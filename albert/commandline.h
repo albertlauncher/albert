@@ -21,16 +21,9 @@
 
 class CommandLine : public QLineEdit
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    explicit CommandLine(QWidget *parent = 0);
-
-
-
-signals:
-
-public slots:
-
+	explicit CommandLine(QWidget *parent = 0);
 };
 
 #endif // COMMANDLINE_H

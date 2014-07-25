@@ -35,9 +35,9 @@
 AlbertWidget::AlbertWidget(QWidget *parent)
 	: QWidget(parent)
 {
-    // Window properties
-    setObjectName("albert");
-    setWindowTitle("Albert");
+	// Window properties
+	setObjectName("albert");
+	setWindowTitle("Albert");
 	setAttribute(Qt::WA_TranslucentBackground);
 	setWindowFlags( Qt::CustomizeWindowHint
 					| Qt::FramelessWindowHint
@@ -79,30 +79,26 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	topFrame->setFocusProxy(_commandLine);
 
 	this->setFocusPolicy(Qt::StrongFocus);
-    this->adjustSize();
+	this->adjustSize();
 
-    // Position
-    this->move(QApplication::desktop()->screenGeometry().center() - rect().center());
+	// Position
+	this->move(QApplication::desktop()->screenGeometry().center() - rect().center());
 
 	// installEventFilter to check if app lost focus
 	QApplication::instance()->installEventFilter(this);
 
-    // Show albert if hotkey was pressed
+	// Show albert if hotkey was pressed
 	connect(XHotKeyManager::getInstance(), SIGNAL(hotKeyPressed()), this, SLOT(onHotKeyPressed()), Qt::QueuedConnection);
 	// React on confirmation in commandline
 	connect(_commandLine, SIGNAL(returnPressed()), this, SLOT(onReturnPressed()));
 
-    // Start listening for the hotkey(s)
+	// Start listening for the hotkey(s)
 	XHotKeyManager::getInstance()->start();
 
 	// Build the index
 	_engine.buildIndex();
 
 	// // testing area // //
-
-
-
-
 }
 
 /**************************************************************************//**

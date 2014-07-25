@@ -23,38 +23,38 @@
 
 class XHotKeyManager : public QThread
 {
-    Q_OBJECT
+	Q_OBJECT
 
-    typedef struct {
-        unsigned int numlock;
-        unsigned int capslock;
-        unsigned int scrolllock;
-    } xhkLockmasks;
+	typedef struct {
+		unsigned int numlock;
+		unsigned int capslock;
+		unsigned int scrolllock;
+	} xhkLockmasks;
 
 public:
-    static XHotKeyManager * getInstance(){
-        if (instance == nullptr)
-            instance = new XHotKeyManager();
-        return instance;
-    }
-    void run() Q_DECL_OVERRIDE ;
+	static XHotKeyManager * getInstance(){
+		if (instance == nullptr)
+			instance = new XHotKeyManager();
+		return instance;
+	}
+	void run() Q_DECL_OVERRIDE ;
 
 signals:
-    void hotKeyPressed();
+	void hotKeyPressed();
 
 private:
-    XHotKeyManager();
-    ~XHotKeyManager();
+	XHotKeyManager();
+	~XHotKeyManager();
 
-    static XHotKeyManager*  instance;
-    Display*                _display;
-    Window                  _root;
-    xhkLockmasks            _lmasks;
-    bool                    _continue;
+	static XHotKeyManager*  instance;
+	Display*                _display;
+	Window                  _root;
+	xhkLockmasks            _lmasks;
+	bool                    _continue;
 
-    void grab_key(int keycode, unsigned int modifiers);
-    void ungrab_key(int keycode, unsigned int modifiers);
-    void getOffendingModifiers();
+	void grab_key(int keycode, unsigned int modifiers);
+	void ungrab_key(int keycode, unsigned int modifiers);
+	void getOffendingModifiers();
 };
 
 #endif // XHOTKEYMANAGER_H

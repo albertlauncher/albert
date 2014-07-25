@@ -31,10 +31,6 @@ public:
 	void loadIndex();
 	void saveIndex();
 
-signals:
-
-public slots:
-
 private:
 	std::vector<Items::AbstractItem*> _index;
 

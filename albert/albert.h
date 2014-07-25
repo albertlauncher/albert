@@ -35,13 +35,13 @@
 
 class AlbertWidget : public QWidget
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
 	AlbertWidget(QWidget *parent = 0);
-    ~AlbertWidget();
+	~AlbertWidget();
 private slots:
-	void onHotKeyPressed();	
+	void onHotKeyPressed();
 	void onReturnPressed();
 protected:
 	void         keyPressEvent(QKeyEvent * event) override;
@@ -51,8 +51,6 @@ private:
 	void hideAndClear();
 	CommandLine * _commandLine;
 	AlbertEngine  _engine;
-
-
 };
 
 #endif // ALBERT_H
