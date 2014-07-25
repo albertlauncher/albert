@@ -22,52 +22,59 @@ AlbertWidget::AlbertWidget(QWidget *parent)
     // Window properties
     setObjectName("albert");
     setWindowTitle("Albert");
-    setAttribute(Qt::WA_TranslucentBackground);
-    setFocusPolicy(Qt::ClickFocus);
+	setAttribute(Qt::WA_TranslucentBackground);
 	setWindowFlags( Qt::CustomizeWindowHint
 					| Qt::FramelessWindowHint
 					| Qt::WindowStaysOnTopHint
-					| Qt::Tool);
+					| Qt::Tool
+					);
 
-	// Layout hierarchy
-	 _commandLine = new CommandLine(this);
+	/* Layout hierarchy */
 
+	//Bottomlayer
+	QVBoxLayout *bottomLayout = new QVBoxLayout;
+	bottomLayout->setMargin(0);
+	this->setLayout(bottomLayout);
+
+	QFrame * bottomFrame = new QFrame(this);
+	bottomFrame->setObjectName("bottomFrame");
+	bottomLayout->addWidget(bottomFrame,0,0);
+
+	// toplayer
+	QVBoxLayout *topLayout = new QVBoxLayout;
+	topLayout->setMargin(0);
+	bottomFrame->setLayout(topLayout);
+
+	QFrame * topFrame = new QFrame(bottomFrame);
+	topFrame->setObjectName("topFrame");
+	topLayout->addWidget(topFrame,0,0);
+
+	// Content
 	QVBoxLayout *verticalLayout = new QVBoxLayout();
+	verticalLayout->setMargin(0);
+	topFrame->setLayout(verticalLayout);
+
+	_commandLine = new CommandLine(topFrame);
 	verticalLayout->addWidget(_commandLine);
-    verticalLayout->setMargin(0);
 
-    QFrame * topFrame = new QFrame;
-    topFrame->setObjectName("topFrame");
+	//Set focus proxies
+	this->setFocusProxy(_commandLine);
+	bottomFrame->setFocusProxy(_commandLine);
 	topFrame->setFocusProxy(_commandLine);
-    topFrame->setLayout(verticalLayout);
 
-    QVBoxLayout *topLayer = new QVBoxLayout;
-    topLayer->addWidget(topFrame,0,0);
-    topLayer->setMargin(0);
-
-    QFrame * bottomFrame = new QFrame;
-    bottomFrame->setObjectName("bottomFrame");
-    bottomFrame->setFocusProxy(topFrame);
-    bottomFrame->setLayout(topLayer);
-
-    QVBoxLayout *bottomLayer = new QVBoxLayout;
-    bottomLayer->addWidget(bottomFrame,0,0);
-    bottomLayer->setMargin(0);
-
-    this->setLayout(bottomLayer);
-	this->setFocusProxy(bottomFrame);
 	this->setFocusPolicy(Qt::StrongFocus);
     this->adjustSize();
 
     // Position
     this->move(QApplication::desktop()->screenGeometry().center() - rect().center());
 
-//	// Check if app lost focus
+	// installEventFilter to check if app lost focus
 	QApplication::instance()->installEventFilter(this);
-	_commandLine->installEventFilter(this);
 
     // Show albert if hotkey was pressed
 	connect(XHotKeyManager::getInstance(), SIGNAL(hotKeyPressed()), this, SLOT(onHotKeyPressed()), Qt::QueuedConnection);
+	// React on confirmation in commandline
+	connect(_commandLine, SIGNAL(returnPressed()), this, SLOT(onReturnPressed()));
 
     // Start listening for the hotkey(s)
 	XHotKeyManager::getInstance()->start();
@@ -75,9 +82,9 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	// Build the index
 	_engine.buildIndex();
 
+	// // testing area // //
 
 
-	// tesing area
 
 
 }
@@ -88,21 +95,6 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 AlbertWidget::~AlbertWidget()
 {
 
-}
-
-/**************************************************************************//**
- * @brief AlbertWidget::toggle
- */
-void AlbertWidget::toggle()
-{
-	if (this->isVisible()){
-		this->hideAndClear();
-		return;
-	}
-	this->show();
-	this->activateWindow();
-	this->raise();
-	_commandLine->setFocus();
 }
 
 /**************************************************************************//**
@@ -119,19 +111,32 @@ void AlbertWidget::hideAndClear()
  */
 void AlbertWidget::onHotKeyPressed()
 {
-	/*
-	* TODO MAKE A HACK NOTE
-	*/
-	std::cout << "Hot key emitted!" << std::endl;
-
+//	std::cout << ":: HotKeyPressed()" << std::endl;
 	if (this->isVisible()){
 		this->hideAndClear();
 		return;
 	}
 	this->show();
-	this->activateWindow();
 	this->raise();
-	_commandLine->setFocus();
+	this->activateWindow();
+	//_commandLine->setFocus();
+
+	if (isVisible())std::cout << "isVisible"<< std::endl;
+	if (isActiveWindow())std::cout << "isActiveWindow"<< std::endl;
+	if (hasFocus())std::cout << "hasFocus"<< std::endl;
+	if (isTopLevel())std::cout << "isTopLevel"<< std::endl;
+	if (isWindowType())std::cout << "isWindowType"<< std::endl;
+
+}
+
+/**************************************************************************//**
+ * @brief AlbertWidget::onReturnPressed
+ */
+void AlbertWidget::onReturnPressed()
+{
+	if (!_commandLine->text().isEmpty())
+		QDesktopServices::openUrl(QUrl(QString("https://www.google.de/search?q=%1").arg(_commandLine->text())));
+	this->hideAndClear();
 }
 
 
@@ -144,11 +149,6 @@ void AlbertWidget::onHotKeyPressed()
 void AlbertWidget::keyPressEvent(QKeyEvent *event)
 {
 	switch (event->key()) {
-	case Qt::Key_Return:
-		if (!_commandLine->text().isEmpty())
-			QDesktopServices::openUrl(QUrl(QString("https://www.google.de/search?q=%1").arg(_commandLine->text())));
-		this->hideAndClear();
-		break;
 	case Qt::Key_Escape:
 		this->hideAndClear();
 		break;
@@ -159,63 +159,39 @@ void AlbertWidget::keyPressEvent(QKeyEvent *event)
 }
 
 /**************************************************************************//**
- * @brief AlbertWidget::focusOutEvent
- * @param e
- */
-void AlbertWidget::focusOutEvent(QFocusEvent* e)
-{
-//	if (e->reason() != Qt::TabFocusReason
-//			||e->reason() != Qt::BacktabFocusReason
-//			||e->reason() != Qt::ActiveWindowFocusReason
-//			||e->reason() != Qt::PopupFocusReason
-//			||e->reason() != Qt::ShortcutFocusReason
-//			||e->reason() != Qt::MenuBarFocusReason
-//			||e->reason() != Qt::OtherFocusReason)
-//		return;
-	std::cout << " focusOutEvent" << std::endl;
-	this->hideAndClear();
-	QWidget::focusOutEvent(e);
-}
-
-/**************************************************************************//**
  * @brief AlbertWidget::eventFilter
+ *
+ * Handle focus loss of the app
+ *
  * @param obj
  * @param event
  * @return
  */
 bool AlbertWidget::eventFilter(QObject *obj, QEvent *event)
 {
-   if (event->type() == QEvent::ApplicationStateChange && this->isActiveWindow()) {
-	   std::cout << "Hidden by  ApplicationStateChange" << std::endl;
-	   this->hideAndClear();
-	  return true; // The event is handled
-   }
-//   if (obj == _commandLine) {
-
-////	   this->hideAndClear();
-//	   std::cout << " _commandLine" << std::endl;
-//	   std::cout << event->type() << std::endl;
-//	 // return false; // The event is handled
-//   }
-   return QObject::eventFilter(obj, event); // Unhandled events are passed to the base class
+	if (event->type() == QEvent::ApplicationStateChange && this->isActiveWindow()) {
+		std::cout << "Hidden by  ApplicationStateChange" << std::endl;
+		this->hideAndClear();
+		return true;
+	}
+	return QObject::eventFilter(obj, event); // Unhandled events are passed to the base class
 }
 
 /**************************************************************************//**
  * @brief AlbertWidget::nativeEvent
+ *
  * This special event handler can be reimplemented in a subclass to receive
  * native platform events identified by eventType which are passed in the
- * message parameter. In your reimplementation of this function, if you want to
- * stop the event being handled by Qt, return true and set result. If you
- * return false, this native event is passed back to Qt, which translates the
- * event into a Qt event and sends it to the widget.
- *
+ * message parameter.
  * This method is called for every native event. On X11, eventType is set to
  * "xcb_generic_event_t", and the message can be casted to a
  * xcb_generic_event_t pointer.
+ * The purpose of this function is to eat malicious focus events generated by
+ * X11 when the keyboard is grabbed when the hotkey is pressed.
  *
  * @param eventType
  * @param message
- * @return Indicator if this event shall be stoped being handled further.
+ * @return Indicator if this event shall be stopped being handled by Qt.
  */
 bool AlbertWidget::nativeEvent(const QByteArray &eventType, void *message, long *)
 {
@@ -226,50 +202,26 @@ bool AlbertWidget::nativeEvent(const QByteArray &eventType, void *message, long 
 		{
 		case XCB_FOCUS_IN: {
 			xcb_focus_in_event_t *fe = (xcb_focus_in_event_t *)event;
-			if (fe->mode & (XCB_NOTIFY_MODE_GRAB|XCB_NOTIFY_MODE_UNGRAB)){
+			if (fe->mode & (XCB_NOTIFY_MODE_GRAB|XCB_NOTIFY_MODE_WHILE_GRABBED|XCB_NOTIFY_MODE_UNGRAB)){
+				std::cout << "Ignored XCB_FOCUS_IN event" << std::endl;
 				return true; // Ignore this events
 			}
+			std::cout << "Ignored XCB_FOCUS_IN event NOT" << std::endl;
 			break;
 		}
 		case XCB_FOCUS_OUT: {
 			xcb_focus_out_event_t *fe = (xcb_focus_out_event_t *)event;
-			if (fe->mode & (XCB_NOTIFY_MODE_GRAB|XCB_NOTIFY_MODE_UNGRAB)){
+			if (fe->mode & (XCB_NOTIFY_MODE_GRAB|XCB_NOTIFY_MODE_WHILE_GRABBED|XCB_NOTIFY_MODE_UNGRAB)){
+				std::cout << "Ignored XCB_FOCUS_OUT event" << std::endl;
 				return true; // Ignore this events
 			}
+			std::cout << "Ignored XCB_FOCUS_OUT event NOT" << std::endl;
 			break;
 		}
 		}
 	}
 	return false;
 }
-
-
-				//		if (event->response_type & ~0x80  & (XCB_FOCUS_IN|XCB_FOCUS_OUT))
-//		{
-//			if (event->response_type & ~0x80 & (XCB_FOCUS_IN))
-//				std::cout << "eventType.XCB_FOCUS_IN()" << std::endl;
-//			if (event->response_type & ~0x80 & (XCB_FOCUS_OUT))
-//				std::cout << "eventType.XCB_FOCUS_OUT()" << std::endl;
-//			// xcb_focus_out_event_t is a typedef of xcb_focus_in_event_t
-//			// and hence can be handled equally
-//			xcb_focus_in_event_t *fe = (xcb_focus_in_event_t *)event;
-//			std::cout << "" << fe->response_type << std::endl;
-//			std::cout << "" << fe->detail << std::endl;
-//			std::cout << "" << fe->detail << std::endl;
-//			std::cout << "" << fe->detail << std::endl;
-//			std::cout << "" << fe->detail << std::endl;
-//			std::cout << "" << fe->detail << std::endl;
-//			// If this is a focus event generated by a grab ignore it
-//			if (fe->mode & (XCB_NOTIFY_MODE_GRAB|XCB_NOTIFY_MODE_UNGRAB))
-//				return false; // stop being handled further
-//		}
-//	}
-//	return false;
-//}
-
-
-
-
 
 
 

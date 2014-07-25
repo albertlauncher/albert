@@ -24,21 +24,15 @@ class AlbertWidget : public QWidget
 public:
 	AlbertWidget(QWidget *parent = 0);
     ~AlbertWidget();
-
 private slots:
-	void toggle();
-	void onHotKeyPressed();
-
+	void onHotKeyPressed();	
+	void onReturnPressed();
 protected:
-	void keyPressEvent(QKeyEvent * event) override;
-	void focusOutEvent(QFocusEvent* e) override;
-	bool eventFilter(QObject *obj, QEvent *event) override;
+	void         keyPressEvent(QKeyEvent * event) override;
+	bool         eventFilter(QObject *obj, QEvent *event) override;
 	virtual bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
-
-
 private:
 	void hideAndClear();
-
 	CommandLine * _commandLine;
 	AlbertEngine  _engine;
 

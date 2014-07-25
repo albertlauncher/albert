@@ -3,7 +3,6 @@
 #include <QSettings>
 #include <iostream>
 #include <QObject>
-#include "settings.h"
 
 
 
