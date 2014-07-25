@@ -1,0 +1,69 @@
+#albert {
+        padding: 0px;
+        margin: 0px;
+        border-radius: 5px;
+
+}
+
+#commandline {
+        qproperty-geometry: rect(0 0 700 110);
+        padding: 5px;
+        margin: 0px;
+        /*border: 2px solid #fff;*/
+        border-radius: 5px;
+        font:  42px "Tahoma";
+        color : #0f0;
+        background-color: rgba(0,0,0,100%);
+}
+
+#topFrame {
+        padding: 10px;
+        margin: 0px;
+        /*border: 1px solid #fff;*/
+        border-radius: 15px;
+        background-color: rgba(0, 0, 0, 100%);
+}
+
+#bottomFrame {
+        padding: 10px;
+        margin: 0px;
+        /*border: 1px solid #fff;*/
+        border-radius: 25px;
+        background-color: rgba(0, 0, 0, 50%);
+}
+
+
+
+/* * * TRASH * * * */
+/*background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde);*/
+
+
+
+
+
+
+
+
+
+
+
+
+#output {
+	font:  12px "Tahoma";
+	color: black;
+	qproperty-alignment: AlignLeft;
+	qproperty-geometry: rect(48 60 580 24);
+}
+
+#outputIcon {
+	qproperty-geometry: rect(640 40 32 32);
+}
+
+#alternatives {
+	font:  12px "Tahoma";
+	qproperty-geometry: rect(5 104 690 200);
+}
+
+#alternatives::item {
+	padding: 2px 0px;
+}
