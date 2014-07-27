@@ -20,13 +20,14 @@
 #include <QUrl>
 #include <QDebug>
 #include <QStandardPaths>
+#include <QLabel>
 
 #include "xcb/xcb.h"
 
 // remove
 
 #include <iostream>
-#include <QtX11Extras/QX11Info>
+
 
 /**************************************************************************//**
  * @brief AlbertWidget::AlbertWidget
@@ -73,6 +74,11 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_commandLine = new CommandLine(topFrame);
 	verticalLayout->addWidget(_commandLine);
 
+	// Results
+	_resultsLayout = new QVBoxLayout();
+	_resultsLayout->setMargin(0);
+	verticalLayout->addLayout(_resultsLayout);
+
 	//Set focus proxies
 	this->setFocusProxy(_commandLine);
 	bottomFrame->setFocusProxy(_commandLine);
@@ -91,6 +97,7 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	connect(XHotKeyManager::getInstance(), SIGNAL(hotKeyPressed()), this, SLOT(onHotKeyPressed()), Qt::QueuedConnection);
 	// React on confirmation in commandline
 	connect(_commandLine, SIGNAL(returnPressed()), this, SLOT(onReturnPressed()));
+	connect(_commandLine, SIGNAL(textEdited(QString)), this, SLOT(onTextEdited(QString)));
 
 	// Start listening for the hotkey(s)
 	XHotKeyManager::getInstance()->start();
@@ -99,6 +106,18 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_engine.buildIndex();
 
 	// // testing area // //
+
+
+////	QLabel *_commandLine2 = new QLabel("eins",topFrame);
+////	QLabel *_commandLine3 = new QLabel("2", topFrame);
+////	QLabel *_commandLine4 = new QLabel("3", topFrame);
+//	_resultsLayout->addWidget(_commandLine2);
+//	_resultsLayout->addWidget(_commandLine3);
+//	_resultsLayout->addWidget(_commandLine4);
+
+
+
+
 }
 
 /**************************************************************************//**
@@ -139,6 +158,40 @@ void AlbertWidget::onHotKeyPressed()
 	if (isTopLevel())std::cout << "isTopLevel"<< std::endl;
 	if (isWindowType())std::cout << "isWindowType"<< std::endl;
 
+}
+
+/*****************************************************************************/
+/******************************** S L O T S **********************************/
+/**************************************************************************//**
+ * @brief AlbertWidget::onTextChanged
+ */
+void AlbertWidget::onTextEdited(const QString & text)
+{
+
+	std::cout << text.toStdString() << std::endl;
+	QLayoutItem *item;
+	while ((item = _resultsLayout->takeAt(0)) != 0) {
+		item->widget()->deleteLater();
+		delete item;
+	}
+	this->adjustSize();
+
+	if (!text.isEmpty())
+	{
+		std::vector<Items::AbstractItem *> results = _engine.request(text);
+		if (!results.empty())
+		{
+
+			std::cout << results.size() << std::endl;
+			QLabel *resultItem;
+			for (auto i : results)
+			{
+				resultItem = new QLabel(i->name());
+				_resultsLayout->addWidget(resultItem);
+			}
+			this->adjustSize();
+		}
+	}
 }
 
 /**************************************************************************//**

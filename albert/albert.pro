@@ -15,15 +15,15 @@ TEMPLATE = app
 SOURCES += main.cpp\
 		albert.cpp \
 		commandline.cpp \
-    xhotkeymanager.cpp \
-    albertengine.cpp \
-    item.cpp
+	xhotkeymanager.cpp \
+	albertengine.cpp \
+	item.cpp
 
 HEADERS  += albert.h \
 		commandline.h \
-    xhotkeymanager.h \
-    albertengine.h \
-    item.h
+	xhotkeymanager.h \
+	albertengine.h \
+	item.h
 
 RESOURCES += albert.qrc
 

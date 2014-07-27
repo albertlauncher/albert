@@ -1,35 +1,44 @@
 #albert {
-        padding: 0px;
-        margin: 0px;
-        border-radius: 5px;
+	padding: 0px;
+	margin: 0px;
+	border-radius: 5px;
 
-}
-
-#commandline {
-        qproperty-geometry: rect(0 0 700 110);
-        padding: 5px;
-        margin: 0px;
-        /*border: 2px solid #fff;*/
-        border-radius: 5px;
-        font:  42px "Tahoma";
-        color : #0f0;
-        background-color: rgba(0,0,0,100%);
-}
-
-#topFrame {
-        padding: 10px;
-        margin: 0px;
-        /*border: 1px solid #fff;*/
-        border-radius: 15px;
-        background-color: rgba(0, 0, 0, 100%);
 }
 
 #bottomFrame {
-        padding: 10px;
-        margin: 0px;
-        /*border: 1px solid #fff;*/
-        border-radius: 25px;
-        background-color: rgba(0, 0, 0, 50%);
+	padding: 10px;
+	margin: 0px;
+	/*border: 1px solid #fff;*/
+	border-radius: 25px;
+	background-color: rgba(0, 0, 0, 50%);
+}
+
+#topFrame {
+	padding: 10px;
+	margin: 0px;
+	/*border: 1px solid #fff;*/
+	border-radius: 15px;
+	background-color: rgba(0, 0, 0, 100%);
+}
+
+#commandline {
+	padding: 5px;
+	margin: 0px;
+	/*border: 2px solid #fff;*/
+	border-radius: 5px;
+	font:  42px "Tahoma";
+	color : #0f0;
+	background-color: rgba(255,255,255,10%);
+}
+
+QLabel {
+	padding: 5px;
+	margin: 0px;
+	/*border: 2px solid #fff;*/
+	border-radius: 5px;
+	font:  36px "Tahoma";
+	color : #080;
+	background-color: rgba(0,0,0,100%);
 }
 
 

@@ -17,9 +17,8 @@
 #ifndef ITEM_H
 #define ITEM_H
 
-#include <string>
+#include <QString>
 
-using std::string;
 
 ///  ---  to remove
 #include <QDebug>
@@ -33,18 +32,19 @@ namespace Items
 	{
 	public:
 		AbstractItem() = delete;
-		AbstractItem(string name, string path) : _name(name), _path(path), _score(0) {}
+		AbstractItem(QString name, QString path) : _name(name), _path(path), _score(0) {}
 		virtual ~AbstractItem() {}
 
 		virtual void  action() = 0;
-		inline string name()                 { return _name; }
-		inline string path()                 { return _path; }
+		inline QString name()                 { return _name; }
+		inline QString path()                 { return _path; }
 		inline double score()                { return _score; }
 		inline void   setScore(double score) { _score = score; }
 
+
 	protected:
-		const string _name;
-		const string _path;
+		const QString _name;
+		const QString _path;
 		double       _score;
 
 	};
@@ -56,7 +56,7 @@ namespace Items
 	{
 	public:
 		Executable() = delete;
-		Executable(string name, string path)
+		Executable(QString name, QString path)
 			: AbstractItem(name, path) {}
 		~Executable() {}
 		virtual void action()
@@ -72,7 +72,7 @@ namespace Items
 	{
 	public:
 		DesktopApp() = delete;
-		DesktopApp(string name, string path) : AbstractItem(name, path) {}
+		DesktopApp(QString name, QString path) : AbstractItem(name, path) {}
 		~DesktopApp() {}
 		virtual void action()
 		{
@@ -87,7 +87,7 @@ namespace Items
 	{
 	public:
 		Directory() = delete;
-		Directory(string name, string path) : AbstractItem(name, path) {}
+		Directory(QString name, QString path) : AbstractItem(name, path) {}
 		~Directory() {}
 		virtual void action()
 		{
@@ -102,7 +102,7 @@ namespace Items
 	{
 	public:
 		Document() = delete;
-		Document(string name, string path)
+		Document(QString name, QString path)
 			: AbstractItem(name, path) {}
 		~Document() {}
 		virtual void action()

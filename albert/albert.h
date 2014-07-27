@@ -43,14 +43,25 @@ public:
 private slots:
 	void onHotKeyPressed();
 	void onReturnPressed();
+	void hideAndClear();
+	void onTextEdited(const QString &text);
 protected:
 	void         keyPressEvent(QKeyEvent * event) override;
 	bool         eventFilter(QObject *obj, QEvent *event) override;
 	virtual bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
 private:
-	void hideAndClear();
 	CommandLine * _commandLine;
+	QVBoxLayout *_resultsLayout;
 	AlbertEngine  _engine;
 };
 
 #endif // ALBERT_H
+
+
+/*
+ * Calc
+ * Desktop
+ * Binary
+ * Files
+ * Dirs
+ */

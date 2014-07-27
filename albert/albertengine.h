@@ -19,7 +19,11 @@
 
 #include <QObject>
 #include <vector>
+#include <map>
 #include "item.h"
+
+using std::vector;
+using std::map;
 
 class AlbertEngine : public QObject
 {
@@ -31,8 +35,12 @@ public:
 	void loadIndex();
 	void saveIndex();
 
+	vector<Items::AbstractItem *> request(QString req);
+
 private:
-	std::vector<Items::AbstractItem*> _index;
+	vector<Items::AbstractItem*> _index;
+	map<QString, vector<int>> _qGrams;
+
 
 };
 
