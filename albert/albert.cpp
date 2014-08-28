@@ -14,22 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "albert.h"
-#include "xhotkeymanager.h"
-#include <QDesktopServices>
-#include <QUrl>
-#include <QDebug>
-#include <QStandardPaths>
-#include <QLabel>
 #include <algorithm>
-
 #include "xcb/xcb.h"
-#include "listitemwidget.h"
+#include "albert.h"
+#include "albertengine.h"
+#include "resultwidget.h"
+#include "xhotkeymanager.h"
 
 // remove
-
 #include <iostream>
-
 
 /**************************************************************************//**
  * @brief AlbertWidget::AlbertWidget
@@ -38,7 +31,9 @@
 AlbertWidget::AlbertWidget(QWidget *parent)
 	: QWidget(parent)
 {
+	_selectedResultIndex = -1;
 	_nItemsToShow = 5;
+	_firstVisibleItemIndex=0;
 
 	// Window properties
 	setObjectName("albert");
@@ -52,39 +47,58 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 
 	/* Layout hierarchy */
 
-	//Bottomlayer
-	QVBoxLayout *bottomLayout = new QVBoxLayout;
-	bottomLayout->setMargin(0);
-	this->setLayout(bottomLayout);
+	// Layer 3
+	QVBoxLayout *l3 = new QVBoxLayout;
+	l3->setMargin(0);
+	l3->setSizeConstraint(QLayout::SetFixedSize);
+	this->setLayout(l3);
 
-	QFrame * bottomFrame = new QFrame(this);
-	bottomFrame->setObjectName("bottomFrame");
-	bottomLayout->addWidget(bottomFrame,0,0);
+	_frame3 = new QFrame;
+	_frame3->setObjectName("frame3");
+	_frame3->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Minimum);
+	l3->addWidget(_frame3,0,0);
 
-	// toplayer
-	QVBoxLayout *topLayout = new QVBoxLayout;
-	topLayout->setMargin(0);
-	bottomFrame->setLayout(topLayout);
+	// Layer 2
+	QVBoxLayout *l2 = new QVBoxLayout;
+	l2->setMargin(0);
+	_frame3->setLayout(l2);
 
-	QFrame * topFrame = new QFrame(bottomFrame);
-	topFrame->setObjectName("topFrame");
-	topLayout->addWidget(topFrame,0,0);
+	_frame2 = new QFrame;
+	_frame2->setObjectName("frame2");
+	_frame2->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
+	l2->addWidget(_frame2,0,0);
 
-	// Content
-	_contentLayout = new QVBoxLayout();
-	_contentLayout->setMargin(0);
-	topFrame->setLayout(_contentLayout);
+	// Layer 1
+	QVBoxLayout *l1 = new QVBoxLayout;
+	l1->setMargin(0);
+	_frame2->setLayout(l1);
 
-	// Input
-	_commandLine = new CommandLine(topFrame);
-	_commandLine->setObjectName("commandline");
-	_contentLayout->addWidget(_commandLine);
+	_frame1 = new QFrame;
+	_frame1->setObjectName("frame1");
+	_frame1->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
+	l1->addWidget(_frame1,0,0);
+
+	QVBoxLayout *contentLayout = new QVBoxLayout();
+	contentLayout->setMargin(0);
+	_frame1->setLayout(contentLayout);
+
+
+	/* Interface */
+	_inputLine = new QLineEdit;
+	_inputLine->setObjectName("inputline");
+	_inputLine->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
+	contentLayout->addWidget(_inputLine);
+
+	_resultsLayout = new QVBoxLayout();
+	_resultsLayout->setMargin(0);
+	_resultsLayout->setSpacing(0);
+	contentLayout->addLayout(_resultsLayout);
 
 	//Set focus proxies
-	this->setFocusProxy(_commandLine);
-	bottomFrame->setFocusProxy(_commandLine);
-	topFrame->setFocusProxy(_commandLine);
-
+	this->setFocusProxy(_inputLine);
+	_frame1->setFocusProxy(_inputLine);
+	_frame2->setFocusProxy(_inputLine);
+	_frame3->setFocusProxy(_inputLine);
 	this->setFocusPolicy(Qt::StrongFocus);
 
 	// Position
@@ -95,34 +109,12 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 
 	// Show albert if hotkey was pressed
 	connect(XHotKeyManager::getInstance(), SIGNAL(hotKeyPressed()), this, SLOT(onHotKeyPressed()), Qt::QueuedConnection);
-	// React on confirmation in commandline
-	connect(_commandLine, SIGNAL(returnPressed()), this, SLOT(onReturnPressed()));
-	connect(_commandLine, SIGNAL(textEdited(QString)), this, SLOT(onTextEdited(QString)));
-
 	// Start listening for the hotkey(s)
 	XHotKeyManager::getInstance()->start();
 
-	// Build the index
-	_engine.buildIndex();
-
-	// // testing area // //
-
-//	_resultsWidgetList
-
-
-	ListItemWidget *w = new ListItemWidget;
-	w->setTitle("1ABCabc123");
-	w->setAuxInfo("1ABCabc123 Tool");
-	_resultsWidgetList.append(w);
-	_contentLayout->addWidget(w);
-
-	w = new ListItemWidget;
-	w->setTitle("2ABCabc123");
-	w->setAuxInfo("2ABCabc123 Tool");
-	_resultsWidgetList.append(w);
-	_contentLayout->addWidget(w);
-
-	//_contentLayout->adjustSize();
+	// React on confirmation in commandline
+	connect(_inputLine, SIGNAL(returnPressed()), this, SLOT(onReturnPressed()));
+	connect(_inputLine, SIGNAL(textEdited(QString)), this, SLOT(onTextEdited(QString)));
 
 	this->adjustSize();
 
@@ -143,9 +135,50 @@ AlbertWidget::~AlbertWidget()
 void AlbertWidget::hideAndClear()
 {
 	QWidget::hide();
-	_commandLine->clear();
+	_inputLine->clear();
+	clearResults();
 }
 
+/**************************************************************************//**
+ * @brief AlbertWidget::clear
+ */
+void AlbertWidget::clearResults()
+{
+	QLayoutItem *child;
+	while ((child = _resultsLayout->takeAt(0)) != 0)  {
+		delete child->widget();
+	}
+
+}
+
+/**************************************************************************//**
+ * @brief AlbertWidget::drawResults
+ */
+void AlbertWidget::drawResults()
+{
+	clearResults();
+	int begin;
+	if (_selectedResultIndex <= (_nItemsToShow-1)/2 ) {
+		begin=0;
+	} else if (_selectedResultIndex > (int)_results.size()-1-_nItemsToShow+(_nItemsToShow-1)/2) {
+		begin=_results.size()-_nItemsToShow;
+	} else {
+		begin=_selectedResultIndex-(_nItemsToShow-1)/2;
+	}
+
+	for (int i = begin; i < begin+_nItemsToShow; ++i) {
+		ResultWidget *w = new ResultWidget;
+		w->setTitle(_results[i]->name());
+		w->setAuxInfo(_results[i]->path());
+		if (i == _selectedResultIndex)
+			w->setObjectName("selectedResultWidget");
+		_resultsLayout->addWidget(w);
+		w->show();
+	}
+}
+
+/*****************************************************************************/
+/**************************** O V E R R I D E S ******************************/
 /**************************************************************************//**
  * @brief AlbertWidget::onHotKeyPressed
  */
@@ -158,47 +191,27 @@ void AlbertWidget::onHotKeyPressed()
 	this->show();
 	this->raise();
 	this->activateWindow();
-	_commandLine->setFocus();
-
-	if (isVisible())std::cout << "isVisible"<< std::endl;
-	if (isActiveWindow())std::cout << "isActiveWindow"<< std::endl;
-	if (hasFocus())std::cout << "hasFocus"<< std::endl;
-	if (isTopLevel())std::cout << "isTopLevel"<< std::endl;
-	if (isWindowType())std::cout << "isWindowType"<< std::endl;
-
+	_inputLine->setFocus();
 }
 
-/*****************************************************************************/
-/******************************** S L O T S **********************************/
 /**************************************************************************//**
- * @brief AlbertWidget::onTextChanged
+ * @brief AlbertWidget::onTextEdited
+ * @param text
  */
 void AlbertWidget::onTextEdited(const QString & text)
 {
-	while (!_resultsWidgetList.isEmpty()){
-		ListItemWidget *w =_resultsWidgetList.takeLast();
-		_contentLayout->removeWidget(w);
-		delete w;
-	}
+	clearResults();
+	std::cout << "_resultsLayout->count(): " << _resultsLayout->count() << std::endl;
 
 	if (!text.isEmpty())
 	{
-		const std::vector<const Items::AbstractItem *> &results = _engine.request(text);
-		if (!results.empty())
-		{
-			std::cout << results.size() << std::endl;
-			for (int i = 0 ; i<std::min(_nItemsToShow, (int)results.size()); ++i)
-			{
-				ListItemWidget *w = new ListItemWidget;
-				w->setTitle(results[i]->name());
-				w->setAuxInfo(results[i]->path());
-				_resultsWidgetList.append(w);
-				_contentLayout->addWidget(w);
-			}
-//			_resultsListWidget->setFixedHeight(std::min(5,_resultsListWidget->count()) * 48); // TODO
-//			_resultsListWidget->show();
-		}
+		AlbertEngine::instance()->request(text, _results);
+		_selectedResultIndex = 0;
+		std::cout << "_results.size(): " <<  _results.size() << std::endl;
+		if (!_results.empty())
+			drawResults();
 	}
+	std::cout << "adjustSize()"  << std::endl;
 	this->adjustSize();
 }
 
@@ -208,9 +221,6 @@ void AlbertWidget::onTextEdited(const QString & text)
  */
 void AlbertWidget::onReturnPressed()
 {
-	if (!_commandLine->text().isEmpty())
-		QDesktopServices::openUrl(QUrl(QString("https://www.google.de/search?q=%1").arg(_commandLine->text())));
-	this->hideAndClear();
 }
 
 
@@ -226,6 +236,34 @@ void AlbertWidget::keyPressEvent(QKeyEvent *event)
 	case Qt::Key_Escape:
 		this->hideAndClear();
 		break;
+	case Qt::Key_Up:
+		if (_selectedResultIndex != 0) {
+			--_selectedResultIndex;
+			drawResults();
+		}
+		std::cout << "UpArrow pressed." << std::endl;
+		break;
+	case Qt::Key_Down:
+		if (_selectedResultIndex != (int)_results.size()-1) {
+			++_selectedResultIndex;
+			drawResults();
+		}
+		std::cout << "DownArrow pressed." << std::endl;
+		break;
+	case Qt::Key_PageUp:
+		if (_selectedResultIndex != 0) {
+			_selectedResultIndex = std::max(0, _selectedResultIndex-_nItemsToShow);
+			drawResults();
+		}
+		std::cout << "Key_PageUp pressed." << std::endl;
+		break;
+	case Qt::Key_PageDown:
+		if (_selectedResultIndex != (int)_results.size()-1) {
+			_selectedResultIndex = std::min(_selectedResultIndex+_nItemsToShow, (int)_results.size()-1);
+			drawResults();
+		}
+		std::cout << "Key_PageDown pressed." << std::endl;
+		break;
 	default:
 		QWidget::keyPressEvent(event);
 		break;
@@ -234,9 +272,7 @@ void AlbertWidget::keyPressEvent(QKeyEvent *event)
 
 /**************************************************************************//**
  * @brief AlbertWidget::eventFilter
- *
  * Handle focus loss of the app
- *
  * @param obj
  * @param event
  * @return
@@ -244,7 +280,6 @@ void AlbertWidget::keyPressEvent(QKeyEvent *event)
 bool AlbertWidget::eventFilter(QObject *obj, QEvent *event)
 {
 	if (event->type() == QEvent::ApplicationStateChange && this->isActiveWindow()) {
-		std::cout << "Hidden by  ApplicationStateChange" << std::endl;
 		this->hideAndClear();
 		return true;
 	}
@@ -296,15 +331,3 @@ bool AlbertWidget::nativeEvent(const QByteArray &eventType, void *message, long 
 	}
 	return false;
 }
-
-
-
-
-
-
-//    TRASH     //
-
-//    QGraphicsBlurEffect* dropShadowEffect = new QGraphicsBlurEffect(this);
-//    dropShadowEffect->setBlurHints(QGraphicsBlurEffect::QualityHint);
-//    dropShadowEffect->setBlurRadius(5);
-//    this->setGraphicsEffect(dropShadowEffect);

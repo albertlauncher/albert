@@ -14,22 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "albert.h"
 #include <QApplication>
 #include <QSettings>
-#include <iostream>
-#include <QObject>
-
-
+#include "albert.h"
+#include "albertengine.h"
 
 
 int main(int argc, char *argv[])
 {
 	QCoreApplication::setOrganizationName("albert");
 	QCoreApplication::setApplicationName("albert");
-
 	QApplication a(argc, argv);
 	a.setStyleSheet("file:///:/resources/basicskin.qss");
+
+	AlbertEngine::instance()->buildIndex();
 	AlbertWidget w;
 	return a.exec();
 }

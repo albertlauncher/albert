@@ -33,13 +33,13 @@ bool lexicographically (Items::AbstractItem*  i, Items::AbstractItem* j)
 
 //bool sortByName(const Items::AbstractItem &lhs, const Items::AbstractItem &rhs) { return lhs.name() < rhs.name(); }
 
+AlbertEngine* AlbertEngine::_instance = nullptr;
 
 /**********************************************************************//**
  * @brief AlbertEngine::AlbertEngine
  * @param parent
  */
-AlbertEngine::AlbertEngine(QObject *parent) :
-	QObject(parent)
+AlbertEngine::AlbertEngine()
 {
 }
 
@@ -104,27 +104,29 @@ void AlbertEngine::buildIndex()
 }
 
 
-/**********************************************************************//**
- * @brief AlbertEngine::loadIndex
- */
-void AlbertEngine::loadIndex()
-{
+///**********************************************************************//**
+// * @brief AlbertEngine::loadIndex
+// */
+//void AlbertEngine::loadIndex()
+//{
 
-}
+//}
+
+///**********************************************************************//**
+// * @brief AlbertEngine::saveIndex
+// */
+//void AlbertEngine::saveIndex()
+//{
+
+//}
 
 /**********************************************************************//**
  * @brief AlbertEngine::saveIndex
  */
-void AlbertEngine::saveIndex()
+void AlbertEngine::request(const QString &req, std::vector<const Items::AbstractItem *>& result)
 {
+	result.clear();
 
-}
-
-/**********************************************************************//**
- * @brief AlbertEngine::saveIndex
- */
-const std::vector<const Items::AbstractItem*>& AlbertEngine::request(const QString &req)
-{
 	QString reqlo = req.toLower();
 	std::vector<Items::AbstractItem *>::const_iterator it, first, last, lb;
 	std::iterator_traits<std::vector<Items::AbstractItem *>::const_iterator>::difference_type count, step;
@@ -151,7 +153,5 @@ const std::vector<const Items::AbstractItem*>& AlbertEngine::request(const QStri
 		++it;
 	}
 
-	_result.clear();
-	_result.assign(lb, it);
-	return _result;
+	result.assign(lb, it);
 }

@@ -23,16 +23,15 @@
 #include <QDebug>
 #include <QApplication>
 #include <QKeyEvent>
-#include <QAbstractNativeEventFilter>
 
-//bleibtz
+//bleibt
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QLineEdit>
 #include <QList>
-#include "commandline.h"
-#include "albertengine.h"
-#include "listitemwidget.h"
+#include <QAbstractNativeEventFilter>
+// meine
+#include "item.h"
 
 class AlbertWidget : public QWidget
 {
@@ -41,24 +40,38 @@ class AlbertWidget : public QWidget
 public:
 	AlbertWidget(QWidget *parent = 0);
 	~AlbertWidget();
+
 private slots:
 	void onHotKeyPressed();
-	void onReturnPressed();
 	void hideAndClear();
 	void onTextEdited(const QString &text);
+	void onReturnPressed();
+
 protected:
 	void         keyPressEvent(QKeyEvent * event) override;
 	bool         eventFilter(QObject *obj, QEvent *event) override;
 	virtual bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
+
 private:
-	CommandLine	  * _commandLine;
-	QList<ListItemWidget*>  _resultsWidgetList;
-	AlbertEngine  _engine;
-	int           _nItemsToShow;
-	QVBoxLayout   *_contentLayout;
+	QFrame           *_frame1,*_frame2,*_frame3;
+	QLineEdit	     *_inputLine;
+	QVBoxLayout      *_resultsLayout;
+	int              _nItemsToShow;
+	int              _selectedResultIndex;
+	int              _firstVisibleItemIndex;
+	std::vector<const Items::AbstractItem *> _results;
+
+	void clearResults();
+	void drawResults();
+
+
 };
 
 #endif // ALBERT_H
+
+
+
+
 
 
 /*

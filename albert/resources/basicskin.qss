@@ -2,96 +2,96 @@
 	padding: 0px;
 	margin: 0px;
 	border-radius: 5px;
-	width:500px;
 }
 
-#bottomFrame {
+#frame3 {
 	padding: 10px;
 	margin: 0px;
-	/*border: 1px solid #fff;*/
-	border-radius: 25px;
+	border-radius: 30px;
 	background-color: rgba(0, 0, 0, 50%);
 }
-
-#topFrame {
+#frame2 {
 	padding: 10px;
 	margin: 0px;
-	/*border: 1px solid #fff;*/
-	border-radius: 15px;
+	border-radius: 20px;
 	background-color: rgba(0, 0, 0, 100%);
 }
-
-#commandline {
-	padding: 5px;
+#frame1 {
+	padding: 10px;
 	margin: 0px;
-	/*border: 2px solid #fff;*/
+	spacing: 0px;
+	border-radius: 10px;
+	background-color: #444;
+	width:720px;
+	min-width:720px;
+	max-width:720px;
+}
+
+#inputline {
+	padding: 2px;
+	margin: 0px;
 	border-radius: 5px;
 	font:  48px "Ubuntu";
-	color : #0f0;
-	background-color: rgba(255,255,255,10%);
-	width:640px;
+	color : #0080ff;
+	background-color: #3a3a3a;
+	border:none;
 }
 
 /* * LIST-WIDGET-ITEM-WIDGET * */
 
+#selectedResultWidget {
+	padding: 1px;
+	margin: 0px;
+	spacing: 0px;
+	border-radius:5px;
+	border-left: 1px solid #0080ff;
+	background: qlineargradient(spread:pad,x1:0,x2:1, stop:0 rgba(0, 128, 255, 32), stop:1 rgba(0, 0, 0, 0) )
+}
+
+#resultWidget {
+	padding: 1px;
+	margin: 0px;
+	spacing: 0px;
+}
+
 #icon {
+	padding: 0px;
+	margin: 0px;
 	width:48px;
 	height:48px;
 }
-
 #title {
 	padding: 0px;
 	margin: 0px;
-	height: 36pt;
-	color: #0f0;
-	font: 34px "Ubuntu";
-	background-color: transparent;
+	color: #0080ff;
+	font: 32px "Ubuntu";
 }
-
 #auxInfo {
 	padding: 0px;
 	margin: 0px;
-	height: 12px;
-	color: #0f0;
-	font: 10px "Ubuntu";
-	background-color: transparent;
+	color: #0080ff;
+	font: 12px "Ubuntu";
 }
 
 
 
 
+
+
+
+
+
+/* * *  * ** * ** ** * * * * * * * ** * * TRASH  * * * ** * * * * ** ** * * * * * * * * * * */
+/*
 QLabel {
 	padding: 5px;
 	margin: 0px;
 	border-radius: 5px;
 	font:  36px "Tahoma";
-	color : #080;
+	color : #0080ff;
 	background-color: transparent;
 }
 
-
-
-
-/* * LISTWIDGET **/
-
-QListWidget {
-	padding: 5px;
-	margin: 0px;
-	border-radius: 5px;
-	border: 0px solid #fff;
-	background-color: rgba(255,255,255,10%);
-	font:  36px "Ubuntu";
-}
-QListWidget::item {
-	color:#0f0;
-	background-color:transparent;
-}
-QListWidget::item:selected {
-	background-color: rgba(255,255,255,10%);
-}
-
-
-/* * SCROLLBAR * */
 QScrollBar:vertical  {
 	background: transparent;
 	width: 0px;
@@ -125,12 +125,6 @@ QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical  {
 QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical  {
 	background: none;
 }
-
-
-
-/* * * TRASH * * * */
-/*
-
 
 background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde);
 

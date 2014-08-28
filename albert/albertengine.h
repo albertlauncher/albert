@@ -17,7 +17,6 @@
 #ifndef ALBERTENGINE_H
 #define ALBERTENGINE_H
 
-#include <QObject>
 #include <vector>
 #include <map>
 #include "item.h"
@@ -25,24 +24,25 @@
 using std::vector;
 using std::map;
 
-class AlbertEngine : public QObject
+class AlbertEngine
 {
-	Q_OBJECT
 public:
-	explicit AlbertEngine(QObject *parent = 0);
+	explicit AlbertEngine();
 	~AlbertEngine();
+	static AlbertEngine* instance(){
+		if (_instance == nullptr)
+			_instance = new AlbertEngine;
+		return _instance;
+	}
 	void buildIndex();
-	void loadIndex();
-	void saveIndex();
-
-	const std::vector<const Items::AbstractItem *> &request(const QString &req);
+//	void loadIndex();
+//	void saveIndex();
+	void request(const QString &req, std::vector<const Items::AbstractItem *> &result);
 
 private:
+	static AlbertEngine *_instance;
 	vector<Items::AbstractItem*> _index;
 	vector<const Items::AbstractItem * > _result;
-	map<QString, vector<int>> _qGrams;
-
-
 };
 
 #endif // ALBERTENGINE_H

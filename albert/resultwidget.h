@@ -14,16 +14,31 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef COMMANDLINE_H
-#define COMMANDLINE_H
+#ifndef RESULTWIDGET_H
+#define RESULTWIDGET_H
 
-#include <QLineEdit>
+#include <QWidget>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QLabel>
 
-class CommandLine : public QLineEdit
+class ResultWidget : public QFrame
 {
 	Q_OBJECT
+
+	QHBoxLayout *_horizontalLayout;
+	QLabel      *_icon;
+	QVBoxLayout *_verticalLayout;
+	QLabel      *_title;
+	QLabel      *_auxInfo;
+
 public:
-	explicit CommandLine(QWidget *parent = 0);
+	explicit ResultWidget(QWidget *parent = 0);
+	~ResultWidget();
+	inline QString title() const { return _title->text(); }
+	inline QString auxInfo() const { return _auxInfo->text(); }
+	inline void setTitle(const QString& t) { _title->setText(t); }
+	inline void setAuxInfo(const QString& a) { _auxInfo->setText(a); }
 };
 
-#endif // COMMANDLINE_H
+#endif // RESULTWIDGET_H
