@@ -21,8 +21,10 @@
 #include <QDebug>
 #include <QStandardPaths>
 #include <QLabel>
+#include <algorithm>
 
 #include "xcb/xcb.h"
+#include "listitemwidget.h"
 
 // remove
 
@@ -36,6 +38,8 @@
 AlbertWidget::AlbertWidget(QWidget *parent)
 	: QWidget(parent)
 {
+	_nItemsToShow = 5;
+
 	// Window properties
 	setObjectName("albert");
 	setWindowTitle("Albert");
@@ -67,17 +71,14 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	topLayout->addWidget(topFrame,0,0);
 
 	// Content
-	QVBoxLayout *verticalLayout = new QVBoxLayout();
-	verticalLayout->setMargin(0);
-	topFrame->setLayout(verticalLayout);
+	_contentLayout = new QVBoxLayout();
+	_contentLayout->setMargin(0);
+	topFrame->setLayout(_contentLayout);
 
+	// Input
 	_commandLine = new CommandLine(topFrame);
-	verticalLayout->addWidget(_commandLine);
-
-	// Results
-	_resultsLayout = new QVBoxLayout();
-	_resultsLayout->setMargin(0);
-	verticalLayout->addLayout(_resultsLayout);
+	_commandLine->setObjectName("commandline");
+	_contentLayout->addWidget(_commandLine);
 
 	//Set focus proxies
 	this->setFocusProxy(_commandLine);
@@ -85,7 +86,6 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	topFrame->setFocusProxy(_commandLine);
 
 	this->setFocusPolicy(Qt::StrongFocus);
-	this->adjustSize();
 
 	// Position
 	this->move(QApplication::desktop()->screenGeometry().center() - rect().center());
@@ -107,15 +107,24 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 
 	// // testing area // //
 
-
-////	QLabel *_commandLine2 = new QLabel("eins",topFrame);
-////	QLabel *_commandLine3 = new QLabel("2", topFrame);
-////	QLabel *_commandLine4 = new QLabel("3", topFrame);
-//	_resultsLayout->addWidget(_commandLine2);
-//	_resultsLayout->addWidget(_commandLine3);
-//	_resultsLayout->addWidget(_commandLine4);
+//	_resultsWidgetList
 
 
+	ListItemWidget *w = new ListItemWidget;
+	w->setTitle("1ABCabc123");
+	w->setAuxInfo("1ABCabc123 Tool");
+	_resultsWidgetList.append(w);
+	_contentLayout->addWidget(w);
+
+	w = new ListItemWidget;
+	w->setTitle("2ABCabc123");
+	w->setAuxInfo("2ABCabc123 Tool");
+	_resultsWidgetList.append(w);
+	_contentLayout->addWidget(w);
+
+	//_contentLayout->adjustSize();
+
+	this->adjustSize();
 
 
 }
@@ -142,7 +151,6 @@ void AlbertWidget::hideAndClear()
  */
 void AlbertWidget::onHotKeyPressed()
 {
-//	std::cout << ":: HotKeyPressed()" << std::endl;
 	if (this->isVisible()){
 		this->hideAndClear();
 		return;
@@ -150,7 +158,7 @@ void AlbertWidget::onHotKeyPressed()
 	this->show();
 	this->raise();
 	this->activateWindow();
-	//_commandLine->setFocus();
+	_commandLine->setFocus();
 
 	if (isVisible())std::cout << "isVisible"<< std::endl;
 	if (isActiveWindow())std::cout << "isActiveWindow"<< std::endl;
@@ -167,32 +175,33 @@ void AlbertWidget::onHotKeyPressed()
  */
 void AlbertWidget::onTextEdited(const QString & text)
 {
-
-	std::cout << text.toStdString() << std::endl;
-	QLayoutItem *item;
-	while ((item = _resultsLayout->takeAt(0)) != 0) {
-		item->widget()->deleteLater();
-		delete item;
+	while (!_resultsWidgetList.isEmpty()){
+		ListItemWidget *w =_resultsWidgetList.takeLast();
+		_contentLayout->removeWidget(w);
+		delete w;
 	}
-	this->adjustSize();
 
 	if (!text.isEmpty())
 	{
-		std::vector<Items::AbstractItem *> results = _engine.request(text);
+		const std::vector<const Items::AbstractItem *> &results = _engine.request(text);
 		if (!results.empty())
 		{
-
 			std::cout << results.size() << std::endl;
-			QLabel *resultItem;
-			for (auto i : results)
+			for (int i = 0 ; i<std::min(_nItemsToShow, (int)results.size()); ++i)
 			{
-				resultItem = new QLabel(i->name());
-				_resultsLayout->addWidget(resultItem);
+				ListItemWidget *w = new ListItemWidget;
+				w->setTitle(results[i]->name());
+				w->setAuxInfo(results[i]->path());
+				_resultsWidgetList.append(w);
+				_contentLayout->addWidget(w);
 			}
-			this->adjustSize();
+//			_resultsListWidget->setFixedHeight(std::min(5,_resultsListWidget->count()) * 48); // TODO
+//			_resultsListWidget->show();
 		}
 	}
+	this->adjustSize();
 }
+
 
 /**************************************************************************//**
  * @brief AlbertWidget::onReturnPressed

@@ -65,7 +65,7 @@ void AlbertEngine::buildIndex()
 	// Define a lambda for recursion
 	std::function<void(const QString& p)> rec_dirsearch = [&] (const QString& p) {
 		QDir dir(p);
-		dir.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot);
+		dir.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks);
 		_index.push_back(new Items::Directory(dir.dirName(), dir.canonicalPath()));
 
 		// go recursive into subdirs
@@ -97,14 +97,10 @@ void AlbertEngine::buildIndex()
 		rec_dirsearch(path);
 
 
-//	std::sort(_index.begin(), _index.end(), lexicographically);
-//	std::cout << "Size: " << _index.size() << std::endl;
-//	for ( auto i : _index)
-//		std::cout << i->name().toStdString() << std::endl;
-
-
-
-
+	std::sort(_index.begin(), _index.end(), lexicographically);
+	std::cout << "Size: " << _index.size() << std::endl;
+	for ( auto i : _index)
+		std::cout << i->name().toStdString() << std::endl;
 }
 
 
@@ -127,10 +123,10 @@ void AlbertEngine::saveIndex()
 /**********************************************************************//**
  * @brief AlbertEngine::saveIndex
  */
-std::vector<Items::AbstractItem *> AlbertEngine::request(QString req)
+const std::vector<const Items::AbstractItem*>& AlbertEngine::request(const QString &req)
 {
 	QString reqlo = req.toLower();
-	std::vector<Items::AbstractItem *>::const_iterator it, first, last, ub, lb;
+	std::vector<Items::AbstractItem *>::const_iterator it, first, last, lb;
 	std::iterator_traits<std::vector<Items::AbstractItem *>::const_iterator>::difference_type count, step;
 
 	// lower bound
@@ -138,10 +134,12 @@ std::vector<Items::AbstractItem *> AlbertEngine::request(QString req)
 	last = _index.cend();
 	count = distance(first,last);
 	while (count>0) {
-		it = first; step=count/2; advance (it,step);
-		std::cout << "it:  " << (*it)->name().toStdString() << std::endl;
-		if (reqlo.toStdString().compare(0, reqlo.size(), (*it)->name().toLower().toStdString())>0) {
-			first=++it; count-=step+1;
+		it = first;
+		step=count/2;
+		advance (it,step);
+		if (strncmp(reqlo.toStdString().c_str(), (*it)->name().toLower().toStdString().c_str(), reqlo.size()) > 0) {
+			first=++it;
+			count-=step+1;
 		}
 		else
 			count=step;
@@ -149,27 +147,11 @@ std::vector<Items::AbstractItem *> AlbertEngine::request(QString req)
 	lb = it;
 
 	// upper bound
-	first = _index.cbegin();
-	last = _index.cend();
-	count = distance(first,last);
-	while (count>0) {
-		it = first;
-		step=count/2;
-		advance (it,step);
-
-		std::cout << "it:  " << (*it)->name().toStdString() << std::endl;
-		if (!(reqlo.toStdString().compare(0, reqlo.size(), (*it)->name().toLower().toStdString())>0)) {
-			first=++it;
-			count-=step+1;
-		}
-		else
-			count=step;
+	while (it != _index.end() && reqlo.toStdString().compare(0, string::npos, (*it)->name().toLower().toStdString(),0,reqlo.size()) == 0){
+		++it;
 	}
-	ub = it;
 
-	std::cout << "req: " << req.toStdString() << std::endl;
-	std::cout << "lb: " << (*lb)->name().toStdString() << std::endl;
-	std::cout << "ub: " << (*--ub)->name().toStdString() << std::endl;
-
-	return std::vector<Items::AbstractItem *>();
+	_result.clear();
+	_result.assign(lb, it);
+	return _result;
 }

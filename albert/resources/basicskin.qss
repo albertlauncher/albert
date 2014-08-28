@@ -2,7 +2,7 @@
 	padding: 0px;
 	margin: 0px;
 	border-radius: 5px;
-
+	width:500px;
 }
 
 #bottomFrame {
@@ -26,36 +26,113 @@
 	margin: 0px;
 	/*border: 2px solid #fff;*/
 	border-radius: 5px;
-	font:  42px "Tahoma";
+	font:  48px "Ubuntu";
 	color : #0f0;
 	background-color: rgba(255,255,255,10%);
+	width:640px;
 }
+
+/* * LIST-WIDGET-ITEM-WIDGET * */
+
+#icon {
+	width:48px;
+	height:48px;
+}
+
+#title {
+	padding: 0px;
+	margin: 0px;
+	height: 36pt;
+	color: #0f0;
+	font: 34px "Ubuntu";
+	background-color: transparent;
+}
+
+#auxInfo {
+	padding: 0px;
+	margin: 0px;
+	height: 12px;
+	color: #0f0;
+	font: 10px "Ubuntu";
+	background-color: transparent;
+}
+
+
+
 
 QLabel {
 	padding: 5px;
 	margin: 0px;
-	/*border: 2px solid #fff;*/
 	border-radius: 5px;
 	font:  36px "Tahoma";
 	color : #080;
-	background-color: rgba(0,0,0,100%);
+	background-color: transparent;
+}
+
+
+
+
+/* * LISTWIDGET **/
+
+QListWidget {
+	padding: 5px;
+	margin: 0px;
+	border-radius: 5px;
+	border: 0px solid #fff;
+	background-color: rgba(255,255,255,10%);
+	font:  36px "Ubuntu";
+}
+QListWidget::item {
+	color:#0f0;
+	background-color:transparent;
+}
+QListWidget::item:selected {
+	background-color: rgba(255,255,255,10%);
+}
+
+
+/* * SCROLLBAR * */
+QScrollBar:vertical  {
+	background: transparent;
+	width: 0px;
+	margin: 0px 0 0px 0;
+}
+QScrollBar::handle:vertical  {
+	background: black;
+	min-height: 20px;
+}
+QScrollBar::add-line:vertical  {
+	border: 2px solid grey;
+	background: #32CC99;
+	height: 20px;
+	subcontrol-position: bottom;
+	subcontrol-origin: margin;
+}
+
+QScrollBar::sub-line:vertical  {
+	border: 0px solid grey;
+	background: #32CC99;
+	height: 0px;
+	subcontrol-position: top;
+	subcontrol-origin: margin;
+}
+QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical  {
+	border: 0px solid grey;
+	width: 0px;
+	height: 0px;
+	background: white;
+}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical  {
+	background: none;
 }
 
 
 
 /* * * TRASH * * * */
-/*background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde);*/
+/*
 
 
-
-
-
-
-
-
-
-
-
+background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde);
 
 #output {
 	font:  12px "Tahoma";
@@ -76,3 +153,4 @@ QLabel {
 #alternatives::item {
 	padding: 2px 0px;
 }
+*/

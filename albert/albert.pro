@@ -23,10 +23,12 @@ HEADERS  += albert.h \
 		commandline.h \
 	xhotkeymanager.h \
 	albertengine.h \
-	item.h
+	item.h \
+	listitemwidget.h
 
 RESOURCES += albert.qrc
 
 CONFIG += c++11
 
 LIBS += -lX11
+

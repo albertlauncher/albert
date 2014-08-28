@@ -19,19 +19,20 @@
 
 
 // aufräumemn
-#include <QLineEdit>
-#include <QVBoxLayout>
-#include <QApplication>
 #include <QDesktopWidget>
 #include <QDebug>
-#include <QKeyEvent>
+#include <QApplication>
 #include <QKeyEvent>
 #include <QAbstractNativeEventFilter>
 
 //bleibtz
 #include <QWidget>
+#include <QVBoxLayout>
+#include <QLineEdit>
+#include <QList>
 #include "commandline.h"
 #include "albertengine.h"
+#include "listitemwidget.h"
 
 class AlbertWidget : public QWidget
 {
@@ -50,9 +51,11 @@ protected:
 	bool         eventFilter(QObject *obj, QEvent *event) override;
 	virtual bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
 private:
-	CommandLine * _commandLine;
-	QVBoxLayout *_resultsLayout;
+	CommandLine	  * _commandLine;
+	QList<ListItemWidget*>  _resultsWidgetList;
 	AlbertEngine  _engine;
+	int           _nItemsToShow;
+	QVBoxLayout   *_contentLayout;
 };
 
 #endif // ALBERT_H

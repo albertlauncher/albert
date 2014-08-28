@@ -35,10 +35,11 @@ public:
 	void loadIndex();
 	void saveIndex();
 
-	vector<Items::AbstractItem *> request(QString req);
+	const std::vector<const Items::AbstractItem *> &request(const QString &req);
 
 private:
 	vector<Items::AbstractItem*> _index;
+	vector<const Items::AbstractItem * > _result;
 	map<QString, vector<int>> _qGrams;
 
 

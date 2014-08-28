@@ -36,10 +36,10 @@ namespace Items
 		virtual ~AbstractItem() {}
 
 		virtual void  action() = 0;
-		inline QString name()                 { return _name; }
-		inline QString path()                 { return _path; }
-		inline double score()                { return _score; }
-		inline void   setScore(double score) { _score = score; }
+		inline QString name() const { return _name; }
+		inline QString path() const { return _path; }
+		inline double score() const { return _score; }
+		inline void setScore(double score) { _score = score; }
 
 
 	protected:
