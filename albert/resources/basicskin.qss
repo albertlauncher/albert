@@ -50,6 +50,7 @@
 
 #resultWidget {
 	padding: 1px;
+	padding-left:2px;
 	margin: 0px;
 	spacing: 0px;
 }

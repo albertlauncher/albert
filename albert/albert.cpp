@@ -82,7 +82,6 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	contentLayout->setMargin(0);
 	_frame1->setLayout(contentLayout);
 
-
 	/* Interface */
 	_inputLine = new QLineEdit;
 	_inputLine->setObjectName("inputline");
@@ -116,9 +115,6 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	connect(_inputLine, SIGNAL(returnPressed()), this, SLOT(onReturnPressed()));
 	connect(_inputLine, SIGNAL(textEdited(QString)), this, SLOT(onTextEdited(QString)));
 
-	this->adjustSize();
-
-
 }
 
 /**************************************************************************//**
@@ -126,7 +122,7 @@ AlbertWidget::AlbertWidget(QWidget *parent)
  */
 AlbertWidget::~AlbertWidget()
 {
-
+	clearResults();
 }
 
 /**************************************************************************//**
@@ -146,9 +142,9 @@ void AlbertWidget::clearResults()
 {
 	QLayoutItem *child;
 	while ((child = _resultsLayout->takeAt(0)) != 0)  {
-		delete child->widget();
+		child->widget()->deleteLater();
+		delete child;
 	}
-
 }
 
 /**************************************************************************//**
@@ -156,7 +152,6 @@ void AlbertWidget::clearResults()
  */
 void AlbertWidget::drawResults()
 {
-	clearResults();
 	int begin;
 	if (_selectedResultIndex <= (_nItemsToShow-1)/2 ) {
 		begin=0;
@@ -166,14 +161,14 @@ void AlbertWidget::drawResults()
 		begin=_selectedResultIndex-(_nItemsToShow-1)/2;
 	}
 
-	for (int i = begin; i < begin+_nItemsToShow; ++i) {
+	clearResults();
+	for (int i = 0; i < _nItemsToShow && i+begin < (int)_results.size(); ++i) {
+		// Create a new widget
 		ResultWidget *w = new ResultWidget;
-		w->setTitle(_results[i]->name());
-		w->setAuxInfo(_results[i]->path());
-		if (i == _selectedResultIndex)
-			w->setObjectName("selectedResultWidget");
+		w->setTitle(_results[begin+i]->name());
+		w->setAuxInfo(_results[begin+i]->path());
+		w->setObjectName((begin+i == _selectedResultIndex)?"selectedResultWidget":"resultWidget");
 		_resultsLayout->addWidget(w);
-		w->show();
 	}
 }
 
@@ -211,8 +206,6 @@ void AlbertWidget::onTextEdited(const QString & text)
 		if (!_results.empty())
 			drawResults();
 	}
-	std::cout << "adjustSize()"  << std::endl;
-	this->adjustSize();
 }
 
 
