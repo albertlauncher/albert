@@ -75,7 +75,7 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 
 	_frame1 = new QFrame;
 	_frame1->setObjectName("frame1");
-	_frame1->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
+	_frame1->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Preferred);
 	l1->addWidget(_frame1,0,0);
 
 	QVBoxLayout *contentLayout = new QVBoxLayout();
@@ -142,7 +142,7 @@ void AlbertWidget::clearResults()
 {
 	QLayoutItem *child;
 	while ((child = _resultsLayout->takeAt(0)) != 0)  {
-		child->widget()->deleteLater();
+		delete child->widget();
 		delete child;
 	}
 }
@@ -161,6 +161,7 @@ void AlbertWidget::drawResults()
 		begin=_selectedResultIndex-(_nItemsToShow-1)/2;
 	}
 
+	setUpdatesEnabled(false);
 	clearResults();
 	for (int i = 0; i < _nItemsToShow && i+begin < (int)_results.size(); ++i) {
 		// Create a new widget
@@ -170,6 +171,8 @@ void AlbertWidget::drawResults()
 		w->setObjectName((begin+i == _selectedResultIndex)?"selectedResultWidget":"resultWidget");
 		_resultsLayout->addWidget(w);
 	}
+	std::cout <<_resultsLayout->count()<< "/"<< (int)_results.size()<< _resultsLayout->count() << std::endl;
+	setUpdatesEnabled(true);
 }
 
 /*****************************************************************************/
@@ -195,17 +198,17 @@ void AlbertWidget::onHotKeyPressed()
  */
 void AlbertWidget::onTextEdited(const QString & text)
 {
-	clearResults();
 	std::cout << "_resultsLayout->count(): " << _resultsLayout->count() << std::endl;
-
 	if (!text.isEmpty())
 	{
 		AlbertEngine::instance()->request(text, _results);
 		_selectedResultIndex = 0;
 		std::cout << "_results.size(): " <<  _results.size() << std::endl;
-		if (!_results.empty())
-			drawResults();
+		drawResults();
+		return;
 	}
+	clearResults();
+
 }
 
 

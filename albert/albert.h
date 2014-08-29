@@ -37,22 +37,6 @@ class AlbertWidget : public QWidget
 {
 	Q_OBJECT
 
-public:
-	AlbertWidget(QWidget *parent = 0);
-	~AlbertWidget();
-
-private slots:
-	void onHotKeyPressed();
-	void hideAndClear();
-	void onTextEdited(const QString &text);
-	void onReturnPressed();
-
-protected:
-	void         keyPressEvent(QKeyEvent * event) override;
-	bool         eventFilter(QObject *obj, QEvent *event) override;
-	virtual bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
-
-private:
 	QFrame           *_frame1,*_frame2,*_frame3;
 	QLineEdit	     *_inputLine;
 	QVBoxLayout      *_resultsLayout;
@@ -64,7 +48,20 @@ private:
 	void clearResults();
 	void drawResults();
 
+protected:
+	void         keyPressEvent(QKeyEvent * event) override;
+	bool         eventFilter(QObject *obj, QEvent *event) override;
+	virtual bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
 
+public:
+	AlbertWidget(QWidget *parent = 0);
+	~AlbertWidget();
+
+private slots:
+	void onHotKeyPressed();
+	void hideAndClear();
+	void onTextEdited(const QString &text);
+	void onReturnPressed();
 };
 
 #endif // ALBERT_H
