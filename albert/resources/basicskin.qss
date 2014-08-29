@@ -65,19 +65,31 @@
 	padding: 0px;
 	margin: 0px;
 	color: #0080ff;
+	height:32px;
 	font: 32px "Ubuntu";
 }
 #auxInfo {
 	padding: 0px;
 	margin: 0px;
 	color: #0080ff;
+	height:12px;
 	font: 12px "Ubuntu";
+}
+
+
+QListWidget {
+	background-color: transparent;
+	border:none;
 }
 
 
 
 
-
+QListWidget::item {
+	height:48px;
+	background-color: transparent;
+	border:none;
+}
 
 
 

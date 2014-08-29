@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 	QCoreApplication::setOrganizationName("albert");
 	QCoreApplication::setApplicationName("albert");
 	QApplication a(argc, argv);
-	a.setStyleSheet("file:///:/resources/basicskin.qss");
+	//a.setStyleSheet("file:///:/resources/basicskin.qss");
 
 	AlbertEngine::instance()->buildIndex();
 	AlbertWidget w;

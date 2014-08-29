@@ -23,6 +23,7 @@
 #include <QDebug>
 #include <QApplication>
 #include <QKeyEvent>
+#include <QListWidget>
 
 //bleibt
 #include <QWidget>
@@ -44,6 +45,9 @@ class AlbertWidget : public QWidget
 	int              _selectedResultIndex;
 	int              _firstVisibleItemIndex;
 	std::vector<const Items::AbstractItem *> _results;
+
+	// TETSIBNtgf
+	QListWidget *_lw;
 
 	void clearResults();
 	void drawResults();

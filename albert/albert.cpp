@@ -88,10 +88,14 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_inputLine->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
 	contentLayout->addWidget(_inputLine);
 
-	_resultsLayout = new QVBoxLayout();
-	_resultsLayout->setMargin(0);
-	_resultsLayout->setSpacing(0);
-	contentLayout->addLayout(_resultsLayout);
+	_lw = new QListWidget;
+	contentLayout->addWidget(_lw);
+
+
+//	_resultsLayout = new QVBoxLayout();
+//	_resultsLayout->setMargin(0);
+//	_resultsLayout->setSpacing(0);
+//	contentLayout->addLayout(_resultsLayout);
 
 	//Set focus proxies
 	this->setFocusProxy(_inputLine);
@@ -122,7 +126,7 @@ AlbertWidget::AlbertWidget(QWidget *parent)
  */
 AlbertWidget::~AlbertWidget()
 {
-	clearResults();
+//	clearResults();
 }
 
 /**************************************************************************//**
@@ -140,11 +144,12 @@ void AlbertWidget::hideAndClear()
  */
 void AlbertWidget::clearResults()
 {
-	QLayoutItem *child;
-	while ((child = _resultsLayout->takeAt(0)) != 0)  {
-		delete child->widget();
-		delete child;
-	}
+//	QLayoutItem *child;
+//	while ((child = _resultsLayout->takeAt(0)) != 0)  {
+//		delete child->widget();
+//		delete child;
+//	}
+	_lw->clear();
 }
 
 /**************************************************************************//**
@@ -152,27 +157,32 @@ void AlbertWidget::clearResults()
  */
 void AlbertWidget::drawResults()
 {
-	int begin;
-	if (_selectedResultIndex <= (_nItemsToShow-1)/2 ) {
-		begin=0;
-	} else if (_selectedResultIndex > (int)_results.size()-1-_nItemsToShow+(_nItemsToShow-1)/2) {
-		begin=_results.size()-_nItemsToShow;
-	} else {
-		begin=_selectedResultIndex-(_nItemsToShow-1)/2;
-	}
+//	int begin;
+//	if (_selectedResultIndex <= (_nItemsToShow-1)/2 ) {
+//		begin=0;
+//	} else if (_selectedResultIndex > (int)_results.size()-1-_nItemsToShow+(_nItemsToShow-1)/2) {
+//		begin=_results.size()-_nItemsToShow;
+//	} else {
+//		begin=_selectedResultIndex-(_nItemsToShow-1)/2;
+//	}
 
-	setUpdatesEnabled(false);
-	clearResults();
-	for (int i = 0; i < _nItemsToShow && i+begin < (int)_results.size(); ++i) {
-		// Create a new widget
-		ResultWidget *w = new ResultWidget;
-		w->setTitle(_results[begin+i]->name());
-		w->setAuxInfo(_results[begin+i]->path());
-		w->setObjectName((begin+i == _selectedResultIndex)?"selectedResultWidget":"resultWidget");
-		_resultsLayout->addWidget(w);
-	}
-	std::cout <<_resultsLayout->count()<< "/"<< (int)_results.size()<< _resultsLayout->count() << std::endl;
-	setUpdatesEnabled(true);
+//	setUpdatesEnabled(false);
+//	clearResults();
+//	for (int i = 0; i < _nItemsToShow && i+begin < (int)_results.size(); ++i) {
+//		// Create a new widget
+//		ResultWidget *w = new ResultWidget;
+//		w->setTitle(_results[begin+i]->name());
+//		w->setAuxInfo(_results[begin+i]->path());
+//		w->setObjectName((begin+i == _selectedResultIndex)?"selectedResultWidget":"resultWidget");
+//		_resultsLayout->addWidget(w);
+//	}
+//	std::cout <<_resultsLayout->count()<< "/"<< (int)_results.size()<< _resultsLayout->count() << std::endl;
+//	setUpdatesEnabled(true);
+
+
+
+
+
 }
 
 /*****************************************************************************/
@@ -198,17 +208,39 @@ void AlbertWidget::onHotKeyPressed()
  */
 void AlbertWidget::onTextEdited(const QString & text)
 {
-	std::cout << "_resultsLayout->count(): " << _resultsLayout->count() << std::endl;
+//	if (!text.isEmpty())
+//	{
+//		AlbertEngine::instance()->request(text, _results);
+//		_selectedResultIndex = 0;
+//		std::cout << "_results.size(): " <<  _results.size() << std::endl;
+//		drawResults();
+//		return;
+//	}
+//	clearResults();
+
+	_lw->clear();
 	if (!text.isEmpty())
 	{
 		AlbertEngine::instance()->request(text, _results);
-		_selectedResultIndex = 0;
-		std::cout << "_results.size(): " <<  _results.size() << std::endl;
-		drawResults();
-		return;
-	}
-	clearResults();
+		if (!_results.empty())
+		{
+			int count=0;
+			setUpdatesEnabled(false);
+//			_lw->hide();
+			for (auto i : _results){
+				QListWidgetItem *lwi = new QListWidgetItem;
+				_lw->addItem(lwi);
+				ResultWidget *w = new ResultWidget;
+				std::cout << "Item "<<count++<< " add." << std::endl;
 
+				w->setTitle(i->name());
+				w->setAuxInfo(i->path());
+				_lw->setItemWidget(lwi, w);
+			}
+//			_lw->show();
+			setUpdatesEnabled(true);
+		}
+	}
 }
 
 
@@ -233,18 +265,14 @@ void AlbertWidget::keyPressEvent(QKeyEvent *event)
 		this->hideAndClear();
 		break;
 	case Qt::Key_Up:
-		if (_selectedResultIndex != 0) {
-			--_selectedResultIndex;
-			drawResults();
+		if (_lw->currentRow()!=0) {
+			_lw->setCurrentRow(_lw->currentRow()-1);
 		}
-		std::cout << "UpArrow pressed." << std::endl;
 		break;
 	case Qt::Key_Down:
-		if (_selectedResultIndex != (int)_results.size()-1) {
-			++_selectedResultIndex;
-			drawResults();
+		if (_lw->currentRow()!=(int)_results.size()-1) {
+			_lw->setCurrentRow(_lw->currentRow()+1);
 		}
-		std::cout << "DownArrow pressed." << std::endl;
 		break;
 	case Qt::Key_PageUp:
 		if (_selectedResultIndex != 0) {
