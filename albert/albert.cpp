@@ -19,6 +19,8 @@
 #include "albert.h"
 #include "albertengine.h"
 #include "xhotkeymanager.h"
+#include <QMimeType>
+#include <QMimeDatabase>
 
 // remove
 #include <iostream>
@@ -162,14 +164,16 @@ void AlbertWidget::onTextEdited(const QString & text)
 //	clearResults();
 
 	_proposalListWidget->clear();
-	if (!text.isEmpty())
-	{
+	if (!text.isEmpty())	{
 		AlbertEngine::instance()->request(text, _results);
 		if (!_results.empty())
 		{
+			QMimeDatabase qmd;
 			for (auto i : _results){
 				QListWidgetItem *lwi = new QListWidgetItem(i->name(), _proposalListWidget);
 				lwi->setData(Qt::UserRole+1, i->path());
+				QMimeType mt = qmd.mimeTypeForFile(i->path());
+				lwi->setData(Qt::DecorationRole, QIcon::fromTheme(mt.iconName(), mt.genericIconName()));
 			}
 		}
 	}

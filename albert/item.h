@@ -18,8 +18,6 @@
 #define ITEM_H
 
 #include <QString>
-#include <QMimeType>
-#include <QMimeDatabase>
 
 
 ///  ---  to remove
@@ -38,6 +36,7 @@ namespace Items
 		virtual ~AbstractItem() {}
 
 		virtual void  action() = 0;
+//		inline QString  iconName() = 0;
 		inline QString name() const { return _name; }
 		inline QString path() const { return _path; }
 		inline double score() const { return _score; }
@@ -98,15 +97,9 @@ namespace Items
 	 */
 	class Document : public AbstractItem
 	{
-		QMimeType mime;
 	public:
 		Document() = delete;
-		Document(QString name, QString path) : AbstractItem(name, path) {
-			QMimeDatabase db;
-			QMimeType type = db.mimeTypeForFile(path);
-			qDebug() << "Mime type:" << type.name();
-
-		}
+		Document(QString name, QString path) : AbstractItem(name, path) {}
 		~Document() {}
 		virtual void action(){
 			qDebug() << QString(_name.data()) << "should be runned now. (Document)";

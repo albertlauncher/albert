@@ -77,17 +77,18 @@ void AlbertEngine::buildIndex()
 				std::cout << "Entry(dir): " << fi.absoluteFilePath().toStdString() << std::endl;
 			}
 			if (fi.isFile()) {
-				if (fi.isExecutable()){
-					_index.push_back(new Items::Executable(fi.baseName(), fi.absoluteFilePath()));
-					std::cout << "Entry(exe): " << fi.absoluteFilePath().toStdString() << std::endl;
-				}
-				if (fi.suffix() == QString::fromLocal8Bit("deskop")){
-					_index.push_back(new Items::DesktopApp(fi.baseName(), fi.absoluteFilePath()));
-					std::cout << "Entry(desktop): " << fi.absoluteFilePath().toStdString() << std::endl;
-				}
+				//				if (fi.isExecutable()){
+				//					_index.push_back(new Items::Executable(fi.completeBaseName(), fi.absoluteFilePath()));
+				//					std::cout << "Entry(exe): " << fi.absoluteFilePath().toStdString() << std::endl;
+				//				}
+				//				if (fi.suffix() == "deskop"){
+				//					_index.push_back(new Items::DesktopApp(fi.completeBaseName(), fi.absoluteFilePath()));
+				//					std::cout << "Entry(DesktopApp): " << fi.absoluteFilePath().toStdString() << std::endl;
+				//				} else {
+									_index.push_back(new Items::Document(fi.completeBaseName(), fi.absoluteFilePath()));
+									std::cout << "Entry(Document): " << fi.absoluteFilePath().toStdString() << std::endl;
+				//
 			}
-			// Else is document
-				// TODO Check with libmagic
 		}
 	};
 
