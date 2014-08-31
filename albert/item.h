@@ -18,6 +18,8 @@
 #define ITEM_H
 
 #include <QString>
+#include <QMimeType>
+#include <QMimeDatabase>
 
 
 ///  ---  to remove
@@ -56,11 +58,9 @@ namespace Items
 	{
 	public:
 		Executable() = delete;
-		Executable(QString name, QString path)
-			: AbstractItem(name, path) {}
+		Executable(QString name, QString path) : AbstractItem(name, path) {}
 		~Executable() {}
-		virtual void action()
-		{
+		virtual void action(){
 			qDebug() << QString(_name.data()) << "should be runned now. (Executable)";
 		}
 	};
@@ -74,8 +74,7 @@ namespace Items
 		DesktopApp() = delete;
 		DesktopApp(QString name, QString path) : AbstractItem(name, path) {}
 		~DesktopApp() {}
-		virtual void action()
-		{
+		virtual void action(){
 			qDebug() << QString(_name.data()) << "should be runned now. (DesktopApp)";
 		}
 	};
@@ -89,8 +88,7 @@ namespace Items
 		Directory() = delete;
 		Directory(QString name, QString path) : AbstractItem(name, path) {}
 		~Directory() {}
-		virtual void action()
-		{
+		virtual void action(){
 			qDebug() << QString(_name.data()) << "should be runned now. (Directory)";
 		}
 	};
@@ -100,13 +98,17 @@ namespace Items
 	 */
 	class Document : public AbstractItem
 	{
+		QMimeType mime;
 	public:
 		Document() = delete;
-		Document(QString name, QString path)
-			: AbstractItem(name, path) {}
+		Document(QString name, QString path) : AbstractItem(name, path) {
+			QMimeDatabase db;
+			QMimeType type = db.mimeTypeForFile(path);
+			qDebug() << "Mime type:" << type.name();
+
+		}
 		~Document() {}
-		virtual void action()
-		{
+		virtual void action(){
 			qDebug() << QString(_name.data()) << "should be runned now. (Document)";
 		}
 	};

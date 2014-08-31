@@ -60,7 +60,7 @@ void AlbertEngine::buildIndex()
 
 	QSettings conf;
 	std::cout << "Config: " << conf.fileName().toStdString() << std::endl;
-	QStringList paths = conf.value("paths").toStringList();
+	QStringList paths = conf.value(QString::fromLocal8Bit("paths")).toStringList();
 
 	// Define a lambda for recursion
 	std::function<void(const QString& p)> rec_dirsearch = [&] (const QString& p) {
@@ -81,7 +81,7 @@ void AlbertEngine::buildIndex()
 					_index.push_back(new Items::Executable(fi.baseName(), fi.absoluteFilePath()));
 					std::cout << "Entry(exe): " << fi.absoluteFilePath().toStdString() << std::endl;
 				}
-				if (fi.suffix() == "deskop"){
+				if (fi.suffix() == QString::fromLocal8Bit("deskop")){
 					_index.push_back(new Items::DesktopApp(fi.baseName(), fi.absoluteFilePath()));
 					std::cout << "Entry(desktop): " << fi.absoluteFilePath().toStdString() << std::endl;
 				}

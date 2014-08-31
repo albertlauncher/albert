@@ -17,13 +17,15 @@ SOURCES += main.cpp\
 	xhotkeymanager.cpp \
 	albertengine.cpp \
 	item.cpp \
-    resultwidget.cpp
+	proposallistwidget.cpp \
+    proposallistdelegate.cpp
 
 HEADERS  += albert.h \
 	xhotkeymanager.h \
 	albertengine.h \
 	item.h \
-    resultwidget.h
+	proposallistwidget.h \
+    proposallistdelegate.h
 
 RESOURCES += albert.qrc
 
@@ -31,3 +33,5 @@ CONFIG += c++11
 
 LIBS += -lX11
 
+DEFINES += QT_NO_CAST_FROM_ASCII \
+			 QT_NO_CAST_TO_ASCII

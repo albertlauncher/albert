@@ -3,7 +3,6 @@
 	margin: 0px;
 	border-radius: 5px;
 }
-
 #frame3 {
 	padding: 10px;
 	margin: 0px;
@@ -39,125 +38,71 @@
 
 /* * LIST-WIDGET-ITEM-WIDGET * */
 
-#selectedResultWidget {
-	padding: 1px;
-	margin: 0px;
-	spacing: 0px;
-	border-radius:5px;
-	border-left: 1px solid #0080ff;
-	background: qlineargradient(spread:pad,x1:0,x2:1, stop:0 rgba(0, 128, 255, 32), stop:1 rgba(0, 0, 0, 0) )
-}
-
-#resultWidget {
-	padding: 1px;
-	padding-left:2px;
-	margin: 0px;
-	spacing: 0px;
-}
-
-#icon {
+#ProposalListWidget {
 	padding: 0px;
 	margin: 0px;
-	width:48px;
-	height:48px;
-}
-#title {
-	padding: 0px;
-	margin: 0px;
+	spacing: 0px;
 	color: #0080ff;
 	height:32px;
 	font: 32px "Ubuntu";
-}
-#auxInfo {
-	padding: 0px;
-	margin: 0px;
-	color: #0080ff;
-	height:12px;
-	font: 12px "Ubuntu";
-}
-
-
-QListWidget {
-	background-color: transparent;
 	border:none;
+	background-color: #444;
 }
 
-
-
-
-QListWidget::item {
+#ProposalListWidget::item
+{
 	height:48px;
-	background-color: transparent;
+	background-color: #444;
 	border:none;
+	border-radius: 10px;
 }
+
+QScrollBar:vertical  {
+	background: transparent;
+	width: 5px;
+	margin: 0px;
+}
+
+QScrollBar::handle:vertical  {
+	background: #3a3a3a;
+	min-height: 64px;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
+QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical,
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+	border: 0px;
+	width: 0px;
+	height: 0px;
+	background: none;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 
 /* * *  * ** * ** ** * * * * * * * ** * * TRASH  * * * ** * * * * ** ** * * * * * * * * * * */
 /*
-QLabel {
-	padding: 5px;
-	margin: 0px;
-	border-radius: 5px;
-	font:  36px "Tahoma";
-	color : #0080ff;
-	background-color: transparent;
-}
-
-QScrollBar:vertical  {
-	background: transparent;
-	width: 0px;
-	margin: 0px 0 0px 0;
-}
-QScrollBar::handle:vertical  {
-	background: black;
-	min-height: 20px;
-}
-QScrollBar::add-line:vertical  {
-	border: 2px solid grey;
-	background: #32CC99;
-	height: 20px;
-	subcontrol-position: bottom;
-	subcontrol-origin: margin;
-}
-
-QScrollBar::sub-line:vertical  {
-	border: 0px solid grey;
-	background: #32CC99;
-	height: 0px;
-	subcontrol-position: top;
-	subcontrol-origin: margin;
-}
-QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical  {
-	border: 0px solid grey;
-	width: 0px;
-	height: 0px;
-	background: white;
-}
-QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical  {
-	background: none;
-}
 
 background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde);
 
-#output {
-	font:  12px "Tahoma";
-	color: black;
-	qproperty-alignment: AlignLeft;
-	qproperty-geometry: rect(48 60 580 24);
-}
 
-#outputIcon {
-	qproperty-geometry: rect(640 40 32 32);
-}
 
-#alternatives {
-	font:  12px "Tahoma";
-	qproperty-geometry: rect(5 104 690 200);
-}
 
-#alternatives::item {
-	padding: 2px 0px;
-}
+
+
+
+
+
 */

@@ -18,7 +18,6 @@
 #include "xcb/xcb.h"
 #include "albert.h"
 #include "albertengine.h"
-#include "resultwidget.h"
 #include "xhotkeymanager.h"
 
 // remove
@@ -31,13 +30,9 @@
 AlbertWidget::AlbertWidget(QWidget *parent)
 	: QWidget(parent)
 {
-	_selectedResultIndex = -1;
-	_nItemsToShow = 5;
-	_firstVisibleItemIndex=0;
-
 	// Window properties
-	setObjectName("albert");
-	setWindowTitle("Albert");
+	setObjectName(QString::fromLocal8Bit("albert"));
+	setWindowTitle(QString::fromLocal8Bit("Albert"));
 	setAttribute(Qt::WA_TranslucentBackground);
 	setWindowFlags( Qt::CustomizeWindowHint
 					| Qt::FramelessWindowHint
@@ -54,7 +49,7 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	this->setLayout(l3);
 
 	_frame3 = new QFrame;
-	_frame3->setObjectName("frame3");
+	_frame3->setObjectName(QString::fromLocal8Bit("frame3"));
 	_frame3->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Minimum);
 	l3->addWidget(_frame3,0,0);
 
@@ -64,7 +59,7 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_frame3->setLayout(l2);
 
 	_frame2 = new QFrame;
-	_frame2->setObjectName("frame2");
+	_frame2->setObjectName(QString::fromLocal8Bit("frame2"));
 	_frame2->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
 	l2->addWidget(_frame2,0,0);
 
@@ -74,7 +69,7 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_frame2->setLayout(l1);
 
 	_frame1 = new QFrame;
-	_frame1->setObjectName("frame1");
+	_frame1->setObjectName(QString::fromLocal8Bit("frame1"));
 	_frame1->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Preferred);
 	l1->addWidget(_frame1,0,0);
 
@@ -84,18 +79,12 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 
 	/* Interface */
 	_inputLine = new QLineEdit;
-	_inputLine->setObjectName("inputline");
+	_inputLine->setObjectName(QString::fromLocal8Bit("inputline"));
 	_inputLine->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
 	contentLayout->addWidget(_inputLine);
 
-	_lw = new QListWidget;
-	contentLayout->addWidget(_lw);
-
-
-//	_resultsLayout = new QVBoxLayout();
-//	_resultsLayout->setMargin(0);
-//	_resultsLayout->setSpacing(0);
-//	contentLayout->addLayout(_resultsLayout);
+	_proposalListWidget = new ProposalListWidget;
+	contentLayout->addWidget(_proposalListWidget);
 
 	//Set focus proxies
 	this->setFocusProxy(_inputLine);
@@ -126,7 +115,6 @@ AlbertWidget::AlbertWidget(QWidget *parent)
  */
 AlbertWidget::~AlbertWidget()
 {
-//	clearResults();
 }
 
 /**************************************************************************//**
@@ -136,54 +124,9 @@ void AlbertWidget::hideAndClear()
 {
 	QWidget::hide();
 	_inputLine->clear();
-	clearResults();
+	_proposalListWidget->clear();
 }
 
-/**************************************************************************//**
- * @brief AlbertWidget::clear
- */
-void AlbertWidget::clearResults()
-{
-//	QLayoutItem *child;
-//	while ((child = _resultsLayout->takeAt(0)) != 0)  {
-//		delete child->widget();
-//		delete child;
-//	}
-	_lw->clear();
-}
-
-/**************************************************************************//**
- * @brief AlbertWidget::drawResults
- */
-void AlbertWidget::drawResults()
-{
-//	int begin;
-//	if (_selectedResultIndex <= (_nItemsToShow-1)/2 ) {
-//		begin=0;
-//	} else if (_selectedResultIndex > (int)_results.size()-1-_nItemsToShow+(_nItemsToShow-1)/2) {
-//		begin=_results.size()-_nItemsToShow;
-//	} else {
-//		begin=_selectedResultIndex-(_nItemsToShow-1)/2;
-//	}
-
-//	setUpdatesEnabled(false);
-//	clearResults();
-//	for (int i = 0; i < _nItemsToShow && i+begin < (int)_results.size(); ++i) {
-//		// Create a new widget
-//		ResultWidget *w = new ResultWidget;
-//		w->setTitle(_results[begin+i]->name());
-//		w->setAuxInfo(_results[begin+i]->path());
-//		w->setObjectName((begin+i == _selectedResultIndex)?"selectedResultWidget":"resultWidget");
-//		_resultsLayout->addWidget(w);
-//	}
-//	std::cout <<_resultsLayout->count()<< "/"<< (int)_results.size()<< _resultsLayout->count() << std::endl;
-//	setUpdatesEnabled(true);
-
-
-
-
-
-}
 
 /*****************************************************************************/
 /**************************** O V E R R I D E S ******************************/
@@ -218,27 +161,16 @@ void AlbertWidget::onTextEdited(const QString & text)
 //	}
 //	clearResults();
 
-	_lw->clear();
+	_proposalListWidget->clear();
 	if (!text.isEmpty())
 	{
 		AlbertEngine::instance()->request(text, _results);
 		if (!_results.empty())
 		{
-			int count=0;
-			setUpdatesEnabled(false);
-//			_lw->hide();
 			for (auto i : _results){
-				QListWidgetItem *lwi = new QListWidgetItem;
-				_lw->addItem(lwi);
-				ResultWidget *w = new ResultWidget;
-				std::cout << "Item "<<count++<< " add." << std::endl;
-
-				w->setTitle(i->name());
-				w->setAuxInfo(i->path());
-				_lw->setItemWidget(lwi, w);
+				QListWidgetItem *lwi = new QListWidgetItem(i->name(), _proposalListWidget);
+				lwi->setData(Qt::UserRole+1, i->path());
 			}
-//			_lw->show();
-			setUpdatesEnabled(true);
 		}
 	}
 }
@@ -264,30 +196,30 @@ void AlbertWidget::keyPressEvent(QKeyEvent *event)
 	case Qt::Key_Escape:
 		this->hideAndClear();
 		break;
-	case Qt::Key_Up:
-		if (_lw->currentRow()!=0) {
-			_lw->setCurrentRow(_lw->currentRow()-1);
-		}
-		break;
-	case Qt::Key_Down:
-		if (_lw->currentRow()!=(int)_results.size()-1) {
-			_lw->setCurrentRow(_lw->currentRow()+1);
-		}
-		break;
-	case Qt::Key_PageUp:
-		if (_selectedResultIndex != 0) {
-			_selectedResultIndex = std::max(0, _selectedResultIndex-_nItemsToShow);
-			drawResults();
-		}
-		std::cout << "Key_PageUp pressed." << std::endl;
-		break;
-	case Qt::Key_PageDown:
-		if (_selectedResultIndex != (int)_results.size()-1) {
-			_selectedResultIndex = std::min(_selectedResultIndex+_nItemsToShow, (int)_results.size()-1);
-			drawResults();
-		}
-		std::cout << "Key_PageDown pressed." << std::endl;
-		break;
+//	case Qt::Key_Up:
+//		if (_resultListWidget->currentRow()!=0) {
+//			_resultListWidget->setCurrentRow(_resultListWidget->currentRow()-1);
+//		}
+//		break;
+//	case Qt::Key_Down:
+//		if (_resultListWidget->currentRow()!=(int)_results.size()-1) {
+//			_resultListWidget->setCurrentRow(_resultListWidget->currentRow()+1);
+//		}
+//		break;
+//	case Qt::Key_PageUp:
+//		if (_selectedResultIndex != 0) {
+//			_selectedResultIndex = std::max(0, _selectedResultIndex-_nItemsToShow);
+//			drawResults();
+//		}
+//		std::cout << "Key_PageUp pressed." << std::endl;
+//		break;
+//	case Qt::Key_PageDown:
+//		if (_selectedResultIndex != (int)_results.size()-1) {
+//			_selectedResultIndex = std::min(_selectedResultIndex+_nItemsToShow, (int)_results.size()-1);
+//			drawResults();
+//		}
+//		std::cout << "Key_PageDown pressed." << std::endl;
+//		break;
 	default:
 		QWidget::keyPressEvent(event);
 		break;

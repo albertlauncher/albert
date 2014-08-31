@@ -23,7 +23,6 @@
 #include <QDebug>
 #include <QApplication>
 #include <QKeyEvent>
-#include <QListWidget>
 
 //bleibt
 #include <QWidget>
@@ -33,6 +32,7 @@
 #include <QAbstractNativeEventFilter>
 // meine
 #include "item.h"
+#include "proposallistwidget.h"
 
 class AlbertWidget : public QWidget
 {
@@ -40,17 +40,8 @@ class AlbertWidget : public QWidget
 
 	QFrame           *_frame1,*_frame2,*_frame3;
 	QLineEdit	     *_inputLine;
-	QVBoxLayout      *_resultsLayout;
-	int              _nItemsToShow;
-	int              _selectedResultIndex;
-	int              _firstVisibleItemIndex;
 	std::vector<const Items::AbstractItem *> _results;
-
-	// TETSIBNtgf
-	QListWidget *_lw;
-
-	void clearResults();
-	void drawResults();
+	ProposalListWidget *_proposalListWidget;
 
 protected:
 	void         keyPressEvent(QKeyEvent * event) override;
