@@ -7,7 +7,7 @@
 	padding: 10px;
 	margin: 0px;
 	border-radius: 30px;
-	background-color: rgba(0, 0, 0, 50%);
+	background-color: rgba(192, 192, 192, 64);
 }
 #frame2 {
 	padding: 10px;
