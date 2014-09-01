@@ -129,7 +129,7 @@ void AlbertWidget::hideAndClear()
 {
 	QWidget::hide();
 	_inputLine->clear();
-//	_proposalListView->clear();
+	_proposalListModel->clear();
 }
 
 
@@ -156,8 +156,7 @@ void AlbertWidget::onHotKeyPressed()
  */
 void AlbertWidget::onTextEdited(const QString & text)
 {
-//	_proposalListWidget->clear();
-	if (!text.isEmpty())	{
+	if (!text.isEmpty()){
 		_proposalListModel->set(AlbertEngine::instance()->request(text));
 		_proposalListView->setModel(_proposalListModel);
 	}

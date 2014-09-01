@@ -18,7 +18,7 @@
 #define ITEM_H
 
 #include <QString>
-
+#include <unistd.h>
 
 ///  ---  to remove
 #include <QDebug>
@@ -88,6 +88,11 @@ namespace Items
 		Directory(QString name, QString path) : AbstractItem(name, path) {}
 		~Directory() {}
 		virtual void action(){
+			pid_t pid = fork();
+			if (pid == 0) {
+				execl("/usr/bin/xdg-open", "xdg-open", _path.toStdString().c_str(), (char *)0);
+				exit(1);
+			}
 			qDebug() << QString(_name.data()) << "should be runned now. (Directory)";
 		}
 	};
@@ -101,7 +106,12 @@ namespace Items
 		Document() = delete;
 		Document(QString name, QString path) : AbstractItem(name, path) {}
 		~Document() {}
-		virtual void action(){
+		virtual void action() {
+			pid_t pid = fork();
+			if (pid == 0) {
+				execl("/usr/bin/xdg-open", "xdg-open", _path.toStdString().c_str(), (char *)0);
+				exit(1);
+			}
 			qDebug() << QString(_name.data()) << "should be runned now. (Document)";
 		}
 	};

@@ -31,7 +31,7 @@ public:
 	explicit ProposalListView(QWidget *parent = 0);
 
 protected:
-	bool eventFilter(QObject*, QEvent *event);
+	bool eventFilter(QObject*, QEvent *event) override;
 };
 
 #endif // PROPOSALLISTVIEW_H

@@ -16,7 +16,12 @@
 
 #include "proposallistview.h"
 #include "proposallistdelegate.h"
+#include "proposallistmodel.h"
 
+/**************************************************************************//**
+ * @brief ProposalListView::ProposalListView
+ * @param parent
+ */
 ProposalListView::ProposalListView(QWidget *parent) :
 	QListView(parent)
 {
@@ -25,16 +30,25 @@ ProposalListView::ProposalListView(QWidget *parent) :
 	setObjectName(QString::fromLocal8Bit("ProposalListWidget"));
 }
 
+/**************************************************************************//**
+ * @brief ProposalListView::eventFilter
+ * @param event
+ * @return
+ */
 bool ProposalListView::eventFilter(QObject*, QEvent *event)
 {
 	if (event->type() == QEvent::KeyPress)
 	{
 		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-		if (keyEvent->key() == Qt::Key_Up || keyEvent->key() == Qt::Key_Down
-				|| keyEvent->key() == Qt::Key_PageDown || keyEvent->key() == Qt::Key_PageUp){
+		if (keyEvent->key() == Qt::Key_Up
+				|| keyEvent->key() == Qt::Key_Down
+				|| keyEvent->key() == Qt::Key_PageDown
+				|| keyEvent->key() == Qt::Key_PageUp){
 			this->keyPressEvent(keyEvent);
 			return true;
 		}
+		if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter)
+			static_cast<ProposalListModel*>(model())->action(currentIndex());
 	}
 	return false;
 }

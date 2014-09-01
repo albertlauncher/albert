@@ -16,17 +16,28 @@
 
 #include "proposallistmodel.h"
 
+/**************************************************************************//**
+ * @brief ProposalListModel::ProposalListModel
+ * @param parent
+ */
 ProposalListModel::ProposalListModel(QObject *parent) :
 	QAbstractListModel(parent)
 {
 }
 
-void ProposalListModel::set(std::vector<const Items::AbstractItem *> d){
+/**************************************************************************//**
+ * @brief ProposalListModel::set
+ * @param d
+ */
+void ProposalListModel::set(std::vector<Items::AbstractItem *> d){
 	beginResetModel();
 	_data = d;
 	endResetModel();
 }
 
+/**************************************************************************//**
+ * @brief ProposalListModel::clear
+ */
 void ProposalListModel::clear()
 {
 	beginResetModel();
@@ -34,8 +45,26 @@ void ProposalListModel::clear()
 	endResetModel();
 }
 
+/**************************************************************************//**
+ * @brief ProposalListModel::action
+ * @param index
+ * @return
+ */
+void ProposalListModel::action(const QModelIndex &index)
+{
+	if (rowCount() != 0)
+		_data[index.isValid()?index.row():0]->action();
+}
+
+/**************************************************************************//**
+ * @brief ProposalListModel::data
+ * @param index
+ * @param role
+ * @return
+ */
 QVariant ProposalListModel::data(const QModelIndex &index, int role) const
 {
+	qDebug() << index.row()<< _data.size();
 	if (role == Qt::DisplayRole)
 		return _data[index.row()]->name();
 	if (role == Qt::UserRole)
@@ -43,6 +72,10 @@ QVariant ProposalListModel::data(const QModelIndex &index, int role) const
 	return QVariant();
 }
 
+/**************************************************************************//**
+ * @brief ProposalListModel::rowCount
+ * @return
+ */
 int ProposalListModel::rowCount(const QModelIndex&) const
 {
 	return _data.size();

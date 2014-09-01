@@ -28,14 +28,15 @@ class ProposalListModel : public QAbstractListModel
 
 public:
 	explicit ProposalListModel(QObject *parent = 0);
-	void set(std::vector<const Items::AbstractItem *> d);
+	void set(std::vector<Items::AbstractItem *> d);
 	void clear();
+	void action( const QModelIndex & index);
 
 protected:
-	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
-	int rowCount(const QModelIndex & = QModelIndex()) const;
+	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
+	int rowCount(const QModelIndex & = QModelIndex()) const override;
 
-	std::vector<const Items::AbstractItem *> _data;
+	std::vector<Items::AbstractItem *> _data;
 
 };
 

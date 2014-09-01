@@ -37,7 +37,7 @@ public:
 	void buildIndex();
 //	void loadIndex();
 //	void saveIndex();
-	std::vector<const Items::AbstractItem *> request(const QString &req);
+	std::vector<Items::AbstractItem *> request(const QString &req);
 
 private:
 	static AlbertEngine *_instance;

@@ -18,10 +18,19 @@
 #include <QMimeType>
 #include <QMimeDatabase>
 
+/**************************************************************************//**
+ * @brief ProposalListDelegate::ProposalListDelegate
+ */
 ProposalListDelegate::ProposalListDelegate()
 {
 }
 
+/**************************************************************************//**
+ * @brief ProposalListDelegate::paint
+ * @param painter
+ * @param option
+ * @param index
+ */
 void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const
 {
 

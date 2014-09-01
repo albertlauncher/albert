@@ -16,7 +16,6 @@ SOURCES += main.cpp\
 		albert.cpp \
 	xhotkeymanager.cpp \
 	albertengine.cpp \
-	item.cpp \
 	proposallistdelegate.cpp \
 	proposallistmodel.cpp \
 	proposallistview.cpp

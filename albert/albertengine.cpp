@@ -124,7 +124,7 @@ void AlbertEngine::buildIndex()
 /**********************************************************************//**
  * @brief AlbertEngine::saveIndex
  */
-std::vector<const Items::AbstractItem *> AlbertEngine::request(const QString &req)
+std::vector<Items::AbstractItem *> AlbertEngine::request(const QString &req)
 {
 	QString reqlo = req.toLower();
 	std::vector<Items::AbstractItem *>::const_iterator it, first, last, lb;
@@ -152,5 +152,5 @@ std::vector<const Items::AbstractItem *> AlbertEngine::request(const QString &re
 		++it;
 	}
 
-	return std::vector<const Items::AbstractItem *>(lb, it);
+	return std::vector<Items::AbstractItem *>(lb, it);
 }
