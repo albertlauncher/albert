@@ -17,15 +17,17 @@ SOURCES += main.cpp\
 	xhotkeymanager.cpp \
 	albertengine.cpp \
 	item.cpp \
-	proposallistwidget.cpp \
-    proposallistdelegate.cpp
+	proposallistdelegate.cpp \
+	proposallistmodel.cpp \
+	proposallistview.cpp
 
 HEADERS  += albert.h \
 	xhotkeymanager.h \
 	albertengine.h \
 	item.h \
-	proposallistwidget.h \
-    proposallistdelegate.h
+	proposallistdelegate.h \
+	proposallistmodel.h \
+	proposallistview.h
 
 RESOURCES += albert.qrc
 
@@ -35,3 +37,5 @@ LIBS += -lX11
 
 DEFINES += QT_NO_CAST_FROM_ASCII \
 			 QT_NO_CAST_TO_ASCII
+
+QMAKE_CXXFLAGS_WARN_ON += -Werror

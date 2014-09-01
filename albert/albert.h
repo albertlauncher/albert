@@ -17,7 +17,6 @@
 #ifndef ALBERT_H
 #define ALBERT_H
 
-
 // aufräumemn
 #include <QDesktopWidget>
 #include <QDebug>
@@ -32,7 +31,8 @@
 #include <QAbstractNativeEventFilter>
 // meine
 #include "item.h"
-#include "proposallistwidget.h"
+#include "proposallistview.h"
+#include "proposallistmodel.h"
 
 class AlbertWidget : public QWidget
 {
@@ -40,8 +40,8 @@ class AlbertWidget : public QWidget
 
 	QFrame           *_frame1,*_frame2,*_frame3;
 	QLineEdit	     *_inputLine;
-	std::vector<const Items::AbstractItem *> _results;
-	ProposalListWidget *_proposalListWidget;
+	ProposalListModel  *_proposalListModel;
+	ProposalListView   *_proposalListView;
 
 protected:
 	void         keyPressEvent(QKeyEvent * event) override;

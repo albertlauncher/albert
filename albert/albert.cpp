@@ -19,8 +19,6 @@
 #include "albert.h"
 #include "albertengine.h"
 #include "xhotkeymanager.h"
-#include <QMimeType>
-#include <QMimeDatabase>
 
 // remove
 #include <iostream>
@@ -85,21 +83,26 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_inputLine->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
 	contentLayout->addWidget(_inputLine);
 
-	_proposalListWidget = new ProposalListWidget;
-	contentLayout->addWidget(_proposalListWidget);
+
+	_proposalListModel = new ProposalListModel;
+	_proposalListView = new ProposalListView;
+	_proposalListView->setModel(_proposalListModel);
+	contentLayout->addWidget(_proposalListView);
 
 	//Set focus proxies
 	this->setFocusProxy(_inputLine);
 	_frame1->setFocusProxy(_inputLine);
 	_frame2->setFocusProxy(_inputLine);
 	_frame3->setFocusProxy(_inputLine);
+	_proposalListView->setFocusProxy(_inputLine);
 	this->setFocusPolicy(Qt::StrongFocus);
 
 	// Position
 	this->move(QApplication::desktop()->screenGeometry().center() - rect().center());
 
-	// installEventFilter to check if app lost focus
-	QApplication::instance()->installEventFilter(this);
+	// install EventFilter
+	QApplication::instance()->installEventFilter(this); // check if app lost focus
+	_inputLine->installEventFilter(_proposalListView); // propagate arrows to list
 
 	// Show albert if hotkey was pressed
 	connect(XHotKeyManager::getInstance(), SIGNAL(hotKeyPressed()), this, SLOT(onHotKeyPressed()), Qt::QueuedConnection);
@@ -126,7 +129,7 @@ void AlbertWidget::hideAndClear()
 {
 	QWidget::hide();
 	_inputLine->clear();
-	_proposalListWidget->clear();
+//	_proposalListView->clear();
 }
 
 
@@ -153,29 +156,10 @@ void AlbertWidget::onHotKeyPressed()
  */
 void AlbertWidget::onTextEdited(const QString & text)
 {
-//	if (!text.isEmpty())
-//	{
-//		AlbertEngine::instance()->request(text, _results);
-//		_selectedResultIndex = 0;
-//		std::cout << "_results.size(): " <<  _results.size() << std::endl;
-//		drawResults();
-//		return;
-//	}
-//	clearResults();
-
-	_proposalListWidget->clear();
+//	_proposalListWidget->clear();
 	if (!text.isEmpty())	{
-		AlbertEngine::instance()->request(text, _results);
-		if (!_results.empty())
-		{
-			QMimeDatabase qmd;
-			for (auto i : _results){
-				QListWidgetItem *lwi = new QListWidgetItem(i->name(), _proposalListWidget);
-				lwi->setData(Qt::UserRole+1, i->path());
-				QMimeType mt = qmd.mimeTypeForFile(i->path());
-				lwi->setData(Qt::DecorationRole, QIcon::fromTheme(mt.iconName(), mt.genericIconName()));
-			}
-		}
+		_proposalListModel->set(AlbertEngine::instance()->request(text));
+		_proposalListView->setModel(_proposalListModel);
 	}
 }
 
@@ -200,30 +184,6 @@ void AlbertWidget::keyPressEvent(QKeyEvent *event)
 	case Qt::Key_Escape:
 		this->hideAndClear();
 		break;
-//	case Qt::Key_Up:
-//		if (_resultListWidget->currentRow()!=0) {
-//			_resultListWidget->setCurrentRow(_resultListWidget->currentRow()-1);
-//		}
-//		break;
-//	case Qt::Key_Down:
-//		if (_resultListWidget->currentRow()!=(int)_results.size()-1) {
-//			_resultListWidget->setCurrentRow(_resultListWidget->currentRow()+1);
-//		}
-//		break;
-//	case Qt::Key_PageUp:
-//		if (_selectedResultIndex != 0) {
-//			_selectedResultIndex = std::max(0, _selectedResultIndex-_nItemsToShow);
-//			drawResults();
-//		}
-//		std::cout << "Key_PageUp pressed." << std::endl;
-//		break;
-//	case Qt::Key_PageDown:
-//		if (_selectedResultIndex != (int)_results.size()-1) {
-//			_selectedResultIndex = std::min(_selectedResultIndex+_nItemsToShow, (int)_results.size()-1);
-//			drawResults();
-//		}
-//		std::cout << "Key_PageDown pressed." << std::endl;
-//		break;
 	default:
 		QWidget::keyPressEvent(event);
 		break;

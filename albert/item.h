@@ -38,7 +38,7 @@ namespace Items
 		virtual void  action() = 0;
 //		inline QString  iconName() = 0;
 		inline QString name() const { return _name; }
-		inline QString path() const { return _path; }
+		inline QString info() const { return _path; }
 		inline double score() const { return _score; }
 		inline void setScore(double score) { _score = score; }
 
