@@ -54,9 +54,11 @@ public:
 
 private slots:
 	void onHotKeyPressed();
-	void hideAndClear();
 	void onTextEdited(const QString &text);
 	void onReturnPressed();
+	void hide();
+	void show();
+
 };
 
 #endif // ALBERT_H

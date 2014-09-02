@@ -98,9 +98,6 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_proposalListView->setFocusProxy(_inputLine);
 	this->setFocusPolicy(Qt::StrongFocus);
 
-	// Position
-	this->move(QApplication::desktop()->screenGeometry().center() - rect().center());
-
 	// install EventFilter
 	QApplication::instance()->installEventFilter(this); // check if app lost focus
 	_inputLine->installEventFilter(_proposalListView); // propagate arrows to list
@@ -123,10 +120,12 @@ AlbertWidget::~AlbertWidget()
 {
 }
 
+/*****************************************************************************/
+/********************************* S L O T S *********************************/
 /**************************************************************************//**
- * @brief AlbertWidget::hideAndClear
+ * @brief AlbertWidget::hide
  */
-void AlbertWidget::hideAndClear()
+void AlbertWidget::hide()
 {
 	QWidget::hide();
 	_inputLine->clear();
@@ -134,16 +133,24 @@ void AlbertWidget::hideAndClear()
 	_proposalListView->hide();
 }
 
+/**************************************************************************//**
+ * @brief AlbertWidget::show
+ */
+void AlbertWidget::show()
+{
+	QWidget::show();
+	// Position
+	qDebug()<<rect();
+	this->move(QApplication::desktop()->screenGeometry().center() - rect().center() -QPoint(0,256 ));
+}
 
-/*****************************************************************************/
-/**************************** O V E R R I D E S ******************************/
 /**************************************************************************//**
  * @brief AlbertWidget::onHotKeyPressed
  */
 void AlbertWidget::onHotKeyPressed()
 {
 	if (this->isVisible()){
-		this->hideAndClear();
+		this->hide();
 		return;
 	}
 	this->show();
@@ -190,7 +197,7 @@ void AlbertWidget::keyPressEvent(QKeyEvent *event)
 {
 	switch (event->key()) {
 	case Qt::Key_Escape:
-		this->hideAndClear();
+		this->hide();
 		break;
 	default:
 		QWidget::keyPressEvent(event);
@@ -208,7 +215,7 @@ void AlbertWidget::keyPressEvent(QKeyEvent *event)
 bool AlbertWidget::eventFilter(QObject *obj, QEvent *event)
 {
 	if (event->type() == QEvent::ApplicationStateChange && this->isActiveWindow()) {
-		this->hideAndClear();
+		this->hide();
 		return true;
 	}
 	return QObject::eventFilter(obj, event); // Unhandled events are passed to the base class

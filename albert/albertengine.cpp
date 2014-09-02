@@ -23,6 +23,7 @@
 #include <string>
 #include <iostream>
 #include <functional>
+#include <QDebug>
 
 using std::string;
 
@@ -74,7 +75,7 @@ void AlbertEngine::buildIndex()
 		{
 			if (fi.isDir()){
 				rec_dirsearch(fi.absoluteFilePath());
-				std::cout << "Entry(dir): " << fi.absoluteFilePath().toStdString() << std::endl;
+//				std::cout << "Entry(dir): " << fi.absoluteFilePath().toStdString() << std::endl;
 			}
 			if (fi.isFile()) {
 				//				if (fi.isExecutable()){
@@ -86,22 +87,19 @@ void AlbertEngine::buildIndex()
 				//					std::cout << "Entry(DesktopApp): " << fi.absoluteFilePath().toStdString() << std::endl;
 				//				} else {
 									_index.push_back(new Items::Document(fi.completeBaseName(), fi.absoluteFilePath()));
-									std::cout << "Entry(Document): " << fi.absoluteFilePath().toStdString() << std::endl;
+//									std::cout << "Entry(Document): " << fi.absoluteFilePath().toStdString() << std::endl;
 				//
 			}
 		}
 	};
 
 	// Finally do this recursion for all paths
-	std::cout << "pathsize: " << paths.size() << std::endl;
 	for ( auto path : paths)
 		rec_dirsearch(path);
 
 
 	std::sort(_index.begin(), _index.end(), lexicographically);
-	std::cout << "Size: " << _index.size() << std::endl;
-	for ( auto i : _index)
-		std::cout << i->name().toStdString() << std::endl;
+	qDebug() << "Found" << _index.size() << "items.";
 }
 
 
