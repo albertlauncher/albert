@@ -64,7 +64,6 @@ void ProposalListModel::action(const QModelIndex &index)
  */
 QVariant ProposalListModel::data(const QModelIndex &index, int role) const
 {
-	qDebug() << index.row()<< _data.size();
 	if (role == Qt::DisplayRole)
 		return _data[index.row()]->name();
 	if (role == Qt::UserRole)

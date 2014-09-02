@@ -29,6 +29,7 @@ class ProposalListView: public QListView
 
 public:
 	explicit ProposalListView(QWidget *parent = 0);
+	QSize sizeHint() const override;
 
 protected:
 	bool eventFilter(QObject*, QEvent *event) override;

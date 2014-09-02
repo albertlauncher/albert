@@ -18,6 +18,8 @@
 #include <QMimeType>
 #include <QMimeDatabase>
 
+#
+
 /**************************************************************************//**
  * @brief ProposalListDelegate::ProposalListDelegate
  */
@@ -51,24 +53,26 @@ void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewIte
 	// Draw name
 	QFont font = option.font;
 	font.setPixelSize(32);
+	QString elided = QFontMetrics(font).elidedText(index.data(Qt::DisplayRole).toString(), Qt::ElideRight, 720-64);
 	painter->setFont(font);
 	painter->drawText(option.rect.x()+48,
 					  option.rect.y(),
 					  option.rect.width()-48,
 					  48,
 					  Qt::AlignTop|Qt::AlignLeft,
-					  index.data(Qt::DisplayRole).toString(),
+					  elided,
 					  nullptr);
 
 	// Draw info
 	font.setPixelSize(12);
+	elided = QFontMetrics(font).elidedText(info, Qt::ElideMiddle, 720-64);
 	painter->setFont(font);
 	painter->drawText(option.rect.x()+48,
 					  option.rect.y()+36,
 					  option.rect.width()-48,
 					  option.rect.height()-32,
 					  Qt::AlignTop|Qt::AlignLeft,
-					  info,
+					  elided,
 					  nullptr);
 }
 

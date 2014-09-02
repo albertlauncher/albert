@@ -28,6 +28,10 @@ ProposalListView::ProposalListView(QWidget *parent) :
 	_nItemsToShow = 8;
 	setItemDelegate(new ProposalListDelegate);
 	setObjectName(QString::fromLocal8Bit("ProposalListWidget"));
+	setUniformItemSizes(true);
+	setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+//	setLayoutMode(QListView::Batched);
+//	setBatchSize(20);
 }
 
 /**************************************************************************//**
@@ -51,4 +55,13 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 			static_cast<ProposalListModel*>(model())->action(currentIndex());
 	}
 	return false;
+}
+
+QSize ProposalListView::sizeHint() const
+{
+	if (model()->rowCount() == 0)
+		return QSize(width(), 0);
+	int nToShow = _nItemsToShow < model()->rowCount() ? _nItemsToShow : model()->rowCount();
+	qDebug() << "ProposalListView::sizeHint()"  <<  QSize(width(), nToShow*sizeHintForRow(0));
+	return QSize(width(), nToShow*sizeHintForRow(0));
 }

@@ -60,16 +60,3 @@ private slots:
 };
 
 #endif // ALBERT_H
-
-
-
-
-
-
-/*
- * Calc
- * Desktop
- * Binary
- * Files
- * Dirs
- */

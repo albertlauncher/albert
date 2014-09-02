@@ -87,6 +87,7 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_proposalListModel = new ProposalListModel;
 	_proposalListView = new ProposalListView;
 	_proposalListView->setModel(_proposalListModel);
+	_proposalListView->hide();
 	contentLayout->addWidget(_proposalListView);
 
 	//Set focus proxies
@@ -130,6 +131,7 @@ void AlbertWidget::hideAndClear()
 	QWidget::hide();
 	_inputLine->clear();
 	_proposalListModel->clear();
+	_proposalListView->hide();
 }
 
 
@@ -157,9 +159,16 @@ void AlbertWidget::onHotKeyPressed()
 void AlbertWidget::onTextEdited(const QString & text)
 {
 	if (!text.isEmpty()){
-		_proposalListModel->set(AlbertEngine::instance()->request(text));
-		_proposalListView->setModel(_proposalListModel);
+		const std::vector<Items::AbstractItem *> &r = AlbertEngine::instance()->request(text);
+		if (!r.empty()) {
+			_proposalListModel->set(AlbertEngine::instance()->request(text));
+			_proposalListView->updateGeometry(); // TODO besseren platz finden in
+			_proposalListView->show();
+			qDebug() << _proposalListView->size();
+			return;
+		}
 	}
+	_proposalListView->hide();
 }
 
 
