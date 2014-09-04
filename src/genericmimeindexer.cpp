@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QSettings>
+#include "genericmimeitem.h"
 #include "genericmimeindexer.h"
 
 /**************************************************************************//**
@@ -36,17 +38,35 @@ GenericMimeIndexer::~GenericMimeIndexer()
  */
 void GenericMimeIndexer::buildIndex()
 {
+  QSettings conf;
+	std::cout << "Config: " << conf.fileName().toStdString() << std::endl;
+	QStringList paths = conf.value(QString::fromLocal8Bit("paths")).toStringList();
 
+	// Define a lambda for recursion
+	std::function<void(const QString& p)> rec_dirsearch = [&] (const QString& p)
+  {
+		QDir dir(p);
+		dir.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+		_index.push_back(new GenericMimeItem(dir.dirName(), dir.canonicalPath()));
+
+		// go recursive into subdirs
+		QFileInfoList list = dir.entryInfoList();
+		for ( QFileInfo &fi : list)
+		{
+			if (fi.isDir())
+				rec_dirsearch(fi.absoluteFilePath());
+      _index.push_back(new GenericMimeItem(fi.completeBaseName(), fi.absoluteFilePath()));
+		}
+	};
+
+	// Finally do this recursion for all paths
+	for ( auto path : paths)
+		rec_dirsearch(path);
+
+	std::sort(_index.begin(), _index.end(), lexicographically);
+	qDebug() << "Found" << _index.size() << "items.";
 }
 
-/**************************************************************************//**
- * @brief GenericMimeIndexer::query
- * @return
- */
-std::vector<AbstractItem *> GenericMimeIndexer::query(QString)
-{
-
-}
 
 /**************************************************************************//**
  * @brief GenericMimeIndexer::configWidget
