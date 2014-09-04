@@ -11,14 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = albert
 TEMPLATE = app
 
-
-SOURCES += main.cpp\
-		albert.cpp \
-	xhotkeymanager.cpp \
-	albertengine.cpp \
-	proposallistdelegate.cpp \
-	proposallistmodel.cpp \
-	proposallistview.cpp
+VPATH += albert/ \
+		albert-filelauncher/
 
 HEADERS  += albert.h \
 	xhotkeymanager.h \
@@ -26,7 +20,28 @@ HEADERS  += albert.h \
 	item.h \
 	proposallistdelegate.h \
 	proposallistmodel.h \
-	proposallistview.h
+	proposallistview.h \
+	filelauncher.h \
+	config.h \
+	abstractlauncher.h \
+	abstractitem.h \
+	fileitem.h \
+    abstractserviceprovider.h \
+    abstractindexitem.h \
+    genericmimeitem.h \
+    abstractindexer.h \
+    genericmimeindexer.h
+
+SOURCES += main.cpp\
+	albert.cpp \
+	xhotkeymanager.cpp \
+	albertengine.cpp \
+	proposallistdelegate.cpp \
+	proposallistmodel.cpp \
+	proposallistview.cpp \
+	filelauncher.cpp \
+    genericmimeitem.cpp \
+    genericmimeindexer.cpp
 
 RESOURCES += albert.qrc
 
