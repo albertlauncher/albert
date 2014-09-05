@@ -166,9 +166,9 @@ void AlbertWidget::onHotKeyPressed()
 void AlbertWidget::onTextEdited(const QString & text)
 {
 	if (!text.isEmpty()){
-		const std::vector<Items::AbstractItem *> &r = AlbertEngine::instance()->request(text);
+		const std::vector<AbstractItem *> &r = AlbertEngine::instance()->query(text);
 		if (!r.empty()) {
-			_proposalListModel->set(AlbertEngine::instance()->request(text));
+			_proposalListModel->set(r);
 			_proposalListView->updateGeometry(); // TODO besseren platz finden in
 			_proposalListView->show();
 			qDebug() << _proposalListView->size();

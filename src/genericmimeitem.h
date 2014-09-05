@@ -17,6 +17,7 @@
 #ifndef GENERICMIMEITEM_H
 #define GENERICMIMEITEM_H
 
+#include <QString>
 #include "abstractindexitem.h"
 
 class GenericMimeItem : public AbstractIndexItem
@@ -24,7 +25,7 @@ class GenericMimeItem : public AbstractIndexItem
 public:
 	GenericMimeItem() = delete;
 	GenericMimeItem(QString title, QString uri)
-    : AbstractIndexItem(title, uri) {}
+		: AbstractIndexItem(title, uri) {}
 	~GenericMimeItem() {}
 	void action(int) override;
 	QString actionText(int) override;

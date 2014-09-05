@@ -15,9 +15,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "abstractindex.h"
+#include "abstractindexitem.h"
+
+#include <string>
+using std::string;
 
 
-std::vector<AbstractIndexItem *> AbstractIndex::query(QString req)
+std::vector<AbstractItem *> AbstractIndex::query(QString req)
 {
   QString reqlo = req.toLower();
   std::vector<AbstractIndexItem *>::const_iterator it, first, last, lb;
@@ -41,9 +45,9 @@ std::vector<AbstractIndexItem *> AbstractIndex::query(QString req)
   lb = it;
 
   // upper bound
-  while (it != _index.end() && reqlo.toStdString().compare(0, string::npos, (*it)->name().toLower().toStdString(),0,reqlo.size()) == 0){
+  while (it != _index.end() && reqlo.toStdString().compare(0, string::npos, (*it)->title().toLower().toStdString(),0,reqlo.size()) == 0){
 	++it;
   }
 
-  return std::vector<AbstractIndexItem *>(lb, it);
+  return std::vector<AbstractItem *>(lb, it);
 }

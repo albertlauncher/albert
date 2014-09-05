@@ -20,17 +20,13 @@ HEADERS  += albert.h \
 	proposallistdelegate.h \
 	proposallistmodel.h \
 	proposallistview.h \
-	filelauncher.h \
-	config.h \
-	abstractlauncher.h \
 	abstractitem.h \
-	fileitem.h \
 	abstractserviceprovider.h \
 	abstractindexitem.h \
 	genericmimeitem.h \
 	index.h \
-    abstractindex.h \
-    genericmimeindex.h
+	abstractindex.h \
+	genericmimeindex.h
 
 SOURCES += main.cpp\
 	albert.cpp \
@@ -39,11 +35,10 @@ SOURCES += main.cpp\
 	proposallistdelegate.cpp \
 	proposallistmodel.cpp \
 	proposallistview.cpp \
-	filelauncher.cpp \
 	genericmimeitem.cpp \
 	index.cpp \
-    abstractindex.cpp \
-    genericmimeindex.cpp
+	abstractindex.cpp \
+	genericmimeindex.cpp
 
 RESOURCES += albert.qrc
 

@@ -30,7 +30,6 @@
 #include <QList>
 #include <QAbstractNativeEventFilter>
 // meine
-#include "item.h"
 #include "proposallistview.h"
 #include "proposallistmodel.h"
 

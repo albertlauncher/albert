@@ -14,9 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <iostream>
+#include <functional>
 #include <QSettings>
+#include <QDir>
+#include <QDebug>
 #include "genericmimeitem.h"
-#include "genericmimeindexer.h"
+#include "genericmimeindex.h"
+
+
+bool lexicographically (AbstractItem*  i, AbstractItem* j)
+{
+	return 0 > i->title().compare(j->title(), Qt::CaseInsensitive);
+}
+
 
 /**************************************************************************//**
  * @brief GenericMimeIndexer::GenericMimeIndexer

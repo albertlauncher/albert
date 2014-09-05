@@ -25,7 +25,6 @@ public:
 	GenericMimeIndex();
 	~GenericMimeIndex();
 	void buildIndex() override;
-	std::vector<AbstractItem*> query(QString) override;
 	QWidget* configWidget() override;
 };
 

@@ -24,12 +24,14 @@ void GenericMimeItem::action(int nth)
 {
 	switch (nth) {
 	case 1:
+	{
 		pid_t pid = fork();
 		if (pid == 0) {
 			// TODO SETID()
 			execl("/usr/bin/xdg-open", "xdg-open", _uri.toStdString().c_str(), (char *)0);
 			exit(1);
 		}
+	}
 		break;
 	default:
 		break;
@@ -45,9 +47,11 @@ QString GenericMimeItem::actionText(int nth)
 {
 	switch (nth) {
 	case 1:
-		return QString("Open %1").arg(_uri);
+//		return QString("Open %1").arg(_uri);
+		return QString();
 		break;
 	default:
+		return QString();
 		break;
 	}
 }

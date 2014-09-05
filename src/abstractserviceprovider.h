@@ -24,12 +24,13 @@
 
 class AbstractServiceProvider
 {
-	QWidget* _config;
 
 public:
-	virtual ~AbstractServiceProvider() = 0;
+	virtual ~AbstractServiceProvider(){delete _config;}
 	virtual std::vector<AbstractItem*> query(QString) = 0;
 	virtual QWidget* configWidget() = 0;
+protected:
+	QWidget* _config;
 };
 
 #endif // ABSTRACTSERVICEPROVIDER_H

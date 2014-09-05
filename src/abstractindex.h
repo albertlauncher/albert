@@ -28,14 +28,13 @@ using std::vector;
 class AbstractIndex : public AbstractServiceProvider
 {
 
-	vector<AbstractIndexItem> _index;
-	virtual void buildIndex() = 0;
-	vector<AbstractIndexItem*> fuzzySearch();
-	vector<AbstractIndexItem*> search();
-
 public:
-	virtual ~AbstractIndex() = 0;
-	vector<AbstractIndexItem*> query() override;
+	virtual ~AbstractIndex(){}
+	vector<AbstractItem*> query(QString) override;
+protected:
+	virtual void buildIndex() = 0;
+	vector<AbstractIndexItem*> _index;
+
 };
 
 

@@ -21,16 +21,18 @@
 
 class AbstractItem
 {
-	const QString _title;
-
 public:
 	AbstractItem() = delete;
 	AbstractItem(QString title) : _title(title){}
-	virtual ~AbstractItem() = 0;
+	virtual ~AbstractItem(){}
 
 	inline QString   title() const { return _title; }
 	virtual void     action(int) = 0;
 	virtual QString  actionText(int) = 0;
+protected:
+	const QString _title;
+private:
+
 };
 
 #endif // ABSTRACTITEM_H

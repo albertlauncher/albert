@@ -24,16 +24,17 @@ using std::vector;
 
 class AbstractIndexItem : public AbstractItem
 {
-	QString _uri;
-	//time  _lastAccess;
-
 public:
 	AbstractIndexItem() = delete;
 	AbstractIndexItem(QString title, QString uri)
 		: AbstractItem(title), _uri(uri) {}
-	virtual ~AbstractIndexItem() = 0;
+	virtual ~AbstractIndexItem(){}
 	inline QString uri() { return _uri;}
 	//inline time lastAccess() { return _lastAccess;}
+
+protected:
+	QString _uri;
+	//time  _lastAccess;
 };
 
 #endif // ABSTRACTINDEXITEM_H

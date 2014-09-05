@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "index.h"
-#include "genericmimeindexer.h"
+#include "genericmimeindex.h"
 
 Index::Index()
 {
@@ -24,17 +24,18 @@ Index::Index()
 
 Index::~Index()
 {
-	for (auto i : _indizes)
+	for (auto &i : _indizes)
 		delete i;
 }
 
-std::vector<AbstractItem *> Index::query(QString)
+std::vector<AbstractItem *> Index::query(QString q)
 {
 	std::vector<AbstractItem *> results;
 	for (auto i : _indizes) {
-		std::vector<AbstractItem *> tmp = i->query();
+		std::vector<AbstractItem *> tmp = i->query(q);
 		results.insert(results.end(), tmp.begin(), tmp.end());
 	}
+	return results;
 	// TODO SORT
 }
 

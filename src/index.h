@@ -17,17 +17,18 @@
 #ifndef INDEX_H
 #define INDEX_H
 
+#include <list>
 #include "abstractserviceprovider.h"
 #include "abstractindex.h"
 
 class Index : public AbstractServiceProvider
 {
-	list<AbstractIndex*> _indizes;
+	std::list<AbstractIndex*> _indizes;
 	void buildIndex();
 
 public:
 	Index();
-	~Index();
+	~Index() override;
 	std::vector<AbstractItem*> query(QString) override;
 	QWidget *configWidget() override;
 };
