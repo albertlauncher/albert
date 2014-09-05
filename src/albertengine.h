@@ -20,12 +20,17 @@
 #include <vector>
 #include <map>
 #include "item.h"
+#include "index.h"
 
 using std::vector;
 using std::map;
 
 class AlbertEngine
 {
+	Index _index;
+	static AlbertEngine *_instance;
+	vector<const Items::AbstractItem * > _result;
+
 public:
 	explicit AlbertEngine();
 	~AlbertEngine();
@@ -34,15 +39,7 @@ public:
 			_instance = new AlbertEngine;
 		return _instance;
 	}
-	void buildIndex();
-//	void loadIndex();
-//	void saveIndex();
 	std::vector<Items::AbstractItem *> request(const QString &req);
-
-private:
-	static AlbertEngine *_instance;
-	vector<Items::AbstractItem*> _index;
-	vector<const Items::AbstractItem * > _result;
 };
 
 #endif // ALBERTENGINE_H

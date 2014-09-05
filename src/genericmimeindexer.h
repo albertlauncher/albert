@@ -26,7 +26,7 @@ public:
 	~GenericMimeIndexer();
 	void buildIndex() override;
 	std::vector<AbstractItem*> query(QString) override;
-	QWidget configWidget() override;
+	QWidget* configWidget() override;
 };
 
 #endif // GENERICMIMEINDEXER_H

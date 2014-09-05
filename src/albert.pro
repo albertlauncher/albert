@@ -26,22 +26,25 @@ HEADERS  += albert.h \
 	abstractlauncher.h \
 	abstractitem.h \
 	fileitem.h \
-    abstractserviceprovider.h \
-    abstractindexitem.h \
-    genericmimeitem.h \
-    abstractindexer.h \
-    genericmimeindexer.h
+	abstractserviceprovider.h \
+	abstractindexitem.h \
+	genericmimeitem.h \
+	abstractindexer.h \
+	genericmimeindexer.h \
+	index.h
 
 SOURCES += main.cpp\
 	albert.cpp \
+	abstractindexer.cpp \
 	xhotkeymanager.cpp \
 	albertengine.cpp \
 	proposallistdelegate.cpp \
 	proposallistmodel.cpp \
 	proposallistview.cpp \
 	filelauncher.cpp \
-    genericmimeitem.cpp \
-    genericmimeindexer.cpp
+	genericmimeitem.cpp \
+	genericmimeindexer.cpp \
+	index.cpp
 
 RESOURCES += albert.qrc
 

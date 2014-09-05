@@ -52,7 +52,7 @@ std::vector<AbstractItem *> GenericMimeIndexer::query(QString)
  * @brief GenericMimeIndexer::configWidget
  * @return
  */
-QWidget GenericMimeIndexer::configWidget()
+QWidget *GenericMimeIndexer::configWidget()
 {
-
+	return new QWidget;
 }
