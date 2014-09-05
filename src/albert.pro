@@ -11,8 +11,10 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = albert
 TEMPLATE = app
 
-VPATH += albert/ \
-		albert-filelauncher/
+VPATH += frontend/\
+	backend/ \
+	backend/index/ \
+	backend/index/genericmimeindex/
 
 HEADERS  += albert.h \
 	xhotkeymanager.h \
