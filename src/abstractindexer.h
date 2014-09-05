@@ -29,12 +29,13 @@ class AbstractIndexer : public AbstractServiceProvider
 {
 
 	vector<AbstractIndexItem> _index;
+	virtual void buildIndex() = 0;
+	vector<AbstractIndexItem*> fuzzySearch();
+	vector<AbstractIndexItem*> search();
 
 public:
 	virtual ~AbstractIndexer() = 0;
-	virtual void buildIndex() = 0;
-	vector<AbstractIndexItem> fuzzySearch();
-	vector<AbstractIndexItem> search();
+	vector<AbstractIndexItem*> query() override;
 };
 
 

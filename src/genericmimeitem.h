@@ -23,7 +23,8 @@ class GenericMimeItem : public AbstractIndexItem
 {
 public:
 	GenericMimeItem() = delete;
-	GenericMimeItem(QString uri) : AbstractIndexItem(uri) {}
+	GenericMimeItem(QString title, QString uri)
+    : AbstractIndexItem(title, uri) {}
 	~GenericMimeItem() {}
 	void action(int) override;
 	QString actionText(int) override;
