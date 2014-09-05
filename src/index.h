@@ -18,11 +18,11 @@
 #define INDEX_H
 
 #include "abstractserviceprovider.h"
-#include "abstractindexer.h"
+#include "abstractindex.h"
 
 class Index : public AbstractServiceProvider
 {
-	list<AbstractIndexer*> _indizes;
+	list<AbstractIndex*> _indizes;
 	void buildIndex();
 
 public:

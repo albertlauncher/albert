@@ -19,7 +19,7 @@
 
 Index::Index()
 {
-	_indizes = {new GenericMimeIndexer};
+	_indizes = {new GenericMimeIndex};
 }
 
 Index::~Index()

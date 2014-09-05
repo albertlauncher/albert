@@ -14,13 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "abstractindexer.h"
+#include "abstractindex.h"
 
-/**************************************************************************//**
- * @brief GenericMimeIndexer::query
- * @return
- */
-std::vector<AbstractIndexItem *> AbstractIndexer::query(QString req)
+
+std::vector<AbstractIndexItem *> AbstractIndex::query(QString req)
 {
   QString reqlo = req.toLower();
   std::vector<AbstractIndexItem *>::const_iterator it, first, last, lb;
@@ -31,21 +28,21 @@ std::vector<AbstractIndexItem *> AbstractIndexer::query(QString req)
   last = _index.cend();
   count = distance(first,last);
   while (count>0) {
-    it = first;
-    step=count/2;
-    advance (it,step);
-    if (strncmp(reqlo.toStdString().c_str(), (*it)->title().toLower().toStdString().c_str(), reqlo.size()) > 0) {
-      first=++it;
-      count-=step+1;
-    }
-    else
-      count=step;
+	it = first;
+	step=count/2;
+	advance (it,step);
+	if (strncmp(reqlo.toStdString().c_str(), (*it)->title().toLower().toStdString().c_str(), reqlo.size()) > 0) {
+	  first=++it;
+	  count-=step+1;
+	}
+	else
+	  count=step;
   }
   lb = it;
 
   // upper bound
   while (it != _index.end() && reqlo.toStdString().compare(0, string::npos, (*it)->name().toLower().toStdString(),0,reqlo.size()) == 0){
-    ++it;
+	++it;
   }
 
   return std::vector<AbstractIndexItem *>(lb, it);

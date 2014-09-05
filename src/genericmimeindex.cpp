@@ -21,14 +21,14 @@
 /**************************************************************************//**
  * @brief GenericMimeIndexer::GenericMimeIndexer
  */
-GenericMimeIndexer::GenericMimeIndexer()
+GenericMimeIndex::GenericMimeIndex()
 {
 }
 
 /**************************************************************************//**
  * @brief GenericMimeIndexer::~GenericMimeIndexer
  */
-GenericMimeIndexer::~GenericMimeIndexer()
+GenericMimeIndex::~GenericMimeIndex()
 {
 
 }
@@ -36,7 +36,7 @@ GenericMimeIndexer::~GenericMimeIndexer()
 /**************************************************************************//**
  * @brief GenericMimeIndexer::buildIndex
  */
-void GenericMimeIndexer::buildIndex()
+void GenericMimeIndex::buildIndex()
 {
   QSettings conf;
 	std::cout << "Config: " << conf.fileName().toStdString() << std::endl;
@@ -55,7 +55,7 @@ void GenericMimeIndexer::buildIndex()
 		{
 			if (fi.isDir())
 				rec_dirsearch(fi.absoluteFilePath());
-      _index.push_back(new GenericMimeItem(fi.completeBaseName(), fi.absoluteFilePath()));
+	  _index.push_back(new GenericMimeItem(fi.completeBaseName(), fi.absoluteFilePath()));
 		}
 	};
 
@@ -72,7 +72,7 @@ void GenericMimeIndexer::buildIndex()
  * @brief GenericMimeIndexer::configWidget
  * @return
  */
-QWidget *GenericMimeIndexer::configWidget()
+QWidget *GenericMimeIndex::configWidget()
 {
 	return new QWidget;
 }

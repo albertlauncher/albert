@@ -17,7 +17,6 @@ VPATH += albert/ \
 HEADERS  += albert.h \
 	xhotkeymanager.h \
 	albertengine.h \
-	item.h \
 	proposallistdelegate.h \
 	proposallistmodel.h \
 	proposallistview.h \
@@ -29,13 +28,12 @@ HEADERS  += albert.h \
 	abstractserviceprovider.h \
 	abstractindexitem.h \
 	genericmimeitem.h \
-	abstractindexer.h \
-	genericmimeindexer.h \
-	index.h
+	index.h \
+    abstractindex.h \
+    genericmimeindex.h
 
 SOURCES += main.cpp\
 	albert.cpp \
-	abstractindexer.cpp \
 	xhotkeymanager.cpp \
 	albertengine.cpp \
 	proposallistdelegate.cpp \
@@ -43,8 +41,9 @@ SOURCES += main.cpp\
 	proposallistview.cpp \
 	filelauncher.cpp \
 	genericmimeitem.cpp \
-	genericmimeindexer.cpp \
-	index.cpp
+	index.cpp \
+    abstractindex.cpp \
+    genericmimeindex.cpp
 
 RESOURCES += albert.qrc
 

@@ -17,13 +17,13 @@
 #ifndef GENERICMIMEINDEXER_H
 #define GENERICMIMEINDEXER_H
 
-#include "abstractindexer.h"
+#include "abstractindex.h"
 
-class GenericMimeIndexer : public AbstractIndexer
+class GenericMimeIndex : public AbstractIndex
 {
 public:
-	GenericMimeIndexer();
-	~GenericMimeIndexer();
+	GenericMimeIndex();
+	~GenericMimeIndex();
 	void buildIndex() override;
 	std::vector<AbstractItem*> query(QString) override;
 	QWidget* configWidget() override;

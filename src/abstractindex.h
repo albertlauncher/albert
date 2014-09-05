@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef ABSTRACTINDEXER_H
-#define ABSTRACTINDEXER_H
+#ifndef ABSTRACTINDEX_H
+#define ABSTRACTINDEX_H
 
 #include <QString>
 #include <vector>
@@ -25,7 +25,7 @@
 using std::vector;
 
 
-class AbstractIndexer : public AbstractServiceProvider
+class AbstractIndex : public AbstractServiceProvider
 {
 
 	vector<AbstractIndexItem> _index;
@@ -34,9 +34,9 @@ class AbstractIndexer : public AbstractServiceProvider
 	vector<AbstractIndexItem*> search();
 
 public:
-	virtual ~AbstractIndexer() = 0;
+	virtual ~AbstractIndex() = 0;
 	vector<AbstractIndexItem*> query() override;
 };
 
 
-#endif // ABSTRACTINDEXER_H
+#endif // ABSTRACTINDEX_H
