@@ -36,7 +36,8 @@ public:
 	};
 
 	AbstractIndexProvider(){}
-	virtual ~AbstractIndexProvider() = 0;
+	virtual ~AbstractIndexProvider(){}
+
 	std::vector<AbstractServiceProvider::AbstractItem *> query(const QString &req) override;
 	virtual void buildIndex() = 0;
 

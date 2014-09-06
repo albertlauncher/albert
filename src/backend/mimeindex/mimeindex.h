@@ -22,7 +22,7 @@ public:
 	};
 
 
-	MimeIndex(){}
+	MimeIndex();
 	~MimeIndex();
 
 	void buildIndex() override;

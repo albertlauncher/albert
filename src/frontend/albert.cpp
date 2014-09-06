@@ -167,14 +167,13 @@ void AlbertWidget::onHotKeyPressed()
 void AlbertWidget::onTextEdited(const QString & text)
 {
 	if (!text.isEmpty()){
-//		const std::vector<AbstractServiceProvider::AbstractItem *> &r = AlbertEngine::instance()->query(text);
-//		if (!r.empty()) {
-//			_proposalListModel->set(r);
-//			_proposalListView->updateGeometry(); // TODO besseren platz finden in
-//			_proposalListView->show();
-//			qDebug() << _proposalListView->size();
-//			return;
-//		}
+		const std::vector<AbstractServiceProvider::AbstractItem *> &r = AlbertEngine::instance()->query(text);
+		if (!r.empty()) {
+			_proposalListModel->set(r);
+			_proposalListView->updateGeometry(); // TODO besseren platz finden in
+			_proposalListView->show();
+			return;
+		}
 	}
 	_proposalListView->hide();
 }

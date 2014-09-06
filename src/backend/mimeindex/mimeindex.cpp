@@ -18,9 +18,17 @@ bool lexicographically (AbstractServiceProvider::AbstractItem*  i, AbstractServi
 /**************************************************************************//**
  * @brief MimeIndex::MimeIndex
  */
-//MimeIndex::MimeIndex()
-//{
-//}
+MimeIndex::MimeIndex()
+{
+}
+
+/**************************************************************************//**
+ * @brief MimeIndex::~MimeIndex
+ */
+MimeIndex::~MimeIndex()
+{
+
+}
 
 /**************************************************************************//**
  * @brief MimeIndex::buildIndex

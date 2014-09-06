@@ -28,19 +28,20 @@ using std::map;
 
 class AlbertEngine
 {
-	static AlbertEngine *_instance;
-	vector<AbstractServiceProvider::AbstractItem*> _result;
-
 public:
 	explicit AlbertEngine();
 	~AlbertEngine();
-	static AlbertEngine* instance(){
-		if (_instance == nullptr)
-			_instance = new AlbertEngine;
-		return _instance;
-	}
-//	std::vector<AbstractServiceProvider::AbstractItem *> query(const QString &req);
+
 	void buildIndex();
+	std::vector<AbstractServiceProvider::AbstractItem *> query(const QString &req);
+	static AlbertEngine* instance();
+
+private:
+	static AlbertEngine *_instance;
+	vector<AbstractServiceProvider::AbstractItem*> _result;
+	AbstractServiceProvider        *_websearch;
+	AbstractServiceProvider        *_calculator;
+	vector<AbstractIndexProvider*> _indizes;
 };
 
 #endif // ALBERTENGINE_H

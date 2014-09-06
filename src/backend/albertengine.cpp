@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "albertengine.h"
+#include "mimeindex/mimeindex.h"
 
 AlbertEngine* AlbertEngine::_instance = nullptr;
 
@@ -24,6 +25,9 @@ AlbertEngine* AlbertEngine::_instance = nullptr;
  */
 AlbertEngine::AlbertEngine()
 {
+	// _websearch =
+	// _calculator =
+	_indizes.push_back(new MimeIndex);
 }
 
 /**********************************************************************//**
@@ -33,20 +37,37 @@ AlbertEngine::~AlbertEngine()
 {
 }
 
-///**********************************************************************//**
-// * @brief AlbertEngine::request
-// * @param req
-// * @return
-// */
-//std::vector<AbstractServiceProvider::AbstractItem*> AlbertEngine::query(const QString &req)
-//{
-//	return _result;
-//}
+/**********************************************************************//**
+ * @brief AlbertEngine::instance
+ * @return
+ */
+AlbertEngine *AlbertEngine::instance(){
+	if (_instance == nullptr)
+		_instance = new AlbertEngine;
+	return _instance;
+}
+
+/**********************************************************************//**
+ * @brief AlbertEngine::request
+ * @param req
+ * @return
+ */
+std::vector<AbstractServiceProvider::AbstractItem*> AlbertEngine::query(const QString &req)
+{
+	_result.clear();
+	for (auto i: _indizes) {
+		const std::vector<AbstractServiceProvider::AbstractItem *> &r = i->query(req);
+		_result.insert(_result.end(), r.begin(), r.end());
+	}
+	return _result;
+}
 
 /**********************************************************************//**
  * @brief AlbertEngine::buildIndex
  */
 void AlbertEngine::buildIndex()
 {
+	for (auto i: _indizes) {
+		i->buildIndex();
+	}
 }
-
