@@ -3,6 +3,10 @@
 #include <QDir>
 #include <functional>
 
+
+#include <QMimeType>
+#include <QMimeDatabase>
+
 //REMOVE
 #include <QDebug>
 
@@ -82,9 +86,9 @@ QWidget *MimeIndex::configWidget()
  * @brief MimeIndex::MimeIndexItem::iconPath
  * @return
  */
-QString MimeIndex::MimeIndexItem::iconPath()
+QString MimeIndex::MimeIndexItem::iconName()
 {
-	return QString(); //TODO
+	return QMimeDatabase().mimeTypeForFile(_uri).iconName();
 }
 
 /**************************************************************************//**
@@ -101,7 +105,13 @@ QString MimeIndex::MimeIndexItem::complete()
  */
 void MimeIndex::MimeIndexItem::action(MimeIndex::MimeIndexItem::Action)
 {
-
+	pid_t pid = fork();
+	if (pid == 0) {
+		pid_t sid = setsid();
+		if (sid < 0) exit(EXIT_FAILURE);
+		execl("/usr/bin/xdg-open", "xdg-open", _uri.toStdString().c_str(), (char *)0);
+		exit(1);
+	}
 }
 
 /**************************************************************************//**

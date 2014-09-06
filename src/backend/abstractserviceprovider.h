@@ -20,6 +20,7 @@
 #include <QWidget>
 #include <QString>
 #include <vector>
+#include <unistd.h>
 
 class AbstractServiceProvider
 {
@@ -35,7 +36,7 @@ public:
 		virtual ~AbstractItem(){}
 
 		inline  QString  title() const { return _title; }
-		virtual QString  iconPath() = 0;
+		virtual QString  iconName() = 0;
 		virtual QString  complete() = 0;
 		virtual void     action(Action) = 0;
 		virtual QString  actionText(Action) = 0;

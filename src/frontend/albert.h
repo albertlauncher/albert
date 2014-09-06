@@ -54,7 +54,6 @@ public:
 private slots:
 	void onHotKeyPressed();
 	void onTextEdited(const QString &text);
-	void onReturnPressed();
 	void hide();
 	void show();
 

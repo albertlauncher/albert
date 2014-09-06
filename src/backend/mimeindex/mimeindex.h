@@ -15,7 +15,7 @@ public:
 		~MimeIndexItem(){}
 
 		inline  QString  title() const { return _title; }
-		QString iconPath() override;
+		QString iconName() override;
 		QString complete() override;
 		void    action(Action) override;
 		QString actionText(Action) override;

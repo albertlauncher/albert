@@ -73,6 +73,7 @@ QVariant ProposalListModel::data(const QModelIndex &index, int role) const
 	//	Mod1Text  = Qt::UserRole+1;
 	//	Mod2Text  = Qt::UserRole+2;
 	//	InfoText  = Qt::UserRole+3;
+	//	IconName = Qt::UserRole+4;
 
 	if (role == Qt::DisplayRole)
 		return _data[index.row()]->title();
@@ -83,11 +84,14 @@ QVariant ProposalListModel::data(const QModelIndex &index, int role) const
 	if (role == Qt::UserRole+1)
 		return _data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Mod1);
 
-	if (role == Qt::UserRole+2)
+	if (role == Qt::UserRole+2 )
 		return _data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Mod2);
 
-	//if (role == Qt::UserRole+3)
-	return _data[index.row()]->infoText();
+	if (role == Qt::UserRole+3)
+		return _data[index.row()]->infoText();
+
+	//if (role == Qt::UserRole+4)
+	return _data[index.row()]->iconName();
 }
 
 /**************************************************************************//**

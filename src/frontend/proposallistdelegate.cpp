@@ -39,6 +39,7 @@ void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewIte
 	//	Mod1Text = Qt::UserRole+1;
 	//	Mod2Text = Qt::UserRole+2;
 	//	InfoText = Qt::UserRole+3;
+	//	IconName = Qt::UserRole+4;
 
 	QString elided;
 	QFont font = option.font;
@@ -72,10 +73,9 @@ void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewIte
 	}
 
 	// Draw icon
-	QString info = index.data(Qt::UserRole).toString();
 	painter->drawPixmap(option.rect.x(),
 						option.rect.y(),
-						QIcon::fromTheme(QMimeDatabase().mimeTypeForFile(info).iconName()).pixmap(48,48));
+						QIcon::fromTheme(index.data(Qt::UserRole+4).toString()).pixmap(48,48));
 
 	// Draw name
 	font.setPixelSize(32);

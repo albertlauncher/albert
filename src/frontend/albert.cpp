@@ -109,7 +109,6 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	XHotKeyManager::getInstance()->start();
 
 	// React on confirmation in commandline
-	connect(_inputLine, SIGNAL(returnPressed()), this, SLOT(onReturnPressed()));
 	connect(_inputLine, SIGNAL(textEdited(QString)), this, SLOT(onTextEdited(QString)));
 
 }
@@ -140,8 +139,6 @@ void AlbertWidget::hide()
 void AlbertWidget::show()
 {
 	QWidget::show();
-	// Position
-	qDebug()<<rect();
 	this->move(QApplication::desktop()->screenGeometry().center() - rect().center() -QPoint(0,256 ));
 }
 
@@ -177,15 +174,6 @@ void AlbertWidget::onTextEdited(const QString & text)
 	}
 	_proposalListView->hide();
 }
-
-
-/**************************************************************************//**
- * @brief AlbertWidget::onReturnPressed
- */
-void AlbertWidget::onReturnPressed()
-{
-}
-
 
 /*****************************************************************************/
 /**************************** O V E R R I D E S ******************************/

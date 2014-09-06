@@ -51,8 +51,10 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 			this->keyPressEvent(keyEvent);
 			return true;
 		}
-		if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter)
+		if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter){
 			static_cast<ProposalListModel*>(model())->action(currentIndex());
+			qDebug() << "PRESSED!";
+		}
 	}
 	return false;
 }
