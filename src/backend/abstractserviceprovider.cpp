@@ -14,33 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef ALBERTENGINE_H
-#define ALBERTENGINE_H
-
-#include <vector>
-#include <map>
-// Services
 #include "abstractserviceprovider.h"
-#include "abstractindexprovider.h"
+#include <unistd.h>
 
-using std::vector;
-using std::map;
 
-class AlbertEngine
+
+void AbstractServiceProvider::AbstractItem::fallbackAction(AbstractServiceProvider::AbstractItem::Action)
 {
-	static AlbertEngine *_instance;
-	vector<AbstractServiceProvider::AbstractItem*> _result;
-
-public:
-	explicit AlbertEngine();
-	~AlbertEngine();
-	static AlbertEngine* instance(){
-		if (_instance == nullptr)
-			_instance = new AlbertEngine;
-		return _instance;
+	pid_t pid = fork();
+	if (pid == 0) {
+		// TODO SETID()
+		execl("/usr/bin/chromium", "chromium", QString::fromLocal8Bit("https://www.google.de/search?q=%1").arg(_title).toStdString().c_str(), (char *)0);
+		exit(1);
 	}
-//	std::vector<AbstractServiceProvider::AbstractItem *> query(const QString &req);
-	void buildIndex();
-};
+}
 
-#endif // ALBERTENGINE_H
+QString AbstractServiceProvider::AbstractItem::fallbackActionText(AbstractServiceProvider::AbstractItem::Action)
+{
+	return QString::fromLocal8Bit("Search for '%1' in web.").arg(_title);
+}

@@ -11,36 +11,33 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = albert
 TEMPLATE = app
 
-VPATH += frontend/\
-	backend/ \
-	backend/index/ \
-	backend/index/genericmimeindex/
 
-HEADERS  += albert.h \
-	xhotkeymanager.h \
-	albertengine.h \
-	proposallistdelegate.h \
-	proposallistmodel.h \
-	proposallistview.h \
-	abstractitem.h \
-	abstractserviceprovider.h \
-	abstractindexitem.h \
-	genericmimeitem.h \
-	index.h \
-	abstractindex.h \
-	genericmimeindex.h
 
-SOURCES += main.cpp\
+INCLUDEPATH += frontend/ \
+	backend
+VPATH += frontend/ \
+	backend
+
+HEADERS  +=	backend/abstractindexprovider.h \
+	backend/abstractserviceprovider.h \
+	backend/albertengine.h \
+	albert.h \
+	frontend/proposallistdelegate.h \
+	frontend/proposallistmodel.h \
+	frontend/proposallistview.h \
+	frontend/xhotkeymanager.h \
+    backend/mimeindex/mimeindex.h
+
+SOURCES += main.cpp \
+	backend/abstractindexprovider.cpp \
+	backend/abstractserviceprovider.cpp \
+	backend/albertengine.cpp \
 	albert.cpp \
-	xhotkeymanager.cpp \
-	albertengine.cpp \
-	proposallistdelegate.cpp \
-	proposallistmodel.cpp \
-	proposallistview.cpp \
-	genericmimeitem.cpp \
-	index.cpp \
-	abstractindex.cpp \
-	genericmimeindex.cpp
+	frontend/proposallistdelegate.cpp \
+	frontend/proposallistmodel.cpp \
+	frontend/proposallistview.cpp \
+	frontend/xhotkeymanager.cpp \
+    backend/mimeindex/mimeindex.cpp
 
 RESOURCES += albert.qrc
 

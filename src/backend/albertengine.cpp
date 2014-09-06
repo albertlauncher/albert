@@ -31,24 +31,22 @@ AlbertEngine::AlbertEngine()
  */
 AlbertEngine::~AlbertEngine()
 {
-	delete _index;
 }
 
-/**********************************************************************//**
- * @brief AlbertEngine::request
- * @param req
- * @return
- */
-std::vector<AbstractItem *> AlbertEngine::query(const QString &req)
-{
-	return _index->query(req);
-}
+///**********************************************************************//**
+// * @brief AlbertEngine::request
+// * @param req
+// * @return
+// */
+//std::vector<AbstractServiceProvider::AbstractItem*> AlbertEngine::query(const QString &req)
+//{
+//	return _result;
+//}
 
 /**********************************************************************//**
  * @brief AlbertEngine::buildIndex
  */
 void AlbertEngine::buildIndex()
 {
-	_index = new Index;
 }
 

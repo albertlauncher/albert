@@ -19,19 +19,39 @@
 
 #include <QWidget>
 #include <QString>
-#include "abstractitem.h"
 #include <vector>
 
 class AbstractServiceProvider
 {
-
 public:
-	virtual ~AbstractServiceProvider(){delete _config;}
+	class AbstractItem
+	{
+	public:
+		enum class Action { Enter, Mod1, Mod2 };
+
+		AbstractItem() = delete;
+		AbstractItem(QString title)
+			: _title(title){}
+		virtual ~AbstractItem(){}
+
+		inline  QString  title() const { return _title; }
+		virtual QString  iconPath() = 0;
+		virtual QString  complete() = 0;
+		virtual void     action(Action) = 0;
+		virtual QString  actionText(Action) = 0;
+		void    fallbackAction(Action);
+		QString fallbackActionText(Action);
+
+	protected:
+		const QString _title;
+	};
+
+	virtual ~AbstractServiceProvider(){ _config->deleteLater(); }
 	virtual std::vector<AbstractItem*> query(QString) = 0;
 	virtual QWidget* configWidget() = 0;
+
 protected:
 	QWidget* _config;
 };
 
 #endif // ABSTRACTSERVICEPROVIDER_H
-

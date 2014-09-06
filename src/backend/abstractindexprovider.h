@@ -14,33 +14,33 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef ALBERTENGINE_H
-#define ALBERTENGINE_H
+#ifndef ABSTRACTINDEXPROVIDER_H
+#define ABSTRACTINDEXPROVIDER_H
 
-#include <vector>
-#include <map>
-// Services
 #include "abstractserviceprovider.h"
-#include "abstractindexprovider.h"
 
-using std::vector;
-using std::map;
-
-class AlbertEngine
+class AbstractIndexProvider : public AbstractServiceProvider
 {
-	static AlbertEngine *_instance;
-	vector<AbstractServiceProvider::AbstractItem*> _result;
-
 public:
-	explicit AlbertEngine();
-	~AlbertEngine();
-	static AlbertEngine* instance(){
-		if (_instance == nullptr)
-			_instance = new AlbertEngine;
-		return _instance;
-	}
-//	std::vector<AbstractServiceProvider::AbstractItem *> query(const QString &req);
-	void buildIndex();
+	class AbstractIndexItem : public AbstractServiceProvider::AbstractItem
+	{
+	public:
+		AbstractIndexItem() = delete;
+		AbstractIndexItem(QString title, QString uri)
+			: AbstractItem(title), _uri(uri) {}
+		virtual ~AbstractIndexItem(){}
+
+	protected:
+		const QString _uri;
+		// time _atime;
+	};
+
+	virtual ~AbstractIndexProvider() = 0;
+	virtual void buildIndex() = 0;
+
+protected:
+	std::vector<AbstractIndexItem*> _index;
+	std::list<QString> _watchPaths;
 };
 
-#endif // ALBERTENGINE_H
+#endif // ABSTRACTINDEXPROVIDER_H
