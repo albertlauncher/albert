@@ -36,7 +36,6 @@ protected:
 	int rowCount(const QModelIndex & = QModelIndex()) const override;
 
 	std::vector<AbstractServiceProvider::AbstractItem*> _data;
-
 };
 
 #endif // PROPOSALLISTMODEL_H

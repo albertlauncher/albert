@@ -15,10 +15,11 @@ public:
 		~MimeIndexItem(){}
 
 		inline  QString  title() const { return _title; }
-		QString  iconPath() override;
-		QString  complete() override;
-		void     action(Action) override;
-		QString  actionText(Action) override;
+		QString iconPath() override;
+		QString complete() override;
+		void    action(Action) override;
+		QString actionText(Action) override;
+		QString infoText() override;
 	};
 
 

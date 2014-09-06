@@ -39,6 +39,7 @@ public:
 		virtual QString  complete() = 0;
 		virtual void     action(Action) = 0;
 		virtual QString  actionText(Action) = 0;
+		virtual QString  infoText() = 0;
 		void    fallbackAction(Action);
 		QString fallbackActionText(Action);
 

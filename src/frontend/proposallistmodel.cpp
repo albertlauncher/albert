@@ -16,6 +16,11 @@
 
 #include "proposallistmodel.h"
 
+
+
+
+
+
 /**************************************************************************//**
  * @brief ProposalListModel::ProposalListModel
  * @param parent
@@ -64,11 +69,25 @@ void ProposalListModel::action(const QModelIndex &index)
  */
 QVariant ProposalListModel::data(const QModelIndex &index, int role) const
 {
+	//	EnterText = Qt::UserRole;
+	//	Mod1Text  = Qt::UserRole+1;
+	//	Mod2Text  = Qt::UserRole+2;
+	//	InfoText  = Qt::UserRole+3;
+
 	if (role == Qt::DisplayRole)
 		return _data[index.row()]->title();
+
 	if (role == Qt::UserRole)
 		return _data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Enter);
-	return QVariant();
+
+	if (role == Qt::UserRole+1)
+		return _data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Mod1);
+
+	if (role == Qt::UserRole+2)
+		return _data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Mod2);
+
+	//if (role == Qt::UserRole+3)
+	return _data[index.row()]->infoText();
 }
 
 /**************************************************************************//**

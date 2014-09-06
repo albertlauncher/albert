@@ -35,13 +35,40 @@ ProposalListDelegate::ProposalListDelegate()
  */
 void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const
 {
+	//	EnterText = Qt::UserRole;
+	//	Mod1Text = Qt::UserRole+1;
+	//	Mod2Text = Qt::UserRole+2;
+	//	InfoText = Qt::UserRole+3;
+
+	QString elided;
+	QFont font = option.font;
+	font.setPixelSize(12); // Size for the infotext
 
 	// Draw selection
 	if(option.state & QStyle::State_Selected){
+		// Draw a selection background
 		QLinearGradient gradient(option.rect.topLeft(), option.rect.bottomRight());
 		gradient.setColorAt(0, option.widget->palette().color(QPalette::Window).lighter(120)  );
 		gradient.setColorAt(1, option.widget->palette().color(QPalette::Window));
 		painter->fillRect(option.rect, gradient);
+
+		//Draw the infotext
+		elided = QFontMetrics(font).elidedText(index.data(Qt::UserRole).toString(), Qt::ElideMiddle, 720-64);
+		painter->setFont(font);
+		painter->drawText(option.rect.x()+48, option.rect.y()+36,
+						  option.rect.width()-48, option.rect.height()-32,
+						  Qt::AlignTop|Qt::AlignLeft,
+						  elided, nullptr);
+	}
+	else
+	{
+		// Draw info
+		elided = QFontMetrics(font).elidedText(index.data(Qt::UserRole+3).toString(), Qt::ElideMiddle, 720-64);
+		painter->setFont(font);
+		painter->drawText(option.rect.x()+48, option.rect.y()+36,
+						  option.rect.width()-48, option.rect.height()-32,
+						  Qt::AlignTop|Qt::AlignLeft,
+						  elided, nullptr);
 	}
 
 	// Draw icon
@@ -51,29 +78,13 @@ void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewIte
 						QIcon::fromTheme(QMimeDatabase().mimeTypeForFile(info).iconName()).pixmap(48,48));
 
 	// Draw name
-	QFont font = option.font;
 	font.setPixelSize(32);
-	QString elided = QFontMetrics(font).elidedText(index.data(Qt::DisplayRole).toString(), Qt::ElideRight, 720-64);
+	elided = QFontMetrics(font).elidedText(index.data(Qt::DisplayRole).toString(), Qt::ElideRight, 720-64);
 	painter->setFont(font);
-	painter->drawText(option.rect.x()+48,
-					  option.rect.y(),
-					  option.rect.width()-48,
-					  48,
+	painter->drawText(option.rect.x()+48, option.rect.y(),
+					  option.rect.width()-48, 48,
 					  Qt::AlignTop|Qt::AlignLeft,
-					  elided,
-					  nullptr);
-
-	// Draw info
-	font.setPixelSize(12);
-	elided = QFontMetrics(font).elidedText(info, Qt::ElideMiddle, 720-64);
-	painter->setFont(font);
-	painter->drawText(option.rect.x()+48,
-					  option.rect.y()+36,
-					  option.rect.width()-48,
-					  option.rect.height()-32,
-					  Qt::AlignTop|Qt::AlignLeft,
-					  elided,
-					  nullptr);
+					  elided, nullptr);
 }
 
 

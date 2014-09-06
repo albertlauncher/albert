@@ -119,3 +119,12 @@ QString MimeIndex::MimeIndexItem::actionText(MimeIndex::MimeIndexItem::Action a)
 	// else MimeIndex::MimeIndexItem::Action::Mod2
 	return QString::fromLocal8Bit("Search for '%1' in web.").arg(_title);
 }
+
+/**************************************************************************//**
+ * @brief MimeIndex::MimeIndexItem::infoText
+ * @return
+ */
+QString MimeIndex::MimeIndexItem::infoText()
+{
+	return _uri;
+}
