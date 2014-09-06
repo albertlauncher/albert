@@ -16,7 +16,7 @@
 
 #include <QApplication>
 #include <QSettings>
-#include "albert.h"
+#include "frontend/albert.h"
 #include "albertengine.h"
 
 

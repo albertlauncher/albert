@@ -15,4 +15,39 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "abstractindexprovider.h"
+#include <string>
+using std::string;
+
+std::vector<AbstractServiceProvider::AbstractItem*> AbstractIndexProvider::query(const QString &req)
+{
+	QString reqlo = req.toLower();
+	std::vector<AbstractIndexItem *>::const_iterator it, first, last, lb;
+	std::iterator_traits<std::vector<AbstractIndexItem *>::const_iterator>::difference_type count, step;
+
+	// lower bound
+	first = _index.cbegin();
+	last = _index.cend();
+	count = distance(first,last);
+	while (count>0) {
+	  it = first;
+	  step=count/2;
+	  advance (it,step);
+	  if (strncmp(reqlo.toStdString().c_str(), (*it)->title().toLower().toStdString().c_str(), reqlo.size()) > 0) {
+		first=++it;
+		count-=step+1;
+	  }
+	  else
+		count=step;
+	}
+	lb = it;
+
+	// upper bound
+	while (it != _index.end() && reqlo.toStdString().compare(0, string::npos, (*it)->title().toLower().toStdString(),0,reqlo.size()) == 0){
+	  ++it;
+	}
+
+	return std::vector<AbstractItem *>(lb, it);
+}
+
+
 

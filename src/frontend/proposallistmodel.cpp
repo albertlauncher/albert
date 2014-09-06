@@ -29,7 +29,7 @@ ProposalListModel::ProposalListModel(QObject *parent) :
  * @brief ProposalListModel::set
  * @param d
  */
-void ProposalListModel::set(std::vector<AbstractItem *> d){
+void ProposalListModel::set(const std::vector<AbstractServiceProvider::AbstractItem *> &d){
 	beginResetModel();
 	_data = d;
 	endResetModel();
@@ -53,7 +53,7 @@ void ProposalListModel::clear()
 void ProposalListModel::action(const QModelIndex &index)
 {
 	if (rowCount() != 0)
-		_data[index.isValid()?index.row():0]->action(0);
+		_data[index.isValid()?index.row():0]->action(AbstractServiceProvider::AbstractItem::Action::Enter);
 }
 
 /**************************************************************************//**
@@ -67,7 +67,7 @@ QVariant ProposalListModel::data(const QModelIndex &index, int role) const
 	if (role == Qt::DisplayRole)
 		return _data[index.row()]->title();
 	if (role == Qt::UserRole)
-		return _data[index.row()]->actionText(0);
+		return _data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Enter);
 	return QVariant();
 }
 

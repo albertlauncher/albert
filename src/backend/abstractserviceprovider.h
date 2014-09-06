@@ -46,8 +46,9 @@ public:
 		const QString _title;
 	};
 
+	AbstractServiceProvider(){}
 	virtual ~AbstractServiceProvider(){ _config->deleteLater(); }
-	virtual std::vector<AbstractItem*> query(QString) = 0;
+	virtual std::vector<AbstractItem*> query(const QString &req) = 0;
 	virtual QWidget* configWidget() = 0;
 
 protected:

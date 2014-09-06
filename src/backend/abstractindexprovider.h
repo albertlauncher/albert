@@ -35,7 +35,9 @@ public:
 		// time _atime;
 	};
 
+	AbstractIndexProvider(){}
 	virtual ~AbstractIndexProvider() = 0;
+	std::vector<AbstractServiceProvider::AbstractItem *> query(const QString &req) override;
 	virtual void buildIndex() = 0;
 
 protected:

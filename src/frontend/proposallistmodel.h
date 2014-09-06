@@ -18,17 +18,16 @@
 #define PROPOSALLISTMODEL_H
 
 #include <QAbstractListModel>
-#include "abstractitem.h"
+#include "abstractserviceprovider.h"
+
 
 class ProposalListModel : public QAbstractListModel
 {
 	Q_OBJECT
 
-
-
 public:
 	explicit ProposalListModel(QObject *parent = 0);
-	void set(std::vector<AbstractItem *> d);
+	void set(const std::vector<AbstractServiceProvider::AbstractItem*> &d);
 	void clear();
 	void action( const QModelIndex & index);
 
@@ -36,7 +35,7 @@ protected:
 	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
 	int rowCount(const QModelIndex & = QModelIndex()) const override;
 
-	std::vector<AbstractItem *> _data;
+	std::vector<AbstractServiceProvider::AbstractItem*> _data;
 
 };
 
