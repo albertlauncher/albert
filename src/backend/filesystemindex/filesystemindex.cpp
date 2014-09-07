@@ -1,6 +1,5 @@
-#include "mimeindex.h"
+#include "filesystemindex.h"
 #include <QSettings>
-#include <QDir>
 #include <functional>
 
 
@@ -22,24 +21,9 @@ bool lexicographically (AbstractServiceProvider::AbstractItem*  i, AbstractServi
 /*********************************** MimeIndex *******************************/
 /*****************************************************************************/
 /**************************************************************************//**
- * @brief MimeIndex::MimeIndex
+ * @brief FileSystemIndex::buildIndex
  */
-MimeIndex::MimeIndex()
-{
-}
-
-/**************************************************************************//**
- * @brief MimeIndex::~MimeIndex
- */
-MimeIndex::~MimeIndex()
-{
-
-}
-
-/**************************************************************************//**
- * @brief MimeIndex::buildIndex
- */
-void MimeIndex::buildIndex()
+void FileSystemIndex::buildIndex()
 {
 	QSettings conf;
 	qDebug() << "Config:" << conf.fileName();
@@ -50,7 +34,7 @@ void MimeIndex::buildIndex()
 	{
 		QDir dir(p);
 		dir.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks);
-		_index.push_back(new MimeIndexItem(dir.dirName(), dir.canonicalPath()));
+		_index.push_back(new DirIndexItem(dir));
 
 		// go recursive into subdirs
 		QFileInfoList list = dir.entryInfoList();
@@ -58,7 +42,7 @@ void MimeIndex::buildIndex()
 		{
 			if (fi.isDir())
 				rec_dirsearch(fi.absoluteFilePath());
-			_index.push_back(new MimeIndexItem(fi.completeBaseName(), fi.absoluteFilePath()));
+			_index.push_back(new FileIndexItem(fi));
 		}
 	};
 
@@ -74,81 +58,89 @@ void MimeIndex::buildIndex()
  * @brief MimeIndex::configWidget
  * @return
  */
-QWidget *MimeIndex::configWidget()
+QWidget *FileSystemIndex::configWidget()
 {
 	return new QWidget;
 }
 
-
 /*****************************************************************************/
 /*****************************************************************************/
-/************************** MimeIndex::MimeIndexItem *************************/
+/******************************** DirIndexItem *******************************/
 /*****************************************************************************/
 /**************************************************************************//**
- * @brief MimeIndex::MimeIndexItem::iconPath
- * @return
+ * @brief FileSystemIndex::DirIndexItem::action
+ * @param a
  */
-QString MimeIndex::MimeIndexItem::iconName()
+void FileSystemIndex::DirIndexItem::action(Action a)
 {
-	return QMimeDatabase().mimeTypeForFile(_uri).iconName();
+	if (a == Action::Enter || a == Action::Ctrl) {
+		QDesktopServices::openUrl(QUrl("file://" + uri()));
+		return;
+	}
+
+	// else Action::Alt
+	fallbackAction(a);
+
 }
 
 /**************************************************************************//**
- * @brief MimeIndex::MimeIndexItem::complete
+ * @brief FileSystemIndex::DirIndexItem::actionText
+ * @param a
  * @return
  */
-QString MimeIndex::MimeIndexItem::complete()
+QString FileSystemIndex::DirIndexItem::actionText(Action a) const
 {
-	return QString(); //TODO
+	if (a == Action::Enter || a == Action::Ctrl)
+		return QString::fromLocal8Bit("Open '%1' in default file browser.").arg(_title);
+
+	// else Action::Alt
+	return QString::fromLocal8Bit("Search for '%1' in web.").arg(_title);
 }
 
+/*****************************************************************************/
+/*****************************************************************************/
+/******************************* FileIndexItem *******************************/
+/*****************************************************************************/
 /**************************************************************************//**
- * @brief MimeIndex::MimeIndexItem::action
+ * @brief FileSystemIndex::FileIndexItem::action
+ * @param a
  */
-void MimeIndex::MimeIndexItem::action(MimeIndex::MimeIndexItem::Action a)
+void FileSystemIndex::FileIndexItem::action(Action a)
 {
-	switch (a)
-	{
-	case MimeIndex::MimeIndexItem::Action::Enter: {
+	if (a == Action::Enter) {
 		pid_t pid = fork();
 		if (pid == 0) {
 			pid_t sid = setsid();
 			if (sid < 0) exit(EXIT_FAILURE);
-			execl("/usr/bin/xdg-open", "xdg-open", _uri.toStdString().c_str(), (char *)0);
+			execl("/usr/bin/xdg-open", "xdg-open", uri().toStdString().c_str(), (char *)0);
 			exit(1);
 		}
-		break;
+		return;
 	}
-	case MimeIndex::MimeIndexItem::Action::Ctrl:
-		QDesktopServices::openUrl(QUrl("file://" + _uri));
-		break;
-	case MimeIndex::MimeIndexItem::Action::Alt:
-		fallbackAction(a);
-		break;
+
+	if (a == Action::Ctrl){
+		QDesktopServices::openUrl(QUrl("file://" + uri()));
+		return;
 	}
+
+	// else Action::Alt
+	fallbackAction(a);
 }
 
 /**************************************************************************//**
- * @brief MimeIndex::MimeIndexItem::actionText
+ * @brief FileSystemIndex::FileIndexItem::actionText
+ * @param a
  * @return
  */
-QString MimeIndex::MimeIndexItem::actionText(MimeIndex::MimeIndexItem::Action a)
+QString FileSystemIndex::FileIndexItem::actionText(Action a) const
 {
-	if (a == MimeIndex::MimeIndexItem::Action::Enter)
+	if (a == Action::Enter)
 		return QString::fromLocal8Bit("Open '%1' with default application.").arg(_title);
 
-	if (a == MimeIndex::MimeIndexItem::Action::Ctrl)
+	if (a == Action::Ctrl)
 		return QString::fromLocal8Bit("Open '%1' in default file browser.").arg(_title);
 
-	// else MimeIndex::MimeIndexItem::Action::Alt
+	// else Action::Alt
 	return QString::fromLocal8Bit("Search for '%1' in web.").arg(_title);
 }
 
-/**************************************************************************//**
- * @brief MimeIndex::MimeIndexItem::infoText
- * @return
- */
-QString MimeIndex::MimeIndexItem::infoText()
-{
-	return _uri;
-}

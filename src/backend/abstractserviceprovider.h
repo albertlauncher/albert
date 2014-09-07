@@ -36,13 +36,13 @@ public:
 		virtual ~AbstractItem(){}
 
 		inline  QString  title() const { return _title; }
-		virtual QString  iconName() = 0;
-		virtual QString  complete() = 0;
+		virtual QString  iconName() const = 0;
+		virtual QString  complete() const = 0;
 		virtual void     action(Action) = 0;
-		virtual QString  actionText(Action) = 0;
-		virtual QString  infoText() = 0;
-		void    fallbackAction(Action);
-		QString fallbackActionText(Action);
+		virtual QString  actionText(Action) const = 0;
+		virtual QString  infoText() const = 0;
+		void    fallbackAction(Action) const;
+		QString fallbackActionText(Action) const;
 
 	protected:
 		const QString _title;

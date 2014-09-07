@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "albertengine.h"
-#include "mimeindex/mimeindex.h"
+#include "filesystemindex/filesystemindex.h"
 
 AlbertEngine* AlbertEngine::_instance = nullptr;
 
@@ -27,7 +27,7 @@ AlbertEngine::AlbertEngine()
 {
 	// _websearch =
 	// _calculator =
-	_indizes.push_back(new MimeIndex);
+	_indizes.push_back(new FileSystemIndex);
 }
 
 /**********************************************************************//**

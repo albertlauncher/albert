@@ -52,13 +52,11 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 		if (mods & Qt::ControlModifier){
 			update(currentIndex());
 			_mods = keyEvent->modifiers();
-			qDebug()<< "press ctrl";
 			return true;
 		}
 		if (mods & Qt::AltModifier){
 			update(currentIndex());
 			_mods = keyEvent->modifiers();
-			qDebug()<< "press alt";
 			return true;
 		}
 
@@ -95,18 +93,13 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 		if (mods & Qt::ControlModifier){
 			update(currentIndex());
 			_mods = keyEvent->modifiers();
-			qDebug()<< "rel ctrl";
 			return true;
 		}
 		if (mods & Qt::AltModifier){
 			update(currentIndex());
 			_mods = keyEvent->modifiers();
-			qDebug()<< "rel alt";
 			return true;
 		}
-
-
-
 	}
 	return false;
 }

@@ -19,7 +19,7 @@
 #include <QUrl>
 
 
-void AbstractServiceProvider::AbstractItem::fallbackAction(AbstractServiceProvider::AbstractItem::Action)
+void AbstractServiceProvider::AbstractItem::fallbackAction(AbstractServiceProvider::AbstractItem::Action) const
 {
 	QDesktopServices::openUrl(QUrl("https://www.google.de/search?q=" + _title));
 //	pid_t pid = fork();
@@ -30,7 +30,7 @@ void AbstractServiceProvider::AbstractItem::fallbackAction(AbstractServiceProvid
 //	}
 }
 
-QString AbstractServiceProvider::AbstractItem::fallbackActionText(AbstractServiceProvider::AbstractItem::Action)
+QString AbstractServiceProvider::AbstractItem::fallbackActionText(AbstractServiceProvider::AbstractItem::Action) const
 {
 	return QString::fromLocal8Bit("Search for '%1' in web.").arg(_title);
 }

@@ -54,16 +54,12 @@ void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewIte
 		painter->fillRect(option.rect, gradient);
 
 		Qt::KeyboardModifiers mods = QGuiApplication::queryKeyboardModifiers();
-		if (mods & Qt::ControlModifier){
-			qDebug() << index.data(Qt::UserRole+2).toString()<<"1";
+		if (mods & Qt::ControlModifier)
 			elided = index.data(Qt::UserRole+2).toString();
-		} else if (mods & Qt::AltModifier) {
-			qDebug() << index.data(Qt::UserRole+1).toString()<<"2";
+		else if (mods & Qt::AltModifier)
 			elided = index.data(Qt::UserRole+1).toString();
-		} else {
-			qDebug() << index.data(Qt::UserRole).toString()<<"3";
+		else
 			elided = index.data(Qt::UserRole).toString();
-		}
 
 		//Draw the infotext
 		elided = QFontMetrics(font).elidedText(elided, Qt::ElideMiddle, 720-64);
@@ -97,7 +93,6 @@ void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewIte
 					  option.rect.width()-48, 48,
 					  Qt::AlignTop|Qt::AlignLeft,
 					  elided, nullptr);
-	qDebug() << "drawn";
 }
 
 

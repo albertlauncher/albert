@@ -26,13 +26,10 @@ public:
 	{
 	public:
 		AbstractIndexItem() = delete;
-		AbstractIndexItem(QString title, QString uri)
-			: AbstractItem(title), _uri(uri) {}
+		AbstractIndexItem(QString title) : AbstractItem(title) {}
 		virtual ~AbstractIndexItem(){}
-
-	protected:
-		const QString _uri;
-		// time _atime;
+		virtual QString uri() const = 0;
+//		virtual QString lastAccess() = 0;
 	};
 
 	AbstractIndexProvider(){}
