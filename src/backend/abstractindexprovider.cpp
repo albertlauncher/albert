@@ -18,6 +18,7 @@
 #include <string>
 using std::string;
 
+
 std::vector<AbstractServiceProvider::AbstractItem*> AbstractIndexProvider::query(const QString &req)
 {
 	QString reqlo = req.toLower();

@@ -18,6 +18,8 @@
 #include "proposallistdelegate.h"
 #include "proposallistmodel.h"
 
+#include <QDebug>
+
 /**************************************************************************//**
  * @brief ProposalListView::ProposalListView
  * @param parent
@@ -44,17 +46,67 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 	if (event->type() == QEvent::KeyPress)
 	{
 		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+
+		// Modifiers
+		Qt::KeyboardModifiers mods = _mods ^ keyEvent->modifiers();
+		if (mods & Qt::ControlModifier){
+			update(currentIndex());
+			_mods = keyEvent->modifiers();
+			qDebug()<< "press ctrl";
+			return true;
+		}
+		if (mods & Qt::AltModifier){
+			update(currentIndex());
+			_mods = keyEvent->modifiers();
+			qDebug()<< "press alt";
+			return true;
+		}
+
+
+		// Navigation
 		if (keyEvent->key() == Qt::Key_Up
-				|| keyEvent->key() == Qt::Key_Down
-				|| keyEvent->key() == Qt::Key_PageDown
-				|| keyEvent->key() == Qt::Key_PageUp){
+			|| keyEvent->key() == Qt::Key_Down
+			|| keyEvent->key() == Qt::Key_PageDown
+			|| keyEvent->key() == Qt::Key_PageUp)
+		{
 			this->keyPressEvent(keyEvent);
 			return true;
 		}
-		if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter){
-			static_cast<ProposalListModel*>(model())->action(currentIndex());
-			qDebug() << "PRESSED!";
+
+		// Confirmation
+		if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter)
+		{
+			if (keyEvent->modifiers() & Qt::ControlModifier)
+				static_cast<ProposalListModel*>(model())->ctrlAction(currentIndex());
+			else if (keyEvent->modifiers() & Qt::AltModifier)
+				static_cast<ProposalListModel*>(model())->altAction(currentIndex());
+			else
+				static_cast<ProposalListModel*>(model())->action(currentIndex());
+			return true;
 		}
+	}
+
+	if (event->type() == QEvent::KeyRelease)
+	{
+		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+
+		// Modifiers
+		Qt::KeyboardModifiers mods = _mods ^ keyEvent->modifiers();
+		if (mods & Qt::ControlModifier){
+			update(currentIndex());
+			_mods = keyEvent->modifiers();
+			qDebug()<< "rel ctrl";
+			return true;
+		}
+		if (mods & Qt::AltModifier){
+			update(currentIndex());
+			_mods = keyEvent->modifiers();
+			qDebug()<< "rel alt";
+			return true;
+		}
+
+
+
 	}
 	return false;
 }

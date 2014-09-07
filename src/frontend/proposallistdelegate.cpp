@@ -17,8 +17,8 @@
 #include "proposallistdelegate.h"
 #include <QMimeType>
 #include <QMimeDatabase>
+#include <QGuiApplication>
 
-#
 
 /**************************************************************************//**
  * @brief ProposalListDelegate::ProposalListDelegate
@@ -36,8 +36,8 @@ ProposalListDelegate::ProposalListDelegate()
 void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const
 {
 	//	EnterText = Qt::UserRole;
-	//	Mod1Text = Qt::UserRole+1;
-	//	Mod2Text = Qt::UserRole+2;
+	//	AltText  = Qt::UserRole+1;
+	//	CtrlText  = Qt::UserRole+2;
 	//	InfoText = Qt::UserRole+3;
 	//	IconName = Qt::UserRole+4;
 
@@ -53,10 +53,22 @@ void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewIte
 		gradient.setColorAt(1, option.widget->palette().color(QPalette::Window));
 		painter->fillRect(option.rect, gradient);
 
+		Qt::KeyboardModifiers mods = QGuiApplication::queryKeyboardModifiers();
+		if (mods & Qt::ControlModifier){
+			qDebug() << index.data(Qt::UserRole+2).toString()<<"1";
+			elided = index.data(Qt::UserRole+2).toString();
+		} else if (mods & Qt::AltModifier) {
+			qDebug() << index.data(Qt::UserRole+1).toString()<<"2";
+			elided = index.data(Qt::UserRole+1).toString();
+		} else {
+			qDebug() << index.data(Qt::UserRole).toString()<<"3";
+			elided = index.data(Qt::UserRole).toString();
+		}
+
 		//Draw the infotext
-		elided = QFontMetrics(font).elidedText(index.data(Qt::UserRole).toString(), Qt::ElideMiddle, 720-64);
+		elided = QFontMetrics(font).elidedText(elided, Qt::ElideMiddle, 720-64);
 		painter->setFont(font);
-		painter->drawText(option.rect.x()+48, option.rect.y()+36,
+		painter->drawText(option.rect.x()+48, option.rect.y()+34,
 						  option.rect.width()-48, option.rect.height()-32,
 						  Qt::AlignTop|Qt::AlignLeft,
 						  elided, nullptr);
@@ -66,7 +78,7 @@ void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewIte
 		// Draw info
 		elided = QFontMetrics(font).elidedText(index.data(Qt::UserRole+3).toString(), Qt::ElideMiddle, 720-64);
 		painter->setFont(font);
-		painter->drawText(option.rect.x()+48, option.rect.y()+36,
+		painter->drawText(option.rect.x()+48, option.rect.y()+34,
 						  option.rect.width()-48, option.rect.height()-32,
 						  Qt::AlignTop|Qt::AlignLeft,
 						  elided, nullptr);
@@ -85,6 +97,7 @@ void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewIte
 					  option.rect.width()-48, 48,
 					  Qt::AlignTop|Qt::AlignLeft,
 					  elided, nullptr);
+	qDebug() << "drawn";
 }
 
 

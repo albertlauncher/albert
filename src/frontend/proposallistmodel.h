@@ -30,6 +30,8 @@ public:
 	void set(const std::vector<AbstractServiceProvider::AbstractItem*> &d);
 	void clear();
 	void action( const QModelIndex & index);
+	void altAction( const QModelIndex & index);
+	void ctrlAction( const QModelIndex & index);
 
 protected:
 	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;

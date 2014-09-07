@@ -26,7 +26,7 @@ HEADERS  +=	backend/abstractindexprovider.h \
 	frontend/proposallistmodel.h \
 	frontend/proposallistview.h \
 	frontend/xhotkeymanager.h \
-    backend/mimeindex/mimeindex.h
+	backend/mimeindex/mimeindex.h
 
 SOURCES += main.cpp \
 	backend/abstractindexprovider.cpp \
@@ -37,7 +37,7 @@ SOURCES += main.cpp \
 	frontend/proposallistmodel.cpp \
 	frontend/proposallistview.cpp \
 	frontend/xhotkeymanager.cpp \
-    backend/mimeindex/mimeindex.cpp
+	backend/mimeindex/mimeindex.cpp
 
 RESOURCES += albert.qrc
 
@@ -45,7 +45,7 @@ CONFIG += c++11
 
 LIBS += -lX11
 
-DEFINES += QT_NO_CAST_FROM_ASCII \
-			 QT_NO_CAST_TO_ASCII
+#DEFINES += QT_NO_CAST_FROM_ASCII \
+			 #QT_NO_CAST_TO_ASCII
 
 QMAKE_CXXFLAGS_WARN_ON += -Werror
