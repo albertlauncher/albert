@@ -60,7 +60,6 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 			return true;
 		}
 
-
 		// Navigation
 		if (keyEvent->key() == Qt::Key_Up
 			|| keyEvent->key() == Qt::Key_Down
@@ -68,6 +67,17 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 			|| keyEvent->key() == Qt::Key_PageUp)
 		{
 			this->keyPressEvent(keyEvent);
+			return true;
+		}
+
+		// Completion
+		if (keyEvent->key() == Qt::Key_Tab)
+		{
+			if (model()->rowCount() > 0){
+				if (!currentIndex().isValid())
+					setCurrentIndex(model()->index(0, 0));
+			}
+			emit completion(model()->data(currentIndex(), Qt::UserRole+5).toString());
 			return true;
 		}
 

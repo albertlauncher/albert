@@ -26,10 +26,10 @@
 //bleibt
 #include <QWidget>
 #include <QVBoxLayout>
-#include <QLineEdit>
 #include <QList>
 #include <QAbstractNativeEventFilter>
 // meine
+#include "inputline.h"
 #include "proposallistview.h"
 #include "proposallistmodel.h"
 
@@ -37,8 +37,8 @@ class AlbertWidget : public QWidget
 {
 	Q_OBJECT
 
-	QFrame           *_frame1,*_frame2,*_frame3;
-	QLineEdit	     *_inputLine;
+	QFrame             *_frame1,*_frame2,*_frame3;
+	InputLine          *_inputLine;
 	ProposalListModel  *_proposalListModel;
 	ProposalListView   *_proposalListView;
 
@@ -51,7 +51,7 @@ public:
 	AlbertWidget(QWidget *parent = 0);
 	~AlbertWidget();
 
-private slots:
+public slots:
 	void onHotKeyPressed();
 	void onTextEdited(const QString &text);
 	void hide();

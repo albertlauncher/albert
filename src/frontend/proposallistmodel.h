@@ -33,8 +33,9 @@ public:
 	void altAction( const QModelIndex & index);
 	void ctrlAction( const QModelIndex & index);
 
-protected:
 	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
+
+protected:
 	int rowCount(const QModelIndex & = QModelIndex()) const override;
 
 	std::vector<AbstractServiceProvider::AbstractItem*> _data;

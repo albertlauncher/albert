@@ -26,7 +26,8 @@ HEADERS  +=	backend/abstractindexprovider.h \
 	frontend/proposallistmodel.h \
 	frontend/proposallistview.h \
 	frontend/xhotkeymanager.h \
-	backend/filesystemindex/filesystemindex.h
+	backend/filesystemindex/filesystemindex.h \
+    frontend/inputline.h
 
 SOURCES += main.cpp \
 	backend/abstractindexprovider.cpp \
@@ -37,7 +38,8 @@ SOURCES += main.cpp \
 	frontend/proposallistmodel.cpp \
 	frontend/proposallistview.cpp \
 	frontend/xhotkeymanager.cpp \
-	backend/filesystemindex/filesystemindex.cpp
+	backend/filesystemindex/filesystemindex.cpp \
+    frontend/inputline.cpp
 
 RESOURCES += albert.qrc
 

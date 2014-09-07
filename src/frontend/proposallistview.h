@@ -34,6 +34,8 @@ public:
 protected:
 	bool eventFilter(QObject*, QEvent *event) override;
 	Qt::KeyboardModifiers _mods;
+signals:
+	void completion(QString);
 };
 
 #endif // PROPOSALLISTVIEW_H

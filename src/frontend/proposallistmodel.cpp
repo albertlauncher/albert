@@ -89,11 +89,17 @@ void ProposalListModel::ctrlAction(const QModelIndex &index)
  */
 QVariant ProposalListModel::data(const QModelIndex &index, int role) const
 {
+	if (!index.isValid())
+		return QVariant();
+
+
+
 	//	EnterText = Qt::UserRole;
 	//	AltText  = Qt::UserRole+1;
 	//	CtrlText  = Qt::UserRole+2;
 	//	InfoText  = Qt::UserRole+3;
 	//	IconName = Qt::UserRole+4;
+	//	Completion = Qt::UserRole+5;
 
 	if (role == Qt::DisplayRole)
 		return _data[index.row()]->title();
@@ -110,8 +116,15 @@ QVariant ProposalListModel::data(const QModelIndex &index, int role) const
 	if (role == Qt::UserRole+3)
 		return _data[index.row()]->infoText();
 
-	//if (role == Qt::UserRole+4)
-	return _data[index.row()]->iconName();
+	if (role == Qt::UserRole+4)
+		return _data[index.row()]->iconName();
+
+	if (role == Qt::UserRole+5)
+		return _data[index.row()]->complete();
+
+
+	return QVariant();
+
 }
 
 /**************************************************************************//**

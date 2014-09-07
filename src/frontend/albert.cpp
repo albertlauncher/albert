@@ -14,15 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <algorithm>
-#include "xcb/xcb.h"
 #include "albert.h"
 #include "albertengine.h"
 #include "xhotkeymanager.h"
-#include "abstractserviceprovider.h"
+#include "xcb/xcb.h"
 
 // remove
-#include <iostream>
+#include <QEvent>
+
 
 /**************************************************************************//**
  * @brief AlbertWidget::AlbertWidget
@@ -79,11 +78,8 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_frame1->setLayout(contentLayout);
 
 	/* Interface */
-	_inputLine = new QLineEdit;
-	_inputLine->setObjectName(QString::fromLocal8Bit("inputline"));
-	_inputLine->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
+	_inputLine = new InputLine;
 	contentLayout->addWidget(_inputLine);
-
 
 	_proposalListModel = new ProposalListModel;
 	_proposalListView = new ProposalListView;
@@ -99,18 +95,13 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_proposalListView->setFocusProxy(_inputLine);
 	this->setFocusPolicy(Qt::StrongFocus);
 
-	// install EventFilter
+	// Install EventFilter and signals
 	QApplication::instance()->installEventFilter(this); // check if app lost focus
-	_inputLine->installEventFilter(_proposalListView); // propagate arrows to list
-
-	// Show albert if hotkey was pressed
-	connect(XHotKeyManager::getInstance(), SIGNAL(hotKeyPressed()), this, SLOT(onHotKeyPressed()), Qt::QueuedConnection);
-	// Start listening for the hotkey(s)
-	XHotKeyManager::getInstance()->start();
-
-	// React on confirmation in commandline
-	connect(_inputLine, SIGNAL(textEdited(QString)), this, SLOT(onTextEdited(QString)));
-
+	_inputLine->installEventFilter(_proposalListView); // intercept navigation, handle modifiers
+	connect(_inputLine, SIGNAL(textChanged(QString)), this, SLOT(onTextEdited(QString)));
+	connect(_proposalListView, SIGNAL(completion(QString)), _inputLine, SLOT(onCompletion(QString)));
+	connect(XHotKeyManager::getInstance(), SIGNAL(hotKeyPressed()), this, SLOT(onHotKeyPressed()), Qt::QueuedConnection);// Show albert if hotkey was pressed
+	XHotKeyManager::getInstance()->start(); // Start listening for the hotkey(s)
 }
 
 /**************************************************************************//**
@@ -203,7 +194,8 @@ void AlbertWidget::keyPressEvent(QKeyEvent *event)
  */
 bool AlbertWidget::eventFilter(QObject *obj, QEvent *event)
 {
-	if (event->type() == QEvent::ApplicationStateChange && this->isActiveWindow()) {
+	if (event->type() == QEvent::ApplicationStateChange && this->isActiveWindow())
+	{
 		this->hide();
 		return true;
 	}
@@ -236,19 +228,15 @@ bool AlbertWidget::nativeEvent(const QByteArray &eventType, void *message, long 
 		case XCB_FOCUS_IN: {
 			xcb_focus_in_event_t *fe = (xcb_focus_in_event_t *)event;
 			if (fe->mode & (XCB_NOTIFY_MODE_GRAB|XCB_NOTIFY_MODE_WHILE_GRABBED|XCB_NOTIFY_MODE_UNGRAB)){
-				std::cout << "Ignored XCB_FOCUS_IN event" << std::endl;
 				return true; // Ignore this events
 			}
-			std::cout << "Ignored XCB_FOCUS_IN event NOT" << std::endl;
 			break;
 		}
 		case XCB_FOCUS_OUT: {
 			xcb_focus_out_event_t *fe = (xcb_focus_out_event_t *)event;
 			if (fe->mode & (XCB_NOTIFY_MODE_GRAB|XCB_NOTIFY_MODE_WHILE_GRABBED|XCB_NOTIFY_MODE_UNGRAB)){
-				std::cout << "Ignored XCB_FOCUS_OUT event" << std::endl;
 				return true; // Ignore this events
 			}
-			std::cout << "Ignored XCB_FOCUS_OUT event NOT" << std::endl;
 			break;
 		}
 		}
