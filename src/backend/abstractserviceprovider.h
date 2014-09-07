@@ -28,7 +28,7 @@ public:
 	class AbstractItem
 	{
 	public:
-		enum class Action { Enter, Mod1, Mod2 };
+		enum class Action { Enter, Alt, Ctrl };
 
 		AbstractItem() = delete;
 		AbstractItem(QString title)

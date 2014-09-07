@@ -6,6 +6,8 @@
 
 #include <QMimeType>
 #include <QMimeDatabase>
+#include <QDesktopServices>
+#include <QUrl>
 
 //REMOVE
 #include <QDebug>
@@ -103,14 +105,26 @@ QString MimeIndex::MimeIndexItem::complete()
 /**************************************************************************//**
  * @brief MimeIndex::MimeIndexItem::action
  */
-void MimeIndex::MimeIndexItem::action(MimeIndex::MimeIndexItem::Action)
+void MimeIndex::MimeIndexItem::action(MimeIndex::MimeIndexItem::Action a)
 {
-	pid_t pid = fork();
-	if (pid == 0) {
-		pid_t sid = setsid();
-		if (sid < 0) exit(EXIT_FAILURE);
-		execl("/usr/bin/xdg-open", "xdg-open", _uri.toStdString().c_str(), (char *)0);
-		exit(1);
+	switch (a)
+	{
+	case MimeIndex::MimeIndexItem::Action::Enter: {
+		pid_t pid = fork();
+		if (pid == 0) {
+			pid_t sid = setsid();
+			if (sid < 0) exit(EXIT_FAILURE);
+			execl("/usr/bin/xdg-open", "xdg-open", _uri.toStdString().c_str(), (char *)0);
+			exit(1);
+		}
+		break;
+	}
+	case MimeIndex::MimeIndexItem::Action::Ctrl:
+		QDesktopServices::openUrl(QUrl("file://" + _uri));
+		break;
+	case MimeIndex::MimeIndexItem::Action::Alt:
+		fallbackAction(a);
+		break;
 	}
 }
 
@@ -121,12 +135,12 @@ void MimeIndex::MimeIndexItem::action(MimeIndex::MimeIndexItem::Action)
 QString MimeIndex::MimeIndexItem::actionText(MimeIndex::MimeIndexItem::Action a)
 {
 	if (a == MimeIndex::MimeIndexItem::Action::Enter)
-		return QString::fromLocal8Bit("Open '%1'.").arg(_title);
+		return QString::fromLocal8Bit("Open '%1' with default application.").arg(_title);
 
-	if (a == MimeIndex::MimeIndexItem::Action::Mod1)
-		return QString::fromLocal8Bit("Search for '%1' in web.").arg(_title);
+	if (a == MimeIndex::MimeIndexItem::Action::Ctrl)
+		return QString::fromLocal8Bit("Open '%1' in default file browser.").arg(_title);
 
-	// else MimeIndex::MimeIndexItem::Action::Mod2
+	// else MimeIndex::MimeIndexItem::Action::Alt
 	return QString::fromLocal8Bit("Search for '%1' in web.").arg(_title);
 }
 

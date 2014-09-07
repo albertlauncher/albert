@@ -15,20 +15,26 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "abstractserviceprovider.h"
-
+#include <QDesktopServices>
+#include <QUrl>
 
 
 void AbstractServiceProvider::AbstractItem::fallbackAction(AbstractServiceProvider::AbstractItem::Action)
 {
-	pid_t pid = fork();
-	if (pid == 0) {
-		// TODO SETID()
-		execl("/usr/bin/chromium", "chromium", QString::fromLocal8Bit("https://www.google.de/search?q=%1").arg(_title).toStdString().c_str(), (char *)0);
-		exit(1);
-	}
+	QDesktopServices::openUrl(QUrl("https://www.google.de/search?q=" + _title));
+
+
+
+//	pid_t pid = fork();
+//	if (pid == 0) {
+//		// TODO SETID()
+//		execl("/usr/bin/chromium", "chromium", QString::fromLocal8Bit("https://www.google.de/search?q=%1").arg(_title).toStdString().c_str(), (char *)0);
+//		exit(1);
+//	}
 }
 
 QString AbstractServiceProvider::AbstractItem::fallbackActionText(AbstractServiceProvider::AbstractItem::Action)
 {
 	return QString::fromLocal8Bit("Search for '%1' in web.").arg(_title);
 }
+

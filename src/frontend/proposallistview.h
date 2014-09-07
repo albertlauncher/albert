@@ -33,6 +33,7 @@ public:
 
 protected:
 	bool eventFilter(QObject*, QEvent *event) override;
+	Qt::KeyboardModifiers _mods;
 };
 
 #endif // PROPOSALLISTVIEW_H

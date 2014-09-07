@@ -62,6 +62,26 @@ void ProposalListModel::action(const QModelIndex &index)
 }
 
 /**************************************************************************//**
+ * @brief ProposalListModel::altAction
+ * @param index
+ */
+void ProposalListModel::altAction(const QModelIndex &index)
+{
+	if (rowCount() != 0)
+		_data[index.isValid()?index.row():0]->action(AbstractServiceProvider::AbstractItem::Action::Alt);
+}
+
+/**************************************************************************//**
+ * @brief ProposalListModel::ctrlAction
+ * @param index
+ */
+void ProposalListModel::ctrlAction(const QModelIndex &index)
+{
+	if (rowCount() != 0)
+		_data[index.isValid()?index.row():0]->action(AbstractServiceProvider::AbstractItem::Action::Ctrl);
+}
+
+/**************************************************************************//**
  * @brief ProposalListModel::data
  * @param index
  * @param role
@@ -70,8 +90,8 @@ void ProposalListModel::action(const QModelIndex &index)
 QVariant ProposalListModel::data(const QModelIndex &index, int role) const
 {
 	//	EnterText = Qt::UserRole;
-	//	Mod1Text  = Qt::UserRole+1;
-	//	Mod2Text  = Qt::UserRole+2;
+	//	AltText  = Qt::UserRole+1;
+	//	CtrlText  = Qt::UserRole+2;
 	//	InfoText  = Qt::UserRole+3;
 	//	IconName = Qt::UserRole+4;
 
@@ -82,10 +102,10 @@ QVariant ProposalListModel::data(const QModelIndex &index, int role) const
 		return _data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Enter);
 
 	if (role == Qt::UserRole+1)
-		return _data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Mod1);
+		return _data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Alt);
 
 	if (role == Qt::UserRole+2 )
-		return _data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Mod2);
+		return _data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Ctrl);
 
 	if (role == Qt::UserRole+3)
 		return _data[index.row()]->infoText();

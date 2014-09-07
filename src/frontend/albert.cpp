@@ -172,6 +172,7 @@ void AlbertWidget::onTextEdited(const QString & text)
 			return;
 		}
 	}
+	_proposalListModel->clear();
 	_proposalListView->hide();
 }
 
