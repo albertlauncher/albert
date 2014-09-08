@@ -122,3 +122,10 @@ QSize ProposalListView::sizeHint() const
 	qDebug() << "ProposalListView::sizeHint()"  <<  QSize(width(), nToShow*sizeHintForRow(0));
 	return QSize(width(), nToShow*sizeHintForRow(0));
 }
+
+void ProposalListView::reset()
+{
+	setCurrentIndex(model()->index(0, 0));
+	QListView::reset();
+	updateGeometry();
+}

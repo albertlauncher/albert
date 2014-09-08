@@ -27,7 +27,8 @@ HEADERS  +=	backend/abstractindexprovider.h \
 	frontend/proposallistview.h \
 	frontend/xhotkeymanager.h \
 	backend/filesystemindex/filesystemindex.h \
-    frontend/inputline.h
+	frontend/inputline.h \
+	backend/settings.h
 
 SOURCES += main.cpp \
 	backend/abstractindexprovider.cpp \
@@ -39,13 +40,14 @@ SOURCES += main.cpp \
 	frontend/proposallistview.cpp \
 	frontend/xhotkeymanager.cpp \
 	backend/filesystemindex/filesystemindex.cpp \
-    frontend/inputline.cpp
+	frontend/inputline.cpp \
+	backend/settings.cpp
 
 RESOURCES += albert.qrc
 
 CONFIG += c++11
 
-LIBS += -lX11
+LIBS += -lX11 -lboost_system -lboost_filesystem -lboost_timer
 
 #DEFINES += QT_NO_CAST_FROM_ASCII \
 			 #QT_NO_CAST_TO_ASCII

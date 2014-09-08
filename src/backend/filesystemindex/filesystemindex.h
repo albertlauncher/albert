@@ -2,6 +2,10 @@
 #define FILESYSTEMINDEX_H
 
 #include "abstractindexprovider.h"
+#include "boost/filesystem.hpp"
+#include <string>
+
+
 #include <QFileInfo>
 #include <QDir>
 #include <QMimeType>
@@ -14,34 +18,18 @@ public:
 	{
 	public:
 		FileIndexItem() = delete;
-		FileIndexItem(QFileInfo fi) : AbstractIndexItem(fi.fileName()), _fi(fi) {}
+		FileIndexItem(boost::filesystem::path p) : AbstractIndexItem(p.filename().string()), _path(p) {}
 		~FileIndexItem(){}
 
-		inline  QString iconName() const override { return QMimeDatabase().mimeTypeForFile(_fi.canonicalFilePath()).iconName(); }
-		inline  QString complete() const override { return _fi.fileName(); }
-		inline  QString infoText() const override { return _fi.canonicalFilePath(); }
-		inline  QString uri() const override { return _fi.canonicalFilePath(); }
-		void    action(Action) override;
-		QString actionText(Action)  const override ;
-	protected:
-		QFileInfo _fi;
-	};
+		inline std::string complete() const override {return _path.filename().string();}
+		inline std::string infoText() const override {return _path.string();}
+		inline std::string uri() const override {return _path.string();}
+		void               action(Action) override;
+		std::string        actionText(Action) const override;
+		std::string        mimeType() const override;
 
-	class DirIndexItem : public AbstractIndexProvider::AbstractIndexItem
-	{
-	public:
-		DirIndexItem() = delete;
-		DirIndexItem(QDir dir) : AbstractIndexItem(dir.dirName()), _dir(dir) {}
-		~DirIndexItem(){}
-
-		inline  QString iconName() const override { return QMimeDatabase().mimeTypeForFile(_dir.canonicalPath()).iconName(); }
-		inline  QString complete() const override { return _dir.dirName(); }
-		inline  QString infoText() const override { return _dir.canonicalPath(); }
-		inline  QString uri() const override { return _dir.canonicalPath(); }
-		void    action(Action) override;
-		QString actionText(Action)  const override ;
 	protected:
-		QDir _dir;
+		boost::filesystem::path _path;
 	};
 
 
@@ -49,8 +37,6 @@ public:
 	~FileSystemIndex() {}
 
 	void buildIndex() override;
-	QWidget* configWidget() override;
-
 };
 
 #endif // FILESYSTEMINDEX_H

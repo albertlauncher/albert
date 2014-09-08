@@ -155,10 +155,9 @@ void AlbertWidget::onHotKeyPressed()
 void AlbertWidget::onTextEdited(const QString & text)
 {
 	if (!text.isEmpty()){
-		const std::vector<AbstractServiceProvider::AbstractItem *> &r = AlbertEngine::instance()->query(text);
+		const std::vector<AbstractServiceProvider::AbstractItem *> &r = AlbertEngine::instance()->query(text.toStdString());
 		if (!r.empty()) {
 			_proposalListModel->set(r);
-			_proposalListView->updateGeometry(); // TODO besseren platz finden in
 			_proposalListView->show();
 			return;
 		}

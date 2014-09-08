@@ -17,10 +17,8 @@
 #ifndef ABSTRACTSERVICEPROVIDER_H
 #define ABSTRACTSERVICEPROVIDER_H
 
-#include <QWidget>
-#include <QString>
+#include <string>
 #include <vector>
-#include <unistd.h>
 
 class AbstractServiceProvider
 {
@@ -31,30 +29,26 @@ public:
 		enum class Action { Enter, Alt, Ctrl };
 
 		AbstractItem() = delete;
-		AbstractItem(QString title)
-			: _title(title){}
+		AbstractItem(const std::string &title) : _title(title){}
 		virtual ~AbstractItem(){}
 
-		inline  QString  title() const { return _title; }
-		virtual QString  iconName() const = 0;
-		virtual QString  complete() const = 0;
-		virtual void     action(Action) = 0;
-		virtual QString  actionText(Action) const = 0;
-		virtual QString  infoText() const = 0;
-		void    fallbackAction(Action) const;
-		QString fallbackActionText(Action) const;
+		inline  std::string  title() const {return _title;}
+		virtual std::string  mimeType() const = 0;
+		virtual std::string  complete() const = 0;
+		virtual void         action(Action) = 0;
+		virtual std::string  actionText(Action) const = 0;
+		virtual std::string  infoText() const = 0;
+		void                 fallbackAction(Action) const;
+		std::string          fallbackActionText(Action) const;
 
 	protected:
-		const QString _title;
+		const std::string _title;
+		static void startDetached(std::string cmd, std::string param);
 	};
 
 	AbstractServiceProvider(){}
-	virtual ~AbstractServiceProvider(){ _config->deleteLater(); }
-	virtual std::vector<AbstractItem*> query(const QString &req) = 0;
-	virtual QWidget* configWidget() = 0;
-
-protected:
-	QWidget* _config;
+	virtual ~AbstractServiceProvider(){}
+	virtual std::vector<AbstractItem*> query(const std::string &req) = 0;
 };
 
 #endif // ABSTRACTSERVICEPROVIDER_H

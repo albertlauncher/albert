@@ -15,23 +15,33 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "abstractserviceprovider.h"
-#include <QDesktopServices>
-#include <QUrl>
-
+#include <sstream>
+#include <unistd.h>
 
 void AbstractServiceProvider::AbstractItem::fallbackAction(AbstractServiceProvider::AbstractItem::Action) const
 {
-	QDesktopServices::openUrl(QUrl("https://www.google.de/search?q=" + _title));
-//	pid_t pid = fork();
-//	if (pid == 0) {
-//		// TODO SETID()
-//		execl("/usr/bin/chromium", "chromium", QString::fromLocal8Bit("https://www.google.de/search?q=%1").arg(_title).toStdString().c_str(), (char *)0);
-//		exit(1);
-//	}
+	std::string url("https://www.google.de/search?q=");
+	url.append(_title);
+	startDetached("xdg-open", url);
 }
 
-QString AbstractServiceProvider::AbstractItem::fallbackActionText(AbstractServiceProvider::AbstractItem::Action) const
+std::string AbstractServiceProvider::AbstractItem::fallbackActionText(AbstractServiceProvider::AbstractItem::Action) const
 {
-	return QString::fromLocal8Bit("Search for '%1' in web.").arg(_title);
+	std::ostringstream stringStream;
+	stringStream << "Search for " << _title << " in the web.";
+	return stringStream.str();
+}
+
+void AbstractServiceProvider::AbstractItem::startDetached(std::string cmd, std::string param)
+{
+	pid_t pid = fork();
+	if (pid == 0) {
+		pid_t sid = setsid();
+		if (sid < 0) exit(EXIT_FAILURE);
+		std::string cmd_p("/usr/bin/");
+		cmd_p.append(cmd);
+		execl(cmd_p.c_str(), cmd.c_str(), param.c_str(), (char *)0);
+		exit(1);
+	}
 }
 

@@ -102,25 +102,25 @@ QVariant ProposalListModel::data(const QModelIndex &index, int role) const
 	//	Completion = Qt::UserRole+5;
 
 	if (role == Qt::DisplayRole)
-		return _data[index.row()]->title();
+		return QString::fromStdString(_data[index.row()]->title());
 
 	if (role == Qt::UserRole)
-		return _data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Enter);
+		return QString::fromStdString(_data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Enter));
 
 	if (role == Qt::UserRole+1)
-		return _data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Alt);
+		return QString::fromStdString(_data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Alt));
 
 	if (role == Qt::UserRole+2 )
-		return _data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Ctrl);
+		return QString::fromStdString(_data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Ctrl));
 
 	if (role == Qt::UserRole+3)
-		return _data[index.row()]->infoText();
+		return QString::fromStdString(_data[index.row()]->infoText());
 
 	if (role == Qt::UserRole+4)
-		return _data[index.row()]->iconName();
+		return QString::fromStdString(_data[index.row()]->mimeType());
 
 	if (role == Qt::UserRole+5)
-		return _data[index.row()]->complete();
+		return QString::fromStdString(_data[index.row()]->complete());
 
 
 	return QVariant();
@@ -135,3 +135,4 @@ int ProposalListModel::rowCount(const QModelIndex&) const
 {
 	return _data.size();
 }
+

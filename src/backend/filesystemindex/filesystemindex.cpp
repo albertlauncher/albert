@@ -1,20 +1,14 @@
 #include "filesystemindex.h"
-#include <QSettings>
+#include "settings.h"
+#include "boost/algorithm/string.hpp"
+#include "boost/filesystem.hpp"
 #include <functional>
-
-
-#include <QMimeType>
-#include <QMimeDatabase>
-#include <QDesktopServices>
-#include <QUrl>
+#include <sstream>
 
 //REMOVE
-#include <QDebug>
+#include <iostream>
+#include <boost/timer/timer.hpp>
 
-bool lexicographically (AbstractServiceProvider::AbstractItem*  i, AbstractServiceProvider::AbstractItem* j)
-{
-	return 0 > i->title().compare(j->title(), Qt::CaseInsensitive);
-}
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -25,76 +19,44 @@ bool lexicographically (AbstractServiceProvider::AbstractItem*  i, AbstractServi
  */
 void FileSystemIndex::buildIndex()
 {
-	QSettings conf;
-	qDebug() << "Config:" << conf.fileName();
-	QStringList paths = conf.value(QString::fromLocal8Bit("paths")).toStringList();
+	std::string paths = Settings::instance()->get("file_index_paths");
+	std::cout << paths << std::endl;
+
+	std::vector<std::string> pathList;
+	boost::split(pathList, paths, boost::is_any_of(","), boost::token_compress_on);
 
 	// Define a lambda for recursion
-	std::function<void(const QString& p)> rec_dirsearch = [&] (const QString& p)
+	std::function<void(const boost::filesystem::path &p)> rec_dirsearch = [&] (const boost::filesystem::path &p)
 	{
-		QDir dir(p);
-		dir.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks);
-		_index.push_back(new DirIndexItem(dir));
-
-		// go recursive into subdirs
-		QFileInfoList list = dir.entryInfoList();
-		for ( QFileInfo &fi : list)
+		boost::filesystem::path path(p);
+		boost::filesystem::directory_iterator end_iterator;
+		if ( boost::filesystem::exists(path))
 		{
-			if (fi.isDir())
-				rec_dirsearch(fi.absoluteFilePath());
-			_index.push_back(new FileIndexItem(fi));
+			if (boost::filesystem::is_regular_file(path))
+				_index.push_back(new FileIndexItem(path));
+			if (boost::filesystem::is_directory(path))
+			{
+				_index.push_back(new FileIndexItem(path));
+				for( boost::filesystem::directory_iterator d(path); d != end_iterator; ++d)
+					rec_dirsearch(*d);
+			}
 		}
 	};
 
 	// Finally do this recursion for all paths
-	for ( auto path : paths)
-		rec_dirsearch(path);
 
-	std::sort(_index.begin(), _index.end(), lexicographically);
-	qDebug() << "Found" << _index.size() << "items.";
-}
+	boost::timer::auto_cpu_timer *t = new boost::timer::auto_cpu_timer;
+	for ( std::string &p : pathList)
+		rec_dirsearch(boost::filesystem::path(p));
+	delete t;
 
-/**************************************************************************//**
- * @brief MimeIndex::configWidget
- * @return
- */
-QWidget *FileSystemIndex::configWidget()
-{
-	return new QWidget;
-}
+	t = new boost::timer::auto_cpu_timer;
+	std::sort(_index.begin(), _index.end(), CaseInsensitiveCompare());
+	delete t;
 
-/*****************************************************************************/
-/*****************************************************************************/
-/******************************** DirIndexItem *******************************/
-/*****************************************************************************/
-/**************************************************************************//**
- * @brief FileSystemIndex::DirIndexItem::action
- * @param a
- */
-void FileSystemIndex::DirIndexItem::action(Action a)
-{
-	if (a == Action::Enter || a == Action::Ctrl) {
-		QDesktopServices::openUrl(QUrl("file://" + uri()));
-		return;
-	}
-
-	// else Action::Alt
-	fallbackAction(a);
-
-}
-
-/**************************************************************************//**
- * @brief FileSystemIndex::DirIndexItem::actionText
- * @param a
- * @return
- */
-QString FileSystemIndex::DirIndexItem::actionText(Action a) const
-{
-	if (a == Action::Enter || a == Action::Ctrl)
-		return QString::fromLocal8Bit("Open '%1' in default file browser.").arg(_title);
-
-	// else Action::Alt
-	return QString::fromLocal8Bit("Search for '%1' in web.").arg(_title);
+//	for ( auto &i : _index)
+//		std::cout << i->title() << std::endl;
+	std::cout << "Indexing done. Found " << _index.size() << " items." << std::endl;
 }
 
 /*****************************************************************************/
@@ -107,21 +69,11 @@ QString FileSystemIndex::DirIndexItem::actionText(Action a) const
  */
 void FileSystemIndex::FileIndexItem::action(Action a)
 {
-	if (a == Action::Enter) {
-		pid_t pid = fork();
-		if (pid == 0) {
-			pid_t sid = setsid();
-			if (sid < 0) exit(EXIT_FAILURE);
-			execl("/usr/bin/xdg-open", "xdg-open", uri().toStdString().c_str(), (char *)0);
-			exit(1);
-		}
-		return;
-	}
+	if (a == Action::Enter)
+		return startDetached("xdg-open", _path.string());
 
-	if (a == Action::Ctrl){
-		QDesktopServices::openUrl(QUrl("file://" + uri()));
-		return;
-	}
+	if (a == Action::Ctrl)
+		return startDetached("xdg-open", _path.parent_path().string());
 
 	// else Action::Alt
 	fallbackAction(a);
@@ -132,15 +84,27 @@ void FileSystemIndex::FileIndexItem::action(Action a)
  * @param a
  * @return
  */
-QString FileSystemIndex::FileIndexItem::actionText(Action a) const
+std::string FileSystemIndex::FileIndexItem::actionText(Action a) const
 {
+	std::ostringstream stringStream;
+
 	if (a == Action::Enter)
-		return QString::fromLocal8Bit("Open '%1' with default application.").arg(_title);
+		stringStream << "Open " << _title << " with default application.";
 
 	if (a == Action::Ctrl)
-		return QString::fromLocal8Bit("Open '%1' in default file browser.").arg(_title);
+		stringStream << "Open " << _title << " in default file browser.";
 
 	// else Action::Alt
-	return QString::fromLocal8Bit("Search for '%1' in web.").arg(_title);
+	stringStream << "Search for " << _title << " in web.";
+	return stringStream.str();
+}
+
+/**************************************************************************//**
+ * @brief FileSystemIndex::FileIndexItem::mimeType
+ * @return
+ */
+std::string FileSystemIndex::FileIndexItem::mimeType() const
+{
+	return "";
 }
 

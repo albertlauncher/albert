@@ -36,6 +36,8 @@ protected:
 	Qt::KeyboardModifiers _mods;
 signals:
 	void completion(QString);
+public slots:
+	void reset() override;
 };
 
 #endif // PROPOSALLISTVIEW_H

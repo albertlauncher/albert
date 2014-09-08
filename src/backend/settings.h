@@ -14,32 +14,27 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef PROPOSALLISTMODEL_H
-#define PROPOSALLISTMODEL_H
+#ifndef SETTINGS_H
+#define SETTINGS_H
 
-#include <QAbstractListModel>
-#include "abstractserviceprovider.h"
+#include <map>
+using std::map;
+#include <string>
+using std::string;
 
-
-class ProposalListModel : public QAbstractListModel
+class Settings
 {
-	Q_OBJECT
-
 public:
-	explicit ProposalListModel(QObject *parent = 0);
-	void set(const std::vector<AbstractServiceProvider::AbstractItem*> &d);
-	void clear();
-	void action( const QModelIndex & index);
-	void altAction( const QModelIndex & index);
-	void ctrlAction( const QModelIndex & index);
+	static Settings* instance() noexcept;
+	void load(string path = systemSettings);
+	void save(string path) const;
+	inline string get(string key) const throw (std::out_of_range) { return _settings.at(key); }
 
-	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
 
-protected:
-	int rowCount(const QModelIndex & = QModelIndex()) const override;
-
-	std::vector<AbstractServiceProvider::AbstractItem*> _data;
-
+private:
+	static Settings *_instance;
+	map<string,string> _settings;
+	static const string systemSettings;
 };
 
-#endif // PROPOSALLISTMODEL_H
+#endif // SETTINGS_H

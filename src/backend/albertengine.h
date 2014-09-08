@@ -33,7 +33,7 @@ public:
 	~AlbertEngine();
 
 	void buildIndex();
-	std::vector<AbstractServiceProvider::AbstractItem *> query(const QString &req);
+	std::vector<AbstractServiceProvider::AbstractItem *> query(const std::string &req);
 	static AlbertEngine* instance();
 
 private:

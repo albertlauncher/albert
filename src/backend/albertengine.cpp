@@ -52,7 +52,7 @@ AlbertEngine *AlbertEngine::instance(){
  * @param req
  * @return
  */
-std::vector<AbstractServiceProvider::AbstractItem*> AlbertEngine::query(const QString &req)
+std::vector<AbstractServiceProvider::AbstractItem*> AlbertEngine::query(const std::string &req)
 {
 	_result.clear();
 	for (auto i: _indizes) {

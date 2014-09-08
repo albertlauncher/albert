@@ -18,29 +18,59 @@
 #define ABSTRACTINDEXPROVIDER_H
 
 #include "abstractserviceprovider.h"
+#include <string>
+#include <list>
+#include <locale>
 
 class AbstractIndexProvider : public AbstractServiceProvider
 {
 public:
+
 	class AbstractIndexItem : public AbstractServiceProvider::AbstractItem
 	{
 	public:
 		AbstractIndexItem() = delete;
-		AbstractIndexItem(QString title) : AbstractItem(title) {}
+		AbstractIndexItem(const std::string &title) : AbstractItem(title){}
 		virtual ~AbstractIndexItem(){}
-		virtual QString uri() const = 0;
-//		virtual QString lastAccess() = 0;
+
+		virtual std::string uri() const = 0;
+//		virtual string      lastAccess() = 0;
 	};
+
+
+
+	class CaseInsensitiveCompare
+	{
+		std::locale _myLocale;
+		std::ctype<char> const& myCType;
+	public:
+		CaseInsensitiveCompare( std::locale const& locale = std::locale( "" ) )
+			: _myLocale( locale ), myCType( std::use_facet<std::ctype<char>>( locale ) ){}
+		bool operator()( AbstractIndexItem const* lhs, AbstractIndexItem const* rhs ) const	{
+			return (*this)( lhs->title(), rhs->title() );
+		}
+		bool operator()( std::string const& lhs, std::string const& rhs ) const	{
+			return std::lexicographical_compare(
+				lhs.begin(), lhs.end(),
+				rhs.begin(), rhs.end(),
+				*this);
+		}
+		bool operator()( char lhs, char rhs ) const	{
+			return myCType.tolower(lhs) < myCType.tolower(rhs);
+		}
+	};
+
+
 
 	AbstractIndexProvider(){}
 	virtual ~AbstractIndexProvider(){}
 
-	std::vector<AbstractServiceProvider::AbstractItem *> query(const QString &req) override;
+	std::vector<AbstractServiceProvider::AbstractItem *> query(const std::string &req) override;
 	virtual void buildIndex() = 0;
 
 protected:
 	std::vector<AbstractIndexItem*> _index;
-	std::list<QString> _watchPaths;
+	std::list<std::string> _watchPaths;
 };
 
 #endif // ABSTRACTINDEXPROVIDER_H
