@@ -1,25 +1,24 @@
 #albert {
 	padding: 0px;
 	margin: 0px;
-	border-radius: 5px;
 }
 #frame3 {
-	padding: 10px;
+	padding: 8px;
 	margin: 0px;
-	border-radius: 30px;
+	border-radius: 24px;
 	background-color: rgba(192, 192, 192, 64);
 }
 #frame2 {
-	padding: 10px;
+	padding: 8px;
 	margin: 0px;
-	border-radius: 20px;
+	border-radius: 16px;
 	background-color: rgba(0, 0, 0, 100%);
 }
 #frame1 {
-	padding: 10px;
+	padding: 8px;
 	margin: 0px;
 	spacing: 0px;
-	border-radius: 10px;
+	border-radius: 8px;
 	background-color: #444;
 	width:720px;
 	min-width:720px;
