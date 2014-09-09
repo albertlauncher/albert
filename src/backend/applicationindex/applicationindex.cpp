@@ -21,6 +21,7 @@
 #include <functional>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
 
 //REMOVE
 #include <iostream>
@@ -62,6 +63,8 @@ void ApplicationIndex::buildIndex()
 			}
 			if (boost::filesystem::is_regular_file(path))
 			{
+
+				// Read the entris in the desktopfile
 				std::map<std::string, std::string> desktopfile;
 				std::ifstream file(path.string());
 				if (!file.good())
@@ -75,13 +78,26 @@ void ApplicationIndex::buildIndex()
 					desktopfile[str.substr(0,found)] = str.substr(found+1);
 				}
 
+				// Check if this shall be displayed
+				std::string noDisplay = desktopfile["NoDisplay"];
+				std::transform(noDisplay.begin(), noDisplay.end(), noDisplay.begin(),
+							   std::bind2nd(std::ptr_fun(&std::tolower<char>), Settings::instance()->locale()));
+				if (noDisplay == "true")
+					return;
+
+
+				// Check if this shall be runned in terminal
+				std::string term = desktopfile["Terminal"];
+				std::transform(term.begin(), term.end(), term.begin(),
+							   std::bind2nd(std::ptr_fun(&std::tolower<char>), Settings::instance()->locale()));
+
 				_index.push_back(
 					new ApplicationIndexItem(
 						desktopfile["Name"],
 						(desktopfile["Comment"].empty())?desktopfile["GenericName"]:desktopfile["Comment"],
-						desktopfile["IconName"],
+						desktopfile["Icon"],
 						desktopfile["Exec"],
-						(desktopfile["Terminal"]=="false")?false:true
+						(term=="false")?false:true
 					)
 				);
 			}

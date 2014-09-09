@@ -48,7 +48,7 @@ public:
 
 	AbstractServiceProvider(){}
 	virtual ~AbstractServiceProvider(){}
-	virtual std::vector<AbstractItem*> query(const std::string &req) = 0;
+	virtual void query(const std::string&, std::vector<AbstractItem*>*) = 0;
 };
 
 #endif // ABSTRACTSERVICEPROVIDER_H

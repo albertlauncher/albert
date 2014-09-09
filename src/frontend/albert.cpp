@@ -156,12 +156,11 @@ void AlbertWidget::onHotKeyPressed()
 void AlbertWidget::onTextEdited(const QString & text)
 {
 	if (!text.isEmpty()){
-		const std::vector<AbstractServiceProvider::AbstractItem *> &r = AlbertEngine::instance()->query(text.toStdString());
-		if (!r.empty()) {
-			_proposalListModel->set(r);
-			_proposalListView->show();
-			return;
-		}
+		std::vector<AbstractServiceProvider::AbstractItem *> r;
+		AlbertEngine::instance()->query(text.toStdString(), &r);
+		_proposalListModel->set(r);
+		_proposalListView->show();
+		return;
 	}
 	_proposalListModel->clear();
 	_proposalListView->hide();

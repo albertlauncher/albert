@@ -30,7 +30,7 @@ class AlbertEngine
 {
 public:
 	void buildIndex();
-	std::vector<AbstractServiceProvider::AbstractItem *> query(const std::string &req);
+	void query(const std::string &req, std::vector<AbstractServiceProvider::AbstractItem *> *res);
 	static AlbertEngine* instance();
 
 private:

@@ -29,7 +29,7 @@ AlbertEngine::AlbertEngine()
 {
 	// _websearch =
 	// _calculator =
-	_indizes.push_back(FileIndex::instance());
+//_indizes.push_back(FileIndex::instance());
 	_indizes.push_back(ApplicationIndex::instance());
 }
 
@@ -55,15 +55,12 @@ AlbertEngine *AlbertEngine::instance(){
  * @param req
  * @return
  */
-std::vector<AbstractServiceProvider::AbstractItem*> AlbertEngine::query(const std::string &req)
+void AlbertEngine::query(const std::string &req, std::vector<AbstractServiceProvider::AbstractItem*> *res)
 {
-	_result.clear();
-	for (auto i: _indizes) {
-		const std::vector<AbstractServiceProvider::AbstractItem *> &r = i->query(req);
-		_result.insert(_result.end(), r.begin(), r.end());
-	}
+	for (auto i: _indizes)
+		i->query(req, res);
+
 	std::cout << "Search finished. Found " << _result.size() << " items." << std::endl;
-	return _result;
 }
 
 /**********************************************************************//**

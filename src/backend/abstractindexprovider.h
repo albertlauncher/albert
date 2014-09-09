@@ -82,7 +82,7 @@ public:
 	AbstractIndexProvider(){}
 	virtual ~AbstractIndexProvider(){}
 
-	std::vector<AbstractServiceProvider::AbstractItem *> query(const std::string &req) override;
+	void query(const std::string&, std::vector<AbstractItem*>*) override;
 	virtual void buildIndex() = 0;
 
 protected:
