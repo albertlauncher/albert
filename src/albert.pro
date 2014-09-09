@@ -47,9 +47,14 @@ RESOURCES += albert.qrc
 
 CONFIG += c++11
 
-LIBS += -lX11 -lboost_system -lboost_filesystem -lboost_timer
+LIBS += -lX11 \
+		-lboost_system \
+		-lboost_filesystem \
+		-lboost_timer \
+		-lmagic
 
-#DEFINES += QT_NO_CAST_FROM_ASCII \
-			 #QT_NO_CAST_TO_ASCII
+DEFINES += FRONTEND_QT \
+			QT_NO_CAST_FROM_ASCII \
+			QT_NO_CAST_TO_ASCII
 
 QMAKE_CXXFLAGS_WARN_ON += -Werror

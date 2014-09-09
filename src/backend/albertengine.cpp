@@ -16,6 +16,7 @@
 
 #include "albertengine.h"
 #include "filesystemindex/filesystemindex.h"
+#include <iostream>
 
 AlbertEngine* AlbertEngine::_instance = nullptr;
 
@@ -27,7 +28,7 @@ AlbertEngine::AlbertEngine()
 {
 	// _websearch =
 	// _calculator =
-	_indizes.push_back(new FileSystemIndex);
+	_indizes.push_back(FileSystemIndex::instance());
 }
 
 /**********************************************************************//**
@@ -59,6 +60,7 @@ std::vector<AbstractServiceProvider::AbstractItem*> AlbertEngine::query(const st
 		const std::vector<AbstractServiceProvider::AbstractItem *> &r = i->query(req);
 		_result.insert(_result.end(), r.begin(), r.end());
 	}
+	std::cout << "Search finished. Found " << _result.size() << " items." << std::endl;
 	return _result;
 }
 

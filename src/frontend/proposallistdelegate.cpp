@@ -38,8 +38,8 @@ void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewIte
 	//	EnterText = Qt::UserRole;
 	//	AltText  = Qt::UserRole+1;
 	//	CtrlText  = Qt::UserRole+2;
-	//	InfoText = Qt::UserRole+3;
-	//	IconName = Qt::UserRole+4;
+	//	InfoText  = Qt::UserRole+3;
+	//	Completion = Qt::UserRole+4;
 
 	QString elided;
 	QFont font = option.font;
@@ -81,9 +81,8 @@ void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewIte
 	}
 
 	// Draw icon
-	painter->drawPixmap(option.rect.x(),
-						option.rect.y(),
-						QIcon::fromTheme(index.data(Qt::UserRole+4).toString()).pixmap(48,48));
+	QIcon i = index.data(Qt::DecorationRole).value<QIcon>();
+	painter->drawPixmap(option.rect.x(), option.rect.y(), i.pixmap(48,48));
 
 	// Draw name
 	font.setPixelSize(32);

@@ -33,7 +33,7 @@ public:
 		virtual ~AbstractItem(){}
 
 		inline  std::string  title() const {return _title;}
-		virtual std::string  mimeType() const = 0;
+		virtual std::string  iconName() const = 0;
 		virtual std::string  complete() const = 0;
 		virtual void         action(Action) = 0;
 		virtual std::string  actionText(Action) const = 0;

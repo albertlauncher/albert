@@ -4,12 +4,11 @@
 #include "abstractindexprovider.h"
 #include "boost/filesystem.hpp"
 #include <string>
+#include <magic.h>
 
-
-#include <QFileInfo>
-#include <QDir>
-#include <QMimeType>
+#ifdef FRONTEND_QT
 #include <QMimeDatabase>
+#endif
 
 class FileSystemIndex : public AbstractIndexProvider
 {
@@ -24,19 +23,30 @@ public:
 		inline std::string complete() const override {return _path.filename().string();}
 		inline std::string infoText() const override {return _path.string();}
 		inline std::string uri() const override {return _path.string();}
+		std::chrono::system_clock::time_point lastAccess() const override {return _lastAccess;}
 		void               action(Action) override;
 		std::string        actionText(Action) const override;
-		std::string        mimeType() const override;
+		std::string        iconName() const override;
 
 	protected:
 		boost::filesystem::path _path;
+		std::chrono::system_clock::time_point _lastAccess;
 	};
 
 
-	FileSystemIndex() {}
-	~FileSystemIndex() {}
+	static FileSystemIndex* instance();
+
+private:
+	FileSystemIndex();
+	~FileSystemIndex();
 
 	void buildIndex() override;
-};
 
+	static FileSystemIndex *_instance;
+//	magic_t _magic_cookie;
+
+#ifdef FRONTEND_QT
+	QMimeDatabase mimeDb;
+#endif
+};
 #endif // FILESYSTEMINDEX_H

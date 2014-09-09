@@ -21,6 +21,7 @@
 #include <string>
 #include <list>
 #include <locale>
+#include <chrono>
 
 class AbstractIndexProvider : public AbstractServiceProvider
 {
@@ -34,10 +35,9 @@ public:
 		virtual ~AbstractIndexItem(){}
 
 		virtual std::string uri() const = 0;
+		virtual std::chrono::system_clock::time_point lastAccess() const = 0;
 //		virtual string      lastAccess() = 0;
 	};
-
-
 
 	class CaseInsensitiveCompare
 	{
@@ -49,6 +49,12 @@ public:
 		bool operator()( AbstractIndexItem const* lhs, AbstractIndexItem const* rhs ) const	{
 			return (*this)( lhs->title(), rhs->title() );
 		}
+		bool operator()( std::string const& lhs, AbstractIndexItem const* rhs ) const	{
+			return (*this)( lhs, rhs->title() );
+		}
+		bool operator()( AbstractIndexItem const* lhs, std::string const& rhs ) const	{
+			return (*this)( lhs->title(), rhs );
+		}
 		bool operator()( std::string const& lhs, std::string const& rhs ) const	{
 			return std::lexicographical_compare(
 				lhs.begin(), lhs.end(),
@@ -57,6 +63,33 @@ public:
 		}
 		bool operator()( char lhs, char rhs ) const	{
 			return myCType.tolower(lhs) < myCType.tolower(rhs);
+		}
+	};
+	class CaseInsensitiveComparePrefix
+	{
+		std::locale _myLocale;
+		std::ctype<char> const& myCType;
+	public:
+		CaseInsensitiveComparePrefix( std::locale const& locale = std::locale( "" ) )
+			: _myLocale( locale ), myCType( std::use_facet<std::ctype<char>>( locale ) ){}
+		bool operator()( AbstractIndexItem const* pre, AbstractIndexItem const* rhs ) const	{
+			return (*this)( pre->title(), rhs->title() );
+		}
+		bool operator()( std::string const& pre, AbstractIndexItem const* rhs ) const	{
+			return (*this)( pre, rhs->title() );
+		}
+		bool operator()( AbstractIndexItem const* pre, std::string const& rhs ) const	{
+			return (*this)( pre->title(), rhs );
+		}
+		bool operator()( std::string const& pre, std::string const& rhs ) const	{
+			size_t m = std::min(pre.length(), rhs.length());
+			return std::lexicographical_compare(
+				pre.begin(), pre.begin()+m,
+				rhs.begin(), rhs.begin()+m,
+				*this);
+		}
+		bool operator()( char pre, char rhs ) const	{
+			return myCType.tolower(pre) < myCType.tolower(rhs);
 		}
 	};
 

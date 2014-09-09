@@ -16,8 +16,8 @@
 
 #include "proposallistmodel.h"
 
-
-
+#include <QDebug>
+#include <QIcon>
 
 
 
@@ -92,17 +92,17 @@ QVariant ProposalListModel::data(const QModelIndex &index, int role) const
 	if (!index.isValid())
 		return QVariant();
 
-
-
 	//	EnterText = Qt::UserRole;
 	//	AltText  = Qt::UserRole+1;
 	//	CtrlText  = Qt::UserRole+2;
 	//	InfoText  = Qt::UserRole+3;
-	//	IconName = Qt::UserRole+4;
-	//	Completion = Qt::UserRole+5;
+	//	Completion = Qt::UserRole+4;
 
 	if (role == Qt::DisplayRole)
 		return QString::fromStdString(_data[index.row()]->title());
+
+	if (role == Qt::DecorationRole)
+		return QIcon::fromTheme(QString::fromStdString(_data[index.row()]->iconName()));
 
 	if (role == Qt::UserRole)
 		return QString::fromStdString(_data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Enter));
@@ -117,9 +117,6 @@ QVariant ProposalListModel::data(const QModelIndex &index, int role) const
 		return QString::fromStdString(_data[index.row()]->infoText());
 
 	if (role == Qt::UserRole+4)
-		return QString::fromStdString(_data[index.row()]->mimeType());
-
-	if (role == Qt::UserRole+5)
 		return QString::fromStdString(_data[index.row()]->complete());
 
 

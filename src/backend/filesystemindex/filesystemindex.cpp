@@ -9,14 +9,48 @@
 #include <iostream>
 #include <boost/timer/timer.hpp>
 
+FileSystemIndex* FileSystemIndex::_instance = nullptr;
 
-/*****************************************************************************/
-/*****************************************************************************/
-/*********************************** MimeIndex *******************************/
-/*****************************************************************************/
+
+/**************************************************************************//**
+ * @brief FileSystemIndex::instance
+ * @return
+ */
+FileSystemIndex *FileSystemIndex::instance(){
+	if (_instance == nullptr)
+		_instance = new FileSystemIndex;
+	return _instance;
+}
+
+/**************************************************************************//**
+ * @brief FileSystemIndex::FileSystemIndex
+ */
+FileSystemIndex::FileSystemIndex()
+{
+//	magic_t _magic_cookie = magic_open(MAGIC_MIME);
+//	if (_magic_cookie == NULL) {
+//		std::cout << "Unable to initialize magic library" << std::endl;
+//	}
+
+//	printf("Loading default magic database\n");
+//	if (magic_load(_magic_cookie, NULL) != 0) {
+//		std::cout << "Cannot load magic database: " << magic_error(_magic_cookie) << std::endl;
+//		magic_close(_magic_cookie);
+//	}
+}
+
+/**************************************************************************//**
+ * @brief FileSystemIndex::~FileSystemIndex
+ */
+FileSystemIndex::~FileSystemIndex()
+{
+//	magic_close(_magic_cookie);
+
+}
 /**************************************************************************//**
  * @brief FileSystemIndex::buildIndex
  */
+
 void FileSystemIndex::buildIndex()
 {
 	std::string paths = Settings::instance()->get("file_index_paths");
@@ -69,6 +103,8 @@ void FileSystemIndex::buildIndex()
  */
 void FileSystemIndex::FileIndexItem::action(Action a)
 {
+	_lastAccess = std::chrono::system_clock::now();
+
 	if (a == Action::Enter)
 		return startDetached("xdg-open", _path.string());
 
@@ -88,14 +124,18 @@ std::string FileSystemIndex::FileIndexItem::actionText(Action a) const
 {
 	std::ostringstream stringStream;
 
-	if (a == Action::Enter)
-		stringStream << "Open " << _title << " with default application.";
+	if (a == Action::Enter){
+		stringStream << "Open '" << _title << "' with default application.";
+		return stringStream.str();
+	}
 
-	if (a == Action::Ctrl)
-		stringStream << "Open " << _title << " in default file browser.";
+	if (a == Action::Ctrl){
+		stringStream << "Open '" << _title << "' in default file browser.";
+		return stringStream.str();
+	}
 
 	// else Action::Alt
-	stringStream << "Search for " << _title << " in web.";
+	stringStream << "Search for '" << _title << "' in web.";
 	return stringStream.str();
 }
 
@@ -103,8 +143,28 @@ std::string FileSystemIndex::FileIndexItem::actionText(Action a) const
  * @brief FileSystemIndex::FileIndexItem::mimeType
  * @return
  */
-std::string FileSystemIndex::FileIndexItem::mimeType() const
+std::string FileSystemIndex::FileIndexItem::iconName() const
 {
-	return "";
-}
+#ifdef FRONTEND_QT
+	return FileSystemIndex::instance()->mimeDb.mimeTypeForFile(QString::fromStdString(_path.string())).iconName().toStdString();
+#endif
 
+//	std::string s("xdg-mime query filetype ");
+//	s.append(_path.string());
+//	FILE* pipe = popen(s.c_str(), "r");
+//	if (!pipe)
+//		return "ERROR";
+
+//	s.clear();
+//	while(!feof(pipe)) {
+//		char buffer[128];
+//		if(fgets(buffer, 128, pipe) != NULL)
+//			s += buffer;
+//	}
+//	pclose(pipe);
+//	return s
+//--------------------------------------------------------------------------...
+	//	std::string s(magic_file(FileSystemIndex::instance()->_magic_cookie, _path.c_str()));
+//	return s;
+//--------------------------------------------------------------------------...
+}

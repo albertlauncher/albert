@@ -29,14 +29,13 @@ using std::map;
 class AlbertEngine
 {
 public:
-	explicit AlbertEngine();
-	~AlbertEngine();
-
 	void buildIndex();
 	std::vector<AbstractServiceProvider::AbstractItem *> query(const std::string &req);
 	static AlbertEngine* instance();
 
 private:
+	explicit AlbertEngine();
+	~AlbertEngine();
 	static AlbertEngine *_instance;
 	vector<AbstractServiceProvider::AbstractItem*> _result;
 	AbstractServiceProvider        *_websearch;
