@@ -1,4 +1,20 @@
-#include "filesystemindex.h"
+// albert - a simple application launcher for linux
+// Copyright (C) 2014 Manuel Schneider
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#include "fileindex.h"
 #include "settings.h"
 #include "boost/algorithm/string.hpp"
 #include "boost/filesystem.hpp"
@@ -9,23 +25,22 @@
 #include <iostream>
 #include <boost/timer/timer.hpp>
 
-FileSystemIndex* FileSystemIndex::_instance = nullptr;
-
+FileIndex* FileIndex::_instance = nullptr;
 
 /**************************************************************************//**
- * @brief FileSystemIndex::instance
+ * @brief FileIndex::instance
  * @return
  */
-FileSystemIndex *FileSystemIndex::instance(){
+FileIndex *FileIndex::instance(){
 	if (_instance == nullptr)
-		_instance = new FileSystemIndex;
+		_instance = new FileIndex;
 	return _instance;
 }
 
 /**************************************************************************//**
- * @brief FileSystemIndex::FileSystemIndex
+ * @brief FileIndex::FileIndex
  */
-FileSystemIndex::FileSystemIndex()
+FileIndex::FileIndex()
 {
 //	magic_t _magic_cookie = magic_open(MAGIC_MIME);
 //	if (_magic_cookie == NULL) {
@@ -40,22 +55,20 @@ FileSystemIndex::FileSystemIndex()
 }
 
 /**************************************************************************//**
- * @brief FileSystemIndex::~FileSystemIndex
+ * @brief FileIndex::~FileIndex
  */
-FileSystemIndex::~FileSystemIndex()
+FileIndex::~FileIndex()
 {
 //	magic_close(_magic_cookie);
 
 }
 /**************************************************************************//**
- * @brief FileSystemIndex::buildIndex
+ * @brief FileIndex::buildIndex
  */
-
-void FileSystemIndex::buildIndex()
+void FileIndex::buildIndex()
 {
 	std::string paths = Settings::instance()->get("file_index_paths");
-	std::cout << paths << std::endl;
-
+	std::cout << "[FileIndex] Looking in: " << paths << std::endl;
 	std::vector<std::string> pathList;
 	boost::split(pathList, paths, boost::is_any_of(","), boost::token_compress_on);
 
@@ -64,7 +77,7 @@ void FileSystemIndex::buildIndex()
 	{
 		boost::filesystem::path path(p);
 		boost::filesystem::directory_iterator end_iterator;
-		if ( boost::filesystem::exists(path))
+		if ( boost::filesystem::exists(path) && !boost::filesystem::is_symlink(path) && p.filename().c_str()[0] != '.')
 		{
 			if (boost::filesystem::is_regular_file(path))
 				_index.push_back(new FileIndexItem(path));
@@ -90,7 +103,7 @@ void FileSystemIndex::buildIndex()
 
 //	for ( auto &i : _index)
 //		std::cout << i->title() << std::endl;
-	std::cout << "Indexing done. Found " << _index.size() << " items." << std::endl;
+	std::cout << "[FileIndex] Indexing done. Found " << _index.size() << " items." << std::endl;
 }
 
 /*****************************************************************************/
@@ -98,10 +111,10 @@ void FileSystemIndex::buildIndex()
 /******************************* FileIndexItem *******************************/
 /*****************************************************************************/
 /**************************************************************************//**
- * @brief FileSystemIndex::FileIndexItem::action
+ * @brief FileIndex::FileIndexItem::action
  * @param a
  */
-void FileSystemIndex::FileIndexItem::action(Action a)
+void FileIndex::FileIndexItem::action(Action a)
 {
 	_lastAccess = std::chrono::system_clock::now();
 
@@ -116,11 +129,11 @@ void FileSystemIndex::FileIndexItem::action(Action a)
 }
 
 /**************************************************************************//**
- * @brief FileSystemIndex::FileIndexItem::actionText
+ * @brief FileIndex::FileIndexItem::actionText
  * @param a
  * @return
  */
-std::string FileSystemIndex::FileIndexItem::actionText(Action a) const
+std::string FileIndex::FileIndexItem::actionText(Action a) const
 {
 	std::ostringstream stringStream;
 
@@ -140,13 +153,13 @@ std::string FileSystemIndex::FileIndexItem::actionText(Action a) const
 }
 
 /**************************************************************************//**
- * @brief FileSystemIndex::FileIndexItem::mimeType
+ * @brief FileIndex::FileIndexItem::iconName
  * @return
  */
-std::string FileSystemIndex::FileIndexItem::iconName() const
+std::string FileIndex::FileIndexItem::iconName() const
 {
 #ifdef FRONTEND_QT
-	return FileSystemIndex::instance()->mimeDb.mimeTypeForFile(QString::fromStdString(_path.string())).iconName().toStdString();
+	return FileIndex::instance()->mimeDb.mimeTypeForFile(QString::fromStdString(_path.string())).iconName().toStdString();
 #endif
 
 //	std::string s("xdg-mime query filetype ");
@@ -164,7 +177,7 @@ std::string FileSystemIndex::FileIndexItem::iconName() const
 //	pclose(pipe);
 //	return s
 //--------------------------------------------------------------------------...
-	//	std::string s(magic_file(FileSystemIndex::instance()->_magic_cookie, _path.c_str()));
+	//	std::string s(magic_file(FileIndex::instance()->_magic_cookie, _path.c_str()));
 //	return s;
 //--------------------------------------------------------------------------...
 }

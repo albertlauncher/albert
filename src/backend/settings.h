@@ -18,23 +18,21 @@
 #define SETTINGS_H
 
 #include <map>
-using std::map;
 #include <string>
-using std::string;
 
 class Settings
 {
 public:
 	static Settings* instance() noexcept;
-	void load(string path = systemSettings);
-	void save(string path) const;
-	inline string get(string key) const throw (std::out_of_range) { return _settings.at(key); }
+	void load(std::string path = systemSettings);
+	void save(std::string path) const;
+	inline std::string get(std::string key) const throw (std::out_of_range) { return _settings.at(key); }
 
 
 private:
 	static Settings *_instance;
-	map<string,string> _settings;
-	static const string systemSettings;
+	std::map<std::string,std::string> _settings;
+	static const std::string systemSettings;
 };
 
 #endif // SETTINGS_H

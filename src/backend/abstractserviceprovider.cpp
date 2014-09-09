@@ -37,10 +37,8 @@ void AbstractServiceProvider::AbstractItem::startDetached(std::string cmd, std::
 	pid_t pid = fork();
 	if (pid == 0) {
 		pid_t sid = setsid();
-		if (sid < 0) exit(EXIT_FAILURE);
-		std::string cmd_p("/usr/bin/");
-		cmd_p.append(cmd);
-		execl(cmd_p.c_str(), cmd.c_str(), param.c_str(), (char *)0);
+		if (sid < 0) exit(EXIT_FAILURE);         // TODO hier wietermachen
+		execl(cmd.c_str(), cmd.c_str(), param.c_str(), (char *)0);
 		exit(1);
 	}
 }

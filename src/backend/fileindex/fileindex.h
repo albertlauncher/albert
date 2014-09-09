@@ -1,5 +1,21 @@
-#ifndef FILESYSTEMINDEX_H
-#define FILESYSTEMINDEX_H
+// albert - a simple application launcher for linux
+// Copyright (C) 2014 Manuel Schneider
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#ifndef FILEINDEX_H
+#define FILEINDEX_H
 
 #include "abstractindexprovider.h"
 #include "boost/filesystem.hpp"
@@ -10,7 +26,7 @@
 #include <QMimeDatabase>
 #endif
 
-class FileSystemIndex : public AbstractIndexProvider
+class FileIndex : public AbstractIndexProvider
 {
 public:
 	class FileIndexItem : public AbstractIndexProvider::AbstractIndexItem
@@ -33,20 +49,18 @@ public:
 		std::chrono::system_clock::time_point _lastAccess;
 	};
 
-
-	static FileSystemIndex* instance();
+	static FileIndex* instance();
 
 private:
-	FileSystemIndex();
-	~FileSystemIndex();
+	FileIndex();
+	~FileIndex();
 
 	void buildIndex() override;
 
-	static FileSystemIndex *_instance;
+	static FileIndex *_instance;
 //	magic_t _magic_cookie;
-
 #ifdef FRONTEND_QT
 	QMimeDatabase mimeDb;
 #endif
 };
-#endif // FILESYSTEMINDEX_H
+#endif // FILEINDEX_H

@@ -17,18 +17,19 @@
 #include "settings.h"
 #include <fstream>
 #include <iostream>
+#include <string>
 
 
 //REMOVE
 #include <QDebug>
 
 Settings* Settings::_instance= nullptr;
-const string Settings::systemSettings = "/etc/albert/config";
+const std::string Settings::systemSettings = "/etc/albert/config";
 
 /**************************************************************************//**
  * @brief Settings::load
  */
-void Settings::load(string path)
+void Settings::load(std::string path)
 {
 	std::ifstream file(path);
 	if (!file.good())
@@ -37,21 +38,21 @@ void Settings::load(string path)
 	while (std::getline(file, str))
 	{
 		std::size_t found = str.find_first_of('=');
-		if (found == string::npos || found == str.length())
+		if (found == std::string::npos || found == str.length())
 			continue;
-		_settings.insert(std::pair<string,string>(str.substr(0,found).c_str(),str.substr(found+1)));
+		_settings.insert(std::pair<std::string,std::string>(str.substr(0,found),str.substr(found+1)));
 	}
 }
 
 /**************************************************************************//**
  * @brief Settings::save
  */
-void Settings::save(string path) const
+void Settings::save(std::string path) const
 {
 	std::ofstream file(path);
 	if (!file.good())
 		return;
-	for (std::pair<string,string> i : _settings)
+	for (std::pair<std::string,std::string> i : _settings)
 		file << i.first << "=" << i.second << std::endl;
 }
 
