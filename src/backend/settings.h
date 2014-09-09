@@ -19,6 +19,7 @@
 
 #include <map>
 #include <string>
+#include <locale>
 
 class Settings
 {
@@ -27,11 +28,17 @@ public:
 	void load(std::string path = systemSettings);
 	void save(std::string path) const;
 	inline std::string get(std::string key) const throw (std::out_of_range) { return _settings.at(key); }
+	inline std::locale const& locale() const { return _locale; }
 
 
 private:
-	static Settings *_instance;
+	Settings() : _locale(std::locale("")) {}
+	~Settings() {}
+
 	std::map<std::string,std::string> _settings;
+	std::locale _locale;
+
+	static Settings *_instance;
 	static const std::string systemSettings;
 };
 

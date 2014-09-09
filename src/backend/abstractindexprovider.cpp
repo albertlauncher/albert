@@ -18,12 +18,13 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
+#include <settings.h>
 
 std::vector<AbstractServiceProvider::AbstractItem*> AbstractIndexProvider::query(const std::string &req)
 {
 	std::vector<AbstractIndexItem *>::const_iterator lb, ub;
-	lb =  std::lower_bound (_index.cbegin(), _index.cend(), req, CaseInsensitiveCompare());
-	ub =  std::upper_bound (_index.cbegin(), _index.cend(), req, CaseInsensitiveComparePrefix());
+	lb =  std::lower_bound (_index.cbegin(), _index.cend(), req, CaseInsensitiveCompare(Settings::instance()->locale()));
+	ub =  std::upper_bound (_index.cbegin(), _index.cend(), req, CaseInsensitiveComparePrefix(Settings::instance()->locale()));
 	return std::vector<AbstractItem *>(lb, ub);
 }
 

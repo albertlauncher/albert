@@ -56,6 +56,7 @@ void Settings::save(std::string path) const
 		file << i.first << "=" << i.second << std::endl;
 }
 
+
 /**************************************************************************//**
  * @brief Settings::instance
  * @return

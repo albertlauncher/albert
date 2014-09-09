@@ -91,7 +91,7 @@ void ApplicationIndex::buildIndex()
 	// Finally do this recursion for all paths
 	for ( std::string &p : pathList)
 		rec_dirsearch(boost::filesystem::path(p));
-	std::sort(_index.begin(), _index.end(), CaseInsensitiveCompare());
+	std::sort(_index.begin(), _index.end(), CaseInsensitiveCompare(Settings::instance()->locale()));
 
 	std::cout << "[ApplicationIndex] Indexing done. Found " << _index.size() << " apps." << std::endl;
 }

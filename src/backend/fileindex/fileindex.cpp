@@ -98,7 +98,7 @@ void FileIndex::buildIndex()
 	delete t;
 
 	t = new boost::timer::auto_cpu_timer;
-	std::sort(_index.begin(), _index.end(), CaseInsensitiveCompare());
+	std::sort(_index.begin(), _index.end(), CaseInsensitiveCompare(Settings::instance()->locale()));
 	delete t;
 
 //	for ( auto &i : _index)
