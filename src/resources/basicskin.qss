@@ -26,11 +26,11 @@
 }
 
 #inputline {
+	color : #aaa;
 	padding: 2px;
 	margin: 0px;
 	border-radius: 5px;
 	font:  48px "Ubuntu";
-	color : #0080ff;
 	background-color: #3a3a3a;
 	border:none;
 }
@@ -38,10 +38,10 @@
 /* * LIST-WIDGET-ITEM-WIDGET * */
 
 #ProposalListWidget {
+	color: #aaa;
 	padding: 0px;
 	margin: 0px;
 	spacing: 0px;
-	color: #0080ff;
 	height:32px;
 	font: 32px "Ubuntu";
 	border:none;

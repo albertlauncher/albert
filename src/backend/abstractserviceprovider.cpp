@@ -18,28 +18,22 @@
 #include <sstream>
 #include <unistd.h>
 
-void AbstractServiceProvider::AbstractItem::fallbackAction(AbstractServiceProvider::AbstractItem::Action) const
+void AbstractServiceProvider::AbstractItem::fallbackAction() const
 {
 	std::string url("https://www.google.de/search?q=");
 	url.append(_title);
-	startDetached("xdg-open", url);
+	pid_t pid = fork();
+	if (pid == 0) {
+		pid_t sid = setsid();
+		if (sid < 0) exit(EXIT_FAILURE);
+		execl("/usr/bin/xdg-open", "xdg-open", url.c_str(), (char *)0);
+		exit(1);
+	}
 }
 
-std::string AbstractServiceProvider::AbstractItem::fallbackActionText(AbstractServiceProvider::AbstractItem::Action) const
+std::string AbstractServiceProvider::AbstractItem::fallbackActionText() const
 {
 	std::ostringstream stringStream;
 	stringStream << "Search for " << _title << " in the web.";
 	return stringStream.str();
 }
-
-void AbstractServiceProvider::AbstractItem::startDetached(std::string cmd, std::string param)
-{
-	pid_t pid = fork();
-	if (pid == 0) {
-		pid_t sid = setsid();
-		if (sid < 0) exit(EXIT_FAILURE);         // TODO hier wietermachen
-		execl(cmd.c_str(), cmd.c_str(), param.c_str(), (char *)0);
-		exit(1);
-	}
-}
-

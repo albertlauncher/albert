@@ -22,6 +22,7 @@
 #include <sstream>
 #include <fstream>
 #include <algorithm>
+#include <unistd.h>
 
 //REMOVE
 #include <iostream>
@@ -91,12 +92,20 @@ void ApplicationIndex::buildIndex()
 				std::transform(term.begin(), term.end(), term.begin(),
 							   std::bind2nd(std::ptr_fun(&std::tolower<char>), Settings::instance()->locale()));
 
+				// Strip every desktop file params
+				std::string exec = desktopfile["Exec"];
+				size_t d = exec.find_first_of('%');
+				if (d != std::string::npos){
+					d = exec.find_first_of(' ');
+					exec.resize(d);
+				}
+
 				_index.push_back(
 					new ApplicationIndexItem(
 						desktopfile["Name"],
 						(desktopfile["Comment"].empty())?desktopfile["GenericName"]:desktopfile["Comment"],
 						desktopfile["Icon"],
-						desktopfile["Exec"],
+						exec,
 						(term=="false")?false:true
 					)
 				);
@@ -122,16 +131,38 @@ void ApplicationIndex::buildIndex()
  */
 void ApplicationIndex::ApplicationIndexItem::action(Action a)
 {
-//	_lastAccess = std::chrono::system_clock::now();
+	//	_lastAccess = std::chrono::system_clock::now();
 
-	if (a == Action::Enter)
-		return startDetached(_exec, "");
-
-	if (a == Action::Ctrl)
-		return startDetached(_exec, "");
-
-	// else Action::Alt
-	fallbackAction(a);
+	pid_t pid;
+	switch (a) {
+	case Action::Enter:
+		pid = fork();
+		if (pid == 0) {
+			pid_t sid = setsid();
+			if (sid < 0) exit(EXIT_FAILURE);
+			if (_term)
+				execlp("konsole", "konsole" , "-e", _exec.c_str(), (char *)0);
+			else
+				execlp(_exec.c_str(), _exec.c_str(), (char *)0);
+			exit(1);
+		}
+		break;
+	case Action::Ctrl:
+		pid = fork();
+		if (pid == 0) {
+			pid_t sid = setsid();
+			if (sid < 0) exit(EXIT_FAILURE);
+			if (_term)
+				execlp("konsole", "konsole" , "-e", _exec.c_str(), (char *)0);
+			else
+				execlp(_exec.c_str(), _exec.c_str(), (char *)0);
+			exit(1);
+		}
+		break;
+	case Action::Alt:
+		fallbackAction();
+		break;
+	}
 }
 
 /**************************************************************************//**
@@ -142,19 +173,22 @@ void ApplicationIndex::ApplicationIndexItem::action(Action a)
 std::string ApplicationIndex::ApplicationIndexItem::actionText(Action a) const
 {
 	std::ostringstream stringStream;
-
-	if (a == Action::Enter){
+	switch (a) {
+	case Action::Enter:
 		stringStream << "Start '" << _title << "'.";
 		return stringStream.str();
-	}
-
-	if (a == Action::Ctrl){
+		break;
+	case Action::Ctrl:
 		stringStream << "Start '" << _title << "' as root.";
 		return stringStream.str();
+		break;
+	case Action::Alt:
+		stringStream << "Search for '" << _title << "' in web.";
+		return stringStream.str();
+		break;
+	default: // Will never happen
+		return stringStream.str();
+		break;
 	}
-
-	// else Action::Alt
-	stringStream << "Search for '" << _title << "' in web.";
-	return stringStream.str();
 }
 

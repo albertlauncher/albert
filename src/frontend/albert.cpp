@@ -198,14 +198,14 @@ bool AlbertWidget::eventFilter(QObject *obj, QEvent *event)
 		this->hide();
 		return true;
 	}
-#undef KeyPress
-	if (event->type() == QEvent::KeyPress)
-	{
-		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-		// Confirmation
-		if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter)
-			this->hide();
-	}
+//#undef KeyPress
+//	if (event->type() == QEvent::KeyPress)
+//	{
+//		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+//		// Confirmation
+//		if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter)
+//			this->hide();
+//	}
 	return QObject::eventFilter(obj, event); // Unhandled events are passed to the base class
 }
 

@@ -20,6 +20,7 @@
 #include "boost/filesystem.hpp"
 #include <functional>
 #include <sstream>
+#include <unistd.h>
 
 //REMOVE
 #include <iostream>
@@ -117,15 +118,30 @@ void FileIndex::buildIndex()
 void FileIndex::FileIndexItem::action(Action a)
 {
 	_lastAccess = std::chrono::system_clock::now();
-
-	if (a == Action::Enter)
-		return startDetached("xdg-open", _path.string());
-
-	if (a == Action::Ctrl)
-		return startDetached("xdg-open", _path.parent_path().string());
-
-	// else Action::Alt
-	fallbackAction(a);
+	pid_t pid;
+	switch (a) {
+	case Action::Enter:
+		pid = fork();
+		if (pid == 0) {
+			pid_t sid = setsid();
+			if (sid < 0) exit(EXIT_FAILURE);
+			execl("/usr/bin/xdg-open", "xdg-open", _path.c_str(), (char *)0);
+			exit(1);
+		}
+		break;
+	case Action::Ctrl:
+		pid = fork();
+		if (pid == 0) {
+			pid_t sid = setsid();
+			if (sid < 0) exit(EXIT_FAILURE);
+			execl("/usr/bin/xdg-open", "xdg-open", _path.parent_path().c_str(), (char *)0);
+			exit(1);
+		}
+		break;
+	case Action::Alt:
+		fallbackAction();
+		break;
+	}
 }
 
 /**************************************************************************//**
@@ -136,20 +152,23 @@ void FileIndex::FileIndexItem::action(Action a)
 std::string FileIndex::FileIndexItem::actionText(Action a) const
 {
 	std::ostringstream stringStream;
-
-	if (a == Action::Enter){
+	switch (a) {
+	case Action::Enter:
 		stringStream << "Open '" << _title << "' with default application.";
 		return stringStream.str();
-	}
-
-	if (a == Action::Ctrl){
+		break;
+	case Action::Ctrl:
 		stringStream << "Open '" << _title << "' in default file browser.";
 		return stringStream.str();
+		break;
+	case Action::Alt:
+		stringStream << "Search for '" << _title << "' in web.";
+		return stringStream.str();
+		break;
+	default: // Will never happen
+		return stringStream.str();
+		break;
 	}
-
-	// else Action::Alt
-	stringStream << "Search for '" << _title << "' in web.";
-	return stringStream.str();
 }
 
 /**************************************************************************//**

@@ -38,12 +38,11 @@ public:
 		virtual void         action(Action) = 0;
 		virtual std::string  actionText(Action) const = 0;
 		virtual std::string  infoText() const = 0;
-		void                 fallbackAction(Action) const;
-		std::string          fallbackActionText(Action) const;
+		void                 fallbackAction() const;
+		std::string          fallbackActionText() const;
 
 	protected:
 		const std::string _title;
-		static void startDetached(std::string cmd, std::string param);
 	};
 
 	AbstractServiceProvider(){}
