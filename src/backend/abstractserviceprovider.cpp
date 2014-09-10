@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "abstractserviceprovider.h"
-#include <sstream>
 #include <unistd.h>
 
 void AbstractServiceProvider::AbstractItem::fallbackAction() const
@@ -33,7 +32,5 @@ void AbstractServiceProvider::AbstractItem::fallbackAction() const
 
 std::string AbstractServiceProvider::AbstractItem::fallbackActionText() const
 {
-	std::ostringstream stringStream;
-	stringStream << "Search for " << _title << " in the web.";
-	return stringStream.str();
+	return "Search for  '" + _title + "' in the web";
 }

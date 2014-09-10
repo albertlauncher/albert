@@ -19,7 +19,6 @@
 #include "boost/algorithm/string.hpp"
 #include "boost/filesystem.hpp"
 #include <functional>
-#include <sstream>
 #include <fstream>
 #include <algorithm>
 #include <unistd.h>
@@ -172,23 +171,18 @@ void ApplicationIndex::ApplicationIndexItem::action(Action a)
  */
 std::string ApplicationIndex::ApplicationIndexItem::actionText(Action a) const
 {
-	std::ostringstream stringStream;
 	switch (a) {
 	case Action::Enter:
-		stringStream << "Start '" << _title << "'.";
-		return stringStream.str();
+		return "Start " + _title;
 		break;
 	case Action::Ctrl:
-		stringStream << "Start '" << _title << "' as root.";
-		return stringStream.str();
+		return "Start " + _title + " as root";
 		break;
 	case Action::Alt:
-		stringStream << "Search for '" << _title << "' in web.";
-		return stringStream.str();
-		break;
-	default: // Will never happen
-		return stringStream.str();
+		fallbackActionText();
 		break;
 	}
+	// Will never happen
+	return "";
 }
 

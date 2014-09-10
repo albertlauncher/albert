@@ -20,7 +20,6 @@
 #include "abstractindexprovider.h"
 #include "boost/filesystem.hpp"
 #include <string>
-#include <magic.h>
 
 #ifdef FRONTEND_QT
 #include <QMimeDatabase>

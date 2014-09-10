@@ -19,7 +19,6 @@
 #include "boost/algorithm/string.hpp"
 #include "boost/filesystem.hpp"
 #include <functional>
-#include <sstream>
 #include <unistd.h>
 
 //REMOVE
@@ -151,24 +150,19 @@ void FileIndex::FileIndexItem::action(Action a)
  */
 std::string FileIndex::FileIndexItem::actionText(Action a) const
 {
-	std::ostringstream stringStream;
 	switch (a) {
 	case Action::Enter:
-		stringStream << "Open '" << _title << "' with default application.";
-		return stringStream.str();
+		return "Open '" + _title + "' with default application";
 		break;
 	case Action::Ctrl:
-		stringStream << "Open '" << _title << "' in default file browser.";
-		return stringStream.str();
+		return "Open '" + _title + "' in default file browser";
 		break;
 	case Action::Alt:
-		stringStream << "Search for '" << _title << "' in web.";
-		return stringStream.str();
-		break;
-	default: // Will never happen
-		return stringStream.str();
+		fallbackActionText();
 		break;
 	}
+	// Will never happen
+	return "";
 }
 
 /**************************************************************************//**
