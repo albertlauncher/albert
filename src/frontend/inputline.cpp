@@ -6,8 +6,3 @@ InputLine::InputLine(QWidget *parent) :
 	setObjectName(QString::fromLocal8Bit("inputline"));
 	setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
 }
-
-void InputLine::onCompletion(QString t)
-{
-	setText(t);
-}

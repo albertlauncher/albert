@@ -37,7 +37,6 @@ private:
 	explicit AlbertEngine();
 	~AlbertEngine();
 	static AlbertEngine *_instance;
-	vector<AbstractServiceProvider::AbstractItem*> _result;
 	AbstractServiceProvider        *_websearch;
 	AbstractServiceProvider        *_calculator;
 	vector<AbstractIndexProvider*> _indizes;

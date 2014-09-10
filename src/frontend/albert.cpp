@@ -95,12 +95,17 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_proposalListView->setFocusProxy(_inputLine);
 	this->setFocusPolicy(Qt::StrongFocus);
 
-	// Install EventFilter and signals
-	QApplication::instance()->installEventFilter(this); // check if app lost focus
-	_inputLine->installEventFilter(this); // enter
-	_inputLine->installEventFilter(_proposalListView); // intercept navigation, handle modifiers
+	/* Sniffing and snooping*/
+
+	// Albert intercepts inputline (Enter, Tab(Completion) and focus-loss handling)
+	_inputLine->installEventFilter(this);
+
+	// Listview intercepts inputline (Navigation with keys, pressed modifiers)
+	_inputLine->installEventFilter(_proposalListView);
+
+	// A change in text triggers requests
 	connect(_inputLine, SIGNAL(textChanged(QString)), this, SLOT(onTextEdited(QString)));
-	connect(_proposalListView, SIGNAL(completion(QString)), _inputLine, SLOT(onCompletion(QString)));
+
 	connect(XHotKeyManager::getInstance(), SIGNAL(hotKeyPressed()), this, SLOT(onHotKeyPressed()), Qt::QueuedConnection);// Show albert if hotkey was pressed
 	XHotKeyManager::getInstance()->start(); // Start listening for the hotkey(s)
 }
@@ -159,6 +164,10 @@ void AlbertWidget::onTextEdited(const QString & text)
 		std::vector<AbstractServiceProvider::AbstractItem *> r;
 		AlbertEngine::instance()->query(text.toStdString(), &r);
 		_proposalListModel->set(r);
+		if (_proposalListModel->rowCount() > 0){
+			if (!_proposalListView->currentIndex().isValid())
+				_proposalListView->setCurrentIndex(_proposalListModel->index(0, 0));
+		}
 		_proposalListView->show();
 		return;
 	}
@@ -169,19 +178,25 @@ void AlbertWidget::onTextEdited(const QString & text)
 /*****************************************************************************/
 /**************************** O V E R R I D E S ******************************/
 /**************************************************************************//**
- * @brief AlbertWidget::keyPressEvent
+ * @brief AlbertWidget::event
  * @param event
+ * @return
  */
-void AlbertWidget::keyPressEvent(QKeyEvent *event)
+bool AlbertWidget::event(QEvent *event)
 {
-	switch (event->key()) {
-	case Qt::Key_Escape:
-		this->hide();
-		break;
-	default:
-		QWidget::keyPressEvent(event);
-		break;
+	if (event->type() == QEvent::KeyPress)
+	{
+		QKeyEvent *ke = static_cast<QKeyEvent *>(event);
+		switch (ke->key()) {
+		case Qt::Key_Escape:
+			this->hide();
+			break;
+		default:
+			QWidget::keyPressEvent(ke);
+			break;
+		}
 	}
+	return QWidget::event(event);
 }
 
 /**************************************************************************//**
@@ -193,19 +208,47 @@ void AlbertWidget::keyPressEvent(QKeyEvent *event)
  */
 bool AlbertWidget::eventFilter(QObject *obj, QEvent *event)
 {
-	if (event->type() == QEvent::ApplicationStateChange && this->isActiveWindow())
-	{
-		this->hide();
-		return true;
-	}
-//#undef KeyPress
-//	if (event->type() == QEvent::KeyPress)
+//	if (event->type() == QEvent::FocusOut)
 //	{
-//		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-//		// Confirmation
-//		if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter)
-//			this->hide();
+//		qDebug() << "QEvent::FocusOut";
+//		this->hide();
+//		return true;
 //	}
+	if (event->type() == QEvent::KeyPress)
+	{
+		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+
+		// Completion
+		if (keyEvent->key() == Qt::Key_Tab)
+		{
+			if (_proposalListView->currentIndex().isValid())
+				_inputLine->setText(_proposalListModel->data(_proposalListView->currentIndex()).toString());
+			return true;
+		}
+
+		// Confirmation
+		if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter)
+		{
+			if (!_proposalListView->currentIndex().isValid())
+				return true;
+
+			switch (keyEvent->modifiers()) {
+			case Qt::ControlModifier:
+				_proposalListModel->ctrlAction(_proposalListView->currentIndex());
+				break;
+			case Qt::AltModifier:
+				_proposalListModel->altAction(_proposalListView->currentIndex());
+				break;
+			case Qt::NoModifier:
+				_proposalListModel->action(_proposalListView->currentIndex());
+				break;
+			default:
+				break;
+			}
+			this->hide();
+			return true;
+		}
+	}
 	return QObject::eventFilter(obj, event); // Unhandled events are passed to the base class
 }
 

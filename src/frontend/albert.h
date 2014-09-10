@@ -22,6 +22,8 @@
 #include <QDebug>
 #include <QApplication>
 #include <QKeyEvent>
+#include <QDebug>
+#include <QFocusEvent>
 
 //bleibt
 #include <QWidget>
@@ -43,9 +45,9 @@ class AlbertWidget : public QWidget
 	ProposalListView   *_proposalListView;
 
 protected:
-	void         keyPressEvent(QKeyEvent * event) override;
 	bool         eventFilter(QObject *obj, QEvent *event) override;
 	virtual bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
+	bool         event(QEvent *event ) override;
 
 public:
 	AlbertWidget(QWidget *parent = 0);

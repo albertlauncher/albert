@@ -69,29 +69,6 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 			this->keyPressEvent(keyEvent);
 			return true;
 		}
-
-		// Completion
-		if (keyEvent->key() == Qt::Key_Tab)
-		{
-			if (model()->rowCount() > 0){
-				if (!currentIndex().isValid())
-					setCurrentIndex(model()->index(0, 0));
-			}
-			emit completion(model()->data(currentIndex(), Qt::UserRole+5).toString());
-			return true;
-		}
-
-		// Confirmation
-		if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter)
-		{
-			if (keyEvent->modifiers() & Qt::ControlModifier)
-				static_cast<ProposalListModel*>(model())->ctrlAction(currentIndex());
-			else if (keyEvent->modifiers() & Qt::AltModifier)
-				static_cast<ProposalListModel*>(model())->altAction(currentIndex());
-			else
-				static_cast<ProposalListModel*>(model())->action(currentIndex());
-			return true;
-		}
 	}
 
 	if (event->type() == QEvent::KeyRelease)
