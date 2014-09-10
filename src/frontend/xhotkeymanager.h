@@ -19,11 +19,14 @@
 
 #include <QThread>
 #include <QDebug>
-#include <X11/Xlib.h>
 
 class XHotKeyManager : public QThread
 {
 	Q_OBJECT
+
+	// Forward declare those 2 to avoid ugly conflicts
+	typedef struct _XDisplay Display;
+	typedef unsigned long Window;
 
 	typedef struct {
 		unsigned int numlock;
