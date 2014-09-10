@@ -17,6 +17,7 @@
 #include "albert.h"
 #include "albertengine.h"
 #include "xhotkeymanager.h"
+#include "settings.h"
 #include "xcb/xcb.h"
 
 // remove
@@ -136,7 +137,8 @@ void AlbertWidget::hide()
 void AlbertWidget::show()
 {
 	QWidget::show();
-	this->move(QApplication::desktop()->screenGeometry().center() - rect().center() -QPoint(0,256 ));
+	if (Settings::instance()->get("show_centered")=="true")
+		this->move(QApplication::desktop()->screenGeometry().center() - rect().center() -QPoint(0,256 ));
 }
 
 /**************************************************************************//**
@@ -208,12 +210,12 @@ bool AlbertWidget::event(QEvent *event)
  */
 bool AlbertWidget::eventFilter(QObject *obj, QEvent *event)
 {
-//	if (event->type() == QEvent::FocusOut)
-//	{
-//		qDebug() << "QEvent::FocusOut";
-//		this->hide();
-//		return true;
-//	}
+	if (event->type() == QEvent::FocusOut)
+	{
+		qDebug() << "QEvent::FocusOut";
+		this->hide();
+		return true;
+	}
 	if (event->type() == QEvent::KeyPress)
 	{
 		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
