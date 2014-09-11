@@ -6,7 +6,8 @@
  - [x] Refactor code for a convenient extension by modules
  - [x] Implement basic plugins for testing purposes (file launcher)
  - [x] Implement basic plugins for testing purposes (application launcher)
- - [ ] Implement basic plugins for testing purposes (web-search)
+ - [x] Implement basic plugins for testing purposes (web-search)
+ - [x] Implement basic plugins for testing purposes (calculater)
  - [ ] Animate geometry changes
  - [ ] Add configuration widget to configure the plugins
  - [ ] Complete the planned pluginlist (calculator, bookmarks, system control)
