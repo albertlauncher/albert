@@ -17,6 +17,8 @@
 #include "albertengine.h"
 #include "fileindex/fileindex.h"
 #include "applicationindex/applicationindex.h"
+#include "websearch/websearch.h"
+#include "calculator/calculator.h"
 #include <iostream>
 
 AlbertEngine* AlbertEngine::_instance = nullptr;
@@ -27,8 +29,6 @@ AlbertEngine* AlbertEngine::_instance = nullptr;
  */
 AlbertEngine::AlbertEngine()
 {
-	// _websearch =
-	// _calculator =
 	_indizes.push_back(ApplicationIndex::instance());
 	_indizes.push_back(FileIndex::instance());
 }
@@ -57,10 +57,12 @@ AlbertEngine *AlbertEngine::instance(){
  */
 void AlbertEngine::query(const std::string &req, std::vector<AbstractServiceProvider::AbstractItem*> *res)
 {
+	Calculator::instance()->query(req, res);
+	WebSearch::instance()->query(req, res);
 	for (auto i: _indizes)
 		i->query(req, res);
-
-	std::cout << "Search finished. Found " << res->size() << " items." << std::endl;
+	if (res->empty())
+		WebSearch::instance()->queryAll(req, res);
 }
 
 /**********************************************************************//**

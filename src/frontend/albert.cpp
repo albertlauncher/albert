@@ -137,8 +137,9 @@ void AlbertWidget::hide()
 void AlbertWidget::show()
 {
 	QWidget::show();
+	updateGeometry();
 	if (Settings::instance()->get("show_centered")=="true")
-		this->move(QApplication::desktop()->screenGeometry().center() - rect().center() -QPoint(0,256 ));
+		this->move(QApplication::desktop()->screenGeometry().center() - QPoint(rect().right()/2,192 ));
 }
 
 /**************************************************************************//**
@@ -162,9 +163,10 @@ void AlbertWidget::onHotKeyPressed()
  */
 void AlbertWidget::onTextEdited(const QString & text)
 {
-	if (!text.isEmpty()){
+	QString t = text.trimmed();
+	if (!t.isEmpty()){
 		std::vector<AbstractServiceProvider::AbstractItem *> r;
-		AlbertEngine::instance()->query(text.toStdString(), &r);
+		AlbertEngine::instance()->query(t.toStdString(), &r);
 		_proposalListModel->set(r);
 		if (_proposalListModel->rowCount() > 0){
 			if (!_proposalListView->currentIndex().isValid())
@@ -223,8 +225,9 @@ bool AlbertWidget::eventFilter(QObject *obj, QEvent *event)
 		// Completion
 		if (keyEvent->key() == Qt::Key_Tab)
 		{
+			// For the definition of the Userroles see proposallistmodel.cpp (::data())
 			if (_proposalListView->currentIndex().isValid())
-				_inputLine->setText(_proposalListModel->data(_proposalListView->currentIndex()).toString());
+				_inputLine->setText(_proposalListModel->data(_proposalListView->currentIndex(), Qt::UserRole+4).toString());
 			return true;
 		}
 

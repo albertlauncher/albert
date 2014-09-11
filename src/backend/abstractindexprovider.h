@@ -31,12 +31,11 @@ public:
 	{
 	public:
 		AbstractIndexItem() = delete;
-		AbstractIndexItem(const std::string &title) : AbstractItem(title){}
+		AbstractIndexItem(std::string name) : _name(name){}
 		virtual ~AbstractIndexItem(){}
 
-		virtual std::string uri() const = 0;
 		virtual std::chrono::system_clock::time_point lastAccess() const = 0;
-//		virtual string      lastAccess() = 0;
+		std::string _name;
 	};
 
 	class CaseInsensitiveCompare

@@ -35,11 +35,8 @@ ProposalListDelegate::ProposalListDelegate()
  */
 void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const
 {
-	//	EnterText = Qt::UserRole;
-	//	AltText  = Qt::UserRole+1;
-	//	CtrlText  = Qt::UserRole+2;
-	//	InfoText  = Qt::UserRole+3;
-	//	Completion = Qt::UserRole+4;
+
+	// For the definition of the Userroles see proposallistmodel.cpp (::data())
 
 	QString elided;
 	QFont font = option.font;

@@ -28,21 +28,15 @@ public:
 	public:
 		enum class Action { Enter, Alt, Ctrl };
 
-		AbstractItem() = delete;
-		AbstractItem(const std::string &title) : _title(title){}
+		AbstractItem(){}
 		virtual ~AbstractItem(){}
 
-		inline  std::string  title() const {return _title;}
+		virtual std::string  title() const = 0;
 		virtual std::string  iconName() const = 0;
 		virtual std::string  complete() const = 0;
 		virtual void         action(Action) = 0;
 		virtual std::string  actionText(Action) const = 0;
 		virtual std::string  infoText() const = 0;
-		void                 fallbackAction() const;
-		std::string          fallbackActionText() const;
-
-	protected:
-		const std::string _title;
 	};
 
 	AbstractServiceProvider(){}

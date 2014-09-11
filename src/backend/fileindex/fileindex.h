@@ -35,9 +35,9 @@ public:
 		FileIndexItem(boost::filesystem::path p) : AbstractIndexItem(p.filename().string()), _path(p) {}
 		~FileIndexItem(){}
 
+		inline std::string title() const override {return _path.filename().string();}
 		inline std::string complete() const override {return _path.filename().string();}
 		inline std::string infoText() const override {return _path.string();}
-		inline std::string uri() const override {return _path.string();}
 		std::chrono::system_clock::time_point lastAccess() const override {return _lastAccess;}
 		void               action(Action) override;
 		std::string        actionText(Action) const override;

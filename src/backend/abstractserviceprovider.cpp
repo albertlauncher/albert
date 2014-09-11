@@ -15,22 +15,3 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "abstractserviceprovider.h"
-#include <unistd.h>
-
-void AbstractServiceProvider::AbstractItem::fallbackAction() const
-{
-	std::string url("https://www.google.de/search?q=");
-	url.append(_title);
-	pid_t pid = fork();
-	if (pid == 0) {
-		pid_t sid = setsid();
-		if (sid < 0) exit(EXIT_FAILURE);
-		execl("/usr/bin/xdg-open", "xdg-open", url.c_str(), (char *)0);
-		exit(1);
-	}
-}
-
-std::string AbstractServiceProvider::AbstractItem::fallbackActionText() const
-{
-	return "Search for  '" + _title + "' in the web";
-}

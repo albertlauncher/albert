@@ -20,10 +20,10 @@
 #include "boost/filesystem.hpp"
 #include <functional>
 #include <unistd.h>
+#include "websearch/websearch.h"
 
 //REMOVE
 #include <iostream>
-#include <boost/timer/timer.hpp>
 
 FileIndex* FileIndex::_instance = nullptr;
 
@@ -91,15 +91,10 @@ void FileIndex::buildIndex()
 	};
 
 	// Finally do this recursion for all paths
-
-	boost::timer::auto_cpu_timer *t = new boost::timer::auto_cpu_timer;
 	for ( std::string &p : pathList)
 		rec_dirsearch(boost::filesystem::path(p));
-	delete t;
 
-	t = new boost::timer::auto_cpu_timer;
 	std::sort(_index.begin(), _index.end(), CaseInsensitiveCompare(Settings::instance()->locale()));
-	delete t;
 
 //	for ( auto &i : _index)
 //		std::cout << i->title() << std::endl;
@@ -138,7 +133,7 @@ void FileIndex::FileIndexItem::action(Action a)
 		}
 		break;
 	case Action::Alt:
-		fallbackAction();
+		WebSearch::instance()->defaultSearch(_name);
 		break;
 	}
 }
@@ -152,13 +147,13 @@ std::string FileIndex::FileIndexItem::actionText(Action a) const
 {
 	switch (a) {
 	case Action::Enter:
-		return "Open '" + _title + "' with default application";
+		return "Open '" + _name + "' with default application";
 		break;
 	case Action::Ctrl:
-		return "Open '" + _title + "' in default file browser";
+		return "Open '" + _name + "' in default file browser";
 		break;
 	case Action::Alt:
-		fallbackActionText();
+		WebSearch::instance()->defaultSearchText(_name);
 		break;
 	}
 	// Will never happen

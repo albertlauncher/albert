@@ -27,7 +27,7 @@
 ProposalListView::ProposalListView(QWidget *parent) :
 	QListView(parent)
 {
-	_nItemsToShow = 8;
+	_nItemsToShow = 5;
 	setItemDelegate(new ProposalListDelegate);
 	setObjectName(QString::fromLocal8Bit("ProposalListWidget"));
 	setUniformItemSizes(true);

@@ -29,7 +29,9 @@ HEADERS  +=	backend/abstractindexprovider.h \
 	frontend/inputline.h \
 	backend/settings.h \
 	backend/fileindex/fileindex.h \
-	backend/applicationindex/applicationindex.h
+	backend/applicationindex/applicationindex.h \
+	backend/calculator/calculator.h \
+	backend/websearch/websearch.h
 
 SOURCES += main.cpp \
 	backend/abstractindexprovider.cpp \
@@ -43,7 +45,9 @@ SOURCES += main.cpp \
 	frontend/inputline.cpp \
 	backend/settings.cpp \
 	backend/fileindex/fileindex.cpp \
-	backend/applicationindex/applicationindex.cpp
+	backend/applicationindex/applicationindex.cpp \
+	backend/calculator/calculator.cpp \
+	backend/websearch/websearch.cpp
 
 RESOURCES += albert.qrc
 
@@ -52,8 +56,7 @@ CONFIG += c++11
 LIBS += -lX11 \
 		-lboost_system \
 		-lboost_filesystem \
-		-lboost_timer \
-		-lmagic
+		-lmuparser
 
 DEFINES += FRONTEND_QT \
 			QT_NO_CAST_FROM_ASCII \

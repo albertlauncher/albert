@@ -22,6 +22,7 @@
 #include <fstream>
 #include <algorithm>
 #include <unistd.h>
+#include "websearch/websearch.h"
 
 //REMOVE
 #include <iostream>
@@ -159,7 +160,7 @@ void ApplicationIndex::ApplicationIndexItem::action(Action a)
 		}
 		break;
 	case Action::Alt:
-		fallbackAction();
+		WebSearch::instance()->defaultSearch(_name);
 		break;
 	}
 }
@@ -173,13 +174,13 @@ std::string ApplicationIndex::ApplicationIndexItem::actionText(Action a) const
 {
 	switch (a) {
 	case Action::Enter:
-		return "Start " + _title;
+		return "Start " + _name;
 		break;
 	case Action::Ctrl:
-		return "Start " + _title + " as root";
+		return "Start " + _name + " as root";
 		break;
 	case Action::Alt:
-		fallbackActionText();
+		WebSearch::instance()->defaultSearchText(_name);
 		break;
 	}
 	// Will never happen
