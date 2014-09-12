@@ -130,7 +130,6 @@ std::string WebSearch::defaultSearchText(const std::string &term) const{
  */
 void WebSearch::WebSearchItem::action(Action a)
 {
-//	_lastAccess = std::chrono::system_clock::now();
 	pid_t pid;
 	switch (a) {
 	case Action::Enter:
@@ -142,16 +141,16 @@ void WebSearch::WebSearchItem::action(Action a)
 			exit(1);
 		}
 		break;
-	case Action::Ctrl:
+	case Action::Alt:
 		pid = fork();
 		if (pid == 0) {
 			pid_t sid = setsid();
 			if (sid < 0) exit(EXIT_FAILURE);
-			execl("/usr/bin/sh", "sh", "-c", std::string("echo \""+std::string(_url).replace(_url.find("%s"), 2, _searchTerm)+"\"|xclip -i").c_str(), (char *)0);
+			execl("/usr/bin/sh", "sh", "-c", std::string("xclip -i <<< echo \""+std::string(_url).replace(_url.find("%s"), 2, _searchTerm)+"\"").c_str(), (char *)0);
 			exit(1);
 		}
 		break;
-	case Action::Alt:
+	case Action::Ctrl:
 		WebSearch::instance()->defaultSearch(_name);
 		break;
 	}
@@ -168,11 +167,11 @@ std::string WebSearch::WebSearchItem::actionText(Action a) const
 	case Action::Enter:
 		return "Visit '" + std::string(_url).replace(_url.find("%s"), 2, _searchTerm) + "'";
 		break;
-	case Action::Ctrl:
+	case Action::Alt:
 		return "Copy '" + std::string(_url).replace(_url.find("%s"), 2, _searchTerm) + "' to clipboard";
 		break;
-	case Action::Alt:
-		return WebSearch::instance()->defaultSearchText(_name);
+	case Action::Ctrl:
+		return WebSearch::instance()->defaultSearchText(_searchTerm);
 		break;
 	}
 	// Will never happen

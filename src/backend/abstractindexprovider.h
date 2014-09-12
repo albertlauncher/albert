@@ -21,9 +21,6 @@
 #include <string>
 #include <list>
 #include <locale>
-#include <chrono>
-
-using std::chrono::system_clock;
 
 class AbstractIndexProvider : public AbstractServiceProvider
 {
@@ -36,9 +33,6 @@ public:
 		AbstractIndexItem(const std::string &name) : _name(name){}
 		virtual ~AbstractIndexItem(){}
 
-		inline system_clock::time_point  lastAccess() const {return _lastAccess;}
-
-		system_clock::time_point _lastAccess;
 		std::string _name;
 	};
 
@@ -59,8 +53,6 @@ public:
 		}
 		bool operator()( char lhs, char rhs ) const	{return myCType.tolower(lhs) < myCType.tolower(rhs);}
 	};
-
-
 	class CaseInsensitiveComparePrefix
 	{
 		std::ctype<char> const& myCType;

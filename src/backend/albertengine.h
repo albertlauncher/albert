@@ -28,6 +28,12 @@ using std::map;
 
 class AlbertEngine
 {
+	struct ATimeCompare	{
+		bool operator()( AbstractServiceProvider::AbstractItem const* lhs, AbstractServiceProvider::AbstractItem  const* rhs ) const {
+			return lhs->lastAccess() > rhs->lastAccess();
+		}
+	};
+
 public:
 	void buildIndex();
 	void query(const std::string &req, std::vector<AbstractServiceProvider::AbstractItem *> *res);

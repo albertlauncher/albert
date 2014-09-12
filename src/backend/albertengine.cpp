@@ -24,6 +24,12 @@
 #include "bookmarkindex/bookmarkindex.h"
 #include "applicationindex/applicationindex.h"
 
+
+
+
+// DEBUG
+#include <iostream>
+
 AlbertEngine* AlbertEngine::_instance = nullptr;
 
 /**********************************************************************//**
@@ -67,6 +73,9 @@ void AlbertEngine::query(const std::string &req, std::vector<AbstractServiceProv
 		i->query(req, res);
 	if (res->empty())
 		WebSearch::instance()->queryAll(req, res);
+
+	// Sort them by atime
+	std::sort(res->begin(), res->end(), ATimeCompare());
 }
 
 /**********************************************************************//**

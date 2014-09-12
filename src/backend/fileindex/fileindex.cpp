@@ -112,6 +112,7 @@ void FileIndex::buildIndex()
 void FileIndex::FileIndexItem::action(Action a)
 {
 	_lastAccess = std::chrono::system_clock::now();
+
 	pid_t pid;
 	switch (a) {
 	case Action::Enter:
@@ -123,7 +124,7 @@ void FileIndex::FileIndexItem::action(Action a)
 			exit(1);
 		}
 		break;
-	case Action::Ctrl:
+	case Action::Alt:
 		pid = fork();
 		if (pid == 0) {
 			pid_t sid = setsid();
@@ -132,7 +133,7 @@ void FileIndex::FileIndexItem::action(Action a)
 			exit(1);
 		}
 		break;
-	case Action::Alt:
+	case Action::Ctrl:
 		WebSearch::instance()->defaultSearch(_name);
 		break;
 	}
@@ -149,10 +150,10 @@ std::string FileIndex::FileIndexItem::actionText(Action a) const
 	case Action::Enter:
 		return "Open '" + _name + "' with default application";
 		break;
-	case Action::Ctrl:
-		return "Open '" + _name + "' in default file browser";
-		break;
 	case Action::Alt:
+		return "Open the folder containing '" + _name + "' in file browser";
+		break;
+	case Action::Ctrl:
 		return WebSearch::instance()->defaultSearchText(_name);
 		break;
 	}

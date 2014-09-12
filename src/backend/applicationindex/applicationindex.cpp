@@ -131,7 +131,7 @@ void ApplicationIndex::buildIndex()
  */
 void ApplicationIndex::ApplicationIndexItem::action(Action a)
 {
-	//	_lastAccess = std::chrono::system_clock::now();
+	_lastAccess = std::chrono::system_clock::now();
 
 	pid_t pid;
 	switch (a) {
@@ -147,19 +147,19 @@ void ApplicationIndex::ApplicationIndexItem::action(Action a)
 			exit(1);
 		}
 		break;
-	case Action::Ctrl:
+	case Action::Alt:
 		pid = fork();
 		if (pid == 0) {
 			pid_t sid = setsid();
 			if (sid < 0) exit(EXIT_FAILURE);
 			if (_term)
-				execlp("konsole", "konsole" , "-e", _exec.c_str(), (char *)0);
+				execlp("gksu", "gksu", std::string("konsole -e "+_exec).c_str(), (char *)0);
 			else
-				execlp(_exec.c_str(), _exec.c_str(), (char *)0);
+				execlp("gksu", "gksu", _exec.c_str(), (char *)0);
 			exit(1);
 		}
 		break;
-	case Action::Alt:
+	case Action::Ctrl:
 		WebSearch::instance()->defaultSearch(_name);
 		break;
 	}
@@ -176,10 +176,10 @@ std::string ApplicationIndex::ApplicationIndexItem::actionText(Action a) const
 	case Action::Enter:
 		return "Start " + _name;
 		break;
-	case Action::Ctrl:
+	case Action::Alt:
 		return "Start " + _name + " as root";
 		break;
-	case Action::Alt:
+	case Action::Ctrl:
 		return WebSearch::instance()->defaultSearchText(_name);
 		break;
 	}

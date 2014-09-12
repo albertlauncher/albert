@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <sstream>
 #include "muParser.h"
+#include "websearch/websearch.h"
 
 #include <QDebug>
 
@@ -79,7 +80,7 @@ void Calculator::CalculatorItem::action(Action a)
 			exit(1);
 		}
 		break;
-	case Action::Ctrl:
+	case Action::Alt:
 		pid = fork();
 		if (pid == 0) {
 			pid_t sid = setsid();
@@ -88,14 +89,8 @@ void Calculator::CalculatorItem::action(Action a)
 			exit(1);
 		}
 		break;
-	case Action::Alt:
-		pid = fork();
-		if (pid == 0) {
-			pid_t sid = setsid();
-			if (sid < 0) exit(EXIT_FAILURE);
-			execl("/usr/bin/xdg-open", "xdg-open", std::string("http://www.wolframalpha.com/input/?i=").append(_query).c_str(), (char *)0);
-			exit(1);
-		}
+	case Action::Ctrl:
+		WebSearch::instance()->defaultSearch(_query);
 		break;
 	}
 }
@@ -111,11 +106,11 @@ std::string Calculator::CalculatorItem::actionText(Action a) const
 	case Action::Enter:
 		return "Copy '" + _result + "' to clipboard";
 		break;
-	case Action::Ctrl:
+	case Action::Alt:
 		return "Copy '" + _query + "' to clipboard";
 		break;
-	case Action::Alt:
-		return "Let Wolphram Alpha compute '" + _query + "'";
+	case Action::Ctrl:
+		return WebSearch::instance()->defaultSearchText(_query);
 		break;
 	}
 	// Will never happen

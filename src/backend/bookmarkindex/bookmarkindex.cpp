@@ -21,12 +21,10 @@
 #include <pwd.h>
 #include <unistd.h>
 #include <functional>
+#include "websearch/websearch.h"
 
 
 //REMOVE
-#include "boost/algorithm/string.hpp"
-#include "boost/filesystem.hpp"
-#include "websearch/websearch.h"
 #include <iostream>
 
 BookmarkIndex* BookmarkIndex::_instance = nullptr;
@@ -119,9 +117,11 @@ void BookmarkIndex::buildIndex()
 void BookmarkIndex::BookmarkIndexItem::action(Action a)
 {
 	_lastAccess = std::chrono::system_clock::now();
+
 	pid_t pid;
 	switch (a) {
 	case Action::Enter:
+	case Action::Alt:
 		pid = fork();
 		if (pid == 0) {
 			pid_t sid = setsid();
@@ -131,15 +131,6 @@ void BookmarkIndex::BookmarkIndexItem::action(Action a)
 		}
 		break;
 	case Action::Ctrl:
-		pid = fork();
-		if (pid == 0) {
-			pid_t sid = setsid();
-			if (sid < 0) exit(EXIT_FAILURE);
-			execl("/usr/bin/xdg-open", "xdg-open", _url.c_str(), (char *)0);
-			exit(1);
-		}
-		break;
-	case Action::Alt:
 		WebSearch::instance()->defaultSearch(_name);
 		break;
 	}
@@ -154,12 +145,10 @@ std::string BookmarkIndex::BookmarkIndexItem::actionText(Action a) const
 {
 	switch (a) {
 	case Action::Enter:
+	case Action::Alt:
 		return "Visit '" + _name + "'";
 		break;
 	case Action::Ctrl:
-		return "Visit '" + _name + "'";
-		break;
-	case Action::Alt:
 		return WebSearch::instance()->defaultSearchText(_name);
 		break;
 	}

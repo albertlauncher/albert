@@ -19,6 +19,8 @@
 
 #include <string>
 #include <vector>
+#include <chrono>
+using std::chrono::system_clock;
 
 class AbstractServiceProvider
 {
@@ -37,6 +39,9 @@ public:
 		virtual void         action(Action) = 0;
 		virtual std::string  actionText(Action) const = 0;
 		virtual std::string  infoText() const = 0;
+		inline system_clock::time_point  lastAccess() const {return _lastAccess;}
+
+		system_clock::time_point _lastAccess;
 	};
 
 	AbstractServiceProvider(){}
