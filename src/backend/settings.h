@@ -25,8 +25,8 @@ class Settings
 {
 public:
 	static Settings* instance() noexcept;
-	void load(std::string path = systemSettings);
-	void save(std::string path) const;
+	void load(std::string path = relativeUserSettings);
+	void save(std::string path = relativeUserSettings) const;
 	inline std::string get(std::string key) const throw (std::out_of_range) { return _settings.at(key); }
 	inline std::locale const& locale() const { return _locale; }
 
@@ -39,7 +39,8 @@ private:
 	std::locale _locale;
 
 	static Settings *_instance;
-	static const std::string systemSettings;
+	static const std::string absulutesystemSettings;
+	static const std::string relativeUserSettings;
 };
 
 #endif // SETTINGS_H

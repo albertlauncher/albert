@@ -15,11 +15,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QApplication>
-#include <pwd.h>
-#include <unistd.h>
 #include "settings.h"
 #include "albert.h"
 #include "albertengine.h"
+
+#include <iostream>
 
 
 int main(int argc, char *argv[])
@@ -27,13 +27,8 @@ int main(int argc, char *argv[])
 	QApplication a(argc, argv);
 	a.setStyleSheet(QString::fromLocal8Bit("file:///:/resources/basicskin.qss"));
 
-	// Load system settings
+	// Load  settings
 	Settings::instance()->load();
-
-	// Override with user settings
-	std::string userSettings(getpwuid(getuid())->pw_dir);
-	userSettings += "/.config/albert/config";
-	Settings::instance()->load(userSettings);
 
 	// Build the indizes
 	AlbertEngine::instance()->buildIndex();
@@ -45,7 +40,7 @@ int main(int argc, char *argv[])
 	int retval = a.exec();
 
 	// Store settings
-	Settings::instance()->save(userSettings);
+	Settings::instance()->save();
 
 	return retval;
 }

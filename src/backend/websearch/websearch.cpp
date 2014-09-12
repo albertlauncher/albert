@@ -172,7 +172,7 @@ std::string WebSearch::WebSearchItem::actionText(Action a) const
 		return "Copy '" + std::string(_url).replace(_url.find("%s"), 2, _searchTerm) + "' to clipboard";
 		break;
 	case Action::Alt:
-		return "Visit '" + std::string(_url).replace(_url.find("%s"), 2, _searchTerm) + "'";
+		return WebSearch::instance()->defaultSearchText(_name);
 		break;
 	}
 	// Will never happen

@@ -28,21 +28,17 @@ public:
 	{
 	public:
 		ApplicationIndexItem() = delete;
-		ApplicationIndexItem(std::string name, std::string info, std::string iconName, std::string cmd, bool term = false)
+		ApplicationIndexItem(const std::string &name, const std::string &info, const std::string &iconName, const std::string &cmd, const bool term = false)
 			: AbstractIndexItem(name), _info(info), _iconName(iconName), _exec(cmd), _term(term) {}
 		~ApplicationIndexItem(){}
-
 		inline std::string title() const override {return _name;}
 		inline std::string complete() const override {return _name;}
 		inline std::string infoText() const override {return _info;}
 		inline std::string iconName() const override {return _iconName;}
-		std::chrono::system_clock::time_point lastAccess() const override {return _lastAccess;}
 		void               action(Action) override;
 		std::string        actionText(Action) const override;
 
 	protected:
-	std::chrono::system_clock::time_point _lastAccess;
-
 		std::string _info;
 		std::string _iconName;
 		std::string _exec;
@@ -54,7 +50,6 @@ public:
 private:
 	ApplicationIndex(){}
 	~ApplicationIndex(){}
-
 	void buildIndex() override;
 
 	static ApplicationIndex *_instance;

@@ -15,11 +15,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "albertengine.h"
-#include "fileindex/fileindex.h"
-#include "applicationindex/applicationindex.h"
-#include "websearch/websearch.h"
-#include "calculator/calculator.h"
 #include <iostream>
+
+//Modules
+#include "websearch/websearch.h"
+#include "fileindex/fileindex.h"
+#include "calculator/calculator.h"
+#include "bookmarkindex/bookmarkindex.h"
+#include "applicationindex/applicationindex.h"
 
 AlbertEngine* AlbertEngine::_instance = nullptr;
 
@@ -31,6 +34,7 @@ AlbertEngine::AlbertEngine()
 {
 	_indizes.push_back(ApplicationIndex::instance());
 	_indizes.push_back(FileIndex::instance());
+	_indizes.push_back(BookmarkIndex::instance());
 }
 
 /**********************************************************************//**
@@ -59,7 +63,7 @@ void AlbertEngine::query(const std::string &req, std::vector<AbstractServiceProv
 {
 	Calculator::instance()->query(req, res);
 	WebSearch::instance()->query(req, res);
-	for (auto i: _indizes)
+	for (AbstractIndexProvider *i: _indizes)
 		i->query(req, res);
 	if (res->empty())
 		WebSearch::instance()->queryAll(req, res);

@@ -18,30 +18,56 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <functional>
+#include <pwd.h>
+#include <unistd.h>
 
 
 //REMOVE
 #include <QDebug>
 
 Settings* Settings::_instance= nullptr;
-const std::string Settings::systemSettings = "/etc/albert/config";
+const std::string Settings::absulutesystemSettings = "/etc/albert/config";
+const std::string Settings::relativeUserSettings= ".config/albert/config";
 
 /**************************************************************************//**
  * @brief Settings::load
  */
 void Settings::load(std::string path)
 {
-	std::ifstream file(path);
-	if (!file.good())
-		return;
-	std::string str;
-	while (std::getline(file, str))
+	std::cout << "[Settings] Locale is:\t\t" << _locale.name() << std::endl;
+
+
+	// Define a lambda
+	std::function<void(const std::string &p)> loadLambda = [&] (const std::string &p)
 	{
-		std::size_t found = str.find_first_of('=');
-		if (found == std::string::npos || found == str.length())
-			continue;
-		_settings.insert(std::pair<std::string,std::string>(str.substr(0,found),str.substr(found+1)));
-	}
+		std::ifstream file(p);
+		if (!file.good()){
+			std::cout << "[Settings] Config file not found:\t" << p << std::endl;
+			return;
+		}
+		std::string str;
+		while (std::getline(file, str))	{
+			std::size_t found = str.find_first_of('=');
+			if (found == std::string::npos || found == str.length())
+				continue;
+			_settings.insert(std::pair<std::string,std::string>(str.substr(0,found),str.substr(found+1)));
+		}
+		std::cout << "[Settings] Config file loaded:\t" << p << std::endl;
+	};
+
+	// Load global settings
+	loadLambda(absulutesystemSettings);
+
+	// Override with user settings
+	std::string userSettings(getpwuid(getuid())->pw_dir);
+	userSettings += "/" + path;
+	loadLambda(userSettings);
+
+
+	std::cout << "[Settings]\t" << "[Key]\t\t[Value]"<< std::endl;
+	for ( std::pair<const std::string, std::string> &i : _settings)
+		std::cout << "[Settings]\t" << i.first << "\t" << i.second << std::endl;
 }
 
 /**************************************************************************//**

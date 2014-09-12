@@ -14,50 +14,42 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef FILEINDEX_H
-#define FILEINDEX_H
+#ifndef BOOKMARKINDEX_H
+#define BOOKMARKINDEX_H
 
 #include "abstractindexprovider.h"
 #include "boost/filesystem.hpp"
 #include <string>
+#include <iostream>
 
-#ifdef FRONTEND_QT
-#include <QMimeDatabase>
-#endif
 
-class FileIndex : public AbstractIndexProvider
+class BookmarkIndex : public AbstractIndexProvider
 {
 public:
-	class FileIndexItem : public AbstractIndexProvider::AbstractIndexItem
+	class BookmarkIndexItem : public AbstractIndexProvider::AbstractIndexItem
 	{
 	public:
-		FileIndexItem() = delete;
-		FileIndexItem(boost::filesystem::path p) : AbstractIndexItem(p.filename().string()), _path(p) {}
-		~FileIndexItem(){}
-
-		inline std::string title() const override {return _path.filename().string();}
-		inline std::string complete() const override {return _path.filename().string();}
-		inline std::string infoText() const override {return _path.string();}
+		BookmarkIndexItem() = delete;
+		BookmarkIndexItem(const std::string &name, const std::string &url) : AbstractIndexItem(name), _url(url){}
+		~BookmarkIndexItem(){}
+		inline std::string title() const override {return _name;}
+		inline std::string complete() const override {return _name;}
+		inline std::string infoText() const override {return _url;}
 		void               action(Action) override;
 		std::string        actionText(Action) const override;
 		std::string        iconName() const override;
 
 	protected:
-		boost::filesystem::path _path;
+		const std::string _url;
 	};
 
-	static FileIndex* instance();
+	static BookmarkIndex* instance();
 
 private:
-	FileIndex();
-	~FileIndex();
-
+	BookmarkIndex();
+	~BookmarkIndex();
 	void buildIndex() override;
 
-	static FileIndex *_instance;
-//	magic_t _magic_cookie;
-#ifdef FRONTEND_QT
-	QMimeDatabase mimeDb;
-#endif
+	static BookmarkIndex *_instance;
 };
-#endif // FILEINDEX_H
+#endif // BOOKMARKINDEX_H

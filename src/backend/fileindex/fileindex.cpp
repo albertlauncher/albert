@@ -98,7 +98,7 @@ void FileIndex::buildIndex()
 
 //	for ( auto &i : _index)
 //		std::cout << i->title() << std::endl;
-	std::cout << "[FileIndex] Indexing done. Found " << _index.size() << " items." << std::endl;
+	std::cout << "[FileIndex] Indexing done. Found " << _index.size() << " files." << std::endl;
 }
 
 /*****************************************************************************/
@@ -153,7 +153,7 @@ std::string FileIndex::FileIndexItem::actionText(Action a) const
 		return "Open '" + _name + "' in default file browser";
 		break;
 	case Action::Alt:
-		WebSearch::instance()->defaultSearchText(_name);
+		return WebSearch::instance()->defaultSearchText(_name);
 		break;
 	}
 	// Will never happen

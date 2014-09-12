@@ -23,6 +23,8 @@
 #include <locale>
 #include <chrono>
 
+using std::chrono::system_clock;
+
 class AbstractIndexProvider : public AbstractServiceProvider
 {
 public:
@@ -31,10 +33,12 @@ public:
 	{
 	public:
 		AbstractIndexItem() = delete;
-		AbstractIndexItem(std::string name) : _name(name){}
+		AbstractIndexItem(const std::string &name) : _name(name){}
 		virtual ~AbstractIndexItem(){}
 
-		virtual std::chrono::system_clock::time_point lastAccess() const = 0;
+		inline system_clock::time_point  lastAccess() const {return _lastAccess;}
+
+		system_clock::time_point _lastAccess;
 		std::string _name;
 	};
 

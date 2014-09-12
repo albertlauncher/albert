@@ -28,8 +28,9 @@ HEADERS  +=	backend/abstractindexprovider.h \
 	frontend/xhotkeymanager.h \
 	frontend/inputline.h \
 	backend/settings.h \
-	backend/fileindex/fileindex.h \
 	backend/applicationindex/applicationindex.h \
+	backend/bookmarkindex/bookmarkindex.h \
+	backend/fileindex/fileindex.h \
 	backend/calculator/calculator.h \
 	backend/websearch/websearch.h
 
@@ -44,8 +45,9 @@ SOURCES += main.cpp \
 	frontend/xhotkeymanager.cpp \
 	frontend/inputline.cpp \
 	backend/settings.cpp \
-	backend/fileindex/fileindex.cpp \
 	backend/applicationindex/applicationindex.cpp \
+	backend/bookmarkindex/bookmarkindex.cpp \
+	backend/fileindex/fileindex.cpp \
 	backend/calculator/calculator.cpp \
 	backend/websearch/websearch.cpp
 

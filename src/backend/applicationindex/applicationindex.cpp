@@ -180,7 +180,7 @@ std::string ApplicationIndex::ApplicationIndexItem::actionText(Action a) const
 		return "Start " + _name + " as root";
 		break;
 	case Action::Alt:
-		WebSearch::instance()->defaultSearchText(_name);
+		return WebSearch::instance()->defaultSearchText(_name);
 		break;
 	}
 	// Will never happen
