@@ -1,6 +1,6 @@
-#Albert
+#Albert (alpha)
 ###An amazing, desktop environment agnostic omnilauncher
-![Image of v0.2](https://raw.githubusercontent.com/ManuelSchneid3r/albert/master/pictures/v0.2.png)
+![Image of v0.3](https://raw.githubusercontent.com/ManuelSchneid3r/albert/master/pictures/v0.3.gif)
 
 ### Estimated roadmap
  - [x] User Interface
@@ -9,7 +9,7 @@
  - [x] Implement module (application launcher)
  - [x] Implement module (web-search)
  - [x] Implement module (calculator)
- - [ ] Implement module (bookmarks)
+ - [x] Implement module (bookmarks)
  - [ ] Implement module (terminal apps)
  - [ ] Implement module (system control)
  - [ ] Implement serialization of indizes
