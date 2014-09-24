@@ -31,8 +31,8 @@ public:
 	class WebSearchItem : public AbstractServiceProvider::AbstractItem
 	{
 	public:
-		WebSearchItem() = delete;
-		WebSearchItem( const std::string &name, const std::string &url, const std::string &sc, const std::string &iconName)
+		explicit WebSearchItem(){}
+		explicit WebSearchItem( const std::string &name, const std::string &url, const std::string &sc, const std::string &iconName)
 			: _name(name), _url(url), _shortcut(sc), _iconName(iconName) {}
 		~WebSearchItem(){}
 

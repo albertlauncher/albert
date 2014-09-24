@@ -30,6 +30,13 @@
 ApplicationIndex* ApplicationIndex::_instance = nullptr;
 
 /**************************************************************************//**
+ * @brief ApplicationIndex::ApplicationIndex
+ */
+ApplicationIndex::ApplicationIndex(){
+	_indexFile = Settings::instance()->configDir() + "idx_apps";
+}
+
+/**************************************************************************//**
  * @brief ApplicationIndex::instance
  * @return
  */
@@ -45,80 +52,107 @@ ApplicationIndex *ApplicationIndex::instance(){
 
 void ApplicationIndex::buildIndex()
 {
-	std::string paths = Settings::instance()->get("app_index_paths");
-	std::cout << "[ApplicationIndex] Looking in: " << paths << std::endl;
-	std::vector<std::string> pathList;
-	boost::split(pathList, paths, boost::is_any_of(":,"), boost::token_compress_on);
-
-	// Define a lambda for recursion
-	std::function<void(const boost::filesystem::path &p)> rec_dirsearch = [&] (const boost::filesystem::path &p)
+	// If there is a serialized index use it
+	std::ifstream f(_indexFile);
+	if (f.good()){
+		boost::archive::text_iarchive ia(f);
+		ia.template register_type<ApplicationIndexItem>();
+		ia >> _index;
+		f.close();
+	}
+	else
 	{
-		boost::filesystem::path path(p);
-		boost::filesystem::directory_iterator end_iterator;
-		if ( boost::filesystem::exists(path))
+		std::string paths = Settings::instance()->get("app_index_paths");
+		std::cout << "[ApplicationIndex] Looking in: " << paths << std::endl;
+		std::vector<std::string> pathList;
+		boost::split(pathList, paths, boost::is_any_of(":,"), boost::token_compress_on);
+
+		// Define a lambda for recursion
+		std::function<void(const boost::filesystem::path &p)> rec_dirsearch = [&] (const boost::filesystem::path &p)
 		{
-			if (boost::filesystem::is_directory(path))
+			boost::filesystem::path path(p);
+			boost::filesystem::directory_iterator end_iterator;
+			if ( boost::filesystem::exists(path))
 			{
-				for( boost::filesystem::directory_iterator d(path); d != end_iterator; ++d)
-					rec_dirsearch(*d);
-			}
-			if (boost::filesystem::is_regular_file(path))
-			{
-
-				// Read the entris in the desktopfile
-				std::map<std::string, std::string> desktopfile;
-				std::ifstream file(path.string());
-				if (!file.good())
-					return;
-				std::string str;
-				while (std::getline(file, str))
+				if (boost::filesystem::is_directory(path))
 				{
-					std::size_t found = str.find_first_of('=');
-					if (found == std::string::npos || found == str.length())
-						continue;
-					desktopfile[str.substr(0,found)] = str.substr(found+1);
+					for( boost::filesystem::directory_iterator d(path); d != end_iterator; ++d)
+						rec_dirsearch(*d);
 				}
+				if (boost::filesystem::is_regular_file(path))
+				{
+					// Check extension
+					if (path.extension().compare(".desktop"))
+						return;
 
-				// Check if this shall be displayed
-				std::string noDisplay = desktopfile["NoDisplay"];
-				std::transform(noDisplay.begin(), noDisplay.end(), noDisplay.begin(),
-							   std::bind2nd(std::ptr_fun(&std::tolower<char>), Settings::instance()->locale()));
-				if (noDisplay == "true")
-					return;
+					// Read the entries in the desktopfile
+					std::map<std::string, std::string> desktopfile;
+					std::ifstream file(path.string());
+					if (!file.good())
+						return;
+					std::string str;
+					while (std::getline(file, str))
+					{
+						std::size_t found = str.find_first_of('=');
+						if (found == std::string::npos || found == str.length())
+							continue;
+						desktopfile[str.substr(0,found)] = str.substr(found+1);
+					}
 
+					// Check if this shall be displayed
+					std::string noDisplay = desktopfile["NoDisplay"];
+					std::transform(noDisplay.begin(), noDisplay.end(), noDisplay.begin(),
+								   std::bind2nd(std::ptr_fun(&std::tolower<char>), Settings::instance()->locale()));
+					if (noDisplay == "true")
+						return;
 
-				// Check if this shall be runned in terminal
-				std::string term = desktopfile["Terminal"];
-				std::transform(term.begin(), term.end(), term.begin(),
-							   std::bind2nd(std::ptr_fun(&std::tolower<char>), Settings::instance()->locale()));
+					// Check if this shall be runned in terminal
+					std::string term = desktopfile["Terminal"];
+					std::transform(term.begin(), term.end(), term.begin(),
+								   std::bind2nd(std::ptr_fun(&std::tolower<char>), Settings::instance()->locale()));
 
-				// Strip every desktop file params
-				std::string exec = desktopfile["Exec"];
-				size_t d = exec.find_first_of('%');
-				if (d != std::string::npos){
-					d = exec.find_first_of(' ');
-					exec.resize(d);
+					// Strip every desktop file params
+					std::string exec = desktopfile["Exec"];
+					size_t d = exec.find_first_of('%');
+					if (d != std::string::npos){
+						d = exec.find_first_of(' ');
+						exec.resize(d);
+					}
+
+					_index.push_back(
+						new ApplicationIndexItem(
+							desktopfile["Name"],
+							(desktopfile["Comment"].empty())?desktopfile["GenericName"]:desktopfile["Comment"],
+							desktopfile["Icon"],
+							exec,
+							(term=="true")?true:false
+						)
+					);
 				}
-
-				_index.push_back(
-					new ApplicationIndexItem(
-						desktopfile["Name"],
-						(desktopfile["Comment"].empty())?desktopfile["GenericName"]:desktopfile["Comment"],
-						desktopfile["Icon"],
-						exec,
-						(term=="false")?false:true
-					)
-				);
 			}
-		}
-	};
+		};
 
-	// Finally do this recursion for all paths
-	for ( std::string &p : pathList)
-		rec_dirsearch(boost::filesystem::path(p));
-	std::sort(_index.begin(), _index.end(), CaseInsensitiveCompare(Settings::instance()->locale()));
+		// Finally do this recursion for all paths
+		for ( std::string &p : pathList)
+			rec_dirsearch(boost::filesystem::path(p));
+		std::sort(_index.begin(), _index.end(), CaseInsensitiveCompare(Settings::instance()->locale()));
+	}
 
 	std::cout << "[ApplicationIndex] Indexing done. Found " << _index.size() << " apps." << std::endl;
+}
+
+void ApplicationIndex::saveIndex() const
+{
+	std::ofstream f(_indexFile);
+	boost::archive::text_oarchive oa(f);
+	oa.template register_type<ApplicationIndexItem>();
+	oa << _index;
+	f.close();
+}
+
+void ApplicationIndex::loadIndex()
+{
+
 }
 
 /*****************************************************************************/
@@ -131,7 +165,7 @@ void ApplicationIndex::buildIndex()
  */
 void ApplicationIndex::ApplicationIndexItem::action(Action a)
 {
-	_lastAccess = std::chrono::system_clock::now();
+	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
 
 	pid_t pid;
 	switch (a) {
@@ -153,9 +187,9 @@ void ApplicationIndex::ApplicationIndexItem::action(Action a)
 			pid_t sid = setsid();
 			if (sid < 0) exit(EXIT_FAILURE);
 			if (_term)
-				execlp("gksu", "gksu", std::string("konsole -e "+_exec).c_str(), (char *)0);
+				execlp("kdesu", "kdesu", std::string("konsole -e "+_exec).c_str(), (char *)0);
 			else
-				execlp("gksu", "gksu", _exec.c_str(), (char *)0);
+				execlp("kdesu", "kdesu", _exec.c_str(), (char *)0);
 			exit(1);
 		}
 		break;

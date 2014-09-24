@@ -58,10 +58,16 @@ CONFIG += c++11
 LIBS += -lX11 \
 		-lboost_system \
 		-lboost_filesystem \
-		-lmuparser
+		-lmuparser \
+		-lboost_serialization
+
 
 DEFINES += FRONTEND_QT \
 			QT_NO_CAST_FROM_ASCII \
 			QT_NO_CAST_TO_ASCII
 
-QMAKE_CXXFLAGS_WARN_ON += -Werror
+
+target.path = /usr/local/bin/
+INSTALLS += target
+
+

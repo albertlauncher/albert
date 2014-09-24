@@ -21,6 +21,9 @@
 #include <string>
 #include <list>
 #include <locale>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/vector.hpp>
 
 class AbstractIndexProvider : public AbstractServiceProvider
 {
@@ -29,11 +32,19 @@ public:
 	class AbstractIndexItem : public AbstractServiceProvider::AbstractItem
 	{
 	public:
-		AbstractIndexItem() = delete;
-		AbstractIndexItem(const std::string &name) : _name(name){}
+		explicit AbstractIndexItem(){}
+		explicit AbstractIndexItem(const std::string &name) : _name(name){}
 		virtual ~AbstractIndexItem(){}
 
 		std::string _name;
+	protected:
+		friend class boost::serialization::access;
+		template <typename Archive>
+		void serialize(Archive &ar, const unsigned int version)
+		{
+			ar & _name;
+			ar & _lastAccess;
+		}
 	};
 
 	class CaseInsensitiveCompare
@@ -72,17 +83,18 @@ public:
 		bool operator()( char pre, char rhs ) const	{return myCType.tolower(pre) < myCType.tolower(rhs);}
 	};
 
-
-
 	AbstractIndexProvider(){}
 	virtual ~AbstractIndexProvider(){}
 
 	void query(const std::string&, std::vector<AbstractItem*>*) override;
 	virtual void buildIndex() = 0;
+	virtual void saveIndex() const = 0;
+	virtual void loadIndex() = 0;
 
 protected:
 	std::vector<AbstractIndexItem*> _index;
 	std::list<std::string> _watchPaths;
+	std::string _indexFile;
 };
 
 #endif // ABSTRACTINDEXPROVIDER_H

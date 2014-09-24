@@ -20,7 +20,6 @@
 #include <string>
 #include <vector>
 #include <chrono>
-using std::chrono::system_clock;
 
 class AbstractServiceProvider
 {
@@ -30,18 +29,18 @@ public:
 	public:
 		enum class Action { Enter, Alt, Ctrl };
 
-		AbstractItem(){}
+		explicit AbstractItem(): _lastAccess(0) {}
 		virtual ~AbstractItem(){}
 
-		virtual std::string  title() const = 0;
-		virtual std::string  iconName() const = 0;
-		virtual std::string  complete() const = 0;
-		virtual void         action(Action) = 0;
-		virtual std::string  actionText(Action) const = 0;
-		virtual std::string  infoText() const = 0;
-		inline system_clock::time_point  lastAccess() const {return _lastAccess;}
+		virtual std::string title() const = 0;
+		virtual std::string iconName() const = 0;
+		virtual std::string complete() const = 0;
+		virtual void        action(Action) = 0;
+		virtual std::string actionText(Action) const = 0;
+		virtual std::string infoText() const = 0;
+		inline  u_int64_t    lastAccess() const {return _lastAccess;}
 
-		system_clock::time_point _lastAccess;
+		u_int64_t _lastAccess; // secs since epoch
 	};
 
 	AbstractServiceProvider(){}

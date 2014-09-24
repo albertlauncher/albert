@@ -21,11 +21,20 @@
 #include <functional>
 #include <unistd.h>
 #include "websearch/websearch.h"
+#include "boost/serialization/access.hpp"
 
 //REMOVE
 #include <iostream>
+#include <fstream>
 
 FileIndex* FileIndex::_instance = nullptr;
+
+/**************************************************************************//**
+ * @brief FileIndex::FileIndex
+ */
+FileIndex::FileIndex(){
+	_indexFile = Settings::instance()->configDir() + "idx_files";
+}
 
 /**************************************************************************//**
  * @brief FileIndex::instance
@@ -38,67 +47,76 @@ FileIndex *FileIndex::instance(){
 }
 
 /**************************************************************************//**
- * @brief FileIndex::FileIndex
- */
-FileIndex::FileIndex()
-{
-//	magic_t _magic_cookie = magic_open(MAGIC_MIME);
-//	if (_magic_cookie == NULL) {
-//		std::cout << "Unable to initialize magic library" << std::endl;
-//	}
-
-//	printf("Loading default magic database\n");
-//	if (magic_load(_magic_cookie, NULL) != 0) {
-//		std::cout << "Cannot load magic database: " << magic_error(_magic_cookie) << std::endl;
-//		magic_close(_magic_cookie);
-//	}
-}
-
-/**************************************************************************//**
- * @brief FileIndex::~FileIndex
- */
-FileIndex::~FileIndex()
-{
-//	magic_close(_magic_cookie);
-
-}
-/**************************************************************************//**
  * @brief FileIndex::buildIndex
  */
 void FileIndex::buildIndex()
 {
-	std::string paths = Settings::instance()->get("file_index_paths");
-	std::cout << "[FileIndex] Looking in: " << paths << std::endl;
-	std::vector<std::string> pathList;
-	boost::split(pathList, paths, boost::is_any_of(","), boost::token_compress_on);
-
-	// Define a lambda for recursion
-	std::function<void(const boost::filesystem::path &p)> rec_dirsearch = [&] (const boost::filesystem::path &p)
+	// If there is a serialized index use it
+	std::ifstream f(_indexFile);
+	if (f.good()){
+		boost::archive::text_iarchive ia(f);
+		ia.template register_type<FileIndexItem>();
+		ia >> _index;
+		f.close();
+	}
+	else
 	{
-		boost::filesystem::path path(p);
-		boost::filesystem::directory_iterator end_iterator;
-		if ( boost::filesystem::exists(path) && !boost::filesystem::is_symlink(path) && p.filename().c_str()[0] != '.')
+		bool indexHiddenFiles = (Settings::instance()->get("showHiddenFiles").compare("true") == 0);
+
+		std::string paths = Settings::instance()->get("file_index_paths");
+		std::cout << "[FileIndex] Looking in: " << paths << std::endl;
+		std::vector<std::string> pathList;
+		boost::split(pathList, paths, boost::is_any_of(","), boost::token_compress_on);
+
+		// Define a lambda for recursion
+		std::function<void(const boost::filesystem::path &p)> rec_dirsearch = [&] (const boost::filesystem::path &p)
 		{
-			if (boost::filesystem::is_regular_file(path))
-				_index.push_back(new FileIndexItem(path));
-			if (boost::filesystem::is_directory(path))
+			boost::filesystem::path path(p);
+			boost::filesystem::directory_iterator end_iterator;
+			if ( boost::filesystem::exists(path) && !boost::filesystem::is_symlink(path))
 			{
-				_index.push_back(new FileIndexItem(path));
-				for( boost::filesystem::directory_iterator d(path); d != end_iterator; ++d)
-					rec_dirsearch(*d);
+				if  (p.filename().c_str()[0] != '.' && !indexHiddenFiles)
+					return;
+
+				if (boost::filesystem::is_regular_file(path))
+					_index.push_back(new FileIndexItem(path));
+				if (boost::filesystem::is_directory(path))
+				{
+					_index.push_back(new FileIndexItem(path));
+					for( boost::filesystem::directory_iterator d(path); d != end_iterator; ++d)
+						rec_dirsearch(*d);
+				}
 			}
-		}
-	};
+		};
 
-	// Finally do this recursion for all paths
-	for ( std::string &p : pathList)
-		rec_dirsearch(boost::filesystem::path(p));
+		// Finally do this recursion for all paths
+		for ( std::string &p : pathList)
+			rec_dirsearch(boost::filesystem::path(p));
 
-	std::sort(_index.begin(), _index.end(), CaseInsensitiveCompare(Settings::instance()->locale()));
+		std::sort(_index.begin(), _index.end(), CaseInsensitiveCompare(Settings::instance()->locale()));
+	}
 
-//	for ( auto &i : _index)
-//		std::cout << i->title() << std::endl;
 	std::cout << "[FileIndex] Indexing done. Found " << _index.size() << " files." << std::endl;
+}
+
+/**************************************************************************//**
+ * @brief FileIndex::saveIndex
+ */
+void FileIndex::saveIndex() const
+{
+	std::ofstream f(_indexFile);
+	boost::archive::text_oarchive oa(f);
+	oa.template register_type<FileIndexItem>();
+	oa << _index;
+	f.close();
+}
+
+/**************************************************************************//**
+ * @brief FileIndex::loadIndex
+ */
+void FileIndex::loadIndex()
+{
+
 }
 
 /*****************************************************************************/
@@ -111,7 +129,7 @@ void FileIndex::buildIndex()
  */
 void FileIndex::FileIndexItem::action(Action a)
 {
-	_lastAccess = std::chrono::system_clock::now();
+	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
 
 	pid_t pid;
 	switch (a) {
@@ -170,23 +188,4 @@ std::string FileIndex::FileIndexItem::iconName() const
 #ifdef FRONTEND_QT
 	return FileIndex::instance()->mimeDb.mimeTypeForFile(QString::fromStdString(_path.string())).iconName().toStdString();
 #endif
-
-//	std::string s("xdg-mime query filetype ");
-//	s.append(_path.string());
-//	FILE* pipe = popen(s.c_str(), "r");
-//	if (!pipe)
-//		return "ERROR";
-
-//	s.clear();
-//	while(!feof(pipe)) {
-//		char buffer[128];
-//		if(fgets(buffer, 128, pipe) != NULL)
-//			s += buffer;
-//	}
-//	pclose(pipe);
-//	return s
-//--------------------------------------------------------------------------...
-	//	std::string s(magic_file(FileIndex::instance()->_magic_cookie, _path.c_str()));
-//	return s;
-//--------------------------------------------------------------------------...
 }

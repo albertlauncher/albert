@@ -31,8 +31,8 @@ public:
 	class FileIndexItem : public AbstractIndexProvider::AbstractIndexItem
 	{
 	public:
-		FileIndexItem() = delete;
-		FileIndexItem(boost::filesystem::path p) : AbstractIndexItem(p.filename().string()), _path(p) {}
+		explicit FileIndexItem(){}
+		explicit FileIndexItem(boost::filesystem::path p) : AbstractIndexItem(p.filename().string()), _path(p) {}
 		~FileIndexItem(){}
 
 		inline std::string title() const override {return _path.filename().string();}
@@ -42,17 +42,32 @@ public:
 		std::string        actionText(Action) const override;
 		std::string        iconName() const override;
 
-	protected:
+	private:
 		boost::filesystem::path _path;
+
+		// Serialization
+		friend class boost::serialization::access;
+		template <typename Archive>
+		void serialize(Archive &ar, const unsigned int version)
+		{
+			ar & boost::serialization::base_object<AbstractIndexItem>(*this);
+			std::string s;
+			if(Archive::is_saving::value)
+				s = _path.string();
+			ar & s;
+			if(Archive::is_loading::value)
+				_path = s;
+		}
 	};
 
 	static FileIndex* instance();
 
 private:
 	FileIndex();
-	~FileIndex();
-
+	~FileIndex(){}
 	void buildIndex() override;
+	void saveIndex() const override;
+	void loadIndex() override;
 
 	static FileIndex *_instance;
 //	magic_t _magic_cookie;

@@ -96,7 +96,6 @@ QSize ProposalListView::sizeHint() const
 	if (model()->rowCount() == 0)
 		return QSize(width(), 0);
 	int nToShow = _nItemsToShow < model()->rowCount() ? _nItemsToShow : model()->rowCount();
-	qDebug() << "ProposalListView::sizeHint()"  <<  QSize(width(), nToShow*sizeHintForRow(0));
 	return QSize(width(), nToShow*sizeHintForRow(0));
 }
 

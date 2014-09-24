@@ -27,19 +27,27 @@
 #include <QDebug>
 
 Settings* Settings::_instance= nullptr;
-const std::string Settings::absulutesystemSettings = "/etc/albert/config";
-const std::string Settings::relativeUserSettings= ".config/albert/config";
+const std::string Settings::systemConfig = "/etc/albert/config";
+const std::string Settings::relativeUserConfig= ".config/albert/config";
+const std::string Settings::relativeUserConfigDir= ".config/albert/";
+
+
+
+/**************************************************************************//**
+ * @brief Settings::Settings
+ */
+Settings::Settings() : _locale(std::locale("")), _homeDir(getpwuid(getuid())->pw_dir)
+{
+	_homeDir.push_back('/');
+}
 
 /**************************************************************************//**
  * @brief Settings::load
  */
 void Settings::load(std::string path)
 {
-	std::cout << "[Settings] Locale is:\t\t" << _locale.name() << std::endl;
-
-
 	// Define a lambda
-	std::function<void(const std::string &p)> loadLambda = [&] (const std::string &p)
+	std::function<void(const std::string &p)> loadSettings = [&] (const std::string &p)
 	{
 		std::ifstream file(p);
 		if (!file.good()){
@@ -57,17 +65,16 @@ void Settings::load(std::string path)
 	};
 
 	// Load global settings
-	loadLambda(absulutesystemSettings);
+	loadSettings(systemConfig);
 
 	// Override with user settings
-	std::string userSettings(getpwuid(getuid())->pw_dir);
-	userSettings += "/" + path;
-	loadLambda(userSettings);
+	std::string userSettings(_homeDir + path);
+	loadSettings(userSettings);
 
-
-	std::cout << "[Settings]\t" << "[Key]\t\t[Value]"<< std::endl;
-	for ( std::pair<const std::string, std::string> &i : _settings)
-		std::cout << "[Settings]\t" << i.first << "\t" << i.second << std::endl;
+	//DEBUG
+//	std::cout << "[Settings]\t" << "[Key]\t\t[Value]"<< std::endl;
+//	for ( std::pair<const std::string, std::string> &i : _settings)
+//		std::cout << "[Settings]\t" << i.first << "\t" << i.second << std::endl;
 }
 
 /**************************************************************************//**
@@ -81,7 +88,6 @@ void Settings::save(std::string path) const
 	for (std::pair<std::string,std::string> i : _settings)
 		file << i.first << "=" << i.second << std::endl;
 }
-
 
 /**************************************************************************//**
  * @brief Settings::instance

@@ -21,6 +21,7 @@
 #include <pwd.h>
 #include <unistd.h>
 #include <functional>
+#include <fstream>
 #include "websearch/websearch.h"
 
 
@@ -28,6 +29,14 @@
 #include <iostream>
 
 BookmarkIndex* BookmarkIndex::_instance = nullptr;
+
+
+/**************************************************************************//**
+ * @brief BookmarkIndex::BookmarkIndex
+ */
+BookmarkIndex::BookmarkIndex(){
+	_indexFile = Settings::instance()->configDir() + "idx_bookmarks";
+}
 
 /**************************************************************************//**
  * @brief BookmarkIndex::instance
@@ -40,69 +49,77 @@ BookmarkIndex *BookmarkIndex::instance(){
 }
 
 /**************************************************************************//**
- * @brief BookmarkIndex::BookmarkIndex
- */
-BookmarkIndex::BookmarkIndex()
-{
-}
-
-/**************************************************************************//**
- * @brief BookmarkIndex::~BookmarkIndex
- */
-BookmarkIndex::~BookmarkIndex()
-{
-}
-
-/**************************************************************************//**
  * @brief BookmarkIndex::buildIndex
  */
 void BookmarkIndex::buildIndex()
 {
-	using namespace boost::property_tree;
-
-	// Define a lambda for recursion
-	std::function<void(const ptree &pt)> rec_bmsearch = [&] (const ptree &pt)
+	// If there is a serialized index use it
+	std::ifstream f(_indexFile);
+	if (f.good()){
+		boost::archive::text_iarchive ia(f);
+		ia.template register_type<BookmarkIndexItem>();
+		ia >> _index;
+		f.close();
+	}
+	else
 	{
-		for (const ptree::value_type& ptvt : pt) {
-			if (!ptvt.second.empty()){
-				if (!ptvt.second.get_child("type").get_value<std::string>().compare("folder"))
-					rec_bmsearch(ptvt.second.get_child("children"));
-				else // (!ptvt.get_child("type").get_value<std::string>().compare("url"))
-				{
+		using namespace boost::property_tree;
 
-					std::string i = ptvt.second.get_child("name").get_value<std::string>();
-//					std::cout << "name" <<  i << std::endl;
-//					std::cout << i.size() << "/" <<  i.length() << std::endl;
-
-					std::string j = ptvt.second.get_child("url").get_value<std::string>();
-//					std::cout << "url" <<  j << std::endl;
-//					std::cout << j.size() << "/" <<  j.length() << std::endl;
-
-					_index.push_back(new BookmarkIndexItem(i,j));
+		// Define a lambda for recursion
+		std::function<void(const ptree &pt)> rec_bmsearch = [&] (const ptree &pt)
+		{
+			for (const ptree::value_type& ptvt : pt) {
+				if (!ptvt.second.empty()){
+					if (!ptvt.second.get_child("type").get_value<std::string>().compare("folder"))
+						rec_bmsearch(ptvt.second.get_child("children"));
+					else // (!ptvt.get_child("type").get_value<std::string>().compare("url"))
+					{
+						std::string i = ptvt.second.get_child("name").get_value<std::string>();
+						std::string j = ptvt.second.get_child("url").get_value<std::string>();
+						_index.push_back(new BookmarkIndexItem(i,j));
+					}
 				}
 			}
+		};
+
+		// Finally do this recursion for all paths
+		std::string bookmarkPath(getpwuid(getuid())->pw_dir);
+		bookmarkPath += "/" + Settings::instance()->get("chromium_bookmark_path");
+		std::cout << "[BookmarkIndex] Parsing in: " << bookmarkPath << std::endl;
+		try
+		{
+			ptree pt;
+			read_json(bookmarkPath, pt);// Settings::instance()->locale());
+			rec_bmsearch(pt.get_child("roots"));
 		}
-	};
+		catch (std::exception const& e)
+		{
+			std::cerr << "[BookmarkIndex] Could not build index: " << e.what() << std::endl;
+		}
 
-	// Finally do this recursion for all paths
-	std::string bookmarkPath(getpwuid(getuid())->pw_dir);
-	bookmarkPath += "/" + Settings::instance()->get("chromium_bookmark_path");
-	std::cout << "[BookmarkIndex] Parsing in: " << bookmarkPath << std::endl;
-	try
-	{
-		ptree pt;
-		read_json(bookmarkPath, pt);// Settings::instance()->locale());
-		rec_bmsearch(pt.get_child("roots"));
-	}
-	catch (std::exception const& e)
-	{
-		std::cerr << "[BookmarkIndex] Could not build index: " << e.what() << std::endl;
+		std::sort(_index.begin(), _index.end(), CaseInsensitiveCompare(Settings::instance()->locale()));
 	}
 
-	std::sort(_index.begin(), _index.end(), CaseInsensitiveCompare(Settings::instance()->locale()));
 	std::cout << "[BookmarkIndex] Indexing done. Found " << _index.size() << " bookmarks." << std::endl;
+}
 
+/**************************************************************************//**
+ * @brief BookmarkIndex::saveIndex
+ */
+void BookmarkIndex::saveIndex() const
+{
+	std::ofstream f(_indexFile);
+	boost::archive::text_oarchive oa(f);
+	oa.template register_type<BookmarkIndexItem>();
+	oa << _index;
+	f.close();
+}
 
+/**************************************************************************//**
+ * @brief BookmarkIndex::loadIndex
+ */
+void BookmarkIndex::loadIndex()
+{
 
 }
 
@@ -116,7 +133,7 @@ void BookmarkIndex::buildIndex()
  */
 void BookmarkIndex::BookmarkIndexItem::action(Action a)
 {
-	_lastAccess = std::chrono::system_clock::now();
+	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
 
 	pid_t pid;
 	switch (a) {

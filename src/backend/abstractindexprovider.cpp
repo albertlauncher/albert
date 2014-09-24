@@ -15,9 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "abstractindexprovider.h"
-#include <string>
 #include <algorithm>
-#include <iostream>
 #include <settings.h>
 
 void AbstractIndexProvider::query(const std::string &req, std::vector<AbstractItem*> *res)
@@ -27,7 +25,3 @@ void AbstractIndexProvider::query(const std::string &req, std::vector<AbstractIt
 	ub =  std::upper_bound (_index.cbegin(), _index.cend(), req, CaseInsensitiveComparePrefix(Settings::instance()->locale()));
 	res->insert(res->end(), lb, ub);
 }
-
-
-
-

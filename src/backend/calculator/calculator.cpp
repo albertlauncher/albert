@@ -40,7 +40,6 @@ Calculator *Calculator::instance(){
 /**************************************************************************//**
  * @brief Calculator::query
  */
-#pragma GCC diagnostic ignored "-Wunused-parameter"
 void Calculator::query(const std::string &req, std::vector<AbstractServiceProvider::AbstractItem *> *res)
 {
 	using namespace mu;

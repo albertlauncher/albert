@@ -17,7 +17,6 @@
 #include <QApplication>
 #include "settings.h"
 #include "albert.h"
-#include "albertengine.h"
 
 #include <iostream>
 
@@ -29,9 +28,6 @@ int main(int argc, char *argv[])
 
 	// Load  settings
 	Settings::instance()->load();
-
-	// Build the indizes
-	AlbertEngine::instance()->buildIndex();
 
 	// Create the app
 	AlbertWidget w;

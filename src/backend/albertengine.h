@@ -19,7 +19,6 @@
 
 #include <vector>
 #include <map>
-// Services
 #include "abstractserviceprovider.h"
 #include "abstractindexprovider.h"
 
@@ -35,14 +34,13 @@ class AlbertEngine
 	};
 
 public:
-	void buildIndex();
+	AlbertEngine();
+	~AlbertEngine(){}
 	void query(const std::string &req, std::vector<AbstractServiceProvider::AbstractItem *> *res);
-	static AlbertEngine* instance();
+	void buildIndex();
+	void saveIndex() const;
 
 private:
-	explicit AlbertEngine();
-	~AlbertEngine();
-	static AlbertEngine *_instance;
 	AbstractServiceProvider        *_websearch;
 	AbstractServiceProvider        *_calculator;
 	vector<AbstractIndexProvider*> _indizes;

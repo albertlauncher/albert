@@ -27,8 +27,8 @@ public:
 	class ApplicationIndexItem : public AbstractIndexProvider::AbstractIndexItem
 	{
 	public:
-		ApplicationIndexItem() = delete;
-		ApplicationIndexItem(const std::string &name, const std::string &info, const std::string &iconName, const std::string &cmd, const bool term = false)
+		explicit ApplicationIndexItem(){}
+		explicit ApplicationIndexItem(const std::string &name, const std::string &info, const std::string &iconName, const std::string &cmd, const bool term = false)
 			: AbstractIndexItem(name), _info(info), _iconName(iconName), _exec(cmd), _term(term) {}
 		~ApplicationIndexItem(){}
 		inline std::string title() const override {return _name;}
@@ -38,20 +38,35 @@ public:
 		void               action(Action) override;
 		std::string        actionText(Action) const override;
 
-	protected:
+	private:
 		std::string _info;
 		std::string _iconName;
 		std::string _exec;
 		bool		_term;
+
+		// Serialization
+		friend class boost::serialization::access;
+		template <typename Archive>
+		void serialize(Archive &ar, const unsigned int version)
+		{
+		  ar & boost::serialization::base_object<AbstractIndexItem>(*this);
+		  ar & _info;
+		  ar & _iconName;
+		  ar & _exec;
+		  ar & _term;
+		}
 	};
 
 	static ApplicationIndex* instance();
 
 private:
-	ApplicationIndex(){}
+	ApplicationIndex();
 	~ApplicationIndex(){}
 	void buildIndex() override;
+	void saveIndex() const override;
+	void loadIndex() override;
 
 	static ApplicationIndex *_instance;
+
 };
 #endif // APPLICATIONINDEX_H

@@ -23,14 +23,8 @@
 #include "calculator/calculator.h"
 #include "bookmarkindex/bookmarkindex.h"
 #include "applicationindex/applicationindex.h"
-
-
-
-
 // DEBUG
 #include <iostream>
-
-AlbertEngine* AlbertEngine::_instance = nullptr;
 
 /**********************************************************************//**
  * @brief AlbertEngine::AlbertEngine
@@ -41,23 +35,7 @@ AlbertEngine::AlbertEngine()
 	_indizes.push_back(ApplicationIndex::instance());
 	_indizes.push_back(FileIndex::instance());
 	_indizes.push_back(BookmarkIndex::instance());
-}
 
-/**********************************************************************//**
- * @brief AlbertEngine::~AlbertEngine
- */
-AlbertEngine::~AlbertEngine()
-{
-}
-
-/**********************************************************************//**
- * @brief AlbertEngine::instance
- * @return
- */
-AlbertEngine *AlbertEngine::instance(){
-	if (_instance == nullptr)
-		_instance = new AlbertEngine;
-	return _instance;
 }
 
 /**********************************************************************//**
@@ -83,7 +61,17 @@ void AlbertEngine::query(const std::string &req, std::vector<AbstractServiceProv
  */
 void AlbertEngine::buildIndex()
 {
-	for (auto i: _indizes) {
+	for (AbstractIndexProvider *i: _indizes) {
 		i->buildIndex();
+	}
+}
+
+/**********************************************************************//**
+ * @brief AlbertEngine::saveIndex
+ */
+void AlbertEngine::saveIndex() const
+{
+	for (AbstractIndexProvider *i : _indizes) {
+		i->saveIndex();
 	}
 }

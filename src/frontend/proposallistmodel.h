@@ -26,7 +26,7 @@ class ProposalListModel : public QAbstractListModel
 	Q_OBJECT
 
 public:
-	explicit ProposalListModel(QObject *parent = 0);
+	explicit ProposalListModel(QObject *parent = 0){}
 	void set(const std::vector<AbstractServiceProvider::AbstractItem*> &d);
 	void clear();
 	void action( const QModelIndex & index);

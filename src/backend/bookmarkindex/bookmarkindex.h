@@ -29,8 +29,8 @@ public:
 	class BookmarkIndexItem : public AbstractIndexProvider::AbstractIndexItem
 	{
 	public:
-		BookmarkIndexItem() = delete;
-		BookmarkIndexItem(const std::string &name, const std::string &url) : AbstractIndexItem(name), _url(url){}
+		explicit BookmarkIndexItem(){}
+		explicit BookmarkIndexItem(const std::string &name, const std::string &url) : AbstractIndexItem(name), _url(url){}
 		~BookmarkIndexItem(){}
 		inline std::string title() const override {return _name;}
 		inline std::string complete() const override {return _name;}
@@ -39,16 +39,27 @@ public:
 		std::string        actionText(Action) const override;
 		std::string        iconName() const override;
 
-	protected:
-		const std::string _url;
+	private:
+		std::string _url;
+
+		// Serialization
+		friend class boost::serialization::access;
+		template <typename Archive>
+		void serialize(Archive &ar, const unsigned int version)
+		{
+		  ar & boost::serialization::base_object<AbstractIndexItem>(*this);
+		  ar & _url;
+		}
 	};
 
 	static BookmarkIndex* instance();
 
 private:
 	BookmarkIndex();
-	~BookmarkIndex();
+	~BookmarkIndex(){}
 	void buildIndex() override;
+	void saveIndex() const override;
+	void loadIndex() override;
 
 	static BookmarkIndex *_instance;
 };

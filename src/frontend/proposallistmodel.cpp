@@ -20,16 +20,6 @@
 #include <QIcon>
 
 
-
-/**************************************************************************//**
- * @brief ProposalListModel::ProposalListModel
- * @param parent
- */
-ProposalListModel::ProposalListModel(QObject *parent) :
-	QAbstractListModel(parent)
-{
-}
-
 /**************************************************************************//**
  * @brief ProposalListModel::set
  * @param d

@@ -31,7 +31,7 @@ public:
 	class CalculatorItem : public AbstractServiceProvider::AbstractItem
 	{
 	public:
-		CalculatorItem(){}
+		explicit CalculatorItem(){}
 		~CalculatorItem(){}
 
 		inline std::string title() const override {return _result;}

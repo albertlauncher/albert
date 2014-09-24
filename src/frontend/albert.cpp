@@ -31,6 +31,9 @@
 AlbertWidget::AlbertWidget(QWidget *parent)
 	: QWidget(parent)
 {
+	/* Stuff concerning the UI and windowing */
+
+
 	// Window properties
 	setObjectName(QString::fromLocal8Bit("albert"));
 	setWindowTitle(QString::fromLocal8Bit("Albert"));
@@ -40,8 +43,6 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 					| Qt::WindowStaysOnTopHint
 					| Qt::Tool
 					);
-
-	/* Layout hierarchy */
 
 	// Layer 3
 	QVBoxLayout *l3 = new QVBoxLayout;
@@ -78,7 +79,7 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	contentLayout->setMargin(0);
 	_frame1->setLayout(contentLayout);
 
-	/* Interface */
+	// Interface
 	_inputLine = new InputLine;
 	contentLayout->addWidget(_inputLine);
 
@@ -96,7 +97,19 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_proposalListView->setFocusProxy(_inputLine);
 	this->setFocusPolicy(Qt::StrongFocus);
 
+
+	/* indexstuff */
+
+
+	// Build or load the index
+	_engine.buildIndex();
+
+	// React on aboutQuit (yes on shutdown too)
+	connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(sigAboutToQuit()));
+
+
 	/* Sniffing and snooping*/
+
 
 	// Albert intercepts inputline (Enter, Tab(Completion) and focus-loss handling)
 	_inputLine->installEventFilter(this);
@@ -143,6 +156,14 @@ void AlbertWidget::show()
 }
 
 /**************************************************************************//**
+ * @brief AlbertWidget::sigAboutToQuit
+ */
+void AlbertWidget::sigAboutToQuit()
+{
+	_engine.saveIndex();
+}
+
+/**************************************************************************//**
  * @brief AlbertWidget::onHotKeyPressed
  */
 void AlbertWidget::onHotKeyPressed()
@@ -166,7 +187,7 @@ void AlbertWidget::onTextEdited(const QString & text)
 	QString t = text.trimmed();
 	if (!t.isEmpty()){
 		std::vector<AbstractServiceProvider::AbstractItem *> r;
-		AlbertEngine::instance()->query(t.toStdString(), &r);
+		_engine.query(t.toStdString(), &r);
 		_proposalListModel->set(r);
 		if (_proposalListModel->rowCount() > 0){
 			if (!_proposalListView->currentIndex().isValid())
