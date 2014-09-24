@@ -24,7 +24,7 @@
  * @brief ProposalListModel::set
  * @param d
  */
-void ProposalListModel::set(const std::vector<AbstractServiceProvider::AbstractItem *> &d){
+void ProposalListModel::set(const std::vector<AbstractServiceProvider::Item *> &d){
 	beginResetModel();
 	_data = d;
 	endResetModel();
@@ -48,7 +48,7 @@ void ProposalListModel::clear()
 void ProposalListModel::action(const QModelIndex &index)
 {
 	if (rowCount() != 0)
-		_data[index.isValid()?index.row():0]->action(AbstractServiceProvider::AbstractItem::Action::Enter);
+		_data[index.isValid()?index.row():0]->action(AbstractServiceProvider::Action::Enter);
 }
 
 /**************************************************************************//**
@@ -58,7 +58,7 @@ void ProposalListModel::action(const QModelIndex &index)
 void ProposalListModel::altAction(const QModelIndex &index)
 {
 	if (rowCount() != 0)
-		_data[index.isValid()?index.row():0]->action(AbstractServiceProvider::AbstractItem::Action::Alt);
+		_data[index.isValid()?index.row():0]->action(AbstractServiceProvider::Action::Alt);
 }
 
 /**************************************************************************//**
@@ -68,7 +68,7 @@ void ProposalListModel::altAction(const QModelIndex &index)
 void ProposalListModel::ctrlAction(const QModelIndex &index)
 {
 	if (rowCount() != 0)
-		_data[index.isValid()?index.row():0]->action(AbstractServiceProvider::AbstractItem::Action::Ctrl);
+		_data[index.isValid()?index.row():0]->action(AbstractServiceProvider::Action::Ctrl);
 }
 
 /**************************************************************************//**
@@ -100,13 +100,13 @@ QVariant ProposalListModel::data(const QModelIndex &index, int role) const
 }
 
 	if (role == Qt::UserRole)
-		return QString::fromStdString(_data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Enter));
+		return QString::fromStdString(_data[index.row()]->actionText(AbstractServiceProvider::Action::Enter));
 
 	if (role == Qt::UserRole+1)
-		return QString::fromStdString(_data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Alt));
+		return QString::fromStdString(_data[index.row()]->actionText(AbstractServiceProvider::Action::Alt));
 
 	if (role == Qt::UserRole+2 )
-		return QString::fromStdString(_data[index.row()]->actionText(AbstractServiceProvider::AbstractItem::Action::Ctrl));
+		return QString::fromStdString(_data[index.row()]->actionText(AbstractServiceProvider::Action::Ctrl));
 
 	if (role == Qt::UserRole+3)
 		return QString::fromStdString(_data[index.row()]->infoText());

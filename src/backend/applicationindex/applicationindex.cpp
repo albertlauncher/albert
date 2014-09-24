@@ -27,8 +27,6 @@
 //REMOVE
 #include <iostream>
 
-ApplicationIndex* ApplicationIndex::_instance = nullptr;
-
 /**************************************************************************//**
  * @brief ApplicationIndex::ApplicationIndex
  */
@@ -37,26 +35,15 @@ ApplicationIndex::ApplicationIndex(){
 }
 
 /**************************************************************************//**
- * @brief ApplicationIndex::instance
- * @return
- */
-ApplicationIndex *ApplicationIndex::instance(){
-	if (_instance == nullptr)
-		_instance = new ApplicationIndex;
-	return _instance;
-}
-
-/**************************************************************************//**
  * @brief ApplicationIndex::buildIndex
  */
-
 void ApplicationIndex::buildIndex()
 {
 	// If there is a serialized index use it
 	std::ifstream f(_indexFile);
 	if (f.good()){
 		boost::archive::text_iarchive ia(f);
-		ia.template register_type<ApplicationIndexItem>();
+		ia.template register_type<Item>();
 		ia >> _index;
 		f.close();
 	}
@@ -120,7 +107,7 @@ void ApplicationIndex::buildIndex()
 					}
 
 					_index.push_back(
-						new ApplicationIndexItem(
+						new Item(
 							desktopfile["Name"],
 							(desktopfile["Comment"].empty())?desktopfile["GenericName"]:desktopfile["Comment"],
 							desktopfile["Icon"],
@@ -145,15 +132,11 @@ void ApplicationIndex::saveIndex() const
 {
 	std::ofstream f(_indexFile);
 	boost::archive::text_oarchive oa(f);
-	oa.template register_type<ApplicationIndexItem>();
+	oa.template register_type<Item>();
 	oa << _index;
 	f.close();
 }
 
-void ApplicationIndex::loadIndex()
-{
-
-}
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -163,7 +146,7 @@ void ApplicationIndex::loadIndex()
  * @brief ApplicationIndex::ApplicationIndexItem::action
  * @param a
  */
-void ApplicationIndex::ApplicationIndexItem::action(Action a)
+void ApplicationIndex::Item::action(Action a)
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
 
@@ -204,7 +187,7 @@ void ApplicationIndex::ApplicationIndexItem::action(Action a)
  * @param a
  * @return
  */
-std::string ApplicationIndex::ApplicationIndexItem::actionText(Action a) const
+std::string ApplicationIndex::Item::actionText(Action a) const
 {
 	switch (a) {
 	case Action::Enter:

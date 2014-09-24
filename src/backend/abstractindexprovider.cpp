@@ -18,9 +18,11 @@
 #include <algorithm>
 #include <settings.h>
 
-void AbstractIndexProvider::query(const std::string &req, std::vector<AbstractItem*> *res)
+
+
+void AbstractIndexProvider::query(const std::string &req, std::vector<AbstractServiceProvider::Item *> *res)
 {
-	std::vector<AbstractIndexItem *>::const_iterator lb, ub;
+	std::vector<Item *>::const_iterator lb, ub;
 	lb =  std::lower_bound (_index.cbegin(), _index.cend(), req, CaseInsensitiveCompare(Settings::instance()->locale()));
 	ub =  std::upper_bound (_index.cbegin(), _index.cend(), req, CaseInsensitiveComparePrefix(Settings::instance()->locale()));
 	res->insert(res->end(), lb, ub);

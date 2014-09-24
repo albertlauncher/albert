@@ -18,47 +18,47 @@
 #define CALCULATOR_H
 
 #include "abstractserviceprovider.h"
+#include "singleton.h"
 #include <string>
 #include <vector>
-
-
-//TODO IN SRC
 #include <unistd.h>
 
-class Calculator : public AbstractServiceProvider
+
+/*********************************************************************/
+class Calculator : public AbstractServiceProvider, public Singleton<Calculator>
 {
+	friend class Singleton<Calculator>;
 public:
-	class CalculatorItem : public AbstractServiceProvider::AbstractItem
-	{
-	public:
-		explicit CalculatorItem(){}
-		~CalculatorItem(){}
+	class Item;
 
-		inline std::string title() const override {return _result;}
-		inline std::string complete() const override {return _query;}
-		inline std::string infoText() const override {return "Result of '"+_query+"'";}
-		void               action(Action) override;
-		std::string        actionText(Action) const override;
-		std::string        iconName() const override;
+	void query(const std::string&, std::vector<AbstractServiceProvider::Item*>*) override;
 
-		inline void set(const std::string &req, const std::string &res){_query=req;_result=res;}
+protected:
+	Calculator();
+	~Calculator();
 
-	protected:
-		std::string _query;
-		std::string _result;
-	};
+	Item *_theOneAndOnly;
+	std::vector<Item*> _searchEngines;
+};
 
-	static Calculator* instance();
-	void        query(const std::string&, std::vector<AbstractItem*>*) override;
+/*********************************************************************/
+class Calculator::Item : public AbstractServiceProvider::Item
+{
+	friend class Calculator;
 
-private:
-	Calculator(){}
-	~Calculator(){}
+public:
+	Item(){}
+	~Item(){}
 
-	CalculatorItem _theOneAndonly;
+	inline std::string title()            const override {return _result;}
+	inline std::string complete()         const override {return _query;}
+	inline std::string infoText()         const override {return "Result of '"+_query+"'";}
+	void               action(Action)           override;
+	std::string        actionText(Action) const override;
+	std::string        iconName()         const override {return "calc";}
 
-	std::vector<CalculatorItem*> _searchEngines;
-	static Calculator *_instance;
-
+protected:
+	std::string _query;
+	std::string _result;
 };
 #endif // CALCULATOR_H

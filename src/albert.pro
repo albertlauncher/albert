@@ -28,6 +28,7 @@ HEADERS  +=	backend/abstractindexprovider.h \
 	frontend/xhotkeymanager.h \
 	frontend/inputline.h \
 	backend/settings.h \
+	singleton.h \
 	backend/applicationindex/applicationindex.h \
 	backend/bookmarkindex/bookmarkindex.h \
 	backend/fileindex/fileindex.h \

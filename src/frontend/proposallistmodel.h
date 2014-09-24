@@ -27,7 +27,7 @@ class ProposalListModel : public QAbstractListModel
 
 public:
 	explicit ProposalListModel(QObject *parent = 0){}
-	void set(const std::vector<AbstractServiceProvider::AbstractItem*> &d);
+	void set(const std::vector<AbstractServiceProvider::Item*> &d);
 	void clear();
 	void action( const QModelIndex & index);
 	void altAction( const QModelIndex & index);
@@ -38,7 +38,7 @@ public:
 
 protected:
 
-	std::vector<AbstractServiceProvider::AbstractItem*> _data;
+	std::vector<AbstractServiceProvider::Item*> _data;
 
 };
 

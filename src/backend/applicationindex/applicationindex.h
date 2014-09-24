@@ -18,55 +18,63 @@
 #define APPLICATIONINDEX_H
 
 #include "abstractindexprovider.h"
+#include "singleton.h"
 #include <string>
 
 
-class ApplicationIndex : public AbstractIndexProvider
+/**************************************************************************//**
+ * @brief The ApplicationIndex class
+ */
+class ApplicationIndex : public AbstractIndexProvider, public Singleton<ApplicationIndex>
 {
-public:
-	class ApplicationIndexItem : public AbstractIndexProvider::AbstractIndexItem
-	{
-	public:
-		explicit ApplicationIndexItem(){}
-		explicit ApplicationIndexItem(const std::string &name, const std::string &info, const std::string &iconName, const std::string &cmd, const bool term = false)
-			: AbstractIndexItem(name), _info(info), _iconName(iconName), _exec(cmd), _term(term) {}
-		~ApplicationIndexItem(){}
-		inline std::string title() const override {return _name;}
-		inline std::string complete() const override {return _name;}
-		inline std::string infoText() const override {return _info;}
-		inline std::string iconName() const override {return _iconName;}
-		void               action(Action) override;
-		std::string        actionText(Action) const override;
+	friend class Singleton<ApplicationIndex>;
 
-	private:
-		std::string _info;
-		std::string _iconName;
-		std::string _exec;
-		bool		_term;
-
-		// Serialization
-		friend class boost::serialization::access;
-		template <typename Archive>
-		void serialize(Archive &ar, const unsigned int version)
-		{
-		  ar & boost::serialization::base_object<AbstractIndexItem>(*this);
-		  ar & _info;
-		  ar & _iconName;
-		  ar & _exec;
-		  ar & _term;
-		}
-	};
-
-	static ApplicationIndex* instance();
-
-private:
 	ApplicationIndex();
 	~ApplicationIndex(){}
-	void buildIndex() override;
+
+public:
+	class Item;
+
+	void buildIndex()      override;
 	void saveIndex() const override;
-	void loadIndex() override;
-
-	static ApplicationIndex *_instance;
-
+	void loadIndex()       override{}
 };
+
+/**************************************************************************//**
+ * @brief The ApplicationIndex::Item class
+ */
+class ApplicationIndex::Item : public AbstractIndexProvider::Item
+{
+	friend class ApplicationIndex;
+
+public:
+	Item(){}
+	~Item(){}
+	explicit Item(const std::string &name, const std::string &info, const std::string &iconName, const std::string &cmd, const bool term = false)
+		: AbstractIndexProvider::Item(name), _info(info), _iconName(iconName), _exec(cmd), _term(term) {}
+
+	inline std::string title()            const override {return _name;}
+	inline std::string complete()         const override {return _name;}
+	inline std::string infoText()         const override {return _info;}
+	inline std::string iconName()         const override {return _iconName;}
+	void               action(Action)           override;
+	std::string        actionText(Action) const override;
+
+protected:
+	// Serialization
+	friend class boost::serialization::access;
+	template <typename Archive> void serialize(Archive &ar, const unsigned int version) {
+	  ar & boost::serialization::base_object<AbstractIndexProvider::Item>(*this);
+	  ar & _info;
+	  ar & _iconName;
+	  ar & _exec;
+	  ar & _term;
+	}
+
+	std::string _info;
+	std::string _iconName;
+	std::string _exec;
+	bool		_term;
+};
+
 #endif // APPLICATIONINDEX_H

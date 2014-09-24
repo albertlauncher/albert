@@ -186,7 +186,7 @@ void AlbertWidget::onTextEdited(const QString & text)
 {
 	QString t = text.trimmed();
 	if (!t.isEmpty()){
-		std::vector<AbstractServiceProvider::AbstractItem *> r;
+		std::vector<AbstractServiceProvider::Item *> r;
 		_engine.query(t.toStdString(), &r);
 		_proposalListModel->set(r);
 		if (_proposalListModel->rowCount() > 0){

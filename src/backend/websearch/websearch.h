@@ -18,6 +18,7 @@
 #define WEBSEARCH_H
 
 #include "abstractserviceprovider.h"
+#include "singleton.h"
 #include <string>
 #include <vector>
 
@@ -25,50 +26,54 @@
 //TODO IN SRC
 #include <unistd.h>
 
-class WebSearch : public AbstractServiceProvider
+class WebSearch : public AbstractServiceProvider, public Singleton<WebSearch>
 {
+	friend class Singleton<WebSearch>;
+
 public:
-	class WebSearchItem : public AbstractServiceProvider::AbstractItem
-	{
-	public:
-		explicit WebSearchItem(){}
-		explicit WebSearchItem( const std::string &name, const std::string &url, const std::string &sc, const std::string &iconName)
-			: _name(name), _url(url), _shortcut(sc), _iconName(iconName) {}
-		~WebSearchItem(){}
+	class Item;
 
-		inline std::string title() const override {return "Search '" + ((_searchTerm.empty())?"...":_searchTerm) + "' in " + _name;}
-		inline std::string complete() const override {return _name + " " + _searchTerm;}
-		inline std::string infoText() const override {return std::string(_url).replace(_url.find("%s"), 2, _searchTerm);}
-		void               action(Action) override;
-		std::string        actionText(Action) const override;
-		std::string        iconName() const override;
-
-		std::string        shortcut() const {return _shortcut;}
-		std::string        name() const {return _name;}
-		std::string        searchTerm() const {return _searchTerm;}
-
-		void setTerm(const std::string &term) {_searchTerm = term;}
-
-	protected:
-		std::string _searchTerm;
-		const std::string _name;
-		const std::string _url;
-		const std::string _shortcut;
-		const std::string _iconName;
-	};
-
-	static WebSearch* instance();
-	void        query(const std::string&, std::vector<AbstractItem*>*) override;
-	void        queryAll(const std::string&, std::vector<AbstractItem*>*);
+	void        query(const std::string&, std::vector<AbstractServiceProvider::Item*>*) override;
+	void        queryAll(const std::string&, std::vector<AbstractServiceProvider::Item*>*);
 	void        defaultSearch(const std::string& term) const;
 	std::string defaultSearchText(const std::string& term) const;
 
-private:
+protected:
 	WebSearch();
-	~WebSearch();
+	~WebSearch(){}
 
-	std::vector<WebSearchItem*> _searchEngines;
-	static WebSearch *_instance;
-
+	std::vector<Item*> _searchEngines;
 };
+
+class WebSearch::Item : public AbstractServiceProvider::Item
+{
+	friend class WebSearch;
+
+public:
+	explicit Item(){}
+	explicit Item( const std::string &name, const std::string &url, const std::string &sc, const std::string &iconName)
+		: _name(name), _url(url), _shortcut(sc), _iconName(iconName) {}
+	~Item(){}
+
+	inline std::string title() const override {return "Search '" + ((_searchTerm.empty())?"...":_searchTerm) + "' in " + _name;}
+	inline std::string complete() const override {return _name + " " + _searchTerm;}
+	inline std::string infoText() const override {return std::string(_url).replace(_url.find("%s"), 2, _searchTerm);}
+	void               action(AbstractServiceProvider::Action) override;
+	std::string        actionText(AbstractServiceProvider::Action) const override;
+	std::string        iconName() const override;
+
+	std::string        shortcut() const {return _shortcut;}
+	std::string        name() const {return _name;}
+	std::string        searchTerm() const {return _searchTerm;}
+
+	void setTerm(const std::string &term) {_searchTerm = term;}
+
+protected:
+	std::string _searchTerm;
+	const std::string _name;
+	const std::string _url;
+	const std::string _shortcut;
+	const std::string _iconName;
+};
+
 #endif // WEBSEARCH_H

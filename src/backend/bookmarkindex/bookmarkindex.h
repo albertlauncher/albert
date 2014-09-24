@@ -18,49 +18,60 @@
 #define BOOKMARKINDEX_H
 
 #include "abstractindexprovider.h"
+#include "singleton.h"
 #include "boost/filesystem.hpp"
 #include <string>
 #include <iostream>
 
 
-class BookmarkIndex : public AbstractIndexProvider
+/**************************************************************************//**
+ * @brief The BookmarkIndex class
+ */
+class BookmarkIndex : public AbstractIndexProvider, public Singleton<BookmarkIndex>
 {
-public:
-	class BookmarkIndexItem : public AbstractIndexProvider::AbstractIndexItem
-	{
-	public:
-		explicit BookmarkIndexItem(){}
-		explicit BookmarkIndexItem(const std::string &name, const std::string &url) : AbstractIndexItem(name), _url(url){}
-		~BookmarkIndexItem(){}
-		inline std::string title() const override {return _name;}
-		inline std::string complete() const override {return _name;}
-		inline std::string infoText() const override {return _url;}
-		void               action(Action) override;
-		std::string        actionText(Action) const override;
-		std::string        iconName() const override;
+	friend class Singleton<BookmarkIndex>;
 
-	private:
-		std::string _url;
-
-		// Serialization
-		friend class boost::serialization::access;
-		template <typename Archive>
-		void serialize(Archive &ar, const unsigned int version)
-		{
-		  ar & boost::serialization::base_object<AbstractIndexItem>(*this);
-		  ar & _url;
-		}
-	};
-
-	static BookmarkIndex* instance();
-
-private:
 	BookmarkIndex();
 	~BookmarkIndex(){}
-	void buildIndex() override;
-	void saveIndex() const override;
-	void loadIndex() override;
 
-	static BookmarkIndex *_instance;
+public:
+	class Item;
+
+	void buildIndex()      override;
+	void saveIndex() const override;
+	void loadIndex()       override{}
 };
+
+/**************************************************************************//**
+ * @brief The BookmarkIndex::Item class
+ */
+class BookmarkIndex::Item : public AbstractIndexProvider::Item
+{
+	friend class BookmarkIndex;
+
+public:
+	Item(){}
+	~Item(){}
+	explicit Item(const std::string &name, const std::string &url)
+		: AbstractIndexProvider::Item(name), _url(url){}
+
+	inline std::string title() const override {return _name;}
+	inline std::string complete() const override {return _name;}
+	inline std::string infoText() const override {return _url;}
+	void               action(Action) override;
+	std::string        actionText(Action) const override;
+	std::string        iconName() const override {return "favorites";}
+
+
+protected:
+	// Serialization
+	friend class boost::serialization::access;
+	template <typename Archive> void serialize(Archive &ar, const unsigned int version){
+	  ar & boost::serialization::base_object<AbstractIndexProvider::Item>(*this);
+	  ar & _url;
+	}
+
+	std::string _url;
+};
+
 #endif // BOOKMARKINDEX_H

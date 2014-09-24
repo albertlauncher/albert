@@ -28,24 +28,11 @@
 //REMOVE
 #include <iostream>
 
-BookmarkIndex* BookmarkIndex::_instance = nullptr;
-
-
 /**************************************************************************//**
  * @brief BookmarkIndex::BookmarkIndex
  */
 BookmarkIndex::BookmarkIndex(){
 	_indexFile = Settings::instance()->configDir() + "idx_bookmarks";
-}
-
-/**************************************************************************//**
- * @brief BookmarkIndex::instance
- * @return
- */
-BookmarkIndex *BookmarkIndex::instance(){
-	if (_instance == nullptr)
-		_instance = new BookmarkIndex;
-	return _instance;
 }
 
 /**************************************************************************//**
@@ -57,7 +44,7 @@ void BookmarkIndex::buildIndex()
 	std::ifstream f(_indexFile);
 	if (f.good()){
 		boost::archive::text_iarchive ia(f);
-		ia.template register_type<BookmarkIndexItem>();
+		ia.template register_type<Item>();
 		ia >> _index;
 		f.close();
 	}
@@ -76,7 +63,7 @@ void BookmarkIndex::buildIndex()
 					{
 						std::string i = ptvt.second.get_child("name").get_value<std::string>();
 						std::string j = ptvt.second.get_child("url").get_value<std::string>();
-						_index.push_back(new BookmarkIndexItem(i,j));
+						_index.push_back(new Item(i,j));
 					}
 				}
 			}
@@ -110,18 +97,11 @@ void BookmarkIndex::saveIndex() const
 {
 	std::ofstream f(_indexFile);
 	boost::archive::text_oarchive oa(f);
-	oa.template register_type<BookmarkIndexItem>();
+	oa.template register_type<Item>();
 	oa << _index;
 	f.close();
 }
 
-/**************************************************************************//**
- * @brief BookmarkIndex::loadIndex
- */
-void BookmarkIndex::loadIndex()
-{
-
-}
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -131,7 +111,7 @@ void BookmarkIndex::loadIndex()
  * @brief BookmarkIndex::BookmarkIndexItem::action
  * @param a
  */
-void BookmarkIndex::BookmarkIndexItem::action(Action a)
+void BookmarkIndex::Item::action(Action a)
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
 
@@ -158,7 +138,7 @@ void BookmarkIndex::BookmarkIndexItem::action(Action a)
  * @param a
  * @return
  */
-std::string BookmarkIndex::BookmarkIndexItem::actionText(Action a) const
+std::string BookmarkIndex::Item::actionText(Action a) const
 {
 	switch (a) {
 	case Action::Enter:
@@ -171,13 +151,4 @@ std::string BookmarkIndex::BookmarkIndexItem::actionText(Action a) const
 	}
 	// Will never happen
 	return "";
-}
-
-/**************************************************************************//**
- * @brief BookmarkIndex::BookmarkIndexItem::iconName
- * @return
- */
-std::string BookmarkIndex::BookmarkIndexItem::iconName() const
-{
-	return "favorites";
 }

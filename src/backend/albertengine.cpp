@@ -43,7 +43,7 @@ AlbertEngine::AlbertEngine()
  * @param req
  * @return
  */
-void AlbertEngine::query(const std::string &req, std::vector<AbstractServiceProvider::AbstractItem*> *res)
+void AlbertEngine::query(const std::string &req, std::vector<AbstractServiceProvider::Item *> *res)
 {
 	Calculator::instance()->query(req, res);
 	WebSearch::instance()->query(req, res);

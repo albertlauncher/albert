@@ -18,61 +18,65 @@
 #define FILEINDEX_H
 
 #include "abstractindexprovider.h"
+#include "singleton.h"
 #include "boost/filesystem.hpp"
 #include <string>
-
-#ifdef FRONTEND_QT
 #include <QMimeDatabase>
-#endif
 
-class FileIndex : public AbstractIndexProvider
+/**************************************************************************//**
+ * @brief The FileIndex class
+ */
+class FileIndex : public AbstractIndexProvider, public Singleton<FileIndex>
 {
-public:
-	class FileIndexItem : public AbstractIndexProvider::AbstractIndexItem
-	{
-	public:
-		explicit FileIndexItem(){}
-		explicit FileIndexItem(boost::filesystem::path p) : AbstractIndexItem(p.filename().string()), _path(p) {}
-		~FileIndexItem(){}
+	friend class Singleton<FileIndex>;
 
-		inline std::string title() const override {return _path.filename().string();}
-		inline std::string complete() const override {return _path.filename().string();}
-		inline std::string infoText() const override {return _path.string();}
-		void               action(Action) override;
-		std::string        actionText(Action) const override;
-		std::string        iconName() const override;
-
-	private:
-		boost::filesystem::path _path;
-
-		// Serialization
-		friend class boost::serialization::access;
-		template <typename Archive>
-		void serialize(Archive &ar, const unsigned int version)
-		{
-			ar & boost::serialization::base_object<AbstractIndexItem>(*this);
-			std::string s;
-			if(Archive::is_saving::value)
-				s = _path.string();
-			ar & s;
-			if(Archive::is_loading::value)
-				_path = s;
-		}
-	};
-
-	static FileIndex* instance();
-
-private:
 	FileIndex();
 	~FileIndex(){}
+
+public:
+	class Item;
+
 	void buildIndex() override;
 	void saveIndex() const override;
-	void loadIndex() override;
+	void loadIndex() override{}
 
-	static FileIndex *_instance;
-//	magic_t _magic_cookie;
-#ifdef FRONTEND_QT
 	QMimeDatabase mimeDb;
-#endif
 };
+
+/**************************************************************************//**
+ * @brief The FileIndex::Item class
+ */
+class FileIndex::Item : public AbstractIndexProvider::Item
+{
+	friend class FileIndex;
+
+public:
+	Item(){}
+	~Item(){}
+	explicit Item(boost::filesystem::path p)
+		: AbstractIndexProvider::Item(p.filename().string()), _path(p) {}
+
+	inline std::string title()            const override {return _path.filename().string();}
+	inline std::string complete()         const override {return _path.filename().string();}
+	inline std::string infoText()         const override {return _path.string();}
+	void               action(Action)           override;
+	std::string        actionText(Action) const override;
+	std::string        iconName()         const override;
+
+protected:
+	// Serialization
+	friend class boost::serialization::access;
+	template <typename Archive> void serialize(Archive &ar, const unsigned int version){
+		ar & boost::serialization::base_object<AbstractIndexProvider::Item>(*this);
+		std::string s;
+		if(Archive::is_saving::value)
+			s = _path.string();
+		ar & s;
+		if(Archive::is_loading::value)
+			_path = s;
+	}
+
+	boost::filesystem::path _path;
+};
+
 #endif // FILEINDEX_H

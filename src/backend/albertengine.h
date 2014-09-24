@@ -28,7 +28,7 @@ using std::map;
 class AlbertEngine
 {
 	struct ATimeCompare	{
-		bool operator()( AbstractServiceProvider::AbstractItem const* lhs, AbstractServiceProvider::AbstractItem  const* rhs ) const {
+		bool operator()( AbstractServiceProvider::Item const* lhs, AbstractServiceProvider::Item  const* rhs ) const {
 			return lhs->lastAccess() > rhs->lastAccess();
 		}
 	};
@@ -36,7 +36,7 @@ class AlbertEngine
 public:
 	AlbertEngine();
 	~AlbertEngine(){}
-	void query(const std::string &req, std::vector<AbstractServiceProvider::AbstractItem *> *res);
+	void query(const std::string &req, std::vector<AbstractServiceProvider::Item *> *res);
 	void buildIndex();
 	void saveIndex() const;
 

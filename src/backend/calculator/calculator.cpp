@@ -23,24 +23,27 @@
 #include "muParser.h"
 #include "websearch/websearch.h"
 
-#include <QDebug>
-
-Calculator* Calculator::_instance = nullptr;
 
 /**************************************************************************//**
- * @brief Calculator::instance
- * @return
+ * @brief Calculator::Calculator
  */
-Calculator *Calculator::instance(){
-	if (_instance == nullptr)
-		_instance = new Calculator;
-	return _instance;
+Calculator::Calculator()
+{
+	 _theOneAndOnly = new Calculator::Item;
+}
+
+/**************************************************************************//**
+ * @brief Calculator::~Calculator
+ */
+Calculator::~Calculator()
+{
+	delete _theOneAndOnly;
 }
 
 /**************************************************************************//**
  * @brief Calculator::query
  */
-void Calculator::query(const std::string &req, std::vector<AbstractServiceProvider::AbstractItem *> *res)
+void Calculator::query(const std::string &req, std::vector<AbstractServiceProvider::Item *> *res)
 {
 	using namespace mu;
 	try
@@ -49,14 +52,16 @@ void Calculator::query(const std::string &req, std::vector<AbstractServiceProvid
 		Parser p;
 		p.SetExpr(req);
 		ss << p.Eval();
-		_theOneAndonly.set(req, ss.str());
-		res->push_back(&_theOneAndonly);
+		_theOneAndOnly->_query=req;
+		_theOneAndOnly->_result=ss.str();
+		res->push_back(_theOneAndOnly);
 	}
 	catch (Parser::exception_type &e)
 	{
 	  std::cout << "[muparser] " << e.GetMsg() << std::endl;
 	}
 }
+
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -66,7 +71,7 @@ void Calculator::query(const std::string &req, std::vector<AbstractServiceProvid
  * @brief Calculator::CalculatorItem::action
  * @param a
  */
-void Calculator::CalculatorItem::action(Action a)
+void Calculator::Item::action(Action a)
 {
 	pid_t pid;
 	switch (a) {
@@ -99,7 +104,7 @@ void Calculator::CalculatorItem::action(Action a)
  * @param a
  * @return
  */
-std::string Calculator::CalculatorItem::actionText(Action a) const
+std::string Calculator::Item::actionText(Action a) const
 {
 	switch (a) {
 	case Action::Enter:
@@ -114,13 +119,4 @@ std::string Calculator::CalculatorItem::actionText(Action a) const
 	}
 	// Will never happen
 	return "";
-}
-
-/**************************************************************************//**
- * @brief Calculator::CalculatorItem::iconName
- * @return
- */
-std::string Calculator::CalculatorItem::iconName() const
-{
-	return "calc";
 }

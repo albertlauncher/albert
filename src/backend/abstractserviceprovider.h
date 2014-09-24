@@ -21,31 +21,38 @@
 #include <vector>
 #include <chrono>
 
+/**************************************************************************//**
+ * @brief The AbstractServiceProvider class
+ */
 class AbstractServiceProvider
 {
 public:
-	class AbstractItem
-	{
-	public:
-		enum class Action { Enter, Alt, Ctrl };
-
-		explicit AbstractItem(): _lastAccess(0) {}
-		virtual ~AbstractItem(){}
-
-		virtual std::string title() const = 0;
-		virtual std::string iconName() const = 0;
-		virtual std::string complete() const = 0;
-		virtual void        action(Action) = 0;
-		virtual std::string actionText(Action) const = 0;
-		virtual std::string infoText() const = 0;
-		inline  u_int64_t    lastAccess() const {return _lastAccess;}
-
-		u_int64_t _lastAccess; // secs since epoch
-	};
+	class Item;
+	enum class Action { Enter, Alt, Ctrl };
 
 	AbstractServiceProvider(){}
 	virtual ~AbstractServiceProvider(){}
-	virtual void query(const std::string&, std::vector<AbstractItem*>*) = 0;
+	virtual void query(const std::string&, std::vector<Item*>*) = 0;
+};
+
+
+/**************************************************************************//**
+ * @brief The AbstractServiceProvider::Item class
+ */
+class AbstractServiceProvider::Item
+{
+public:
+	explicit Item(): _lastAccess(0) {}
+	virtual ~Item(){}
+	virtual std::string title()            const = 0;
+	virtual std::string iconName()         const = 0;
+	virtual std::string complete()         const = 0;
+	virtual void        action(Action)           = 0;
+	virtual std::string actionText(Action) const = 0;
+	virtual std::string infoText()         const = 0;
+	inline  u_int64_t   lastAccess()       const {return _lastAccess;}
+
+	u_int64_t _lastAccess; // secs since epoch
 };
 
 #endif // ABSTRACTSERVICEPROVIDER_H

@@ -18,25 +18,9 @@
 #include "settings.h"
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/trim.hpp"
-#include <unistd.h>
+//#include <unistd.h>
 
-#include <QDebug>
-
-WebSearch* WebSearch::_instance = nullptr;
-
-/**************************************************************************//**
- * @brief WebSearch::instance
- * @return
- */
-WebSearch *WebSearch::instance(){
-	if (_instance == nullptr)
-		_instance = new WebSearch;
-	return _instance;
-}
-
-/**************************************************************************//**
- * @brief WebSearch::WebSearch
- */
+/**************************************************************************/
 WebSearch::WebSearch()
 {
 	std::string engines = Settings::instance()->get("search_engines");
@@ -48,23 +32,15 @@ WebSearch::WebSearch()
 		std::vector<std::string> engineComponents;
 		boost::split(engineComponents, e, boost::is_any_of(","), boost::token_compress_off);
 		if(engineComponents.size() == 4)
-			_searchEngines.push_back(new WebSearchItem(engineComponents[0],engineComponents[1],engineComponents[2],engineComponents[3]));
+			_searchEngines.push_back(new Item(engineComponents[0],engineComponents[1],engineComponents[2],engineComponents[3]));
 	}
 }
 
-/**************************************************************************//**
- * @brief WebSearch::~WebSearch
- */
-WebSearch::~WebSearch()
-{
-}
 
-/**************************************************************************//**
- * @brief WebSearch::query
- */
-void WebSearch::query(const std::string &req, std::vector<AbstractServiceProvider::AbstractItem *> *res)
+/**************************************************************************/
+void WebSearch::query(const std::string &req, std::vector<AbstractServiceProvider::Item *> *res)
 {
-	for (WebSearchItem *w : _searchEngines){
+	for (Item *w : _searchEngines){
 		std::string fstToken(req, 0, req.find_first_of(' '));
 		std::transform(fstToken.begin(), fstToken.end(),
 					   fstToken.begin(), std::bind2nd(std::ptr_fun(&std::tolower<char>), Settings::instance()->locale()));
@@ -85,20 +61,15 @@ void WebSearch::query(const std::string &req, std::vector<AbstractServiceProvide
 	}
 }
 
-/**************************************************************************//**
- * @brief WebSearch::queryAll
- */
-void WebSearch::queryAll(const std::string &req, std::vector<AbstractServiceProvider::AbstractItem *> *res)
+/**************************************************************************/
+void WebSearch::queryAll(const std::string &req, std::vector<AbstractServiceProvider::Item *> *res)
 {
-	for (WebSearchItem *w : _searchEngines)
+	for (Item *w : _searchEngines)
 		w->setTerm(req);
 	res->insert(res->end(), _searchEngines.begin(), _searchEngines.end());
 }
 
-/**************************************************************************//**
- * @brief WebSearch::defaultSearch
- * @param term
- */
+/**************************************************************************/
 void WebSearch::defaultSearch(const std::string &term) const{
 	std::string url("https://www.google.de/search?q=");
 	url.append(term);
@@ -111,11 +82,7 @@ void WebSearch::defaultSearch(const std::string &term) const{
 	}
 }
 
-/**************************************************************************//**
- * @brief WebSearch::defaultSearchText
- * @param term
- * @return
- */
+/**************************************************************************/
 std::string WebSearch::defaultSearchText(const std::string &term) const{
 	return "Search for  '" + term + "' in the web";
 }
@@ -124,11 +91,8 @@ std::string WebSearch::defaultSearchText(const std::string &term) const{
 /*****************************************************************************/
 /******************************* WebSearchItem *******************************/
 /*****************************************************************************/
-/**************************************************************************//**
- * @brief WebSearch::WebSearchItem::action
- * @param a
- */
-void WebSearch::WebSearchItem::action(Action a)
+/**************************************************************************/
+void WebSearch::Item::action(Action a)
 {
 	pid_t pid;
 	switch (a) {
@@ -156,12 +120,8 @@ void WebSearch::WebSearchItem::action(Action a)
 	}
 }
 
-/**************************************************************************//**
- * @brief WebSearch::WebSearchItem::actionText
- * @param a
- * @return
- */
-std::string WebSearch::WebSearchItem::actionText(Action a) const
+/**************************************************************************/
+std::string WebSearch::Item::actionText(Action a) const
 {
 	switch (a) {
 	case Action::Enter:
@@ -178,11 +138,8 @@ std::string WebSearch::WebSearchItem::actionText(Action a) const
 	return "";
 }
 
-/**************************************************************************//**
- * @brief WebSearch::WebSearchItem::iconName
- * @return
- */
-std::string WebSearch::WebSearchItem::iconName() const
+/**************************************************************************/
+std::string WebSearch::Item::iconName() const
 {
 	return _iconName;
 }

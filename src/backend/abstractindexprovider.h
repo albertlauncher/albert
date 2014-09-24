@@ -25,76 +25,89 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/vector.hpp>
 
+
+/**************************************************************************//**
+ * @brief The AbstractIndexProvider class
+ */
 class AbstractIndexProvider : public AbstractServiceProvider
 {
 public:
-
-	class AbstractIndexItem : public AbstractServiceProvider::AbstractItem
-	{
-	public:
-		explicit AbstractIndexItem(){}
-		explicit AbstractIndexItem(const std::string &name) : _name(name){}
-		virtual ~AbstractIndexItem(){}
-
-		std::string _name;
-	protected:
-		friend class boost::serialization::access;
-		template <typename Archive>
-		void serialize(Archive &ar, const unsigned int version)
-		{
-			ar & _name;
-			ar & _lastAccess;
-		}
-	};
-
-	class CaseInsensitiveCompare
-	{
-		std::ctype<char> const& myCType;
-	public:
-		CaseInsensitiveCompare() = delete;
-		CaseInsensitiveCompare(std::locale const& locale) : myCType( std::use_facet<std::ctype<char>>( locale ) ){}
-		bool operator()( AbstractIndexItem const* lhs, AbstractIndexItem const* rhs ) const	{return (*this)( lhs->title(), rhs->title());}
-		bool operator()( std::string const& lhs, AbstractIndexItem const* rhs ) const {return (*this)( lhs, rhs->title() );}
-		bool operator()( AbstractIndexItem const* lhs, std::string const& rhs ) const {return (*this)( lhs->title(), rhs );}
-		bool operator()( std::string const& lhs, std::string const& rhs ) const	{
-			return std::lexicographical_compare(
-				lhs.begin(), lhs.end(),
-				rhs.begin(), rhs.end(),
-				*this);
-		}
-		bool operator()( char lhs, char rhs ) const	{return myCType.tolower(lhs) < myCType.tolower(rhs);}
-	};
-	class CaseInsensitiveComparePrefix
-	{
-		std::ctype<char> const& myCType;
-	public:
-		CaseInsensitiveComparePrefix() = delete;
-		CaseInsensitiveComparePrefix(std::locale const& locale) : myCType( std::use_facet<std::ctype<char>>( locale ) ){}
-		bool operator()( AbstractIndexItem const* pre, AbstractIndexItem const* rhs ) const {return (*this)( pre->title(), rhs->title() );}
-		bool operator()( std::string const& pre, AbstractIndexItem const* rhs ) const {return (*this)( pre, rhs->title() );}
-		bool operator()( AbstractIndexItem const* pre, std::string const& rhs ) const {return (*this)( pre->title(), rhs );}
-		bool operator()( std::string const& pre, std::string const& rhs ) const	{
-			size_t m = std::min(pre.length(), rhs.length());
-			return std::lexicographical_compare(
-				pre.begin(), pre.begin()+m,
-				rhs.begin(), rhs.begin()+m,
-				*this);
-		}
-		bool operator()( char pre, char rhs ) const	{return myCType.tolower(pre) < myCType.tolower(rhs);}
-	};
+	class Item;
+	class CaseInsensitiveCompare;
+	class CaseInsensitiveComparePrefix;
 
 	AbstractIndexProvider(){}
 	virtual ~AbstractIndexProvider(){}
 
-	void query(const std::string&, std::vector<AbstractItem*>*) override;
-	virtual void buildIndex() = 0;
+	void query(const std::string&, std::vector<AbstractServiceProvider::Item*>*) override;
+	virtual void buildIndex()      = 0;
 	virtual void saveIndex() const = 0;
-	virtual void loadIndex() = 0;
+	virtual void loadIndex()       = 0;
 
 protected:
-	std::vector<AbstractIndexItem*> _index;
+	std::vector<Item*> _index;
 	std::list<std::string> _watchPaths;
 	std::string _indexFile;
+};
+
+/**************************************************************************//**
+ * @brief The AbstractIndexProvider::Item class
+ */
+class AbstractIndexProvider::Item : public AbstractServiceProvider::Item
+{
+public:
+	explicit Item(){}
+	explicit Item(const std::string &name) : _name(name){}
+	virtual ~Item(){}
+
+	std::string _name;
+
+protected:
+	// Serialization
+	friend class boost::serialization::access;
+	template <typename Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		ar & _name;
+		ar & _lastAccess;
+	}
+};
+
+/**************************************************************************//**
+ * @brief The AbstractIndexProvider::CaseInsensitiveCompare class
+ */
+class AbstractIndexProvider::CaseInsensitiveCompare
+{
+	std::ctype<char> const& myCType;
+public:
+	CaseInsensitiveCompare() = delete;
+	CaseInsensitiveCompare(std::locale const& locale) : myCType( std::use_facet<std::ctype<char>>( locale ) ){}
+	bool operator()( Item const* lhs, Item const* rhs ) const	{return (*this)( lhs->title(), rhs->title());}
+	bool operator()( std::string const& lhs, Item const* rhs ) const {return (*this)( lhs, rhs->title() );}
+	bool operator()( Item const* lhs, std::string const& rhs ) const {return (*this)( lhs->title(), rhs );}
+	bool operator()( std::string const& lhs, std::string const& rhs ) const	{
+		return std::lexicographical_compare( lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), *this);
+	}
+	bool operator()( char lhs, char rhs ) const	{return myCType.tolower(lhs) < myCType.tolower(rhs);}
+};
+
+/**************************************************************************//**
+ * @brief The AbstractIndexProvider::CaseInsensitiveComparePrefix class
+ */
+class AbstractIndexProvider::CaseInsensitiveComparePrefix
+{
+	std::ctype<char> const& myCType;
+public:
+	CaseInsensitiveComparePrefix() = delete;
+	CaseInsensitiveComparePrefix(std::locale const& locale) : myCType( std::use_facet<std::ctype<char>>( locale ) ){}
+	bool operator()( Item const* pre, Item const* rhs ) const {return (*this)( pre->title(), rhs->title() );}
+	bool operator()( std::string const& pre, Item const* rhs ) const {return (*this)( pre, rhs->title() );}
+	bool operator()( Item const* pre, std::string const& rhs ) const {return (*this)( pre->title(), rhs );}
+	bool operator()( std::string const& pre, std::string const& rhs ) const	{
+		size_t m = std::min(pre.length(), rhs.length());
+		return std::lexicographical_compare(pre.begin(), pre.begin()+m, rhs.begin(), rhs.begin()+m, *this);
+	}
+	bool operator()( char pre, char rhs ) const	{return myCType.tolower(pre) < myCType.tolower(rhs);}
 };
 
 #endif // ABSTRACTINDEXPROVIDER_H

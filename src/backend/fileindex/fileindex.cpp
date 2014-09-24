@@ -27,35 +27,19 @@
 #include <iostream>
 #include <fstream>
 
-FileIndex* FileIndex::_instance = nullptr;
-
-/**************************************************************************//**
- * @brief FileIndex::FileIndex
- */
+/**************************************************************************/
 FileIndex::FileIndex(){
 	_indexFile = Settings::instance()->configDir() + "idx_files";
 }
 
-/**************************************************************************//**
- * @brief FileIndex::instance
- * @return
- */
-FileIndex *FileIndex::instance(){
-	if (_instance == nullptr)
-		_instance = new FileIndex;
-	return _instance;
-}
-
-/**************************************************************************//**
- * @brief FileIndex::buildIndex
- */
+/**************************************************************************/
 void FileIndex::buildIndex()
 {
 	// If there is a serialized index use it
 	std::ifstream f(_indexFile);
 	if (f.good()){
 		boost::archive::text_iarchive ia(f);
-		ia.template register_type<FileIndexItem>();
+		ia.template register_type<Item>();
 		ia >> _index;
 		f.close();
 	}
@@ -79,10 +63,10 @@ void FileIndex::buildIndex()
 					return;
 
 				if (boost::filesystem::is_regular_file(path))
-					_index.push_back(new FileIndexItem(path));
+					_index.push_back(new Item(path));
 				if (boost::filesystem::is_directory(path))
 				{
-					_index.push_back(new FileIndexItem(path));
+					_index.push_back(new Item(path));
 					for( boost::filesystem::directory_iterator d(path); d != end_iterator; ++d)
 						rec_dirsearch(*d);
 				}
@@ -99,35 +83,24 @@ void FileIndex::buildIndex()
 	std::cout << "[FileIndex] Indexing done. Found " << _index.size() << " files." << std::endl;
 }
 
-/**************************************************************************//**
- * @brief FileIndex::saveIndex
- */
+/**************************************************************************/
 void FileIndex::saveIndex() const
 {
 	std::ofstream f(_indexFile);
 	boost::archive::text_oarchive oa(f);
-	oa.template register_type<FileIndexItem>();
+	oa.template register_type<Item>();
 	oa << _index;
 	f.close();
 }
 
-/**************************************************************************//**
- * @brief FileIndex::loadIndex
- */
-void FileIndex::loadIndex()
-{
-
-}
 
 /*****************************************************************************/
 /*****************************************************************************/
 /******************************* FileIndexItem *******************************/
 /*****************************************************************************/
-/**************************************************************************//**
- * @brief FileIndex::FileIndexItem::action
- * @param a
- */
-void FileIndex::FileIndexItem::action(Action a)
+
+/**************************************************************************/
+void FileIndex::Item::action(Action a)
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
 
@@ -157,12 +130,8 @@ void FileIndex::FileIndexItem::action(Action a)
 	}
 }
 
-/**************************************************************************//**
- * @brief FileIndex::FileIndexItem::actionText
- * @param a
- * @return
- */
-std::string FileIndex::FileIndexItem::actionText(Action a) const
+/**************************************************************************/
+std::string FileIndex::Item::actionText(Action a) const
 {
 	switch (a) {
 	case Action::Enter:
@@ -179,13 +148,8 @@ std::string FileIndex::FileIndexItem::actionText(Action a) const
 	return "";
 }
 
-/**************************************************************************//**
- * @brief FileIndex::FileIndexItem::iconName
- * @return
- */
-std::string FileIndex::FileIndexItem::iconName() const
+/**************************************************************************/
+std::string FileIndex::Item::iconName() const
 {
-#ifdef FRONTEND_QT
 	return FileIndex::instance()->mimeDb.mimeTypeForFile(QString::fromStdString(_path.string())).iconName().toStdString();
-#endif
 }
