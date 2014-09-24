@@ -12,7 +12,7 @@
  - [x] Implement module (bookmarks)
  - [ ] Implement module (terminal apps)
  - [ ] Implement module (system control)
- - [ ] Implement serialization of indizes
+ - [x] Implement serialization of indizes
  - [ ] Keep track of indizes using inotify
  - [ ] Implement module (contacts)
  - [ ] Add configuration widget to configure the plugins
