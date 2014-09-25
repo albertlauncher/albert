@@ -92,6 +92,13 @@ std::string WebSearch::defaultSearchText(const std::string &term) const{
 /******************************* WebSearchItem *******************************/
 /*****************************************************************************/
 /**************************************************************************/
+WebSearch::Item::Item(const std::string &name, const std::string &url, const std::string &sc, const std::string &iconName)
+	: _name(name), _url(url), _shortcut(sc), _iconName(iconName)
+{
+	_lastAccess = 1;
+}
+
+/**************************************************************************/
 void WebSearch::Item::action(Action a)
 {
 	pid_t pid;
@@ -139,7 +146,7 @@ std::string WebSearch::Item::actionText(Action a) const
 }
 
 /**************************************************************************/
-std::string WebSearch::Item::iconName() const
+QIcon WebSearch::Item::icon() const
 {
-	return _iconName;
+	return QIcon(QString::fromStdString(_iconName));
 }

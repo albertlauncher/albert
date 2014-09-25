@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 #include <chrono>
+#include <QIcon>
 
 /**************************************************************************//**
  * @brief The AbstractServiceProvider class
@@ -45,13 +46,14 @@ public:
 	explicit Item(): _lastAccess(0) {}
 	virtual ~Item(){}
 	virtual std::string title()            const = 0;
-	virtual std::string iconName()         const = 0;
+	virtual QIcon       icon()             const = 0;
 	virtual std::string complete()         const = 0;
 	virtual void        action(Action)           = 0;
 	virtual std::string actionText(Action) const = 0;
 	virtual std::string infoText()         const = 0;
 	inline  u_int64_t   lastAccess()       const {return _lastAccess;}
 
+protected:
 	u_int64_t _lastAccess; // secs since epoch
 };
 

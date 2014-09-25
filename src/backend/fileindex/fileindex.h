@@ -61,7 +61,7 @@ public:
 	inline std::string infoText()         const override {return _path.string();}
 	void               action(Action)           override;
 	std::string        actionText(Action) const override;
-	std::string        iconName()         const override;
+	QIcon              icon()         const override;
 
 protected:
 	// Serialization
@@ -77,6 +77,8 @@ protected:
 	}
 
 	boost::filesystem::path _path;
+
+	static const QMimeDatabase mimeDb;
 };
 
 #endif // FILEINDEX_H

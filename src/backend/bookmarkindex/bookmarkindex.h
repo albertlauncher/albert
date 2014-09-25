@@ -60,7 +60,7 @@ public:
 	inline std::string infoText() const override {return _url;}
 	void               action(Action) override;
 	std::string        actionText(Action) const override;
-	std::string        iconName() const override {return "favorites";}
+	QIcon              icon() const override;
 
 
 protected:

@@ -24,25 +24,20 @@
 #include "websearch/websearch.h"
 
 
-/**************************************************************************//**
- * @brief Calculator::Calculator
- */
+/**************************************************************************/
 Calculator::Calculator()
 {
 	 _theOneAndOnly = new Calculator::Item;
 }
 
-/**************************************************************************//**
- * @brief Calculator::~Calculator
- */
+/**************************************************************************/
+
 Calculator::~Calculator()
 {
 	delete _theOneAndOnly;
 }
 
-/**************************************************************************//**
- * @brief Calculator::query
- */
+/**************************************************************************/
 void Calculator::query(const std::string &req, std::vector<AbstractServiceProvider::Item *> *res)
 {
 	using namespace mu;
@@ -67,10 +62,7 @@ void Calculator::query(const std::string &req, std::vector<AbstractServiceProvid
 /*****************************************************************************/
 /******************************* CalculatorItem *******************************/
 /*****************************************************************************/
-/**************************************************************************//**
- * @brief Calculator::CalculatorItem::action
- * @param a
- */
+/**************************************************************************/
 void Calculator::Item::action(Action a)
 {
 	pid_t pid;
@@ -99,11 +91,7 @@ void Calculator::Item::action(Action a)
 	}
 }
 
-/**************************************************************************//**
- * @brief Calculator::CalculatorItem::actionText
- * @param a
- * @return
- */
+/**************************************************************************/
 std::string Calculator::Item::actionText(Action a) const
 {
 	switch (a) {
@@ -119,4 +107,12 @@ std::string Calculator::Item::actionText(Action a) const
 	}
 	// Will never happen
 	return "";
+}
+
+/**************************************************************************/
+QIcon Calculator::Item::icon() const
+{
+	if (QIcon::hasThemeIcon(QString::fromLocal8Bit("calc")))
+		return QIcon::fromTheme(QString::fromLocal8Bit("calc"));
+	return QIcon::fromTheme(QString::fromLocal8Bit("unknown"));
 }

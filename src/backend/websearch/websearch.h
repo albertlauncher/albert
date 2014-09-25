@@ -50,17 +50,16 @@ class WebSearch::Item : public AbstractServiceProvider::Item
 	friend class WebSearch;
 
 public:
-	explicit Item(){}
-	explicit Item( const std::string &name, const std::string &url, const std::string &sc, const std::string &iconName)
-		: _name(name), _url(url), _shortcut(sc), _iconName(iconName) {}
+	Item(){}
 	~Item(){}
+	explicit Item( const std::string &name, const std::string &url, const std::string &sc, const std::string &iconName);
 
 	inline std::string title() const override {return "Search '" + ((_searchTerm.empty())?"...":_searchTerm) + "' in " + _name;}
 	inline std::string complete() const override {return _name + " " + _searchTerm;}
 	inline std::string infoText() const override {return std::string(_url).replace(_url.find("%s"), 2, _searchTerm);}
-	void               action(AbstractServiceProvider::Action) override;
-	std::string        actionText(AbstractServiceProvider::Action) const override;
-	std::string        iconName() const override;
+	void               action(Action) override;
+	std::string        actionText(Action) const override;
+	QIcon              icon() const override;
 
 	std::string        shortcut() const {return _shortcut;}
 	std::string        name() const {return _name;}

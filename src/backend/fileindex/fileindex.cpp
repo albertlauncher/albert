@@ -100,6 +100,11 @@ void FileIndex::saveIndex() const
 /*****************************************************************************/
 
 /**************************************************************************/
+
+const QMimeDatabase FileIndex::Item::mimeDb;
+
+
+/**************************************************************************/
 void FileIndex::Item::action(Action a)
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
@@ -149,7 +154,7 @@ std::string FileIndex::Item::actionText(Action a) const
 }
 
 /**************************************************************************/
-std::string FileIndex::Item::iconName() const
+QIcon FileIndex::Item::icon() const
 {
-	return FileIndex::instance()->mimeDb.mimeTypeForFile(QString::fromStdString(_path.string())).iconName().toStdString();
+	return QIcon::fromTheme(mimeDb.mimeTypeForFile(QString::fromStdString(_path.string())).iconName());
 }

@@ -28,16 +28,12 @@
 //REMOVE
 #include <iostream>
 
-/**************************************************************************//**
- * @brief BookmarkIndex::BookmarkIndex
- */
+/**************************************************************************/
 BookmarkIndex::BookmarkIndex(){
 	_indexFile = Settings::instance()->configDir() + "idx_bookmarks";
 }
 
-/**************************************************************************//**
- * @brief BookmarkIndex::buildIndex
- */
+/**************************************************************************/
 void BookmarkIndex::buildIndex()
 {
 	// If there is a serialized index use it
@@ -90,9 +86,7 @@ void BookmarkIndex::buildIndex()
 	std::cout << "[BookmarkIndex] Indexing done. Found " << _index.size() << " bookmarks." << std::endl;
 }
 
-/**************************************************************************//**
- * @brief BookmarkIndex::saveIndex
- */
+/**************************************************************************/
 void BookmarkIndex::saveIndex() const
 {
 	std::ofstream f(_indexFile);
@@ -107,10 +101,7 @@ void BookmarkIndex::saveIndex() const
 /*****************************************************************************/
 /******************************* BookmarkIndexItem *******************************/
 /*****************************************************************************/
-/**************************************************************************//**
- * @brief BookmarkIndex::BookmarkIndexItem::action
- * @param a
- */
+/**************************************************************************/
 void BookmarkIndex::Item::action(Action a)
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
@@ -133,11 +124,7 @@ void BookmarkIndex::Item::action(Action a)
 	}
 }
 
-/**************************************************************************//**
- * @brief BookmarkIndex::BookmarkIndexItem::actionText
- * @param a
- * @return
- */
+/**************************************************************************/
 std::string BookmarkIndex::Item::actionText(Action a) const
 {
 	switch (a) {
@@ -151,4 +138,12 @@ std::string BookmarkIndex::Item::actionText(Action a) const
 	}
 	// Will never happen
 	return "";
+}
+
+/**************************************************************************/
+QIcon BookmarkIndex::Item::icon() const
+{
+	if (QIcon::hasThemeIcon(QString::fromLocal8Bit("favorites")))
+		return QIcon::fromTheme(QString::fromLocal8Bit("favorites"));
+	return QIcon::fromTheme(QString::fromLocal8Bit("unknown"));
 }

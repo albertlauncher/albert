@@ -55,7 +55,7 @@ public:
 	inline std::string infoText()         const override {return "Result of '"+_query+"'";}
 	void               action(Action)           override;
 	std::string        actionText(Action) const override;
-	std::string        iconName()         const override {return "calc";}
+	QIcon              icon()         const override;
 
 protected:
 	std::string _query;

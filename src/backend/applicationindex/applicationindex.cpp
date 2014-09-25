@@ -27,16 +27,12 @@
 //REMOVE
 #include <iostream>
 
-/**************************************************************************//**
- * @brief ApplicationIndex::ApplicationIndex
- */
+/**************************************************************************/
 ApplicationIndex::ApplicationIndex(){
 	_indexFile = Settings::instance()->configDir() + "idx_apps";
 }
 
-/**************************************************************************//**
- * @brief ApplicationIndex::buildIndex
- */
+/**************************************************************************/
 void ApplicationIndex::buildIndex()
 {
 	// If there is a serialized index use it
@@ -128,6 +124,7 @@ void ApplicationIndex::buildIndex()
 	std::cout << "[ApplicationIndex] Indexing done. Found " << _index.size() << " apps." << std::endl;
 }
 
+/**************************************************************************/
 void ApplicationIndex::saveIndex() const
 {
 	std::ofstream f(_indexFile);
@@ -142,10 +139,7 @@ void ApplicationIndex::saveIndex() const
 /*****************************************************************************/
 /************************** ApplicationIndexItem *****************************/
 /*****************************************************************************/
-/**************************************************************************//**
- * @brief ApplicationIndex::ApplicationIndexItem::action
- * @param a
- */
+/**************************************************************************/
 void ApplicationIndex::Item::action(Action a)
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
@@ -182,11 +176,7 @@ void ApplicationIndex::Item::action(Action a)
 	}
 }
 
-/**************************************************************************//**
- * @brief ApplicationIndex::ApplicationIndexItem::actionText
- * @param a
- * @return
- */
+/**************************************************************************/
 std::string ApplicationIndex::Item::actionText(Action a) const
 {
 	switch (a) {
@@ -204,3 +194,11 @@ std::string ApplicationIndex::Item::actionText(Action a) const
 	return "";
 }
 
+
+/**************************************************************************/
+QIcon ApplicationIndex::Item::icon() const
+{
+	if (QIcon::hasThemeIcon(QString::fromStdString(_iconName)));
+		return QIcon::fromTheme(QString::fromStdString(_iconName));
+	return QIcon::fromTheme(QString::fromLocal8Bit("unknown"));
+}

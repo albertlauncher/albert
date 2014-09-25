@@ -56,7 +56,7 @@ public:
 	inline std::string title()            const override {return _name;}
 	inline std::string complete()         const override {return _name;}
 	inline std::string infoText()         const override {return _info;}
-	inline std::string iconName()         const override {return _iconName;}
+	QIcon              icon()             const override;
 	void               action(Action)           override;
 	std::string        actionText(Action) const override;
 

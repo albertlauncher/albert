@@ -35,7 +35,6 @@ ProposalListDelegate::ProposalListDelegate()
  */
 void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const
 {
-
 	// For the definition of the Userroles see proposallistmodel.cpp (::data())
 
 	QString elided;

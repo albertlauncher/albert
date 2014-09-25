@@ -91,13 +91,8 @@ QVariant ProposalListModel::data(const QModelIndex &index, int role) const
 	if (role == Qt::DisplayRole)
 		return QString::fromStdString(_data[index.row()]->title());
 
-	if (role == Qt::DecorationRole)  {
-		QIcon i;
-		i = QIcon::fromTheme(QString::fromStdString(_data[index.row()]->iconName()));
-		if (i.isNull())
-			i = QIcon::fromTheme(QString::fromLocal8Bit("unknown"));
-		return i;
-}
+	if (role == Qt::DecorationRole)
+		return _data[index.row()]->icon();
 
 	if (role == Qt::UserRole)
 		return QString::fromStdString(_data[index.row()]->actionText(AbstractServiceProvider::Action::Enter));
