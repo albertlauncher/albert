@@ -48,7 +48,6 @@ void FileIndex::buildIndex()
 		bool indexHiddenFiles = (Settings::instance()->get("showHiddenFiles").compare("true") == 0);
 
 		std::string paths = Settings::instance()->get("file_index_paths");
-		std::cout << "[FileIndex] Looking in: " << paths << std::endl;
 		std::vector<std::string> pathList;
 		boost::split(pathList, paths, boost::is_any_of(","), boost::token_compress_on);
 
@@ -59,7 +58,7 @@ void FileIndex::buildIndex()
 			boost::filesystem::directory_iterator end_iterator;
 			if ( boost::filesystem::exists(path) && !boost::filesystem::is_symlink(path))
 			{
-				if  (p.filename().c_str()[0] != '.' && !indexHiddenFiles)
+				if  (p.filename().c_str()[0] == '.' && !indexHiddenFiles)
 					return;
 
 				if (boost::filesystem::is_regular_file(path))
@@ -74,8 +73,10 @@ void FileIndex::buildIndex()
 		};
 
 		// Finally do this recursion for all paths
-		for ( std::string &p : pathList)
+		for ( std::string &p : pathList){
+			std::cout << "[FileIndex] Looking in: " << p << std::endl;
 			rec_dirsearch(boost::filesystem::path(p));
+		}
 
 		std::sort(_index.begin(), _index.end(), CaseInsensitiveCompare(Settings::instance()->locale()));
 	}
@@ -156,5 +157,8 @@ std::string FileIndex::Item::actionText(Action a) const
 /**************************************************************************/
 QIcon FileIndex::Item::icon() const
 {
-	return QIcon::fromTheme(mimeDb.mimeTypeForFile(QString::fromStdString(_path.string())).iconName());
+	QString iconName = mimeDb.mimeTypeForFile(QString::fromStdString(_path.string())).iconName();
+	if (QIcon::hasThemeIcon(iconName))
+		return QIcon::fromTheme(iconName);
+	return QIcon::fromTheme(QString::fromLocal8Bit("unknown"));
 }

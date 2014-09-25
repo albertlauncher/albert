@@ -198,7 +198,7 @@ std::string ApplicationIndex::Item::actionText(Action a) const
 /**************************************************************************/
 QIcon ApplicationIndex::Item::icon() const
 {
-	if (QIcon::hasThemeIcon(QString::fromStdString(_iconName)));
+	if (QIcon::hasThemeIcon(QString::fromStdString(_iconName)))
 		return QIcon::fromTheme(QString::fromStdString(_iconName));
 	return QIcon::fromTheme(QString::fromLocal8Bit("unknown"));
 }
