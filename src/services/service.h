@@ -20,12 +20,14 @@
 #include <QString>
 #include <QVector>
 #include <QIcon>
-#include <chrono>
 
 /**************************************************************************/
 struct Service
 {
 	class Item;
+	struct CaseInsensitiveCompare;
+	struct CaseInsensitiveComparePrefix;
+
 	Service(){}
 	virtual ~Service(){}
 	virtual void query(const QString&, QVector<Item*>*) const noexcept = 0;
@@ -51,5 +53,40 @@ protected:
 	qint64 _lastAccess;
 };
 
+
+
+/**************************************************************************/
+struct Service::CaseInsensitiveCompare
+{
+	inline bool operator()( Service::Item const* lhs, Service::Item const* rhs )       const {return (*this)( lhs->title(), rhs->title());}
+	inline bool operator()( QString const& lhs, Service::Item const* rhs )    const {return (*this)( lhs, rhs->title() );}
+	inline bool operator()( Service::Item const* lhs, QString const& rhs )    const {return (*this)( lhs->title(), rhs );}
+	inline bool operator()( QString const& lhs, QString const& rhs ) const {return lhs.compare(rhs, Qt::CaseInsensitive)<0;}
+};
+
+
+
+/**************************************************************************/
+struct Service::CaseInsensitiveComparePrefix
+{
+	inline bool operator()( Service::Item const* pre, Service::Item const* rhs ) const {return (*this)( pre->title(), rhs->title() );}
+	inline bool operator()( QString const& pre, Service::Item const* rhs ) const {return (*this)( pre, rhs->title() );}
+	inline bool operator()( Service::Item const* pre, QString const& rhs ) const {return (*this)( pre->title(), rhs );}
+	inline bool operator()( QString const& pre, QString const& rhs ) const	{
+		QString::const_iterator a,b;
+		a = pre.cbegin();
+		b = rhs.cbegin();
+		QChar ca,cb;
+		while (a != pre.cend() && b != rhs.end()){
+			ca = a++->toLower();
+			cb = b++->toLower();
+			if (ca < cb)
+				return true;
+			if (ca > cb)
+				return false;
+		}
+		return false;
+	}
+};
 
 #endif // SERVICE_H
