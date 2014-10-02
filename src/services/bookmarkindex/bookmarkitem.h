@@ -14,38 +14,37 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef FILEITEM_H
-#define FILEITEM_H
+#ifndef BOOKMARKITEM_H
+#define BOOKMARKITEM_H
 
-#include "fileindex.h"
-#include <QMimeDatabase>
+#include "bookmarkindex.h"
 #include <QString>
-#include <QDataStream>
 #include <QIcon>
+#include <QDataStream>
 
-/**************************************************************************/
-class FileIndex::Item : public Service::Item
+class BookmarkIndex::Item : public Service::Item
 {
-	friend class FileIndex;
-	static const QMimeDatabase mimeDb;
+	friend class BookmarkIndex;
 
 public:
 	Item(){}
 	~Item(){}
 
-	inline QString title()            const override {return _name;} //TODO
-	inline QString complete()         const override {return _name;}
-	inline QString infoText()         const override {return _path;}
-	void           action()                 override;
-	QString        actionText()       const override;
-	QIcon          icon()             const override;
+	inline QString title() const override {return _title;}
+	inline QString complete() const override {return _title;}
+	inline QString infoText() const override {return _url;}
+	void action() override;
+	QString actionText() const override;
+	QIcon icon() const override;
+
 
 protected:
-	QString _name;
-	QString _path;
+	QString _title;
+	QString _url;
 
 	friend QDataStream &operator<<(QDataStream &out, const Item &item);
 	friend QDataStream &operator>>(QDataStream &in, Item &item);
 };
 
-#endif // FILEITEM_H
+
+#endif // BOOKMARKITEM_H

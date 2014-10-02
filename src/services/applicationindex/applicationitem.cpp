@@ -18,6 +18,8 @@
 #include <chrono>
 #include <QProcess>
 
+#include <QDebug>
+
 /**************************************************************************/
 void ApplicationIndex::Item::action()
 {
@@ -70,23 +72,29 @@ QIcon ApplicationIndex::Item::icon() const
 /**************************************************************************/
 QDataStream &operator<<(QDataStream &out, const ApplicationIndex::Item &item)
 {
-	out << item._name
-		<< item._exec
-		<< item._iconName
-		<< item._info
-		<< item._lastAccess
-		<< item._term;
-	return out;
+	//TODO
+	qDebug() << "NOT IMPLEMENTED!";
+	exit(1);
+//	out << item._name
+//		<< item._exec
+//		<< item._iconName
+//		<< item._info
+//		<< item._lastAccess
+//		<< item._term;
+//	return out;
 }
 
 /**************************************************************************/
 QDataStream &operator>>(QDataStream &in, ApplicationIndex::Item &item)
 {
-	in >> item._name
-			>> item._exec
-			>> item._iconName
-			>> item._info
-			>> item._lastAccess
-			>> item._term;
-	return in;
+	//TODO
+	qDebug() << "NOT IMPLEMENTED!";
+	exit(1);
+//	in >> item._name
+//			>> item._exec
+//			>> item._iconName
+//			>> item._info
+//			>> item._lastAccess
+//			>> item._term;
+//	return in;
 }

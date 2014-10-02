@@ -74,7 +74,7 @@ void XHotKeyManager::run()
 			}
 			break;
 		default:
-			std::cout << "Defalt!" << std::endl;
+			std::cout << "Ah should never happen!" << std::endl;
 			break;
 		}
 	}

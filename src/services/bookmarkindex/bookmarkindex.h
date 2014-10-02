@@ -17,61 +17,24 @@
 #ifndef BOOKMARKINDEX_H
 #define BOOKMARKINDEX_H
 
-#include "abstractindexprovider.h"
-#include "singleton.h"
-#include "boost/filesystem.hpp"
-#include <string>
-#include <iostream>
+#include "../index.h"
+#include <QString>
 
 
-/**************************************************************************//**
- * @brief The BookmarkIndex class
- */
-class BookmarkIndex : public AbstractIndexProvider, public Singleton<BookmarkIndex>
+class BookmarkIndex : public Index
 {
-	friend class Singleton<BookmarkIndex>;
-
-	BookmarkIndex();
-	~BookmarkIndex(){}
-
 public:
 	class Item;
 
-	void buildIndex()      override;
-	void saveIndex() const override;
-	void loadIndex()       override{}
-};
-
-/**************************************************************************//**
- * @brief The BookmarkIndex::Item class
- */
-class BookmarkIndex::Item : public AbstractIndexProvider::Item
-{
-	friend class BookmarkIndex;
-
-public:
-	Item(){}
-	~Item(){}
-	explicit Item(const std::string &name, const std::string &url)
-		: AbstractIndexProvider::Item(name), _url(url){}
-
-	inline std::string title() const override {return _name;}
-	inline std::string complete() const override {return _name;}
-	inline std::string infoText() const override {return _url;}
-	void               action(Action) override;
-	std::string        actionText(Action) const override;
-	QIcon              icon() const override;
-
+	BookmarkIndex();
+	~BookmarkIndex();
 
 protected:
-	// Serialization
-	friend class boost::serialization::access;
-	template <typename Archive> void serialize(Archive &ar, const unsigned int version){
-	  ar & boost::serialization::base_object<AbstractIndexProvider::Item>(*this);
-	  ar & _url;
-	}
-
-	std::string _url;
+	void buildIndex() override;
+	void save(const QString&) const override;
+	void load(const QString&) override;
 };
+
+
 
 #endif // BOOKMARKINDEX_H

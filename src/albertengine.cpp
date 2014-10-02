@@ -18,7 +18,7 @@
 //#include "services/websearch/websearch.h"
 #include "services/fileindex/fileindex.h"
 #include "services/calculator/calculator.h"
-//#include "services/bookmarkindex/bookmarkindex.h"
+#include "services/bookmarkindex/bookmarkindex.h"
 #include "services/applicationindex/applicationindex.h"
 
 /**********************************************************************/
@@ -27,11 +27,7 @@ AlbertEngine::AlbertEngine()
 	_modules.push_back(new Calculator);
 	_modules.push_back(new ApplicationIndex);
 	_modules.push_back(new FileIndex);
-
-//	if (true) // TODO: Enable in settings
-//		_modules.push_back(new BookmarkIndex);
-
-//	_calculator = new Calculator;
+	_modules.push_back(new BookmarkIndex);
 //	_websearch = new WebSearch;
 }
 

@@ -20,6 +20,7 @@
 #include "calculator.h"
 #include <QString>
 #include <QIcon>
+#include <QDataStream>
 
 /*********************************************************************/
 class Calculator::Item : public Service::Item
@@ -40,6 +41,9 @@ public:
 protected:
 	QString _query;
 	QString _result;
+
+	friend QDataStream &operator<<(QDataStream &out, const Item &item);
+	friend QDataStream &operator>>(QDataStream &in, Item &item);
 };
 
 #endif // CALCULATORITEM_H

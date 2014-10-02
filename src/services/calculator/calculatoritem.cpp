@@ -19,6 +19,8 @@
 #include <QGuiApplication>
 #include <QProcess>
 
+#include <QDebug>
+
 void Calculator::Item::action()
 {
 //	switch (a) {
@@ -58,4 +60,22 @@ QIcon Calculator::Item::icon() const
 	if (QIcon::hasThemeIcon(QString::fromLocal8Bit("calc")))
 		return QIcon::fromTheme(QString::fromLocal8Bit("calc"));
 	return QIcon::fromTheme(QString::fromLocal8Bit("unknown"));
+}
+
+/**************************************************************************/
+QDataStream &operator<<(QDataStream &out, const Calculator::Item &item)
+{
+	//TODO
+	qDebug() << "NOT IMPLEMENTED!";
+	exit(1);
+
+}
+
+/**************************************************************************/
+QDataStream &operator>>(QDataStream &in, Calculator::Item &item)
+{
+	//TODO
+	qDebug() << "NOT IMPLEMENTED!";
+	exit(1);
+
 }

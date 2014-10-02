@@ -14,29 +14,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "fileitem.h"
+#include "bookmarkitem.h"
 #include <chrono>
 #include <QProcess>
-#include <QDesktopServices>
-#include <QUrl>
-
 #include <QDebug>
 
-/**************************************************************************/
-const QMimeDatabase FileIndex::Item::mimeDb;
 
 /**************************************************************************/
-void FileIndex::Item::action()
+void BookmarkIndex::Item::action()
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
 
 //	switch (a) {
 //	case Action::Enter:
-
-		QDesktopServices::openUrl(QUrl(_path, QUrl::StrictMode)); //TODO
-//		break;
 //	case Action::Alt:
-//		QDesktopServices::openUrl(QUrl(QFileInfo(_path).absolutePath()));
+		QProcess::startDetached("xdg-open " + _url);
 //		break;
 //	case Action::Ctrl:
 ////		WebSearch::instance()->defaultSearch(_name);
@@ -45,14 +37,12 @@ void FileIndex::Item::action()
 }
 
 /**************************************************************************/
-QString FileIndex::Item::actionText() const
+QString BookmarkIndex::Item::actionText() const
 {
 //	switch (a) {
 //	case Action::Enter:
-		return "Open '" + _name + "' with default application";
-//		break;
 //	case Action::Alt:
-//		return "Open the folder containing '" + _name + "' in file browser";
+		return "Visit '" + _title + "'";
 //		break;
 //	case Action::Ctrl:
 ////		return WebSearch::instance()->defaultSearchText(_name);
@@ -63,34 +53,33 @@ QString FileIndex::Item::actionText() const
 }
 
 /**************************************************************************/
-QIcon FileIndex::Item::icon() const
+QIcon BookmarkIndex::Item::icon() const
 {
-	QString iconName = mimeDb.mimeTypeForFile(_path).iconName();
-	if (QIcon::hasThemeIcon(iconName))
-		return QIcon::fromTheme(iconName);
+	if (QIcon::hasThemeIcon(QString::fromLocal8Bit("favorites")))
+		return QIcon::fromTheme(QString::fromLocal8Bit("favorites"));
 	return QIcon::fromTheme(QString::fromLocal8Bit("unknown"));
 }
 
 /**************************************************************************/
-QDataStream &operator<<(QDataStream &out, const FileIndex::Item &item)
+QDataStream &operator<<(QDataStream &out, const BookmarkIndex::Item &item)
 {
 	//TODO
 	qDebug() << "NOT IMPLEMENTED!";
 	exit(1);
-//	out << item._name
+//	out << item._title
 //		<< item._lastAccess
-//		<< item._path;
+//		<< item._url;
 //	return out;
 }
 
 /**************************************************************************/
-QDataStream &operator>>(QDataStream &in, FileIndex::Item &item)
+QDataStream &operator>>(QDataStream &in, BookmarkIndex::Item &item)
 {
 	//TODO
 	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
-//	in >> item._name
+//	exit(1);
+//	in >> item._title
 //			>> item._lastAccess
-//			>> item._path;
+//			>> item._url;
 //	return in;
 }

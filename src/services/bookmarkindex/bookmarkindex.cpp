@@ -15,135 +15,129 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "bookmarkindex.h"
-#include "settings.h"
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <pwd.h>
-#include <unistd.h>
+#include "bookmarkitem.h"
+
 #include <functional>
-#include <fstream>
-#include "websearch/websearch.h"
+#include <QSettings>
+//#include <algorithm>
+//#include <QDataStream>
+#include <QFile>
+#include <QFileInfo>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QDebug>
+#include <QStandardPaths>
 
-
-//REMOVE
-#include <iostream>
 
 /**************************************************************************/
-BookmarkIndex::BookmarkIndex(){
-	_indexFile = Settings::instance()->configDir() + "idx_bookmarks";
+BookmarkIndex::BookmarkIndex()
+{
+	buildIndex();
+	qDebug() << "[BookmarkIndex]\tIndexing done. Found " << _index.size() << " bookmarks.";
+	std::sort(_index.begin(), _index.end(), Index::CaseInsensitiveCompare());
+
+//	for(auto *i : _index)
+//		qDebug() << i->title();
+
+	setSearchType(Index::SearchType::WordMatch);
+
+}
+
+/**************************************************************************/
+BookmarkIndex::~BookmarkIndex()
+{
+	for(Service::Item *i : _index)
+		delete i;
+	_index.clear();
 }
 
 /**************************************************************************/
 void BookmarkIndex::buildIndex()
 {
-	// If there is a serialized index use it
-	std::ifstream f(_indexFile);
-	if (f.good()){
-		boost::archive::text_iarchive ia(f);
-		ia.template register_type<Item>();
-		ia >> _index;
-		f.close();
-	}
-	else
+	// Define a lambda for recursion
+	std::function<void(const QJsonObject &json)> rec_bmsearch = [&] (const QJsonObject &json)
 	{
-		using namespace boost::property_tree;
-
-		// Define a lambda for recursion
-		std::function<void(const ptree &pt)> rec_bmsearch = [&] (const ptree &pt)
-		{
-			for (const ptree::value_type& ptvt : pt) {
-				if (!ptvt.second.empty()){
-					if (!ptvt.second.get_child("type").get_value<std::string>().compare("folder"))
-						rec_bmsearch(ptvt.second.get_child("children"));
-					else // (!ptvt.get_child("type").get_value<std::string>().compare("url"))
-					{
-						std::string i = ptvt.second.get_child("name").get_value<std::string>();
-						std::string j = ptvt.second.get_child("url").get_value<std::string>();
-						_index.push_back(new Item(i,j));
-					}
-				}
-			}
-		};
-
-		// Finally do this recursion for all paths
-		std::string bookmarkPath(getpwuid(getuid())->pw_dir);
-		bookmarkPath += "/" + Settings::instance()->get("chromium_bookmark_path");
-		std::cout << "[BookmarkIndex] Parsing in: " << bookmarkPath << std::endl;
-		try
-		{
-			ptree pt;
-			read_json(bookmarkPath, pt);// Settings::instance()->locale());
-			rec_bmsearch(pt.get_child("roots"));
+		QJsonValue type = json["type"];
+		if (type == QJsonValue::Undefined)
+			return;
+		if (type.toString() == "folder"){
+			QJsonArray jarr = json["children"].toArray();
+			for (const QJsonValue &i : jarr)
+				rec_bmsearch(i.toObject());
 		}
-		catch (std::exception const& e)
-		{
-			std::cerr << "[BookmarkIndex] Could not build index: " << e.what() << std::endl;
+		if (type.toString() == "url") {
+			Item *i = new Item;
+			i->_title = json["name"].toString();
+			i->_url   = json["url"].toString();
+			_index.append(i);
 		}
+	};
 
-		std::sort(_index.begin(), _index.end(), CaseInsensitiveCompare(Settings::instance()->locale()));
+	// Finally do this recursion for all paths
+	QString bookmarkPath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + "/"
+			+ QSettings().value(QString::fromLocal8Bit("chromium_bookmark_path"),
+								QString::fromLocal8Bit(".config/chromium/Default/Bookmarks")).toString();
+
+	qDebug() << "[BookmarkIndex]\tParsing" << bookmarkPath;
+
+	QFile loadFile(bookmarkPath);
+	if (!loadFile.open(QIODevice::ReadOnly)) {
+		qWarning() << "[BookmarkIndex]\tCould not open" << bookmarkPath;
+		return;
 	}
 
-	std::cout << "[BookmarkIndex] Indexing done. Found " << _index.size() << " bookmarks." << std::endl;
+	QJsonObject json = QJsonDocument::fromJson(loadFile.readAll()).object();
+	QJsonObject roots = json.value("roots").toObject();
+	for (const QJsonValue &i : roots)
+		if (i.isObject())
+			rec_bmsearch(i.toObject());
+
+	std::sort(_index.begin(), _index.end(), CaseInsensitiveCompare());
 }
 
 /**************************************************************************/
-void BookmarkIndex::saveIndex() const
+void BookmarkIndex::save(const QString& f) const
 {
-	std::ofstream f(_indexFile);
-	boost::archive::text_oarchive oa(f);
-	oa.template register_type<Item>();
-	oa << _index;
-	f.close();
-}
-
-
-/*****************************************************************************/
-/*****************************************************************************/
-/******************************* BookmarkIndexItem *******************************/
-/*****************************************************************************/
-/**************************************************************************/
-void BookmarkIndex::Item::action(Action a)
-{
-	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
-
-	pid_t pid;
-	switch (a) {
-	case Action::Enter:
-	case Action::Alt:
-		pid = fork();
-		if (pid == 0) {
-			pid_t sid = setsid();
-			if (sid < 0) exit(EXIT_FAILURE);
-			execl("/usr/bin/xdg-open", "xdg-open", _url.c_str(), (char *)0);
-			exit(1);
-		}
-		break;
-	case Action::Ctrl:
-		WebSearch::instance()->defaultSearch(_name);
-		break;
-	}
+	//TODO
+	qDebug() << "NOT IMPLEMENTED!";
+	exit(1);
+//	qDebug() << "[BookmarkIndex]\tSerializing to" << f; TODO
+//	// If there is a serialized index use it
+//	QFile file(f);
+//	if (file.open(QIODevice::ReadWrite| QIODevice::Text))
+//	{
+//		QDataStream stream( &file );
+//		stream << _index.size();
+//		for (Index::Item *i : _index)
+//			stream << *static_cast<BookmarkIndex::Item*>(i);
+//		file.close();
+//		return;
+//	}
 }
 
 /**************************************************************************/
-std::string BookmarkIndex::Item::actionText(Action a) const
+void BookmarkIndex::load(const QString& f)
 {
-	switch (a) {
-	case Action::Enter:
-	case Action::Alt:
-		return "Visit '" + _name + "'";
-		break;
-	case Action::Ctrl:
-		return WebSearch::instance()->defaultSearchText(_name);
-		break;
-	}
-	// Will never happen
-	return "";
+	//TODO
+	qDebug() << "NOT IMPLEMENTED!";
+	exit(1);
+//	// If there is a serialized index use it TODO
+//	QFile file(_indexFile);
+//	if (file.open(QIODevice::ReadOnly | QIODevice::Text))
+//	{
+//		qDebug() << "[FileIndex]\tDeserializing from" << _indexFile;
+//		QDataStream stream( &file );
+//		int size;
+//		stream >> size;
+//		BookmarkIndex::Item* tmpItem;
+//		for (int i = 0; i < size; ++i) {
+//			tmpItem = new BookmarkIndex::Item;
+//			stream >> *tmpItem;
+//			_index.push_back(tmpItem);
+//		}
+//		file.close();
+//		return;
+//	}
 }
 
-/**************************************************************************/
-QIcon BookmarkIndex::Item::icon() const
-{
-	if (QIcon::hasThemeIcon(QString::fromLocal8Bit("favorites")))
-		return QIcon::fromTheme(QString::fromLocal8Bit("favorites"));
-	return QIcon::fromTheme(QString::fromLocal8Bit("unknown"));
-}

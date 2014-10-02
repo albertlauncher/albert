@@ -44,8 +44,8 @@ protected:
 	bool    _term;
 
 	// Serialization
-	friend QDataStream &operator<<(QDataStream &out, const ApplicationIndex::Item &item);
-	friend QDataStream &operator>>(QDataStream &in, ApplicationIndex::Item &item);
+	friend QDataStream &operator<<(QDataStream &out, const Item &item);
+	friend QDataStream &operator>>(QDataStream &in, Item &item);
 };
 
 #endif // APPLICATIONITEM_H

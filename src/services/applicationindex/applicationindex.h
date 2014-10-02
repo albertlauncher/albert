@@ -28,6 +28,7 @@ public:
 
 	ApplicationIndex();
 	~ApplicationIndex();
+
 protected:
 	void buildIndex() override;
 	void save(const QString&) const override;
