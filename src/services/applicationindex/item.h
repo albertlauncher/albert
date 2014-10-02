@@ -14,24 +14,39 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef APPLICATIONINDEX_H
-#define APPLICATIONINDEX_H
+#ifndef ITEM_H
+#define ITEM_H
+
+#include "../index.h"
+#include "applicationindex.h"
 
 #include <QString>
-#include "../index.h"
+#include <QDataStream>
+
 
 /**************************************************************************/
-class ApplicationIndex : public Index
+class ApplicationIndex::Item : public Service::Item
 {
+	friend class ApplicationIndex;
 public:
-	class Item;
+	inline QString title()            const override {return _name;}
+	QIcon          icon()             const override;
+	inline QString infoText()         const override {return _info;}
+	inline QString complete()         const override {return _name;}
+	void           action()           override;
+	QString        actionText() const override;
+	inline  qint64 lastAccess()       const;
 
-	ApplicationIndex();
-	~ApplicationIndex();
 protected:
-	void buildIndex();
-	void save(const QString&) const override;
-	void load(const QString&) override;
+	QString _name;
+	QString _info;
+	QString _iconName;
+	QString _exec;
+	bool    _term;
+
+	// Serialization
+	friend QDataStream &operator<<(QDataStream &out, const ApplicationIndex::Item &item);
+	friend QDataStream &operator>>(QDataStream &in, ApplicationIndex::Item &item);
 };
 
-#endif // APPLICATIONINDEX_H
+#endif // ITEM_H

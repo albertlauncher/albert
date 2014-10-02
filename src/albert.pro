@@ -29,6 +29,8 @@ HEADERS  +=	albert.h \
 	#bookmarkindex/bookmarkindex.h \
 	#calculator/calculator.h \
 	#websearch/websearch.h \
+    services/applicationindex/item.h \
+    services/searchimpl.h
 
 SOURCES += main.cpp \
 	albert.cpp \
@@ -43,6 +45,8 @@ SOURCES += main.cpp \
 	#bookmarkindex/bookmarkindex.cpp \
 	#calculator/calculator.cpp \
 	#websearch/websearch.cpp \
+    services/applicationindex/item.cpp \
+    services/searchimpl.cpp
 
 RESOURCES += albert.qrc
 

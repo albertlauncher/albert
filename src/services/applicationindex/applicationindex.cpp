@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "applicationindex.h"
+#include "item.h"
 #include <functional>
 //#include "websearch/websearch.h"
 #include <QSettings>
@@ -23,7 +24,6 @@
 #include <QMap>
 #include <QString>
 #include <QStandardPaths>
-#include <QProcess>
 #include <algorithm>
 #include <QDataStream>
 #include <QMetaType>
@@ -154,78 +154,4 @@ void ApplicationIndex::save(const QString&f) const
 		file.close();
 		return;
 	}
-}
-
-
-/**************************************************************************/
-void ApplicationIndex::Item::action()
-{
-	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
-
-		if (_term)
-			QProcess::startDetached("konsole -e " + _exec);
-		else
-			QProcess::startDetached(_exec);
-
-
-		//		break;
-//	case Action::Alt:
-//		if (_term)
-//			QProcess::startDetached("kdesu konsole -e " + _exec);
-//		else
-//			QProcess::startDetached("kdesu " + _exec);
-//		break;
-//	case Action::Ctrl:
-////		WebSearch::instance()->defaultSearch(_name);
-//		break;
-//	}
-}
-
-/**************************************************************************/
-QString ApplicationIndex::Item::actionText() const
-{
-		return "Start " + _name;
-//		break;
-//	case Action::Alt:
-//		return "Start " + _name + " as root";
-//		break;
-//	case Action::Ctrl:
-////		return WebSearch::instance()->defaultSearchText(_name);
-//		break;
-//	}
-//	// Will never happen
-//	return "";
-}
-
-
-/**************************************************************************/
-QIcon ApplicationIndex::Item::icon() const
-{
-	if (QIcon::hasThemeIcon(_iconName))
-		return QIcon::fromTheme(_iconName);
-	return QIcon::fromTheme("unknown");
-}
-
-/**************************************************************************/
-QDataStream &operator<<(QDataStream &out, const ApplicationIndex::Item &item)
-{
-	out << item._name
-		<< item._exec
-		<< item._iconName
-		<< item._info
-		<< item._lastAccess
-		<< item._term;
-	return out;
-}
-
-/**************************************************************************/
-QDataStream &operator>>(QDataStream &in, ApplicationIndex::Item &item)
-{
-	in >> item._name
-			>> item._exec
-			>> item._iconName
-			>> item._info
-			>> item._lastAccess
-			>> item._term;
-	return in;
 }
