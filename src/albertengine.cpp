@@ -15,15 +15,16 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "albertengine.h"
-//#include "websearch/websearch.h"
+//#include "services/websearch/websearch.h"
 #include "services/fileindex/fileindex.h"
-//#include "calculator/calculator.h"
-//#include "bookmarkindex/bookmarkindex.h"
+#include "services/calculator/calculator.h"
+//#include "services/bookmarkindex/bookmarkindex.h"
 #include "services/applicationindex/applicationindex.h"
 
 /**********************************************************************/
 AlbertEngine::AlbertEngine()
 {
+	_modules.push_back(new Calculator);
 	_modules.push_back(new ApplicationIndex);
 	_modules.push_back(new FileIndex);
 
@@ -72,8 +73,8 @@ void AlbertEngine::save(const QString & f) const
 /**************************************************************************/
 void AlbertEngine::load(const QString &f)
 {
-	for (Service *i: _modules)
-		i->load(f);
+//	for (Service *i: _modules) // TODO
+//		i->load(f);
 }
 
 /**************************************************************************/

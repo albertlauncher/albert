@@ -14,38 +14,32 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef APPLICATIONITEM_H
-#define APPLICATIONITEM_H
+#ifndef CALCULATORITEM_H
+#define CALCULATORITEM_H
 
-#include "applicationindex.h"
+#include "calculator.h"
 #include <QString>
-#include <QDataStream>
 #include <QIcon>
 
-
-/**************************************************************************/
-class ApplicationIndex::Item : public Service::Item
+/*********************************************************************/
+class Calculator::Item : public Service::Item
 {
-	friend class ApplicationIndex;
+	friend class Calculator;
+
 public:
-	inline QString title()            const override {return _name;}
-	QIcon          icon()             const override;
-	inline QString infoText()         const override {return _info;}
-	inline QString complete()         const override {return _name;}
+	Item(){}
+	~Item(){}
+
+	inline QString title()      const override {return _result;}
+	inline QString complete()   const override {return _query;}
+	inline QString infoText()   const override {return "Result of '"+_query+"'";}
 	void           action()           override;
 	QString        actionText() const override;
-	inline  qint64 lastAccess()       const;
+	QIcon          icon()       const override;
 
 protected:
-	QString _name;
-	QString _info;
-	QString _iconName;
-	QString _exec;
-	bool    _term;
-
-	// Serialization
-	friend QDataStream &operator<<(QDataStream &out, const ApplicationIndex::Item &item);
-	friend QDataStream &operator>>(QDataStream &in, ApplicationIndex::Item &item);
+	QString _query;
+	QString _result;
 };
 
-#endif // APPLICATIONITEM_H
+#endif // CALCULATORITEM_H

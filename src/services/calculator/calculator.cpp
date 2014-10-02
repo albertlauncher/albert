@@ -15,14 +15,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "calculator.h"
-#include "settings.h"
-#include "boost/algorithm/string.hpp"
-#include "boost/algorithm/string/trim.hpp"
-#include <unistd.h>
-#include <sstream>
+#include "calculatoritem.h"
 #include "muParser.h"
-#include "websearch/websearch.h"
-
+#include <QDebug>
 
 /**************************************************************************/
 Calculator::Calculator()
@@ -38,17 +33,15 @@ Calculator::~Calculator()
 }
 
 /**************************************************************************/
-void Calculator::query(const std::string &req, std::vector<AbstractServiceProvider::Item *> *res)
+void Calculator::query(const QString &req, QVector<Service::Item *> *res) const noexcept
 {
 	using namespace mu;
 	try
 	{
-		std::stringstream ss;
 		Parser p;
-		p.SetExpr(req);
-		ss << p.Eval();
-		_theOneAndOnly->_query=req;
-		_theOneAndOnly->_result=ss.str();
+		p.SetExpr(req.toStdString());
+		_theOneAndOnly->_query = req;
+		_theOneAndOnly->_result = QString::number(p.Eval());
 		res->push_back(_theOneAndOnly);
 	}
 	catch (Parser::exception_type &e)
@@ -57,62 +50,18 @@ void Calculator::query(const std::string &req, std::vector<AbstractServiceProvid
 	}
 }
 
-
-/*****************************************************************************/
-/*****************************************************************************/
-/******************************* CalculatorItem *******************************/
-/*****************************************************************************/
 /**************************************************************************/
-void Calculator::Item::action(Action a)
+void Calculator::save(const QString &) const
 {
-	pid_t pid;
-	switch (a) {
-	case Action::Enter:
-		pid = fork();
-		if (pid == 0) {
-			pid_t sid = setsid();
-			if (sid < 0) exit(EXIT_FAILURE);
-			execl("/usr/bin/sh", "sh", "-c", std::string("xclip -i <<<" + _result).c_str(), (char *)0);
-			exit(1);
-		}
-		break;
-	case Action::Alt:
-		pid = fork();
-		if (pid == 0) {
-			pid_t sid = setsid();
-			if (sid < 0) exit(EXIT_FAILURE);
-			execl("/usr/bin/sh", "sh", "-c", std::string("xclip -i <<<" + _query).c_str(), (char *)0);
-			exit(1);
-		}
-		break;
-	case Action::Ctrl:
-		WebSearch::instance()->defaultSearch(_query);
-		break;
-	}
+	//TODO
+	qDebug() << "NOT IMPLEMENTED!";
+	exit(1);
 }
 
 /**************************************************************************/
-std::string Calculator::Item::actionText(Action a) const
+void Calculator::load(const QString &)
 {
-	switch (a) {
-	case Action::Enter:
-		return "Copy '" + _result + "' to clipboard";
-		break;
-	case Action::Alt:
-		return "Copy '" + _query + "' to clipboard";
-		break;
-	case Action::Ctrl:
-		return WebSearch::instance()->defaultSearchText(_query);
-		break;
-	}
-	// Will never happen
-	return "";
-}
-
-/**************************************************************************/
-QIcon Calculator::Item::icon() const
-{
-	if (QIcon::hasThemeIcon(QString::fromLocal8Bit("calc")))
-		return QIcon::fromTheme(QString::fromLocal8Bit("calc"));
-	return QIcon::fromTheme(QString::fromLocal8Bit("unknown"));
+	//TODO
+	qDebug() << "NOT IMPLEMENTED!";
+	exit(1);
 }

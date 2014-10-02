@@ -17,48 +17,26 @@
 #ifndef CALCULATOR_H
 #define CALCULATOR_H
 
-#include "abstractserviceprovider.h"
-#include "singleton.h"
-#include <string>
-#include <vector>
-#include <unistd.h>
-
+#include "../service.h"
+#include <QString>
+#include <QVector>
 
 /*********************************************************************/
-class Calculator : public AbstractServiceProvider, public Singleton<Calculator>
+class Calculator : public Service
 {
-	friend class Singleton<Calculator>;
 public:
 	class Item;
 
-	void query(const std::string&, std::vector<AbstractServiceProvider::Item*>*) override;
-
-protected:
 	Calculator();
 	~Calculator();
 
-	Item *_theOneAndOnly;
-	std::vector<Item*> _searchEngines;
-};
-
-/*********************************************************************/
-class Calculator::Item : public AbstractServiceProvider::Item
-{
-	friend class Calculator;
-
-public:
-	Item(){}
-	~Item(){}
-
-	inline std::string title()            const override {return _result;}
-	inline std::string complete()         const override {return _query;}
-	inline std::string infoText()         const override {return "Result of '"+_query+"'";}
-	void               action(Action)           override;
-	std::string        actionText(Action) const override;
-	QIcon              icon()         const override;
+	void query(const QString&, QVector<Service::Item*>*) const noexcept override;
+	void save(const QString&) const override;
+	void load(const QString&) override;
 
 protected:
-	std::string _query;
-	std::string _result;
+	Item *_theOneAndOnly;
+	QVector<Item*> _searchEngines;
 };
+
 #endif // CALCULATOR_H
