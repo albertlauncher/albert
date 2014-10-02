@@ -29,6 +29,12 @@ WebSearch* WebSearch::_instance = nullptr;
 /**************************************************************************/
 WebSearch::WebSearch()
 {
+}
+
+/**************************************************************************/
+void WebSearch::initialize()
+{
+
 	QStringList engines = QSettings().value(QString::fromLocal8Bit("search_engines")).toStringList();
 	for (QString &e : engines)
 	{
@@ -39,10 +45,32 @@ WebSearch::WebSearch()
 			i->_name       = engineComponents[0];
 			i->_url        = engineComponents[1];
 			i->_shortcut   = engineComponents[2];
-			i->_iconName   = engineComponents[3];
+			i->_iconPath   = engineComponents[3];
 			_searchEngines.push_back(i);
 		}
 	}
+}
+
+/**************************************************************************/
+QDataStream &WebSearch::serialize(QDataStream &out) const
+{
+	out << _searchEngines.size();
+	for (WebSearch::Item* it : _searchEngines)
+		 it->serialize(out);
+	return out;
+}
+
+/**************************************************************************/
+QDataStream &WebSearch::deserialize(QDataStream &in)
+{
+	int size;
+	in >> size;
+	for (int i = 0; i < size; ++i) {
+		WebSearch::Item *it = new WebSearch::Item;
+		it->deserialize(in);
+		_searchEngines.push_back(it);
+	}
+	return in;
 }
 
 /**************************************************************************/
@@ -55,22 +83,6 @@ void WebSearch::query(const QString &req, QVector<Service::Item *> *res) const n
 			w->_searchTerm = req.section(' ', 1, -1, QString::SectionSkipEmpty);
 			res->push_back(w);
 		}
-}
-
-/**************************************************************************/
-void WebSearch::save(const QString &) const
-{
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
-}
-
-/**************************************************************************/
-void WebSearch::load(const QString &)
-{
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
 }
 
 /**************************************************************************/

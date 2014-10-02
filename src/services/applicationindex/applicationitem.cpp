@@ -60,6 +60,19 @@ QString ApplicationIndex::Item::actionText(Mod mod) const
 	return "";
 }
 
+/**************************************************************************/
+QDataStream &ApplicationIndex::Item::serialize(QDataStream &out) const
+{
+	out << _lastAccess << _name << _exec << _iconName << _info << _term;
+	return out;
+}
+
+/**************************************************************************/
+QDataStream &ApplicationIndex::Item::deserialize(QDataStream &in)
+{
+	in >> _lastAccess >> _name >> _exec >> _iconName >> _info >> _term;
+	return in;
+}
 
 /**************************************************************************/
 QIcon ApplicationIndex::Item::icon() const
@@ -67,34 +80,4 @@ QIcon ApplicationIndex::Item::icon() const
 	if (QIcon::hasThemeIcon(_iconName))
 		return QIcon::fromTheme(_iconName);
 	return QIcon::fromTheme("unknown");
-}
-
-/**************************************************************************/
-QDataStream &operator<<(QDataStream &out, const ApplicationIndex::Item &item)
-{
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
-//	out << item._name
-//		<< item._exec
-//		<< item._iconName
-//		<< item._info
-//		<< item._lastAccess
-//		<< item._term;
-//	return out;
-}
-
-/**************************************************************************/
-QDataStream &operator>>(QDataStream &in, ApplicationIndex::Item &item)
-{
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
-//	in >> item._name
-//			>> item._exec
-//			>> item._iconName
-//			>> item._info
-//			>> item._lastAccess
-//			>> item._term;
-//	return in;
 }

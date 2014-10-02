@@ -72,25 +72,15 @@ QIcon FileIndex::Item::icon() const
 }
 
 /**************************************************************************/
-QDataStream &operator<<(QDataStream &out, const FileIndex::Item &item)
+QDataStream &FileIndex::Item::serialize(QDataStream &out) const
 {
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
-//	out << item._name
-//		<< item._lastAccess
-//		<< item._path;
-//	return out;
+	out << _lastAccess << _name << _path;
+	return out;
 }
 
 /**************************************************************************/
-QDataStream &operator>>(QDataStream &in, FileIndex::Item &item)
+QDataStream &FileIndex::Item::deserialize(QDataStream &in)
 {
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
-//	in >> item._name
-//			>> item._lastAccess
-//			>> item._path;
-//	return in;
+	in >> _lastAccess >> _name >> _path;
+	return in;
 }

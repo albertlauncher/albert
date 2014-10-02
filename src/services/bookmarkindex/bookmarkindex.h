@@ -19,20 +19,24 @@
 
 #include "../index.h"
 #include <QString>
+#include <QDataStream>
 
 
+#include <QDebug>
 class BookmarkIndex : public Index
 {
 public:
 	class Item;
 
-	BookmarkIndex();
+	BookmarkIndex(){}
 	~BookmarkIndex();
+
+	void initialize() override;
+	QDataStream& serialize (QDataStream &out) const override;
+	QDataStream& deserialize (QDataStream &in) override;
 
 protected:
 	void buildIndex() override;
-	void save(const QString&) const override;
-	void load(const QString&) override;
 };
 
 

@@ -26,24 +26,18 @@
 
 
 /**************************************************************************/
-FileIndex::FileIndex()
-{
-	buildIndex();
-	qDebug() << "[FileIndex]\t\tIndexing done. Found " << _index.size() << " files.";
-	std::sort(_index.begin(), _index.end(), Index::CaseInsensitiveCompare());
-
-//	for (auto *i : _index)
-//		qDebug() << i->title();
-
-	setSearchType(Index::SearchType::WordMatch);
-}
-
-/**************************************************************************/
 FileIndex::~FileIndex()
 {
 	for(Service::Item *i : _index)
 		delete i;
 	_index.clear();
+}
+
+/**************************************************************************/
+void FileIndex::initialize()
+{
+	buildIndex();
+	std::sort(_index.begin(), _index.end(), Index::CaseInsensitiveCompare());
 }
 
 /**************************************************************************/
@@ -84,51 +78,29 @@ void FileIndex::buildIndex()
 			rec_dirsearch(fi);
 	}
 
-	std::sort(_index.begin(), _index.end(), CaseInsensitiveCompare());
+	qDebug() << "[FileIndex]\t\tFound " << _index.size() << " files.";
 }
 
 /**************************************************************************/
-void FileIndex::save(const QString& p) const
+QDataStream &FileIndex::serialize(QDataStream &out) const
 {
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
-//	// If there is a serialized index use it
-//	QFile file(p);
-//	if (file.open(QIODevice::ReadWrite| QIODevice::Text))
-//	{
-//		qDebug() << "[FileIndex]\t\tSerializing to" << p;
-//		QDataStream stream( &file );
-//		stream << _index.size();
-//		for (Index::Item *i : _index)
-//			stream << *static_cast<FileIndex::Item*>(i);
-//		file.close();
-//		return;
-//	}
+	out << _index.size();
+	for (Index::Item *it : _index)
+		static_cast<FileIndex::Item*>(it)->serialize(out);
+	return out;
 }
 
 /**************************************************************************/
-void FileIndex::load(const QString& p)
+QDataStream &FileIndex::deserialize(QDataStream &in)
 {
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
-//	// Exit if the file does not exist
-//	QFile file(p);
-//	if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-//	{
-//		qDebug() << "[FileIndex]\tDeserializing from" << p;
-
-//		// Open the stream an load all data
-//		QDataStream stream( &file );
-//		int size;
-//		stream >> size;
-//		FileIndex::Item* tmpItem;
-//		for (int i = 0; i < size; ++i) {
-//			tmpItem = new FileIndex::Item;
-//			stream >> *tmpItem;
-//			_index.push_back(tmpItem);
-//		}
-//		file.close();
-//	}
+	int size;
+	in >> size;
+	FileIndex::Item *it;
+	for (int i = 0; i < size; ++i) {
+		it = new FileIndex::Item;
+		it->deserialize(in);
+		_index.push_back(it);
+	}
+	qDebug() << "[FileIndex]\t\tLoaded " << _index.size() << " files.";
+	return in;
 }

@@ -108,9 +108,6 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	connect(XHotKeyManager::getInstance(), SIGNAL(hotKeyPressed()), this, SLOT(onHotKeyPressed()), Qt::QueuedConnection);// Show albert if hotkey was pressed
 	XHotKeyManager::getInstance()->start(); // Start listening for the hotkey(s)
 
-
-	_engine.load();
-
 }
 
 /**************************************************************************//**
@@ -118,7 +115,6 @@ AlbertWidget::AlbertWidget(QWidget *parent)
  */
 AlbertWidget::~AlbertWidget()
 {
-	_engine.save();
 }
 
 /*****************************************************************************/

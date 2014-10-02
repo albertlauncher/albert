@@ -29,18 +29,7 @@
 #include <QMetaType>
 
 
-/**************************************************************************/
-ApplicationIndex::ApplicationIndex()
-{
-	buildIndex();
-	qDebug() << "[ApplicationIndex]\tIndexing done. Found " << _index.size() << " apps.";
-	std::sort(_index.begin(), _index.end(), Index::CaseInsensitiveCompare());
-
-//	for(auto *i : _index)
-//		qDebug() << i->title();
-
-	setSearchType(Index::SearchType::WordMatch);
-}
+//	std::sort(_index.begin(), _index.end(), Index::CaseInsensitiveCompare());
 
 /**************************************************************************/
 ApplicationIndex::~ApplicationIndex()
@@ -48,6 +37,13 @@ ApplicationIndex::~ApplicationIndex()
 	for(Service::Item *i : _index)
 		delete i;
 	_index.clear();
+}
+
+/**************************************************************************/
+void ApplicationIndex::initialize()
+{
+	buildIndex();
+	std::sort(_index.begin(), _index.end(), Index::CaseInsensitiveCompare());
 }
 
 /**************************************************************************/
@@ -159,48 +155,29 @@ void ApplicationIndex::buildIndex()
 		if (fi.exists())
 			rec_dirsearch(fi);
 	}
+	qDebug() << "[ApplicationIndex]\tFound " << _index.size() << " apps.";
 }
 
 /**************************************************************************/
-void ApplicationIndex::load(const QString &f)
+QDataStream &ApplicationIndex::serialize(QDataStream &out) const
 {
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
-//	QFile file(f);
-//	if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-//	{
-//		qDebug() << "[ApplicationIndex]\tDeserializing from" << f;
-//		QDataStream stream( &file );
-//		int size;
-//		stream >> size;
-//		ApplicationIndex::Item* tmpItem;
-//		for (int i = 0; i < size; ++i) {
-//			tmpItem = new ApplicationIndex::Item;
-//			stream >> *tmpItem;
-//			_index.push_back(tmpItem);
-//		}
-//		file.close();
-//		return;
-//	}
+	out << _index.size();
+	for (Index::Item *it : _index)
+		static_cast<ApplicationIndex::Item*>(it)->serialize(out);
+	return out;
 }
 
 /**************************************************************************/
-void ApplicationIndex::save(const QString&f) const
+QDataStream &ApplicationIndex::deserialize(QDataStream &in)
 {
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
-//	qDebug() << "[ApplicationIndex]\tSerializing to" << f;
-//	// If there is a serialized index use it
-//	QFile file(f);
-//	if (file.open(QIODevice::ReadWrite| QIODevice::Text))
-//	{
-//		QDataStream stream( &file );
-//		stream << _index.size();
-//		for (Service::Item *i : _index)
-//			stream << *static_cast<ApplicationIndex::Item*>(i);
-//		file.close();
-//		return;
-//	}
+	int size;
+	in >> size;
+	ApplicationIndex::Item *it;
+	for (int i = 0; i < size; ++i) {
+		it = new ApplicationIndex::Item;
+		it->deserialize(in);
+		_index.push_back(it);
+	}
+	qDebug() << "[ApplicationIndex]\tLoaded " << _index.size() << " apps.";
+	return in;
 }

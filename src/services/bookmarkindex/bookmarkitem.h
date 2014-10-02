@@ -42,8 +42,9 @@ protected:
 	QString _title;
 	QString _url;
 
-	friend QDataStream &operator<<(QDataStream &out, const Item &item);
-	friend QDataStream &operator>>(QDataStream &in, Item &item);
+	// Serialization
+	QDataStream& serialize (QDataStream &out) const override;
+	QDataStream& deserialize (QDataStream &in) override;
 };
 
 

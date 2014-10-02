@@ -19,9 +19,7 @@
 
 #include "services/service.h"
 #include <QVector>
-#include <QString>
 #include <QAbstractListModel>
-#include <QStandardPaths>
 
 class AlbertEngine : public QAbstractListModel
 {
@@ -38,8 +36,6 @@ public:
 	~AlbertEngine();
 
 	void query(const QString &req);
-	void save(const QString& = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db") const;
-	void load(const QString& = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db");
 
 	// Modelstuff
 	void     clear();
@@ -51,8 +47,6 @@ public:
 
 
 private:
-//	WebSearch *_websearch;
-//	Calculator *_calculator;
 	QVector<Service*>        _modules;
 	QVector<Service::Item *> _data;
 };

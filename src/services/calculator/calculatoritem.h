@@ -42,8 +42,9 @@ protected:
 	QString _query;
 	QString _result;
 
-	friend QDataStream &operator<<(QDataStream &out, const Item &item);
-	friend QDataStream &operator>>(QDataStream &in, Item &item);
+	// Serialization
+	QDataStream& serialize (QDataStream &out) const override;
+	QDataStream& deserialize (QDataStream &in) override;
 };
 
 #endif // CALCULATORITEM_H

@@ -62,25 +62,15 @@ QIcon BookmarkIndex::Item::icon() const
 }
 
 /**************************************************************************/
-QDataStream &operator<<(QDataStream &out, const BookmarkIndex::Item &item)
+QDataStream &BookmarkIndex::Item::serialize(QDataStream &out) const
 {
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
-//	out << item._title
-//		<< item._lastAccess
-//		<< item._url;
+	out << _lastAccess << _title << _url;
 	return out;
 }
 
 /**************************************************************************/
-QDataStream &operator>>(QDataStream &in, BookmarkIndex::Item &item)
+QDataStream &BookmarkIndex::Item::deserialize(QDataStream &in)
 {
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-//	exit(1);
-//	in >> item._title
-//			>> item._lastAccess
-//			>> item._url;
+	in >> _lastAccess >> _title >> _url;
 	return in;
 }

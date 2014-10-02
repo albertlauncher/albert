@@ -58,21 +58,19 @@ QString WebSearch::Item::actionText(Mod mod) const
 /**************************************************************************/
 QIcon WebSearch::Item::icon() const
 {
-	return QIcon(_iconName);
+	return QIcon(_iconPath);
 }
 
 /**************************************************************************/
-QDataStream &operator<<(QDataStream &out, const WebSearch::Item &item)
+QDataStream &WebSearch::Item::serialize(QDataStream &out) const
 {
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
+	out << _name << _url << _shortcut << _iconPath << _lastAccess;
+	return out;
 }
 
 /**************************************************************************/
-QDataStream &operator>>(QDataStream &in, WebSearch::Item &item)
+QDataStream &WebSearch::Item::deserialize(QDataStream &in)
 {
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
+	in >> _name >> _url >> _shortcut >> _iconPath >> _lastAccess;
+	return in;
 }

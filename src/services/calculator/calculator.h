@@ -20,6 +20,7 @@
 #include "../service.h"
 #include <QString>
 #include <QVector>
+#include "muParser.h"
 
 /*********************************************************************/
 class Calculator : public Service
@@ -31,12 +32,12 @@ public:
 	~Calculator();
 
 	void query(const QString&, QVector<Service::Item*>*) const noexcept override;
-	void save(const QString&) const override;
-	void load(const QString&) override;
+	void initialize() override;
+	QDataStream& serialize (QDataStream &out) const override;
+	QDataStream& deserialize (QDataStream &in) override;
 
 protected:
 	Item *_theOneAndOnly;
-	QVector<Item*> _searchEngines;
 };
 
 #endif // CALCULATOR_H

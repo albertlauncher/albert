@@ -20,6 +20,7 @@
 #include <QString>
 #include <QVector>
 #include <QIcon>
+#include <QDataStream>
 
 /**************************************************************************/
 struct Service
@@ -31,8 +32,10 @@ struct Service
 	Service(){}
 	virtual ~Service(){}
 	virtual void query(const QString&, QVector<Item*>*) const noexcept = 0;
-	virtual void save (const QString&) const = 0;
-	virtual void load (const QString&) = 0;
+
+	virtual void initialize() = 0;
+	virtual QDataStream& serialize(QDataStream &out) const = 0;
+	virtual QDataStream& deserialize(QDataStream &in) = 0;
 };
 
 /**************************************************************************/
@@ -50,6 +53,10 @@ struct Service::Item
 	virtual void action(Mod) = 0;
 	virtual QString actionText(Mod) const = 0;
 	qint64 lastAccess() const {return _lastAccess;}
+
+	virtual QDataStream& serialize(QDataStream &out) const = 0;
+	virtual QDataStream& deserialize(QDataStream &in) = 0;
+
 
 protected:
 	qint64 _lastAccess;

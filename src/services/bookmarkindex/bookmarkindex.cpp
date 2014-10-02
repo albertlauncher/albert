@@ -19,8 +19,6 @@
 
 #include <functional>
 #include <QSettings>
-//#include <algorithm>
-//#include <QDataStream>
 #include <QFile>
 #include <QFileInfo>
 #include <QJsonDocument>
@@ -29,27 +27,19 @@
 #include <QDebug>
 #include <QStandardPaths>
 
-
-/**************************************************************************/
-BookmarkIndex::BookmarkIndex()
-{
-	buildIndex();
-	qDebug() << "[BookmarkIndex]\tIndexing done. Found " << _index.size() << " bookmarks.";
-	std::sort(_index.begin(), _index.end(), Index::CaseInsensitiveCompare());
-
-//	for(auto *i : _index)
-//		qDebug() << i->title();
-
-	setSearchType(Index::SearchType::WordMatch);
-
-}
-
 /**************************************************************************/
 BookmarkIndex::~BookmarkIndex()
 {
 	for(Service::Item *i : _index)
 		delete i;
 	_index.clear();
+}
+
+/**************************************************************************/
+void BookmarkIndex::initialize()
+{
+	buildIndex();
+	std::sort(_index.begin(), _index.end(), Index::CaseInsensitiveCompare());
 }
 
 /**************************************************************************/
@@ -81,63 +71,41 @@ void BookmarkIndex::buildIndex()
 
 	qDebug() << "[BookmarkIndex]\tParsing" << bookmarkPath;
 
-	QFile loadFile(bookmarkPath);
-	if (!loadFile.open(QIODevice::ReadOnly)) {
+	QFile f(bookmarkPath);
+	if (!f.open(QIODevice::ReadOnly)) {
 		qWarning() << "[BookmarkIndex]\tCould not open" << bookmarkPath;
 		return;
 	}
 
-	QJsonObject json = QJsonDocument::fromJson(loadFile.readAll()).object();
+	QJsonObject json = QJsonDocument::fromJson(f.readAll()).object();
 	QJsonObject roots = json.value("roots").toObject();
 	for (const QJsonValue &i : roots)
 		if (i.isObject())
 			rec_bmsearch(i.toObject());
 
-	std::sort(_index.begin(), _index.end(), CaseInsensitiveCompare());
+	qDebug() << "[BookmarkIndex]\tFound " << _index.size() << " bookmarks.";
 }
 
 /**************************************************************************/
-void BookmarkIndex::save(const QString& f) const
+QDataStream &BookmarkIndex::serialize(QDataStream &out) const
 {
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
-//	qDebug() << "[BookmarkIndex]\tSerializing to" << f; TODO
-//	// If there is a serialized index use it
-//	QFile file(f);
-//	if (file.open(QIODevice::ReadWrite| QIODevice::Text))
-//	{
-//		QDataStream stream( &file );
-//		stream << _index.size();
-//		for (Index::Item *i : _index)
-//			stream << *static_cast<BookmarkIndex::Item*>(i);
-//		file.close();
-//		return;
-//	}
+	out << _index.size();
+	for (Index::Item *it : _index)
+		static_cast<BookmarkIndex::Item*>(it)->serialize(out);
+	return out;
 }
 
 /**************************************************************************/
-void BookmarkIndex::load(const QString& f)
+QDataStream &BookmarkIndex::deserialize(QDataStream &in)
 {
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
-//	// If there is a serialized index use it TODO
-//	QFile file(_indexFile);
-//	if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-//	{
-//		qDebug() << "[FileIndex]\tDeserializing from" << _indexFile;
-//		QDataStream stream( &file );
-//		int size;
-//		stream >> size;
-//		BookmarkIndex::Item* tmpItem;
-//		for (int i = 0; i < size; ++i) {
-//			tmpItem = new BookmarkIndex::Item;
-//			stream >> *tmpItem;
-//			_index.push_back(tmpItem);
-//		}
-//		file.close();
-//		return;
-//	}
+	int size;
+	in >> size;
+	BookmarkIndex::Item *it;
+	for (int i = 0; i < size; ++i) {
+		it = new BookmarkIndex::Item;
+		it->deserialize(in);
+		_index.push_back(it);
+	}
+	qDebug() << "[BookmarkIndex]\tLoaded " << _index.size() << " bookmarks.";
+	return in;
 }
-

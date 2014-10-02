@@ -27,10 +27,7 @@ public:
 	class Item;
 	~WebSearch(){}
 
-
 	void    query(const QString&, QVector<Service::Item*>*) const noexcept override ;
-	void    save(const QString&) const override;
-	void    load(const QString&) override;
 	void    queryAll(const QString&, QVector<Service::Item*>*);
 	void    defaultSearch(const QString& term) const;
 	QString defaultSearchText(const QString& term) const;
@@ -39,6 +36,9 @@ public:
 			_instance = new WebSearch;
 		return _instance;
 	}
+	void initialize() override;
+	QDataStream& serialize (QDataStream &out) const override;
+	QDataStream& deserialize (QDataStream &in) override;
 
 protected:
 	WebSearch();

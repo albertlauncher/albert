@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 {
 	QCoreApplication::setOrganizationName(QString::fromLocal8Bit("albert"));
 	QCoreApplication::setApplicationName(QString::fromLocal8Bit("albert"));
-	qDebug() << "[QSettings]" << QSettings().fileName() ;
+	qDebug() << "[QSettings]\t\t" << QSettings().fileName() ;
 
 	QApplication a(argc, argv);
 	a.setStyleSheet(QString::fromLocal8Bit("file:///:/resources/basicskin.qss")); // Todo dont use it

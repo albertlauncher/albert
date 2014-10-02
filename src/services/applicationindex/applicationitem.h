@@ -44,8 +44,8 @@ protected:
 	bool    _term;
 
 	// Serialization
-	friend QDataStream &operator<<(QDataStream &out, const Item &item);
-	friend QDataStream &operator>>(QDataStream &in, Item &item);
+	QDataStream& serialize (QDataStream &out) const override;
+	QDataStream& deserialize (QDataStream &in) override;
 };
 
 #endif // APPLICATIONITEM_H

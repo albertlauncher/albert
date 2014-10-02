@@ -22,11 +22,10 @@
 /**************************************************************************/
 Calculator::Calculator()
 {
-	 _theOneAndOnly = new Calculator::Item;
+	_theOneAndOnly = new Calculator::Item;
 }
 
 /**************************************************************************/
-
 Calculator::~Calculator()
 {
 	delete _theOneAndOnly;
@@ -35,33 +34,34 @@ Calculator::~Calculator()
 /**************************************************************************/
 void Calculator::query(const QString &req, QVector<Service::Item *> *res) const noexcept
 {
-	using namespace mu;
-	try
-	{
-		Parser p;
-		p.SetExpr(req.toStdString());
-		_theOneAndOnly->_query = req;
+	mu::Parser p;
+	p.SetExpr(req.toStdString());
+	try {
 		_theOneAndOnly->_result = QString::number(p.Eval());
-		res->push_back(_theOneAndOnly);
 	}
-	catch (Parser::exception_type &e)
-	{
+	catch (mu::Parser::exception_type &e) {
 	  std::cout << "[muparser] " << e.GetMsg() << std::endl;
+	  return;
 	}
+	_theOneAndOnly->_query = req;
+	res->push_back(_theOneAndOnly);
 }
 
 /**************************************************************************/
-void Calculator::save(const QString &) const
+void Calculator::initialize()
 {
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
 }
 
 /**************************************************************************/
-void Calculator::load(const QString &)
+QDataStream &Calculator::serialize(QDataStream &out) const
 {
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
+	_theOneAndOnly->serialize(out);
+	return out;
+}
+
+/**************************************************************************/
+QDataStream &Calculator::deserialize(QDataStream &in)
+{
+	_theOneAndOnly->deserialize(in);
+	return in;
 }

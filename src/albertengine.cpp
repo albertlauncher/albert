@@ -20,20 +20,52 @@
 #include "services/calculator/calculator.h"
 #include "services/bookmarkindex/bookmarkindex.h"
 #include "services/applicationindex/applicationindex.h"
+#include <QFile>
+#include <QStandardPaths>
+#include <QString>
 
 /**********************************************************************/
 AlbertEngine::AlbertEngine()
 {
+	// Load modules
 	_modules.push_back(WebSearch::instance());
 	_modules.push_back(new Calculator);
 	_modules.push_back(new ApplicationIndex);
 	_modules.push_back(new BookmarkIndex);
 	_modules.push_back(new FileIndex);
+
+	QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db";
+	QFile f(path);
+	if (f.open(QIODevice::ReadOnly| QIODevice::Text)){
+		qDebug() << "[AlbertEngine]\tDeserializing from" << path;
+		QDataStream in( &f );
+		for (Service *i: _modules) // TODO
+			i->deserialize(in);
+		f.close();
+	}
+	else
+	{
+		qWarning() << "[AlbertEngine]\tCould not open file" << path;
+		for (Service *i : _modules)
+			i->initialize();
+	}
 }
 
 /**********************************************************************/
 AlbertEngine::~AlbertEngine()
 {
+	QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db";
+	QFile f(path);
+	if (f.open(QIODevice::ReadWrite| QIODevice::Text)){
+		qDebug() << "[AlbertEngine]\tSerializing to " << path;
+		QDataStream out( &f );
+		for (Service *i: _modules) // TODO
+			i->serialize(out);
+		f.close();
+	}
+	else
+		qWarning() << "[AlbertEngine]\tCould not open file" << path;
+
 	for (Service *i : _modules)
 		delete i;
 }
@@ -53,19 +85,6 @@ void AlbertEngine::query(const QString &req)
 	endResetModel();
 }
 
-/**************************************************************************/
-void AlbertEngine::save(const QString & f) const
-{
-	for (Service *i: _modules)
-		i->save(f);
-}
-
-/**************************************************************************/
-void AlbertEngine::load(const QString &f)
-{
-//	for (Service *i: _modules) // TODO
-//		i->load(f);
-}
 
 /**************************************************************************/
 void AlbertEngine::clear()

@@ -67,19 +67,16 @@ QIcon Calculator::Item::icon() const
 }
 
 /**************************************************************************/
-QDataStream &operator<<(QDataStream &out, const Calculator::Item &item)
+QDataStream &Calculator::Item::serialize(QDataStream &out) const
 {
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
-
+	out << _lastAccess;
+	return out;
 }
 
 /**************************************************************************/
-QDataStream &operator>>(QDataStream &in, Calculator::Item &item)
+QDataStream &Calculator::Item::deserialize(QDataStream &in)
 {
-	//TODO
-	qDebug() << "NOT IMPLEMENTED!";
-	exit(1);
-
+	in >> _lastAccess;
+	return in;
 }
+

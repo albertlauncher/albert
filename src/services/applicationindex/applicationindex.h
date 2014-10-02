@@ -26,13 +26,15 @@ class ApplicationIndex : public Index
 public:
 	class Item;
 
-	ApplicationIndex();
+	ApplicationIndex(){}
 	~ApplicationIndex();
+
+	void initialize() override;
+	QDataStream& serialize (QDataStream &out) const override;
+	QDataStream& deserialize (QDataStream &in) override;
 
 protected:
 	void buildIndex() override;
-	void save(const QString&) const override;
-	void load(const QString&) override;
 };
 
 #endif // APPLICATIONINDEX_H

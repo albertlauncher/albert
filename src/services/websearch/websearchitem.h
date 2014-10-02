@@ -45,11 +45,11 @@ protected:
 	QString _name;
 	QString _url;
 	QString _shortcut;
-	QString _iconName;
+	QString _iconPath;
 
 	// Serialization
-	friend QDataStream &operator<<(QDataStream &out, const Item &item);
-	friend QDataStream &operator>>(QDataStream &in, Item &item);
+	QDataStream& serialize (QDataStream &out) const override;
+	QDataStream& deserialize (QDataStream &in) override;
 };
 
 #endif // WEBSEARCHITEM_H

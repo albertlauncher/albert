@@ -20,19 +20,21 @@
 #include "../index.h"
 #include <QString>
 
+
 /**************************************************************************/
 class FileIndex : public Index
 {
 public:
 	class Item;
 
-	FileIndex();
+	FileIndex(){}
 	~FileIndex();
+	void initialize() override;
+	QDataStream& serialize (QDataStream &out) const override;
+	QDataStream& deserialize (QDataStream &in) override;
 
 protected:
 	void buildIndex() override;
-	void save(const QString&) const override;
-	void load(const QString&) override;
 };
 
 #endif // FILEINDEX_H
