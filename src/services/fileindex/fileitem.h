@@ -33,12 +33,12 @@ public:
 	Item(){}
 	~Item(){}
 
-	inline QString title()            const override {return _name;} //TODO
-	inline QString complete()         const override {return _name;}
-	inline QString infoText()         const override {return _path;}
-	void           action()                 override;
-	QString        actionText()       const override;
-	QIcon          icon()             const override;
+	inline QString title() const override {return _name;} //TODO
+	inline QString complete() const override {return _name;}
+	inline QString infoText() const override {return _path;}
+	void action(Mod) override;
+	QString actionText(Mod) const override;
+	QIcon icon() const override;
 
 protected:
 	QString _name;

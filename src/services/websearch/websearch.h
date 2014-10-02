@@ -17,62 +17,34 @@
 #ifndef WEBSEARCH_H
 #define WEBSEARCH_H
 
-#include "abstractserviceprovider.h"
-#include "singleton.h"
-#include <string>
-#include <vector>
+#include "../service.h"
+#include <QString>
+#include <QVector>
 
-
-//TODO IN SRC
-#include <unistd.h>
-
-class WebSearch : public AbstractServiceProvider, public Singleton<WebSearch>
+class WebSearch : public Service
 {
-	friend class Singleton<WebSearch>;
-
 public:
 	class Item;
+	~WebSearch(){}
 
-	void        query(const std::string&, std::vector<AbstractServiceProvider::Item*>*) override;
-	void        queryAll(const std::string&, std::vector<AbstractServiceProvider::Item*>*);
-	void        defaultSearch(const std::string& term) const;
-	std::string defaultSearchText(const std::string& term) const;
+
+	void    query(const QString&, QVector<Service::Item*>*) const noexcept override ;
+	void    save(const QString&) const override;
+	void    load(const QString&) override;
+	void    queryAll(const QString&, QVector<Service::Item*>*);
+	void    defaultSearch(const QString& term) const;
+	QString defaultSearchText(const QString& term) const;
+	inline static WebSearch* instance(){
+		if(_instance == nullptr)
+			_instance = new WebSearch;
+		return _instance;
+	}
 
 protected:
 	WebSearch();
-	~WebSearch(){}
-
-	std::vector<Item*> _searchEngines;
+	QVector<Item*> _searchEngines;
+	static WebSearch *_instance;
 };
 
-class WebSearch::Item : public AbstractServiceProvider::Item
-{
-	friend class WebSearch;
-
-public:
-	Item(){}
-	~Item(){}
-	explicit Item( const std::string &name, const std::string &url, const std::string &sc, const std::string &iconName);
-
-	inline std::string title() const override {return "Search '" + ((_searchTerm.empty())?"...":_searchTerm) + "' in " + _name;}
-	inline std::string complete() const override {return _name + " " + _searchTerm;}
-	inline std::string infoText() const override {return std::string(_url).replace(_url.find("%s"), 2, _searchTerm);}
-	void               action(Action) override;
-	std::string        actionText(Action) const override;
-	QIcon              icon() const override;
-
-	std::string        shortcut() const {return _shortcut;}
-	std::string        name() const {return _name;}
-	std::string        searchTerm() const {return _searchTerm;}
-
-	void setTerm(const std::string &term) {_searchTerm = term;}
-
-protected:
-	std::string _searchTerm;
-	const std::string _name;
-	const std::string _url;
-	const std::string _shortcut;
-	const std::string _iconName;
-};
 
 #endif // WEBSEARCH_H

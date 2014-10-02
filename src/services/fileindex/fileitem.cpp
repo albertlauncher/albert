@@ -15,10 +15,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "fileitem.h"
+#include "../websearch/websearch.h"
 #include <chrono>
 #include <QProcess>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QFileInfo>
 
 #include <QDebug>
 
@@ -26,40 +28,38 @@
 const QMimeDatabase FileIndex::Item::mimeDb;
 
 /**************************************************************************/
-void FileIndex::Item::action()
+void FileIndex::Item::action(Mod mod)
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
-
-//	switch (a) {
-//	case Action::Enter:
-
-		QDesktopServices::openUrl(QUrl(_path, QUrl::StrictMode)); //TODO
-//		break;
-//	case Action::Alt:
-//		QDesktopServices::openUrl(QUrl(QFileInfo(_path).absolutePath()));
-//		break;
-//	case Action::Ctrl:
-////		WebSearch::instance()->defaultSearch(_name);
-//		break;
-//	}
+	switch (mod) {
+	case Mod::None:
+		QDesktopServices::openUrl(QUrl(_path, QUrl::StrictMode));
+		break;
+	case Mod::Alt:
+		QDesktopServices::openUrl(QUrl(QFileInfo(_path).absolutePath()));
+		break;
+	case Mod::Ctrl:
+		WebSearch::instance()->defaultSearch(_name);
+		break;
+	}
 }
 
 /**************************************************************************/
-QString FileIndex::Item::actionText() const
+QString FileIndex::Item::actionText(Mod mod) const
 {
-//	switch (a) {
-//	case Action::Enter:
-		return "Open '" + _name + "' with default application";
-//		break;
-//	case Action::Alt:
-//		return "Open the folder containing '" + _name + "' in file browser";
-//		break;
-//	case Action::Ctrl:
-////		return WebSearch::instance()->defaultSearchText(_name);
-//		break;
-//	}
-//	// Will never happen
-//	return "";
+	switch (mod) {
+	case Mod::None:
+		return QString("Open '%1' with default application.").arg(_name);
+		break;
+	case Mod::Alt:
+		return QString("Open the folder containing '%1' in file browser.").arg(_name);
+		break;
+	case Mod::Ctrl:
+		return WebSearch::instance()->defaultSearchText(_name);
+		break;
+	}
+	// Will never happen
+	return "";
 }
 
 /**************************************************************************/

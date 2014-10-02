@@ -14,38 +14,42 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef APPLICATIONITEM_H
-#define APPLICATIONITEM_H
+#ifndef WEBSEARCHITEM_H
+#define WEBSEARCHITEM_H
 
-#include "applicationindex.h"
+#include "websearch.h"
 #include <QString>
-#include <QDataStream>
 #include <QIcon>
 
-
-/**************************************************************************/
-class ApplicationIndex::Item : public Service::Item
+class WebSearch::Item : public Service::Item
 {
-	friend class ApplicationIndex;
+	friend class WebSearch;
+
 public:
-	inline QString title() const override {return _name;}
-	QIcon icon() const override;
-	inline QString infoText() const override {return _info;}
-	inline QString complete() const override {return _name;}
+	Item(){_lastAccess = 1;}
+	~Item(){}
+
+	inline QString title() const override {return "Search '" + ((_searchTerm.isEmpty())?"...":_searchTerm) + "' in " + _name;}
+	inline QString complete() const override {return _name + " " + _searchTerm;}
+	inline QString infoText() const override {return QString(_url).replace("%s", _searchTerm);}
 	void action(Mod) override;
 	QString actionText(Mod) const override;
-	inline  qint64 lastAccess() const;
+	QIcon icon() const override;
+
+	QString shortcut() const {return _shortcut;}
+	QString name() const {return _name;}
+	QString searchTerm() const {return _searchTerm;}
 
 protected:
+	QString _searchTerm;
 	QString _name;
-	QString _info;
+	QString _url;
+	QString _shortcut;
 	QString _iconName;
-	QString _exec;
-	bool    _term;
 
 	// Serialization
 	friend QDataStream &operator<<(QDataStream &out, const Item &item);
 	friend QDataStream &operator>>(QDataStream &in, Item &item);
 };
 
-#endif // APPLICATIONITEM_H
+#endif // WEBSEARCHITEM_H

@@ -15,41 +15,42 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "bookmarkitem.h"
+#include "../websearch/websearch.h"
 #include <chrono>
 #include <QProcess>
 #include <QDebug>
-
+#include <QDesktopServices>
+#include <QUrl>
 
 /**************************************************************************/
-void BookmarkIndex::Item::action()
+void BookmarkIndex::Item::action(Mod mod)
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
-
-//	switch (a) {
-//	case Action::Enter:
-//	case Action::Alt:
-		QProcess::startDetached("xdg-open " + _url);
-//		break;
-//	case Action::Ctrl:
-////		WebSearch::instance()->defaultSearch(_name);
-//		break;
-//	}
+	switch (mod) {
+	case Mod::None:
+	case Mod::Alt:
+		QDesktopServices::openUrl(QUrl(_url));
+		break;
+	case Mod::Ctrl:
+		WebSearch::instance()->defaultSearch(_title);
+		break;
+	}
 }
 
 /**************************************************************************/
-QString BookmarkIndex::Item::actionText() const
+QString BookmarkIndex::Item::actionText(Mod mod) const
 {
-//	switch (a) {
-//	case Action::Enter:
-//	case Action::Alt:
-		return "Visit '" + _title + "'";
-//		break;
-//	case Action::Ctrl:
-////		return WebSearch::instance()->defaultSearchText(_name);
-//		break;
-//	}
-//	// Will never happen
-//	return "";
+	switch (mod) {
+	case Mod::None:
+	case Mod::Alt:
+		return QString("Visit '%1'.").arg(_title);
+		break;
+	case Mod::Ctrl:
+		return WebSearch::instance()->defaultSearchText(_title);
+		break;
+	}
+	// Will never happen
+	return "";
 }
 
 /**************************************************************************/
@@ -69,7 +70,7 @@ QDataStream &operator<<(QDataStream &out, const BookmarkIndex::Item &item)
 //	out << item._title
 //		<< item._lastAccess
 //		<< item._url;
-//	return out;
+	return out;
 }
 
 /**************************************************************************/
@@ -81,5 +82,5 @@ QDataStream &operator>>(QDataStream &in, BookmarkIndex::Item &item)
 //	in >> item._title
 //			>> item._lastAccess
 //			>> item._url;
-//	return in;
+	return in;
 }

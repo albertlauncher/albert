@@ -33,8 +33,8 @@ public:
 	inline QString title() const override {return _title;}
 	inline QString complete() const override {return _title;}
 	inline QString infoText() const override {return _url;}
-	void action() override;
-	QString actionText() const override;
+	void action(Mod) override;
+	QString actionText(Mod) const override;
 	QIcon icon() const override;
 
 

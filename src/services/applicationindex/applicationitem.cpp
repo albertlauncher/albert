@@ -15,49 +15,49 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "applicationitem.h"
+#include "../websearch/websearch.h"
 #include <chrono>
 #include <QProcess>
 
 #include <QDebug>
 
 /**************************************************************************/
-void ApplicationIndex::Item::action()
+void ApplicationIndex::Item::action(Mod mod)
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
-
+	switch (mod) {
+	case Mod::None:
 		if (_term)
 			QProcess::startDetached("konsole -e " + _exec);
 		else
 			QProcess::startDetached(_exec);
-
-
-		//		break;
-//	case Action::Alt:
-//		if (_term)
-//			QProcess::startDetached("kdesu konsole -e " + _exec);
-//		else
-//			QProcess::startDetached("kdesu " + _exec);
-//		break;
-//	case Action::Ctrl:
-////		WebSearch::instance()->defaultSearch(_name);
-//		break;
-//	}
+		break;
+	case Mod::Alt:
+		if (_term)
+			QProcess::startDetached("kdesu konsole -e " + _exec);
+		else
+			QProcess::startDetached("kdesu " + _exec);
+	case Mod::Ctrl:
+		WebSearch::instance()->defaultSearch(_name);
+		break;
+	}
 }
 
 /**************************************************************************/
-QString ApplicationIndex::Item::actionText() const
+QString ApplicationIndex::Item::actionText(Mod mod) const
 {
-		return "Start " + _name;
-//		break;
-//	case Action::Alt:
-//		return "Start " + _name + " as root";
-//		break;
-//	case Action::Ctrl:
-////		return WebSearch::instance()->defaultSearchText(_name);
-//		break;
-//	}
-//	// Will never happen
-//	return "";
+	switch (mod) {
+	case Mod::None:
+		return QString("Start '%1'.").arg(_name);
+		break;
+	case Mod::Alt:
+		return QString("Start '%1' as root.").arg(_name);
+	case Mod::Ctrl:
+		return WebSearch::instance()->defaultSearchText(_name);
+		break;
+	}
+	// Will never happen
+	return "";
 }
 
 

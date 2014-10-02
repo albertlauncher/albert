@@ -28,12 +28,13 @@ HEADERS  +=	albert.h \
 	services/fileindex/fileindex.h \
 	services/bookmarkindex/bookmarkindex.h \
 	services/calculator/calculator.h \
-	#services/websearch/websearch.h \
+	services/websearch/websearch.h \
 	services/searchimpl.h \
 	services/applicationindex/applicationitem.h \
 	services/fileindex/fileitem.h \
 	services/calculator/calculatoritem.h \
-    services/bookmarkindex/bookmarkitem.h
+	services/bookmarkindex/bookmarkitem.h \
+    services/websearch/websearchitem.h
 
 SOURCES += main.cpp \
 	albert.cpp \
@@ -47,12 +48,13 @@ SOURCES += main.cpp \
 	services/fileindex/fileindex.cpp \
 	services/bookmarkindex/bookmarkindex.cpp \
 	services/calculator/calculator.cpp \
-	#services/websearch/websearch.cpp \
+	services/websearch/websearch.cpp \
 	services/searchimpl.cpp \
 	services/applicationindex/applicationitem.cpp \
 	services/fileindex/fileitem.cpp \
 	services/calculator/calculatoritem.cpp \
-    services/bookmarkindex/bookmarkitem.cpp
+	services/bookmarkindex/bookmarkitem.cpp \
+    services/websearch/websearchitem.cpp
 
 RESOURCES += albert.qrc
 

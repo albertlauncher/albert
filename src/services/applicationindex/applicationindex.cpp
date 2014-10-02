@@ -142,7 +142,6 @@ void ApplicationIndex::buildIndex()
 
 			// Remove other placeholders
 			exec.remove(QRegExp("%."));
-			qDebug() << exec;
 
 			Item *i = new Item;
 			i->_name     = name;

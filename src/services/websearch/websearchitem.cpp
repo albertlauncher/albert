@@ -14,44 +14,41 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "calculatoritem.h"
-#include "../websearch/websearch.h"
+#include "websearchitem.h"
 #include <chrono>
+#include <QProcess>
 #include <QClipboard>
 #include <QGuiApplication>
-#include <QProcess>
-
+#include <QSettings>
 #include <QDebug>
+#include <QDesktopServices>
+#include <QUrl>
 
 /**************************************************************************/
-void Calculator::Item::action(Mod mod)
+void WebSearch::Item::action(Mod mod)
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
 	switch (mod) {
 	case Mod::None:
-		QGuiApplication::clipboard()->setText(_result);
+		QDesktopServices::openUrl(QUrl(QString(_url).replace("%s", _searchTerm)));
 		break;
 	case Mod::Alt:
-		QGuiApplication::clipboard()->setText(_query);
-		break;
 	case Mod::Ctrl:
-		WebSearch::instance()->defaultSearch(_query);
+		QGuiApplication::clipboard()->setText(QString(_url).replace("%s", _searchTerm));
 		break;
 	}
 }
 
 /**************************************************************************/
-QString Calculator::Item::actionText(Mod mod) const
+QString WebSearch::Item::actionText(Mod mod) const
 {
 	switch (mod) {
 	case Mod::None:
-		return QString("Copy '%1' to clipboard.").arg(_result);
+		return QString("Visit '%1'.").arg(QString(_url).replace("%s", _searchTerm));
 		break;
 	case Mod::Alt:
-		return QString("Copy '%1' to clipboard.").arg(_query);
-		break;
 	case Mod::Ctrl:
-		return WebSearch::instance()->defaultSearchText(_query);
+		return QString("Copy '%1' to clipboard.").arg(QString(_url).replace("%s", _searchTerm));
 		break;
 	}
 	// Will never happen
@@ -59,27 +56,23 @@ QString Calculator::Item::actionText(Mod mod) const
 }
 
 /**************************************************************************/
-QIcon Calculator::Item::icon() const
+QIcon WebSearch::Item::icon() const
 {
-	if (QIcon::hasThemeIcon(QString::fromLocal8Bit("calc")))
-		return QIcon::fromTheme(QString::fromLocal8Bit("calc"));
-	return QIcon::fromTheme(QString::fromLocal8Bit("unknown"));
+	return QIcon(_iconName);
 }
 
 /**************************************************************************/
-QDataStream &operator<<(QDataStream &out, const Calculator::Item &item)
+QDataStream &operator<<(QDataStream &out, const WebSearch::Item &item)
 {
 	//TODO
 	qDebug() << "NOT IMPLEMENTED!";
 	exit(1);
-
 }
 
 /**************************************************************************/
-QDataStream &operator>>(QDataStream &in, Calculator::Item &item)
+QDataStream &operator>>(QDataStream &in, WebSearch::Item &item)
 {
 	//TODO
 	qDebug() << "NOT IMPLEMENTED!";
 	exit(1);
-
 }
