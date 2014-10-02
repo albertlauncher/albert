@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "applicationindex.h"
-#include "item.h"
+#include "applicationitem.h"
 #include <functional>
 //#include "websearch/websearch.h"
 #include <QSettings>
@@ -34,10 +34,10 @@ ApplicationIndex::ApplicationIndex()
 {
 	buildIndex();
 	qDebug() << "[ApplicationIndex]\tIndexing done. Found " << _index.size() << " apps.";
-
 	std::sort(_index.begin(), _index.end(), Index::CaseInsensitiveCompare());
-	for(auto *i : _index)
-		qDebug() << i->title();
+
+//	for(auto *i : _index)
+//		qDebug() << i->title();
 
 	setSearchType(Index::SearchType::WordMatch);
 }

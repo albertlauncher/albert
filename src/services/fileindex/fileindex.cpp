@@ -15,150 +15,114 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "fileindex.h"
-#include "settings.h"
-#include "boost/algorithm/string.hpp"
-#include "boost/filesystem.hpp"
+#include "fileitem.h"
 #include <functional>
-#include <unistd.h>
-#include "websearch/websearch.h"
-#include "boost/serialization/access.hpp"
+#include <chrono>
+#include <algorithm>
+#include <QSettings>
+#include <QDir>
+#include <QDebug>
+#include <QFile>
 
-//REMOVE
-#include <iostream>
-#include <fstream>
 
 /**************************************************************************/
-FileIndex::FileIndex(){
-	_indexFile = Settings::instance()->configDir() + "idx_files";
+FileIndex::FileIndex()
+{
+	buildIndex();
+	qDebug() << "[FileIndex]\t\tIndexing done. Found " << _index.size() << " files.";
+	std::sort(_index.begin(), _index.end(), Index::CaseInsensitiveCompare());
+
+	for (auto *i : _index)
+		qDebug() << i->title();
+
+	setSearchType(Index::SearchType::WordMatch);
+}
+
+/**************************************************************************/
+FileIndex::~FileIndex()
+{
+	for(Service::Item *i : _index)
+		delete i;
+	_index.clear();
 }
 
 /**************************************************************************/
 void FileIndex::buildIndex()
 {
-	// If there is a serialized index use it
-	std::ifstream f(_indexFile);
-	if (f.good()){
-		boost::archive::text_iarchive ia(f);
-		ia.template register_type<Item>();
-		ia >> _index;
-		f.close();
-	}
-	else
+	QSettings conf;
+	QStringList paths = conf.value(QString::fromLocal8Bit("file_index_paths")).toStringList();
+	qDebug() << "[FileIndex]\t\tLooking in: " << paths;
+
+	// Define a lambda for recursion
+	// This lambdsa makes no sanity checks since the directories in the recursion are always
+	// valid an would simply produce overhead -> check for sanity before use
+	std::function<void(const QFileInfo& p)> rec_dirsearch = [&] (const QFileInfo& fi)
 	{
-		bool indexHiddenFiles = (Settings::instance()->get("showHiddenFiles").compare("true") == 0);
+		Item *i = new Item;
+		i->_name = fi.fileName();
+		i->_path = fi.absolutePath();
+		_index.push_back(i);
 
-		std::string paths = Settings::instance()->get("file_index_paths");
-		std::vector<std::string> pathList;
-		boost::split(pathList, paths, boost::is_any_of(","), boost::token_compress_on);
-
-		// Define a lambda for recursion
-		std::function<void(const boost::filesystem::path &p)> rec_dirsearch = [&] (const boost::filesystem::path &p)
+		if (fi.isDir())
 		{
-			boost::filesystem::path path(p);
-			boost::filesystem::directory_iterator end_iterator;
-			if ( boost::filesystem::exists(path) && !boost::filesystem::is_symlink(path))
-			{
-				if  (p.filename().c_str()[0] == '.' && !indexHiddenFiles)
-					return;
+			QDir d(fi.absoluteFilePath());
+			d.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+			if (conf.value(QString::fromLocal8Bit("index_hidden_files"), false).toBool())
+				d.setFilter(d.filter() | QDir::Hidden);
 
-				if (boost::filesystem::is_regular_file(path))
-					_index.push_back(new Item(path));
-				if (boost::filesystem::is_directory(path))
-				{
-					_index.push_back(new Item(path));
-					for( boost::filesystem::directory_iterator d(path); d != end_iterator; ++d)
-						rec_dirsearch(*d);
-				}
-			}
-		};
-
-		// Finally do this recursion for all paths
-		for ( std::string &p : pathList){
-			std::cout << "[FileIndex] Looking in: " << p << std::endl;
-			rec_dirsearch(boost::filesystem::path(p));
+			// go recursive into subdirs
+			QFileInfoList list = d.entryInfoList();
+			for ( QFileInfo &dfi : list)
+				rec_dirsearch(dfi);
 		}
+	};
 
-		std::sort(_index.begin(), _index.end(), CaseInsensitiveCompare(Settings::instance()->locale()));
+	// Finally do this recursion for all paths
+	for ( QString &p : paths) {
+		QFileInfo fi(p);
+		if (fi.exists())
+			rec_dirsearch(fi);
 	}
 
-	std::cout << "[FileIndex] Indexing done. Found " << _index.size() << " files." << std::endl;
+	std::sort(_index.begin(), _index.end(), CaseInsensitiveCompare());
 }
 
 /**************************************************************************/
-void FileIndex::saveIndex() const
+void FileIndex::save(const QString& p) const
 {
-	std::ofstream f(_indexFile);
-	boost::archive::text_oarchive oa(f);
-	oa.template register_type<Item>();
-	oa << _index;
-	f.close();
-}
-
-
-/*****************************************************************************/
-/*****************************************************************************/
-/******************************* FileIndexItem *******************************/
-/*****************************************************************************/
-
-/**************************************************************************/
-
-const QMimeDatabase FileIndex::Item::mimeDb;
-
-
-/**************************************************************************/
-void FileIndex::Item::action(Action a)
-{
-	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
-
-	pid_t pid;
-	switch (a) {
-	case Action::Enter:
-		pid = fork();
-		if (pid == 0) {
-			pid_t sid = setsid();
-			if (sid < 0) exit(EXIT_FAILURE);
-			execl("/usr/bin/xdg-open", "xdg-open", _path.c_str(), (char *)0);
-			exit(1);
-		}
-		break;
-	case Action::Alt:
-		pid = fork();
-		if (pid == 0) {
-			pid_t sid = setsid();
-			if (sid < 0) exit(EXIT_FAILURE);
-			execl("/usr/bin/xdg-open", "xdg-open", _path.parent_path().c_str(), (char *)0);
-			exit(1);
-		}
-		break;
-	case Action::Ctrl:
-		WebSearch::instance()->defaultSearch(_name);
-		break;
+	// If there is a serialized index use it
+	QFile file(p);
+	if (file.open(QIODevice::ReadWrite| QIODevice::Text))
+	{
+		qDebug() << "[FileIndex]\t\tSerializing to" << p;
+		QDataStream stream( &file );
+		stream << _index.size();
+		for (Index::Item *i : _index)
+			stream << *static_cast<FileIndex::Item*>(i);
+		file.close();
+		return;
 	}
 }
 
 /**************************************************************************/
-std::string FileIndex::Item::actionText(Action a) const
+void FileIndex::load(const QString& p)
 {
-	switch (a) {
-	case Action::Enter:
-		return "Open '" + _name + "' with default application";
-		break;
-	case Action::Alt:
-		return "Open the folder containing '" + _name + "' in file browser";
-		break;
-	case Action::Ctrl:
-		return WebSearch::instance()->defaultSearchText(_name);
-		break;
-	}
-	// Will never happen
-	return "";
-}
+	// Exit if the file does not exist
+	QFile file(p);
+	if (file.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		qDebug() << "[FileIndex]\tDeserializing from" << p;
 
-/**************************************************************************/
-QIcon FileIndex::Item::icon() const
-{
-	QString iconName = mimeDb.mimeTypeForFile(QString::fromStdString(_path.string())).iconName();
-	if (QIcon::hasThemeIcon(iconName))
-		return QIcon::fromTheme(iconName);
-	return QIcon::fromTheme(QString::fromLocal8Bit("unknown"));
+		// Open the stream an load all data
+		QDataStream stream( &file );
+		int size;
+		stream >> size;
+		FileIndex::Item* tmpItem;
+		for (int i = 0; i < size; ++i) {
+			tmpItem = new FileIndex::Item;
+			stream >> *tmpItem;
+			_index.push_back(tmpItem);
+		}
+		file.close();
+	}
 }

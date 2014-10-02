@@ -15,17 +15,17 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "albertengine.h"
-#include <iostream>
-#include <iostream>
+//#include "websearch/websearch.h"
+#include "services/fileindex/fileindex.h"
+//#include "calculator/calculator.h"
+//#include "bookmarkindex/bookmarkindex.h"
+#include "services/applicationindex/applicationindex.h"
 
 /**********************************************************************/
 AlbertEngine::AlbertEngine()
 {
-	if (true) // TODO: Enable in settings
-		_modules.push_back(new ApplicationIndex);
-
-//	if (true) // TODO: Enable in settings
-//		_modules.push_back(new FileIndex);
+	_modules.push_back(new ApplicationIndex);
+	_modules.push_back(new FileIndex);
 
 //	if (true) // TODO: Enable in settings
 //		_modules.push_back(new BookmarkIndex);

@@ -17,17 +17,11 @@
 #ifndef ALBERTENGINE_H
 #define ALBERTENGINE_H
 
+#include "services/service.h"
 #include <QVector>
 #include <QString>
 #include <QAbstractListModel>
 #include <QStandardPaths>
-//Modules
-#include "services/service.h"
-//#include "websearch/websearch.h"
-//#include "fileindex/fileindex.h"
-//#include "calculator/calculator.h"
-//#include "bookmarkindex/bookmarkindex.h"
-#include "services/applicationindex/applicationindex.h"
 
 class AlbertEngine : public QAbstractListModel
 {

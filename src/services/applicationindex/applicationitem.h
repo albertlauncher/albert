@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef ITEM_H
-#define ITEM_H
+#ifndef APPLICATIONITEM_H
+#define APPLICATIONITEM_H
 
 #include "../index.h"
 #include "applicationindex.h"
-
 #include <QString>
 #include <QDataStream>
+#include <QIcon>
 
 
 /**************************************************************************/
@@ -49,4 +49,4 @@ protected:
 	friend QDataStream &operator>>(QDataStream &in, ApplicationIndex::Item &item);
 };
 
-#endif // ITEM_H
+#endif // APPLICATIONITEM_H

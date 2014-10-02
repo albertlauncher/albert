@@ -14,25 +14,38 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef FILEINDEX_H
-#define FILEINDEX_H
+#ifndef FILEITEM_H
+#define FILEITEM_H
 
-#include "../index.h"
+#include "fileindex.h"
+#include <QMimeDatabase>
 #include <QString>
+#include <QDataStream>
+#include <QIcon>
 
 /**************************************************************************/
-class FileIndex : public Index
+class FileIndex::Item : public Index::Item
 {
-public:
-	class Item;
+	friend class FileIndex;
+	static const QMimeDatabase mimeDb;
 
-	FileIndex();
-	~FileIndex();
+public:
+	Item(){}
+	~Item(){}
+
+	inline QString title()            const override {return _name;} //TODO
+	inline QString complete()         const override {return _name;}
+	inline QString infoText()         const override {return _path;}
+	void           action()                 override;
+	QString        actionText()       const override;
+	QIcon          icon()             const override;
 
 protected:
-	void buildIndex() override;
-	void save(const QString&) const override;
-	void load(const QString&) override;
+	QString _name;
+	QString _path;
+
+	friend QDataStream &operator<<(QDataStream &out, const FileIndex::Item &item);
+	friend QDataStream &operator>>(QDataStream &in, FileIndex::Item &item);
 };
 
-#endif // FILEINDEX_H
+#endif // FILEITEM_H

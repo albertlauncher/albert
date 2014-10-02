@@ -34,6 +34,7 @@ public:
 	virtual ~Index();
 	enum class SearchType {Exact, WordMatch, Fuzzy};
 
+	virtual void buildIndex() = 0;
 	void query(const QString &req, QVector<Service::Item*> *res) const noexcept override;
 	void setSearchType(SearchType);
 };

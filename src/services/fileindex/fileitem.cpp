@@ -14,28 +14,29 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "item.h"
+#include "fileitem.h"
 #include <chrono>
 #include <QProcess>
-#include <QIcon>
+#include <QDesktopServices>
+#include <QUrl>
+
+#include <QDebug>
 
 /**************************************************************************/
-void ApplicationIndex::Item::action()
+const QMimeDatabase FileIndex::Item::mimeDb;
+
+/**************************************************************************/
+void FileIndex::Item::action()
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
 
-		if (_term)
-			QProcess::startDetached("konsole -e " + _exec);
-		else
-			QProcess::startDetached(_exec);
+//	switch (a) {
+//	case Action::Enter:
 
-
-		//		break;
+		QDesktopServices::openUrl(QUrl(_path, QUrl::StrictMode)); //TODO
+//		break;
 //	case Action::Alt:
-//		if (_term)
-//			QProcess::startDetached("kdesu konsole -e " + _exec);
-//		else
-//			QProcess::startDetached("kdesu " + _exec);
+//		QDesktopServices::openUrl(QUrl(QFileInfo(_path).absolutePath()));
 //		break;
 //	case Action::Ctrl:
 ////		WebSearch::instance()->defaultSearch(_name);
@@ -44,12 +45,14 @@ void ApplicationIndex::Item::action()
 }
 
 /**************************************************************************/
-QString ApplicationIndex::Item::actionText() const
+QString FileIndex::Item::actionText() const
 {
-		return "Start " + _name;
+//	switch (a) {
+//	case Action::Enter:
+		return "Open '" + _name + "' with default application";
 //		break;
 //	case Action::Alt:
-//		return "Start " + _name + " as root";
+//		return "Open the folder containing '" + _name + "' in file browser";
 //		break;
 //	case Action::Ctrl:
 ////		return WebSearch::instance()->defaultSearchText(_name);
@@ -59,35 +62,29 @@ QString ApplicationIndex::Item::actionText() const
 //	return "";
 }
 
-
 /**************************************************************************/
-QIcon ApplicationIndex::Item::icon() const
+QIcon FileIndex::Item::icon() const
 {
-	if (QIcon::hasThemeIcon(_iconName))
-		return QIcon::fromTheme(_iconName);
-	return QIcon::fromTheme("unknown");
+	QString iconName = mimeDb.mimeTypeForFile(_path).iconName();
+	if (QIcon::hasThemeIcon(iconName))
+		return QIcon::fromTheme(iconName);
+	return QIcon::fromTheme(QString::fromLocal8Bit("unknown"));
 }
 
 /**************************************************************************/
-QDataStream &operator<<(QDataStream &out, const ApplicationIndex::Item &item)
+QDataStream &operator<<(QDataStream &out, const FileIndex::Item &item)
 {
 	out << item._name
-		<< item._exec
-		<< item._iconName
-		<< item._info
 		<< item._lastAccess
-		<< item._term;
+		<< item._path;
 	return out;
 }
 
 /**************************************************************************/
-QDataStream &operator>>(QDataStream &in, ApplicationIndex::Item &item)
+QDataStream &operator>>(QDataStream &in, FileIndex::Item &item)
 {
 	in >> item._name
-			>> item._exec
-			>> item._iconName
-			>> item._info
 			>> item._lastAccess
-			>> item._term;
+			>> item._path;
 	return in;
 }

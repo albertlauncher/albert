@@ -18,7 +18,6 @@
 #define SEARCHIMPL_H
 
 #include "index.h"
-#include <algorithm>
 #include <QString>
 #include <QVector>
 #include <QMap>
@@ -46,9 +45,10 @@ public:
 /**************************************************************************/
 class WordMatchSearchImpl : public Index::SearchImpl
 {
-	class CaseInsensitiveComparePrefix;
 	typedef QPair<QString, QSet<Service::Item*>> Posting;
 	typedef QVector<Posting> InvertedIndex;
+	class CaseInsensitiveCompare;
+	class CaseInsensitiveComparePrefix;
 
 	InvertedIndex _invertedIndex;
 

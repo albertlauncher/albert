@@ -17,8 +17,8 @@
 #ifndef APPLICATIONINDEX_H
 #define APPLICATIONINDEX_H
 
-#include <QString>
 #include "../index.h"
+#include <QString>
 
 /**************************************************************************/
 class ApplicationIndex : public Index
@@ -29,7 +29,7 @@ public:
 	ApplicationIndex();
 	~ApplicationIndex();
 protected:
-	void buildIndex();
+	void buildIndex() override;
 	void save(const QString&) const override;
 	void load(const QString&) override;
 };
