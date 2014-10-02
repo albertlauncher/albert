@@ -14,32 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef PROPOSALLISTMODEL_H
-#define PROPOSALLISTMODEL_H
+#include "inputline.h"
 
-#include <QAbstractListModel>
-#include "abstractserviceprovider.h"
-
-
-class ProposalListModel : public QAbstractListModel
+InputLine::InputLine(QWidget *parent) :
+	QLineEdit(parent)
 {
-	Q_OBJECT
-
-public:
-	explicit ProposalListModel(QObject *parent = 0){}
-	void set(const std::vector<AbstractServiceProvider::Item*> &d);
-	void clear();
-	void action( const QModelIndex & index);
-	void altAction( const QModelIndex & index);
-	void ctrlAction( const QModelIndex & index);
-	int rowCount(const QModelIndex & = QModelIndex()) const override;
-
-	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
-
-protected:
-
-	std::vector<AbstractServiceProvider::Item*> _data;
-
-};
-
-#endif // PROPOSALLISTMODEL_H
+	setObjectName(QString::fromLocal8Bit("inputline"));
+	setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
+}

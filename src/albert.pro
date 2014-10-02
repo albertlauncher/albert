@@ -8,67 +8,45 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = albert
 TEMPLATE = app
-
-
+TARGET = albert
 
 INCLUDEPATH += frontend/ \
 	backend
 VPATH += frontend/ \
 	backend
 
-HEADERS  +=	backend/abstractindexprovider.h \
-	backend/abstractserviceprovider.h \
-	backend/albertengine.h \
-	albert.h \
-	frontend/proposallistdelegate.h \
-	frontend/proposallistmodel.h \
-	frontend/proposallistview.h \
-	frontend/xhotkeymanager.h \
-	frontend/inputline.h \
-	backend/settings.h \
-	singleton.h \
-	backend/applicationindex/applicationindex.h \
-	backend/bookmarkindex/bookmarkindex.h \
-	backend/fileindex/fileindex.h \
-	backend/calculator/calculator.h \
-	backend/websearch/websearch.h
+HEADERS  +=	albert.h \
+	albertengine.h \
+	proposallistdelegate.h \
+	proposallistview.h \
+	xhotkeymanager.h \
+	inputline.h \
+	services/service.h \
+	services/index.h \
+	services/applicationindex/applicationindex.h \
+	#services/fileindex/fileindex.h
+	#bookmarkindex/bookmarkindex.h \
+	#calculator/calculator.h \
+	#websearch/websearch.h \
 
 SOURCES += main.cpp \
-	backend/abstractindexprovider.cpp \
-	backend/abstractserviceprovider.cpp \
-	backend/albertengine.cpp \
 	albert.cpp \
-	frontend/proposallistdelegate.cpp \
-	frontend/proposallistmodel.cpp \
-	frontend/proposallistview.cpp \
-	frontend/xhotkeymanager.cpp \
-	frontend/inputline.cpp \
-	backend/settings.cpp \
-	backend/applicationindex/applicationindex.cpp \
-	backend/bookmarkindex/bookmarkindex.cpp \
-	backend/fileindex/fileindex.cpp \
-	backend/calculator/calculator.cpp \
-	backend/websearch/websearch.cpp
+	albertengine.cpp \
+	proposallistdelegate.cpp \
+	proposallistview.cpp \
+	xhotkeymanager.cpp \
+	inputline.cpp \
+	services/index.cpp \
+	services/applicationindex/applicationindex.cpp \
+	# services/fileindex/fileindex.cpp
+	#bookmarkindex/bookmarkindex.cpp \
+	#calculator/calculator.cpp \
+	#websearch/websearch.cpp \
 
 RESOURCES += albert.qrc
 
 CONFIG += c++11
 
 LIBS += -lX11 \
-		-lboost_system \
-		-lboost_filesystem \
-		-lmuparser \
-		-lboost_serialization
-
-
-DEFINES += FRONTEND_QT \
-			QT_NO_CAST_FROM_ASCII \
-			QT_NO_CAST_TO_ASCII
-
-
-target.path = /usr/local/bin/
-INSTALLS += target
-
-
+		-lmuparser

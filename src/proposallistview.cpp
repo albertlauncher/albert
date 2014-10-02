@@ -16,8 +16,6 @@
 
 #include "proposallistview.h"
 #include "proposallistdelegate.h"
-#include "proposallistmodel.h"
-
 #include <QDebug>
 
 /**************************************************************************//**

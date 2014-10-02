@@ -19,7 +19,6 @@
 #include <QMimeDatabase>
 #include <QGuiApplication>
 
-
 /**************************************************************************//**
  * @brief ProposalListDelegate::ProposalListDelegate
  */

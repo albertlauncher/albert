@@ -24,7 +24,6 @@
 #include <QKeyEvent>
 #include <QDebug>
 #include <QFocusEvent>
-
 //bleibt
 #include <QWidget>
 #include <QVBoxLayout>
@@ -33,7 +32,6 @@
 // meine
 #include "inputline.h"
 #include "proposallistview.h"
-#include "proposallistmodel.h"
 #include "albertengine.h"
 
 class AlbertWidget : public QWidget
@@ -42,16 +40,12 @@ class AlbertWidget : public QWidget
 
 	QFrame             *_frame1,*_frame2,*_frame3;
 	InputLine          *_inputLine;
-	ProposalListModel  *_proposalListModel;
 	ProposalListView   *_proposalListView;
+	AlbertEngine _engine;
 
 protected:
 	bool         eventFilter(QObject *obj, QEvent *event) override;
 	virtual bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
-	bool         event(QEvent *event ) override;
-
-private:
-	AlbertEngine _engine;
 
 public:
 	AlbertWidget(QWidget *parent = 0);
@@ -62,7 +56,6 @@ public slots:
 	void onTextEdited(const QString &text);
 	void hide();
 	void show();
-	void sigAboutToQuit();
 
 };
 

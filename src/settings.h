@@ -18,32 +18,32 @@
 #define SETTINGS_H
 
 #include <map>
-#include <string>
+#include <QString>
 #include <locale>
 
 class Settings
 {
 public:
 	static Settings*          instance() noexcept;
-	void                      load(std::string path = relativeUserConfig);
-	void                      save(std::string path = relativeUserConfig) const;
-	inline std::string        get(std::string key) const throw (std::out_of_range) {return _settings.at(key);}
+	void                      load(QString path = relativeUserConfig);
+	void                      save(QString path = relativeUserConfig) const;
+	inline QString        get(QString key) const throw (std::out_of_range) {return _settings.at(key);}
 	inline std::locale const& locale() const {return _locale;}
-	inline std::string        configDir() {return _homeDir + relativeUserConfigDir;}
+	inline QString        configDir() {return _homeDir + relativeUserConfigDir;}
 
 
 private:
 	Settings();
 	~Settings() {}
 
-	std::map<std::string,std::string> _settings;
+	std::map<QString,QString> _settings;
 	std::locale _locale;
 
 	static Settings *_instance;
-	std::string _homeDir;
-	static const std::string systemConfig;
-	static const std::string relativeUserConfig;
-	static const std::string relativeUserConfigDir;
+	QString _homeDir;
+	static const QString systemConfig;
+	static const QString relativeUserConfig;
+	static const QString relativeUserConfigDir;
 
 };
 

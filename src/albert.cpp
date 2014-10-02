@@ -17,12 +17,9 @@
 #include "albert.h"
 #include "albertengine.h"
 #include "xhotkeymanager.h"
-#include "settings.h"
 #include "xcb/xcb.h"
-
-// remove
 #include <QEvent>
-
+#include <QSettings>
 
 /**************************************************************************//**
  * @brief AlbertWidget::AlbertWidget
@@ -83,9 +80,8 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_inputLine = new InputLine;
 	contentLayout->addWidget(_inputLine);
 
-	_proposalListModel = new ProposalListModel;
 	_proposalListView = new ProposalListView;
-	_proposalListView->setModel(_proposalListModel);
+	_proposalListView->setModel(&_engine);
 	_proposalListView->hide();
 	contentLayout->addWidget(_proposalListView);
 
@@ -98,18 +94,7 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	this->setFocusPolicy(Qt::StrongFocus);
 
 
-	/* indexstuff */
-
-
-	// Build or load the index
-	_engine.buildIndex();
-
-	// React on aboutQuit (yes on shutdown too)
-	connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(sigAboutToQuit()));
-
-
 	/* Sniffing and snooping*/
-
 
 	// Albert intercepts inputline (Enter, Tab(Completion) and focus-loss handling)
 	_inputLine->installEventFilter(this);
@@ -122,6 +107,10 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 
 	connect(XHotKeyManager::getInstance(), SIGNAL(hotKeyPressed()), this, SLOT(onHotKeyPressed()), Qt::QueuedConnection);// Show albert if hotkey was pressed
 	XHotKeyManager::getInstance()->start(); // Start listening for the hotkey(s)
+
+
+	_engine.load();
+
 }
 
 /**************************************************************************//**
@@ -129,6 +118,7 @@ AlbertWidget::AlbertWidget(QWidget *parent)
  */
 AlbertWidget::~AlbertWidget()
 {
+	_engine.save();
 }
 
 /*****************************************************************************/
@@ -140,7 +130,7 @@ void AlbertWidget::hide()
 {
 	QWidget::hide();
 	_inputLine->clear();
-	_proposalListModel->clear();
+	_engine.clear();
 	_proposalListView->hide();
 }
 
@@ -151,16 +141,8 @@ void AlbertWidget::show()
 {
 	QWidget::show();
 	updateGeometry();
-	if (Settings::instance()->get("show_centered")=="true")
+	if (QSettings().value(QString::fromLocal8Bit("show_centered"), QString::fromLocal8Bit("true")).toBool())
 		this->move(QApplication::desktop()->screenGeometry().center() - QPoint(rect().right()/2,192 ));
-}
-
-/**************************************************************************//**
- * @brief AlbertWidget::sigAboutToQuit
- */
-void AlbertWidget::sigAboutToQuit()
-{
-	_engine.saveIndex();
 }
 
 /**************************************************************************//**
@@ -186,51 +168,21 @@ void AlbertWidget::onTextEdited(const QString & text)
 {
 	QString t = text.trimmed();
 	if (!t.isEmpty()){
-		std::vector<AbstractServiceProvider::Item *> r;
-		_engine.query(t.toStdString(), &r);
-		_proposalListModel->set(r);
-		if (_proposalListModel->rowCount() > 0){
+		_engine.query(t);
+		if (_engine.rowCount() > 0){
 			if (!_proposalListView->currentIndex().isValid())
-				_proposalListView->setCurrentIndex(_proposalListModel->index(0, 0));
+				_proposalListView->setCurrentIndex(_engine.index(0, 0));
 		}
 		_proposalListView->show();
 		return;
 	}
-	_proposalListModel->clear();
+	_engine.clear();
 	_proposalListView->hide();
 }
 
 /*****************************************************************************/
 /**************************** O V E R R I D E S ******************************/
-/**************************************************************************//**
- * @brief AlbertWidget::event
- * @param event
- * @return
- */
-bool AlbertWidget::event(QEvent *event)
-{
-	if (event->type() == QEvent::KeyPress)
-	{
-		QKeyEvent *ke = static_cast<QKeyEvent *>(event);
-		switch (ke->key()) {
-		case Qt::Key_Escape:
-			this->hide();
-			break;
-		default:
-			QWidget::keyPressEvent(ke);
-			break;
-		}
-	}
-	return QWidget::event(event);
-}
-
-/**************************************************************************//**
- * @brief AlbertWidget::eventFilter
- * Handle focus loss of the app
- * @param obj
- * @param event
- * @return
- */
+/**************************************************************************/
 bool AlbertWidget::eventFilter(QObject *obj, QEvent *event)
 {
 	if (event->type() == QEvent::FocusOut)
@@ -243,34 +195,41 @@ bool AlbertWidget::eventFilter(QObject *obj, QEvent *event)
 	{
 		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
 
-		// Completion
-		if (keyEvent->key() == Qt::Key_Tab)
-		{
+		switch (keyEvent->key()) {
+		case Qt::Key_Tab:
+			// Completion
 			// For the definition of the Userroles see proposallistmodel.cpp (::data())
 			if (_proposalListView->currentIndex().isValid())
-				_inputLine->setText(_proposalListModel->data(_proposalListView->currentIndex(), Qt::UserRole+4).toString());
+				_inputLine->setText(_engine.data(_proposalListView->currentIndex(), Qt::UserRole+4).toString());
 			return true;
-		}
-
-		// Confirmation
-		if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter)
-		{
+			break;
+		case Qt::Key_Return:
+		case Qt::Key_Enter:
+			// Confirmation
 			if (!_proposalListView->currentIndex().isValid())
 				return true;
 
 			switch (keyEvent->modifiers()) {
 			case Qt::ControlModifier:
-				_proposalListModel->ctrlAction(_proposalListView->currentIndex());
+				_engine.ctrlAction(_proposalListView->currentIndex());
 				break;
 			case Qt::AltModifier:
-				_proposalListModel->altAction(_proposalListView->currentIndex());
+				_engine.altAction(_proposalListView->currentIndex());
 				break;
 			case Qt::NoModifier:
-				_proposalListModel->action(_proposalListView->currentIndex());
+				_engine.action(_proposalListView->currentIndex());
 				break;
 			default:
 				break;
 			}
+			this->hide();
+			return true;
+			break;
+		case Qt::Key_F4:
+			qDebug() << "quit.";
+			qApp->quit();
+			return true;
+		case Qt::Key_Escape:
 			this->hide();
 			return true;
 		}

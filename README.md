@@ -13,12 +13,14 @@
  - [ ] Implement module (terminal apps)
  - [ ] Implement module (system control)
  - [x] Implement serialization of indizes
+ - [x] Implement configurability of search algorithms.
+ - [x] Implement search algorithms. (Prefixmatch any word)
+ - [ ] Implement search algorithms. (Fuzzy)
  - [ ] Keep track of indizes using inotify
  - [ ] Implement module (contacts)
  - [ ] Add configuration widget to configure the plugins
  - [ ] Find an idea on how to implement fancy submodules(ssh 'host', mail 'someone')
  - [ ] Animate geometry changes
  - ...
- - [ ] Adjust buildsystem to build desktop specific builds (albert-kde, albert-gnome, ...)
  - [ ] Implement first desktop specific plugins (contacts)
  - [ ] Implement first desktop specific decorators for e.g. windowing (KDE)

@@ -15,28 +15,24 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QApplication>
-#include "settings.h"
+#include <QSettings>
+#include <QDebug>
 #include "albert.h"
-
-#include <iostream>
-
 
 int main(int argc, char *argv[])
 {
-	QApplication a(argc, argv);
-	a.setStyleSheet(QString::fromLocal8Bit("file:///:/resources/basicskin.qss"));
+	QCoreApplication::setOrganizationName(QString::fromLocal8Bit("albert"));
+	QCoreApplication::setApplicationName(QString::fromLocal8Bit("albert"));
+	qDebug() << "[QSettings]" << QSettings().fileName() ;
 
-	// Load  settings
-	Settings::instance()->load();
+	QApplication a(argc, argv);
+	a.setStyleSheet(QString::fromLocal8Bit("file:///:/resources/basicskin.qss")); // Todo dont use it
 
 	// Create the app
 	AlbertWidget w;
 
 	// Enter eventloop
 	int retval = a.exec();
-
-	// Store settings
-	Settings::instance()->save();
 
 	return retval;
 }

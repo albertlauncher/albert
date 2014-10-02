@@ -14,36 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef ALBERTENGINE_H
-#define ALBERTENGINE_H
+#ifndef INPUTLINE_H
+#define INPUTLINE_H
 
-#include <vector>
-#include <map>
-#include "abstractserviceprovider.h"
-#include "abstractindexprovider.h"
+#include <QLineEdit>
+#include <QString>
 
-using std::vector;
-using std::map;
-
-class AlbertEngine
+class InputLine : public QLineEdit
 {
-	struct ATimeCompare	{
-		bool operator()( AbstractServiceProvider::Item const* lhs, AbstractServiceProvider::Item  const* rhs ) const {
-			return lhs->lastAccess() > rhs->lastAccess();
-		}
-	};
-
+	Q_OBJECT
 public:
-	AlbertEngine();
-	~AlbertEngine(){}
-	void query(const std::string &req, std::vector<AbstractServiceProvider::Item *> *res);
-	void buildIndex();
-	void saveIndex() const;
-
-private:
-	AbstractServiceProvider        *_websearch;
-	AbstractServiceProvider        *_calculator;
-	vector<AbstractIndexProvider*> _indizes;
+	explicit InputLine(QWidget *parent = 0);
 };
 
-#endif // ALBERTENGINE_H
+#endif // INPUTLINE_H

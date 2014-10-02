@@ -14,10 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "settings.h"
 #include <fstream>
 #include <iostream>
-#include <string>
 #include <functional>
 #include <pwd.h>
 #include <unistd.h>
@@ -27,9 +25,9 @@
 #include <QDebug>
 
 Settings* Settings::_instance= nullptr;
-const std::string Settings::systemConfig = "/etc/albert/config";
-const std::string Settings::relativeUserConfig= ".config/albert/config";
-const std::string Settings::relativeUserConfigDir= ".config/albert/";
+const QString Settings::systemConfig = "/etc/albert/albert.conf";
+const QString Settings::relativeUserConfig= ".config/albert/albert.conf";
+const QString Settings::relativeUserConfigDir= ".config/albert/";
 
 
 
@@ -44,22 +42,22 @@ Settings::Settings() : _locale(std::locale("")), _homeDir(getpwuid(getuid())->pw
 /**************************************************************************//**
  * @brief Settings::load
  */
-void Settings::load(std::string path)
+void Settings::load(QString path)
 {
 	// Define a lambda
-	std::function<void(const std::string &p)> loadSettings = [&] (const std::string &p)
+	std::function<void(const QString &p)> loadSettings = [&] (const QString &p)
 	{
 		std::ifstream file(p);
 		if (!file.good()){
 			std::cout << "[Settings] Config file not found:\t" << p << std::endl;
 			return;
 		}
-		std::string str;
+		QString str;
 		while (std::getline(file, str))	{
 			std::size_t found = str.find_first_of('=');
-			if (found == std::string::npos || found == str.length())
+			if (found == QString::npos || found == str.length())
 				continue;
-			_settings.insert(std::pair<std::string,std::string>(str.substr(0,found),str.substr(found+1)));
+			_settings.insert(std::pair<QString,QString>(str.substr(0,found),str.substr(found+1)));
 		}
 		std::cout << "[Settings] Config file loaded:\t" << p << std::endl;
 	};
@@ -68,24 +66,24 @@ void Settings::load(std::string path)
 	loadSettings(systemConfig);
 
 	// Override with user settings
-	std::string userSettings(_homeDir + path);
+	QString userSettings(_homeDir + path);
 	loadSettings(userSettings);
 
 	//DEBUG
 //	std::cout << "[Settings]\t" << "[Key]\t\t[Value]"<< std::endl;
-//	for ( std::pair<const std::string, std::string> &i : _settings)
+//	for ( std::pair<const QString, QString> &i : _settings)
 //		std::cout << "[Settings]\t" << i.first << "\t" << i.second << std::endl;
 }
 
 /**************************************************************************//**
  * @brief Settings::save
  */
-void Settings::save(std::string path) const
+void Settings::save(QString path) const
 {
 	std::ofstream file(path);
 	if (!file.good())
 		return;
-	for (std::pair<std::string,std::string> i : _settings)
+	for (std::pair<QString,QString> i : _settings)
 		file << i.first << "=" << i.second << std::endl;
 }
 
