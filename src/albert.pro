@@ -34,7 +34,7 @@ HEADERS  +=	albert.h \
 	services/fileindex/fileitem.h \
 	services/calculator/calculatoritem.h \
 	services/bookmarkindex/bookmarkitem.h \
-    services/websearch/websearchitem.h
+  services/websearch/websearchitem.h
 
 SOURCES += main.cpp \
 	albert.cpp \
@@ -62,3 +62,8 @@ CONFIG += c++11
 
 LIBS += -lX11 \
 		-lmuparser
+
+#DEFINES += QT_NO_CAST_FROM_ASCII \
+			 #QT_NO_CAST_TO_ASCII
+
+QMAKE_CXXFLAGS_WARN_ON += -Werror

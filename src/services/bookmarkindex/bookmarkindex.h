@@ -39,6 +39,4 @@ protected:
 	void buildIndex() override;
 };
 
-
-
 #endif // BOOKMARKINDEX_H

@@ -87,6 +87,7 @@ void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewIte
 					  option.rect.width()-48, 48,
 					  Qt::AlignTop|Qt::AlignLeft,
 					  elided, nullptr);
+	qDebug() << "drawn";
 }
 
 
