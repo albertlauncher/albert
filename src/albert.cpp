@@ -20,11 +20,9 @@
 #include "xcb/xcb.h"
 #include <QEvent>
 #include <QSettings>
+#include <QLabel>
 
-/**************************************************************************//**
- * @brief AlbertWidget::AlbertWidget
- * @param parent
- */
+/**************************************************************************/
 AlbertWidget::AlbertWidget(QWidget *parent)
 	: QWidget(parent)
 {
@@ -41,25 +39,15 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 					| Qt::Tool
 					);
 
-	// Layer 3
-	QVBoxLayout *l3 = new QVBoxLayout;
-	l3->setMargin(0);
-	l3->setSizeConstraint(QLayout::SetFixedSize);
-	this->setLayout(l3);
-
-	_frame3 = new QFrame;
-	_frame3->setObjectName(QString::fromLocal8Bit("frame3"));
-	_frame3->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Minimum);
-	l3->addWidget(_frame3,0,0);
-
 	// Layer 2
 	QVBoxLayout *l2 = new QVBoxLayout;
 	l2->setMargin(0);
-	_frame3->setLayout(l2);
+	l2->setSizeConstraint(QLayout::SetFixedSize);
+	this->setLayout(l2);
 
 	_frame2 = new QFrame;
-	_frame2->setObjectName(QString::fromLocal8Bit("frame2"));
-	_frame2->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
+	_frame2->setObjectName(QString::fromLocal8Bit("bottomframe"));
+	_frame2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
 	l2->addWidget(_frame2,0,0);
 
 	// Layer 1
@@ -68,28 +56,27 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_frame2->setLayout(l1);
 
 	_frame1 = new QFrame;
-	_frame1->setObjectName(QString::fromLocal8Bit("frame1"));
+	_frame1->setObjectName(QString::fromLocal8Bit("topframe"));
 	_frame1->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Preferred);
 	l1->addWidget(_frame1,0,0);
 
+
 	QVBoxLayout *contentLayout = new QVBoxLayout();
-	contentLayout->setMargin(0);
-	_frame1->setLayout(contentLayout);
 
 	// Interface
 	_inputLine = new InputLine;
 	contentLayout->addWidget(_inputLine);
-
 	_proposalListView = new ProposalListView;
 	_proposalListView->setModel(&_engine);
 	_proposalListView->hide();
 	contentLayout->addWidget(_proposalListView);
+	contentLayout->setMargin(0);
+	_frame1->setLayout(contentLayout);
 
 	//Set focus proxies
 	this->setFocusProxy(_inputLine);
 	_frame1->setFocusProxy(_inputLine);
 	_frame2->setFocusProxy(_inputLine);
-	_frame3->setFocusProxy(_inputLine);
 	_proposalListView->setFocusProxy(_inputLine);
 	this->setFocusPolicy(Qt::StrongFocus);
 
@@ -110,18 +97,14 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 
 }
 
-/**************************************************************************//**
- * @brief AlbertWidget::~AlbertWidget
- */
+/**************************************************************************/
 AlbertWidget::~AlbertWidget()
 {
 }
 
 /*****************************************************************************/
 /********************************* S L O T S *********************************/
-/**************************************************************************//**
- * @brief AlbertWidget::hide
- */
+/**************************************************************************/
 void AlbertWidget::hide()
 {
 	QWidget::hide();
@@ -130,9 +113,7 @@ void AlbertWidget::hide()
 	_proposalListView->hide();
 }
 
-/**************************************************************************//**
- * @brief AlbertWidget::show
- */
+/**************************************************************************/
 void AlbertWidget::show()
 {
 	QWidget::show();
@@ -141,9 +122,7 @@ void AlbertWidget::show()
 		this->move(QApplication::desktop()->screenGeometry().center() - QPoint(rect().right()/2,192 ));
 }
 
-/**************************************************************************//**
- * @brief AlbertWidget::onHotKeyPressed
- */
+/**************************************************************************/
 void AlbertWidget::onHotKeyPressed()
 {
 	if (this->isVisible()){
@@ -156,10 +135,7 @@ void AlbertWidget::onHotKeyPressed()
 	_inputLine->setFocus();
 }
 
-/**************************************************************************//**
- * @brief AlbertWidget::onTextEdited
- * @param text
- */
+/**************************************************************************/
 void AlbertWidget::onTextEdited(const QString & text)
 {
 	QString t = text.trimmed();

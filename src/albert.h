@@ -38,14 +38,14 @@ class AlbertWidget : public QWidget
 {
 	Q_OBJECT
 
-	QFrame             *_frame1,*_frame2,*_frame3;
+	QFrame             *_frame1,*_frame2;
 	InputLine          *_inputLine;
 	ProposalListView   *_proposalListView;
 	AlbertEngine _engine;
 
 protected:
-	bool         eventFilter(QObject *obj, QEvent *event) override;
-	virtual bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
+	bool eventFilter(QObject *obj, QEvent *event) override;
+	bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
 
 public:
 	AlbertWidget(QWidget *parent = 0);
