@@ -87,14 +87,6 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 			_mods = keyEvent->modifiers();
 			return true;
 		}
-		if (mods & Qt::AltModifier){
-			update(currentIndex());
-			_mods = keyEvent->modifiers();
-			return true;
-		}
-
-
-
 	}
 	return false;
 }

@@ -28,11 +28,10 @@ class ProposalListDelegate : public QStyledItemDelegate
 	Q_OBJECT
 
 public:
-	ProposalListDelegate();
+	ProposalListDelegate(){}
 protected:
 	void paint ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const override;
 	inline QSize sizeHint ( const QStyleOptionViewItem&, const QModelIndex& ) const  override { return QSize(200, 48); }
-
 };
 
 #endif // PROPOSALLISTDELEGATE_H

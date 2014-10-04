@@ -19,19 +19,7 @@
 #include <QMimeDatabase>
 #include <QGuiApplication>
 
-/**************************************************************************//**
- * @brief ProposalListDelegate::ProposalListDelegate
- */
-ProposalListDelegate::ProposalListDelegate()
-{
-}
-
-/**************************************************************************//**
- * @brief ProposalListDelegate::paint
- * @param painter
- * @param option
- * @param index
- */
+/**************************************************************************/
 void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const
 {
 	// For the definition of the Userroles see proposallistmodel.cpp (::data())
@@ -87,7 +75,6 @@ void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewIte
 					  option.rect.width()-48, 48,
 					  Qt::AlignTop|Qt::AlignLeft,
 					  elided, nullptr);
-	qDebug() << "drawn";
 }
 
 
