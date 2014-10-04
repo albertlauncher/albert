@@ -18,15 +18,15 @@
 #define APPLICATIONINDEX_H
 
 #include "../index.h"
-#include <QString>
+#include "../../singleton.h"
 
-/**************************************************************************/
-class ApplicationIndex : public Index
+class ApplicationIndex : public Index, public Singleton<ApplicationIndex>
 {
+	friend class Singleton<ApplicationIndex>;
+
 public:
 	class Item;
 
-	ApplicationIndex(){}
 	~ApplicationIndex();
 
 	void initialize() override;
@@ -34,6 +34,7 @@ public:
 	QDataStream& deserialize (QDataStream &in) override;
 
 protected:
+	ApplicationIndex(){}
 	void buildIndex() override;
 };
 

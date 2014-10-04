@@ -17,7 +17,6 @@
 #include "calculator.h"
 #include "calculatoritem.h"
 #include "muParser.h"
-#include <QDebug>
 
 /**************************************************************************/
 Calculator::Calculator()

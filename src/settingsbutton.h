@@ -14,29 +14,29 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef CALCULATOR_H
-#define CALCULATOR_H
+#ifndef SETTINGSBUTTON_H
+#define SETTINGSBUTTON_H
 
-#include "../service.h"
-#include "../../singleton.h"
+#include <QPushButton>
 
-class Calculator : public Service, public Singleton<Calculator>
+class SettingsButton : public QPushButton
 {
-	friend class Singleton<Calculator>;
-
+	Q_OBJECT
 public:
-	class Item;
-
-	~Calculator();
-
-	void query(const QString&, QVector<Service::Item*>*) const noexcept override;
-	void initialize() override;
-	QDataStream& serialize (QDataStream &out) const override;
-	QDataStream& deserialize (QDataStream &in) override;
-
+	explicit SettingsButton(QWidget *parent = 0);
 protected:
-	Calculator();
-	Item *_theOneAndOnly;
+	void paintEvent(QPaintEvent *) override;
+	void resizeEvent(QResizeEvent *) override;
+
+	QPixmap _icon;
+
+signals:
+
+public slots:
+
+protected slots:
+	void onClick();
+
 };
 
-#endif // CALCULATOR_H
+#endif // SETTINGSBUTTON_H

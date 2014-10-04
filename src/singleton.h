@@ -14,29 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef CALCULATOR_H
-#define CALCULATOR_H
+#ifndef SINGLETON_H
+#define SINGLETON_H
 
-#include "../service.h"
-#include "../../singleton.h"
-
-class Calculator : public Service, public Singleton<Calculator>
+template <typename C>
+class Singleton
 {
-	friend class Singleton<Calculator>;
-
 public:
-	class Item;
-
-	~Calculator();
-
-	void query(const QString&, QVector<Service::Item*>*) const noexcept override;
-	void initialize() override;
-	QDataStream& serialize (QDataStream &out) const override;
-	QDataStream& deserialize (QDataStream &in) override;
-
+   static C* instance () {
+	  if (!_instance)
+		 _instance = new C ();
+	  return _instance;
+   }
+   virtual ~Singleton ()
+   {
+	  _instance = 0;
+   }
+private:
+   static C* _instance;
 protected:
-	Calculator();
-	Item *_theOneAndOnly;
+   Singleton () { }
 };
 
-#endif // CALCULATOR_H
+template <typename C> C* Singleton <C>::_instance = nullptr;
+
+#endif // SINGLETON_H

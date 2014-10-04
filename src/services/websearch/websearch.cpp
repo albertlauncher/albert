@@ -22,15 +22,6 @@
 #include <QSettings>
 #include <QDebug>
 
-
-WebSearch* WebSearch::_instance = nullptr;
-
-
-/**************************************************************************/
-WebSearch::WebSearch()
-{
-}
-
 /**************************************************************************/
 void WebSearch::initialize()
 {

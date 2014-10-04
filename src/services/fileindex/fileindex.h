@@ -18,22 +18,22 @@
 #define FILEINDEX_H
 
 #include "../index.h"
-#include <QString>
+#include "../../singleton.h"
 
-
-/**************************************************************************/
-class FileIndex : public Index
+class FileIndex : public Index, public Singleton<FileIndex>
 {
+	friend class Singleton<FileIndex>;
+
 public:
 	class Item;
 
-	FileIndex(){}
 	~FileIndex();
 	void initialize() override;
 	QDataStream& serialize (QDataStream &out) const override;
 	QDataStream& deserialize (QDataStream &in) override;
 
 protected:
+	FileIndex(){}
 	void buildIndex() override;
 };
 

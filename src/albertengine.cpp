@@ -23,16 +23,17 @@
 #include <QFile>
 #include <QStandardPaths>
 #include <QString>
+#include <QDebug>
 
 /**********************************************************************/
 AlbertEngine::AlbertEngine()
 {
 	// Load modules
 	_modules.push_back(WebSearch::instance());
-	_modules.push_back(new Calculator);
-	_modules.push_back(new ApplicationIndex);
-	_modules.push_back(new BookmarkIndex);
-	_modules.push_back(new FileIndex);
+	_modules.push_back(Calculator::instance());
+	_modules.push_back(ApplicationIndex::instance());
+	_modules.push_back(BookmarkIndex::instance());
+	_modules.push_back(FileIndex::instance());
 
 	QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db";
 	QFile f(path);

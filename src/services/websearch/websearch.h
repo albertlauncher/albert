@@ -18,11 +18,12 @@
 #define WEBSEARCH_H
 
 #include "../service.h"
-#include <QString>
-#include <QVector>
+#include "../../singleton.h"
 
-class WebSearch : public Service
+class WebSearch : public Service, public Singleton<WebSearch>
 {
+	friend class Singleton<WebSearch>;
+
 public:
 	class Item;
 	~WebSearch(){}
@@ -31,19 +32,13 @@ public:
 	void    queryAll(const QString&, QVector<Service::Item*>*);
 	void    defaultSearch(const QString& term) const;
 	QString defaultSearchText(const QString& term) const;
-	inline static WebSearch* instance(){
-		if(_instance == nullptr)
-			_instance = new WebSearch;
-		return _instance;
-	}
 	void initialize() override;
 	QDataStream& serialize (QDataStream &out) const override;
 	QDataStream& deserialize (QDataStream &in) override;
 
 protected:
-	WebSearch();
+	WebSearch(){}
 	QVector<Item*> _searchEngines;
-	static WebSearch *_instance;
 };
 
 

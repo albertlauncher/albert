@@ -18,17 +18,15 @@
 #define BOOKMARKINDEX_H
 
 #include "../index.h"
-#include <QString>
-#include <QDataStream>
+#include "../../singleton.h"
 
-
-#include <QDebug>
-class BookmarkIndex : public Index
+class BookmarkIndex : public Index, public Singleton<BookmarkIndex>
 {
+	friend class Singleton<BookmarkIndex>;
+
 public:
 	class Item;
 
-	BookmarkIndex(){}
 	~BookmarkIndex();
 
 	void initialize() override;
@@ -36,6 +34,7 @@ public:
 	QDataStream& deserialize (QDataStream &in) override;
 
 protected:
+	BookmarkIndex(){}
 	void buildIndex() override;
 };
 

@@ -21,4 +21,15 @@ InputLine::InputLine(QWidget *parent) :
 {
 	setObjectName(QString::fromLocal8Bit("inputline"));
 	setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
+
+	_settingsButton = new SettingsButton(this);
+	_settingsButton->setFocusProxy(this);
+	this->setFocusPolicy(Qt::StrongFocus);
+
+}
+
+#include <QResizeEvent>
+void InputLine::resizeEvent(QResizeEvent *event)
+{
+	_settingsButton->move(event->size().width()-_settingsButton->width(),0);
 }

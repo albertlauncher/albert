@@ -34,7 +34,10 @@ HEADERS  +=	albert.h \
 	services/fileindex/fileitem.h \
 	services/calculator/calculatoritem.h \
 	services/bookmarkindex/bookmarkitem.h \
-  services/websearch/websearchitem.h
+  services/websearch/websearchitem.h \
+	settingsbutton.h \
+	singleton.h \
+	settingsdialog.h
 
 SOURCES += main.cpp \
 	albert.cpp \
@@ -54,7 +57,9 @@ SOURCES += main.cpp \
 	services/fileindex/fileitem.cpp \
 	services/calculator/calculatoritem.cpp \
 	services/bookmarkindex/bookmarkitem.cpp \
-    services/websearch/websearchitem.cpp
+	services/websearch/websearchitem.cpp \
+	settingsbutton.cpp \
+	settingsdialog.cpp
 
 RESOURCES += albert.qrc
 
@@ -63,7 +68,9 @@ CONFIG += c++11
 LIBS += -lX11 \
 		-lmuparser
 
+FORMS = settingsdialog.ui
+
 #DEFINES += QT_NO_CAST_FROM_ASCII \
 			 #QT_NO_CAST_TO_ASCII
 
-QMAKE_CXXFLAGS_WARN_ON += -Werror
+#QMAKE_CXXFLAGS_WARN_ON += -Werror

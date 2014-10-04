@@ -19,10 +19,16 @@
 
 #include <QLineEdit>
 #include <QString>
+#include "settingsbutton.h"
 
 class InputLine : public QLineEdit
 {
 	Q_OBJECT
+
+	SettingsButton     *_settingsButton;
+protected:
+	void resizeEvent(QResizeEvent * event) override;
+
 public:
 	explicit InputLine(QWidget *parent = 0);
 };
