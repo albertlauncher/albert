@@ -14,30 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef CALCULATOR_H
-#define CALCULATOR_H
+#include "calculatorwidget.h"
 
-#include "../service.h"
-#include "../../singleton.h"
-
-class Calculator : public Service, public Singleton<Calculator>
+CalculatorWidget::CalculatorWidget(QWidget *parent) :
+	QWidget(parent)
 {
-	friend class Singleton<Calculator>;
-
-public:
-	class Item;
-
-	~Calculator();
-
-	QWidget* widget() const override;
-	void query(const QString&, QVector<Service::Item*>*) const noexcept override;
-	void initialize() override;
-	QDataStream& serialize (QDataStream &out) const override;
-	QDataStream& deserialize (QDataStream &in) override;
-
-protected:
-	Calculator();
-	Item *_theOneAndOnly;
-};
-
-#endif // CALCULATOR_H
+}

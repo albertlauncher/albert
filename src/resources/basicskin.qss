@@ -32,12 +32,16 @@
 	border:none;
 }
 #settingsbutton {
+	min-width:15px;
+	min-height:15px;
 	max-width:15px;
 	max-height:15px;
-	color: #444;
 	border: none;
-	border-radius: 10px;
-	background-color: transparent;
+	border-radius: 5px;
+	color: #444;
+	background-color: #3a3a3a;
+}
+#settingsbutton:hover {
 }
 
 /* * LIST-WIDGET-ITEM-WIDGET * */

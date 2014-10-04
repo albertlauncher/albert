@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "applicationindex.h"
-#include "applicationitem.h"
+#include "appindex.h"
+#include "appitem.h"
 #include <functional>
 //#include "websearch/websearch.h"
 #include <QSettings>
@@ -37,6 +37,12 @@ ApplicationIndex::~ApplicationIndex()
 	for(Service::Item *i : _index)
 		delete i;
 	_index.clear();
+}
+
+/**************************************************************************/
+QWidget *ApplicationIndex::widget() const
+{
+	return new QWidget;
 }
 
 /**************************************************************************/

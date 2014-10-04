@@ -65,6 +65,12 @@ QDataStream &WebSearch::deserialize(QDataStream &in)
 }
 
 /**************************************************************************/
+QWidget *WebSearch::widget() const
+{
+	return new QWidget;
+}
+
+/**************************************************************************/
 void WebSearch::query(const QString &req, QVector<Service::Item *> *res) const noexcept
 {
 	QString firstWord = req.section(' ',0,0);

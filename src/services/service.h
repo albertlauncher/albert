@@ -18,6 +18,7 @@
 #define SERVICE_H
 
 #include <QString>
+#include <QWidget>
 #include <QVector>
 #include <QIcon>
 #include <QDataStream>
@@ -32,6 +33,8 @@ struct Service
 	Service(){}
 	virtual ~Service(){}
 	virtual void query(const QString&, QVector<Item*>*) const noexcept = 0;
+	virtual QWidget* widget() const = 0;
+
 
 	virtual void initialize() = 0;
 	virtual QDataStream& serialize(QDataStream &out) const = 0;

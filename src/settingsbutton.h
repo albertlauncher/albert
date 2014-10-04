@@ -18,6 +18,7 @@
 #define SETTINGSBUTTON_H
 
 #include <QPushButton>
+#include <QPolygonF>
 
 class SettingsButton : public QPushButton
 {
@@ -26,9 +27,6 @@ public:
 	explicit SettingsButton(QWidget *parent = 0);
 protected:
 	void paintEvent(QPaintEvent *) override;
-	void resizeEvent(QResizeEvent *) override;
-
-	QPixmap _icon;
 
 signals:
 

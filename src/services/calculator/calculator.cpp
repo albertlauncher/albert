@@ -31,6 +31,12 @@ Calculator::~Calculator()
 }
 
 /**************************************************************************/
+QWidget *Calculator::widget() const
+{
+	return new QWidget;
+}
+
+/**************************************************************************/
 void Calculator::query(const QString &req, QVector<Service::Item *> *res) const noexcept
 {
 	mu::Parser p;

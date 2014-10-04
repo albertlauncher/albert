@@ -26,15 +26,18 @@ class WebSearch : public Service, public Singleton<WebSearch>
 
 public:
 	class Item;
+
 	~WebSearch(){}
 
+	QWidget* widget() const override;
 	void    query(const QString&, QVector<Service::Item*>*) const noexcept override ;
-	void    queryAll(const QString&, QVector<Service::Item*>*);
-	void    defaultSearch(const QString& term) const;
-	QString defaultSearchText(const QString& term) const;
 	void initialize() override;
 	QDataStream& serialize (QDataStream &out) const override;
 	QDataStream& deserialize (QDataStream &in) override;
+
+	void    queryAll(const QString&, QVector<Service::Item*>*);
+	void    defaultSearch(const QString& term) const;
+	QString defaultSearchText(const QString& term) const;
 
 protected:
 	WebSearch(){}

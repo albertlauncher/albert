@@ -34,6 +34,12 @@ FileIndex::~FileIndex()
 }
 
 /**************************************************************************/
+QWidget *FileIndex::widget() const
+{
+	return new QWidget;
+}
+
+/**************************************************************************/
 void FileIndex::initialize()
 {
 	buildIndex();

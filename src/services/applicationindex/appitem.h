@@ -17,7 +17,7 @@
 #ifndef APPLICATIONITEM_H
 #define APPLICATIONITEM_H
 
-#include "applicationindex.h"
+#include "appindex.h"
 #include <QString>
 #include <QDataStream>
 #include <QIcon>

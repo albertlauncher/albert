@@ -14,28 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef APPLICATIONINDEX_H
-#define APPLICATIONINDEX_H
+#include "fileindexwidget.h"
 
-#include "../index.h"
-#include "../../singleton.h"
-
-class ApplicationIndex : public Index, public Singleton<ApplicationIndex>
+FileIndexWidget::FileIndexWidget(QWidget *parent) :
+	QWidget(parent)
 {
-	friend class Singleton<ApplicationIndex>;
-
-public:
-	class Item;
-
-	~ApplicationIndex();
-
-	void initialize() override;
-	QDataStream& serialize (QDataStream &out) const override;
-	QDataStream& deserialize (QDataStream &in) override;
-
-protected:
-	ApplicationIndex(){}
-	void buildIndex() override;
-};
-
-#endif // APPLICATIONINDEX_H
+}

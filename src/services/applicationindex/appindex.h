@@ -14,30 +14,29 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef CALCULATOR_H
-#define CALCULATOR_H
+#ifndef APPLICATIONINDEX_H
+#define APPLICATIONINDEX_H
 
-#include "../service.h"
+#include "../index.h"
 #include "../../singleton.h"
 
-class Calculator : public Service, public Singleton<Calculator>
+class ApplicationIndex : public Index, public Singleton<ApplicationIndex>
 {
-	friend class Singleton<Calculator>;
+	friend class Singleton<ApplicationIndex>;
 
 public:
 	class Item;
 
-	~Calculator();
+	~ApplicationIndex();
 
 	QWidget* widget() const override;
-	void query(const QString&, QVector<Service::Item*>*) const noexcept override;
 	void initialize() override;
 	QDataStream& serialize (QDataStream &out) const override;
 	QDataStream& deserialize (QDataStream &in) override;
 
 protected:
-	Calculator();
-	Item *_theOneAndOnly;
+	ApplicationIndex(){}
+	void buildIndex() override;
 };
 
-#endif // CALCULATOR_H
+#endif // APPLICATIONINDEX_H

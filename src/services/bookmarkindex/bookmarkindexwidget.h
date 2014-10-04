@@ -14,30 +14,24 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef CALCULATOR_H
-#define CALCULATOR_H
+#ifndef BOOKMARKINDEXWIDGET_H
+#define BOOKMARKINDEXWIDGET_H
 
-#include "../service.h"
-#include "../../singleton.h"
+#include "ui_bookmarkindexwidget.h"
+#include <QWidget>
 
-class Calculator : public Service, public Singleton<Calculator>
+class BookmarkIndexWidget : public QWidget
 {
-	friend class Singleton<Calculator>;
+	Q_OBJECT
+	Ui::BookmarkIndexWidget ui;
 
 public:
-	class Item;
+	explicit BookmarkIndexWidget(QWidget *parent = 0);
 
-	~Calculator();
+signals:
 
-	QWidget* widget() const override;
-	void query(const QString&, QVector<Service::Item*>*) const noexcept override;
-	void initialize() override;
-	QDataStream& serialize (QDataStream &out) const override;
-	QDataStream& deserialize (QDataStream &in) override;
+public slots:
 
-protected:
-	Calculator();
-	Item *_theOneAndOnly;
 };
 
-#endif // CALCULATOR_H
+#endif // BOOKMARKINDEXWIDGET_H

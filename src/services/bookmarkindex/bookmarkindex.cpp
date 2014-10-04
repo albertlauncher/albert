@@ -36,6 +36,12 @@ BookmarkIndex::~BookmarkIndex()
 }
 
 /**************************************************************************/
+QWidget *BookmarkIndex::widget() const
+{
+	return new QWidget;
+}
+
+/**************************************************************************/
 void BookmarkIndex::initialize()
 {
 	buildIndex();

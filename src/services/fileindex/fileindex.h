@@ -28,6 +28,8 @@ public:
 	class Item;
 
 	~FileIndex();
+
+	QWidget* widget() const override;
 	void initialize() override;
 	QDataStream& serialize (QDataStream &out) const override;
 	QDataStream& deserialize (QDataStream &in) override;
