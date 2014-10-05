@@ -16,6 +16,7 @@
 
 #include "albert.h"
 #include "albertengine.h"
+#include "settingsdialog.h"
 #include "xhotkeymanager.h"
 #include "xcb/xcb.h"
 #include <QEvent>
@@ -197,6 +198,9 @@ bool AlbertWidget::eventFilter(QObject *obj, QEvent *event)
 			this->hide();
 			return true;
 			break;
+		case Qt::Key_Comma:
+			SettingsDialog::instance()->show();
+			return true;
 		case Qt::Key_F4:
 			qDebug() << "quit.";
 			qApp->quit();
