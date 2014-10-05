@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "fileitem.h"
-#include "../websearch/websearch.h"
+#include "websearch/websearch.h"
 #include <chrono>
 #include <QProcess>
 #include <QDesktopServices>

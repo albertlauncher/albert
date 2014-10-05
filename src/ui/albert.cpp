@@ -199,7 +199,7 @@ bool AlbertWidget::eventFilter(QObject *obj, QEvent *event)
 			return true;
 			break;
 		case Qt::Key_Comma:
-			SettingsDialog::instance()->show();
+			SettingsDialog::instance()->exec();
 			return true;
 		case Qt::Key_F4:
 			qDebug() << "quit.";

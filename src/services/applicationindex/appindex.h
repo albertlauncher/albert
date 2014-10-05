@@ -17,8 +17,8 @@
 #ifndef APPLICATIONINDEX_H
 #define APPLICATIONINDEX_H
 
-#include "../index.h"
-#include "../../singleton.h"
+#include "index.h"
+#include "singleton.h"
 
 class ApplicationIndex : public Index, public Singleton<ApplicationIndex>
 {

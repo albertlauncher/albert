@@ -17,8 +17,8 @@
 #ifndef BOOKMARKINDEX_H
 #define BOOKMARKINDEX_H
 
-#include "../index.h"
-#include "../../singleton.h"
+#include "index.h"
+#include "singleton.h"
 
 class BookmarkIndex : public Index, public Singleton<BookmarkIndex>
 {

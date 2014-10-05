@@ -17,7 +17,7 @@
 #include <QApplication>
 #include <QSettings>
 #include <QDebug>
-#include "ui/albert.h"
+#include "albert.h"
 
 int main(int argc, char *argv[])
 {
@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
 
 	QApplication a(argc, argv);
 	a.setStyleSheet(QString::fromLocal8Bit("file:///:/resources/basicskin.qss")); // Todo dont use it
+	a.setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
 	// Create the app
 	AlbertWidget w;

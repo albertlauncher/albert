@@ -17,8 +17,8 @@
 #ifndef WEBSEARCH_H
 #define WEBSEARCH_H
 
-#include "../service.h"
-#include "../../singleton.h"
+#include "service.h"
+#include "singleton.h"
 
 class WebSearch : public Service, public Singleton<WebSearch>
 {

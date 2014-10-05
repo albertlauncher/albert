@@ -17,8 +17,8 @@
 #ifndef CALCULATOR_H
 #define CALCULATOR_H
 
-#include "../service.h"
-#include "../../singleton.h"
+#include "service.h"
+#include "singleton.h"
 
 class Calculator : public Service, public Singleton<Calculator>
 {
