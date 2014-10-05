@@ -20,8 +20,3 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 	ui.tabCalculator->layout()->addWidget(Calculator::instance()->widget());
 	ui.tabWebSearch->layout()->addWidget(WebSearch::instance()->widget());
 }
-
-void SettingsDialog::closeEvent(QCloseEvent *event)
-{
-	event->ignore();
-}

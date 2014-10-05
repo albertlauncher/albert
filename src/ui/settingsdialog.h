@@ -30,13 +30,6 @@ class SettingsDialog : public QDialog, public Singleton<SettingsDialog>
 	Q_OBJECT
 public:
 	explicit SettingsDialog(QWidget *parent = 0);
-
-signals:
-
-public slots:
-
-protected:
-	void closeEvent(QCloseEvent *event);
 };
 
 #endif // SETTINGSDIALOG_H
