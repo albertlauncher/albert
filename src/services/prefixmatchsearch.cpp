@@ -14,7 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "searchimpl.h"
-#include <algorithm>
-#include <QDebug>
+#include "prefixmatchsearch.h"
 
+/**************************************************************************/
+Index::ExactMatchSearchImpl::ExactMatchSearchImpl(Index *p) : SearchImpl(p)
+{
+
+}
+
+/**************************************************************************/
+void Index::ExactMatchSearchImpl::query(const QString &req, QVector<Service::Item *> *res) const {
+	QVector<Service::Item *>::const_iterator lb, ub;
+	lb =  std::lower_bound (_parent->_index.cbegin(), _parent->_index.cend(), req, Index::CaseInsensitiveCompare());
+	ub =  std::upper_bound (_parent->_index.cbegin(), _parent->_index.cend(), req, Index::CaseInsensitiveComparePrefix());
+	while (lb!=ub)
+		res->push_back(*(lb++));
+}

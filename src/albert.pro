@@ -40,7 +40,10 @@ HEADERS  +=	albertengine.h \
 	services/bookmarkindex/bookmarkindexwidget.h \
 	services/calculator/calculatorwidget.h \
 	services/fileindex/fileindexwidget.h \
-	services/websearch/websearchwidget.h
+	services/websearch/websearchwidget.h \
+    services/fuzzysearch.h \
+    services/prefixmatchanywordsearch.h \
+    services/prefixmatchsearch.h
 
 SOURCES += main.cpp \
 	albertengine.cpp \
@@ -68,7 +71,10 @@ SOURCES += main.cpp \
 	services/calculator/calculatorwidget.cpp \
 	services/fileindex/fileindexwidget.cpp \
 	services/websearch/websearchwidget.cpp \
-	services/service.cpp
+	services/service.cpp \
+    services/fuzzysearch.cpp \
+    services/prefixmatchanywordsearch.cpp \
+    services/prefixmatchsearch.cpp
 
 RESOURCES += albert.qrc
 

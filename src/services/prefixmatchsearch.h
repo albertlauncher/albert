@@ -14,7 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "searchimpl.h"
-#include <algorithm>
-#include <QDebug>
+#ifndef EXACTMATCHSEARCHIMPL_H
+#define EXACTMATCHSEARCHIMPL_H
 
+#include "searchimpl.h"
+
+class Index::ExactMatchSearchImpl : public Index::SearchImpl
+{
+public:
+	ExactMatchSearchImpl(Index *p);
+	virtual void query(const QString &req, QVector<Service::Item*> *res) const;
+};
+
+#endif // EXACTMATCHSEARCHIMPL_H

@@ -14,7 +14,24 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "searchimpl.h"
-#include <algorithm>
-#include <QDebug>
+#ifndef PREFIXMATCHANYWORDSEARCH_H
+#define PREFIXMATCHANYWORDSEARCH_H
 
+#include "searchimpl.h"
+#include <QSet>
+
+class Index::WordMatchSearchImpl : public Index::SearchImpl
+{
+	typedef QPair<QString, QSet<Service::Item*>> Posting;
+	typedef QVector<Posting> InvertedIndex;
+	class CaseInsensitiveCompare;
+	class CaseInsensitiveComparePrefix;
+
+	InvertedIndex _invertedIndex;
+
+public:
+	WordMatchSearchImpl(Index *p);
+	virtual void query(const QString &req, QVector<Service::Item*> *res) const;
+};
+
+#endif // PREFIXMATCHANYWORDSEARCH_H

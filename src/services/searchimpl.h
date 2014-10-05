@@ -23,7 +23,6 @@
 #include <QMap>
 #include <QSet>
 
-/**************************************************************************/
 class Index::SearchImpl
 {
 protected:
@@ -32,43 +31,6 @@ public:
 	SearchImpl(Index *p) : _parent(p){}
 	virtual ~SearchImpl(){}
 	virtual void query(const QString &req, QVector<Service::Item*> *res) const = 0;
-};
-
-/**************************************************************************/
-class Index::ExactMatchSearchImpl : public Index::SearchImpl
-{
-public:
-	ExactMatchSearchImpl(Index *p);
-	virtual void query(const QString &req, QVector<Service::Item*> *res) const;
-};
-
-/**************************************************************************/
-class Index::WordMatchSearchImpl : public Index::SearchImpl
-{
-	typedef QPair<QString, QSet<Service::Item*>> Posting;
-	typedef QVector<Posting> InvertedIndex;
-	class CaseInsensitiveCompare;
-	class CaseInsensitiveComparePrefix;
-
-	InvertedIndex _invertedIndex;
-
-public:
-	WordMatchSearchImpl(Index *p);
-	virtual void query(const QString &req, QVector<Service::Item*> *res) const;
-};
-
-/**************************************************************************/
-class Index::FuzzySearchImpl : public Index::SearchImpl
-{
-	class CaseInsensitiveComparePrefix;
-	typedef QPair<QString, QSet<Service::Item*>> Posting;
-	typedef QVector<Posting> InvertedIndex;
-
-	InvertedIndex _invertedIndex;
-
-public:
-	FuzzySearchImpl(Index *p);
-	virtual void query(const QString &req, QVector<Service::Item*> *res) const;
 };
 
 #endif // SEARCHIMPL_H

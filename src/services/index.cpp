@@ -16,6 +16,9 @@
 
 #include "index.h"
 #include "searchimpl.h"
+#include "fuzzysearch.h"
+#include "prefixmatchsearch.h"
+#include "prefixmatchanywordsearch.h"
 #include <algorithm>
 #include <QMap>
 #include <QSet>
