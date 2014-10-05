@@ -16,12 +16,15 @@ INCLUDEPATH += frontend/ \
 VPATH += frontend/ \
 	backend
 
-HEADERS  +=	albert.h \
-	albertengine.h \
-	proposallistdelegate.h \
-	proposallistview.h \
+HEADERS  +=	albertengine.h \
 	xhotkeymanager.h \
-	inputline.h \
+	singleton.h \
+	ui/albert.h \
+	ui/proposallistdelegate.h \
+	ui/proposallistview.h \
+	ui/inputline.h \
+	ui/settingsbutton.h \
+	ui/settingsdialog.h \
 	services/service.h \
 	services/index.h \
 	services/fileindex/fileindex.h \
@@ -32,10 +35,7 @@ HEADERS  +=	albert.h \
 	services/fileindex/fileitem.h \
 	services/calculator/calculatoritem.h \
 	services/bookmarkindex/bookmarkitem.h \
-  services/websearch/websearchitem.h \
-	settingsbutton.h \
-	singleton.h \
-	settingsdialog.h \
+	services/websearch/websearchitem.h \
 	services/applicationindex/appindex.h \
 	services/applicationindex/appindexwidget.h \
 	services/applicationindex/appitem.h \
@@ -45,12 +45,14 @@ HEADERS  +=	albert.h \
 	services/websearch/websearchwidget.h
 
 SOURCES += main.cpp \
-	albert.cpp \
 	albertengine.cpp \
-	proposallistdelegate.cpp \
-	proposallistview.cpp \
 	xhotkeymanager.cpp \
-	inputline.cpp \
+	ui/albert.cpp \
+	ui/proposallistdelegate.cpp \
+	ui/proposallistview.cpp \
+	ui/inputline.cpp \
+	ui/settingsbutton.cpp \
+	ui/settingsdialog.cpp \
 	services/index.cpp \
 	services/fileindex/fileindex.cpp \
 	services/bookmarkindex/bookmarkindex.cpp \
@@ -61,15 +63,14 @@ SOURCES += main.cpp \
 	services/calculator/calculatoritem.cpp \
 	services/bookmarkindex/bookmarkitem.cpp \
 	services/websearch/websearchitem.cpp \
-	settingsbutton.cpp \
-	settingsdialog.cpp \
 	services/applicationindex/appindexwidget.cpp \
 	services/applicationindex/appindex.cpp \
 	services/applicationindex/appitem.cpp \
 	services/bookmarkindex/bookmarkindexwidget.cpp \
 	services/calculator/calculatorwidget.cpp \
 	services/fileindex/fileindexwidget.cpp \
-	services/websearch/websearchwidget.cpp
+	services/websearch/websearchwidget.cpp \
+	services/service.cpp
 
 RESOURCES += albert.qrc
 
@@ -78,7 +79,7 @@ CONFIG += c++11
 LIBS += -lX11 \
 		-lmuparser
 
-FORMS = settingsdialog.ui \
+FORMS = ui/settingsdialog.ui \
 		services/applicationindex/appindexwidget.ui \
 		services/bookmarkindex/bookmarkindexwidget.ui \
 		services/calculator/calculatorwidget.ui \

@@ -16,6 +16,8 @@
 
 #include "fileindex.h"
 #include "fileitem.h"
+#include "fileindexwidget.h"
+
 #include <functional>
 #include <chrono>
 #include <algorithm>
@@ -34,9 +36,11 @@ FileIndex::~FileIndex()
 }
 
 /**************************************************************************/
-QWidget *FileIndex::widget() const
+QWidget *FileIndex::widget()
 {
-	return new QWidget;
+	if (_widget == nullptr)
+		_widget = new FileIndexWidget(this);
+	return _widget;
 }
 
 /**************************************************************************/
@@ -93,6 +97,7 @@ QDataStream &FileIndex::serialize(QDataStream &out) const
 	out << _index.size();
 	for (Index::Item *it : _index)
 		static_cast<FileIndex::Item*>(it)->serialize(out);
+	out << static_cast<int>(searchType());
 	return out;
 }
 
@@ -107,6 +112,11 @@ QDataStream &FileIndex::deserialize(QDataStream &in)
 		it->deserialize(in);
 		_index.push_back(it);
 	}
+	int T;
+	in >> T;
+	setSearchType(static_cast<Index::SearchType>(T));
 	qDebug() << "[FileIndex]\t\tLoaded " << _index.size() << " files.";
 	return in;
 }
+
+

@@ -16,6 +16,7 @@
 
 #include "bookmarkindex.h"
 #include "bookmarkitem.h"
+#include "bookmarkindexwidget.h"
 
 #include <functional>
 #include <QSettings>
@@ -36,9 +37,11 @@ BookmarkIndex::~BookmarkIndex()
 }
 
 /**************************************************************************/
-QWidget *BookmarkIndex::widget() const
+QWidget *BookmarkIndex::widget()
 {
-	return new QWidget;
+	if (_widget == nullptr)
+		_widget = new BookmarkIndexWidget;
+	return _widget;
 }
 
 /**************************************************************************/

@@ -19,7 +19,7 @@
 #include "services/fileindex/fileindex.h"
 #include "services/calculator/calculator.h"
 #include "services/bookmarkindex/bookmarkindex.h"
-#include "services/applicationindex/applicationindex.h"
+#include "services/applicationindex/appindex.h"
 #include <QFile>
 #include <QStandardPaths>
 #include <QString>

@@ -16,7 +16,21 @@
 
 #include "fileindexwidget.h"
 
-FileIndexWidget::FileIndexWidget(QWidget *parent) :
-	QWidget(parent)
+FileIndexWidget::FileIndexWidget(FileIndex *fi, QWidget *parent) :
+	QWidget(parent), _ref(fi)
 {
+	ui.setupUi(this);
+
+	// Set current values
+	ui.comboBoxSearchType->setCurrentIndex(static_cast<int>(_ref->searchType()));
+
+	// Rect to changes
+	connect(ui.comboBoxSearchType,SIGNAL(activated(int)),this,SLOT(onSearchTypeChanged(int)));
+
+}
+
+void FileIndexWidget::onSearchTypeChanged(int st)
+{
+	_ref->setSearchType(static_cast<Index::SearchType>(st));
+
 }

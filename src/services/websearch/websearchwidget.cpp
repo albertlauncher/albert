@@ -19,4 +19,5 @@
 WebSearchWidget::WebSearchWidget(QWidget *parent) :
 	QWidget(parent)
 {
+	ui.setupUi(this);
 }

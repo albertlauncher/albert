@@ -16,6 +16,8 @@
 
 #include "calculator.h"
 #include "calculatoritem.h"
+#include "calculatorwidget.h"
+
 #include "muParser.h"
 
 /**************************************************************************/
@@ -31,9 +33,11 @@ Calculator::~Calculator()
 }
 
 /**************************************************************************/
-QWidget *Calculator::widget() const
+QWidget *Calculator::widget()
 {
-	return new QWidget;
+	if (_widget == nullptr)
+		_widget = new CalculatorWidget;
+	return _widget;
 }
 
 /**************************************************************************/

@@ -22,21 +22,29 @@
 #include <QVector>
 
 /**************************************************************************/
-struct Index : public Service
+class Index : public Service
 {
+public:
+	enum class SearchType {Exact, WordMatch, Fuzzy};
+	SearchType _searchType;
+	Index();
+	virtual ~Index();
+
+	virtual void buildIndex() = 0;
+	void query(const QString &req, QVector<Service::Item*> *res) const noexcept override;
+
+	void setSearchType(SearchType);
+	inline SearchType searchType() const {return _searchType;}
+
+protected:
 	class SearchImpl;
+	class ExactMatchSearchImpl;
+	class WordMatchSearchImpl;
+	class FuzzySearchImpl;
 
 	QVector<Service::Item*> _index;
 	SearchImpl              *_search;
 
-public:
-	Index();
-	virtual ~Index();
-	enum class SearchType {Exact, WordMatch, Fuzzy};
-
-	virtual void buildIndex() = 0;
-	void query(const QString &req, QVector<Service::Item*> *res) const noexcept override;
-	void setSearchType(SearchType);
 };
 
 

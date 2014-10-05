@@ -17,7 +17,7 @@
 #include <QApplication>
 #include <QSettings>
 #include <QDebug>
-#include "albert.h"
+#include "ui/albert.h"
 
 int main(int argc, char *argv[])
 {

@@ -19,4 +19,5 @@
 AppIndexWidget::AppIndexWidget(QWidget *parent) :
 	QWidget(parent)
 {
+	ui.setupUi(this);
 }

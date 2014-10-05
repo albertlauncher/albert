@@ -16,12 +16,16 @@
 
 #include "searchimpl.h"
 #include <algorithm>
+#include <QDebug>
 
 /**************************************************************************/
-ExactMatchSearchImpl::ExactMatchSearchImpl(Index *p) : SearchImpl(p){}
+Index::ExactMatchSearchImpl::ExactMatchSearchImpl(Index *p) : SearchImpl(p)
+{
+
+}
 
 /**************************************************************************/
-void ExactMatchSearchImpl::query(const QString &req, QVector<Service::Item *> *res) const {
+void Index::ExactMatchSearchImpl::query(const QString &req, QVector<Service::Item *> *res) const {
 	QVector<Service::Item *>::const_iterator lb, ub;
 	lb =  std::lower_bound (_parent->_index.cbegin(), _parent->_index.cend(), req, Index::CaseInsensitiveCompare());
 	ub =  std::upper_bound (_parent->_index.cbegin(), _parent->_index.cend(), req, Index::CaseInsensitiveComparePrefix());
@@ -32,7 +36,7 @@ void ExactMatchSearchImpl::query(const QString &req, QVector<Service::Item *> *r
 
 
 /**************************************************************************/
-struct WordMatchSearchImpl::CaseInsensitiveCompare
+struct Index::WordMatchSearchImpl::CaseInsensitiveCompare
 {
 	inline bool operator()( Posting const &pre, Posting const &rhs ) const {return (*this)(pre.first, rhs.first);}
 	inline bool operator()( QString const &pre, Posting const &rhs ) const {return (*this)(pre, rhs.first);}
@@ -40,7 +44,7 @@ struct WordMatchSearchImpl::CaseInsensitiveCompare
 	inline bool operator()( QString const &pre, QString const &rhs ) const {return Service::CaseInsensitiveCompare()(pre, rhs);}
 };
 /**************************************************************************/
-struct WordMatchSearchImpl::CaseInsensitiveComparePrefix
+struct Index::WordMatchSearchImpl::CaseInsensitiveComparePrefix
 {
 	inline bool operator()( Posting const &pre, Posting const &rhs ) const {return (*this)(pre.first, rhs.first);}
 	inline bool operator()( QString const &pre, Posting const &rhs ) const {return (*this)(pre, rhs.first);}
@@ -52,7 +56,7 @@ struct WordMatchSearchImpl::CaseInsensitiveComparePrefix
 #include <qdebug.h>
 #include <QRegularExpression>
 /**************************************************************************/
-WordMatchSearchImpl::WordMatchSearchImpl(Index *p) : SearchImpl(p)
+Index::WordMatchSearchImpl::WordMatchSearchImpl(Index *p) : SearchImpl(p)
 {
 	// Build inverted index
 	typedef QMap<QString, QSet<Service::Item*>> InvertedIndexMap;
@@ -74,7 +78,7 @@ WordMatchSearchImpl::WordMatchSearchImpl(Index *p) : SearchImpl(p)
 
 
 /**************************************************************************/
-void WordMatchSearchImpl::query(const QString &req, QVector<Service::Item *> *res) const
+void Index::WordMatchSearchImpl::query(const QString &req, QVector<Service::Item *> *res) const
 {
 	QSet<Service::Item*>* resSet = nullptr;
 	QStringList words = req.split(' ', QString::SkipEmptyParts);
@@ -97,7 +101,7 @@ void WordMatchSearchImpl::query(const QString &req, QVector<Service::Item *> *re
 
 
 /**************************************************************************/
-struct FuzzySearchImpl::CaseInsensitiveComparePrefix
+struct Index::FuzzySearchImpl::CaseInsensitiveComparePrefix
 {
 	inline bool operator()( Posting const &pre, Posting const &rhs ) const {return (*this)(pre.first, rhs.first);}
 	inline bool operator()( QString const &pre, Posting const &rhs ) const {return (*this)(pre, rhs.first);}
@@ -106,10 +110,10 @@ struct FuzzySearchImpl::CaseInsensitiveComparePrefix
 };
 
 /**************************************************************************/
-FuzzySearchImpl::FuzzySearchImpl(Index *p) : SearchImpl(p){}
+Index::FuzzySearchImpl::FuzzySearchImpl(Index *p) : SearchImpl(p){}
 
 /**************************************************************************/
-void FuzzySearchImpl::query(const QString &req, QVector<Service::Item *> *res) const
+void Index::FuzzySearchImpl::query(const QString &req, QVector<Service::Item *> *res) const
 {
 
 }

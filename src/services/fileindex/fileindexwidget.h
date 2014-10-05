@@ -18,6 +18,7 @@
 #define FILEINDEXWIDGET_H
 
 #include "ui_fileindexwidget.h"
+#include "fileindex.h"
 #include <QWidget>
 
 class FileIndexWidget : public QWidget
@@ -26,12 +27,13 @@ class FileIndexWidget : public QWidget
 	Ui::FileIndexWidget ui;
 
 public:
-	explicit FileIndexWidget(QWidget *parent = 0);
+	explicit FileIndexWidget(FileIndex *fi, QWidget *parent = 0);
 
-signals:
+protected:
+	FileIndex *_ref;
 
-public slots:
-
+protected slots:
+	void onSearchTypeChanged(int);
 };
 
 #endif // FILEINDEXWIDGET_H

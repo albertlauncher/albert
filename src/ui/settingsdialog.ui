@@ -19,26 +19,87 @@
   <property name="modal">
    <bool>true</bool>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
+  <layout class="QGridLayout" name="gridLayout_11">
+   <item row="0" column="0">
     <widget class="QTabWidget" name="tabs">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
        <string>General</string>
       </attribute>
+      <widget class="QLabel" name="label_3">
+       <property name="geometry">
+        <rect>
+         <x>9</x>
+         <y>9</y>
+         <width>72</width>
+         <height>18</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
      </widget>
      <widget class="QWidget" name="tabAppearance">
       <attribute name="title">
        <string>Appearance</string>
       </attribute>
+      <layout class="QGridLayout" name="gridLayout_13">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>TextLabel</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="tabModules">
       <attribute name="title">
        <string>Modules</string>
       </attribute>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QTabWidget" name="tabWidget">
+         <property name="currentIndex">
+          <number>2</number>
+         </property>
+         <widget class="QWidget" name="tabWebSearch">
+          <attribute name="title">
+           <string>WebSearch</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_6"/>
+         </widget>
+         <widget class="QWidget" name="tabAppIndex">
+          <attribute name="title">
+           <string>AppIndex</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_7"/>
+         </widget>
+         <widget class="QWidget" name="tabFileIndex">
+          <attribute name="title">
+           <string>FileIndex</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_8"/>
+         </widget>
+         <widget class="QWidget" name="tabBookmarkIndex">
+          <attribute name="title">
+           <string>BookmarkIndex</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_9"/>
+         </widget>
+         <widget class="QWidget" name="tabCalculator">
+          <attribute name="title">
+           <string>Calculator</string>
+          </attribute>
+          <layout class="QGridLayout" name="gridLayout_10"/>
+         </widget>
+        </widget>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="tabAbout">
       <attribute name="title">
@@ -59,7 +120,7 @@
      </widget>
     </widget>
    </item>
-   <item>
+   <item row="1" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>

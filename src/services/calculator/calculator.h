@@ -29,7 +29,7 @@ public:
 
 	~Calculator();
 
-	QWidget* widget() const override;
+	QWidget* widget() override;
 	void query(const QString&, QVector<Service::Item*>*) const noexcept override;
 	void initialize() override;
 	QDataStream& serialize (QDataStream &out) const override;

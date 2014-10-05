@@ -35,7 +35,7 @@ public:
 };
 
 /**************************************************************************/
-class ExactMatchSearchImpl : public Index::SearchImpl
+class Index::ExactMatchSearchImpl : public Index::SearchImpl
 {
 public:
 	ExactMatchSearchImpl(Index *p);
@@ -43,7 +43,7 @@ public:
 };
 
 /**************************************************************************/
-class WordMatchSearchImpl : public Index::SearchImpl
+class Index::WordMatchSearchImpl : public Index::SearchImpl
 {
 	typedef QPair<QString, QSet<Service::Item*>> Posting;
 	typedef QVector<Posting> InvertedIndex;
@@ -58,7 +58,7 @@ public:
 };
 
 /**************************************************************************/
-class FuzzySearchImpl : public Index::SearchImpl
+class Index::FuzzySearchImpl : public Index::SearchImpl
 {
 	class CaseInsensitiveComparePrefix;
 	typedef QPair<QString, QSet<Service::Item*>> Posting;

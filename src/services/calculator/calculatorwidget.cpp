@@ -19,4 +19,5 @@
 CalculatorWidget::CalculatorWidget(QWidget *parent) :
 	QWidget(parent)
 {
+	ui.setupUi(this);
 }

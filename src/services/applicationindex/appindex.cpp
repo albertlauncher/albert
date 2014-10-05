@@ -16,17 +16,12 @@
 
 #include "appindex.h"
 #include "appitem.h"
+#include "appindexwidget.h"
+
 #include <functional>
-//#include "websearch/websearch.h"
 #include <QSettings>
 #include <QDebug>
 #include <QDir>
-#include <QMap>
-#include <QString>
-#include <QStandardPaths>
-#include <algorithm>
-#include <QDataStream>
-#include <QMetaType>
 
 
 //	std::sort(_index.begin(), _index.end(), Index::CaseInsensitiveCompare());
@@ -40,9 +35,11 @@ ApplicationIndex::~ApplicationIndex()
 }
 
 /**************************************************************************/
-QWidget *ApplicationIndex::widget() const
+QWidget *ApplicationIndex::widget()
 {
-	return new QWidget;
+	if (_widget == nullptr)
+		_widget = new AppIndexWidget;
+	return _widget;
 }
 
 /**************************************************************************/

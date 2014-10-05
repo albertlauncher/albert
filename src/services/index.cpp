@@ -20,12 +20,14 @@
 #include <QMap>
 #include <QSet>
 #include <QString>
+#include <QDebug>
 
 
 /**************************************************************************/
 Index::Index()
 {
 	_search =  new ExactMatchSearchImpl(this);
+	_searchType = Index::SearchType::Exact;
 }
 
 /**************************************************************************/
@@ -42,23 +44,27 @@ inline void Index::query(const QString&req, QVector<Service::Item*>*res) const n
 /**************************************************************************/
 void Index::setSearchType(Index::SearchType T)
 {
+	_searchType = T;
 	switch (T) {
 	case Index::SearchType::Exact:
 		if (!dynamic_cast<ExactMatchSearchImpl*>(_search)){
 			delete _search;
 			_search = new ExactMatchSearchImpl(this);
+			qDebug() << "Set searchtype to ExactMatch";
 		}
 		break;
 	case Index::SearchType::WordMatch:
 		if (!dynamic_cast<WordMatchSearchImpl*>(_search)){
 			delete _search;
 			_search = new WordMatchSearchImpl(this);
+			qDebug() << "Set searchtype to WordMatch";
 		}
 		break;
 	case Index::SearchType::Fuzzy:
 		if (!dynamic_cast<FuzzySearchImpl*>(_search)){
 			delete _search;
 			_search = new FuzzySearchImpl(this);
+			qDebug() << "Set searchtype to Fuzzy";
 		}
 		break;
 	}

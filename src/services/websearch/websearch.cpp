@@ -16,6 +16,7 @@
 
 #include "websearch.h"
 #include "websearchitem.h"
+#include "websearchwidget.h"
 
 #include <QDesktopServices>
 #include <QUrl>
@@ -65,9 +66,11 @@ QDataStream &WebSearch::deserialize(QDataStream &in)
 }
 
 /**************************************************************************/
-QWidget *WebSearch::widget() const
+QWidget *WebSearch::widget()
 {
-	return new QWidget;
+	if (_widget == nullptr)
+		_widget = new WebSearchWidget;
+	return _widget;
 }
 
 /**************************************************************************/

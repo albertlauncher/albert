@@ -22,6 +22,7 @@
 
 class FileIndex : public Index, public Singleton<FileIndex>
 {
+	friend class FileIndexWidget;
 	friend class Singleton<FileIndex>;
 
 public:
@@ -29,7 +30,7 @@ public:
 
 	~FileIndex();
 
-	QWidget* widget() const override;
+	QWidget* widget() override;
 	void initialize() override;
 	QDataStream& serialize (QDataStream &out) const override;
 	QDataStream& deserialize (QDataStream &in) override;
