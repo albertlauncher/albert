@@ -22,7 +22,6 @@
 #include <QIcon>
 #include <QDataStream>
 
-/*********************************************************************/
 class Calculator::Item : public Service::Item
 {
 	friend class Calculator;

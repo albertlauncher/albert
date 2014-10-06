@@ -23,7 +23,6 @@
 #include <QDataStream>
 #include <QIcon>
 
-/**************************************************************************/
 class FileIndex::Item : public Service::Item
 {
 	friend class FileIndex;

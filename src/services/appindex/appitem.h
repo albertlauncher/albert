@@ -22,8 +22,6 @@
 #include <QDataStream>
 #include <QIcon>
 
-
-/**************************************************************************/
 class AppIndex::Item : public Service::Item
 {
 	friend class AppIndex;
