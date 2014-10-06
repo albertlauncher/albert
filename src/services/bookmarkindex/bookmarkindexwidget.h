@@ -18,6 +18,7 @@
 #define BOOKMARKINDEXWIDGET_H
 
 #include "ui_bookmarkindexwidget.h"
+#include "bookmarkindex.h"
 #include <QWidget>
 
 class BookmarkIndexWidget : public QWidget
@@ -26,12 +27,13 @@ class BookmarkIndexWidget : public QWidget
 	Ui::BookmarkIndexWidget ui;
 
 public:
-	explicit BookmarkIndexWidget(QWidget *parent = 0);
+	explicit BookmarkIndexWidget(BookmarkIndex*, QWidget *parent = 0);
 
-signals:
+protected:
+	BookmarkIndex *_ref;
 
-public slots:
-
+protected slots:
+	void onSearchTypeChanged(int);
 };
 
 #endif // BOOKMARKINDEXWIDGET_H

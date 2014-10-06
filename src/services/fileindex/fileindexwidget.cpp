@@ -16,8 +16,9 @@
 
 #include "fileindexwidget.h"
 
-FileIndexWidget::FileIndexWidget(FileIndex *fi, QWidget *parent) :
-	QWidget(parent), _ref(fi)
+/**************************************************************************/
+FileIndexWidget::FileIndexWidget(FileIndex *srv, QWidget *parent) :
+	QWidget(parent), _ref(srv)
 {
 	ui.setupUi(this);
 
@@ -29,8 +30,8 @@ FileIndexWidget::FileIndexWidget(FileIndex *fi, QWidget *parent) :
 
 }
 
+/**************************************************************************/
 void FileIndexWidget::onSearchTypeChanged(int st)
 {
 	_ref->setSearchType(static_cast<IndexService::SearchType>(st));
-
 }

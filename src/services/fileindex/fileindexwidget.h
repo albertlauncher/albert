@@ -27,7 +27,7 @@ class FileIndexWidget : public QWidget
 	Ui::FileIndexWidget ui;
 
 public:
-	explicit FileIndexWidget(FileIndex *fi, QWidget *parent = 0);
+	explicit FileIndexWidget(FileIndex*, QWidget *parent = 0);
 
 protected:
 	FileIndex *_ref;

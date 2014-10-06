@@ -18,6 +18,7 @@
 #define APPINDEXWIDGET_H
 
 #include "ui_appindexwidget.h"
+#include "appindex.h"
 #include <QWidget>
 
 class AppIndexWidget : public QWidget
@@ -26,12 +27,13 @@ class AppIndexWidget : public QWidget
 	Ui::AppIndexWidget ui;
 
 public:
-	explicit AppIndexWidget(QWidget *parent = 0);
+	explicit AppIndexWidget(AppIndex *fi, QWidget *parent = 0);
 
-signals:
+protected:
+	AppIndex *_ref;
 
-public slots:
-
+protected slots:
+	void onSearchTypeChanged(int);
 };
 
 #endif // APPINDEXWIDGET_H

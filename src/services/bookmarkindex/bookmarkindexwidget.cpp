@@ -16,8 +16,21 @@
 
 #include "bookmarkindexwidget.h"
 
-BookmarkIndexWidget::BookmarkIndexWidget(QWidget *parent) :
-	QWidget(parent)
+/**************************************************************************/
+BookmarkIndexWidget::BookmarkIndexWidget(BookmarkIndex *srv, QWidget *parent) :
+	QWidget(parent), _ref(srv)
 {
 	ui.setupUi(this);
+
+	// Set current values
+	ui.comboBoxSearchType->setCurrentIndex(static_cast<int>(_ref->searchType()));
+
+	// Rect to changes
+	connect(ui.comboBoxSearchType,SIGNAL(activated(int)),this,SLOT(onSearchTypeChanged(int)));
+}
+
+/**************************************************************************/
+void BookmarkIndexWidget::onSearchTypeChanged(int st)
+{
+	_ref->setSearchType(static_cast<IndexService::SearchType>(st));
 }

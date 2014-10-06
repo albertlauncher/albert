@@ -38,7 +38,7 @@ AppIndex::~AppIndex()
 QWidget *AppIndex::widget()
 {
 	if (_widget == nullptr)
-		_widget = new AppIndexWidget;
+		_widget = new AppIndexWidget(this);
 	return _widget;
 }
 

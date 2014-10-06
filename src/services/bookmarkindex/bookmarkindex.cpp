@@ -40,7 +40,7 @@ BookmarkIndex::~BookmarkIndex()
 QWidget *BookmarkIndex::widget()
 {
 	if (_widget == nullptr)
-		_widget = new BookmarkIndexWidget;
+		_widget = new BookmarkIndexWidget(this);
 	return _widget;
 }
 

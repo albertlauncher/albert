@@ -16,8 +16,22 @@
 
 #include "appindexwidget.h"
 
-AppIndexWidget::AppIndexWidget(QWidget *parent) :
-	QWidget(parent)
+/**************************************************************************/
+AppIndexWidget::AppIndexWidget(AppIndex *srv, QWidget *parent) :
+	QWidget(parent), _ref(srv)
 {
 	ui.setupUi(this);
+
+	// Set current values
+	ui.comboBoxSearchType->setCurrentIndex(static_cast<int>(_ref->searchType()));
+
+	// Rect to changes
+	connect(ui.comboBoxSearchType,SIGNAL(activated(int)),this,SLOT(onSearchTypeChanged(int)));
+}
+
+/**************************************************************************/
+void AppIndexWidget::onSearchTypeChanged(int st)
+{
+	_ref->setSearchType(static_cast<IndexService::SearchType>(st));
+
 }
