@@ -125,8 +125,11 @@ void WordMatchSearchImpl::query(const QString &req, QVector<Service::Item *> *re
 		else
 			resSet->intersect(tmpSet);
 	}
-	for (Service::Item *s : *resSet)
-		res->append(s);
+	if (resSet != nullptr) {
+		for (Service::Item *s : *resSet)
+			res->append(s);
+		delete resSet;
+	}
 }
 /**************************************************************************/
 /**************************************************************************/
@@ -134,19 +137,61 @@ void WordMatchSearchImpl::query(const QString &req, QVector<Service::Item *> *re
 /**************************************************************************/
 class FuzzySearchImpl : public SearchImpl
 {
-	InvertedIndex _invertedIndex;
+	typedef QMap<QString, QSet<Service::Item *>> qGramIndex;
+	qGramIndex _qGramIndex;
+	static const int q;
 public:
 	FuzzySearchImpl(QVector<Service::Item*> const &p);
 	virtual void query(const QString &req, QVector<Service::Item*> *res) const;
 };
 /**************************************************************************/
+const int FuzzySearchImpl::q = 3;
+/**************************************************************************/
 FuzzySearchImpl::FuzzySearchImpl(const QVector<Service::Item *> &p) : SearchImpl(p)
 {
-
+	// Build qGramIndex
+	for (Service::Item *item : _indexRef) {
+		//Split the name into words
+		QStringList words = item->title().split(QRegExp("\\W+"), QString::SkipEmptyParts);
+		for (QString &w : words){
+			//Split the word into qGrams
+			QString spaced = QString("  ").append(w).append("  ");
+			for (int i = 0 ; i < w.size()+q-1; ++i)
+				// Save a reference to this enty under the key qGram
+				_qGramIndex[spaced.mid(i,q)].insert(item);
+		}
+	}
 }
 /**************************************************************************/
 void FuzzySearchImpl::query(const QString &req, QVector<Service::Item *> *res) const
 {
+	// Extract the qGrams of the query
+	QSet<QString> qGrams;
+	// Split the query into words
+	QStringList words = req.split(QRegExp("\\W+"), QString::SkipEmptyParts);
+	for (QString &w : words){
+		// Split the word into qGrams
+		QString spaced = QString("  ").append(w).append("  ");
+		for (int i = 0 ; i < w.size()+q-1; ++i)
+			// Save the qgram
+			qGrams.insert(spaced.mid(i,q));
+	}
+
+	// Get the intersection of the entries referenced by the qgrams
+	QSet<Service::Item*>* resSet = nullptr;
+	for(QString qGram : qGrams){
+		if (resSet == nullptr)
+			resSet = new QSet<Service::Item*>(_qGramIndex[qGram]);
+		else
+			resSet->intersect(_qGramIndex[qGram]);
+	}
+
+	// Convert to vector
+	if (resSet != nullptr) {
+		for (Service::Item *s : *resSet)
+			res->append(s);
+		delete resSet;
+	}
 
 }
 /**************************************************************************/
