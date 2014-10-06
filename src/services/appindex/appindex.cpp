@@ -167,6 +167,7 @@ QDataStream &AppIndex::serialize(QDataStream &out) const
 	out << _index.size();
 	for (Service::Item *it : _index)
 		static_cast<AppIndex::Item*>(it)->serialize(out);
+	out << static_cast<int>(searchType());
 	return out;
 }
 
@@ -181,6 +182,9 @@ QDataStream &AppIndex::deserialize(QDataStream &in)
 		it->deserialize(in);
 		_index.push_back(it);
 	}
+	int T;
+	in >> T;
+	setSearchType(static_cast<IndexService::SearchType>(T));
 	qDebug() << "[ApplicationIndex]\tLoaded " << _index.size() << " apps.";
 	return in;
 }

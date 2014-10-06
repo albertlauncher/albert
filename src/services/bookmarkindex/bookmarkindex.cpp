@@ -101,6 +101,7 @@ QDataStream &BookmarkIndex::serialize(QDataStream &out) const
 	out << _index.size();
 	for (Service::Item *it : _index)
 		static_cast<BookmarkIndex::Item*>(it)->serialize(out);
+	out << static_cast<int>(searchType());
 	return out;
 }
 
@@ -115,6 +116,9 @@ QDataStream &BookmarkIndex::deserialize(QDataStream &in)
 		it->deserialize(in);
 		_index.push_back(it);
 	}
+	int T;
+	in >> T;
+	setSearchType(static_cast<IndexService::SearchType>(T));
 	qDebug() << "[BookmarkIndex]\tLoaded " << _index.size() << " bookmarks.";
 	return in;
 }
