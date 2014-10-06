@@ -19,7 +19,7 @@
 #include "services/fileindex/fileindex.h"
 #include "services/calculator/calculator.h"
 #include "services/bookmarkindex/bookmarkindex.h"
-#include "services/applicationindex/appindex.h"
+#include "services/appindex/appindex.h"
 #include <QFile>
 #include <QStandardPaths>
 #include <QString>
@@ -31,7 +31,7 @@ AlbertEngine::AlbertEngine()
 	// Load modules
 	_modules.push_back(WebSearch::instance());
 	_modules.push_back(Calculator::instance());
-	_modules.push_back(ApplicationIndex::instance());
+	_modules.push_back(AppIndex::instance());
 	_modules.push_back(BookmarkIndex::instance());
 	_modules.push_back(FileIndex::instance());
 

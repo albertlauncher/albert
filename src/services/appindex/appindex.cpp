@@ -27,7 +27,7 @@
 //	std::sort(_index.begin(), _index.end(), Index::CaseInsensitiveCompare());
 
 /**************************************************************************/
-ApplicationIndex::~ApplicationIndex()
+AppIndex::~AppIndex()
 {
 	for(Service::Item *i : _index)
 		delete i;
@@ -35,7 +35,7 @@ ApplicationIndex::~ApplicationIndex()
 }
 
 /**************************************************************************/
-QWidget *ApplicationIndex::widget()
+QWidget *AppIndex::widget()
 {
 	if (_widget == nullptr)
 		_widget = new AppIndexWidget;
@@ -43,14 +43,14 @@ QWidget *ApplicationIndex::widget()
 }
 
 /**************************************************************************/
-void ApplicationIndex::initialize()
+void AppIndex::initialize()
 {
 	buildIndex();
 	std::sort(_index.begin(), _index.end(), Service::CaseInsensitiveCompare());
 }
 
 /**************************************************************************/
-void ApplicationIndex::buildIndex()
+void AppIndex::buildIndex()
 {
 	QStringList paths = QSettings().value(QString::fromLocal8Bit("app_index_paths")).toStringList();
 	qDebug() << "[ApplicationIndex]\tLooking in: " << paths;
@@ -162,22 +162,22 @@ void ApplicationIndex::buildIndex()
 }
 
 /**************************************************************************/
-QDataStream &ApplicationIndex::serialize(QDataStream &out) const
+QDataStream &AppIndex::serialize(QDataStream &out) const
 {
 	out << _index.size();
 	for (Service::Item *it : _index)
-		static_cast<ApplicationIndex::Item*>(it)->serialize(out);
+		static_cast<AppIndex::Item*>(it)->serialize(out);
 	return out;
 }
 
 /**************************************************************************/
-QDataStream &ApplicationIndex::deserialize(QDataStream &in)
+QDataStream &AppIndex::deserialize(QDataStream &in)
 {
 	int size;
 	in >> size;
-	ApplicationIndex::Item *it;
+	AppIndex::Item *it;
 	for (int i = 0; i < size; ++i) {
-		it = new ApplicationIndex::Item;
+		it = new AppIndex::Item;
 		it->deserialize(in);
 		_index.push_back(it);
 	}

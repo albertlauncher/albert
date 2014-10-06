@@ -22,7 +22,7 @@
 #include <QDebug>
 
 /**************************************************************************/
-void ApplicationIndex::Item::action(Mod mod)
+void AppIndex::Item::action(Mod mod)
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
 	switch (mod) {
@@ -44,7 +44,7 @@ void ApplicationIndex::Item::action(Mod mod)
 }
 
 /**************************************************************************/
-QString ApplicationIndex::Item::actionText(Mod mod) const
+QString AppIndex::Item::actionText(Mod mod) const
 {
 	switch (mod) {
 	case Mod::None:
@@ -61,21 +61,21 @@ QString ApplicationIndex::Item::actionText(Mod mod) const
 }
 
 /**************************************************************************/
-QDataStream &ApplicationIndex::Item::serialize(QDataStream &out) const
+QDataStream &AppIndex::Item::serialize(QDataStream &out) const
 {
 	out << _lastAccess << _name << _exec << _iconName << _info << _term;
 	return out;
 }
 
 /**************************************************************************/
-QDataStream &ApplicationIndex::Item::deserialize(QDataStream &in)
+QDataStream &AppIndex::Item::deserialize(QDataStream &in)
 {
 	in >> _lastAccess >> _name >> _exec >> _iconName >> _info >> _term;
 	return in;
 }
 
 /**************************************************************************/
-QIcon ApplicationIndex::Item::icon() const
+QIcon AppIndex::Item::icon() const
 {
 	if (QIcon::hasThemeIcon(_iconName))
 		return QIcon::fromTheme(_iconName);

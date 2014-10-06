@@ -32,14 +32,14 @@ HEADERS  +=	albertengine.h \
 	services/calculator/calculatoritem.h \
 	services/bookmarkindex/bookmarkitem.h \
 	services/websearch/websearchitem.h \
-	services/applicationindex/appindex.h \
-	services/applicationindex/appindexwidget.h \
-	services/applicationindex/appitem.h \
+	services/appindex/appindex.h \
+	services/appindex/appindexwidget.h \
+	services/appindex/appitem.h \
 	services/bookmarkindex/bookmarkindexwidget.h \
 	services/calculator/calculatorwidget.h \
 	services/fileindex/fileindexwidget.h \
 	services/websearch/websearchwidget.h \
-    services/indexservice.h
+	services/indexservice.h
 
 SOURCES += main.cpp \
 	albertengine.cpp \
@@ -58,15 +58,15 @@ SOURCES += main.cpp \
 	services/calculator/calculatoritem.cpp \
 	services/bookmarkindex/bookmarkitem.cpp \
 	services/websearch/websearchitem.cpp \
-	services/applicationindex/appindexwidget.cpp \
-	services/applicationindex/appindex.cpp \
-	services/applicationindex/appitem.cpp \
+	services/appindex/appindexwidget.cpp \
+	services/appindex/appindex.cpp \
+	services/appindex/appitem.cpp \
 	services/bookmarkindex/bookmarkindexwidget.cpp \
 	services/calculator/calculatorwidget.cpp \
 	services/fileindex/fileindexwidget.cpp \
 	services/websearch/websearchwidget.cpp \
 	services/service.cpp \
-    services/indexservice.cpp
+	services/indexservice.cpp
 
 RESOURCES += albert.qrc
 
@@ -76,7 +76,7 @@ LIBS += -lX11 \
 		-lmuparser
 
 FORMS = ui/settingsdialog.ui \
-		services/applicationindex/appindexwidget.ui \
+		services/appindex/appindexwidget.ui \
 		services/bookmarkindex/bookmarkindexwidget.ui \
 		services/calculator/calculatorwidget.ui \
 		services/fileindex/fileindexwidget.ui \

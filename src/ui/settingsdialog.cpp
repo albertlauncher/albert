@@ -3,7 +3,7 @@
 #include "services/fileindex/fileindex.h"
 #include "services/calculator/calculator.h"
 #include "services/bookmarkindex/bookmarkindex.h"
-#include "services/applicationindex/appindex.h"
+#include "services/appindex/appindex.h"
 #include <QCloseEvent>
 
 SettingsDialog::SettingsDialog(QWidget *parent) :
@@ -14,7 +14,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 	setWindowFlags( Qt::WindowStaysOnTopHint
 					|Qt::Dialog );
 
-	ui.tabAppIndex->layout()->addWidget(ApplicationIndex::instance()->widget());
+	ui.tabAppIndex->layout()->addWidget(AppIndex::instance()->widget());
 	ui.tabBookmarkIndex->layout()->addWidget(BookmarkIndex::instance()->widget());
 	ui.tabFileIndex->layout()->addWidget(FileIndex::instance()->widget());
 	ui.tabCalculator->layout()->addWidget(Calculator::instance()->widget());

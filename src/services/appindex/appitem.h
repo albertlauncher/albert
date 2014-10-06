@@ -14,29 +14,38 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef APPLICATIONINDEX_H
-#define APPLICATIONINDEX_H
+#ifndef APPLICATIONITEM_H
+#define APPLICATIONITEM_H
 
-#include "indexservice.h"
-#include "singleton.h"
+#include "appindex.h"
+#include <QString>
+#include <QDataStream>
+#include <QIcon>
 
-class ApplicationIndex : public IndexService, public Singleton<ApplicationIndex>
+
+/**************************************************************************/
+class AppIndex::Item : public Service::Item
 {
-	friend class Singleton<ApplicationIndex>;
-
+	friend class AppIndex;
 public:
-	class Item;
-
-	~ApplicationIndex();
-
-	QWidget* widget() override;
-	void initialize() override;
-	QDataStream& serialize (QDataStream &out) const override;
-	QDataStream& deserialize (QDataStream &in) override;
+	inline QString title() const override {return _name;}
+	QIcon icon() const override;
+	inline QString infoText() const override {return _info;}
+	inline QString complete() const override {return _name;}
+	void action(Mod) override;
+	QString actionText(Mod) const override;
+	inline  qint64 lastAccess() const;
 
 protected:
-	ApplicationIndex(){}
-	void buildIndex() override;
+	QString _name;
+	QString _info;
+	QString _iconName;
+	QString _exec;
+	bool    _term;
+
+	// Serialization
+	QDataStream& serialize (QDataStream &out) const override;
+	QDataStream& deserialize (QDataStream &in) override;
 };
 
-#endif // APPLICATIONINDEX_H
+#endif // APPLICATIONITEM_H
