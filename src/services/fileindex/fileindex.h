@@ -17,10 +17,10 @@
 #ifndef FILEINDEX_H
 #define FILEINDEX_H
 
-#include "index.h"
+#include "indexservice.h"
 #include "singleton.h"
 
-class FileIndex : public Index, public Singleton<FileIndex>
+class FileIndex : public IndexService, public Singleton<FileIndex>
 {
 	friend class FileIndexWidget;
 	friend class Singleton<FileIndex>;

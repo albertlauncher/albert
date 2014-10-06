@@ -31,6 +31,6 @@ FileIndexWidget::FileIndexWidget(FileIndex *fi, QWidget *parent) :
 
 void FileIndexWidget::onSearchTypeChanged(int st)
 {
-	_ref->setSearchType(static_cast<Index::SearchType>(st));
+	_ref->setSearchType(static_cast<IndexService::SearchType>(st));
 
 }

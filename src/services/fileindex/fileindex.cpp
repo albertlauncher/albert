@@ -47,7 +47,7 @@ QWidget *FileIndex::widget()
 void FileIndex::initialize()
 {
 	buildIndex();
-	std::sort(_index.begin(), _index.end(), Index::CaseInsensitiveCompare());
+	std::sort(_index.begin(), _index.end(), Service::CaseInsensitiveCompare());
 }
 
 /**************************************************************************/
@@ -95,7 +95,7 @@ void FileIndex::buildIndex()
 QDataStream &FileIndex::serialize(QDataStream &out) const
 {
 	out << _index.size();
-	for (Index::Item *it : _index)
+	for (Service::Item *it : _index)
 		static_cast<FileIndex::Item*>(it)->serialize(out);
 	out << static_cast<int>(searchType());
 	return out;
@@ -114,7 +114,7 @@ QDataStream &FileIndex::deserialize(QDataStream &in)
 	}
 	int T;
 	in >> T;
-	setSearchType(static_cast<Index::SearchType>(T));
+	setSearchType(static_cast<IndexService::SearchType>(T));
 	qDebug() << "[FileIndex]\t\tLoaded " << _index.size() << " files.";
 	return in;
 }

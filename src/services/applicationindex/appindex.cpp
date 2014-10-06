@@ -46,7 +46,7 @@ QWidget *ApplicationIndex::widget()
 void ApplicationIndex::initialize()
 {
 	buildIndex();
-	std::sort(_index.begin(), _index.end(), Index::CaseInsensitiveCompare());
+	std::sort(_index.begin(), _index.end(), Service::CaseInsensitiveCompare());
 }
 
 /**************************************************************************/
@@ -165,7 +165,7 @@ void ApplicationIndex::buildIndex()
 QDataStream &ApplicationIndex::serialize(QDataStream &out) const
 {
 	out << _index.size();
-	for (Index::Item *it : _index)
+	for (Service::Item *it : _index)
 		static_cast<ApplicationIndex::Item*>(it)->serialize(out);
 	return out;
 }

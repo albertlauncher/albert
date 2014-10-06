@@ -24,12 +24,10 @@ HEADERS  +=	albertengine.h \
 	ui/settingsbutton.h \
 	ui/settingsdialog.h \
 	services/service.h \
-	services/index.h \
 	services/fileindex/fileindex.h \
 	services/bookmarkindex/bookmarkindex.h \
 	services/calculator/calculator.h \
 	services/websearch/websearch.h \
-	services/searchimpl.h \
 	services/fileindex/fileitem.h \
 	services/calculator/calculatoritem.h \
 	services/bookmarkindex/bookmarkitem.h \
@@ -41,9 +39,7 @@ HEADERS  +=	albertengine.h \
 	services/calculator/calculatorwidget.h \
 	services/fileindex/fileindexwidget.h \
 	services/websearch/websearchwidget.h \
-    services/fuzzysearch.h \
-    services/prefixmatchanywordsearch.h \
-    services/prefixmatchsearch.h
+    services/indexservice.h
 
 SOURCES += main.cpp \
 	albertengine.cpp \
@@ -54,12 +50,10 @@ SOURCES += main.cpp \
 	ui/inputline.cpp \
 	ui/settingsbutton.cpp \
 	ui/settingsdialog.cpp \
-	services/index.cpp \
 	services/fileindex/fileindex.cpp \
 	services/bookmarkindex/bookmarkindex.cpp \
 	services/calculator/calculator.cpp \
 	services/websearch/websearch.cpp \
-	services/searchimpl.cpp \
 	services/fileindex/fileitem.cpp \
 	services/calculator/calculatoritem.cpp \
 	services/bookmarkindex/bookmarkitem.cpp \
@@ -72,9 +66,7 @@ SOURCES += main.cpp \
 	services/fileindex/fileindexwidget.cpp \
 	services/websearch/websearchwidget.cpp \
 	services/service.cpp \
-    services/fuzzysearch.cpp \
-    services/prefixmatchanywordsearch.cpp \
-    services/prefixmatchsearch.cpp
+    services/indexservice.cpp
 
 RESOURCES += albert.qrc
 

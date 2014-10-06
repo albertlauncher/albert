@@ -17,10 +17,10 @@
 #ifndef BOOKMARKINDEX_H
 #define BOOKMARKINDEX_H
 
-#include "index.h"
+#include "indexservice.h"
 #include "singleton.h"
 
-class BookmarkIndex : public Index, public Singleton<BookmarkIndex>
+class BookmarkIndex : public IndexService, public Singleton<BookmarkIndex>
 {
 	friend class Singleton<BookmarkIndex>;
 

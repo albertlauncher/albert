@@ -17,10 +17,10 @@
 #ifndef APPLICATIONINDEX_H
 #define APPLICATIONINDEX_H
 
-#include "index.h"
+#include "indexservice.h"
 #include "singleton.h"
 
-class ApplicationIndex : public Index, public Singleton<ApplicationIndex>
+class ApplicationIndex : public IndexService, public Singleton<ApplicationIndex>
 {
 	friend class Singleton<ApplicationIndex>;
 

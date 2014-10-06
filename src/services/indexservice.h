@@ -14,7 +14,36 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "searchimpl.h"
-#include <algorithm>
-#include <QDebug>
+#ifndef INDEXSERVICE_H
+#define INDEXSERVICE_H
 
+#include "services/service.h"
+#include <QString>
+#include <QVector>
+
+class SearchImpl;
+
+class IndexService : public Service
+{
+public:
+	enum class SearchType {Exact, WordMatch, Fuzzy};
+
+	IndexService();
+	virtual ~IndexService();
+
+	virtual void buildIndex() = 0;
+	void query(const QString &req, QVector<Service::Item*> *res) const noexcept override;
+	void setSearchType(SearchType);
+	inline SearchType searchType() const {return _searchType;}
+
+protected:
+
+	QVector<Service::Item*> _index;
+	SearchImpl *_search;
+	SearchType _searchType;
+
+};
+
+
+
+#endif // INDEXSERVICE_H

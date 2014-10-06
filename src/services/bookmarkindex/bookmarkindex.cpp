@@ -48,7 +48,7 @@ QWidget *BookmarkIndex::widget()
 void BookmarkIndex::initialize()
 {
 	buildIndex();
-	std::sort(_index.begin(), _index.end(), Index::CaseInsensitiveCompare());
+	std::sort(_index.begin(), _index.end(), Service::CaseInsensitiveCompare());
 }
 
 /**************************************************************************/
@@ -99,7 +99,7 @@ void BookmarkIndex::buildIndex()
 QDataStream &BookmarkIndex::serialize(QDataStream &out) const
 {
 	out << _index.size();
-	for (Index::Item *it : _index)
+	for (Service::Item *it : _index)
 		static_cast<BookmarkIndex::Item*>(it)->serialize(out);
 	return out;
 }
