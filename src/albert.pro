@@ -17,6 +17,7 @@ INCLUDEPATH += services/ ui/
 HEADERS  +=	albertengine.h \
 	xhotkeymanager.h \
 	singleton.h \
+	Timer.h \
 	ui/albert.h \
 	ui/proposallistdelegate.h \
 	ui/proposallistview.h \
