@@ -6,7 +6,8 @@
 	padding: 8px;
 	margin: 0px;
 	border-radius: 16px;
-	background: qlineargradient(x1:0, y1:0, x2:1, y2:1,	stop:0.0 rgba(255, 255, 0, 64), stop:0.2 rgba(0, 255, 0, 64), stop:0.4 rgba(0, 255, 255, 64), stop:0.6 rgba(0, 0, 255, 64), stop:0.8 rgba(255, 0, 255, 64), stop:1.0 rgba(255, 0, 0, 64));
+	background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0.2 rgba(0, 0, 0, 128), stop:0.5 rgba(255, 0, 0, 128), stop:0.8 rgba(255, 255, 0, 128));
+	/*background: qlineargradient(x1:0, y1:0, x2:1, y2:1,	stop:0.0 rgba(255, 255, 0, 64), stop:0.2 rgba(0, 255, 0, 64), stop:0.4 rgba(0, 255, 255, 64), stop:0.6 rgba(0, 0, 255, 64), stop:0.8 rgba(255, 0, 255, 64), stop:1.0 rgba(255, 0, 0, 64));*/
 	/*background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0.0 rgba(128, 255, 0, 128), stop:0.5 rgba(0,0,0,0), stop:1.0 rgba(0, 128, 255, 128));*/
 	/*background-color: rgba(192, 192, 192, 64);*/
 	/*, stop: 0.4 #0f0, stop: 0.6 #0ff, stop: 0.8 #00f, stop: 1 #f0f);*/
