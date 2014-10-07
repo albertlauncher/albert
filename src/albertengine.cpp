@@ -25,6 +25,9 @@
 #include <QString>
 #include <QDebug>
 
+
+#include <Timer.h>
+
 /**********************************************************************/
 AlbertEngine::AlbertEngine()
 {
@@ -36,15 +39,15 @@ AlbertEngine::AlbertEngine()
 	_modules.push_back(FileIndex::instance());
 
 	QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db";
-	QFile f(path);
-	if (f.open(QIODevice::ReadOnly| QIODevice::Text)){
-		qDebug() << "[AlbertEngine]\tDeserializing from" << path;
-		QDataStream in( &f );
-		for (Service *i: _modules) // TODO
-			i->deserialize(in);
-		f.close();
-	}
-	else
+//	QFile f(path);
+//	if (f.open(QIODevice::ReadOnly| QIODevice::Text)){
+//		qDebug() << "[AlbertEngine]\tDeserializing from" << path;
+//		QDataStream in( &f );
+//		for (Service *i: _modules) // TODO
+//			i->deserialize(in);
+//		f.close();
+//	}
+//	else
 	{
 		qWarning() << "[AlbertEngine]\tCould not open file" << path;
 		for (Service *i : _modules)
@@ -77,12 +80,18 @@ void AlbertEngine::query(const QString &req)
 	beginResetModel();
 	_data.clear();
 	for (Service *i: _modules)
+	{
+		Timer t;
+		t.start();
 		i->query(req, &_data);
+		t.stop();
+		qDebug() << t.getUSecs() << "µs";
+	}
 	if (_data.isEmpty())
 		WebSearch::instance()->queryAll(req, &_data);
 
 	// Sort them by atime
-	std::sort(_data.begin(), _data.end(), ATimeCompare());
+	std::stable_sort(_data.begin(), _data.end(), ATimeCompare());
 	endResetModel();
 }
 
