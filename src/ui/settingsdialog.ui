@@ -19,43 +19,31 @@
   <property name="modal">
    <bool>true</bool>
   </property>
-  <layout class="QGridLayout" name="gridLayout_11">
+  <layout class="QGridLayout">
+   <property name="leftMargin">
+    <number>4</number>
+   </property>
+   <property name="topMargin">
+    <number>4</number>
+   </property>
+   <property name="rightMargin">
+    <number>4</number>
+   </property>
+   <property name="bottomMargin">
+    <number>4</number>
+   </property>
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabs">
-     <property name="currentIndex">
-      <number>2</number>
-     </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
        <string>General</string>
       </attribute>
-      <widget class="QLabel" name="label_3">
-       <property name="geometry">
-        <rect>
-         <x>9</x>
-         <y>9</y>
-         <width>72</width>
-         <height>18</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>TextLabel</string>
-       </property>
-      </widget>
      </widget>
      <widget class="QWidget" name="tabAppearance">
       <attribute name="title">
        <string>Appearance</string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout_13">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>TextLabel</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <layout class="QGridLayout" name="gridLayout_13"/>
      </widget>
      <widget class="QWidget" name="tabModules">
       <attribute name="title">
@@ -64,8 +52,8 @@
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
         <widget class="QTabWidget" name="tabWidget">
-         <property name="currentIndex">
-          <number>2</number>
+         <property name="tabPosition">
+          <enum>QTabWidget::South</enum>
          </property>
          <widget class="QWidget" name="tabWebSearch">
           <attribute name="title">
