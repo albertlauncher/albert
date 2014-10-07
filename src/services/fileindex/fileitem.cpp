@@ -65,7 +65,7 @@ QString FileIndex::Item::actionText(Mod mod) const
 /**************************************************************************/
 QIcon FileIndex::Item::icon() const
 {
-	QString iconName = mimeDb.mimeTypeForFile(_path).iconName();
+	QString iconName = mimeDb.mimeTypeForFile(_path+"/"+_name).iconName();
 	if (QIcon::hasThemeIcon(iconName))
 		return QIcon::fromTheme(iconName);
 	return QIcon::fromTheme(QString::fromLocal8Bit("unknown"));
