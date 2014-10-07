@@ -16,9 +16,11 @@
 
 #include "indexservice.h"
 #include <algorithm>
+#include <functional>
 #include <QMap>
 #include <QSet>
 #include <QString>
+#include <QVector>
 #include <QDebug>
 
 /**************************************************************************/
@@ -137,105 +139,210 @@ void WordMatchSearchImpl::query(const QString &req, QVector<Service::Item *> *re
 /**************************************************************************/
 class FuzzySearchImpl : public SearchImpl
 {
-	typedef QMap<QString, QSet<Service::Item *>> qGramIndex;
-	qGramIndex _qGramIndex;
-	static const int q;
+	// Map of words, containing their item references
+	typedef QMap<QString, QSet<Service::Item*>> InvertedIndex;
+	InvertedIndex _invertedIndex;
+
+	// Map of qGrams, containing their word references and #occurences
+	typedef QMap<QString, QMap<QString, unsigned int>> QGramIndex;
+	QGramIndex _qGramIndex;
+
+	// Length of the grams
+	unsigned int _q;
+	inline unsigned int q(){return _q;}
+	inline void setQ(unsigned int q){_q=q; buildIndex();}
+
+	// Max allowed errors
+	unsigned int _delta;
+	inline unsigned int delta(){return _delta;}
+	inline void setDelta(unsigned int d){_delta=d;}
+
+	void buildIndex();
+	bool checkPrefixEditDistance(const QString& prefix, const QString& str, unsigned int delta) const;
+
 public:
-	FuzzySearchImpl(QVector<Service::Item*> const &p);
+	FuzzySearchImpl(QVector<Service::Item*> const &p, unsigned int q = 3, unsigned int delta = 2);
 	virtual void query(const QString &req, QVector<Service::Item*> *res) const;
 };
 /**************************************************************************/
-const int FuzzySearchImpl::q = 3;
-/**************************************************************************/
-FuzzySearchImpl::FuzzySearchImpl(const QVector<Service::Item *> &p) : SearchImpl(p)
+FuzzySearchImpl::FuzzySearchImpl(const QVector<Service::Item *> &p, unsigned int q, unsigned int delta)
+	: SearchImpl(p), _q(q), _delta(delta)
 {
-	// Build qGramIndex
+	buildIndex();
+}
+/**************************************************************************/
+void FuzzySearchImpl::buildIndex()
+{
+	_invertedIndex.clear();
+	_qGramIndex.clear();
+
+	// Build inverted index
 	for (Service::Item *item : _indexRef) {
-		//Split the name into words
 		QStringList words = item->title().split(QRegExp("\\W+"), QString::SkipEmptyParts);
-		for (QString &w : words){
-			//Split the word into qGrams
-			QString spaced = QString("  ").append(w).append("  ");
-			for (int i = 0 ; i < w.size()+q-1; ++i)
-				// Save a reference to this enty under the key qGram
-				_qGramIndex[spaced.mid(i,q)].insert(item);
-		}
+		for (QString &w : words)
+			_invertedIndex[w.toLower()].insert(item);
 	}
+
+	// Build qGramIndex
+	for (InvertedIndex::const_iterator it = _invertedIndex.cbegin(); it != _invertedIndex.cend(); ++it)
+	{
+		//Split the word into lowercase qGrams
+		QString spaced = QString(_q-1,' ').append(it.key().toLower());
+		for (unsigned int i = 0 ; i < static_cast<unsigned int>(it.key().size()); ++i)
+			// Increment #occurences of this qGram in this word
+			++_qGramIndex[spaced.mid(i,_q)][it.key()];
+	}
+}
+/**************************************************************************/
+bool FuzzySearchImpl::checkPrefixEditDistance(const QString& prefix, const QString& str, unsigned int delta) const
+{
+  unsigned int n = prefix.size() + 1;
+  unsigned int m = std::min(prefix.size() + delta + 1, static_cast<unsigned int>(str.size()) + 1);
+  unsigned int matrix[n][m];
+
+  // Initialize left and top row.
+  for (unsigned int i = 0; i < n; ++i) { matrix[i][0] = i; }
+  for (unsigned int i = 0; i < m; ++i) { matrix[0][i] = i; }
+
+  // Now fill the whole matrix.
+  for (unsigned int i = 1; i < n; ++i) {
+	for (unsigned int j = 1; j < m; ++j) {
+	  unsigned int dia = matrix[i - 1][j - 1] + (prefix[i - 1] == str[j - 1] ? 0 : 1);
+	  matrix[i][j] = std::min(std::min(
+		  dia,
+		  matrix[i][j - 1] + 1),
+		  matrix[i - 1][j] + 1);
+	}
+  }
+  // Check the last row if there is an entry <= delta.
+  for (unsigned int j = 0; j < m; ++j) {
+	if (matrix[n - 1][j] <= delta) {
+//		qDebug() << prefix << "~" << str << matrix[n - 1][j];
+	  return true;
+	}
+  }
+  return false;
 }
 /**************************************************************************/
 void FuzzySearchImpl::query(const QString &req, QVector<Service::Item *> *res) const
 {
-	// Extract the qGrams of the query
-	QSet<QString> qGrams;
+	QVector<QString> words;
+	for (QString &word : req.split(QRegExp("\\W+"), QString::SkipEmptyParts))
+		words.append(word.toLower());
+	QVector<QMap<Service::Item *, unsigned int>> resultsPerWord;
+
 	// Split the query into words
-	QStringList words = req.split(QRegExp("\\W+"), QString::SkipEmptyParts);
-	for (QString &w : words){
-		// Split the word into qGrams
-		QString spaced = QString("  ").append(w).append("  ");
-		for (int i = 0 ; i < w.size()+q-1; ++i)
-			// Save the qgram
-			qGrams.insert(spaced.mid(i,q));
+	for (QString &word : words)
+	{
+		unsigned int delta = word.size()/3;
+
+		// Get qGrams with counts of this word
+		QMap<QString, unsigned int> qGrams;
+		QString spaced(_q-1,' ');
+		spaced.append(word.toLower());
+		for (unsigned int i = 0 ; i < static_cast<unsigned int>(word.size()); ++i)
+			++qGrams[spaced.mid(i,_q)];
+
+		// Get the words referenced by each qGram an increment their
+		// reference counter
+		QMap<QString, unsigned int> wordMatches;
+		// Iterate over the set of qgrams in the word
+		for (QMap<QString, unsigned int>::const_iterator it = qGrams.cbegin(); it != qGrams.end(); ++it)
+		{
+			// Iterate over the set of words referenced by this qGram
+			for (QMap<QString, unsigned int>::const_iterator wit = _qGramIndex[it.key()].begin(); wit != _qGramIndex[it.key()].cend(); ++wit)
+			{
+				// CRUCIAL: The match can contain only the commom amount of qGrams
+				wordMatches[wit.key()] += (it.value() < wit.value()) ? it.value() : wit.value();
+			}
+		}
+
+		// Allocate a new set
+		resultsPerWord.push_back(QMap<Service::Item *, unsigned int>());
+		QMap<Service::Item *, unsigned int>& resultsRef = resultsPerWord.back();
+
+		// Unite the items referenced by the words accumulating their #matches
+		for (QMap<QString, unsigned int>::const_iterator wm = wordMatches.begin(); wm != wordMatches.cend(); ++wm)
+		{
+//			// Do some kind of (cheap) preselection by mathematical bound
+//			if (wm.value() < qGrams.size()-delta*_q)
+//				continue;
+
+			// Now check the (expensive) prefix edit distance
+			if (!checkPrefixEditDistance(word, wm.key(), delta))
+				continue;
+
+
+			for(Service::Item * item: _invertedIndex[wm.key()])
+			{
+				resultsRef[item] += wm.value();
+			}
+		}
 	}
 
-	// Get the intersection of the entries referenced by the qgrams
-	QSet<Service::Item*>* resSet = nullptr;
-	for(QString qGram : qGrams){
-		if (resSet == nullptr)
-			resSet = new QSet<Service::Item*>(_qGramIndex[qGram]);
-		else
-			resSet->intersect(_qGramIndex[qGram]);
+	// Intersect the set of items references by the (referenced) words
+	// This assusmes that there is at least one word (the query would not have
+	// been started elsewise)
+	QVector<QPair<Service::Item *, unsigned int>> finalResult;
+	if (resultsPerWord.size() > 1)
+	{
+		// Get the smallest list for intersection (performance)
+		unsigned int smallest=0;
+		for (unsigned int i = 1; i < static_cast<unsigned int>(resultsPerWord.size()); ++i)
+			if (resultsPerWord[i].size() < resultsPerWord[smallest].size())
+				smallest = i;
+
+		bool allResultsContainEntry;
+		for (QMap<Service::Item *, unsigned int>::const_iterator r = resultsPerWord[smallest].begin(); r != resultsPerWord[smallest].cend(); ++r)
+		{
+			// Check if all results contain this entry
+			allResultsContainEntry=true;
+			unsigned int accMatches = resultsPerWord[smallest][r.key()];
+			for (unsigned int i = 0; i < static_cast<unsigned int>(resultsPerWord.size()); ++i)
+			{
+				// Ignore itself
+				if (i==smallest)
+					continue;
+
+				// If it is in: check next relutlist
+				if (resultsPerWord[i].contains(r.key()))
+				{
+					// Accumulate matches
+					accMatches += resultsPerWord[i][r.key()];
+					continue;
+				}
+
+				allResultsContainEntry = false;
+				break;
+			}
+
+			// If this is not common, check the next entry
+			if (!allResultsContainEntry)
+				continue;
+
+			// Finally this match is common an can be put into the results
+			finalResult.append(QPair<Service::Item *, unsigned int>(r.key(), accMatches));
+		}
+	}
+	else // Else do it without intersction
+	{
+		for (QMap<Service::Item *, unsigned int>::const_iterator r = resultsPerWord[0].begin(); r != resultsPerWord[0].cend(); ++r)
+			finalResult.append(QPair<Service::Item *, unsigned int>(r.key(), r.value()));
 	}
 
-	// Convert to vector
-	if (resSet != nullptr) {
-		for (Service::Item *s : *resSet)
-			res->append(s);
-		delete resSet;
-	}
+	// Sort em by relevance
+	std::sort(finalResult.begin(), finalResult.end(),
+			  [&](QPair<Service::Item *, unsigned int> x, QPair<Service::Item *, unsigned int> y)
+				{return x.second > y.second;});
 
+	for (QPair<Service::Item *, unsigned int> pair : finalResult){
+		res->append(pair.first);
+	}
 }
 /**************************************************************************/
 /**************************************************************************/
 /**************************************************************************/
 /**************************************************************************/
-/**************************************************************************/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**************************************************************************/
 IndexService::IndexService()
 {
