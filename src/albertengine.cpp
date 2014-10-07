@@ -39,15 +39,15 @@ AlbertEngine::AlbertEngine()
 	_modules.push_back(FileIndex::instance());
 
 	QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db";
-//	QFile f(path);
-//	if (f.open(QIODevice::ReadOnly| QIODevice::Text)){
-//		qDebug() << "[AlbertEngine]\tDeserializing from" << path;
-//		QDataStream in( &f );
-//		for (Service *i: _modules) // TODO
-//			i->deserialize(in);
-//		f.close();
-//	}
-//	else
+	QFile f(path);
+	if (f.open(QIODevice::ReadOnly| QIODevice::Text)){
+		qDebug() << "[AlbertEngine]\tDeserializing from" << path;
+		QDataStream in( &f );
+		for (Service *i: _modules) // TODO
+			i->deserialize(in);
+		f.close();
+	}
+	else
 	{
 		qWarning() << "[AlbertEngine]\tCould not open file" << path;
 		for (Service *i : _modules)
