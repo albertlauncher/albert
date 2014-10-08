@@ -367,25 +367,19 @@ void IndexService::setSearchType(IndexService::SearchType T)
 	_searchType = T;
 	switch (T) {
 	case IndexService::SearchType::Exact:
-		if (!dynamic_cast<ExactMatchSearchImpl*>(_search)){
-			delete _search;
-			_search = new ExactMatchSearchImpl(_index);
-			qDebug() << "Set searchtype to ExactMatch";
-		}
+		delete _search;
+		_search = new ExactMatchSearchImpl(_index);
+		qDebug() << "Set searchtype to ExactMatch";
 		break;
 	case IndexService::SearchType::WordMatch:
-		if (!dynamic_cast<WordMatchSearchImpl*>(_search)){
-			delete _search;
-			_search = new WordMatchSearchImpl(_index);
-			qDebug() << "Set searchtype to WordMatch";
-		}
+		delete _search;
+		_search = new WordMatchSearchImpl(_index);
+		qDebug() << "Set searchtype to WordMatch";
 		break;
 	case IndexService::SearchType::Fuzzy:
-		if (!dynamic_cast<FuzzySearchImpl*>(_search)){
-			delete _search;
-			_search = new FuzzySearchImpl(_index);
-			qDebug() << "Set searchtype to Fuzzy";
-		}
+		delete _search;
+		_search = new FuzzySearchImpl(_index);
+		qDebug() << "Set searchtype to Fuzzy";
 		break;
 	}
 }
