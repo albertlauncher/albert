@@ -33,7 +33,11 @@ protected:
 	AppIndex *_ref;
 
 protected slots:
-	void onSearchTypeChanged(int);
+	void onComboBox_SearchTypeChanged(int);
+	void onButton_PathAdd();
+	void onButton_PathEdit();
+	void onButton_PathRemove();
+	void onButton_RebuildIndex();
 };
 
 #endif // APPINDEXWIDGET_H

@@ -19,9 +19,11 @@
 
 #include "indexservice.h"
 #include "singleton.h"
+#include <QSet>
 
 class AppIndex : public IndexService, public Singleton<AppIndex>
 {
+	friend class AppIndexWidget;
 	friend class Singleton<AppIndex>;
 
 public:
@@ -37,6 +39,7 @@ public:
 protected:
 	AppIndex(){}
 	void buildIndex() override;
+	QSet<QString> _paths;
 };
 
 #endif // APPINDEX_H

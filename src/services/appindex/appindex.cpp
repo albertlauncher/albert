@@ -19,9 +19,9 @@
 #include "appindexwidget.h"
 
 #include <functional>
-#include <QSettings>
 #include <QDebug>
 #include <QDir>
+#include <QStandardPaths>
 
 /**************************************************************************/
 AppIndex::~AppIndex()
@@ -42,15 +42,21 @@ QWidget *AppIndex::widget()
 /**************************************************************************/
 void AppIndex::initialize()
 {
+	// Initially index std paths
+	_paths = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation).toSet();
+
+	// Selfexplanatory
 	buildIndex();
-	std::sort(_index.begin(), _index.end(), Service::Item::CaseInsensitiveCompare());
 }
 
 /**************************************************************************/
 void AppIndex::buildIndex()
 {
-	QStringList paths = QSettings().value(QString::fromLocal8Bit("app_index_paths")).toStringList();
-	qDebug() << "[ApplicationIndex]\tLooking in: " << paths;
+	for(Service::Item *i : _index)
+		delete i;
+	_index.clear();
+
+	qDebug() << "[ApplicationIndex]\tLooking in: " << _paths;
 
 	// Define a lambda for recursion
 	// This lambdsa makes no sanity checks since the directories in the recursion are always
@@ -150,37 +156,42 @@ void AppIndex::buildIndex()
 	};
 
 	// Finally do this recursion for all paths
-	for ( QString &p : paths) {
+	for ( const QString &p : _paths) {
 		QFileInfo fi(p);
 		if (fi.exists())
 			rec_dirsearch(fi);
 	}
+
+	std::sort(_index.begin(), _index.end(), Service::Item::CaseInsensitiveCompare());
+
 	qDebug() << "[ApplicationIndex]\tFound " << _index.size() << " apps.";
 }
 
 /**************************************************************************/
 QDataStream &AppIndex::serialize(QDataStream &out) const
 {
-	out << _index.size();
+	out << _paths
+		<< _index.size()
+		<< static_cast<int>(searchType());
 	for (Service::Item *it : _index)
 		static_cast<AppIndex::Item*>(it)->serialize(out);
-	out << static_cast<int>(searchType());
 	return out;
 }
 
 /**************************************************************************/
 QDataStream &AppIndex::deserialize(QDataStream &in)
 {
-	int size;
-	in >> size;
+	int size, T;
+	in >> _paths
+			>> size
+			>> T;
 	AppIndex::Item *it;
 	for (int i = 0; i < size; ++i) {
 		it = new AppIndex::Item;
 		it->deserialize(in);
 		_index.push_back(it);
 	}
-	int T;
-	in >> T;
+	setSearchType(static_cast<IndexService::SearchType>(T));
 	setSearchType(static_cast<IndexService::SearchType>(T));
 	qDebug() << "[ApplicationIndex]\tLoaded " << _index.size() << " apps.";
 	return in;
