@@ -23,12 +23,76 @@
 #include <QIcon>
 #include <QDataStream>
 
-/**************************************************************************/
-struct Service
+class Service
 {
-	class Item;
-	struct CaseInsensitiveCompare;
-	struct CaseInsensitiveComparePrefix;
+public:
+
+	/**************************************************************************/
+	class Item
+	{
+	public:
+		enum class Mod {None, Alt, Ctrl};
+
+		/**************************************************************************/
+		struct ATimeCompare
+		{
+			bool operator()( Service::Item const* lhs, Service::Item  const* rhs ) const {
+				return lhs->lastAccess() > rhs->lastAccess();
+			}
+		};
+
+		/**************************************************************************/
+		struct CaseInsensitiveCompare
+		{
+			inline bool operator()( Service::Item const* lhs, Service::Item const* rhs )       const {return (*this)( lhs->title(), rhs->title());}
+			inline bool operator()( QString const& lhs, Service::Item const* rhs )    const {return (*this)( lhs, rhs->title() );}
+			inline bool operator()( Service::Item const* lhs, QString const& rhs )    const {return (*this)( lhs->title(), rhs );}
+			inline bool operator()( QString const& lhs, QString const& rhs ) const {return lhs.compare(rhs, Qt::CaseInsensitive)<0;}
+		};
+
+		/**************************************************************************/
+		struct CaseInsensitiveComparePrefix
+		{
+			inline bool operator()( Service::Item const* pre, Service::Item const* rhs ) const {return (*this)( pre->title(), rhs->title() );}
+			inline bool operator()( QString const& pre, Service::Item const* rhs ) const {return (*this)( pre, rhs->title() );}
+			inline bool operator()( Service::Item const* pre, QString const& rhs ) const {return (*this)( pre->title(), rhs );}
+			inline bool operator()( QString const& pre, QString const& rhs ) const	{
+				QString::const_iterator a,b;
+				a = pre.cbegin();
+				b = rhs.cbegin();
+				QChar ca,cb;
+				while (a != pre.cend() && b != rhs.end()){
+					ca = a++->toLower();
+					cb = b++->toLower();
+					if (ca < cb)
+						return true;
+					if (ca > cb)
+						return false;
+				}
+				return false;
+			}
+		};
+		/**************************************************************************/
+
+		Item() : _lastAccess(0) {}
+		virtual ~Item(){}
+
+		virtual QString title() const = 0;
+		virtual QIcon icon() const = 0;
+		virtual QString infoText() const = 0;
+		virtual QString complete() const = 0;
+		virtual void action(Mod) = 0;
+		virtual QString actionText(Mod) const = 0;
+		qint64 lastAccess() const {return _lastAccess;}
+
+		virtual QDataStream& serialize(QDataStream &out) const = 0;
+		virtual QDataStream& deserialize(QDataStream &in) = 0;
+
+
+	protected:
+		qint64 _lastAccess;
+	};
+	/**************************************************************************/
 
 	Service() : _widget(nullptr){}
 	virtual ~Service(){}
@@ -40,66 +104,6 @@ struct Service
 
 protected:
 	QWidget* _widget;
-};
-
-/**************************************************************************/
-struct Service::Item
-{
-	enum class Mod {None, Alt, Ctrl};
-
-	Item() : _lastAccess(0) {}
-	virtual ~Item(){}
-
-	virtual QString title() const = 0;
-	virtual QIcon icon() const = 0;
-	virtual QString infoText() const = 0;
-	virtual QString complete() const = 0;
-	virtual void action(Mod) = 0;
-	virtual QString actionText(Mod) const = 0;
-	qint64 lastAccess() const {return _lastAccess;}
-
-	virtual QDataStream& serialize(QDataStream &out) const = 0;
-	virtual QDataStream& deserialize(QDataStream &in) = 0;
-
-
-protected:
-	qint64 _lastAccess;
-};
-
-
-
-/**************************************************************************/
-struct Service::CaseInsensitiveCompare
-{
-	inline bool operator()( Service::Item const* lhs, Service::Item const* rhs )       const {return (*this)( lhs->title(), rhs->title());}
-	inline bool operator()( QString const& lhs, Service::Item const* rhs )    const {return (*this)( lhs, rhs->title() );}
-	inline bool operator()( Service::Item const* lhs, QString const& rhs )    const {return (*this)( lhs->title(), rhs );}
-	inline bool operator()( QString const& lhs, QString const& rhs ) const {return lhs.compare(rhs, Qt::CaseInsensitive)<0;}
-};
-
-
-
-/**************************************************************************/
-struct Service::CaseInsensitiveComparePrefix
-{
-	inline bool operator()( Service::Item const* pre, Service::Item const* rhs ) const {return (*this)( pre->title(), rhs->title() );}
-	inline bool operator()( QString const& pre, Service::Item const* rhs ) const {return (*this)( pre, rhs->title() );}
-	inline bool operator()( Service::Item const* pre, QString const& rhs ) const {return (*this)( pre->title(), rhs );}
-	inline bool operator()( QString const& pre, QString const& rhs ) const	{
-		QString::const_iterator a,b;
-		a = pre.cbegin();
-		b = rhs.cbegin();
-		QChar ca,cb;
-		while (a != pre.cend() && b != rhs.end()){
-			ca = a++->toLower();
-			cb = b++->toLower();
-			if (ca < cb)
-				return true;
-			if (ca > cb)
-				return false;
-		}
-		return false;
-	}
 };
 
 #endif // SERVICE_H

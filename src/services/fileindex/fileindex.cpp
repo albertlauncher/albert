@@ -47,7 +47,7 @@ QWidget *FileIndex::widget()
 void FileIndex::initialize()
 {
 	buildIndex();
-	std::sort(_index.begin(), _index.end(), Service::CaseInsensitiveCompare());
+	std::sort(_index.begin(), _index.end(), Service::Item::CaseInsensitiveCompare());
 }
 
 /**************************************************************************/

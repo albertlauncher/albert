@@ -66,7 +66,6 @@ SOURCES += main.cpp \
 	services/calculator/calculatorwidget.cpp \
 	services/fileindex/fileindexwidget.cpp \
 	services/websearch/websearchwidget.cpp \
-	services/service.cpp \
 	services/indexservice.cpp
 
 RESOURCES += albert.qrc

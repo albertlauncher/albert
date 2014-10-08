@@ -91,7 +91,7 @@ void AlbertEngine::query(const QString &req)
 		WebSearch::instance()->queryAll(req, &_data);
 
 	// Sort them by atime
-	std::stable_sort(_data.begin(), _data.end(), ATimeCompare());
+	std::stable_sort(_data.begin(), _data.end(), Service::Item::ATimeCompare());
 	endResetModel();
 }
 

@@ -25,12 +25,6 @@ class AlbertEngine : public QAbstractListModel
 {
 	Q_OBJECT
 
-	struct ATimeCompare	{
-		bool operator()( Service::Item const* lhs, Service::Item  const* rhs ) const {
-			return lhs->lastAccess() > rhs->lastAccess();
-		}
-	};
-
 public:
 	AlbertEngine();
 	~AlbertEngine();

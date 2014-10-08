@@ -36,7 +36,7 @@ struct CaseInsensitiveCompare
 	inline bool operator()( Posting const &pre, Posting const &rhs ) const {return (*this)(pre.first, rhs.first);}
 	inline bool operator()( QString const &pre, Posting const &rhs ) const {return (*this)(pre, rhs.first);}
 	inline bool operator()( Posting const &pre, QString const &rhs ) const {return (*this)(pre.first, rhs);}
-	inline bool operator()( QString const &pre, QString const &rhs ) const {return Service::CaseInsensitiveCompare()(pre, rhs);}
+	inline bool operator()( QString const &pre, QString const &rhs ) const {return Service::Item::CaseInsensitiveCompare()(pre, rhs);}
 };
 /**************************************************************************/
 struct CaseInsensitiveComparePrefix
@@ -44,7 +44,7 @@ struct CaseInsensitiveComparePrefix
 	inline bool operator()( Posting const &pre, Posting const &rhs ) const {return (*this)(pre.first, rhs.first);}
 	inline bool operator()( QString const &pre, Posting const &rhs ) const {return (*this)(pre, rhs.first);}
 	inline bool operator()( Posting const &pre, QString const &rhs ) const {return (*this)(pre.first, rhs);}
-	inline bool operator()( QString const &pre, QString const &rhs ) const {return Service::CaseInsensitiveComparePrefix()(pre, rhs);}
+	inline bool operator()( QString const &pre, QString const &rhs ) const {return Service::Item::CaseInsensitiveComparePrefix()(pre, rhs);}
 };
 /**************************************************************************/
 /**************************************************************************/
@@ -74,8 +74,8 @@ ExactMatchSearchImpl::ExactMatchSearchImpl(const QVector<Service::Item *> &p) : 
 /**************************************************************************/
 void ExactMatchSearchImpl::query(const QString &req, QVector<Service::Item *> *res) const {
 	QVector<Service::Item *>::const_iterator lb, ub;
-	lb =  std::lower_bound (_indexRef.cbegin(), _indexRef.cend(), req, Service::CaseInsensitiveCompare());
-	ub =  std::upper_bound (_indexRef.cbegin(), _indexRef.cend(), req, Service::CaseInsensitiveComparePrefix());
+	lb =  std::lower_bound (_indexRef.cbegin(), _indexRef.cend(), req, Service::Item::CaseInsensitiveCompare());
+	ub =  std::upper_bound (_indexRef.cbegin(), _indexRef.cend(), req, Service::Item::CaseInsensitiveComparePrefix());
 	while (lb!=ub)
 		res->push_back(*(lb++));
 }

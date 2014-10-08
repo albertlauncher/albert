@@ -23,9 +23,6 @@
 #include <QDebug>
 #include <QDir>
 
-
-//	std::sort(_index.begin(), _index.end(), Index::CaseInsensitiveCompare());
-
 /**************************************************************************/
 AppIndex::~AppIndex()
 {
@@ -46,7 +43,7 @@ QWidget *AppIndex::widget()
 void AppIndex::initialize()
 {
 	buildIndex();
-	std::sort(_index.begin(), _index.end(), Service::CaseInsensitiveCompare());
+	std::sort(_index.begin(), _index.end(), Service::Item::CaseInsensitiveCompare());
 }
 
 /**************************************************************************/

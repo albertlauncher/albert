@@ -48,7 +48,7 @@ QWidget *BookmarkIndex::widget()
 void BookmarkIndex::initialize()
 {
 	buildIndex();
-	std::sort(_index.begin(), _index.end(), Service::CaseInsensitiveCompare());
+	std::sort(_index.begin(), _index.end(), Service::Item::CaseInsensitiveCompare());
 }
 
 /**************************************************************************/
