@@ -38,6 +38,7 @@ protected slots:
 	void onButton_PathEdit();
 	void onButton_PathRemove();
 	void onButton_RebuildIndex();
+	void onCheckbox_toggle(bool);
 };
 
 #endif // FILEINDEXWIDGET_H

@@ -25,10 +25,9 @@ FileIndexWidget::FileIndexWidget(FileIndex *srv, QWidget *parent) :
 {
 	ui.setupUi(this);
 
-	// Set current values
+	// Init ui
 	ui.comboBox_searchType->setCurrentIndex(static_cast<int>(_ref->searchType()));
-
-	// Display current paths
+	ui.checkBox_hiddenFiles->setChecked(_ref->_indexHidenFiles);
 	ui.listWidget_paths->addItems(_ref->_paths.toList());
 
 	// Rect to changes
@@ -37,6 +36,7 @@ FileIndexWidget::FileIndexWidget(FileIndex *srv, QWidget *parent) :
 	connect(ui.pushButton_editPath, SIGNAL(clicked()), this, SLOT(onButton_PathEdit()));
 	connect(ui.pushButton_removePath, SIGNAL(clicked()), this, SLOT(onButton_PathRemove()));
 	connect(ui.pushButton_rebuildIndex, SIGNAL(clicked()), this, SLOT(onButton_RebuildIndex()));
+	connect(ui.checkBox_hiddenFiles, SIGNAL(toggled(bool)), this, SLOT(onCheckbox_toggle(bool)));
  }
 
 /**************************************************************************/
@@ -99,7 +99,19 @@ void FileIndexWidget::onButton_PathRemove()
 void FileIndexWidget::onButton_RebuildIndex()
 {
 	ui.label_info->setText("Building index...");
+
+	// Rebuild index
 	_ref->buildIndex();
+
+	// Rebuild searchindex (id necessary)
+	_ref->setSearchType(_ref->searchType());
+
 	ui.label_info->setText("Building index done.");
 	QTimer::singleShot(1000, ui.label_info, SLOT(clear()));
+}
+
+/**************************************************************************/
+void FileIndexWidget::onCheckbox_toggle(bool b)
+{
+	_ref->_indexHidenFiles = b;
 }

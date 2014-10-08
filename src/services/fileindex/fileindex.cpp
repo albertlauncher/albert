@@ -109,26 +109,29 @@ void FileIndex::buildIndex()
 /**************************************************************************/
 QDataStream &FileIndex::serialize(QDataStream &out) const
 {
-	out << _index.size();
+	out << _paths
+		<< _indexHidenFiles
+		<< _index.size()
+		<< static_cast<int>(searchType());
 	for (Service::Item *it : _index)
 		static_cast<FileIndex::Item*>(it)->serialize(out);
-	out << static_cast<int>(searchType());
 	return out;
 }
 
 /**************************************************************************/
 QDataStream &FileIndex::deserialize(QDataStream &in)
 {
-	int size;
-	in >> size;
+	int size, T;
+	in >> _paths
+			>> _indexHidenFiles
+			>> size
+			>> T;
 	FileIndex::Item *it;
 	for (int i = 0; i < size; ++i) {
 		it = new FileIndex::Item;
 		it->deserialize(in);
 		_index.push_back(it);
 	}
-	int T;
-	in >> T;
 	setSearchType(static_cast<IndexService::SearchType>(T));
 	qDebug() << "[FileIndex]\t\tLoaded " << _index.size() << " files.";
 	return in;
