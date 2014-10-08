@@ -98,26 +98,23 @@ void BookmarkIndex::buildIndex()
 /**************************************************************************/
 QDataStream &BookmarkIndex::serialize(QDataStream &out) const
 {
-	out << _index.size();
+	out << _index.size() << static_cast<int>(searchType());
 	for (Service::Item *it : _index)
 		static_cast<BookmarkIndex::Item*>(it)->serialize(out);
-	out << static_cast<int>(searchType());
 	return out;
 }
 
 /**************************************************************************/
 QDataStream &BookmarkIndex::deserialize(QDataStream &in)
 {
-	int size;
-	in >> size;
+	int size,T;
+	in >> size >> T;
 	BookmarkIndex::Item *it;
 	for (int i = 0; i < size; ++i) {
 		it = new BookmarkIndex::Item;
 		it->deserialize(in);
 		_index.push_back(it);
 	}
-	int T;
-	in >> T;
 	setSearchType(static_cast<IndexService::SearchType>(T));
 	qDebug() << "[BookmarkIndex]\tLoaded " << _index.size() << " bookmarks.";
 	return in;
