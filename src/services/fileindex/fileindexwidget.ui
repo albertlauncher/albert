@@ -26,13 +26,13 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QGroupBox" name="groupBoxSS">
+      <widget class="QGroupBox" name="groupBox_3">
        <property name="title">
         <string>Search settings</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QComboBox" name="comboBoxSearchType">
+         <widget class="QComboBox" name="comboBox_searchType">
           <item>
            <property name="text">
             <string>Prefix match</string>
@@ -54,15 +54,15 @@
       </widget>
      </item>
      <item>
-      <widget class="QGroupBox" name="groupBoxIS">
+      <widget class="QGroupBox" name="groupBox_2">
        <property name="title">
         <string>Index settings</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QCheckBox" name="checkBoxHiddenFiles">
+         <widget class="QCheckBox" name="checkBox_hiddenFiles">
           <property name="text">
-           <string>Index hiden files</string>
+           <string>Index hidden files</string>
           </property>
          </widget>
         </item>
@@ -80,28 +80,41 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QListView" name="listView"/>
+         <widget class="QListWidget" name="listWidget_paths">
+          <property name="textElideMode">
+           <enum>Qt::ElideMiddle</enum>
+          </property>
+          <property name="sortingEnabled">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_5">
           <item>
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="pushButton_addPath">
             <property name="text">
              <string>Add</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_3">
+           <widget class="QPushButton" name="pushButton_editPath">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
             <property name="text">
              <string>Edit</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="pushButton_removePath">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
             <property name="text">
-             <string>Delete</string>
+             <string>Remove</string>
             </property>
            </widget>
           </item>
@@ -128,7 +141,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
-      <widget class="QPushButton" name="pushButton_4">
+      <widget class="QPushButton" name="pushButton_rebuildIndex">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -141,7 +154,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="label_info">
        <property name="text">
         <string/>
        </property>

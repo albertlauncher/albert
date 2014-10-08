@@ -19,6 +19,7 @@
 
 #include "indexservice.h"
 #include "singleton.h"
+#include <QSet>
 
 class FileIndex : public IndexService, public Singleton<FileIndex>
 {
@@ -38,6 +39,8 @@ public:
 protected:
 	FileIndex(){}
 	void buildIndex() override;
+	bool _indexHidenFiles;
+	QSet<QString> _paths;
 };
 
 #endif // FILEINDEX_H

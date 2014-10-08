@@ -21,10 +21,10 @@
 #include <functional>
 #include <chrono>
 #include <algorithm>
-#include <QSettings>
 #include <QDir>
 #include <QDebug>
 #include <QFile>
+#include <QStandardPaths>
 
 
 /**************************************************************************/
@@ -46,16 +46,29 @@ QWidget *FileIndex::widget()
 /**************************************************************************/
 void FileIndex::initialize()
 {
+	// Initially dont index hidden files
+	_indexHidenFiles = false;
+
+	// Initially index std paths
+	_paths << QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)
+		   << QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+		   << QStandardPaths::writableLocation(QStandardPaths::MusicLocation)
+		   << QStandardPaths::writableLocation(QStandardPaths::MoviesLocation)
+		   << QStandardPaths::writableLocation(QStandardPaths::PicturesLocation)
+		   << QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+
+	// Selfexplanatory
 	buildIndex();
-	std::sort(_index.begin(), _index.end(), Service::Item::CaseInsensitiveCompare());
 }
 
 /**************************************************************************/
 void FileIndex::buildIndex()
 {
-	QSettings conf;
-	QStringList paths = conf.value(QString::fromLocal8Bit("file_index_paths")).toStringList();
-	qDebug() << "[FileIndex]\t\tLooking in: " << paths;
+	for(Service::Item *i : _index)
+		delete i;
+	_index.clear();
+
+	qDebug() << "[FileIndex]\t\tLooking in: " << _paths;
 
 	// Define a lambda for recursion
 	// This lambdsa makes no sanity checks since the directories in the recursion are always
@@ -71,7 +84,7 @@ void FileIndex::buildIndex()
 		{
 			QDir d(fi.absoluteFilePath());
 			d.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks);
-			if (conf.value(QString::fromLocal8Bit("index_hidden_files"), false).toBool())
+			if (_indexHidenFiles)
 				d.setFilter(d.filter() | QDir::Hidden);
 
 			// go recursive into subdirs
@@ -82,11 +95,13 @@ void FileIndex::buildIndex()
 	};
 
 	// Finally do this recursion for all paths
-	for ( QString &p : paths) {
+	for ( const QString &p : _paths) {
 		QFileInfo fi(p);
 		if (fi.exists())
 			rec_dirsearch(fi);
 	}
+
+	std::sort(_index.begin(), _index.end(), Service::Item::CaseInsensitiveCompare());
 
 	qDebug() << "[FileIndex]\t\tFound " << _index.size() << " files.";
 }

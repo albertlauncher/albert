@@ -33,7 +33,11 @@ protected:
 	FileIndex *_ref;
 
 protected slots:
-	void onSearchTypeChanged(int);
+	void onComboBox_SearchTypeChanged(int);
+	void onButton_PathAdd();
+	void onButton_PathEdit();
+	void onButton_PathRemove();
+	void onButton_RebuildIndex();
 };
 
 #endif // FILEINDEXWIDGET_H
