@@ -61,7 +61,7 @@ public:
 				a = pre.cbegin();
 				b = rhs.cbegin();
 				QChar ca,cb;
-				while (a != pre.cend() && b != rhs.end()){
+				while (a != pre.cend() && b != rhs.cend()){
 					ca = a++->toLower();
 					cb = b++->toLower();
 					if (ca < cb)

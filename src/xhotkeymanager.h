@@ -40,7 +40,7 @@ public:
 			instance = new XHotKeyManager();
 		return instance;
 	}
-	void run() Q_DECL_OVERRIDE ;
+	void run() override;
 
 signals:
 	void hotKeyPressed();
