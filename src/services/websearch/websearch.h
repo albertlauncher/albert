@@ -22,6 +22,7 @@
 
 class WebSearch : public Service, public Singleton<WebSearch>
 {
+	friend class WebSearchWidget;
 	friend class Singleton<WebSearch>;
 
 public:

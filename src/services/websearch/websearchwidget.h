@@ -18,6 +18,7 @@
 #define WEBSEARCHWIDGET_H
 
 #include "ui_websearchwidget.h"
+#include "websearch.h"
 #include <QWidget>
 
 class WebSearchWidget : public QWidget
@@ -26,12 +27,18 @@ class WebSearchWidget : public QWidget
 	Ui::WebSearchWidget ui;
 
 public:
-	explicit WebSearchWidget(QWidget *parent = 0);
+	explicit WebSearchWidget(WebSearch*, QWidget *parent = 0);
 
-signals:
+protected:
+	WebSearch *_ref;
+	void updateUI();
 
-public slots:
-
+protected slots:
+	void onButton_new();
+	void onButton_remove();
+	void onButton_setIcon();
+	void onChange(int,int);
+	void onReset();
 };
 
 #endif // WEBSEARCHWIDGET_H

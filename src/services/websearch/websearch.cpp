@@ -20,27 +20,50 @@
 
 #include <QDesktopServices>
 #include <QUrl>
-#include <QSettings>
-#include <QDebug>
 
 /**************************************************************************/
 void WebSearch::initialize()
 {
+	/* Init std searches */
+	for(Service::Item *i : _searchEngines)
+		delete i;
+	_searchEngines.clear();
 
-	QStringList engines = QSettings().value(QString::fromLocal8Bit("search_engines")).toStringList();
-	for (QString &e : engines)
-	{
-		QStringList engineComponents = e.split('|');
-		if( engineComponents.size() == 4){
-			Item *i = new Item;
-			i->_lastAccess = 1;
-			i->_name       = engineComponents[0];
-			i->_url        = engineComponents[1];
-			i->_shortcut   = engineComponents[2];
-			i->_iconPath   = engineComponents[3];
-			_searchEngines.push_back(i);
-		}
-	}
+	// Google
+	Item *i = new Item;
+	i->_lastAccess = 1;
+	i->_name       = "Google";
+	i->_url        = "https://www.google.de/#q=%s";
+	i->_shortcut   = "gg";
+	i->_iconPath   = "/etc/xdg/albert/google.svg";
+	_searchEngines.push_back(i);
+
+	// Youtube
+	i = new Item;
+	i->_lastAccess = 1;
+	i->_name       = "Youtube";
+	i->_url        = "https://www.youtube.com/results?search_query=%s";
+	i->_shortcut   = "yt";
+	i->_iconPath   = "/etc/xdg/albert/youtube.svg";
+	_searchEngines.push_back(i);
+
+	// Amazon
+	i = new Item;
+	i->_lastAccess = 1;
+	i->_name       = "Amazon";
+	i->_url        = "http://www.amazon.de/s/?field-keywords=%s";
+	i->_shortcut   = "ama";
+	i->_iconPath   = "/etc/xdg/albert/amazon.svg";
+	_searchEngines.push_back(i);
+
+	// Ebay
+	i = new Item;
+	i->_lastAccess = 1;
+	i->_name       = "Ebay";
+	i->_url        = "http://www.ebay.de/sch/i.html?_nkw=%s";
+	i->_shortcut   = "eb";
+	i->_iconPath   = "/etc/xdg/albert/ebay.svg";
+	_searchEngines.push_back(i);
 }
 
 /**************************************************************************/
@@ -69,7 +92,7 @@ QDataStream &WebSearch::deserialize(QDataStream &in)
 QWidget *WebSearch::widget()
 {
 	if (_widget == nullptr)
-		_widget = new WebSearchWidget;
+		_widget = new WebSearchWidget(this);
 	return _widget;
 }
 

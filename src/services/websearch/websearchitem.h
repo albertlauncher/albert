@@ -23,6 +23,7 @@
 
 class WebSearch::Item : public Service::Item
 {
+	friend class WebSearchWidget;
 	friend class WebSearch;
 
 public:
