@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>640</width>
-    <height>480</height>
+    <width>800</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -34,16 +34,42 @@
    </property>
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabs">
+     <property name="currentIndex">
+      <number>2</number>
+     </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
        <string>General</string>
       </attribute>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Comimng soon ...</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="tabAppearance">
       <attribute name="title">
        <string>Appearance</string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout_13"/>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Coming soon ...</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="tabModules">
       <attribute name="title">
@@ -51,40 +77,44 @@
       </attribute>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QTabWidget" name="tabWidget">
-         <property name="tabPosition">
-          <enum>QTabWidget::South</enum>
+        <widget class="QListWidget" name="listWidget">
+         <property name="maximumSize">
+          <size>
+           <width>98</width>
+           <height>16777215</height>
+          </size>
          </property>
-         <widget class="QWidget" name="tabWebSearch">
-          <attribute name="title">
-           <string>WebSearch</string>
-          </attribute>
-          <layout class="QGridLayout" name="gridLayout_6"/>
-         </widget>
-         <widget class="QWidget" name="tabAppIndex">
-          <attribute name="title">
-           <string>AppIndex</string>
-          </attribute>
-          <layout class="QGridLayout" name="gridLayout_7"/>
-         </widget>
-         <widget class="QWidget" name="tabFileIndex">
-          <attribute name="title">
-           <string>FileIndex</string>
-          </attribute>
-          <layout class="QGridLayout" name="gridLayout_8"/>
-         </widget>
-         <widget class="QWidget" name="tabBookmarkIndex">
-          <attribute name="title">
-           <string>BookmarkIndex</string>
-          </attribute>
-          <layout class="QGridLayout" name="gridLayout_9"/>
-         </widget>
-         <widget class="QWidget" name="tabCalculator">
-          <attribute name="title">
-           <string>Calculator</string>
-          </attribute>
-          <layout class="QGridLayout" name="gridLayout_10"/>
-         </widget>
+         <property name="editTriggers">
+          <set>QAbstractItemView::NoEditTriggers</set>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>48</width>
+           <height>48</height>
+          </size>
+         </property>
+         <property name="flow">
+          <enum>QListView::TopToBottom</enum>
+         </property>
+         <property name="isWrapping" stdset="0">
+          <bool>false</bool>
+         </property>
+         <property name="viewMode">
+          <enum>QListView::IconMode</enum>
+         </property>
+         <property name="uniformItemSizes">
+          <bool>true</bool>
+         </property>
+         <property name="currentRow">
+          <number>-1</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QStackedWidget" name="stackedWidget">
+         <property name="currentIndex">
+          <number>-1</number>
+         </property>
         </widget>
        </item>
       </layout>
@@ -129,8 +159,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>252</x>
+     <y>595</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -145,12 +175,28 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>320</x>
+     <y>595</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>
      <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>listWidget</sender>
+   <signal>currentRowChanged(int)</signal>
+   <receiver>stackedWidget</receiver>
+   <slot>setCurrentIndex(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>62</x>
+     <y>78</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>206</x>
+     <y>99</y>
     </hint>
    </hints>
   </connection>
