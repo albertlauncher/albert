@@ -34,9 +34,9 @@ protected:
 
 protected slots:
 	void onComboBox_SearchTypeChanged(int);
-	void onButton_PathAdd();
-	void onButton_PathEdit();
-	void onButton_PathRemove();
+	void onButton_add();
+	void onButton_edit();
+	void onButton_remove();
 	void onButton_RebuildIndex();
 	void onCheckbox_toggle(bool);
 };

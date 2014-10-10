@@ -32,9 +32,9 @@ FileIndexWidget::FileIndexWidget(FileIndex *srv, QWidget *parent) :
 
 	// Rect to changes
 	connect(ui.comboBox_searchType,SIGNAL(activated(int)),this,SLOT(onComboBox_SearchTypeChanged(int)));
-	connect(ui.pushButton_addPath, SIGNAL(clicked()), this, SLOT(onButton_PathAdd()));
-	connect(ui.pushButton_editPath, SIGNAL(clicked()), this, SLOT(onButton_PathEdit()));
-	connect(ui.pushButton_removePath, SIGNAL(clicked()), this, SLOT(onButton_PathRemove()));
+	connect(ui.pushButton_add, SIGNAL(clicked()), this, SLOT(onButton_add()));
+	connect(ui.pushButton_edit, SIGNAL(clicked()), this, SLOT(onButton_edit()));
+	connect(ui.pushButton_remove, SIGNAL(clicked()), this, SLOT(onButton_remove()));
 	connect(ui.pushButton_rebuildIndex, SIGNAL(clicked()), this, SLOT(onButton_RebuildIndex()));
 	connect(ui.checkBox_hiddenFiles, SIGNAL(toggled(bool)), this, SLOT(onCheckbox_toggle(bool)));
  }
@@ -49,7 +49,7 @@ void FileIndexWidget::onComboBox_SearchTypeChanged(int st)
 }
 
 /**************************************************************************/
-void FileIndexWidget::onButton_PathAdd()
+void FileIndexWidget::onButton_add()
 {
 	QString pathName = QFileDialog::getExistingDirectory(
 				this,
@@ -65,7 +65,7 @@ void FileIndexWidget::onButton_PathAdd()
 }
 
 /**************************************************************************/
-void FileIndexWidget::onButton_PathEdit()
+void FileIndexWidget::onButton_edit()
 {
 	if (ui.listWidget_paths->currentItem() == nullptr)
 		return;
@@ -85,7 +85,7 @@ void FileIndexWidget::onButton_PathEdit()
 }
 
 /**************************************************************************/
-void FileIndexWidget::onButton_PathRemove()
+void FileIndexWidget::onButton_remove()
 {
 	if (ui.listWidget_paths->currentItem() == nullptr)
 		return;
