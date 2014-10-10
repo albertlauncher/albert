@@ -50,6 +50,7 @@ void FileIndex::initialize()
 	_indexHidenFiles = false;
 
 	// Initially index std paths
+	_paths.clear();
 	_paths << QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)
 		   << QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
 		   << QStandardPaths::writableLocation(QStandardPaths::MusicLocation)
