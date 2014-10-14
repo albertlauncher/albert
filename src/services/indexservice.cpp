@@ -114,6 +114,11 @@ void WordMatchSearchImpl::query(const QString &req, QVector<Service::Item *> *re
 {
 	QSet<Service::Item*>* resSet = nullptr;
 	QStringList words = req.split(' ', QString::SkipEmptyParts);
+
+	// Quit if there are no words in query
+	if (words.empty())
+		return;
+
 	for (QString &w : words)
 	{
 		InvertedIndex::const_iterator lb, ub;
@@ -230,6 +235,10 @@ void FuzzySearchImpl::query(const QString &req, QVector<Service::Item *> *res) c
 	for (QString &word : req.split(QRegExp("\\W+"), QString::SkipEmptyParts))
 		words.append(word.toLower());
 	QVector<QMap<Service::Item *, unsigned int>> resultsPerWord;
+
+	// Quit if there are no words in query
+	if (words.empty())
+		return;
 
 	// Split the query into words
 	for (QString &word : words)
