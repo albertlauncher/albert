@@ -26,7 +26,6 @@ int main(int argc, char *argv[])
 	qDebug() << "[QSettings]\t\t" << QSettings().fileName() ;
 
 	QApplication a(argc, argv);
-	a.setStyleSheet(QString::fromLocal8Bit("file:///:/resources/basicskin.qss")); // Todo dont use it
 	a.setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
 	// Create the app

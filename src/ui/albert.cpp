@@ -117,11 +117,12 @@ void AlbertWidget::serialize() const
 	QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db";
 	QFile f(path);
 	if (!f.open(QIODevice::ReadWrite| QIODevice::Text)){
-		qWarning() << "[AlbertEngine]\tCould not open file" << path;
+		qWarning() << "[Albert]\tCould not open file" << path;
 	}
 
 	qDebug() << "[Albert]\tSerializing to " << path;
 	QDataStream out( &f );
+	out << _skinName;
 	_engine->serialize(out);
 	f.close();
 
@@ -132,15 +133,32 @@ void AlbertWidget::deserialize()
 {
 	QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db";
 	QFile f(path);
-	if (!f.open(QIODevice::ReadOnly| QIODevice::Text)) {
-		qWarning() << "[AlbertEngine]\tCould not open file" << path;
+	if (f.open(QIODevice::ReadOnly| QIODevice::Text))
+	{
+		qDebug() << "[Albert]\t\tDeserializing from" << path;
+		QDataStream in( &f );
+		in >> _skinName;
+		_engine->deserialize(in);
+		f.close();
+	}
+	else
+	{
+		qWarning() << "[Albert]\t\tCould not open file" << path;
 		_engine->initialize();
 	}
 
-	qDebug() << "[Albert]\tDeserializing from" << path;
-	QDataStream in( &f );
-	_engine->deserialize(in);
-	f.close();
+	QFile styleFile(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)+"/skins/"+_skinName+".qss");
+	if (styleFile.open(QFile::ReadOnly)) {
+		qApp->setStyleSheet(styleFile.readAll());
+		styleFile.close();
+	}
+	else
+	{
+		qWarning() << "[Albert]\t\tCould not open style file" << _skinName;
+		qWarning() << "[Albert]\t\tFallback to basicskin";
+		qApp->setStyleSheet(QString::fromLocal8Bit("file:///:/resources/basicskin.qss"));
+	}
+
 }
 
 /*****************************************************************************/
