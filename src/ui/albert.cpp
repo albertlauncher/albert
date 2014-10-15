@@ -22,6 +22,8 @@
 #include <QEvent>
 #include <QSettings>
 #include <QLabel>
+#include <QFile>
+#include <QStandardPaths>
 
 /**************************************************************************/
 AlbertWidget::AlbertWidget(QWidget *parent)
@@ -61,14 +63,12 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_frame1->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Preferred);
 	l1->addWidget(_frame1,0,0);
 
-
 	QVBoxLayout *contentLayout = new QVBoxLayout();
 
 	// Interface
 	_inputLine = new InputLine;
 	contentLayout->addWidget(_inputLine);
 	_proposalListView = new ProposalListView;
-	_proposalListView->setModel(&_engine);
 	_proposalListView->hide();
 	contentLayout->addWidget(_proposalListView);
 	contentLayout->setMargin(0);
@@ -93,6 +93,13 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	// A change in text triggers requests
 	connect(_inputLine, SIGNAL(textChanged(QString)), this, SLOT(onTextEdited(QString)));
 
+	// Start the engine :D
+	_engine = new AlbertEngine;
+	_proposalListView->setModel(_engine);
+
+	deserialize();
+
+	// React to hotkeys
 	connect(XHotKeyManager::getInstance(), SIGNAL(hotKeyPressed()), this, SLOT(onHotKeyPressed()), Qt::QueuedConnection);// Show albert if hotkey was pressed
 	XHotKeyManager::getInstance()->start(); // Start listening for the hotkey(s)
 
@@ -101,6 +108,39 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 /**************************************************************************/
 AlbertWidget::~AlbertWidget()
 {
+	serialize();
+}
+
+/**************************************************************************/
+void AlbertWidget::serialize() const
+{
+	QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db";
+	QFile f(path);
+	if (!f.open(QIODevice::ReadWrite| QIODevice::Text)){
+		qWarning() << "[AlbertEngine]\tCould not open file" << path;
+	}
+
+	qDebug() << "[Albert]\tSerializing to " << path;
+	QDataStream out( &f );
+	_engine->serialize(out);
+	f.close();
+
+}
+
+/**************************************************************************/
+void AlbertWidget::deserialize()
+{
+	QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db";
+	QFile f(path);
+	if (!f.open(QIODevice::ReadOnly| QIODevice::Text)) {
+		qWarning() << "[AlbertEngine]\tCould not open file" << path;
+		_engine->initialize();
+	}
+
+	qDebug() << "[Albert]\tDeserializing from" << path;
+	QDataStream in( &f );
+	_engine->deserialize(in);
+	f.close();
 }
 
 /*****************************************************************************/
@@ -110,7 +150,7 @@ void AlbertWidget::hide()
 {
 	QWidget::hide();
 	_inputLine->clear();
-	_engine.clear();
+	_engine->clear();
 	_proposalListView->hide();
 }
 
@@ -141,15 +181,15 @@ void AlbertWidget::onTextEdited(const QString & text)
 {
 	QString t = text.trimmed();
 	if (!t.isEmpty()){
-		_engine.query(t);
-		if (_engine.rowCount() > 0){
+		_engine->query(t);
+		if (_engine->rowCount() > 0){
 			if (!_proposalListView->currentIndex().isValid())
-				_proposalListView->setCurrentIndex(_engine.index(0, 0));
+				_proposalListView->setCurrentIndex(_engine->index(0, 0));
 		}
 		_proposalListView->show();
 		return;
 	}
-	_engine.clear();
+	_engine->clear();
 	_proposalListView->hide();
 }
 
@@ -173,7 +213,7 @@ bool AlbertWidget::eventFilter(QObject *obj, QEvent *event)
 			// Completion
 			// For the definition of the Userroles see proposallistmodel.cpp (::data())
 			if (_proposalListView->currentIndex().isValid())
-				_inputLine->setText(_engine.data(_proposalListView->currentIndex(), Qt::UserRole+4).toString());
+				_inputLine->setText(_engine->data(_proposalListView->currentIndex(), Qt::UserRole+4).toString());
 			return true;
 			break;
 		case Qt::Key_Return:
@@ -184,13 +224,13 @@ bool AlbertWidget::eventFilter(QObject *obj, QEvent *event)
 
 			switch (keyEvent->modifiers()) {
 			case Qt::ControlModifier:
-				_engine.ctrlAction(_proposalListView->currentIndex());
+				_engine->ctrlAction(_proposalListView->currentIndex());
 				break;
 			case Qt::AltModifier:
-				_engine.altAction(_proposalListView->currentIndex());
+				_engine->altAction(_proposalListView->currentIndex());
 				break;
 			case Qt::NoModifier:
-				_engine.action(_proposalListView->currentIndex());
+				_engine->action(_proposalListView->currentIndex());
 				break;
 			default:
 				break;

@@ -20,8 +20,6 @@
 #include "services/calculator/calculator.h"
 #include "services/bookmarkindex/bookmarkindex.h"
 #include "services/appindex/appindex.h"
-#include <QFile>
-#include <QStandardPaths>
 #include <QString>
 #include <QDebug>
 
@@ -38,40 +36,32 @@ AlbertEngine::AlbertEngine()
 	_modules.push_back(BookmarkIndex::instance());
 	_modules.push_back(FileIndex::instance());
 
-	QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db";
-	QFile f(path);
-	if (f.open(QIODevice::ReadOnly| QIODevice::Text)){
-		qDebug() << "[AlbertEngine]\tDeserializing from" << path;
-		QDataStream in( &f );
-		for (Service *i: _modules) // TODO
-			i->deserialize(in);
-		f.close();
-	}
-	else
-	{
-		qWarning() << "[AlbertEngine]\tCould not open file" << path;
-		for (Service *i : _modules)
-			i->initialize();
-	}
 }
 
 /**********************************************************************/
 AlbertEngine::~AlbertEngine()
 {
-	QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db";
-	QFile f(path);
-	if (f.open(QIODevice::ReadWrite| QIODevice::Text)){
-		qDebug() << "[AlbertEngine]\tSerializing to " << path;
-		QDataStream out( &f );
-		for (Service *i: _modules) // TODO
-			i->serialize(out);
-		f.close();
-	}
-	else
-		qWarning() << "[AlbertEngine]\tCould not open file" << path;
+}
 
+/**************************************************************************/
+void AlbertEngine::initialize()
+{
 	for (Service *i : _modules)
-		delete i;
+		i->initialize();
+}
+
+/**************************************************************************/
+QDataStream &AlbertEngine::serialize(QDataStream &out) const
+{
+	for (Service *i: _modules) // TODO
+		i->serialize(out);
+}
+
+/**************************************************************************/
+QDataStream &AlbertEngine::deserialize(QDataStream &in)
+{
+	for (Service *i: _modules) // TODO
+		i->deserialize(in);
 }
 
 /**********************************************************************/

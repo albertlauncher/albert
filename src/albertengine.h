@@ -39,6 +39,10 @@ public:
 	int      rowCount(const QModelIndex & = QModelIndex()) const override;
 	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
 
+	void initialize();
+	QDataStream& serialize (QDataStream &out) const;
+	QDataStream& deserialize (QDataStream &in);
+
 
 private:
 	QVector<Service*>        _modules;
