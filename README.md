@@ -1,4 +1,4 @@
-#Albert (alpha)
+#Albert (alpha 0.4) 
 ###An amazing, desktop environment agnostic omnilauncher
 ![Image of v0.3](https://raw.githubusercontent.com/ManuelSchneid3r/albert/master/pictures/v0.3.gif)
 
@@ -15,12 +15,10 @@
  - [x] Implement serialization of indizes
  - [x] Implement configurability of search algorithms.
  - [x] Implement search algorithms. (Prefixmatch any word)
- - [ ] Implement search algorithms. (Fuzzy)
+ - [x] Implement search algorithms. (Fuzzy)
  - [ ] Keep track of indizes using inotify
  - [ ] Implement module (contacts)
- - [ ] Add configuration widget to configure the plugins
+ - [x] Add configuration widget to configure the modules
  - [ ] Find an idea on how to implement fancy submodules(ssh 'host', mail 'someone')
  - [ ] Animate geometry changes
- - ...
- - [ ] Implement first desktop specific plugins (contacts)
- - [ ] Implement first desktop specific decorators for e.g. windowing (KDE)
+ - [x] Make UI customizable
