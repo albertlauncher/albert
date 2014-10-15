@@ -77,8 +77,7 @@ void FileIndex::buildIndex()
 	std::function<void(const QFileInfo& p)> rec_dirsearch = [&] (const QFileInfo& fi)
 	{
 		Item *i = new Item;
-		i->_name = fi.fileName();
-		i->_path = fi.absolutePath();
+		i->_fileInfo = fi;
 		_index.push_back(i);
 
 		if (fi.isDir())

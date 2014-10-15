@@ -22,6 +22,7 @@
 #include <QString>
 #include <QDataStream>
 #include <QIcon>
+#include <QFileInfo>
 
 class FileIndex::Item : public Service::Item
 {
@@ -32,16 +33,15 @@ public:
 	Item(){}
 	~Item(){}
 
-	inline QString title() const override {return _name;}
-	inline QString complete() const override {return _name;}
-	inline QString infoText() const override {return _path;}
+	inline QString title() const override {return _fileInfo.fileName();}
+	inline QString complete() const override {return _fileInfo.fileName();}
+	inline QString infoText() const override {return _fileInfo.canonicalFilePath();}
 	void action(Mod) override;
 	QString actionText(Mod) const override;
 	QIcon icon() const override;
 
 protected:
-	QString _name;
-	QString _path;
+	QFileInfo _fileInfo;
 
 	// Serialization
 	QDataStream& serialize (QDataStream &out) const override;

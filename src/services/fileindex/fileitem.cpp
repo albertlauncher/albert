@@ -33,13 +33,13 @@ void FileIndex::Item::action(Mod mod)
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
 	switch (mod) {
 	case Mod::None:
-		QDesktopServices::openUrl(QUrl(_path, QUrl::StrictMode));
+		QDesktopServices::openUrl(QUrl("file:///"+_fileInfo.canonicalFilePath()));
 		break;
 	case Mod::Alt:
-		QDesktopServices::openUrl(QUrl(QFileInfo(_path).absolutePath()));
+		QDesktopServices::openUrl(QUrl("file:///"+_fileInfo.canonicalPath()));
 		break;
 	case Mod::Ctrl:
-		WebSearch::instance()->defaultSearch(_name);
+		WebSearch::instance()->defaultSearch(_fileInfo.fileName());
 		break;
 	}
 }
@@ -49,13 +49,13 @@ QString FileIndex::Item::actionText(Mod mod) const
 {
 	switch (mod) {
 	case Mod::None:
-		return QString("Open '%1' with default application.").arg(_name);
+		return QString("Open '%1' with default application.").arg(_fileInfo.fileName());
 		break;
 	case Mod::Alt:
-		return QString("Open the folder containing '%1' in file browser.").arg(_name);
+		return QString("Open the folder containing '%1' in file browser.").arg(_fileInfo.fileName());
 		break;
 	case Mod::Ctrl:
-		return WebSearch::instance()->defaultSearchText(_name);
+		return WebSearch::instance()->defaultSearchText(_fileInfo.fileName());
 		break;
 	}
 	// Will never happen
@@ -65,7 +65,7 @@ QString FileIndex::Item::actionText(Mod mod) const
 /**************************************************************************/
 QIcon FileIndex::Item::icon() const
 {
-	QString iconName = mimeDb.mimeTypeForFile(_path+"/"+_name).iconName();
+	QString iconName = mimeDb.mimeTypeForFile(_fileInfo).iconName();
 	if (QIcon::hasThemeIcon(iconName))
 		return QIcon::fromTheme(iconName);
 	return QIcon::fromTheme(QString::fromLocal8Bit("unknown"));
@@ -74,13 +74,15 @@ QIcon FileIndex::Item::icon() const
 /**************************************************************************/
 QDataStream &FileIndex::Item::serialize(QDataStream &out) const
 {
-	out << _lastAccess << _name << _path;
+	out << _lastAccess << _fileInfo.canonicalFilePath();
 	return out;
 }
 
 /**************************************************************************/
 QDataStream &FileIndex::Item::deserialize(QDataStream &in)
 {
-	in >> _lastAccess >> _name >> _path;
+	QString canonicalFilePath;
+	in >> _lastAccess >> canonicalFilePath;
+	_fileInfo.setFile(canonicalFilePath);
 	return in;
 }
