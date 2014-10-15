@@ -23,13 +23,19 @@
 
 class SettingsDialog : public QDialog, public Singleton<SettingsDialog>
 {
-	friend class Singleton<SettingsDialog>;
-
-	Ui::SettingsDialog ui;
-
 	Q_OBJECT
+
 public:
 	explicit SettingsDialog(QWidget *parent = 0);
+
+protected:
+	friend class Singleton<SettingsDialog>;
+	Ui::SettingsDialog ui;
+
+protected slots:
+	void onSkinClicked(QListWidgetItem*);
+
+
 };
 
 #endif // SETTINGSDIALOG_H

@@ -5,12 +5,35 @@
 #include "services/bookmarkindex/bookmarkindex.h"
 #include "services/appindex/appindex.h"
 #include <QCloseEvent>
+#include <QDir>
+#include <QDebug>
+#include <QStandardPaths>
 
 SettingsDialog::SettingsDialog(QWidget *parent) :
 	QDialog(parent)
 {
 	ui.setupUi(this);
 
+
+	/* APPEARANCE */
+
+	QDir dir(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)+"/albert/skins");
+	QStringList filters;
+	filters << "*.qss";
+	dir.setNameFilters(filters);
+
+	// Add skins to list
+	QFileInfoList list = dir.entryInfoList();
+	for ( QFileInfo &dfi : list)
+		ui.listWidget_skins->addItem(dfi.baseName());
+
+	// Apply a skin if clicked
+	connect(ui.listWidget_skins, SIGNAL(itemClicked(QListWidgetItem*)),
+			this, SLOT(onSkinClicked(QListWidgetItem*)));
+
+
+
+	/* MODULES */
 
 	QListWidgetItem *item = new QListWidgetItem(QIcon(":icon_websearch"),"Websearch");
 	item->setTextAlignment(Qt::AlignHCenter);
@@ -44,4 +67,13 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 
 	ui.listWidget->setCurrentRow(0);
 
+}
+
+void SettingsDialog::onSkinClicked(QListWidgetItem *i)
+{
+	QFile styleFile(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)+"/albert/skins/"+i->text()+".qss");
+	if (styleFile.open(QFile::ReadOnly)) {
+		qApp->setStyleSheet(styleFile.readAll());
+		styleFile.close();
+	}
 }

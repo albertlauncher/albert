@@ -147,7 +147,7 @@ void AlbertWidget::deserialize()
 		_engine->initialize();
 	}
 
-	QFile styleFile(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)+"/skins/"+_skinName+".qss");
+	QFile styleFile(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)+"/albert/skins/"+_skinName+".qss");
 	if (styleFile.open(QFile::ReadOnly)) {
 		qApp->setStyleSheet(styleFile.readAll());
 		styleFile.close();
