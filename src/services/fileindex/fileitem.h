@@ -32,7 +32,7 @@ public:
 	Item(){}
 	~Item(){}
 
-	inline QString title() const override {return _name;} //TODO
+	inline QString title() const override {return _name;}
 	inline QString complete() const override {return _name;}
 	inline QString infoText() const override {return _path;}
 	void action(Mod) override;
