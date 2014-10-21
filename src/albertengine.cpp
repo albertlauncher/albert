@@ -55,6 +55,7 @@ QDataStream &AlbertEngine::serialize(QDataStream &out) const
 {
 	for (Service *i: _modules)
 		i->serialize(out);
+	return out;
 }
 
 /**************************************************************************/
@@ -62,6 +63,7 @@ QDataStream &AlbertEngine::deserialize(QDataStream &in)
 {
 	for (Service *i: _modules)
 		i->deserialize(in);
+	return in;
 }
 
 /**********************************************************************/
