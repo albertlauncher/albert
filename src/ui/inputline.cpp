@@ -46,20 +46,25 @@ void InputLine::resizeEvent(QResizeEvent *event)
 }
 
 /**************************************************************************/
-void InputLine::keyPressEvent(QKeyEvent *event)
+void InputLine::keyPressEvent(QKeyEvent *e)
 {
-	switch (event->key()) {
-	case Qt::Key_Comma:
+	// Open settings dialog
+	if (e->modifiers() == Qt::AltModifier && e->key() == Qt::Key_Comma ) {
 		SettingsDialog::instance()->show();
 		return;
+	}
 
-	case Qt::Key_F4:
+	// Quit application
+	if (e->modifiers() == Qt::AltModifier && e->key() == Qt::Key_F4 ) {
 		qApp->quit();
 		return;
+	}
 
-	case Qt::Key_Escape:
+	// Hide window
+	if (e->modifiers() == Qt::NoModifier && e->key() == Qt::Key_Escape ) {
 		window()->hide();
 		return;
 	}
-	QLineEdit::keyPressEvent(event);
+
+	QLineEdit::keyPressEvent(e);
 }
