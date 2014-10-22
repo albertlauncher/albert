@@ -48,25 +48,37 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
 
 		// Modifiers
-		Qt::KeyboardModifiers mods = _mods ^ keyEvent->modifiers();
-		if (mods & Qt::ControlModifier){
+		if ((keyEvent->key()== Qt::Key_Alt || keyEvent->key() == Qt::Key_Control))
 			update(currentIndex());
-			_mods = keyEvent->modifiers();
-			return true;
-		}
-		if (mods & Qt::AltModifier){
-			update(currentIndex());
-			_mods = keyEvent->modifiers();
-			return true;
-		}
 
 		// Navigation
 		if (keyEvent->key() == Qt::Key_Up
 			|| keyEvent->key() == Qt::Key_Down
 			|| keyEvent->key() == Qt::Key_PageDown
-			|| keyEvent->key() == Qt::Key_PageUp)
-		{
+			|| keyEvent->key() == Qt::Key_PageUp) {
 			this->keyPressEvent(keyEvent);
+			return true;
+		}
+
+		// Selection
+		if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) {
+			if (currentIndex().isValid()) {
+				Qt::KeyboardModifiers mods = keyEvent->modifiers();
+				if ( !(mods&Qt::AltModifier) && !(mods&Qt::ControlModifier) ) // None
+					model()->data(currentIndex(), Qt::UserRole+5);
+				else if ( (mods&Qt::AltModifier) && !(mods&Qt::ControlModifier) ) //only ALT
+					model()->data(currentIndex(), Qt::UserRole+6);
+				else if ( !(mods&Qt::AltModifier) && (mods&Qt::ControlModifier) ) // only CTRL
+					model()->data(currentIndex(), Qt::UserRole+7);
+			}
+			window()->hide();
+			return true;
+		}
+
+		// Completion
+		if (keyEvent->key() == Qt::Key_Tab) {
+			if (currentIndex().isValid())
+				emit completion(model()->data(currentIndex(), Qt::UserRole+4).toString());
 			return true;
 		}
 	}
@@ -76,17 +88,8 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
 
 		// Modifiers
-		Qt::KeyboardModifiers mods = _mods ^ keyEvent->modifiers();
-		if (mods & Qt::ControlModifier){
+		if ((keyEvent->key()== Qt::Key_Alt || keyEvent->key() == Qt::Key_Control))
 			update(currentIndex());
-			_mods = keyEvent->modifiers();
-			return true;
-		}
-		if (mods & Qt::AltModifier){
-			update(currentIndex());
-			_mods = keyEvent->modifiers();
-			return true;
-		}
 	}
 	return false;
 }

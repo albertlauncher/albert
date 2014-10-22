@@ -14,8 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include "albert.h"
 #include "inputline.h"
+#include "settingsdialog.h"
+#include <QString>
+#include <QKeyEvent>
+#include <QFocusEvent>
+#include <QResizeEvent>
 
+/**************************************************************************/
 InputLine::InputLine(QWidget *parent) :
 	QLineEdit(parent)
 {
@@ -23,13 +30,36 @@ InputLine::InputLine(QWidget *parent) :
 	setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
 
 	_settingsButton = new SettingsButton(this);
-	_settingsButton->setFocusProxy(this);
-	this->setFocusPolicy(Qt::StrongFocus);
-
+	_settingsButton->setFocusPolicy(Qt::NoFocus);
 }
 
-#include <QResizeEvent>
+/**************************************************************************/
+void InputLine::focusOutEvent(QFocusEvent *)
+{
+	gAlbertWidget->toggleVisibility();
+}
+
+/**************************************************************************/
 void InputLine::resizeEvent(QResizeEvent *event)
 {
 	_settingsButton->move(event->size().width()-_settingsButton->width(),0);
+}
+
+/**************************************************************************/
+void InputLine::keyPressEvent(QKeyEvent *event)
+{
+	switch (event->key()) {
+	case Qt::Key_Comma:
+		SettingsDialog::instance()->show();
+		return;
+
+	case Qt::Key_F4:
+		qApp->quit();
+		return;
+
+	case Qt::Key_Escape:
+		window()->hide();
+		return;
+	}
+	QLineEdit::keyPressEvent(event);
 }

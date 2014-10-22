@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 	a.setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
 	// Create the app
-	AlbertWidget w;
+	gAlbertWidget;
 
 	// Enter eventloop
 	int retval = a.exec();

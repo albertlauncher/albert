@@ -37,11 +37,11 @@ void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewIte
 		painter->fillRect(option.rect, gradient);
 
 		Qt::KeyboardModifiers mods = QGuiApplication::queryKeyboardModifiers();
-		if (mods & Qt::ControlModifier)
-			elided = index.data(Qt::UserRole+2).toString();
-		else if (mods & Qt::AltModifier)
+		if ( (mods&Qt::AltModifier) && !(mods&Qt::ControlModifier) ) //only ALT
 			elided = index.data(Qt::UserRole+1).toString();
-		else
+		else if ( !(mods&Qt::AltModifier) && (mods&Qt::ControlModifier) ) // only CTRL
+			elided = index.data(Qt::UserRole+2).toString();
+		else if ( !(mods&Qt::AltModifier) && !(mods&Qt::ControlModifier) ) // None
 			elided = index.data(Qt::UserRole).toString();
 
 		//Draw the infotext

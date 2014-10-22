@@ -17,7 +17,7 @@
 #include "albert.h"
 #include "albertengine.h"
 #include "settingsdialog.h"
-#include "xhotkeymanager.h"
+#include "globalhotkey.h"
 #include "xcb/xcb.h"
 #include <QEvent>
 #include <QSettings>
@@ -42,56 +42,53 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 					| Qt::Tool
 					);
 
-	// Layer 2
 	QVBoxLayout *l2 = new QVBoxLayout;
 	l2->setMargin(0);
 	l2->setSizeConstraint(QLayout::SetFixedSize);
 	this->setLayout(l2);
 
+	// Layer 2
 	_frame2 = new QFrame;
 	_frame2->setObjectName(QString::fromLocal8Bit("bottomframe"));
 	_frame2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
 	l2->addWidget(_frame2,0,0);
 
-	// Layer 1
 	QVBoxLayout *l1 = new QVBoxLayout;
 	l1->setMargin(0);
 	_frame2->setLayout(l1);
 
+	// Layer 1
 	_frame1 = new QFrame;
 	_frame1->setObjectName(QString::fromLocal8Bit("topframe"));
 	_frame1->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Preferred);
 	l1->addWidget(_frame1,0,0);
 
 	QVBoxLayout *contentLayout = new QVBoxLayout();
-
-	// Interface
-	_inputLine = new InputLine;
-	contentLayout->addWidget(_inputLine);
-	_proposalListView = new ProposalListView;
-	_proposalListView->hide();
-	contentLayout->addWidget(_proposalListView);
 	contentLayout->setMargin(0);
 	_frame1->setLayout(contentLayout);
 
-	//Set focus proxies
-	this->setFocusProxy(_inputLine);
-	_frame1->setFocusProxy(_inputLine);
-	_frame2->setFocusProxy(_inputLine);
+	// ContentLayer
+	_inputLine = new InputLine;
+	contentLayout->addWidget(_inputLine);
+
+	_proposalListView = new ProposalListView;
+	_proposalListView->setFocusPolicy(Qt::NoFocus);
 	_proposalListView->setFocusProxy(_inputLine);
-	this->setFocusPolicy(Qt::StrongFocus);
+	_proposalListView->hide();
+	contentLayout->addWidget(_proposalListView);
 
 
-	/* Sniffing and snooping*/
 
-	// Albert intercepts inputline (Enter, Tab(Completion) and focus-loss handling)
-	_inputLine->installEventFilter(this);
+	/* MISC */
 
-	// Listview intercepts inputline (Navigation with keys, pressed modifiers)
+	// Listview intercepts inputline (Navigation with keys, pressed modifiers, etc)
 	_inputLine->installEventFilter(_proposalListView);
 
 	// A change in text triggers requests
 	connect(_inputLine, SIGNAL(textChanged(QString)), this, SLOT(onTextEdited(QString)));
+
+	// Inputline listens if proposallistview tells it to change text (completion)
+	connect(_proposalListView, SIGNAL(completion(QString)), _inputLine, SLOT(setText(QString)));
 
 	// Start the engine :D
 	_engine = new AlbertEngine;
@@ -100,9 +97,11 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	deserialize();
 
 	// React to hotkeys
-	connect(XHotKeyManager::getInstance(), SIGNAL(hotKeyPressed()), this, SLOT(onHotKeyPressed()), Qt::QueuedConnection);// Show albert if hotkey was pressed
-	XHotKeyManager::getInstance()->start(); // Start listening for the hotkey(s)
+	connect(GlobalHotkey::instance(), SIGNAL(hotKeyPressed()), this, SLOT(toggleVisibility()));
 
+	GlobalHotkey::instance()->setHotkey({Qt::AltModifier, Qt::Key_Space});
+
+	_t.start();
 }
 
 /**************************************************************************/
@@ -125,7 +124,6 @@ void AlbertWidget::serialize() const
 	out << _skinName;
 	_engine->serialize(out);
 	f.close();
-
 }
 
 /**************************************************************************/
@@ -140,22 +138,23 @@ void AlbertWidget::deserialize()
 		in >> _skinName;
 		_engine->deserialize(in);
 		f.close();
+
+		QFile styleFile(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)+"/albert/skins/"+_skinName+".qss");
+		if (styleFile.open(QFile::ReadOnly)) {
+			qApp->setStyleSheet(styleFile.readAll());
+			styleFile.close();
+		}
+		else
+		{
+			qWarning() << "[Albert]\t\tCould not open style file" << _skinName;
+			qWarning() << "[Albert]\t\tFallback to basicskin";
+			qApp->setStyleSheet(QString::fromLocal8Bit("file:///:/resources/basicskin.qss"));
+		}
 	}
 	else
 	{
 		qWarning() << "[Albert]\t\tCould not open file" << path;
 		_engine->initialize();
-	}
-
-	QFile styleFile(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)+"/albert/skins/"+_skinName+".qss");
-	if (styleFile.open(QFile::ReadOnly)) {
-		qApp->setStyleSheet(styleFile.readAll());
-		styleFile.close();
-	}
-	else
-	{
-		qWarning() << "[Albert]\t\tCould not open style file" << _skinName;
-		qWarning() << "[Albert]\t\tFallback to basicskin";
 		qApp->setStyleSheet(QString::fromLocal8Bit("file:///:/resources/basicskin.qss"));
 	}
 
@@ -164,34 +163,34 @@ void AlbertWidget::deserialize()
 /*****************************************************************************/
 /********************************* S L O T S *********************************/
 /**************************************************************************/
-void AlbertWidget::hide()
-{
-	QWidget::hide();
-	_inputLine->clear();
-	_engine->clear();
-	_proposalListView->hide();
-}
-
-/**************************************************************************/
 void AlbertWidget::show()
 {
+	_engine->clear();
+	_proposalListView->hide();
 	QWidget::show();
+	_inputLine->clear();
 	updateGeometry();
 	if (QSettings().value(QString::fromLocal8Bit("show_centered"), QString::fromLocal8Bit("true")).toBool())
 		this->move(QApplication::desktop()->screenGeometry().center() - QPoint(rect().right()/2,192 ));
-}
-
-/**************************************************************************/
-void AlbertWidget::onHotKeyPressed()
-{
-	if (this->isVisible()){
-		this->hide();
-		return;
-	}
-	this->show();
 	this->raise();
 	this->activateWindow();
 	_inputLine->setFocus();
+}
+
+/**************************************************************************/
+void AlbertWidget::toggleVisibility()
+{
+	// Delay the hiding, since this may have happened because HK was pressed
+	// and X11 sent a shitty focus while grab, which could not be catched in a
+	// native way (nativeEvent), since qt does bullshit on focuses after that.
+	// I hate workarounds...
+	qDebug("Time elapsed: %d ms", _t.elapsed());
+	if (_t.elapsed() > 50)
+	{
+		qDebug("Toggled");
+		_t.restart();
+		this->isVisible() ? this->hide() : this->show();
+	}
 }
 
 /**************************************************************************/
@@ -209,106 +208,4 @@ void AlbertWidget::onTextEdited(const QString & text)
 	}
 	_engine->clear();
 	_proposalListView->hide();
-}
-
-/*****************************************************************************/
-/**************************** O V E R R I D E S ******************************/
-/**************************************************************************/
-bool AlbertWidget::eventFilter(QObject *obj, QEvent *event)
-{
-	if (event->type() == QEvent::FocusOut)
-	{
-		qDebug() << "QEvent::FocusOut";
-		this->hide();
-		return true;
-	}
-	if (event->type() == QEvent::KeyPress)
-	{
-		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-
-		switch (keyEvent->key()) {
-		case Qt::Key_Tab:
-			// Completion
-			// For the definition of the Userroles see proposallistmodel.cpp (::data())
-			if (_proposalListView->currentIndex().isValid())
-				_inputLine->setText(_engine->data(_proposalListView->currentIndex(), Qt::UserRole+4).toString());
-			return true;
-			break;
-		case Qt::Key_Return:
-		case Qt::Key_Enter:
-			// Confirmation
-			if (!_proposalListView->currentIndex().isValid())
-				return true;
-
-			switch (keyEvent->modifiers()) {
-			case Qt::ControlModifier:
-				_engine->ctrlAction(_proposalListView->currentIndex());
-				break;
-			case Qt::AltModifier:
-				_engine->altAction(_proposalListView->currentIndex());
-				break;
-			case Qt::NoModifier:
-				_engine->action(_proposalListView->currentIndex());
-				break;
-			default:
-				break;
-			}
-			this->hide();
-			return true;
-			break;
-		case Qt::Key_Comma:
-			SettingsDialog::instance()->exec();
-			return true;
-		case Qt::Key_F4:
-			qDebug() << "quit.";
-			qApp->quit();
-			return true;
-		case Qt::Key_Escape:
-			this->hide();
-			return true;
-		}
-	}
-	return QObject::eventFilter(obj, event); // Unhandled events are passed to the base class
-}
-
-/**************************************************************************//**
- * @brief AlbertWidget::nativeEvent
- *
- * This special event handler can be reimplemented in a subclass to receive
- * native platform events identified by eventType which are passed in the
- * message parameter.
- * This method is called for every native event. On X11, eventType is set to
- * "xcb_generic_event_t", and the message can be casted to a
- * xcb_generic_event_t pointer.
- * The purpose of this function is to eat malicious focus events generated by
- * X11 when the keyboard is grabbed when the hotkey is pressed.
- *
- * @param eventType
- * @param message
- * @return Indicator if this event shall be stopped being handled by Qt.
- */
-bool AlbertWidget::nativeEvent(const QByteArray &eventType, void *message, long *)
-{
-	if (eventType == "xcb_generic_event_t")
-	{
-		xcb_generic_event_t* event = static_cast<xcb_generic_event_t *>(message);
-		switch (event->response_type & ~0x80)
-		{
-		case XCB_FOCUS_IN: {
-			xcb_focus_in_event_t *fe = (xcb_focus_in_event_t *)event;
-			if (fe->mode & (XCB_NOTIFY_MODE_GRAB|XCB_NOTIFY_MODE_WHILE_GRABBED|XCB_NOTIFY_MODE_UNGRAB)){
-				return true; // Ignore this events
-			}
-			break;
-		}
-		case XCB_FOCUS_OUT: {
-			xcb_focus_out_event_t *fe = (xcb_focus_out_event_t *)event;
-			if (fe->mode & (XCB_NOTIFY_MODE_GRAB|XCB_NOTIFY_MODE_WHILE_GRABBED|XCB_NOTIFY_MODE_UNGRAB)){
-				return true; // Ignore this events
-			}
-			break;
-		}
-		}
-	}
-	return false;
 }

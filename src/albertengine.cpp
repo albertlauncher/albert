@@ -128,6 +128,9 @@ QVariant AlbertEngine::data(const QModelIndex &index, int role) const
 	//	CtrlText  = Qt::UserRole+2;
 	//	InfoText  = Qt::UserRole+3;
 	//	Completion = Qt::UserRole+4;
+	//	ExecutionNormal = Qt::UserRole+5;
+	//	ExecutionAlt = Qt::UserRole+6;
+	//	ExecutionCTRL = Qt::UserRole+7;
 
 	if (role == Qt::DisplayRole)
 		return _data[index.row()]->title();
@@ -149,6 +152,15 @@ QVariant AlbertEngine::data(const QModelIndex &index, int role) const
 
 	if (role == Qt::UserRole+4)
 		return _data[index.row()]->complete();
+
+	if (role == Qt::UserRole+5)
+		_data[index.row()]->action(Service::Item::Mod::None);
+
+	if (role == Qt::UserRole+6)
+		_data[index.row()]->action(Service::Item::Mod::Alt);
+
+	if (role == Qt::UserRole+7)
+		_data[index.row()]->action(Service::Item::Mod::Ctrl);
 
 	return QVariant();
 }

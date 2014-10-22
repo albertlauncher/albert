@@ -29,39 +29,38 @@
 #include <QVBoxLayout>
 #include <QList>
 #include <QAbstractNativeEventFilter>
+#include <QTime>
 // meine
 #include "inputline.h"
 #include "proposallistview.h"
 #include "albertengine.h"
+#include "singleton.h"
 
-class AlbertWidget : public QWidget
+#define gAlbertWidget AlbertWidget::instance()
+
+class AlbertWidget : public QWidget, public Singleton<AlbertWidget>
 {
 	Q_OBJECT
+	friend class Singleton<AlbertWidget>;
 
 private:
+	AlbertWidget(QWidget *parent = 0);
+	~AlbertWidget();
 
 	QFrame           *_frame1,*_frame2;
 	InputLine        *_inputLine;
 	ProposalListView *_proposalListView;
 	AlbertEngine     *_engine;
 	QString          _skinName;
+	QTime            _t;
 
 	void serialize() const;
 	void deserialize ();
 
-	bool eventFilter(QObject *obj, QEvent *event) override;
-	bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
-
-public:
-	AlbertWidget(QWidget *parent = 0);
-	~AlbertWidget();
-
 public slots:
-	void onHotKeyPressed();
 	void onTextEdited(const QString &text);
-	void hide();
 	void show();
-
+	void toggleVisibility();
 };
 
 #endif // ALBERT_H

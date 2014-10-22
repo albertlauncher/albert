@@ -15,15 +15,8 @@ INCLUDEPATH += services/ ui/
 
 
 HEADERS  +=	albertengine.h \
-	xhotkeymanager.h \
 	singleton.h \
 	Timer.h \
-	ui/albert.h \
-	ui/proposallistdelegate.h \
-	ui/proposallistview.h \
-	ui/inputline.h \
-	ui/settingsbutton.h \
-	ui/settingsdialog.h \
 	services/service.h \
 	services/fileindex/fileindex.h \
 	services/bookmarkindex/bookmarkindex.h \
@@ -40,17 +33,18 @@ HEADERS  +=	albertengine.h \
 	services/calculator/calculatorwidget.h \
 	services/fileindex/fileindexwidget.h \
 	services/websearch/websearchwidget.h \
-	services/indexservice.h
+	services/indexservice.h \
+	ui/albert.h \
+	ui/proposallistdelegate.h \
+	ui/proposallistview.h \
+	ui/inputline.h \
+	ui/settingsbutton.h \
+	ui/settingsdialog.h \
+	ui/globalhotkey.h \
+	ui/globalhotkey_p.h
 
 SOURCES += main.cpp \
 	albertengine.cpp \
-	xhotkeymanager.cpp \
-	ui/albert.cpp \
-	ui/proposallistdelegate.cpp \
-	ui/proposallistview.cpp \
-	ui/inputline.cpp \
-	ui/settingsbutton.cpp \
-	ui/settingsdialog.cpp \
 	services/fileindex/fileindex.cpp \
 	services/bookmarkindex/bookmarkindex.cpp \
 	services/calculator/calculator.cpp \
@@ -66,7 +60,29 @@ SOURCES += main.cpp \
 	services/calculator/calculatorwidget.cpp \
 	services/fileindex/fileindexwidget.cpp \
 	services/websearch/websearchwidget.cpp \
-	services/indexservice.cpp
+	services/indexservice.cpp \
+	ui/albert.cpp \
+	ui/proposallistdelegate.cpp \
+	ui/proposallistview.cpp \
+	ui/inputline.cpp \
+	ui/settingsbutton.cpp \
+	ui/settingsdialog.cpp \
+	ui/globalhotkey.cpp
+
+win32 {
+	SOURCES += ui/globalhotkey_win.cpp
+}
+unix:!macx {
+	QT += x11extras
+	SOURCES += ui/globalhotkey_x11.cpp
+}
+
+
+
+
+
+
+
 
 RESOURCES += albert.qrc
 
