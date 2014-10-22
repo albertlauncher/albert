@@ -212,6 +212,10 @@ GlobalHotkey::GlobalHotkeyPrivate::GlobalHotkeyPrivate(QObject *parent)
 /**************************************************************************/
 bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const Hotkey& hk)
 {
+	// Unregister other hotkeys before registering new ones
+	if ( !_grabbedKeys.isEmpty() )
+		unregisterNativeHotkeys();
+
 	int keySymQt = static_cast<int>( hk._key );
 
 	/* Translate key symbol ( Qt -> X ) */
@@ -301,7 +305,6 @@ void GlobalHotkey::GlobalHotkeyPrivate::unregisterNativeHotkeys()
 		XUngrabKey(QX11Info::display(), key.code, key.mod, QX11Info::appRootWindow());
 	_grabbedKeys.clear();
 }
-
 
 /**************************************************************************/
 bool GlobalHotkey::GlobalHotkeyPrivate::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
