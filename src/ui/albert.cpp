@@ -29,8 +29,15 @@
 AlbertWidget::AlbertWidget(QWidget *parent)
 	: QWidget(parent)
 {
-	/* Stuff concerning the UI and windowing */
+	/* MISC */
 
+	_engine = new AlbertEngine;
+	_t.start();
+	deserialize();
+	connect(GlobalHotkey::instance(), SIGNAL(hotKeyPressed()), this, SLOT(toggleVisibility()));
+	GlobalHotkey::instance()->setHotkey({Qt::AltModifier, Qt::Key_Space});
+
+	/* UI and windowing */
 
 	// Window properties
 	setObjectName(QString::fromLocal8Bit("albert"));
@@ -48,6 +55,7 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	this->setLayout(l2);
 
 	// Layer 2
+
 	_frame2 = new QFrame;
 	_frame2->setObjectName(QString::fromLocal8Bit("bottomframe"));
 	_frame2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
@@ -58,6 +66,7 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_frame2->setLayout(l1);
 
 	// Layer 1
+
 	_frame1 = new QFrame;
 	_frame1->setObjectName(QString::fromLocal8Bit("topframe"));
 	_frame1->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Preferred);
@@ -68,40 +77,22 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_frame1->setLayout(contentLayout);
 
 	// ContentLayer
+
 	_inputLine = new InputLine;
+	// A change in text triggers requests
+	connect(_inputLine, SIGNAL(textChanged(QString)), this, SLOT(onTextEdited(QString)));
 	contentLayout->addWidget(_inputLine);
 
 	_proposalListView = new ProposalListView;
 	_proposalListView->setFocusPolicy(Qt::NoFocus);
 	_proposalListView->setFocusProxy(_inputLine);
 	_proposalListView->hide();
-	contentLayout->addWidget(_proposalListView);
-
-
-
-	/* MISC */
-
-	// Listview intercepts inputline (Navigation with keys, pressed modifiers, etc)
-	_inputLine->installEventFilter(_proposalListView);
-
-	// A change in text triggers requests
-	connect(_inputLine, SIGNAL(textChanged(QString)), this, SLOT(onTextEdited(QString)));
-
-	// Inputline listens if proposallistview tells it to change text (completion)
-	connect(_proposalListView, SIGNAL(completion(QString)), _inputLine, SLOT(setText(QString)));
-
-	// Start the engine :D
-	_engine = new AlbertEngine;
 	_proposalListView->setModel(_engine);
-
-	deserialize();
-
-	// React to hotkeys
-	connect(GlobalHotkey::instance(), SIGNAL(hotKeyPressed()), this, SLOT(toggleVisibility()));
-
-	GlobalHotkey::instance()->setHotkey({Qt::AltModifier, Qt::Key_Space});
-
-	_t.start();
+	// Proposallistview tells Inputline to change text (completion)
+	connect(_proposalListView, SIGNAL(completion(QString)), _inputLine, SLOT(setText(QString)));
+	// Proposallistview intercepts inputline's events (Navigation with keys, pressed modifiers, etc)
+	_inputLine->installEventFilter(_proposalListView);
+	contentLayout->addWidget(_proposalListView);
 }
 
 /**************************************************************************/
@@ -184,10 +175,7 @@ void AlbertWidget::toggleVisibility()
 	// and X11 sent a shitty focus while grab, which could not be catched in a
 	// native way (nativeEvent), since qt does bullshit on focuses after that.
 	// I hate workarounds...
-	qDebug("Time elapsed: %d ms", _t.elapsed());
-	if (_t.elapsed() > 50)
-	{
-		qDebug("Toggled");
+	if (_t.elapsed() > 50) {
 		_t.restart();
 		this->isVisible() ? this->hide() : this->show();
 	}
