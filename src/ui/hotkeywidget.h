@@ -14,25 +14,29 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef SETTINGSDIALOG_H
-#define SETTINGSDIALOG_H
+#ifndef HOTKEYWIDGET_H
+#define HOTKEYWIDGET_H
 
-#include "ui_settingsdialog.h"
-#include "singleton.h"
-#include "hotkeywidget.h"
+#include <QLabel>
 
-class SettingsDialog : public QDialog, public Singleton<SettingsDialog>
+class HotkeyWidget : public QLabel
 {
 	Q_OBJECT
-	friend class Singleton<SettingsDialog>;
-	Ui::SettingsDialog ui;
-	HotkeyWidget* _hkWidget;
 
 public:
-	explicit SettingsDialog(QWidget *parent = 0);
+	explicit HotkeyWidget(QWidget *parent = 0);
 
-protected slots:
-	void onSkinClicked(QListWidgetItem*);
+private:
+	bool _settingHotkey;
+
+	QString keyKomboToString(Qt::KeyboardModifiers mod, int key);
+	void grabAll();
+	void releaseAll();
+
+protected:
+	void mousePressEvent (QMouseEvent*)  override;
+	void keyPressEvent (QKeyEvent *) override;
+	void keyReleaseEvent ( QKeyEvent* ) override;
 };
 
-#endif // SETTINGSDIALOG_H
+#endif // HOTKEYWIDGET_H

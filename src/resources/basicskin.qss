@@ -80,32 +80,25 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 	background: transparent;
 }
 
+#hotkeyWidget {
+	background: white;
+	color:black;
+	padding: 2px;
+	margin: 0px;
+	border-radius: 5px;
+	font:  48px "Ubuntu";
+	border:none;
+	margin: 0px;
+}
 
+#lineEdit {
+	background: white;
+	color:black;
+	padding: 2px;
+	margin: 0px;
+	border-radius: 5px;
+	font:  48px "Ubuntu";
+	border:none;
+	margin: 0px;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* * *  * ** * ** ** * * * * * * * ** * * TRASH  * * * ** * * * * ** ** * * * * * * * * * * */
-/*
-
-background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde);
-
-
-
-
-
-
-
-
-
-*/

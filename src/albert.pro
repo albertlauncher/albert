@@ -41,7 +41,8 @@ HEADERS  +=	albertengine.h \
 	ui/settingsbutton.h \
 	ui/settingsdialog.h \
 	ui/globalhotkey.h \
-	ui/globalhotkey_p.h
+	ui/globalhotkey_p.h \
+    ui/hotkeywidget.h
 
 SOURCES += main.cpp \
 	albertengine.cpp \
@@ -67,7 +68,8 @@ SOURCES += main.cpp \
 	ui/inputline.cpp \
 	ui/settingsbutton.cpp \
 	ui/settingsdialog.cpp \
-	ui/globalhotkey.cpp
+	ui/globalhotkey.cpp \
+    ui/hotkeywidget.cpp
 
 win32 {
 	SOURCES += ui/globalhotkey_win.cpp

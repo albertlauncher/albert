@@ -15,20 +15,29 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "settingsdialog.h"
+
 #include "services/websearch/websearch.h"
 #include "services/fileindex/fileindex.h"
 #include "services/calculator/calculator.h"
 #include "services/bookmarkindex/bookmarkindex.h"
 #include "services/appindex/appindex.h"
-#include <QCloseEvent>
+
 #include <QDir>
-#include <QDebug>
 #include <QStandardPaths>
 
-SettingsDialog::SettingsDialog(QWidget *parent) :
-	QDialog(parent)
+
+/**************************************************************************/
+SettingsDialog::SettingsDialog(QWidget *parent)
+	: QDialog(parent)
 {
 	ui.setupUi(this);
+
+
+	/* GENERAL */
+
+	// hotkey setter
+	_hkWidget = new HotkeyWidget;
+	ui.tabGeneral->layout()->addWidget(_hkWidget);
 
 
 	/* APPEARANCE */
@@ -46,7 +55,6 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 	// Apply a skin if clicked
 	connect(ui.listWidget_skins, SIGNAL(itemClicked(QListWidgetItem*)),
 			this, SLOT(onSkinClicked(QListWidgetItem*)));
-
 
 
 	/* MODULES */
@@ -82,9 +90,9 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 	ui.stackedWidget->addWidget(Calculator::instance()->widget());
 
 	ui.listWidget->setCurrentRow(0);
-
 }
 
+/**************************************************************************/
 void SettingsDialog::onSkinClicked(QListWidgetItem *i)
 {
 	QFile styleFile(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)+"/albert/skins/"+i->text()+".qss");
