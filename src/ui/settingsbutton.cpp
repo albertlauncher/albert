@@ -16,22 +16,22 @@
 
 #include "settingsbutton.h"
 #include "settingsdialog.h"
-
-SettingsButton::SettingsButton(QWidget *parent) :
-	QPushButton(parent)
-{
-	this->setObjectName(QString::fromLocal8Bit("settingsbutton"));
-	connect(this, SIGNAL(clicked()), this, SLOT(onClick()));
-	this->setFocusPolicy(Qt::NoFocus);
-	setAttribute(Qt::WA_TranslucentBackground);
-}
-
 #include <QApplication>
 #include <QPaintEvent>
 #include <QPainter>
 #include <QDebug>
 #include <QPolygonF>
 #include <qmath.h>
+
+SettingsButton::SettingsButton(QWidget *parent) :
+	QPushButton(parent)
+{
+	this->setObjectName(QString::fromLocal8Bit("settingsbutton"));
+	this->setFocusPolicy(Qt::NoFocus);
+	setAttribute(Qt::WA_TranslucentBackground);
+	connect(this, SIGNAL(clicked()), SettingsDialog::instance(), SLOT(show()));
+}
+
 
 void SettingsButton::paintEvent(QPaintEvent *event)
 {
@@ -62,9 +62,4 @@ void SettingsButton::paintEvent(QPaintEvent *event)
 
 	QPainter p2(this);
 	p2.drawPixmap(0,0,icon);
-}
-
-void SettingsButton::onClick()
-{
-	SettingsDialog::instance()->exec();
 }
