@@ -29,7 +29,6 @@
 #include <QVBoxLayout>
 #include <QList>
 #include <QAbstractNativeEventFilter>
-#include <QTime>
 // meine
 #include "inputline.h"
 #include "proposallistview.h"
@@ -52,10 +51,12 @@ private:
 	ProposalListView *_proposalListView;
 	AlbertEngine     *_engine;
 	QString          _skinName;
-	QTime            _t;
 
 	void serialize() const;
 	void deserialize ();
+
+protected:
+	bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
 
 public slots:
 	void onTextEdited(const QString &text);

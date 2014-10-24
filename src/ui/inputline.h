@@ -31,7 +31,6 @@ public:
 	explicit InputLine(QWidget *parent = 0);
 
 protected:
-	void focusOutEvent(QFocusEvent*) override;
 	void resizeEvent(QResizeEvent*) override;
 	void keyPressEvent(QKeyEvent*) override;
 };

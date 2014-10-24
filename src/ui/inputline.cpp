@@ -34,12 +34,6 @@ InputLine::InputLine(QWidget *parent) :
 }
 
 /**************************************************************************/
-void InputLine::focusOutEvent(QFocusEvent *)
-{
-	gAlbertWidget->toggleVisibility();
-}
-
-/**************************************************************************/
 void InputLine::resizeEvent(QResizeEvent *event)
 {
 	_settingsButton->move(event->size().width()-_settingsButton->width(),0);
