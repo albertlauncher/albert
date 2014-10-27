@@ -16,6 +16,8 @@ INCLUDEPATH += services/ ui/
 
 HEADERS  +=	albertengine.h \
 	singleton.h \
+	globalhotkey.h \
+	globalhotkey_p.h \
 	services/service.h \
 	services/fileindex/fileindex.h \
 	services/bookmarkindex/bookmarkindex.h \
@@ -39,12 +41,11 @@ HEADERS  +=	albertengine.h \
 	ui/inputline.h \
 	ui/settingsbutton.h \
 	ui/settingsdialog.h \
-	ui/globalhotkey.h \
-	ui/globalhotkey_p.h \
 	ui/hotkeywidget.h
 
 SOURCES += main.cpp \
 	albertengine.cpp \
+	globalhotkey.cpp \
 	services/fileindex/fileindex.cpp \
 	services/bookmarkindex/bookmarkindex.cpp \
 	services/calculator/calculator.cpp \
@@ -67,15 +68,14 @@ SOURCES += main.cpp \
 	ui/inputline.cpp \
 	ui/settingsbutton.cpp \
 	ui/settingsdialog.cpp \
-	ui/globalhotkey.cpp \
 	ui/hotkeywidget.cpp
 
 win32 {
-	SOURCES += ui/globalhotkey_win.cpp
+	SOURCES += globalhotkey_win.cpp
 }
 unix:!macx {
-    LIBS += -lX11 \
-            -lmuparser
+	LIBS += -lX11 \
+			-lmuparser
 	QT += x11extras
 	SOURCES += ui/globalhotkey_x11.cpp
 }
