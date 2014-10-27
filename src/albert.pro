@@ -16,7 +16,6 @@ INCLUDEPATH += services/ ui/
 
 HEADERS  +=	albertengine.h \
 	singleton.h \
-	Timer.h \
 	services/service.h \
 	services/fileindex/fileindex.h \
 	services/bookmarkindex/bookmarkindex.h \
