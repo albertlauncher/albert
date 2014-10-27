@@ -19,7 +19,7 @@
 #include <QStandardPaths>
 #include <QDebug>
 #include <QDir>
-#include "albert.h"
+#include "mainwidget.h"
 
 int main(int argc, char *argv[])
 {
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 	a.setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
 	// Create the app
-	AlbertWidget w;
+	MainWidget w;
 
 	/* Style */
 	// Get theme name from config

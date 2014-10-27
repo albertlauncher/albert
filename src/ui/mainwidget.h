@@ -32,10 +32,10 @@
 // meine
 #include "inputline.h"
 #include "proposallistview.h"
-#include "albertengine.h"
+#include "engine.h"
 #include "singleton.h"
 
-class AlbertWidget : public QWidget
+class MainWidget : public QWidget
 {
 	Q_OBJECT
 
@@ -44,14 +44,14 @@ private:
 	QFrame           *_frame1,*_frame2;
 	InputLine        *_inputLine;
 	ProposalListView *_proposalListView;
-	AlbertEngine     *_engine;
+	Engine     *_engine;
 
 	void serialize() const;
 	void deserialize ();
 
 public:
-	AlbertWidget(QWidget *parent = 0);
-	~AlbertWidget();
+	MainWidget(QWidget *parent = 0);
+	~MainWidget();
 
 protected:
 	bool nativeEvent(const QByteArray &eventType, void *message, long *) override;

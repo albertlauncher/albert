@@ -26,7 +26,7 @@ include_directories(
 
 set(SRCS
   src/main.cpp
-  src/albertengine.cpp
+  src/engine.cpp
   src/globalhotkey.cpp
   src/services/fileindex/fileindex.cpp
   src/services/bookmarkindex/bookmarkindex.cpp
@@ -44,7 +44,7 @@ set(SRCS
   src/services/fileindex/fileindexwidget.cpp
   src/services/websearch/websearchwidget.cpp
   src/services/indexservice.cpp
-  src/ui/albert.cpp
+  src/ui/mainwidget.cpp
   src/ui/proposallistdelegate.cpp
   src/ui/proposallistview.cpp
   src/ui/inputline.cpp

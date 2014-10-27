@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "albert.h"
-#include "albertengine.h"
+#include "mainwidget.h"
+#include "engine.h"
 #include "settingsdialog.h"
 #include "globalhotkey.h"
 #include <QEvent>
@@ -25,12 +25,12 @@
 #include <QStandardPaths>
 
 /**************************************************************************/
-AlbertWidget::AlbertWidget(QWidget *parent)
+MainWidget::MainWidget(QWidget *parent)
 	: QWidget(parent)
 {
 	/* MISC */
 
-	_engine = new AlbertEngine;
+	_engine = new Engine;
 	deserialize();
 	connect(GlobalHotkey::instance(), SIGNAL(hotKeyPressed()), this, SLOT(toggleVisibility()));
 	GlobalHotkey::instance()->setHotkey({Qt::AltModifier, Qt::Key_Space});
@@ -94,41 +94,41 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 }
 
 /**************************************************************************/
-AlbertWidget::~AlbertWidget()
+MainWidget::~MainWidget()
 {
 	serialize();
 }
 
 /**************************************************************************/
-void AlbertWidget::serialize() const
+void MainWidget::serialize() const
 {
 	QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db";
 	QFile f(path);
 	if (!f.open(QIODevice::ReadWrite| QIODevice::Text)){
-		qWarning() << "[Albert]\tCould not open file" << path;
+		qWarning() << "Could not open file" << path;
 	}
 
-	qDebug() << "[Albert]\tSerializing to " << path;
+	qDebug() << "Serializing to " << path;
 	QDataStream out( &f );
 	_engine->serialize(out);
 	f.close();
 }
 
 /**************************************************************************/
-void AlbertWidget::deserialize()
+void MainWidget::deserialize()
 {
 	QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db";
 	QFile f(path);
 	if (f.open(QIODevice::ReadOnly| QIODevice::Text))
 	{
-		qDebug() << "[Albert]\t\tDeserializing from" << path;
+		qDebug() << "Deserializing from" << path;
 		QDataStream in( &f );
 		_engine->deserialize(in);
 		f.close();
 	}
 	else
 	{
-		qWarning() << "[Albert]\t\tCould not open file" << path;
+		qWarning() << "Could not open file" << path;
 		_engine->initialize();
 	}
 
@@ -137,7 +137,7 @@ void AlbertWidget::deserialize()
 /*****************************************************************************/
 /********************************* S L O T S *********************************/
 /**************************************************************************/
-void AlbertWidget::show()
+void MainWidget::show()
 {
 	_engine->clear();
 	_proposalListView->hide();
@@ -152,13 +152,13 @@ void AlbertWidget::show()
 }
 
 /**************************************************************************/
-void AlbertWidget::toggleVisibility()
+void MainWidget::toggleVisibility()
 {
 	this->isVisible() ? this->hide() : this->show();
 }
 
 /**************************************************************************/
-void AlbertWidget::onTextEdited(const QString & text)
+void MainWidget::onTextEdited(const QString & text)
 {
 	QString t = text.trimmed();
 	if (!t.isEmpty()){
@@ -179,11 +179,11 @@ void AlbertWidget::onTextEdited(const QString & text)
 #endif
 
 /**************************************************************************//**
- * @brief AlbertWidget::nativeEvent
+ * @brief MainWidget::nativeEvent
  *
  * The purpose of this function is to hide in special casesonly.
  */
-bool AlbertWidget::nativeEvent(const QByteArray &eventType, void *message, long *)
+bool MainWidget::nativeEvent(const QByteArray &eventType, void *message, long *)
 {
 #ifdef Q_OS_LINUX
 	if (eventType == "xcb_generic_event_t")
@@ -193,7 +193,7 @@ bool AlbertWidget::nativeEvent(const QByteArray &eventType, void *message, long 
 		{
 		case XCB_FOCUS_OUT: {
 			xcb_focus_out_event_t *fe = (xcb_focus_out_event_t *)event;
-//			std::cout << "AlbertWidget::nativeEvent::XCB_FOCUS_OUT\t";
+//			std::cout << "MainWidget::nativeEvent::XCB_FOCUS_OUT\t";
 //			switch (fe->mode) {
 //			case XCB_NOTIFY_MODE_NORMAL: std::cout << "XCB_NOTIFY_MODE_NORMAL";break;
 //			case XCB_NOTIFY_MODE_GRAB: std::cout << "XCB_NOTIFY_MODE_GRAB";break;
