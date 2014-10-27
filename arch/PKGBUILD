@@ -1,13 +1,13 @@
 # Maintainer: Manuel Schneider  <manuelschneid3r at googles mail>
 pkgname=albert
-pkgver=0.4
+pkgver=0.5
 pkgrel=1
 pkgdesc="A DE agnostic omnilauncher."
 arch=('i686' 'x86_64')
 url="https://github.com/ManuelSchneid3r/albert"
 license=('GPL')
 depends=('qt5-base' 'libx11' 'muparser')
-makedepends=('git' 'qt5-base' 'qt5-tools')
+makedepends=('cmake' 'git' 'qt5-base' 'qt5-tools')
 provides=()
 conflicts=()
 replaces=()
@@ -21,25 +21,30 @@ md5sums=() #generate with 'makepkg -g'
 _gitroot=https://github.com/ManuelSchneid3r/albert.git
 
 build() {
-  if [[ -d "$pkgname-$pkgver" ]]; then
-    cd "$pkgname-$pkgver" && git pull origin && cd ..
+  cd "${srcdir}"
+  
+  msg "Connecting to Git server..."
+  if [[ -d "$pkgname" ]]; then
+    cd "$pkgname" && git pull
   else
-    git clone "$_gitroot" "$pkgname-$pkgver"
+    git clone "$_gitroot" --branch testing "$pkgname"
   fi
-  if [[ ! -d "$srcdir/$pkgname-$pkgver-build" ]]; then
-    mkdir "$srcdir/$pkgname-$pkgver-build"
-  fi
-  cd "$srcdir"/"$pkgname-$pkgver-build" && \
-    qmake "$srcdir"/"$pkgname-$pkgver"/src/"$pkgname".pro && \
-    make || \
-    msg "Build failed."                        
+
+  msg "Git checkout done."
+  msg "Starting make..."
+
+  [[ -d "${srcdir}/build" ]] || mkdir -p "${srcdir}/build"
+  cd "${srcdir}/build"
+
+  cmake ../$pkgname \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr
+  make
 }
 
-package() {
-  if [[ ! -d "$pkgdir"/usr/bin/ ]]; then
-    mkdir -p "$pkgdir"/usr/bin/
-  fi
-  cp "$srcdir/$pkgname-$pkgver-build/$pkgname" "$pkgdir"/usr/bin
+package(){
+  cd "${srcdir}/build" 
+  make DESTDIR="$pkgdir/" install
 }
 
 # vim:set ts=2 sw=2 et:
