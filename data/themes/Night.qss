@@ -1,0 +1,104 @@
+#albert {
+	padding: 0px;
+	margin: 0px;
+}
+#bottomframe {
+	padding: 8px;
+	margin: 0px;
+	border-radius: 16px;
+	background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0.0 rgba(96, 96, 192, 255), stop:0.5 rgba(0,0,0,64), stop:1.0 rgba(192, 96, 192, 255));
+}
+#topframe {
+	padding: 8px;
+	margin: 0px;
+	spacing: 0px;
+	border-radius: 8px;
+	background-color: #080808;
+	width:720px;
+	min-width:720px;
+	max-width:720px;
+}
+
+#inputline {
+	padding: 2px;
+	margin: 0px;
+	border-radius: 5px;
+	font:  48px "Ubuntu";
+	color : #6060c0;
+	background-color: #101010;
+	border:none;
+}
+#settingsbutton {
+	min-width:15px;
+	min-height:15px;
+	max-width:15px;
+	max-height:15px;
+	border: none;
+	border-radius: 5px;
+	color: #6060c0;
+	background-color: #101010;
+}
+#settingsbutton:hover {
+}
+
+/* * LIST-WIDGET-ITEM-WIDGET * */
+
+#ProposalListWidget {
+	color: #6060c0;
+	padding: 0px;
+	margin: 0px;
+	spacing: 0px;
+	height:32px;
+	font: 32px "Ubuntu";
+	border:none;
+	background-color: #080808;
+/*	background-color: #6060C0;*/
+}
+#ProposalListWidget::item
+{
+	height:48px;
+	background-color: #6060C0;
+	border:none;
+	border-radius: 10px;
+}
+
+QScrollBar:vertical  {
+	background: transparent;
+	width: 5px;
+	margin: 0px;
+}
+QScrollBar::handle:vertical  {
+	background: #3a3a3a;
+	min-height: 24px;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
+QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical,
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+	border: 0px;
+	width: 0px;
+	height: 0px;
+	background: transparent;
+}
+
+#hotkeyWidget {
+	background: white;
+	color:black;
+	padding: 2px;
+	margin: 0px;
+	border-radius: 5px;
+	font:  48px "Ubuntu";
+	border:none;
+	margin: 0px;
+}
+
+#lineEdit {
+	background: white;
+	color:black;
+	padding: 2px;
+	margin: 0px;
+	border-radius: 5px;
+	font:  48px "Ubuntu";
+	border:none;
+	margin: 0px;
+}

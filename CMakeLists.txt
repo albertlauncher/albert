@@ -52,6 +52,13 @@ set(SRCS
   src/ui/settingsdialog.cpp
   src/ui/hotkeywidget.cpp
 )
+set(data
+  data/albert.conf
+  data/icons/youtube.svg
+  data/icons/google.svg
+  data/icons/ebay.svg
+  data/icons/amamzon.conf
+)
 
 qt5_wrap_ui(UIS
   src/ui/settingsdialog.ui
@@ -65,9 +72,12 @@ qt5_wrap_ui(UIS
 #linux
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   set(SRCS ${SRCS} src/globalhotkey_x11.cpp)
-  add_executable(albert ${SRCS} ${UIS})
+  add_executable(albert ${SRCS} ${UIS} ${DATA})
   target_link_libraries(albert Qt5::Widgets Qt5::X11Extras muparser X11)
-  install(TARGETS albert RUNTIME DESTINATION bin)
+  install(TARGETS albert RUNTIME DESTINATION /usr/bin)
+  install(FILES data/albert.conf DESTINATION /etc/xdg/albert COMPONENT config)
+  install(DIRECTORY data/icons DESTINATION /usr/share/albert COMPONENT config)
+  install(DIRECTORY data/themes DESTINATION /usr/share/albert COMPONENT config)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 #win

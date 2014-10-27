@@ -21,29 +21,29 @@ md5sums=() #generate with 'makepkg -g'
 _gitroot=https://github.com/ManuelSchneid3r/albert.git
 
 build() {
-  cd "${srcdir}"
-  
-  msg "Connecting to Git server..."
+
+  msg "Connecting to GIT server...."
+
   if [[ -d "$pkgname" ]]; then
     cd "$pkgname" && git pull
   else
     git clone "$_gitroot" --branch testing "$pkgname"
   fi
 
-  msg "Git checkout done."
-  msg "Starting make..."
+  msg "Done."
+  msg "Make project..."
 
-  [[ -d "${srcdir}/build" ]] || mkdir -p "${srcdir}/build"
-  cd "${srcdir}/build"
+  [[ -d "$srcdir/build" ]] || mkdir -p "$srcdir/build"
 
-  cmake ../$pkgname \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=/usr
+  cd "$srcdir/build"
+  cmake "../$pkgname" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_BUILD_TYPE=Debug
   make
 }
 
-package(){
-  cd "${srcdir}/build" 
+package() {
+  cd "$srcdir/build"
   make DESTDIR="$pkgdir/" install
 }
 
