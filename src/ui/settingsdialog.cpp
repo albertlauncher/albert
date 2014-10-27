@@ -77,37 +77,28 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 
 	/* MODULES */
 
-	QListWidgetItem *item = new QListWidgetItem(QIcon(":icon_websearch"),"Websearch");
-	item->setTextAlignment(Qt::AlignHCenter);
-	item->setSizeHint(QSize(96,72));
+	QListWidgetItem *item = new QListWidgetItem("Websearch");
 	ui.listWidget->addItem(item);
 	ui.stackedWidget->addWidget(WebSearch::instance()->widget());
 
-	item = new QListWidgetItem(QIcon(":icon_apps"),"Apps");
-	item->setTextAlignment(Qt::AlignHCenter);
-	item->setSizeHint(QSize(96,72));
+	item = new QListWidgetItem("Apps");
 	ui.listWidget->addItem(item);
 	ui.stackedWidget->addWidget(AppIndex::instance()->widget());
 
-	item = new QListWidgetItem(QIcon(":icon_bookmarks"),"Bookmarks");
-	item->setTextAlignment(Qt::AlignHCenter);
-	item->setSizeHint(QSize(96,72));
+	item = new QListWidgetItem("Bookmarks");
 	ui.listWidget->addItem(item);
 	ui.stackedWidget->addWidget(BookmarkIndex::instance()->widget());
 
-	item = new QListWidgetItem(QIcon(":icon_files"),"Files");
-	item->setTextAlignment(Qt::AlignHCenter);
-	item->setSizeHint(QSize(96,72));
+	item = new QListWidgetItem("Files");
 	ui.listWidget->addItem(item);
 	ui.stackedWidget->addWidget(FileIndex::instance()->widget());
 
-	item = new QListWidgetItem(QIcon(":icon_calc"),"Calculator");
-	item->setTextAlignment(Qt::AlignHCenter);
-	item->setSizeHint(QSize(96,72));
+	item = new QListWidgetItem("Calculator");
 	ui.listWidget->addItem(item);
 	ui.stackedWidget->addWidget(Calculator::instance()->widget());
 
 	ui.listWidget->setCurrentRow(0);
+	ui.listWidget->adjustSize();
 }
 
 /**************************************************************************/
