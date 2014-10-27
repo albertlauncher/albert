@@ -35,25 +35,23 @@
 #include "albertengine.h"
 #include "singleton.h"
 
-#define gAlbertWidget AlbertWidget::instance()
-
-class AlbertWidget : public QWidget, public Singleton<AlbertWidget>
+class AlbertWidget : public QWidget
 {
 	Q_OBJECT
-	friend class Singleton<AlbertWidget>;
 
 private:
-	AlbertWidget(QWidget *parent = 0);
-	~AlbertWidget();
 
 	QFrame           *_frame1,*_frame2;
 	InputLine        *_inputLine;
 	ProposalListView *_proposalListView;
 	AlbertEngine     *_engine;
-	QString          _skinName;
 
 	void serialize() const;
 	void deserialize ();
+
+public:
+	AlbertWidget(QWidget *parent = 0);
+	~AlbertWidget();
 
 protected:
 	bool nativeEvent(const QByteArray &eventType, void *message, long *) override;

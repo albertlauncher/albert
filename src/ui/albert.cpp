@@ -111,7 +111,6 @@ void AlbertWidget::serialize() const
 
 	qDebug() << "[Albert]\tSerializing to " << path;
 	QDataStream out( &f );
-	out << _skinName;
 	_engine->serialize(out);
 	f.close();
 }
@@ -125,27 +124,13 @@ void AlbertWidget::deserialize()
 	{
 		qDebug() << "[Albert]\t\tDeserializing from" << path;
 		QDataStream in( &f );
-		in >> _skinName;
 		_engine->deserialize(in);
 		f.close();
-
-		QFile styleFile(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)+"/albert/skins/"+_skinName+".qss");
-		if (styleFile.open(QFile::ReadOnly)) {
-			qApp->setStyleSheet(styleFile.readAll());
-			styleFile.close();
-		}
-		else
-		{
-			qWarning() << "[Albert]\t\tCould not open style file" << _skinName;
-			qWarning() << "[Albert]\t\tFallback to basicskin";
-			qApp->setStyleSheet(QString::fromLocal8Bit("file:///:/resources/basicskin.qss"));
-		}
 	}
 	else
 	{
 		qWarning() << "[Albert]\t\tCould not open file" << path;
 		_engine->initialize();
-		qApp->setStyleSheet(QString::fromLocal8Bit("file:///:/resources/basicskin.qss"));
 	}
 
 }
