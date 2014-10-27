@@ -28,8 +28,14 @@
 AlbertWidget::AlbertWidget(QWidget *parent)
 	: QWidget(parent)
 {
-	/* Stuff concerning the UI and windowing */
+	/* MISC */
 
+	_engine = new AlbertEngine;
+	deserialize();
+	connect(GlobalHotkey::instance(), SIGNAL(hotKeyPressed()), this, SLOT(toggleVisibility()));
+	GlobalHotkey::instance()->setHotkey({Qt::AltModifier, Qt::Key_Space});
+
+	/* UI and windowing */
 
 	// Window properties
 	setObjectName(QString::fromLocal8Bit("albert"));
@@ -47,6 +53,7 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	this->setLayout(l2);
 
 	// Layer 2
+
 	_frame2 = new QFrame;
 	_frame2->setObjectName(QString::fromLocal8Bit("bottomframe"));
 	_frame2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
@@ -57,6 +64,7 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_frame2->setLayout(l1);
 
 	// Layer 1
+
 	_frame1 = new QFrame;
 	_frame1->setObjectName(QString::fromLocal8Bit("topframe"));
 	_frame1->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Preferred);
@@ -67,41 +75,22 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_frame1->setLayout(contentLayout);
 
 	// ContentLayer
+
 	_inputLine = new InputLine;
+	// A change in text triggers requests
+	connect(_inputLine, SIGNAL(textChanged(QString)), this, SLOT(onTextEdited(QString)));
 	contentLayout->addWidget(_inputLine);
 
 	_proposalListView = new ProposalListView;
 	_proposalListView->setFocusPolicy(Qt::NoFocus);
 	_proposalListView->setFocusProxy(_inputLine);
-	_proposalListView->hide();
-    contentLayout->addWidget(_proposalListView);
-
-
-
-	/* MISC */
-
-	// Listview intercepts inputline (Navigation with keys, pressed modifiers, etc)
-	_inputLine->installEventFilter(_proposalListView);
-
-	// A change in text triggers requests
-	connect(_inputLine, SIGNAL(textChanged(QString)), this, SLOT(onTextEdited(QString)));
-
-	// Inputline listens if proposallistview tells it to change text (completion)
-	connect(_proposalListView, SIGNAL(completion(QString)), _inputLine, SLOT(setText(QString)));
-
-	// Start the engine :D
-	_engine = new AlbertEngine;
+    _proposalListView->hide();
 	_proposalListView->setModel(_engine);
-
-	deserialize();
-
-	// React to hotkeys
-	connect(GlobalHotkey::instance(), SIGNAL(hotKeyPressed()), this, SLOT(toggleVisibility()));
-
-	GlobalHotkey::instance()->setHotkey({Qt::AltModifier, Qt::Key_Space});
-
-	_t.start();
-    this->show();
+	// Proposallistview tells Inputline to change text (completion)
+	connect(_proposalListView, SIGNAL(completion(QString)), _inputLine, SLOT(setText(QString)));
+	// Proposallistview intercepts inputline's events (Navigation with keys, pressed modifiers, etc)
+	_inputLine->installEventFilter(_proposalListView);
+    contentLayout->addWidget(_proposalListView);
 }
 
 /**************************************************************************/
@@ -121,7 +110,6 @@ void AlbertWidget::serialize() const
 
 	qDebug() << "[Albert]\tSerializing to " << path;
 	QDataStream out( &f );
-	out << _skinName;
 	_engine->serialize(out);
 	f.close();
 }
@@ -135,27 +123,13 @@ void AlbertWidget::deserialize()
 	{
 		qDebug() << "[Albert]\t\tDeserializing from" << path;
 		QDataStream in( &f );
-		in >> _skinName;
 		_engine->deserialize(in);
 		f.close();
-
-		QFile styleFile(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)+"/albert/skins/"+_skinName+".qss");
-		if (styleFile.open(QFile::ReadOnly)) {
-			qApp->setStyleSheet(styleFile.readAll());
-			styleFile.close();
-		}
-		else
-		{
-			qWarning() << "[Albert]\t\tCould not open style file" << _skinName;
-			qWarning() << "[Albert]\t\tFallback to basicskin";
-			qApp->setStyleSheet(QString::fromLocal8Bit("file:///:/resources/basicskin.qss"));
-		}
 	}
 	else
 	{
 		qWarning() << "[Albert]\t\tCould not open file" << path;
 		_engine->initialize();
-		qApp->setStyleSheet(QString::fromLocal8Bit("file:///:/resources/basicskin.qss"));
 	}
 
 }
@@ -180,17 +154,7 @@ void AlbertWidget::show()
 /**************************************************************************/
 void AlbertWidget::toggleVisibility()
 {
-	// Delay the hiding, since this may have happened because HK was pressed
-	// and X11 sent a shitty focus while grab, which could not be catched in a
-	// native way (nativeEvent), since qt does bullshit on focuses after that.
-	// I hate workarounds...
-	qDebug("Time elapsed: %d ms", _t.elapsed());
-	if (_t.elapsed() > 50)
-	{
-		qDebug("Toggled");
-		_t.restart();
-		this->isVisible() ? this->hide() : this->show();
-	}
+	this->isVisible() ? this->hide() : this->show();
 }
 
 /**************************************************************************/
@@ -208,4 +172,50 @@ void AlbertWidget::onTextEdited(const QString & text)
 	}
 	_engine->clear();
 	_proposalListView->hide();
+}
+
+
+/**************************************************************************//**
+ * @brief AlbertWidget::nativeEvent
+ *
+ * The purpose of this function is to hide in special casesonly.
+ */
+bool AlbertWidget::nativeEvent(const QByteArray &eventType, void *message, long *)
+{
+#ifdef Q_WS_X11
+	if (eventType == "xcb_generic_event_t")
+	{
+		xcb_generic_event_t* event = static_cast<xcb_generic_event_t *>(message);
+		switch (event->response_type & 127)
+		{
+		case XCB_FOCUS_OUT: {
+			xcb_focus_out_event_t *fe = (xcb_focus_out_event_t *)event;
+//			std::cout << "AlbertWidget::nativeEvent::XCB_FOCUS_OUT\t";
+//			switch (fe->mode) {
+//			case XCB_NOTIFY_MODE_NORMAL: std::cout << "XCB_NOTIFY_MODE_NORMAL";break;
+//			case XCB_NOTIFY_MODE_GRAB: std::cout << "XCB_NOTIFY_MODE_GRAB";break;
+//			case XCB_NOTIFY_MODE_UNGRAB: std::cout << "XCB_NOTIFY_MODE_UNGRAB";break;
+//			case XCB_NOTIFY_MODE_WHILE_GRABBED: std::cout << "XCB_NOTIFY_MODE_WHILE_GRABBED";break;
+//			}
+//			std::cout << "\t";
+//			switch (fe->detail) {
+//			case XCB_NOTIFY_DETAIL_ANCESTOR: std::cout << "ANCESTOR";break;
+//			case XCB_NOTIFY_DETAIL_INFERIOR: std::cout << "INFERIOR";break;
+//			case XCB_NOTIFY_DETAIL_NONE: std::cout << "NONE";break;
+//			case XCB_NOTIFY_DETAIL_NONLINEAR: std::cout << "NONLINEAR";break;
+//			case XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL: std::cout << "NONLINEAR_VIRTUAL";break;
+//			case XCB_NOTIFY_DETAIL_POINTER: std::cout << "POINTER";break;break;
+//			case XCB_NOTIFY_DETAIL_POINTER_ROOT: std::cout << "POINTER_ROOT";
+//			case XCB_NOTIFY_DETAIL_VIRTUAL: std::cout << "VIRTUAL";break;
+//			}
+//			std::cout << std::endl;
+			if ((fe->mode==XCB_NOTIFY_MODE_GRAB && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR)
+					|| (fe->mode==XCB_NOTIFY_MODE_NORMAL && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR ))
+				hide();
+			break;
+		}
+		}
+	}
+#endif
+return false;
 }

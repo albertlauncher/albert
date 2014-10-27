@@ -16,23 +16,52 @@
 
 #include <QApplication>
 #include <QSettings>
+#include <QStandardPaths>
 #include <QDebug>
+#include <QDir>
 #include "albert.h"
 
 int main(int argc, char *argv[])
 {
-	QCoreApplication::setOrganizationName(QString::fromLocal8Bit("albert"));
-	QCoreApplication::setApplicationName(QString::fromLocal8Bit("albert"));
-	qDebug() << "[QSettings]\t\t" << QSettings().fileName() ;
-
+	// Application
 	QApplication a(argc, argv);
+	QCoreApplication::setApplicationName(QString::fromLocal8Bit("albert"));
 	a.setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
 	// Create the app
-	gAlbertWidget;
+	AlbertWidget w;
+
+	/* Style */
+	// Get theme name from config
+	QString theme = QSettings(QSettings::UserScope, "albert", "albert")
+			.value("theme", "Standard.qss").toString();
+
+	// Get theme dirs
+	QStringList themeDirs = QStandardPaths::locateAll(QStandardPaths::DataLocation,
+													  "themes",
+													  QStandardPaths::LocateDirectory);
+	// Find the theme
+	for (QDir d : themeDirs)
+	{
+		QFileInfoList fil = d.entryInfoList(QStringList("*.qss"),
+											QDir::Files | QDir::NoSymLinks);
+		for (QFileInfo fi : fil){
+			if (fi.fileName() == theme)
+			{
+				// Apply the theme
+				QFile styleFile(fi.canonicalFilePath()); // TODO errorhandling
+				if (styleFile.open(QFile::ReadOnly)) {
+					qApp->setStyleSheet(styleFile.readAll());
+					styleFile.close();
+				}
+				else
+					qWarning() << "Could not open style file";;
+			}
+		}
+	}
+
 
 	// Enter eventloop
 	int retval = a.exec();
-
 	return retval;
 }

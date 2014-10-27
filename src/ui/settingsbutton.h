@@ -27,14 +27,6 @@ public:
 	explicit SettingsButton(QWidget *parent = 0);
 protected:
 	void paintEvent(QPaintEvent *) override;
-
-signals:
-
-public slots:
-
-protected slots:
-	void onClick();
-
 };
 
 #endif // SETTINGSBUTTON_H

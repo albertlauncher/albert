@@ -22,9 +22,7 @@
 #include "services/appindex/appindex.h"
 #include <QString>
 #include <QDebug>
-
-
-#include <Timer.h>
+#include <QTime>
 
 /**********************************************************************/
 AlbertEngine::AlbertEngine()
@@ -73,11 +71,10 @@ void AlbertEngine::query(const QString &req)
 	_data.clear();
 	for (Service *i: _modules)
 	{
-		Timer t;
+		QTime t;
 		t.start();
 		i->query(req, &_data);
-		t.stop();
-		qDebug() << t.getUSecs() << "µs";
+		qDebug() << t.elapsed() << "µs";
 	}
 	if (_data.isEmpty())
 		WebSearch::instance()->queryAll(req, &_data);

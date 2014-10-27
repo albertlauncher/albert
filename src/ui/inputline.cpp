@@ -34,12 +34,6 @@ InputLine::InputLine(QWidget *parent) :
 }
 
 /**************************************************************************/
-void InputLine::focusOutEvent(QFocusEvent *)
-{
-	gAlbertWidget->toggleVisibility();
-}
-
-/**************************************************************************/
 void InputLine::resizeEvent(QResizeEvent *event)
 {
 	_settingsButton->move(event->size().width()-_settingsButton->width(),0);
@@ -55,7 +49,7 @@ void InputLine::keyPressEvent(QKeyEvent *e)
 	}
 
 	// Quit application
-	if (e->modifiers() == Qt::AltModifier && e->key() == Qt::Key_F4 ) {
+	if (/*e->modifiers() == Qt::AltModifier && */e->key() == Qt::Key_F4 ) {
 		qApp->quit();
 		return;
 	}
