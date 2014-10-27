@@ -84,13 +84,13 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_proposalListView = new ProposalListView;
 	_proposalListView->setFocusPolicy(Qt::NoFocus);
 	_proposalListView->setFocusProxy(_inputLine);
-    _proposalListView->hide();
+	_proposalListView->hide();
 	_proposalListView->setModel(_engine);
 	// Proposallistview tells Inputline to change text (completion)
 	connect(_proposalListView, SIGNAL(completion(QString)), _inputLine, SLOT(setText(QString)));
 	// Proposallistview intercepts inputline's events (Navigation with keys, pressed modifiers, etc)
 	_inputLine->installEventFilter(_proposalListView);
-    contentLayout->addWidget(_proposalListView);
+	contentLayout->addWidget(_proposalListView);
 }
 
 /**************************************************************************/
@@ -174,6 +174,9 @@ void AlbertWidget::onTextEdited(const QString & text)
 	_proposalListView->hide();
 }
 
+#ifdef Q_OS_LINUX
+#include "xcb/xcb.h"
+#endif
 
 /**************************************************************************//**
  * @brief AlbertWidget::nativeEvent
@@ -182,7 +185,7 @@ void AlbertWidget::onTextEdited(const QString & text)
  */
 bool AlbertWidget::nativeEvent(const QByteArray &eventType, void *message, long *)
 {
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
 	if (eventType == "xcb_generic_event_t")
 	{
 		xcb_generic_event_t* event = static_cast<xcb_generic_event_t *>(message);
