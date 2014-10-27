@@ -18,8 +18,9 @@
 #include "calculatoritem.h"
 #include "calculatorwidget.h"
 
+#ifndef Q_OS_WIN
 #include "muParser.h"
-
+#endif
 /**************************************************************************/
 Calculator::Calculator()
 {
@@ -43,6 +44,8 @@ QWidget *Calculator::widget()
 /**************************************************************************/
 void Calculator::query(const QString &req, QVector<Service::Item *> *res) const noexcept
 {
+
+#ifndef Q_OS_WIN
 	mu::Parser p;
 	p.SetExpr(req.toStdString());
 	try {
@@ -54,6 +57,7 @@ void Calculator::query(const QString &req, QVector<Service::Item *> *res) const 
 	}
 	_theOneAndOnly->_query = req;
 	res->push_back(_theOneAndOnly);
+#endif
 }
 
 /**************************************************************************/

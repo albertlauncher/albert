@@ -73,14 +73,11 @@ win32 {
 	SOURCES += ui/globalhotkey_win.cpp
 }
 unix:!macx {
+    LIBS += -lX11 \
+            -lmuparser
 	QT += x11extras
 	SOURCES += ui/globalhotkey_x11.cpp
 }
-
-
-
-
-
 
 
 
@@ -88,8 +85,6 @@ RESOURCES += albert.qrc
 
 CONFIG += c++11
 
-LIBS += -lX11 \
-		-lmuparser
 
 FORMS = ui/settingsdialog.ui \
 		services/appindex/appindexwidget.ui \

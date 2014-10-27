@@ -21,8 +21,11 @@
 #include <functional>
 #include <QDebug>
 #include <QDir>
+#include <QString>
 #include <QStandardPaths>
-
+#ifdef Q_OS_WIN
+#include "windows.h"
+#endif
 /**************************************************************************/
 AppIndex::~AppIndex()
 {
@@ -58,6 +61,8 @@ void AppIndex::buildIndex()
 
 	qDebug() << "[ApplicationIndex]\tLooking in: " << _paths;
 
+
+#ifndef Q_OS_WIN
 	// Define a lambda for recursion
 	// This lambdsa makes no sanity checks since the directories in the recursion are always
 	// valid an would simply produce overhead -> check for sanity before use
@@ -161,6 +166,67 @@ void AppIndex::buildIndex()
 		if (fi.exists())
 			rec_dirsearch(fi);
 	}
+#endif
+#ifdef Q_OS_WIN
+    HKEY hUninstKey = NULL;
+    HKEY hAppKey = NULL;
+    WCHAR sAppKeyName[1024];
+    WCHAR sSubKey[1024];
+    WCHAR sDisplayName[1024];
+    WCHAR *sRoot = L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
+    long lResult = ERROR_SUCCESS;
+    DWORD dwType = KEY_ALL_ACCESS;
+    DWORD dwBufferSize = 0;
+
+    //Open the "Uninstall" key.
+    if(RegOpenKeyEx(HKEY_LOCAL_MACHINE, sRoot, 0, KEY_READ, &hUninstKey) != ERROR_SUCCESS)
+    {
+        return;
+    }
+
+    for(DWORD dwIndex = 0; lResult == ERROR_SUCCESS; dwIndex++)
+    {
+        //Enumerate all sub keys...
+        dwBufferSize = sizeof(sAppKeyName);
+        if((lResult = RegEnumKeyEx(hUninstKey, dwIndex, sAppKeyName,
+            &dwBufferSize, NULL, NULL, NULL, NULL)) == ERROR_SUCCESS)
+        {
+            //Open the sub key.
+            wsprintf(sSubKey, L"%s\\%s", sRoot, sAppKeyName);
+            if(RegOpenKeyEx(HKEY_LOCAL_MACHINE, sSubKey, 0, KEY_READ, &hAppKey) != ERROR_SUCCESS) {
+                RegCloseKey(hAppKey);
+                RegCloseKey(hUninstKey);
+                return;
+            }
+
+            //Get the display name value from the application's sub key.
+            dwBufferSize = sizeof(sDisplayName);
+            if(RegQueryValueEx(hAppKey, L"DisplayName", NULL,
+                &dwType, (unsigned char*)sDisplayName, &dwBufferSize) == ERROR_SUCCESS) {
+                qDebug() << QString::fromWCharArray(sAppKeyName);
+                qDebug() << QString::fromWCharArray(sSubKey);
+                qDebug() << QString::fromWCharArray(sDisplayName);
+
+
+                Item *i = new Item;
+                i->_name     = QString::fromWCharArray(sDisplayName);
+                i->_info     = "";
+                i->_iconName = "";
+                i->_exec     = "";
+                i->_term     = false;
+                _index.push_back(i);
+            }
+
+            RegCloseKey(hAppKey);
+        }
+    }
+
+    RegCloseKey(hUninstKey);
+#endif
+
+
+
+
 
 	std::sort(_index.begin(), _index.end(), Service::Item::CaseInsensitiveCompare());
 

@@ -18,7 +18,6 @@
 #include "albertengine.h"
 #include "settingsdialog.h"
 #include "globalhotkey.h"
-#include "xcb/xcb.h"
 #include <QEvent>
 #include <QSettings>
 #include <QLabel>
@@ -75,7 +74,7 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	_proposalListView->setFocusPolicy(Qt::NoFocus);
 	_proposalListView->setFocusProxy(_inputLine);
 	_proposalListView->hide();
-	contentLayout->addWidget(_proposalListView);
+    contentLayout->addWidget(_proposalListView);
 
 
 
@@ -102,6 +101,7 @@ AlbertWidget::AlbertWidget(QWidget *parent)
 	GlobalHotkey::instance()->setHotkey({Qt::AltModifier, Qt::Key_Space});
 
 	_t.start();
+    this->show();
 }
 
 /**************************************************************************/

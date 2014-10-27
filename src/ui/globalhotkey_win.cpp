@@ -14,7 +14,36 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "globalhotkey.h"
+#include "globalhotkey_p.h"
 
+/**************************************************************************/
+/**************************************************************************/
+/**************************************************************************/
+GlobalHotkey::GlobalHotkeyPrivate::GlobalHotkeyPrivate(QObject *parent)
+    : QObject(parent)
+{
 
+    QAbstractEventDispatcher::instance()->installNativeEventFilter(this);
+}
 
+/**************************************************************************/
+bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const Hotkey& hk)
+{
+
+}
+
+/**************************************************************************/
+void GlobalHotkey::GlobalHotkeyPrivate::unregisterNativeHotkeys()
+{
+
+}
+
+/**************************************************************************/
+bool GlobalHotkey::GlobalHotkeyPrivate::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
+{
+    Q_UNUSED(result);
+    if (eventType == "xcb_generic_event_t") {
+
+    }
+    return false;
+}
