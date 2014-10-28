@@ -1,0 +1,16 @@
+[Desktop Entry]
+Categories=Utility;
+Comment=Omnilauncher
+Exec=albert
+GenericName=Albert
+Icon=/usr/share/albert/icon.svg
+Name=Albert
+NoDisplay=false
+Path[$e]=
+StartupNotify=false
+Terminal=0
+TerminalOptions=
+Type=Application
+Version=0.4
+X-KDE-SubstituteUID=false
+X-KDE-Username=
