@@ -38,7 +38,7 @@ build() {
   cd "$srcdir/build"
   cmake "../$pkgname" \
     -DCMAKE_INSTALL_PREFIX=/usr \
-    -DCMAKE_BUILD_TYPE=Debug
+    -DCMAKE_BUILD_TYPE=Release
   make
 }
 
