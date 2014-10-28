@@ -38,7 +38,8 @@ int main(int argc, char *argv[])
 		QDir data(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
 		if (!data.exists())
 			data.mkpath(".");
-		QDir conf(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation));
+		QDir conf(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
+				  +"/"+qApp->applicationName());
 		if (!conf.exists())
 			conf.mkpath(".");
 	}
