@@ -44,9 +44,6 @@ int main(int argc, char *argv[])
 			conf.mkpath(".");
 	}
 
-	// Create the app
-	MainWidget *w = new MainWidget;
-
 	/*  BEGIN Style */
 	// Get theme name from config
 	QString theme = gSettings->value("theme").toString();
@@ -81,6 +78,9 @@ int main(int argc, char *argv[])
 		a.setStyleSheet(QString::fromLocal8Bit("file:///:/resources/Standard.qss"));
 	}
 	/*  END Style */
+
+	// Create the app
+	MainWidget *w = new MainWidget;
 
 	// Enter eventloop
 	int retval = a.exec();

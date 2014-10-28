@@ -35,40 +35,13 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 	ui.setupUi(this);
 
 
+
 	/* GENERAL */
 
 	// hotkey setter
 	_hkWidget = new HotkeyWidget;
 	ui.tabGeneral->layout()->addWidget(_hkWidget);
 
-
-	/* APPEARANCE */
-
-
-	// Add a simple fallback without path
-	ui.listWidget_skins->addItem("Standard (Fallback)");
-
-	// Get theme dirs
-	QStringList themeDirs = QStandardPaths::locateAll(QStandardPaths::DataLocation,
-													  "themes",
-													  QStandardPaths::LocateDirectory);
-	// Get all themes
-	QFileInfoList themes;
-	for (QDir d : themeDirs)
-		themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
-
-	// Add the themes
-	for (QFileInfo fi : themes)
-	{
-		ui.listWidget_skins->addItem(fi.baseName());
-		ui.listWidget_skins->item(ui.listWidget_skins->count()-1)->setData(
-					Qt::UserRole,
-					fi.canonicalFilePath());
-	}
-
-	// Apply a skin if clicked
-	connect(ui.listWidget_skins, SIGNAL(itemClicked(QListWidgetItem*)),
-			this, SLOT(onSkinClicked(QListWidgetItem*)));
 
 
 	/* MODULES */
@@ -95,6 +68,35 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 
 	ui.listWidget->setCurrentRow(0);
 	ui.listWidget->adjustSize();
+
+
+
+	/* APPEARANCE */
+
+	// Add a simple fallback without path
+	ui.listWidget_skins->addItem("Standard (Fallback)");
+
+	// Get theme dirs
+	QStringList themeDirs = QStandardPaths::locateAll(QStandardPaths::DataLocation,
+													  "themes",
+													  QStandardPaths::LocateDirectory);
+	// Get all themes
+	QFileInfoList themes;
+	for (QDir d : themeDirs)
+		themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
+
+	// Add the themes
+	for (QFileInfo fi : themes)
+	{
+		ui.listWidget_skins->addItem(fi.baseName());
+		ui.listWidget_skins->item(ui.listWidget_skins->count()-1)->setData(
+					Qt::UserRole,
+					fi.canonicalFilePath());
+	}
+
+	// Apply a skin if clicked
+	connect(ui.listWidget_skins, SIGNAL(itemClicked(QListWidgetItem*)),
+			this, SLOT(onSkinClicked(QListWidgetItem*)));
 }
 
 /**************************************************************************/
