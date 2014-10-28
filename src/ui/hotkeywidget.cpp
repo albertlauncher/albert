@@ -102,8 +102,10 @@ void HotkeyWidget::keyPressEvent(QKeyEvent *event)
 		if ( !GlobalHotkey::instance()->setHotkey({mods, Qt::Key(key)}) ) {
 			QMessageBox msgBox(QMessageBox::Critical, "Error",
 							   keyKomboToString(mods, key) +
-							   " could not be added.");
+							   " could not be registered.");
 			msgBox.exec();
+			const GlobalHotkey::Hotkey HK = GlobalHotkey::instance()->hotkey();
+			this->setText((HK._key == Qt::Key(0)) ? "?" : keyKomboToString(HK._mods,HK._key));
 			return;
 		}
 
