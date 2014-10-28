@@ -18,6 +18,7 @@
 #include "websearch/websearch.h"
 #include <chrono>
 #include <QProcess>
+#include <QDirIterator>
 
 #include <QDebug>
 
@@ -77,7 +78,60 @@ QDataStream &AppIndex::Item::deserialize(QDataStream &in)
 /**************************************************************************/
 QIcon AppIndex::Item::icon() const
 {
+	/* Icons and themes are looked for in a set of directories. By default,
+	 * apps should look in $HOME/.icons (for backwards compatibility), in
+	 * $XDG_DATA_DIRS/icons and in /usr/share/pixmaps (in that order).
+	 * Applications may further add their own icon directories to this list,
+	 * and users may extend or change the list (in application/desktop specific
+	 * ways).In each of these directories themes are stored as subdirectories.
+	 * A theme can be spread across several base directories by having
+	 * subdirectories of the same name. This way users can extend and override
+	 * system themes.
+	 *
+	 * In order to have a place for third party applications to install their
+	 * icons there should always exist a theme called "hicolor" [1]. The data
+	 * for the hicolor theme is available for download at:
+	 * http://www.freedesktop.org/software/icon-theme/. Implementations are
+	 * required to look in the "hicolor" theme if an icon was not found in the
+	 * current theme.*/
+
+	// PATH
+	if (_iconName.startsWith('/'))
+		return QIcon(_iconName);
+
+	// STD WAY
 	if (QIcon::hasThemeIcon(_iconName))
 		return QIcon::fromTheme(_iconName);
+
+	// HICOLOR (Fallback)
+	QString currTheme = QIcon::themeName();
+	QIcon::setThemeName("Hicolor");
+
+	if (QIcon::hasThemeIcon(_iconName)){
+		QIcon retval = QIcon::fromTheme(_iconName);
+		QIcon::setThemeName(currTheme);
+		return retval;
+	}
+
+	// Try again without extension if there is one
+	if (_iconName.contains('.')){
+		QString s =  _iconName.section('.',0,-2);
+		if (QIcon::hasThemeIcon(s))	{
+			QIcon retval = QIcon::fromTheme(s);
+			QIcon::setThemeName(currTheme);
+			return retval;
+		}
+	}
+
+	// PIXMAPS
+	QDirIterator it("/usr/share/pixmaps", QDirIterator::Subdirectories);
+	while (it.hasNext()) {
+		it.next();
+		QFileInfo fi = it.fileInfo();
+		if (fi.isFile() && fi.baseName().startsWith(_iconName))
+			return QIcon(fi.canonicalFilePath());
+	}
+
+	//UNKNOWN
 	return QIcon::fromTheme("unknown");
 }
