@@ -34,6 +34,15 @@ int main(int argc, char *argv[])
 	QCoreApplication::setApplicationName(QString::fromLocal8Bit("albert"));
 	a.setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
+	{ // FIRST RUN STUFF
+		QDir data(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
+		if (!data.exists())
+			data.mkpath(".");
+		QDir conf(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation));
+		if (!conf.exists())
+			conf.mkpath(".");
+	}
+
 	// Create the app
 	MainWidget *w = new MainWidget;
 
@@ -76,8 +85,8 @@ int main(int argc, char *argv[])
 	int retval = a.exec();
 
 	// Cleanup
-	delete gSettings;
 	delete w;
+	delete gSettings;
 
 	// Quit
 	return retval;
