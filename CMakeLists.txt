@@ -71,13 +71,22 @@ qt5_wrap_ui(UIS
 
 #linux
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
+  # Add platformspecific sources
   set(SRCS ${SRCS} src/globalhotkey_x11.cpp)
+
+  # Define targets and linked libs
   add_executable(albert ${SRCS} ${UIS} ${DATA})
   target_link_libraries(albert Qt5::Widgets Qt5::X11Extras muparser X11)
-  install(TARGETS albert RUNTIME DESTINATION /usr/bin)
+
+  # Define make install target
+  install(TARGETS albert RUNTIME DESTINATION bin)
+  install(DIRECTORY data/icons DESTINATION share/albert COMPONENT config)
+  install(DIRECTORY data/themes DESTINATION share/albert COMPONENT config)
+  install(FILES data/icon.svg DESTINATION share/albert COMPONENT icon)
+  install(FILES data/albert.desktop DESTINATION share/applications COMPONENT desktop)
   install(FILES data/albert.conf DESTINATION /etc/xdg/albert COMPONENT config)
-  install(DIRECTORY data/icons DESTINATION /usr/share/albert COMPONENT config)
-  install(DIRECTORY data/themes DESTINATION /usr/share/albert COMPONENT config)
+
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 #win
