@@ -30,6 +30,9 @@ void WebSearch::initialize()
 		delete i;
 	_searchEngines.clear();
 
+
+
+
 	// Google
 	Item *i = new Item;
 	i->_lastAccess = 1;

@@ -21,10 +21,11 @@
 #include "services/calculator/calculator.h"
 #include "services/bookmarkindex/bookmarkindex.h"
 #include "services/appindex/appindex.h"
+#include "globals.h"
 
 #include <QDir>
 #include <QStandardPaths>
-#include <QSettings>
+#include <QMessageBox>
 
 
 /**************************************************************************/
@@ -43,31 +44,26 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 
 	/* APPEARANCE */
 
-	// Get theme name from config
-	QString theme = QSettings(QSettings::UserScope, "albert", "albert")
-			.value("theme", "Standard.qss").toString();
+
+	// Add a simple fallback without path
+	ui.listWidget_skins->addItem("Standard (Fallback)");
 
 	// Get theme dirs
 	QStringList themeDirs = QStandardPaths::locateAll(QStandardPaths::DataLocation,
 													  "themes",
 													  QStandardPaths::LocateDirectory);
-
-	// Find the theme
+	// Get all themes
+	QFileInfoList themes;
 	for (QDir d : themeDirs)
-	{
-		QFileInfoList fil = d.entryInfoList(QStringList("*.qss"),
-											QDir::Files | QDir::NoSymLinks);
-		for (QFileInfo fi : fil)
-		{
-			ui.listWidget_skins->addItem(fi.baseName());
-			ui.listWidget_skins->item(ui.listWidget_skins->count()-1)->setData(
-						Qt::UserRole,
-						fi.canonicalFilePath()
-						);
+		themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
 
-			if (fi.fileName() == theme)
-				ui.listWidget_skins->setCurrentRow(ui.listWidget_skins->count()-1);
-		}
+	// Add the themes
+	for (QFileInfo fi : themes)
+	{
+		ui.listWidget_skins->addItem(fi.baseName());
+		ui.listWidget_skins->item(ui.listWidget_skins->count()-1)->setData(
+					Qt::UserRole,
+					fi.canonicalFilePath());
 	}
 
 	// Apply a skin if clicked
@@ -106,11 +102,24 @@ void SettingsDialog::onSkinClicked(QListWidgetItem *i)
 {
 	// Apply and save the theme
 	QString path(i->data(Qt::UserRole).toString());
-	QFile styleFile(path);
-	if (styleFile.open(QFile::ReadOnly)) {
-		qApp->setStyleSheet(styleFile.readAll());
-		QSettings(QSettings::UserScope, "albert", "albert")
-				.setValue("theme", path.section('/', -1));
-		styleFile.close();
+	if (path.isEmpty())
+	{
+		qApp->setStyleSheet(QString::fromLocal8Bit("file:///:/resources/Standard.qss"));
+		gSettings->remove("theme");
+	}
+	else
+	{
+		QFile styleFile(path);
+		if (styleFile.open(QFile::ReadOnly)) {
+			qApp->setStyleSheet(styleFile.readAll());
+			gSettings->setValue("theme", path.section('/', -1));
+			styleFile.close();
+		}
+		else
+		{
+			QMessageBox msgBox(QMessageBox::Critical, "Error",
+							   "Could not open theme file.");
+			msgBox.exec();
+		}
 	}
 }

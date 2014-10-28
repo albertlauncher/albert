@@ -19,10 +19,10 @@
 #include "settingsdialog.h"
 #include "globalhotkey.h"
 #include <QEvent>
-#include <QSettings>
 #include <QLabel>
 #include <QFile>
 #include <QStandardPaths>
+#include "globals.h"
 
 /**************************************************************************/
 MainWidget::MainWidget(QWidget *parent)
@@ -144,7 +144,7 @@ void MainWidget::show()
 	QWidget::show();
 	_inputLine->clear();
 	updateGeometry();
-	if (QSettings().value(QString::fromLocal8Bit("show_centered"), QString::fromLocal8Bit("true")).toBool())
+	if (gSettings->value(QString::fromLocal8Bit("showCentered"), QString::fromLocal8Bit("true")).toBool())
 		this->move(QApplication::desktop()->screenGeometry().center() - QPoint(rect().right()/2,192 ));
 	this->raise();
 	this->activateWindow();

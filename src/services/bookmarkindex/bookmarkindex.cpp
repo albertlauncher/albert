@@ -17,9 +17,9 @@
 #include "bookmarkindex.h"
 #include "bookmarkitem.h"
 #include "bookmarkindexwidget.h"
+#include "globals.h"
 
 #include <functional>
-#include <QSettings>
 #include <QFile>
 #include <QFileInfo>
 #include <QJsonDocument>
@@ -75,7 +75,7 @@ void BookmarkIndex::buildIndex()
 
 	// Finally do this recursion for all paths
 	QString bookmarkPath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + "/"
-			+ QSettings().value(QString::fromLocal8Bit("chromium_bookmark_path"),
+			+ gSettings->value(QString::fromLocal8Bit("chromium_bookmark_path"),
 								QString::fromLocal8Bit(".config/chromium/Default/Bookmarks")).toString();
 
 	qDebug() << "[BookmarkIndex]\tParsing" << bookmarkPath;

@@ -19,49 +19,66 @@
 #include <QStandardPaths>
 #include <QDebug>
 #include <QDir>
+#include "globals.h"
 #include "mainwidget.h"
+
+QSettings *gSettings = nullptr;
 
 int main(int argc, char *argv[])
 {
+	// Settings
+	gSettings = new QSettings(QSettings::UserScope, "albert", "albert");
+
 	// Application
 	QApplication a(argc, argv);
 	QCoreApplication::setApplicationName(QString::fromLocal8Bit("albert"));
 	a.setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
 	// Create the app
-	MainWidget w;
+	MainWidget *w = new MainWidget;
 
-	/* Style */
+	/*  BEGIN Style */
 	// Get theme name from config
-	QString theme = QSettings(QSettings::UserScope, "albert", "albert")
-			.value("theme", "Standard.qss").toString();
+	QString theme = gSettings->value("theme").toString();
 
 	// Get theme dirs
 	QStringList themeDirs = QStandardPaths::locateAll(QStandardPaths::DataLocation,
 													  "themes",
 													  QStandardPaths::LocateDirectory);
-	// Find the theme
+	// Get all themes
+	QFileInfoList themes;
 	for (QDir d : themeDirs)
-	{
-		QFileInfoList fil = d.entryInfoList(QStringList("*.qss"),
-											QDir::Files | QDir::NoSymLinks);
-		for (QFileInfo fi : fil){
-			if (fi.fileName() == theme)
-			{
-				// Apply the theme
-				QFile styleFile(fi.canonicalFilePath()); // TODO errorhandling
-				if (styleFile.open(QFile::ReadOnly)) {
-					qApp->setStyleSheet(styleFile.readAll());
-					styleFile.close();
-				}
-				else
-					qWarning() << "Could not open style file";;
+		themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
+
+	// Find the theme
+	bool success = false;
+	for (QFileInfo fi : themes){
+		if (fi.fileName() == theme)
+		{
+			// Apply the theme
+			QFile styleFile(fi.canonicalFilePath()); // TODO errorhandling
+			if (styleFile.open(QFile::ReadOnly)) {
+				qApp->setStyleSheet(styleFile.readAll());
+				styleFile.close();
+				success = true;
 			}
 		}
 	}
 
+	if (!success)
+	{
+		qWarning() << "Error setting style. Using fallback";
+		a.setStyleSheet(QString::fromLocal8Bit("file:///:/resources/Standard.qss"));
+	}
+	/*  END Style */
 
 	// Enter eventloop
 	int retval = a.exec();
+
+	// Cleanup
+	delete gSettings;
+	delete w;
+
+	// Quit
 	return retval;
 }

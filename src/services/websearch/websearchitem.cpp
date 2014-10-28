@@ -19,7 +19,6 @@
 #include <QProcess>
 #include <QClipboard>
 #include <QGuiApplication>
-#include <QSettings>
 #include <QDebug>
 #include <QDesktopServices>
 #include <QUrl>
