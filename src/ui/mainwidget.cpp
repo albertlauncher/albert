@@ -104,14 +104,14 @@ void MainWidget::serialize() const
 {
 	QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db";
 	QFile f(path);
-	if (!f.open(QIODevice::ReadWrite| QIODevice::Text)){
-		qWarning() << "Could not open file" << path;
+	if (f.open(QIODevice::ReadWrite| QIODevice::Text)){
+		qDebug() << "Serializing to " << path;
+		QDataStream out( &f );
+		_engine->serialize(out);
+		f.close();
+		return;
 	}
-
-	qDebug() << "Serializing to " << path;
-	QDataStream out( &f );
-	_engine->serialize(out);
-	f.close();
+	qFatal("FATAL: Could not write to %s", path.toStdString().c_str());
 }
 
 /**************************************************************************/
