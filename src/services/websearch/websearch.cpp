@@ -30,16 +30,15 @@ void WebSearch::initialize()
 		delete i;
 	_searchEngines.clear();
 
-
-
-
 	// Google
 	Item *i = new Item;
 	i->_lastAccess = 1;
 	i->_name       = "Google";
 	i->_url        = "https://www.google.de/#q=%s";
 	i->_shortcut   = "gg";
-	i->_iconPath   = QStandardPaths::locate(QStandardPaths::DataLocation, "google.svg");
+	// this should give back the system data path + /icons/icon.svg
+	i->_iconPath   = QStandardPaths::standardLocations(QStandardPaths::DataLocation).back()
+			+ "/icons/google.svg";
 	_searchEngines.push_back(i);
 
 	// Youtube
@@ -48,7 +47,8 @@ void WebSearch::initialize()
 	i->_name       = "Youtube";
 	i->_url        = "https://www.youtube.com/results?search_query=%s";
 	i->_shortcut   = "yt";
-	i->_iconPath   = QStandardPaths::locate(QStandardPaths::DataLocation, "youtube.svg");
+	i->_iconPath   = QStandardPaths::standardLocations(QStandardPaths::DataLocation).back()
+			+ "/icons/youtube.svg";
 	_searchEngines.push_back(i);
 
 	// Amazon
@@ -57,7 +57,8 @@ void WebSearch::initialize()
 	i->_name       = "Amazon";
 	i->_url        = "http://www.amazon.de/s/?field-keywords=%s";
 	i->_shortcut   = "ama";
-	i->_iconPath   = QStandardPaths::locate(QStandardPaths::DataLocation, "amazon.svg");
+	i->_iconPath   = QStandardPaths::standardLocations(QStandardPaths::DataLocation).back()
+			+ "/icons/amazon.svg";
 	_searchEngines.push_back(i);
 
 	// Ebay
@@ -66,7 +67,8 @@ void WebSearch::initialize()
 	i->_name       = "Ebay";
 	i->_url        = "http://www.ebay.de/sch/i.html?_nkw=%s";
 	i->_shortcut   = "eb";
-	i->_iconPath   = QStandardPaths::locate(QStandardPaths::DataLocation, "ebay.svg");
+	i->_iconPath   = QStandardPaths::standardLocations(QStandardPaths::DataLocation).back()
+			+ "/icons/ebay.svg";
 	_searchEngines.push_back(i);
 }
 
