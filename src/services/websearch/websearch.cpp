@@ -21,6 +21,8 @@
 #include <QDesktopServices>
 #include <QStandardPaths>
 #include <QUrl>
+#include <QFile>
+#include <QDebug>
 
 /**************************************************************************/
 void WebSearch::initialize()
@@ -37,9 +39,14 @@ void WebSearch::initialize()
 	i->_url        = "https://www.google.de/#q=%s";
 	i->_shortcut   = "gg";
 	// this should give back the system data path + /icons/icon.svg
-	i->_iconPath   = QStandardPaths::standardLocations(QStandardPaths::DataLocation).back()
-			+ "/icons/google.svg";
+	for (QString s : QStandardPaths::standardLocations(QStandardPaths::DataLocation)) {
+		QFile f(s.append("/icons/google.svg"));
+		if (f.exists())
+			i->_iconPath = s;
+	}
 	_searchEngines.push_back(i);
+
+	qDebug() << i->_iconPath;
 
 	// Youtube
 	i = new Item;
@@ -47,8 +54,11 @@ void WebSearch::initialize()
 	i->_name       = "Youtube";
 	i->_url        = "https://www.youtube.com/results?search_query=%s";
 	i->_shortcut   = "yt";
-	i->_iconPath   = QStandardPaths::standardLocations(QStandardPaths::DataLocation).back()
-			+ "/icons/youtube.svg";
+	for (QString s : QStandardPaths::standardLocations(QStandardPaths::DataLocation)) {
+		QFile f(s.append("/icons/youtube.svg"));
+		if (f.exists())
+			i->_iconPath = s;
+	}
 	_searchEngines.push_back(i);
 
 	// Amazon
@@ -57,8 +67,11 @@ void WebSearch::initialize()
 	i->_name       = "Amazon";
 	i->_url        = "http://www.amazon.de/s/?field-keywords=%s";
 	i->_shortcut   = "ama";
-	i->_iconPath   = QStandardPaths::standardLocations(QStandardPaths::DataLocation).back()
-			+ "/icons/amazon.svg";
+	for (QString s : QStandardPaths::standardLocations(QStandardPaths::DataLocation)) {
+		QFile f(s.append("/icons/amazon.svg"));
+		if (f.exists())
+			i->_iconPath = s;
+	}
 	_searchEngines.push_back(i);
 
 	// Ebay
@@ -67,8 +80,11 @@ void WebSearch::initialize()
 	i->_name       = "Ebay";
 	i->_url        = "http://www.ebay.de/sch/i.html?_nkw=%s";
 	i->_shortcut   = "eb";
-	i->_iconPath   = QStandardPaths::standardLocations(QStandardPaths::DataLocation).back()
-			+ "/icons/ebay.svg";
+	for (QString s : QStandardPaths::standardLocations(QStandardPaths::DataLocation)) {
+		QFile f(s.append("/icons/ebay.svg"));
+		if (f.exists())
+			i->_iconPath = s;
+	}
 	_searchEngines.push_back(i);
 }
 
