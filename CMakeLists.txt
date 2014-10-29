@@ -11,8 +11,6 @@ endif()
 project(albert)
 
 find_package(Qt5Widgets REQUIRED)
-find_package(Qt5X11Extras REQUIRED)
-find_library(muparser REQUIRED)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
@@ -77,7 +75,9 @@ qt5_add_resources(RSRC
 #linux
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-	# Add platformspecific sources
+        # Add platformspecific stuff
+	find_package(Qt5X11Extras REQUIRED)
+	find_library(muparser REQUIRED)	
 	set(SRCS ${SRCS} src/globalhotkey_x11.cpp)
 
 	# Define targets and linked libs
@@ -96,5 +96,18 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 #win
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-  set(SRCS ${SRCS} src/globalhotkey_win.cpp)
+
+        # Add platformspecific stuff
+        set(SRCS ${SRCS} src/globalhotkey_win.cpp)
+
+        #Use unicode
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")
+
+        # Define targets and linked libs
+        add_executable(albert ${SRCS} ${UIS} ${DATA} ${RSRC})
+        target_link_libraries(albert Qt5::Widgets)
+
+        # Define make install target
+        install(TARGETS albert RUNTIME DESTINATION bin)
+
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
