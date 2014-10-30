@@ -31,7 +31,7 @@ public:
 
 protected:
 	WebSearch *_ref;
-	void updateUI();
+    void updateWebsearchListWidget();
 
 protected slots:
 	void onButton_new();

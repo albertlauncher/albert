@@ -25,7 +25,7 @@ WebSearchWidget::WebSearchWidget(WebSearch *srv, QWidget *parent) :
 	QWidget(parent), _ref(srv)
 {
 	ui.setupUi(this);
-	updateUI();
+    updateWebsearchListWidget();
 
 	// Initialize connections
 	connect(ui.pushButton_defaults, SIGNAL(clicked()), this, SLOT(onReset()));
@@ -37,11 +37,11 @@ WebSearchWidget::WebSearchWidget(WebSearch *srv, QWidget *parent) :
 }
 
 /**************************************************************************/
-void WebSearchWidget::updateUI()
+void WebSearchWidget::updateWebsearchListWidget()
 {
 	ui.tableWidget_searches->clearContents();
 
-	ui.tableWidget_searches->setRowCount(_ref->_searchEngines.size());
+    ui.tableWidget_searches->setRowCount(_ref->_searchEngines.size());
 	for (int i = 0; i < _ref->_searchEngines.size(); ++i)
 	{
 		ui.tableWidget_searches->setItem(i,0,new QTableWidgetItem(
@@ -53,8 +53,10 @@ void WebSearchWidget::updateUI()
 											 ));
 		ui.tableWidget_searches->setItem(i,2,new QTableWidgetItem(
 											 _ref->_searchEngines[i]->_url
-											 ));
-	}
+                                             ));
+    }
+    ui.tableWidget_searches->resizeColumnsToContents();
+    ui.tableWidget_searches->resizeRowsToContents();
 }
 
 /**************************************************************************/
@@ -66,6 +68,8 @@ void WebSearchWidget::onButton_new()
 	ui.tableWidget_searches->setItem(r,0,new QTableWidgetItem("<Name>"));
 	ui.tableWidget_searches->setItem(r,1,new QTableWidgetItem("<Shortcut>"));
 	ui.tableWidget_searches->setItem(r,2,new QTableWidgetItem("<Url containing %s>"));
+    ui.tableWidget_searches->resizeColumnsToContents();
+    ui.tableWidget_searches->resizeRowsToContents();
 }
 
 /**************************************************************************/
@@ -77,6 +81,8 @@ void WebSearchWidget::onButton_remove()
 	delete _ref->_searchEngines[ui.tableWidget_searches->currentRow()];
 	_ref->_searchEngines.remove(ui.tableWidget_searches->currentRow());
 	ui.tableWidget_searches->removeRow(ui.tableWidget_searches->currentRow());
+    ui.tableWidget_searches->resizeColumnsToContents();
+    ui.tableWidget_searches->resizeRowsToContents();
 }
 
 /**************************************************************************/
@@ -95,6 +101,8 @@ void WebSearchWidget::onButton_setIcon()
 
 	_ref->_searchEngines[row]->_iconPath = fileName;
 	ui.tableWidget_searches->item(row,0)->setIcon(QIcon(fileName));
+    ui.tableWidget_searches->resizeColumnsToContents();
+    ui.tableWidget_searches->resizeRowsToContents();
 }
 
 /**************************************************************************/
@@ -113,11 +121,13 @@ void WebSearchWidget::onChange(int row , int col)
 	default:// Does never happen
 		break;
 	}
+    ui.tableWidget_searches->resizeColumnsToContents();
+    ui.tableWidget_searches->resizeRowsToContents();
 }
 
 /**************************************************************************/
 void WebSearchWidget::onReset()
 {
 	_ref->initialize();
-	updateUI();
+    updateWebsearchListWidget();
 }
