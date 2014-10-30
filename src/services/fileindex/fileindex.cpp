@@ -17,6 +17,7 @@
 #include "fileindex.h"
 #include "fileitem.h"
 #include "fileindexwidget.h"
+#include "globals.h"
 
 #include <functional>
 #include <chrono>
@@ -46,9 +47,6 @@ QWidget *FileIndex::widget()
 /**************************************************************************/
 void FileIndex::initialize()
 {
-	// Initially dont index hidden files
-	_indexHidenFiles = false;
-
 	// Initially index std paths
 	_paths.clear();
 	_paths << QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)
@@ -84,7 +82,7 @@ void FileIndex::buildIndex()
 		{
 			QDir d(fi.absoluteFilePath());
 			d.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks);
-			if (_indexHidenFiles)
+            if (gSettings->value("indexHidenFiles", false).toBool())
 				d.setFilter(d.filter() | QDir::Hidden);
 
 			// go recursive into subdirs
@@ -110,7 +108,6 @@ void FileIndex::buildIndex()
 QDataStream &FileIndex::serialize(QDataStream &out) const
 {
 	out << _paths
-		<< _indexHidenFiles
 		<< _index.size()
 		<< static_cast<int>(searchType());
 	for (Service::Item *it : _index)
@@ -123,7 +120,6 @@ QDataStream &FileIndex::deserialize(QDataStream &in)
 {
 	int size, T;
 	in >> _paths
-			>> _indexHidenFiles
 			>> size
 			>> T;
 	FileIndex::Item *it;

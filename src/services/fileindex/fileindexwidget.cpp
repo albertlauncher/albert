@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "fileindexwidget.h"
+#include "globals.h"
 #include <QFileDialog>
 #include <QStandardPaths>
 #include <QTimer>
@@ -27,7 +28,7 @@ FileIndexWidget::FileIndexWidget(FileIndex *srv, QWidget *parent) :
 
 	// Init ui
 	ui.comboBox_searchType->setCurrentIndex(static_cast<int>(_ref->searchType()));
-	ui.checkBox_hiddenFiles->setChecked(_ref->_indexHidenFiles);
+    ui.checkBox_hiddenFiles->setChecked(gSettings->value("indexHidenFiles", false).toBool());
 	ui.listWidget_paths->addItems(_ref->_paths.toList());
 
 	// Rect to changes
@@ -113,5 +114,6 @@ void FileIndexWidget::onButton_RebuildIndex()
 /**************************************************************************/
 void FileIndexWidget::onCheckbox_toggle(bool b)
 {
-	_ref->_indexHidenFiles = b;
+    gSettings->setValue("indexHiddenFiles", b);
+    _ref->buildIndex();
 }

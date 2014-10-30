@@ -39,8 +39,7 @@ public:
 protected:
 	FileIndex(){}
 	void buildIndex() override;
-	bool _indexHidenFiles;
-	QSet<QString> _paths;
+    QSet<QString> _paths;
 };
 
 #endif // FILEINDEX_H
