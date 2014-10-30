@@ -20,6 +20,7 @@
 #include <QtX11Extras/QX11Info>
 #include <QVector>
 #include <QSet>
+#include <QAbstractEventDispatcher>
 
 static u_int16_t _alt_mask;
 static u_int16_t _meta_mask;
@@ -210,13 +211,11 @@ GlobalHotkey::GlobalHotkeyPrivate::GlobalHotkeyPrivate(QObject *parent)
 }
 
 /**************************************************************************/
-bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const Hotkey& hk)
+bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const int& hk)
 {
-	// Unregister other hotkeys before registering new ones
-	if ( !_grabbedKeys.isEmpty() )
-		unregisterNativeHotkeys();
+	int keyQt = hk & ~Qt::KeyboardModifierMask;
+	int modQt = hk &  Qt::KeyboardModifierMask;
 
-	int keySymQt = static_cast<int>( hk._key );
 
 	/* Translate key symbol ( Qt -> X ) */
 
@@ -224,11 +223,11 @@ bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const Hotkey& hk)
 	kg.num = 0;
 	kg.sym[0] = 0;
 
-	keySymQt &= ~Qt::KeyboardModifierMask;
+	keyQt &= ~Qt::KeyboardModifierMask;
 
 	bool found = false;
 	for (int n = 0; Qt_XKSym_table[n].key != Qt::Key_unknown; ++n) {
-			if (Qt_XKSym_table[n].key == keySymQt) {
+			if (Qt_XKSym_table[n].key == keyQt) {
 					kg = Qt_XKSym_table[n].xk;
 					found = true;
 					break;
@@ -237,9 +236,9 @@ bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const Hotkey& hk)
 
 	if (!found) {
 			// try latin1
-			if (keySymQt >= 0x20 && keySymQt <= 0x7f) {
+			if (keyQt >= 0x20 && keyQt <= 0x7f) {
 					kg.num = 1;
-					kg.sym[0] = keySymQt;
+					kg.sym[0] = keyQt;
 			}
 	}
 
@@ -250,13 +249,13 @@ bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const Hotkey& hk)
 	/* Translate modifiers ( Qt -> X ) */
 
 	unsigned int modsX = 0;
-	if (hk._mods & Qt::META)
+	if (modQt & Qt::META)
 			modsX |= _meta_mask;
-	if (hk._mods & Qt::SHIFT)
+	if (modQt & Qt::SHIFT)
 			modsX |= ShiftMask;
-	if (hk._mods & Qt::CTRL)
+	if (modQt & Qt::CTRL)
 			modsX |= ControlMask;
-	if (hk._mods & Qt::ALT)
+	if (modQt & Qt::ALT)
 			modsX |= _alt_mask;
 
 

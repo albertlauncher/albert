@@ -18,7 +18,6 @@
 #define GLOBALHOTKEY_H
 
 #include <QObject>
-#include <QAbstractEventDispatcher>
 #include "singleton.h"
 
 class GlobalHotkey : public QObject, public Singleton<GlobalHotkey>
@@ -27,26 +26,26 @@ class GlobalHotkey : public QObject, public Singleton<GlobalHotkey>
 	friend class Singleton<GlobalHotkey>;
 	class GlobalHotkeyPrivate;
 
-public:
-	typedef struct{
-		Qt::KeyboardModifiers _mods;
-		Qt::Key _key;
-	} Hotkey;
-
 private:
 	bool _enabled;
-	Hotkey _hotkey;
+	int  _hotkey;
 	GlobalHotkeyPrivate* _impl;
 
 public:
 	explicit GlobalHotkey(QObject *parent = 0);
-	explicit GlobalHotkey(const Hotkey&, QObject* parent = 0);
 	virtual ~GlobalHotkey();
 
-	bool setHotkey(const Hotkey&);
+	bool setHotkey(const QString&);
+	bool setHotkey(const QKeySequence&);
+	bool setHotkey(const int);
 	void unsetHotkey();
-	const Hotkey& hotkey();
+
+	int hotkey();
+
+
+
 	bool isEnabled() const;
+
 
 signals:
 	void hotKeyPressed();

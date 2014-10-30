@@ -27,9 +27,8 @@ public:
 	explicit HotkeyWidget(QWidget *parent = 0);
 
 private:
-	bool _settingHotkey;
+	bool _waitingForHotkey;
 
-	QString keyKomboToString(Qt::KeyboardModifiers mod, int key);
 	void grabAll();
 	void releaseAll();
 

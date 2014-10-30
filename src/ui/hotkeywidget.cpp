@@ -16,35 +16,36 @@
 
 #include "hotkeywidget.h"
 #include "globalhotkey.h"
+#include "globals.h"
+
 #include <QApplication>
 #include <QMessageBox>
 #include <QKeySequence>
 #include <QMouseEvent>
 #include <QKeyEvent>
+#include <QKeyEvent>
 
 /**************************************************************************/
 HotkeyWidget::HotkeyWidget(QWidget *parent) : QLabel(parent)
 {
-	_settingHotkey = false;
-	this->setObjectName("hotkeyWidget");
-	this->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-	const GlobalHotkey::Hotkey HK = GlobalHotkey::instance()->hotkey();
-	this->setText((HK._key == Qt::Key(0)) ? "?" : keyKomboToString(HK._mods,HK._key));
-}
+	_waitingForHotkey = false;
+	const int hk = GlobalHotkey::instance()->hotkey();
+	this->setText((!hk)
+				  ? "Press to set hotkey"
+				  : QKeySequence(hk).toString());
 
+//	// Swap fg and bg
 
-/**************************************************************************/
-QString HotkeyWidget::keyKomboToString(Qt::KeyboardModifiers mod, int key)
-{
-	if(mod & Qt::ShiftModifier)
-		key += Qt::SHIFT;
-	if(mod & Qt::ControlModifier)
-		key += Qt::CTRL;
-	if(mod & Qt::AltModifier)
-		key += Qt::ALT;
-	if(mod & Qt::MetaModifier)
-		key += Qt::META;
-	return QKeySequence(key).toString(QKeySequence::NativeText);
+//	QPalette p = this->palette();
+//	QColor c = p.color(QPalette::Active, QPalette::Window);
+//	p.setColor(QPalette::Active, QPalette::Window, p.color(QPalette::Active, QPalette::WindowText));
+//	p.setColor(QPalette::Active, QPalette::WindowText, c);
+//	setStyleSheet("padding: 2px;\
+////					margin: 0px;\
+//					border-radius: 5px;\
+////					font:  32px \"Ubuntu\";\
+//					border:none;\
+//					margin: 0px;}");
 }
 
 /**************************************************************************/
@@ -53,7 +54,7 @@ void HotkeyWidget::grabAll()
 	grabKeyboard();
 	grabMouse();
 	QApplication::setOverrideCursor(Qt::BlankCursor);
-	_settingHotkey = true;
+	_waitingForHotkey = true;
 	GlobalHotkey::instance()->setEnabled(false);
 }
 
@@ -63,7 +64,7 @@ void HotkeyWidget::releaseAll()
 	releaseKeyboard();
 	releaseMouse();
 	QApplication::restoreOverrideCursor();
-	_settingHotkey = false;
+	_waitingForHotkey = false;
 	GlobalHotkey::instance()->setEnabled(true);
 }
 
@@ -77,40 +78,53 @@ void HotkeyWidget::mousePressEvent(QMouseEvent *)
 /**************************************************************************/
 void HotkeyWidget::keyPressEvent(QKeyEvent *event)
 {
-	if ( _settingHotkey )
+	if ( _waitingForHotkey )
 	{
+		int currHK = GlobalHotkey::instance()->hotkey();
 		int key = event->key();
-		Qt::KeyboardModifiers mods = event->modifiers();
+		int mods = event->modifiers();
 
 		// Modifier pressed -> update the label
 		if(key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta) {
-			this->setText(keyKomboToString(mods, Qt::Key_Question));
+			this->setText(QKeySequence(mods|Qt::Key_Question).toString());
 			return;
 		}
 
 		// Cancel
 		if (key == Qt::Key_Escape){
 			// Reset the text
-			const GlobalHotkey::Hotkey HK = GlobalHotkey::instance()->hotkey();
-			this->setText((HK._key == Qt::Key(0)) ? "?" : keyKomboToString(HK._mods,HK._key));
+			this->setText(( currHK==0 ) ? "?" : QKeySequence(currHK).toString());
 			releaseAll();
 			return;
 		}
 
 		// Try to register a hotkey
 		releaseAll();
-		if ( !GlobalHotkey::instance()->setHotkey({mods, Qt::Key(key)}) ) {
-			QMessageBox msgBox(QMessageBox::Critical, "Error",
-							   keyKomboToString(mods, key) +
-							   " could not be registered.");
-			msgBox.exec();
-			const GlobalHotkey::Hotkey HK = GlobalHotkey::instance()->hotkey();
-			this->setText((HK._key == Qt::Key(0)) ? "?" : keyKomboToString(HK._mods,HK._key));
-			return;
+		if (GlobalHotkey::instance()->setHotkey(mods|key) )
+		{
+			// Fine save it..
+			gSettings->setValue("hotkey", QKeySequence(mods|key).toString());
+			setText(QKeySequence(mods|key).toString());
 		}
+		else
+		{
+			QMessageBox msgBox(QMessageBox::Critical, "Error",
+							   QKeySequence(mods|key).toString()
+							   + " could not be registered.");
+			msgBox.exec();
 
-		// Fine show it..
-		this->setText(keyKomboToString(mods, key));
+			// Try to set the old hotkey
+			if (GlobalHotkey::instance()->setHotkey(currHK) )
+			{
+				gSettings->setValue("hotkey", QKeySequence(currHK).toString());
+				setText(QKeySequence(currHK).toString());
+				return;
+			}
+
+			// Everything failed
+			gSettings->remove("hotkey");
+			setText("Press to set hotkey");
+		}
 		return;
 	}
 	QWidget::keyPressEvent( event );
@@ -119,11 +133,11 @@ void HotkeyWidget::keyPressEvent(QKeyEvent *event)
 /**************************************************************************/
 void HotkeyWidget::keyReleaseEvent(QKeyEvent *event)
 {
-	if ( _settingHotkey ) {
+	if ( _waitingForHotkey ) {
 		// Modifier released -> update the label
 		int key = event->key();
 		if(key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta) {
-			this->setText(keyKomboToString(event->modifiers(), Qt::Key_Question));
+			this->setText(QKeySequence(event->modifiers()|Qt::Key_Question).toString());
 			return;
 		}
 		return;

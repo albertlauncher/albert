@@ -22,6 +22,7 @@
 #include <QLabel>
 #include <QFile>
 #include <QStandardPaths>
+#include <QMessageBox>
 #include "globals.h"
 
 /**************************************************************************/
@@ -32,8 +33,18 @@ MainWidget::MainWidget(QWidget *parent)
 
 	_engine = new Engine;
 	deserialize();
+
+	// Initialize hotkey
 	connect(GlobalHotkey::instance(), SIGNAL(hotKeyPressed()), this, SLOT(toggleVisibility()));
-	GlobalHotkey::instance()->setHotkey({Qt::AltModifier, Qt::Key_Space});
+	if(!gSettings->value("hotkey").isValid() ||
+			!GlobalHotkey::instance()->setHotkey(gSettings->value("hotkey").toString()))
+	{
+		QMessageBox msgBox(QMessageBox::Critical,
+						   "Error",
+						   "Hotkey is not set or invalid. Please set it in the settings.");
+		msgBox.exec();
+		SettingsDialog::instance()->show();
+	}
 
 	/* UI and windowing */
 

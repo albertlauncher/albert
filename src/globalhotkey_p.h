@@ -28,7 +28,7 @@ class GlobalHotkey::GlobalHotkeyPrivate : public QObject, public QAbstractNative
 public:
 	GlobalHotkeyPrivate(QObject* parent = 0);
 
-	bool registerNativeHotkey(const GlobalHotkey::Hotkey &hk);
+	bool registerNativeHotkey(const int &hk);
 	void unregisterNativeHotkeys();
 
 	bool nativeEventFilter(const QByteArray&, void*, long*) override;

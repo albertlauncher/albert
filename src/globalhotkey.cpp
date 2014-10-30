@@ -17,6 +17,8 @@
 #include "globalhotkey.h"
 #include "globalhotkey_p.h"
 
+#include <QKeySequence>
+
 /**************************************************************************/
 GlobalHotkey::GlobalHotkey(QObject *parent) :
 	QObject(parent)
@@ -24,14 +26,7 @@ GlobalHotkey::GlobalHotkey(QObject *parent) :
 	_impl = new GlobalHotkeyPrivate;
 	connect(_impl, SIGNAL(hotKeyPressed()), this, SLOT(onHotkeyPressed()));
 	_enabled = true;
-	_hotkey._key = Qt::Key(0);
-	_hotkey._mods = Qt::NoModifier;
-}
-
-/**************************************************************************/
-GlobalHotkey::GlobalHotkey(const Hotkey &hk, QObject *parent) :	GlobalHotkey(parent)
-{
-	setHotkey(hk);
+	_hotkey = 0;
 }
 
 /**************************************************************************/
@@ -40,10 +35,27 @@ GlobalHotkey::~GlobalHotkey()
 	delete _impl;
 }
 
+/**************************************************************************/
+bool GlobalHotkey::setHotkey(const QString &hk)
+{
+	return setHotkey(QKeySequence(hk));
+}
 
 /**************************************************************************/
-bool GlobalHotkey::setHotkey(const Hotkey &hk)
+bool GlobalHotkey::setHotkey(const QKeySequence &hk)
 {
+	if (hk.count() != 1)
+		return false;
+	return setHotkey(hk[0]);
+}
+
+/**************************************************************************/
+bool GlobalHotkey::setHotkey(const int hk)
+{
+	// Unregister other hotkeys before registering new ones
+	unsetHotkey();
+
+	//TODO make this capable of multiple key, so that the old one does not have to be unregistered whil registereing another
 	if (_impl->registerNativeHotkey(hk)) {
 		_hotkey = hk;
 		return true;
@@ -52,19 +64,18 @@ bool GlobalHotkey::setHotkey(const Hotkey &hk)
 }
 
 /**************************************************************************/
-void GlobalHotkey::unsetHotkey()
-{
-	_hotkey._key = Qt::Key(0);
-	_hotkey._mods = Qt::NoModifier;
-	_impl->unregisterNativeHotkeys();
-}
-
-/**************************************************************************/
-const GlobalHotkey::Hotkey &GlobalHotkey::hotkey()
+int GlobalHotkey::hotkey()
 {
 	return _hotkey;
 }
 
+
+/**************************************************************************/
+void GlobalHotkey::unsetHotkey()
+{
+	_impl->unregisterNativeHotkeys();
+	_hotkey = 0;
+}
 /**************************************************************************/
 bool GlobalHotkey::isEnabled() const
 {
