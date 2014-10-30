@@ -47,28 +47,39 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 	/* MODULES */
 
 	QListWidgetItem *item = new QListWidgetItem("Websearch");
-	ui.listWidget->addItem(item);
+    ui.listWidget_modules->addItem(item);
 	ui.stackedWidget->addWidget(WebSearch::instance()->widget());
 
 	item = new QListWidgetItem("Apps");
-	ui.listWidget->addItem(item);
+    ui.listWidget_modules->addItem(item);
 	ui.stackedWidget->addWidget(AppIndex::instance()->widget());
 
 	item = new QListWidgetItem("Bookmarks");
-	ui.listWidget->addItem(item);
+    ui.listWidget_modules->addItem(item);
 	ui.stackedWidget->addWidget(BookmarkIndex::instance()->widget());
 
 	item = new QListWidgetItem("Files");
-	ui.listWidget->addItem(item);
+    ui.listWidget_modules->addItem(item);
 	ui.stackedWidget->addWidget(FileIndex::instance()->widget());
 
 	item = new QListWidgetItem("Calculator");
-	ui.listWidget->addItem(item);
+    ui.listWidget_modules->addItem(item);
 	ui.stackedWidget->addWidget(Calculator::instance()->widget());
 
-	ui.listWidget->setCurrentRow(0);
-	ui.listWidget->adjustSize();
-
+    // Set the width of the list to the with of the content
+    QFontMetrics fm(ui.listWidget_modules->font());
+    int width=0;
+    for (int i = 0; i < ui.listWidget_modules->count(); ++i)
+    {
+        int tmp = fm.width(ui.listWidget_modules->item(i)->text());
+        if (width < tmp)
+            width = tmp;
+    }
+    ui.listWidget_modules->setFixedWidth(width
+                                         + ui.listWidget_modules->contentsMargins().left()
+                                         + ui.listWidget_modules->contentsMargins().right()
+                                         + 6
+                                         );
 
 
 	/* APPEARANCE */
