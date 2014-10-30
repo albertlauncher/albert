@@ -16,7 +16,7 @@
 
 #include "proposallistview.h"
 #include "proposallistdelegate.h"
-#include <QDebug>
+#include "globals.h"
 
 #include <QDebug>
 
@@ -27,13 +27,10 @@
 ProposalListView::ProposalListView(QWidget *parent) :
 	QListView(parent)
 {
-	_nItemsToShow = 5;
 	setItemDelegate(new ProposalListDelegate);
-	setObjectName(QString::fromLocal8Bit("ProposalListWidget"));
+	setObjectName("ProposalList");
 	setUniformItemSizes(true);
 	setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
-//	setLayoutMode(QListView::Batched);
-//	setBatchSize(20);
 }
 
 /**************************************************************************//**
@@ -98,7 +95,9 @@ QSize ProposalListView::sizeHint() const
 {
 	if (model()->rowCount() == 0)
 		return QSize(width(), 0);
-	int nToShow = _nItemsToShow < model()->rowCount() ? _nItemsToShow : model()->rowCount();
+	int nToShow = gSettings->value("nItemsToShow", 5).toInt() < model()->rowCount()
+			? gSettings->value("nItemsToShow", 5).toInt()
+			: model()->rowCount();
 	return QSize(width(), nToShow*sizeHintForRow(0));
 }
 

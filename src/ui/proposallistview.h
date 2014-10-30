@@ -25,8 +25,6 @@ class ProposalListView: public QListView
 {
 	Q_OBJECT
 
-	int _nItemsToShow;
-
 public:
 	explicit ProposalListView(QWidget *parent = 0);
 	QSize sizeHint() const override;

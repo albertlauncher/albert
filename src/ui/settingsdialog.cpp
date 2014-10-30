@@ -39,47 +39,57 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 	/* GENERAL */
 
 	// hotkey setter
-	_hkWidget = new HotkeyWidget;
-	ui.tabGeneral->layout()->addWidget(_hkWidget);
+	_hkWidget = new HotkeyWidget; // Initializes itself
+	ui.groupBox_hotkey->layout()->addWidget(_hkWidget);
+
+	// Proposal stuff
+	ui.spinBox_proposals->setValue(gSettings->value("nItemsToShow", 5).toInt());
+
+	// Save if changes are made to the spinBox_proposals
+	connect(ui.spinBox_proposals, SIGNAL(valueChanged(int)),
+			this, SLOT(onNItemsChanged(int)));
 
 
 
 	/* MODULES */
 
 	QListWidgetItem *item = new QListWidgetItem("Websearch");
-    ui.listWidget_modules->addItem(item);
+	ui.listWidget_modules->addItem(item);
 	ui.stackedWidget->addWidget(WebSearch::instance()->widget());
 
 	item = new QListWidgetItem("Apps");
-    ui.listWidget_modules->addItem(item);
+	ui.listWidget_modules->addItem(item);
 	ui.stackedWidget->addWidget(AppIndex::instance()->widget());
 
 	item = new QListWidgetItem("Bookmarks");
-    ui.listWidget_modules->addItem(item);
+	ui.listWidget_modules->addItem(item);
 	ui.stackedWidget->addWidget(BookmarkIndex::instance()->widget());
 
 	item = new QListWidgetItem("Files");
-    ui.listWidget_modules->addItem(item);
+	ui.listWidget_modules->addItem(item);
 	ui.stackedWidget->addWidget(FileIndex::instance()->widget());
 
 	item = new QListWidgetItem("Calculator");
-    ui.listWidget_modules->addItem(item);
+	ui.listWidget_modules->addItem(item);
 	ui.stackedWidget->addWidget(Calculator::instance()->widget());
 
-    // Set the width of the list to the with of the content
-    QFontMetrics fm(ui.listWidget_modules->font());
-    int width=0;
-    for (int i = 0; i < ui.listWidget_modules->count(); ++i)
-    {
-        int tmp = fm.width(ui.listWidget_modules->item(i)->text());
-        if (width < tmp)
-            width = tmp;
-    }
-    ui.listWidget_modules->setFixedWidth(width
-                                         + ui.listWidget_modules->contentsMargins().left()
-                                         + ui.listWidget_modules->contentsMargins().right()
-                                         + 6
-                                         );
+	// The entries and the stackeswidgets are connected in the .ui
+
+	// Set the width of the list to the with of the content
+	QFontMetrics fm(ui.listWidget_modules->font());
+	int width=0;
+	for (int i = 0; i < ui.listWidget_modules->count(); ++i)
+	{
+		int tmp = fm.width(ui.listWidget_modules->item(i)->text());
+		if (width < tmp)
+			width = tmp;
+	}
+	ui.listWidget_modules->setFixedWidth(width
+										 + ui.listWidget_modules->contentsMargins().left()
+										 + ui.listWidget_modules->contentsMargins().right()
+										 + 6
+										 );
+
 
 
 	/* APPEARANCE */
@@ -135,4 +145,10 @@ void SettingsDialog::onSkinClicked(QListWidgetItem *i)
 			msgBox.exec();
 		}
 	}
+}
+
+/**************************************************************************/
+void SettingsDialog::onNItemsChanged(int i)
+{
+	gSettings->setValue("nItemsToShow", i);
 }

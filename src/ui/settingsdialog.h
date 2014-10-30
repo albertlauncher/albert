@@ -33,6 +33,7 @@ public:
 
 protected slots:
 	void onSkinClicked(QListWidgetItem*);
+	void onNItemsChanged(int i);
 };
 
 #endif // SETTINGSDIALOG_H
