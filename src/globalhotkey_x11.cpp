@@ -211,7 +211,7 @@ GlobalHotkey::GlobalHotkeyPrivate::GlobalHotkeyPrivate(QObject *parent)
 }
 
 /**************************************************************************/
-bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const int& hk)
+bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const int hk)
 {
 	int keyQt = hk & ~Qt::KeyboardModifierMask;
 	int modQt = hk &  Qt::KeyboardModifierMask;
