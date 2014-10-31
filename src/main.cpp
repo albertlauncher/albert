@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
 	// Application
 	QApplication a(argc, argv);
 	QCoreApplication::setApplicationName(QString::fromLocal8Bit("albert"));
+	a.setWindowIcon(QIcon(":app_icon"));
 	a.setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
 	{ // FIRST RUN STUFF

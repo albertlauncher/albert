@@ -1,7 +1,6 @@
-<!DOCTYPE RCC>
-<RCC version="1.0">
- <qresource>
-  <file>resources/Standard.qss</file>
- </qresource>
+<RCC>
+    <qresource prefix="/">
+        <file>resources/Standard.qss</file>
+        <file alias="app_icon">resources/icon.svg</file>
+    </qresource>
 </RCC>
-
