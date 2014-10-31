@@ -33,6 +33,8 @@ HotkeyWidget::HotkeyWidget(QWidget *parent) : QLabel(parent)
 	this->setText((hk==0)
 				  ? "Press to set hotkey"
 				  : QKeySequence(hk).toString());
+    connect(GlobalHotkey::instance(), SIGNAL(hotKeyChanged(int)),
+            this, SLOT(onHotkeyChanged(int)));
 
 //	// Swap fg and bg
 
@@ -102,8 +104,7 @@ void HotkeyWidget::keyPressEvent(QKeyEvent *event)
 		if (GlobalHotkey::instance()->registerHotkey(mods|key) )
 		{
 			// Fine save it..
-			gSettings->setValue("hotkey", QKeySequence(mods|key).toString());
-			setText(QKeySequence(mods|key).toString());
+            gSettings->setValue("hotkey", QKeySequence(mods|key).toString());
 		}
 		else
 		{
@@ -115,8 +116,7 @@ void HotkeyWidget::keyPressEvent(QKeyEvent *event)
 			// Try to set the old hotkey
 			if (GlobalHotkey::instance()->registerHotkey(currHK) )
 			{
-				gSettings->setValue("hotkey", QKeySequence(currHK).toString());
-				setText(QKeySequence(currHK).toString());
+                gSettings->setValue("hotkey", QKeySequence(currHK).toString());
 				return;
 			}
 
@@ -141,5 +141,11 @@ void HotkeyWidget::keyReleaseEvent(QKeyEvent *event)
 		}
 		return;
 	}
-	QWidget::keyReleaseEvent( event );
+    QWidget::keyReleaseEvent( event );
+}
+
+/**************************************************************************/
+void HotkeyWidget::onHotkeyChanged(int hotkey)
+{
+    setText(QKeySequence(hotkey).toString());
 }

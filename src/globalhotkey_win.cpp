@@ -17,6 +17,7 @@
 #include "globalhotkey_p.h"
 #include "windows.h"
 #include <QSet>
+#include <QAbstractEventDispatcher>
 
 /**************************************************************************/
 // The ID of the one and only hotkey;
@@ -134,24 +135,23 @@ GlobalHotkey::GlobalHotkeyPrivate::GlobalHotkeyPrivate(QObject *parent)
 }
 
 /**************************************************************************/
-bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const Hotkey& hk)
+bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const int hk)
 {
-    // Unregister other hotkeys before registering new ones
-    if ( !sGrabbedIds.isEmpty() )
-        unregisterNativeHotkeys();
+    int keyQt = hk & ~Qt::KeyboardModifierMask;
+    int modQt = hk &  Qt::KeyboardModifierMask;
 
 
     /* Translate key symbol ( Qt -> X ) */
     UINT key = 0;
-    if (hk._key == 0x20 || //SPACE
-            (hk._key >= 0x30 && hk._key <= 0x39) || // NUMBRS
-            (hk._key > 0x41 && hk._key <= 0x5a) || // LETTERS
-            (hk._key > 0x60 && hk._key <= 0x7a))   //NUMPAD
-        key = hk._key;
+    if (keyQt == 0x20 || //SPACE
+            (keyQt >= 0x30 && keyQt <= 0x39) || // NUMBRS
+            (keyQt > 0x41 && keyQt <= 0x5a) || // LETTERS
+            (keyQt > 0x60 && keyQt <= 0x7a))   //NUMPAD
+        key = keyQt;
     else {
         // Others require lookup from a keymap
         for (int n = 0; Qt_VK_table[n].key != Qt::Key_unknown; ++n) {
-            if (Qt_VK_table[n].key == hk._key) {
+            if (Qt_VK_table[n].key == keyQt) {
                 key = Qt_VK_table[n].vk;
                 break;
             }
@@ -164,13 +164,13 @@ bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const Hotkey& hk)
     /* Translate modifiers ( Qt -> X ) */
 
     unsigned int mods = 0; // MOD_NOREPEAT;
-    if (hk._mods & Qt::META)
+    if (modQt & Qt::META)
             mods |= MOD_WIN;
-    if (hk._mods & Qt::SHIFT)
+    if (modQt & Qt::SHIFT)
             mods |= MOD_SHIFT;
-    if (hk._mods & Qt::CTRL)
+    if (modQt & Qt::CTRL)
             mods |= MOD_CONTROL;
-    if (hk._mods & Qt::ALT)
+    if (modQt & Qt::ALT)
             mods |= MOD_ALT;
 
     /* Grab the key combo*/
