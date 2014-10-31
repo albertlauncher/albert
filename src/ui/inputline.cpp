@@ -43,7 +43,7 @@ void InputLine::keyPressEvent(QKeyEvent *e)
 {
 	// Open settings dialog
 	if (e->modifiers() == Qt::AltModifier && e->key() == Qt::Key_Comma ) {
-		SettingsDialog::instance()->show();
+		emit settingsDialogRequested();
 		return;
 	}
 

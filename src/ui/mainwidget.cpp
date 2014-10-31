@@ -29,22 +29,10 @@
 MainWidget::MainWidget(QWidget *parent)
 	: QWidget(parent)
 {
-	/* MISC */
+	/* Deserializing */
 
 	_engine = new Engine;
 	deserialize();
-
-	// Initialize hotkey
-	connect(GlobalHotkey::instance(), SIGNAL(hotKeyPressed()), this, SLOT(toggleVisibility()));
-	if(!gSettings->value("hotkey").isValid() ||
-			!GlobalHotkey::instance()->registerHotkey(gSettings->value("hotkey").toString()))
-	{
-		QMessageBox msgBox(QMessageBox::Critical,
-						   "Error",
-						   "Hotkey is not set or invalid. Please set it in the settings.");
-		msgBox.exec();
-		SettingsDialog::instance()->show();
-	}
 
 	/* UI and windowing */
 
@@ -102,6 +90,26 @@ MainWidget::MainWidget(QWidget *parent)
 	// Proposallistview intercepts inputline's events (Navigation with keys, pressed modifiers, etc)
 	_inputLine->installEventFilter(_proposalListView);
 	contentLayout->addWidget(_proposalListView);
+
+
+	// Initialize SettingsDialog
+	_settingsDialog = new SettingsDialog(this);
+	connect(_inputLine, SIGNAL(settingsDialogRequested()),
+			_settingsDialog, SLOT(show()));
+
+
+	// Initialize hotkey
+	connect(GlobalHotkey::instance(), SIGNAL(hotKeyPressed()),
+			this, SLOT(toggleVisibility()));
+	if(!gSettings->value("hotkey").isValid() ||
+			!GlobalHotkey::instance()->registerHotkey(gSettings->value("hotkey").toString())) {
+		QMessageBox msgBox(
+					QMessageBox::Critical, "Error",
+					"Hotkey is not set or invalid. Please set it in the settings."
+					);
+		msgBox.exec();
+		_settingsDialog->show();
+	}
 }
 
 /**************************************************************************/

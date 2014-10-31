@@ -34,6 +34,7 @@
 #include "proposallistview.h"
 #include "engine.h"
 #include "singleton.h"
+#include "settingsdialog.h"
 
 class MainWidget : public QWidget
 {
@@ -44,7 +45,8 @@ private:
 	QFrame           *_frame1,*_frame2;
 	InputLine        *_inputLine;
 	ProposalListView *_proposalListView;
-	Engine     *_engine;
+	Engine           *_engine;
+	SettingsDialog   *_settingsDialog;
 
 	void serialize() const;
 	void deserialize ();

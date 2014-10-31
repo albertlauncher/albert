@@ -28,8 +28,7 @@ SettingsButton::SettingsButton(QWidget *parent) :
 {
 	this->setObjectName(QString::fromLocal8Bit("settingsbutton"));
 	this->setFocusPolicy(Qt::NoFocus);
-	setAttribute(Qt::WA_TranslucentBackground);
-	connect(this, SIGNAL(clicked()), SettingsDialog::instance(), SLOT(show()));
+//	setAttribute(Qt::WA_TranslucentBackground);
 }
 
 

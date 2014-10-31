@@ -21,19 +21,24 @@
 #include "singleton.h"
 #include "hotkeywidget.h"
 
-class SettingsDialog : public QDialog, public Singleton<SettingsDialog>
+class SettingsDialog : public QDialog
 {
 	Q_OBJECT
-	friend class Singleton<SettingsDialog>;
 	Ui::SettingsDialog ui;
 	HotkeyWidget* _hkWidget;
 
 public:
 	explicit SettingsDialog(QWidget *parent = 0);
 
+protected:
+	void closeEvent(QCloseEvent * event) override;
+
 protected slots:
 	void onSkinClicked(QListWidgetItem*);
 	void onNItemsChanged(int i);
+
+public slots:
+	void show();
 };
 
 #endif // SETTINGSDIALOG_H

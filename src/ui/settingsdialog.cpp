@@ -22,10 +22,13 @@
 #include "services/bookmarkindex/bookmarkindex.h"
 #include "services/appindex/appindex.h"
 #include "globals.h"
+#include "globalhotkey.h"
 
 #include <QDir>
 #include <QStandardPaths>
 #include <QMessageBox>
+#include <QCloseEvent>
+#include <QDesktopWidget>
 
 
 /**************************************************************************/
@@ -33,7 +36,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 	: QDialog(parent)
 {
 	ui.setupUi(this);
-
+	setWindowFlags(Qt::Window);
 
 
 	/* GENERAL */
@@ -121,6 +124,20 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 }
 
 /**************************************************************************/
+void SettingsDialog::closeEvent(QCloseEvent *event)
+{
+	if (GlobalHotkey::instance()->hotkey() == 0){
+		QMessageBox msgBox(
+					QMessageBox::Critical, "Error",
+					"You have to define a hotkey to open albert."
+					);
+		msgBox.exec();
+		ui.tabs->setCurrentIndex(0);
+		event->ignore();
+	}
+}
+
+/**************************************************************************/
 void SettingsDialog::onSkinClicked(QListWidgetItem *i)
 {
 	// Apply and save the theme
@@ -151,4 +168,10 @@ void SettingsDialog::onSkinClicked(QListWidgetItem *i)
 void SettingsDialog::onNItemsChanged(int i)
 {
 	gSettings->setValue("nItemsToShow", i);
+}
+
+void SettingsDialog::show()
+{
+	QWidget::show();
+	this->move(QApplication::desktop()->screenGeometry().center() - rect().center());
 }

@@ -33,6 +33,9 @@ public:
 protected:
 	void resizeEvent(QResizeEvent*) override;
 	void keyPressEvent(QKeyEvent*) override;
+
+signals:
+	void settingsDialogRequested();
 };
 
 #endif // INPUTLINE_H
