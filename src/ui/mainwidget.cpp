@@ -29,6 +29,7 @@
 MainWidget::MainWidget(QWidget *parent)
 	: QWidget(parent)
 {
+
 	/* Deserializing */
 
 	_engine = new Engine;
@@ -91,13 +92,6 @@ MainWidget::MainWidget(QWidget *parent)
 	_inputLine->installEventFilter(_proposalListView);
 	contentLayout->addWidget(_proposalListView);
 
-
-	// Initialize SettingsDialog
-	_settingsDialog = new SettingsDialog(this);
-	connect(_inputLine, SIGNAL(settingsDialogRequested()),
-			_settingsDialog, SLOT(show()));
-
-
 	// Initialize hotkey
 	connect(GlobalHotkey::instance(), SIGNAL(hotKeyPressed()),
 			this, SLOT(toggleVisibility()));
@@ -108,8 +102,15 @@ MainWidget::MainWidget(QWidget *parent)
 					"Hotkey is not set or invalid. Please set it in the settings."
 					);
 		msgBox.exec();
-		_settingsDialog->show();
+		_settingsDialog->show(SettingsWidget::Tab::General);
 	}
+
+	// Initialize SettingsDialog
+	_settingsDialog = new SettingsWidget(this);
+	connect(_inputLine, SIGNAL(settingsDialogRequested()),
+			_settingsDialog, SLOT(show()));
+	connect(_inputLine, SIGNAL(settingsDialogRequested()),
+			this, SLOT(hide()));
 }
 
 /**************************************************************************/

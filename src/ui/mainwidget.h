@@ -46,7 +46,7 @@ private:
 	InputLine        *_inputLine;
 	ProposalListView *_proposalListView;
 	Engine           *_engine;
-	SettingsDialog   *_settingsDialog;
+	SettingsWidget   *_settingsDialog;
 
 	void serialize() const;
 	void deserialize ();

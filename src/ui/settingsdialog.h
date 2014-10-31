@@ -21,14 +21,24 @@
 #include "singleton.h"
 #include "hotkeywidget.h"
 
-class SettingsDialog : public QDialog
+class MainWidget;
+
+class SettingsWidget : public QWidget
 {
 	Q_OBJECT
 	Ui::SettingsDialog ui;
 	HotkeyWidget* _hkWidget;
+	MainWidget* _mainWidget;
 
 public:
-	explicit SettingsDialog(QWidget *parent = 0);
+	enum class Tab{
+		General,
+		Appearance,
+		Modules,
+		About
+	};
+
+	explicit SettingsWidget(MainWidget *ref);
 
 protected:
 	void closeEvent(QCloseEvent * event) override;
@@ -39,6 +49,7 @@ protected slots:
 
 public slots:
 	void show();
+	void show(Tab);
 };
 
 #endif // SETTINGSDIALOG_H

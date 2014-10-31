@@ -30,7 +30,7 @@ HotkeyWidget::HotkeyWidget(QWidget *parent) : QLabel(parent)
 {
 	_waitingForHotkey = false;
 	const int hk = GlobalHotkey::instance()->hotkey();
-	this->setText((!hk)
+	this->setText((hk==0)
 				  ? "Press to set hotkey"
 				  : QKeySequence(hk).toString());
 

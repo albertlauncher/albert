@@ -23,6 +23,7 @@
 #include "services/appindex/appindex.h"
 #include "globals.h"
 #include "globalhotkey.h"
+#include "mainwidget.h"
 
 #include <QDir>
 #include <QStandardPaths>
@@ -32,11 +33,12 @@
 
 
 /**************************************************************************/
-SettingsDialog::SettingsDialog(QWidget *parent)
-	: QDialog(parent)
+SettingsWidget::SettingsWidget(MainWidget *ref)
+	: _mainWidget(ref)
 {
 	ui.setupUi(this);
 	setWindowFlags(Qt::Window);
+//	setAttribute(Qt::WA_DeleteOnClose);
 
 
 	/* GENERAL */
@@ -56,7 +58,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 
 	/* MODULES */
 
-	QListWidgetItem *item = new QListWidgetItem("Websearch");
+	QListWidgetItem *item = new QListWidgetItem("Websearch"); // TODO NO SINGLETONS!!!
 	ui.listWidget_modules->addItem(item);
 	ui.stackedWidget->addWidget(WebSearch::instance()->widget());
 
@@ -124,7 +126,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 }
 
 /**************************************************************************/
-void SettingsDialog::closeEvent(QCloseEvent *event)
+void SettingsWidget::closeEvent(QCloseEvent *event)
 {
 	if (GlobalHotkey::instance()->hotkey() == 0){
 		QMessageBox msgBox(
@@ -138,7 +140,7 @@ void SettingsDialog::closeEvent(QCloseEvent *event)
 }
 
 /**************************************************************************/
-void SettingsDialog::onSkinClicked(QListWidgetItem *i)
+void SettingsWidget::onSkinClicked(QListWidgetItem *i)
 {
 	// Apply and save the theme
 	QString path(i->data(Qt::UserRole).toString());
@@ -165,13 +167,21 @@ void SettingsDialog::onSkinClicked(QListWidgetItem *i)
 }
 
 /**************************************************************************/
-void SettingsDialog::onNItemsChanged(int i)
+void SettingsWidget::onNItemsChanged(int i)
 {
 	gSettings->setValue("nItemsToShow", i);
 }
 
-void SettingsDialog::show()
+/**************************************************************************/
+void SettingsWidget::show()
 {
 	QWidget::show();
 	this->move(QApplication::desktop()->screenGeometry().center() - rect().center());
+}
+
+/**************************************************************************/
+void SettingsWidget::show(SettingsWidget::Tab t)
+{
+	show();
+	ui.tabs->setCurrentIndex(static_cast<int>(t));
 }
