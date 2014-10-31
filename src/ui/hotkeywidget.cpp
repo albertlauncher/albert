@@ -72,7 +72,6 @@ void HotkeyWidget::releaseAll()
 void HotkeyWidget::mousePressEvent(QMouseEvent *)
 {
 	grabAll();
-	GlobalHotkey::instance()->setEnabled(false);
 }
 
 /**************************************************************************/
