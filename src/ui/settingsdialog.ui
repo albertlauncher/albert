@@ -2,9 +2,6 @@
 <ui version="4.0">
  <class>SettingsDialog</class>
  <widget class="QDialog" name="SettingsDialog">
-  <property name="windowModality">
-   <enum>Qt::WindowModal</enum>
-  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -20,10 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Settings</string>
-  </property>
-  <property name="modal">
-   <bool>true</bool>
+   <string>Albert settings</string>
   </property>
   <layout class="QGridLayout">
    <property name="leftMargin">
@@ -41,7 +35,7 @@
    <item row="1" column="0">
     <widget class="QTabWidget" name="tabs">
      <property name="currentIndex">
-      <number>0</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -203,7 +197,7 @@
        <item>
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>Albert omni launcher v 0.5 (alpha)</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Albert omni launcher&lt;/span&gt; v 0.5 &lt;span style=&quot; color:#717171;&quot;&gt;(alpha)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If you encounter a bug or think you have suggestions for improvement visit the github &lt;a href=&quot;https://github.com/ManuelSchneid3r/albert/issues&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#9cd4ff;&quot;&gt;github issue tracker.&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
