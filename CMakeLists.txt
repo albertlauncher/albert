@@ -75,9 +75,9 @@ qt5_add_resources(RSRC
 #linux
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-        # Add platformspecific stuff
+	# Add platformspecific stuff
 	find_package(Qt5X11Extras REQUIRED)
-	find_library(muparser REQUIRED)	
+	find_library(muparser REQUIRED)
 	set(SRCS ${SRCS} src/globalhotkey_x11.cpp)
 
 	# Define targets and linked libs
@@ -86,28 +86,28 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 	# Define make install target
 	install(TARGETS albert RUNTIME DESTINATION bin)
-	install(DIRECTORY data/icons DESTINATION share/albert COMPONENT config)
-	install(DIRECTORY data/themes DESTINATION share/albert COMPONENT config)
-	install(FILES data/icon.svg DESTINATION share/albert COMPONENT icon)
-	install(FILES data/albert.desktop DESTINATION share/applications COMPONENT desktop)
-	install(FILES data/albert.conf DESTINATION /etc/xdg/albert COMPONENT config)
+	install(DIRECTORY src/resources/icons DESTINATION share/albert COMPONENT config)
+	install(DIRECTORY src/resources/themes DESTINATION share/albert COMPONENT config)
+	install(FILES src/resources/icon.svg DESTINATION share/albert COMPONENT icon)
+	install(FILES src/resources/albert.desktop DESTINATION share/applications COMPONENT desktop)
+	install(FILES src/resources/albert.conf DESTINATION /etc/xdg/albert COMPONENT config)
 
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 #win
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-        # Add platformspecific stuff
-        set(SRCS ${SRCS} src/globalhotkey_win.cpp)
+		# Add platformspecific stuff
+		set(SRCS ${SRCS} src/globalhotkey_win.cpp)
 
-        #Use unicode
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")
+		#Use unicode
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")
 
-        # Define targets and linked libs
-        add_executable(albert ${SRCS} ${UIS} ${DATA} ${RSRC})
-        target_link_libraries(albert Qt5::Widgets)
+		# Define targets and linked libs
+		add_executable(albert ${SRCS} ${UIS} ${DATA} ${RSRC})
+		target_link_libraries(albert Qt5::Widgets)
 
-        # Define make install target
-        install(TARGETS albert RUNTIME DESTINATION bin)
+		# Define make install target
+		install(TARGETS albert RUNTIME DESTINATION bin)
 
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
