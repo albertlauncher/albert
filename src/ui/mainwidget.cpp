@@ -231,8 +231,9 @@ bool MainWidget::nativeEvent(const QByteArray &eventType, void *message, long *)
 //			case XCB_NOTIFY_DETAIL_VIRTUAL: std::cout << "VIRTUAL";break;
 //			}
 //			std::cout << std::endl;
-			if ((fe->mode==XCB_NOTIFY_MODE_GRAB && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR)
+			if (((fe->mode==XCB_NOTIFY_MODE_GRAB && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR)
 					|| (fe->mode==XCB_NOTIFY_MODE_NORMAL && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR ))
+					&& !_settingsDialog->isVisible())
 				hide();
 			break;
 		}
