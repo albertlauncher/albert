@@ -37,7 +37,7 @@ MainWidget::MainWidget(QWidget *parent)
 	// Initialize hotkey
 	connect(GlobalHotkey::instance(), SIGNAL(hotKeyPressed()), this, SLOT(toggleVisibility()));
 	if(!gSettings->value("hotkey").isValid() ||
-			!GlobalHotkey::instance()->setHotkey(gSettings->value("hotkey").toString()))
+			!GlobalHotkey::instance()->registerHotkey(gSettings->value("hotkey").toString()))
 	{
 		QMessageBox msgBox(QMessageBox::Critical,
 						   "Error",

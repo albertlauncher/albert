@@ -36,24 +36,24 @@ GlobalHotkey::~GlobalHotkey()
 }
 
 /**************************************************************************/
-bool GlobalHotkey::setHotkey(const QString &hk)
+bool GlobalHotkey::registerHotkey(const QString &hk)
 {
-	return setHotkey(QKeySequence(hk));
+	return registerHotkey(QKeySequence(hk));
 }
 
 /**************************************************************************/
-bool GlobalHotkey::setHotkey(const QKeySequence &hk)
+bool GlobalHotkey::registerHotkey(const QKeySequence &hk)
 {
 	if (hk.count() != 1)
 		return false;
-	return setHotkey(hk[0]);
+	return registerHotkey(hk[0]);
 }
 
 /**************************************************************************/
-bool GlobalHotkey::setHotkey(const int hk)
+bool GlobalHotkey::registerHotkey(const int hk)
 {
 	// Unregister other hotkeys before registering new ones
-	unsetHotkey();
+	unregisterHotkey();
 
 	//TODO make this capable of multiple key, so that the old one does not have to be unregistered whil registereing another
 	if (_impl->registerNativeHotkey(hk)) {
@@ -71,7 +71,7 @@ int GlobalHotkey::hotkey()
 
 
 /**************************************************************************/
-void GlobalHotkey::unsetHotkey()
+void GlobalHotkey::unregisterHotkey()
 {
 	_impl->unregisterNativeHotkeys();
 	_hotkey = 0;

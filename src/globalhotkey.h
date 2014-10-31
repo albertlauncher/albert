@@ -35,17 +35,12 @@ public:
 	explicit GlobalHotkey(QObject *parent = 0);
 	virtual ~GlobalHotkey();
 
-	bool setHotkey(const QString&);
-	bool setHotkey(const QKeySequence&);
-	bool setHotkey(const int);
-	void unsetHotkey();
-
+	bool registerHotkey(const QString&);
+	bool registerHotkey(const QKeySequence&);
+	bool registerHotkey(const int);
+	void unregisterHotkey();
 	int hotkey();
-
-
-
 	bool isEnabled() const;
-
 
 signals:
 	void hotKeyPressed();
@@ -55,7 +50,6 @@ private slots:
 
 public slots:
 	void setEnabled(bool enabled = true);
-
 };
 
 #endif // GLOBALHOTKEY_H

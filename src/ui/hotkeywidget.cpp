@@ -100,7 +100,7 @@ void HotkeyWidget::keyPressEvent(QKeyEvent *event)
 
 		// Try to register a hotkey
 		releaseAll();
-		if (GlobalHotkey::instance()->setHotkey(mods|key) )
+		if (GlobalHotkey::instance()->registerHotkey(mods|key) )
 		{
 			// Fine save it..
 			gSettings->setValue("hotkey", QKeySequence(mods|key).toString());
@@ -114,7 +114,7 @@ void HotkeyWidget::keyPressEvent(QKeyEvent *event)
 			msgBox.exec();
 
 			// Try to set the old hotkey
-			if (GlobalHotkey::instance()->setHotkey(currHK) )
+			if (GlobalHotkey::instance()->registerHotkey(currHK) )
 			{
 				gSettings->setValue("hotkey", QKeySequence(currHK).toString());
 				setText(QKeySequence(currHK).toString());
