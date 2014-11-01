@@ -26,7 +26,7 @@ InputLine::InputLine(QWidget *parent) :
 	QLineEdit(parent)
 {
 	setObjectName(QString::fromLocal8Bit("inputline"));
-	setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
+	setContextMenuPolicy(Qt::NoContextMenu);
 
 	_settingsButton = new SettingsButton(this);
 	_settingsButton->setFocusPolicy(Qt::NoFocus);
