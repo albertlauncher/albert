@@ -27,10 +27,7 @@ class Engine : public QAbstractListModel
 
 public:
 	Engine();
-	~Engine();
 
-
-	// Modelstuff
 	void     action( const QModelIndex & index);
 	void     altAction( const QModelIndex & index);
 	void     ctrlAction( const QModelIndex & index);
