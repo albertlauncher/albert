@@ -28,7 +28,7 @@ FileIndexWidget::FileIndexWidget(FileIndex *srv, QWidget *parent) :
 
 	// Init ui
 	ui.comboBox_searchType->setCurrentIndex(static_cast<int>(_ref->searchType()));
-    ui.checkBox_hiddenFiles->setChecked(gSettings->value("indexHidenFiles", false).toBool());
+	ui.checkBox_hiddenFiles->setChecked(gSettings->value("indexHiddenFiles", false).toBool());
 	ui.listWidget_paths->addItems(_ref->_paths.toList());
 
 	// Rect to changes
@@ -36,7 +36,7 @@ FileIndexWidget::FileIndexWidget(FileIndex *srv, QWidget *parent) :
 	connect(ui.pushButton_add, SIGNAL(clicked()), this, SLOT(onButton_add()));
 	connect(ui.pushButton_edit, SIGNAL(clicked()), this, SLOT(onButton_edit()));
 	connect(ui.pushButton_remove, SIGNAL(clicked()), this, SLOT(onButton_remove()));
-	connect(ui.pushButton_rebuildIndex, SIGNAL(clicked()), this, SLOT(onButton_RebuildIndex()));
+	connect(ui.pushButton_rebuildIndex, SIGNAL(clicked()), this, SLOT(rebuildIndex()));
 	connect(ui.checkBox_hiddenFiles, SIGNAL(toggled(bool)), this, SLOT(onCheckbox_toggle(bool)));
  }
 
@@ -97,9 +97,10 @@ void FileIndexWidget::onButton_remove()
 }
 
 /**************************************************************************/
-void FileIndexWidget::onButton_RebuildIndex()
+void FileIndexWidget::rebuildIndex()
 {
 	ui.label_info->setText("Building index...");
+	ui.label_info->repaint();
 
 	// Rebuild index
 	_ref->buildIndex();
@@ -114,6 +115,6 @@ void FileIndexWidget::onButton_RebuildIndex()
 /**************************************************************************/
 void FileIndexWidget::onCheckbox_toggle(bool b)
 {
-    gSettings->setValue("indexHiddenFiles", b);
-    _ref->buildIndex();
+	gSettings->setValue("indexHiddenFiles", b);
+	rebuildIndex();
 }

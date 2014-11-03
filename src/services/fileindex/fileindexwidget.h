@@ -37,7 +37,7 @@ protected slots:
 	void onButton_add();
 	void onButton_edit();
 	void onButton_remove();
-	void onButton_RebuildIndex();
+	void rebuildIndex();
 	void onCheckbox_toggle(bool);
 };
 

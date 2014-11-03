@@ -82,7 +82,7 @@ void FileIndex::buildIndex()
 		{
 			QDir d(fi.absoluteFilePath());
 			d.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks);
-			if (gSettings->value("indexHidenFiles", false).toBool())
+			if (gSettings->value("indexHiddenFiles", false).toBool())
 				d.setFilter(d.filter() | QDir::Hidden);
 
 			// go recursive into subdirs
