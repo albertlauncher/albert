@@ -51,6 +51,7 @@ void InputLine::keyPressEvent(QKeyEvent *e)
 
 	// Quit application
 	if (/*e->modifiers() == Qt::AltModifier && */e->key() == Qt::Key_F4 ) {
+		window()->hide();
 		qApp->quit();
 		return;
 	}
