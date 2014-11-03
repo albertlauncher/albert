@@ -34,18 +34,10 @@ HotkeyWidget::HotkeyWidget(QWidget *parent) : QLabel(parent)
 				  ? "Press to set hotkey"
 				  : QKeySequence(hk).toString());
 
-//	// Swap fg and bg
-
-//	QPalette p = this->palette();
-//	QColor c = p.color(QPalette::Active, QPalette::Window);
-//	p.setColor(QPalette::Active, QPalette::Window, p.color(QPalette::Active, QPalette::WindowText));
-//	p.setColor(QPalette::Active, QPalette::WindowText, c);
-//	setStyleSheet("padding: 2px;\
-////					margin: 0px;\
-//					border-radius: 5px;\
-////					font:  32px \"Ubuntu\";\
-//					border:none;\
-//					margin: 0px;}");
+	this->setStyleSheet("padding:2px;\
+						border-radius:2px;\
+						background-color:#000;\
+						color:#fff;");
 }
 
 /**************************************************************************/
