@@ -46,8 +46,6 @@ void WebSearch::initialize()
 	}
 	_searchEngines.push_back(i);
 
-	qDebug() << i->_iconPath;
-
 	// Youtube
 	i = new Item;
 	i->_lastAccess = 1;

@@ -67,7 +67,7 @@ void FileIndex::buildIndex()
 		delete i;
 	_index.clear();
 
-	qDebug() << "[FileIndex]\t\tLooking in: " << _paths;
+	qDebug() << "[FileIndex]\tLooking in: " << _paths;
 
 	// Define a lambda for recursion
 	// This lambdsa makes no sanity checks since the directories in the recursion are always
@@ -82,7 +82,7 @@ void FileIndex::buildIndex()
 		{
 			QDir d(fi.absoluteFilePath());
 			d.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks);
-            if (gSettings->value("indexHidenFiles", false).toBool())
+			if (gSettings->value("indexHidenFiles", false).toBool())
 				d.setFilter(d.filter() | QDir::Hidden);
 
 			// go recursive into subdirs
@@ -101,7 +101,7 @@ void FileIndex::buildIndex()
 
 	std::sort(_index.begin(), _index.end(), Service::Item::CaseInsensitiveCompare());
 
-	qDebug() << "[FileIndex]\t\tFound " << _index.size() << " files.";
+	qDebug() << "[FileIndex]\tFound " << _index.size() << " files.";
 }
 
 /**************************************************************************/
@@ -129,7 +129,7 @@ QDataStream &FileIndex::deserialize(QDataStream &in)
 		_index.push_back(it);
 	}
 	setSearchType(static_cast<IndexService::SearchType>(T));
-	qDebug() << "[FileIndex]\t\tLoaded " << _index.size() << " files.";
+	qDebug() << "[FileIndex]\tLoaded " << _index.size() << " files.";
 	return in;
 }
 
