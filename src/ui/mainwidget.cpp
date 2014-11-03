@@ -47,9 +47,15 @@ MainWidget::MainWidget(QWidget *parent)
 	_inputLine        = new InputLine;
 	_settingsDialog   = new SettingsWidget(this);
 	if(!gSettings->value("hotkey").isValid() || !GlobalHotkey::instance()->registerHotkey(gSettings->value("hotkey").toString())) {
-		QMessageBox msgBox(QMessageBox::Critical, "Error", "Hotkey is not set or invalid. Please set it in the settings.");
+		QMessageBox msgBox(QMessageBox::Critical, "Error",
+						   "Hotkey is not set or invalid. Please set it in the settings. "\
+						   "Press Ok to open the settings, or press Cancel to quit albert.",
+						   QMessageBox::Close|QMessageBox::Ok);
 		msgBox.exec();
-		_settingsDialog->show(SettingsWidget::Tab::General);
+		if ( msgBox.result() == QMessageBox::Ok )
+			_settingsDialog->show(SettingsWidget::Tab::General);
+		else
+			exit(0);
 	}
 
 
