@@ -22,7 +22,7 @@
 #include <functional>
 #include <chrono>
 #include <algorithm>
-#include <QDir>
+#include <QDirIterator>
 #include <QDebug>
 #include <QFile>
 #include <QStandardPaths>
@@ -69,35 +69,18 @@ void FileIndex::buildIndex()
 
 	qDebug() << "[FileIndex]\tLooking in: " << _paths;
 
-	// Define a lambda for recursion
-	// This lambdsa makes no sanity checks since the directories in the recursion are always
-	// valid an would simply produce overhead -> check for sanity before use
-	std::function<void(const QFileInfo& p)> rec_dirsearch = [&] (const QFileInfo& fi)
-	{
-		Item *i = new Item;
-		i->_fileInfo = fi;
-		_index.push_back(i);
-
-		if (fi.isDir())
-		{
-			QDir d(fi.absoluteFilePath());
-			d.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks);
-			if (gSettings->value("indexHiddenFiles", false).toBool())
-				d.setFilter(d.filter() | QDir::Hidden);
-
-			// go recursive into subdirs
-			QFileInfoList list = d.entryInfoList();
-			for ( QFileInfo &dfi : list)
-				rec_dirsearch(dfi);
-		}
-	};
-
-	// Finally do this recursion for all paths
-	for ( const QString &p : _paths) {
-		QFileInfo fi(p);
-		if (fi.exists())
-			rec_dirsearch(fi);
-	}
+    for ( const QString &p : _paths) {
+        QDirIterator it(p, QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            it.next();
+            if (gSettings->value("indexHidenFiles", false).toBool()
+                    && it.fileInfo().isHidden())
+                continue;
+            Item *i = new Item;
+            i->_fileInfo = it.fileInfo();
+            _index.push_back(i);
+        }
+    }
 
 	std::sort(_index.begin(), _index.end(), Service::Item::CaseInsensitiveCompare());
 

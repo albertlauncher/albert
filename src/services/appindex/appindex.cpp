@@ -18,10 +18,9 @@
 #include "appitem.h"
 #include "appindexwidget.h"
 
-#include <functional>
 #include <QDebug>
 #include <QDir>
-#include <QString>
+#include <QString> // TODO CLEANUP
 #include <QStandardPaths>
 #ifdef Q_OS_WIN
 #include "windows.h"
@@ -61,111 +60,91 @@ void AppIndex::buildIndex()
 
 	qDebug() << "[ApplicationIndex]\tLooking in: " << _paths;
 
-
 #ifndef Q_OS_WIN
-	// Define a lambda for recursion
-	// This lambdsa makes no sanity checks since the directories in the recursion are always
-	// valid an would simply produce overhead -> check for sanity before use
-	std::function<void(const QFileInfo& fi)> rec_dirsearch = [&] (const QFileInfo& fi)
-	{
-		if (fi.isDir())
-		{
-			QDir d(fi.absoluteFilePath());
-			d.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+    for ( const QString &p : _paths) {
+        QDirIterator it(p, QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            it.next();
+            QFileInfo fi = it.fileInfo();
+            // Check extension
+            if (fi.suffix() != QString::fromLocal8Bit("desktop"))
+                return;
 
-			// go recursive into subdirs
-			QFileInfoList list = d.entryInfoList();
-			for ( QFileInfo &dfi : list)
-				rec_dirsearch(dfi);
-		}
-		else
-		{
-			// Check extension
-			if (fi.suffix() != QString::fromLocal8Bit("desktop"))
-				return;
+            // Read the entries in the desktopfile
+            QMap<QString, QString> desktopfile;
+            QFile file(fi.absoluteFilePath());
+            if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+                continue;
+            QTextStream in(&file);
+            QString line = in.readLine();
+            while (!line.isNull()) {
+                desktopfile[line.section('=', 0, 0)] = line.section('=', 1);
+                line = in.readLine();
+            }
 
-			// Read the entries in the desktopfile
-			QMap<QString, QString> desktopfile;
-			QFile file(fi.absoluteFilePath());
-			if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-				return;
-			QTextStream in(&file);
-			QString line = in.readLine();
-			while (!line.isNull()) {
-				desktopfile[line.section('=', 0, 0)] = line.section('=', 1);
-				line = in.readLine();
-			}
+            // Check if this shall be displayed
+            if (desktopfile["NoDisplay"].compare("true", Qt::CaseInsensitive) == 0)
+                return;
 
-			// Check if this shall be displayed
-			if (desktopfile["NoDisplay"].compare("true", Qt::CaseInsensitive) == 0)
-				return;
+            // Check if this shall be runned in terminal
+            bool term = (desktopfile["Terminal"].compare("true", Qt::CaseInsensitive) == 0);
 
-			// Check if this shall be runned in terminal
-			bool term = (desktopfile["Terminal"].compare("true", Qt::CaseInsensitive) == 0);
+            // Check if there exists a lcoalized name
+            QString localeShortcut = QLocale().name();
+            localeShortcut.truncate(2);
+            QString name = desktopfile.value(QString("Name[%1]").arg(localeShortcut), desktopfile["Name"]);
 
-			// Check if there exists a lcoalized name
-			QString localeShortcut = QLocale().name();
-			localeShortcut.truncate(2);
-			QString name = desktopfile.value(QString("Name[%1]").arg(localeShortcut), desktopfile["Name"]);
+            // Replace placeholders
+            /*
+             * Code	Description
+             * %f	A single file name, even if multiple files are selected.
+             * The system reading the desktop entry should recognize that the
+             * program in question cannot handle multiple file arguments, and
+             * it should should probably spawn and execute multiple copies of
+             * a program for each selected file if the program is not able to
+             * handle additional file arguments. If files are not on the local
+             * file system (i.e. are on HTTP or FTP locations), the files will
+             * be copied to the local file system and %f will be expanded to
+             * point at the temporary file. Used for programs that do not
+             * understand the URL syntax.
+             * %F	A list of files. Use for apps that can open several local
+             * files at once. Each file is passed as a separate argument to the
+             * executable program.
+             * %u	A single URL. Local files may either be passed as file: URLs
+             * or as file path.
+             * %U	A list of URLs. Each URL is passed as a separate argument to
+             * the executable program. Local files may either be passed as file:
+             * URLs or as file path.
+             * %d	Deprecated.
+             * %D	Deprecated.
+             * %n	Deprecated.
+             * %N	Deprecated.
+             * %i	The Icon key of the desktop entry expanded as two arguments,
+             * first --icon and then the value of the Icon key. Should not
+             * expand to any arguments if the Icon key is empty or missing.
+             * %c	The translated name of the application as listed in the
+             * appropriate Name key in the desktop entry.
+             * %k	The location of the desktop file as either a URI (if for
+             * example gotten from the vfolder system) or a local filename or
+             * empty if no location is known.
+             * %v	Deprecated.
+             * %m	Deprecated.
+            */
+            QString exec = desktopfile["Exec"];
+            exec.replace("%c", name);
 
-			// Replace placeholders
-			/*
-			 * Code	Description
-			 * %f	A single file name, even if multiple files are selected.
-			 * The system reading the desktop entry should recognize that the
-			 * program in question cannot handle multiple file arguments, and
-			 * it should should probably spawn and execute multiple copies of
-			 * a program for each selected file if the program is not able to
-			 * handle additional file arguments. If files are not on the local
-			 * file system (i.e. are on HTTP or FTP locations), the files will
-			 * be copied to the local file system and %f will be expanded to
-			 * point at the temporary file. Used for programs that do not
-			 * understand the URL syntax.
-			 * %F	A list of files. Use for apps that can open several local
-			 * files at once. Each file is passed as a separate argument to the
-			 * executable program.
-			 * %u	A single URL. Local files may either be passed as file: URLs
-			 * or as file path.
-			 * %U	A list of URLs. Each URL is passed as a separate argument to
-			 * the executable program. Local files may either be passed as file:
-			 * URLs or as file path.
-			 * %d	Deprecated.
-			 * %D	Deprecated.
-			 * %n	Deprecated.
-			 * %N	Deprecated.
-			 * %i	The Icon key of the desktop entry expanded as two arguments,
-			 * first --icon and then the value of the Icon key. Should not
-			 * expand to any arguments if the Icon key is empty or missing.
-			 * %c	The translated name of the application as listed in the
-			 * appropriate Name key in the desktop entry.
-			 * %k	The location of the desktop file as either a URI (if for
-			 * example gotten from the vfolder system) or a local filename or
-			 * empty if no location is known.
-			 * %v	Deprecated.
-			 * %m	Deprecated.
-			*/
-			QString exec = desktopfile["Exec"];
-			exec.replace("%c", name);
+            // Remove other placeholders
+            exec.remove(QRegExp("%."));
 
-			// Remove other placeholders
-			exec.remove(QRegExp("%."));
-
-			Item *i = new Item;
-			i->_name     = name;
-			i->_info     = (desktopfile["Comment"].isEmpty())?desktopfile["GenericName"]:desktopfile["Comment"];
-			i->_iconName = desktopfile["Icon"];
-			i->_exec     = exec;
-			i->_term     = term;
-			_index.push_back(i);
-		}
-	};
-
-	// Finally do this recursion for all paths
-	for ( const QString &p : _paths) {
-		QFileInfo fi(p);
-		if (fi.exists())
-			rec_dirsearch(fi);
-	}
+            Item *i = new Item;
+            i->_name     = name;
+            i->_info     = (desktopfile["Comment"].isEmpty())?desktopfile["GenericName"]:desktopfile["Comment"];
+            i->_iconName = desktopfile["Icon"];
+            i->_exec     = exec;
+            i->_term     = term;
+            _index.push_back(i);
+        }
+    }
 #endif
 #ifdef Q_OS_WIN
     HKEY hUninstKey = NULL;

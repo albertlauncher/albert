@@ -16,7 +16,6 @@
 
 #include "indexservice.h"
 #include <algorithm>
-#include <functional>
 #include <QMap>
 #include <QSet>
 #include <QString>

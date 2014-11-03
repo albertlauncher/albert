@@ -43,7 +43,8 @@ public:
 	bool isEnabled() const;
 
 signals:
-	void hotKeyPressed();
+    void hotKeyPressed();
+    void hotKeyChanged(int);
 
 private slots:
 	void onHotkeyPressed();

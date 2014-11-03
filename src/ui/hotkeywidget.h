@@ -36,6 +36,8 @@ protected:
 	void mousePressEvent (QMouseEvent*)  override;
 	void keyPressEvent (QKeyEvent *) override;
 	void keyReleaseEvent ( QKeyEvent* ) override;
+protected slots:
+    void onHotkeyChanged(int);
 };
 
 #endif // HOTKEYWIDGET_H
