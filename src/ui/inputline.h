@@ -29,6 +29,7 @@ class InputLine : public QLineEdit
 
 public:
 	explicit InputLine(QWidget *parent = 0);
+	~InputLine();
 
 protected:
 	void resizeEvent(QResizeEvent*) override;

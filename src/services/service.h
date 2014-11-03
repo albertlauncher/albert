@@ -31,7 +31,7 @@ public:
 	class Item
 	{
 	public:
-		enum class Mod {None, Alt, Ctrl};
+		enum class Mod {None, Ctrl, Meta, Alt};
 
 		/**************************************************************************/
 		struct ATimeCompare

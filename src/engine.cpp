@@ -21,8 +21,6 @@
 #include "services/bookmarkindex/bookmarkindex.h"
 #include "services/appindex/appindex.h"
 #include <QString>
-#include <QDebug>
-#include <QTime>
 
 /**********************************************************************/
 Engine::Engine()
@@ -68,28 +66,15 @@ QDataStream &Engine::deserialize(QDataStream &in)
 void Engine::query(const QString &req)
 {
 	beginResetModel();
+	QString t = req.trimmed();
 	_data.clear();
-	for (Service *i: _modules)
-	{
-		QTime t;
-		t.start();
-		i->query(req, &_data);
-		qDebug() << t.elapsed() << "µs";
+	if (!t.isEmpty()){
+		for (Service *i: _modules)
+			i->query(t, &_data);
+		if (_data.isEmpty())
+			WebSearch::instance()->queryAll(t, &_data);
+		std::stable_sort(_data.begin(), _data.end(), Service::Item::ATimeCompare());
 	}
-	if (_data.isEmpty())
-		WebSearch::instance()->queryAll(req, &_data);
-
-	// Sort them by atime
-	std::stable_sort(_data.begin(), _data.end(), Service::Item::ATimeCompare());
-	endResetModel();
-}
-
-
-/**************************************************************************/
-void Engine::clear()
-{
-	beginResetModel();
-	_data.clear();
 	endResetModel();
 }
 
@@ -120,44 +105,38 @@ QVariant Engine::data(const QModelIndex &index, int role) const
 	if (!index.isValid())
 		return QVariant();
 
-	//	EnterText = Qt::UserRole;
-	//	AltText  = Qt::UserRole+1;
-	//	CtrlText  = Qt::UserRole+2;
-	//	InfoText  = Qt::UserRole+3;
-	//	Completion = Qt::UserRole+4;
-	//	ExecutionNormal = Qt::UserRole+5;
-	//	ExecutionAlt = Qt::UserRole+6;
-	//	ExecutionCTRL = Qt::UserRole+7;
-
 	if (role == Qt::DisplayRole)
 		return _data[index.row()]->title();
 
 	if (role == Qt::DecorationRole)
 		return _data[index.row()]->icon();
 
-	if (role == Qt::UserRole)
+	if (role == Qt::UserRole+0)
 		return _data[index.row()]->actionText(Service::Item::Mod::None);
 
 	if (role == Qt::UserRole+1)
-		return _data[index.row()]->actionText(Service::Item::Mod::Alt);
-
-	if (role == Qt::UserRole+2 )
 		return _data[index.row()]->actionText(Service::Item::Mod::Ctrl);
 
+	if (role == Qt::UserRole+2)
+		return _data[index.row()]->actionText(Service::Item::Mod::Meta);
+
 	if (role == Qt::UserRole+3)
-		return _data[index.row()]->infoText();
+		return _data[index.row()]->actionText(Service::Item::Mod::Alt);
 
 	if (role == Qt::UserRole+4)
-		return _data[index.row()]->complete();
-
-	if (role == Qt::UserRole+5)
 		_data[index.row()]->action(Service::Item::Mod::None);
 
+	if (role == Qt::UserRole+5)
+		_data[index.row()]->action(Service::Item::Mod::Ctrl);
+
 	if (role == Qt::UserRole+6)
-		_data[index.row()]->action(Service::Item::Mod::Alt);
+		_data[index.row()]->action(Service::Item::Mod::Meta);
 
 	if (role == Qt::UserRole+7)
-		_data[index.row()]->action(Service::Item::Mod::Ctrl);
+		_data[index.row()]->action(Service::Item::Mod::Alt);
+
+	if (role == Qt::UserRole+8)
+		return _data[index.row()]->complete();
 
 	return QVariant();
 }

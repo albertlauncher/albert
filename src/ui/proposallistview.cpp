@@ -17,65 +17,75 @@
 #include "proposallistview.h"
 #include "proposallistdelegate.h"
 #include "globals.h"
+#include "math.h"
 
 #include <QDebug>
 
-/**************************************************************************//**
- * @brief ProposalListView::ProposalListView
- * @param parent
- */
+/**************************************************************************/
 ProposalListView::ProposalListView(QWidget *parent) :
 	QListView(parent)
 {
-	setItemDelegate(new ProposalListDelegate);
-	setObjectName("ProposalList");
+	_defaultDelegate = new ProposalListDelegate(Qt::NoModifier);
+	_selectedDelegate = new ProposalListDelegate(Qt::NoModifier);
+
+	setItemDelegate(_defaultDelegate);
 	setUniformItemSizes(true);
-	setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
 }
 
-/**************************************************************************//**
- * @brief ProposalListView::eventFilter
- * @param event
- * @return
- */
+/**************************************************************************/
+ProposalListView::~ProposalListView()
+{
+	delete _selectedDelegate;
+}
+
+/**************************************************************************/
 bool ProposalListView::eventFilter(QObject*, QEvent *event)
 {
 	if (event->type() == QEvent::KeyPress)
 	{
 		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+		int key = keyEvent->key();
+		Qt::KeyboardModifiers mods = keyEvent->modifiers();
 
-		// Modifiers
-		if ((keyEvent->key()== Qt::Key_Alt || keyEvent->key() == Qt::Key_Control))
-			update(currentIndex());
+		// Mutual exclusive modifiers
+		if ( currentIndex().isValid() && (key == Qt::Key_Control || key == Qt::Key_Meta || key == Qt::Key_Alt)){
+			ProposalListDelegate *old = _selectedDelegate;
+			if (mods == Qt::ControlModifier || mods == Qt::MetaModifier || mods == Qt::AltModifier)
+				_selectedDelegate = new ProposalListDelegate(mods);
+			else // there are multiple mod pressed fallback to nomod
+				_selectedDelegate = new ProposalListDelegate(Qt::NoModifier);
+			setItemDelegateForRow(currentIndex().row(), _selectedDelegate);
+			old->deleteLater();
+			return true;
+		}
 
 		// Navigation
-		if (keyEvent->key() == Qt::Key_Up
-			|| keyEvent->key() == Qt::Key_Down
-			|| keyEvent->key() == Qt::Key_PageDown
-			|| keyEvent->key() == Qt::Key_PageUp) {
-			this->keyPressEvent(keyEvent);
+		if (key == Qt::Key_Up || key == Qt::Key_Down
+			|| key == Qt::Key_PageDown || key == Qt::Key_PageUp) {
+			QListView::keyPressEvent(keyEvent);
 			return true;
 		}
 
 		// Selection
-		if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) {
+		if (key == Qt::Key_Return || key == Qt::Key_Enter) {
 			if (currentIndex().isValid()) {
-				Qt::KeyboardModifiers mods = keyEvent->modifiers();
-				if ( !(mods&Qt::AltModifier) && !(mods&Qt::ControlModifier) ) // None
+				if (mods == Qt::ControlModifier )
 					model()->data(currentIndex(), Qt::UserRole+5);
-				else if ( (mods&Qt::AltModifier) && !(mods&Qt::ControlModifier) ) //only ALT
+				else if (mods == Qt::MetaModifier)
 					model()->data(currentIndex(), Qt::UserRole+6);
-				else if ( !(mods&Qt::AltModifier) && (mods&Qt::ControlModifier) ) // only CTRL
+				else if (mods == Qt::AltModifier)
 					model()->data(currentIndex(), Qt::UserRole+7);
+				else //	if (mods == Qt::NoModifier )
+					model()->data(currentIndex(), Qt::UserRole+4);
 			}
 			window()->hide();
 			return true;
 		}
 
 		// Completion
-		if (keyEvent->key() == Qt::Key_Tab) {
+		if (key == Qt::Key_Tab) {
 			if (currentIndex().isValid())
-				emit completion(model()->data(currentIndex(), Qt::UserRole+4).toString());
+				emit completion(model()->data(currentIndex(), Qt::UserRole+8).toString());
 			return true;
 		}
 	}
@@ -83,27 +93,46 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 	if (event->type() == QEvent::KeyRelease)
 	{
 		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+		int key = keyEvent->key();
+		Qt::KeyboardModifiers mod = keyEvent->modifiers();
 
 		// Modifiers
-		if ((keyEvent->key()== Qt::Key_Alt || keyEvent->key() == Qt::Key_Control))
-			update(currentIndex());
+		if ( currentIndex().isValid() && ( key == Qt::Key_Control || key == Qt::Key_Meta || key == Qt::Key_Alt )){
+			ProposalListDelegate *old = _selectedDelegate;
+			if ( mod == Qt::ControlModifier || mod == Qt::MetaModifier || mod == Qt::AltModifier)
+				_selectedDelegate = new ProposalListDelegate(mod);
+			else // there are multiple or none mods pressed fallback to nomod
+				_selectedDelegate = new ProposalListDelegate(Qt::NoModifier);
+			setItemDelegateForRow(currentIndex().row(), _selectedDelegate);
+			old->deleteLater();
+			return true;
+		}
 	}
 	return false;
 }
 
+/**************************************************************************/
+void ProposalListView::currentChanged(const QModelIndex &current, const QModelIndex &previous)
+{
+	QAbstractItemDelegate *a = itemDelegate(current);
+	setItemDelegateForRow(current.row(), itemDelegate(previous));
+	setItemDelegateForRow(previous.row(), a);
+	QListView::currentChanged(current, previous);
+}
+
+/**************************************************************************/
 QSize ProposalListView::sizeHint() const
 {
-	if (model()->rowCount() == 0)
-		return QSize(width(), 0);
-	int nToShow = gSettings->value("nItemsToShow", 5).toInt() < model()->rowCount()
-			? gSettings->value("nItemsToShow", 5).toInt()
-			: model()->rowCount();
+	if (model()->rowCount() == 0) return QSize(width(), 0);
+	int nToShow = std::min(gSettings->value("nItemsToShow", 5).toInt(),
+						   model()->rowCount());
 	return QSize(width(), nToShow*sizeHintForRow(0));
 }
 
+/**************************************************************************/
 void ProposalListView::reset()
 {
-	setCurrentIndex(model()->index(0, 0));
-	QListView::reset();
+	QAbstractItemView::reset();
 	updateGeometry();
+	(model()->rowCount() > 0) ? show() : hide();
 }

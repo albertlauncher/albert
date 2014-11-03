@@ -18,63 +18,95 @@
 #include <QMimeType>
 #include <QMimeDatabase>
 #include <QGuiApplication>
+#include <QStylePainter>
+#include <QApplication>
+#include <QDebug>
 
+
+
+
+
+/**************************************************************************/
+ProposalListDelegate::ProposalListDelegate(Qt::KeyboardModifiers mods)
+{
+	switch (mods) {
+	case Qt::NoModifier: _role = Qt::UserRole;break;
+	case Qt::ControlModifier: _role = Qt::UserRole+1;break;
+	case Qt::MetaModifier: _role = Qt::UserRole+2;break;
+	case Qt::AltModifier: _role = Qt::UserRole+3;break;
+	default:break;
+	}
+}
+
+
+#include <QPushButton>
 /**************************************************************************/
 void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const
 {
-	// For the definition of the Userroles see proposallistmodel.cpp (::data())
+//	QStyledItemDelegate::paint(painter, option, index);
 
-	QString elided;
-	QFont font = option.font;
-	font.setPixelSize(12); // Size for the infotext
+	painter->save();
 
-	// Draw selection
-	if(option.state & QStyle::State_Selected){
-		// Draw a selection background
-		QLinearGradient gradient(option.rect.topLeft(), option.rect.bottomRight());
-		gradient.setColorAt(0, option.widget->palette().color(QPalette::Window).lighter(120)  );
-		gradient.setColorAt(1, option.widget->palette().color(QPalette::Window));
-		painter->fillRect(option.rect, gradient);
+	QStyle *style = option.widget->style();
+	style->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
+//	style->drawControl(QStyle::CE_ItemViewItem, &option, painter, option.widget);
 
-		Qt::KeyboardModifiers mods = QGuiApplication::queryKeyboardModifiers();
-		if ( (mods&Qt::AltModifier) && !(mods&Qt::ControlModifier) ) //only ALT
-			elided = index.data(Qt::UserRole+1).toString();
-		else if ( !(mods&Qt::AltModifier) && (mods&Qt::ControlModifier) ) // only CTRL
-			elided = index.data(Qt::UserRole+2).toString();
-		else if ( !(mods&Qt::AltModifier) && !(mods&Qt::ControlModifier) ) // None
-			elided = index.data(Qt::UserRole).toString();
+	/* a = rect.height
+	 * fm(x) := fontmetrics of x
+	 * DR := DisplayRole
+	 * UR := UserRole
+	 *             a                            rect.width-a
+	 *  +---------------------+------------------------------------------------+
+	 *  |                     |                                                |
+	 *  |   +-------------+   |                                                |
+	 *  |   |             |   |                                                |
+	 *  |   |             |   |a*fm(DR)/(fm(rd)+fm(UR))            DisplayRole |
+	 * a|   |     icon    |   |                                                |
+	 *  |   |             |   |                                                |
+	 *  |   |             |   +------------------------------------------------+
+	 *  |   |             |   |                                                |
+	 *  |   +-------------+   |a*fm(UR)/(fm(rd)+fm(UR))             UserRole+x |
+	 *  |                     |                                                |
+	 * +-----------------------------------------------------------------------+
+	 */
 
-		//Draw the infotext
-		elided = QFontMetrics(font).elidedText(elided, Qt::ElideMiddle, 720-64);
-		painter->setFont(font);
-		painter->drawText(option.rect.x()+48, option.rect.y()+34,
-						  option.rect.width()-48, option.rect.height()-32,
-						  Qt::AlignTop|Qt::AlignLeft,
-						  elided, nullptr);
-	}
-	else
-	{
-		// Draw info
-		elided = QFontMetrics(font).elidedText(index.data(Qt::UserRole+3).toString(), Qt::ElideMiddle, 720-64);
-		painter->setFont(font);
-		painter->drawText(option.rect.x()+48, option.rect.y()+34,
-						  option.rect.width()-48, option.rect.height()-32,
-						  Qt::AlignTop|Qt::AlignLeft,
-						  elided, nullptr);
-	}
+	int a = option.rect.height();
 
-	// Draw icon
-	QIcon i = index.data(Qt::DecorationRole).value<QIcon>();
-	painter->drawPixmap(option.rect.x(), option.rect.y(), i.pixmap(48,48));
+	/* Draw icon */
+	QRect iconRect(option.rect.topLeft(), option.decorationSize);
+	iconRect.translate( (a-option.decorationSize.width())/2,
+						(a-option.decorationSize.height())/2);
+	painter->drawPixmap(iconRect, index.data(Qt::DecorationRole).value<QIcon>().pixmap(option.decorationSize));
+
+
+	/* Draw texts */
+
+	// Calculate the text rects
+	QRect DRTextRect(option.rect.adjusted(
+		a,0,
+		0,-a*12/(option.fontMetrics.height()+12)) // TODO
+	);
+
+	QRect URTextRect(option.rect.adjusted(
+		a,DRTextRect.height(),
+		0,0)
+	);
 
 	// Draw name
-	font.setPixelSize(32);
-	elided = QFontMetrics(font).elidedText(index.data(Qt::DisplayRole).toString(), Qt::ElideRight, 720-64);
+	QFont font = option.font;
+	QString text = index.data(Qt::DisplayRole).toString();
+	text = QFontMetrics(font).elidedText(text, Qt::ElideRight, DRTextRect.width());
 	painter->setFont(font);
-	painter->drawText(option.rect.x()+48, option.rect.y(),
-					  option.rect.width()-48, 48,
-					  Qt::AlignTop|Qt::AlignLeft,
-					  elided, nullptr);
+	painter->drawText(DRTextRect, Qt::AlignVCenter|Qt::AlignLeft, text);
+
+	//Draw the infotext
+	font.setPixelSize(12);
+	text = index.data(_role).toString();
+	text = QFontMetrics(font).elidedText(text, Qt::ElideMiddle, URTextRect.width());
+	painter->setFont(font);
+	painter->drawText(URTextRect, Qt::AlignVCenter|Qt::AlignLeft, text);
+
+	painter->restore();
 }
 
 

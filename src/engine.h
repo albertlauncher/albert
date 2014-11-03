@@ -29,10 +29,8 @@ public:
 	Engine();
 	~Engine();
 
-	void query(const QString &req);
 
 	// Modelstuff
-	void     clear();
 	void     action( const QModelIndex & index);
 	void     altAction( const QModelIndex & index);
 	void     ctrlAction( const QModelIndex & index);
@@ -47,6 +45,9 @@ public:
 private:
 	QVector<Service*>        _modules;
 	QVector<Service::Item *> _data;
+
+public slots:
+	void query(const QString &req);
 };
 
 #endif // ENGINE_H

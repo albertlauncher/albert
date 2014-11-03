@@ -27,11 +27,13 @@ class ProposalListDelegate : public QStyledItemDelegate
 {
 	Q_OBJECT
 
+	int _role;
+
 public:
-	ProposalListDelegate(){}
+	ProposalListDelegate(Qt::KeyboardModifiers mods);
+
 protected:
 	void paint ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const override;
-	inline QSize sizeHint ( const QStyleOptionViewItem&, const QModelIndex& ) const  override { return QSize(200, 48); }
 };
 
 #endif // PROPOSALLISTDELEGATE_H
