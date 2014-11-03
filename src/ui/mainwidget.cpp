@@ -30,7 +30,19 @@ MainWidget::MainWidget(QWidget *parent)
 	: QWidget(parent)
 {
 	/* Initializing members*/
+
+	// Deserialize data if datafile exists
 	_engine           = new Engine;
+	QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db");
+	if (f.open(QIODevice::ReadOnly| QIODevice::Text)) {
+		qDebug() << "Deserializing from" << f.fileName();
+		QDataStream in(&f);
+		_engine->deserialize(in);
+		f.close();
+	} else {
+		qWarning() << "Could not open file" << f.fileName();
+		_engine->initialize();
+	}
 	_proposalListView = new ProposalListView;
 	_inputLine        = new InputLine;
 	_settingsDialog   = new SettingsWidget(this);
@@ -43,6 +55,7 @@ MainWidget::MainWidget(QWidget *parent)
 
 
 	/* Setup signal flow */
+
 	// A change in text triggers requests
 	connect(_inputLine, SIGNAL(textChanged(QString)), _engine, SLOT(query(QString)));
 
@@ -64,12 +77,8 @@ MainWidget::MainWidget(QWidget *parent)
 
 
 
-	/* Deserializing */
-	deserialize();
-
-
-
 	/* Initializing UI */
+
 	setWindowTitle(QString::fromLocal8Bit("Albert"));
 	setAttribute(Qt::WA_TranslucentBackground);
 	setWindowFlags( Qt::CustomizeWindowHint
@@ -106,26 +115,21 @@ MainWidget::MainWidget(QWidget *parent)
 
 	_inputLine->setObjectName(QString::fromLocal8Bit("inputline"));
 	_inputLine->setContextMenuPolicy(Qt::NoContextMenu);
-	_inputLine->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
+	_inputLine->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	contentLayout->addWidget(_inputLine);
 
 	_proposalListView->setObjectName("proposallist");
 	_proposalListView->setFocusPolicy(Qt::NoFocus);
 	_proposalListView->setFocusProxy(_inputLine);
 	_proposalListView->hide();
-	_proposalListView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
+	_proposalListView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	contentLayout->addWidget(_proposalListView);
 }
 
 /**************************************************************************/
 MainWidget::~MainWidget()
 {
-	serialize();
-}
-
-/**************************************************************************/
-void MainWidget::serialize() const
-{
+	// Serialize data
 	QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db";
 	QFile f(path);
 	if (f.open(QIODevice::ReadWrite| QIODevice::Text)){
@@ -136,27 +140,11 @@ void MainWidget::serialize() const
 		return;
 	}
 	qFatal("FATAL: Could not write to %s", path.toStdString().c_str());
+
+	delete _engine;
+	_settingsDialog->deleteLater();
 }
 
-/**************************************************************************/
-void MainWidget::deserialize()
-{
-	QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db";
-	QFile f(path);
-	if (f.open(QIODevice::ReadOnly| QIODevice::Text))
-	{
-		qDebug() << "Deserializing from" << path;
-		QDataStream in( &f );
-		_engine->deserialize(in);
-		f.close();
-	}
-	else
-	{
-		qWarning() << "Could not open file" << path;
-		_engine->initialize();
-	}
-
-}
 
 
 /*****************************************************************************/

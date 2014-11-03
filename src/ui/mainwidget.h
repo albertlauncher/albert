@@ -48,9 +48,6 @@ private:
 	Engine           *_engine;
 	SettingsWidget   *_settingsDialog;
 
-	void serialize() const;
-	void deserialize ();
-
 public:
 	MainWidget(QWidget *parent = 0);
 	~MainWidget();
