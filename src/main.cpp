@@ -35,6 +35,9 @@ int main(int argc, char *argv[])
 	a.setWindowIcon(QIcon(":app_icon"));
 	a.setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
+	// Create the app
+	MainWidget *w = new MainWidget;
+
 	{ // FIRST RUN STUFF
 		QDir data(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
 		if (!data.exists())
@@ -66,7 +69,7 @@ int main(int argc, char *argv[])
 			// Apply the theme
 			QFile styleFile(fi.canonicalFilePath()); // TODO errorhandling
 			if (styleFile.open(QFile::ReadOnly)) {
-				qApp->setStyleSheet(styleFile.readAll());
+				a.setStyleSheet(styleFile.readAll());
 				styleFile.close();
 				success = true;
 			}
@@ -80,8 +83,6 @@ int main(int argc, char *argv[])
 	}
 	/*  END Style */
 
-	// Create the app
-	MainWidget *w = new MainWidget;
 
 	// Enter eventloop
 	int retval = a.exec();
