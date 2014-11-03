@@ -19,14 +19,10 @@
 #include "fileindexwidget.h"
 #include "globals.h"
 
-#include <functional>
-#include <chrono>
 #include <algorithm>
 #include <QDirIterator>
 #include <QDebug>
-#include <QFile>
 #include <QStandardPaths>
-
 
 /**************************************************************************/
 FileIndex::~FileIndex()
@@ -69,18 +65,18 @@ void FileIndex::buildIndex()
 
 	qDebug() << "[FileIndex]\tLooking in: " << _paths;
 
-    for ( const QString &p : _paths) {
-        QDirIterator it(p, QDirIterator::Subdirectories);
-        while (it.hasNext()) {
-            it.next();
-            if (gSettings->value("indexHidenFiles", false).toBool()
-                    && it.fileInfo().isHidden())
-                continue;
-            Item *i = new Item;
-            i->_fileInfo = it.fileInfo();
-            _index.push_back(i);
-        }
-    }
+	for ( const QString &p : _paths) {
+		QDirIterator it(p, QDirIterator::Subdirectories);
+		while (it.hasNext()) {
+			it.next();
+			if (it.fileInfo().isHidden()
+				&& !gSettings->value("indexHiddenFiles", false).toBool())
+				continue;
+			Item *i = new Item;
+			i->_fileInfo = it.fileInfo();
+			_index.push_back(i);
+		}
+	}
 
 	std::sort(_index.begin(), _index.end(), Service::Item::CaseInsensitiveCompare());
 
