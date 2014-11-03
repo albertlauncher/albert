@@ -20,8 +20,9 @@
 
 #include <QDebug>
 #include <QDirIterator>
-#include <QString> // TODO CLEANUP
+#include <QString>
 #include <QStandardPaths>
+
 #ifdef Q_OS_WIN
 #include "windows.h"
 #endif
@@ -60,7 +61,7 @@ void AppIndex::buildIndex()
 
 	qDebug() << "[ApplicationIndex]\tLooking in: " << _paths;
 
-#ifndef Q_OS_WIN
+#ifdef Q_OS_LINUX
 	for ( const QString &p : _paths) {
 		QDirIterator it(p, QDirIterator::Subdirectories);
 		while (it.hasNext()) {
@@ -202,10 +203,6 @@ void AppIndex::buildIndex()
 
 	RegCloseKey(hUninstKey);
 #endif
-
-
-
-
 
 	std::sort(_index.begin(), _index.end(), Service::Item::CaseInsensitiveCompare());
 
