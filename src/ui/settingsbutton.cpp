@@ -41,11 +41,11 @@ void SettingsButton::paintEvent(QPaintEvent *event)
 	QPixmap icon = QPixmap(event->rect().size());
 	icon.fill(Qt::transparent);
 
-	// Draw a simple circle
+	// Draw a simple circle TODO QTBUG-42337
 	QPainter p1(&icon);
 	p1.setRenderHint(QPainter::Antialiasing, true);
-	p1.setPen(this->palette().brush(QPalette::Active, QPalette::Text).color());
-	p1.setBrush(QBrush(this->palette().brush(QPalette::Active, QPalette::ButtonText).color()));
+	p1.setPen(this->palette().brush(QPalette::Active, QPalette::WindowText).color());
+	p1.setBrush(QBrush(this->palette().brush(QPalette::Active, QPalette::WindowText).color()));
 	p1.drawEllipse(r);
 
 	// Cut the cogs of the wheel

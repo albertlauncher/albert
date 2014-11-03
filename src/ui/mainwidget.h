@@ -59,7 +59,6 @@ protected:
 	bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
 
 public slots:
-	void onTextEdited(const QString &text);
 	void show();
 	void toggleVisibility();
 };

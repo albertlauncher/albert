@@ -29,16 +29,47 @@
 MainWidget::MainWidget(QWidget *parent)
 	: QWidget(parent)
 {
+	/* Initializing members*/
+	_engine           = new Engine;
+	_proposalListView = new ProposalListView;
+	_inputLine        = new InputLine;
+	_settingsDialog   = new SettingsWidget(this);
+	if(!gSettings->value("hotkey").isValid() || !GlobalHotkey::instance()->registerHotkey(gSettings->value("hotkey").toString())) {
+		QMessageBox msgBox(QMessageBox::Critical, "Error", "Hotkey is not set or invalid. Please set it in the settings.");
+		msgBox.exec();
+		_settingsDialog->show(SettingsWidget::Tab::General);
+	}
+
+
+
+	/* Setup signal flow */
+	// A change in text triggers requests
+	connect(_inputLine, SIGNAL(textChanged(QString)), _engine, SLOT(query(QString)));
+
+	// Proposal list displays eninges contents
+	_proposalListView->setModel(_engine);
+
+	// Proposallistview intercepts inputline's events (Navigation with keys, pressed modifiers, etc)
+	_inputLine->installEventFilter(_proposalListView);
+
+	// Proposallistview tells Inputline to change text on completion. TODO ??
+	connect(_proposalListView, SIGNAL(completion(QString)), _inputLine, SLOT(setText(QString)));
+
+	// Bottonpress or shortcuts op settings dialog, and close albert once
+	connect(_inputLine, SIGNAL(settingsDialogRequested()), _settingsDialog, SLOT(show()));
+	connect(_inputLine, SIGNAL(settingsDialogRequested()), this, SLOT(hide()));
+
+	// Show mainwidget if hotkey is pressed
+	connect(GlobalHotkey::instance(), SIGNAL(hotKeyPressed()), this, SLOT(toggleVisibility()));
+
+
 
 	/* Deserializing */
-
-	_engine = new Engine;
 	deserialize();
 
-	/* UI and windowing */
 
-	// Window properties
-	setObjectName(QString::fromLocal8Bit("albert"));
+
+	/* Initializing UI */
 	setWindowTitle(QString::fromLocal8Bit("Albert"));
 	setAttribute(Qt::WA_TranslucentBackground);
 	setWindowFlags( Qt::CustomizeWindowHint
@@ -50,67 +81,40 @@ MainWidget::MainWidget(QWidget *parent)
 	QVBoxLayout *l2 = new QVBoxLayout;
 	l2->setMargin(0);
 	l2->setSizeConstraint(QLayout::SetFixedSize);
+	l2->setAlignment(Qt::AlignHCenter|Qt::AlignTop);
 	this->setLayout(l2);
-
-	// Layer 2
 
 	_frame2 = new QFrame;
 	_frame2->setObjectName(QString::fromLocal8Bit("bottomframe"));
-	_frame2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
-	l2->addWidget(_frame2,0,0);
+	_frame2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	l2->addWidget(_frame2);
 
 	QVBoxLayout *l1 = new QVBoxLayout;
 	l1->setMargin(0);
+	l1->setAlignment(Qt::AlignHCenter|Qt::AlignTop);
 	_frame2->setLayout(l1);
-
-	// Layer 1
 
 	_frame1 = new QFrame;
 	_frame1->setObjectName(QString::fromLocal8Bit("topframe"));
-	_frame1->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Preferred);
-	l1->addWidget(_frame1,0,0);
+	_frame1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	l1->addWidget(_frame1);
 
 	QVBoxLayout *contentLayout = new QVBoxLayout();
 	contentLayout->setMargin(0);
+	contentLayout->setAlignment(Qt::AlignHCenter|Qt::AlignTop);
 	_frame1->setLayout(contentLayout);
 
-	// ContentLayer
-
-	_inputLine = new InputLine;
-	// A change in text triggers requests
-	connect(_inputLine, SIGNAL(textChanged(QString)), this, SLOT(onTextEdited(QString)));
+	_inputLine->setObjectName(QString::fromLocal8Bit("inputline"));
+	_inputLine->setContextMenuPolicy(Qt::NoContextMenu);
+	_inputLine->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
 	contentLayout->addWidget(_inputLine);
 
-	_proposalListView = new ProposalListView;
+	_proposalListView->setObjectName("proposallist");
 	_proposalListView->setFocusPolicy(Qt::NoFocus);
 	_proposalListView->setFocusProxy(_inputLine);
 	_proposalListView->hide();
-	_proposalListView->setModel(_engine);
-	// Proposallistview tells Inputline to change text (completion)
-	connect(_proposalListView, SIGNAL(completion(QString)), _inputLine, SLOT(setText(QString)));
-	// Proposallistview intercepts inputline's events (Navigation with keys, pressed modifiers, etc)
-	_inputLine->installEventFilter(_proposalListView);
+	_proposalListView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
 	contentLayout->addWidget(_proposalListView);
-
-	// Initialize hotkey
-	connect(GlobalHotkey::instance(), SIGNAL(hotKeyPressed()),
-			this, SLOT(toggleVisibility()));
-	if(!gSettings->value("hotkey").isValid() ||
-			!GlobalHotkey::instance()->registerHotkey(gSettings->value("hotkey").toString())) {
-		QMessageBox msgBox(
-					QMessageBox::Critical, "Error",
-					"Hotkey is not set or invalid. Please set it in the settings."
-					);
-		msgBox.exec();
-		_settingsDialog->show(SettingsWidget::Tab::General);
-	}
-
-	// Initialize SettingsDialog
-	_settingsDialog = new SettingsWidget(this);
-	connect(_inputLine, SIGNAL(settingsDialogRequested()),
-			_settingsDialog, SLOT(show()));
-	connect(_inputLine, SIGNAL(settingsDialogRequested()),
-			this, SLOT(hide()));
 }
 
 /**************************************************************************/
@@ -154,16 +158,14 @@ void MainWidget::deserialize()
 
 }
 
+
 /*****************************************************************************/
 /********************************* S L O T S *********************************/
 /**************************************************************************/
 void MainWidget::show()
 {
-	_engine->clear();
-	_proposalListView->hide();
-	QWidget::show();
 	_inputLine->clear();
-	updateGeometry();
+	QWidget::show();
 	if (gSettings->value(QString::fromLocal8Bit("showCentered"), QString::fromLocal8Bit("true")).toBool())
 		this->move(QApplication::desktop()->screenGeometry().center() - QPoint(rect().right()/2,192 ));
 	this->raise();
@@ -177,27 +179,15 @@ void MainWidget::toggleVisibility()
 	this->isVisible() ? this->hide() : this->show();
 }
 
+
+/*****************************************************************************/
+/**************************** O V E R R I D E S ******************************/
 /**************************************************************************/
-void MainWidget::onTextEdited(const QString & text)
-{
-	QString t = text.trimmed();
-	if (!t.isEmpty()){
-		_engine->query(t);
-		if (_engine->rowCount() > 0){
-			if (!_proposalListView->currentIndex().isValid())
-				_proposalListView->setCurrentIndex(_engine->index(0, 0));
-		}
-		_proposalListView->show();
-		return;
-	}
-	_engine->clear();
-	_proposalListView->hide();
-}
+
 
 #ifdef Q_OS_LINUX
 #include "xcb/xcb.h"
 #endif
-
 /**************************************************************************//**
  * @brief MainWidget::nativeEvent
  *

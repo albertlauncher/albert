@@ -17,23 +17,34 @@
 #ifndef PROPOSALLISTVIEW_H
 #define PROPOSALLISTVIEW_H
 
+#include "proposallistdelegate.h"
+
 #include <QListWidget>
 #include <QEvent>
 #include <QKeyEvent>
+#include <QArrayData>
+
 
 class ProposalListView: public QListView
 {
 	Q_OBJECT
 
+	ProposalListDelegate *_defaultDelegate;
+	ProposalListDelegate *_selectedDelegate;
+
+
 public:
 	explicit ProposalListView(QWidget *parent = 0);
+	~ProposalListView();
 	QSize sizeHint() const override;
 
 protected:
 	bool eventFilter(QObject*, QEvent *event) override;
-	Qt::KeyboardModifiers _mods;
+	void currentChanged(const QModelIndex & current, const QModelIndex & previous) override;
+
 signals:
 	void completion(QString);
+
 public slots:
 	void reset() override;
 };
