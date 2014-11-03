@@ -75,6 +75,7 @@ QDataStream &AppIndex::Item::deserialize(QDataStream &in)
 	return in;
 }
 
+#include <QDebug>
 /**************************************************************************/
 QIcon AppIndex::Item::icon() const
 {
@@ -95,32 +96,19 @@ QIcon AppIndex::Item::icon() const
 	 * required to look in the "hicolor" theme if an icon was not found in the
 	 * current theme.*/
 
+	// TODO QTBUG-42239 CHNAGE WITH Qt5.4
+
 	// PATH
 	if (_iconName.startsWith('/'))
 		return QIcon(_iconName);
+	else
+	{
+		QString s = _iconName;
+		if (s.contains('.'))
+			s =  s.section('.',0,-2);
 
-	// STD WAY
-	if (QIcon::hasThemeIcon(_iconName))
-		return QIcon::fromTheme(_iconName);
-
-	// HICOLOR (Fallback)
-	QString currTheme = QIcon::themeName();
-	QIcon::setThemeName("Hicolor");
-
-	if (QIcon::hasThemeIcon(_iconName)){
-		QIcon retval = QIcon::fromTheme(_iconName);
-		QIcon::setThemeName(currTheme);
-		return retval;
-	}
-
-	// Try again without extension if there is one
-	if (_iconName.contains('.')){
-		QString s =  _iconName.section('.',0,-2);
-		if (QIcon::hasThemeIcon(s))	{
-			QIcon retval = QIcon::fromTheme(s);
-			QIcon::setThemeName(currTheme);
-			return retval;
-		}
+		if (QIcon::hasThemeIcon(s))
+			return QIcon::fromTheme(s);
 	}
 
 	// PIXMAPS
