@@ -28,18 +28,18 @@
 }
 
 #settingsbutton {
-	min-width:15px;
-	min-height:15px;
-	max-width:15px;
-	max-height:15px;
+	min-width:14px;
+	min-height:14px;
+	max-width:14px;
+	max-height:14px;
 	border: none;
-	border-radius: 5px;
+	border-radius: 7px;
 	color : #444;
-	background-color: #3a3a3a;
+	background-color: transparent;
 }
 
 #settingsbutton:hover {
-	background-color: #aaa;
+	background-color: #282828;
 }
 
 /********** PROPOSALLIST **********/
@@ -48,13 +48,13 @@
 	icon-size:48px;
 	font: 26px "Ubuntu";
 	border-radius: 5px;
-	/*border: 1px solid#fff ;*/
 	background-color: transparent;
 }
 
-#proposallist::item{ /*TODO Proper support for padding*/
+#proposallist::item{
 	height:48px;
 	border-radius: 5px;
+	border: 1px solid transparent;
 }
 
 #proposallist::item:selected{
