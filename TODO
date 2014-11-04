@@ -1,0 +1,6 @@
+TODO Command history
+TODO Virtualize actions, define global actions, make em customizable
+TODO Connect listview to engine to run actions using signals.
+TODO Make standard delegate customizable.
+Done Fixflickering in mainwidget.
+Done Use custom delegates for the list.
