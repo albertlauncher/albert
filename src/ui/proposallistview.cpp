@@ -27,15 +27,9 @@ ProposalListView::ProposalListView(QWidget *parent) :
 {
 	_defaultDelegate = new ProposalListDelegate(Qt::NoModifier);
 	_selectedDelegate = new ProposalListDelegate(Qt::NoModifier);
-
 	setItemDelegate(_defaultDelegate);
 	setUniformItemSizes(true);
-	/*
-	 * Please note that even if wrapping is enabled, the cell will not be
-	 * expanded to make room for the text. It will print ellipsis for text that
-	 * cannot be shown, according to the view's textElideMode.
-	 */
-	setWordWrap(true);
+	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
 
 /**************************************************************************/

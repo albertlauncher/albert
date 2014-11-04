@@ -32,7 +32,6 @@ class ProposalListView: public QListView
 	ProposalListDelegate *_defaultDelegate;
 	ProposalListDelegate *_selectedDelegate;
 
-
 public:
 	explicit ProposalListView(QWidget *parent = 0);
 	~ProposalListView();
