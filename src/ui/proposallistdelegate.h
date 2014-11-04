@@ -18,15 +18,10 @@
 #define PROPOSALLISTDELEGATE_H
 
 #include <QStyledItemDelegate>
-#include <QPainter>
-#include <QRect>
 #include <QDebug>
-#include <QLinearGradient>
 
 class ProposalListDelegate : public QStyledItemDelegate
 {
-	Q_OBJECT
-
 	int _role;
 
 public:

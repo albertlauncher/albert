@@ -15,16 +15,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "proposallistdelegate.h"
-#include <QMimeType>
-#include <QMimeDatabase>
-#include <QGuiApplication>
-#include <QStylePainter>
-#include <QApplication>
-#include <QDebug>
 
-
-
-
+#include <QPainter>
 
 /**************************************************************************/
 ProposalListDelegate::ProposalListDelegate(Qt::KeyboardModifiers mods)
@@ -38,20 +30,16 @@ ProposalListDelegate::ProposalListDelegate(Qt::KeyboardModifiers mods)
 	}
 }
 
-
-#include <QPushButton>
 /**************************************************************************/
 void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const
 {
 //	QStyledItemDelegate::paint(painter, option, index);
-
 	painter->save();
-
 	QStyle *style = option.widget->style();
 	style->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
-//	style->drawControl(QStyle::CE_ItemViewItem, &option, painter, option.widget);
 
-	/* a = rect.height
+	/*
+	 *  a = rect.height
 	 * fm(x) := fontmetrics of x
 	 * DR := DisplayRole
 	 * UR := UserRole
@@ -60,53 +48,53 @@ void ProposalListDelegate::paint ( QPainter * painter, const QStyleOptionViewIte
 	 *  |                     |                                                |
 	 *  |   +-------------+   |                                                |
 	 *  |   |             |   |                                                |
-	 *  |   |             |   |a*fm(DR)/(fm(rd)+fm(UR))            DisplayRole |
+	 *  |   |             |   |a*fm(DR)/(fm(DR)+fm(UR))            DisplayRole |
 	 * a|   |     icon    |   |                                                |
 	 *  |   |             |   |                                                |
 	 *  |   |             |   +------------------------------------------------+
 	 *  |   |             |   |                                                |
-	 *  |   +-------------+   |a*fm(UR)/(fm(rd)+fm(UR))             UserRole+x |
+	 *  |   +-------------+   |a*fm(UR)/(fm(DR)+fm(UR))             UserRole+x |
 	 *  |                     |                                                |
 	 * +-----------------------------------------------------------------------+
 	 */
 
-	int a = option.rect.height();
+	QRect contentsRect = style->subElementRect(QStyle::SE_ItemViewItemText,
+											   &option,
+											   option.widget);
+	int a = contentsRect.height();
 
 	/* Draw icon */
-	QRect iconRect(option.rect.topLeft(), option.decorationSize);
-	iconRect.translate( (a-option.decorationSize.width())/2,
-						(a-option.decorationSize.height())/2);
+	QRect iconRect(contentsRect.topLeft(), option.decorationSize);
+	iconRect.translate( (a-option.decorationSize.width())/2, (a-option.decorationSize.height())/2);
 	painter->drawPixmap(iconRect, index.data(Qt::DecorationRole).value<QIcon>().pixmap(option.decorationSize));
 
-
-	/* Draw texts */
-
-	// Calculate the text rects
-	QRect DRTextRect(option.rect.adjusted(
+	/* Draw name */
+	QRect DRTextRect(contentsRect.adjusted(
 		a,0,
 		0,-a*12/(option.fontMetrics.height()+12)) // TODO
 	);
-
-	QRect URTextRect(option.rect.adjusted(
-		a,DRTextRect.height(),
-		0,0)
-	);
-
-	// Draw name
+	DRTextRect.adjust(3,-2,0,-2);  // Empirical
 	QFont font = option.font;
-	QString text = index.data(Qt::DisplayRole).toString();
-	text = QFontMetrics(font).elidedText(text, Qt::ElideRight, DRTextRect.width());
+	QString text = QFontMetrics(font).elidedText(
+				index.data(Qt::DisplayRole).toString(),
+				option.textElideMode,
+				DRTextRect.width());
 	painter->setFont(font);
 	painter->drawText(DRTextRect, Qt::AlignVCenter|Qt::AlignLeft, text);
 
-	//Draw the infotext
+	/* Draw the infotext */
+	QRect URTextRect(contentsRect.adjusted(
+		a,DRTextRect.height(),
+		0,0)
+	);
+	URTextRect.adjust(3,-4,0,-4);  // Empirical
 	font.setPixelSize(12);
-	text = index.data(_role).toString();
-	text = QFontMetrics(font).elidedText(text, Qt::ElideMiddle, URTextRect.width());
+	text = QFontMetrics(font).elidedText(
+				index.data(_role).toString(),
+				option.textElideMode,
+				URTextRect.width());
 	painter->setFont(font);
 	painter->drawText(URTextRect, Qt::AlignVCenter|Qt::AlignLeft, text);
 
 	painter->restore();
 }
-
-
