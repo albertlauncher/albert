@@ -18,14 +18,16 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 include_directories(
 	src/
-	src/ui/
+	src/hotkey/
 	src/services/
+	src/ui/mainwidget/
+	src/ui/settingsdialog/
 )
 
 set(SRCS
 	src/main.cpp
 	src/engine.cpp
-	src/globalhotkey.cpp
+	src/hotkey/globalhotkey.cpp
 	src/services/fileindex/fileindex.cpp
 	src/services/bookmarkindex/bookmarkindex.cpp
 	src/services/calculator/calculator.cpp
@@ -42,14 +44,15 @@ set(SRCS
 	src/services/fileindex/fileindexwidget.cpp
 	src/services/websearch/websearchwidget.cpp
 	src/services/indexservice.cpp
-	src/ui/mainwidget.cpp
-	src/ui/proposallistdelegate.cpp
-	src/ui/proposallistview.cpp
-	src/ui/inputline.cpp
-	src/ui/settingsbutton.cpp
-	src/ui/settingsdialog.cpp
-	src/ui/hotkeywidget.cpp
+	src/ui/mainwidget/mainwidget.cpp
+	src/ui/mainwidget/proposallistdelegate.cpp
+	src/ui/mainwidget/proposallistview.cpp
+	src/ui/mainwidget/inputline.cpp
+	src/ui/mainwidget/settingsbutton.cpp
+	src/ui/settingsdialog/settingsdialog.cpp
+	src/ui/settingsdialog/hotkeywidget.cpp
 )
+
 set(data
 	data/albert.conf
 	data/icons/youtube.svg
@@ -59,7 +62,7 @@ set(data
 )
 
 qt5_wrap_ui(UIS
-	src/ui/settingsdialog.ui
+	src/ui/settingsdialog/settingsdialog.ui
 	src/services/appindex/appindexwidget.ui
 	src/services/bookmarkindex/bookmarkindexwidget.ui
 	src/services/calculator/calculatorwidget.ui
@@ -78,7 +81,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	# Add platformspecific stuff
 	find_package(Qt5X11Extras REQUIRED)
 	find_library(muparser REQUIRED)
-	set(SRCS ${SRCS} src/globalhotkey_x11.cpp)
+	set(SRCS ${SRCS} src/hotkey/globalhotkey_x11.cpp)
 
 	# Define targets and linked libs
 	add_executable(albert ${SRCS} ${UIS} ${DATA} ${RSRC})

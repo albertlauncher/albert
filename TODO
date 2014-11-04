@@ -1,4 +1,5 @@
 TODO Command history
+TODO Make first item selected
 TODO Virtualize actions, define global actions, make em customizable
 TODO Connect listview to engine to run actions using signals.
 TODO Make standard delegate customizable.
