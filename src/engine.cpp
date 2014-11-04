@@ -106,6 +106,9 @@ QVariant Engine::data(const QModelIndex &index, int role) const
 	if (role == Qt::DecorationRole)
 		return _data[index.row()]->icon();
 
+	if (role == Qt::ToolTipRole)
+		return _data[index.row()]->infoText();
+
 	if (role == Qt::UserRole+0)
 		return _data[index.row()]->actionText(Service::Item::Mod::None);
 
