@@ -69,7 +69,7 @@ void AppIndex::buildIndex()
 			QFileInfo fi = it.fileInfo();
 			// Check extension
 			if (fi.suffix() != QString::fromLocal8Bit("desktop"))
-				return;
+				continue;
 
 			// Read the entries in the desktopfile
 			QMap<QString, QString> desktopfile;
@@ -85,7 +85,7 @@ void AppIndex::buildIndex()
 
 			// Check if this shall be displayed
 			if (desktopfile["NoDisplay"].compare("true", Qt::CaseInsensitive) == 0)
-				return;
+				continue;
 
 			// Check if this shall be runned in terminal
 			bool term = (desktopfile["Terminal"].compare("true", Qt::CaseInsensitive) == 0);
