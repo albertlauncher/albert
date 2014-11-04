@@ -17,7 +17,7 @@
    id="svg2408"
    style="enable-background:new"
    inkscape:version="0.48.5 r10040"
-   sodipodi:docname="albert.svg">
+   sodipodi:docname="icon.svg">
   <metadata
      id="metadata71">
     <rdf:RDF>
@@ -39,16 +39,16 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="1036"
+     inkscape:window-width="956"
+     inkscape:window-height="1029"
      id="namedview69"
      showgrid="false"
-     inkscape:zoom="1.2291667"
-     inkscape:cx="-230.02575"
-     inkscape:cy="-28.307939"
-     inkscape:window-x="-2"
-     inkscape:window-y="-3"
-     inkscape:window-maximized="1"
+     inkscape:zoom="6.9532169"
+     inkscape:cx="45.139697"
+     inkscape:cy="40.884736"
+     inkscape:window-x="960"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
      inkscape:current-layer="svg2408" />
   <defs
      id="defs2410">
@@ -480,21 +480,6 @@
        d="M 12,6 C 8.676,6 6,8.676 6,12 l 0,36 84,0 0,-36 C 90,8.676 87.324,6 84,6 L 12,6 z"
        id="rect3819"
        style="opacity:0.8;fill:url(#radialGradient3832);fill-opacity:1;fill-rule:nonzero;stroke:none" />
-  </g>
-  <g
-     id="layer4"
-     style="display:inline"
-     transform="translate(-1.220339,0.61016949)">
-    <rect
-       width="66"
-       height="66"
-       rx="12"
-       ry="12"
-       x="15"
-       y="15"
-       clip-path="url(#clipPath3613)"
-       id="rect3171"
-       style="opacity:0.1;fill:url(#linearGradient3942);fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;filter:url(#filter3794-7)" />
   </g>
   <g
      id="g3065"
