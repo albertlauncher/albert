@@ -101,7 +101,7 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 		# Add platformspecific stuff
-		set(SRCS ${SRCS} src/globalhotkey_win.cpp)
+		set(SRCS ${SRCS} src/hotkey/globalhotkey_win.cpp)
 
 		#Use unicode
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")
