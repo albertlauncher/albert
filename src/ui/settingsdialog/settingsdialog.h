@@ -46,6 +46,8 @@ protected:
 protected slots:
 	void onSkinClicked(QListWidgetItem*);
 	void onNItemsChanged(int i);
+	void onSubModeSelChanged(int);
+	void onSubModeDefChanged(int);
 
 public slots:
 	void show();

@@ -45,7 +45,6 @@ set(SRCS
 	src/services/websearch/websearchwidget.cpp
 	src/services/indexservice.cpp
 	src/ui/mainwidget/mainwidget.cpp
-	src/ui/mainwidget/proposallistdelegate.cpp
 	src/ui/mainwidget/proposallistview.cpp
 	src/ui/mainwidget/inputline.cpp
 	src/ui/mainwidget/settingsbutton.cpp

@@ -50,9 +50,20 @@ SettingsWidget::SettingsWidget(MainWidget *ref)
 	// Proposal stuff
 	ui.spinBox_proposals->setValue(gSettings->value("nItemsToShow", 5).toInt());
 
-	// Save if changes are made to the spinBox_proposals
-	connect(ui.spinBox_proposals, SIGNAL(valueChanged(int)),
-			this, SLOT(onNItemsChanged(int)));
+	// Apply changes made to the amount of proposals
+	connect(ui.spinBox_proposals, SIGNAL(valueChanged(int)), this, SLOT(onNItemsChanged(int)));
+
+	// Load subtext mode for selected items
+	ui.cb_subModeSel->setCurrentIndex(gSettings->value("subModeSelected", 2).toInt());
+	// Apply changes made to subtext mode of selected items
+	connect(ui.cb_subModeSel, SIGNAL(currentIndexChanged(int)),
+			this, SLOT(onSubModeSelChanged(int)));
+
+	// Load subtext mode for unselected items
+	ui.cb_subModeDef->setCurrentIndex(gSettings->value("subModeDefault",  1).toInt());
+	// Apply changes made to subtext mode of "UN"selected items
+	connect(ui.cb_subModeDef, SIGNAL(currentIndexChanged(int)),
+			this, SLOT(onSubModeDefChanged(int)));
 
 
 
@@ -139,6 +150,11 @@ void SettingsWidget::closeEvent(QCloseEvent *event)
 	}
 }
 
+/******************************************************************************/
+/*******************************  S L O T S  **********************************/
+/******************************************************************************/
+
+
 /**************************************************************************/
 void SettingsWidget::onSkinClicked(QListWidgetItem *i)
 {
@@ -170,6 +186,20 @@ void SettingsWidget::onSkinClicked(QListWidgetItem *i)
 void SettingsWidget::onNItemsChanged(int i)
 {
 	gSettings->setValue("nItemsToShow", i);
+}
+
+/**************************************************************************/
+void SettingsWidget::onSubModeSelChanged(int option)
+{
+	gSettings->setValue("subModeSelected", option);
+	_mainWidget->_proposalListView->setSubModeSel(static_cast<ProposalListView::SubTextMode>(option));
+}
+
+/**************************************************************************/
+void SettingsWidget::onSubModeDefChanged(int option)
+{
+	gSettings->setValue("subModeDeault", option);
+	_mainWidget->_proposalListView->setSubModeDef(static_cast<ProposalListView::SubTextMode>(option));
 }
 
 /**************************************************************************/

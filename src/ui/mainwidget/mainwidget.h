@@ -40,6 +40,8 @@ class MainWidget : public QWidget
 {
 	Q_OBJECT
 
+	friend class SettingsWidget;
+
 private:
 
 	QFrame           *_frame1,*_frame2;
