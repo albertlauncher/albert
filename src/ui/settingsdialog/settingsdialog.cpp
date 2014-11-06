@@ -66,74 +66,57 @@ SettingsWidget::SettingsWidget(MainWidget *ref)
 			this, SLOT(onSubModeDefChanged(int)));
 
 
-
-	/* MODULES */
-
-	QListWidgetItem *item = new QListWidgetItem("Websearch"); // TODO NO SINGLETONS!!!
-	ui.listWidget_modules->addItem(item);
-	ui.stackedWidget->addWidget(WebSearch::instance()->widget());
-
-	item = new QListWidgetItem("Apps");
-	ui.listWidget_modules->addItem(item);
-	ui.stackedWidget->addWidget(AppIndex::instance()->widget());
-
-	item = new QListWidgetItem("Bookmarks");
-	ui.listWidget_modules->addItem(item);
-	ui.stackedWidget->addWidget(BookmarkIndex::instance()->widget());
-
-	item = new QListWidgetItem("Files");
-	ui.listWidget_modules->addItem(item);
-	ui.stackedWidget->addWidget(FileIndex::instance()->widget());
-
-	item = new QListWidgetItem("Calculator");
-	ui.listWidget_modules->addItem(item);
-	ui.stackedWidget->addWidget(Calculator::instance()->widget());
-
-	// The entries and the stackeswidgets are connected in the .ui
-
-	// Set the width of the list to the with of the content
-	QFontMetrics fm(ui.listWidget_modules->font());
-	int width=0;
-	for (int i = 0; i < ui.listWidget_modules->count(); ++i)
-	{
-		int tmp = fm.width(ui.listWidget_modules->item(i)->text());
-		if (width < tmp)
-			width = tmp;
-	}
-	ui.listWidget_modules->setFixedWidth(width
-										 + ui.listWidget_modules->contentsMargins().left()
-										 + ui.listWidget_modules->contentsMargins().right()
-										 + 6
-										 );
-
-
-
-	/* APPEARANCE */
-
-	// Add a simple fallback without path
+	// Appearance // add a fallback
 	ui.cb_themes->addItem("Standard (Fallback)");
-
-	// Get theme dirs
 	QStringList themeDirs = QStandardPaths::locateAll(QStandardPaths::DataLocation,
 													  "themes",
 													  QStandardPaths::LocateDirectory);
-	// Get all themes
+	// Get all themes and add them
 	QFileInfoList themes;
 	for (QDir d : themeDirs)
 		themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
-
-	// Add the themes
 	int i = 1;
 	for (QFileInfo fi : themes){
-		++i;
 		ui.cb_themes->addItem(fi.baseName(), fi.canonicalFilePath());
-		if ( fi.fileName() == gSettings->value("theme").toString() )
+		if ( fi.baseName() == gSettings->value("theme").toString() )
 			ui.cb_themes->setCurrentIndex(i);
+		++i;
 	}
 
 	// Apply a skin if clicked
 	connect(ui.cb_themes, SIGNAL(currentIndexChanged(int)),
 			this, SLOT(onThemeChanged(int)));
+
+
+	/* MODULES */
+
+	QListWidgetItem *item = new QListWidgetItem("Websearch"); // TODO NO SINGLETONS!!!
+	ui.lw_modules->addItem(item);
+	ui.sw_modules->addWidget(WebSearch::instance()->widget());
+
+	item = new QListWidgetItem("Apps");
+	ui.lw_modules->addItem(item);
+	ui.sw_modules->addWidget(AppIndex::instance()->widget());
+
+	item = new QListWidgetItem("Bookmarks");
+	ui.lw_modules->addItem(item);
+	ui.sw_modules->addWidget(BookmarkIndex::instance()->widget());
+
+	item = new QListWidgetItem("Files");
+	ui.lw_modules->addItem(item);
+	ui.sw_modules->addWidget(FileIndex::instance()->widget());
+
+	item = new QListWidgetItem("Calculator");
+	ui.lw_modules->addItem(item);
+	ui.sw_modules->addWidget(Calculator::instance()->widget());
+
+	// The entries and the stackeswidgets are connected in the .ui
+
+	// Set the width of the list to the with of the content
+	ui.lw_modules->setFixedWidth(ui.lw_modules->sizeHintForColumn(0)
+								 + ui.lw_modules->contentsMargins().left()
+								 + ui.lw_modules->contentsMargins().right()
+								 + ui.lw_modules->spacing()*2);
 }
 
 /**************************************************************************/
