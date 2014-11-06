@@ -47,13 +47,30 @@ QWidget *BookmarkIndex::widget()
 /**************************************************************************/
 void BookmarkIndex::initialize()
 {
+	restoreDefaults();
 	buildIndex();
 	std::sort(_index.begin(), _index.end(), Service::Item::CaseInsensitiveCompare());
 }
 
 /**************************************************************************/
+void BookmarkIndex::restoreDefaults()
+{
+	setSearchType(SearchType::WordMatch);
+
+	gSettings->beginGroup("BookmarkIndex");
+	gSettings->setValue("bookmarkPath",
+			QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
+			+ "/chromium/Default/Bookmarks");
+	gSettings->endGroup();
+}
+
+/**************************************************************************/
 void BookmarkIndex::buildIndex()
 {
+	for(Service::Item *i : _index)
+		delete i;
+	_index.clear();
+
 	// Define a lambda for recursion
 	std::function<void(const QJsonObject &json)> rec_bmsearch = [&] (const QJsonObject &json)
 	{
@@ -73,10 +90,10 @@ void BookmarkIndex::buildIndex()
 		}
 	};
 
-	// Finally do this recursion for all paths
-	QString bookmarkPath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + "/"
-			+ gSettings->value(QString::fromLocal8Bit("chromium_bookmark_path"),
-								QString::fromLocal8Bit(".config/chromium/Default/Bookmarks")).toString();
+	// Get path form settings
+	gSettings->beginGroup("BookmarkIndex");
+	QString bookmarkPath = gSettings->value("bookmarkPath").toString();
+	gSettings->endGroup();
 
 	qDebug() << "[BookmarkIndex]\tParsing" << bookmarkPath;
 

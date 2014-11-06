@@ -17,6 +17,7 @@
 #include "appindex.h"
 #include "appitem.h"
 #include "appindexwidget.h"
+#include "globals.h"
 
 #include <QDebug>
 #include <QDirIterator>
@@ -45,11 +46,18 @@ QWidget *AppIndex::widget()
 /**************************************************************************/
 void AppIndex::initialize()
 {
-	// Initially index std paths
-	_paths = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation).toSet();
-
-	// Selfexplanatory
+	restoreDefaults();
 	buildIndex();
+}
+
+/**************************************************************************/
+void AppIndex::restoreDefaults()
+{
+	setSearchType(SearchType::WordMatch);
+
+	gSettings->beginGroup("AppIndex");
+	gSettings->setValue("paths", QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation));
+	gSettings->endGroup();
 }
 
 /**************************************************************************/
@@ -59,10 +67,14 @@ void AppIndex::buildIndex()
 		delete i;
 	_index.clear();
 
-	qDebug() << "[ApplicationIndex]\tLooking in: " << _paths;
+	// Get paths from settings
+	gSettings->beginGroup("AppIndex");
+	QStringList paths = gSettings->value("paths", "").toStringList();
+	gSettings->endGroup();
+	qDebug() << "[ApplicationIndex]\tLooking in: " << paths;
 
 #ifdef Q_OS_LINUX
-	for ( const QString &p : _paths) {
+	for ( const QString &p : paths) {
 		QDirIterator it(p, QDirIterator::Subdirectories);
 		while (it.hasNext()) {
 			it.next();
@@ -212,8 +224,7 @@ void AppIndex::buildIndex()
 /**************************************************************************/
 QDataStream &AppIndex::serialize(QDataStream &out) const
 {
-	out << _paths
-		<< _index.size()
+	out << _index.size()
 		<< static_cast<int>(searchType());
 	for (Service::Item *it : _index)
 		static_cast<AppIndex::Item*>(it)->serialize(out);
@@ -224,9 +235,7 @@ QDataStream &AppIndex::serialize(QDataStream &out) const
 QDataStream &AppIndex::deserialize(QDataStream &in)
 {
 	int size, T;
-	in >> _paths
-			>> size
-			>> T;
+	in >> size >> T;
 	AppIndex::Item *it;
 	for (int i = 0; i < size; ++i) {
 		it = new AppIndex::Item;

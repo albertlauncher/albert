@@ -43,17 +43,27 @@ QWidget *FileIndex::widget()
 /**************************************************************************/
 void FileIndex::initialize()
 {
-	// Initially index std paths
-	_paths.clear();
-	_paths << QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)
-		   << QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-		   << QStandardPaths::writableLocation(QStandardPaths::MusicLocation)
-		   << QStandardPaths::writableLocation(QStandardPaths::MoviesLocation)
-		   << QStandardPaths::writableLocation(QStandardPaths::PicturesLocation)
-		   << QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
-
-	// Selfexplanatory
+	restoreDefaults();
 	buildIndex();
+}
+
+/**************************************************************************/
+void FileIndex::restoreDefaults()
+{
+	setSearchType(SearchType::WordMatch);
+
+	gSettings->beginGroup("FileIndex");
+	QStringList paths;
+	paths << QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)
+		  << QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+		  << QStandardPaths::writableLocation(QStandardPaths::MusicLocation)
+		  << QStandardPaths::writableLocation(QStandardPaths::MoviesLocation)
+		  << QStandardPaths::writableLocation(QStandardPaths::PicturesLocation)
+		  << QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+	_paths = paths; //TODO
+	gSettings->setValue("paths", paths);
+	gSettings->endGroup();
+
 }
 
 /**************************************************************************/

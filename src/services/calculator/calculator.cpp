@@ -34,6 +34,17 @@ Calculator::~Calculator()
 }
 
 /**************************************************************************/
+void Calculator::initialize()
+{
+}
+
+/**************************************************************************/
+void Calculator::restoreDefaults()
+{
+
+}
+
+/**************************************************************************/
 QWidget *Calculator::widget()
 {
 	if (_widget == nullptr)
@@ -58,11 +69,6 @@ void Calculator::query(const QString &req, QVector<Service::Item *> *res) const 
 	_theOneAndOnly->_query = req;
 	res->push_back(_theOneAndOnly);
 #endif
-}
-
-/**************************************************************************/
-void Calculator::initialize()
-{
 }
 
 /**************************************************************************/

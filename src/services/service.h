@@ -99,6 +99,7 @@ public:
 	virtual void query(const QString&, QVector<Item*>*) const noexcept = 0;
 	virtual QWidget* widget() = 0;
 	virtual void initialize() = 0;
+	virtual void restoreDefaults() = 0;
 	virtual QDataStream& serialize(QDataStream &out) const = 0;
 	virtual QDataStream& deserialize(QDataStream &in) = 0;
 

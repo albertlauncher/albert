@@ -31,14 +31,15 @@ public:
 
 protected:
 	WebSearch *_ref;
-    void updateWebsearchListWidget();
 
 protected slots:
+	void resetDefaults();
+	void updateUI();
+
 	void onButton_new();
 	void onButton_remove();
 	void onButton_setIcon();
 	void onChange(int,int);
-	void onReset();
 };
 
 #endif // WEBSEARCHWIDGET_H

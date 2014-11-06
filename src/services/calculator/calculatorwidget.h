@@ -18,6 +18,7 @@
 #define CALCULATORWIDGET_H
 
 #include "ui_calculatorwidget.h"
+#include "calculator.h"
 #include <QWidget>
 
 class CalculatorWidget : public QWidget
@@ -28,10 +29,12 @@ class CalculatorWidget : public QWidget
 public:
 	explicit CalculatorWidget(QWidget *parent = 0);
 
-signals:
+protected:
+	Calculator *_ref;
 
-public slots:
-
+protected slots:
+	void restoreDefaults();
+	void updateUI();
 };
 
 #endif // CALCULATORWIDGET_H

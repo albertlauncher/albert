@@ -33,6 +33,9 @@ protected:
 	FileIndex *_ref;
 
 protected slots:
+	void restoreDefaults();
+	void updateUI();
+
 	void onComboBox_SearchTypeChanged(int);
 	void onButton_add();
 	void onButton_edit();
