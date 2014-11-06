@@ -1,8 +1,8 @@
 #bottomframe * {
-	color : #222;
-	background-color: #444;
-	selection-color: #3a3a3a;
-	selection-background-color: #aaa;
+	color : #655332;
+	background-color: #f8edda;
+	selection-color: #f8edda;
+	selection-background-color: #655332;
 }
 
 #bottomframe {
@@ -11,13 +11,12 @@
 	max-width:640px;
 	padding: 7px;
 	border-radius: 14px;
-	background-color: rgba(64, 64, 64, 192);
+	background-color: rgba(248, 237, 218, 64);
 }
 
 #topframe {
 	padding: 7px;
 	border-radius: 7px;
-	background: qlineargradient(x1:0, y1:0, x2:1, y2:1,	stop:0.0 rgba(255, 255, 0, 96), stop:0.2 rgba(0, 255, 0, 96), stop:0.4 rgba(0, 255, 255, 96), stop:0.6 rgba(0, 0, 255, 96), stop:0.8 rgba(255, 0, 255, 96), stop:1.0 rgba(255, 0, 0, 96));
 }
 
 #inputline {
@@ -25,8 +24,7 @@
 	border-radius: 2px;
 	font: 36px "Ubuntu";
 	border: none;
-	
-	background-color: rgba(0, 0, 0, 64);
+	background-color: #f4e3c8;
 }
 
 #settingsbutton {
@@ -36,13 +34,11 @@
 	max-height:14px;
 	border: none;
 	border-radius: 7px;
-	color: rgba(0, 0, 0, 64);
 	background-color: transparent;
 }
 
 #settingsbutton:hover {
-	background-color: rgba(0, 0, 0, 64);
-	background-color: #282828;
+	background-color: #655332;
 }
 
 /********** PROPOSALLIST **********/
@@ -61,8 +57,8 @@
 }
 
 #proposallist::item:selected{
-	border: 1px solid #888;
-	background: qlineargradient(x1:1, y1:1, x2:0, y2:0, stop:0.0 rgba(0, 0, 0, 0), stop:0.5 rgba(192,192,192,32), stop:1.0 rgba(0, 0, 0, 0));
+	border: 1px solid #655332;
+	background: qlineargradient(x1:1, y1:1, x2:0, y2:0, stop:0.0 rgba(0, 0, 0, 0), stop:0.5 rgba(101,83,50,,32), stop:1.0 rgba(0, 0, 0, 0));
 }
 
 #proposallist::item:hover{}
@@ -78,7 +74,7 @@
 }
 
 #proposallist QScrollBar::handle:vertical  {
-	background: #3a3a3a;
+	background: #655332;
 	min-height: 24px;
 }
 
@@ -90,5 +86,3 @@
 	height: 0px;
 	background: transparent;
 }
-
-

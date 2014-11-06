@@ -53,11 +53,10 @@ set(SRCS
 )
 
 set(data
-	data/albert.conf
 	data/icons/youtube.svg
 	data/icons/google.svg
 	data/icons/ebay.svg
-	data/icons/amamzon.conf
+	data/icons/amazon.svg
 )
 
 qt5_wrap_ui(UIS
@@ -92,7 +91,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	install(DIRECTORY src/resources/themes DESTINATION share/albert COMPONENT config)
 	install(FILES src/resources/icon.svg DESTINATION share/albert COMPONENT icon)
 	install(FILES src/resources/albert.desktop DESTINATION share/applications COMPONENT desktop)
-	install(FILES src/resources/albert.conf DESTINATION /etc/xdg/albert COMPONENT config)
 
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
