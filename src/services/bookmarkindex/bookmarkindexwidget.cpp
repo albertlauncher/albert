@@ -31,10 +31,10 @@ BookmarkIndexWidget::BookmarkIndexWidget(BookmarkIndex *srv, QWidget *parent) :
 	updateUI();
 
 	// Rect to changes
-	connect(ui.comboBoxSearchType,SIGNAL(activated(int)),this,SLOT(onSearchTypeChanged(int)));
+	connect(ui.cb_SearchType,SIGNAL(activated(int)),this,SLOT(onSearchTypeChanged(int)));
 	connect(ui.pb_editPath, SIGNAL(clicked()), this , SLOT(editPath()));
 	connect(ui.pb_rebuildIndex, SIGNAL(clicked()), this , SLOT(rebuildIndex()));
-	connect(ui.pb_defaults, SIGNAL(clicked()), this , SLOT(restoreDefaults()));
+	connect(ui.pb_restoreDefaults, SIGNAL(clicked()), this , SLOT(restoreDefaults()));
 
 }
 
@@ -97,5 +97,5 @@ void BookmarkIndexWidget::updateUI()
 	gSettings->endGroup();
 
 	// Update the search
-	ui.comboBoxSearchType->setCurrentIndex(static_cast<int>(_ref->searchType()));
+	ui.cb_SearchType->setCurrentIndex(static_cast<int>(_ref->searchType()));
 }

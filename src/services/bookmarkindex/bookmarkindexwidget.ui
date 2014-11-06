@@ -55,7 +55,7 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QComboBox" name="comboBoxSearchType">
+         <widget class="QComboBox" name="cb_SearchType">
           <item>
            <property name="text">
             <string>Prefix match</string>
@@ -140,7 +140,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pb_defaults">
+      <widget class="QPushButton" name="pb_restoreDefaults">
        <property name="text">
         <string>Restore defaults</string>
        </property>

@@ -30,7 +30,7 @@
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_4">
       <item>
-       <widget class="QListWidget" name="listWidget_paths">
+       <widget class="QListWidget" name="lw_paths">
         <property name="textElideMode">
          <enum>Qt::ElideMiddle</enum>
         </property>
@@ -42,14 +42,14 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_5">
         <item>
-         <widget class="QPushButton" name="pushButton_add">
+         <widget class="QPushButton" name="pb_add">
           <property name="text">
            <string>Add</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_edit">
+         <widget class="QPushButton" name="pb_edit">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -59,7 +59,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_remove">
+         <widget class="QPushButton" name="pb_remove">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -95,7 +95,7 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QComboBox" name="comboBox_searchType">
+         <widget class="QComboBox" name="cb_searchType">
           <item>
            <property name="text">
             <string>Prefix match</string>
@@ -123,7 +123,7 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QCheckBox" name="checkBox_hiddenFiles">
+         <widget class="QCheckBox" name="cb_hiddenFiles">
           <property name="text">
            <string>Index hidden files</string>
           </property>
@@ -163,7 +163,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
-      <widget class="QPushButton" name="pushButton_rebuildIndex">
+      <widget class="QPushButton" name="pb_rebuildIndex">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -176,7 +176,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_info">
+      <widget class="QLabel" name="lbl_info">
        <property name="text">
         <string/>
        </property>

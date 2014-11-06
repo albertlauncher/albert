@@ -28,10 +28,10 @@ WebSearchWidget::WebSearchWidget(WebSearch *srv, QWidget *parent) :
 	updateUI();
 
 	// Initialize connections
-	connect(ui.pushButton_defaults, SIGNAL(clicked()), this, SLOT(resetDefaults()));
-	connect(ui.pushButton_new, SIGNAL(clicked()), this, SLOT(onButton_new()));
-	connect(ui.pushButton_setIcon, SIGNAL(clicked()), this, SLOT(onButton_setIcon()));
-	connect(ui.pushButton_remove, SIGNAL(clicked()), this, SLOT(onButton_remove()));
+	connect(ui.pb_restoreDefaults, SIGNAL(clicked()), this, SLOT(resetDefaults()));
+	connect(ui.pb_new, SIGNAL(clicked()), this, SLOT(onButton_new()));
+	connect(ui.pb_setIcon, SIGNAL(clicked()), this, SLOT(onButton_setIcon()));
+	connect(ui.pb_remove, SIGNAL(clicked()), this, SLOT(onButton_remove()));
 	connect(ui.tableWidget_searches, SIGNAL(cellChanged(int, int)), this, SLOT(onChange(int,int)));
 }
 

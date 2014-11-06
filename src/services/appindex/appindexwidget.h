@@ -36,7 +36,7 @@ protected slots:
 	void restoreDefaults();
 	void updateUI();
 
-	void onComboBox_SearchTypeChanged(int);
+	void oncb_searchTypeChanged(int);
 	void onButton_PathAdd();
 	void onButton_PathRemove();
 	void onButton_RebuildIndex();

@@ -30,12 +30,12 @@
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_4">
       <item>
-       <widget class="QListWidget" name="listWidget_paths"/>
+       <widget class="QListWidget" name="lw_paths"/>
       </item>
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
-         <widget class="QPushButton" name="pushButton_addPath">
+         <widget class="QPushButton" name="pb_addPath">
           <property name="text">
            <string>Add</string>
           </property>
@@ -47,7 +47,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_removePath">
+         <widget class="QPushButton" name="pb_removePath">
           <property name="text">
            <string>Remove</string>
           </property>
@@ -80,7 +80,7 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QComboBox" name="comboBox_searchType">
+         <widget class="QComboBox" name="cb_searchType">
           <item>
            <property name="text">
             <string>Prefix match</string>
@@ -132,7 +132,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
-      <widget class="QPushButton" name="pushButton_rebuildIndex">
+      <widget class="QPushButton" name="pb_rebuildIndex">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -145,7 +145,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_info">
+      <widget class="QLabel" name="lbl_info">
        <property name="text">
         <string/>
        </property>
@@ -165,7 +165,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pb_defaults">
+      <widget class="QPushButton" name="pb_restoreDefaults">
        <property name="text">
         <string>Restore defaults</string>
        </property>
