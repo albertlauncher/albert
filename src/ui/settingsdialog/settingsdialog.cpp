@@ -140,12 +140,17 @@ SettingsWidget::SettingsWidget(MainWidget *ref)
 void SettingsWidget::closeEvent(QCloseEvent *event)
 {
 	if (GlobalHotkey::instance()->hotkey() == 0){
-		QMessageBox msgBox(
-					QMessageBox::Critical, "Error",
-					"You have to define a hotkey to open albert."
-					);
+		QMessageBox msgBox(QMessageBox::Critical, "Error",
+						   "Hotkey is not set or invalid. Please set it in the settings. "\
+						   "Press Ok to go back to the settings, or press Cancel to quit albert.",
+						   QMessageBox::Close|QMessageBox::Ok);
 		msgBox.exec();
-		ui.tabs->setCurrentIndex(0);
+		if ( msgBox.result() == QMessageBox::Ok ){
+			this->show(SettingsWidget::Tab::General);
+			ui.tabs->setCurrentIndex(0);
+		}
+		else
+			qApp->quit();
 		event->ignore();
 	}
 }
