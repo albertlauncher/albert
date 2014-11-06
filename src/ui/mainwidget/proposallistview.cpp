@@ -296,7 +296,12 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 
 		// Completion
 		if (key == Qt::Key_Tab) {
-			if (currentIndex().isValid())
+			if (!currentIndex().isValid())
+				if (model()->rowCount() > 0)
+					emit completion(model()->data(model()->index(0,0), Qt::UserRole+8).toString());
+				else
+					return true;
+			else
 				emit completion(model()->data(currentIndex(), Qt::UserRole+8).toString());
 			return true;
 		}
@@ -328,8 +333,6 @@ void ProposalListView::currentChanged(const QModelIndex &current, const QModelIn
 
 	setItemDelegateForRow(current.row(), _selectedDelegate);
 	_customDelegateRows.insert(current.row());
-	qDebug() <<"sdasd"<< current.row();
-
 }
 
 /**************************************************************************/
