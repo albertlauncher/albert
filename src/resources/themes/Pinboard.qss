@@ -33,7 +33,7 @@
 	max-width:14px;
 	max-height:14px;
 	border: none;
-	border-radius: 7px;
+	border-radius: 2px;
 	background-color: transparent;
 }
 
@@ -57,8 +57,7 @@
 }
 
 #proposallist::item:selected{
-	border: 1px solid #655332;
-	background: qlineargradient(x1:1, y1:1, x2:0, y2:0, stop:0.0 rgba(0, 0, 0, 0), stop:0.5 rgba(101,83,50,,32), stop:1.0 rgba(0, 0, 0, 0));
+	border: 1px solid #e5cba3;
 }
 
 #proposallist::item:hover{}
