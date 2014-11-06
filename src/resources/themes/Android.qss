@@ -1,9 +1,10 @@
-#bottomframe * {
-	color : #222;
-	background-color: #444;
-	selection-color: #3a3a3a;
-	selection-background-color: #aaa;
-}
+/*
+ * Android Theme
+ * Main colors:
+ * Green : #9acd00	154, 205, 0
+ * Gray  : #6d6e71	109, 110, 113
+ * White : #f9f9f9	249, 249, 249
+ */
 
 #bottomframe {
 	width:640px;
@@ -11,13 +12,13 @@
 	max-width:640px;
 	padding: 7px;
 	border-radius: 14px;
-	background-color: rgba(64, 64, 64, 192);
+	background-color: rgba(154, 205, 0, 128);
 }
 
 #topframe {
+	background-color: #f9f9f9;
 	padding: 7px;
 	border-radius: 7px;
-	background: qlineargradient(x1:0, y1:0, x2:1, y2:1,	stop:0.0 rgba(255, 255, 0, 96), stop:0.2 rgba(0, 255, 0, 96), stop:0.4 rgba(0, 255, 255, 96), stop:0.6 rgba(0, 0, 255, 96), stop:0.8 rgba(255, 0, 255, 96), stop:1.0 rgba(255, 0, 0, 96));
 }
 
 #inputline {
@@ -25,8 +26,10 @@
 	border-radius: 2px;
 	font: 36px "Ubuntu";
 	border: none;
-	
-	background-color: rgba(0, 0, 0, 64);
+	color : #f9f9f9;
+	background-color: #9acd00;
+	selection-color: #9acd00;
+	selection-background-color: #f9f9f9;
 }
 
 #settingsbutton {
@@ -35,14 +38,13 @@
 	max-width:14px;
 	max-height:14px;
 	border: none;
-	border-radius: 7px;
-	color: rgba(0, 0, 0, 64);
+	border-radius: 2px;
+	color: #f9f9f9;
 	background-color: transparent;
 }
 
 #settingsbutton:hover {
-	background-color: rgba(0, 0, 0, 64);
-	background-color: #282828;
+	background-color: #9acd00;
 }
 
 /********** PROPOSALLIST **********/
@@ -51,6 +53,7 @@
 	icon-size:48px;
 	font: 26px "Ubuntu";
 	border-radius: 5px;
+	color: #6d6e71;
 	background-color: transparent;
 }
 
@@ -61,8 +64,8 @@
 }
 
 #proposallist::item:selected{
-	border: 1px solid #888;
-	background: qlineargradient(x1:1, y1:1, x2:0, y2:0, stop:0.0 rgba(0, 0, 0, 0), stop:0.5 rgba(192,192,192,32), stop:1.0 rgba(0, 0, 0, 0));
+	border: 1px solid #9acd00;
+	background: qlineargradient(x1:1, y1:1, x2:0, y2:0, stop:0.0 rgba(154, 205, 0, 32), stop:0.5 rgba(0,0,0,0), stop:1.0 rgba(154, 205, 0,32));
 }
 
 #proposallist::item:hover{}
@@ -78,7 +81,7 @@
 }
 
 #proposallist QScrollBar::handle:vertical  {
-	background: #3a3a3a;
+	background: #9acd00;
 	min-height: 24px;
 }
 
@@ -90,5 +93,3 @@
 	height: 0px;
 	background: transparent;
 }
-
-
