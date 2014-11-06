@@ -35,7 +35,7 @@
    <item row="1" column="0">
     <widget class="QTabWidget" name="tabs">
      <property name="currentIndex">
-      <number>0</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -247,13 +247,13 @@
        <item>
         <widget class="QLabel" name="label_4">
          <property name="pixmap">
-          <pixmap>../resources/icon.svg</pixmap>
+          <pixmap resource="../../resources.qrc">:/app_icon</pixmap>
          </property>
          <property name="scaledContents">
           <bool>false</bool>
          </property>
          <property name="alignment">
-          <set>Qt::AlignCenter</set>
+          <set>Qt::AlignBottom|Qt::AlignHCenter</set>
          </property>
         </widget>
        </item>
@@ -267,6 +267,9 @@ p, li { white-space: pre-wrap; }
 &lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Albert omni launcher &lt;/span&gt;v 0.5&lt;span style=&quot; color:#717171; vertical-align:super;&quot;&gt; (alpha)&lt;/span&gt;&lt;/p&gt;
 &lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;If you encounter bugs or think you have suggestions for improvement, tell me at the &lt;a href=&quot;https://github.com/ManuelSchneid3r/albert/issues&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#9cd4ff;&quot;&gt;github issue tracker.&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+         </property>
         </widget>
        </item>
       </layout>
@@ -275,7 +278,9 @@ p, li { white-space: pre-wrap; }
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../../resources.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>listWidget_modules</sender>
