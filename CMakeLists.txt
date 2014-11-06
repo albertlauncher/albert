@@ -28,22 +28,23 @@ set(SRCS
 	src/main.cpp
 	src/engine.cpp
 	src/hotkey/globalhotkey.cpp
-	src/services/fileindex/fileindex.cpp
-	src/services/bookmarkindex/bookmarkindex.cpp
-	src/services/calculator/calculator.cpp
-	src/services/websearch/websearch.cpp
-	src/services/fileindex/fileitem.cpp
-	src/services/calculator/calculatoritem.cpp
-	src/services/bookmarkindex/bookmarkitem.cpp
-	src/services/websearch/websearchitem.cpp
+	src/services/service.h
+	src/services/indexservice.cpp
 	src/services/appindex/appindexwidget.cpp
 	src/services/appindex/appindex.cpp
 	src/services/appindex/appitem.cpp
+	src/services/bookmarkindex/bookmarkindex.cpp
+	src/services/bookmarkindex/bookmarkitem.cpp
 	src/services/bookmarkindex/bookmarkindexwidget.cpp
+	src/services/calculator/calculator.cpp
+	src/services/calculator/calculatoritem.cpp
 	src/services/calculator/calculatorwidget.cpp
+	src/services/fileindex/fileindex.cpp
 	src/services/fileindex/fileindexwidget.cpp
+	src/services/fileindex/fileitem.cpp
+	src/services/websearch/websearch.cpp
+	src/services/websearch/websearchitem.cpp
 	src/services/websearch/websearchwidget.cpp
-	src/services/indexservice.cpp
 	src/ui/mainwidget/mainwidget.cpp
 	src/ui/mainwidget/proposallistview.cpp
 	src/ui/mainwidget/inputline.cpp
