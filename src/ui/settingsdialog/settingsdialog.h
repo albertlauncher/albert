@@ -44,7 +44,7 @@ protected:
 	void closeEvent(QCloseEvent * event) override;
 
 protected slots:
-	void onSkinClicked(QListWidgetItem*);
+	void onThemeChanged(int);
 	void onNItemsChanged(int i);
 	void onSubModeSelChanged(int);
 	void onSubModeDefChanged(int);
