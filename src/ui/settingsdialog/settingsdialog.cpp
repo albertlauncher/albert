@@ -108,11 +108,14 @@ SettingsWidget::SettingsWidget(MainWidget *ref)
 
 	// The entries and the stackeswidgets are connected in the .ui
 
+
 	// Set the width of the list to the with of the content
 	ui.lw_modules->setFixedWidth(ui.lw_modules->sizeHintForColumn(0)
 								 + ui.lw_modules->contentsMargins().left()
 								 + ui.lw_modules->contentsMargins().right()
 								 + ui.lw_modules->spacing()*2);
+
+	ui.lw_modules->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
 
 /**************************************************************************/
