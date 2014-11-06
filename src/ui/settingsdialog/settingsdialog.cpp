@@ -191,6 +191,7 @@ void SettingsWidget::onSkinClicked(QListWidgetItem *i)
 void SettingsWidget::onNItemsChanged(int i)
 {
 	gSettings->setValue("nItemsToShow", i);
+	_mainWidget->_proposalListView->updateGeometry();
 }
 
 /**************************************************************************/
