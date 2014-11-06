@@ -60,7 +60,6 @@ void FileIndex::restoreDefaults()
 		  << QStandardPaths::writableLocation(QStandardPaths::MoviesLocation)
 		  << QStandardPaths::writableLocation(QStandardPaths::PicturesLocation)
 		  << QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
-	_paths = paths; //TODO
 	gSettings->setValue("paths", paths);
 	gSettings->endGroup();
 
@@ -73,14 +72,18 @@ void FileIndex::buildIndex()
 		delete i;
 	_index.clear();
 
-	qDebug() << "[FileIndex]\tLooking in: " << _paths;
+	// Get paths from settings
+	gSettings->beginGroup("FileIndex");
+	QStringList paths = gSettings->value("paths", "").toStringList();
+	gSettings->endGroup();
+	qDebug() << "[FileIndex]\tLooking in: " << paths;
 
-	for ( const QString &p : _paths) {
+	for ( const QString &p : paths) {
 		QDirIterator it(p, QDirIterator::Subdirectories);
 		while (it.hasNext()) {
 			it.next();
 			if (it.fileInfo().isHidden()
-				&& !gSettings->value("indexHiddenFiles", false).toBool())
+				&& !gSettings->value("FileIndex/indexHiddenFiles", false).toBool())
 				continue;
 			Item *i = new Item;
 			i->_fileInfo = it.fileInfo();
@@ -96,8 +99,7 @@ void FileIndex::buildIndex()
 /**************************************************************************/
 QDataStream &FileIndex::serialize(QDataStream &out) const
 {
-	out << _paths
-		<< _index.size()
+	out	<< _index.size()
 		<< static_cast<int>(searchType());
 	for (Service::Item *it : _index)
 		static_cast<FileIndex::Item*>(it)->serialize(out);
@@ -108,8 +110,7 @@ QDataStream &FileIndex::serialize(QDataStream &out) const
 QDataStream &FileIndex::deserialize(QDataStream &in)
 {
 	int size, T;
-	in >> _paths
-			>> size
+	in	>> size
 			>> T;
 	FileIndex::Item *it;
 	for (int i = 0; i < size; ++i) {

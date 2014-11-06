@@ -27,14 +27,11 @@ FileIndexWidget::FileIndexWidget(FileIndex *srv, QWidget *parent) :
 	ui.setupUi(this);
 
 	// Init ui
-	ui.cb_searchType->setCurrentIndex(static_cast<int>(_ref->searchType()));
-	ui.cb_hiddenFiles->setChecked(gSettings->value("indexHiddenFiles", false).toBool());
-	ui.lw_paths->addItems(_ref->_paths);
+	updateUI();
 
 	// Rect to changes
 	connect(ui.cb_searchType,SIGNAL(activated(int)),this,SLOT(oncb_searchTypeChanged(int)));
 	connect(ui.pb_add, SIGNAL(clicked()), this, SLOT(onButton_add()));
-	connect(ui.pb_edit, SIGNAL(clicked()), this, SLOT(onButton_edit()));
 	connect(ui.pb_remove, SIGNAL(clicked()), this, SLOT(onButton_remove()));
 	connect(ui.pb_restore, SIGNAL(clicked()), this, SLOT(restoreDefaults()));
 	connect(ui.pb_rebuildIndex, SIGNAL(clicked()), this, SLOT(rebuildIndex()));
@@ -61,29 +58,17 @@ void FileIndexWidget::onButton_add()
 	if(pathName.isEmpty())
 		return;
 
-	_ref->_paths.append(pathName);
+	// Add it in the settings
+	gSettings->beginGroup("FileIndex");
+	QStringList paths = gSettings->value("paths", "").toStringList();
+	paths << pathName;
+	paths.removeDuplicates();
+	gSettings->setValue("paths", paths);
+	gSettings->endGroup();
+
+	// Add it in the ui
 	ui.lw_paths->clear();
-	ui.lw_paths->addItems(_ref->_paths);
-}
-
-/**************************************************************************/
-void FileIndexWidget::onButton_edit()
-{
-	if (ui.lw_paths->currentItem() == nullptr)
-		return;
-
-	QString pathName = QFileDialog::getExistingDirectory(
-				this,
-				tr("Choose path"),
-				ui.lw_paths->currentItem()->text());
-
-	if(pathName.isEmpty())
-		return;
-
-	_ref->_paths.removeAt(ui.lw_paths->currentRow());
-	_ref->_paths.append(pathName);
-	ui.lw_paths->currentItem()->setText(pathName);
-
+	ui.lw_paths->addItems(paths);
 }
 
 /**************************************************************************/
@@ -91,8 +76,16 @@ void FileIndexWidget::onButton_remove()
 {
 	if (ui.lw_paths->currentItem() == nullptr)
 		return;
+
+	// Remove it in the settings
+	gSettings->beginGroup("FileIndex");
+	QStringList paths = gSettings->value("paths", "").toStringList();
+	paths.removeAll(ui.lw_paths->currentItem()->text());
+	gSettings->setValue("paths", paths);
+	gSettings->endGroup();
+
+	// Remove it in the ui
 	delete ui.lw_paths->currentItem();
-	_ref->_paths.removeAt(ui.lw_paths->currentRow());
 }
 
 /**************************************************************************/
@@ -114,7 +107,9 @@ void FileIndexWidget::rebuildIndex()
 /**************************************************************************/
 void FileIndexWidget::onCheckbox_toggle(bool b)
 {
+	gSettings->beginGroup("FileIndex");
 	gSettings->setValue("indexHiddenFiles", b);
+	gSettings->endGroup();
 }
 
 /**************************************************************************/
@@ -129,13 +124,14 @@ void FileIndexWidget::updateUI()
 {
 	// Update the list
 	gSettings->beginGroup("FileIndex");
-	QStringList paths = gSettings->value("paths", "").toStringList();
-	gSettings->endGroup();
+	QStringList paths = gSettings->value("paths").toStringList();
 	ui.lw_paths->clear();
 	ui.lw_paths->addItems(paths);
+
+	// Update the list
+	ui.cb_hiddenFiles->setChecked(gSettings->value("indexHiddenFiles", false).toBool());
+	gSettings->endGroup();
 
 	// Update the search
 	ui.cb_searchType->setCurrentIndex(static_cast<int>(_ref->searchType()));
 }
-
-

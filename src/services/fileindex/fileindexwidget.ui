@@ -49,16 +49,6 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pb_edit">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="text">
-           <string>Edit</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QPushButton" name="pb_remove">
           <property name="enabled">
            <bool>true</bool>

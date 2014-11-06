@@ -82,12 +82,7 @@ void AppIndexWidget::onButton_PathRemove()
 	gSettings->endGroup();
 
 	// Remove it in the ui
-	ui.lw_paths->clear();
-	ui.lw_paths->addItems(paths);
-
-	// Select first
-	if(ui.lw_paths->count() > 0)
-		ui.lw_paths->setCurrentRow(0);
+	delete ui.lw_paths->currentItem();
 }
 
 /**************************************************************************/

@@ -40,7 +40,6 @@ public:
 protected:
 	FileIndex(){}
 	void buildIndex() override;
-	QStringList _paths;
 };
 
 #endif // FILEINDEX_H

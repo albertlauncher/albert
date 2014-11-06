@@ -38,7 +38,6 @@ protected slots:
 
 	void oncb_searchTypeChanged(int);
 	void onButton_add();
-	void onButton_edit();
 	void onButton_remove();
 	void rebuildIndex();
 	void onCheckbox_toggle(bool);
