@@ -43,10 +43,6 @@ SettingsWidget::SettingsWidget(MainWidget *ref)
 
 	/* GENERAL */
 
-	// hotkey setter
-	_hkWidget = new HotkeyWidget; // Initializes itself
-	ui.groupBox_hotkey->layout()->addWidget(_hkWidget);
-
 	// Proposal stuff
 	ui.spinBox_proposals->setValue(gSettings->value("nItemsToShow", 5).toInt());
 

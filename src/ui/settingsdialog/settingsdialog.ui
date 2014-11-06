@@ -35,7 +35,7 @@
    <item row="1" column="0">
     <widget class="QTabWidget" name="tabs">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -56,6 +56,9 @@
                <string>Hotkey</string>
               </property>
              </widget>
+            </item>
+            <item>
+             <widget class="HotkeyWidget" name="widget" native="true"/>
             </item>
            </layout>
           </widget>
@@ -285,6 +288,14 @@ p, li { white-space: pre-wrap; }
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>HotkeyWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">hotkeywidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../../resources.qrc"/>
  </resources>
