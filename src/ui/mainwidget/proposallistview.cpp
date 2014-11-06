@@ -275,16 +275,21 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 
 		// Selection
 		if (key == Qt::Key_Return || key == Qt::Key_Enter) {
-			if (currentIndex().isValid()) {
-				if (mods == Qt::ControlModifier )
-					model()->data(currentIndex(), Qt::UserRole+5);
-				else if (mods == Qt::MetaModifier)
-					model()->data(currentIndex(), Qt::UserRole+6);
-				else if (mods == Qt::AltModifier)
-					model()->data(currentIndex(), Qt::UserRole+7);
-				else //	if (mods == Qt::NoModifier )
-					model()->data(currentIndex(), Qt::UserRole+4);
-			}
+			if (!currentIndex().isValid())
+				if (model()->rowCount() > 0)
+					setCurrentIndex(model()->index(0,0));
+				else
+					return true;
+
+			if (mods == Qt::ControlModifier )
+				model()->data(currentIndex(), Qt::UserRole+5);
+			else if (mods == Qt::MetaModifier)
+				model()->data(currentIndex(), Qt::UserRole+6);
+			else if (mods == Qt::AltModifier)
+				model()->data(currentIndex(), Qt::UserRole+7);
+			else //	if (mods == Qt::NoModifier )
+				model()->data(currentIndex(), Qt::UserRole+4);
+
 			window()->hide();
 			return true;
 		}
@@ -353,7 +358,7 @@ void ProposalListView::reset()
 	// Make the size of this widget be adjusted (size hint changed)
 	updateGeometry();
 
-	// Shwo if not empty and make first item current
+	// Show if not empty and make first item current
 	if ( model()->rowCount() > 0 ){
 		show();
 		setCurrentIndex(model()->index(0,0));
