@@ -38,7 +38,7 @@
 }
 
 #settingsbutton:hover {
-	background-color: #655332;
+	background-color: #f8edda;
 }
 
 /********** PROPOSALLIST **********/
