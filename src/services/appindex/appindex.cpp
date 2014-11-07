@@ -62,8 +62,8 @@ void AppIndex::buildIndex()
 	qDebug() << "[ApplicationIndex]\tLooking in: " << _paths;
 
 #ifdef Q_OS_LINUX
-	for ( const QString &p : _paths) {
-		QDirIterator it(p, QDirIterator::Subdirectories);
+    for ( const QString &p : _paths) {
+        QDirIterator it(p, QDirIterator::Subdirectories);
 		while (it.hasNext()) {
 			it.next();
 			QFileInfo fi = it.fileInfo();
@@ -148,60 +148,87 @@ void AppIndex::buildIndex()
 	}
 #endif
 #ifdef Q_OS_WIN
-	HKEY hUninstKey = NULL;
-	HKEY hAppKey = NULL;
-	WCHAR sAppKeyName[1024];
-	WCHAR sSubKey[1024];
-	WCHAR sDisplayName[1024];
-	WCHAR *sRoot = L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
-	long lResult = ERROR_SUCCESS;
-	DWORD dwType = KEY_ALL_ACCESS;
-	DWORD dwBufferSize = 0;
+// TODO QTBUG-40565
+    //	for ( const QString &p : _paths) {
+        QDirIterator it(
+                    "C:/Documents and Settings/All Users/Start Menu/Programs",
+                   QDir::Files|QDir::NoDotAndDotDot,
+                    QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            it.next();
+            QFileInfo fi = it.fileInfo();
+            if (fi.isExecutable())
+            {
+                Item *i = new Item;
+                qDebug()<< fi.baseName();
+                i->_name     = fi.baseName();
+                if (fi.isSymLink())
+                    fi.setFile(fi.symLinkTarget());
+                qDebug()<< fi.fileName();
+                qDebug()<< fi.canonicalFilePath();
+                i->_info     = fi.canonicalFilePath();
+                i->_iconName = "";
+                i->_exec     = QString("\"%1\"").arg(fi.canonicalFilePath());
+                i->_term     = false;
+                _index.push_back(i);
+            }
 
-	//Open the "Uninstall" key.
-	if(RegOpenKeyEx(HKEY_LOCAL_MACHINE, sRoot, 0, KEY_READ, &hUninstKey) != ERROR_SUCCESS)
-	{
-		return;
-	}
+        }
+//    }
+//	HKEY hUninstKey = NULL;
+//	HKEY hAppKey = NULL;
+//	WCHAR sAppKeyName[1024];
+//	WCHAR sSubKey[1024];
+//	WCHAR sDisplayName[1024];
+//	WCHAR *sRoot = L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
+//	long lResult = ERROR_SUCCESS;
+//	DWORD dwType = KEY_ALL_ACCESS;
+//	DWORD dwBufferSize = 0;
 
-	for(DWORD dwIndex = 0; lResult == ERROR_SUCCESS; dwIndex++)
-	{
-		//Enumerate all sub keys...
-		dwBufferSize = sizeof(sAppKeyName);
-		if((lResult = RegEnumKeyEx(hUninstKey, dwIndex, sAppKeyName,
-			&dwBufferSize, NULL, NULL, NULL, NULL)) == ERROR_SUCCESS)
-		{
-			//Open the sub key.
-			wsprintf(sSubKey, L"%s\\%s", sRoot, sAppKeyName);
-			if(RegOpenKeyEx(HKEY_LOCAL_MACHINE, sSubKey, 0, KEY_READ, &hAppKey) != ERROR_SUCCESS) {
-				RegCloseKey(hAppKey);
-				RegCloseKey(hUninstKey);
-				return;
-			}
+//	//Open the "Uninstall" key.
+//	if(RegOpenKeyEx(HKEY_LOCAL_MACHINE, sRoot, 0, KEY_READ, &hUninstKey) != ERROR_SUCCESS)
+//	{
+//		return;
+//	}
 
-			//Get the display name value from the application's sub key.
-			dwBufferSize = sizeof(sDisplayName);
-			if(RegQueryValueEx(hAppKey, L"DisplayName", NULL,
-				&dwType, (unsigned char*)sDisplayName, &dwBufferSize) == ERROR_SUCCESS) {
-				qDebug() << QString::fromWCharArray(sAppKeyName);
-				qDebug() << QString::fromWCharArray(sSubKey);
-				qDebug() << QString::fromWCharArray(sDisplayName);
+//	for(DWORD dwIndex = 0; lResult == ERROR_SUCCESS; dwIndex++)
+//	{
+//		//Enumerate all sub keys...
+//		dwBufferSize = sizeof(sAppKeyName);
+//		if((lResult = RegEnumKeyEx(hUninstKey, dwIndex, sAppKeyName,
+//			&dwBufferSize, NULL, NULL, NULL, NULL)) == ERROR_SUCCESS)
+//		{
+//			//Open the sub key.
+//			wsprintf(sSubKey, L"%s\\%s", sRoot, sAppKeyName);
+//			if(RegOpenKeyEx(HKEY_LOCAL_MACHINE, sSubKey, 0, KEY_READ, &hAppKey) != ERROR_SUCCESS) {
+//				RegCloseKey(hAppKey);
+//				RegCloseKey(hUninstKey);
+//				return;
+//			}
+
+//			//Get the display name value from the application's sub key.
+//			dwBufferSize = sizeof(sDisplayName);
+//			if(RegQueryValueEx(hAppKey, L"DisplayName", NULL,
+//				&dwType, (unsigned char*)sDisplayName, &dwBufferSize) == ERROR_SUCCESS) {
+//				qDebug() << QString::fromWCharArray(sAppKeyName);
+//				qDebug() << QString::fromWCharArray(sSubKey);
+//				qDebug() << QString::fromWCharArray(sDisplayName);
 
 
-				Item *i = new Item;
-				i->_name     = QString::fromWCharArray(sDisplayName);
-				i->_info     = "";
-				i->_iconName = "";
-				i->_exec     = "";
-				i->_term     = false;
-				_index.push_back(i);
-			}
+//				Item *i = new Item;
+//				i->_name     = QString::fromWCharArray(sDisplayName);
+//				i->_info     = "";
+//				i->_iconName = "";
+//				i->_exec     = "";
+//				i->_term     = false;
+//				_index.push_back(i);
+//			}
 
-			RegCloseKey(hAppKey);
-		}
-	}
+//			RegCloseKey(hAppKey);
+//		}
+//	}
 
-	RegCloseKey(hUninstKey);
+//	RegCloseKey(hUninstKey);
 #endif
 
 	std::sort(_index.begin(), _index.end(), Service::Item::CaseInsensitiveCompare());
