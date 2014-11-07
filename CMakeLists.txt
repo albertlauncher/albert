@@ -1,12 +1,8 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-if(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(CMAKE_BUILD_TYPE Release)
-	set(CMAKE_CXX_FILES "-O2 -g -Wall")
-else()
-	set(CMAKE_BUILD_TYPE Debug)
-	set(CMAKE_CXX_FILES "-O0 -g -Wall")
-endif()
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -Wall")
+
 
 project(albert)
 
