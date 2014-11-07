@@ -27,6 +27,7 @@ void BookmarkIndex::Item::action(Mod mod)
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
 	switch (mod) {
+	case Mod::Meta:
 	case Mod::None:
 	case Mod::Alt:
 		QDesktopServices::openUrl(QUrl(_url));
@@ -41,6 +42,7 @@ void BookmarkIndex::Item::action(Mod mod)
 QString BookmarkIndex::Item::actionText(Mod mod) const
 {
 	switch (mod) {
+	case Mod::Meta:
 	case Mod::None:
 	case Mod::Alt:
 		return QString("Visit '%1'.").arg(_title);

@@ -32,6 +32,7 @@ void FileIndex::Item::action(Mod mod)
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
 	switch (mod) {
+	case Mod::Meta:
 	case Mod::None:
 		QDesktopServices::openUrl(QUrl("file:///"+_fileInfo.canonicalFilePath()));
 		break;
@@ -48,6 +49,7 @@ void FileIndex::Item::action(Mod mod)
 QString FileIndex::Item::actionText(Mod mod) const
 {
 	switch (mod) {
+	case Mod::Meta:
 	case Mod::None:
 		return QString("Open '%1' with default application.").arg(_fileInfo.fileName());
 		break;
