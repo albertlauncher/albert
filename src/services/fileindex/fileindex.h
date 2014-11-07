@@ -33,13 +33,13 @@ public:
 
 	QWidget* widget() override;
 	void initialize() override;
+	void restoreDefaults() override;
 	QDataStream& serialize (QDataStream &out) const override;
 	QDataStream& deserialize (QDataStream &in) override;
 
 protected:
 	FileIndex(){}
 	void buildIndex() override;
-    QSet<QString> _paths;
 };
 
 #endif // FILEINDEX_H

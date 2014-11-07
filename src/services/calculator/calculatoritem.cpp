@@ -28,6 +28,7 @@ void Calculator::Item::action(Mod mod)
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
 	switch (mod) {
+	case Mod::Meta:
 	case Mod::None:
 		QGuiApplication::clipboard()->setText(_result);
 		break;
@@ -44,6 +45,7 @@ void Calculator::Item::action(Mod mod)
 QString Calculator::Item::actionText(Mod mod) const
 {
 	switch (mod) {
+	case Mod::Meta:
 	case Mod::None:
 		return QString("Copy '%1' to clipboard.").arg(_result);
 		break;

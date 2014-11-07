@@ -27,26 +27,24 @@ FileIndexWidget::FileIndexWidget(FileIndex *srv, QWidget *parent) :
 	ui.setupUi(this);
 
 	// Init ui
-	ui.comboBox_searchType->setCurrentIndex(static_cast<int>(_ref->searchType()));
-	ui.checkBox_hiddenFiles->setChecked(gSettings->value("indexHiddenFiles", false).toBool());
-	ui.listWidget_paths->addItems(_ref->_paths.toList());
+	updateUI();
 
 	// Rect to changes
-	connect(ui.comboBox_searchType,SIGNAL(activated(int)),this,SLOT(onComboBox_SearchTypeChanged(int)));
-	connect(ui.pushButton_add, SIGNAL(clicked()), this, SLOT(onButton_add()));
-	connect(ui.pushButton_edit, SIGNAL(clicked()), this, SLOT(onButton_edit()));
-	connect(ui.pushButton_remove, SIGNAL(clicked()), this, SLOT(onButton_remove()));
-	connect(ui.pushButton_rebuildIndex, SIGNAL(clicked()), this, SLOT(rebuildIndex()));
-	connect(ui.checkBox_hiddenFiles, SIGNAL(toggled(bool)), this, SLOT(onCheckbox_toggle(bool)));
+	connect(ui.cb_searchType,SIGNAL(activated(int)),this,SLOT(oncb_searchTypeChanged(int)));
+	connect(ui.pb_add, SIGNAL(clicked()), this, SLOT(onButton_add()));
+	connect(ui.pb_remove, SIGNAL(clicked()), this, SLOT(onButton_remove()));
+	connect(ui.pb_restore, SIGNAL(clicked()), this, SLOT(restoreDefaults()));
+	connect(ui.pb_rebuildIndex, SIGNAL(clicked()), this, SLOT(rebuildIndex()));
+	connect(ui.cb_hiddenFiles, SIGNAL(toggled(bool)), this, SLOT(onCheckbox_toggle(bool)));
  }
 
 /**************************************************************************/
-void FileIndexWidget::onComboBox_SearchTypeChanged(int st)
+void FileIndexWidget::oncb_searchTypeChanged(int st)
 {
-	ui.label_info->setText("Building search index...");
+	ui.lbl_info->setText("Building search index...");
 	_ref->setSearchType(static_cast<IndexService::SearchType>(st));
-	ui.label_info->setText("Building search index done.");
-	QTimer::singleShot(1000, ui.label_info, SLOT(clear()));
+	ui.lbl_info->setText("Building search index done.");
+	QTimer::singleShot(1000, ui.lbl_info, SLOT(clear()));
 }
 
 /**************************************************************************/
@@ -60,47 +58,41 @@ void FileIndexWidget::onButton_add()
 	if(pathName.isEmpty())
 		return;
 
-	_ref->_paths.insert(pathName);
-	ui.listWidget_paths->clear();
-	ui.listWidget_paths->addItems(_ref->_paths.toList());
-}
+	// Add it in the settings
+	gSettings->beginGroup("FileIndex");
+	QStringList paths = gSettings->value("paths", "").toStringList();
+	paths << pathName;
+	paths.removeDuplicates();
+	gSettings->setValue("paths", paths);
+	gSettings->endGroup();
 
-/**************************************************************************/
-void FileIndexWidget::onButton_edit()
-{
-	if (ui.listWidget_paths->currentItem() == nullptr)
-		return;
-
-	QString pathName = QFileDialog::getExistingDirectory(
-				this,
-				tr("Choose path"),
-				ui.listWidget_paths->currentItem()->text());
-
-	if(pathName.isEmpty())
-		return;
-
-	_ref->_paths.remove(ui.listWidget_paths->currentItem()->text());
-	_ref->_paths.insert(pathName);
-	ui.listWidget_paths->currentItem()->setText(pathName);
-
+	// Add it in the ui
+	ui.lw_paths->clear();
+	ui.lw_paths->addItems(paths);
 }
 
 /**************************************************************************/
 void FileIndexWidget::onButton_remove()
 {
-	if (ui.listWidget_paths->currentItem() == nullptr)
+	if (ui.lw_paths->currentItem() == nullptr)
 		return;
 
-	_ref->_paths.remove(ui.listWidget_paths->currentItem()->text());
-	ui.listWidget_paths->clear();
-	ui.listWidget_paths->addItems(_ref->_paths.toList());
+	// Remove it in the settings
+	gSettings->beginGroup("FileIndex");
+	QStringList paths = gSettings->value("paths", "").toStringList();
+	paths.removeAll(ui.lw_paths->currentItem()->text());
+	gSettings->setValue("paths", paths);
+	gSettings->endGroup();
+
+	// Remove it in the ui
+	delete ui.lw_paths->currentItem();
 }
 
 /**************************************************************************/
 void FileIndexWidget::rebuildIndex()
 {
-	ui.label_info->setText("Building index...");
-	ui.label_info->repaint();
+	ui.lbl_info->setText("Building index...");
+	ui.lbl_info->repaint();
 
 	// Rebuild index
 	_ref->buildIndex();
@@ -108,13 +100,38 @@ void FileIndexWidget::rebuildIndex()
 	// Rebuild searchindex (id necessary)
 	_ref->setSearchType(_ref->searchType());
 
-	ui.label_info->setText("Building index done.");
-	QTimer::singleShot(1000, ui.label_info, SLOT(clear()));
+	ui.lbl_info->setText("Building index done.");
+	QTimer::singleShot(1000, ui.lbl_info, SLOT(clear()));
 }
 
 /**************************************************************************/
 void FileIndexWidget::onCheckbox_toggle(bool b)
 {
+	gSettings->beginGroup("FileIndex");
 	gSettings->setValue("indexHiddenFiles", b);
-	rebuildIndex();
+	gSettings->endGroup();
+}
+
+/**************************************************************************/
+void FileIndexWidget::restoreDefaults()
+{
+	_ref->restoreDefaults();
+	updateUI();
+}
+
+/**************************************************************************/
+void FileIndexWidget::updateUI()
+{
+	// Update the list
+	gSettings->beginGroup("FileIndex");
+	QStringList paths = gSettings->value("paths").toStringList();
+	ui.lw_paths->clear();
+	ui.lw_paths->addItems(paths);
+
+	// Update the list
+	ui.cb_hiddenFiles->setChecked(gSettings->value("indexHiddenFiles", false).toBool());
+	gSettings->endGroup();
+
+	// Update the search
+	ui.cb_searchType->setCurrentIndex(static_cast<int>(_ref->searchType()));
 }

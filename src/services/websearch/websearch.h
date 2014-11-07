@@ -33,6 +33,7 @@ public:
 	QWidget* widget() override;
 	void    query(const QString&, QVector<Service::Item*>*) const noexcept override ;
 	void initialize() override;
+	void restoreDefaults() override;
 	QDataStream& serialize (QDataStream &out) const override;
 	QDataStream& deserialize (QDataStream &in) override;
 

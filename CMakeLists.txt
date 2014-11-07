@@ -1,12 +1,8 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-if(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(CMAKE_BUILD_TYPE Release)
-	set(CMAKE_CXX_FILES "-O2 -g -Wall")
-else()
-	set(CMAKE_BUILD_TYPE Debug)
-	set(CMAKE_CXX_FILES "-O0 -g -Wall")
-endif()
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -Wall")
+
 
 project(albert)
 
@@ -28,24 +24,24 @@ set(SRCS
 	src/main.cpp
 	src/engine.cpp
 	src/hotkey/globalhotkey.cpp
-	src/services/fileindex/fileindex.cpp
-	src/services/bookmarkindex/bookmarkindex.cpp
-	src/services/calculator/calculator.cpp
-	src/services/websearch/websearch.cpp
-	src/services/fileindex/fileitem.cpp
-	src/services/calculator/calculatoritem.cpp
-	src/services/bookmarkindex/bookmarkitem.cpp
-	src/services/websearch/websearchitem.cpp
+	src/services/service.h
+	src/services/indexservice.cpp
 	src/services/appindex/appindexwidget.cpp
 	src/services/appindex/appindex.cpp
 	src/services/appindex/appitem.cpp
+	src/services/bookmarkindex/bookmarkindex.cpp
+	src/services/bookmarkindex/bookmarkitem.cpp
 	src/services/bookmarkindex/bookmarkindexwidget.cpp
+	src/services/calculator/calculator.cpp
+	src/services/calculator/calculatoritem.cpp
 	src/services/calculator/calculatorwidget.cpp
+	src/services/fileindex/fileindex.cpp
 	src/services/fileindex/fileindexwidget.cpp
+	src/services/fileindex/fileitem.cpp
+	src/services/websearch/websearch.cpp
+	src/services/websearch/websearchitem.cpp
 	src/services/websearch/websearchwidget.cpp
-	src/services/indexservice.cpp
 	src/ui/mainwidget/mainwidget.cpp
-	src/ui/mainwidget/proposallistdelegate.cpp
 	src/ui/mainwidget/proposallistview.cpp
 	src/ui/mainwidget/inputline.cpp
 	src/ui/mainwidget/settingsbutton.cpp
@@ -54,11 +50,10 @@ set(SRCS
 )
 
 set(data
-	data/albert.conf
 	data/icons/youtube.svg
 	data/icons/google.svg
 	data/icons/ebay.svg
-	data/icons/amamzon.conf
+	data/icons/amazon.svg
 )
 
 qt5_wrap_ui(UIS
@@ -91,9 +86,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	install(TARGETS albert RUNTIME DESTINATION bin)
 	install(DIRECTORY src/resources/icons DESTINATION share/albert COMPONENT config)
 	install(DIRECTORY src/resources/themes DESTINATION share/albert COMPONENT config)
-	install(FILES src/resources/icon.svg DESTINATION share/albert COMPONENT icon)
 	install(FILES src/resources/albert.desktop DESTINATION share/applications COMPONENT desktop)
-	install(FILES src/resources/albert.conf DESTINATION /etc/xdg/albert COMPONENT config)
 
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 

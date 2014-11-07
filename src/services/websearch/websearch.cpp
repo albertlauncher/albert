@@ -27,6 +27,13 @@
 /**************************************************************************/
 void WebSearch::initialize()
 {
+	restoreDefaults();
+}
+
+/**************************************************************************/
+void WebSearch::restoreDefaults()
+{
+
 	/* Init std searches */
 	for(Service::Item *i : _searchEngines)
 		delete i;

@@ -33,7 +33,12 @@ protected:
 	BookmarkIndex *_ref;
 
 protected slots:
+	void restoreDefaults();
+	void updateUI();
+
 	void onSearchTypeChanged(int);
+	void editPath();
+	void rebuildIndex();
 };
 
 #endif // BOOKMARKINDEXWIDGET_H

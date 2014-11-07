@@ -17,6 +17,7 @@
 #include "appindex.h"
 #include "appitem.h"
 #include "appindexwidget.h"
+#include "globals.h"
 
 #include <QDebug>
 #include <QDirIterator>
@@ -45,11 +46,18 @@ QWidget *AppIndex::widget()
 /**************************************************************************/
 void AppIndex::initialize()
 {
-	// Initially index std paths
-	_paths = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation).toSet();
-
-	// Selfexplanatory
+	restoreDefaults();
 	buildIndex();
+}
+
+/**************************************************************************/
+void AppIndex::restoreDefaults()
+{
+	setSearchType(SearchType::WordMatch);
+
+	gSettings->beginGroup("AppIndex");
+	gSettings->setValue("paths", QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation));
+	gSettings->endGroup();
 }
 
 /**************************************************************************/
@@ -59,17 +67,21 @@ void AppIndex::buildIndex()
 		delete i;
 	_index.clear();
 
-	qDebug() << "[ApplicationIndex]\tLooking in: " << _paths;
+	// Get paths from settings
+	gSettings->beginGroup("AppIndex");
+	QStringList paths = gSettings->value("paths", "").toStringList();
+	gSettings->endGroup();
+	qDebug() << "[ApplicationIndex]\tLooking in: " << paths;
 
 #ifdef Q_OS_LINUX
-    for ( const QString &p : _paths) {
-        QDirIterator it(p, QDirIterator::Subdirectories);
+	for ( const QString &p : paths) {
+		QDirIterator it(p, QDirIterator::Subdirectories);
 		while (it.hasNext()) {
 			it.next();
 			QFileInfo fi = it.fileInfo();
 			// Check extension
 			if (fi.suffix() != QString::fromLocal8Bit("desktop"))
-				return;
+				continue;
 
 			// Read the entries in the desktopfile
 			QMap<QString, QString> desktopfile;
@@ -85,7 +97,7 @@ void AppIndex::buildIndex()
 
 			// Check if this shall be displayed
 			if (desktopfile["NoDisplay"].compare("true", Qt::CaseInsensitive) == 0)
-				return;
+				continue;
 
 			// Check if this shall be runned in terminal
 			bool term = (desktopfile["Terminal"].compare("true", Qt::CaseInsensitive) == 0);
@@ -231,16 +243,14 @@ void AppIndex::buildIndex()
 //	RegCloseKey(hUninstKey);
 #endif
 
-	std::sort(_index.begin(), _index.end(), Service::Item::CaseInsensitiveCompare());
-
 	qDebug() << "[ApplicationIndex]\tFound " << _index.size() << " apps.";
+	prepareSearch();
 }
 
 /**************************************************************************/
 QDataStream &AppIndex::serialize(QDataStream &out) const
 {
-	out << _paths
-		<< _index.size()
+	out << _index.size()
 		<< static_cast<int>(searchType());
 	for (Service::Item *it : _index)
 		static_cast<AppIndex::Item*>(it)->serialize(out);
@@ -251,9 +261,7 @@ QDataStream &AppIndex::serialize(QDataStream &out) const
 QDataStream &AppIndex::deserialize(QDataStream &in)
 {
 	int size, T;
-	in >> _paths
-			>> size
-			>> T;
+	in >> size >> T;
 	AppIndex::Item *it;
 	for (int i = 0; i < size; ++i) {
 		it = new AppIndex::Item;

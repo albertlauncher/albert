@@ -17,8 +17,6 @@
 #ifndef PROPOSALLISTVIEW_H
 #define PROPOSALLISTVIEW_H
 
-#include "proposallistdelegate.h"
-
 #include <QListWidget>
 #include <QEvent>
 #include <QKeyEvent>
@@ -29,12 +27,21 @@ class ProposalListView: public QListView
 {
 	Q_OBJECT
 
-	ProposalListDelegate *_defaultDelegate;
-	ProposalListDelegate *_selectedDelegate;
+	QAbstractItemDelegate *_selectedDelegate;
+	QSet<int> _customDelegateRows;
+	bool _subModeSelIsAction;
+	bool _subModeDefIsAction;
+
+	void modifyDelegate(Qt::KeyboardModifiers);
 
 public:
+	enum class SubTextMode{ None, Info, Action };
+
 	explicit ProposalListView(QWidget *parent = 0);
 	~ProposalListView();
+
+	void setSubModeSel(SubTextMode d);
+	void setSubModeDef(SubTextMode d);
 	QSize sizeHint() const override;
 
 protected:

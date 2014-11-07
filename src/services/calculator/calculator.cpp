@@ -24,6 +24,7 @@
 /**************************************************************************/
 Calculator::Calculator()
 {
+	_p = new mu::Parser;
 	_theOneAndOnly = new Calculator::Item;
 }
 
@@ -31,6 +32,18 @@ Calculator::Calculator()
 Calculator::~Calculator()
 {
 	delete _theOneAndOnly;
+	delete _p;
+}
+
+/**************************************************************************/
+void Calculator::initialize()
+{
+}
+
+/**************************************************************************/
+void Calculator::restoreDefaults()
+{
+
 }
 
 /**************************************************************************/
@@ -44,12 +57,10 @@ QWidget *Calculator::widget()
 /**************************************************************************/
 void Calculator::query(const QString &req, QVector<Service::Item *> *res) const noexcept
 {
-
 #ifndef Q_OS_WIN
-	mu::Parser p;
-	p.SetExpr(req.toStdString());
+	_p->SetExpr(req.toStdString());
 	try {
-		_theOneAndOnly->_result = QString::number(p.Eval());
+		_theOneAndOnly->_result = QString::number(_p->Eval());
 	}
 	catch (mu::Parser::exception_type &e) {
 	  std::cout << "[muparser] " << e.GetMsg() << std::endl;
@@ -58,11 +69,6 @@ void Calculator::query(const QString &req, QVector<Service::Item *> *res) const 
 	_theOneAndOnly->_query = req;
 	res->push_back(_theOneAndOnly);
 #endif
-}
-
-/**************************************************************************/
-void Calculator::initialize()
-{
 }
 
 /**************************************************************************/

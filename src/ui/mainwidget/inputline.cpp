@@ -26,6 +26,7 @@ InputLine::InputLine(QWidget *parent) : QLineEdit(parent)
 {
 	_settingsButton = new SettingsButton(this);
 	_settingsButton->setFocusPolicy(Qt::NoFocus);
+	connect(_settingsButton, SIGNAL(clicked()), this, SIGNAL(settingsDialogRequested()));
 }
 
 /**************************************************************************/

@@ -1,0 +1,87 @@
+#bottomframe * {
+	color : #655332;
+	background-color: #f8edda;
+	selection-color: #f8edda;
+	selection-background-color: #655332;
+}
+
+#bottomframe {
+	width:640px;
+	min-width:640px;
+	max-width:640px;
+	padding: 7px;
+	border-radius: 14px;
+	background-color: rgba(248, 237, 218, 64);
+}
+
+#topframe {
+	padding: 7px;
+	border-radius: 7px;
+}
+
+#inputline {
+	padding: 2px;
+	border-radius: 2px;
+	font: 36px "Ubuntu";
+	border: none;
+	background-color: #f4e3c8;
+}
+
+#settingsbutton {
+	min-width:14px;
+	min-height:14px;
+	max-width:14px;
+	max-height:14px;
+	border: none;
+	border-radius: 2px;
+	background-color: transparent;
+}
+
+#settingsbutton:hover {
+	background-color: #f8edda;
+}
+
+/********** PROPOSALLIST **********/
+
+#proposallist {
+	icon-size:48px;
+	font: 26px "Ubuntu";
+	border-radius: 5px;
+	background-color: transparent;
+}
+
+#proposallist::item{
+	height:48px;
+	border-radius: 5px;
+	border: 1px solid transparent;
+}
+
+#proposallist::item:selected{
+	border: 1px solid #e5cba3;
+}
+
+#proposallist::item:hover{}
+#proposallist::item:selected:!active{}
+#proposallist::item:selected:active{}
+#proposallist::item:alternate{}
+
+/********** SCROLLBAR **********/
+
+#proposallist QScrollBar:vertical  {
+	width: 5px;
+	background: transparent;
+}
+
+#proposallist QScrollBar::handle:vertical  {
+	background: #655332;
+	min-height: 24px;
+}
+
+#proposallist QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
+#proposallist QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical,
+#proposallist QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+	border: 0px;
+	width: 0px;
+	height: 0px;
+	background: transparent;
+}

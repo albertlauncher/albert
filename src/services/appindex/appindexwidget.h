@@ -33,9 +33,11 @@ protected:
 	AppIndex *_ref;
 
 protected slots:
-	void onComboBox_SearchTypeChanged(int);
+	void restoreDefaults();
+	void updateUI();
+
+	void oncb_searchTypeChanged(int);
 	void onButton_PathAdd();
-	void onButton_PathEdit();
 	void onButton_PathRemove();
 	void onButton_RebuildIndex();
 };

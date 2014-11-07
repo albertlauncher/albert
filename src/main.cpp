@@ -35,8 +35,6 @@ int main(int argc, char *argv[])
 	a.setWindowIcon(QIcon(":app_icon"));
 	a.setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
-	// Create the app
-	MainWidget *w = new MainWidget;
 
 	{ // FIRST RUN STUFF
 		QDir data(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
@@ -48,40 +46,38 @@ int main(int argc, char *argv[])
 			conf.mkpath(".");
 	}
 
-	/*  BEGIN Style */
-	// Get theme name from config
-	QString theme = gSettings->value("theme").toString();
+	// Create the app
+	MainWidget *w = new MainWidget;
 
-	// Get theme dirs
-	QStringList themeDirs = QStandardPaths::locateAll(QStandardPaths::DataLocation,
-													  "themes",
-													  QStandardPaths::LocateDirectory);
+	// Get theme name from config
+	QString themeName = gSettings->value("theme").toString();
+
 	// Get all themes
+	QStringList themeDirs = QStandardPaths::locateAll(
+				QStandardPaths::DataLocation, "themes", QStandardPaths::LocateDirectory);
 	QFileInfoList themes;
 	for (QDir d : themeDirs)
 		themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
 
-	// Find the theme
+	// Find and apply the theme
 	bool success = false;
 	for (QFileInfo fi : themes){
-		if (fi.fileName() == theme)
-		{
-			// Apply the theme
-			QFile styleFile(fi.canonicalFilePath()); // TODO errorhandling
+		if (fi.baseName() == themeName) {
+			QFile styleFile(fi.canonicalFilePath());
 			if (styleFile.open(QFile::ReadOnly)) {
 				a.setStyleSheet(styleFile.readAll());
 				styleFile.close();
 				success = true;
+				break;
 			}
 		}
 	}
 
-	if (!success)
-	{
+	// In case of an error use the fallback
+	if (!success) {
 		qWarning() << "Error setting style. Using fallback";
 		a.setStyleSheet(QString::fromLocal8Bit("file:///:/resources/Standard.qss"));
 	}
-	/*  END Style */
 
 
 	// Enter eventloop
