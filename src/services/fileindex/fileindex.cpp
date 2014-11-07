@@ -91,9 +91,8 @@ void FileIndex::buildIndex()
 		}
 	}
 
-	std::sort(_index.begin(), _index.end(), Service::Item::CaseInsensitiveCompare());
-
 	qDebug() << "[FileIndex]\tFound " << _index.size() << " files.";
+	prepareSearch();
 }
 
 /**************************************************************************/

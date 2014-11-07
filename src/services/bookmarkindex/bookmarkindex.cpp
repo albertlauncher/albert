@@ -49,7 +49,6 @@ void BookmarkIndex::initialize()
 {
 	restoreDefaults();
 	buildIndex();
-	std::sort(_index.begin(), _index.end(), Service::Item::CaseInsensitiveCompare());
 }
 
 /**************************************************************************/
@@ -110,6 +109,7 @@ void BookmarkIndex::buildIndex()
 			rec_bmsearch(i.toObject());
 
 	qDebug() << "[BookmarkIndex]\tFound " << _index.size() << " bookmarks.";
+	prepareSearch();
 }
 
 /**************************************************************************/

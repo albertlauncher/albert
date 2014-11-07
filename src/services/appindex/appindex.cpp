@@ -216,9 +216,8 @@ void AppIndex::buildIndex()
 	RegCloseKey(hUninstKey);
 #endif
 
-	std::sort(_index.begin(), _index.end(), Service::Item::CaseInsensitiveCompare());
-
 	qDebug() << "[ApplicationIndex]\tFound " << _index.size() << " apps.";
+	prepareSearch();
 }
 
 /**************************************************************************/
