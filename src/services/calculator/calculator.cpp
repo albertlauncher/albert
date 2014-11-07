@@ -17,14 +17,12 @@
 #include "calculator.h"
 #include "calculatoritem.h"
 #include "calculatorwidget.h"
-
-#ifndef Q_OS_WIN
 #include "muParser.h"
-#endif
+
 /**************************************************************************/
 Calculator::Calculator()
 {
-//	_p = new mu::Parser;
+    _p = new mu::Parser;
 	_theOneAndOnly = new Calculator::Item;
 }
 
@@ -32,7 +30,7 @@ Calculator::Calculator()
 Calculator::~Calculator()
 {
 	delete _theOneAndOnly;
-//	delete _p;
+    delete _p;
 }
 
 /**************************************************************************/
@@ -57,7 +55,6 @@ QWidget *Calculator::widget()
 /**************************************************************************/
 void Calculator::query(const QString &req, QVector<Service::Item *> *res) const noexcept
 {
-#ifndef Q_OS_WIN
 	_p->SetExpr(req.toStdString());
 	try {
 		_theOneAndOnly->_result = QString::number(_p->Eval());
@@ -67,8 +64,7 @@ void Calculator::query(const QString &req, QVector<Service::Item *> *res) const 
 	  return;
 	}
 	_theOneAndOnly->_query = req;
-	res->push_back(_theOneAndOnly);
-#endif
+    res->push_back(_theOneAndOnly);
 }
 
 /**************************************************************************/
