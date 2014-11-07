@@ -19,6 +19,9 @@
 
 #include "service.h"
 #include "singleton.h"
+#ifndef Q_OS_WIN
+#include "muParser.h"
+#endif
 
 class Calculator : public Service, public Singleton<Calculator>
 {
@@ -39,6 +42,9 @@ public:
 protected:
 	Calculator();
 	Item *_theOneAndOnly;
+#ifndef Q_OS_WIN
+	mu::Parser *_p;
+#endif
 };
 
 #endif // CALCULATOR_H
