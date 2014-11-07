@@ -35,8 +35,6 @@ int main(int argc, char *argv[])
 	a.setWindowIcon(QIcon(":app_icon"));
 	a.setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
-	// Create the app
-	MainWidget *w = new MainWidget;
 
 	{ // FIRST RUN STUFF
 		QDir data(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
@@ -48,6 +46,8 @@ int main(int argc, char *argv[])
 			conf.mkpath(".");
 	}
 
+	// Create the app
+	MainWidget *w = new MainWidget;
 
 	// Get theme name from config
 	QString themeName = gSettings->value("theme").toString();
