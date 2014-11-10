@@ -24,7 +24,7 @@
 /**************************************************************************/
 Calculator::Calculator()
 {
-//	_p = new mu::Parser;
+	_p = new mu::Parser;
 	_theOneAndOnly = new Calculator::Item;
 }
 
@@ -32,7 +32,7 @@ Calculator::Calculator()
 Calculator::~Calculator()
 {
 	delete _theOneAndOnly;
-//	delete _p;
+	delete _p;
 }
 
 /**************************************************************************/
