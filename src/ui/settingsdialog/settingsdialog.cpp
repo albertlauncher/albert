@@ -83,6 +83,17 @@ SettingsWidget::SettingsWidget(MainWidget *ref)
 	connect(ui.cb_themes, SIGNAL(currentIndexChanged(int)),
 			this, SLOT(onThemeChanged(int)));
 
+	// Action modifier
+	ui.cb_modActionCtrl->setCurrentIndex(gSettings->value("ctrlAction",1).toInt());
+	connect(ui.cb_modActionCtrl, SIGNAL(currentIndexChanged(int)),
+			this, SLOT(modActionCtrlChanged(int)));
+	ui.cb_modActionMeta->setCurrentIndex(gSettings->value("metaAction",0).toInt());
+	connect(ui.cb_modActionMeta, SIGNAL(currentIndexChanged(int)),
+			this, SLOT(modActionMetaChanged(int)));
+	ui.cb_modActionAlt->setCurrentIndex(gSettings->value("altAction",2).toInt());
+	connect(ui.cb_modActionAlt, SIGNAL(currentIndexChanged(int)),
+			this, SLOT(modActionAltChanged(int)));
+
 
 	/* MODULES */
 
@@ -192,6 +203,25 @@ void SettingsWidget::onSubModeDefChanged(int option)
 {
 	gSettings->setValue("subModeDeault", option);
 	_mainWidget->_proposalListView->setSubModeDef(static_cast<ProposalListView::SubTextMode>(option));
+}
+
+/**************************************************************************/
+void SettingsWidget::modActionCtrlChanged(int i)
+{
+	gSettings->setValue("ctrlAction", i);
+}
+
+/**************************************************************************/
+void SettingsWidget::modActionMetaChanged(int i)
+{
+	gSettings->setValue("metaAction", i);
+
+}
+
+/**************************************************************************/
+void SettingsWidget::modActionAltChanged(int i)
+{
+	gSettings->setValue("altAction", i);
 }
 
 /**************************************************************************/

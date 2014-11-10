@@ -28,9 +28,6 @@ class Engine : public QAbstractListModel
 public:
 	Engine();
 
-	void     action( const QModelIndex & index);
-	void     altAction( const QModelIndex & index);
-	void     ctrlAction( const QModelIndex & index);
 	int      rowCount(const QModelIndex & = QModelIndex()) const override;
 	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
 
@@ -42,6 +39,7 @@ public:
 private:
 	QVector<Service*>        _modules;
 	QVector<Service::Item *> _data;
+	QString                  _requestString;
 
 public slots:
 	void query(const QString &req);

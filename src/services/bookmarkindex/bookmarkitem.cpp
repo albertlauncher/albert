@@ -18,41 +18,32 @@
 #include "websearch/websearch.h"
 #include <chrono>
 #include <QProcess>
-#include <QDebug>
 #include <QDesktopServices>
 #include <QUrl>
 
 /**************************************************************************/
-void BookmarkIndex::Item::action(Mod mod)
+void BookmarkIndex::Item::action()
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
-	switch (mod) {
-	case Mod::Meta:
-	case Mod::None:
-	case Mod::Alt:
-		QDesktopServices::openUrl(QUrl(_url));
-		break;
-	case Mod::Ctrl:
-		WebSearch::instance()->defaultSearch(_title);
-		break;
-	}
+	QDesktopServices::openUrl(QUrl(_url));
 }
 
 /**************************************************************************/
-QString BookmarkIndex::Item::actionText(Mod mod) const
+QString BookmarkIndex::Item::actionText() const
 {
-	switch (mod) {
-	case Mod::Meta:
-	case Mod::None:
-	case Mod::Alt:
-		return QString("Visit '%1'.").arg(_title);
-		break;
-	case Mod::Ctrl:
-		return WebSearch::instance()->defaultSearchText(_title);
-		break;
-	}
-	// Will never happen
-	return "";
+	return QString("Visit '%1'.").arg(_title);
+}
+
+/**************************************************************************/
+void BookmarkIndex::Item::altAction()
+{
+	action();
+}
+
+/**************************************************************************/
+QString BookmarkIndex::Item::altActionText() const
+{
+	return actionText();
 }
 
 /**************************************************************************/

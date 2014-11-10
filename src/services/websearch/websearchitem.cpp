@@ -16,42 +16,35 @@
 
 #include "websearchitem.h"
 #include <chrono>
-#include <QProcess>
 #include <QClipboard>
 #include <QGuiApplication>
-#include <QDebug>
 #include <QDesktopServices>
 #include <QUrl>
 
 /**************************************************************************/
-void WebSearch::Item::action(Mod mod)
+void WebSearch::Item::action()
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
-	switch (mod) {
-	case Mod::None:
-		QDesktopServices::openUrl(QUrl(QString(_url).replace("%s", _searchTerm)));
-		break;
-	case Mod::Alt:
-	case Mod::Ctrl:
-		QGuiApplication::clipboard()->setText(QString(_url).replace("%s", _searchTerm));
-		break;
-	}
+	QDesktopServices::openUrl(QUrl(QString(_url).replace("%s", _searchTerm)));
 }
 
 /**************************************************************************/
-QString WebSearch::Item::actionText(Mod mod) const
+QString WebSearch::Item::actionText() const
 {
-	switch (mod) {
-	case Mod::None:
-		return QString("Visit '%1'.").arg(QString(_url).replace("%s", _searchTerm));
-		break;
-	case Mod::Alt:
-	case Mod::Ctrl:
-		return QString("Copy '%1' to clipboard.").arg(QString(_url).replace("%s", _searchTerm));
-		break;
-	}
-	// Will never happen
-	return "";
+	return QString("Visit '%1'.").arg(QString(_url).replace("%s", _searchTerm));
+}
+
+/**************************************************************************/
+void WebSearch::Item::altAction()
+{
+	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
+	QGuiApplication::clipboard()->setText(QString(_url).replace("%s", _searchTerm));
+}
+
+/**************************************************************************/
+QString WebSearch::Item::altActionText() const
+{
+	return QString("Copy '%1' to clipboard.").arg(QString(_url).replace("%s", _searchTerm));
 }
 
 /**************************************************************************/

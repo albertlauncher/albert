@@ -21,43 +21,30 @@
 #include <QGuiApplication>
 #include <QProcess>
 
-#include <QDebug>
-
 /**************************************************************************/
-void Calculator::Item::action(Mod mod)
+void Calculator::Item::action()
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
-	switch (mod) {
-	case Mod::Meta:
-	case Mod::None:
-		QGuiApplication::clipboard()->setText(_result);
-		break;
-	case Mod::Alt:
-		QGuiApplication::clipboard()->setText(_query);
-		break;
-	case Mod::Ctrl:
-		WebSearch::instance()->defaultSearch(_query);
-		break;
-	}
+	QGuiApplication::clipboard()->setText(_result);
 }
 
 /**************************************************************************/
-QString Calculator::Item::actionText(Mod mod) const
+QString Calculator::Item::actionText() const
 {
-	switch (mod) {
-	case Mod::Meta:
-	case Mod::None:
-		return QString("Copy '%1' to clipboard.").arg(_result);
-		break;
-	case Mod::Alt:
-		return QString("Copy '%1' to clipboard.").arg(_query);
-		break;
-	case Mod::Ctrl:
-		return WebSearch::instance()->defaultSearchText(_query);
-		break;
-	}
-	// Will never happen
-	return "";
+	return QString("Copy '%1' to clipboard.").arg(_result);
+}
+
+/**************************************************************************/
+void Calculator::Item::altAction()
+{
+	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
+	QGuiApplication::clipboard()->setText(_query);
+}
+
+/**************************************************************************/
+QString Calculator::Item::altActionText() const
+{
+	return QString("Copy '%1' to clipboard.").arg(_query);
 }
 
 /**************************************************************************/

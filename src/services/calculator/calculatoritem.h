@@ -33,9 +33,12 @@ public:
 	inline QString title() const override {return _result;}
 	inline QString complete() const override {return _query;}
 	inline QString infoText() const override {return "Result of '"+_query+"'";}
-	void action(Mod) override;
-	QString actionText(Mod) const override;
 	QIcon icon() const override;
+
+	void    action() override;
+	QString actionText() const override;
+	void    altAction() override;
+	QString altActionText() const override;
 
 protected:
 	QString _query;

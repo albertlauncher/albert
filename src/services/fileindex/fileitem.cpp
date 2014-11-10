@@ -22,46 +22,33 @@
 #include <QUrl>
 #include <QFileInfo>
 
-#include <QDebug>
-
 /**************************************************************************/
 const QMimeDatabase FileIndex::Item::mimeDb;
 
 /**************************************************************************/
-void FileIndex::Item::action(Mod mod)
+void FileIndex::Item::action()
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
-	switch (mod) {
-	case Mod::Meta:
-	case Mod::None:
-		QDesktopServices::openUrl(QUrl("file:///"+_fileInfo.canonicalFilePath()));
-		break;
-	case Mod::Alt:
-		QDesktopServices::openUrl(QUrl("file:///"+_fileInfo.canonicalPath()));
-		break;
-	case Mod::Ctrl:
-		WebSearch::instance()->defaultSearch(_fileInfo.fileName());
-		break;
-	}
+	QDesktopServices::openUrl(QUrl("file:///"+_fileInfo.canonicalFilePath()));
 }
 
 /**************************************************************************/
-QString FileIndex::Item::actionText(Mod mod) const
+QString FileIndex::Item::actionText() const
 {
-	switch (mod) {
-	case Mod::Meta:
-	case Mod::None:
-		return QString("Open '%1' with default application.").arg(_fileInfo.fileName());
-		break;
-	case Mod::Alt:
-		return QString("Open the folder containing '%1' in file browser.").arg(_fileInfo.fileName());
-		break;
-	case Mod::Ctrl:
-		return WebSearch::instance()->defaultSearchText(_fileInfo.fileName());
-		break;
-	}
-	// Will never happen
-	return "";
+	return QString("Open '%1' with default application.").arg(_fileInfo.fileName());
+}
+
+/**************************************************************************/
+void FileIndex::Item::altAction()
+{
+	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
+	QDesktopServices::openUrl(QUrl("file:///"+_fileInfo.canonicalPath()));
+}
+
+/**************************************************************************/
+QString FileIndex::Item::altActionText() const
+{
+	return QString("Open the folder containing '%1' in file browser.").arg(_fileInfo.fileName());
 }
 
 /**************************************************************************/

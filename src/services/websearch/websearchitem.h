@@ -33,9 +33,12 @@ public:
 	inline QString title() const override {return "Search '" + ((_searchTerm.isEmpty())?"...":_searchTerm) + "' in " + _name;}
 	inline QString complete() const override {return _name + " " + _searchTerm;}
 	inline QString infoText() const override {return QString(_url).replace("%s", _searchTerm);}
-	void action(Mod) override;
-	QString actionText(Mod) const override;
 	QIcon icon() const override;
+
+	void    action() override;
+	QString actionText() const override;
+	void    altAction() override;
+	QString altActionText() const override;
 
 	QString shortcut() const {return _shortcut;}
 	QString name() const {return _name;}

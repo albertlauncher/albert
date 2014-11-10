@@ -30,9 +30,13 @@ public:
 	QIcon icon() const override;
 	inline QString infoText() const override {return _info;}
 	inline QString complete() const override {return _name;}
-	void action(Mod) override;
-	QString actionText(Mod) const override;
-	inline  qint64 lastAccess() const;
+
+	void    action() override;
+	QString actionText() const override;
+	void    altAction() override;
+	QString altActionText() const override;
+
+
 
 protected:
 	QString _name;

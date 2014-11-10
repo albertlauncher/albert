@@ -142,7 +142,6 @@ protected:
 /******************************************************************************/
 
 
-static QAbstractItemDelegate *bla;
 /**************************************************************************/
 ProposalListView::ProposalListView(QWidget *parent) :
 	QListView(parent)
@@ -169,14 +168,21 @@ ProposalListView::~ProposalListView()
 /**************************************************************************/
 void ProposalListView::modifyDelegate(Qt::KeyboardModifiers mods)
 {
-
 	if (_subModeDefIsAction){
 		delete itemDelegate();
 		switch (mods) {
-		case Qt::ControlModifier: setItemDelegate(new SubTextDelegate(Qt::UserRole+1)); break;
-		case Qt::MetaModifier: setItemDelegate(new SubTextDelegate(Qt::UserRole+2)); break;
-		case Qt::AltModifier: setItemDelegate(new SubTextDelegate(Qt::UserRole+3)); break;
-		default: setItemDelegate(new SubTextDelegate(Qt::UserRole)); break;
+		case Qt::ControlModifier:
+			setItemDelegate(new SubTextDelegate(Qt::UserRole+10+gSettings->value("ctrlAction",1).toInt()));
+			break;
+		case Qt::MetaModifier:
+			setItemDelegate(new SubTextDelegate(Qt::UserRole+10+gSettings->value("metaAction",0).toInt()));
+			break;
+		case Qt::AltModifier:
+			setItemDelegate(new SubTextDelegate(Qt::UserRole+10+gSettings->value("altAction",2).toInt()));
+			break;
+		default:
+			setItemDelegate(new SubTextDelegate(Qt::UserRole+10));
+			break;
 		}
 		update();
 	}
@@ -184,10 +190,18 @@ void ProposalListView::modifyDelegate(Qt::KeyboardModifiers mods)
 	if (_subModeSelIsAction){
 		delete _selectedDelegate;
 		switch (mods) {
-		case Qt::ControlModifier: _selectedDelegate = new SubTextDelegate(Qt::UserRole+1); break;
-		case Qt::MetaModifier: _selectedDelegate = new SubTextDelegate(Qt::UserRole+2); break;
-		case Qt::AltModifier: _selectedDelegate = new SubTextDelegate(Qt::UserRole+3); break;
-		default: _selectedDelegate = new SubTextDelegate(Qt::UserRole); break;
+		case Qt::ControlModifier:
+			_selectedDelegate = new SubTextDelegate(Qt::UserRole+10+gSettings->value("ctrlAction",1).toInt());
+			break;
+		case Qt::MetaModifier:
+			_selectedDelegate = new SubTextDelegate(Qt::UserRole+10+gSettings->value("metaAction",0).toInt());
+			break;
+		case Qt::AltModifier:
+			_selectedDelegate = new SubTextDelegate(Qt::UserRole+10+gSettings->value("altAction",2).toInt());
+			break;
+		default:
+			_selectedDelegate = new SubTextDelegate(Qt::UserRole+10);
+			break;
 		}
 
 		// Give all the custom rows the new delegate
@@ -214,7 +228,7 @@ void ProposalListView::setSubModeSel(ProposalListView::SubTextMode m)
 		_selectedDelegate = new SubTextDelegate(Qt::ToolTipRole);
 		break;
 	case SubTextMode::Action:
-		_selectedDelegate = new SubTextDelegate(Qt::UserRole);
+		_selectedDelegate = new SubTextDelegate(Qt::UserRole+10);
 		break;
 	}
 
@@ -239,11 +253,10 @@ void ProposalListView::setSubModeDef(ProposalListView::SubTextMode m)
 		setItemDelegate(new StandardDelegate);
 		break;
 	case SubTextMode::Info:
-		bla = new SubTextDelegate(Qt::ToolTipRole);
-		setItemDelegate(bla);
+		setItemDelegate(new SubTextDelegate(Qt::ToolTipRole));
 		break;
 	case SubTextMode::Action:
-		setItemDelegate(new SubTextDelegate(Qt::UserRole));
+		setItemDelegate(new SubTextDelegate(Qt::UserRole+10));
 		break;
 	}
 
@@ -275,20 +288,21 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 
 		// Selection
 		if (key == Qt::Key_Return || key == Qt::Key_Enter) {
-			if (!currentIndex().isValid())
+			if (!currentIndex().isValid()){
 				if (model()->rowCount() > 0)
 					setCurrentIndex(model()->index(0,0));
 				else
 					return true;
+			}
 
 			if (mods == Qt::ControlModifier )
-				model()->data(currentIndex(), Qt::UserRole+5);
+				model()->data(currentIndex(), Qt::UserRole+20+gSettings->value("ctrlAction",1).toInt());
 			else if (mods == Qt::MetaModifier)
-				model()->data(currentIndex(), Qt::UserRole+6);
+				model()->data(currentIndex(), Qt::UserRole+20+gSettings->value("metaAction",0).toInt());
 			else if (mods == Qt::AltModifier)
-				model()->data(currentIndex(), Qt::UserRole+7);
+				model()->data(currentIndex(), Qt::UserRole+20+gSettings->value("altAction",2).toInt());
 			else //	if (mods == Qt::NoModifier )
-				model()->data(currentIndex(), Qt::UserRole+4);
+				model()->data(currentIndex(), Qt::UserRole+20);
 
 			window()->hide();
 			return true;
@@ -298,11 +312,11 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 		if (key == Qt::Key_Tab) {
 			if (!currentIndex().isValid())
 				if (model()->rowCount() > 0)
-					emit completion(model()->data(model()->index(0,0), Qt::UserRole+8).toString());
+					emit completion(model()->data(model()->index(0,0), Qt::UserRole).toString());
 				else
 					return true;
 			else
-				emit completion(model()->data(currentIndex(), Qt::UserRole+8).toString());
+				emit completion(model()->data(currentIndex(), Qt::UserRole).toString());
 			return true;
 		}
 	}

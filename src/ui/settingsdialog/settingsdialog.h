@@ -48,6 +48,9 @@ protected slots:
 	void onNItemsChanged(int i);
 	void onSubModeSelChanged(int);
 	void onSubModeDefChanged(int);
+	void modActionCtrlChanged(int);
+	void modActionMetaChanged(int);
+	void modActionAltChanged(int);
 
 public slots:
 	void show();

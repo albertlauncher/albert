@@ -1,7 +1,6 @@
+TODO Make webserachitems proirity changeable
 TODO Command history
+TODO Read setting once at startup and write once on close
 TODO Virtualize actions, define global actions, make em customizable
 TODO Connect listview to engine to run actions using signals.
-Done Make standard delegate customizable.
-Done Make first item selected
-Done Fixflickering in mainwidget.
-Done Use custom delegates for the list.
+TODO komma punkt in calc

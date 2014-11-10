@@ -77,17 +77,20 @@ public:
 		Item() : _lastAccess(0) {}
 		virtual ~Item(){}
 
+		qint64 lastAccess() const {return _lastAccess;}
+
 		virtual QString title() const = 0;
 		virtual QIcon icon() const = 0;
 		virtual QString infoText() const = 0;
 		virtual QString complete() const = 0;
-		virtual void action(Mod) = 0;
-		virtual QString actionText(Mod) const = 0;
-		qint64 lastAccess() const {return _lastAccess;}
+
+		virtual void action() = 0;
+		virtual QString actionText() const = 0;
+		virtual void altAction() = 0;
+		virtual QString altActionText() const = 0;
 
 		virtual QDataStream& serialize(QDataStream &out) const = 0;
 		virtual QDataStream& deserialize(QDataStream &in) = 0;
-
 
 	protected:
 		qint64 _lastAccess;
