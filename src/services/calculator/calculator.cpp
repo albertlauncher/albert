@@ -17,10 +17,8 @@
 #include "calculator.h"
 #include "calculatoritem.h"
 #include "calculatorwidget.h"
-
-#ifndef Q_OS_WIN
 #include "muParser.h"
-#endif
+
 /**************************************************************************/
 Calculator::Calculator()
 {
@@ -100,5 +98,4 @@ void Calculator::query(const QString &req, QVector<Service::Item *> *res) const
 /**************************************************************************/
 void Calculator::queryFallback(const QString &, QVector<Service::Item *> *) const
 {
-
 }

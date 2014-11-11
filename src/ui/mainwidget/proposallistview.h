@@ -35,8 +35,6 @@ public:
 
 	enum class SubTextMode{ None, Info, Action };
 
-	void setSubModeSel(SubTextMode d);
-	void setSubModeDef(SubTextMode d);
 	QSize sizeHint() const override;
 
 	void saveSettings(QSettings &s) const;
@@ -51,9 +49,9 @@ private:
 
 	QAbstractItemDelegate *_selectedDelegate;
 	QSet<int> _customDelegateRows;
-	bool _subModeSelIsAction;
-	bool _subModeDefIsAction;
 
+    void setSubModeSel(SubTextMode d);
+    void setSubModeDef(SubTextMode d);
 	SubTextMode _selSubtextMode;
 	SubTextMode _defSubtextMode;
 

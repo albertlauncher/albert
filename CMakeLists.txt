@@ -3,14 +3,17 @@ cmake_minimum_required(VERSION 2.8.11)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -Wall")
 
-
 project(albert)
-
-find_package(Qt5Widgets REQUIRED)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+find_package(Qt5Widgets REQUIRED)
+
+add_library(muparser STATIC IMPORTED)
+set_property(TARGET muparser PROPERTY
+			 IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/muparser/lib/libmuparser.a")
 
 include_directories(
 	src/
@@ -19,6 +22,7 @@ include_directories(
 	src/services/
 	src/ui/mainwidget/
 	src/ui/settingsdialog/
+	src/thirdparty/muparser/include
 )
 
 set(SRCS
@@ -97,14 +101,14 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		# Add platformspecific stuff
 		set(SRCS ${SRCS} src/util/hotkey/globalhotkey_win.cpp)
 
-		#Use unicode
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")
+	#Use unicode
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")
 
-		# Define targets and linked libs
-		add_executable(albert ${SRCS} ${UIS} ${DATA} ${RSRC})
-		target_link_libraries(albert Qt5::Widgets)
+	# Define targets and linked libs
+	add_executable(albert ${SRCS} ${UIS} ${DATA} ${RSRC})
+	target_link_libraries(albert Qt5::Widgets muparser)
 
-		# Define make install target
-		install(TARGETS albert RUNTIME DESTINATION bin)
+	# Define make install target
+	install(TARGETS albert RUNTIME DESTINATION bin)
 
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
