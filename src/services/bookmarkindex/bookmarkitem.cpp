@@ -55,15 +55,13 @@ QIcon BookmarkIndex::Item::icon() const
 }
 
 /**************************************************************************/
-QDataStream &BookmarkIndex::Item::serialize(QDataStream &out) const
+void BookmarkIndex::Item::serialize(QDataStream &out) const
 {
 	out << _lastAccess << _title << _url;
-	return out;
 }
 
 /**************************************************************************/
-QDataStream &BookmarkIndex::Item::deserialize(QDataStream &in)
+void BookmarkIndex::Item::deserialize(QDataStream &in)
 {
 	in >> _lastAccess >> _title >> _url;
-	return in;
 }

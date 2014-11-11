@@ -22,6 +22,7 @@
 #include <QVector>
 #include <QIcon>
 #include <QDataStream>
+#include <QSettings>
 
 class Service
 {
@@ -89,25 +90,27 @@ public:
 		virtual void altAction() = 0;
 		virtual QString altActionText() const = 0;
 
-		virtual QDataStream& serialize(QDataStream &out) const = 0;
-		virtual QDataStream& deserialize(QDataStream &in) = 0;
+		virtual void serialize(QDataStream &out) const = 0;
+		virtual void deserialize(QDataStream &in) = 0;
 
 	protected:
 		qint64 _lastAccess;
 	};
 	/**************************************************************************/
 
-	Service() : _widget(nullptr){}
+	Service(){}
 	virtual ~Service(){}
-	virtual void query(const QString&, QVector<Item*>*) const noexcept = 0;
-	virtual QWidget* widget() = 0;
+
 	virtual void initialize() = 0;
 	virtual void restoreDefaults() = 0;
-	virtual QDataStream& serialize(QDataStream &out) const = 0;
-	virtual QDataStream& deserialize(QDataStream &in) = 0;
 
-protected:
-	QWidget* _widget;
+	virtual void saveSettings(QSettings &s) const = 0;
+	virtual void loadSettings(QSettings &s) = 0;
+	virtual void serilizeData(QDataStream &out) const = 0;
+	virtual void deserilizeData(QDataStream &in) = 0;
+
+	virtual void query(const QString&, QVector<Item*>*) const noexcept = 0;
+	virtual QWidget* widget() = 0;
 };
 
 #endif // SERVICE_H

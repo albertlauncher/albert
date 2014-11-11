@@ -55,17 +55,15 @@ QString AppIndex::Item::altActionText() const
 }
 
 /**************************************************************************/
-QDataStream &AppIndex::Item::serialize(QDataStream &out) const
+void AppIndex::Item::serialize(QDataStream &out) const
 {
 	out << _lastAccess << _name << _exec << _iconName << _info << _term;
-	return out;
 }
 
 /**************************************************************************/
-QDataStream &AppIndex::Item::deserialize(QDataStream &in)
+void AppIndex::Item::deserialize(QDataStream &in)
 {
 	in >> _lastAccess >> _name >> _exec >> _iconName >> _info >> _term;
-	return in;
 }
 
 /**************************************************************************/

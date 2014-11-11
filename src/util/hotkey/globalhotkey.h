@@ -20,10 +20,9 @@
 #include <QObject>
 #include "singleton.h"
 
-class GlobalHotkey : public QObject, public Singleton<GlobalHotkey>
+class GlobalHotkey : public QObject
 {
 	Q_OBJECT
-	friend class Singleton<GlobalHotkey>;
 	class GlobalHotkeyPrivate;
 
 private:
@@ -43,8 +42,8 @@ public:
 	bool isEnabled() const;
 
 signals:
-    void hotKeyPressed();
-    void hotKeyChanged(int);
+	void hotKeyPressed();
+	void hotKeyChanged(int);
 
 private slots:
 	void onHotkeyPressed();

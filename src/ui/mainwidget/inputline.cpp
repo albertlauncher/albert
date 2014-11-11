@@ -37,6 +37,30 @@ InputLine::~InputLine()
 }
 
 /**************************************************************************/
+void InputLine::saveSettings(QSettings &s) const
+{
+	_history.saveSettings(s);
+}
+
+/**************************************************************************/
+void InputLine::loadSettings(QSettings &s)
+{
+	_history.loadSettings(s);
+}
+
+/**************************************************************************/
+void InputLine::serilizeData(QDataStream &out) const
+{
+	_history.serilizeData(out);
+}
+
+/**************************************************************************/
+void InputLine::deserilizeData(QDataStream &in)
+{
+	_history.deserilizeData(in);
+}
+
+/**************************************************************************/
 void InputLine::resizeEvent(QResizeEvent *event)
 {
 	_settingsButton->move(event->size().width()-_settingsButton->width(),0);

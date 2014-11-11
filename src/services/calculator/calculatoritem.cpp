@@ -56,16 +56,14 @@ QIcon Calculator::Item::icon() const
 }
 
 /**************************************************************************/
-QDataStream &Calculator::Item::serialize(QDataStream &out) const
+void Calculator::Item::serialize(QDataStream &out) const
 {
 	out << _lastAccess;
-	return out;
 }
 
 /**************************************************************************/
-QDataStream &Calculator::Item::deserialize(QDataStream &in)
+void Calculator::Item::deserialize(QDataStream &in)
 {
 	in >> _lastAccess;
-	return in;
 }
 

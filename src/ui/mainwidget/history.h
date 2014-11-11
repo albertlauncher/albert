@@ -19,6 +19,7 @@
 
 #include <QObject>
 #include <QStringList>
+#include <QSettings>
 
 class History : public QObject
 {
@@ -30,6 +31,12 @@ class History : public QObject
 
 public:
 	History();
+
+	void saveSettings(QSettings &s) const;
+	void loadSettings(QSettings &s);
+	void serilizeData(QDataStream &out) const;
+	void deserilizeData(QDataStream &in);
+
 	void insert(QString);
 	bool hasNext() const;
 	const QString& next();

@@ -19,12 +19,13 @@
 
 #include "indexservice.h"
 #include "singleton.h"
-#include <QSet>
 
 class AppIndex : public IndexService, public Singleton<AppIndex>
 {
 	friend class AppIndexWidget;
 	friend class Singleton<AppIndex>;
+
+	QStringList _paths;
 
 public:
 	class Item;
@@ -32,10 +33,14 @@ public:
 	~AppIndex();
 
 	QWidget* widget() override;
+
 	void initialize() override;
 	void restoreDefaults() override;
-	QDataStream& serialize (QDataStream &out) const override;
-	QDataStream& deserialize (QDataStream &in) override;
+
+	void saveSettings(QSettings &s) const override;
+	void loadSettings(QSettings &s) override;
+	void serilizeData(QDataStream &out) const override;
+	void deserilizeData(QDataStream &in) override;
 
 protected:
 	AppIndex(){}

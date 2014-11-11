@@ -61,17 +61,15 @@ QIcon FileIndex::Item::icon() const
 }
 
 /**************************************************************************/
-QDataStream &FileIndex::Item::serialize(QDataStream &out) const
+void FileIndex::Item::serialize(QDataStream &out) const
 {
 	out << _lastAccess << _fileInfo.canonicalFilePath();
-	return out;
 }
 
 /**************************************************************************/
-QDataStream &FileIndex::Item::deserialize(QDataStream &in)
+void FileIndex::Item::deserialize(QDataStream &in)
 {
 	QString canonicalFilePath;
 	in >> _lastAccess >> canonicalFilePath;
 	_fileInfo.setFile(canonicalFilePath);
-	return in;
 }

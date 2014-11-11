@@ -47,8 +47,8 @@ protected:
 	QFileInfo _fileInfo;
 
 	// Serialization
-	QDataStream& serialize (QDataStream &out) const override;
-	QDataStream& deserialize (QDataStream &in) override;
+	void serialize (QDataStream &out) const override;
+	void deserialize (QDataStream &in) override;
 };
 
 #endif // FILEITEM_H

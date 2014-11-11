@@ -15,20 +15,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QApplication>
-#include <QSettings>
 #include <QStandardPaths>
-#include <QDebug>
 #include <QDir>
-#include "globals.h"
 #include "mainwidget.h"
 
-QSettings *gSettings = nullptr;
 
 int main(int argc, char *argv[])
 {
-	// Settings
-	gSettings = new QSettings(QSettings::UserScope, "albert", "albert");
-
 	// Application
 	QApplication a(argc, argv);
 	QCoreApplication::setApplicationName(QString::fromLocal8Bit("albert"));
@@ -46,47 +39,8 @@ int main(int argc, char *argv[])
 			conf.mkpath(".");
 	}
 
-	// Create the app
 	MainWidget *w = new MainWidget;
-
-	// Get theme name from config
-	QString themeName = gSettings->value("theme").toString();
-
-	// Get all themes
-	QStringList themeDirs = QStandardPaths::locateAll(
-				QStandardPaths::DataLocation, "themes", QStandardPaths::LocateDirectory);
-	QFileInfoList themes;
-	for (QDir d : themeDirs)
-		themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
-
-	// Find and apply the theme
-	bool success = false;
-	for (QFileInfo fi : themes){
-		if (fi.baseName() == themeName) {
-			QFile styleFile(fi.canonicalFilePath());
-			if (styleFile.open(QFile::ReadOnly)) {
-				a.setStyleSheet(styleFile.readAll());
-				styleFile.close();
-				success = true;
-				break;
-			}
-		}
-	}
-
-	// In case of an error use the fallback
-	if (!success) {
-		qWarning() << "Error setting style. Using fallback";
-		a.setStyleSheet(QString::fromLocal8Bit("file:///:/resources/Standard.qss"));
-	}
-
-
-	// Enter eventloop
 	int retval = a.exec();
-
-	// Cleanup
 	delete w;
-	delete gSettings;
-
-	// Quit
 	return retval;
 }

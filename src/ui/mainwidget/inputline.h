@@ -33,6 +33,11 @@ public:
 	explicit InputLine(QWidget *parent = 0);
 	~InputLine();
 
+	void saveSettings(QSettings &s) const;
+	void loadSettings(QSettings &s);
+	void serilizeData(QDataStream &out) const;
+	void deserilizeData(QDataStream &in);
+
 protected:
 	void resizeEvent(QResizeEvent*) override;
 	void keyPressEvent(QKeyEvent*) override;

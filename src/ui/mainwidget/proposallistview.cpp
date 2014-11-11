@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "proposallistview.h"
-#include "globals.h"
 #include "math.h"
 
 #include <QStyledItemDelegate>
@@ -151,8 +150,8 @@ ProposalListView::ProposalListView(QWidget *parent) :
 	_subModeDefIsAction = false;
 
 	/* Apply initial delegates */
-	setSubModeSel(static_cast<SubTextMode>(gSettings->value("subTextSelected", 2).toInt()));
-	setSubModeDef(static_cast<SubTextMode>(gSettings->value("subTextDefault", 1).toInt()));
+	setSubModeSel(SubTextMode::None);
+	setSubModeDef(SubTextMode::None);
 
 	// List properties
 	setUniformItemSizes(true);
@@ -172,13 +171,13 @@ void ProposalListView::modifyDelegate(Qt::KeyboardModifiers mods)
 		delete itemDelegate();
 		switch (mods) {
 		case Qt::ControlModifier:
-			setItemDelegate(new SubTextDelegate(Qt::UserRole+10+gSettings->value("ctrlAction",1).toInt()));
+			setItemDelegate(new SubTextDelegate(Qt::UserRole+10+_actionCtrl));
 			break;
 		case Qt::MetaModifier:
-			setItemDelegate(new SubTextDelegate(Qt::UserRole+10+gSettings->value("metaAction",0).toInt()));
+			setItemDelegate(new SubTextDelegate(Qt::UserRole+10+_actionMeta));
 			break;
 		case Qt::AltModifier:
-			setItemDelegate(new SubTextDelegate(Qt::UserRole+10+gSettings->value("altAction",2).toInt()));
+			setItemDelegate(new SubTextDelegate(Qt::UserRole+10+_actionAlt));
 			break;
 		default:
 			setItemDelegate(new SubTextDelegate(Qt::UserRole+10));
@@ -191,13 +190,13 @@ void ProposalListView::modifyDelegate(Qt::KeyboardModifiers mods)
 		delete _selectedDelegate;
 		switch (mods) {
 		case Qt::ControlModifier:
-			_selectedDelegate = new SubTextDelegate(Qt::UserRole+10+gSettings->value("ctrlAction",1).toInt());
+			_selectedDelegate = new SubTextDelegate(Qt::UserRole+10+_actionCtrl);
 			break;
 		case Qt::MetaModifier:
-			_selectedDelegate = new SubTextDelegate(Qt::UserRole+10+gSettings->value("metaAction",0).toInt());
+			_selectedDelegate = new SubTextDelegate(Qt::UserRole+10+_actionMeta);
 			break;
 		case Qt::AltModifier:
-			_selectedDelegate = new SubTextDelegate(Qt::UserRole+10+gSettings->value("altAction",2).toInt());
+			_selectedDelegate = new SubTextDelegate(Qt::UserRole+10+_actionAlt);
 			break;
 		default:
 			_selectedDelegate = new SubTextDelegate(Qt::UserRole+10);
@@ -302,11 +301,11 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 			}
 
 			if (mods == Qt::ControlModifier )
-				model()->data(currentIndex(), Qt::UserRole+20+gSettings->value("ctrlAction",1).toInt());
+				model()->data(currentIndex(), Qt::UserRole+20+_actionCtrl);
 			else if (mods == Qt::MetaModifier)
-				model()->data(currentIndex(), Qt::UserRole+20+gSettings->value("metaAction",0).toInt());
+				model()->data(currentIndex(), Qt::UserRole+20+_actionMeta);
 			else if (mods == Qt::AltModifier)
-				model()->data(currentIndex(), Qt::UserRole+20+gSettings->value("altAction",2).toInt());
+				model()->data(currentIndex(), Qt::UserRole+20+_actionAlt);
 			else //	if (mods == Qt::NoModifier )
 				model()->data(currentIndex(), Qt::UserRole+20);
 
@@ -361,9 +360,30 @@ void ProposalListView::currentChanged(const QModelIndex &current, const QModelIn
 QSize ProposalListView::sizeHint() const
 {
 	if (model()->rowCount() == 0) return QSize(width(), 0);
-	int nToShow = std::min(gSettings->value("nItemsToShow", 5).toInt(),
-						   model()->rowCount());
+	int nToShow = std::min(_nItemsToShow, model()->rowCount());
 	return QSize(width(), nToShow*sizeHintForRow(0));
+}
+
+/**************************************************************************/
+void ProposalListView::saveSettings(QSettings &s) const
+{
+	s.setValue("ActionCtrl", _actionCtrl);
+	s.setValue("ActionMeta", _actionMeta);
+	s.setValue("ActionAlt", _actionAlt);
+	s.setValue("SubtextModeSelection", static_cast<int>(_selSubtextMode));
+	s.setValue("SubtextModeDefault", static_cast<int>(_defSubtextMode));
+	s.setValue("NumberOfProposals", _nItemsToShow);
+}
+
+/**************************************************************************/
+void ProposalListView::loadSettings(QSettings &s)
+{
+	_actionCtrl = s.value("ActionCtrl",1).toInt();
+	_actionMeta = s.value("ActionMeta",0).toInt();
+	_actionAlt = s.value("ActionAlt",2).toInt();
+	_selSubtextMode = static_cast<SubTextMode>(s.value("SubtextModeSelection", 2).toInt());
+	_defSubtextMode = static_cast<SubTextMode>(s.value("SubtextModeDefault", 1).toInt());
+	_nItemsToShow = s.value("NumberOfProposals", 6).toInt();
 }
 
 /**************************************************************************/

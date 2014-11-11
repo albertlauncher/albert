@@ -54,15 +54,13 @@ QIcon WebSearch::Item::icon() const
 }
 
 /**************************************************************************/
-QDataStream &WebSearch::Item::serialize(QDataStream &out) const
+void WebSearch::Item::serialize(QDataStream &out) const
 {
 	out << _name << _url << _shortcut << _iconPath << _lastAccess;
-	return out;
 }
 
 /**************************************************************************/
-QDataStream &WebSearch::Item::deserialize(QDataStream &in)
+void WebSearch::Item::deserialize(QDataStream &in)
 {
 	in >> _name >> _url >> _shortcut >> _iconPath >> _lastAccess;
-	return in;
 }

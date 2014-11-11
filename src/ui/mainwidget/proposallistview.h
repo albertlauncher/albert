@@ -21,32 +21,47 @@
 #include <QEvent>
 #include <QKeyEvent>
 #include <QArrayData>
+#include <QSettings>
 
 
 class ProposalListView: public QListView
 {
 	Q_OBJECT
+	friend class SettingsWidget;
+
+public:
+	explicit ProposalListView(QWidget *parent = 0);
+	~ProposalListView();
+
+	enum class SubTextMode{ None, Info, Action };
+
+	void setSubModeSel(SubTextMode d);
+	void setSubModeDef(SubTextMode d);
+	QSize sizeHint() const override;
+
+	void saveSettings(QSettings &s) const;
+	void loadSettings(QSettings &s);
+
+protected:
+	bool eventFilter(QObject*, QEvent *event) override;
+	void currentChanged(const QModelIndex & current, const QModelIndex & previous) override;
+
+private:
+	void modifyDelegate(Qt::KeyboardModifiers);
 
 	QAbstractItemDelegate *_selectedDelegate;
 	QSet<int> _customDelegateRows;
 	bool _subModeSelIsAction;
 	bool _subModeDefIsAction;
 
-	void modifyDelegate(Qt::KeyboardModifiers);
+	SubTextMode _selSubtextMode;
+	SubTextMode _defSubtextMode;
 
-public:
-	enum class SubTextMode{ None, Info, Action };
+	int _actionCtrl; // TODOO PROPER ENUMS
+	int _actionMeta;
+	int _actionAlt;
+	int _nItemsToShow;
 
-	explicit ProposalListView(QWidget *parent = 0);
-	~ProposalListView();
-
-	void setSubModeSel(SubTextMode d);
-	void setSubModeDef(SubTextMode d);
-	QSize sizeHint() const override;
-
-protected:
-	bool eventFilter(QObject*, QEvent *event) override;
-	void currentChanged(const QModelIndex & current, const QModelIndex & previous) override;
 
 signals:
 	void completion(QString);

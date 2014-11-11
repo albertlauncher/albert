@@ -42,19 +42,31 @@ void Engine::initialize()
 }
 
 /**************************************************************************/
-QDataStream &Engine::serialize(QDataStream &out) const
+void Engine::saveSettings(QSettings &s) const
 {
 	for (Service *i: _modules)
-		i->serialize(out);
-	return out;
+		i->saveSettings(s);
 }
 
 /**************************************************************************/
-QDataStream &Engine::deserialize(QDataStream &in)
+void Engine::loadSettings(QSettings &s)
 {
 	for (Service *i: _modules)
-		i->deserialize(in);
-	return in;
+		i->loadSettings(s);
+}
+
+/**************************************************************************/
+void Engine::serilizeData(QDataStream &out) const
+{
+	for (Service *i: _modules)
+		i->serilizeData(out);
+}
+
+/**************************************************************************/
+void Engine::deserilizeData(QDataStream &in)
+{
+	for (Service *i: _modules)
+		i->deserilizeData(in);
 }
 
 /**********************************************************************/

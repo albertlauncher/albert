@@ -94,17 +94,34 @@ void WebSearch::restoreDefaults()
 }
 
 /**************************************************************************/
-QDataStream &WebSearch::serialize(QDataStream &out) const
+void WebSearch::saveSettings(QSettings &s) const
 {
-	out << _searchEngines.size();
-	for (WebSearch::Item* it : _searchEngines)
-		 it->serialize(out);
-	return out;
+	// Save settings
+	s.beginGroup("WebSearch");
+	s.endGroup();
 }
 
 /**************************************************************************/
-QDataStream &WebSearch::deserialize(QDataStream &in)
+void WebSearch::loadSettings(QSettings &s)
 {
+	// Load settings
+	s.beginGroup("WebSearch");
+	s.endGroup();
+}
+
+/**************************************************************************/
+void WebSearch::serilizeData(QDataStream &out) const
+{
+	// Serialize data
+	out << _searchEngines.size();
+	for (WebSearch::Item* it : _searchEngines)
+		 it->serialize(out);
+}
+
+/**************************************************************************/
+void WebSearch::deserilizeData(QDataStream &in)
+{
+	// Deserialize the index
 	int size;
 	in >> size;
 	for (int i = 0; i < size; ++i) {
@@ -112,15 +129,12 @@ QDataStream &WebSearch::deserialize(QDataStream &in)
 		it->deserialize(in);
 		_searchEngines.push_back(it);
 	}
-	return in;
 }
 
 /**************************************************************************/
 QWidget *WebSearch::widget()
 {
-	if (_widget == nullptr)
-		_widget = new WebSearchWidget(this);
-	return _widget;
+	return new WebSearchWidget(this);
 }
 
 /**************************************************************************/

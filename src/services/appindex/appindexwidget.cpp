@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "appindexwidget.h"
-#include "globals.h"
 
 #include <QFileDialog>
 #include <QStandardPaths>
@@ -55,17 +54,12 @@ void AppIndexWidget::onButton_PathAdd()
 	if(pathName.isEmpty())
 		return;
 
-	// Add it in the settings
-	gSettings->beginGroup("AppIndex");
-	QStringList paths = gSettings->value("paths", "").toStringList();
-	paths << pathName;
-	paths.removeDuplicates();
-	gSettings->setValue("paths", paths);
-	gSettings->endGroup();
+	_ref->_paths << pathName;
+	_ref->_paths.removeDuplicates();
 
 	// Add it in the ui
 	ui.lw_paths->clear();
-	ui.lw_paths->addItems(paths);
+	ui.lw_paths->addItems(_ref->_paths);
 }
 
 /**************************************************************************/
@@ -74,12 +68,7 @@ void AppIndexWidget::onButton_PathRemove()
 	if (ui.lw_paths->currentItem() == nullptr)
 		return;
 
-	// Remove it in the settings
-	gSettings->beginGroup("AppIndex");
-	QStringList paths = gSettings->value("paths", "").toStringList();
-	paths.removeAll(ui.lw_paths->currentItem()->text());
-	gSettings->setValue("paths", paths);
-	gSettings->endGroup();
+	_ref->_paths.removeAll(ui.lw_paths->currentItem()->text());
 
 	// Remove it in the ui
 	delete ui.lw_paths->currentItem();
@@ -112,11 +101,8 @@ void AppIndexWidget::restoreDefaults()
 void AppIndexWidget::updateUI()
 {
 	// Update the list
-	gSettings->beginGroup("AppIndex");
-	QStringList paths = gSettings->value("paths", "").toStringList();
-	gSettings->endGroup();
 	ui.lw_paths->clear();
-	ui.lw_paths->addItems(paths);
+	ui.lw_paths->addItems(_ref->_paths);
 
 	// Update the search
 	ui.cb_searchType->setCurrentIndex(static_cast<int>(_ref->searchType()));

@@ -27,7 +27,7 @@ class CalculatorWidget : public QWidget
 	Ui::CalculatorWidget ui;
 
 public:
-	explicit CalculatorWidget(QWidget *parent = 0);
+	explicit CalculatorWidget(Calculator*, QWidget *parent = 0);
 
 protected:
 	Calculator *_ref;

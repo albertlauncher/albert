@@ -15,13 +15,35 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "history.h"
-#include "globals.h"
 
 /**********************************************************************/
 History::History()
 {
-	_max = gSettings->value("maxHistory", 32).toInt();
 	reset();
+}
+
+/**********************************************************************/
+void History::saveSettings(QSettings &s) const
+{
+	s.setValue("maxHistory", _max);
+}
+
+/**********************************************************************/
+void History::loadSettings(QSettings &s)
+{
+	_max = s.value("maxHistory", 32).toInt();
+}
+
+/**********************************************************************/
+void History::serilizeData(QDataStream &out) const
+{
+//	out << _data;
+}
+
+/**********************************************************************/
+void History::deserilizeData(QDataStream &in)
+{
+//	in >> _data;
 }
 
 /**********************************************************************/

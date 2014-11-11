@@ -17,7 +17,6 @@
 #include "appindex.h"
 #include "appitem.h"
 #include "appindexwidget.h"
-#include "globals.h"
 
 #include <QDebug>
 #include <QDirIterator>
@@ -38,9 +37,7 @@ AppIndex::~AppIndex()
 /**************************************************************************/
 QWidget *AppIndex::widget()
 {
-	if (_widget == nullptr)
-		_widget = new AppIndexWidget(this);
-	return _widget;
+	return new AppIndexWidget(this);
 }
 
 /**************************************************************************/
@@ -54,10 +51,54 @@ void AppIndex::initialize()
 void AppIndex::restoreDefaults()
 {
 	setSearchType(SearchType::WordMatch);
+	_paths = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
+}
 
-	gSettings->beginGroup("AppIndex");
-	gSettings->setValue("paths", QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation));
-	gSettings->endGroup();
+/**************************************************************************/
+void AppIndex::saveSettings(QSettings &s) const
+{
+	// Save settings
+	s.beginGroup("AppIndex");
+	s.setValue("Paths", _paths);
+	s.setValue("SearchType", static_cast<int>(searchType()));
+	s.endGroup();
+}
+
+/**************************************************************************/
+void AppIndex::loadSettings(QSettings &s)
+{
+	// Load settings
+	s.beginGroup("AppIndex");
+	_paths = s.value("Paths", QStandardPaths::standardLocations(
+						 QStandardPaths::ApplicationsLocation)).toStringList();
+	setSearchType(static_cast<SearchType>(s.value("SearchType",1).toInt()));
+	s.endGroup();
+}
+
+/**************************************************************************/
+void AppIndex::serilizeData(QDataStream &out) const
+{
+	// Serialize data
+	out << _index.size()
+		<< static_cast<int>(searchType());
+	for (Service::Item *it : _index)
+		static_cast<AppIndex::Item*>(it)->serialize(out);
+}
+
+/**************************************************************************/
+void AppIndex::deserilizeData(QDataStream &in)
+{
+	// Deserialize the index
+	int size, T;
+	in >> size >> T;
+	AppIndex::Item *it;
+	for (int i = 0; i < size; ++i) {
+		it = new AppIndex::Item;
+		it->deserialize(in);
+		_index.push_back(it);
+	}
+	setSearchType(static_cast<IndexService::SearchType>(T));
+	qDebug() << "[ApplicationIndex]\tLoaded " << _index.size() << " apps.";
 }
 
 /**************************************************************************/
@@ -67,14 +108,10 @@ void AppIndex::buildIndex()
 		delete i;
 	_index.clear();
 
-	// Get paths from settings
-	gSettings->beginGroup("AppIndex");
-	QStringList paths = gSettings->value("paths", "").toStringList();
-	gSettings->endGroup();
-	qDebug() << "[ApplicationIndex]\tLooking in: " << paths;
+	qDebug() << "[ApplicationIndex]\tLooking in: " << _paths;
 
 #ifdef Q_OS_LINUX
-	for ( const QString &p : paths) {
+	for ( const QString &p : _paths) {
 		QDirIterator it(p, QDirIterator::Subdirectories);
 		while (it.hasNext()) {
 			it.next();
@@ -161,31 +198,31 @@ void AppIndex::buildIndex()
 #endif
 #ifdef Q_OS_WIN
 // TODO QTBUG-40565
-    //	for ( const QString &p : _paths) {
-        QDirIterator it(
-                    "C:/Documents and Settings/All Users/Start Menu/Programs",
-                   QDir::Files|QDir::NoDotAndDotDot,
-                    QDirIterator::Subdirectories);
-        while (it.hasNext()) {
-            it.next();
-            QFileInfo fi = it.fileInfo();
-            if (fi.isExecutable())
-            {
-                Item *i = new Item;
-                qDebug()<< fi.baseName();
-                i->_name     = fi.baseName();
-                if (fi.isSymLink())
-                    fi.setFile(fi.symLinkTarget());
-                qDebug()<< fi.fileName();
-                qDebug()<< fi.canonicalFilePath();
-                i->_info     = fi.canonicalFilePath();
-                i->_iconName = "";
-                i->_exec     = QString("\"%1\"").arg(fi.canonicalFilePath());
-                i->_term     = false;
-                _index.push_back(i);
-            }
+	//	for ( const QString &p : _paths) {
+		QDirIterator it(
+					"C:/Documents and Settings/All Users/Start Menu/Programs",
+				   QDir::Files|QDir::NoDotAndDotDot,
+					QDirIterator::Subdirectories);
+		while (it.hasNext()) {
+			it.next();
+			QFileInfo fi = it.fileInfo();
+			if (fi.isExecutable())
+			{
+				Item *i = new Item;
+				qDebug()<< fi.baseName();
+				i->_name     = fi.baseName();
+				if (fi.isSymLink())
+					fi.setFile(fi.symLinkTarget());
+				qDebug()<< fi.fileName();
+				qDebug()<< fi.canonicalFilePath();
+				i->_info     = fi.canonicalFilePath();
+				i->_iconName = "";
+				i->_exec     = QString("\"%1\"").arg(fi.canonicalFilePath());
+				i->_term     = false;
+				_index.push_back(i);
+			}
 
-        }
+		}
 //    }
 //	HKEY hUninstKey = NULL;
 //	HKEY hAppKey = NULL;
@@ -247,29 +284,4 @@ void AppIndex::buildIndex()
 	prepareSearch();
 }
 
-/**************************************************************************/
-QDataStream &AppIndex::serialize(QDataStream &out) const
-{
-	out << _index.size()
-		<< static_cast<int>(searchType());
-	for (Service::Item *it : _index)
-		static_cast<AppIndex::Item*>(it)->serialize(out);
-	return out;
-}
 
-/**************************************************************************/
-QDataStream &AppIndex::deserialize(QDataStream &in)
-{
-	int size, T;
-	in >> size >> T;
-	AppIndex::Item *it;
-	for (int i = 0; i < size; ++i) {
-		it = new AppIndex::Item;
-		it->deserialize(in);
-		_index.push_back(it);
-	}
-	setSearchType(static_cast<IndexService::SearchType>(T));
-	setSearchType(static_cast<IndexService::SearchType>(T));
-	qDebug() << "[ApplicationIndex]\tLoaded " << _index.size() << " apps.";
-	return in;
-}

@@ -16,8 +16,9 @@
 
 #include "calculatorwidget.h"
 
-CalculatorWidget::CalculatorWidget(QWidget *parent) :
-	QWidget(parent)
+/**************************************************************************/
+CalculatorWidget::CalculatorWidget(Calculator *srv, QWidget *parent) :
+	QWidget(parent), _ref(srv)
 {
 	ui.setupUi(this);
 }

@@ -30,13 +30,17 @@ public:
 
 	~WebSearch(){}
 
-	QWidget* widget() override;
-	void    query(const QString&, QVector<Service::Item*>*) const noexcept override ;
 	void initialize() override;
 	void restoreDefaults() override;
-	QDataStream& serialize (QDataStream &out) const override;
-	QDataStream& deserialize (QDataStream &in) override;
 
+	void saveSettings(QSettings &s) const override;
+	void loadSettings(QSettings &s) override;
+	void serilizeData(QDataStream &out) const override;
+	void deserilizeData(QDataStream &in) override;
+
+	QWidget* widget() override;
+
+	void    query(const QString&, QVector<Service::Item*>*) const noexcept override ;
 	void    queryAll(const QString&, QVector<Service::Item*>*);
 	void    defaultSearch(const QString& term) const;
 	QString defaultSearchText(const QString& term) const;

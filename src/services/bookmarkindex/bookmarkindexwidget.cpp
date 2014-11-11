@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "bookmarkindexwidget.h"
-#include "globals.h"
 
 #include <QFileDialog>
 #include <QStandardPaths>
@@ -48,7 +47,7 @@ void BookmarkIndexWidget::onSearchTypeChanged(int st)
 void BookmarkIndexWidget::editPath()
 {
 	QString path = QFileDialog::getOpenFileName( this, tr("Choose path"),
-				QFileInfo(gSettings->value("bookmarkPath").toString()).canonicalPath()); // TODO DOESNT WORK
+				QFileInfo(_ref->_path).canonicalPath()); // TODO DOESNT WORK
 
 	if(path.isEmpty())
 		return;
@@ -56,9 +55,7 @@ void BookmarkIndexWidget::editPath()
 	// TODO SANITYCHECK
 
 	// Add it in the settings
-	gSettings->beginGroup("BookmarkIndex");
-	gSettings->setValue("bookmarkPath", path);
-	gSettings->endGroup();
+	_ref->_path = path;
 
 	// Add it in the ui
 	ui.le_path->setText(path);
@@ -92,9 +89,7 @@ void BookmarkIndexWidget::restoreDefaults()
 void BookmarkIndexWidget::updateUI()
 {
 	// Update the path
-	gSettings->beginGroup("BookmarkIndex");
-	ui.le_path->setText(gSettings->value("bookmarkPath").toString());
-	gSettings->endGroup();
+	ui.le_path->setText(_ref->_path);
 
 	// Update the search
 	ui.cb_SearchType->setCurrentIndex(static_cast<int>(_ref->searchType()));

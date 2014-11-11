@@ -52,8 +52,8 @@ protected:
 	QString _iconPath;
 
 	// Serialization
-	QDataStream& serialize (QDataStream &out) const override;
-	QDataStream& deserialize (QDataStream &in) override;
+	void serialize (QDataStream &out) const override;
+	void deserialize (QDataStream &in) override;
 };
 
 #endif // WEBSEARCHITEM_H
