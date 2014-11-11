@@ -11,9 +11,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 find_package(Qt5Widgets REQUIRED)
 
-add_library(muparser STATIC IMPORTED)
-set_property(TARGET muparser PROPERTY
-			 IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/muparser/lib/libmuparser.a")
 
 include_directories(
 	src/
@@ -98,8 +95,12 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 #win
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-		# Add platformspecific stuff
-		set(SRCS ${SRCS} src/util/hotkey/globalhotkey_win.cpp)
+	add_library(muparser STATIC IMPORTED)
+	set_property(TARGET muparser PROPERTY
+		IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/muparser/lib/libmuparser.a")
+
+	# Add platformspecific stuff
+	set(SRCS ${SRCS} src/util/hotkey/globalhotkey_win.cpp)
 
 	#Use unicode
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")
