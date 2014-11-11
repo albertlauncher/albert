@@ -104,6 +104,12 @@ void BookmarkIndex::deserilizeData(QDataStream &in)
 }
 
 /**************************************************************************/
+void BookmarkIndex::queryFallback(const QString &, QVector<Service::Item *> *) const
+{
+
+}
+
+/**************************************************************************/
 void BookmarkIndex::buildIndex()
 {
 	for(Service::Item *i : _index)

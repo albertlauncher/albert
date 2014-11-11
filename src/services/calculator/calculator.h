@@ -18,21 +18,20 @@
 #define CALCULATOR_H
 
 #include "service.h"
-#include "singleton.h"
-#ifndef Q_OS_WIN
 #include "muParser.h"
-#endif
 
-class Calculator : public Service, public Singleton<Calculator>
+class Calculator : public Service
 {
-	friend class Singleton<Calculator>;
+	friend class CalculatorWidget;
 
 public:
 	class Item;
 
+	Calculator();
 	~Calculator();
 
 	QWidget* widget() override;
+	inline QString moduleName() override {return "Calculator";}
 
 	void initialize() override;
 	void restoreDefaults() override;
@@ -42,14 +41,12 @@ public:
 	void serilizeData(QDataStream &out) const override;
 	void deserilizeData(QDataStream &in) override;
 
-	void query(const QString&, QVector<Service::Item*>*) const noexcept override;
+	void query(const QString&, QVector<Service::Item*>*) const override;
+	void queryFallback(const QString&, QVector<Service::Item*>*) const override;
 
 protected:
-	Calculator();
 	Item *_theOneAndOnly;
-#ifndef Q_OS_WIN
 	mu::Parser *_p;
-#endif
 };
 
 #endif // CALCULATOR_H

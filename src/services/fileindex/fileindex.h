@@ -18,22 +18,19 @@
 #define FILEINDEX_H
 
 #include "indexservice.h"
-#include "singleton.h"
 
-class FileIndex : public IndexService, public Singleton<FileIndex>
+class FileIndex : public IndexService
 {
 	friend class FileIndexWidget;
-	friend class Singleton<FileIndex>;
-
-	QStringList _paths;
-	bool        _indexHiddenFiles;
 
 public:
 	class Item;
 
+	FileIndex(){}
 	~FileIndex();
 
 	QWidget* widget() override;
+	inline QString moduleName() override {return "FileIndex";}
 
 	void initialize() override;
 	void restoreDefaults() override;
@@ -43,9 +40,14 @@ public:
 	void serilizeData(QDataStream &out) const override;
 	void deserilizeData(QDataStream &in) override;
 
+	void queryFallback(const QString&, QVector<Service::Item*>*) const override;
+
 protected:
-	FileIndex(){}
 	void buildIndex() override;
+
+private:
+	QStringList _paths;
+	bool        _indexHiddenFiles;
 };
 
 #endif // FILEINDEX_H

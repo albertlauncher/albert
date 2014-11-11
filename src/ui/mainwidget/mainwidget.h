@@ -33,7 +33,6 @@
 #include "inputline.h"
 #include "proposallistview.h"
 #include "engine.h"
-#include "singleton.h"
 #include "settingsdialog.h"
 #include "globalhotkey.h"
 

@@ -113,6 +113,12 @@ void FileIndex::deserilizeData(QDataStream &in)
 }
 
 /**************************************************************************/
+void FileIndex::queryFallback(const QString &, QVector<Service::Item *> *) const
+{
+
+}
+
+/**************************************************************************/
 void FileIndex::buildIndex()
 {
 	for(Service::Item *i : _index)

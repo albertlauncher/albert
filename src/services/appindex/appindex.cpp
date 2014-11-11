@@ -102,6 +102,12 @@ void AppIndex::deserilizeData(QDataStream &in)
 }
 
 /**************************************************************************/
+void AppIndex::queryFallback(const QString &, QVector<Service::Item *> *) const
+{
+
+}
+
+/**************************************************************************/
 void AppIndex::buildIndex()
 {
 	for(Service::Item *i : _index)

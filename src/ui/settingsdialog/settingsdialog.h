@@ -18,7 +18,6 @@
 #define SETTINGSDIALOG_H
 
 #include "ui_settingsdialog.h"
-#include "singleton.h"
 
 class MainWidget;
 

@@ -387,7 +387,7 @@ IndexService::~IndexService()
 }
 
 /**************************************************************************/
-inline void IndexService::query(const QString&req, QVector<Service::Item*>*res) const noexcept {
+inline void IndexService::query(const QString&req, QVector<Service::Item*>*res) const {
 	_search->query(req, res);
 }
 

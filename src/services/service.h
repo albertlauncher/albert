@@ -109,8 +109,12 @@ public:
 	virtual void serilizeData(QDataStream &out) const = 0;
 	virtual void deserilizeData(QDataStream &in) = 0;
 
-	virtual void query(const QString&, QVector<Item*>*) const noexcept = 0;
+
+	virtual void query(const QString&, QVector<Item*>*) const = 0;
+	virtual void queryFallback(const QString&, QVector<Item*>*) const = 0;
+
 	virtual QWidget* widget() = 0;
+	virtual QString moduleName() = 0;
 };
 
 #endif // SERVICE_H

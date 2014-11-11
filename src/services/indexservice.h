@@ -32,7 +32,7 @@ public:
 	virtual ~IndexService();
 
 	virtual void buildIndex() = 0;
-	void query(const QString &req, QVector<Service::Item*> *res) const noexcept override;
+	void query(const QString &req, QVector<Service::Item*> *res) const override;
 
 	void setSearchType(SearchType);
 	inline SearchType searchType() const {return _searchType;}

@@ -18,21 +18,19 @@
 #define APPINDEX_H
 
 #include "indexservice.h"
-#include "singleton.h"
 
-class AppIndex : public IndexService, public Singleton<AppIndex>
+class AppIndex : public IndexService
 {
 	friend class AppIndexWidget;
-	friend class Singleton<AppIndex>;
-
-	QStringList _paths;
 
 public:
 	class Item;
 
+	AppIndex(){}
 	~AppIndex();
 
 	QWidget* widget() override;
+	inline QString moduleName() override {return "AppIndex";}
 
 	void initialize() override;
 	void restoreDefaults() override;
@@ -42,9 +40,13 @@ public:
 	void serilizeData(QDataStream &out) const override;
 	void deserilizeData(QDataStream &in) override;
 
+	void queryFallback(const QString&, QVector<Service::Item*>*) const override;
+
 protected:
-	AppIndex(){}
 	void buildIndex() override;
+
+private:
+	QStringList _paths;
 };
 
 #endif // APPINDEX_H

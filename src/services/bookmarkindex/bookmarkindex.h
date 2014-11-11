@@ -18,19 +18,19 @@
 #define BOOKMARKINDEX_H
 
 #include "indexservice.h"
-#include "singleton.h"
 
-class BookmarkIndex : public IndexService, public Singleton<BookmarkIndex>
+class BookmarkIndex : public IndexService
 {
 	friend class BookmarkIndexWidget;
-	friend class Singleton<BookmarkIndex>;
 
 public:
 	class Item;
 
+	BookmarkIndex(){}
 	~BookmarkIndex();
 
 	QWidget* widget() override;
+	inline QString moduleName() override {return "BookmarkIndex";}
 
 	void initialize() override;
 	void restoreDefaults() override;
@@ -40,8 +40,9 @@ public:
 	void serilizeData(QDataStream &out) const override;
 	void deserilizeData(QDataStream &in) override;
 
+	void queryFallback(const QString&, QVector<Service::Item*>*) const override;
+
 protected:
-	BookmarkIndex(){}
 	void buildIndex() override;
 
 private:

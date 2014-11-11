@@ -25,9 +25,11 @@
 class Engine : public QAbstractListModel
 {
 	Q_OBJECT
+	friend class SettingsWidget;
 
 public:
 	Engine();
+	~Engine();
 
 	int      rowCount(const QModelIndex & = QModelIndex()) const override;
 	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
