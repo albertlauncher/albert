@@ -1,0 +1,89 @@
+#bottomframe * {
+	color : #aaa;
+	background-color: #444;
+	selection-color: #3a3a3a;
+	selection-background-color: #aaa;
+}
+
+#bottomframe {
+	width:640px;
+	min-width:640px;
+	max-width:640px;
+	padding: 7px;
+	border-radius: 14px;
+	background-color: rgba(192, 192, 192, 64);
+}
+
+#topframe {
+	padding: 7px;
+	border-radius: 7px;
+}
+
+#inputline {
+	padding: 2px;
+	border-radius: 2px;
+	font: 36px "Ubuntu";
+	border: none;
+	background-color: #3a3a3a;
+}
+
+#settingsbutton {
+	min-width:14px;
+	min-height:14px;
+	max-width:14px;
+	max-height:14px;
+	border: none;
+	border-radius: 7px;
+	color : #444;
+	background-color: transparent;
+}
+
+#settingsbutton:hover {
+	background-color: #282828;
+}
+
+/********** PROPOSALLIST **********/
+
+#proposallist {
+	icon-size:48px;
+	font: 26px "Ubuntu";
+	border-radius: 5px;
+	background-color: transparent;
+}
+
+#proposallist::item{
+	height:48px;
+	border-radius: 5px;
+	border: 1px solid transparent;
+}
+
+#proposallist::item:selected{
+	border: 1px solid #888;
+	background: qlineargradient(x1:1, y1:1, x2:0, y2:0, stop:0.0 rgba(0, 0, 0, 0), stop:0.5 rgba(192,192,192,32), stop:1.0 rgba(0, 0, 0, 0));
+}
+
+#proposallist::item:hover{}
+#proposallist::item:selected:!active{}
+#proposallist::item:selected:active{}
+#proposallist::item:alternate{}
+
+/********** SCROLLBAR **********/
+
+#proposallist QScrollBar:vertical  {
+	width: 5px;
+	background: transparent;
+}
+
+#proposallist QScrollBar::handle:vertical  {
+	background: #3a3a3a;
+	min-height: 24px;
+}
+
+#proposallist QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
+#proposallist QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical,
+#proposallist QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+	border: 0px;
+	width: 0px;
+	height: 0px;
+	background: transparent;
+}

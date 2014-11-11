@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>resources/Standard.qss</file>
         <file alias="app_icon">resources/icons/icon.svg</file>
         <file alias="cogwheel">resources/icons/cogwheel.svg</file>
     </qresource>
