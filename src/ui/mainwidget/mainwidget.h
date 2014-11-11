@@ -35,20 +35,12 @@
 #include "engine.h"
 #include "singleton.h"
 #include "settingsdialog.h"
+#include "globalhotkey.h"
 
 class MainWidget : public QWidget
 {
 	Q_OBJECT
-
 	friend class SettingsWidget;
-
-private:
-
-	QFrame           *_frame1,*_frame2;
-	InputLine        *_inputLine;
-	ProposalListView *_proposalListView;
-	Engine           *_engine;
-	SettingsWidget   *_settingsDialog;
 
 public:
 	MainWidget(QWidget *parent = 0);
@@ -56,6 +48,16 @@ public:
 
 protected:
 	bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
+
+private:
+	QFrame           *_frame1,*_frame2;
+	InputLine        *_inputLine;
+	ProposalListView *_proposalListView;
+	Engine           *_engine;
+	SettingsWidget   *_settingsDialog;
+	bool             _showCentered;
+	GlobalHotkey     _hotkeyManager;
+	QString          _theme;
 
 public slots:
 	void show();

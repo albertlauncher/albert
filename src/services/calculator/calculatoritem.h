@@ -33,17 +33,20 @@ public:
 	inline QString title() const override {return _result;}
 	inline QString complete() const override {return _query;}
 	inline QString infoText() const override {return "Result of '"+_query+"'";}
-	void action(Mod) override;
-	QString actionText(Mod) const override;
 	QIcon icon() const override;
+
+	void    action() override;
+	QString actionText() const override;
+	void    altAction() override;
+	QString altActionText() const override;
 
 protected:
 	QString _query;
 	QString _result;
 
 	// Serialization
-	QDataStream& serialize (QDataStream &out) const override;
-	QDataStream& deserialize (QDataStream &in) override;
+	void serialize (QDataStream &out) const override;
+	void deserialize (QDataStream &in) override;
 };
 
 #endif // CALCULATORITEM_H

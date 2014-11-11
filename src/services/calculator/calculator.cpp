@@ -22,7 +22,7 @@
 /**************************************************************************/
 Calculator::Calculator()
 {
-    _p = new mu::Parser;
+	_p = new mu::Parser;
 	_theOneAndOnly = new Calculator::Item;
 }
 
@@ -30,7 +30,7 @@ Calculator::Calculator()
 Calculator::~Calculator()
 {
 	delete _theOneAndOnly;
-    delete _p;
+	delete _p;
 }
 
 /**************************************************************************/
@@ -45,11 +45,39 @@ void Calculator::restoreDefaults()
 }
 
 /**************************************************************************/
+void Calculator::saveSettings(QSettings &s) const
+{
+	// Save settings
+	s.beginGroup("Calculator");
+	s.endGroup();
+}
+
+/**************************************************************************/
+void Calculator::loadSettings(QSettings &s)
+{
+	// Load settings
+	s.beginGroup("Calculator");
+	s.endGroup();
+}
+
+/**************************************************************************/
+void Calculator::serilizeData(QDataStream &out) const
+{
+	// Serialize data
+	_theOneAndOnly->serialize(out);
+}
+
+/**************************************************************************/
+void Calculator::deserilizeData(QDataStream &in)
+{
+	// Deserialize the index
+	_theOneAndOnly->deserialize(in);
+}
+
+/**************************************************************************/
 QWidget *Calculator::widget()
 {
-	if (_widget == nullptr)
-		_widget = new CalculatorWidget;
-	return _widget;
+	return new CalculatorWidget(this);
 }
 
 /**************************************************************************/
@@ -65,18 +93,4 @@ void Calculator::query(const QString &req, QVector<Service::Item *> *res) const 
 	}
 	_theOneAndOnly->_query = req;
     res->push_back(_theOneAndOnly);
-}
-
-/**************************************************************************/
-QDataStream &Calculator::serialize(QDataStream &out) const
-{
-	_theOneAndOnly->serialize(out);
-	return out;
-}
-
-/**************************************************************************/
-QDataStream &Calculator::deserialize(QDataStream &in)
-{
-	_theOneAndOnly->deserialize(in);
-	return in;
 }

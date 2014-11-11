@@ -19,7 +19,6 @@
 
 #include "ui_settingsdialog.h"
 #include "singleton.h"
-#include "hotkeywidget.h"
 
 class MainWidget;
 
@@ -27,8 +26,8 @@ class SettingsWidget : public QWidget
 {
 	Q_OBJECT
 	Ui::SettingsDialog ui;
-	HotkeyWidget* _hkWidget;
 	MainWidget* _mainWidget;
+	bool _waitingForHotkey;
 
 public:
 	enum class Tab{
@@ -42,12 +41,23 @@ public:
 
 protected:
 	void closeEvent(QCloseEvent * event) override;
+	void keyPressEvent (QKeyEvent *) override;
+	void keyReleaseEvent ( QKeyEvent* ) override;
+
+private:
+	void grabAll();
+	void releaseAll();
 
 protected slots:
 	void onThemeChanged(int);
 	void onNItemsChanged(int i);
 	void onSubModeSelChanged(int);
 	void onSubModeDefChanged(int);
+	void modActionCtrlChanged(int);
+	void modActionMetaChanged(int);
+	void modActionAltChanged(int);
+	void onPbHotkeyPressed();
+	void onHotkeyChanged(int);
 
 public slots:
 	void show();

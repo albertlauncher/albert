@@ -19,6 +19,7 @@
 
 #include "services/service.h"
 #include <QVector>
+#include <QSettings>
 #include <QAbstractListModel>
 
 class Engine : public QAbstractListModel
@@ -28,20 +29,20 @@ class Engine : public QAbstractListModel
 public:
 	Engine();
 
-	void     action( const QModelIndex & index);
-	void     altAction( const QModelIndex & index);
-	void     ctrlAction( const QModelIndex & index);
 	int      rowCount(const QModelIndex & = QModelIndex()) const override;
 	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
 
 	void initialize();
-	QDataStream& serialize (QDataStream &out) const;
-	QDataStream& deserialize (QDataStream &in);
+	void saveSettings(QSettings &s) const;
+	void loadSettings(QSettings &s);
+	void serilizeData(QDataStream &out) const;
+	void deserilizeData(QDataStream &in);
 
 
 private:
 	QVector<Service*>        _modules;
 	QVector<Service::Item *> _data;
+	QString                  _requestString;
 
 public slots:
 	void query(const QString &req);

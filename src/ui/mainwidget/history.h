@@ -14,30 +14,35 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef HOTKEYWIDGET_H
-#define HOTKEYWIDGET_H
+#ifndef HISTORY_H
+#define HISTORY_H
 
-#include <QLabel>
+#include <QObject>
+#include <QStringList>
+#include <QSettings>
 
-class HotkeyWidget : public QLabel
+class History : public QObject
 {
 	Q_OBJECT
 
+	QStringList           _data;
+	int                   _max;
+	QStringList::iterator _it;
+
 public:
-	explicit HotkeyWidget(QWidget *parent = 0);
+	History();
 
-private:
-	bool _waitingForHotkey;
+	void saveSettings(QSettings &s) const;
+	void loadSettings(QSettings &s);
+	void serilizeData(QDataStream &out) const;
+	void deserilizeData(QDataStream &in);
 
-	void grabAll();
-	void releaseAll();
+	void insert(QString);
+	bool hasNext() const;
+	const QString& next();
 
-protected:
-	void mousePressEvent (QMouseEvent*)  override;
-	void keyPressEvent (QKeyEvent *) override;
-	void keyReleaseEvent ( QKeyEvent* ) override;
-protected slots:
-    void onHotkeyChanged(int);
+public slots:
+	void reset();
 };
 
-#endif // HOTKEYWIDGET_H
+#endif // HISTORY_H

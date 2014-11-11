@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "fileindexwidget.h"
-#include "globals.h"
 #include <QFileDialog>
 #include <QStandardPaths>
 #include <QTimer>
@@ -58,17 +57,12 @@ void FileIndexWidget::onButton_add()
 	if(pathName.isEmpty())
 		return;
 
-	// Add it in the settings
-	gSettings->beginGroup("FileIndex");
-	QStringList paths = gSettings->value("paths", "").toStringList();
-	paths << pathName;
-	paths.removeDuplicates();
-	gSettings->setValue("paths", paths);
-	gSettings->endGroup();
+	_ref->_paths << pathName;
+	_ref->_paths.removeDuplicates();
 
 	// Add it in the ui
 	ui.lw_paths->clear();
-	ui.lw_paths->addItems(paths);
+	ui.lw_paths->addItems(_ref->_paths);
 }
 
 /**************************************************************************/
@@ -77,12 +71,7 @@ void FileIndexWidget::onButton_remove()
 	if (ui.lw_paths->currentItem() == nullptr)
 		return;
 
-	// Remove it in the settings
-	gSettings->beginGroup("FileIndex");
-	QStringList paths = gSettings->value("paths", "").toStringList();
-	paths.removeAll(ui.lw_paths->currentItem()->text());
-	gSettings->setValue("paths", paths);
-	gSettings->endGroup();
+	_ref->_paths.removeAll(ui.lw_paths->currentItem()->text());
 
 	// Remove it in the ui
 	delete ui.lw_paths->currentItem();
@@ -107,9 +96,7 @@ void FileIndexWidget::rebuildIndex()
 /**************************************************************************/
 void FileIndexWidget::onCheckbox_toggle(bool b)
 {
-	gSettings->beginGroup("FileIndex");
-	gSettings->setValue("indexHiddenFiles", b);
-	gSettings->endGroup();
+	_ref->_indexHiddenFiles = b;
 }
 
 /**************************************************************************/
@@ -123,14 +110,11 @@ void FileIndexWidget::restoreDefaults()
 void FileIndexWidget::updateUI()
 {
 	// Update the list
-	gSettings->beginGroup("FileIndex");
-	QStringList paths = gSettings->value("paths").toStringList();
 	ui.lw_paths->clear();
-	ui.lw_paths->addItems(paths);
+	ui.lw_paths->addItems(_ref->_paths);
 
-	// Update the list
-	ui.cb_hiddenFiles->setChecked(gSettings->value("indexHiddenFiles", false).toBool());
-	gSettings->endGroup();
+	// Update the checkbox
+	ui.cb_hiddenFiles->setChecked(_ref->_indexHiddenFiles);
 
 	// Update the search
 	ui.cb_searchType->setCurrentIndex(static_cast<int>(_ref->searchType()));

@@ -36,16 +36,19 @@ public:
 	inline QString title() const override {return _fileInfo.fileName();}
 	inline QString complete() const override {return _fileInfo.fileName();}
 	inline QString infoText() const override {return _fileInfo.canonicalFilePath();}
-	void action(Mod) override;
-	QString actionText(Mod) const override;
 	QIcon icon() const override;
+
+	void    action() override;
+	QString actionText() const override;
+	void    altAction() override;
+	QString altActionText() const override;
 
 protected:
 	QFileInfo _fileInfo;
 
 	// Serialization
-	QDataStream& serialize (QDataStream &out) const override;
-	QDataStream& deserialize (QDataStream &in) override;
+	void serialize (QDataStream &out) const override;
+	void deserialize (QDataStream &in) override;
 };
 
 #endif // FILEITEM_H

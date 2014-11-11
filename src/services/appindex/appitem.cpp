@@ -19,65 +19,53 @@
 #include <chrono>
 #include <QProcess>
 #include <QDirIterator>
-
 #include <QDebug>
 
 /**************************************************************************/
-void AppIndex::Item::action(Mod mod)
+void AppIndex::Item::action()
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
-	switch (mod) {
-	case Mod::Meta:
-	case Mod::None:
-		if (_term)
-			QProcess::startDetached("konsole -e " + _exec);
-		else
-			QProcess::startDetached(_exec);
-		break;
-	case Mod::Alt:
-		if (_term)
-			QProcess::startDetached("kdesu konsole -e " + _exec);
-		else
-			QProcess::startDetached("kdesu " + _exec);
-	case Mod::Ctrl:
-		WebSearch::instance()->defaultSearch(_name);
-		break;
-	}
+	if (_term)
+		QProcess::startDetached("konsole -e " + _exec);
+	else
+		QProcess::startDetached(_exec);
+
 }
 
 /**************************************************************************/
-QString AppIndex::Item::actionText(Mod mod) const
+QString AppIndex::Item::actionText() const
 {
-	switch (mod) {
-	case Mod::Meta:
-	case Mod::None:
-		return QString("Start '%1'.").arg(_name);
-		break;
-	case Mod::Alt:
-		return QString("Start '%1' as root.").arg(_name);
-	case Mod::Ctrl:
-		return WebSearch::instance()->defaultSearchText(_name);
-		break;
-	}
-	// Will never happen
-	return "";
+	return QString("Start '%1'.").arg(_name);
 }
 
 /**************************************************************************/
-QDataStream &AppIndex::Item::serialize(QDataStream &out) const
+void AppIndex::Item::altAction()
+{
+	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
+	if (_term)
+		QProcess::startDetached("kdesu konsole -e " + _exec);
+	else
+		QProcess::startDetached("kdesu " + _exec);
+}
+
+/**************************************************************************/
+QString AppIndex::Item::altActionText() const
+{
+	return QString("Start '%1' as root.").arg(_name);
+}
+
+/**************************************************************************/
+void AppIndex::Item::serialize(QDataStream &out) const
 {
 	out << _lastAccess << _name << _exec << _iconName << _info << _term;
-	return out;
 }
 
 /**************************************************************************/
-QDataStream &AppIndex::Item::deserialize(QDataStream &in)
+void AppIndex::Item::deserialize(QDataStream &in)
 {
 	in >> _lastAccess >> _name >> _exec >> _iconName >> _info >> _term;
-	return in;
 }
 
-#include <QDebug>
 /**************************************************************************/
 QIcon AppIndex::Item::icon() const
 {

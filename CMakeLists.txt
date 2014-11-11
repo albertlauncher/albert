@@ -17,7 +17,8 @@ set_property(TARGET muparser PROPERTY
 
 include_directories(
 	src/
-	src/hotkey/
+	src/util/
+	src/util/hotkey/
 	src/services/
 	src/ui/mainwidget/
 	src/ui/settingsdialog/
@@ -27,7 +28,7 @@ include_directories(
 set(SRCS
 	src/main.cpp
 	src/engine.cpp
-	src/hotkey/globalhotkey.cpp
+	src/util/hotkey/globalhotkey.cpp
 	src/services/service.h
 	src/services/indexservice.cpp
 	src/services/appindex/appindexwidget.cpp
@@ -48,9 +49,9 @@ set(SRCS
 	src/ui/mainwidget/mainwidget.cpp
 	src/ui/mainwidget/proposallistview.cpp
 	src/ui/mainwidget/inputline.cpp
+	src/ui/mainwidget/history.cpp
 	src/ui/mainwidget/settingsbutton.cpp
 	src/ui/settingsdialog/settingsdialog.cpp
-	src/ui/settingsdialog/hotkeywidget.cpp
 )
 
 set(data
@@ -80,7 +81,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	# Add platformspecific stuff
 	find_package(Qt5X11Extras REQUIRED)
 	find_library(muparser REQUIRED)
-	set(SRCS ${SRCS} src/hotkey/globalhotkey_x11.cpp)
+	set(SRCS ${SRCS} src/util/hotkey/globalhotkey_x11.cpp)
 
 	# Define targets and linked libs
 	add_executable(albert ${SRCS} ${UIS} ${DATA} ${RSRC})
@@ -97,8 +98,8 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 #win
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-	# Add platformspecific stuff
-	set(SRCS ${SRCS} src/hotkey/globalhotkey_win.cpp)
+		# Add platformspecific stuff
+		set(SRCS ${SRCS} src/util/hotkey/globalhotkey_win.cpp)
 
 	#Use unicode
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")

@@ -42,56 +42,47 @@ void Engine::initialize()
 }
 
 /**************************************************************************/
-QDataStream &Engine::serialize(QDataStream &out) const
+void Engine::saveSettings(QSettings &s) const
 {
 	for (Service *i: _modules)
-		i->serialize(out);
-	return out;
+		i->saveSettings(s);
 }
 
 /**************************************************************************/
-QDataStream &Engine::deserialize(QDataStream &in)
+void Engine::loadSettings(QSettings &s)
 {
 	for (Service *i: _modules)
-		i->deserialize(in);
-	return in;
+		i->loadSettings(s);
+}
+
+/**************************************************************************/
+void Engine::serilizeData(QDataStream &out) const
+{
+	for (Service *i: _modules)
+		i->serilizeData(out);
+}
+
+/**************************************************************************/
+void Engine::deserilizeData(QDataStream &in)
+{
+	for (Service *i: _modules)
+		i->deserilizeData(in);
 }
 
 /**********************************************************************/
 void Engine::query(const QString &req)
 {
+	_requestString = req.trimmed();
 	beginResetModel();
-	QString t = req.trimmed();
 	_data.clear();
-	if (!t.isEmpty()){
+	if (!_requestString.isEmpty()){
 		for (Service *i: _modules)
-			i->query(t, &_data);
+			i->query(_requestString, &_data);
 		if (_data.isEmpty())
-			WebSearch::instance()->queryAll(t, &_data);
+			WebSearch::instance()->queryAll(_requestString, &_data);
 		std::stable_sort(_data.begin(), _data.end(), Service::Item::ATimeCompare());
 	}
 	endResetModel();
-}
-
-/**************************************************************************/
-void Engine::action(const QModelIndex &index)
-{
-	if (rowCount() != 0)
-		_data[index.isValid()?index.row():0]->action(Service::Item::Mod::None);
-}
-
-/**************************************************************************/
-void Engine::altAction(const QModelIndex &index)
-{
-	if (rowCount() != 0)
-		_data[index.isValid()?index.row():0]->action(Service::Item::Mod::Alt);
-}
-
-/**************************************************************************/
-void Engine::ctrlAction(const QModelIndex &index)
-{
-	if (rowCount() != 0)
-		_data[index.isValid()?index.row():0]->action(Service::Item::Mod::Ctrl);
 }
 
 /**************************************************************************/
@@ -109,32 +100,28 @@ QVariant Engine::data(const QModelIndex &index, int role) const
 	if (role == Qt::ToolTipRole)
 		return _data[index.row()]->infoText();
 
-	if (role == Qt::UserRole+0)
-		return _data[index.row()]->actionText(Service::Item::Mod::None);
-
-	if (role == Qt::UserRole+1)
-		return _data[index.row()]->actionText(Service::Item::Mod::Ctrl);
-
-	if (role == Qt::UserRole+2)
-		return _data[index.row()]->actionText(Service::Item::Mod::Meta);
-
-	if (role == Qt::UserRole+3)
-		return _data[index.row()]->actionText(Service::Item::Mod::Alt);
-
-	if (role == Qt::UserRole+4)
-		_data[index.row()]->action(Service::Item::Mod::None);
-
-	if (role == Qt::UserRole+5)
-		_data[index.row()]->action(Service::Item::Mod::Ctrl);
-
-	if (role == Qt::UserRole+6)
-		_data[index.row()]->action(Service::Item::Mod::Meta);
-
-	if (role == Qt::UserRole+7)
-		_data[index.row()]->action(Service::Item::Mod::Alt);
-
-	if (role == Qt::UserRole+8)
+	if (role == Qt::UserRole)
 		return _data[index.row()]->complete();
+
+
+	if (role == Qt::UserRole+10)
+		return _data[index.row()]->actionText();
+
+	if (role == Qt::UserRole+11)
+		return _data[index.row()]->altActionText();
+
+	if (role == Qt::UserRole+12)
+		return WebSearch::instance()->defaultSearchText(_requestString);
+
+
+	if (role == Qt::UserRole+20)
+		_data[index.row()]->action();
+
+	if (role == Qt::UserRole+21)
+		_data[index.row()]->altAction();
+
+	if (role == Qt::UserRole+22)
+		WebSearch::instance()->defaultSearch(_requestString);
 
 	return QVariant();
 }

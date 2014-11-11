@@ -33,9 +33,12 @@ public:
 	inline QString title() const override {return _title;}
 	inline QString complete() const override {return _title;}
 	inline QString infoText() const override {return _url;}
-	void action(Mod) override;
-	QString actionText(Mod) const override;
 	QIcon icon() const override;
+
+	void    action() override;
+	QString actionText() const override;
+	void    altAction() override;
+	QString altActionText() const override;
 
 
 protected:
@@ -43,8 +46,8 @@ protected:
 	QString _url;
 
 	// Serialization
-	QDataStream& serialize (QDataStream &out) const override;
-	QDataStream& deserialize (QDataStream &in) override;
+	void serialize (QDataStream &out) const override;
+	void deserialize (QDataStream &in) override;
 };
 
 

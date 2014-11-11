@@ -19,6 +19,7 @@
 #include <QPaintEvent>
 #include <QPainter>
 
+/**********************************************************************/
 SettingsButton::SettingsButton(QWidget *parent) :
 	QPushButton(parent)
 {
@@ -26,6 +27,7 @@ SettingsButton::SettingsButton(QWidget *parent) :
 	this->setFocusPolicy(Qt::NoFocus);
 }
 
+/**********************************************************************/
 void SettingsButton::paintEvent(QPaintEvent *event)
 {
 	QPushButton::paintEvent(event); // TODO REPLACE BY CORRECT STYLEFUNC

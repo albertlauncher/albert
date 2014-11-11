@@ -17,7 +17,6 @@
 #include "bookmarkindex.h"
 #include "bookmarkitem.h"
 #include "bookmarkindexwidget.h"
-#include "globals.h"
 
 #include <functional>
 #include <QFile>
@@ -39,9 +38,7 @@ BookmarkIndex::~BookmarkIndex()
 /**************************************************************************/
 QWidget *BookmarkIndex::widget()
 {
-	if (_widget == nullptr)
-		_widget = new BookmarkIndexWidget(this);
-	return _widget;
+	return new BookmarkIndexWidget(this);
 }
 
 /**************************************************************************/
@@ -55,12 +52,55 @@ void BookmarkIndex::initialize()
 void BookmarkIndex::restoreDefaults()
 {
 	setSearchType(SearchType::WordMatch);
+	_path = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
+			+ "/chromium/Default/Bookmarks";
+}
 
-	gSettings->beginGroup("BookmarkIndex");
-	gSettings->setValue("bookmarkPath",
-			QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
-			+ "/chromium/Default/Bookmarks");
-	gSettings->endGroup();
+/**************************************************************************/
+void BookmarkIndex::saveSettings(QSettings &s) const
+{
+	// Save settings
+	s.beginGroup("BookmarkIndex");
+	s.setValue("Path", _path);
+	s.setValue("SearchType", static_cast<int>(searchType()));
+	s.endGroup();
+}
+
+/**************************************************************************/
+void BookmarkIndex::loadSettings(QSettings &s)
+{
+	// Load settings
+	s.beginGroup("BookmarkIndex");
+	_path = s.value("Path",
+					QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
+					+ "/chromium/Default/Bookmarks").toString();
+	setSearchType(static_cast<SearchType>(s.value("SearchType",1).toInt()));
+	s.endGroup();
+}
+
+/**************************************************************************/
+void BookmarkIndex::serilizeData(QDataStream &out) const
+{
+	// Serialize data
+	out << _index.size() << static_cast<int>(searchType());
+	for (Service::Item *it : _index)
+		static_cast<BookmarkIndex::Item*>(it)->serialize(out);
+}
+
+/**************************************************************************/
+void BookmarkIndex::deserilizeData(QDataStream &in)
+{
+	// Deserialize the index
+	int size,T;
+	in >> size >> T;
+	BookmarkIndex::Item *it;
+	for (int i = 0; i < size; ++i) {
+		it = new BookmarkIndex::Item;
+		it->deserialize(in);
+		_index.push_back(it);
+	}
+	setSearchType(static_cast<IndexService::SearchType>(T));
+	qDebug() << "[BookmarkIndex]\tLoaded " << _index.size() << " bookmarks.";
 }
 
 /**************************************************************************/
@@ -89,16 +129,11 @@ void BookmarkIndex::buildIndex()
 		}
 	};
 
-	// Get path form settings
-	gSettings->beginGroup("BookmarkIndex");
-	QString bookmarkPath = gSettings->value("bookmarkPath").toString();
-	gSettings->endGroup();
+	qDebug() << "[BookmarkIndex]\tParsing" << _path;
 
-	qDebug() << "[BookmarkIndex]\tParsing" << bookmarkPath;
-
-	QFile f(bookmarkPath);
+	QFile f(_path);
 	if (!f.open(QIODevice::ReadOnly)) {
-		qWarning() << "[BookmarkIndex]\tCould not open" << bookmarkPath;
+		qWarning() << "[BookmarkIndex]\tCould not open" << _path;
 		return;
 	}
 
@@ -112,27 +147,3 @@ void BookmarkIndex::buildIndex()
 	prepareSearch();
 }
 
-/**************************************************************************/
-QDataStream &BookmarkIndex::serialize(QDataStream &out) const
-{
-	out << _index.size() << static_cast<int>(searchType());
-	for (Service::Item *it : _index)
-		static_cast<BookmarkIndex::Item*>(it)->serialize(out);
-	return out;
-}
-
-/**************************************************************************/
-QDataStream &BookmarkIndex::deserialize(QDataStream &in)
-{
-	int size,T;
-	in >> size >> T;
-	BookmarkIndex::Item *it;
-	for (int i = 0; i < size; ++i) {
-		it = new BookmarkIndex::Item;
-		it->deserialize(in);
-		_index.push_back(it);
-	}
-	setSearchType(static_cast<IndexService::SearchType>(T));
-	qDebug() << "[BookmarkIndex]\tLoaded " << _index.size() << " bookmarks.";
-	return in;
-}

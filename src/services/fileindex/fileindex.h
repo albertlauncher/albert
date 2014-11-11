@@ -19,12 +19,14 @@
 
 #include "indexservice.h"
 #include "singleton.h"
-#include <QSet>
 
 class FileIndex : public IndexService, public Singleton<FileIndex>
 {
 	friend class FileIndexWidget;
 	friend class Singleton<FileIndex>;
+
+	QStringList _paths;
+	bool        _indexHiddenFiles;
 
 public:
 	class Item;
@@ -32,10 +34,14 @@ public:
 	~FileIndex();
 
 	QWidget* widget() override;
+
 	void initialize() override;
 	void restoreDefaults() override;
-	QDataStream& serialize (QDataStream &out) const override;
-	QDataStream& deserialize (QDataStream &in) override;
+
+	void saveSettings(QSettings &s) const override;
+	void loadSettings(QSettings &s) override;
+	void serilizeData(QDataStream &out) const override;
+	void deserilizeData(QDataStream &in) override;
 
 protected:
 	FileIndex(){}
