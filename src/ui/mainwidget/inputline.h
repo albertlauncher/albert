@@ -20,12 +20,14 @@
 #include <QLineEdit>
 
 #include "settingsbutton.h"
+#include "history.h"
 
 class InputLine : public QLineEdit
 {
 	Q_OBJECT
 
-	SettingsButton     *_settingsButton;
+	SettingsButton *_settingsButton;
+	History		   _history;
 
 public:
 	explicit InputLine(QWidget *parent = 0);
@@ -37,6 +39,9 @@ protected:
 
 signals:
 	void settingsDialogRequested();
+
+public slots:
+	void reset();
 };
 
 #endif // INPUTLINE_H

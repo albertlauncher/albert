@@ -282,6 +282,12 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 		// Navigation
 		if (key == Qt::Key_Up || key == Qt::Key_Down
 			|| key == Qt::Key_PageDown || key == Qt::Key_PageUp) {
+
+			/* I this is the first item pass key up through for the
+			 * command history */
+			if (key == Qt::Key_Up && (!currentIndex().isValid() || currentIndex().row()==0))
+				return false;
+
 			QListView::keyPressEvent(keyEvent);
 			return true;
 		}
@@ -305,7 +311,9 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 				model()->data(currentIndex(), Qt::UserRole+20);
 
 			window()->hide();
-			return true;
+			// Do not accept since the inpuline needs
+			// to store the request in history
+			return false;
 		}
 
 		// Completion

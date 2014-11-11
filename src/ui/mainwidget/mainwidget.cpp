@@ -158,7 +158,7 @@ MainWidget::~MainWidget()
 /**************************************************************************/
 void MainWidget::show()
 {
-	_inputLine->clear();
+	_inputLine->reset();
 	QWidget::show();
 	if (gSettings->value(QString::fromLocal8Bit("showCentered"), QString::fromLocal8Bit("true")).toBool())
 		this->move(QApplication::desktop()->screenGeometry().center() - QPoint(rect().right()/2,192 ));

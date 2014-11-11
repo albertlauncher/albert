@@ -27,6 +27,7 @@ InputLine::InputLine(QWidget *parent) : QLineEdit(parent)
 	_settingsButton = new SettingsButton(this);
 	_settingsButton->setFocusPolicy(Qt::NoFocus);
 	connect(_settingsButton, SIGNAL(clicked()), this, SIGNAL(settingsDialogRequested()));
+	connect(this,SIGNAL(textEdited(QString)), &_history, SLOT(reset()));
 }
 
 /**************************************************************************/
@@ -44,24 +45,49 @@ void InputLine::resizeEvent(QResizeEvent *event)
 /**************************************************************************/
 void InputLine::keyPressEvent(QKeyEvent *e)
 {
+	int key = e->key();
+	Qt::KeyboardModifiers mods = e->modifiers();
+
 	// Open settings dialog
-	if (e->modifiers() == Qt::AltModifier && e->key() == Qt::Key_Comma ) {
+	if (mods == Qt::AltModifier && key == Qt::Key_Comma ) {
 		emit settingsDialogRequested();
 		return;
 	}
 
 	// Quit application
-	if (/*e->modifiers() == Qt::AltModifier && */e->key() == Qt::Key_F4 ) {
+	if (/*mods == Qt::AltModifier && */key == Qt::Key_F4 ) {
 		window()->hide();
 		qApp->quit();
 		return;
 	}
 
 	// Hide window
-	if (e->modifiers() == Qt::NoModifier && e->key() == Qt::Key_Escape ) {
+	if (mods == Qt::NoModifier && key == Qt::Key_Escape ) {
 		window()->hide();
 		return;
 	}
 
+	// Navigation in history
+	if (key == Qt::Key_Up) {
+		if (_history.hasNext()){
+			setText(_history.next());
+			selectAll();
+		}
+		return;
+	}
+
+	// Selection (history)
+	if (key == Qt::Key_Return || key == Qt::Key_Enter) {
+		_history.insert(text());
+		return;
+	}
+
 	QLineEdit::keyPressEvent(e);
+}
+
+/**************************************************************************/
+void InputLine::reset()
+{
+	_history.reset();
+	QLineEdit::clear();
 }
