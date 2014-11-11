@@ -23,6 +23,7 @@ include_directories(
 
 set(SRCS
 	src/main.cpp
+	src/globals.h
 	src/engine.cpp
 	src/util/hotkey/globalhotkey.cpp
 	src/services/service.h
@@ -45,6 +46,7 @@ set(SRCS
 	src/ui/mainwidget/mainwidget.cpp
 	src/ui/mainwidget/proposallistview.cpp
 	src/ui/mainwidget/inputline.cpp
+	src/ui/mainwidget/history.cpp
 	src/ui/mainwidget/settingsbutton.cpp
 	src/ui/settingsdialog/settingsdialog.cpp
 	src/ui/settingsdialog/hotkeywidget.cpp
