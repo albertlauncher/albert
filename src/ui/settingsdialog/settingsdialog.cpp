@@ -116,26 +116,7 @@ SettingsWidget::SettingsWidget(MainWidget *ref)
 		ui.sw_modules->addWidget(m->widget());
 	}
 
-//	QListWidgetItem *item = new QListWidgetItem("Websearch");
-//	ui.lw_modules->addItem(item);
-//	ui.sw_modules->addWidget(WebSearch::instance()->widget());
 
-//	item = new QListWidgetItem("Apps");
-//	ui.lw_modules->addItem(item);
-//	ui.sw_modules->addWidget(AppIndex::instance()->widget());
-
-//	item = new QListWidgetItem("Bookmarks");
-//	ui.lw_modules->addItem(item);
-//	ui.sw_modules->addWidget(BookmarkIndex::instance()->widget());
-
-//	item = new QListWidgetItem("Files");
-//	ui.lw_modules->addItem(item);
-//	ui.sw_modules->addWidget(FileIndex::instance()->widget());
-
-//	item = new QListWidgetItem("Calculator");
-//	ui.lw_modules->addItem(item);
-//	ui.sw_modules->addWidget(Calculator::instance()->widget());
-//	// The entries and the stackeswidgets are connected in the .ui
 
 
 	/* GENERAL APPEARANCE OF SETTINGSWISGET */
