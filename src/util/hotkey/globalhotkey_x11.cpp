@@ -92,7 +92,6 @@ static Qt_XK_Keymap Qt_XKSym_table[] = {
 	{ Qt::Key_Comma,       {1, { XK_comma }}},
 	{ Qt::Key_Period,      {1, { XK_period }}},
 	{ Qt::Key_Minus,       {1, { XK_minus }}},
-	// TODO Missing Hash/Pound
 	{ Qt::Key_Plus,        {1, { XK_plus }}},
 	{ Qt::Key_unknown,     {0, { 0 }}},
 };

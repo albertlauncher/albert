@@ -137,7 +137,7 @@ MainWidget::MainWidget(QWidget *parent)
 	// A change in text triggers requests
 	connect(_inputLine, SIGNAL(textChanged(QString)), _engine, SLOT(query(QString)));
 
-	// Proposallistview tells Inputline to change text on completion. TODO ??
+	// Proposallistview tells Inputline to change text on completion.
 	connect(_proposalListView, SIGNAL(completion(QString)), _inputLine, SLOT(setText(QString)));
 
 	// Bottonpress or shortcuts op settings dialog, and close albert once

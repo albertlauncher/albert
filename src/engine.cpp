@@ -129,7 +129,7 @@ QVariant Engine::data(const QModelIndex &index, int role) const
 		_data[index.row()]->altAction();
 
 	if (role == Qt::UserRole+22)
-		static_cast<WebSearch*>(_modules[0])->defaultSearch(_requestString);
+		static_cast<WebSearch*>(_modules[0])->defaultSearch(_requestString); // Todo implement a mechaninsm which let the modules offer global actions
 
 	return QVariant();
 }
