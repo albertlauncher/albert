@@ -1,6 +1,6 @@
 # Maintainer: Manuel Schneider  <manuelschneid3r at googles mail>
 pkgname=albert
-pkgver=0.5
+pkgver=0.6
 pkgrel=1
 pkgdesc="A DE agnostic omnilauncher."
 arch=('i686' 'x86_64')
@@ -14,37 +14,26 @@ replaces=()
 backup=()
 options=()
 install=
-source=()
+source=(https://github.com/ManuelSchneid3r/albert/archive/v0.6.tar.gz)
 noextract=()
-md5sums=() #generate with 'makepkg -g'
+md5sums=('dc0c1bdb1a409d267b93a73c3e033a47')
 
 _gitroot=https://github.com/ManuelSchneid3r/albert.git
 
 build() {
+  builddir="${srcdir}/${pkgname}-${pkgver}/build"
 
-  msg "Connecting to GIT server...."
+  [[ -d "${builddir}" ]] || mkdir -p "${builddir}"
 
-  if [[ -d "$pkgname" ]]; then
-    cd "$pkgname" && git pull
-  else
-    git clone "$_gitroot" --branch testing "$pkgname"
-  fi
-
-  msg "Done."
-  msg "Make project..."
-
-  [[ -d "$srcdir/build" ]] || mkdir -p "$srcdir/build"
-
-  cd "$srcdir/build"
-  cmake "../$pkgname" \
+  cd "${builddir}" && cmake ".." \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_BUILD_TYPE=Release
   make
 }
 
 package() {
-  cd "$srcdir/build"
-  make DESTDIR="$pkgdir/" install
+  builddir="${srcdir}/${pkgname}-${pkgver}/build"
+  cd "${builddir}" && make DESTDIR="$pkgdir/" install
 }
 
 # vim:set ts=2 sw=2 et:
