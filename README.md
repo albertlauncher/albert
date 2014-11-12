@@ -1,3 +1,3 @@
-#Albert (alpha 0.4) 
+#Albert (alpha 0.6) 
 ###An amazing, desktop environment agnostic omnilauncher
-![Image of v0.3](https://raw.githubusercontent.com/ManuelSchneid3r/albert/master/v0.3.gif)
+![Image of v0.6](https://raw.githubusercontent.com/ManuelSchneid3r/albert/master/v0.6.gif)
