@@ -37,13 +37,13 @@ void History::loadSettings(QSettings &s)
 /**********************************************************************/
 void History::serilizeData(QDataStream &out) const
 {
-//	out << _data;
+	out << _data;
 }
 
 /**********************************************************************/
 void History::deserilizeData(QDataStream &in)
 {
-//	in >> _data;
+	in >> _data;
 }
 
 /**********************************************************************/
