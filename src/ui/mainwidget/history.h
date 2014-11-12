@@ -24,10 +24,7 @@
 class History : public QObject
 {
 	Q_OBJECT
-
-	QStringList           _data;
-	int                   _max;
-	QStringList::iterator _it;
+	friend class SettingsWidget;
 
 public:
 	History();
@@ -40,6 +37,11 @@ public:
 	void insert(QString);
 	bool hasNext() const;
 	const QString& next();
+
+private:
+	QStringList           _data;
+	int                   _max;
+	QStringList::iterator _it;
 
 public slots:
 	void reset();

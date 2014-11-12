@@ -53,6 +53,16 @@ SettingsWidget::SettingsWidget(MainWidget *ref)
 
 
 
+	// Always center
+	ui.cb_center->setChecked(_mainWidget->_showCentered);
+	connect(ui.cb_center, SIGNAL(clicked(bool)), this, SLOT(onShowCenteredChanged(bool)));
+
+
+	// Max History
+	ui.sb_maxHistory->setValue(_mainWidget->_inputLine->_history._max);
+	connect(ui.sb_maxHistory, SIGNAL(valueChanged(int)), this, SLOT(onMaxHistoryChanged(int)));
+
+
 	/* GENERAL */
 	// Proposal stuff
 	ui.spinBox_proposals->setValue(_mainWidget->_proposalListView->_nItemsToShow);
@@ -239,6 +249,18 @@ void SettingsWidget::keyReleaseEvent(QKeyEvent *event)
 void SettingsWidget::onHotkeyChanged(int hotkey)
 {
 	ui.pb_hotkey->setText(QKeySequence(hotkey).toString());
+}
+
+/**************************************************************************/
+void SettingsWidget::onShowCenteredChanged(bool b)
+{
+	_mainWidget->_showCentered = b;
+}
+
+/**************************************************************************/
+void SettingsWidget::onMaxHistoryChanged(int i)
+{
+	_mainWidget->_inputLine->_history._max = i;
 }
 
 /**************************************************************************/

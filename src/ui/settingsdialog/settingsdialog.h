@@ -57,6 +57,8 @@ protected slots:
 	void modActionAltChanged(int);
 	void onPbHotkeyPressed();
 	void onHotkeyChanged(int);
+	void onShowCenteredChanged(bool);
+	void onMaxHistoryChanged(int);
 
 public slots:
 	void show();
