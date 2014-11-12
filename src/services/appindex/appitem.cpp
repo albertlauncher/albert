@@ -20,6 +20,7 @@
 #include <QProcess>
 #include <QDirIterator>
 #include <QDebug>
+#include <QStandardPaths>
 
 /**************************************************************************/
 void AppIndex::Item::action()
@@ -86,19 +87,39 @@ QIcon AppIndex::Item::icon() const
 	 * required to look in the "hicolor" theme if an icon was not found in the
 	 * current theme.*/
 
-	// TODO QTBUG-42239 CHNAGE WITH Qt5.4
-
 	// PATH
 	if (_iconName.startsWith('/'))
 		return QIcon(_iconName);
-	else
-	{
-		QString s = _iconName;
-		if (s.contains('.'))
-			s =  s.section('.',0,-2);
 
-		if (QIcon::hasThemeIcon(s))
-			return QIcon::fromTheme(s);
+	// Strip suffix
+	QString strippedIconName = _iconName;
+	if (strippedIconName.contains('.'))
+		strippedIconName =  strippedIconName.section('.',0,-2);
+
+	if (QIcon::hasThemeIcon(strippedIconName)) // HORRIBLY BUGGY QTBUG-42239 CHNAGE WITH Qt5.4
+		return QIcon::fromTheme(strippedIconName);
+
+	// Implementation for desktop specs
+	QStringList paths, themes, sizes;
+	paths << QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+	themes << QIcon::themeName() << "hicolor";
+	sizes << "scalable" << "512x512" << "384x384" << "256x256" << "192x192"
+		  << "128x128" << "96x96" << "72x72" << "64x64" << "48x48" << "42x42"
+		  << "36x36" << "32x32" << "24x24" << "22x22" << "16x16" << "8x8";
+
+	for (const QString & p : paths){
+		for (const QString & t : themes){
+			for (const QString & s : sizes){
+				qDebug() << QString("%1/icons/%2/%3/apps").arg(p,t,s);
+				QDirIterator it(QString("%1/icons/%2/%3/apps").arg(p,t,s), QDirIterator::FollowSymlinks);
+				while (it.hasNext()){
+					it.next();
+					QFileInfo fi = it.fileInfo();
+					if (fi.isFile() && fi.baseName() == strippedIconName)
+						return QIcon(fi.canonicalFilePath());
+				}
+			}
+		}
 	}
 
 	// PIXMAPS
@@ -106,7 +127,7 @@ QIcon AppIndex::Item::icon() const
 	while (it.hasNext()) {
 		it.next();
 		QFileInfo fi = it.fileInfo();
-		if (fi.isFile() && fi.baseName().startsWith(_iconName))
+		if (fi.isFile() && fi.baseName() == strippedIconName)
 			return QIcon(fi.canonicalFilePath());
 	}
 
