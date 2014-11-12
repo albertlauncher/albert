@@ -126,14 +126,25 @@ void AppIndex::buildIndex()
 			if (fi.suffix() != QString::fromLocal8Bit("desktop"))
 				continue;
 
+			// TYPES http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s03.html
+
 			// Read the entries in the desktopfile
 			QMap<QString, QString> desktopfile;
 			QFile file(fi.absoluteFilePath());
 			if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
 				continue;
 			QTextStream in(&file);
-			QString line = in.readLine();
-			while (!line.isNull()) {
+			QString line;
+
+			// Skip everything until [Desktop Entry]
+			do {
+				line = in.readLine();
+			} while (line.trimmed().compare("[Desktop Entry]") != 0);
+
+
+			// Read everything until end or next section
+			line = in.readLine();
+			while (!line.isNull() && ! line.startsWith('[')){
 				desktopfile[line.section('=', 0, 0)] = line.section('=', 1);
 				line = in.readLine();
 			}
@@ -150,42 +161,7 @@ void AppIndex::buildIndex()
 			localeShortcut.truncate(2);
 			QString name = desktopfile.value(QString("Name[%1]").arg(localeShortcut), desktopfile["Name"]);
 
-			// Replace placeholders
-			/*
-			 * Code	Description
-			 * %f	A single file name, even if multiple files are selected.
-			 * The system reading the desktop entry should recognize that the
-			 * program in question cannot handle multiple file arguments, and
-			 * it should should probably spawn and execute multiple copies of
-			 * a program for each selected file if the program is not able to
-			 * handle additional file arguments. If files are not on the local
-			 * file system (i.e. are on HTTP or FTP locations), the files will
-			 * be copied to the local file system and %f will be expanded to
-			 * point at the temporary file. Used for programs that do not
-			 * understand the URL syntax.
-			 * %F	A list of files. Use for apps that can open several local
-			 * files at once. Each file is passed as a separate argument to the
-			 * executable program.
-			 * %u	A single URL. Local files may either be passed as file: URLs
-			 * or as file path.
-			 * %U	A list of URLs. Each URL is passed as a separate argument to
-			 * the executable program. Local files may either be passed as file:
-			 * URLs or as file path.
-			 * %d	Deprecated.
-			 * %D	Deprecated.
-			 * %n	Deprecated.
-			 * %N	Deprecated.
-			 * %i	The Icon key of the desktop entry expanded as two arguments,
-			 * first --icon and then the value of the Icon key. Should not
-			 * expand to any arguments if the Icon key is empty or missing.
-			 * %c	The translated name of the application as listed in the
-			 * appropriate Name key in the desktop entry.
-			 * %k	The location of the desktop file as either a URI (if for
-			 * example gotten from the vfolder system) or a local filename or
-			 * empty if no location is known.
-			 * %v	Deprecated.
-			 * %m	Deprecated.
-			*/
+			//  http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s06.html
 			QString exec = desktopfile["Exec"];
 			exec.replace("%c", name);
 
