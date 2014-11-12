@@ -7,7 +7,7 @@ arch=('i686' 'x86_64')
 url="https://github.com/ManuelSchneid3r/albert"
 license=('GPL')
 depends=('qt5-base' 'libx11' 'muparser')
-makedepends=('cmake' 'git' 'qt5-base' 'qt5-tools')
+makedepends=('cmake' 'qt5-base' 'qt5-tools')
 provides=()
 conflicts=()
 replaces=()
@@ -18,22 +18,19 @@ source=(https://github.com/ManuelSchneid3r/albert/archive/v0.6.tar.gz)
 noextract=()
 md5sums=('dc0c1bdb1a409d267b93a73c3e033a47')
 
-_gitroot=https://github.com/ManuelSchneid3r/albert.git
-
 build() {
-  builddir="${srcdir}/${pkgname}-${pkgver}/build"
-
-  [[ -d "${builddir}" ]] || mkdir -p "${builddir}"
-
-  cd "${builddir}" && cmake ".." \
+  [[ -d "${srcdir}/${pkgname}-${pkgver}/build" ]]\
+    || mkdir -p "${srcdir}/${pkgname}-${pkgver}/build"
+  cd "${srcdir}/${pkgname}-${pkgver}/build"
+  cmake ".." \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_BUILD_TYPE=Release
   make
 }
 
 package() {
-  builddir="${srcdir}/${pkgname}-${pkgver}/build"
-  cd "${builddir}" && make DESTDIR="$pkgdir/" install
+  cd "${srcdir}/${pkgname}-${pkgver}/build"
+  make DESTDIR="$pkgdir/" install
 }
 
 # vim:set ts=2 sw=2 et:
