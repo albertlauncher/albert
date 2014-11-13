@@ -26,7 +26,7 @@ class SearchImpl;
 class IndexService : public Service
 {
 public:
-	enum class SearchType {Exact, WordMatch, Fuzzy};
+	enum class SearchType {/*Exact, */WordMatch, Fuzzy};
 
 	IndexService();
 	virtual ~IndexService();
@@ -38,7 +38,7 @@ public:
 	inline SearchType searchType() const {return _searchType;}
 
 protected:
-	QVector<Service::Item*> _index;
+	QList<Service::Item*> _index;
 	void prepareSearch();
 
 private:
