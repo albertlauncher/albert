@@ -23,6 +23,8 @@
 Calculator::Calculator()
 {
 	_p = new mu::Parser;
+	_p->SetDecSep(loc.decimalPoint().toLatin1());
+	_p->SetThousandsSep(loc.groupSeparator().toLatin1());
 	_theOneAndOnly = new Calculator::Item;
 }
 
@@ -79,7 +81,9 @@ void Calculator::query(const QString &req, QVector<Service::Item *> *res) const
 {
 	_p->SetExpr(req.toStdString());
 	try {
-		_theOneAndOnly->_result = QString::number(_p->Eval());
+		std::cout << _p->Eval() << std::endl;
+		_theOneAndOnly->_result = QString::number((double) _p->Eval());
+		_theOneAndOnly->_result = loc.toString(_p->Eval());
 	}
 	catch (mu::Parser::exception_type &e) {
 	  std::cout << "[muparser] " << e.GetMsg() << std::endl;

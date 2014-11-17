@@ -19,6 +19,7 @@
 
 #include "service.h"
 #include "muParser.h"
+#include <QLocale>
 
 class Calculator : public Service
 {
@@ -46,6 +47,7 @@ public:
 protected:
 	Item *_theOneAndOnly;
 	mu::Parser *_p;
+	QLocale loc;
 };
 
 #endif // CALCULATOR_H
