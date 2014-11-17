@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "indexservice.h"
+#include "search.h"
 #include <algorithm>
 #include <QMap>
 #include <QSet>
@@ -48,70 +48,44 @@ struct CaseInsensitiveComparePrefix
 /**************************************************************************/
 /**************************************************************************/
 /**************************************************************************/
-class SearchImpl
+class Search::SearchImpl
 {
-protected:
-	QList<Service::Item*> &_indexRef;
 public:
-	SearchImpl(QList<Service::Item*> &p) : _indexRef(p){}
+	SearchImpl(const Search* parent) : _outer(parent) {}
 	virtual ~SearchImpl(){}
-	virtual void prepare() = 0;
+	virtual void buildIndex() = 0;
 	virtual void query(const QString &req, QVector<Service::Item*> *res) const = 0;
+	virtual Search::Type searchType() const = 0;
+protected:
+	const Search* _outer;
 };
 /**************************************************************************/
 /**************************************************************************/
 /**************************************************************************/
 /**************************************************************************/
-//class ExactMatchSearchImpl : public SearchImpl
-//{
-//public:
-//	ExactMatchSearchImpl(QVector<Service::Item*> &p);
-//	virtual void prepare();
-//	virtual void query(const QString &req, QVector<Service::Item*> *res) const;
-//};
-///**************************************************************************/
-//ExactMatchSearchImpl::ExactMatchSearchImpl(QVector<Service::Item *> &p) : SearchImpl(p)
-//{
-//	prepare();
-//}
-///**************************************************************************/
-//void ExactMatchSearchImpl::prepare()
-//{
-//	std::sort(_indexRef.begin(), _indexRef.end(), Service::Item::CaseInsensitiveCompare());
-//}
-///**************************************************************************/
-//void ExactMatchSearchImpl::query(const QString &req, QVector<Service::Item *> *res) const
-//{
-//	QVector<Service::Item *>::const_iterator lb, ub;
-//	lb =  std::lower_bound (_indexRef.cbegin(), _indexRef.cend(), req, Service::Item::CaseInsensitiveCompare());
-//	ub =  std::upper_bound (_indexRef.cbegin(), _indexRef.cend(), req, Service::Item::CaseInsensitiveComparePrefix());
-//	while (lb!=ub)
-//		res->push_back(*(lb++));
-//}
-/**************************************************************************/
-/**************************************************************************/
-/**************************************************************************/
-/**************************************************************************/
-class WordMatchSearchImpl : public SearchImpl
+class WordMatchSearchImpl : public Search::SearchImpl
 {
-	InvertedIndex _invertedIndex;
 public:
-	WordMatchSearchImpl(QList<Service::Item *> &p);
-	virtual void prepare();
-	virtual void query(const QString &req, QVector<Service::Item*> *res) const;
+	WordMatchSearchImpl(const Search *parent);
+	void buildIndex() override;
+	void query(const QString &req, QVector<Service::Item*> *res) const override;
+	inline Search::Type searchType() const override {return Search::Type::WordMatch;}
+private:
+	InvertedIndex _invertedIndex;
 };
 /**************************************************************************/
-WordMatchSearchImpl::WordMatchSearchImpl(QList<Service::Item *> &p) : SearchImpl(p)
+WordMatchSearchImpl::WordMatchSearchImpl(const Search *parent) : SearchImpl(parent)
 {
-	prepare();
 }
 /**************************************************************************/
-void WordMatchSearchImpl::prepare()
+void WordMatchSearchImpl::buildIndex()
 {
+	_invertedIndex.clear();
+
 	// Build inverted index
 	typedef QMap<QString, QSet<Service::Item*>> InvertedIndexMap;
 	InvertedIndexMap invertedIndexMap;
-	for (Service::Item *i : _indexRef)
+	for (Service::Item *i : _outer->_indexRef)
 	{
 		QStringList words = i->title().split(QRegExp("\\W+"), QString::SkipEmptyParts);
 		for (QString &w : words)
@@ -157,8 +131,15 @@ void WordMatchSearchImpl::query(const QString &req, QVector<Service::Item *> *re
 /**************************************************************************/
 /**************************************************************************/
 /**************************************************************************/
-class FuzzySearchImpl : public SearchImpl
+class FuzzySearchImpl : public Search::SearchImpl
 {
+public:
+	FuzzySearchImpl(const Search * parent, unsigned int q = 3, unsigned int delta = 2);
+	virtual void query(const QString &req, QVector<Service::Item*> *res) const;
+	void buildIndex() override;
+	inline Search::Type searchType() const override {return Search::Type::Fuzzy;}
+
+private:
 	// Map of words, containing their item references
 	typedef QMap<QString, QSet<Service::Item*>> InvertedIndex;
 	InvertedIndex _invertedIndex;
@@ -170,31 +151,19 @@ class FuzzySearchImpl : public SearchImpl
 	// Length of the grams
 	unsigned int _q;
 	inline unsigned int q(){return _q;}
-	inline void setQ(unsigned int q){_q=q; buildIndex();}
+//	inline void setQ(unsigned int q){_q=q; buildIndex();}
 
 	// Max allowed errors
 	unsigned int _delta;
 	inline unsigned int delta(){return _delta;}
-	inline void setDelta(unsigned int d){_delta=d;}
+//	inline void setDelta(unsigned int d){_delta=d;}
 
-	void buildIndex();
 	bool checkPrefixEditDistance(const QString& prefix, const QString& str, unsigned int delta) const;
-
-public:
-	FuzzySearchImpl(QList<Service::Item*> &p, unsigned int q = 3, unsigned int delta = 2);
-	virtual void prepare();
-	virtual void query(const QString &req, QVector<Service::Item*> *res) const;
 };
 /**************************************************************************/
-FuzzySearchImpl::FuzzySearchImpl(QList<Service::Item *> &p, unsigned int q, unsigned int delta)
-	: SearchImpl(p), _q(q), _delta(delta)
+FuzzySearchImpl::FuzzySearchImpl(const Search * parent, unsigned int q, unsigned int delta)
+	: SearchImpl(parent), _q(q), _delta(delta)
 {
-	prepare();
-}
-/**************************************************************************/
-void FuzzySearchImpl::prepare()
-{
-	buildIndex();
 }
 /**************************************************************************/
 void FuzzySearchImpl::buildIndex()
@@ -203,7 +172,7 @@ void FuzzySearchImpl::buildIndex()
 	_qGramIndex.clear();
 
 	// Build inverted index
-	for (Service::Item *item : _indexRef) {
+	for (Service::Item *item : _outer->_indexRef) {
 		QStringList words = item->title().split(QRegExp("\\W+"), QString::SkipEmptyParts);
 		for (QString &w : words)
 			_invertedIndex[w.toLower()].insert(item);
@@ -374,52 +343,47 @@ void FuzzySearchImpl::query(const QString &req, QVector<Service::Item *> *res) c
 /**************************************************************************/
 /**************************************************************************/
 /**************************************************************************/
-IndexService::IndexService()
+Search::Search(const QList<Service::Item*>& index) : _indexRef(index)
 {
-	_search =  new WordMatchSearchImpl(_index);
-	_searchType = IndexService::SearchType::WordMatch;
+	_search =  new WordMatchSearchImpl(this);
 }
 
 /**************************************************************************/
-IndexService::~IndexService()
+Search::~Search()
 {
 	delete _search;
 }
 
 /**************************************************************************/
-inline void IndexService::query(const QString&req, QVector<Service::Item*>*res) const {
+void Search::query(const QString&req, QVector<Service::Item*>*res) const {
 	_search->query(req, res);
 }
 
 /**************************************************************************/
-void IndexService::setSearchType(IndexService::SearchType T)
+void Search::setSearchType(Search::Type T)
 {
-	_searchType = T;
 	switch (T) {
-//	case IndexService::SearchType::Exact:
-//		delete _search;
-//		_search = new ExactMatchSearchImpl(_index);
-////		qDebug() << "Set searchtype to ExactMatch";
-//		break;
-	case IndexService::SearchType::WordMatch:
+	case Search::Type::WordMatch:
 		delete _search;
-		_search = new WordMatchSearchImpl(_index);
-//		qDebug() << "Set searchtype to WordMatch";
+		_search = new WordMatchSearchImpl(this);
 		break;
-	case IndexService::SearchType::Fuzzy:
+	case Search::Type::Fuzzy:
 		delete _search;
-		_search = new FuzzySearchImpl(_index);
-//		qDebug() << "Set searchtype to Fuzzy";
+		_search = new FuzzySearchImpl(this);
 		break;
 	}
+	_search->buildIndex();
 }
 
 /**************************************************************************/
-void IndexService::prepareSearch()
+Search::Type Search::searchType() const
 {
-	_search->prepare();
+	return _search->searchType();
 }
 
 /**************************************************************************/
-/**************************************************************************/
-/**************************************************************************/
+void Search::buildIndex()
+{
+	_search->buildIndex();
+}
+

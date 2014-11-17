@@ -40,7 +40,7 @@ BookmarkIndexWidget::BookmarkIndexWidget(BookmarkIndex *srv, QWidget *parent) :
 /**************************************************************************/
 void BookmarkIndexWidget::onSearchTypeChanged(int st)
 {
-	_ref->setSearchType(static_cast<IndexService::SearchType>(st));
+	_ref->_search.setSearchType(static_cast<Search::Type>(st));
 }
 
 /**************************************************************************/
@@ -67,11 +67,8 @@ void BookmarkIndexWidget::rebuildIndex()
 	ui.lbl_info->setText("Building index...");
 	ui.lbl_info->repaint();
 
-	// Rebuild index
+	// Rebuild index and searchindex
 	_ref->buildIndex();
-
-	// Rebuild searchindex
-	_ref->setSearchType(_ref->searchType());
 
 	ui.lbl_info->setText("Building index done.");
 	QTimer::singleShot(1000, ui.lbl_info, SLOT(clear()));
@@ -92,5 +89,5 @@ void BookmarkIndexWidget::updateUI()
 	ui.le_path->setText(_ref->_path);
 
 	// Update the search
-	ui.cb_SearchType->setCurrentIndex(static_cast<int>(_ref->searchType()));
+	ui.cb_SearchType->setCurrentIndex(static_cast<int>(_ref->_search.searchType()));
 }

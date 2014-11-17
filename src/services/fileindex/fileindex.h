@@ -17,20 +17,24 @@
 #ifndef FILEINDEX_H
 #define FILEINDEX_H
 
-#include "indexservice.h"
+#include "search/search.h"
 
-class FileIndex : public IndexService
+#include <QObject>
+#include <QFileSystemWatcher>
+
+class FileIndex : public QObject, public Service
 {
+	Q_OBJECT
 	friend class FileIndexWidget;
 
 public:
 	class Item;
 
-	FileIndex(){}
+	FileIndex();
 	~FileIndex();
 
 	QWidget* widget() override;
-	inline QString moduleName() override {return "FileIndex";}
+	inline QString moduleName() override {return "FileFinder";}
 
 	void initialize() override;
 	void restoreDefaults() override;
@@ -40,14 +44,22 @@ public:
 	void serilizeData(QDataStream &out) const override;
 	void deserilizeData(QDataStream &in) override;
 
+	void query(const QString &req, QVector<Service::Item*> *res) const override;
 	void queryFallback(const QString&, QVector<Service::Item*>*) const override;
 
-protected:
-	void buildIndex() override;
-
 private:
-	QStringList _paths;
-	bool        _indexHiddenFiles;
+	QList<Service::Item*> _index;
+	Search                _search;
+	QFileSystemWatcher    _watcher;
+	QStringList           _paths;
+	bool                  _indexHiddenFiles;
+
+protected slots:
+	void buildIndex();
+	bool addPath(const QString &path);
+	void removePath(const QString &path);
+	void HAPPENING(const QString &path);
+private slots:
 };
 
 #endif // FILEINDEX_H

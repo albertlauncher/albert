@@ -41,7 +41,7 @@ FileIndexWidget::FileIndexWidget(FileIndex *srv, QWidget *parent) :
 void FileIndexWidget::oncb_searchTypeChanged(int st)
 {
 	ui.lbl_info->setText("Building search index...");
-	_ref->setSearchType(static_cast<IndexService::SearchType>(st));
+	_ref->_search.setSearchType(static_cast<Search::Type>(st));
 	ui.lbl_info->setText("Building search index done.");
 	QTimer::singleShot(1000, ui.lbl_info, SLOT(clear()));
 }
@@ -57,8 +57,7 @@ void FileIndexWidget::onButton_add()
 	if(pathName.isEmpty())
 		return;
 
-	_ref->_paths << pathName;
-	_ref->_paths.removeDuplicates();
+	_ref->addPath(pathName);
 
 	// Add it in the ui
 	ui.lw_paths->clear();
@@ -83,11 +82,8 @@ void FileIndexWidget::rebuildIndex()
 	ui.lbl_info->setText("Building index...");
 	ui.lbl_info->repaint();
 
-	// Rebuild index
+	// Rebuild index and searchindex
 	_ref->buildIndex();
-
-	// Rebuild searchindex (id necessary)
-	_ref->setSearchType(_ref->searchType());
 
 	ui.lbl_info->setText("Building index done.");
 	QTimer::singleShot(1000, ui.lbl_info, SLOT(clear()));
@@ -117,5 +113,5 @@ void FileIndexWidget::updateUI()
 	ui.cb_hiddenFiles->setChecked(_ref->_indexHiddenFiles);
 
 	// Update the search
-	ui.cb_searchType->setCurrentIndex(static_cast<int>(_ref->searchType()));
+	ui.cb_searchType->setCurrentIndex(static_cast<int>(_ref->_search.searchType()));
 }

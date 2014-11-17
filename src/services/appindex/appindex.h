@@ -17,16 +17,20 @@
 #ifndef APPINDEX_H
 #define APPINDEX_H
 
-#include "indexservice.h"
+#include "search/search.h"
 
-class AppIndex : public IndexService
+#include <QObject>
+#include <QFileSystemWatcher>
+
+class AppIndex : public QObject, public Service
 {
+	Q_OBJECT
 	friend class AppIndexWidget;
 
 public:
 	class Item;
 
-	AppIndex(){}
+	AppIndex();
 	~AppIndex();
 
 	QWidget* widget() override;
@@ -40,13 +44,20 @@ public:
 	void serilizeData(QDataStream &out) const override;
 	void deserilizeData(QDataStream &in) override;
 
+	void query(const QString &req, QVector<Service::Item*> *res) const override;
 	void queryFallback(const QString&, QVector<Service::Item*>*) const override;
 
-protected:
-	void buildIndex() override;
-
 private:
-	QStringList _paths;
+	void buildIndex();
+	QIcon getIcon(QString iconName);
+
+	QList<Service::Item*> _index;
+	Search                _search;
+	QFileSystemWatcher    _watcher;
+
+signals:
+	void beginBuildIndex();
+	void endBuildIndex();
 };
 
 #endif // APPINDEX_H

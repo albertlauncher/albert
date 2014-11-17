@@ -86,7 +86,7 @@ MainWidget::MainWidget(QWidget *parent)
 
 
 
-	/* DESERIALIZE DATA */
+	/* DESERIALIZE DATA (BEFORE!! LOAD SETTINGS ) */
 
 	QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db");
 	if (f.open(QIODevice::ReadOnly| QIODevice::Text)) {

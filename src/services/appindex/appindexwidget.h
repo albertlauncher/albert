@@ -35,11 +35,8 @@ protected:
 protected slots:
 	void restoreDefaults();
 	void updateUI();
-
-	void oncb_searchTypeChanged(int);
 	void onButton_PathAdd();
 	void onButton_PathRemove();
-	void onButton_RebuildIndex();
 };
 
 #endif // APPINDEXWIDGET_H

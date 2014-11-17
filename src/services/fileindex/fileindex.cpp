@@ -24,6 +24,10 @@
 #include <QStandardPaths>
 
 /**************************************************************************/
+FileIndex::FileIndex() : _search(_index)
+{}
+
+/**************************************************************************/
 FileIndex::~FileIndex()
 {
 	for(Service::Item *i : _index)
@@ -47,13 +51,14 @@ void FileIndex::initialize()
 /**************************************************************************/
 void FileIndex::restoreDefaults()
 {
-	setSearchType(SearchType::WordMatch);
+	_search.setSearchType(Search::Type::WordMatch);
+	_paths.clear();
 	_paths << QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)
-		  << QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-		  << QStandardPaths::writableLocation(QStandardPaths::MusicLocation)
-		  << QStandardPaths::writableLocation(QStandardPaths::MoviesLocation)
-		  << QStandardPaths::writableLocation(QStandardPaths::PicturesLocation)
-		  << QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+		   << QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+		   << QStandardPaths::writableLocation(QStandardPaths::MusicLocation)
+		   << QStandardPaths::writableLocation(QStandardPaths::MoviesLocation)
+		   << QStandardPaths::writableLocation(QStandardPaths::PicturesLocation)
+		   << QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
 }
 
 /**************************************************************************/
@@ -61,9 +66,9 @@ void FileIndex::saveSettings(QSettings &s) const
 {
 	// Save settings
 	s.beginGroup("FileIndex");
-	s.setValue("Paths", _paths);
+	s.setValue("Paths", _watcher.directories() <<_watcher.files());
 	s.setValue("indexHiddenFiles", _indexHiddenFiles);
-	s.setValue("SearchType", static_cast<int>(searchType()));
+	s.setValue("SearchType", static_cast<int>(_search.searchType()));
 	s.endGroup();
 }
 
@@ -81,7 +86,7 @@ void FileIndex::loadSettings(QSettings &s)
 		  << QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
 	_paths = s.value("Paths", paths).toStringList();
 	_indexHiddenFiles = s.value("indexHiddenFiles", false).toBool();
-	setSearchType(static_cast<SearchType>(s.value("SearchType",1).toInt()));
+	_search.setSearchType(static_cast<Search::Type>(s.value("SearchType",1).toInt()));
 	s.endGroup();
 }
 
@@ -89,8 +94,7 @@ void FileIndex::loadSettings(QSettings &s)
 void FileIndex::serilizeData(QDataStream &out) const
 {
 	// Serialize data
-	out	<< _index.size()
-		<< static_cast<int>(searchType());
+	out	<< _index.size();
 	for (Service::Item *it : _index)
 		static_cast<FileIndex::Item*>(it)->serialize(out);
 }
@@ -99,17 +103,21 @@ void FileIndex::serilizeData(QDataStream &out) const
 void FileIndex::deserilizeData(QDataStream &in)
 {
 	// Deserialize the index
-	int size, T;
-	in	>> size
-			>> T;
+	int size;
+	in	>> size;
 	FileIndex::Item *it;
 	for (int i = 0; i < size; ++i) {
 		it = new FileIndex::Item;
 		it->deserialize(in);
 		_index.push_back(it);
 	}
-	setSearchType(static_cast<IndexService::SearchType>(T));
 	qDebug() << "[FileIndex]\tLoaded " << _index.size() << " files.";
+}
+
+/**************************************************************************/
+void FileIndex::query(const QString &req, QVector<Service::Item *> *res) const
+{
+	_search.query(req, res);
 }
 
 /**************************************************************************/
@@ -127,8 +135,30 @@ void FileIndex::buildIndex()
 
 	qDebug() << "[FileIndex]\tLooking in: " << _paths;
 
-	for ( const QString &p : _paths) {
-		QDirIterator it(p, QDirIterator::Subdirectories);
+	for (const QString &p : _paths)
+		addPath(p);
+
+	qDebug() << "[FileIndex]\tFound " << _index.size() << " files.";
+	_search.buildIndex();
+}
+
+/**************************************************************************/
+bool FileIndex::addPath(const QString &path)
+{
+	QFileInfo fi(path);
+	if (!fi.exists())
+		return false;
+
+	if (_paths.contains(path))
+		return true;
+
+	if (!_watcher.addPath(path))
+		return false;
+
+	_paths << path;
+
+	if (fi.isDir()){
+		QDirIterator it(fi.canonicalFilePath(), QDirIterator::Subdirectories);
 		while (it.hasNext()) {
 			it.next();
 			if (it.fileInfo().isHidden() && !_indexHiddenFiles)
@@ -138,7 +168,34 @@ void FileIndex::buildIndex()
 			_index.push_back(i);
 		}
 	}
+	else if (fi.isFile() || (!fi.isHidden() || _indexHiddenFiles) ) {
+		Item *i = new Item;
+		i->_fileInfo = fi;
+		_index.push_back(i);
+	}
 
-	qDebug() << "[FileIndex]\tFound " << _index.size() << " files.";
-	prepareSearch();
+	qDebug() << "[FileIndex]\tAdded" << path;
+	_search.buildIndex();
+	return true;
+}
+
+/**************************************************************************/
+void FileIndex::removePath(const QString &path)
+{
+	_watcher.removePath(path);
+
+	QFileInfo fi(path);
+	if (fi.isFile() || (!fi.isHidden() || _indexHiddenFiles) )
+		for (QList<Service::Item*>::iterator it = _index.begin(); it != _index.end();)
+			((*it)->infoText().startsWith(path))?it = _index.erase(it):++it;
+
+	qDebug() << "[FileIndex]\tRemoved" << path;
+	_search.buildIndex();
+}
+
+/**************************************************************************/
+void FileIndex::HAPPENING(const QString &path)
+{
+	qDebug() << "WOW:" << path;
+
 }

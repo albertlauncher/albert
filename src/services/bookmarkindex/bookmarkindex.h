@@ -17,16 +17,16 @@
 #ifndef BOOKMARKINDEX_H
 #define BOOKMARKINDEX_H
 
-#include "indexservice.h"
+#include "search/search.h"
 
-class BookmarkIndex : public IndexService
+class BookmarkIndex : public Service
 {
 	friend class BookmarkIndexWidget;
 
 public:
 	class Item;
 
-	BookmarkIndex(){}
+	BookmarkIndex();
 	~BookmarkIndex();
 
 	QWidget* widget() override;
@@ -40,13 +40,16 @@ public:
 	void serilizeData(QDataStream &out) const override;
 	void deserilizeData(QDataStream &in) override;
 
+	void query(const QString &req, QVector<Service::Item*> *res) const override;
 	void queryFallback(const QString&, QVector<Service::Item*>*) const override;
 
 protected:
-	void buildIndex() override;
+	void buildIndex();
 
 private:
 	QString _path;
+	QList<Service::Item*> _index;
+	Search _search;
 };
 
 #endif // BOOKMARKINDEX_H

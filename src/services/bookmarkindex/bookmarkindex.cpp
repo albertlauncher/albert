@@ -28,6 +28,11 @@
 #include <QStandardPaths>
 
 /**************************************************************************/
+BookmarkIndex::BookmarkIndex() : _search(_index)
+{
+}
+
+/**************************************************************************/
 BookmarkIndex::~BookmarkIndex()
 {
 	for(Service::Item *i : _index)
@@ -51,7 +56,7 @@ void BookmarkIndex::initialize()
 /**************************************************************************/
 void BookmarkIndex::restoreDefaults()
 {
-	setSearchType(SearchType::WordMatch);
+	_search.setSearchType(Search::Type::WordMatch);
 	_path = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
 			+ "/chromium/Default/Bookmarks";
 }
@@ -62,7 +67,7 @@ void BookmarkIndex::saveSettings(QSettings &s) const
 	// Save settings
 	s.beginGroup("BookmarkIndex");
 	s.setValue("Path", _path);
-	s.setValue("SearchType", static_cast<int>(searchType()));
+	s.setValue("SearchType", static_cast<int>(_search.searchType()));
 	s.endGroup();
 }
 
@@ -74,7 +79,7 @@ void BookmarkIndex::loadSettings(QSettings &s)
 	_path = s.value("Path",
 					QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
 					+ "/chromium/Default/Bookmarks").toString();
-	setSearchType(static_cast<SearchType>(s.value("SearchType",1).toInt()));
+	_search.setSearchType(static_cast<Search::Type>(s.value("SearchType",1).toInt()));
 	s.endGroup();
 }
 
@@ -82,7 +87,7 @@ void BookmarkIndex::loadSettings(QSettings &s)
 void BookmarkIndex::serilizeData(QDataStream &out) const
 {
 	// Serialize data
-	out << _index.size() << static_cast<int>(searchType());
+	out << _index.size();
 	for (Service::Item *it : _index)
 		static_cast<BookmarkIndex::Item*>(it)->serialize(out);
 }
@@ -91,16 +96,21 @@ void BookmarkIndex::serilizeData(QDataStream &out) const
 void BookmarkIndex::deserilizeData(QDataStream &in)
 {
 	// Deserialize the index
-	int size,T;
-	in >> size >> T;
+	int size;
+	in >> size;
 	BookmarkIndex::Item *it;
 	for (int i = 0; i < size; ++i) {
 		it = new BookmarkIndex::Item;
 		it->deserialize(in);
 		_index.push_back(it);
 	}
-	setSearchType(static_cast<IndexService::SearchType>(T));
 	qDebug() << "[BookmarkIndex]\tLoaded " << _index.size() << " bookmarks.";
+}
+
+/**************************************************************************/
+void BookmarkIndex::query(const QString &req, QVector<Service::Item *> *res) const
+{
+	_search.query(req, res);
 }
 
 /**************************************************************************/
@@ -150,6 +160,6 @@ void BookmarkIndex::buildIndex()
 			rec_bmsearch(i.toObject());
 
 	qDebug() << "[BookmarkIndex]\tFound " << _index.size() << " bookmarks.";
-	prepareSearch();
+	_search.buildIndex();
 }
 

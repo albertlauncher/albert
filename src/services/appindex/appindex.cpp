@@ -27,6 +27,20 @@
 #include "windows.h"
 #endif
 /**************************************************************************/
+AppIndex::AppIndex() : _search(_index)
+{
+	// Rebuild index if something changed
+	connect(&_watcher, &QFileSystemWatcher::fileChanged, [&](){
+		buildIndex();
+		qDebug() << "[ApplicationIndex]\tIndex rebuilt";
+	});
+	connect(&_watcher, &QFileSystemWatcher::directoryChanged, [&](){
+		buildIndex();
+		qDebug() << "[ApplicationIndex]\tIndex rebuilt";
+	});
+}
+
+/**************************************************************************/
 AppIndex::~AppIndex()
 {
 	for(Service::Item *i : _index)
@@ -50,8 +64,8 @@ void AppIndex::initialize()
 /**************************************************************************/
 void AppIndex::restoreDefaults()
 {
-	setSearchType(SearchType::WordMatch);
-	_paths = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
+	_search.setSearchType(Search::Type::WordMatch);
+	_watcher.addPaths(QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation));
 }
 
 /**************************************************************************/
@@ -59,8 +73,8 @@ void AppIndex::saveSettings(QSettings &s) const
 {
 	// Save settings
 	s.beginGroup("AppIndex");
-	s.setValue("Paths", _paths);
-	s.setValue("SearchType", static_cast<int>(searchType()));
+	s.setValue("Paths", _watcher.directories());
+	s.setValue("SearchType", static_cast<int>(_search.searchType()));
 	s.endGroup();
 }
 
@@ -69,9 +83,9 @@ void AppIndex::loadSettings(QSettings &s)
 {
 	// Load settings
 	s.beginGroup("AppIndex");
-	_paths = s.value("Paths", QStandardPaths::standardLocations(
-						 QStandardPaths::ApplicationsLocation)).toStringList();
-	setSearchType(static_cast<SearchType>(s.value("SearchType",1).toInt()));
+	_watcher.addPaths(s.value("Paths", QStandardPaths::standardLocations(
+						 QStandardPaths::ApplicationsLocation)).toStringList());
+	_search.setSearchType(static_cast<Search::Type>(s.value("SearchType",1).toInt()));
 	s.endGroup();
 }
 
@@ -79,8 +93,7 @@ void AppIndex::loadSettings(QSettings &s)
 void AppIndex::serilizeData(QDataStream &out) const
 {
 	// Serialize data
-	out << _index.size()
-		<< static_cast<int>(searchType());
+	out << _index.size();
 	for (Service::Item *it : _index)
 		static_cast<AppIndex::Item*>(it)->serialize(out);
 }
@@ -89,16 +102,21 @@ void AppIndex::serilizeData(QDataStream &out) const
 void AppIndex::deserilizeData(QDataStream &in)
 {
 	// Deserialize the index
-	int size, T;
-	in >> size >> T;
+	int size;
+	in >> size;
 	AppIndex::Item *it;
 	for (int i = 0; i < size; ++i) {
 		it = new AppIndex::Item;
 		it->deserialize(in);
 		_index.push_back(it);
 	}
-	setSearchType(static_cast<IndexService::SearchType>(T));
 	qDebug() << "[ApplicationIndex]\tLoaded " << _index.size() << " apps.";
+}
+
+/**************************************************************************/
+void AppIndex::query(const QString &req, QVector<Service::Item *> *res) const
+{
+	_search.query(req, res);
 }
 
 /**************************************************************************/
@@ -110,14 +128,16 @@ void AppIndex::queryFallback(const QString &, QVector<Service::Item *> *) const
 /**************************************************************************/
 void AppIndex::buildIndex()
 {
+	emit beginBuildIndex();
+
 	for(Service::Item *i : _index)
 		delete i;
 	_index.clear();
 
-	qDebug() << "[ApplicationIndex]\tLooking in: " << _paths;
+	qDebug() << "[ApplicationIndex]\tLooking in: " << _watcher.directories();
 
 #ifdef Q_OS_LINUX
-	for ( const QString &p : _paths) {
+	for ( const QString &p : _watcher.directories()) {
 		QDirIterator it(p, QDirIterator::Subdirectories);
 		while (it.hasNext()) {
 			it.next();
@@ -169,11 +189,11 @@ void AppIndex::buildIndex()
 			exec.remove(QRegExp("%."));
 
 			Item *i = new Item;
-			i->_name     = name;
-			i->_info     = (desktopfile["Comment"].isEmpty())?desktopfile["GenericName"]:desktopfile["Comment"];
-			i->_iconName = desktopfile["Icon"];
-			i->_exec     = exec;
-			i->_term     = term;
+			i->_name = name;
+			i->_info = (desktopfile["Comment"].isEmpty())?desktopfile["GenericName"]:desktopfile["Comment"];
+			i->_icon = getIcon(desktopfile["Icon"]);
+			i->_exec = exec;
+			i->_term = term;
 			_index.push_back(i);
 		}
 	}
@@ -263,7 +283,77 @@ void AppIndex::buildIndex()
 #endif
 
 	qDebug() << "[ApplicationIndex]\tFound " << _index.size() << " apps.";
-	prepareSearch();
+	_search.buildIndex();
+
+	emit endBuildIndex();
 }
 
+/**************************************************************************/
+QIcon AppIndex::getIcon(QString iconName)
+{
+
+	/* Icons and themes are looked for in a set of directories. By default,
+	 * apps should look in $HOME/.icons (for backwards compatibility), in
+	 * $XDG_DATA_DIRS/icons and in /usr/share/pixmaps (in that order).
+	 * Applications may further add their own icon directories to this list,
+	 * and users may extend or change the list (in application/desktop specific
+	 * ways).In each of these directories themes are stored as subdirectories.
+	 * A theme can be spread across several base directories by having
+	 * subdirectories of the same name. This way users can extend and override
+	 * system themes.
+	 *
+	 * In order to have a place for third party applications to install their
+	 * icons there should always exist a theme called "hicolor" [1]. The data
+	 * for the hicolor theme is available for download at:
+	 * http://www.freedesktop.org/software/icon-theme/. Implementations are
+	 * required to look in the "hicolor" theme if an icon was not found in the
+	 * current theme.*/
+
+	// PATH
+	if (iconName.startsWith('/'))
+		return QIcon(iconName);
+
+	// Strip suffix
+	QString strippedIconName = iconName;
+	if (strippedIconName.contains('.'))
+		strippedIconName =  strippedIconName.section('.',0,-2);
+
+	if (QIcon::hasThemeIcon(strippedIconName)) // HORRIBLY BUGGY QTBUG-42239 CHNAGE WITH Qt5.4
+		return QIcon::fromTheme(strippedIconName);
+
+	// Implementation for desktop specs
+	QStringList paths, themes, sizes;
+	paths << QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+	themes << QIcon::themeName() << "hicolor";
+	sizes << "scalable" << "512x512" << "384x384" << "256x256" << "192x192"
+		  << "128x128" << "96x96" << "72x72" << "64x64" << "48x48" << "42x42"
+		  << "36x36" << "32x32" << "24x24" << "22x22" << "16x16" << "8x8";
+
+//	for (const QString & p : paths){
+//		for (const QString & t : themes){
+//			for (const QString & s : sizes){
+//				qDebug() << QString("%1/icons/%2/%3/apps").arg(p,t,s);
+//				QDirIterator it(QString("%1/icons/%2/%3/apps").arg(p,t,s), QDirIterator::FollowSymlinks);
+//				while (it.hasNext()){
+//					it.next();
+//					QFileInfo fi = it.fileInfo();
+//					if (fi.isFile() && fi.baseName() == strippedIconName)
+//						return QIcon(fi.canonicalFilePath());
+//				}
+//			}
+//		}
+//	}
+
+	// PIXMAPS
+	QDirIterator it("/usr/share/pixmaps", QDirIterator::Subdirectories);
+	while (it.hasNext()) {
+		it.next();
+		QFileInfo fi = it.fileInfo();
+		if (fi.isFile() && fi.baseName() == strippedIconName)
+			return QIcon(fi.canonicalFilePath());
+	}
+
+	//UNKNOWN
+	return QIcon::fromTheme("unknown");
+}
 

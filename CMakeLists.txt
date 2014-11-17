@@ -26,8 +26,8 @@ set(SRCS
 	src/main.cpp
 	src/engine.cpp
 	src/util/hotkey/globalhotkey.cpp
+	src/util/search/search.cpp
 	src/services/service.h
-	src/services/indexservice.cpp
 	src/services/appindex/appindexwidget.cpp
 	src/services/appindex/appindex.cpp
 	src/services/appindex/appitem.cpp

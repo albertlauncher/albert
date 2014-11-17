@@ -28,7 +28,7 @@ class AppIndex::Item : public Service::Item
 
 public:
 	inline QString title() const override {return _name;}
-	QIcon icon() const override;
+	QIcon icon() const override	{return _icon;}
 	inline QString infoText() const override {return _info;}
 	inline QString complete() const override {return _name;}
 
@@ -40,7 +40,7 @@ public:
 protected:
 	QString _name;
 	QString _info;
-	QString _iconName;
+	QIcon   _icon;
 	QString _exec;
 	bool    _term;
 
