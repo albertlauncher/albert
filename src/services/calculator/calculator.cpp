@@ -81,8 +81,6 @@ void Calculator::query(const QString &req, QVector<Service::Item *> *res) const
 {
 	_p->SetExpr(req.toStdString());
 	try {
-		std::cout << _p->Eval() << std::endl;
-		_theOneAndOnly->_result = QString::number((double) _p->Eval());
 		_theOneAndOnly->_result = loc.toString(_p->Eval());
 	}
 	catch (mu::Parser::exception_type &e) {
