@@ -44,21 +44,18 @@ QWidget *FileIndex::widget()
 /**************************************************************************/
 void FileIndex::initialize()
 {
-	restoreDefaults();
 	buildIndex();
 }
 
 /**************************************************************************/
-void FileIndex::restoreDefaults()
+void FileIndex::restorePaths()
 {
-	_search.setSearchType(Search::Type::WordMatch);
-	_paths.clear();
-	_paths << QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)
-		   << QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-		   << QStandardPaths::writableLocation(QStandardPaths::MusicLocation)
-		   << QStandardPaths::writableLocation(QStandardPaths::MoviesLocation)
-		   << QStandardPaths::writableLocation(QStandardPaths::PicturesLocation)
-		   << QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+	_paths = QStringList({QStandardPaths::writableLocation(QStandardPaths::DesktopLocation),
+						  QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+						  QStandardPaths::writableLocation(QStandardPaths::MusicLocation),
+						  QStandardPaths::writableLocation(QStandardPaths::MoviesLocation),
+						  QStandardPaths::writableLocation(QStandardPaths::PicturesLocation),
+						  QStandardPaths::writableLocation(QStandardPaths::DownloadLocation)});
 }
 
 /**************************************************************************/

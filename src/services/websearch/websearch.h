@@ -33,7 +33,6 @@ public:
 	inline QString moduleName() override {return "WebSearch";}
 
 	void initialize() override;
-	void restoreDefaults() override;
 
 	void saveSettings(QSettings &s) const override;
 	void loadSettings(QSettings &s) override;
@@ -47,6 +46,8 @@ public:
 	QString defaultSearchText(const QString& term) const;
 
 private:
+	void restoreDefaults();
+
 	QVector<Item*> _searchEngines;
 };
 

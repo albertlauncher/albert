@@ -39,12 +39,6 @@ void Calculator::initialize()
 }
 
 /**************************************************************************/
-void Calculator::restoreDefaults()
-{
-
-}
-
-/**************************************************************************/
 void Calculator::saveSettings(QSettings &s) const
 {
 	// Save settings

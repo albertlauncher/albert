@@ -49,16 +49,9 @@ QWidget *BookmarkIndex::widget()
 /**************************************************************************/
 void BookmarkIndex::initialize()
 {
-	restoreDefaults();
-	buildIndex();
-}
-
-/**************************************************************************/
-void BookmarkIndex::restoreDefaults()
-{
-	_search.setSearchType(Search::Type::WordMatch);
 	_path = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
 			+ "/chromium/Default/Bookmarks";
+	buildIndex();
 }
 
 /**************************************************************************/

@@ -37,7 +37,6 @@ public:
 	inline QString moduleName() override {return "FileFinder";}
 
 	void initialize() override;
-	void restoreDefaults() override;
 
 	void saveSettings(QSettings &s) const override;
 	void loadSettings(QSettings &s) override;
@@ -48,6 +47,8 @@ public:
 	void queryFallback(const QString&, QVector<Service::Item*>*) const override;
 
 private:
+	void restorePaths();
+
 	QList<Service::Item*> _index;
 	Search                _search;
 	QFileSystemWatcher    _watcher;

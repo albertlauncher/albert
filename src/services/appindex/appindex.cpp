@@ -57,14 +57,14 @@ QWidget *AppIndex::widget()
 /**************************************************************************/
 void AppIndex::initialize()
 {
-	restoreDefaults();
+	restorePaths();
 	buildIndex();
 }
 
 /**************************************************************************/
-void AppIndex::restoreDefaults()
+void AppIndex::restorePaths()
 {
-	_search.setSearchType(Search::Type::WordMatch);
+	_watcher.removePaths(_watcher.directories());
 	_watcher.addPaths(QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation));
 }
 

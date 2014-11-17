@@ -58,7 +58,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pb_restoreDefaults">
+         <widget class="QPushButton" name="pb_restorePaths">
           <property name="text">
            <string>Restore</string>
           </property>

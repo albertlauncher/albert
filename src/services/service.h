@@ -102,7 +102,6 @@ public:
 	virtual ~Service(){}
 
 	virtual void initialize() = 0;
-	virtual void restoreDefaults() = 0;
 
 	virtual void saveSettings(QSettings &s) const = 0;
 	virtual void loadSettings(QSettings &s) = 0;

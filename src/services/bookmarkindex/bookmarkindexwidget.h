@@ -33,7 +33,6 @@ protected:
 	BookmarkIndex *_ref;
 
 protected slots:
-	void restoreDefaults();
 	void updateUI();
 
 	void onSearchTypeChanged(int);

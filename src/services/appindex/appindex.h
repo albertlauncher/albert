@@ -37,7 +37,6 @@ public:
 	inline QString moduleName() override {return "AppIndex";}
 
 	void initialize() override;
-	void restoreDefaults() override;
 
 	void saveSettings(QSettings &s) const override;
 	void loadSettings(QSettings &s) override;
@@ -49,6 +48,7 @@ public:
 
 private:
 	void buildIndex();
+	void restorePaths();
 	QIcon getIcon(QString iconName);
 
 	QList<Service::Item*> _index;

@@ -22,18 +22,3 @@ CalculatorWidget::CalculatorWidget(Calculator *srv, QWidget *parent) :
 {
 	ui.setupUi(this);
 }
-
-
-/**************************************************************************/
-void CalculatorWidget::restoreDefaults()
-{
-	_ref->restoreDefaults();
-	updateUI();
-}
-
-/**************************************************************************/
-void CalculatorWidget::updateUI()
-{
-
-}
-

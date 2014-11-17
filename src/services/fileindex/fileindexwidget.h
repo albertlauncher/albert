@@ -33,13 +33,12 @@ protected:
 	FileIndex *_ref;
 
 protected slots:
-	void restoreDefaults();
-	void updateUI();
+	void onButton_AddPath();
+	void onButton_RemovePath();
+	void onButton_RestorePaths();
 
-	void oncb_searchTypeChanged(int);
-	void onButton_add();
-	void onButton_remove();
 	void rebuildIndex();
+	void oncb_searchTypeChanged(int);
 	void onCheckbox_toggle(bool);
 };
 

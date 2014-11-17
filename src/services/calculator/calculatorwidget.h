@@ -31,10 +31,6 @@ public:
 
 protected:
 	Calculator *_ref;
-
-protected slots:
-	void restoreDefaults();
-	void updateUI();
 };
 
 #endif // CALCULATORWIDGET_H

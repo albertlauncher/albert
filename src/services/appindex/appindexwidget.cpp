@@ -28,7 +28,9 @@ AppIndexWidget::AppIndexWidget(AppIndex *srv, QWidget *parent) :
 	ui.setupUi(this);
 
 	//Get data from reference and initilize the ui
-	updateUI();
+	ui.lw_paths->clear();
+	ui.lw_paths->addItems(_ref->_watcher.directories());
+	ui.cb_searchType->setCurrentIndex(static_cast<int>(_ref->_search.searchType()));
 
 	/* Connect all the onliners */
 
@@ -56,7 +58,7 @@ AppIndexWidget::AppIndexWidget(AppIndex *srv, QWidget *parent) :
 	// Connect the explicitely implemented (long) slots
 	connect(ui.pb_addPath, SIGNAL(clicked()), this, SLOT(onButton_PathAdd()));
 	connect(ui.pb_removePath, SIGNAL(clicked()), this, SLOT(onButton_PathRemove()));
-	connect(ui.pb_restoreDefaults, SIGNAL(clicked()), this, SLOT(restoreDefaults()));
+	connect(ui.pb_restorePaths, SIGNAL(clicked()), this, SLOT(onButton_RestorePaths()));
 }
 
 
@@ -91,16 +93,10 @@ void AppIndexWidget::onButton_PathRemove()
 
 
 /**************************************************************************/
-void AppIndexWidget::restoreDefaults()
+void AppIndexWidget::onButton_RestorePaths()
 {
-	_ref->restoreDefaults();
-	updateUI();
-}
-
-/**************************************************************************/
-void AppIndexWidget::updateUI()
-{
+	_ref->restorePaths();
 	ui.lw_paths->clear();
 	ui.lw_paths->addItems(_ref->_watcher.directories());
-	ui.cb_searchType->setCurrentIndex(static_cast<int>(_ref->_search.searchType()));
 }
+

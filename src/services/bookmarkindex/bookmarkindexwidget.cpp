@@ -33,7 +33,6 @@ BookmarkIndexWidget::BookmarkIndexWidget(BookmarkIndex *srv, QWidget *parent) :
 	connect(ui.cb_SearchType,SIGNAL(activated(int)),this,SLOT(onSearchTypeChanged(int)));
 	connect(ui.pb_editPath, SIGNAL(clicked()), this , SLOT(editPath()));
 	connect(ui.pb_rebuildIndex, SIGNAL(clicked()), this , SLOT(rebuildIndex()));
-	connect(ui.pb_restoreDefaults, SIGNAL(clicked()), this , SLOT(restoreDefaults()));
 
 }
 
@@ -74,13 +73,6 @@ void BookmarkIndexWidget::rebuildIndex()
 	QTimer::singleShot(1000, ui.lbl_info, SLOT(clear()));
 }
 
-
-/**************************************************************************/
-void BookmarkIndexWidget::restoreDefaults()
-{
-	_ref->restoreDefaults();
-	updateUI();
-}
 
 /**************************************************************************/
 void BookmarkIndexWidget::updateUI()

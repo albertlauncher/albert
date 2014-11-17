@@ -34,7 +34,6 @@ public:
 	inline QString moduleName() override {return "Calculator";}
 
 	void initialize() override;
-	void restoreDefaults() override;
 
 	void saveSettings(QSettings &s) const override;
 	void loadSettings(QSettings &s) override;

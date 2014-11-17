@@ -33,10 +33,9 @@ protected:
 	AppIndex *_ref;
 
 protected slots:
-	void restoreDefaults();
-	void updateUI();
 	void onButton_PathAdd();
 	void onButton_PathRemove();
+	void onButton_RestorePaths();
 };
 
 #endif // APPINDEXWIDGET_H
