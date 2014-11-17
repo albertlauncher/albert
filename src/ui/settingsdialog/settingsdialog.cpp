@@ -48,19 +48,21 @@ SettingsWidget::SettingsWidget(MainWidget *ref)
 	ui.pb_hotkey->setText((hk==0)
 				  ? "Press to set hotkey"
 				  : QKeySequence(hk).toString());
-	connect(ui.pb_hotkey, SIGNAL(clicked()),
-			this, SLOT(onPbHotkeyPressed()));
+	connect(ui.pb_hotkey, &QPushButton::clicked,
+			this, &SettingsWidget::onPbHotkeyPressed);
 
 
 
 	// Always center
 	ui.cb_center->setChecked(_mainWidget->_showCentered);
-	connect(ui.cb_center, SIGNAL(clicked(bool)), this, SLOT(onShowCenteredChanged(bool)));
+	connect(ui.cb_center, &QCheckBox::clicked,
+			this, &SettingsWidget::onShowCenteredChanged);
 
 
 	// Max History
 	ui.sb_maxHistory->setValue(_mainWidget->_inputLine->_history._max);
-	connect(ui.sb_maxHistory, SIGNAL(valueChanged(int)), this, SLOT(onMaxHistoryChanged(int)));
+	connect(ui.sb_maxHistory, (void (QSpinBox::*)(int))&QSpinBox::valueChanged,
+			this, &SettingsWidget::onMaxHistoryChanged);
 
 
 	/* GENERAL */
@@ -68,19 +70,20 @@ SettingsWidget::SettingsWidget(MainWidget *ref)
 	ui.spinBox_proposals->setValue(_mainWidget->_proposalListView->_nItemsToShow);
 
 	// Apply changes made to the amount of proposals
-	connect(ui.spinBox_proposals, SIGNAL(valueChanged(int)), this, SLOT(onNItemsChanged(int)));
+	connect(ui.spinBox_proposals, (void (QSpinBox::*)(int))&QSpinBox::valueChanged,
+			this, &SettingsWidget::onNItemsChanged);
 
 	// Load subtext mode for selected items
 	ui.cb_subModeSel->setCurrentIndex((int)_mainWidget->_proposalListView->_selSubtextMode);
 	// Apply changes made to subtext mode of selected items
-	connect(ui.cb_subModeSel, SIGNAL(currentIndexChanged(int)),
-			this, SLOT(onSubModeSelChanged(int)));
+	connect(ui.cb_subModeSel, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged,
+			this, &SettingsWidget::onSubModeSelChanged);
 
 	// Load subtext mode for unselected items
 	ui.cb_subModeDef->setCurrentIndex((int)_mainWidget->_proposalListView->_defSubtextMode);
 	// Apply changes made to subtext mode of "UN"selected items
-	connect(ui.cb_subModeDef, SIGNAL(currentIndexChanged(int)),
-			this, SLOT(onSubModeDefChanged(int)));
+	connect(ui.cb_subModeDef, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged,
+			this, &SettingsWidget::onSubModeDefChanged);
 
 
 
@@ -101,21 +104,21 @@ SettingsWidget::SettingsWidget(MainWidget *ref)
 	}
 
 	// Apply a skin if clicked
-	connect(ui.cb_themes, SIGNAL(currentIndexChanged(int)),
-			this, SLOT(onThemeChanged(int)));
+	connect(ui.cb_themes, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged,
+			this, &SettingsWidget::onThemeChanged);
 
 
 
 	/* ACTION MODIFIERS */
 	ui.cb_modActionCtrl->setCurrentIndex(_mainWidget->_proposalListView->_actionCtrl);
-	connect(ui.cb_modActionCtrl, SIGNAL(currentIndexChanged(int)),
-			this, SLOT(modActionCtrlChanged(int)));
+	connect(ui.cb_modActionCtrl, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged,
+			this, &SettingsWidget::modActionCtrlChanged);
 	ui.cb_modActionMeta->setCurrentIndex(_mainWidget->_proposalListView->_actionMeta);
-	connect(ui.cb_modActionMeta, SIGNAL(currentIndexChanged(int)),
-			this, SLOT(modActionMetaChanged(int)));
+	connect(ui.cb_modActionMeta, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged,
+			this, &SettingsWidget::modActionMetaChanged);
 	ui.cb_modActionAlt->setCurrentIndex(_mainWidget->_proposalListView->_actionAlt);
-	connect(ui.cb_modActionAlt, SIGNAL(currentIndexChanged(int)),
-			this, SLOT(modActionAltChanged(int)));
+	connect(ui.cb_modActionAlt, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged,
+			this, &SettingsWidget::modActionAltChanged);
 
 
 

@@ -36,12 +36,12 @@ FileIndexWidget::FileIndexWidget(FileIndex *srv, QWidget *parent) :
 	ui.cb_searchType->setCurrentIndex(static_cast<int>(_ref->_search.searchType()));
 
 	// Rect to changes
-	connect(ui.cb_searchType,SIGNAL(activated(int)),this,SLOT(oncb_searchTypeChanged(int)));
-	connect(ui.pb_add, SIGNAL(clicked()), this, SLOT(onButton_AddPath()));
-	connect(ui.pb_remove, SIGNAL(clicked()), this, SLOT(onButton_RemovePath()));
-	connect(ui.pb_restore, SIGNAL(clicked()), this, SLOT(onButton_RestorePaths()));
-	connect(ui.pb_rebuildIndex, SIGNAL(clicked()), this, SLOT(rebuildIndex()));
-	connect(ui.cb_hiddenFiles, SIGNAL(toggled(bool)), this, SLOT(onCheckbox_toggle(bool)));
+	connect(ui.cb_searchType, (void (QComboBox::*)(int))&QComboBox::activated, this, &FileIndexWidget::oncb_searchTypeChanged);
+	connect(ui.pb_add, &QPushButton::clicked, this, &FileIndexWidget::onButton_AddPath);
+	connect(ui.pb_remove, &QPushButton::clicked, this, &FileIndexWidget::onButton_RemovePath);
+	connect(ui.pb_restore, &QPushButton::clicked, this, &FileIndexWidget::onButton_RestorePaths);
+	connect(ui.pb_rebuildIndex, &QPushButton::clicked, this, &FileIndexWidget::rebuildIndex);
+	connect(ui.cb_hiddenFiles, &QCheckBox::toggled, this, &FileIndexWidget::onCheckbox_toggle);
  }
 
 /**************************************************************************/

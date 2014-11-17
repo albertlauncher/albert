@@ -30,10 +30,9 @@ BookmarkIndexWidget::BookmarkIndexWidget(BookmarkIndex *srv, QWidget *parent) :
 	updateUI();
 
 	// Rect to changes
-	connect(ui.cb_SearchType,SIGNAL(activated(int)),this,SLOT(onSearchTypeChanged(int)));
-	connect(ui.pb_editPath, SIGNAL(clicked()), this , SLOT(editPath()));
-	connect(ui.pb_rebuildIndex, SIGNAL(clicked()), this , SLOT(rebuildIndex()));
-
+	connect(ui.cb_SearchType, (void (QComboBox::*)(int))&QComboBox::activated, this, &BookmarkIndexWidget::onSearchTypeChanged);
+	connect(ui.pb_editPath, &QPushButton::clicked, this, &BookmarkIndexWidget::editPath);
+	connect(ui.pb_rebuildIndex, &QPushButton::clicked, this, &BookmarkIndexWidget::rebuildIndex);
 }
 
 /**************************************************************************/

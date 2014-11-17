@@ -135,17 +135,22 @@ MainWidget::MainWidget(QWidget *parent)
 	/* SETUP SIGNAL FLOW */
 
 	// A change in text triggers requests
-	connect(_inputLine, SIGNAL(textChanged(QString)), _engine, SLOT(query(QString)));
+	connect(_inputLine, &QLineEdit::textChanged,
+			_engine, &Engine::query);
 
 	// Proposallistview tells Inputline to change text on completion.
-	connect(_proposalListView, SIGNAL(completion(QString)), _inputLine, SLOT(setText(QString)));
+	connect(_proposalListView, &ProposalListView::completion,
+			_inputLine, &QLineEdit::setText);
 
 	// Bottonpress or shortcuts op settings dialog, and close albert once
-	connect(_inputLine, SIGNAL(settingsDialogRequested()), this, SLOT(hide()));
-	connect(_inputLine, SIGNAL(settingsDialogRequested()), _settingsDialog, SLOT(show()));
+	connect(_inputLine, &InputLine::settingsDialogRequested,
+			this, &MainWidget::hide);
+	connect(_inputLine, &InputLine::settingsDialogRequested,
+			_settingsDialog, (void (SettingsWidget::*)())&SettingsWidget::show);
 
 	// Show mainwidget if hotkey is pressed
-	connect(&_hotkeyManager, SIGNAL(hotKeyPressed()), this, SLOT(toggleVisibility()));
+	connect(&_hotkeyManager, &GlobalHotkey::hotKeyPressed,
+			this, &MainWidget::toggleVisibility);
 
 
 

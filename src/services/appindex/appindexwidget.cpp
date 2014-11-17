@@ -56,11 +56,10 @@ AppIndexWidget::AppIndexWidget(AppIndex *srv, QWidget *parent) :
 	});
 
 	// Connect the explicitely implemented (long) slots
-	connect(ui.pb_addPath, SIGNAL(clicked()), this, SLOT(onButton_PathAdd()));
-	connect(ui.pb_removePath, SIGNAL(clicked()), this, SLOT(onButton_PathRemove()));
-	connect(ui.pb_restorePaths, SIGNAL(clicked()), this, SLOT(onButton_RestorePaths()));
+	connect(ui.pb_addPath, &QPushButton::clicked, this, &AppIndexWidget::onButton_PathAdd);
+	connect(ui.pb_removePath, &QPushButton::clicked, this, &AppIndexWidget::onButton_PathRemove);
+	connect(ui.pb_restorePaths, &QPushButton::clicked, this, &AppIndexWidget::onButton_RestorePaths);
 }
-
 
 /**************************************************************************/
 void AppIndexWidget::onButton_PathAdd()
