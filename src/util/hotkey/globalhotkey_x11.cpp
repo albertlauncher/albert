@@ -83,6 +83,7 @@ static Qt_XK_Keymap Qt_XKSym_table[] = {
 	{ Qt::Key_Control,     {2, { XK_Control_L, XK_Control_R }}},
 	{ Qt::Key_Meta,        {2, { XK_Meta_L, XK_Meta_R }}},
 	{ Qt::Key_Alt,         {2, { XK_Alt_L, XK_Alt_R }}},
+	{ Qt::Key_Menu,        {1, { XK_Menu }}},
 	{ Qt::Key_Space,       {1, { XK_space }}},
 	{ Qt::Key_Return,      {1, { XK_Return }}},
 	{ Qt::Key_Asterisk,    {1, { XK_asterisk }}},
