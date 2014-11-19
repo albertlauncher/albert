@@ -27,6 +27,7 @@ set(SRCS
 	src/main.cpp
 	src/engine.cpp
 	src/util/hotkey/globalhotkey.cpp
+	src/util/hotkey/globalhotkey_p.h
 	src/util/search/abstractsearch.h
 	src/util/search/fuzzysearch.cpp
 	src/util/search/wordmatchsearch.cpp
