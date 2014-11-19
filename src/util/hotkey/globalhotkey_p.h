@@ -19,6 +19,7 @@
 
 #include "globalhotkey.h"
 #include <QObject>
+#include <QVector>
 #include <QAbstractNativeEventFilter>
 
 class GlobalHotkey::GlobalHotkeyPrivate : public QObject, public QAbstractNativeEventFilter
@@ -28,10 +29,24 @@ class GlobalHotkey::GlobalHotkeyPrivate : public QObject, public QAbstractNative
 public:
 	GlobalHotkeyPrivate(QObject* parent = 0);
 
-    bool registerNativeHotkey(const int hk);
+	bool registerNativeHotkey(const int hk);
 	void unregisterNativeHotkeys();
 
+private:
+	struct Qt_XK_Keygroup { char num; int sym[3]; };
+	struct Qt_XK_Keymap { int key; Qt_XK_Keygroup xk; };
+	struct GrabbedKey { uint mod; int code; };
+
 	bool nativeEventFilter(const QByteArray&, void*, long*) override;
+
+	u_int16_t _alt_mask;
+	u_int16_t _meta_mask;
+	u_int16_t _super_mask;
+	u_int16_t _hyper_mask;
+	u_int16_t _numlock_mask;
+
+	QVector<GrabbedKey> _grabbedKeys;
+	static Qt_XK_Keymap Qt_XKSym_table[];
 
 signals:
 	 void hotKeyPressed();
