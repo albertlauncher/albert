@@ -17,7 +17,7 @@
 #ifndef WEBSEARCH_H
 #define WEBSEARCH_H
 
-#include "service.h"
+#include "abstractservice.h"
 
 class WebSearch : public Service
 {

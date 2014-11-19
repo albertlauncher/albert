@@ -30,7 +30,7 @@ Engine::Engine()
 	_modules.push_back(new Calculator);
 	_modules.push_back(new AppIndex);
 	_modules.push_back(new BookmarkIndex);
-	_modules.push_back(new FileIndex);
+//	_modules.push_back(new FileIndex);
 
 }
 

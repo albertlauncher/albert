@@ -24,20 +24,16 @@
 class BookmarkIndexWidget : public QWidget
 {
 	Q_OBJECT
-	Ui::BookmarkIndexWidget ui;
 
 public:
 	explicit BookmarkIndexWidget(BookmarkIndex*, QWidget *parent = 0);
 
-protected:
-	BookmarkIndex *_ref;
+private:
+	BookmarkIndex *_index;
+	Ui::BookmarkIndexWidget ui;
 
 protected slots:
-	void updateUI();
-
-	void onSearchTypeChanged(int);
-	void editPath();
-	void rebuildIndex();
+	void onButton_EditPath();
 };
 
 #endif // BOOKMARKINDEXWIDGET_H

@@ -16,6 +16,7 @@ include_directories(
 	src/
 	src/util/
 	src/util/hotkey/
+	src/util/search/
 	src/services/
 	src/ui/mainwidget/
 	src/ui/settingsdialog/
@@ -26,8 +27,12 @@ set(SRCS
 	src/main.cpp
 	src/engine.cpp
 	src/util/hotkey/globalhotkey.cpp
-	src/util/search/search.cpp
-	src/services/service.h
+	src/util/search/abstractsearch.h
+	src/util/search/fuzzysearch.cpp
+	src/util/search/wordmatchsearch.cpp
+	src/util/search/searchwidget.cpp
+	src/services/abstractservice.h
+	src/services/abstractindex.h
 	src/services/appindex/appindexwidget.cpp
 	src/services/appindex/appindex.cpp
 	src/services/appindex/appitem.cpp
@@ -60,6 +65,7 @@ set(data
 
 qt5_wrap_ui(UIS
 	src/ui/settingsdialog/settingsdialog.ui
+	src/util/search/searchwidget.ui
 	src/services/appindex/appindexwidget.ui
 	src/services/bookmarkindex/bookmarkindexwidget.ui
 	src/services/calculator/calculatorwidget.ui

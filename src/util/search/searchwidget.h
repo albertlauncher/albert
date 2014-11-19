@@ -14,29 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef FILEINDEXWIDGET_H
-#define FILEINDEXWIDGET_H
+#ifndef SEARCHWIDGET_H
+#define SEARCHWIDGET_H
 
-#include "ui_fileindexwidget.h"
-#include "fileindex.h"
+#include "ui_searchwidget.h"
+#include "abstractindex.h"
 #include <QWidget>
+#include <QRegExpValidator>
 
-class FileIndexWidget : public QWidget
+class SearchWidget : public QWidget
 {
 	Q_OBJECT
-	Ui::FileIndexWidget ui;
 
 public:
-	explicit FileIndexWidget(FileIndex*, QWidget *parent = 0);
+	explicit SearchWidget(AbstractIndex *ref);
 
-protected:
-	FileIndex *_ref;
+private:
+	AbstractIndex *_ref;
+	Ui::SearchWidget ui;
+	QRegExpValidator val;
 
 protected slots:
-	void onButton_AddPath();
-	void onButton_RemovePath();
-	void onButton_RestorePaths();
-	void rebuildIndex();
+
 };
 
-#endif // FILEINDEXWIDGET_H
+#endif // SEARCHWIDGET_H

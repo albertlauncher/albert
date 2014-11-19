@@ -17,7 +17,7 @@
 #ifndef CALCULATOR_H
 #define CALCULATOR_H
 
-#include "service.h"
+#include "abstractservice.h"
 #include "muParser.h"
 #include <QLocale>
 

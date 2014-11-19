@@ -23,35 +23,36 @@
 FileIndexWidget::FileIndexWidget(FileIndex *srv, QWidget *parent) :
 	QWidget(parent), _ref(srv)
 {
+	/* SETUP UI*/
+
 	ui.setupUi(this);
+	// Insert the setting for the search
+//	ui.hl_1strow->insertWidget(0, _ref->_search.widget());
+
+
+	/* INIT UI*/
 
 	// Update the list
 	ui.lw_paths->clear();
 	ui.lw_paths->addItems(_ref->_paths);
-
 	// Update the checkbox
 	ui.cb_hiddenFiles->setChecked(_ref->_indexHiddenFiles);
 
-	// Update the search
-	ui.cb_searchType->setCurrentIndex(static_cast<int>(_ref->_search.searchType()));
+
+	/* SETUP SIGNALS */
+
+	// Inline oneliners
+	// Index hidden files?
+	connect(ui.cb_hiddenFiles, &QCheckBox::toggled, [&](bool b){
+		_ref->_indexHiddenFiles = b;
+	});
 
 	// Rect to changes
-	connect(ui.cb_searchType, (void (QComboBox::*)(int))&QComboBox::activated, this, &FileIndexWidget::oncb_searchTypeChanged);
 	connect(ui.pb_add, &QPushButton::clicked, this, &FileIndexWidget::onButton_AddPath);
 	connect(ui.pb_remove, &QPushButton::clicked, this, &FileIndexWidget::onButton_RemovePath);
 	connect(ui.pb_restore, &QPushButton::clicked, this, &FileIndexWidget::onButton_RestorePaths);
 	connect(ui.pb_rebuildIndex, &QPushButton::clicked, this, &FileIndexWidget::rebuildIndex);
-	connect(ui.cb_hiddenFiles, &QCheckBox::toggled, this, &FileIndexWidget::onCheckbox_toggle);
  }
-
-/**************************************************************************/
-void FileIndexWidget::oncb_searchTypeChanged(int st)
-{
-	ui.lbl_info->setText("Building search index...");
-	_ref->_search.setSearchType(static_cast<Search::Type>(st));
-	ui.lbl_info->setText("Building search index done.");
-	QTimer::singleShot(1000, ui.lbl_info, SLOT(clear()));
-}
 
 /**************************************************************************/
 void FileIndexWidget::onButton_AddPath()
@@ -102,10 +103,4 @@ void FileIndexWidget::rebuildIndex()
 
 	ui.lbl_info->setText("Building index done.");
 	QTimer::singleShot(1000, ui.lbl_info, SLOT(clear()));
-}
-
-/**************************************************************************/
-void FileIndexWidget::onCheckbox_toggle(bool b)
-{
-	_ref->_indexHiddenFiles = b;
 }

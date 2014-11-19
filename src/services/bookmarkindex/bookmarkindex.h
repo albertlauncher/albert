@@ -17,12 +17,11 @@
 #ifndef BOOKMARKINDEX_H
 #define BOOKMARKINDEX_H
 
-#include "search/search.h"
+#include "abstractindex.h"
+#include <QFileSystemWatcher>
 
-class BookmarkIndex : public Service
+class BookmarkIndex final : public Service, public AbstractIndex
 {
-	friend class BookmarkIndexWidget;
-
 public:
 	class Item;
 
@@ -34,6 +33,11 @@ public:
 
 	void initialize() override;
 
+	QString path() const;
+	bool setPath(const QString &s);
+	void unsetPath();
+	void restorePath();
+
 	void saveSettings(QSettings &s) const override;
 	void loadSettings(QSettings &s) override;
 	void serilizeData(QDataStream &out) const override;
@@ -42,13 +46,11 @@ public:
 	void query(const QString &req, QVector<Service::Item*> *res) const override;
 	void queryFallback(const QString&, QVector<Service::Item*>*) const override;
 
-protected:
-	void buildIndex();
-
 private:
-	QString _path;
-	QList<Service::Item*> _index;
-	Search _search;
+	QFileSystemWatcher _watcher;
+
+public slots:
+	void buildIndex() override;
 };
 
 #endif // BOOKMARKINDEX_H

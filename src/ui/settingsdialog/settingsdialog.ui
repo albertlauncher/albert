@@ -413,7 +413,7 @@
        <item>
         <widget class="QLabel" name="label_4">
          <property name="pixmap">
-          <pixmap resource="../../resources.qrc">:/app_icon</pixmap>
+          <pixmap>:/app_icon</pixmap>
          </property>
          <property name="scaledContents">
           <bool>false</bool>
@@ -444,9 +444,7 @@ p, li { white-space: pre-wrap; }
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../../resources.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>lw_modules</sender>

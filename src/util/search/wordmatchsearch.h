@@ -14,34 +14,35 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef SEARCH_H
-#define SEARCH_H
+#ifndef WORDMATCHSEARCH_H
+#define WORDMATCHSEARCH_H
 
-#include "services/service.h"
+#include "abstractsearch.h"
+
+#include <QList>
 #include <QString>
 #include <QVector>
+#include <QPair>
+#include <QSet>
 
-
-class Search
+class WordMatchSearch final : public AbstractSearch
 {
-
 public:
-	class SearchImpl;
-	enum class Type {/*Exact, */WordMatch, Fuzzy};
+	explicit WordMatchSearch() : WordMatchSearch(nullptr){}
+	explicit WordMatchSearch(AbstractIndex *ref) : AbstractSearch(ref){}
+	virtual ~WordMatchSearch(){}
 
-	Search(const QList<Service::Item*>& index);
-	~Search();
-
-	void buildIndex();
-	void query(const QString &req, QVector<Service::Item*> *res) const;
-
-	void setSearchType(Type);
-	Type searchType() const;
-	const QList<Service::Item*> &_indexRef;
+	void buildIndex() override;
+	void query(const QString &req, QVector<Service::Item*> *res) const override;
 
 private:
+	class CaseInsensitiveCompare;
+	class CaseInsensitiveComparePrefix;
 
-	SearchImpl *_search;
+	typedef QPair<QString, QSet<Service::Item*>> Posting;
+	typedef QVector<Posting> InvertedIndex;
+
+	QVector<Posting> _invertedIndex;
 };
 
-#endif // SEARCH_H
+#endif // WORDMATCHSEARCH_H

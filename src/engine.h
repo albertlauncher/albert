@@ -17,7 +17,7 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#include "services/service.h"
+#include "abstractservice.h"
 #include <QVector>
 #include <QSettings>
 #include <QAbstractListModel>

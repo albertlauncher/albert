@@ -24,13 +24,13 @@
 class AppIndexWidget : public QWidget
 {
 	Q_OBJECT
-	Ui::AppIndexWidget ui;
 
 public:
-	explicit AppIndexWidget(AppIndex *fi, QWidget *parent = 0);
+	explicit AppIndexWidget(AppIndex *, QWidget *parent = 0);
 
-protected:
-	AppIndex *_ref;
+private:
+	AppIndex *_index;
+	Ui::AppIndexWidget ui;
 
 protected slots:
 	void onButton_PathAdd();

@@ -18,6 +18,9 @@
 #include "bookmarkitem.h"
 #include "bookmarkindexwidget.h"
 
+#include "wordmatchsearch.h"
+#include "fuzzysearch.h"
+
 #include <functional>
 #include <QFile>
 #include <QFileInfo>
@@ -28,16 +31,18 @@
 #include <QStandardPaths>
 
 /**************************************************************************/
-BookmarkIndex::BookmarkIndex() : _search(_index)
+BookmarkIndex::BookmarkIndex()
 {
+	// Rebuild index if bookmarkfile changed
+	connect(&_watcher, &QFileSystemWatcher::fileChanged, [&](){
+		buildIndex();
+		qDebug() << "[BookmarkIndex]\tIndex rebuilt";
+	});
 }
 
 /**************************************************************************/
 BookmarkIndex::~BookmarkIndex()
 {
-	for(Service::Item *i : _index)
-		delete i;
-	_index.clear();
 }
 
 /**************************************************************************/
@@ -49,9 +54,41 @@ QWidget *BookmarkIndex::widget()
 /**************************************************************************/
 void BookmarkIndex::initialize()
 {
-	_path = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
-			+ "/chromium/Default/Bookmarks";
+	restorePath();
 	buildIndex();
+}
+
+/**************************************************************************/
+QString BookmarkIndex::path() const
+{
+	return (_watcher.files().isEmpty()) ? "" : _watcher.files()[0];
+}
+
+/**************************************************************************/
+bool BookmarkIndex::setPath(const QString &s)
+{
+	QFileInfo fi(s);
+	// Only let files in
+	if (!(fi.exists() && fi.isFile()))
+		return false;
+
+	// Remove old path
+	unsetPath();
+	return _watcher.addPath(s);
+}
+
+/**************************************************************************/
+void BookmarkIndex::unsetPath()
+{
+	_watcher.removePaths(_watcher.files());
+}
+
+/**************************************************************************/
+void BookmarkIndex::restorePath()
+{
+	if (!setPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
+			+ "/chromium/Default/Bookmarks"))
+		qWarning("[BookmarkIndex]Unable to restore bookmark path.");
 }
 
 /**************************************************************************/
@@ -59,8 +96,8 @@ void BookmarkIndex::saveSettings(QSettings &s) const
 {
 	// Save settings
 	s.beginGroup("BookmarkIndex");
-	s.setValue("Path", _path);
-	s.setValue("SearchType", static_cast<int>(_search.searchType()));
+	s.setValue("Path", path());
+	s.setValue("Fuzzy", dynamic_cast<FuzzySearch*>(_search) != nullptr);
 	s.endGroup();
 }
 
@@ -69,10 +106,14 @@ void BookmarkIndex::loadSettings(QSettings &s)
 {
 	// Load settings
 	s.beginGroup("BookmarkIndex");
-	_path = s.value("Path",
-					QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
-					+ "/chromium/Default/Bookmarks").toString();
-	_search.setSearchType(static_cast<Search::Type>(s.value("SearchType",1).toInt()));
+	if (s.contains("Path"))
+		setPath(s.value("Path").toString());
+	else
+		restorePath();
+	if(s.value("Fuzzy",false).toBool())
+		setSearch(new FuzzySearch());
+	else
+		setSearch(new WordMatchSearch());
 	s.endGroup();
 }
 
@@ -103,7 +144,7 @@ void BookmarkIndex::deserilizeData(QDataStream &in)
 /**************************************************************************/
 void BookmarkIndex::query(const QString &req, QVector<Service::Item *> *res) const
 {
-	_search.query(req, res);
+	_search->query(req, res);
 }
 
 /**************************************************************************/
@@ -115,6 +156,7 @@ void BookmarkIndex::queryFallback(const QString &, QVector<Service::Item *> *) c
 /**************************************************************************/
 void BookmarkIndex::buildIndex()
 {
+	emit beginBuildIndex();
 	for(Service::Item *i : _index)
 		delete i;
 	_index.clear();
@@ -138,11 +180,11 @@ void BookmarkIndex::buildIndex()
 		}
 	};
 
-	qDebug() << "[BookmarkIndex]\tParsing" << _path;
+	qDebug() << "[BookmarkIndex]\tParsing" << path();
 
-	QFile f(_path);
+	QFile f(path());
 	if (!f.open(QIODevice::ReadOnly)) {
-		qWarning() << "[BookmarkIndex]\tCould not open" << _path;
+		qWarning() << "[BookmarkIndex]\tCould not open" << path();
 		return;
 	}
 
@@ -153,6 +195,6 @@ void BookmarkIndex::buildIndex()
 			rec_bmsearch(i.toObject());
 
 	qDebug() << "[BookmarkIndex]\tFound " << _index.size() << " bookmarks.";
-	_search.buildIndex();
+	emit endBuildIndex();
 }
 

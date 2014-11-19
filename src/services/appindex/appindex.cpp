@@ -18,6 +18,9 @@
 #include "appitem.h"
 #include "appindexwidget.h"
 
+#include "wordmatchsearch.h"
+#include "fuzzysearch.h"
+
 #include <QDebug>
 #include <QDirIterator>
 #include <QString>
@@ -27,13 +30,8 @@
 #include "windows.h"
 #endif
 /**************************************************************************/
-AppIndex::AppIndex() : _search(_index)
+AppIndex::AppIndex()
 {
-	// Rebuild index if something changed
-	connect(&_watcher, &QFileSystemWatcher::fileChanged, [&](){
-		buildIndex();
-		qDebug() << "[ApplicationIndex]\tIndex rebuilt";
-	});
 	connect(&_watcher, &QFileSystemWatcher::directoryChanged, [&](){
 		buildIndex();
 		qDebug() << "[ApplicationIndex]\tIndex rebuilt";
@@ -43,9 +41,6 @@ AppIndex::AppIndex() : _search(_index)
 /**************************************************************************/
 AppIndex::~AppIndex()
 {
-	for(Service::Item *i : _index)
-		delete i;
-	_index.clear();
 }
 
 /**************************************************************************/
@@ -62,10 +57,35 @@ void AppIndex::initialize()
 }
 
 /**************************************************************************/
+QStringList AppIndex::paths() const
+{
+	return _watcher.directories();
+}
+
+/**************************************************************************/
+bool AppIndex::addPath(const QString & s)
+{
+	bool failed = _watcher.addPath(s);
+	if (!failed)
+		buildIndex();
+	return failed;
+}
+
+/**************************************************************************/
+bool   AppIndex::removePath(const QString & s)
+{
+	bool failed = _watcher.removePath(s);
+	if (!failed)
+		buildIndex();
+	return failed;
+}
+
+/**************************************************************************/
 void AppIndex::restorePaths()
 {
 	_watcher.removePaths(_watcher.directories());
 	_watcher.addPaths(QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation));
+	buildIndex();
 }
 
 /**************************************************************************/
@@ -74,7 +94,7 @@ void AppIndex::saveSettings(QSettings &s) const
 	// Save settings
 	s.beginGroup("AppIndex");
 	s.setValue("Paths", _watcher.directories());
-	s.setValue("SearchType", static_cast<int>(_search.searchType()));
+	s.setValue("Fuzzy", dynamic_cast<FuzzySearch*>(_search) != nullptr);
 	s.endGroup();
 }
 
@@ -85,7 +105,10 @@ void AppIndex::loadSettings(QSettings &s)
 	s.beginGroup("AppIndex");
 	_watcher.addPaths(s.value("Paths", QStandardPaths::standardLocations(
 						 QStandardPaths::ApplicationsLocation)).toStringList());
-	_search.setSearchType(static_cast<Search::Type>(s.value("SearchType",1).toInt()));
+	if(s.value("Fuzzy",false).toBool())
+		setSearch(new FuzzySearch());
+	else
+		setSearch(new WordMatchSearch());
 	s.endGroup();
 }
 
@@ -94,8 +117,11 @@ void AppIndex::serilizeData(QDataStream &out) const
 {
 	// Serialize data
 	out << _index.size();
-	for (Service::Item *it : _index)
+	int c = 0;
+	for (Service::Item *it : _index){
+		qDebug() << c++ <<  it->title();
 		static_cast<AppIndex::Item*>(it)->serialize(out);
+	}
 }
 
 /**************************************************************************/
@@ -105,18 +131,22 @@ void AppIndex::deserilizeData(QDataStream &in)
 	int size;
 	in >> size;
 	AppIndex::Item *it;
+	emit beginBuildIndex();
 	for (int i = 0; i < size; ++i) {
 		it = new AppIndex::Item;
 		it->deserialize(in);
+		it->_icon = getIcon(it->_iconName);
+		qDebug() << i <<  it->title();
 		_index.push_back(it);
 	}
+	emit endBuildIndex();
 	qDebug() << "[ApplicationIndex]\tLoaded " << _index.size() << " apps.";
 }
 
 /**************************************************************************/
 void AppIndex::query(const QString &req, QVector<Service::Item *> *res) const
 {
-	_search.query(req, res);
+	_search->query(req, res);
 }
 
 /**************************************************************************/
@@ -191,7 +221,8 @@ void AppIndex::buildIndex()
 			Item *i = new Item;
 			i->_name = name;
 			i->_info = (desktopfile["Comment"].isEmpty())?desktopfile["GenericName"]:desktopfile["Comment"];
-			i->_icon = getIcon(desktopfile["Icon"]);
+			i->_iconName = desktopfile["Icon"];
+			i->_icon = getIcon(i->_iconName);
 			i->_exec = exec;
 			i->_term = term;
 			_index.push_back(i);
@@ -283,8 +314,6 @@ void AppIndex::buildIndex()
 #endif
 
 	qDebug() << "[ApplicationIndex]\tFound " << _index.size() << " apps.";
-	_search.buildIndex();
-
 	emit endBuildIndex();
 }
 

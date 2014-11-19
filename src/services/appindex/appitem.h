@@ -40,6 +40,7 @@ public:
 protected:
 	QString _name;
 	QString _info;
+	QString _iconName;
 	QIcon   _icon;
 	QString _exec;
 	bool    _term;

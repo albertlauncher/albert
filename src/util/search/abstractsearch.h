@@ -14,29 +14,35 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef FILEINDEXWIDGET_H
-#define FILEINDEXWIDGET_H
+#ifndef ABSTRACTSEARCH_H
+#define ABSTRACTSEARCH_H
 
-#include "ui_fileindexwidget.h"
-#include "fileindex.h"
-#include <QWidget>
+#include "abstractservice.h"
+#include <QObject>
+#include <QList>
+#include <QVector>
 
-class FileIndexWidget : public QWidget
+class AbstractIndex;
+
+class AbstractSearch : public QObject
 {
 	Q_OBJECT
-	Ui::FileIndexWidget ui;
-
 public:
-	explicit FileIndexWidget(FileIndex*, QWidget *parent = 0);
+	explicit AbstractSearch(){}
+	explicit AbstractSearch(AbstractIndex*ref) : _ref(ref) {}
+	virtual ~AbstractSearch(){}
+
+	inline void setIndex(AbstractIndex* ref){_ref=ref;}
+	inline const AbstractIndex* index(){return _ref;}
+
+	virtual void query(const QString &req, QVector<Service::Item*> *res) const = 0;
 
 protected:
-	FileIndex *_ref;
+	AbstractIndex* _ref;
 
-protected slots:
-	void onButton_AddPath();
-	void onButton_RemovePath();
-	void onButton_RestorePaths();
-	void rebuildIndex();
+public slots:
+	virtual void buildIndex() = 0;
+
 };
 
-#endif // FILEINDEXWIDGET_H
+#endif // ABSTRACTSEARCH_H

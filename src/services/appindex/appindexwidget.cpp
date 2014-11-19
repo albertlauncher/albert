@@ -15,44 +15,48 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "appindexwidget.h"
+#include "searchwidget.h"
 
 #include <QFileDialog>
 #include <QStandardPaths>
 #include <QTimer>
-#include <QComboBox>
 
 /**************************************************************************/
-AppIndexWidget::AppIndexWidget(AppIndex *srv, QWidget *parent) :
-	QWidget(parent), _ref(srv)
+AppIndexWidget::AppIndexWidget(AppIndex *idx, QWidget *parent) :
+	QWidget(parent), _index(idx)
 {
+	/* SETUP UI*/
+
 	ui.setupUi(this);
+	// Insert the settings for the search
+	ui.hl_1strow->insertWidget(0, new SearchWidget(_index));
+
+
+	/* INIT UI*/
 
 	//Get data from reference and initilize the ui
 	ui.lw_paths->clear();
-	ui.lw_paths->addItems(_ref->_watcher.directories());
-	ui.cb_searchType->setCurrentIndex(static_cast<int>(_ref->_search.searchType()));
+	ui.lw_paths->addItems(_index->paths());
 
-	/* Connect all the onliners */
 
+	/* SETUP SIGNALS */
+
+	// Inline oneliners
 	// Show information if the index is rebuild
-	connect(_ref, &AppIndex::beginBuildIndex, [=](){
+	connect(_index, &AppIndex::beginBuildIndex, [&](){
 		ui.lbl_info->setText("Building index...");
+		ui.lbl_info->repaint();
 	});
 
 	// Show information if the index has been rebuilt
-	connect(_ref, &AppIndex::endBuildIndex, [=](){
+	connect(_index, &AppIndex::endBuildIndex, [&](){
 		ui.lbl_info->setText("Building index done.");
 		QTimer::singleShot(1000, ui.lbl_info, SLOT(clear()));
 	});
 
-	// Change the searchtype on selection
-	connect(ui.cb_searchType, (void (QComboBox::*)(int))&QComboBox::activated, [=](int st){
-		_ref->_search.setSearchType(static_cast<Search::Type>(st));
-	});
-
 	// Rebuild index on button press
-	connect(ui.pb_rebuildIndex, &QPushButton::clicked, [=](){
-		_ref->buildIndex();
+	connect(ui.pb_rebuildIndex, &QPushButton::clicked, [&](){
+		_index->buildIndex();
 	});
 
 	// Connect the explicitely implemented (long) slots
@@ -72,7 +76,7 @@ void AppIndexWidget::onButton_PathAdd()
 	if(pathName.isEmpty())
 		return;
 
-	if (_ref->_watcher.addPath(pathName))
+	if (_index->addPath(pathName))
 		ui.lw_paths->addItem(pathName);
 	else
 		qWarning("Could not add %s", pathName.toStdString().c_str());
@@ -84,7 +88,7 @@ void AppIndexWidget::onButton_PathRemove()
 	if (ui.lw_paths->currentItem() == nullptr)
 		return;
 
-	_ref->_watcher.removePath(ui.lw_paths->currentItem()->text());
+	_index->removePath(ui.lw_paths->currentItem()->text());
 
 	// Remove it in the ui
 	delete ui.lw_paths->currentItem();
@@ -94,8 +98,8 @@ void AppIndexWidget::onButton_PathRemove()
 /**************************************************************************/
 void AppIndexWidget::onButton_RestorePaths()
 {
-	_ref->restorePaths();
+	_index->restorePaths();
 	ui.lw_paths->clear();
-	ui.lw_paths->addItems(_ref->_watcher.directories());
+	ui.lw_paths->addItems(_index->paths());
 }
 

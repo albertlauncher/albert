@@ -18,13 +18,16 @@
 #include "fileitem.h"
 #include "fileindexwidget.h"
 
+#include "wordmatchsearch.h"
+#include "fuzzysearch.h"
+
 #include <algorithm>
 #include <QDirIterator>
 #include <QDebug>
 #include <QStandardPaths>
 
 /**************************************************************************/
-FileIndex::FileIndex() : _search(_index)
+FileIndex::FileIndex()
 {}
 
 /**************************************************************************/
@@ -65,7 +68,7 @@ void FileIndex::saveSettings(QSettings &s) const
 	s.beginGroup("FileIndex");
 	s.setValue("Paths", _watcher.directories() <<_watcher.files());
 	s.setValue("indexHiddenFiles", _indexHiddenFiles);
-	s.setValue("SearchType", static_cast<int>(_search.searchType()));
+	s.setValue("Fuzzy", dynamic_cast<FuzzySearch*>(_search) != nullptr);
 	s.endGroup();
 }
 
@@ -83,7 +86,10 @@ void FileIndex::loadSettings(QSettings &s)
 		  << QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
 	_paths = s.value("Paths", paths).toStringList();
 	_indexHiddenFiles = s.value("indexHiddenFiles", false).toBool();
-	_search.setSearchType(static_cast<Search::Type>(s.value("SearchType",1).toInt()));
+	if(s.value("Fuzzy",false).toBool())
+		setSearch(new FuzzySearch());
+	else
+		setSearch(new WordMatchSearch());
 	s.endGroup();
 }
 
@@ -114,7 +120,7 @@ void FileIndex::deserilizeData(QDataStream &in)
 /**************************************************************************/
 void FileIndex::query(const QString &req, QVector<Service::Item *> *res) const
 {
-	_search.query(req, res);
+	_search->query(req, res);
 }
 
 /**************************************************************************/
@@ -126,6 +132,7 @@ void FileIndex::queryFallback(const QString &, QVector<Service::Item *> *) const
 /**************************************************************************/
 void FileIndex::buildIndex()
 {
+	emit beginBuildIndex();
 	for(Service::Item *i : _index)
 		delete i;
 	_index.clear();
@@ -136,7 +143,7 @@ void FileIndex::buildIndex()
 		addPath(p);
 
 	qDebug() << "[FileIndex]\tFound " << _index.size() << " files.";
-	_search.buildIndex();
+	emit endBuildIndex();
 }
 
 /**************************************************************************/
@@ -172,7 +179,6 @@ bool FileIndex::addPath(const QString &path)
 	}
 
 	qDebug() << "[FileIndex]\tAdded" << path;
-	_search.buildIndex();
 	return true;
 }
 
@@ -187,7 +193,6 @@ void FileIndex::removePath(const QString &path)
 			((*it)->infoText().startsWith(path))?it = _index.erase(it):++it;
 
 	qDebug() << "[FileIndex]\tRemoved" << path;
-	_search.buildIndex();
 }
 
 /**************************************************************************/

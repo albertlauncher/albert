@@ -17,14 +17,11 @@
 #ifndef FILEINDEX_H
 #define FILEINDEX_H
 
-#include "search/search.h"
-
-#include <QObject>
+#include "abstractindex.h"
 #include <QFileSystemWatcher>
 
-class FileIndex : public QObject, public Service
+class FileIndex : public Service, public AbstractIndex
 {
-	Q_OBJECT
 	friend class FileIndexWidget;
 
 public:
@@ -50,7 +47,7 @@ private:
 	void restorePaths();
 
 	QList<Service::Item*> _index;
-	Search                _search;
+	AbstractSearch        *_search;
 	QFileSystemWatcher    _watcher;
 	QStringList           _paths;
 	bool                  _indexHiddenFiles;

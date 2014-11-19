@@ -58,11 +58,11 @@ QString AppIndex::Item::altActionText() const
 /**************************************************************************/
 void AppIndex::Item::serialize(QDataStream &out) const
 {
-	out << _lastAccess << _name << _exec << _icon << _info << _term;
+	out << _lastAccess << _name << _exec << _iconName << _info << _term;
 }
 
 /**************************************************************************/
 void AppIndex::Item::deserialize(QDataStream &in)
 {
-	in >> _lastAccess >> _name >> _exec >> _icon >> _info >> _term;
+	in >> _lastAccess >> _name >> _exec >> _iconName >> _info >> _term;
 }
