@@ -20,6 +20,7 @@
 #include <QProcess>
 #include <QDirIterator>
 #include <QDebug>
+#include <QPixmap>
 
 /**************************************************************************/
 void AppIndex::Item::action()
@@ -66,9 +67,11 @@ void AppIndex::Item::deserialize(QDataStream &in)
 	in >> _lastAccess >> _name >> _exec >> _iconName >> _info >> _term;
 }
 
+#include "QFileIconProvider"
 /**************************************************************************/
 QIcon AppIndex::Item::icon() const
 {
+#ifdef Q_OS_LINUX
 	/* Icons and themes are looked for in a set of directories. By default,
 	 * apps should look in $HOME/.icons (for backwards compatibility), in
 	 * $XDG_DATA_DIRS/icons and in /usr/share/pixmaps (in that order).
@@ -112,4 +115,18 @@ QIcon AppIndex::Item::icon() const
 
 	//UNKNOWN
 	return QIcon::fromTheme("unknown");
+
+#endif
+#ifdef Q_OS_WIN
+
+
+	QFileIconProvider fip;
+	qDebug() << this->_info;
+	return fip.icon(QFileInfo(this->_info));
+//	HICON ico = ExtractIconW(nullptr, this->_exec.toStdWString().c_str(), 0);
+
+//	DestroyIcon(ico);
+//	return QIcon(QPixmap::fromWinHICON(ico));
+
+#endif
 }

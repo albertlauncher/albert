@@ -51,13 +51,30 @@ QString FileIndex::Item::altActionText() const
 	return QString("Open the folder containing '%1' in file browser.").arg(_fileInfo.fileName());
 }
 
+#include "QFileIconProvider"
+
 /**************************************************************************/
 QIcon FileIndex::Item::icon() const
 {
+#ifdef Q_OS_LINUX
 	QString iconName = mimeDb.mimeTypeForFile(_fileInfo).iconName();
 	if (QIcon::hasThemeIcon(iconName))
 		return QIcon::fromTheme(iconName);
 	return QIcon::fromTheme(QString::fromLocal8Bit("unknown"));
+
+#endif
+
+#ifdef Q_OS_WIN
+
+
+	QFileIconProvider fip;
+	return fip.icon(this->_fileInfo);
+//	HICON ico = ExtractIconW(nullptr, this->_exec.toStdWString().c_str(), 0);
+
+//	DestroyIcon(ico);
+//	return QIcon(QPixmap::fromWinHICON(ico));
+
+#endif
 }
 
 /**************************************************************************/
