@@ -14,28 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef FILEINDEXWIDGET_H
-#define FILEINDEXWIDGET_H
+#ifndef FILEINDEXBUILDER_H
+#define FILEINDEXBUILDER_H
 
-#include "ui_fileindexwidget.h"
-#include "fileindex.h"
-#include <QWidget>
+#include <QThread>
+#include "abstractservice.h"
 
-class FileIndexWidget : public QWidget
+class FileIndex;
+class FileIndexBuilder : public QThread
 {
 	Q_OBJECT
 
 public:
-	explicit FileIndexWidget(FileIndex*, QWidget *parent = 0);
+	FileIndexBuilder() = delete;
+	explicit FileIndexBuilder(const FileIndex * ref) : _ref(ref){}
+	virtual ~FileIndexBuilder(){}
+	FileIndex const * const _ref;
 
-private:
-	FileIndex *_index;
-	Ui::FileIndexWidget ui;
+	void run();
+	QList<Service::Item*> _result;
 
-protected slots:
-	void onButton_AddPath();
-	void onButton_RemovePath();
-	void onButton_RestorePaths();
+signals:
+	void fileIndexingDone();
 };
 
-#endif // FILEINDEXWIDGET_H
+#endif // FILEINDEXBUILDER_H

@@ -31,6 +31,7 @@ class FileIndex::Item : public Service::Item
 
 public:
 	Item(){}
+	Item(QFileInfo fi) : _fileInfo(fi){}
 	~Item(){}
 
 	inline QString title() const override {return _fileInfo.fileName();}

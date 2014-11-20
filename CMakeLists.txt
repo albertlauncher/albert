@@ -44,6 +44,7 @@ set(SRCS
 	src/services/calculator/calculatoritem.cpp
 	src/services/calculator/calculatorwidget.cpp
 	src/services/fileindex/fileindex.cpp
+	src/services/fileindex/fileindexbuilder.cpp
 	src/services/fileindex/fileindexwidget.cpp
 	src/services/fileindex/fileitem.cpp
 	src/services/websearch/websearch.cpp

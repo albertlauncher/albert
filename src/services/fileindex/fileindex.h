@@ -18,12 +18,10 @@
 #define FILEINDEX_H
 
 #include "abstractindex.h"
-#include <QFileSystemWatcher>
+#include "fileindexbuilder.h"
 
-class FileIndex : public Service, public AbstractIndex
+class FileIndex final : public Service, public AbstractIndex
 {
-	friend class FileIndexWidget;
-
 public:
 	class Item;
 
@@ -43,21 +41,22 @@ public:
 	void query(const QString &req, QVector<Service::Item*> *res) const override;
 	void queryFallback(const QString&, QVector<Service::Item*>*) const override;
 
-private:
+	QStringList paths() const { return _paths; }
+	void addPath(const QString &s){_paths << s;}
+	void removePath(const QString &s) { _paths.removeAll(s); }
 	void restorePaths();
 
-	QList<Service::Item*> _index;
-	AbstractSearch        *_search;
-	QFileSystemWatcher    _watcher;
+	inline bool indexHiddenFiles() const{ return _indexHiddenFiles; }
+	inline void setIndexHiddenFiles(bool b){ _indexHiddenFiles = b;}
+
+private:
 	QStringList           _paths;
 	bool                  _indexHiddenFiles;
+	FileIndexBuilder      _builder ;
 
-protected slots:
-	void buildIndex();
-	bool addPath(const QString &path);
-	void removePath(const QString &path);
-	void HAPPENING(const QString &path);
-private slots:
+public slots:
+	void buildIndex() override;
+	void handleResults();
 };
 
 #endif // FILEINDEX_H

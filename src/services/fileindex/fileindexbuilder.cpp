@@ -14,28 +14,29 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef FILEINDEXWIDGET_H
-#define FILEINDEXWIDGET_H
-
-#include "ui_fileindexwidget.h"
+#include "fileindexbuilder.h"
 #include "fileindex.h"
-#include <QWidget>
+#include "fileitem.h"
+#include <QDebug>
+#include <QDirIterator>
 
-class FileIndexWidget : public QWidget
-{
-	Q_OBJECT
+void FileIndexBuilder::run() {
 
-public:
-	explicit FileIndexWidget(FileIndex*, QWidget *parent = 0);
+	for(Service::Item *i : _result)
+		delete i;
+	_result.clear();
 
-private:
-	FileIndex *_index;
-	Ui::FileIndexWidget ui;
+	qDebug() << "[FileIndex]\tLooking in: " << _ref->paths();
 
-protected slots:
-	void onButton_AddPath();
-	void onButton_RemovePath();
-	void onButton_RestorePaths();
-};
-
-#endif // FILEINDEXWIDGET_H
+	for ( const QString &p : _ref->paths()) {
+		QDirIterator it(p, QDirIterator::Subdirectories);
+		while (it.hasNext()) {
+			it.next();
+			if (it.fileInfo().isHidden() && !_ref->indexHiddenFiles())
+				continue;
+			_result.push_back(new FileIndex::Item(it.fileInfo()));
+		}
+	}
+	qDebug() << "[FileIndex]\tFound " << _result.size() << " files.";
+	emit fileIndexingDone();
+}
