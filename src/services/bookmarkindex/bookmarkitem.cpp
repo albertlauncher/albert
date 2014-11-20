@@ -25,7 +25,8 @@
 void BookmarkIndex::Item::action()
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
-	QDesktopServices::openUrl(QUrl(_url));
+//	QDesktopServices::openUrl(QUrl(_url));
+	QProcess::startDetached(QString("kstart --activate chromium %1").arg(QUrl(_url).toString()));
 }
 
 /**************************************************************************/
