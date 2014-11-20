@@ -32,6 +32,7 @@
 /**************************************************************************/
 AppIndex::AppIndex()
 {
+	// Rebuild index if watcher signaled a change
 	connect(&_watcher, &QFileSystemWatcher::directoryChanged, [&](){
 		buildIndex();
 		qDebug() << "[ApplicationIndex]\tIndex rebuilt";
@@ -117,11 +118,8 @@ void AppIndex::serilizeData(QDataStream &out) const
 {
 	// Serialize data
 	out << _index.size();
-	int c = 0;
-	for (Service::Item *it : _index){
-		qDebug() << c++ <<  it->title();
+	for (Service::Item *it : _index)
 		static_cast<AppIndex::Item*>(it)->serialize(out);
-	}
 }
 
 /**************************************************************************/
@@ -136,7 +134,6 @@ void AppIndex::deserilizeData(QDataStream &in)
 		it = new AppIndex::Item;
 		it->deserialize(in);
 		it->_icon = getIcon(it->_iconName);
-		qDebug() << i <<  it->title();
 		_index.push_back(it);
 	}
 	emit endBuildIndex();
