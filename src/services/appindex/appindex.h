@@ -29,7 +29,7 @@ public:
 	~AppIndex();
 
 	QWidget* widget() override;
-	inline QString moduleName() override {return "AppIndex";}
+	inline QString moduleName() override {return "AppLauncher";}
 
 	void initialize() override;
 
