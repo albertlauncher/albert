@@ -34,7 +34,10 @@
 BookmarkIndex::BookmarkIndex()
 {
 	// Rebuild index if bookmarkfile changed
-	connect(&_watcher, &QFileSystemWatcher::fileChanged, [&](){
+	connect(&_watcher, &QFileSystemWatcher::fileChanged, [&](const QString & p){
+		// QFileSystemWatcher stops monitoring files once they have been
+		// renamed or removed from disk, hence rewatch.
+		_watcher.addPath(p);
 		buildIndex();
 		qDebug() << "[BookmarkIndex]\tIndex rebuilt";
 	});
@@ -61,6 +64,7 @@ void BookmarkIndex::initialize()
 /**************************************************************************/
 QString BookmarkIndex::path() const
 {
+	qDebug() << _watcher.files();
 	return (_watcher.files().isEmpty()) ? "" : _watcher.files()[0];
 }
 
@@ -106,8 +110,10 @@ void BookmarkIndex::loadSettings(QSettings &s)
 {
 	// Load settings
 	s.beginGroup("BookmarkIndex");
-	if (s.contains("Path"))
-		setPath(s.value("Path").toString());
+	if (s.contains("Path")){
+		if (!setPath(s.value("Path").toString()))
+			qWarning("Could not set path %s", s.value("Path").toString().toStdString().c_str());
+	}
 	else
 		restorePath();
 	if(s.value("Fuzzy",false).toBool())
