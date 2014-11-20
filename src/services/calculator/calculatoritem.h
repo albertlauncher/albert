@@ -48,5 +48,4 @@ protected:
 	void serialize (QDataStream &out) const override;
 	void deserialize (QDataStream &in) override;
 };
-
 #endif // CALCULATORITEM_H

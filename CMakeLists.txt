@@ -11,14 +11,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 find_package(Qt5Widgets REQUIRED)
 
-add_library(muparser STATIC IMPORTED)
-set_property(TARGET muparser PROPERTY
-			 IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/muparser/lib/libmuparser.a")
 
 include_directories(
 	src/
 	src/util/
 	src/util/hotkey/
+	src/util/search/
 	src/services/
 	src/ui/mainwidget/
 	src/ui/settingsdialog/
@@ -29,8 +27,13 @@ set(SRCS
 	src/main.cpp
 	src/engine.cpp
 	src/util/hotkey/globalhotkey.cpp
-	src/services/service.h
-	src/services/indexservice.cpp
+	src/util/hotkey/globalhotkey_p.h
+	src/util/search/abstractsearch.h
+	src/util/search/fuzzysearch.cpp
+	src/util/search/wordmatchsearch.cpp
+	src/util/search/searchwidget.cpp
+	src/services/abstractservice.h
+	src/services/abstractindex.h
 	src/services/appindex/appindexwidget.cpp
 	src/services/appindex/appindex.cpp
 	src/services/appindex/appitem.cpp
@@ -41,6 +44,7 @@ set(SRCS
 	src/services/calculator/calculatoritem.cpp
 	src/services/calculator/calculatorwidget.cpp
 	src/services/fileindex/fileindex.cpp
+	src/services/fileindex/fileindexbuilder.cpp
 	src/services/fileindex/fileindexwidget.cpp
 	src/services/fileindex/fileitem.cpp
 	src/services/websearch/websearch.cpp
@@ -63,6 +67,7 @@ set(data
 
 qt5_wrap_ui(UIS
 	src/ui/settingsdialog/settingsdialog.ui
+	src/util/search/searchwidget.ui
 	src/services/appindex/appindexwidget.ui
 	src/services/bookmarkindex/bookmarkindexwidget.ui
 	src/services/calculator/calculatorwidget.ui
@@ -97,6 +102,10 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 #win
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
+	add_library(muparser STATIC IMPORTED)
+	set_property(TARGET muparser PROPERTY
+		IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/muparser/lib/libmuparser.a")
 
 	# Add platformspecific stuff
 	set(SRCS ${SRCS} src/util/hotkey/globalhotkey_win.cpp)

@@ -40,7 +40,6 @@ public:
 	void    altAction() override;
 	QString altActionText() const override;
 
-
 protected:
 	QString _title;
 	QString _url;
@@ -49,6 +48,4 @@ protected:
 	void serialize (QDataStream &out) const override;
 	void deserialize (QDataStream &in) override;
 };
-
-
 #endif // BOOKMARKITEM_H

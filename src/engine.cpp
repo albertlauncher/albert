@@ -26,12 +26,19 @@
 Engine::Engine()
 {
 	// Load modules
-	_modules.push_back(WebSearch::instance());
-	_modules.push_back(Calculator::instance());
-	_modules.push_back(AppIndex::instance());
-	_modules.push_back(BookmarkIndex::instance());
-	_modules.push_back(FileIndex::instance());
+	_modules.push_back(new WebSearch);
+	_modules.push_back(new Calculator);
+	_modules.push_back(new AppIndex);
+	_modules.push_back(new BookmarkIndex);
+	_modules.push_back(new FileIndex);
 
+}
+
+/**********************************************************************/
+Engine::~Engine()
+{
+	for (Service *i : _modules)
+		delete i;
 }
 
 /**************************************************************************/
@@ -79,7 +86,8 @@ void Engine::query(const QString &req)
 		for (Service *i: _modules)
 			i->query(_requestString, &_data);
 		if (_data.isEmpty())
-			WebSearch::instance()->queryAll(_requestString, &_data);
+			for (Service *i: _modules)
+				i->queryFallback(_requestString, &_data);
 		std::stable_sort(_data.begin(), _data.end(), Service::Item::ATimeCompare());
 	}
 	endResetModel();
@@ -111,7 +119,7 @@ QVariant Engine::data(const QModelIndex &index, int role) const
 		return _data[index.row()]->altActionText();
 
 	if (role == Qt::UserRole+12)
-		return WebSearch::instance()->defaultSearchText(_requestString);
+		return static_cast<WebSearch*>(_modules[0])->defaultSearchText(_requestString); // Todo implement a mechaninsm which let the modules offer global actions
 
 
 	if (role == Qt::UserRole+20)
@@ -121,7 +129,7 @@ QVariant Engine::data(const QModelIndex &index, int role) const
 		_data[index.row()]->altAction();
 
 	if (role == Qt::UserRole+22)
-		WebSearch::instance()->defaultSearch(_requestString);
+		static_cast<WebSearch*>(_modules[0])->defaultSearch(_requestString); // Todo implement a mechaninsm which let the modules offer global actions
 
 	return QVariant();
 }

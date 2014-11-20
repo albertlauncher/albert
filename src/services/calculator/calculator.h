@@ -17,35 +17,37 @@
 #ifndef CALCULATOR_H
 #define CALCULATOR_H
 
-#include "service.h"
-#include "singleton.h"
+#include "abstractservice.h"
 #include "muParser.h"
+#include <QLocale>
 
-class Calculator : public Service, public Singleton<Calculator>
+class Calculator : public Service
 {
-	friend class Singleton<Calculator>;
+	friend class CalculatorWidget;
 
 public:
 	class Item;
 
+	Calculator();
 	~Calculator();
 
 	QWidget* widget() override;
+	inline QString moduleName() override {return "Calculator";}
 
 	void initialize() override;
-	void restoreDefaults() override;
 
 	void saveSettings(QSettings &s) const override;
 	void loadSettings(QSettings &s) override;
 	void serilizeData(QDataStream &out) const override;
 	void deserilizeData(QDataStream &in) override;
 
-	void query(const QString&, QVector<Service::Item*>*) const noexcept override;
+	void query(const QString&, QVector<Service::Item*>*) const override;
+	void queryFallback(const QString&, QVector<Service::Item*>*) const override;
 
 protected:
-	Calculator();
 	Item *_theOneAndOnly;
 	mu::Parser *_p;
+	QLocale loc;
 };
 
 #endif // CALCULATOR_H

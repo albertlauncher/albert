@@ -25,9 +25,7 @@
 class InputLine : public QLineEdit
 {
 	Q_OBJECT
-
-	SettingsButton *_settingsButton;
-	History		   _history;
+	friend class SettingsWidget;
 
 public:
 	explicit InputLine(QWidget *parent = 0);
@@ -41,6 +39,10 @@ public:
 protected:
 	void resizeEvent(QResizeEvent*) override;
 	void keyPressEvent(QKeyEvent*) override;
+
+private:
+	SettingsButton *_settingsButton;
+	History		   _history;
 
 signals:
 	void settingsDialogRequested();

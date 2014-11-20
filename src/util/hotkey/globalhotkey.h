@@ -18,7 +18,6 @@
 #define GLOBALHOTKEY_H
 
 #include <QObject>
-#include "singleton.h"
 
 class GlobalHotkey : public QObject
 {

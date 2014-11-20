@@ -24,22 +24,18 @@
 class AppIndexWidget : public QWidget
 {
 	Q_OBJECT
-	Ui::AppIndexWidget ui;
 
 public:
-	explicit AppIndexWidget(AppIndex *fi, QWidget *parent = 0);
+	explicit AppIndexWidget(AppIndex *, QWidget *parent = 0);
 
-protected:
-	AppIndex *_ref;
+private:
+	AppIndex *_index;
+	Ui::AppIndexWidget ui;
 
 protected slots:
-	void restoreDefaults();
-	void updateUI();
-
-	void oncb_searchTypeChanged(int);
 	void onButton_PathAdd();
 	void onButton_PathRemove();
-	void onButton_RebuildIndex();
+	void onButton_RestorePaths();
 };
 
 #endif // APPINDEXWIDGET_H

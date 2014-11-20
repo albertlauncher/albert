@@ -17,36 +17,37 @@
 #ifndef WEBSEARCH_H
 #define WEBSEARCH_H
 
-#include "service.h"
-#include "singleton.h"
+#include "abstractservice.h"
 
-class WebSearch : public Service, public Singleton<WebSearch>
+class WebSearch : public Service
 {
 	friend class WebSearchWidget;
-	friend class Singleton<WebSearch>;
 
 public:
 	class Item;
 
+	WebSearch(){}
 	~WebSearch(){}
 
+	QWidget* widget() override;
+	inline QString moduleName() override {return "WebSearch";}
+
 	void initialize() override;
-	void restoreDefaults() override;
 
 	void saveSettings(QSettings &s) const override;
 	void loadSettings(QSettings &s) override;
 	void serilizeData(QDataStream &out) const override;
 	void deserilizeData(QDataStream &in) override;
 
-	QWidget* widget() override;
+	void query(const QString&, QVector<Service::Item*>*) const override ;
+	void queryFallback(const QString&, QVector<Service::Item*>*) const override;
 
-	void    query(const QString&, QVector<Service::Item*>*) const noexcept override ;
-	void    queryAll(const QString&, QVector<Service::Item*>*);
 	void    defaultSearch(const QString& term) const;
 	QString defaultSearchText(const QString& term) const;
 
-protected:
-	WebSearch(){}
+private:
+	void restoreDefaults();
+
 	QVector<Item*> _searchEngines;
 };
 

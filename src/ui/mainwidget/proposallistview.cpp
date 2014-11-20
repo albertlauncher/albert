@@ -165,7 +165,7 @@ ProposalListView::~ProposalListView()
 /**************************************************************************/
 void ProposalListView::modifyDelegate(Qt::KeyboardModifiers mods)
 {
-    if (_defSubtextMode == SubTextMode::Action){
+	if (_defSubtextMode == SubTextMode::Action){
 		delete itemDelegate();
 		switch (mods) {
 		case Qt::ControlModifier:
@@ -184,7 +184,7 @@ void ProposalListView::modifyDelegate(Qt::KeyboardModifiers mods)
 		update();
 	}
 
-    if (_selSubtextMode == SubTextMode::Action){
+	if (_selSubtextMode == SubTextMode::Action){
 		delete _selectedDelegate;
 		switch (mods) {
 		case Qt::ControlModifier:
@@ -213,7 +213,7 @@ void ProposalListView::modifyDelegate(Qt::KeyboardModifiers mods)
 /**************************************************************************/
 void ProposalListView::setSubModeSel(ProposalListView::SubTextMode m)
 {
-    _selSubtextMode = m;
+	_selSubtextMode = m;
 
 	// Replace the delegate by a new cool one
 	delete _selectedDelegate;
@@ -241,7 +241,7 @@ void ProposalListView::setSubModeSel(ProposalListView::SubTextMode m)
 /**************************************************************************/
 void ProposalListView::setSubModeDef(ProposalListView::SubTextMode m)
 {
-    _defSubtextMode = m;
+	_defSubtextMode = m;
 
 	// Replace the delegate by a new cool one
 	delete itemDelegate();
@@ -379,8 +379,8 @@ void ProposalListView::loadSettings(QSettings &s)
 	_actionCtrl = s.value("ActionCtrl",1).toInt();
 	_actionMeta = s.value("ActionMeta",0).toInt();
 	_actionAlt = s.value("ActionAlt",2).toInt();
-    setSubModeSel(static_cast<SubTextMode>(s.value("SubtextModeSelection", 2).toInt()));
-    setSubModeDef(static_cast<SubTextMode>(s.value("SubtextModeDefault", 1).toInt()));
+	setSubModeSel(static_cast<SubTextMode>(s.value("SubtextModeSelection", 2).toInt()));
+	setSubModeDef(static_cast<SubTextMode>(s.value("SubtextModeDefault", 1).toInt()));
 	_nItemsToShow = s.value("NumberOfProposals", 6).toInt();
 }
 

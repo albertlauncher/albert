@@ -18,7 +18,6 @@
 #define SETTINGSDIALOG_H
 
 #include "ui_settingsdialog.h"
-#include "singleton.h"
 
 class MainWidget;
 
@@ -58,6 +57,8 @@ protected slots:
 	void modActionAltChanged(int);
 	void onPbHotkeyPressed();
 	void onHotkeyChanged(int);
+	void onShowCenteredChanged(bool);
+	void onMaxHistoryChanged(int);
 
 public slots:
 	void show();

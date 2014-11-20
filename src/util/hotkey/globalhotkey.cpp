@@ -24,7 +24,7 @@ GlobalHotkey::GlobalHotkey(QObject *parent) :
 	QObject(parent)
 {
 	_impl = new GlobalHotkeyPrivate;
-	connect(_impl, SIGNAL(hotKeyPressed()), this, SLOT(onHotkeyPressed()));
+	connect(_impl, &GlobalHotkeyPrivate::hotKeyPressed, this, &GlobalHotkey::onHotkeyPressed);
 	_enabled = true;
 	_hotkey = 0;
 }
@@ -53,12 +53,12 @@ bool GlobalHotkey::registerHotkey(const QKeySequence &hk)
 bool GlobalHotkey::registerHotkey(const int hk)
 {
 	// Unregister other hotkeys before registering new ones
-    unregisterHotkey();
+	unregisterHotkey();
 
 	//TODO make this capable of multiple key, so that the old one does not have to be unregistered whil registereing another
 	if (_impl->registerNativeHotkey(hk)) {
 		_hotkey = hk;
-        emit hotKeyChanged(hk);
+		emit hotKeyChanged(hk);
 		return true;
 	}
 	return false;
@@ -75,7 +75,7 @@ void GlobalHotkey::unregisterHotkey()
 {
 	_impl->unregisterNativeHotkeys();
 	_hotkey = 0;
-    emit hotKeyChanged(0);
+	emit hotKeyChanged(0);
 }
 
 /**************************************************************************/

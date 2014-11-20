@@ -24,23 +24,18 @@
 class FileIndexWidget : public QWidget
 {
 	Q_OBJECT
-	Ui::FileIndexWidget ui;
 
 public:
 	explicit FileIndexWidget(FileIndex*, QWidget *parent = 0);
 
-protected:
-	FileIndex *_ref;
+private:
+	FileIndex *_index;
+	Ui::FileIndexWidget ui;
 
 protected slots:
-	void restoreDefaults();
-	void updateUI();
-
-	void oncb_searchTypeChanged(int);
-	void onButton_add();
-	void onButton_remove();
-	void rebuildIndex();
-	void onCheckbox_toggle(bool);
+	void onButton_AddPath();
+	void onButton_RemovePath();
+	void onButton_RestorePaths();
 };
 
 #endif // FILEINDEXWIDGET_H

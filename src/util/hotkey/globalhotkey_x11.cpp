@@ -16,40 +16,21 @@
 
 #include "globalhotkey_p.h"
 #include "X11/Xutil.h"
+#include "X11/XKBlib.h"
 #include "xcb/xcb.h"
 #include <QtX11Extras/QX11Info>
-#include <QVector>
 #include <QSet>
 #include <QAbstractEventDispatcher>
 
-static u_int16_t _alt_mask;
-static u_int16_t _meta_mask;
-static u_int16_t _super_mask;
-static u_int16_t _hyper_mask;
-static u_int16_t _numlock_mask;
 static bool failed;
+static int XGrabErrorHandler(Display *, XErrorEvent *){
+	failed = true;
+	return 0;
+}
 
 /**************************************************************************/
-struct Qt_XK_Keygroup {
-		char num;
-		int sym[3];
-};
-
-/**************************************************************************/
-struct Qt_XK_Keymap {
-		int key;
-		Qt_XK_Keygroup xk;
-};
-
-/**************************************************************************/
-struct GrabbedKey {
-	uint mod;
-	int code;
-};
-static QVector<GrabbedKey> _grabbedKeys;
-
-/**************************************************************************/
-static Qt_XK_Keymap Qt_XKSym_table[] = {
+GlobalHotkey::GlobalHotkeyPrivate::Qt_XK_Keymap
+GlobalHotkey::GlobalHotkeyPrivate::Qt_XKSym_table[] = {
 	{ Qt::Key_Escape,      {1, { XK_Escape }}},
 	{ Qt::Key_F1,          {1, { XK_F1 }}},
 	{ Qt::Key_F2,          {1, { XK_F2 }}},
@@ -83,6 +64,7 @@ static Qt_XK_Keymap Qt_XKSym_table[] = {
 	{ Qt::Key_Control,     {2, { XK_Control_L, XK_Control_R }}},
 	{ Qt::Key_Meta,        {2, { XK_Meta_L, XK_Meta_R }}},
 	{ Qt::Key_Alt,         {2, { XK_Alt_L, XK_Alt_R }}},
+	{ Qt::Key_Menu,        {1, { XK_Menu }}},
 	{ Qt::Key_Space,       {1, { XK_space }}},
 	{ Qt::Key_Return,      {1, { XK_Return }}},
 	{ Qt::Key_Asterisk,    {1, { XK_asterisk }}},
@@ -92,17 +74,9 @@ static Qt_XK_Keymap Qt_XKSym_table[] = {
 	{ Qt::Key_Comma,       {1, { XK_comma }}},
 	{ Qt::Key_Period,      {1, { XK_period }}},
 	{ Qt::Key_Minus,       {1, { XK_minus }}},
-	// TODO Missing Hash/Pound
 	{ Qt::Key_Plus,        {1, { XK_plus }}},
 	{ Qt::Key_unknown,     {0, { 0 }}},
 };
-
-/**************************************************************************/
-static int XGrabErrorHandler(Display *, XErrorEvent *)
-{
-	failed = true;
-	return 0;
-}
 
 /**************************************************************************/
 /**************************************************************************/
@@ -110,6 +84,12 @@ static int XGrabErrorHandler(Display *, XErrorEvent *)
 GlobalHotkey::GlobalHotkeyPrivate::GlobalHotkeyPrivate(QObject *parent)
 	: QObject(parent)
 {
+	_alt_mask = 0;
+	_meta_mask = 0;
+	_super_mask = 0;
+	_hyper_mask = 0;
+	_numlock_mask = 0;
+
 	// open Xlib stuff
 	Display* dpy = QX11Info::display();
 	if (dpy == NULL) {
@@ -120,7 +100,6 @@ GlobalHotkey::GlobalHotkeyPrivate::GlobalHotkeyPrivate(QObject *parent)
 	// GET CORRECT MODIFIERS
 	XModifierKeymap* map = XGetModifierMapping(dpy);
 	if (map) {
-		// XKeycodeToKeysym helper code adapeted from xmodmap
 		int min_keycode, max_keycode, keysyms_per_keycode = 1;
 		XDisplayKeycodes (dpy, &min_keycode, &max_keycode);
 		XFree(XGetKeyboardMapping (dpy, min_keycode, (max_keycode - min_keycode + 1), &keysyms_per_keycode));
@@ -132,9 +111,9 @@ GlobalHotkey::GlobalHotkeyPrivate::GlobalHotkeyPrivate(QObject *parent)
 					KeySym sym;
 					int symIndex = 0;
 					do {
-						sym = XKeycodeToKeysym(dpy, map->modifiermap[mapIndex], symIndex);
+						sym = XkbKeycodeToKeysym(dpy, map->modifiermap[mapIndex], 0, symIndex);
 						symIndex++;
-					} while ( !sym && symIndex < keysyms_per_keycode);
+					} while ( sym == NoSymbol && symIndex < keysyms_per_keycode);
 					if (_alt_mask == 0 && (sym == XK_Alt_L || sym == XK_Alt_R)) {
 						_alt_mask = 1 << maskIndex;
 					}
@@ -227,36 +206,36 @@ bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const int hk)
 
 	bool found = false;
 	for (int n = 0; Qt_XKSym_table[n].key != Qt::Key_unknown; ++n) {
-			if (Qt_XKSym_table[n].key == keyQt) {
-					kg = Qt_XKSym_table[n].xk;
-					found = true;
-					break;
-			}
+		if (Qt_XKSym_table[n].key == keyQt) {
+			kg = Qt_XKSym_table[n].xk;
+			found = true;
+			break;
+		}
 	}
 
 	if (!found) {
-			// try latin1
-			if (keyQt >= 0x20 && keyQt <= 0x7f) {
-					kg.num = 1;
-					kg.sym[0] = keyQt;
-			}
+		// try latin1
+		if (keyQt >= 0x20 && keyQt <= 0x7f) {
+			kg.num = 1;
+			kg.sym[0] = keyQt;
+		}
 	}
 
 	if (!kg.num)
-			return false;
+		return false;
 
 
 	/* Translate modifiers ( Qt -> X ) */
 
 	unsigned int modsX = 0;
 	if (modQt & Qt::META)
-			modsX |= _meta_mask;
+		modsX |= _meta_mask;
 	if (modQt & Qt::SHIFT)
-			modsX |= ShiftMask;
+		modsX |= ShiftMask;
 	if (modQt & Qt::CTRL)
-			modsX |= ControlMask;
+		modsX |= ControlMask;
 	if (modQt & Qt::ALT)
-			modsX |= _alt_mask;
+		modsX |= _alt_mask;
 
 
 

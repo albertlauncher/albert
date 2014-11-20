@@ -1,49 +1,35 @@
 # Maintainer: Manuel Schneider  <manuelschneid3r at googles mail>
 pkgname=albert
-pkgver=0.5
+pkgver=0.6.2
 pkgrel=1
 pkgdesc="A DE agnostic omnilauncher."
 arch=('i686' 'x86_64')
 url="https://github.com/ManuelSchneid3r/albert"
 license=('GPL')
 depends=('qt5-base' 'libx11' 'muparser')
-makedepends=('cmake' 'git' 'qt5-base' 'qt5-tools')
+makedepends=('cmake' 'qt5-base' 'qt5-tools')
 provides=()
 conflicts=()
 replaces=()
 backup=()
 options=()
 install=
-source=()
+source=(https://github.com/ManuelSchneid3r/albert/archive/${pkgver}.tar.gz)
 noextract=()
-md5sums=() #generate with 'makepkg -g'
-
-_gitroot=https://github.com/ManuelSchneid3r/albert.git
+md5sums=('6bd72b03a5ff5116e535a24999f4113b')
 
 build() {
-
-  msg "Connecting to GIT server...."
-
-  if [[ -d "$pkgname" ]]; then
-    cd "$pkgname" && git pull
-  else
-    git clone "$_gitroot" --branch testing "$pkgname"
-  fi
-
-  msg "Done."
-  msg "Make project..."
-
-  [[ -d "$srcdir/build" ]] || mkdir -p "$srcdir/build"
-
-  cd "$srcdir/build"
-  cmake "../$pkgname" \
+  [[ -d "${srcdir}/${pkgname}-${pkgver}/build" ]]\
+    || mkdir -p "${srcdir}/${pkgname}-${pkgver}/build"
+  cd "${srcdir}/${pkgname}-${pkgver}/build"
+  cmake ".." \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_BUILD_TYPE=Release
   make
 }
 
 package() {
-  cd "$srcdir/build"
+  cd "${srcdir}/${pkgname}-${pkgver}/build"
   make DESTDIR="$pkgdir/" install
 }
 

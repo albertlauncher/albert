@@ -138,7 +138,7 @@ QWidget *WebSearch::widget()
 }
 
 /**************************************************************************/
-void WebSearch::query(const QString &req, QVector<Service::Item *> *res) const noexcept
+void WebSearch::query(const QString &req, QVector<Service::Item *> *res) const
 {
 	QString firstWord = req.section(' ',0,0);
 	for (Item *w : _searchEngines)
@@ -150,7 +150,7 @@ void WebSearch::query(const QString &req, QVector<Service::Item *> *res) const n
 }
 
 /**************************************************************************/
-void WebSearch::queryAll(const QString &req, QVector<Service::Item *> *res)
+void WebSearch::queryFallback(const QString &req, QVector<Service::Item *> *res) const
 {
 	for (Item *w : _searchEngines){
 		w->_searchTerm = req;

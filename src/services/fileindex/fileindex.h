@@ -17,35 +17,46 @@
 #ifndef FILEINDEX_H
 #define FILEINDEX_H
 
-#include "indexservice.h"
-#include "singleton.h"
+#include "abstractindex.h"
+#include "fileindexbuilder.h"
 
-class FileIndex : public IndexService, public Singleton<FileIndex>
+class FileIndex final : public Service, public AbstractIndex
 {
-	friend class FileIndexWidget;
-	friend class Singleton<FileIndex>;
-
-	QStringList _paths;
-	bool        _indexHiddenFiles;
-
 public:
 	class Item;
 
+	FileIndex();
 	~FileIndex();
 
 	QWidget* widget() override;
+	inline QString moduleName() override {return "FileFinder";}
 
 	void initialize() override;
-	void restoreDefaults() override;
 
 	void saveSettings(QSettings &s) const override;
 	void loadSettings(QSettings &s) override;
 	void serilizeData(QDataStream &out) const override;
 	void deserilizeData(QDataStream &in) override;
 
-protected:
-	FileIndex(){}
+	void query(const QString &req, QVector<Service::Item*> *res) const override;
+	void queryFallback(const QString&, QVector<Service::Item*>*) const override;
+
+	QStringList paths() const { return _paths; }
+	void addPath(const QString &s){_paths << s;}
+	void removePath(const QString &s) { _paths.removeAll(s); }
+	void restorePaths();
+
+	inline bool indexHiddenFiles() const{ return _indexHiddenFiles; }
+	inline void setIndexHiddenFiles(bool b){ _indexHiddenFiles = b;}
+
+private:
+	QStringList           _paths;
+	bool                  _indexHiddenFiles;
+	FileIndexBuilder      _builder ;
+
+public slots:
 	void buildIndex() override;
+	void handleResults();
 };
 
 #endif // FILEINDEX_H

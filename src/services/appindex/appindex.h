@@ -17,33 +17,40 @@
 #ifndef APPINDEX_H
 #define APPINDEX_H
 
-#include "indexservice.h"
-#include "singleton.h"
+#include "abstractindex.h"
+#include <QFileSystemWatcher>
 
-class AppIndex : public IndexService, public Singleton<AppIndex>
+class AppIndex final : public Service, public AbstractIndex
 {
-	friend class AppIndexWidget;
-	friend class Singleton<AppIndex>;
-
-	QStringList _paths;
-
 public:
 	class Item;
 
+	AppIndex();
 	~AppIndex();
 
 	QWidget* widget() override;
+	inline QString moduleName() override {return "AppLauncher";}
 
 	void initialize() override;
-	void restoreDefaults() override;
+
+	QStringList paths() const;
+	bool addPath(const QString &s);
+	bool removePath(const QString &s);
+	void restorePaths();
 
 	void saveSettings(QSettings &s) const override;
 	void loadSettings(QSettings &s) override;
 	void serilizeData(QDataStream &out) const override;
 	void deserilizeData(QDataStream &in) override;
 
-protected:
-	AppIndex(){}
+	void query(const QString &req, QVector<Service::Item*> *res) const override;
+	void queryFallback(const QString&, QVector<Service::Item*>*) const override;
+
+private:
+	QFileSystemWatcher    _watcher;
+	static QIcon getIcon(QString iconName);
+
+public slots:
 	void buildIndex() override;
 };
 

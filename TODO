@@ -1,7 +1,2 @@
-TODO setEARCH IS buull
 TODO Make webserachitems proirity changeable
-TODO Command history
-TODO Read setting once at startup and write once on close
-TODO Virtualize actions, define global actions, make em customizable
-TODO Connect listview to engine to run actions using signals.
-TODO komma punkt in calc
+TODO define global actions

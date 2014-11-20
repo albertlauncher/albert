@@ -25,9 +25,10 @@
 class AppIndex::Item : public Service::Item
 {
 	friend class AppIndex;
+
 public:
 	inline QString title() const override {return _name;}
-	QIcon icon() const override;
+	QIcon icon() const override	{return _icon;}
 	inline QString infoText() const override {return _info;}
 	inline QString complete() const override {return _name;}
 
@@ -36,12 +37,11 @@ public:
 	void    altAction() override;
 	QString altActionText() const override;
 
-
-
 protected:
 	QString _name;
 	QString _info;
 	QString _iconName;
+	QIcon   _icon;
 	QString _exec;
 	bool    _term;
 
@@ -49,5 +49,4 @@ protected:
 	void serialize (QDataStream &out) const override;
 	void deserialize (QDataStream &in) override;
 };
-
 #endif // APPLICATIONITEM_H

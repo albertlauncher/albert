@@ -17,35 +17,40 @@
 #ifndef BOOKMARKINDEX_H
 #define BOOKMARKINDEX_H
 
-#include "indexservice.h"
-#include "singleton.h"
+#include "abstractindex.h"
+#include <QFileSystemWatcher>
 
-class BookmarkIndex : public IndexService, public Singleton<BookmarkIndex>
+class BookmarkIndex final : public Service, public AbstractIndex
 {
-	friend class BookmarkIndexWidget;
-	friend class Singleton<BookmarkIndex>;
-
 public:
 	class Item;
 
+	BookmarkIndex();
 	~BookmarkIndex();
 
 	QWidget* widget() override;
+	inline QString moduleName() override {return "BookmarkIndex";}
 
 	void initialize() override;
-	void restoreDefaults() override;
+
+	QString path() const;
+	bool setPath(const QString &s);
+	void unsetPath();
+	void restorePath();
 
 	void saveSettings(QSettings &s) const override;
 	void loadSettings(QSettings &s) override;
 	void serilizeData(QDataStream &out) const override;
 	void deserilizeData(QDataStream &in) override;
 
-protected:
-	BookmarkIndex(){}
-	void buildIndex() override;
+	void query(const QString &req, QVector<Service::Item*> *res) const override;
+	void queryFallback(const QString&, QVector<Service::Item*>*) const override;
 
 private:
-	QString _path;
+	QFileSystemWatcher _watcher;
+
+public slots:
+	void buildIndex() override;
 };
 
 #endif // BOOKMARKINDEX_H

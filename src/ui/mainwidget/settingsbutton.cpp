@@ -30,10 +30,7 @@ SettingsButton::SettingsButton(QWidget *parent) :
 /**********************************************************************/
 void SettingsButton::paintEvent(QPaintEvent *event)
 {
-	QPushButton::paintEvent(event); // TODO REPLACE BY CORRECT STYLEFUNC
-	//	style()->drawPrimitive(QStyle::PE_FrameDefaultButton, &option, &p, this);
-	//	style()->drawControl(QStyle::CE_PushButton,&option,&painter);
-
+	QPushButton::paintEvent(event);
 	QStyleOptionButton option;
 	option.initFrom(this);
 	QRect r = this->rect();
