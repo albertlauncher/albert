@@ -64,7 +64,6 @@ void BookmarkIndex::initialize()
 /**************************************************************************/
 QString BookmarkIndex::path() const
 {
-	qDebug() << _watcher.files();
 	return (_watcher.files().isEmpty()) ? "" : _watcher.files()[0];
 }
 
