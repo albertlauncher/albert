@@ -39,6 +39,7 @@ private:
 
 	bool nativeEventFilter(const QByteArray&, void*, long*) override;
 
+#ifdef Q_OS_LINUX
 	u_int16_t _alt_mask;
 	u_int16_t _meta_mask;
 	u_int16_t _super_mask;
@@ -47,6 +48,7 @@ private:
 
 	QVector<GrabbedKey> _grabbedKeys;
 	static Qt_XK_Keymap Qt_XKSym_table[];
+#endif
 
 signals:
 	 void hotKeyPressed();

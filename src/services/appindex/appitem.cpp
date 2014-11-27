@@ -20,7 +20,6 @@
 #include <QProcess>
 #include <QDirIterator>
 #include <QDebug>
-#include <QStandardPaths>
 
 /**************************************************************************/
 void AppIndex::Item::action()

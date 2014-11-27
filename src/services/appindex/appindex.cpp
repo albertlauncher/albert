@@ -246,7 +246,7 @@ void AppIndex::buildIndex()
 				qDebug()<< fi.fileName();
 				qDebug()<< fi.canonicalFilePath();
 				i->_info     = fi.canonicalFilePath();
-				i->_iconName = "";
+				i->_icon     = getIcon(fi.canonicalFilePath());
 				i->_exec     = QString("\"%1\"").arg(fi.canonicalFilePath());
 				i->_term     = false;
 				_index.push_back(i);
@@ -314,10 +314,11 @@ void AppIndex::buildIndex()
 	emit endBuildIndex();
 }
 
+#include "QFileIconProvider"
 /**************************************************************************/
 QIcon AppIndex::getIcon(QString iconName)
 {
-
+#ifdef Q_OS_LINUX
 	/* Icons and themes are looked for in a set of directories. By default,
 	 * apps should look in $HOME/.icons (for backwards compatibility), in
 	 * $XDG_DATA_DIRS/icons and in /usr/share/pixmaps (in that order).
@@ -381,5 +382,18 @@ QIcon AppIndex::getIcon(QString iconName)
 
 	//UNKNOWN
 	return QIcon::fromTheme("unknown");
+#endif
+#ifdef Q_OS_WIN
+
+
+	QFileIconProvider fip;
+	qDebug() << iconName;
+	return fip.icon(QFileInfo(iconName));
+//	HICON ico = ExtractIconW(nullptr, this->_exec.toStdWString().c_str(), 0);
+
+//	DestroyIcon(ico);
+//	return QIcon(QPixmap::fromWinHICON(ico));
+
+#endif
 }
 
