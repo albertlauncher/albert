@@ -49,12 +49,12 @@ private:
 
 protected slots:
 	void onThemeChanged(int);
-	void onNItemsChanged(int i);
-	void onSubModeSelChanged(int);
-	void onSubModeDefChanged(int);
-	void modActionCtrlChanged(int);
-	void modActionMetaChanged(int);
-	void modActionAltChanged(int);
+//	void onNItemsChanged(int i);
+//	void onSubModeSelChanged(int);
+//	void onSubModeDefChanged(int);
+//	void modActionCtrlChanged(int);
+//	void modActionMetaChanged(int);
+//	void modActionAltChanged(int);
 	void onPbHotkeyPressed();
 	void onHotkeyChanged(int);
 	void onShowCenteredChanged(bool);

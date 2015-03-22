@@ -14,35 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef ABSTRACTSEARCH_H
-#define ABSTRACTSEARCH_H
+#ifndef CONFIGWIDGET_H
+#define CONFIGWIDGET_H
 
-#include "abstractservice.h"
-#include <QObject>
-#include <QList>
-#include <QVector>
-
-class AbstractIndex;
-
-class AbstractSearch : public QObject
-{
-	Q_OBJECT
-public:
-	explicit AbstractSearch(){}
-	explicit AbstractSearch(AbstractIndex*ref) : _ref(ref) {}
-	virtual ~AbstractSearch(){}
-
-	inline void setIndex(AbstractIndex* ref){_ref=ref;}
-	inline const AbstractIndex* index(){return _ref;}
-
-	virtual void query(const QString &req, QVector<Service::Item*> *res) const = 0;
-
-protected:
-	AbstractIndex* _ref;
-
-public slots:
-	virtual void buildIndex() = 0;
-
-};
-
-#endif // ABSTRACTSEARCH_H
+#endif // CONFIGWIDGET_H

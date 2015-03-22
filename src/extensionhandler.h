@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,40 +14,58 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef ENGINE_H
-#define ENGINE_H
+#ifndef EXTENSIONHANDLER_H
+#define EXTENSIONHANDLER_H
 
-#include "abstractservice.h"
-#include <QVector>
-#include <QSettings>
-#include <QAbstractListModel>
+#include <QObject>
+#include <QString>
+#include <QStringList>
+#include <QPluginLoader>
+#include <QDebug>
+#include <QMap>
 
-class Engine : public QAbstractListModel
+#include "query.h"
+#include "extensioninterface.h"
+
+class ExtensionHandler : public QObject
 {
 	Q_OBJECT
-	friend class SettingsWidget;
 
 public:
-	Engine();
-	~Engine();
-
-	int      rowCount(const QModelIndex & = QModelIndex()) const override;
-	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
-
 	void initialize();
-	void saveSettings(QSettings &s) const;
-	void loadSettings(QSettings &s);
-	void serilizeData(QDataStream &out) const;
-	void deserilizeData(QDataStream &in);
-
+	void finalize();
 
 private:
-	QVector<Service*>        _modules;
-	QVector<Service::Item *> _data;
-	QString                  _requestString;
+	QMap<QString, ExtensionInterface*> _extensions;
+	QMap<QString, Query*> _recentQueries;
+	QString _lastSearchTerm;
+
+	void loadExtensions();
+
+signals:
+	void currentQueryChanged(Query *);
 
 public slots:
-	void query(const QString &req);
+	void startQuery(const QString &term);
+	void setupSession();
+	void teardownSession();
 };
 
-#endif // ENGINE_H
+#endif // EXTENSIONHANDLER_H
+
+
+/*
+
+Hoe to load an extension
+
+
+
+
+
+
+
+
+
+
+
+*/

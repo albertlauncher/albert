@@ -17,49 +17,36 @@
 #ifndef ALBERT_H
 #define ALBERT_H
 
-// aufräumemn
-#include <QDesktopWidget>
-#include <QDebug>
-#include <QApplication>
-#include <QKeyEvent>
-#include <QDebug>
-#include <QFocusEvent>
-//bleibt
 #include <QWidget>
-#include <QVBoxLayout>
-#include <QList>
-#include <QAbstractNativeEventFilter>
-// meine
 #include "inputline.h"
 #include "proposallistview.h"
-#include "engine.h"
-#include "settingsdialog.h"
-#include "globalhotkey.h"
 
 class MainWidget : public QWidget
 {
 	Q_OBJECT
-	friend class SettingsWidget;
 
 public:
 	MainWidget(QWidget *parent = 0);
 	~MainWidget();
 
+	InputLine        *_inputLine;
+	ProposalListView *_proposalListView;
+
 protected:
 	bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
 
 private:
-	QFrame           *_frame1,*_frame2;
-	InputLine        *_inputLine;
-	ProposalListView *_proposalListView;
-	Engine           *_engine;
-	SettingsWidget   *_settingsDialog;
-	bool             _showCentered;
-	GlobalHotkey     _hotkeyManager;
-	QString          _theme;
+	QFrame  *_frame1,*_frame2;
+	QString _theme;
+	bool    _showCentered;
+
+signals:
+	void widgetShown();
+	void widgetHidden();
 
 public slots:
 	void show();
+	void hide();
 	void toggleVisibility();
 };
 

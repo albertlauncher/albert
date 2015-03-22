@@ -14,35 +14,29 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef WORDMATCHSEARCH_H
-#define WORDMATCHSEARCH_H
+#ifndef ABSTRACTSEARCH_H
+#define ABSTRACTSEARCH_H
 
-#include "abstractsearch.h"
-
-#include <QList>
+#include <functional>
+#include <QHash>
 #include <QString>
-#include <QVector>
-#include <QPair>
-#include <QSet>
+#include <QList>
 
-class WordMatchSearch final : public AbstractSearch
+template<class T>
+class AbstractSearch
 {
 public:
-	explicit WordMatchSearch() : WordMatchSearch(nullptr){}
-	explicit WordMatchSearch(AbstractIndex *ref) : AbstractSearch(ref){}
-	virtual ~WordMatchSearch(){}
+	AbstractSearch() = delete;
+	explicit AbstractSearch(QHash<QString, T> *idx, std::function<QString(T)> f)
+		: _index(idx), _textFunctor(f) {}
+	virtual ~AbstractSearch(){}
 
-	void buildIndex() override;
-	void query(const QString &req, QVector<Service::Item*> *res) const override;
+	virtual void buildIndex() = 0;
+	virtual QStringList find(const QString &req) const = 0; // BLEIBT SO NICHT !MT
 
-private:
-	class CaseInsensitiveCompare;
-	class CaseInsensitiveComparePrefix;
-
-	typedef QPair<QString, QSet<Service::Item*>> Posting;
-	typedef QVector<Posting> InvertedIndex;
-
-	QVector<Posting> _invertedIndex;
+protected:
+	QHash<QString, T> *_index;
+	std::function<QString(T)> _textFunctor;
 };
 
-#endif // WORDMATCHSEARCH_H
+#endif // ABSTRACTSEARCH_H

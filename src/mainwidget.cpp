@@ -14,24 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "mainwidget.h"
-#include "engine.h"
-#include "settingsdialog.h"
-#include <QEvent>
-#include <QLabel>
 #include <QFile>
 #include <QStandardPaths>
-#include <QMessageBox>
 #include <QDir>
+#include <QDesktopWidget>
+#include <QDebug>
+#include <QApplication>
+#include <QVBoxLayout>
+#include "mainwidget.h"
 
-/**************************************************************************/
+/****************************************************************************///
 MainWidget::MainWidget(QWidget *parent)
 	: QWidget(parent)
 {
-	_settingsDialog = nullptr;
-
-	/* INITIALIZE UI */
-
+	// INITIALIZE UI
 	setWindowTitle(QString::fromLocal8Bit("Albert"));
 	setAttribute(Qt::WA_TranslucentBackground);
 	setWindowFlags( Qt::CustomizeWindowHint
@@ -72,152 +68,56 @@ MainWidget::MainWidget(QWidget *parent)
 	_inputLine->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	contentLayout->addWidget(_inputLine);
 
-	_engine = new Engine;
 	_proposalListView = new ProposalListView;
-	_proposalListView->setModel(_engine);
 	_proposalListView->setObjectName("proposallist");
 	_proposalListView->setFocusPolicy(Qt::NoFocus);
 	_proposalListView->setFocusProxy(_inputLine);
 	_proposalListView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-	_proposalListView->hide();
+//	_proposalListView->hide();
+	contentLayout->addWidget(_proposalListView);
+	// _proposalListView->setModel(_engine);
 	// Proposallistview intercepts inputline's events (Navigation with keys, pressed modifiers, etc)
 	_inputLine->installEventFilter(_proposalListView);
-	contentLayout->addWidget(_proposalListView);
 
 
-
-	/* DESERIALIZE DATA (BEFORE!! LOAD SETTINGS ) */
-
-	QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db");
-	if (f.open(QIODevice::ReadOnly| QIODevice::Text)) {
-		qDebug() << "Deserializing from" << f.fileName();
-		QDataStream in(&f);
-		_engine->deserilizeData(in);
-		_inputLine->deserilizeData(in);
-		f.close();
-	} else {
-		qWarning() << "Could not open file" << f.fileName();
-		_engine->initialize();
-	}
+	// LOAD SETTINGS
+	QSettings s(QSettings::UserScope, "albert", "albert");
+//	_proposalListView->loadSettings(s);
+	_inputLine->loadSettings(s);
+	_showCentered = s.value("showCentered", "true").toBool();
 
 
-
-	/* LOAD SETTINGS */
-
-	QSettings settings(QSettings::UserScope, "albert", "albert");
-	_engine->loadSettings(settings);
-	_proposalListView->loadSettings(settings);
-	_inputLine->loadSettings(settings);
-
-	_showCentered = settings.value("showCentered", "true").toBool();
-	_hotkeyManager.registerHotkey(settings.value("hotkey", "").toString());
-	_theme = settings.value("Theme", "Standard").toString();
-
-	// This one has to be instanciated after! all settings are loaded
-	_settingsDialog = new SettingsWidget(this);
-
-	// Albert without hotkey is useless. Force it!
-	if (_hotkeyManager.hotkey() == 0)
-	{
-		QMessageBox msgBox(QMessageBox::Critical, "Error",
-						   "Hotkey is invalid, please set it. Press Ok to open"\
-						   "the settings, or press Cancel to quit albert.",
-						   QMessageBox::Close|QMessageBox::Ok);
-		msgBox.exec();
-		if ( msgBox.result() == QMessageBox::Ok )
-			_settingsDialog->show();
-		else
-			exit(0);
-	}
-
-
-
-	/* SETUP SIGNAL FLOW */
-
-	// A change in text triggers requests
-	connect(_inputLine, &QLineEdit::textChanged,
-			_engine, &Engine::query);
-
+	// SETUP SIGNAL FLOW
 	// Proposallistview tells Inputline to change text on completion.
-	connect(_proposalListView, &ProposalListView::completion,
-			_inputLine, &QLineEdit::setText);
-
-	// Bottonpress or shortcuts op settings dialog, and close albert once
-	connect(_inputLine, &InputLine::settingsDialogRequested,
-			this, &MainWidget::hide);
-	connect(_inputLine, &InputLine::settingsDialogRequested,
-			_settingsDialog, (void (SettingsWidget::*)())&SettingsWidget::show);
-
-	// Show mainwidget if hotkey is pressed
-	connect(&_hotkeyManager, &GlobalHotkey::hotKeyPressed,
-			this, &MainWidget::toggleVisibility);
+//	connect(_proposalListView, &ProposalListView::completion,
+//			_inputLine, &QLineEdit::setText);
 
 
-
-	/* THEME */
-
-	QStringList themeDirs = QStandardPaths::locateAll(
-				QStandardPaths::DataLocation, "themes", QStandardPaths::LocateDirectory);
-	QFileInfoList themes;
-	for (QDir d : themeDirs)
-		themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
-
-	// Find and apply the theme
-	bool success = false;
-	for (QFileInfo fi : themes){
-		if (fi.baseName() == _theme) {
-			QFile styleFile(fi.canonicalFilePath());
-			if (styleFile.open(QFile::ReadOnly)) {
-				qApp->setStyleSheet(styleFile.readAll());
-				styleFile.close();
-				success = true;
-				break;
-			}
-		}
-	}
-
-	if (!success) {
-		qFatal("FATAL: Stylefile not found: %s", _theme.toStdString().c_str());
-		exit(EXIT_FAILURE);
-	}
 }
 
-/**************************************************************************/
+/****************************************************************************///
 MainWidget::~MainWidget()
 {
-	/* SERIALIZE DATA */
-	QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db";
-	QFile f(path);
-	if (f.open(QIODevice::ReadWrite| QIODevice::Text)){
-		qDebug() << "Serializing to " << path;
-		QDataStream out( &f );
-		_engine->serilizeData(out);
-		_inputLine->serilizeData(out);
-		f.close();
-	}
-	else
-		qFatal("FATAL: Could not write to %s", path.toStdString().c_str());
+	/*
+	 *  SAVE SETTINGS
+	 */
 
+//	QSettings settings(QSettings::UserScope, "albert", "albert");
 
-	/* SAVE SETTINGS */
-	QSettings settings(QSettings::UserScope, "albert", "albert");
+//	_engine->saveSettings(settings);
+//	_proposalListView->saveSettings(settings);
+//	_inputLine->saveSettings(settings);
 
-	_engine->saveSettings(settings);
-	_proposalListView->saveSettings(settings);
-	_inputLine->saveSettings(settings);
+//	settings.setValue("showCentered", _showCentered);
+//	settings.setValue("hotkey", QKeySequence(_hotkeyManager.hotkey()).toString());
+//	settings.setValue("Theme", _theme);
 
-	settings.setValue("showCentered", _showCentered);
-	settings.setValue("hotkey", QKeySequence(_hotkeyManager.hotkey()).toString());
-	settings.setValue("Theme", _theme);
-
-	delete _engine;
+//	delete _engine;
 }
-
-
 
 /*****************************************************************************/
 /********************************* S L O T S *********************************/
-/**************************************************************************/
+/****************************************************************************///
 void MainWidget::show()
 {
 	_inputLine->reset();
@@ -228,9 +128,16 @@ void MainWidget::show()
 	this->raise();
 	this->activateWindow();
 	_inputLine->setFocus();
+	emit widgetShown();
+}
+/****************************************************************************///
+void MainWidget::hide()
+{
+	QWidget::hide();
+	emit widgetHidden();
 }
 
-/**************************************************************************/
+/****************************************************************************///
 void MainWidget::toggleVisibility()
 {
 	this->isVisible() ? this->hide() : this->show();
@@ -238,13 +145,13 @@ void MainWidget::toggleVisibility()
 
 /*****************************************************************************/
 /**************************** O V E R R I D E S ******************************/
-/**************************************************************************/
+/****************************************************************************///
 
 
 #ifdef Q_OS_LINUX
 #include "xcb/xcb.h"
 #endif
-/**************************************************************************//**
+/***************************************************************************//**
  * @brief MainWidget::nativeEvent
  *
  * The purpose of this function is to hide in special casesonly.
@@ -279,8 +186,8 @@ bool MainWidget::nativeEvent(const QByteArray &eventType, void *message, long *)
 //			}
 //			std::cout << std::endl;
 			if (((fe->mode==XCB_NOTIFY_MODE_GRAB && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR)
-					|| (fe->mode==XCB_NOTIFY_MODE_NORMAL && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR ))
-					&& !_settingsDialog->isVisible())
+					|| (fe->mode==XCB_NOTIFY_MODE_NORMAL && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR )))
+//					&& !_settingsDialog->isVisible())
 				hide();
 			break;
 		}
@@ -289,3 +196,31 @@ bool MainWidget::nativeEvent(const QByteArray &eventType, void *message, long *)
 #endif
 	return false;
 }
+
+
+
+/////////////////////////////////////////////TRASH//////////////////////////////
+
+//	QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db");
+//	if (f.open(QIODevice::ReadOnly| QIODevice::Text)) {
+//		qDebug() << "Deserializing from" << f.fileName();
+//		QDataStream in(&f);
+//		_engine->deserilizeData(in);
+//		_inputLine->deserilizeData(in);
+//		f.close();
+//	} else {
+//		qWarning() << "Could not open file" << f.fileName();
+//		_engine->initialize();
+//	}
+
+//	QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db";
+//	QFile f(path);
+//	if (f.open(QIODevice::ReadWrite| QIODevice::Text)){
+//		qDebug() << "Serializing to " << path;
+//		QDataStream out( &f );
+//		_engine->serilizeData(out);
+//		_inputLine->serilizeData(out);
+//		f.close();
+//	}
+//	else
+//		qFatal("FATAL: Could not write to %s", path.toStdString().c_str());

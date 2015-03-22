@@ -14,28 +14,34 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef SEARCHWIDGET_H
-#define SEARCHWIDGET_H
+#ifndef PROPOSALLISTVIEW_H
+#define PROPOSALLISTVIEW_H
 
-#include "ui_searchwidget.h"
-#include "abstractindex.h"
-#include <QWidget>
-#include <QRegExpValidator>
+#include <QListWidget>
+#include <QEvent>
+#include <QKeyEvent>
+#include <QArrayData>
+#include <QSettings>
 
-class SearchWidget : public QWidget
+class ProposalListView final: public QListView
 {
 	Q_OBJECT
 
+	class ItemDelegate;
+
 public:
-	explicit SearchWidget(AbstractIndex *ref);
+	explicit ProposalListView(QWidget *parent = 0);
+	~ProposalListView();
+	QSize sizeHint() const override;
+	void reset() override;
 
 private:
-	AbstractIndex *_ref;
-	Ui::SearchWidget ui;
-	QRegExpValidator val;
+	bool eventFilter(QObject*, QEvent *event) override;
 
-protected slots:
+	QAbstractItemDelegate *_itemDelegate;
 
+signals:
+	void completion(QString);
 };
 
-#endif // SEARCHWIDGET_H
+#endif // PROPOSALLISTVIEW_H
