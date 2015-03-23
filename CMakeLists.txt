@@ -24,6 +24,7 @@ set(SRCS
 	src/settings.cpp
 	src/query.cpp
 	src/extensionhandler.cpp
+    src/pluginhandler.cpp
 	src/globalhotkey.cpp
 	src/globalhotkey_p.h
 	src/mainwidget.cpp

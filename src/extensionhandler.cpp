@@ -3,75 +3,7 @@
 #include <QDebug>
 #include <QJsonArray>
 #include "settings.h"
-
-/****************************************************************************///
-void ExtensionHandler::loadExtensions()
-{
-	QStringList blacklist = gSettings->value("blacklist").toStringList();
-	QDirIterator plgnIt("/usr/share/albert/plugins/", QDir::Files);
-	while (plgnIt.hasNext())
-	{
-		QString path = plgnIt.next();
-
-		// Check if this is a lib
-		if (!QLibrary::isLibrary(path)) {
-			qDebug() << "Not a library:" << path;
-			continue;
-		}
-
-		// Check if this lib is an albert extension plugin
-		QPluginLoader loader(path);
-		QString name = loader.metaData()["MetaData"].toObject()["name"].toString();
-
-		if (loader.metaData()["IID"].toString().compare(ALBERT_EXTENSION_IID) != 0) {
-			qDebug() << "Extension incompatible:" << path
-					 << loader.metaData()["IID"].toString()
-					 << ALBERT_EXTENSION_IID;
-			continue;
-		}
-
-		// METADATA ACCESS
-//		// Populate Extension
-//		Extension *ret = new Extension;
-//		ret->_info.path        = path;
-//		ret->_info.name        = metaData["name"].toString();
-//		ret->_info.version     = metaData["version"].toString();
-//		ret->_info.description = metaData["description"].toString();
-//		ret->_info.url         = metaData["url"].toString();
-//		ret->_info.copyright   = metaData["copyright"].toString();
-//		for(const auto &v : metaData["dependencies"].toArray())
-//			ret->_info.deps << v.toString();
-//		ret->_loader.setFileName(path);
-//		ret->_interface = nullptr;
-//		return ret;
-
-		// Check if this extension is blacklisted
-		if (blacklist.contains(name)){
-			qWarning() << "WARNING: Extension blacklisted:" << path;
-			continue;
-		}
-
-		QObject *rootComponent = loader.instance();
-		if (rootComponent == nullptr){
-			qWarning() << "WARNING: Loading extension failed:" << path << loader.errorString();
-			if (loader.isLoaded())
-				loader.unload();
-			continue;
-		}
-
-		ExtensionInterface *extension = qobject_cast<ExtensionInterface*>(rootComponent);
-		if (!extension) {
-			qWarning() << "Interface cast failed:" << path << loader.errorString();
-			if (loader.isLoaded())
-				loader.unload();
-			continue;
-		}
-
-		// Store the extensions
-		_extensions.insert(name, extension);
-		qDebug() << "Extension loaded:" <<  path;
-	}
-}
+#include "pluginhandler.h"
 
 /****************************************************************************///
 void ExtensionHandler::startQuery(const QString &term)
@@ -98,10 +30,16 @@ void ExtensionHandler::startQuery(const QString &term)
 /****************************************************************************///
 void ExtensionHandler::initialize()
 {
+    QList<ExtensionInterface*> extensions =
+            PluginHandler::instance()->getLoadedPlugins<ExtensionInterface*>();
+
 	qDebug() << "Initialize extenstions.";
-	loadExtensions();
-	for (ExtensionInterface *e : _extensions)
-		e->initialize();
+    for (ExtensionInterface *e : extensions){
+        if (_extensions.contains(e))
+            continue;
+        _extensions.insert(e);
+        e->initialize();
+    }
 }
 
 /****************************************************************************///

@@ -29,26 +29,25 @@
 
 class ExtensionHandler : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	void initialize();
-	void finalize();
+    void initialize();
+    void finalize();
 
 private:
-	QMap<QString, ExtensionInterface*> _extensions;
-	QMap<QString, Query*> _recentQueries;
-	QString _lastSearchTerm;
+    QSet<ExtensionInterface*> _extensions;
+    QMap<QString, Query*> _recentQueries;
+    QString _lastSearchTerm;
 
-	void loadExtensions();
 
 signals:
-	void currentQueryChanged(Query *);
+    void currentQueryChanged(Query *);
 
 public slots:
-	void startQuery(const QString &term);
-	void setupSession();
-	void teardownSession();
+    void startQuery(const QString &term);
+    void setupSession();
+    void teardownSession();
 };
 
 #endif // EXTENSIONHANDLER_H
