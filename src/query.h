@@ -34,10 +34,12 @@ struct QueryResult
 		: rid(id), type(t), relevance(r), _extension(e) {}
 	~QueryResult(){}
 
-	QString text() const   { return _extension->text(*this); }
-	QString subtext() const { return _extension->subtext(*this); }
-	const QIcon& icon() const { return _extension->icon(*this); }
-	void action(const Query &query) const {_extension->action(query, *this);}
+
+    const QIcon  &icon     (const Query &q, Qt::KeyboardModifiers mods) const { return _extension->icon      (q, *this, mods); }
+    void         action    (const Query &q, Qt::KeyboardModifiers mods) const {        _extension->action    (q, *this, mods); }
+    QString      titleText (const Query &q, Qt::KeyboardModifiers mods) const { return _extension->titleText (q, *this, mods); }
+    QString      infoText  (const Query &q, Qt::KeyboardModifiers mods) const { return _extension->infoText  (q, *this, mods); }
+    QString      actionText(const Query &q, Qt::KeyboardModifiers mods) const { return _extension->actionText(q, *this, mods); }
 
 	QString rid;
 	Type    type;
@@ -62,7 +64,7 @@ public:
 	void addResults(const QList<QueryResult> &&results);
 	void addResult(QueryResult &&result);
 
-	int      rowCount(const QModelIndex & = QModelIndex()) const override;
+    int      rowCount(const QModelIndex & = QModelIndex()) const override;
 	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
 
 private:

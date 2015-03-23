@@ -38,7 +38,7 @@ public:
 private:
 	bool eventFilter(QObject*, QEvent *event) override;
 
-	QAbstractItemDelegate *_itemDelegate;
+    ItemDelegate *_itemDelegate;
 
 signals:
 	void completion(QString);

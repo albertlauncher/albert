@@ -27,6 +27,9 @@
 /****************************************************************************///
 class ProposalListView::ItemDelegate final : public QStyledItemDelegate
 {
+public:
+    Qt::KeyboardModifiers mods;
+
 	void paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const override
 	{
 		QStyleOptionViewItemV4 option = options;
@@ -44,7 +47,7 @@ class ProposalListView::ItemDelegate final : public QStyledItemDelegate
 //		QRect iconRect(contentsRect.topLeft(), option.decorationSize);
 //		iconRect.translate( (a-option.decorationSize.width())/2, (a-option.decorationSize.height())/2);
 		QRect iconRect = option.widget->style()->subElementRect(QStyle::SE_ItemViewItemDecoration, &option, option.widget);
-		painter->drawPixmap(iconRect, index.data(Qt::DecorationRole).value<QIcon>().pixmap(option.decorationSize));
+        painter->drawPixmap(iconRect, index.data(Qt::DecorationRole + mods).value<QIcon>().pixmap(option.decorationSize));
 
 		/* Drawing text differs dependent on the mode and selection */
 		if ( (option.state & QStyle::State_Selected && gSettings->value("General/subtextSelection", false).toBool())
@@ -53,7 +56,7 @@ class ProposalListView::ItemDelegate final : public QStyledItemDelegate
 			QRect DisplayRect = option.widget->style()->subElementRect(QStyle::SE_ItemViewItemText, &option, option.widget);
 //			QRect DisplayRect(contentsRect.adjusted(a+3,0,0,0));
 			QString text = QFontMetrics(option.font).elidedText(
-						index.data(Qt::DisplayRole).toString(),
+                        index.data(Qt::DisplayRole + mods).toString(),
 						option.textElideMode,
 						DisplayRect.width());
 			painter->drawText(DisplayRect, Qt::AlignVCenter|Qt::AlignLeft, text);
@@ -83,14 +86,14 @@ class ProposalListView::ItemDelegate final : public QStyledItemDelegate
 			QFont font = option.font;
 			painter->setFont(font);
 			QString text = QFontMetrics(font).elidedText(
-						index.data(Qt::DisplayRole).toString(),
+                        index.data(Qt::DisplayRole + mods).toString(),
 						option.textElideMode,
 						DisplayRect.width());
 			painter->drawText(DisplayRect, Qt::AlignTop|Qt::AlignLeft, text);
 			font.setPixelSize(12);
 			painter->setFont(font);
 			text = QFontMetrics(font).elidedText(
-						index.data(Qt::ToolTipRole).toString(),
+                        index.data(option.state & QStyle::State_Selected ? Qt::UserRole+1 + mods : Qt::ToolTipRole + mods).toString(),
 						option.textElideMode,
 						DisplayRect.width());
 			painter->drawText(DisplayRect, Qt::AlignBottom|Qt::AlignLeft, text);
@@ -163,12 +166,12 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 	{
 		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
 		int key = keyEvent->key();
-		Qt::KeyboardModifiers mods = keyEvent->modifiers();
 
 		// Display different subtexts according to the KeyboardModifiers
 		if ( (key == Qt::Key_Control || key == Qt::Key_Meta || key == Qt::Key_Alt)){
-			// TODO FIXME
-//			modifyDelegate(mods);
+
+            _itemDelegate->mods = keyEvent->modifiers();
+            update(currentIndex());
 			return true;
 		}
 
@@ -188,39 +191,29 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 		// Selection
 		if (key == Qt::Key_Return || key == Qt::Key_Enter) {
 			if (!currentIndex().isValid()){
-//				if (model()->rowCount() > 0)
-//					setCurrentIndex(model()->index(0,0));
-//				else /// Not so easy anymore with informational
+                if (model()->rowCount() > 0)
+                    setCurrentIndex(model()->index(0,0));
+                else // TODO: Not so easy anymore with  widgets
 					return true;
-			}
-			emit activated(currentIndex());
-
-//			if (mods == Qt::ControlModifier )
-//				model()->data(currentIndex(), Qt::UserRole+20+_actionCtrl);
-//			else if (mods == Qt::MetaModifier)
-//				model()->data(currentIndex(), Qt::UserRole+20+_actionMeta);
-//			else if (mods == Qt::AltModifier)
-//				model()->data(currentIndex(), Qt::UserRole+20+_actionAlt);
-//			else //	if (mods == Qt::NoModifier )
-//				model()->data(currentIndex(), Qt::UserRole+20);
-
+            }
+            model()->data(currentIndex(), Qt::UserRole + keyEvent->modifiers());
 //			window()->hide();
 //			// Do not accept since the inpuline needs
 //			// to store the request in history
 //			return false;
 		}
 
-		// Completion
-		if (key == Qt::Key_Tab) {
-			if (!currentIndex().isValid())
-				if (model()->rowCount() > 0)
-					emit completion(model()->data(model()->index(0,0), Qt::UserRole).toString());
-				else
-					return true;
-			else
-				emit completion(model()->data(currentIndex(), Qt::UserRole).toString());
-			return true;
-		}
+//		// Completion
+//		if (key == Qt::Key_Tab) {
+//			if (!currentIndex().isValid())
+//				if (model()->rowCount() > 0)
+//					emit completion(model()->data(model()->index(0,0), Qt::UserRole).toString());
+//				else
+//					return true;
+//			else
+//				emit completion(model()->data(currentIndex(), Qt::UserRole).toString());
+//			return true;
+//		}
 	}
 
 	if (event->type() == QEvent::KeyRelease)
@@ -230,8 +223,8 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 
 		// Display different subtexts according to the KeyboardModifiers
 		if ( (key == Qt::Key_Control || key == Qt::Key_Meta || key == Qt::Key_Alt)){
-			// TODO FIXME
-//			modifyDelegate(keyEvent->modifiers());
+            _itemDelegate->mods = keyEvent->modifiers();
+            update(currentIndex());
 			return true;
 		}
 	}

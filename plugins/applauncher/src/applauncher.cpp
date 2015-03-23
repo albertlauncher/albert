@@ -21,6 +21,7 @@
 #include <QProcess>
 #include <QDirIterator>
 #include <QStandardPaths>
+#include <QMessageBox>
 #include "settings.h"
 #include "query.h"
 #include "configwidget.h"
@@ -215,19 +216,19 @@ void AppLauncher::handleQuery(Query *q)
 }
 
 /****************************************************************************///
-QString AppLauncher::text(const QueryResult &qr) const
+QString AppLauncher::titleText(const Query &q, const QueryResult &qr, Qt::KeyboardModifiers mods) const
 {
 	return _index.value(qr.rid).name;
 }
 
 /****************************************************************************///
-QString AppLauncher::subtext(const QueryResult &qr) const
+QString AppLauncher::infoText(const Query &q, const QueryResult &qr, Qt::KeyboardModifiers mods) const
 {
 	return _index.value(qr.rid).altName;
 }
 
 /****************************************************************************///
-const QIcon &AppLauncher::icon(const QueryResult &qr)
+const QIcon &AppLauncher::icon(const Query &q, const QueryResult &qr, Qt::KeyboardModifiers mods)
 {
 	if (!_iconCache.contains(_index[qr.rid].iconName))
 		_iconCache.insert(_index[qr.rid].iconName, getIcon(_index[qr.rid].iconName));
@@ -235,10 +236,27 @@ const QIcon &AppLauncher::icon(const QueryResult &qr)
 }
 
 /****************************************************************************///
-void AppLauncher::action(const Query &q, const QueryResult &qr)
+void AppLauncher::action(const Query &q, const QueryResult &qr, Qt::KeyboardModifiers mods)
 {
-	++_index[qr.rid].usage;
-	QProcess::startDetached(_index[qr.rid].exec);
+    ++_index[qr.rid].usage;
+    QString cmd = _index[qr.rid].exec;
+    if (mods == Qt::ControlModifier)
+        cmd.prepend("gksu ");
+    bool succ = QProcess::startDetached(cmd);
+    if(!succ){
+        QMessageBox msgBox(QMessageBox::Warning, "Error",
+                           "Could not run \"" + cmd + "\"",
+                           QMessageBox::Ok);
+        msgBox.exec();
+    }
+}
+
+/****************************************************************************///
+QString AppLauncher::actionText(const Query &q, const QueryResult &qr, Qt::KeyboardModifiers mods) const
+{
+    if (mods == Qt::ControlModifier)
+        return "Run " + _index[qr.rid].name + " as root";
+    return "Run " + _index[qr.rid].name;
 }
 
 /**************************************************************************/
@@ -261,113 +279,38 @@ QIcon AppLauncher::getIcon(const QString &iconName)
 	 * required to look in the "hicolor" theme if an icon was not found in the
 	 * current theme.*/
 
+
+
+
+
+
+
+    qDebug() << "---------------------";
+    qDebug() << QIcon::themeName()<< iconName;
+
     // PATH
     if (iconName.startsWith('/')){
+        qDebug() << "BY PATH";
         return QIcon(iconName);
     }
-
 
     // Strip suffix
     QString strippedIconName = iconName;
     if (strippedIconName.contains('.'))
         strippedIconName =  strippedIconName.section('.',0,-2);
 
-
-//    auto LookupIcon = [](QString iconName, QString themeName){
-
-
-//    auto fromTheme = [](QString iconName, QString themeName){
-//        QString path = LookupIcon (iconName, themeName);
-//        if (!path.isEmpty())
-//          return path;
-
-
-
-
-
-
-//          if theme has parents
-//            parents = theme.parents
-
-//          for parent in parents {
-//            filename = FindIconHelper (icon, size, parent)
-//            if filename != none
-//              return filename
-//          }
-//          return none
-//        }
-
-
-
-//    };
-
-
-
-
-//    QString path = fromTheme(iconName, QIcon::themeName());
-//    if (!path.isEmpty())
-//      return path;
-
-//    QString path = fromTheme(iconName, "hicolor");
-//    if (!path.isEmpty())
-//      return path;
-
-//    return QIcon::fromTheme("unknown");
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    if (QIcon::hasThemeIcon(strippedIconName)) // HORRIBLY BUGGY QTBUG-42239 CHNAGE WITH Qt5.4
+    if (QIcon::hasThemeIcon(strippedIconName)) {// HORRIBLY BUGGY QTBUG-42239 CHNAGE WITH Qt5.4
+        qDebug() << "BY QIcon::fromTheme";
         return QIcon::fromTheme(strippedIconName);
+    }
 
-    // Implementation for desktop specs
-    QStringList paths, themes, sizes;
-    paths << QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-    themes << QIcon::themeName() << "hicolor";
-    sizes << "scalable" << "512x512" << "384x384" << "256x256" << "192x192"
-          << "128x128" << "96x96" << "72x72" << "64x64" << "48x48" << "42x42"
-          << "36x36" << "32x32" << "24x24" << "22x22" << "16x16" << "8x8";
-
+//    // Implementation for desktop specs
+//    QStringList paths, themes, sizes;
+//    paths << QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+//    themes << QIcon::themeName() << "hicolor";
+//    sizes << "scalable" << "512x512" << "384x384" << "256x256" << "192x192"
+//          << "128x128" << "96x96" << "72x72" << "64x64" << "48x48" << "42x42"
+//          << "36x36" << "32x32" << "24x24" << "22x22" << "16x16" << "8x8";
 //	for (const QString & p : paths){
 //		for (const QString & t : themes){
 //			for (const QString & s : sizes){
@@ -388,10 +331,15 @@ QIcon AppLauncher::getIcon(const QString &iconName)
     while (it.hasNext()) {
         it.next();
         QFileInfo fi = it.fileInfo();
-        if (fi.isFile() && fi.baseName() == strippedIconName)
+        if (fi.isFile() && fi.baseName() == strippedIconName){
+            qDebug() << "BY PIXMAPS";
             return QIcon(fi.canonicalFilePath());
+        }
     }
 
+    //UNKNOWN
+    qDebug() << "unknown";
+    return QIcon::fromTheme("unknown");
 
 
 
@@ -409,6 +357,35 @@ QIcon AppLauncher::getIcon(const QString &iconName)
 
 
 
+    //TEST
+
+    //    auto LookupIcon = [](QString iconName, QString themeName){
+
+
+    //    auto fromTheme = [](QString iconName, QString themeName){
+    //        QString path = LookupIcon (iconName, themeName);
+    //        if (!path.isEmpty())
+    //          return path;
+    //          if theme has parents
+    //            parents = theme.parents
+    //          for parent in parents {
+    //            filename = FindIconHelper (icon, size, parent)
+    //            if filename != none
+    //              return filename
+    //          }
+    //          return none
+    //        }
+    //    };
+
+    //    QString path = fromTheme(iconName, QIcon::themeName());
+    //    if (!path.isEmpty())
+    //      return path;
+
+    //    QString path = fromTheme(iconName, "hicolor");
+    //    if (!path.isEmpty())
+    //      return path;
+
+    //    return QIcon::fromTheme("unknown");
 
 
 
@@ -418,29 +395,15 @@ QIcon AppLauncher::getIcon(const QString &iconName)
 
 
 
-
-
-
-
-
-    qDebug() << "---------------------";
-    qDebug() << iconName;
-    qDebug() << QIcon::themeName();
-    qDebug() << QIcon::themeSearchPaths();
-	// PATH
-	if (iconName.startsWith('/')){
-		return QIcon(iconName);
-	}
-
-	// Strip suffix
-//	QString tmp = iconName;
-//	if (tmp.contains('.'))
-//		tmp =  tmp.section('.',0,-2);
-	if (QIcon::hasThemeIcon(iconName))
-		return QIcon::fromTheme(iconName);
-
-	//UNKNOWN
-	return QIcon::fromTheme("unknown");
+//	// BACKUP
+//	if (iconName.startsWith('/'))
+//		return QIcon(iconName);
+////	QString tmp = iconName;
+////	if (tmp.contains('.'))
+////		tmp =  tmp.section('.',0,-2);
+//	if (QIcon::hasThemeIcon(iconName))
+//		return QIcon::fromTheme(iconName);
+//	return QIcon::fromTheme("unknown");
 }
 
 /****************************************************************************///

@@ -38,19 +38,23 @@ void Query::addResult(QueryResult &&result)
 /****************************************************************************///
 QVariant Query::data(const QModelIndex &index, int role) const
 {
+    // Strip out modifiers
+    Qt::KeyboardModifiers mods = static_cast<Qt::KeyboardModifiers>(role & Qt::KeyboardModifierMask);
+    role = role & ~Qt::KeyboardModifierMask;
+
 	if (!index.isValid())
 		return QVariant();
 	if (role == Qt::DisplayRole)
-		return _results[index.row()].text();
+        return _results[index.row()].titleText(*this, mods);
 	if (role == Qt::ToolTipRole)
-		return _results[index.row()].subtext();
-//	if (role == Qt::DecorationRole)  // TODO UNCOMMENT
-//		return _results[index.row()].icon();
-
-//	if (role == Qt::UserRole)
-//	if (role == Qt::UserRole+10)
-//	if (role == Qt::UserRole+11)
-	return QVariant();
+        return _results[index.row()].infoText(*this, mods);
+    if (role == Qt::DecorationRole)
+        return _results[index.row()].icon(*this, mods);
+    if (role == Qt::UserRole)
+        _results[index.row()].action(*this, mods);
+    if (role == Qt::UserRole + 1)
+        return _results[index.row()].actionText(*this, mods);
+    return QVariant();
 }
 
 /****************************************************************************///

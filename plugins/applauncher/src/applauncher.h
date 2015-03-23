@@ -75,12 +75,14 @@ public:
 	void        finalize() override;
 	void        setupSession() override;
 	void        teardownSession() override;
-	void        handleQuery(Query*) override;
-	QString     text (const QueryResult&) const override;
-	QString     subtext (const QueryResult&) const override;
-	const QIcon &icon(const QueryResult&) override;
-	void        action(const Query&, const QueryResult&) override;
-	QWidget*    widget() override;
+	void        handleQuery(Query*) override;    
+    const QIcon &icon     (const Query&, const QueryResult&, Qt::KeyboardModifiers mods) override;
+    void        action    (const Query&, const QueryResult&, Qt::KeyboardModifiers mods) override;
+    QString     titleText (const Query&, const QueryResult&, Qt::KeyboardModifiers mods) const override;
+    QString     infoText  (const Query&, const QueryResult&, Qt::KeyboardModifiers mods) const override;
+    QString     actionText(const Query&, const QueryResult&, Qt::KeyboardModifiers mods) const override;
+
+    QWidget*    widget() override;
 
 private:
 	QHash<QString, AppInfo> _index;
