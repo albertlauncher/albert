@@ -10,9 +10,15 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-MESSAGE(STATUS "Build type: " ${CMAKE_BUILD_TYPE} )
+IF (NOT CMAKE_BUILD_TYPE)
+    MESSAGE(STATUS "Albert build type is debug")
+    SET(CMAKE_BUILD_TYPE "debug" )
+ELSE  (NOT CMAKE_BUILD_TYPE)
+    MESSAGE(STATUS "Albert build type is " ${CMAKE_BUILD_TYPE} )
+ENDIF (NOT CMAKE_BUILD_TYPE)
 
 find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Svg REQUIRED)
 
 include_directories(
 	src/
@@ -62,8 +68,8 @@ qt5_add_resources(RSRC
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 	# Add platformspecific stuff
-	find_package(Qt5X11Extras REQUIRED)
-	find_library(muparser REQUIRED)
+    find_package(Qt5X11Extras REQUIRED)
+#	find_library(muparser REQUIRED)
 	set(SRCS ${SRCS} src/globalhotkey_x11.cpp)
 
 	# Define targets and linked libs
