@@ -25,15 +25,6 @@
 #define PLUGINFOLDER "plugins"
 
 /****************************************************************************///
-PluginHandler *PluginHandler::_instance = nullptr;
-/****************************************************************************///
-PluginHandler *PluginHandler::instance() {
-    if( _instance == nullptr )
-        _instance = new PluginHandler();
-    return _instance;
-}
-
-/****************************************************************************///
 void PluginHandler::loadPlugins()
 {
     QStringList pluginDirs = QStandardPaths::locateAll(

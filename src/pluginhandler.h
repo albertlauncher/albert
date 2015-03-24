@@ -21,6 +21,7 @@
 #include <QString>
 #include <QStringList>
 #include <QPluginLoader>
+#include "singleton.h"
 
 struct PluginSpec
 {
@@ -38,11 +39,12 @@ struct PluginSpec
     QPluginLoader * loader;
 };
 
-class PluginHandler final
+class PluginHandler final : public Singleton<PluginHandler>
 {
+    friend class Singleton<PluginHandler>;
+
 public:
     ~PluginHandler(){}
-    static PluginHandler *instance();
     const QList<PluginSpec> & getPluginSpecs(){ return _plugins; }
 
     template<typename T>
@@ -58,7 +60,6 @@ private:
     PluginHandler() { loadPlugins(); }
     void loadPlugins();
 
-    static PluginHandler *_instance;
     QList<PluginSpec> _plugins;
 };
 
