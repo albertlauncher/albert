@@ -1,17 +1,25 @@
+#http://doc.qt.io/qt-5/cmake-manual.html
 cmake_minimum_required(VERSION 2.8.12)
+
 project(appLauncher)
-SET(TARGET_VERSION_MAJOR 0)
-SET(TARGET_VERSION_MINOR 6)
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -Wall")
+SET(TARGET_VERSION_MAJOR 1)
+SET(TARGET_VERSION_MINOR 0)
+
+# Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+# Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-MESSAGE(STATUS "Build type: " ${CMAKE_BUILD_TYPE} )
+# Set additional compiler flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -pedantic -Wextra")
 
-find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Widgets 5.1 REQUIRED)
+MESSAGE(STATUS "Qt5Widgets_VERSION " ${Qt5Widgets_VERSION_STRING})
+
+find_package(Qt5Svg REQUIRED)
+MESSAGE(STATUS "Qt5Svg_VERSION " ${Qt5Svg_VERSION})
 
 include_directories(
 	../../src/common
@@ -19,7 +27,8 @@ include_directories(
 )
 
 set(APPLAUNCHER_SRCS
-	src/applauncher.cpp
+    src/metadata.json
+    src/applauncher.cpp
 	src/configwidget.cpp
 	../../src/common/extensioninterface.h
 	../../src/common/abstractsearch.h

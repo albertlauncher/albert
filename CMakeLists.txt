@@ -1,24 +1,30 @@
+#http://doc.qt.io/qt-5/cmake-manual.html
 cmake_minimum_required(VERSION 2.8.12)
 
 PROJECT(albert)
+
 SET(TARGET_VERSION_MAJOR 0)
 SET(TARGET_VERSION_MINOR 6)
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -Wall")
+# Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+# Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+# Set additional compiler flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -pedantic -Wextra")
 
 IF (NOT CMAKE_BUILD_TYPE)
-    MESSAGE(STATUS "Albert build type is debug")
+    MESSAGE(STATUS "Set build type explicitely to debug")
     SET(CMAKE_BUILD_TYPE "debug" )
-ELSE  (NOT CMAKE_BUILD_TYPE)
-    MESSAGE(STATUS "Albert build type is " ${CMAKE_BUILD_TYPE} )
 ENDIF (NOT CMAKE_BUILD_TYPE)
 
-find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Widgets 5.1 REQUIRED)
+MESSAGE(STATUS "Qt5Widgets_VERSION " ${Qt5Widgets_VERSION_STRING})
+
 find_package(Qt5Svg REQUIRED)
+MESSAGE(STATUS "Qt5Svg_VERSION " ${Qt5Svg_VERSION})
 
 include_directories(
 	src/
@@ -67,14 +73,24 @@ qt5_add_resources(RSRC
 #linux
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-	# Add platformspecific stuff
     find_package(Qt5X11Extras REQUIRED)
+    MESSAGE(STATUS "Qt5X11Extras_VERSION " ${Qt5X11Extras_VERSION})
+
 #	find_library(muparser REQUIRED)
+
+
 	set(SRCS ${SRCS} src/globalhotkey_x11.cpp)
 
 	# Define targets and linked libs
 	add_executable(albert ${SRCS} ${UIS} ${DATA} ${RSRC})
-	target_link_libraries(albert Qt5::Widgets Qt5::X11Extras muparser X11)
+
+    target_link_libraries(albert
+        ${Qt5Widgets_LIBRARIES}
+        ${Qt5X11Extras_LIBRARIES}
+        Qt5::X11Extras
+#        muparser
+        X11
+)
 
 	# Define make install target
 	install(TARGETS albert RUNTIME DESTINATION bin)
