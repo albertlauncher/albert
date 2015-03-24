@@ -17,6 +17,7 @@
 #include "pluginhandler.h"
 #include <QDirIterator>
 #include <QDebug>
+#include <QJsonArray>
 #include <QStandardPaths>
 #include "settings.h"
 #include "extensioninterface.h"
@@ -59,14 +60,19 @@ void PluginHandler::loadPlugins()
             QPluginLoader *loader = new QPluginLoader(path);
             QJsonObject metaData = loader->metaData()["MetaData"].toObject();
             PluginSpec ps;
+            ps.path = path;
             ps.IID = loader->metaData()["IID"].toString();
             ps.name = metaData["name"].toString();
-            ps.path = path;
             ps.version = metaData["version"].toString();
             ps.platform = metaData["platform"].toString();
             ps.group = metaData["group"].toString();
-            ps.dependencies = metaData["dependencies"].toString().split(", " , QString::SkipEmptyParts);
+            ps.copyright = metaData["copyright"].toString();
             ps.description = metaData["description"].toString();
+            for (const QJsonValue &v : metaData["dependencies"].toArray()){
+                QString dep = v.toString();
+                if (!dep.isEmpty())
+                    ps.dependencies << dep;
+            }
             ps.loader = loader;
 
             // Check if this lib is an albert extension plugin
@@ -80,7 +86,6 @@ void PluginHandler::loadPlugins()
             // Check if this extension is blacklisted
             if (blacklist.contains(ps.name)){
                 qWarning() << "WARNING: Extension blacklisted:" << path;
-                ps.status = PluginSpec::Status::Blacklisted;
                 delete loader;
                 continue;
             }

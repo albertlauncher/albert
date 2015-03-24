@@ -20,12 +20,15 @@
 #include "mainwidget.h"
 
 #include <QDir>
+#include <QDebug>
 #include <QStandardPaths>
 #include <QMessageBox>
 #include <QCloseEvent>
 #include <QDesktopWidget>
 #include <QFocusEvent>
-#include <QSettings>
+#include "pluginhandler.h"
+#include "settings.h"
+
 
 
 /****************************************************************************///
@@ -34,6 +37,11 @@ SettingsWidget::SettingsWidget(MainWidget *ref)
 {
 	ui.setupUi(this);
 	setWindowFlags(Qt::Window);
+    updatePluginList();
+
+    connect(ui.treeWidget_plugins, &QTreeWidget::currentItemChanged,
+            this, &SettingsWidget::updatePluginInformations);
+
 
 
 	/*
@@ -145,7 +153,80 @@ SettingsWidget::SettingsWidget(MainWidget *ref)
 //								 + ui.lw_modules->contentsMargins().left()
 //								 + ui.lw_modules->contentsMargins().right()
 //								 + ui.lw_modules->spacing()*2);
-//	ui.lw_modules->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    //	ui.lw_modules->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+}
+
+/****************************************************************************///
+void SettingsWidget::updatePluginList()
+{
+    QSet<QString> blacklist = gSettings->value(SETTINGS_PLGN_BLACKLIST).toStringList().toSet();
+    const QList<PluginSpec>& specs = PluginHandler::instance()->getPluginSpecs();
+    for (const PluginSpec & spec : specs){
+
+        // Get the top level item of this group, make sure it exists
+        QList<QTreeWidgetItem *> tlis =
+                ui.treeWidget_plugins->findItems(spec.group, Qt::MatchExactly);
+        if (tlis.size() > 1) // MUST NOT HAPPEN
+            qCritical() << "Found multiple identical TopLevelItems in PluginList";
+        QTreeWidgetItem *tli;
+        if (tlis.size() == 0){
+            tli= new QTreeWidgetItem({spec.group});
+            tli->setFlags(Qt::ItemIsEnabled);
+            ui.treeWidget_plugins->addTopLevelItem(tli);
+        }
+        else
+            tli = tlis.first();
+
+        // Create the child and insert a childitem
+        QTreeWidgetItem *child = new QTreeWidgetItem();
+//        child->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        child->setData(0, Qt::DisplayRole, spec.name);
+        child->setData(1, Qt::DisplayRole, spec.version);
+            child->setCheckState(0, (blacklist.contains(spec.name)) ? Qt::Unchecked : Qt::Checked);
+        switch (spec.status) {
+        case PluginSpec::Status::Loaded:
+            child->setData(0, Qt::DecorationRole, QIcon(":plugin_loaded"));
+            break;
+        case PluginSpec::Status::NotLoaded:
+            child->setData(0, Qt::DecorationRole, QIcon(":plugin_notloaded"));
+            break;
+        case PluginSpec::Status::Error:
+            child->setData(0, Qt::DecorationRole, QIcon(":plugin_error"));
+            break;
+        default:
+            qCritical() << "Unhandled PluginSpec::Status";
+        }
+        child->setData(0, Qt::UserRole, spec.path);
+        child->setData(0, Qt::ToolTipRole, spec.description);
+        tli->addChild(child);
+    }
+}
+/****************************************************************************///
+void SettingsWidget::updatePluginInformations()
+{
+    // Respect the toplevel items
+    bool isTopLevelItem = !ui.treeWidget_plugins->currentIndex().parent().isValid();
+    ui.widget_pluginInfos->setEnabled(!isTopLevelItem);
+    if (isTopLevelItem) return;
+
+    //    FIND AND APPLY
+    QString path = ui.treeWidget_plugins->currentItem()->data(0,Qt::UserRole).toString();
+    for (const PluginSpec& spec : PluginHandler::instance()->getPluginSpecs()){
+        if (spec.path == path) { // MUST HAPPEN
+            ui.label_pluginName->setText(spec.name);
+            ui.label_pluginVersion->setText(spec.version);
+            ui.label_pluginCopyright->setText(spec.copyright);
+            ui.label_pluginGroup->setText(spec.group);
+            ui.label_pluginPath->setText(spec.path);
+            ui.label_pluginPlatform->setText(spec.platform);
+            QString deps;
+            for (QString s : spec.dependencies)
+                deps.append(s).append("\n");
+            ui.textBrowser_pluginDependencies->setText(deps);
+            ui.textBrowser_pluginDescription->setText(spec.description);
+            break;
+        }
+    }
 }
 
 /****************************************************************************///
@@ -241,7 +322,7 @@ void SettingsWidget::keyReleaseEvent(QKeyEvent *event)
 		// Modifier released -> update the label
 		int key = event->key();
 		if(key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta) {
-			ui.pb_hotkey->setText(QKeySequence(event->modifiers()|Qt::Key_Question).toString());
+            ui.pushButton_hotkey->setText(QKeySequence(event->modifiers()|Qt::Key_Question).toString());
 			return;
 		}
 		return;
@@ -258,7 +339,7 @@ void SettingsWidget::keyReleaseEvent(QKeyEvent *event)
 /****************************************************************************///
 void SettingsWidget::onHotkeyChanged(int hotkey)
 {
-	ui.pb_hotkey->setText(QKeySequence(hotkey).toString());
+    ui.pushButton_hotkey->setText(QKeySequence(hotkey).toString());
 }
 
 /****************************************************************************///

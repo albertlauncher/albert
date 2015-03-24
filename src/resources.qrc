@@ -1,6 +1,9 @@
 <RCC>
     <qresource prefix="/">
+        <file alias="plugin_err">resources/icons/plugin_error.png</file>
+        <file alias="plugin_notloaded">resources/icons/plugin_notloaded.png</file>
+        <file alias="plugin_loaded">resources/icons/plugin_ok.png</file>
         <file alias="app_icon">resources/icons/icon.svg</file>
-        <file alias="cogwheel">resources/icons/cogwheel.svg</file>
+        <file alias="gear">resources/icons/cogwheel.svg</file>
     </qresource>
 </RCC>

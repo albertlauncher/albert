@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>640</width>
-    <height>360</height>
+    <height>380</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -61,14 +61,14 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QPushButton" name="pb_hotkey">
+             <widget class="QPushButton" name="pushButton_hotkey">
               <property name="text">
                <string>Press to set hotkey</string>
               </property>
              </widget>
             </item>
             <item row="3" column="0" colspan="2">
-             <widget class="QCheckBox" name="cb_center">
+             <widget class="QCheckBox" name="checkBox_center">
               <property name="text">
                <string>Always center Albert</string>
               </property>
@@ -93,17 +93,20 @@
                <string>H&amp;otkey</string>
               </property>
               <property name="buddy">
-               <cstring>pb_hotkey</cstring>
+               <cstring>pushButton_hotkey</cstring>
               </property>
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QSpinBox" name="sb_maxHistory"/>
+             <widget class="QSpinBox" name="spinBox_maxHistory"/>
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="label_10">
               <property name="text">
                <string>Maximum history</string>
+              </property>
+              <property name="buddy">
+               <cstring>spinBox_maxHistory</cstring>
               </property>
              </widget>
             </item>
@@ -113,12 +116,12 @@
                <string>&amp;Theme</string>
               </property>
               <property name="buddy">
-               <cstring>cb_themes</cstring>
+               <cstring>checkBox_themes</cstring>
               </property>
              </widget>
             </item>
             <item row="6" column="1">
-             <widget class="QComboBox" name="cb_themes"/>
+             <widget class="QComboBox" name="checkBox_themes"/>
             </item>
             <item row="4" column="0" colspan="2">
              <widget class="QCheckBox" name="checkBox_infoSelected">
@@ -182,14 +185,224 @@
      </widget>
      <widget class="QWidget" name="tabPlugins">
       <attribute name="title">
-       <string>Modules</string>
+       <string>Plugins</string>
       </attribute>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QTreeView" name="treeView_plugins">
-         <property name="horizontalScrollBarPolicy">
-          <enum>Qt::ScrollBarAlwaysOff</enum>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QTreeWidget" name="treeWidget_plugins">
+           <property name="horizontalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
+           </property>
+           <property name="headerHidden">
+            <bool>true</bool>
+           </property>
+           <property name="columnCount">
+            <number>1</number>
+           </property>
+           <column>
+            <property name="text">
+             <string notr="true">1</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_restart">
+           <property name="text">
+            <string>Restart needed!</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QWidget" name="widget_pluginInfos" native="true">
+         <property name="enabled">
+          <bool>false</bool>
          </property>
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <item>
+           <layout class="QGridLayout" name="gridLayout_2">
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_9">
+              <property name="text">
+               <string>Version:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="0">
+             <widget class="QLabel" name="label_15">
+              <property name="text">
+               <string>Dependencies:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="1">
+             <widget class="QTextBrowser" name="textBrowser_pluginDependencies">
+              <property name="html">
+               <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLabel" name="label_pluginVersion">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLabel" name="label_pluginGroup">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_13">
+              <property name="text">
+               <string>Path:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="1">
+             <widget class="QTextBrowser" name="textBrowser_pluginDescription">
+              <property name="html">
+               <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="label_pluginName">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="label_14">
+              <property name="text">
+               <string>Platform:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="0">
+             <widget class="QLabel" name="label_16">
+              <property name="text">
+               <string>Description:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QLabel" name="label_pluginPath">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QLabel" name="label_pluginCopyright">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QLabel" name="label_7">
+              <property name="text">
+               <string>Copyright:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QLabel" name="label_pluginPlatform">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_12">
+              <property name="text">
+               <string>Group:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_6">
+              <property name="text">
+               <string>Name:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_pluginHelp">
+              <property name="text">
+               <string>Help</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_pluginConfig">
+              <property name="text">
+               <string>Configuration</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
@@ -225,6 +438,9 @@ p, li { white-space: pre-wrap; }
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
          </property>
+         <property name="openExternalLinks">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
       </layout>
@@ -235,14 +451,13 @@ p, li { white-space: pre-wrap; }
  </widget>
  <tabstops>
   <tabstop>tabs</tabstop>
-  <tabstop>pb_hotkey</tabstop>
-  <tabstop>sb_maxHistory</tabstop>
+  <tabstop>pushButton_hotkey</tabstop>
+  <tabstop>spinBox_maxHistory</tabstop>
   <tabstop>spinBox_proposals</tabstop>
-  <tabstop>cb_center</tabstop>
+  <tabstop>checkBox_center</tabstop>
   <tabstop>checkBox_infoSelected</tabstop>
   <tabstop>checkBox_infoUnselected</tabstop>
-  <tabstop>cb_themes</tabstop>
-  <tabstop>treeView_plugins</tabstop>
+  <tabstop>checkBox_themes</tabstop>
  </tabstops>
  <resources>
   <include location="resources.qrc"/>

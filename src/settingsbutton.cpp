@@ -19,7 +19,7 @@
 #include <QPaintEvent>
 #include <QPainter>
 
-/**********************************************************************/
+/****************************************************************************///
 SettingsButton::SettingsButton(QWidget *parent) :
 	QPushButton(parent)
 {
@@ -27,7 +27,7 @@ SettingsButton::SettingsButton(QWidget *parent) :
 	this->setFocusPolicy(Qt::NoFocus);
 }
 
-/**********************************************************************/
+/****************************************************************************///
 void SettingsButton::paintEvent(QPaintEvent *event)
 {
 	QPushButton::paintEvent(event);
@@ -39,7 +39,7 @@ void SettingsButton::paintEvent(QPaintEvent *event)
 	QPixmap pm(r.size());
 	pm.fill(Qt::transparent);
 	pm.fill(option.palette.windowText().color());
-	QIcon w(":cogwheel");
+    QIcon w(":gear");
 	QPainter ppm(&pm);
 	ppm.setCompositionMode(QPainter::CompositionMode_DestinationIn);
 	ppm.drawPixmap(0,0,w.pixmap(r.size()));

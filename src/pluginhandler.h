@@ -24,15 +24,16 @@
 
 struct PluginSpec
 {
-    enum class Status{NotLoaded, Error, Loaded, Blacklisted};
+    enum class Status{NotLoaded, Error, Loaded};
     QString path;
-    QString name;
     QString IID;
+    QString name;
     QString version;
     QString platform;
     QString group;
-    QStringList dependencies;
+    QString copyright;
     QString description;
+    QStringList dependencies;
     Status  status;
     QPluginLoader * loader;
 };
@@ -42,7 +43,7 @@ class PluginHandler final
 public:
     ~PluginHandler(){}
     static PluginHandler *instance();
-    const QList<PluginSpec> & getPluginSpecs(){return _plugins;}
+    const QList<PluginSpec> & getPluginSpecs(){ return _plugins; }
 
     template<typename T>
     QList<T> getLoadedPlugins(){
@@ -54,9 +55,7 @@ public:
     }
 
 private:
-    PluginHandler() {
-        loadPlugins();
-    }
+    PluginHandler() { loadPlugins(); }
     void loadPlugins();
 
     static PluginHandler *_instance;

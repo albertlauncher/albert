@@ -21,12 +21,9 @@
 
 class MainWidget;
 
-class SettingsWidget : public QWidget
+class SettingsWidget final : public QWidget
 {
-	Q_OBJECT
-	Ui::SettingsDialog ui;
-	MainWidget* _mainWidget;
-	bool _waitingForHotkey;
+    Q_OBJECT
 
 public:
 	enum class Tab{
@@ -37,32 +34,32 @@ public:
 	};
 
 	explicit SettingsWidget(MainWidget *ref);
-
-protected:
-	void closeEvent(QCloseEvent * event) override;
-	void keyPressEvent (QKeyEvent *) override;
-	void keyReleaseEvent ( QKeyEvent* ) override;
+    void show();
+    void show(Tab);
 
 private:
 	void grabAll();
 	void releaseAll();
+    void updatePluginList();
+    void updatePluginInformations();
+    void onThemeChanged(int);
+    void onPbHotkeyPressed();
+    void onHotkeyChanged(int);
+    void onShowCenteredChanged(bool);
+    void onMaxHistoryChanged(int);
+    //	void onNItemsChanged(int i);
+    //	void onSubModeSelChanged(int);
+    //	void onSubModeDefChanged(int);
+    //	void modActionCtrlChanged(int);
+    //	void modActionMetaChanged(int);
+    //	void modActionAltChanged(int);
+    void closeEvent(QCloseEvent * event) override;
+    void keyPressEvent (QKeyEvent *) override;
+    void keyReleaseEvent ( QKeyEvent* ) override;
 
-protected slots:
-	void onThemeChanged(int);
-//	void onNItemsChanged(int i);
-//	void onSubModeSelChanged(int);
-//	void onSubModeDefChanged(int);
-//	void modActionCtrlChanged(int);
-//	void modActionMetaChanged(int);
-//	void modActionAltChanged(int);
-	void onPbHotkeyPressed();
-	void onHotkeyChanged(int);
-	void onShowCenteredChanged(bool);
-	void onMaxHistoryChanged(int);
-
-public slots:
-	void show();
-	void show(Tab);
+    Ui::SettingsDialog ui;
+    MainWidget* _mainWidget;
+    bool _waitingForHotkey;
 };
 
 #endif // SETTINGSDIALOG_H
