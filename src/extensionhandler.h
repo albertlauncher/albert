@@ -14,9 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef EXTENSIONHANDLER_H
-#define EXTENSIONHANDLER_H
-
+#pragma once
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -27,44 +25,22 @@
 #include "query.h"
 #include "extensioninterface.h"
 
-class ExtensionHandler : public QObject
+class ExtensionHandler final : public QObject
 {
     Q_OBJECT
 
 public:
     void initialize();
     void finalize();
+    void startQuery(const QString &term);
+    void setupSession();
+    void teardownSession();
 
 private:
     QSet<ExtensionInterface*> _extensions;
     QMap<QString, Query*> _recentQueries;
     QString _lastSearchTerm;
 
-
 signals:
     void currentQueryChanged(Query *);
-
-public slots:
-    void startQuery(const QString &term);
-    void setupSession();
-    void teardownSession();
 };
-
-#endif // EXTENSIONHANDLER_H
-
-
-/*
-
-Hoe to load an extension
-
-
-
-
-
-
-
-
-
-
-
-*/

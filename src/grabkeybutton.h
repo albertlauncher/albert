@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #include <QKeyEvent>
 #include <QKeySequence>
 
-class GrabKeyButton : public QPushButton
+class GrabKeyButton final : public QPushButton
 {
     Q_OBJECT
 

@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,9 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef ABSTRACTSEARCH_H
-#define ABSTRACTSEARCH_H
-
+#pragma once
 #include <functional>
 #include <QHash>
 #include <QString>
@@ -38,5 +36,3 @@ protected:
 	QHash<QString, T> *_index;
 	std::function<QString(T)> _textFunctor;
 };
-
-#endif // ABSTRACTSEARCH_H

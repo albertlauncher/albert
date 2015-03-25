@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -32,9 +32,7 @@ private:
     void updatePluginList();
     void updatePluginInformations();
     void changeHotkey(int);
-
-
-    void onThemeChanged(int);
+    //  void onThemeChanged(int);
     //	void onNItemsChanged(int i);
     //	void onSubModeSelChanged(int);
     //	void onSubModeDefChanged(int);
@@ -42,5 +40,4 @@ private:
     //	void modActionMetaChanged(int);
     //	void modActionAltChanged(int);
     void closeEvent(QCloseEvent * event) override;
-
 };

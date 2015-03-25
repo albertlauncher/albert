@@ -14,9 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef APPLAUNCHER_H
-#define APPLAUNCHER_H
-
+#pragma once
 #include <QObject>
 #include <QtPlugin>
 #include <QList>
@@ -56,7 +54,7 @@ class AppLauncher final : public QObject, public ExtensionInterface
 	Q_INTERFACES(ExtensionInterface)
 
 public:
-	explicit AppLauncher() : _search(nullptr) {}
+    explicit AppLauncher() : _search(nullptr) {}
     ~AppLauncher() {if (_search) delete _search;}
 
 	void cleanApplications();
@@ -93,10 +91,6 @@ private:
     static bool getAppInfo(const QString &path, AppInfo *appInfo);
     static QIcon getIcon(const QString &iconName);
 	void restorePaths();
+
+    static constexpr const char* configString = "AppIndex/Paths";
 };
-
-#endif // APPLAUNCHER_H
-
-
-
-

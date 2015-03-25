@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #include <QFocusEvent>
 #include <QResizeEvent>
 
-/**************************************************************************/
+/****************************************************************************///
 InputLine::InputLine(QWidget *parent) : QLineEdit(parent)
 {
 	_settingsButton = new SettingsButton(this);
@@ -31,43 +31,43 @@ InputLine::InputLine(QWidget *parent) : QLineEdit(parent)
 	connect(this, &QLineEdit::textEdited, &_history, &History::reset);
 }
 
-/**************************************************************************/
+/****************************************************************************///
 InputLine::~InputLine()
 {
 	delete _settingsButton;
 }
 
-/**************************************************************************/
+/****************************************************************************///
 void InputLine::saveSettings(QSettings &s) const
 {
 	_history.saveSettings(s);
 }
 
-/**************************************************************************/
+/****************************************************************************///
 void InputLine::loadSettings(QSettings &s)
 {
 	_history.loadSettings(s);
 }
 
-/**************************************************************************/
+/****************************************************************************///
 void InputLine::serilizeData(QDataStream &out) const
 {
 	_history.serilizeData(out);
 }
 
-/**************************************************************************/
+/****************************************************************************///
 void InputLine::deserilizeData(QDataStream &in)
 {
 	_history.deserilizeData(in);
 }
 
-/**************************************************************************/
+/****************************************************************************///
 void InputLine::resizeEvent(QResizeEvent *event)
 {
 	_settingsButton->move(event->size().width()-_settingsButton->width(),0);
 }
 
-/**************************************************************************/
+/****************************************************************************///
 void InputLine::keyPressEvent(QKeyEvent *e)
 {
 	int key = e->key();
@@ -110,7 +110,7 @@ void InputLine::keyPressEvent(QKeyEvent *e)
 	QLineEdit::keyPressEvent(e);
 }
 
-/**************************************************************************/
+/****************************************************************************///
 void InputLine::reset()
 {
 	_history.reset();

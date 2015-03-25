@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,15 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef GLOBALHOTKEY_P_H
-#define GLOBALHOTKEY_P_H
-
+#pragma once
 #include "globalhotkey.h"
 #include <QObject>
 #include <QSet>
 #include <QAbstractNativeEventFilter>
 
-class GlobalHotkey::GlobalHotkeyPrivate : public QObject, public QAbstractNativeEventFilter
+class GlobalHotkey::GlobalHotkeyPrivate final: public QObject, public QAbstractNativeEventFilter
 {
     Q_OBJECT
 
@@ -38,5 +36,3 @@ private:
 signals:
 	 void hotKeyPressed();
 };
-
-#endif // GLOBALHOTKEY_P_H

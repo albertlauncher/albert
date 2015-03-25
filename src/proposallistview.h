@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,9 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef PROPOSALLISTVIEW_H
-#define PROPOSALLISTVIEW_H
-
+#pragma once
 #include <QListWidget>
 #include <QEvent>
 #include <QKeyEvent>
@@ -43,5 +41,3 @@ private:
 signals:
 	void completion(QString);
 };
-
-#endif // PROPOSALLISTVIEW_H

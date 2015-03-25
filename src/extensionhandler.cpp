@@ -1,3 +1,19 @@
+// albert - a simple application launcher for linux
+// Copyright (C) 2014-2015 Manuel Schneider
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #include "extensionhandler.h"
 #include <QDirIterator>
 #include <QDebug>
@@ -33,7 +49,7 @@ void ExtensionHandler::initialize()
     QList<ExtensionInterface*> extensions =
             PluginHandler::instance()->getLoadedPlugins<ExtensionInterface*>();
 
-	qDebug() << "Initialize extenstions.";
+    qDebug() << "Initialize extenstions.";
     for (ExtensionInterface *e : extensions){
         if (_extensions.contains(e))
             continue;
@@ -66,25 +82,3 @@ void ExtensionHandler::teardownSession(){
 		e->teardownSession();
 	qDebug() << "Session teared down.";
 }
-
-
-
-
-//		// DEBUG
-//		qDebug() <<pluginInfo.path;
-//		qDebug() <<pi.name;
-//		qDebug() <<pi.deps;
-//		qDebug() <<pi.authors;
-//		qDebug() << "keys" << pluginLib.metaData().keys();
-//		qDebug() << "IID" << pluginLib.metaData().value("IID").toString();
-//		qDebug() << "className" << pluginLib.metaData().value("className").toString();
-//		qDebug() << "debug" << pluginLib.metaData().value("debug").toString();
-//		qDebug() << "version" << pluginLib.metaData().value("version").toString();
-//		qDebug() << "version" << meta.value("version").toString();
-//		qDebug() << "authors" ;
-//		for (const QJsonValue &v : meta.value("authors").toArray())
-//			qDebug() << v.toString("error");
-//		qDebug() << "dependencies" ;
-//		for (const QJsonValue &v : meta.value("dependencies").toArray())
-//			qDebug() << v.toString("error");
-

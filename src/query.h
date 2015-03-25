@@ -14,9 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef QUERY_H
-#define QUERY_H
-
+#pragma once
 #include "stdint.h"
 #include <QString>
 #include <QAbstractListModel>
@@ -70,18 +68,8 @@ public:
 private:
 	QList<QueryResult> _results;
 	QString _searchTerm;
-
-public slots:
-	void run(const QModelIndex &);
 };
-
-#endif // QUERY_H
-
 /*
  *  STUFF RELATED TO SORTING
  */
 // std::stable_sort(_data.begin(), _data.end(), Service::Item::ATimeCompare());
-
-
-
-

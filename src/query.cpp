@@ -17,7 +17,6 @@
 #include "query.h"
 #include <QDebug>
 
-
 /****************************************************************************///
 void Query::addResults(const QList<QueryResult> &&results)
 {
@@ -61,11 +60,4 @@ QVariant Query::data(const QModelIndex &index, int role) const
 int Query::rowCount(const QModelIndex&) const
 {
 	return _results.size();
-}
-
-/****************************************************************************///
-void Query::run(const QModelIndex &)
-{
-	// TODO: Complete this if queryresult interface is known
-
 }

@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,19 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef SETTINGSBUTTON_H
-#define SETTINGSBUTTON_H
-
+#pragma once
 #include <QPushButton>
 #include <QPolygonF>
 
-class SettingsButton : public QPushButton
+class SettingsButton final : public QPushButton
 {
 	Q_OBJECT
 public:
 	explicit SettingsButton(QWidget *parent = 0);
-protected:
+private:
 	void paintEvent(QPaintEvent *) override;
 };
-
-#endif // SETTINGSBUTTON_H

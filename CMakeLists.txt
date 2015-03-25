@@ -33,7 +33,7 @@ include_directories(
 
 set(SRCS
 	src/main.cpp
-	src/settings.cpp
+    src/settings.h
 	src/query.cpp
 	src/extensionhandler.cpp
     src/pluginhandler.cpp

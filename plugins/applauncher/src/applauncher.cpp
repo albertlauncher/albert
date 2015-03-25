@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#define CONFIG_PATHS "AppIndex/Paths"
-
 #include "applauncher.h"
 #include <QDebug>
 #include <QProcess>
@@ -43,8 +41,8 @@ void AppLauncher::initialize()
 {
 	// Check settings for paths
 	QStringList paths;
-	if (gSettings->value(CONFIG_PATHS).isValid())
-		paths = gSettings->value(CONFIG_PATHS).toStringList();
+    if (gSettings->value(configString).isValid())
+        paths = gSettings->value(configString).toStringList();
 	else{
 		paths = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
 	}
@@ -99,7 +97,7 @@ void AppLauncher::initialize()
 void AppLauncher::finalize()
 {
 	// Save settings
-	gSettings->setValue(CONFIG_PATHS, _watcher.directories());
+    gSettings->setValue(configString, _watcher.directories());
 //	gSettings.setValue("Fuzzy", dynamic_cast<FuzzySearch*>(_search) != nullptr);
 
 	// Serialize the data

@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,14 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef ALBERT_H
-#define ALBERT_H
-
+#pragma once
 #include <QWidget>
 #include "inputline.h"
 #include "proposallistview.h"
 
-class MainWidget : public QWidget
+class MainWidget final : public QWidget
 {
 	Q_OBJECT
 
@@ -29,24 +27,20 @@ public:
 	MainWidget(QWidget *parent = 0);
 	~MainWidget();
 
+    void show();
+    void hide();
+    void toggleVisibility();
+
 	InputLine        *_inputLine;
 	ProposalListView *_proposalListView;
 
-protected:
-	bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
-
 private:
+    bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
+
 	QFrame  *_frame1,*_frame2;
 	QString _theme;
 
 signals:
 	void widgetShown();
 	void widgetHidden();
-
-public slots:
-	void show();
-	void hide();
-	void toggleVisibility();
 };
-
-#endif // ALBERT_H

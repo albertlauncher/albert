@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@
 #include "settings.h"
 #include "globalhotkey.h"
 
-
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
 	QByteArray localMsg = msg.toLocal8Bit();
@@ -47,12 +46,6 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 		abort();
 	}
 }
-
-
-
-
-
-
 
 int main(int argc, char *argv[])
 {

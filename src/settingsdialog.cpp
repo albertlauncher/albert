@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,10 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "settingsdialog.h"
-
-#include "globalhotkey.h"
-#include "mainwidget.h"
-
 #include <QDir>
 #include <QDebug>
 #include <QStandardPaths>
@@ -26,10 +22,10 @@
 #include <QCloseEvent>
 #include <QDesktopWidget>
 #include <QFocusEvent>
+#include "globalhotkey.h"
+#include "mainwidget.h"
 #include "pluginhandler.h"
 #include "settings.h"
-
-
 
 /****************************************************************************///
 SettingsWidget::SettingsWidget(QWidget * parent, Qt::WindowFlags f)
@@ -297,9 +293,9 @@ void SettingsWidget::changeHotkey(int newhk)
 }
 
 
-/****************************************************************************///
-void SettingsWidget::onThemeChanged(int i)
-{
+///****************************************************************************///
+//void SettingsWidget::onThemeChanged(int i)
+//{
 //	// Apply and save the theme
 //	QFile themeFile(ui.cb_themes->itemData(i).toString());
 //	if (themeFile.open(QFile::ReadOnly)) {
@@ -311,7 +307,7 @@ void SettingsWidget::onThemeChanged(int i)
 //		QMessageBox msgBox(QMessageBox::Critical, "Error", "Could not open theme file.");
 //		msgBox.exec();
 //	}
-}
+//}
 
 ///****************************************************************************///
 //void SettingsWidget::onNItemsChanged(int i)

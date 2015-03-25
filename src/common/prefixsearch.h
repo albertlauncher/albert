@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,13 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef PREFIXSEARCH_H
-#define PREFIXSEARCH_H
-
+#pragma once
 #define SEPARATOR "\\W+" // TODO MAKE CONFIGURABLE
-
 #include "abstractsearch.h"
-
 #include <QList>
 #include <QString>
 #include <QVector>
@@ -154,5 +150,3 @@ struct CaseInsensitiveComparePrefix
 		return false;
 	}
 };
-
-#endif // PREFIXSEARCH_H

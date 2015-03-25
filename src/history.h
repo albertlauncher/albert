@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,14 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef HISTORY_H
-#define HISTORY_H
-
+#pragma once
 #include <QObject>
 #include <QStringList>
 #include <QSettings>
 
-class History : public QObject
+class History final : public QObject
 {
 	Q_OBJECT
 	friend class SettingsWidget;
@@ -33,18 +31,13 @@ public:
 	void loadSettings(QSettings &s);
 	void serilizeData(QDataStream &out) const;
 	void deserilizeData(QDataStream &in);
-
 	void insert(QString);
 	bool hasNext() const;
 	const QString& next();
+    void reset();
 
 private:
 	QStringList           _data;
 	int                   _max;
 	QStringList::iterator _it;
-
-public slots:
-	void reset();
 };
-
-#endif // HISTORY_H

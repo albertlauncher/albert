@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,9 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef PLUGINHANDLER_H
-#define PLUGINHANDLER_H
-
+#pragma once
 #include <QList>
 #include <QString>
 #include <QStringList>
@@ -62,5 +60,3 @@ private:
 
     QList<PluginSpec> _plugins;
 };
-
-#endif // PLUGINHANDLER_H

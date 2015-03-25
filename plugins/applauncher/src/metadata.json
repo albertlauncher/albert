@@ -1,9 +1,9 @@
 {
-    "Name" :            "AppLauncher",
-    "Version" :         "1.0",
-    "Description" :     "Finds and launches applications.",
-    "Url" :             "https://github.com/ManuelSchneid3r",
-    "Copyright" :       "(C) 2015 Manuel Schneider",
-    "Platform" :        "Linux",
+    "name" :            "AppLauncher",
+    "version" :         "1.0",
+    "platform" :        "Linux",
+    "group" :           "Extensions",
+    "copyright" :       "(C) 2015 Manuel Schneider",
+    "description" :     "Finds and launches applications.",
     "dependencies" :    []
 }
