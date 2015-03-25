@@ -68,14 +68,12 @@ int main(int argc, char *argv[])
 	a.setWindowIcon(QIcon(":app_icon"));
 	a.setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
-	MainWidget            mainWidget;
-	SettingsWidget        settingsDialog(&mainWidget);
-	GlobalHotkey          hotkeyManager;
-	QSortFilterProxyModel sortProxyModel;
+    MainWidget            mw;
+    QSortFilterProxyModel sortProxyModel;
 	ExtensionHandler      extensionHandler;
 
 	extensionHandler.initialize();
-	mainWidget._proposalListView->setModel(&sortProxyModel);
+    mw._proposalListView->setModel(&sortProxyModel);
 
 	// TODO STUFF
 	//	{ // FIRST RUN STUFF
@@ -91,24 +89,6 @@ int main(int argc, char *argv[])
 	//	fsw.addPath(QSettings(QSettings::UserScope, "albert", "albert").fileName());
 	//	connect(&fsw, QFileSystemWatcher::fileChanged,
 	//			TODO ALLES WAS RELOADEN KANN, &ExtensionHandler::reloadConfig);
-
-	/*
-	 *  HOTKEY
-	 */
-
-	// Albert without hotkey is useless. Force it!
-	hotkeyManager.registerHotkey(gSettings->value("hotkey", "").toString());
-	if (hotkeyManager.hotkey() == 0) {
-		QMessageBox msgBox(QMessageBox::Critical, "Error",
-						   "Hotkey is invalid, please set it. Press ok to open"\
-						   "the settings, or press close to quit albert.",
-						   QMessageBox::Close|QMessageBox::Ok);
-		msgBox.exec();
-		if ( msgBox.result() == QMessageBox::Ok )
-			settingsDialog.show();
-		else
-			exit(0);
-	}
 
 
 	/*
@@ -147,47 +127,58 @@ int main(int argc, char *argv[])
 	}
 
 
+    /*
+     *  HOTKEY
+     */
+
+    // Albert without hotkey is useless. Force it!
+    gHotkeyManager->registerHotkey(gSettings->value("hotkey", "").toString());
+    if (gHotkeyManager->hotkeys().empty()) {
+        QMessageBox msgBox(QMessageBox::Critical, "Error",
+                           "Hotkey is invalid, please set it. Press ok to "\
+                           "open the settings or press close to quit albert.",
+                           QMessageBox::Close|QMessageBox::Ok);
+        msgBox.exec();
+        if ( msgBox.result() == QMessageBox::Ok ){
+            SettingsWidget *sw = new SettingsWidget(&mw);
+            sw->ui.tabs->setCurrentIndex(0);
+            sw->show();
+        }
+        else
+            exit(0);
+    }
+
+
 	/*
 	 *  SETUP SIGNAL FLOW
 	 */
 
 	// Show mainwidget if hotkey is pressed
-	QObject::connect(&hotkeyManager, &GlobalHotkey::hotKeyPressed,
-					 &mainWidget, &MainWidget::toggleVisibility);
+    QObject::connect(gHotkeyManager, &GlobalHotkey::hotKeyPressed,
+                     &mw, &MainWidget::toggleVisibility);
 
 	// Setup and teardown query sessions with the state of the widget
-	QObject::connect(&mainWidget, &MainWidget::widgetShown,
+    QObject::connect(&mw, &MainWidget::widgetShown,
 					 &extensionHandler, &ExtensionHandler::setupSession);
-	QObject::connect(&mainWidget, &MainWidget::widgetHidden,
+    QObject::connect(&mw, &MainWidget::widgetHidden,
 					 &extensionHandler, &ExtensionHandler::teardownSession);
 
 	// settingsDialogRequested closes albert + opens settings dialog
-	QObject::connect(mainWidget._inputLine, &InputLine::settingsDialogRequested,
-					 &mainWidget, &MainWidget::hide);
-	QObject::connect(mainWidget._inputLine, &InputLine::settingsDialogRequested,
-					 &settingsDialog, (void (SettingsWidget::*)())&SettingsWidget::show);
+    QObject::connect(mw._inputLine, &InputLine::settingsDialogRequested,
+                     &mw, &MainWidget::hide);
+    QObject::connect(mw._inputLine, &InputLine::settingsDialogRequested,
+                     [&](){
+                            SettingsWidget *sw = new SettingsWidget(&mw);
+                            sw->show();
+                          });
 
 	// A change in text triggers requests
-	QObject::connect(mainWidget._inputLine, &QLineEdit::textChanged,
+    QObject::connect(mw._inputLine, &QLineEdit::textChanged,
 					 &extensionHandler, &ExtensionHandler::startQuery);
 
 	// Make the list show the results of the current query
 	QObject::connect(&extensionHandler, &ExtensionHandler::currentQueryChanged,
 					 &sortProxyModel, &QSortFilterProxyModel::setSourceModel);
-
-
-
-// DEBUG
-//	QObject::connect(&extensionHandler, &ExtensionHandler::currentQueryChanged,
-//					 [=](QAbstractItemModel* model) { qDebug() <<  "currentQueryChanged fired:" << model;});
-
-
-
-	// Run an activated entry in the list
-//	QObject::connect(mainWidget._proposalListView, &ProposalListView::activated,
-//					 &queryAdapter, &QueryAdapter::run);
-
-
 	/*
 	 *  E N T E R   T H E   L O O P
 	 */

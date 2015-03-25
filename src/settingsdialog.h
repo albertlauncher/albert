@@ -14,39 +14,27 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef SETTINGSDIALOG_H
-#define SETTINGSDIALOG_H
-
+#pragma once
 #include "ui_settingsdialog.h"
-
-class MainWidget;
 
 class SettingsWidget final : public QWidget
 {
     Q_OBJECT
 
 public:
-	enum class Tab{
-		General,
-		Appearance,
-		Modules,
-		About
-	};
-
-	explicit SettingsWidget(MainWidget *ref);
+    SettingsWidget(QWidget * parent = 0, Qt::WindowFlags f = 0);
+    ~SettingsWidget();
     void show();
-    void show(Tab);
+
+    Ui::SettingsDialog ui;
 
 private:
-	void grabAll();
-	void releaseAll();
     void updatePluginList();
     void updatePluginInformations();
+    void changeHotkey(int);
+
+
     void onThemeChanged(int);
-    void onPbHotkeyPressed();
-    void onHotkeyChanged(int);
-    void onShowCenteredChanged(bool);
-    void onMaxHistoryChanged(int);
     //	void onNItemsChanged(int i);
     //	void onSubModeSelChanged(int);
     //	void onSubModeDefChanged(int);
@@ -54,12 +42,5 @@ private:
     //	void modActionMetaChanged(int);
     //	void modActionAltChanged(int);
     void closeEvent(QCloseEvent * event) override;
-    void keyPressEvent (QKeyEvent *) override;
-    void keyReleaseEvent ( QKeyEvent* ) override;
 
-    Ui::SettingsDialog ui;
-    MainWidget* _mainWidget;
-    bool _waitingForHotkey;
 };
-
-#endif // SETTINGSDIALOG_H

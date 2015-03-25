@@ -32,52 +32,51 @@
 
 
 /****************************************************************************///
-SettingsWidget::SettingsWidget(MainWidget *ref)
-	: _mainWidget(ref)
+SettingsWidget::SettingsWidget(QWidget * parent, Qt::WindowFlags f)
+    : QWidget(parent,f)
 {
+    qDebug() << "Call to SettingsWidget::ctor";
 	ui.setupUi(this);
-	setWindowFlags(Qt::Window);
-    updatePluginList();
+    setWindowFlags(Qt::Dialog|Qt::WindowCloseButtonHint|Qt::WindowStaysOnTopHint);
+    setAttribute(Qt::WA_DeleteOnClose);
+//    setWindowModality(Qt::ApplicationModal);
 
+
+    // Always center
+    ui.checkBox_center->setChecked(gSettings->value(CFG_CENTERED, true).toBool());
+    connect(ui.checkBox_center, &QCheckBox::clicked,
+            [](bool b){ gSettings->setValue(CFG_CENTERED, b); });
+
+//    // Max History
+//    ui.sb_maxHistory->setValue(_mainWidget->_inputLine->_history._max);
+//    connect(ui.sb_maxHistory, (void (QSpinBox::*)(int))&QSpinBox::valueChanged,
+//            this, &SettingsWidget::onMaxHistoryChanged);
+
+
+    // Plugin tab
+    updatePluginList();
     connect(ui.treeWidget_plugins, &QTreeWidget::currentItemChanged,
             this, &SettingsWidget::updatePluginInformations);
 
 
-
-	/*
-	 * HOTKEY STUFF
-	 */
-
-//	_waitingForHotkey = false;
-//	const int hk = _mainWidget->_hotkeyManager.hotkey();
-//	ui.pb_hotkey->setText((hk==0)
-//				  ? "Press to set hotkey"
-//				  : QKeySequence(hk).toString());
-//	connect(ui.pb_hotkey, &QPushButton::clicked,
-//			this, &SettingsWidget::onPbHotkeyPressed);
+     // HOTKEY STUFF
+    QSet<int> hks = gHotkeyManager->hotkeys();
+    if (hks.size() < 1)
+        ui.grabKeyButton_hotkey->setText("Press to set hotkey");
+    else
+        ui.grabKeyButton_hotkey->setText(QKeySequence(*hks.begin()).toString()); // OMG
+    connect(ui.grabKeyButton_hotkey, &GrabKeyButton::clicked,
+            gHotkeyManager, &GlobalHotkey::disable);
+    connect(ui.grabKeyButton_hotkey, &GrabKeyButton::keyCombinationPressed,
+            this, &SettingsWidget::changeHotkey);
 
 
 
-//	// Always center
-//	ui.cb_center->setChecked(_mainWidget->_showCentered);
-//	connect(ui.cb_center, &QCheckBox::clicked,
-//			this, &SettingsWidget::onShowCenteredChanged);
 
 
-//	// Max History
-//	ui.sb_maxHistory->setValue(_mainWidget->_inputLine->_history._max);
-//	connect(ui.sb_maxHistory, (void (QSpinBox::*)(int))&QSpinBox::valueChanged,
-//			this, &SettingsWidget::onMaxHistoryChanged);
-
-
-	/*
-	 * GENERAL
-	 */
 
 //	// Proposal stuff
-//	ui.spinBox_proposals->setValue(_mainWidget->_proposalListView->_nItemsToShow);
-
-//	// Apply changes made to the amount of proposals
+//	ui.spinBox_proposals->setValue(gSettings->value(CFG_ITEMCOUNT, CFG_DEF_ITEMCOUNT));
 //	connect(ui.spinBox_proposals, (void (QSpinBox::*)(int))&QSpinBox::valueChanged,
 //			this, &SettingsWidget::onNItemsChanged);
 
@@ -157,9 +156,16 @@ SettingsWidget::SettingsWidget(MainWidget *ref)
 }
 
 /****************************************************************************///
+SettingsWidget::~SettingsWidget()
+{
+
+    qDebug() << "Call to SettingsWidget::dtor";
+}
+
+/****************************************************************************///
 void SettingsWidget::updatePluginList()
 {
-    QSet<QString> blacklist = gSettings->value(SETTINGS_PLGN_BLACKLIST).toStringList().toSet();
+    QSet<QString> blacklist = gSettings->value(CFG_PLGN_BLACKLIST).toStringList().toSet();
     const QList<PluginSpec>& specs = PluginHandler::instance()->getPluginSpecs();
     for (const PluginSpec & spec : specs){
 
@@ -229,21 +235,6 @@ void SettingsWidget::updatePluginInformations()
     }
 }
 
-/****************************************************************************///
-void SettingsWidget::grabAll()
-{
-	grabKeyboard();
-	grabMouse();
-	_waitingForHotkey = true;
-}
-
-/****************************************************************************///
-void SettingsWidget::releaseAll()
-{
-	releaseKeyboard();
-	releaseMouse();
-	_waitingForHotkey = false;
-}
 
 
 /******************************************************************************/
@@ -254,80 +245,21 @@ void SettingsWidget::releaseAll()
 /****************************************************************************///
 void SettingsWidget::closeEvent(QCloseEvent *event)
 {
-//	if (_mainWidget->_hotkeyManager.hotkey() == 0){
-//		QMessageBox msgBox(QMessageBox::Critical, "Error",
-//						   "Hotkey is invalid, please set it. Press Ok to go"\
-//						   "back to the settings, or press Cancel to quit albert.",
-//						   QMessageBox::Close|QMessageBox::Ok);
-//		msgBox.exec();
-//		if ( msgBox.result() == QMessageBox::Ok ){
-//			this->show(SettingsWidget::Tab::General);
-//			ui.tabs->setCurrentIndex(0);
-//		}
-//		else
-//			qApp->quit();
-//		event->ignore();
-//		return;
-//	}
-}
-
-/****************************************************************************///
-void SettingsWidget::keyPressEvent(QKeyEvent *event)
-{
-//	int key = event->key();
-//	int mods = event->modifiers();
-
-//	if ( _waitingForHotkey )
-//	{
-//		// Modifier pressed -> update the label
-//		if(key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta) {
-//			ui.pb_hotkey->setText(QKeySequence(mods|Qt::Key_Question).toString());
-//			return;
-//		}
-
-//		// Cancel
-//		if (key == Qt::Key_Escape){
-//			ui.pb_hotkey->setText("Press to set hotkey");
-//			releaseAll();
-//			return;
-//		}
-
-//		// Try to register a hotkey
-//		releaseAll();
-//		if (!_mainWidget->_hotkeyManager.registerHotkey(mods|key) )
-//		{
-//			QMessageBox msgBox(QMessageBox::Critical, "Error",
-//							   QKeySequence(mods|key).toString()
-//							   + " could not be registered.");
-//			msgBox.exec();
-//			ui.pb_hotkey->setText("Press to set hotkey");
-//		}
-//		else
-//			ui.pb_hotkey->setText(QKeySequence(mods|key).toString());
-
-//		return;
-//	}
-
-//	if (key == Qt::Key_Escape)
-//		close();
-
-//	QWidget::keyPressEvent( event );
-}
-
-
-/****************************************************************************///
-void SettingsWidget::keyReleaseEvent(QKeyEvent *event)
-{
-	if ( _waitingForHotkey ) {
-		// Modifier released -> update the label
-		int key = event->key();
-		if(key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta) {
-            ui.pushButton_hotkey->setText(QKeySequence(event->modifiers()|Qt::Key_Question).toString());
-			return;
-		}
-		return;
-	}
-	QWidget::keyReleaseEvent( event );
+    if (gHotkeyManager->hotkeys().empty()){
+        QMessageBox msgBox(QMessageBox::Critical, "Error",
+                           "Hotkey is invalid, please set it. Press Ok to go"\
+                           "back to the settings, or press Cancel to quit albert.",
+                           QMessageBox::Close|QMessageBox::Ok);
+        msgBox.exec();
+        if ( msgBox.result() == QMessageBox::Ok ){
+            ui.tabs->setCurrentIndex(0);
+            this->show();
+        }
+        else
+            qApp->quit();
+        event->ignore();
+        return;
+    }
 }
 
 
@@ -337,22 +269,33 @@ void SettingsWidget::keyReleaseEvent(QKeyEvent *event)
 
 
 /****************************************************************************///
-void SettingsWidget::onHotkeyChanged(int hotkey)
+void SettingsWidget::changeHotkey(int newhk)
 {
-    ui.pushButton_hotkey->setText(QKeySequence(hotkey).toString());
+    int oldhk = *gHotkeyManager->hotkeys().begin(); //OMG
+
+    // Cancel
+    if (newhk == Qt::Key_Escape){
+        ui.grabKeyButton_hotkey->setText(QKeySequence(oldhk).toString());
+        gHotkeyManager->enable();
+        return;
+    }
+
+    // Try to set the hotkey
+    if (gHotkeyManager->registerHotkey(newhk)) {
+        ui.grabKeyButton_hotkey->setText(QKeySequence(newhk).toString());
+        gSettings->setValue(CFG_HOTKEY, QKeySequence(newhk).toString());
+        gHotkeyManager->unregisterHotkey(oldhk);
+    }
+    else
+    {
+        ui.grabKeyButton_hotkey->setText(QKeySequence(oldhk).toString());
+        QMessageBox(QMessageBox::Critical, "Error",
+                    QKeySequence(newhk).toString()
+                    + " could not be registered.").exec();
+    }
+    gHotkeyManager->enable();
 }
 
-/****************************************************************************///
-void SettingsWidget::onShowCenteredChanged(bool b)
-{
-//	_mainWidget->_showCentered = b;
-}
-
-/****************************************************************************///
-void SettingsWidget::onMaxHistoryChanged(int i)
-{
-	_mainWidget->_inputLine->_history._max = i;
-}
 
 /****************************************************************************///
 void SettingsWidget::onThemeChanged(int i)
@@ -408,23 +351,8 @@ void SettingsWidget::onThemeChanged(int i)
 //}
 
 /****************************************************************************///
-void SettingsWidget::onPbHotkeyPressed()
-{
-//	_mainWidget->_hotkeyManager.unregisterHotkey();
-//	ui.pb_hotkey->setText("?");
-//	grabAll();
-}
-
-/****************************************************************************///
 void SettingsWidget::show()
 {
 	QWidget::show();
 	this->move(QApplication::desktop()->screenGeometry().center() - rect().center());
-}
-
-/****************************************************************************///
-void SettingsWidget::show(SettingsWidget::Tab t)
-{
-	show();
-	ui.tabs->setCurrentIndex(static_cast<int>(t));
 }

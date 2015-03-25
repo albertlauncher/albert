@@ -37,7 +37,7 @@ void PluginHandler::loadPlugins()
     for (QString pd : pluginDirs)
     {
         QDirIterator plgnIt(pd, QDir::Files);
-        QStringList blacklist = gSettings->value(SETTINGS_PLGN_BLACKLIST).toStringList();
+        QStringList blacklist = gSettings->value(CFG_PLGN_BLACKLIST).toStringList();
         while (plgnIt.hasNext())
         {
             QString path = plgnIt.next();

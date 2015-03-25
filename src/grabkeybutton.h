@@ -14,29 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef GLOBALHOTKEY_P_H
-#define GLOBALHOTKEY_P_H
+#pragma once
+#include <QPushButton>
+#include <QKeyEvent>
+#include <QKeySequence>
 
-#include "globalhotkey.h"
-#include <QObject>
-#include <QSet>
-#include <QAbstractNativeEventFilter>
-
-class GlobalHotkey::GlobalHotkeyPrivate : public QObject, public QAbstractNativeEventFilter
+class GrabKeyButton : public QPushButton
 {
     Q_OBJECT
 
 public:
-	GlobalHotkeyPrivate(QObject* parent = 0);
-
-	bool registerNativeHotkey(const int hk);
-    void unregisterNativeHotkey(const int hk);
+    GrabKeyButton(QWidget * parent = 0);
+    ~GrabKeyButton();
 
 private:
-    bool nativeEventFilter(const QByteArray&, void*, long*) override;
+    bool _waitingForHotkey;
+
+    void grabAll();
+    void releaseAll();
+    void onClick();
+    void keyPressEvent (QKeyEvent *) override;
+    void keyReleaseEvent ( QKeyEvent* ) override;
 
 signals:
-	 void hotKeyPressed();
+    void keyCombinationPressed(int);
 };
-
-#endif // GLOBALHOTKEY_P_H

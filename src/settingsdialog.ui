@@ -35,7 +35,7 @@
    <item row="1" column="0">
     <widget class="QTabWidget" name="tabs">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -61,9 +61,9 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QPushButton" name="pushButton_hotkey">
+             <widget class="GrabKeyButton" name="grabKeyButton_hotkey">
               <property name="text">
-               <string>Press to set hotkey</string>
+               <string/>
               </property>
              </widget>
             </item>
@@ -93,7 +93,7 @@
                <string>H&amp;otkey</string>
               </property>
               <property name="buddy">
-               <cstring>pushButton_hotkey</cstring>
+               <cstring>grabKeyButton_hotkey</cstring>
               </property>
              </widget>
             </item>
@@ -449,9 +449,16 @@ p, li { white-space: pre-wrap; }
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>GrabKeyButton</class>
+   <extends>QPushButton</extends>
+   <header>grabkeybutton.h</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>tabs</tabstop>
-  <tabstop>pushButton_hotkey</tabstop>
+  <tabstop>grabKeyButton_hotkey</tabstop>
   <tabstop>spinBox_maxHistory</tabstop>
   <tabstop>spinBox_proposals</tabstop>
   <tabstop>checkBox_center</tabstop>

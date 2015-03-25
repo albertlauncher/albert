@@ -4,10 +4,12 @@
 
 #define gSettings Settings::instance()
 
-#define SETTINGS_CENTERED "showCentered"
-#define SETTINGS_HOTKEY "hotkey"
-#define SETTINGS_THEME "theme"
-#define SETTINGS_PLGN_BLACKLIST "blacklist"
+#define CFG_CENTERED "showCentered"
+#define CFG_HOTKEY "hotkey"
+#define CFG_THEME "theme"
+#define CFG_PLGN_BLACKLIST "blacklist"
+#define CFG_ITEMCOUNT "itemCount"
+#define CFG_DEF_ITEMCOUNT 5
 
 class Settings final : public QSettings,  public Singleton<Settings>
 {

@@ -18,37 +18,42 @@
 #define GLOBALHOTKEY_H
 
 #include <QObject>
+#include <QSet>
+#include "singleton.h"
 
-class GlobalHotkey : public QObject
+#define gHotkeyManager GlobalHotkey::instance()
+
+class GlobalHotkey : public QObject, public Singleton<GlobalHotkey>
 {
-	Q_OBJECT
-	class GlobalHotkeyPrivate;
-
-private:
-	bool _enabled;
-	int  _hotkey;
-	GlobalHotkeyPrivate* _impl;
+    Q_OBJECT
+    friend class Singleton<GlobalHotkey>;
+    class GlobalHotkeyPrivate;
 
 public:
-	explicit GlobalHotkey(QObject *parent = 0);
-	virtual ~GlobalHotkey();
+    virtual   ~GlobalHotkey();
+    bool      registerHotkey(const QString&);
+    bool      registerHotkey(const QKeySequence&);
+    bool      registerHotkey(const int);
+    bool      unregisterHotkey(const QString&);
+    bool      unregisterHotkey(const QKeySequence&);
+    void      unregisterHotkey(const int);
+    QSet<int> hotkeys() {return _hotkeys;}
+    void      enable(){ setEnabled(true); }
+    void      disable(){ setEnabled(false); }
+    void      setEnabled(bool enabled = true){_enabled = enabled;}
+    bool      isEnabled() const {return _enabled;}
 
-	bool registerHotkey(const QString&);
-	bool registerHotkey(const QKeySequence&);
-	bool registerHotkey(const int);
-	void unregisterHotkey();
-	int hotkey();
-	bool isEnabled() const;
+private:
+    explicit  GlobalHotkey(QObject *parent = 0);
+    void      onHotkeyPressed();
+
+    bool       _enabled;
+    QSet<int>  _hotkeys;
+    GlobalHotkeyPrivate* _impl;
+
 
 signals:
 	void hotKeyPressed();
-	void hotKeyChanged(int);
-
-private slots:
-	void onHotkeyPressed();
-
-public slots:
-	void setEnabled(bool enabled = true);
 };
 
 #endif // GLOBALHOTKEY_H

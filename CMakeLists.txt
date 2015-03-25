@@ -28,7 +28,7 @@ MESSAGE(STATUS "Qt5Svg_VERSION " ${Qt5Svg_VERSION})
 
 include_directories(
 	src/
-	src/common/
+    src/common/
 )
 
 set(SRCS
@@ -37,15 +37,16 @@ set(SRCS
 	src/query.cpp
 	src/extensionhandler.cpp
     src/pluginhandler.cpp
-	src/globalhotkey.cpp
-	src/globalhotkey_p.h
+    src/globalhotkey.cpp
+    src/globalhotkey_p.h
 	src/mainwidget.cpp
 	src/proposallistview.cpp
 	src/inputline.cpp
 	src/history.cpp
+    src/grabkeybutton.cpp
 	src/settingsbutton.cpp
 	src/settingsdialog.cpp
-	src/common/extensioninterface.h
+    src/common/extensioninterface.h
 )
 
 #set(data

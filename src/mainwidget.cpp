@@ -22,6 +22,7 @@
 #include <QApplication>
 #include <QVBoxLayout>
 #include "mainwidget.h"
+#include "settings.h"
 
 /****************************************************************************///
 MainWidget::MainWidget(QWidget *parent)
@@ -83,8 +84,7 @@ MainWidget::MainWidget(QWidget *parent)
 	// LOAD SETTINGS
 	QSettings s(QSettings::UserScope, "albert", "albert");
 //	_proposalListView->loadSettings(s);
-	_inputLine->loadSettings(s);
-	_showCentered = s.value("showCentered", "true").toBool();
+    _inputLine->loadSettings(s);
 
 
 	// SETUP SIGNAL FLOW
@@ -122,7 +122,7 @@ void MainWidget::show()
 {
 	_inputLine->reset();
 	QWidget::show();
-	if (_showCentered)
+    if (gSettings->value(CFG_CENTERED, true).toBool())
 		this->move(QApplication::desktop()->screenGeometry().center()
 				   -QPoint(rect().right()/2,192 ));
 	this->raise();

@@ -19,29 +19,28 @@
 
 #include <QKeySequence>
 
-/**************************************************************************/
+/****************************************************************************///
 GlobalHotkey::GlobalHotkey(QObject *parent) :
 	QObject(parent)
 {
 	_impl = new GlobalHotkeyPrivate;
 	connect(_impl, &GlobalHotkeyPrivate::hotKeyPressed, this, &GlobalHotkey::onHotkeyPressed);
 	_enabled = true;
-	_hotkey = 0;
 }
 
-/**************************************************************************/
+/****************************************************************************///
 GlobalHotkey::~GlobalHotkey()
 {
 	delete _impl;
 }
 
-/**************************************************************************/
+/****************************************************************************///
 bool GlobalHotkey::registerHotkey(const QString &hk)
 {
 	return registerHotkey(QKeySequence(hk));
 }
 
-/**************************************************************************/
+/****************************************************************************///
 bool GlobalHotkey::registerHotkey(const QKeySequence &hk)
 {
 	if (hk.count() != 1)
@@ -49,48 +48,43 @@ bool GlobalHotkey::registerHotkey(const QKeySequence &hk)
 	return registerHotkey(hk[0]);
 }
 
-/**************************************************************************/
+/****************************************************************************///
 bool GlobalHotkey::registerHotkey(const int hk)
 {
-	// Unregister other hotkeys before registering new ones
-	unregisterHotkey();
-
-	//TODO make this capable of multiple key, so that the old one does not have to be unregistered whil registereing another
+    if (_hotkeys.contains(hk))
+        return true;
 	if (_impl->registerNativeHotkey(hk)) {
-		_hotkey = hk;
-		emit hotKeyChanged(hk);
+        _hotkeys.insert(hk);
 		return true;
 	}
-	return false;
+    return false;
 }
 
-/**************************************************************************/
-int GlobalHotkey::hotkey()
+/****************************************************************************///
+bool GlobalHotkey::unregisterHotkey(const QString &hk)
 {
-	return _hotkey;
+    return unregisterHotkey(QKeySequence(hk));
 }
 
-/**************************************************************************/
-void GlobalHotkey::unregisterHotkey()
+/****************************************************************************///
+bool GlobalHotkey::unregisterHotkey(const QKeySequence &hk)
 {
-	_impl->unregisterNativeHotkeys();
-	_hotkey = 0;
-	emit hotKeyChanged(0);
+    if (hk.count() != 1)
+        return false;
+    unregisterHotkey(hk[0]);
+    return true;
 }
 
-/**************************************************************************/
-bool GlobalHotkey::isEnabled() const
+/****************************************************************************///
+void GlobalHotkey::unregisterHotkey(const int hk)
 {
-	return _enabled;
+    if (!_hotkeys.contains(hk))
+        return;
+    _impl->unregisterNativeHotkey(hk);
+    _hotkeys.remove(hk);
 }
 
-/**************************************************************************/
-void GlobalHotkey::setEnabled(bool enabled)
-{
-	_enabled = enabled;
-}
-
-/**************************************************************************/
+/****************************************************************************///
 void GlobalHotkey::onHotkeyPressed()
 {
 	if (_enabled)

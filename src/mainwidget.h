@@ -38,7 +38,6 @@ protected:
 private:
 	QFrame  *_frame1,*_frame2;
 	QString _theme;
-	bool    _showCentered;
 
 signals:
 	void widgetShown();
