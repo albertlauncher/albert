@@ -341,7 +341,7 @@ bool GlobalHotkey::GlobalHotkeyPrivate::nativeEventFilter(const QByteArray &even
                     emit hotKeyPressed();
                     return true;
                 }
-            qWarning() << "received a key which was not registered";
+//            qWarning() << "received a key which was not registered";
         }
     }
     return false;
