@@ -28,6 +28,7 @@ MESSAGE(STATUS "Qt5Svg_VERSION " ${Qt5Svg_VERSION})
 
 include_directories(
 	src/
+    src/ui/
     src/common/
 )
 
@@ -39,13 +40,13 @@ set(SRCS
     src/pluginhandler.cpp
     src/globalhotkey.cpp
     src/globalhotkey_p.h
-	src/mainwidget.cpp
-	src/proposallistview.cpp
-	src/inputline.cpp
 	src/history.cpp
-    src/grabkeybutton.cpp
-	src/settingsbutton.cpp
-	src/settingsdialog.cpp
+    src/ui/mainwidget.cpp
+    src/ui/proposallistview.cpp
+    src/ui/inputline.cpp
+    src/ui/grabkeybutton.cpp
+    src/ui/settingsbutton.cpp
+    src/ui/settingsdialog.cpp
     src/common/extensioninterface.h
 )
 
@@ -57,7 +58,7 @@ set(SRCS
 #)
 
 qt5_wrap_ui(UIS
-	src/settingsdialog.ui
+    src/ui/settingsdialog.ui
 #	src/util/search/searchwidget.ui
 #	src/services/appindex/appindexwidget.ui
 #	src/services/bookmarkindex/bookmarkindexwidget.ui
