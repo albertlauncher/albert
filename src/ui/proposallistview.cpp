@@ -50,18 +50,7 @@ public:
         painter->drawPixmap(iconRect, index.data(Qt::DecorationRole + mods).value<QIcon>().pixmap(option.decorationSize));
 
 		/* Drawing text differs dependent on the mode and selection */
-		if ( (option.state & QStyle::State_Selected && gSettings->value("General/subtextSelection", false).toBool())
-				|| (!(option.state & QStyle::State_Selected) && gSettings->value("General/subtextDefault", false).toBool()))
-		{
-			QRect DisplayRect = option.widget->style()->subElementRect(QStyle::SE_ItemViewItemText, &option, option.widget);
-//			QRect DisplayRect(contentsRect.adjusted(a+3,0,0,0));
-			QString text = QFontMetrics(option.font).elidedText(
-                        index.data(Qt::DisplayRole + mods).toString(),
-						option.textElideMode,
-						DisplayRect.width());
-			painter->drawText(DisplayRect, Qt::AlignVCenter|Qt::AlignLeft, text);
-		}
-		else
+        if (gSettings->value(SHOW_INFO, false).toBool())
 		{
 			/*
 			 * fm(x) := fontmetrics of x
@@ -93,47 +82,24 @@ public:
 			font.setPixelSize(12);
 			painter->setFont(font);
 			text = QFontMetrics(font).elidedText(
-                        index.data(option.state & QStyle::State_Selected ? Qt::UserRole+1 + mods : Qt::ToolTipRole + mods).toString(),
+                        index.data(
+                            ((option.state & QStyle::State_Selected)
+                             && gSettings->value(SHOW_ACTION, false).toBool())
+                            ? Qt::UserRole+1 + mods : Qt::ToolTipRole + mods)
+                        .toString(),
 						option.textElideMode,
 						DisplayRect.width());
 			painter->drawText(DisplayRect, Qt::AlignBottom|Qt::AlignLeft, text);
-
-
-// TODO THIS IS STILL NOT ROCK SOLID
-
-
-
-//			OLD STYLE MORE CODE
-
-//			/* Draw name */
-//			int a = contentsRect.height();
-//			QRect DRTextRect(contentsRect.adjusted(
-//								 a,0,
-//								 0,-a*12/(option.fontMetrics.height()+12)) // TODO
-//							 );
-//			DRTextRect.adjust(3,-2,0,-2);  // Empirical
-//			QFont font = option.font;
-//			QString text = QFontMetrics(font).elidedText(
-//						index.data(Qt::DisplayRole).toString(),
-//						option.textElideMode,
-//						DRTextRect.width());
-//			painter->setFont(font);
-//			painter->drawText(DRTextRect, Qt::AlignVCenter|Qt::AlignLeft, text);
-
-//			/* Draw the infotext */
-//			QRect URTextRect(contentsRect.adjusted(
-//								 a,DRTextRect.height(),
-//								 0,0)
-//							 );
-//			URTextRect.adjust(3,-4,0,-4);  // Empirical
-//			font.setPixelSize(12);
-//			text = QFontMetrics(font).elidedText(
-//						index.data(Qt::ToolTipRole).toString(),
-//						option.textElideMode,
-//						URTextRect.width());
-//			painter->setFont(font);
-//			painter->drawText(URTextRect, Qt::AlignVCenter|Qt::AlignLeft, text);
 		}
+        else
+        {
+            QRect DisplayRect = option.widget->style()->subElementRect(QStyle::SE_ItemViewItemText, &option, option.widget);
+            QString text = QFontMetrics(option.font).elidedText(
+                        index.data(Qt::DisplayRole + mods).toString(),
+                        option.textElideMode,
+                        DisplayRect.width());
+            painter->drawText(DisplayRect, Qt::AlignVCenter|Qt::AlignLeft, text);
+        }
 		painter->restore();
 	}
 };
@@ -235,8 +201,7 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 QSize ProposalListView::sizeHint() const
 {
 	if (model()->rowCount() == 0) return QSize(width(), 0);
-	int nToShow = std::min(5, model()->rowCount());
-//	int nToShow = std::min(_nItemsToShow, model()->rowCount()); TODO FIXME
+    int nToShow = std::min(gSettings->value(CFG_MAX_PROPOSALS, CFG_MAX_PROPOSALS).toInt(), model()->rowCount());
 	return QSize(width(), nToShow*sizeHintForRow(0));
 }
 

@@ -33,129 +33,89 @@ SettingsWidget::SettingsWidget(QWidget * parent, Qt::WindowFlags f)
 {
     qDebug() << "Call to SettingsWidget::ctor";
 	ui.setupUi(this);
-    setWindowFlags(Qt::Dialog|Qt::WindowCloseButtonHint|Qt::WindowStaysOnTopHint);
+    setWindowFlags(Qt::Window|Qt::WindowCloseButtonHint);
     setAttribute(Qt::WA_DeleteOnClose);
 //    setWindowModality(Qt::ApplicationModal);
 
 
-    // Always center
-    ui.checkBox_center->setChecked(gSettings->value(CFG_CENTERED, true).toBool());
-    connect(ui.checkBox_center, &QCheckBox::clicked,
+    /*
+     * GENERAL TAB
+     */
+
+    // HOTKEY STUFF
+   QSet<int> hks = gHotkeyManager->hotkeys();
+   if (hks.size() < 1)
+       ui.grabKeyButton_hotkey->setText("Press to set hotkey");
+   else
+       ui.grabKeyButton_hotkey->setText(QKeySequence(*hks.begin()).toString()); // OMG
+   connect(ui.grabKeyButton_hotkey, &GrabKeyButton::clicked,
+           gHotkeyManager, &GlobalHotkey::disable);
+   connect(ui.grabKeyButton_hotkey, &GrabKeyButton::keyCombinationPressed,
+           this, &SettingsWidget::changeHotkey);
+
+
+   // MAX HISTORY
+   ui.spinBox_maxHistory->setValue(gSettings->value(CFG_MAX_HISTORY, CFG_MAX_HISTORY_DEF).toInt());
+   connect(ui.spinBox_maxHistory, (void (QSpinBox::*)(int))&QSpinBox::valueChanged,
+           [](int i){ gSettings->setValue(CFG_MAX_HISTORY, i); });
+
+
+   // MAX PROPOSALS
+   ui.spinBox_proposals->setValue(gSettings->value(CFG_MAX_PROPOSALS, CFG_MAX_PROPOSALS_DEF).toInt());
+   connect(ui.spinBox_proposals, (void (QSpinBox::*)(int))&QSpinBox::valueChanged,
+           [](int i){ gSettings->setValue(CFG_MAX_PROPOSALS, i); });
+
+
+    // ALWAYS CENTER
+    ui.checkBox_center->setChecked(gSettings->value(CFG_CENTERED, CFG_CENTERED_DEF).toBool());
+    connect(ui.checkBox_center, &QCheckBox::toggled,
             [](bool b){ gSettings->setValue(CFG_CENTERED, b); });
 
-//    // Max History
-//    ui.sb_maxHistory->setValue(_mainWidget->_inputLine->_history._max);
-//    connect(ui.sb_maxHistory, (void (QSpinBox::*)(int))&QSpinBox::valueChanged,
-//            this, &SettingsWidget::onMaxHistoryChanged);
+
+    // SUBTEXT SELECTED
+    ui.checkBox_showInfo->setChecked(gSettings->value(SHOW_INFO, SHOW_INFO_DEF).toBool());
+    connect(ui.checkBox_showInfo, &QCheckBox::toggled,
+            [](bool b){ gSettings->setValue(SHOW_INFO, b); });
 
 
-    // Plugin tab
+    // SUBTEXT UNSELECTED
+    ui.checkBox_showAction->setChecked(gSettings->value(SHOW_ACTION, SHOW_ACTION_DEF).toBool());
+    connect(ui.checkBox_showAction, &QCheckBox::toggled,
+            [](bool b){ gSettings->setValue(SHOW_ACTION, b); });
+
+    // THEMES
+    QFileInfoList themes;
+    int i = 0 ;
+    QStringList themeDirs =
+            QStandardPaths::locateAll(QStandardPaths::DataLocation, "themes",
+                                      QStandardPaths::LocateDirectory);
+    for (QDir d : themeDirs)
+        themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
+    for (QFileInfo fi : themes){
+        ui.comboBox_themes->addItem(fi.baseName(), fi.canonicalFilePath());
+        if ( fi.baseName() == gSettings->value(CFG_THEME, CFG_THEME_DEF).toString())
+            ui.comboBox_themes->setCurrentIndex(i);
+        ++i;
+    }
+    connect(ui.comboBox_themes, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged,
+            this, &SettingsWidget::onThemeChanged);
+
+
+    /*
+     * PLUGIN  TAB
+     */
+
+    // PLUGIN  LIST
     updatePluginList();
     connect(ui.treeWidget_plugins, &QTreeWidget::currentItemChanged,
             this, &SettingsWidget::updatePluginInformations);
-
-
-     // HOTKEY STUFF
-    QSet<int> hks = gHotkeyManager->hotkeys();
-    if (hks.size() < 1)
-        ui.grabKeyButton_hotkey->setText("Press to set hotkey");
-    else
-        ui.grabKeyButton_hotkey->setText(QKeySequence(*hks.begin()).toString()); // OMG
-    connect(ui.grabKeyButton_hotkey, &GrabKeyButton::clicked,
-            gHotkeyManager, &GlobalHotkey::disable);
-    connect(ui.grabKeyButton_hotkey, &GrabKeyButton::keyCombinationPressed,
-            this, &SettingsWidget::changeHotkey);
-
-
-
-
-
-
-//	// Proposal stuff
-//	ui.spinBox_proposals->setValue(gSettings->value(CFG_ITEMCOUNT, CFG_DEF_ITEMCOUNT));
-//	connect(ui.spinBox_proposals, (void (QSpinBox::*)(int))&QSpinBox::valueChanged,
-//			this, &SettingsWidget::onNItemsChanged);
-
-//	// Load subtext mode for selected items
-//	ui.cb_subModeSel->setCurrentIndex((int)_mainWidget->_proposalListView->_selSubtextMode);
-//	// Apply changes made to subtext mode of selected items
-//	connect(ui.cb_subModeSel, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged,
-//			this, &SettingsWidget::onSubModeSelChanged);
-
-//	// Load subtext mode for unselected items
-//	ui.cb_subModeDef->setCurrentIndex((int)_mainWidget->_proposalListView->_defSubtextMode);
-//	// Apply changes made to subtext mode of "UN"selected items
-//	connect(ui.cb_subModeDef, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged,
-//			this, &SettingsWidget::onSubModeDefChanged);
-
-
-
-	/*
-	 * STYLE
-	 */
-
-//	// Get all themes and add them to the cb
-//	QStringList themeDirs =
-//			QStandardPaths::locateAll(QStandardPaths::DataLocation, "themes",
-//									  QStandardPaths::LocateDirectory);
-//	QFileInfoList themes;
-//	for (QDir d : themeDirs)
-//		themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
-//	int i = 0 ;
-//	for (QFileInfo fi : themes){
-//		ui.cb_themes->addItem(fi.baseName(), fi.canonicalFilePath());
-//		if ( fi.baseName() == _mainWidget->_theme)
-//			ui.cb_themes->setCurrentIndex(i);
-//		++i;
-//	}
-
-//	// Apply a skin if clicked
-//	connect(ui.cb_themes, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged,
-//			this, &SettingsWidget::onThemeChanged);
-
-
-
-//	/*
-//	 * ACTION MODIFIERS
-//	 */
-//	ui.cb_modActionCtrl->setCurrentIndex(_mainWidget->_proposalListView->_actionCtrl);
-//	connect(ui.cb_modActionCtrl, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged,
-//			this, &SettingsWidget::modActionCtrlChanged);
-//	ui.cb_modActionMeta->setCurrentIndex(_mainWidget->_proposalListView->_actionMeta);
-//	connect(ui.cb_modActionMeta, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged,
-//			this, &SettingsWidget::modActionMetaChanged);
-//	ui.cb_modActionAlt->setCurrentIndex(_mainWidget->_proposalListView->_actionAlt);
-//	connect(ui.cb_modActionAlt, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged,
-//			this, &SettingsWidget::modActionAltChanged);
-
-
-
-//	/*
-//	 *  MODULES
-//	 */
-//	for (Service* m : _mainWidget->_engine->_modules){
-//		QListWidgetItem *item = new QListWidgetItem(m->moduleName());
-//		ui.lw_modules->addItem(item);
-//		ui.sw_modules->addWidget(m->widget());
-//	}
-
-
-
-
-//	/* GENERAL APPEARANCE OF SETTINGSWISGET */
-//	// Set the width of the list to the with of the content
-//	ui.lw_modules->setFixedWidth(ui.lw_modules->sizeHintForColumn(0)
-//								 + ui.lw_modules->contentsMargins().left()
-//								 + ui.lw_modules->contentsMargins().right()
-//								 + ui.lw_modules->spacing()*2);
-    //	ui.lw_modules->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
 
 /****************************************************************************///
 SettingsWidget::~SettingsWidget()
 {
-
     qDebug() << "Call to SettingsWidget::dtor";
+
 }
 
 /****************************************************************************///
@@ -181,7 +141,8 @@ void SettingsWidget::updatePluginList()
 
         // Create the child and insert a childitem
         QTreeWidgetItem *child = new QTreeWidgetItem();
-//        child->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        child->setChildIndicatorPolicy(QTreeWidgetItem::QTreeWidgetItem::DontShowIndicatorWhenChildless);
+        child->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsSelectable|Qt::ItemIsEnabled);
         child->setData(0, Qt::DisplayRole, spec.name);
         child->setData(1, Qt::DisplayRole, spec.version);
             child->setCheckState(0, (blacklist.contains(spec.name)) ? Qt::Unchecked : Qt::Checked);
@@ -232,38 +193,6 @@ void SettingsWidget::updatePluginInformations()
 }
 
 
-
-/******************************************************************************/
-/**************************** O V E R R I D E S *******************************/
-/******************************************************************************/
-
-
-/****************************************************************************///
-void SettingsWidget::closeEvent(QCloseEvent *event)
-{
-    if (gHotkeyManager->hotkeys().empty()){
-        QMessageBox msgBox(QMessageBox::Critical, "Error",
-                           "Hotkey is invalid, please set it. Press Ok to go"\
-                           "back to the settings, or press Cancel to quit albert.",
-                           QMessageBox::Close|QMessageBox::Ok);
-        msgBox.exec();
-        if ( msgBox.result() == QMessageBox::Ok ){
-            ui.tabs->setCurrentIndex(0);
-            this->show();
-        }
-        else
-            qApp->quit();
-        event->ignore();
-        return;
-    }
-}
-
-
-/******************************************************************************/
-/*******************************  S L O T S  **********************************/
-/******************************************************************************/
-
-
 /****************************************************************************///
 void SettingsWidget::changeHotkey(int newhk)
 {
@@ -292,63 +221,47 @@ void SettingsWidget::changeHotkey(int newhk)
     gHotkeyManager->enable();
 }
 
-
-///****************************************************************************///
-//void SettingsWidget::onThemeChanged(int i)
-//{
-//	// Apply and save the theme
-//	QFile themeFile(ui.cb_themes->itemData(i).toString());
-//	if (themeFile.open(QFile::ReadOnly)) {
-//		qApp->setStyleSheet(themeFile.readAll());
-//		_mainWidget->_theme = ui.cb_themes->itemText(i);
-//		themeFile.close();
-//		return;
-//	} else {
-//		QMessageBox msgBox(QMessageBox::Critical, "Error", "Could not open theme file.");
-//		msgBox.exec();
-//	}
-//}
-
-///****************************************************************************///
-//void SettingsWidget::onNItemsChanged(int i)
-//{
-//	_mainWidget->_proposalListView->_nItemsToShow = i;
-//	_mainWidget->_proposalListView->updateGeometry();
-//}
-
-///****************************************************************************///
-//void SettingsWidget::onSubModeSelChanged(int option)
-//{
-//	_mainWidget->_proposalListView->setSubModeSel(static_cast<ProposalListView::SubTextMode>(option));
-//}
-
-///****************************************************************************///
-//void SettingsWidget::onSubModeDefChanged(int option)
-//{
-//	_mainWidget->_proposalListView->setSubModeDef(static_cast<ProposalListView::SubTextMode>(option));
-//}
-
-///****************************************************************************///
-//void SettingsWidget::modActionCtrlChanged(int i)
-//{
-//	_mainWidget->_proposalListView->_actionCtrl = i;
-//}
-
-///****************************************************************************///
-//void SettingsWidget::modActionMetaChanged(int i)
-//{
-//	_mainWidget->_proposalListView->_actionMeta = i;
-//}
-
-///****************************************************************************///
-//void SettingsWidget::modActionAltChanged(int i)
-//{
-//	_mainWidget->_proposalListView->_actionAlt = i;
-//}
+/****************************************************************************///
+void SettingsWidget::onThemeChanged(int i)
+{
+    // Apply and save the theme
+    QFile themeFile(ui.comboBox_themes->itemData(i).toString());
+    if (themeFile.open(QFile::ReadOnly)) {
+        qApp->setStyleSheet(themeFile.readAll());
+        gSettings->setValue(CFG_THEME, ui.comboBox_themes->itemText(i));
+        themeFile.close();
+        return;
+    } else {
+        QMessageBox msgBox(QMessageBox::Critical, "Error", "Could not open theme file.");
+        msgBox.exec();
+    }
+}
 
 /****************************************************************************///
 void SettingsWidget::show()
 {
-	QWidget::show();
-	this->move(QApplication::desktop()->screenGeometry().center() - rect().center());
+    QWidget::show();
+    this->move(QApplication::desktop()->screenGeometry().center() - rect().center());
+}
+
+/******************************************************************************/
+/**************************** O V E R R I D E S *******************************/
+/******************************************************************************/
+void SettingsWidget::closeEvent(QCloseEvent *event)
+{
+    if (gHotkeyManager->hotkeys().empty()){
+        QMessageBox msgBox(QMessageBox::Critical, "Error",
+                           "Hotkey is invalid, please set it. Press Ok to go"\
+                           "back to the settings, or press Cancel to quit albert.",
+                           QMessageBox::Close|QMessageBox::Ok);
+        msgBox.exec();
+        if ( msgBox.result() == QMessageBox::Ok ){
+            ui.tabs->setCurrentIndex(0);
+            this->show();
+        }
+        else
+            qApp->quit();
+        event->ignore();
+        return;
+    }
 }

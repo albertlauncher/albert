@@ -32,12 +32,6 @@ private:
     void updatePluginList();
     void updatePluginInformations();
     void changeHotkey(int);
-    //  void onThemeChanged(int);
-    //	void onNItemsChanged(int i);
-    //	void onSubModeSelChanged(int);
-    //	void onSubModeDefChanged(int);
-    //	void modActionCtrlChanged(int);
-    //	void modActionMetaChanged(int);
-    //	void modActionAltChanged(int);
+    void onThemeChanged(int);
     void closeEvent(QCloseEvent * event) override;
 };

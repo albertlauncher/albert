@@ -55,8 +55,7 @@ int main(int argc, char *argv[])
 	 *  INITIALIZE APPLICATION
 	 */
 
-	QApplication          a(argc, argv);
-//	QCoreApplication::setOrganizationName(QString::fromLocal8Bit("albert"));
+    QApplication          a(argc, argv);
 	QCoreApplication::setApplicationName(QString::fromLocal8Bit("albert"));
 	a.setWindowIcon(QIcon(":app_icon"));
 	a.setQuitOnLastWindowClosed(false); // Dont quit after settings close
@@ -68,32 +67,12 @@ int main(int argc, char *argv[])
 	extensionHandler.initialize();
     mw._proposalListView->setModel(&sortProxyModel);
 
-	// TODO STUFF
-	//	{ // FIRST RUN STUFF
-	//		QDir data(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
-	//		if (!data.exists())
-	//			data.mkpath(".");
-	//		QDir conf(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
-	//				  +"/"+qApp->applicationName());
-	//		if (!conf.exists())
-	//			conf.mkpath(".");
-	//	}
-	//	QFileSystemWatcher fsw;
-	//	fsw.addPath(QSettings(QSettings::UserScope, "albert", "albert").fileName());
-	//	connect(&fsw, QFileSystemWatcher::fileChanged,
-	//			TODO ALLES WAS RELOADEN KANN, &ExtensionHandler::reloadConfig);
-
-
 	/*
 	 *  THEME
 	 */
 
 	{
-		QString theme = gSettings->value("Theme", "Standard").toString();
-		qDebug() << gSettings->fileName();
-		qDebug() << QStandardPaths::standardLocations(QStandardPaths::ConfigLocation);
-		qDebug() << QStandardPaths::standardLocations(QStandardPaths::DataLocation);
-		qDebug() << QStandardPaths::standardLocations(QStandardPaths::CacheLocation);
+        QString theme = gSettings->value(CFG_THEME, CFG_THEME_DEF).toString();
 		QFileInfoList themes;
 		QStringList themeDirs = QStandardPaths::locateAll(
 			QStandardPaths::DataLocation, "themes", QStandardPaths::LocateDirectory
@@ -125,7 +104,7 @@ int main(int argc, char *argv[])
      */
 
     // Albert without hotkey is useless. Force it!
-    gHotkeyManager->registerHotkey(gSettings->value("hotkey", "").toString());
+    gHotkeyManager->registerHotkey(gSettings->value(CFG_HOTKEY, CFG_HOTKEY_DEF).toString());
     if (gHotkeyManager->hotkeys().empty()) {
         QMessageBox msgBox(QMessageBox::Critical, "Error",
                            "Hotkey is invalid, please set it. Press ok to "\
@@ -172,6 +151,8 @@ int main(int argc, char *argv[])
 	// Make the list show the results of the current query
 	QObject::connect(&extensionHandler, &ExtensionHandler::currentQueryChanged,
 					 &sortProxyModel, &QSortFilterProxyModel::setSourceModel);
+
+
 	/*
 	 *  E N T E R   T H E   L O O P
 	 */
@@ -182,4 +163,5 @@ int main(int argc, char *argv[])
 	 *  CLEANUP
 	 */
 	extensionHandler.finalize();
+    gSettings->sync();
 }
