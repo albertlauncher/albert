@@ -50,7 +50,7 @@ public:
         painter->drawPixmap(iconRect, index.data(Qt::DecorationRole + mods).value<QIcon>().pixmap(option.decorationSize));
 
 		/* Drawing text differs dependent on the mode and selection */
-        if (gSettings->value(SHOW_INFO, false).toBool())
+        if (gSettings->value(CFG_SHOW_INFO, CFG_SHOW_INFO_DEF).toBool())
 		{
 			/*
 			 * fm(x) := fontmetrics of x
@@ -84,7 +84,7 @@ public:
 			text = QFontMetrics(font).elidedText(
                         index.data(
                             ((option.state & QStyle::State_Selected)
-                             && gSettings->value(SHOW_ACTION, false).toBool())
+                             && gSettings->value(CFG_SHOW_ACTION, CFG_SHOW_ACTION_DEF).toBool())
                             ? Qt::UserRole+1 + mods : Qt::ToolTipRole + mods)
                         .toString(),
 						option.textElideMode,
@@ -201,7 +201,7 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 QSize ProposalListView::sizeHint() const
 {
 	if (model()->rowCount() == 0) return QSize(width(), 0);
-    int nToShow = std::min(gSettings->value(CFG_MAX_PROPOSALS, CFG_MAX_PROPOSALS).toInt(), model()->rowCount());
+    int nToShow = std::min(gSettings->value(CFG_MAX_PROPOSALS, CFG_MAX_PROPOSALS_DEF).toInt(), model()->rowCount());
 	return QSize(width(), nToShow*sizeHintForRow(0));
 }
 

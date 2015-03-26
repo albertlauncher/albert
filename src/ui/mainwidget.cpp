@@ -107,12 +107,6 @@ MainWidget::~MainWidget()
 //	_engine->saveSettings(settings);
 //	_proposalListView->saveSettings(settings);
 //	_inputLine->saveSettings(settings);
-
-//	settings.setValue("showCentered", _showCentered);
-//	settings.setValue("hotkey", QKeySequence(_hotkeyManager.hotkey()).toString());
-//	settings.setValue("Theme", _theme);
-
-//	delete _engine;
 }
 
 /*****************************************************************************/
@@ -122,7 +116,7 @@ void MainWidget::show()
 {
 	_inputLine->reset();
 	QWidget::show();
-    if (gSettings->value(CFG_CENTERED, true).toBool())
+    if (gSettings->value(CFG_CENTERED, CFG_CENTERED_DEF).toBool())
 		this->move(QApplication::desktop()->screenGeometry().center()
 				   -QPoint(rect().right()/2,192 ));
 	this->raise();

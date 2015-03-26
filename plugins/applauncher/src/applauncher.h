@@ -92,5 +92,5 @@ private:
     static QIcon getIcon(const QString &iconName);
 	void restorePaths();
 
-    static constexpr const char* configString = "AppIndex/Paths";
+    static constexpr const char* CFG_PATHS = "AppIndex/Paths";
 };

@@ -74,7 +74,7 @@ void PluginHandler::loadPlugins()
             }
 
             // Check if this extension is blacklisted
-            if (gSettings->value(ps.name + "/" + CFG_BLACKLISTED, CFG_BLACKLISTED_DEF).toBool()){
+            if (gSettings->value(CFG_BLACKLIST).toStringList().contains(ps.name)){
                 qWarning() << "WARNING: Extension blacklisted:" << path;
                 ps.status = PluginSpec::Status::NotLoaded;
             }

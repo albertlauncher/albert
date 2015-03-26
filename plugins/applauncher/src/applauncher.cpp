@@ -41,8 +41,8 @@ void AppLauncher::initialize()
 {
 	// Check settings for paths
 	QStringList paths;
-    if (gSettings->value(configString).isValid())
-        paths = gSettings->value(configString).toStringList();
+    if (gSettings->value(CFG_PATHS).isValid())
+        paths = gSettings->value(CFG_PATHS).toStringList();
 	else{
 		paths = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
 	}
@@ -97,7 +97,7 @@ void AppLauncher::initialize()
 void AppLauncher::finalize()
 {
 	// Save settings
-    gSettings->setValue(configString, _watcher.directories());
+    gSettings->setValue(CFG_PATHS, _watcher.directories());
 //	gSettings.setValue("Fuzzy", dynamic_cast<FuzzySearch*>(_search) != nullptr);
 
 	// Serialize the data
@@ -120,7 +120,7 @@ void AppLauncher::restorePaths()
 	_watcher.removePaths(_watcher.files());
 	_watcher.removePaths(_watcher.directories());
 	_watcher.addPaths(paths);
-	gSettings->setValue("AppIndex/Paths", paths);
+    gSettings->setValue(CFG_PATHS, paths);
 //	updateApplications();
 }
 
@@ -339,98 +339,3 @@ bool AppLauncher::getAppInfo(const QString &path, AppInfo *appInfo)
 	s.endGroup();
 	return true;
 }
-
-
-
-
-/*
- *
- * TRASH
- * TODO: Move to seperate plugin (Platform: Win)
- *
- */
-
-//#ifdef Q_OS_WIN
-//	QFileIconProvider fip;
-//	qDebug() << iconName;
-//	return fip.icon(QFileInfo(iconName));
-////	HICON ico = ExtractIconW(nullptr, this->_exec.toStdWString().c_str(), 0);
-////	DestroyIcon(ico);
-////	return QIcon(QPixmap::fromWinHICON(ico));
-//#endif
-
-//#ifdef Q_OS_WIN
-// TODO QTBUG-40565
-//	//	for ( const QString &p : _paths) {
-//		QDirIterator it(
-//					"C:/Documents and Settings/All Users/Start Menu/Programs",
-//				   QDir::Files|QDir::NoDotAndDotDot,
-//					QDirIterator::Subdirectories);
-//		while (it.hasNext()) {
-//			it.next();
-//			QFileInfo fi = it.fileInfo();
-//			if (fi.isExecutable())
-//			{
-//				Item *i = new Item;
-//				qDebug()<< fi.baseName();
-//				i->_name     = fi.baseName();
-//				if (fi.isSymLink())
-//					fi.setFile(fi.symLinkTarget());
-//				qDebug()<< fi.fileName();
-//				qDebug()<< fi.canonicalFilePath();
-//				i->_info     = fi.canonicalFilePath();
-//				i->_icon     = getIcon(fi.canonicalFilePath());
-//				i->_exec     = QString("\"%1\"").arg(fi.canonicalFilePath());
-//				i->_term     = false;
-//				_index.push_back(i);
-//			}
-//		}
-//    }
-//	HKEY hUninstKey = NULL;
-//	HKEY hAppKey = NULL;
-//	WCHAR sAppKeyName[1024];
-//	WCHAR sSubKey[1024];
-//	WCHAR sDisplayName[1024];
-//	WCHAR *sRoot = L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
-//	long lResult = ERROR_SUCCESS;
-//	DWORD dwType = KEY_ALL_ACCESS;
-//	DWORD dwBufferSize = 0;
-//	//Open the "Uninstall" key.
-//	if(RegOpenKeyEx(HKEY_LOCAL_MACHINE, sRoot, 0, KEY_READ, &hUninstKey) != ERROR_SUCCESS)
-//	{
-//		return;
-//	}
-//	for(DWORD dwIndex = 0; lResult == ERROR_SUCCESS; dwIndex++)
-//	{
-//		//Enumerate all sub keys...
-//		dwBufferSize = sizeof(sAppKeyName);
-//		if((lResult = RegEnumKeyEx(hUninstKey, dwIndex, sAppKeyName,
-//			&dwBufferSize, NULL, NULL, NULL, NULL)) == ERROR_SUCCESS)
-//		{
-//			//Open the sub key.
-//			wsprintf(sSubKey, L"%s\\%s", sRoot, sAppKeyName);
-//			if(RegOpenKeyEx(HKEY_LOCAL_MACHINE, sSubKey, 0, KEY_READ, &hAppKey) != ERROR_SUCCESS) {
-//				RegCloseKey(hAppKey);
-//				RegCloseKey(hUninstKey);
-//				return;
-//			}
-//			//Get the display name value from the application's sub key.
-//			dwBufferSize = sizeof(sDisplayName);
-//			if(RegQueryValueEx(hAppKey, L"DisplayName", NULL,
-//				&dwType, (unsigned char*)sDisplayName, &dwBufferSize) == ERROR_SUCCESS) {
-//				qDebug() << QString::fromWCharArray(sAppKeyName);
-//				qDebug() << QString::fromWCharArray(sSubKey);
-//				qDebug() << QString::fromWCharArray(sDisplayName);
-//				Item *i = new Item;
-//				i->_name     = QString::fromWCharArray(sDisplayName);
-//				i->_info     = "";
-//				i->_iconName = "";
-//				i->_exec     = "";
-//				i->_term     = false;
-//				_index.push_back(i);
-//			}
-//			RegCloseKey(hAppKey);
-//		}
-//	}
-//	RegCloseKey(hUninstKey);
-//#endif

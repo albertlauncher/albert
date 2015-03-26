@@ -73,15 +73,15 @@ SettingsWidget::SettingsWidget(QWidget * parent, Qt::WindowFlags f)
 
 
     // SUBTEXT SELECTED
-    ui.checkBox_showInfo->setChecked(gSettings->value(SHOW_INFO, SHOW_INFO_DEF).toBool());
+    ui.checkBox_showInfo->setChecked(gSettings->value(CFG_SHOW_INFO, CFG_SHOW_INFO_DEF).toBool());
     connect(ui.checkBox_showInfo, &QCheckBox::toggled,
-            [](bool b){ gSettings->setValue(SHOW_INFO, b); });
+            [](bool b){ gSettings->setValue(CFG_SHOW_INFO, b); });
 
 
     // SUBTEXT UNSELECTED
-    ui.checkBox_showAction->setChecked(gSettings->value(SHOW_ACTION, SHOW_ACTION_DEF).toBool());
+    ui.checkBox_showAction->setChecked(gSettings->value(CFG_SHOW_ACTION, CFG_SHOW_ACTION_DEF).toBool());
     connect(ui.checkBox_showAction, &QCheckBox::toggled,
-            [](bool b){ gSettings->setValue(SHOW_ACTION, b); });
+            [](bool b){ gSettings->setValue(CFG_SHOW_ACTION, b); });
 
     // THEMES
     QFileInfoList themes;
@@ -114,8 +114,12 @@ SettingsWidget::SettingsWidget(QWidget * parent, Qt::WindowFlags f)
     // Blacklist items if the checbox is cklicked
     connect(ui.treeWidget_plugins, &QTreeWidget::itemChanged,
             [=](QTreeWidgetItem * item, int column){
-        if (item->parent() == nullptr)
-            gSettings->setValue(item->text(0) + "/" + CFG_BLACKLISTED, !static_cast<bool>(item->checkState(column)));
+        QSet<QString> blackSet =gSettings->value(CFG_BLACKLIST).toStringList().toSet();
+        if ( static_cast<bool>(item->checkState(column)) )
+            blackSet.remove(item->text(0));
+        else
+            blackSet.insert(item->text(0));
+        gSettings->setValue(CFG_BLACKLIST, QVariant(QStringList::fromSet(blackSet)));
     });
 }
 
@@ -153,8 +157,10 @@ void SettingsWidget::updatePluginList()
         child->setData(0, Qt::DisplayRole, spec.name);
         child->setData(0, Qt::ToolTipRole, spec.description);
         child->setData(1, Qt::ToolTipRole, "Load at boot");
-        child->setCheckState(1, (gSettings->value(spec.name + "/" + CFG_BLACKLISTED, CFG_BLACKLISTED_DEF).toBool())
-                                     ? Qt::Unchecked : Qt::Checked);
+        if (gSettings->value(CFG_BLACKLIST).toStringList().contains(spec.name ))
+            child->setCheckState(1, Qt::Unchecked);
+        else
+            child->setCheckState(1, Qt::Checked);
         switch (spec.status) {
         case PluginSpec::Status::Loaded:
             child->setData(0, Qt::DecorationRole, QIcon(":plugin_loaded"));

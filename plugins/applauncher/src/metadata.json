@@ -5,5 +5,5 @@
     "group" :           "Extensions",
     "copyright" :       "(C) 2015 Manuel Schneider",
     "description" :     "Finds and launches applications.",
-    "dependencies" :    []
+    "dependencies" :    ["gksu"]
 }

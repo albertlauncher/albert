@@ -19,6 +19,8 @@
 #include "singleton.h"
 
 #define gSettings Settings::instance()
+
+// GENERAL
 #define CFG_HOTKEY              "hotkey"
 #define CFG_HOTKEY_DEF          ""
 #define CFG_MAX_HISTORY         "maxHistory"
@@ -27,14 +29,13 @@
 #define CFG_CENTERED_DEF        true
 #define CFG_THEME               "theme"
 #define CFG_THEME_DEF           "Standard"
-#define CFG_BLACKLISTED         "blacklisted"
-#define CFG_BLACKLISTED_DEF     false
 #define CFG_MAX_PROPOSALS       "itemCount"
 #define CFG_MAX_PROPOSALS_DEF   5
-#define SHOW_INFO               "showAnfo"
-#define SHOW_INFO_DEF           true
-#define SHOW_ACTION             "showAction"
-#define SHOW_ACTION_DEF         true
+#define CFG_SHOW_INFO           "showAnfo"
+#define CFG_SHOW_INFO_DEF       true
+#define CFG_SHOW_ACTION         "showAction"
+#define CFG_SHOW_ACTION_DEF     true
+#define CFG_BLACKLIST           "blacklisted"
 
 class Settings final : public QSettings,  public Singleton<Settings>
 {
