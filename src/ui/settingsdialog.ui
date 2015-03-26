@@ -204,12 +204,35 @@
            <property name="horizontalScrollBarPolicy">
             <enum>Qt::ScrollBarAlwaysOff</enum>
            </property>
+           <property name="alternatingRowColors">
+            <bool>true</bool>
+           </property>
+           <property name="indentation">
+            <number>16</number>
+           </property>
+           <property name="uniformRowHeights">
+            <bool>true</bool>
+           </property>
+           <property name="animated">
+            <bool>true</bool>
+           </property>
            <property name="headerHidden">
             <bool>true</bool>
            </property>
+           <property name="columnCount">
+            <number>2</number>
+           </property>
+           <attribute name="headerStretchLastSection">
+            <bool>false</bool>
+           </attribute>
            <column>
             <property name="text">
              <string notr="true">1</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string notr="true">2</string>
             </property>
            </column>
           </widget>
@@ -242,7 +265,7 @@
            <number>0</number>
           </property>
           <item>
-           <layout class="QGridLayout" name="gridLayout_2">
+           <layout class="QGridLayout" name="gridLayout_2" columnminimumwidth="0,0">
             <item row="1" column="0">
              <widget class="QLabel" name="label_9">
               <property name="text">

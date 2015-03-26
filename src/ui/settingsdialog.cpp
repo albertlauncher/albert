@@ -107,8 +107,16 @@ SettingsWidget::SettingsWidget(QWidget * parent, Qt::WindowFlags f)
 
     // PLUGIN  LIST
     updatePluginList();
+    ui.treeWidget_plugins->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+    ui.treeWidget_plugins->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     connect(ui.treeWidget_plugins, &QTreeWidget::currentItemChanged,
             this, &SettingsWidget::updatePluginInformations);
+    // Blacklist items if the checbox is cklicked
+    connect(ui.treeWidget_plugins, &QTreeWidget::itemChanged,
+            [=](QTreeWidgetItem * item, int column){
+        if (item->parent() == nullptr)
+            gSettings->setValue(item->text(0) + "/" + CFG_BLACKLISTED, !static_cast<bool>(item->checkState(column)));
+    });
 }
 
 /****************************************************************************///
@@ -121,7 +129,6 @@ SettingsWidget::~SettingsWidget()
 /****************************************************************************///
 void SettingsWidget::updatePluginList()
 {
-    QSet<QString> blacklist = gSettings->value(CFG_PLGN_BLACKLIST).toStringList().toSet();
     const QList<PluginSpec>& specs = PluginHandler::instance()->getPluginSpecs();
     for (const PluginSpec & spec : specs){
 
@@ -142,10 +149,12 @@ void SettingsWidget::updatePluginList()
         // Create the child and insert a childitem
         QTreeWidgetItem *child = new QTreeWidgetItem();
         child->setChildIndicatorPolicy(QTreeWidgetItem::QTreeWidgetItem::DontShowIndicatorWhenChildless);
-        child->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        child->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsSelectable | Qt::ItemIsEnabled);
         child->setData(0, Qt::DisplayRole, spec.name);
-        child->setData(1, Qt::DisplayRole, spec.version);
-            child->setCheckState(0, (blacklist.contains(spec.name)) ? Qt::Unchecked : Qt::Checked);
+        child->setData(0, Qt::ToolTipRole, spec.description);
+        child->setData(1, Qt::ToolTipRole, "Load at boot");
+        child->setCheckState(1, (gSettings->value(spec.name + "/" + CFG_BLACKLISTED, CFG_BLACKLISTED_DEF).toBool())
+                                     ? Qt::Unchecked : Qt::Checked);
         switch (spec.status) {
         case PluginSpec::Status::Loaded:
             child->setData(0, Qt::DecorationRole, QIcon(":plugin_loaded"));
@@ -164,6 +173,7 @@ void SettingsWidget::updatePluginList()
         tli->addChild(child);
     }
 }
+
 /****************************************************************************///
 void SettingsWidget::updatePluginInformations()
 {
@@ -187,11 +197,12 @@ void SettingsWidget::updatePluginInformations()
                 deps.append(s).append("\n");
             ui.textBrowser_pluginDependencies->setText(deps);
             ui.textBrowser_pluginDescription->setText(spec.description);
+            ui.pushButton_pluginHelp->setEnabled(spec.status == PluginSpec::Status::Loaded);
+            ui.pushButton_pluginConfig->setEnabled(spec.status == PluginSpec::Status::Loaded);
             break;
         }
     }
 }
-
 
 /****************************************************************************///
 void SettingsWidget::changeHotkey(int newhk)

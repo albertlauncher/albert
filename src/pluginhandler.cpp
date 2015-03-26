@@ -37,7 +37,6 @@ void PluginHandler::loadPlugins()
     for (QString pd : pluginDirs)
     {
         QDirIterator plgnIt(pd, QDir::Files);
-        QStringList blacklist = gSettings->value(CFG_PLGN_BLACKLIST).toStringList();
         while (plgnIt.hasNext())
         {
             QString path = plgnIt.next();
@@ -75,24 +74,24 @@ void PluginHandler::loadPlugins()
             }
 
             // Check if this extension is blacklisted
-            if (blacklist.contains(ps.name)){
+            if (gSettings->value(ps.name + "/" + CFG_BLACKLISTED, CFG_BLACKLISTED_DEF).toBool()){
                 qWarning() << "WARNING: Extension blacklisted:" << path;
-                delete loader;
-                continue;
+                ps.status = PluginSpec::Status::NotLoaded;
+            }
+            else
+            {
+                // Load the plugin
+                if (!loader->load()){
+                    qWarning() << "WARNING: Loading extension failed:" << path << loader->errorString();
+                    ps.status = PluginSpec::Status::Error;
+                }else{
+                    qDebug() << "Extension loaded:" <<  path;
+                    ps.status = PluginSpec::Status::Loaded;
+                }
             }
 
-            // Load the plugin
-            if (!loader->load()){
-                qWarning() << "WARNING: Loading extension failed:" << path << loader->errorString();
-                ps.status = PluginSpec::Status::Error;
-                delete loader;
-                continue;
-            }
-            ps.status = PluginSpec::Status::Loaded;
-
-            // Store the plugins
+            // Store the plugin
             _plugins.append(ps);
-            qDebug() << "Extension loaded:" <<  path;
         }
     }
 }

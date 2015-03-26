@@ -27,8 +27,8 @@
 #define CFG_CENTERED_DEF        true
 #define CFG_THEME               "theme"
 #define CFG_THEME_DEF           "Standard"
-#define CFG_PLGN_BLACKLIST      "blacklist"
-#define CFG_PLGN_BLACKLIST_DEF  QVariant()
+#define CFG_BLACKLISTED         "blacklisted"
+#define CFG_BLACKLISTED_DEF     false
 #define CFG_MAX_PROPOSALS       "itemCount"
 #define CFG_MAX_PROPOSALS_DEF   5
 #define SHOW_INFO               "showAnfo"
