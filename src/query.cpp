@@ -16,25 +16,58 @@
 
 #include "query.h"
 #include <QDebug>
+#include <algorithm>
 
-/****************************************************************************///
+/** ****************************************************************************
+ * @brief The RelevanceCompare struct
+ * This funtion object compares two queryresults. A OR is larger than others if
+ * the usage couter is greater. In case of equality the lexicographical string
+ * comparison of the title is used.
+ */
+struct RelevanceCompare {
+    RelevanceCompare() = delete;
+    RelevanceCompare(Query *q) : _q (q){}
+
+    inline bool operator()(const QueryResult &lhs, const QueryResult &rhs) const {
+        if (lhs.usage == rhs.usage)
+            return QString::compare(lhs.titleText(*_q, Qt::NoModifier),
+                                    rhs.titleText(*_q, Qt::NoModifier),
+                                    Qt::CaseInsensitive) < 0;
+        else
+            return lhs.usage > rhs.usage;
+    }
+private:
+    Query *_q;
+};
+
+
+/** ***************************************************************************/
 void Query::addResults(const QList<QueryResult> &&results)
 {
-	beginInsertRows(QModelIndex(), _results.size(), _results.size()+results.size()-1);
-	_results.append(results);
-	endInsertRows();
+    if (_dynamicSort){
+        throw "Not implemented yet.";
+    }
+    else {
+        beginInsertRows(QModelIndex(), _results.size(), _results.size()+results.size()-1);
+        _results.append(results);
+        endInsertRows();
+    }
 }
 
-/****************************************************************************///
+/** ***************************************************************************/
 void Query::addResult(QueryResult &&result)
 {
-	beginInsertRows(QModelIndex(), _results.size(), _results.size());
-	_results.append(result);
-//	qDebug() << _results.size();
-	endInsertRows();
+    if (_dynamicSort){
+        throw "Not implemented yet.";
+    }
+    else {
+        beginInsertRows(QModelIndex(), _results.size(), _results.size());
+        _results.append(result);
+        endInsertRows();
+    }
 }
 
-/****************************************************************************///
+/** ***************************************************************************/
 QVariant Query::data(const QModelIndex &index, int role) const
 {
     // Strip out modifiers
@@ -53,10 +86,20 @@ QVariant Query::data(const QModelIndex &index, int role) const
         _results[index.row()].action(*this, mods);
     if (role == Qt::UserRole + 1)
         return _results[index.row()].actionText(*this, mods);
+    if (role == Qt::UserRole + 2)
+        return _results[index.row()].usage;
     return QVariant();
 }
 
-/****************************************************************************///
+/** ***************************************************************************/
+void Query::sort()
+{
+    beginResetModel();
+    std::stable_sort(_results.begin(), _results.end(), RelevanceCompare(this));
+    endResetModel();
+}
+
+/** ***************************************************************************/
 int Query::rowCount(const QModelIndex&) const
 {
 	return _results.size();

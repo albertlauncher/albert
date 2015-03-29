@@ -28,8 +28,8 @@ struct QueryResult
 	QueryResult() = delete;
 	explicit QueryResult(ExtensionInterface *ext)
 		: _extension(ext) {}
-	explicit QueryResult(ExtensionInterface *e, const QString &id, Type t, int8_t r)
-		: rid(id), type(t), relevance(r), _extension(e) {}
+    explicit QueryResult(ExtensionInterface *e, const QString &id, Type t, uint r)
+        : rid(id), type(t), usage(r), _extension(e) {}
 	~QueryResult(){}
 
 
@@ -41,7 +41,7 @@ struct QueryResult
 
 	QString rid;
 	Type    type;
-	uint8_t relevance;
+    uint    usage;
 
 private:
 	ExtensionInterface * _extension;
@@ -54,22 +54,23 @@ class Query final : public QAbstractListModel
 	Q_OBJECT
 
 public:
-	explicit Query(QString term) : _searchTerm(term) {}
+    explicit Query(QString term) : _searchTerm(term), _dynamicSort(false) {}
 	~Query(){}
 
-	const QString& searchTerm() {return _searchTerm;}
-//	const QList<QueryResult>& results() {return _results;}
 	void addResults(const QList<QueryResult> &&results);
 	void addResult(QueryResult &&result);
 
     int      rowCount(const QModelIndex & = QModelIndex()) const override;
-	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
+    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
+    void     sort();
+
+    void     setDynamicSearch(bool b){ _dynamicSort = b; }
+    bool     dynamicSearch(){ return _dynamicSort; }
+
+    const QString& searchTerm() {return _searchTerm;}
 
 private:
 	QList<QueryResult> _results;
 	QString _searchTerm;
+    bool    _dynamicSort;
 };
-/*
- *  STUFF RELATED TO SORTING
- */
-// std::stable_sort(_data.begin(), _data.end(), Service::Item::ATimeCompare());

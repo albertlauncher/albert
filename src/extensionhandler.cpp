@@ -27,19 +27,24 @@ void ExtensionHandler::startQuery(const QString &term)
 	_lastSearchTerm = term.trimmed();
 	qDebug() << "Query started" << _lastSearchTerm;
 
-//	if (_lastSearchTerm.isEmpty()) return; // Todo: How to clear proposallist
-
 	Query *q;
-	if (!_recentQueries.contains(_lastSearchTerm)) {
-		q = new Query(_lastSearchTerm);
-		_recentQueries.insert(_lastSearchTerm, q);
-		// TODO INTRODUCE MULTITHREADING HERE
-		for (ExtensionInterface *e : _extensions) {
-			e->handleQuery(q);
-		}
-	} else {
-		q = _recentQueries.value(_lastSearchTerm);
-	}
+    if (_recentQueries.contains(_lastSearchTerm))
+        q = _recentQueries.value(_lastSearchTerm);
+    else {
+        q = new Query(_lastSearchTerm);
+        _recentQueries.insert(_lastSearchTerm, q);
+
+        // TODO INTRODUCE MULTITHREADING HERE
+        for (ExtensionInterface *e : _extensions)
+            e->handleQuery(q);
+
+        // Wait for highspeed threads to finish
+
+        // Sort
+        q->sort();
+
+        // Enable dynmic mode so that lame plugings can still add sorted
+    }
 	emit currentQueryChanged(q);
 }
 

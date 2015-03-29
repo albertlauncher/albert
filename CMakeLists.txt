@@ -11,36 +11,31 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
+set( CMAKE_VERBOSE_MAKEFILE on )
 
 # Set additional compiler flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -pedantic -Wextra")
-
-IF (NOT CMAKE_BUILD_TYPE)
-    MESSAGE(STATUS "Set build type explicitely to debug")
-    SET(CMAKE_BUILD_TYPE "debug" )
-ENDIF (NOT CMAKE_BUILD_TYPE)
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT ")
 
 find_package(Qt5Widgets 5.1 REQUIRED)
-MESSAGE(STATUS "Qt5Widgets_VERSION " ${Qt5Widgets_VERSION_STRING})
-
 find_package(Qt5Svg REQUIRED)
-MESSAGE(STATUS "Qt5Svg_VERSION " ${Qt5Svg_VERSION})
 
 include_directories(
-	src/
+    src/
     src/ui/
     src/common/
 )
 
 set(SRCS
-	src/main.cpp
+    src/main.cpp
     src/settings.h
-	src/query.cpp
-	src/extensionhandler.cpp
+    src/query.cpp
+    src/extensionhandler.cpp
     src/pluginhandler.cpp
     src/globalhotkey.cpp
     src/globalhotkey_p.h
-	src/history.cpp
+    src/history.cpp
     src/ui/mainwidget.cpp
     src/ui/proposallistview.cpp
     src/ui/inputline.cpp
@@ -48,6 +43,14 @@ set(SRCS
     src/ui/settingsbutton.cpp
     src/ui/settingsdialog.cpp
     src/common/extensioninterface.h
+)
+
+set(LIBS
+    ${Qt5Widgets_LIBRARIES}
+    ${Qt5X11Extras_LIBRARIES}
+    Qt5::X11Extras
+    #muparser
+    X11
 )
 
 #set(data
@@ -68,62 +71,41 @@ qt5_wrap_ui(UIS
 )
 
 qt5_add_resources(RSRC
-	src/resources.qrc
+    src/resources.qrc
 )
 
-
-#linux
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-
+    # BUILD
+    #find_library(muparser REQUIRED)
     find_package(Qt5X11Extras REQUIRED)
-    MESSAGE(STATUS "Qt5X11Extras_VERSION " ${Qt5X11Extras_VERSION})
+    set(SRCS ${SRCS} src/globalhotkey_x11.cpp)
+    add_executable(${PROJECT_NAME} ${SRCS} ${UIS} ${DATA} ${RSRC})
+    target_link_libraries(${PROJECT_NAME} ${LIBS})
 
-#	find_library(muparser REQUIRED)
-
-
-	set(SRCS ${SRCS} src/globalhotkey_x11.cpp)
-
-	# Define targets and linked libs
-	add_executable(albert ${SRCS} ${UIS} ${DATA} ${RSRC})
-
-    target_link_libraries(albert
-        ${Qt5Widgets_LIBRARIES}
-        ${Qt5X11Extras_LIBRARIES}
-        Qt5::X11Extras
-#        muparser
-        X11
-)
-
-	# Define make install target
-	install(TARGETS albert RUNTIME DESTINATION bin)
-	install(DIRECTORY src/resources/icons DESTINATION share/albert COMPONENT config)
-	install(DIRECTORY src/resources/themes DESTINATION share/albert COMPONENT config)
-	install(FILES src/resources/albert.desktop DESTINATION share/applications COMPONENT desktop)
-
+    # INSTALL
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+    install(DIRECTORY src/resources/icons DESTINATION share/${PROJECT_NAME} COMPONENT config)
+    install(DIRECTORY src/resources/themes DESTINATION share/${PROJECT_NAME} COMPONENT config)
+    install(FILES src/resources/albert.desktop DESTINATION share/applications COMPONENT desktop)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-#win
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    add_library(muparser STATIC IMPORTED)
+    set_property(TARGET muparser PROPERTY
+        IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/muparser/lib/libmuparser.a")
 
-	add_library(muparser STATIC IMPORTED)
-	set_property(TARGET muparser PROPERTY
-		IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/muparser/lib/libmuparser.a")
+    # Add platformspecific stuff
+    set(SRCS ${SRCS} src/util/hotkey/globalhotkey_win.cpp)
 
-	# Add platformspecific stuff
-	set(SRCS ${SRCS} src/util/hotkey/globalhotkey_win.cpp)
+    #Use unicode
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")
 
-	#Use unicode
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")
+    # Define targets and linked libs
+    add_executable(${PROJECT_NAME} ${SRCS} ${UIS} ${DATA} ${RSRC})
+    target_link_libraries(${PROJECT_NAME} Qt5::Widgets muparser)
 
-	# Define targets and linked libs
-	add_executable(albert ${SRCS} ${UIS} ${DATA} ${RSRC})
-	target_link_libraries(albert Qt5::Widgets muparser)
-
-	# Define make install target
-	install(TARGETS albert RUNTIME DESTINATION bin)
-
+    # Define make install target
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-
-
 
 add_subdirectory(plugins/applauncher)

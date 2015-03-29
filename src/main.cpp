@@ -19,7 +19,6 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QMessageBox>
-#include <QSortFilterProxyModel>
 #include <QDebug>
 
 #include "mainwidget.h"
@@ -28,28 +27,36 @@
 #include "settings.h"
 #include "globalhotkey.h"
 
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
 	QByteArray localMsg = msg.toLocal8Bit();
 	switch (type) {
-	case QtDebugMsg:
-		fprintf(stderr, "Debug: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+    case QtDebugMsg:
+        fprintf(stderr, "\x1b[32m[%s]\x1b[0m %s\n", context.function, localMsg.constData());
 		break;
 	case QtWarningMsg:
-		fprintf(stderr, "Warning: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        fprintf(stderr, "\x1b[32m[%s]\x1b[0m\x1b[33mWarning:\x1b[0m %s\n", context.function, localMsg.constData());
 		break;
 	case QtCriticalMsg:
-		fprintf(stderr, "Critical: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        fprintf(stderr, "\x1b[32m[%s]\x1b[0m\x1b[31mCritical:\x1b[0m %s\n", context.function, localMsg.constData());
 		break;
 	case QtFatalMsg:
-		fprintf(stderr, "Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        fprintf(stderr, "\x1b[41;30;4mFATAL:\x1b[0m %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
 		abort();
 	}
 }
 
 int main(int argc, char *argv[])
 {
-//	qInstallMessageHandler(myMessageOutput);
+    qInstallMessageHandler(myMessageOutput);
 
 	/*
 	 *  INITIALIZE APPLICATION
@@ -61,11 +68,9 @@ int main(int argc, char *argv[])
 	a.setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
     MainWidget            mw;
-    QSortFilterProxyModel sortProxyModel;
 	ExtensionHandler      extensionHandler;
 
-	extensionHandler.initialize();
-    mw._proposalListView->setModel(&sortProxyModel);
+    extensionHandler.initialize();
 
 	/*
 	 *  THEME
@@ -150,18 +155,19 @@ int main(int argc, char *argv[])
 
 	// Make the list show the results of the current query
 	QObject::connect(&extensionHandler, &ExtensionHandler::currentQueryChanged,
-					 &sortProxyModel, &QSortFilterProxyModel::setSourceModel);
+                     mw._proposalListView, &ProposalListView::setModel);
 
 
 	/*
 	 *  E N T E R   T H E   L O O P
 	 */
 
-	return a.exec();
+    int ret = a.exec();
 
 	/*
 	 *  CLEANUP
 	 */
 	extensionHandler.finalize();
     gSettings->sync();
+    return ret;
 }

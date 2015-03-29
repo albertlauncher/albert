@@ -39,56 +39,60 @@ QString AppLauncher::abstract() const
 /****************************************************************************///
 void AppLauncher::initialize()
 {
-	// Check settings for paths
-	QStringList paths;
+    /* Create a list of all directories containing desktop files */
+
+    QStringList paths;
     if (gSettings->value(CFG_PATHS).isValid())
         paths = gSettings->value(CFG_PATHS).toStringList();
-	else{
+    else
 		paths = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
-	}
-
-	// Get addistional subdirectories
 	for (const QString& path : paths) {
 		QDirIterator it(path, QDir::Dirs|QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
 		while (it.hasNext())
 			paths << it.next();
 	}
 
-	// Watch the folders containing the apps for changes
+
+    /* Deserialze data */
+
+    QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + DATA_FILE);
+    if (f.open(QIODevice::ReadOnly| QIODevice::Text)) {
+        qDebug() << "Deserializing from" << f.fileName();
+        QDataStream in(&f);
+        int size;
+        in >> size;
+        for (int i = 0; i < size; ++i) {
+            AppInfo app;
+            in >> app.path >> app.name >> app.altName >> app.iconName >> app.exec >> app.usage;
+            _index.insert(app.path, app);
+        }
+        f.close();
+    } else
+        qWarning() << "Could not open file: " << f.fileName();
+
+
+    /* Set filesystem watches on the application folders */
+
 	QStringList failedPaths = _watcher.addPaths(paths);
 	if (!failedPaths.isEmpty())
 		qWarning() << failedPaths << "could not be watched!";
-	// TODO update the ui? Save this to settings?
+    // Rebuild index if watcher signaled a change
+    connect(&_watcher, &QFileSystemWatcher::directoryChanged,
+            this, &AppLauncher::updateApplications);
 
-	// Get the serialized data
-	// Deserialize the data	// Deserialize the index
-//	int size;
-//	in >> size;
-//	AppIndex::Item *it;
-//	emit beginBuildIndex();
-//	for (int i = 0; i < size; ++i) {
-//		it = new AppIndex::Item;
-//		it->deserialize(in);
-//		it->_icon = getIcon(it->_iconName);
-//		_index.push_back(it);
-//	}
-//	in >> _lastAccess >> _name >> _exec >> _iconName >> _info >> _term;
 
-	// Cleanup and update the database
+    /* Cleanup and update the database */
+
 	cleanApplications();
 	for (const QString& path : paths)
 		updateApplications(path);
 
 	// Initialize the search index
 	_search = new PrefixSearch<AppInfo>(&_index, [](const AppInfo&r) -> QString {return r.name;});
-//	if(gSettings->value("Fuzzy", false).toBool())
-//		_search = new FuzzySearch<AppInfo>(&_index, [](const AppInfo&r) -> QString {return r.name;});
-//	else
+    //	if(gSettings->value("Fuzzy", false).toBool())
+    //		_search = new FuzzySearch<AppInfo>(&_index, [](const AppInfo&r) -> QString {return r.name;});
+    //	else
 	_search->buildIndex();
-
-	// Rebuild index if watcher signaled a change
-	connect(&_watcher, &QFileSystemWatcher::directoryChanged,
-			this, &AppLauncher::updateApplications);
 
 	qDebug() << "Loaded " << _index.size() << " apps.";
 }
@@ -96,21 +100,18 @@ void AppLauncher::initialize()
 /****************************************************************************///
 void AppLauncher::finalize()
 {
-	// Save settings
-    gSettings->setValue(CFG_PATHS, _watcher.directories());
-//	gSettings.setValue("Fuzzy", dynamic_cast<FuzzySearch*>(_search) != nullptr);
+    /* Serialze data */
 
-	// Serialize the data
-//	// Serialize data
-//	out << _index.size();
-//	for (Service::Item *it : _index)
-//		static_cast<AppIndex::Item*>(it)->serialize(out);
-//	out << _lastAccess << _name << _exec << _iconName << _info << _term;
-
-
-	// Rebuild index if watcher signaled a change
-	disconnect(&_watcher, &QFileSystemWatcher::directoryChanged,
-			   this, &AppLauncher::updateApplications);
+    QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + DATA_FILE);
+    if (f.open(QIODevice::ReadWrite| QIODevice::Text)) {
+        qDebug() << "Serializing to " << f.fileName();
+        QDataStream out( &f );
+        out << _index.size();
+        for (const AppInfo &app : _index)
+            out << app.path << app.name << app.altName << app.iconName << app.exec << app.usage;
+        f.close();
+    } else
+        qCritical() << "FATAL: Could not write to " << f.fileName();
 }
 
 /****************************************************************************///
@@ -134,18 +135,6 @@ void AppLauncher::addPath(const QString & s)
 }
 
 /****************************************************************************///
-void AppLauncher::serialize(const QString &path)
-{
-
-}
-
-/****************************************************************************///
-void AppLauncher::deserialize(const QString &path)
-{
-
-}
-
-/****************************************************************************///
 void AppLauncher::removePath(const QString & s)
 {
 //	bool failed = _watcher.removePath(s);
@@ -153,6 +142,7 @@ void AppLauncher::removePath(const QString & s)
 //		buildIndex();
 //	return failed;
 }
+
 /****************************************************************************///
 void AppLauncher::setupSession()
 {
@@ -210,7 +200,7 @@ void AppLauncher::handleQuery(Query *q)
 {
 	QStringList res = _search->find(q->searchTerm());
 	for(const QString &k : res)
-		q->addResult(QueryResult(this, k, QueryResult::Type::Interactive, 255));
+        q->addResult(QueryResult(this, k, QueryResult::Type::Interactive, _index[k].usage));
 }
 
 /****************************************************************************///
@@ -237,6 +227,7 @@ const QIcon &AppLauncher::icon(const Query &q, const QueryResult &qr, Qt::Keyboa
 void AppLauncher::action(const Query &q, const QueryResult &qr, Qt::KeyboardModifiers mods)
 {
     ++_index[qr.rid].usage;
+    qDebug() << _index[qr.rid].usage;
     QString cmd = _index[qr.rid].exec;
     if (mods == Qt::ControlModifier)
         cmd.prepend("gksu ");
@@ -335,7 +326,8 @@ bool AppLauncher::getAppInfo(const QString &path, AppInfo *appInfo)
 		appInfo->altName = v.toString();
     else
         appInfo->altName = appInfo->exec;
-
 	s.endGroup();
+
+    appInfo->path = path;
 	return true;
 }

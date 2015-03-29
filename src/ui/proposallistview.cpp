@@ -128,6 +128,8 @@ ProposalListView::~ProposalListView()
 /****************************************************************************///
 bool ProposalListView::eventFilter(QObject*, QEvent *event)
 {
+    if (model() == nullptr) return false;
+
 	if (event->type() == QEvent::KeyPress)
 	{
 		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
@@ -159,11 +161,11 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 			if (!currentIndex().isValid()){
                 if (model()->rowCount() > 0)
                     setCurrentIndex(model()->index(0,0));
-                else // TODO: Not so easy anymore with  widgets
+                else // TODO: Not so easy anymore with  informational results
 					return true;
             }
             model()->data(currentIndex(), Qt::UserRole + keyEvent->modifiers());
-//			window()->hide();
+            window()->hide();
 //			// Do not accept since the inpuline needs
 //			// to store the request in history
 //			return false;
@@ -200,6 +202,7 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 /****************************************************************************///
 QSize ProposalListView::sizeHint() const
 {
+    if (model() == nullptr) return QSize();
 	if (model()->rowCount() == 0) return QSize(width(), 0);
     int nToShow = std::min(gSettings->value(CFG_MAX_PROPOSALS, CFG_MAX_PROPOSALS_DEF).toInt(), model()->rowCount());
 	return QSize(width(), nToShow*sizeHintForRow(0));
@@ -208,6 +211,8 @@ QSize ProposalListView::sizeHint() const
 /****************************************************************************///
 void ProposalListView::reset()
 {
+    if (model() == nullptr) return;
+
 	// Reset the  views state
 	QListView::reset();
 

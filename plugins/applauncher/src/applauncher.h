@@ -28,9 +28,12 @@
 #include "settings.h"
 #include "prefixsearch.h"
 
+#define DATA_FILE "applauncher.dat"
+
 /****************************************************************************///
 struct AppInfo {
-	QString name;
+    QString path;
+    QString name;
 	QString altName;
 	QString iconName;
 	QString exec;
@@ -61,8 +64,6 @@ public:
 	void updateApplications(const QString &path);
 	void removePath(const QString &path);
 	void addPath(const QString &path);
-	void serialize(const QString &path);
-	void deserialize(const QString &path);
 
 	/*
 	 * ExtensionInterface
