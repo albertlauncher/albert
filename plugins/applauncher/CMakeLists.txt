@@ -31,7 +31,7 @@ set(APPLAUNCHER_SRCS
 	../../src/common/extensioninterface.h
 	../../src/common/abstractsearch.h
 	../../src/common/prefixsearch.h
-    ../../src/common/fuzzysearch.cpp
+    ../../src/common/fuzzysearch.h
 )
 
 qt5_wrap_ui(APPLAUNCHER_UIS

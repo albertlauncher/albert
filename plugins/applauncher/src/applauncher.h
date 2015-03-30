@@ -27,6 +27,7 @@
 #include "ui_configwidget.h"
 #include "settings.h"
 #include "prefixsearch.h"
+#include "fuzzysearch.h"
 
 #define DATA_FILE "applauncher.dat"
 

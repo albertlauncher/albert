@@ -88,10 +88,9 @@ void AppLauncher::initialize()
 		updateApplications(path);
 
 	// Initialize the search index
-	_search = new PrefixSearch<AppInfo>(&_index, [](const AppInfo&r) -> QString {return r.name;});
     //	if(gSettings->value("Fuzzy", false).toBool())
-    //		_search = new FuzzySearch<AppInfo>(&_index, [](const AppInfo&r) -> QString {return r.name;});
-    //	else
+//	_search = new PrefixSearch<AppInfo>(&_index, [](const AppInfo&r) -> QString {return r.name;});
+    _search = new FuzzySearch<AppInfo>(&_index, [](const AppInfo&r) -> QString {return r.name;});
 	_search->buildIndex();
 
 	qDebug() << "Loaded " << _index.size() << " apps.";

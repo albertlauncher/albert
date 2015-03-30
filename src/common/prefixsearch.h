@@ -44,11 +44,12 @@ public:
 	 * @brief buildIndex
 	 */
 	void buildIndex() override
-	{
+    {
+        _invertedIndex.clear();
+
 		// Build an inverted index mapping
 		QHash<QString, QSet<QString>> invIdxMap;
 		for (typename QHash<QString, T>::iterator it = this->_index->begin(); it != this->_index->end(); ++it) {
-			it.key(); it.value();
 			QStringList words = this->_textFunctor.operator()(it.value()).split(QRegExp(SEPARATOR), QString::SkipEmptyParts);
 			for (QString &w : words)
 				invIdxMap[w].insert(it.key());
@@ -94,7 +95,7 @@ public:
 	}
 
 private:
-	QVector<Posting> _invertedIndex;
+    InvertedIndex _invertedIndex;
 };
 
 
@@ -102,15 +103,15 @@ private:
 /****************************************************************************///
 struct CaseInsensitiveCompare
 {
-	inline bool operator()( Posting const &lhs, Posting const &rhs ) const {
+    inline bool operator()( Posting const &lhs, Posting const &rhs ) const {
 		return (*this)(lhs.first, rhs.first);
 	}
 
-	inline bool operator()( QString const &lhs, Posting const &rhs ) const {
+    inline bool operator()( QString const &lhs, Posting const &rhs ) const {
 		return (*this)(lhs, rhs.first);
 	}
 
-	inline bool operator()( Posting const &lhs, QString const &rhs ) const {
+    inline bool operator()( Posting const &lhs, QString const &rhs ) const {
 		return (*this)(lhs.first, rhs);
 	}
 
