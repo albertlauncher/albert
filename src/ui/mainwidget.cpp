@@ -74,7 +74,7 @@ MainWidget::MainWidget(QWidget *parent)
 	_proposalListView->setFocusPolicy(Qt::NoFocus);
 	_proposalListView->setFocusProxy(_inputLine);
 	_proposalListView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-//	_proposalListView->hide();
+    _proposalListView->hide();
 	contentLayout->addWidget(_proposalListView);
 	// _proposalListView->setModel(_engine);
 	// Proposallistview intercepts inputline's events (Navigation with keys, pressed modifiers, etc)
