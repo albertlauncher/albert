@@ -34,4 +34,6 @@ private:
     void changeHotkey(int);
     void onThemeChanged(int);
     void closeEvent(QCloseEvent * event) override;
+    void openPluginHelp();
+    void openPluginConfig();
 };

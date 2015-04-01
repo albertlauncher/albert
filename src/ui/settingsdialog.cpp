@@ -26,6 +26,7 @@
 #include "mainwidget.h"
 #include "pluginhandler.h"
 #include "settings.h"
+#include "extensioninterface.h"
 
 /****************************************************************************///
 SettingsWidget::SettingsWidget(QWidget * parent, Qt::WindowFlags f)
@@ -109,8 +110,10 @@ SettingsWidget::SettingsWidget(QWidget * parent, Qt::WindowFlags f)
     updatePluginList();
     ui.treeWidget_plugins->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui.treeWidget_plugins->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+
     connect(ui.treeWidget_plugins, &QTreeWidget::currentItemChanged,
             this, &SettingsWidget::updatePluginInformations);
+
     // Blacklist items if the checbox is cklicked
     connect(ui.treeWidget_plugins, &QTreeWidget::itemChanged,
             [=](QTreeWidgetItem * item, int column){
@@ -121,6 +124,12 @@ SettingsWidget::SettingsWidget(QWidget * parent, Qt::WindowFlags f)
             blackSet.insert(item->text(0));
         gSettings->setValue(CFG_BLACKLIST, QVariant(QStringList::fromSet(blackSet)));
     });
+
+    connect(ui.pushButton_pluginHelp, &QPushButton::clicked,
+            this, &SettingsWidget::openPluginHelp);
+
+    connect(ui.pushButton_pluginConfig, &QPushButton::clicked,
+            this, &SettingsWidget::openPluginConfig);
 }
 
 /****************************************************************************///
@@ -128,6 +137,43 @@ SettingsWidget::~SettingsWidget()
 {
     qDebug() << "Call to SettingsWidget::dtor";
 
+}
+
+/** ***************************************************************************/
+void SettingsWidget::openPluginHelp()
+{
+    if (ui.treeWidget_plugins->currentIndex().isValid()){
+        QString path = ui.treeWidget_plugins->currentItem()->data(0,Qt::UserRole).toString();
+        for (const PluginSpec& spec : PluginHandler::instance()->getPluginSpecs()){
+            if (spec.path == path) { // MUST HAPPEN
+                QWidget *w = dynamic_cast<GenericPluginInterface*>(spec.loader->instance())->widget();
+                w->setWindowFlags(Qt::Window|Qt::WindowCloseButtonHint);
+                w->setAttribute(Qt::WA_DeleteOnClose);
+                w->show();
+            }
+        }
+    }
+}
+
+/** ***************************************************************************/
+void SettingsWidget::openPluginConfig()
+{
+    if (ui.treeWidget_plugins->currentIndex().isValid()){
+        QString path = ui.treeWidget_plugins->currentItem()->data(0,Qt::UserRole).toString();
+        for (const PluginSpec& spec : PluginHandler::instance()->getPluginSpecs()){
+            if (spec.path == path) { // MUST HAPPEN
+                QWidget *w = dynamic_cast<GenericPluginInterface*>(spec.loader->instance())->widget();
+                w->setParent(this);
+                w->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint |Qt::WindowCloseButtonHint);
+                w->setAttribute(Qt::WA_DeleteOnClose);
+                w->setWindowModality(Qt::ApplicationModal);
+                w->move(w->parentWidget()->window()->frameGeometry().topLeft() +
+                        w->parentWidget()->window()->rect().center() -
+                        w->rect().center());
+                w->show();
+            }
+        }
+    }
 }
 
 /****************************************************************************///
@@ -254,7 +300,7 @@ void SettingsWidget::onThemeChanged(int i)
     }
 }
 
-/****************************************************************************///
+/** ***************************************************************************/
 void SettingsWidget::show()
 {
     QWidget::show();
@@ -262,8 +308,10 @@ void SettingsWidget::show()
 }
 
 /******************************************************************************/
-/**************************** O V E R R I D E S *******************************/
+/*                            O V E R R I D E S                               */
 /******************************************************************************/
+
+/** ***************************************************************************/
 void SettingsWidget::closeEvent(QCloseEvent *event)
 {
     if (gHotkeyManager->hotkeys().empty()){
