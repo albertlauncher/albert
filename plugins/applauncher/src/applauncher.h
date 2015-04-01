@@ -21,17 +21,17 @@
 #include <QWidget>
 #include <QString>
 #include <QIcon>
+#include <QSet>
 #include <QHash>
 #include <QFileSystemWatcher>
 #include <extensioninterface.h>
-#include "ui_configwidget.h"
 #include "settings.h"
 #include "prefixsearch.h"
 #include "fuzzysearch.h"
+#include "configwidget.h"
 
 #define DATA_FILE "applauncher.dat"
 
-/****************************************************************************///
 struct AppInfo {
     QString path;
     QString name;
@@ -41,30 +41,22 @@ struct AppInfo {
 	uint    usage;
 };
 
-/****************************************************************************///
-class ConfigWidget final : public QWidget
-{
-	Q_OBJECT
-public:
-	explicit ConfigWidget(QWidget *parent = 0) : QWidget(parent) {ui.setupUi(this);}
-	Ui::ConfigWidget ui;
-};
-
-/****************************************************************************///
 class AppLauncher final : public QObject, public ExtensionInterface
 {
 	Q_OBJECT
 	Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "../src/metadata.json")
 	Q_INTERFACES(ExtensionInterface)
 
+    typedef QHash<QString, AppInfo> AppIndex;
+
 public:
     explicit AppLauncher() : _search(nullptr) {}
     ~AppLauncher() {if (_search) delete _search;}
 
-	void cleanApplications();
-	void updateApplications(const QString &path);
-	void removePath(const QString &path);
-	void addPath(const QString &path);
+    bool addPath(const QString &);
+    bool removePath(const QString &);
+    void restorePaths();
+    void setFuzzy(bool b = true);
 
 	/*
 	 * ExtensionInterface
@@ -81,18 +73,29 @@ public:
     QString     titleText (const Query&, const QueryResult&, Qt::KeyboardModifiers mods) const override;
     QString     infoText  (const Query&, const QueryResult&, Qt::KeyboardModifiers mods) const override;
     QString     actionText(const Query&, const QueryResult&, Qt::KeyboardModifiers mods) const override;
-
     QWidget*    widget() override;
 
 private:
-	QHash<QString, AppInfo> _index;
-	QHash<QString, QIcon>   _iconCache;
-	QFileSystemWatcher      _watcher;
-	AbstractSearch<AppInfo> *_search;
+    QStringList             _paths;
+    bool                    _fuzzy;
+
+    QPointer<ConfigWidget>  _widget;
+    QFileSystemWatcher      _watcher;
+    AppIndex                _index;
+    AbstractSearch<AppInfo> *_search;
+    QHash<QString, QIcon>   _iconCache;
+
+    void onFileSystemChange(const QString &);
+    void update(const QString &);
+    void clean();
 
     static bool getAppInfo(const QString &path, AppInfo *appInfo);
     static QIcon getIcon(const QString &iconName);
-	void restorePaths();
 
-    static constexpr const char* CFG_PATHS = "AppIndex/Paths";
+    static constexpr const char* CFG_PATHS     = "AppLauncher/paths";
+    static constexpr const char* CFG_FUZZY     = "AppLauncher/fuzzy";
+    static constexpr const bool  CFG_FUZZY_DEF = true;
+
+signals:
+    void indexChanged();
 };

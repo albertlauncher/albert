@@ -14,7 +14,24 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef CONFIGWIDGET_H
-#define CONFIGWIDGET_H
+#pragma once
+#include <QWidget>
+#include "ui_configwidget.h"
 
-#endif // CONFIGWIDGET_H
+class ConfigWidget final : public QWidget
+{
+    Q_OBJECT
+public:
+    explicit ConfigWidget(QWidget *parent = 0);
+    ~ConfigWidget();
+    Ui::ConfigWidget ui;
+
+private:
+    void onButton_PathAdd();
+    void onButton_PathRemove();
+    void onButton_RestorePaths();
+
+signals:
+    void requestAddPath(const QString&);
+    void requestRemovePath(const QString&);
+};

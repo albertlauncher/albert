@@ -15,69 +15,45 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "configwidget.h"
-//#include "searchwidget.h"
 #include <QFileDialog>
 #include <QStandardPaths>
-#include "settings.h"
 
-///****************************************************************************///
-//ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent)
-//{
-//	dirtyFlag = false;
-//	ui.setupUi(this);
-//	// Insert the settings for the search
-////	ui.hl_1strow->insertWidget(0, new SearchWidget(_ref));
+/** ***************************************************************************/
+ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent)
+{
+    ui.setupUi(this);
 
-//	ui.lw_paths->addItems(gSettings->value("AppIndex/Paths", "").toStringList());
+    connect(ui.pushButton_addPath, &QPushButton::clicked,
+            this, &ConfigWidget::onButton_PathAdd);
 
+    connect(ui.pushButton_removePath, &QPushButton::clicked,
+            this, &ConfigWidget::onButton_PathRemove);
+}
 
-//	/* SETUP SIGNALS */
+/** ***************************************************************************/
+ConfigWidget::~ConfigWidget()
+{
 
-//	// Inline oneliners
-////	// Show information if the index is rebuild
-////	connect(_ref, &AppIndex::beginBuildIndex, [&](){
-////		ui.lbl_info->setText("Building index...");
-////		ui.lbl_info->repaint();
-////	});
+}
 
-////	// Show information if the index has been rebuilt
-////	connect(_ref, &AppIndex::endBuildIndex, [&](){
-////		ui.lbl_info->setText("Building index done.");
-////		QTimer::singleShot(1000, ui.lbl_info, SLOT(clear()));
-////	});
+/** ***************************************************************************/
+void ConfigWidget::onButton_PathAdd()
+{
+    QString path = QFileDialog::getExistingDirectory(
+                this,
+                tr("Choose path"),
+                QStandardPaths::writableLocation(QStandardPaths::HomeLocation));
 
-////	// Rebuild index on button press
-////	connect(ui.pb_rebuildIndex, &QPushButton::clicked, [&](){
-////		_ref->buildIndex();
-////	});
+    if(path.isEmpty())
+        return;
 
-////	// Connect the explicitely implemented (long) slots
-////	connect(ui.pb_addPath, &QPushButton::clicked,this, &ConfigWidget::onButton_PathAdd);
-////	connect(ui.pb_removePath, &QPushButton::clicked, this, &ConfigWidget::onButton_PathRemove);
-////	connect(ui.pb_restorePaths, &QPushButton::clicked, this, &ConfigWidget::onButton_RestorePaths);
-//}
+    emit requestAddPath(path);
+}
 
-///****************************************************************************///
-//void ConfigWidget::onButton_PathAdd()
-//{
-//	QString pathName = QFileDialog::getExistingDirectory(
-//				this,
-//				tr("Choose path"),
-//				QStandardPaths::writableLocation(QStandardPaths::HomeLocation));
-//	if(pathName.isEmpty())return;
-//	ui.lw_paths->addItem(pathName);
-//}
-
-///****************************************************************************///
-//void ConfigWidget::onButton_PathRemove()
-//{
-//	if (ui.lw_paths->currentItem() == nullptr) return;
-//	delete ui.lw_paths->currentItem();
-//}
-
-///****************************************************************************///
-//void ConfigWidget::onButton_RestorePaths()
-//{
-//	ui.lw_paths->clear();
-//}
-
+/** ***************************************************************************/
+void ConfigWidget::onButton_PathRemove()
+{
+    if (ui.listWidget_paths->currentItem() == nullptr)
+        return;
+    emit requestRemovePath(ui.listWidget_paths->currentItem()->text());
+}
