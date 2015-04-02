@@ -43,10 +43,10 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
         fprintf(stderr, "\x1b[32m[%s]\x1b[0m %s\n", context.function, localMsg.constData());
 		break;
 	case QtWarningMsg:
-        fprintf(stderr, "\x1b[32m[%s]\x1b[0m\x1b[33mWarning:\x1b[0m %s\n", context.function, localMsg.constData());
+        fprintf(stderr, "\x1b[32m[%s]\x1b[0m\x1b[33m Warning:\x1b[0m %s\n", context.function, localMsg.constData());
 		break;
 	case QtCriticalMsg:
-        fprintf(stderr, "\x1b[32m[%s]\x1b[0m\x1b[31mCritical:\x1b[0m %s\n", context.function, localMsg.constData());
+        fprintf(stderr, "\x1b[32m[%s]\x1b[0m\x1b[31m Critical:\x1b[0m %s\n", context.function, localMsg.constData());
 		break;
 	case QtFatalMsg:
         fprintf(stderr, "\x1b[41;30;4mFATAL:\x1b[0m %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
