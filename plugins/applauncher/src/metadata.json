@@ -4,6 +4,6 @@
     "platform" :        "Linux",
     "group" :           "Extensions",
     "copyright" :       "(C) 2015 Manuel Schneider",
-    "description" :     "Finds and launches applications.",
+    "description" :     "Indexes the dektop applications and makes them runnable via albert.",
     "dependencies" :    ["gksu"]
 }

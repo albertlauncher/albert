@@ -144,7 +144,6 @@ int main(int argc, char *argv[])
 	 *  SETUP SIGNAL FLOW
 	 */
 
-
     ExtensionHandler      extensionHandler;
     extensionHandler.initialize();
 
@@ -181,6 +180,7 @@ int main(int argc, char *argv[])
 	 */
 
     int ret = a.exec();
+
 
 	/*
 	 *  CLEANUP
