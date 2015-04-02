@@ -15,20 +15,21 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
-#include <QtPlugin>
-#include <QList>
-#include <QWidget>
-#include <QString>
-#include <QIcon>
 #include <QSet>
 #include <QHash>
+#include <QList>
+#include <QIcon>
+#include <QTimer>
+#include <QString>
+#include <QWidget>
+#include <QObject>
+#include <QtPlugin>
 #include <QFileSystemWatcher>
-#include <extensioninterface.h>
 #include "settings.h"
-#include "prefixsearch.h"
 #include "fuzzysearch.h"
+#include "prefixsearch.h"
 #include "configwidget.h"
+#include "extensioninterface.h"
 
 #define DATA_FILE "applauncher.dat"
 
@@ -84,6 +85,8 @@ private:
     AppIndex                _index;
     AbstractSearch<AppInfo> *_search;
     QHash<QString, QIcon>   _iconCache;
+    QTimer                  _timer;
+    QStringList             _toBeUpdated;
 
     void onFileSystemChange(const QString &);
     void update(const QString &);
@@ -92,9 +95,10 @@ private:
     static bool getAppInfo(const QString &path, AppInfo *appInfo);
     static QIcon getIcon(const QString &iconName);
 
-    static constexpr const char* CFG_PATHS     = "AppLauncher/paths";
-    static constexpr const char* CFG_FUZZY     = "AppLauncher/fuzzy";
-    static constexpr const bool  CFG_FUZZY_DEF = true;
+    static constexpr const char* CFG_PATHS      = "AppLauncher/paths";
+    static constexpr const char* CFG_FUZZY      = "AppLauncher/fuzzy";
+    static constexpr const bool  CFG_FUZZY_DEF  = true;
+    static constexpr const uint  UPDATE_TIMEOUT = 1000;
 
 signals:
     void indexChanged();

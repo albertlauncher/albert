@@ -138,15 +138,6 @@ void AppLauncher::setFuzzy(bool b)
 }
 
 /** ***************************************************************************/
-void AppLauncher::onFileSystemChange(const QString &path)
-{
-    qDebug() << "Change in filesystem detected! Update" << path;
-
-    update(path);
-    clean();
-}
-
-/** ***************************************************************************/
 void AppLauncher::update(const QString &path)
 {
     qDebug() << "Index applications in" << path;
@@ -170,10 +161,13 @@ void AppLauncher::update(const QString &path)
         if(!_watcher.addPath(absPath)) // No clue why this should happen
             qCritical() << absPath <<  "could not be watched. Changes in this directory will not be noticed.";
 
-    // Update subfolders
+    // Update subfolders if they are not watched
     QDirIterator dit(absPath, QDir::Dirs|QDir::NoDotAndDotDot);
-    while (dit.hasNext())
-        update(dit.next());
+    while (dit.hasNext()){
+        QString p = dit.next();
+        if (!_watcher.directories().contains(p))
+            update(p);
+    }
 
     // And update the widget, if it is visible atm
     if (!_widget.isNull())
@@ -294,8 +288,25 @@ void AppLauncher::initialize()
         restorePaths();
 
     /* Keep the applications in sync with the OS */
+    _timer.setInterval(UPDATE_TIMEOUT);
+    _timer.setSingleShot(true);
+
     connect(&_watcher, &QFileSystemWatcher::directoryChanged,
-            this, &AppLauncher::onFileSystemChange);
+            [&](const QString &path){
+        qDebug() << path << "changed! Starting timer";
+        if (!_toBeUpdated.contains(path))
+            _toBeUpdated << path;
+        _timer.start();
+    });
+
+    connect(&_timer, &QTimer::timeout,
+            [this](){
+        qDebug() << "Timeout! Updating paths " << _toBeUpdated;
+        for (const QString &s: _toBeUpdated)
+            this->update(s);
+        _toBeUpdated.clear();
+        this->clean();
+    });
 
     qDebug() << "Initialized applauncher with " << _index.size() << " apps.";
 }
@@ -346,19 +357,19 @@ void AppLauncher::handleQuery(Query *q)
 }
 
 /** ***************************************************************************/
-QString AppLauncher::titleText(const Query &q, const QueryResult &qr, Qt::KeyboardModifiers mods) const
+QString AppLauncher::titleText(const Query &, const QueryResult &qr, Qt::KeyboardModifiers ) const
 {
 	return _index.value(qr.rid).name;
 }
 
 /** ***************************************************************************/
-QString AppLauncher::infoText(const Query &q, const QueryResult &qr, Qt::KeyboardModifiers mods) const
+QString AppLauncher::infoText(const Query &, const QueryResult &qr, Qt::KeyboardModifiers ) const
 {
 	return _index.value(qr.rid).altName;
 }
 
 /** ***************************************************************************/
-const QIcon &AppLauncher::icon(const Query &q, const QueryResult &qr, Qt::KeyboardModifiers mods)
+const QIcon &AppLauncher::icon(const Query &, const QueryResult &qr, Qt::KeyboardModifiers )
 {
 	if (!_iconCache.contains(_index[qr.rid].iconName))
 		_iconCache.insert(_index[qr.rid].iconName, getIcon(_index[qr.rid].iconName));
@@ -366,7 +377,7 @@ const QIcon &AppLauncher::icon(const Query &q, const QueryResult &qr, Qt::Keyboa
 }
 
 /** ***************************************************************************/
-void AppLauncher::action(const Query &q, const QueryResult &qr, Qt::KeyboardModifiers mods)
+void AppLauncher::action(const Query &, const QueryResult &qr, Qt::KeyboardModifiers mods)
 {
     ++_index[qr.rid].usage;
     qDebug() << _index[qr.rid].usage;
@@ -383,7 +394,7 @@ void AppLauncher::action(const Query &q, const QueryResult &qr, Qt::KeyboardModi
 }
 
 /** ***************************************************************************/
-QString AppLauncher::actionText(const Query &q, const QueryResult &qr, Qt::KeyboardModifiers mods) const
+QString AppLauncher::actionText(const Query &, const QueryResult &qr, Qt::KeyboardModifiers mods) const
 {
     if (mods == Qt::ControlModifier)
         return "Run " + _index[qr.rid].name + " as root";
