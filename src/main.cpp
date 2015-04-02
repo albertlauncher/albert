@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
 {
     qInstallMessageHandler(myMessageOutput);
 
+
 	/*
 	 *  INITIALIZE APPLICATION
 	 */
@@ -67,14 +68,27 @@ int main(int argc, char *argv[])
 	a.setWindowIcon(QIcon(":app_icon"));
 	a.setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
-    MainWidget            mw;
-	ExtensionHandler      extensionHandler;
 
-    extensionHandler.initialize();
+    /*
+     *  MAKE SURE THE NEEDED DIRECTORIES EXIST
+     */
+
+    {
+        QDir data(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
+        if (!data.exists())
+            data.mkpath(".");
+        QDir conf(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
+                  +"/"+ qApp->applicationName());
+        if (!conf.exists())
+            conf.mkpath(".");
+    }
+
 
 	/*
 	 *  THEME
 	 */
+
+    MainWidget            mw;
 
 	{
         QString theme = gSettings->value(CFG_THEME, CFG_THEME_DEF).toString();
@@ -129,6 +143,10 @@ int main(int argc, char *argv[])
 	/*
 	 *  SETUP SIGNAL FLOW
 	 */
+
+
+    ExtensionHandler      extensionHandler;
+    extensionHandler.initialize();
 
 	// Show mainwidget if hotkey is pressed
     QObject::connect(gHotkeyManager, &GlobalHotkey::hotKeyPressed,
