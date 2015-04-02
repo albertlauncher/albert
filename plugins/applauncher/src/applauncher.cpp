@@ -237,20 +237,9 @@ QWidget *AppLauncher::widget()
 }
 
 /** ***************************************************************************/
-QString AppLauncher::name() const
-{
-	return tr("AppLauncher");
-}
-
-/** ***************************************************************************/
-QString AppLauncher::abstract() const
-{
-	return tr("An extension which lets you start applications.");
-}
-
-/** ***************************************************************************/
 void AppLauncher::initialize()
 {
+    qDebug() << "Initialize AppLauncher";
 
     /* Deserialze data */
     QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + DATA_FILE);
@@ -268,7 +257,6 @@ void AppLauncher::initialize()
     } else
         qWarning() << "Could not open file: " << f.fileName();
 
-
     /* Initialize the search index */
     QSettings s(QSettings::UserScope, "albert", "albert");
     _fuzzy = s.value(CFG_FUZZY, CFG_FUZZY_DEF).toBool();
@@ -276,7 +264,6 @@ void AppLauncher::initialize()
         _search = new FuzzySearch<AppInfo>(&_index, [](const AppInfo&r) -> QString {return r.name;});
     else
         _search = new PrefixSearch<AppInfo>(&_index, [](const AppInfo&r) -> QString {return r.name;});
-
 
     /* Create an index of desktop files */
     QVariant v = s.value(CFG_PATHS);
@@ -307,15 +294,14 @@ void AppLauncher::initialize()
         _toBeUpdated.clear();
         this->clean();
     });
-
-    qDebug() << "Initialized applauncher with " << _index.size() << " apps.";
 }
 
 /** ***************************************************************************/
 void AppLauncher::finalize()
 {
-    /* Serialze data */
+    qDebug() << "Finalize AppLauncher";
 
+    /* Serialze data */
     QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + DATA_FILE);
     if (f.open(QIODevice::ReadWrite| QIODevice::Text)) {
         qDebug() << "Serializing to " << f.fileName();
@@ -326,7 +312,6 @@ void AppLauncher::finalize()
         f.close();
     } else
         qCritical() << "FATAL: Could not write to " << f.fileName();
-
 
     /* Save settings */
     QSettings s(QSettings::UserScope, "albert", "albert");

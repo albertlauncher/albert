@@ -59,13 +59,17 @@ public:
     void restorePaths();
     void setFuzzy(bool b = true);
 
+
+    /*
+     * GenericPluginInterface
+     */
+    QWidget*    widget() override;
+    void        initialize() override;
+    void        finalize() override;
+
 	/*
 	 * ExtensionInterface
-	 */
-	QString     name() const override;
-	QString     abstract() const override;
-	void        initialize() override;
-	void        finalize() override;
+     */
 	void        setupSession() override;
 	void        teardownSession() override;
 	void        handleQuery(Query*) override;    
@@ -74,7 +78,6 @@ public:
     QString     titleText (const Query&, const QueryResult&, Qt::KeyboardModifiers mods) const override;
     QString     infoText  (const Query&, const QueryResult&, Qt::KeyboardModifiers mods) const override;
     QString     actionText(const Query&, const QueryResult&, Qt::KeyboardModifiers mods) const override;
-    QWidget*    widget() override;
 
 private:
     QStringList             _paths;
@@ -99,7 +102,4 @@ private:
     static constexpr const char* CFG_FUZZY      = "AppLauncher/fuzzy";
     static constexpr const bool  CFG_FUZZY_DEF  = true;
     static constexpr const uint  UPDATE_TIMEOUT = 1000;
-
-signals:
-    void indexChanged();
 };
