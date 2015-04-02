@@ -74,7 +74,7 @@ public:
         // Split the query into words
         for (QString &word : words)
         {
-            unsigned int delta = (_delta < 1)? word.size()/_delta : _delta;
+            unsigned int delta = static_cast<unsigned int>((_delta < 1)? word.size()/_delta : _delta);
 
             // Generate the qGrams of this word
             QMap<QString, unsigned int> qGrams;
@@ -202,31 +202,38 @@ private:
 
     static bool checkPrefixEditDistance(const QString& prefix, const QString& str, unsigned int delta)
     {
-      unsigned int n = prefix.size() + 1;
-      unsigned int m = std::min(prefix.size() + delta + 1, static_cast<unsigned int>(str.size()) + 1);
-      unsigned int matrix[n][m];
+        bool result = false;
+        unsigned int n = prefix.size() + 1;
+        unsigned int m = std::min(prefix.size() + delta + 1, static_cast<unsigned int>(str.size()) + 1);
+        //      unsigned int matrix[n][m];
+        // This MAY throw an error
+        unsigned int* matrix = new unsigned int[n*m];
 
-      // Initialize left and top row.
-      for (unsigned int i = 0; i < n; ++i) { matrix[i][0] = i; }
-      for (unsigned int i = 0; i < m; ++i) { matrix[0][i] = i; }
+        // Initialize left and top row.
+        //      for (unsigned int i = 0; i < n; ++i) { matrix[i][0] = i; }
+        //      for (unsigned int i = 0; i < m; ++i) { matrix[0][i] = i; }
+        for (unsigned int i = 0; i < n; ++i) { matrix[i*m+0] = i; }
+        for (unsigned int i = 0; i < m; ++i) { matrix[0*m+i] = i; }
 
-      // Now fill the whole matrix.
-      for (unsigned int i = 1; i < n; ++i) {
-        for (unsigned int j = 1; j < m; ++j) {
-          unsigned int dia = matrix[i - 1][j - 1] + (prefix[i - 1] == str[j - 1] ? 0 : 1);
-          matrix[i][j] = std::min(std::min(
-              dia,
-              matrix[i][j - 1] + 1),
-              matrix[i - 1][j] + 1);
+        // Now fill the whole matrix.
+        for (unsigned int i = 1; i < n; ++i) {
+            for (unsigned int j = 1; j < m; ++j) {
+                unsigned int dia = matrix[(i-1)*m+j-1] + (prefix[i-1] == str[j-1] ? 0 : 1);
+                matrix[i*m+j] = std::min(std::min(
+                                             dia,
+                                             matrix[i*m+j-1] + 1),
+                        matrix[(i-1)*m+j] + 1);
+            }
         }
-      }
-      // Check the last row if there is an entry <= delta.
-      for (unsigned int j = 0; j < m; ++j) {
-        if (matrix[n - 1][j] <= delta) {
-    //		qDebug() << prefix << "~" << str << matrix[n - 1][j];
-          return true;
+        // Check the last row if there is an entry <= delta.
+        for (unsigned int j = 0; j < m; ++j) {
+            if (matrix[(n-1)+j] <= delta) {
+                //		qDebug() << prefix << "~" << str << matrix[n - 1][j];
+                result = true;
+                break;
+            }
         }
-      }
-      return false;
+        delete matrix;
+        return result;
     }
 };

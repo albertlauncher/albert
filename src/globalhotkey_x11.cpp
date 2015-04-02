@@ -24,11 +24,11 @@
 #include <QAbstractEventDispatcher>
 
 struct Masks {
-    u_int16_t alt;
-    u_int16_t meta;
-    u_int16_t super;
-    u_int16_t hyper;
-    u_int16_t numlock;
+    unsigned int alt;
+    unsigned int meta;
+    unsigned int super;
+    unsigned int hyper;
+    unsigned int numlock;
 };
 
 struct Qt_XK_Keygroup {
@@ -90,7 +90,7 @@ static Qt_XK_Keymap Qt_XKSym_table[] = {
 };
 static bool failed;
 static Masks masks;
-QSet<QPair<int,int>> grabbedKeys;
+QSet<QPair<unsigned int,int>> grabbedKeys;
 
 
 /****************************************************************************///
@@ -113,7 +113,7 @@ static void initializeMasks(){
     if (map) {
         int min_keycode, max_keycode, keysyms_per_keycode = 1;
         XDisplayKeycodes (dpy, &min_keycode, &max_keycode);
-        XFree(XGetKeyboardMapping (dpy, min_keycode, (max_keycode - min_keycode + 1), &keysyms_per_keycode));
+        XFree(XGetKeyboardMapping (dpy, (KeyCode)min_keycode, (max_keycode - min_keycode + 1), &keysyms_per_keycode));
 
         int i, maskIndex = 0, mapIndex = 0;
         for (maskIndex = 0; maskIndex < 8; maskIndex++) {
@@ -200,7 +200,7 @@ static void initializeMasks(){
 }
 
 /****************************************************************************///
-static bool qtKeyToNatives(const int keyQ, QList<int> *keysX, int *modsX)
+static bool qtKeyToNatives(const int keyQ, QList<int> *keysX, unsigned int *modsX)
 {
     int keyQt = keyQ & ~Qt::KeyboardModifierMask;
     int modQt = keyQ &  Qt::KeyboardModifierMask;
@@ -245,8 +245,8 @@ static bool qtKeyToNatives(const int keyQ, QList<int> *keysX, int *modsX)
     return true;
 }
 
-QSet<u_int16_t> offendingMasks(){
-    return QSet<u_int16_t>() << 0 << LockMask << masks.numlock << (LockMask|masks.numlock);
+QSet<unsigned int> offendingMasks(){
+    return QSet<unsigned int>() << 0 << LockMask << masks.numlock << (LockMask|masks.numlock);
 }
 
 /****************************************************************************///
@@ -263,7 +263,7 @@ GlobalHotkey::GlobalHotkeyPrivate::GlobalHotkeyPrivate(QObject *parent)
 bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const int hk)
 {
     QList<int> keysX;
-    int modsX;
+    unsigned int modsX;
     qtKeyToNatives(hk, &keysX, &modsX);
 
     // Set own errorhandler
@@ -273,10 +273,10 @@ bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const int hk)
     failed = false;
     Display* dpy = QX11Info::display();
     Window root = QX11Info::appRootWindow();
-    QSet<QPair<int,int>> tmpGrabbedKeys;
+    QSet<QPair<unsigned int, int>> tmpGrabbedKeys;
     for (int n = 0; !failed && n < keysX.size(); ++n) {
         KeyCode  XKCode = XKeysymToKeycode(QX11Info::display(), keysX[n]);
-        for (u_int16_t mask : offendingMasks()) {
+        for (unsigned int mask : offendingMasks()) {
             XGrabKey(dpy, XKCode, modsX|mask, root, true, GrabModeAsync, GrabModeAsync);
             if (!failed)
                 tmpGrabbedKeys.insert({modsX|mask, XKCode});
@@ -290,7 +290,7 @@ bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const int hk)
 
     // Unregister the partial registration
     if (failed){
-        for (const QPair<int,int> &p : tmpGrabbedKeys)
+        for (const QPair<unsigned int,int> &p : tmpGrabbedKeys)
             XUngrabKey(dpy, p.second, p.first, root);
         return false;
     }
@@ -302,7 +302,7 @@ bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const int hk)
 void GlobalHotkey::GlobalHotkeyPrivate::unregisterNativeHotkey(const int hk)
 {
     QList<int> keysX;
-    int modsX;
+    unsigned int modsX;
     qtKeyToNatives(hk, &keysX, &modsX);
 
     // Set own errorhandler
@@ -313,7 +313,7 @@ void GlobalHotkey::GlobalHotkeyPrivate::unregisterNativeHotkey(const int hk)
     Window root = QX11Info::appRootWindow();
     for (int n = 0; n < keysX.size(); ++n) {
         KeyCode  XKCode = XKeysymToKeycode(QX11Info::display(), keysX[n]);
-        for (u_int16_t mask : offendingMasks()) {
+        for (unsigned int mask : offendingMasks()) {
             XUngrabKey(dpy, XKCode, modsX|mask, root);
             grabbedKeys.remove({modsX|mask, XKCode});
         }
