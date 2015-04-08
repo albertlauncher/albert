@@ -28,10 +28,10 @@ include_directories(
 )
 
 set(SRCS
+    TODO
     src/main.cpp
     src/settings.h
     src/singleton.h
-    src/query.cpp
 #    src/fstreenode.cpp
     src/extensionhandler.cpp
     src/pluginhandler.cpp
@@ -44,6 +44,7 @@ set(SRCS
     src/ui/grabkeybutton.cpp
     src/ui/settingsbutton.cpp
     src/ui/settingsdialog.cpp
+    src/common/query.cpp
     src/common/extensioninterface.h
 )
 
@@ -110,4 +111,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
+#add_subdirectory(plugins/chromebookmarks)
 add_subdirectory(plugins/applauncher)
+#add_subdirectory(plugins/websearch)

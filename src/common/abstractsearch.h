@@ -16,23 +16,25 @@
 
 #pragma once
 #include <functional>
-#include <QHash>
 #include <QString>
 #include <QList>
+#include "extensioninterface.h"
 
-template<class T>
+#define SEPARATOR "\\W+" // TODO MAKE CONFIGURABLE
+
+template<class C>
 class AbstractSearch
 {
 public:
-	AbstractSearch() = delete;
-	explicit AbstractSearch(QHash<QString, T> *idx, std::function<QString(T)> f)
-		: _index(idx), _textFunctor(f) {}
-	virtual ~AbstractSearch(){}
+    AbstractSearch() = delete;
+    explicit AbstractSearch(const C &idx, std::function<QString(SharedItemPtr)> f)
+        : _index(idx), _textFunctor(f) {}
+    virtual ~AbstractSearch(){}
 
-	virtual void buildIndex() = 0;
-	virtual QStringList find(const QString &req) const = 0; // BLEIBT SO NICHT !MT
+    virtual void buildIndex() = 0;
+    virtual SharedItemPtrList find(const QString &req) const = 0;
 
 protected:
-	QHash<QString, T> *_index;
-	std::function<QString(T)> _textFunctor;
+    const C & _index;
+    std::function<QString(SharedItemPtr)> _textFunctor;
 };

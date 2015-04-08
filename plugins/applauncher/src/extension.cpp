@@ -14,16 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "applauncher.h"
+#include "extension.h"
 #include <QDebug>
 #include <QProcess>
 #include <QDirIterator>
 #include <QStandardPaths>
 #include <QMessageBox>
+#include <QSettings>
+#include <memory>
 #include "query.h"
+#include "configwidget.h"
 
 /** ***************************************************************************/
-bool AppLauncher::addPath(const QString & path)
+bool Extension::addPath(const QString & path)
 {
     qDebug() << "Add path" << path;
 
@@ -67,7 +70,7 @@ bool AppLauncher::addPath(const QString & path)
 }
 
 /** ***************************************************************************/
-bool AppLauncher::removePath(const QString & path)
+bool Extension::removePath(const QString & path)
 {
     qDebug() << "Remove path" << path;
 
@@ -99,7 +102,7 @@ bool AppLauncher::removePath(const QString & path)
 }
 
 /** ***************************************************************************/
-void AppLauncher::restorePaths()
+void Extension::restorePaths()
 {
     qDebug() << "Restore paths to default";
 
@@ -124,23 +127,26 @@ void AppLauncher::restorePaths()
 }
 
 /** ***************************************************************************/
-void AppLauncher::setFuzzy(bool b)
+void Extension::setFuzzy(bool b)
 {
     qDebug() << "Set fuzzy search to" << b;
 
     if (_fuzzy == b) return;
     _fuzzy = b;
+    auto nameFunctor = [](const SharedItemPtr ip) -> QString {
+        return std::static_pointer_cast<AppInfo>(ip)->_name;
+    };
     if (_fuzzy)
-        _search = new FuzzySearch<AppInfo>(&_index, [](const AppInfo&r) -> QString {return r.name;});
+        _search = new FuzzySearch<SharedAppPtrList> (_index, nameFunctor);
     else
-        _search = new PrefixSearch<AppInfo>(&_index, [](const AppInfo&r) -> QString {return r.name;});
+        _search = new PrefixSearch<SharedAppPtrList> (_index, nameFunctor);
     _search->buildIndex();
 }
 
 /** ***************************************************************************/
-void AppLauncher::update(const QString &path)
+void Extension::update(const QString &path)
 {
-    qDebug() << "Index applications in" << path;
+    qDebug() << "Index applications in" << path; // TODO COMPLETELY UPDATE ALL RELATED APPS
 
     // Get an absolute file path
     QString absPath = QFileInfo(path).canonicalFilePath();
@@ -149,12 +155,12 @@ void AppLauncher::update(const QString &path)
     QDirIterator fit(absPath, QStringList("*.desktop"), QDir::Files);
     while (fit.hasNext()) {
         QString filePath = fit.next();
-        if (_index.contains(filePath))
+        if (std::find_if(_index.begin(), _index.end(), [=](shared_ptr<AppInfo> ai){return ai->_path == filePath;}) != _index.end()) // TEST FIXME BINARY WITH SORT
             continue;
-        AppInfo appInfo;
-        appInfo.usage=0;
-        if (getAppInfo(filePath, &appInfo))
-            _index.insert(filePath, appInfo);
+        shared_ptr<AppInfo> appInfo(new AppInfo(this));
+        appInfo->_usage=0;
+        if (getAppInfo(filePath, appInfo.get()))
+            _index.push_back(appInfo);
     }
 
     if (!_watcher.directories().contains(absPath))
@@ -175,17 +181,17 @@ void AppLauncher::update(const QString &path)
 }
 
 /** ***************************************************************************/
-void AppLauncher::clean()
+void Extension::clean()
 {
     qDebug() << "Clean index";
 
     // Remove non existant or unwanted apps
-    AppIndex::iterator ait = _index.begin();
+    SharedAppPtrList::iterator ait = _index.begin();
     QStringList::iterator sit;
     while (ait != _index.end()){
         // If the app and is included in one of the listed dirs and exists
         for (sit = _paths.begin(); sit != _paths.end(); ++sit)
-            if (ait.key().startsWith(*sit + '/') && QFileInfo(ait.key()).exists())
+            if ((*ait)->_path.startsWith(*sit + '/') && QFileInfo((*ait)->_path).exists())
                 break;
         (sit == _paths.end()) ? ait = _index.erase(ait) : ++ait;
     }
@@ -210,7 +216,7 @@ void AppLauncher::clean()
 /******************************************************************************/
 
 /** ***************************************************************************/
-QWidget *AppLauncher::widget()
+QWidget *Extension::widget()
 {
     if (_widget.isNull()){
         _widget = new ConfigWidget;
@@ -221,23 +227,23 @@ QWidget *AppLauncher::widget()
         _widget->ui.label_info->setText(QString("%1 applications.").arg(_index.size()));
 
         connect(_widget, &ConfigWidget::requestAddPath,
-                this, &AppLauncher::addPath);
+                this, &Extension::addPath);
         connect(_widget, &ConfigWidget::requestRemovePath,
-                this, &AppLauncher::removePath);
+                this, &Extension::removePath);
         connect(_widget->ui.pushButton_restorePaths, &QPushButton::clicked,
-                this, &AppLauncher::restorePaths);
+                this, &Extension::restorePaths);
 
         // Fuzzy
         _widget->ui.checkBox_fuzzy->setChecked(_fuzzy);
 
         connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled,
-                this, &AppLauncher::setFuzzy);
+                this, &Extension::setFuzzy);
     }
     return _widget;
 }
 
 /** ***************************************************************************/
-void AppLauncher::initialize()
+void Extension::initialize()
 {
     qDebug() << "Initialize AppLauncher";
 
@@ -246,12 +252,13 @@ void AppLauncher::initialize()
     if (f.open(QIODevice::ReadOnly| QIODevice::Text)) {
         qDebug() << "Deserializing from" << f.fileName();
         QDataStream in(&f);
-        int size;
+        quint64 size;
         in >> size;
-        for (int i = 0; i < size; ++i) {
-            AppInfo app;
-            in >> app.path >> app.name >> app.altName >> app.iconName >> app.exec >> app.usage;
-            _index.insert(app.path, app);
+        for (quint64 i = 0; i < size; ++i) {
+            shared_ptr<AppInfo> app(new AppInfo(this));
+            in >> app->_path >> app->_usage;
+            if (getAppInfo(app->_path, app.get()))
+                _index.push_back(app);
         }
         f.close();
     } else
@@ -259,11 +266,7 @@ void AppLauncher::initialize()
 
     /* Initialize the search index */
     QSettings s(QSettings::UserScope, "albert", "albert");
-    _fuzzy = s.value(CFG_FUZZY, CFG_FUZZY_DEF).toBool();
-    if (_fuzzy)
-        _search = new FuzzySearch<AppInfo>(&_index, [](const AppInfo&r) -> QString {return r.name;});
-    else
-        _search = new PrefixSearch<AppInfo>(&_index, [](const AppInfo&r) -> QString {return r.name;});
+    setFuzzy(s.value(CFG_FUZZY, CFG_FUZZY_DEF).toBool());
 
     /* Create an index of desktop files */
     QVariant v = s.value(CFG_PATHS);
@@ -297,7 +300,7 @@ void AppLauncher::initialize()
 }
 
 /** ***************************************************************************/
-void AppLauncher::finalize()
+void Extension::finalize()
 {
     qDebug() << "Finalize AppLauncher";
 
@@ -306,9 +309,9 @@ void AppLauncher::finalize()
     if (f.open(QIODevice::ReadWrite| QIODevice::Text)) {
         qDebug() << "Serializing to " << f.fileName();
         QDataStream out( &f );
-        out << _index.size();
-        for (const AppInfo &app : _index)
-            out << app.path << app.name << app.altName << app.iconName << app.exec << app.usage;
+        out << static_cast<quint64>(_index.size());
+        for (const shared_ptr<AppInfo> &app : _index)
+            out << app->_path << app->_usage;
         f.close();
     } else
         qCritical() << "FATAL: Could not write to " << f.fileName();
@@ -320,55 +323,17 @@ void AppLauncher::finalize()
 }
 
 /** ***************************************************************************/
-void AppLauncher::setupSession()
+void Extension::handleQuery(Query *q)
 {
-	// Get the images of the applications
+    q->addResults(_search->find(q->searchTerm()));
 }
 
 /** ***************************************************************************/
-void AppLauncher::teardownSession()
+void Extension::action(const AppInfo& ai, const Query &, Qt::KeyboardModifiers mods) const
 {
-	// Clear the imagecache
-    qDebug() << "Clean icon cache."<< _iconCache.size();
-    _iconCache.clear();
-}
-
-/** ***************************************************************************/
-void AppLauncher::handleQuery(Query *q)
-{
-	QStringList res = _search->find(q->searchTerm());
-	for(const QString &k : res)
-        q->addResult(QueryResult(this, k, QueryResult::Type::Interactive, _index[k].usage));
-}
-
-/** ***************************************************************************/
-QString AppLauncher::titleText(const Query &, const QueryResult &qr, Qt::KeyboardModifiers ) const
-{
-	return _index.value(qr.rid).name;
-}
-
-/** ***************************************************************************/
-QString AppLauncher::infoText(const Query &, const QueryResult &qr, Qt::KeyboardModifiers ) const
-{
-	return _index.value(qr.rid).altName;
-}
-
-/** ***************************************************************************/
-const QIcon &AppLauncher::icon(const Query &, const QueryResult &qr, Qt::KeyboardModifiers )
-{
-	if (!_iconCache.contains(_index[qr.rid].iconName))
-		_iconCache.insert(_index[qr.rid].iconName, getIcon(_index[qr.rid].iconName));
-	return _iconCache[_index[qr.rid].iconName];
-}
-
-/** ***************************************************************************/
-void AppLauncher::action(const Query &, const QueryResult &qr, Qt::KeyboardModifiers mods)
-{
-    ++_index[qr.rid].usage;
-    qDebug() << _index[qr.rid].usage;
-    QString cmd = _index[qr.rid].exec;
-    if (mods == Qt::ControlModifier)
-        cmd.prepend("gksu ");
+    QString cmd;
+    if (mods == Qt::ControlModifier) cmd.prepend("gksu ");
+    cmd.append(ai._exec);
     bool succ = QProcess::startDetached(cmd);
     if(!succ){
         QMessageBox msgBox(QMessageBox::Warning, "Error",
@@ -379,11 +344,29 @@ void AppLauncher::action(const Query &, const QueryResult &qr, Qt::KeyboardModif
 }
 
 /** ***************************************************************************/
-QString AppLauncher::actionText(const Query &, const QueryResult &qr, Qt::KeyboardModifiers mods) const
+QString Extension::actionText(const AppInfo& ai, const Query &, Qt::KeyboardModifiers mods) const
 {
     if (mods == Qt::ControlModifier)
-        return "Run " + _index[qr.rid].name + " as root";
-    return "Run " + _index[qr.rid].name;
+        return "Run " + ai._name + " as root";
+    return "Run " + ai._name;
+}
+
+/** ***************************************************************************/
+QString Extension::titleText(const AppInfo& ai, const Query &) const
+{
+    return ai._name;
+}
+
+/** ***************************************************************************/
+QString Extension::infoText(const AppInfo& ai, const Query &) const
+{
+    return ai._altName;
+}
+
+/** ***************************************************************************/
+const QIcon &Extension::icon(const AppInfo& ai) const
+{
+    return ai._icon;
 }
 
 /******************************************************************************/
@@ -391,30 +374,7 @@ QString AppLauncher::actionText(const Query &, const QueryResult &qr, Qt::Keyboa
 /******************************************************************************/
 
 /** ***************************************************************************/
-QIcon AppLauncher::getIcon(const QString &iconName)
-{
-    // http://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
-    // http://standards.freedesktop.org/desktop-entry-spec/latest/
-
-    /*
-     * Icon to display in file manager, menus, etc. If the name is an absolute
-     * path, the given file will be used. If the name is not an absolute path,
-     * the algorithm described in the Icon Theme Specification will be used to
-     * locate the icon.
-     */
-
-    if (iconName.startsWith('/'))
-        return QIcon(iconName);
-
-    if (QIcon::hasThemeIcon(iconName))
-        return QIcon::fromTheme(iconName);
-
-    qDebug() << "unknown";
-    return QIcon::fromTheme("exec");
-}
-
-/** ***************************************************************************/
-bool AppLauncher::getAppInfo(const QString &path, AppInfo *appInfo)
+bool Extension::getAppInfo(const QString &path, AppInfo *appInfo)
 {
 	// TYPES http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s05.html
 	QSettings s(path, QSettings::NativeFormat);
@@ -435,7 +395,7 @@ bool AppLauncher::getAppInfo(const QString &path, AppInfo *appInfo)
     if (((v = s.value(QString("Name[%1]").arg(locale))).isValid() && v.canConvert(QMetaType::QString))
             || ((v = s.value(QString("Name[%1]").arg(shortLocale))).isValid() && v.canConvert(QMetaType::QString))
             || ((v = s.value("Name")).isValid() && v.canConvert(QMetaType::QString)))
-        appInfo->name = v.toString();
+        appInfo->_name = v.toString();
     else
         return false;
 
@@ -443,19 +403,38 @@ bool AppLauncher::getAppInfo(const QString &path, AppInfo *appInfo)
     // Try to get the command
     v = s.value("Exec");
     if (v.isValid() && v.canConvert(QMetaType::QString)){
-        appInfo->exec = v.toString();
+        appInfo->_exec = v.toString();
     } else
         return false;
-    appInfo->exec.replace("%c", appInfo->name);
-    appInfo->exec.remove(QRegExp("%."));
+    appInfo->_exec.replace("%c", appInfo->_name);
+    appInfo->_exec.remove(QRegExp("%."));
 
 
     // Try to get the icon name
+
+    // http://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
+    // http://standards.freedesktop.org/desktop-entry-spec/latest/
+
+    /*
+     * Icon to display in file manager, menus, etc. If the name is an absolute
+     * path, the given file will be used. If the name is not an absolute path,
+     * the algorithm described in the Icon Theme Specification will be used to
+     * locate the icon.
+     */
+
     v = s.value("Icon");
     if (v.isValid() && v.canConvert(QMetaType::QString)){
-        appInfo->iconName = v.toString();
+        QString iconName = v.toString();
+        if (iconName.startsWith('/'))
+            appInfo->_icon = QIcon(iconName);
+        else if (QIcon::hasThemeIcon(iconName))
+            appInfo->_icon = QIcon::fromTheme(iconName);
+        else{
+            qWarning() << "Unknown icon:" << iconName;
+            appInfo->_icon = QIcon::fromTheme("exec");
+        }
     } else
-        return false;
+        appInfo->_icon = QIcon::fromTheme("exec");
 
 
     // Try to get any [localized] secondary information comment
@@ -465,11 +444,11 @@ bool AppLauncher::getAppInfo(const QString &path, AppInfo *appInfo)
             || ((v = s.value(QString("GenericName[%1]").arg(locale))).isValid() && v.canConvert(QMetaType::QString))
             || ((v = s.value(QString("GenericName[%1]").arg(shortLocale))).isValid() && v.canConvert(QMetaType::QString))
             || ((v = s.value("GenericName")).isValid() && v.canConvert(QMetaType::QString)))
-		appInfo->altName = v.toString();
+        appInfo->_altName = v.toString();
     else
-        appInfo->altName = appInfo->exec;
+        appInfo->_altName = appInfo->_exec;
 	s.endGroup();
 
-    appInfo->path = path;
+    appInfo->_path = path;
 	return true;
 }

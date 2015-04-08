@@ -24,9 +24,9 @@ include_directories(
 	src/
 )
 
-set(APPLAUNCHER_SRCS
+set(${PROJECT_NAME}_SRCS
     src/metadata.json
-    src/applauncher.cpp
+    src/extension.cpp
 	src/configwidget.cpp
 	../../src/common/extensioninterface.h
 	../../src/common/abstractsearch.h
@@ -34,12 +34,12 @@ set(APPLAUNCHER_SRCS
     ../../src/common/fuzzysearch.h
 )
 
-qt5_wrap_ui(APPLAUNCHER_UIS
+qt5_wrap_ui(${PROJECT_NAME}_UIS
 	src/configwidget.ui
 )
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    ADD_LIBRARY(${PROJECT_NAME} SHARED ${APPLAUNCHER_SRCS} ${APPLAUNCHER_UIS})
+    ADD_LIBRARY(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_UIS})
     SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE C)
     target_link_libraries(${PROJECT_NAME} Qt5::Widgets)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")

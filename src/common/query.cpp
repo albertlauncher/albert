@@ -19,22 +19,22 @@
 #include <algorithm>
 
 /** ****************************************************************************
- * @brief The RelevanceCompare struct
- * This funtion object compares two queryresults. A OR is larger than others if
+ * @brief The UsageCompare struct
+ * This funtion object compares two items. A n item is larger than others if
  * the usage couter is greater. In case of equality the lexicographical string
  * comparison of the title is used.
  */
-struct RelevanceCompare {
-    RelevanceCompare() = delete;
-    RelevanceCompare(Query *q) : _q (q){}
+struct UsageCompare {
+    UsageCompare() = delete;
+    UsageCompare(Query *q) : _q (q){}
 
-    inline bool operator()(const QueryResult &lhs, const QueryResult &rhs) const {
-        if (lhs.usage == rhs.usage)
-            return QString::compare(lhs.titleText(*_q, Qt::NoModifier),
-                                    rhs.titleText(*_q, Qt::NoModifier),
+    inline bool operator()(const SharedItemPtr &lhs, const SharedItemPtr &rhs) const {
+        if (lhs->usage() == rhs->usage())
+            return QString::compare(lhs->titleText(*_q),
+                                    rhs->titleText(*_q),
                                     Qt::CaseInsensitive) < 0;
         else
-            return lhs.usage > rhs.usage;
+            return lhs->usage() > rhs->usage();
     }
 private:
     Query *_q;
@@ -42,7 +42,7 @@ private:
 
 
 /** ***************************************************************************/
-void Query::addResults(const QList<QueryResult> &&results)
+void Query::addResults(const SharedItemPtrList &&results)
 {
     if (_dynamicSort){
         throw "Not implemented yet.";
@@ -55,7 +55,7 @@ void Query::addResults(const QList<QueryResult> &&results)
 }
 
 /** ***************************************************************************/
-void Query::addResult(QueryResult &&result)
+void Query::addResult(SharedItemPtr &&result)
 {
     if (_dynamicSort){
         throw "Not implemented yet.";
@@ -77,17 +77,17 @@ QVariant Query::data(const QModelIndex &index, int role) const
 	if (!index.isValid())
 		return QVariant();
 	if (role == Qt::DisplayRole)
-        return _results[index.row()].titleText(*this, mods);
+        return _results[index.row()]->titleText(*this);
 	if (role == Qt::ToolTipRole)
-        return _results[index.row()].infoText(*this, mods);
+        return _results[index.row()]->infoText(*this);
     if (role == Qt::DecorationRole)
-        return _results[index.row()].icon(*this, mods);
+        return _results[index.row()]->icon();
     if (role == Qt::UserRole)
-        _results[index.row()].action(*this, mods);
+        _results[index.row()]->action(*this, mods);
     if (role == Qt::UserRole + 1)
-        return _results[index.row()].actionText(*this, mods);
+        return _results[index.row()]->actionText(*this, mods);
     if (role == Qt::UserRole + 2)
-        return _results[index.row()].usage;
+        return _results[index.row()]->usage();
     return QVariant();
 }
 
@@ -95,7 +95,7 @@ QVariant Query::data(const QModelIndex &index, int role) const
 void Query::sort()
 {
     beginResetModel();
-    std::stable_sort(_results.begin(), _results.end(), RelevanceCompare(this));
+    std::stable_sort(_results.begin(), _results.end(), UsageCompare(this));
     endResetModel();
 }
 

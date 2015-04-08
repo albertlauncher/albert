@@ -15,29 +15,36 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#define SEPARATOR "\\W+" // TODO MAKE CONFIGURABLE
 #include "abstractsearch.h"
 #include <QList>
 #include <QString>
 #include <QVector>
 #include <QPair>
 #include <QSet>
-#include <QHash>
+#include <QMap>
+#include <memory>
 
-class CaseInsensitiveCompare;
-class CaseInsensitiveComparePrefix;
-
-typedef QPair<QString, QSet<QString>> Posting;
-typedef QVector<Posting> InvertedIndex;
-
-template<class T>
-class PrefixSearch final : public AbstractSearch<T>
+template<typename T>
+uint qHash(const std::shared_ptr<T> &p)
 {
+    return qHash(p.get());
+}
+
+/** ***************************************************************************/
+template<class C>
+class PrefixSearch final : public AbstractSearch<C>
+{
+    class CaseInsensitiveCompare;
+    class CaseInsensitiveComparePrefix;
+
+    typedef QPair<QString, QSet<SharedItemPtr>> Posting;
+    typedef QVector<Posting> InvertedIndex;
+    typedef QMap<QString, QSet<SharedItemPtr>> InvertedIndexMap;
 
 public:
 	PrefixSearch() = delete;
-	explicit PrefixSearch(QHash<QString, T> *idx, std::function<QString(T)> f)
-		: AbstractSearch<T>(idx, f) {}
+    explicit PrefixSearch(const C &idx, std::function<QString(SharedItemPtr)> f)
+        : AbstractSearch<C>(idx, f) {}
 	~PrefixSearch(){}
 
 	/**
@@ -48,16 +55,16 @@ public:
         _invertedIndex.clear();
 
 		// Build an inverted index mapping
-		QHash<QString, QSet<QString>> invIdxMap;
-		for (typename QHash<QString, T>::iterator it = this->_index->begin(); it != this->_index->end(); ++it) {
-			QStringList words = this->_textFunctor.operator()(it.value()).split(QRegExp(SEPARATOR), QString::SkipEmptyParts);
+        InvertedIndexMap invIdxMap;
+        for (typename C::const_iterator it = this->_index.cbegin(); it != this->_index.cend(); ++it) {
+            QStringList words = this->_textFunctor.operator()(*it).split(QRegExp(SEPARATOR), QString::SkipEmptyParts);
 			for (QString &w : words)
-				invIdxMap[w].insert(it.key());
+                invIdxMap[w].insert(*it);
 		}
 
 		// Convert back to vector for fast random access search algorithms
 		_invertedIndex.clear();
-		for (QHash<QString, QSet<QString>>::const_iterator i = invIdxMap.cbegin(); i != invIdxMap.cend(); ++i)
+        for (typename InvertedIndexMap::const_iterator i = invIdxMap.cbegin(); i != invIdxMap.cend(); ++i)
 			_invertedIndex.push_back(Posting(i.key(), i.value()));
 		std::sort(_invertedIndex.begin(), _invertedIndex.end(), CaseInsensitiveCompare());
 		_invertedIndex.squeeze();
@@ -68,22 +75,22 @@ public:
 	 * @param req
 	 * @param ids
 	 */
-	QStringList find(const QString &req) const override
+    SharedItemPtrList find(const QString &req) const override
 	{
-		QSet<QString>* resSet = nullptr;
+        QSet<SharedItemPtr>* resSet = nullptr;
 		// (1): Constraint resSet == nullptr
 		QStringList words = req.split(SEPARATOR, QString::SkipEmptyParts);
-		if (words.empty()) return QStringList(); //TODO BLEIBT SO NICHT !MT MEMLEAK!!!!
+        if (words.empty()) return SharedItemPtrList();
 		// (2): Constraint words  is not empty
-		for (QString &w : words) {
-			InvertedIndex::const_iterator lb, ub;
+        for (QString &w : words) {
+            typename InvertedIndex::const_iterator lb, ub;
 			lb = std::lower_bound (_invertedIndex.cbegin(), _invertedIndex.cend(), w, CaseInsensitiveCompare());
 			ub = std::upper_bound (_invertedIndex.cbegin(), _invertedIndex.cend(), w, CaseInsensitiveComparePrefix());
-			QSet<QString> tmpSet;
+            QSet<SharedItemPtr> tmpSet;
 			while (lb!=ub)
 				tmpSet.unite(lb++->second);
 			if (resSet == nullptr)		// (1)&&(2)  |-  Constraint resSet != nullptr (3)
-				resSet = new QSet<QString>(tmpSet);
+                resSet = new QSet<SharedItemPtr>(tmpSet);
 			else
 				resSet->intersect(tmpSet);
 		}
@@ -98,10 +105,9 @@ private:
     InvertedIndex _invertedIndex;
 };
 
-
-
-/****************************************************************************///
-struct CaseInsensitiveCompare
+/** ***************************************************************************/
+template<class C>
+struct PrefixSearch<C>::CaseInsensitiveCompare
 {
     inline bool operator()( Posting const &lhs, Posting const &rhs ) const {
 		return (*this)(lhs.first, rhs.first);
@@ -120,8 +126,9 @@ struct CaseInsensitiveCompare
 	}
 };
 
-/****************************************************************************///
-struct CaseInsensitiveComparePrefix
+/** ***************************************************************************/
+template<class C>
+struct PrefixSearch<C>::CaseInsensitiveComparePrefix
 {
 	inline bool operator()( Posting const &pre, Posting const &rhs ) const {
 		return (*this)(pre.first, rhs.first);

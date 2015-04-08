@@ -19,22 +19,17 @@
 #include <QMap>
 #include <QSet>
 
-#define SEPARATOR "\\W+" // TODO MAKE CONFIGURABLE
-
-template<class T>
-class FuzzySearch final : public AbstractSearch<T>
+template<class C>
+class FuzzySearch final : public AbstractSearch<C>
 {
-    typedef QString RID;
-    typedef QMap<QString, QSet<RID>> InvertedIndex;
+    typedef QMap<QString, QSet<SharedItemPtr>> InvertedIndex;
     typedef QMap<QString, QMap<QString, unsigned int>> QGramIndex;
 
 public:
     FuzzySearch() = delete;
-    explicit FuzzySearch(QHash<QString, T> *idx,
-                         std::function<QString(T)> f,
-                         unsigned int q = 3,
-                         double d = 2)
-        : AbstractSearch<T>(idx, f), _q(q), _delta(d) {}
+    explicit FuzzySearch(const C &idx, std::function<QString(SharedItemPtr)> f,
+                         unsigned int q = 3, double d = 2)
+        : AbstractSearch<C>(idx, f), _q(q), _delta(d) {}
     ~FuzzySearch(){}
 
     /** ***********************************************************************/
@@ -44,10 +39,10 @@ public:
         _qGramIndex.clear();
 
         // Build an inverted index mapping
-        for (typename QHash<QString, T>::iterator it = this->_index->begin(); it != this->_index->end(); ++it) {
-            QStringList words = this->_textFunctor.operator()(it.value()).split(QRegExp(SEPARATOR), QString::SkipEmptyParts);
+        for (typename C::const_iterator it = this->_index.begin(); it != this->_index.end(); ++it) {
+            QStringList words = this->_textFunctor.operator()(*it).split(QRegExp(SEPARATOR), QString::SkipEmptyParts);
             for (QString &w : words)
-                _invertedIndex[w.toLower()].insert(it.key());
+                _invertedIndex[w.toLower()].insert(*it);
         }
 
         // Build qGramIndex
@@ -61,15 +56,15 @@ public:
     }
 
     /** ***********************************************************************/
-    QStringList find(const QString &req) const override
+    SharedItemPtrList find(const QString &req) const override
     {
         QVector<QString> words;
         for (QString &word : req.split(QRegExp(SEPARATOR), QString::SkipEmptyParts))
             words.append(word.toLower());
-        QVector<QMap<RID, unsigned int>> resultsPerWord;
+        QVector<QMap<SharedItemPtr, unsigned int>> resultsPerWord;
 
         // Quit if there are no words in query
-        if (words.empty()) return QStringList();
+        if (words.empty()) return SharedItemPtrList();
 
         // Split the query into words
         for (QString &word : words)
@@ -98,8 +93,8 @@ public:
             }
 
             // Allocate a new set
-            resultsPerWord.push_back(QMap<RID, unsigned int>());
-            QMap<RID, unsigned int>& resultsRef = resultsPerWord.back();
+            resultsPerWord.push_back(QMap<SharedItemPtr, unsigned int>());
+            QMap<SharedItemPtr, unsigned int>& resultsRef = resultsPerWord.back();
 
             // Unite the items referenced by the words accumulating their #matches
             for (QMap<QString, unsigned int>::const_iterator wm = wordMatches.begin(); wm != wordMatches.cend(); ++wm)
@@ -113,7 +108,7 @@ public:
                     continue;
 
 
-                for(RID item: _invertedIndex[wm.key()])
+                for(SharedItemPtr item: _invertedIndex[wm.key()])
                 {
                     resultsRef[item] += wm.value();
                 }
@@ -123,7 +118,7 @@ public:
         // Intersect the set of items references by the (referenced) words
         // This assusmes that there is at least one word (the query would not have
         // been started elsewise)
-        QVector<QPair<RID, unsigned int>> finalResult;
+        QVector<QPair<SharedItemPtr, unsigned int>> finalResult;
         if (resultsPerWord.size() > 1)
         {
             // Get the smallest list for intersection (performance)
@@ -133,7 +128,7 @@ public:
                     smallest = i;
 
             bool allResultsContainEntry;
-            for (QMap<RID, unsigned int>::const_iterator r = resultsPerWord[smallest].begin(); r != resultsPerWord[smallest].cend(); ++r)
+            for (typename QMap<SharedItemPtr, unsigned int>::const_iterator r = resultsPerWord[smallest].begin(); r != resultsPerWord[smallest].cend(); ++r)
             {
                 // Check if all results contain this entry
                 allResultsContainEntry=true;
@@ -161,21 +156,21 @@ public:
                     continue;
 
                 // Finally this match is common an can be put into the results
-                finalResult.append(QPair<RID, unsigned int>(r.key(), accMatches));
+                finalResult.append(QPair<SharedItemPtr, unsigned int>(r.key(), accMatches));
             }
         }
         else // Else do it without intersction
         {
-            for (QMap<RID, unsigned int>::const_iterator r = resultsPerWord[0].begin(); r != resultsPerWord[0].cend(); ++r)
-                finalResult.append(QPair<RID, unsigned int>(r.key(), r.value()));
+            for (typename QMap<SharedItemPtr, unsigned int>::const_iterator r = resultsPerWord[0].begin(); r != resultsPerWord[0].cend(); ++r)
+                finalResult.append(QPair<SharedItemPtr, unsigned int>(r.key(), r.value()));
         }
 
-        // Sort em by relevance
-        std::sort(finalResult.begin(), finalResult.end(),
-                  [&](QPair<RID, unsigned int> x, QPair<RID, unsigned int> y)
-                    {return x.second > y.second;});
-        QStringList result;
-        for (QPair<RID, unsigned int> pair : finalResult){
+        // Sort em by relevance // TODO INTRODUCE RELEVANCE TO ITEMS
+//        std::sort(finalResult.begin(), finalResult.end(),
+//                  [&](QPair<T, unsigned int> x, QPair<T, unsigned int> y)
+//                    {return x.second > y.second;});
+        SharedItemPtrList result;
+        for (QPair<SharedItemPtr, unsigned int> pair : finalResult){
             result << pair.first;
         }
         return result;
