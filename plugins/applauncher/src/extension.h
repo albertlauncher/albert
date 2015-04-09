@@ -15,13 +15,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QList>
-#include <QIcon>
-#include <QTimer>
-#include <QString>
-#include <QWidget>
 #include <QObject>
 #include <QtPlugin>
+#include <QList>
+#include <QString>
+#include <QIcon>
+#include <QTimer>
+#include <QWidget>
 #include <QFileSystemWatcher>
 
 #include <memory>
@@ -57,7 +57,6 @@ public:
     /*
      * Item management
      */
-
     void        action    (const AppInfo&, const Query&, Qt::KeyboardModifiers mods) const;
     QString     actionText(const AppInfo&, const Query&, Qt::KeyboardModifiers mods) const;
     QString     titleText (const AppInfo&, const Query&) const;
@@ -77,22 +76,23 @@ public:
     void        finalize() override;
 
 private:
-    QStringList              _paths;
-    bool                     _fuzzy;
-
-    SharedAppPtrList         _index;
-    AppSearch*               _search;
-
-    QPointer<ConfigWidget>   _widget;
-    QFileSystemWatcher       _watcher;
-    QTimer                   _timer;
-    QStringList              _toBeUpdated;
-
-    void update(const QString &);
-    void clean();
-
+    void        update(const QString &);
+    void        clean();
     static bool getAppInfo(const QString &path, AppInfo *appInfo);
 
+    /* Configurable */
+    QStringList _paths;
+    bool        _fuzzy;
+    AppSearch*  _search;
+
+    /* Core elements */
+    SharedAppPtrList       _index;
+    QPointer<ConfigWidget> _widget;
+    QFileSystemWatcher     _watcher;
+    QTimer                 _timer;
+    QStringList            _toBeUpdated;
+
+    /* constexpr */
     static constexpr const char* CFG_PATHS      = "AppLauncher/paths";
     static constexpr const char* CFG_FUZZY      = "AppLauncher/fuzzy";
     static constexpr const char* DATA_FILE      = "applauncher.dat";
@@ -118,7 +118,7 @@ public:
     uint         usage     () const override { return _usage; }
 
 private:
-    QString    _path; // ID
+    QString    _path;
     QString    _name;
     QString    _altName;
     QString    _exec;

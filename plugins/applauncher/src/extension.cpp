@@ -131,7 +131,6 @@ void Extension::setFuzzy(bool b)
 {
     qDebug() << "Set fuzzy search to" << b;
 
-    if (_fuzzy == b) return;
     _fuzzy = b;
     auto nameFunctor = [](const SharedItemPtr ip) -> QString {
         return std::static_pointer_cast<AppInfo>(ip)->_name;
@@ -146,26 +145,37 @@ void Extension::setFuzzy(bool b)
 /** ***************************************************************************/
 void Extension::update(const QString &path)
 {
-    qDebug() << "Index applications in" << path; // TODO COMPLETELY UPDATE ALL RELATED APPS
+    qDebug() << "Index applications in" << path;
 
     // Get an absolute file path
     QString absPath = QFileInfo(path).canonicalFilePath();
 
-    // Update files
+    /*
+     * Go through the directory entries matching the .desktop suffix. If this
+     * app exists in the index update it, if not create it. If the initializa-
+     * tion of the appliction from the desktop file fails do not add it/remove
+     * it to/from the index. This is complex bullshit O(N²), but the amount of
+     * apps will not get that large.
+     */
     QDirIterator fit(absPath, QStringList("*.desktop"), QDir::Files);
     while (fit.hasNext()) {
         QString filePath = fit.next();
-        if (std::find_if(_index.begin(), _index.end(), [=](shared_ptr<AppInfo> ai){return ai->_path == filePath;}) != _index.end()) // TEST FIXME BINARY WITH SORT
-            continue;
-        shared_ptr<AppInfo> appInfo(new AppInfo(this));
-        appInfo->_usage=0;
-        if (getAppInfo(filePath, appInfo.get()))
-            _index.push_back(appInfo);
+        SharedAppPtrList::iterator it;
+        it = std::find_if(_index.begin(), _index.end(), [=](SharedAppPtr ai){return ai->_path == filePath;});
+        if (it == _index.end()){
+            SharedAppPtr appInfo(new AppInfo(this));
+            appInfo->_usage=0;
+            if (getAppInfo(filePath, appInfo.get()))
+                _index.push_back(appInfo);
+        } else {
+            if (!getAppInfo(filePath, it->get()))
+                _index.erase(it);
+        }
     }
 
     if (!_watcher.directories().contains(absPath))
         if(!_watcher.addPath(absPath)) // No clue why this should happen
-            qCritical() << absPath <<  "could not be watched. Changes in this directory will not be noticed.";
+            qCritical() << absPath <<  "could not be watched. Changes in this path will not be noticed.";
 
     // Update subfolders if they are not watched
     QDirIterator dit(absPath, QDir::Dirs|QDir::NoDotAndDotDot);
@@ -225,7 +235,6 @@ QWidget *Extension::widget()
         _widget->ui.listWidget_paths->addItems(_paths);
         _widget->ui.listWidget_paths->sortItems();
         _widget->ui.label_info->setText(QString("%1 applications.").arg(_index.size()));
-
         connect(_widget, &ConfigWidget::requestAddPath,
                 this, &Extension::addPath);
         connect(_widget, &ConfigWidget::requestRemovePath,
@@ -235,7 +244,6 @@ QWidget *Extension::widget()
 
         // Fuzzy
         _widget->ui.checkBox_fuzzy->setChecked(_fuzzy);
-
         connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled,
                 this, &Extension::setFuzzy);
     }
@@ -245,17 +253,18 @@ QWidget *Extension::widget()
 /** ***************************************************************************/
 void Extension::initialize()
 {
-    qDebug() << "Initialize AppLauncher";
+    qDebug() << "Initialize extension 'AppLauncher'";
+    QSettings s(QSettings::UserScope, "albert", "albert");
 
     /* Deserialze data */
     QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + DATA_FILE);
     if (f.open(QIODevice::ReadOnly| QIODevice::Text)) {
         qDebug() << "Deserializing from" << f.fileName();
-        QDataStream in(&f);
+        QTextStream in(&f);
         quint64 size;
         in >> size;
         for (quint64 i = 0; i < size; ++i) {
-            shared_ptr<AppInfo> app(new AppInfo(this));
+            SharedAppPtr app(new AppInfo(this));
             in >> app->_path >> app->_usage;
             if (getAppInfo(app->_path, app.get()))
                 _index.push_back(app);
@@ -265,7 +274,6 @@ void Extension::initialize()
         qWarning() << "Could not open file: " << f.fileName();
 
     /* Initialize the search index */
-    QSettings s(QSettings::UserScope, "albert", "albert");
     setFuzzy(s.value(CFG_FUZZY, CFG_FUZZY_DEF).toBool());
 
     /* Create an index of desktop files */
@@ -302,22 +310,22 @@ void Extension::initialize()
 /** ***************************************************************************/
 void Extension::finalize()
 {
-    qDebug() << "Finalize AppLauncher";
+    qDebug() << "Finalize extension 'AppLauncher'";
+    QSettings s(QSettings::UserScope, "albert", "albert");
 
     /* Serialze data */
     QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + DATA_FILE);
     if (f.open(QIODevice::ReadWrite| QIODevice::Text)) {
         qDebug() << "Serializing to " << f.fileName();
-        QDataStream out( &f );
+        QTextStream out( &f );
         out << static_cast<quint64>(_index.size());
-        for (const shared_ptr<AppInfo> &app : _index)
+        for (SharedAppPtr app : _index)
             out << app->_path << app->_usage;
         f.close();
     } else
-        qCritical() << "FATAL: Could not write to " << f.fileName();
+        qCritical() << "Could not write to " << f.fileName();
 
     /* Save settings */
-    QSettings s(QSettings::UserScope, "albert", "albert");
     s.setValue(CFG_FUZZY, _fuzzy);
     s.setValue(CFG_PATHS, _paths);
 }
@@ -425,16 +433,35 @@ bool Extension::getAppInfo(const QString &path, AppInfo *appInfo)
     v = s.value("Icon");
     if (v.isValid() && v.canConvert(QMetaType::QString)){
         QString iconName = v.toString();
+        // If it is a full path
         if (iconName.startsWith('/'))
             appInfo->_icon = QIcon(iconName);
+        // If it is in the theme
         else if (QIcon::hasThemeIcon(iconName))
             appInfo->_icon = QIcon::fromTheme(iconName);
         else{
-            qWarning() << "Unknown icon:" << iconName;
-            appInfo->_icon = QIcon::fromTheme("exec");
+            // if it is in the pixmaps
+            QDirIterator it("/usr/share/pixmaps", QDir::Files, QDirIterator::Subdirectories);
+            bool found = false;
+            while (it.hasNext()) {
+                it.next();
+                QFileInfo fi = it.fileInfo();
+                if (fi.isFile() && (fi.fileName() == iconName || fi.baseName() == iconName)){
+                    appInfo->_icon = QIcon(fi.canonicalFilePath());
+                    found = true;
+                    break;
+                }
+            }
+            if (!found){
+                // If it is still not found use a generic one
+                qWarning() << "Unknown icon:" << iconName;
+                appInfo->_icon = QIcon::fromTheme("exec");
+            }
         }
-    } else
+    } else{
+        qWarning() << "No icon specified in " << path;
         appInfo->_icon = QIcon::fromTheme("exec");
+    }
 
 
     // Try to get any [localized] secondary information comment
