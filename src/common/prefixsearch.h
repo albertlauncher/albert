@@ -77,11 +77,9 @@ public:
 	 */
     SharedItemPtrList find(const QString &req) const override
 	{
-        QSet<SharedItemPtr>* resSet = nullptr;
-		// (1): Constraint resSet == nullptr
+        QSet<SharedItemPtr>* resSet = nullptr; // Constraint (1): resSet == nullptr
 		QStringList words = req.split(SEPARATOR, QString::SkipEmptyParts);
-        if (words.empty()) return SharedItemPtrList();
-		// (2): Constraint words  is not empty
+        if (words.empty()) return SharedItemPtrList(); // Constraint (2): words is not empty
         for (QString &w : words) {
             typename InvertedIndex::const_iterator lb, ub;
 			lb = std::lower_bound (_invertedIndex.cbegin(), _invertedIndex.cend(), w, CaseInsensitiveCompare());
@@ -94,11 +92,10 @@ public:
 			else
 				resSet->intersect(tmpSet);
 		}
-		// Safe to not check resSet != nullptr since (3) holds
-//		for (const QString &s : *resSet)
-//			ids.to->append(s);
-		return resSet->toList();
-		//delete resSet; //TODO BLEIBT SO NICHT !MT MEMLEAK!!!!
+        // Safe to not check resSet != nullptr since (3) holds
+        SharedItemPtrList res = resSet->toList();
+        delete resSet;
+        return res;
 	}
 
 private:
