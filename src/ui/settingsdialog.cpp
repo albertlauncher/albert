@@ -242,7 +242,8 @@ void SettingsWidget::updatePluginInformations()
             ui.label_pluginVersion->setText(spec.version);
             ui.label_pluginCopyright->setText(spec.copyright);
             ui.label_pluginGroup->setText(spec.group);
-            ui.label_pluginPath->setText(spec.path);
+            ui.label_pluginPath->setText(ui.label_pluginPath->fontMetrics().elidedText(spec.path, Qt::ElideMiddle,ui.label_pluginPath->width()));
+            ui.label_pluginPath->setToolTip(spec.path);
             ui.label_pluginPlatform->setText(spec.platform);
             QString deps;
             for (QString s : spec.dependencies)

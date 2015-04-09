@@ -1,0 +1,31 @@
+TODO:
+
+    Fuzzy again is broken
+    implement help.. somehow
+    MULTITHREADING FUN
+    websearchitem & co
+    Trenn UI vom Rest
+    QUrl::toPercentEncoding in Websearch polugino
+    verbosity in debugmessages
+    ----Spin gear until search is finished
+    Check for a graceful teardown on every startup...
+    .... and rebuild index in case of kills.
+    Theming overwirte all settings
+    Uniform Resource Identifier (Plugin?)
+    Metatypes for styleditemdelegate (qss)
+    Sympy for mathematics
+    Twitterplugin
+    Drop X!!Extras by using completeley only XCB
+
+DONE (Changelog):
+0.7
+    Elide text in plugin settings
+    Rewrite old stuff: ChromeBookmarks
+    Rewrite old stuff: Applauncher
+    Implement a cool messge logger
+    Implement plugin settings
+    Rewrite old stuff: Fuzzy search
+    Rewrite old stuff: Settings
+    Plugin infrastucture
+
+
