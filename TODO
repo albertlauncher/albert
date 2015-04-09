@@ -1,5 +1,4 @@
 TODO:
-
     Fuzzy again is broken
     implement help.. somehow
     MULTITHREADING FUN
@@ -19,8 +18,9 @@ TODO:
 
 DONE (Changelog):
 0.7
-    Elide text in plugin settings
+    Fix library resource bug (unique names!)
     Rewrite old stuff: ChromeBookmarks
+    Elide text in plugin settings
     Rewrite old stuff: Applauncher
     Implement a cool messge logger
     Implement plugin settings

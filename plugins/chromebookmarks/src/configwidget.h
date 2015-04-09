@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,26 +14,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef BOOKMARKINDEXWIDGET_H
-#define BOOKMARKINDEXWIDGET_H
-
-#include "ui_bookmarkindexwidget.h"
-#include "bookmarkindex.h"
+#pragma once
 #include <QWidget>
+#include "ui_configwidget.h"
 
-class BookmarkIndexWidget : public QWidget
+class ConfigWidget final : public QWidget
 {
-	Q_OBJECT
-
+    Q_OBJECT
 public:
-	explicit BookmarkIndexWidget(BookmarkIndex*, QWidget *parent = 0);
+    explicit ConfigWidget(QWidget *parent = 0);
+    ~ConfigWidget();
+    Ui::ConfigWidget ui;
 
 private:
-	BookmarkIndex *_index;
-	Ui::BookmarkIndexWidget ui;
+    void onButton_EditPath();
 
-protected slots:
-	void onButton_EditPath();
+signals:
+    void requestEditPath(const QString&);
 };
-
-#endif // BOOKMARKINDEXWIDGET_H
