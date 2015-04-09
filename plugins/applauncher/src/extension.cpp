@@ -260,7 +260,7 @@ void Extension::initialize()
     QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + DATA_FILE);
     if (f.open(QIODevice::ReadOnly| QIODevice::Text)) {
         qDebug() << "Deserializing from" << f.fileName();
-        QTextStream in(&f);
+        QDataStream in(&f);
         quint64 size;
         in >> size;
         for (quint64 i = 0; i < size; ++i) {
@@ -317,7 +317,7 @@ void Extension::finalize()
     QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + DATA_FILE);
     if (f.open(QIODevice::ReadWrite| QIODevice::Text)) {
         qDebug() << "Serializing to " << f.fileName();
-        QTextStream out( &f );
+        QDataStream out( &f );
         out << static_cast<quint64>(_index.size());
         for (SharedAppPtr app : _index)
             out << app->_path << app->_usage;

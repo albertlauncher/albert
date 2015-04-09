@@ -43,7 +43,6 @@ class Extension final : public QObject, public ExtensionInterface
     typedef QList<SharedBookmarkPtr> SharedBookmarkPtrList;
     typedef AbstractSearch<SharedBookmarkPtrList> BookmarkSearch;
 
-
 public:
     explicit Extension() : _search(nullptr) {}
     ~Extension() {if (_search) delete _search;}
