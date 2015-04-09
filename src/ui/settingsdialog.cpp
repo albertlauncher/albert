@@ -108,6 +108,7 @@ SettingsWidget::SettingsWidget(QWidget * parent, Qt::WindowFlags f)
 
     // PLUGIN  LIST
     updatePluginList();
+    ui.treeWidget_plugins->expandAll();
     ui.treeWidget_plugins->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui.treeWidget_plugins->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
 
