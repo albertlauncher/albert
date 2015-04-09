@@ -113,4 +113,4 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 add_subdirectory(plugins/chromebookmarks)
 add_subdirectory(plugins/applauncher)
-#add_subdirectory(plugins/websearch)
+add_subdirectory(plugins/websearch)

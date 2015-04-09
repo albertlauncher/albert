@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,32 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef WEBSEARCHWIDGET_H
-#define WEBSEARCHWIDGET_H
+#include "configwidget.h"
+#include <QFileDialog>
+#include <QStandardPaths>
 
-#include "ui_websearchwidget.h"
-#include "websearch.h"
-#include <QWidget>
-
-class WebSearchWidget : public QWidget
+/** ***************************************************************************/
+ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent)
 {
-	Q_OBJECT
-	Ui::WebSearchWidget ui;
+    ui.setupUi(this);
+}
 
-public:
-	explicit WebSearchWidget(WebSearch*, QWidget *parent = 0);
+/** ***************************************************************************/
+ConfigWidget::~ConfigWidget()
+{
 
-protected:
-	WebSearch *_ref;
-
-protected slots:
-	void resetDefaults();
-	void updateUI();
-
-	void onButton_new();
-	void onButton_remove();
-	void onButton_setIcon();
-	void onChange(int,int);
-};
-
-#endif // WEBSEARCHWIDGET_H
+}
