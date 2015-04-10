@@ -23,12 +23,10 @@
 #include <QIcon>
 #include <QTimer>
 #include <QString>
-#include <QAbstractTableModel>
 #include <QFileSystemWatcher>
-
+#include <QAbstractTableModel>
 #include <memory>
 using std::shared_ptr;
-
 #include "extensioninterface.h"
 
 class SearchEngine;
@@ -39,41 +37,23 @@ typedef QList<SharedSearchPtr> SharedSearchPtrList;
 
 
 /** ***************************************************************************/
-class IndexAdapter final : public QAbstractTableModel
-{
-    enum class Section{Name, Trigger, URL};
-
-public:
-    IndexAdapter() = delete;
-    explicit IndexAdapter(SharedSearchPtrList * r)
-        : _ref(r) {}
-    ~IndexAdapter() {}
-
-    int rowCount(const QModelIndex & parent = QModelIndex()) const;
-    int columnCount(const QModelIndex & parent = QModelIndex()) const;
-    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-    bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
-    Qt::ItemFlags flags(const QModelIndex & index) const;
-
-private:
-    SharedSearchPtrList * _ref;
-};
-
-/** ***************************************************************************/
-class Extension final : public QObject, public ExtensionInterface
+class Extension final : public QAbstractTableModel, public ExtensionInterface
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "../src/metadata.json")
     Q_INTERFACES(ExtensionInterface)
 
+    enum class Section{Enabled, Name, Trigger, URL};
+    static constexpr unsigned int cColumnCount = 4;
+
 public:
-    explicit Extension() : _adapter(new IndexAdapter(&_index)) {}
-    ~Extension() { delete _adapter;}
+    explicit Extension() {}
+    ~Extension() {}
 
     void restoreDefaults();
 
     // TODO GLOBAL ACTIONS
+
 
     /*
      * Item management
@@ -82,6 +62,18 @@ public:
     QString     actionText(const SearchEngine&, const Query&, Qt::KeyboardModifiers mods) const;
     QString     titleText (const SearchEngine&, const Query&) const;
     QString     infoText  (const SearchEngine&, const Query&) const;
+
+    /*
+     * Modelinterface
+     */
+    int rowCount(const QModelIndex & parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex & parent = QModelIndex()) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
+    bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole) override;
+    bool insertRows (int position, int rows, const QModelIndex & parent = QModelIndex()) override;
+    bool removeRows (int position, int rows, const QModelIndex & parent = QModelIndex()) override;
+    Qt::ItemFlags flags(const QModelIndex & index) const override;
 
     /*
      * ExtensionInterface
@@ -100,7 +92,6 @@ private:
     /* Core elements */
     SharedSearchPtrList     _index;
     QPointer<ConfigWidget>  _widget;
-    IndexAdapter*           _adapter;
 
     /* constexpr */
     static constexpr const char* DATA_FILE      = "websearch.dat";
@@ -111,11 +102,10 @@ private:
 class SearchEngine final : public ItemInterface
 {
     friend class Extension;
-    friend class IndexAdapter;
 
 public:
     SearchEngine() = delete;
-    explicit SearchEngine(Extension *ext) : _extension(ext) {}
+    explicit SearchEngine(Extension *ext) : _extension(ext), _enabled(false), _usage(0) {}
     ~SearchEngine(){}
 
     void         action    (const Query &q, Qt::KeyboardModifiers mods) override { ++_usage; _extension->action(*this, q, mods); }
@@ -126,6 +116,8 @@ public:
     uint         usage     () const override { return _usage; }
 
 private:
+    Extension*  _extension; // Should never be invalid since the extension must not unload
+    bool        _enabled;
     QString     _name;
     QString     _url;
     QString     _trigger;
@@ -133,5 +125,4 @@ private:
     QString     _iconPath;
     QIcon       _icon;
     uint        _usage;
-    Extension*  _extension; // Should never be invalid since the extension must not unload
 };

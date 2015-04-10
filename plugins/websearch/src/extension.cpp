@@ -33,7 +33,10 @@ void Extension::restoreDefaults()
     /* Init std searches */
     _index.clear();
 
+    beginResetModel();
+
     SharedSearchPtr se = std::make_shared<SearchEngine>(this);
+    se->_enabled    = true;
     se->_name       = "Google";
     se->_url        = "https://www.google.de/#q=%s";
     se->_trigger    = "gg";
@@ -42,6 +45,7 @@ void Extension::restoreDefaults()
     _index.push_back(se);
 
     se = std::make_shared<SearchEngine>(this);
+    se->_enabled    = true;
     se->_name       = "Youtube";
     se->_url        = "https://www.youtube.com/results?search_query=%s";
     se->_trigger    = "yt";
@@ -50,6 +54,7 @@ void Extension::restoreDefaults()
     _index.push_back(se);
 
     se = std::make_shared<SearchEngine>(this);
+    se->_enabled    = true;
     se->_name       = "Amazon";
     se->_url        = "http://www.amazon.de/s/?field-keywords=%s";
     se->_trigger    = "ama";
@@ -58,6 +63,7 @@ void Extension::restoreDefaults()
     _index.push_back(se);
 
     se = std::make_shared<SearchEngine>(this);
+    se->_enabled    = true;
     se->_name       = "Ebay";
     se->_url        = "http://www.ebay.de/sch/i.html?_nkw=%s";
     se->_trigger    = "eb";
@@ -66,12 +72,15 @@ void Extension::restoreDefaults()
     _index.push_back(se);
 
     se = std::make_shared<SearchEngine>(this);
+    se->_enabled    = true;
     se->_name       = "Wolfram Alpha";
     se->_url        = "https://www.wolframalpha.com/input/?i=%s";
     se->_trigger    = "=";
-    se->_iconPath   = ":wolfram";
+    se->_iconPath   = ":default";
     se->_icon       = QIcon(se->_iconPath);
     _index.push_back(se);
+
+    endResetModel();
 }
 
 
@@ -94,14 +103,14 @@ void Extension::restoreDefaults()
 /******************************************************************************/
 
 /** ***************************************************************************/
-QWidget *Extension::widget()
+QWidget *Extension:: widget()
 {
     if (_widget.isNull()){
         _widget = new ConfigWidget;
-        _widget->ui.tableView_searches->setModel(_adapter);
-        _widget->ui.tableView_searches->resizeColumnsToContents();
-        _widget->ui.tableView_searches->resizeRowsToContents();
-        _widget->ui.tableView_searches->verticalHeader()->sectionResizeMode(QHeaderView::ResizeToContents);
+        _widget->ui.tableView_searches->setModel(this);
+
+        connect(_widget->ui.pushButton_restoreDefaults, &QPushButton::clicked,
+                this, &Extension::restoreDefaults);
     }
     return _widget;
 }
@@ -121,7 +130,8 @@ void Extension::initialize()
         in >> size;
         for (quint64 i = 0; i < size; ++i) {
             SharedSearchPtr se(new SearchEngine(this));
-            in >> se->_url
+            in >> se->_enabled
+               >> se->_url
                >> se->_name
                >> se->_trigger
                >> se->_iconPath
@@ -149,7 +159,8 @@ void Extension::finalize()
         QDataStream out( &f );
         out << static_cast<quint64>(_index.size());
         for (SharedSearchPtr se : _index)
-            out << se->_url
+            out << se->_enabled
+                << se->_url
                 << se->_name
                 << se->_trigger
                 << se->_iconPath
@@ -164,9 +175,9 @@ void Extension::handleQuery(Query *q)
 {
     QString trigger = q->searchTerm().section(' ',0,0);
     for (SharedSearchPtr se : _index) {
-        if ( (trigger==se->_trigger) || q->searchTerm().startsWith(se->_name) ) {
+        if (se->_enabled && ((trigger==se->_trigger) || q->searchTerm().startsWith(se->_name)) ) {
             // Make a new instance per query
-            SharedSearchPtr newSe = std::make_shared<SearchEngine>(*se.get()); //
+            SharedSearchPtr newSe = std::make_shared<SearchEngine>(*se.get());
             newSe->_searchTerm = q->searchTerm().section(' ', 1, -1, QString::SectionSkipEmpty);
             q->addResult(newSe);
         }
@@ -203,46 +214,55 @@ QString Extension::infoText(const SearchEngine &se, const Query &) const
 
 
 /******************************************************************************/
-/*               SearchEnginesAdapter IMPLEMENTATION                          */
+/*                    MODEL INTERFACE IMPLEMENTATION                          */
 /******************************************************************************/
 
+
 /** ***************************************************************************/
-QVariant IndexAdapter::data(const QModelIndex &index, int role) const
+QVariant Extension::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid())
+    if (!index.isValid()
+            || index.row() >= static_cast<int>(_index.count())
+            || index.column() >= static_cast<int>(cColumnCount))
         return QVariant();
+
     switch (role) {
     case Qt::DisplayRole:
     {
         switch (static_cast<Section>(index.column())) {
-        case Section::Name:  return _ref->value(index.row())->_name;
-        case Section::Trigger:  return _ref->value(index.row())->_trigger;
-        case Section::URL:  return _ref->value(index.row())->_url;
+        case Section::Name:  return _index.value(index.row())->_name;
+        case Section::Trigger:  return _index.value(index.row())->_trigger;
+        case Section::URL:  return _index.value(index.row())->_url;
+        default: return QVariant();
+        }
+    }
+    case Qt::EditRole:
+    {
+        switch (static_cast<Section>(index.column())) {
+        case Section::Name:  return _index.value(index.row())->_name;
+        case Section::Trigger:  return _index.value(index.row())->_trigger;
+        case Section::URL:  return _index.value(index.row())->_url;
         default: return QVariant();
         }
     }
     case Qt::DecorationRole:
     {
         switch (static_cast<Section>(index.column())) {
-        case Section::Name:  return _ref->value(index.row())->_icon;
+        case Section::Name:  return _index.value(index.row())->_icon;
         default: return QVariant();
         }
     }
     case Qt::ToolTipRole:
     {
         switch (static_cast<Section>(index.column())) {
-        case Section::Name:  return QVariant();
-        case Section::Trigger:  return QVariant();
-        case Section::URL:  return QVariant();
-        default: return QVariant();
+        case Section::Enabled:  return "Check to enable the search engine";
+        default: return "Double click to edit";
         }
     }
     case Qt::CheckStateRole:
     {
         switch (static_cast<Section>(index.column())) {
-        case Section::Name:  return QVariant();
-        case Section::Trigger:  return QVariant();
-        case Section::URL:  return QVariant();
+        case Section::Enabled:  return (_index.value(index.row())->_enabled)?Qt::Checked:Qt::Unchecked;
         default: return QVariant();
         }
     }
@@ -252,9 +272,11 @@ QVariant IndexAdapter::data(const QModelIndex &index, int role) const
 }
 
 /** ***************************************************************************/
-bool IndexAdapter::setData(const QModelIndex &index, const QVariant &value, int role)
+bool Extension::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    if (!index.isValid())
+    if (!index.isValid()
+            || index.row() >= static_cast<int>(_index.count())
+            || index.column() >= static_cast<int>(cColumnCount))
         return false;
 
     switch (role)
@@ -265,19 +287,29 @@ bool IndexAdapter::setData(const QModelIndex &index, const QVariant &value, int 
             return false;
         QString s = value.toString();
         switch (static_cast<Section>(index.column())) {
+        case Section::Enabled:
+            return false;
         case Section::Name:
-            _ref->value(index.row())->_name = s;
+            _index.value(index.row())->_name = s;
             dataChanged(index, index, QVector<int>({Qt::DisplayRole}));
             return true;
         case Section::Trigger:
-            _ref->value(index.row())->_trigger = s;
+            _index.value(index.row())->_trigger = s;
             dataChanged(index, index, QVector<int>({Qt::DisplayRole}));
             return true;
         case Section::URL:
-            qDebug() << _ref->value(index.row())->_url;
-            _ref->value(index.row())->_url = s;
+            _index.value(index.row())->_url = s;
             dataChanged(index, index, QVector<int>({Qt::DisplayRole}));
-            qDebug() << _ref->value(index.row())->_url;
+            return true;
+        default:
+            return false;
+        }
+    }
+    case Qt::CheckStateRole:
+    {
+        switch (static_cast<Section>(index.column())) {
+        case Section::Enabled:
+            _index.value(index.row())->_enabled = value.toBool();
             return true;
         default:
             return false;
@@ -290,8 +322,13 @@ bool IndexAdapter::setData(const QModelIndex &index, const QVariant &value, int 
 }
 
 /** ***************************************************************************/
-QVariant IndexAdapter::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant Extension::headerData(int section, Qt::Orientation orientation, int role) const
 {
+    // No sanity check necessary since
+    if ( section<0 || static_cast<int>(cColumnCount)<=section )
+        return QVariant();
+
+
     if (orientation == Qt::Horizontal){
         switch (role)
         {
@@ -309,26 +346,62 @@ QVariant IndexAdapter::headerData(int section, Qt::Orientation orientation, int 
 }
 
 /** ***************************************************************************/
-Qt::ItemFlags IndexAdapter::flags(const QModelIndex &index) const
+Qt::ItemFlags Extension::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
         return Qt::NoItemFlags;
-    return Qt::ItemIsSelectable
-            |Qt::ItemIsEnabled
-            |Qt::ItemIsEditable
-            |Qt::ItemIsDragEnabled;
-//            |Qt::ItemIsDropEnabled;
-//    Qt::ItemIsUserCheckable	| Qt::ItemIsTristate
+
+    switch (static_cast<Section>(index.column())) {
+    case Section::Enabled:
+        return Qt::ItemIsEnabled|Qt::ItemIsUserCheckable;
+    default:
+        return Qt::ItemIsSelectable|Qt::ItemIsEnabled|Qt::ItemIsEditable;
+    }
 }
 
 /** ***************************************************************************/
-int IndexAdapter::rowCount(const QModelIndex &) const
+bool Extension::insertRows(int position, int rows, const QModelIndex &)
 {
-    return _ref->size();
+    if (position > static_cast<int>(_index.count()))
+        return false;
+
+    if (position < 0)
+        position = _index.count();
+
+    beginInsertRows(QModelIndex(), position, position + rows - 1);
+    for (int row = 0; row < rows; ++row){
+        SharedSearchPtr se = std::make_shared<SearchEngine>(this);
+        se->_enabled = false;
+        se->_name = "Name";
+        se->_trigger = "Trigger";
+        se->_url = "URL ";
+        _index.insert(position, se);
+    }
+    endInsertRows();
+    return true;
 }
 
 /** ***************************************************************************/
-int IndexAdapter::columnCount(const QModelIndex &) const
+bool Extension::removeRows(int position, int rows, const QModelIndex &)
 {
-    return 3;
+    if (position < 0 ||   static_cast<int>(_index.count()) <= position)
+        return false;
+
+    beginRemoveRows(QModelIndex(), position, position + rows - 1);
+    for (int row = 0; row < rows; ++row)
+        _index.removeAt(position); // OMG
+    endRemoveRows();
+    return true;
+}
+
+/** ***************************************************************************/
+int Extension::rowCount(const QModelIndex &) const
+{
+    return _index.size();
+}
+
+/** ***************************************************************************/
+int Extension::columnCount(const QModelIndex &) const
+{
+    return cColumnCount;
 }

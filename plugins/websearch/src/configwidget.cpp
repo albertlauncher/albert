@@ -22,10 +22,40 @@
 ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent)
 {
     ui.setupUi(this);
+    ui.tableView_searches->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui.tableView_searches->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    // Initialize connections
+    connect(ui.pushButton_new, &QPushButton::clicked,
+            this, [this](){ui.tableView_searches->model()->insertRow(ui.tableView_searches->currentIndex().row());});
+    connect(ui.pushButton_remove, &QPushButton::clicked,
+            this, [this](){ui.tableView_searches->model()->removeRow(ui.tableView_searches->currentIndex().row());});
+    connect(ui.pushButton_setIcon, &QPushButton::clicked,
+            this, &ConfigWidget::onButton_SetIcon);
+
 }
 
 /** ***************************************************************************/
 ConfigWidget::~ConfigWidget()
 {
 
+}
+
+/** ***************************************************************************/
+void ConfigWidget::onButton_SetIcon()
+{
+    int row = ui.tableView_searches->currentIndex().row();
+    if (row < 0 || ui.tableView_searches->model()->rowCount() <= row)
+        return;
+
+    QString fileName =
+            QFileDialog::getOpenFileName(
+                this,
+                tr("Choose icon"),
+                QStandardPaths::writableLocation(QStandardPaths::HomeLocation),
+                tr("Images (*.png *.svg"));
+    if(fileName.isEmpty())
+        return;
+
+    ui.tableView_searches->model()->setData(ui.tableView_searches->currentIndex(), fileName, Qt::DecorationRole);
 }

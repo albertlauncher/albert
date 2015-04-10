@@ -27,9 +27,5 @@ public:
     Ui::ConfigWidget ui;
 
 private:
-    void onButton_EditPath();
-
-signals:
-    void requestSetIconPath(const QString&);
-
+    void onButton_SetIcon();
 };
