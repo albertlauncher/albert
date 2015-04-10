@@ -165,6 +165,7 @@ void SettingsWidget::openPluginConfig()
             if (spec.path == path) { // MUST HAPPEN
                 QWidget *w = dynamic_cast<GenericPluginInterface*>(spec.loader->instance())->widget();
                 w->setParent(this);
+                w->setWindowTitle("Plugin configuration");
                 w->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint |Qt::WindowCloseButtonHint);
                 w->setAttribute(Qt::WA_DeleteOnClose);
                 w->setWindowModality(Qt::ApplicationModal);
