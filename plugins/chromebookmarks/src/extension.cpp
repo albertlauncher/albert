@@ -45,8 +45,7 @@ void Extension::setPath(const QString &s)
     update();
 
     // And update the widget, if it is visible atm
-    if (!_widget.isNull())
-        _widget->ui.lineEdit_path->setText(s);
+    emit pathChanged(s);
 }
 
 /** ***************************************************************************/
@@ -149,6 +148,8 @@ QWidget *Extension::widget()
         _widget->ui.lineEdit_path->setText(_bookmarksFile);
         connect(_widget, &ConfigWidget::requestEditPath,
                 this, &Extension::setPath);
+        connect(this, &Extension::pathChanged,
+                _widget->ui.lineEdit_path, &QLineEdit::setText);
 
         // Fuzzy
         _widget->ui.checkBox_fuzzy->setChecked(_fuzzy);

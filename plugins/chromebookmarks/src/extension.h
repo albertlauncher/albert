@@ -93,6 +93,9 @@ private:
     static constexpr const char* CFG_FUZZY      = "ChromeBookmarks/fuzzy";
     static constexpr const bool  CFG_FUZZY_DEF  = true;
     static constexpr const uint  UPDATE_TIMEOUT = 1000;
+
+signals:
+    void pathChanged(const QString&);
 };
 
 /** ***************************************************************************/
