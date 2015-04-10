@@ -112,6 +112,8 @@ void Extension::update()
         if (i.isObject())
             rec_bmsearch(i.toObject(), &res);
 
+    f.close();
+
     /*
      * Then update the usages ( Well  O(N²), but is N of relevant size? )
      */
