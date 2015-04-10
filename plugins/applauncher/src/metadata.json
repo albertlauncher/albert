@@ -1,0 +1,9 @@
+{
+    "name" :            "AppLauncher",
+    "version" :         "1.0",
+    "platform" :        "Linux",
+    "group" :           "Extensions",
+    "copyright" :       "(C) 2015 Manuel Schneider",
+    "description" :     "Indexes the dektop applications and makes them runnable via albert.",
+    "dependencies" :    ["gksu"]
+}

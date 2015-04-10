@@ -1,123 +1,116 @@
-cmake_minimum_required(VERSION 2.8.11)
+#http://doc.qt.io/qt-5/cmake-manual.html
+cmake_minimum_required(VERSION 2.8.12)
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -Wall")
+PROJECT(albert)
 
-project(albert)
+SET(TARGET_VERSION_MAJOR 0)
+SET(TARGET_VERSION_MINOR 6)
 
+# Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+# Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set( CMAKE_VERBOSE_MAKEFILE on )
 
-find_package(Qt5Widgets REQUIRED)
+# Set additional compiler flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -pedantic -Wextra -Wconversion -Werror")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT ")
 
+find_package(Qt5Widgets 5.1 REQUIRED)
+find_package(Qt5Svg REQUIRED)
 
 include_directories(
-	src/
-	src/util/
-	src/util/hotkey/
-	src/util/search/
-	src/services/
-	src/ui/mainwidget/
-	src/ui/settingsdialog/
-	src/thirdparty/muparser/include
+    src/
+    src/ui/
+    src/common/
 )
 
 set(SRCS
-	src/main.cpp
-	src/engine.cpp
-	src/util/hotkey/globalhotkey.cpp
-	src/util/hotkey/globalhotkey_p.h
-	src/util/search/abstractsearch.h
-	src/util/search/fuzzysearch.cpp
-	src/util/search/wordmatchsearch.cpp
-	src/util/search/searchwidget.cpp
-	src/services/abstractservice.h
-	src/services/abstractindex.h
-	src/services/appindex/appindexwidget.cpp
-	src/services/appindex/appindex.cpp
-	src/services/appindex/appitem.cpp
-	src/services/bookmarkindex/bookmarkindex.cpp
-	src/services/bookmarkindex/bookmarkitem.cpp
-	src/services/bookmarkindex/bookmarkindexwidget.cpp
-	src/services/calculator/calculator.cpp
-	src/services/calculator/calculatoritem.cpp
-	src/services/calculator/calculatorwidget.cpp
-	src/services/fileindex/fileindex.cpp
-	src/services/fileindex/fileindexbuilder.cpp
-	src/services/fileindex/fileindexwidget.cpp
-	src/services/fileindex/fileitem.cpp
-	src/services/websearch/websearch.cpp
-	src/services/websearch/websearchitem.cpp
-	src/services/websearch/websearchwidget.cpp
-	src/ui/mainwidget/mainwidget.cpp
-	src/ui/mainwidget/proposallistview.cpp
-	src/ui/mainwidget/inputline.cpp
-	src/ui/mainwidget/history.cpp
-	src/ui/mainwidget/settingsbutton.cpp
-	src/ui/settingsdialog/settingsdialog.cpp
+    TODO
+    src/main.cpp
+    src/settings.h
+    src/singleton.h
+#    src/fstreenode.cpp
+    src/extensionhandler.cpp
+    src/pluginhandler.cpp
+    src/globalhotkey.cpp
+    src/globalhotkey_p.h
+    src/history.cpp
+    src/ui/mainwidget.cpp
+    src/ui/proposallistview.cpp
+    src/ui/inputline.cpp
+    src/ui/grabkeybutton.cpp
+    src/ui/settingsbutton.cpp
+    src/ui/settingsdialog.cpp
+    src/common/query.cpp
+    src/common/extensioninterface.h
 )
 
-set(data
-	data/icons/youtube.svg
-	data/icons/google.svg
-	data/icons/ebay.svg
-	data/icons/amazon.svg
+set(LIBS
+    ${Qt5Widgets_LIBRARIES}
+    ${Qt5X11Extras_LIBRARIES}
+    Qt5::X11Extras
+    #muparser
+    X11
 )
+
+#set(data
+#	data/icons/youtube.svg
+#	data/icons/google.svg
+#	data/icons/ebay.svg
+#	data/icons/amazon.svg
+#)
 
 qt5_wrap_ui(UIS
-	src/ui/settingsdialog/settingsdialog.ui
-	src/util/search/searchwidget.ui
-	src/services/appindex/appindexwidget.ui
-	src/services/bookmarkindex/bookmarkindexwidget.ui
-	src/services/calculator/calculatorwidget.ui
-	src/services/fileindex/fileindexwidget.ui
-	src/services/websearch/websearchwidget.ui
+    src/ui/settingsdialog.ui
+#	src/util/search/searchwidget.ui
+#	src/services/appindex/appindexwidget.ui
+#	src/services/bookmarkindex/bookmarkindexwidget.ui
+#	src/services/calculator/calculatorwidget.ui
+#	src/services/fileindex/fileindexwidget.ui
+#	src/services/websearch/websearchwidget.ui
 )
 
 qt5_add_resources(RSRC
-	src/resources.qrc
+    src/resources.qrc
 )
 
-
-#linux
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    # BUILD
+    #find_library(muparser REQUIRED)
+    find_package(Qt5X11Extras REQUIRED)
+    set(SRCS ${SRCS} src/globalhotkey_x11.cpp)
+    add_executable(${PROJECT_NAME} ${SRCS} ${UIS} ${DATA} ${RSRC})
+    target_link_libraries(${PROJECT_NAME} ${LIBS})
 
-	# Add platformspecific stuff
-	find_package(Qt5X11Extras REQUIRED)
-	find_library(muparser REQUIRED)
-	set(SRCS ${SRCS} src/util/hotkey/globalhotkey_x11.cpp)
-
-	# Define targets and linked libs
-	add_executable(albert ${SRCS} ${UIS} ${DATA} ${RSRC})
-	target_link_libraries(albert Qt5::Widgets Qt5::X11Extras muparser X11)
-
-	# Define make install target
-	install(TARGETS albert RUNTIME DESTINATION bin)
-	install(DIRECTORY src/resources/icons DESTINATION share/albert COMPONENT config)
-	install(DIRECTORY src/resources/themes DESTINATION share/albert COMPONENT config)
-	install(FILES src/resources/albert.desktop DESTINATION share/applications COMPONENT desktop)
-
+    # INSTALL
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+    install(DIRECTORY src/resources/icons DESTINATION share/${PROJECT_NAME} COMPONENT config)
+    install(DIRECTORY src/resources/themes DESTINATION share/${PROJECT_NAME} COMPONENT config)
+    install(FILES src/resources/albert.desktop DESTINATION share/applications COMPONENT desktop)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-#win
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    add_library(muparser STATIC IMPORTED)
+    set_property(TARGET muparser PROPERTY
+        IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/muparser/lib/libmuparser.a")
 
-	add_library(muparser STATIC IMPORTED)
-	set_property(TARGET muparser PROPERTY
-		IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/muparser/lib/libmuparser.a")
+    # Add platformspecific stuff
+    set(SRCS ${SRCS} src/util/hotkey/globalhotkey_win.cpp)
 
-	# Add platformspecific stuff
-	set(SRCS ${SRCS} src/util/hotkey/globalhotkey_win.cpp)
+    #Use unicode
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")
 
-	#Use unicode
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")
+    # Define targets and linked libs
+    add_executable(${PROJECT_NAME} ${SRCS} ${UIS} ${DATA} ${RSRC})
+    target_link_libraries(${PROJECT_NAME} Qt5::Widgets muparser)
 
-	# Define targets and linked libs
-	add_executable(albert ${SRCS} ${UIS} ${DATA} ${RSRC})
-	target_link_libraries(albert Qt5::Widgets muparser)
-
-	# Define make install target
-	install(TARGETS albert RUNTIME DESTINATION bin)
-
+    # Define make install target
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
+add_subdirectory(plugins/chromebookmarks)
+add_subdirectory(plugins/applauncher)
+add_subdirectory(plugins/websearch)
