@@ -35,34 +35,35 @@
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
-void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
-	QByteArray localMsg = msg.toLocal8Bit();
-	switch (type) {
+    QString suffix;
+    if (context.function)
+        suffix = QString("  --  [%1]").arg(context.function);
+    switch (type) {
     case QtDebugMsg:
-        fprintf(stderr, "\x1b[32m[%s]\x1b[0m %s\n", context.function, localMsg.constData());
-		break;
-	case QtWarningMsg:
-        fprintf(stderr, "\x1b[32m[%s]\x1b[0m\x1b[33m Warning:\x1b[0m %s\n", context.function, localMsg.constData());
-		break;
-	case QtCriticalMsg:
-        fprintf(stderr, "\x1b[32m[%s]\x1b[0m\x1b[31m Critical:\x1b[0m %s\n", context.function, localMsg.constData());
-		break;
-	case QtFatalMsg:
-        fprintf(stderr, "\x1b[41;30;4mFATAL:\x1b[0m %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
-		abort();
-	}
+        fprintf(stderr, "%s\n", message.toLocal8Bit().constData());
+        break;
+    case QtWarningMsg:
+        fprintf(stderr, "\x1b[33;1mWarning:\x1b[0;1m %s%s\x1b[0m\n", message.toLocal8Bit().constData(), suffix.toLocal8Bit().constData());
+        break;
+    case QtCriticalMsg:
+        fprintf(stderr, "\x1b[31;1mCritical:\x1b[0;1m %s%s\x1b[0m\n", message.toLocal8Bit().constData(), suffix.toLocal8Bit().constData());
+        break;
+    case QtFatalMsg:
+        fprintf(stderr, "\x1b[41;30;4mFATAL:\x1b[0;1m %s%s\x1b[0m\n", message.toLocal8Bit().constData(), suffix.toLocal8Bit().constData());
+        abort();
+    }
 }
 
 int main(int argc, char *argv[])
 {
-    qInstallMessageHandler(myMessageOutput);
-
 
 	/*
 	 *  INITIALIZE APPLICATION
 	 */
 
+    qInstallMessageHandler(myMessageOutput);
     QApplication          a(argc, argv);
 	QCoreApplication::setApplicationName(QString::fromLocal8Bit("albert"));
 	a.setWindowIcon(QIcon(":app_icon"));
@@ -88,7 +89,7 @@ int main(int argc, char *argv[])
 	 *  THEME
 	 */
 
-    MainWidget            mw;
+    MainWidget mw;
 
 	{
         QString theme = gSettings->value(CFG_THEME, CFG_THEME_DEF).toString();
@@ -102,10 +103,10 @@ int main(int argc, char *argv[])
 		bool success = false;
 		for (QFileInfo fi : themes){
 			if (fi.baseName() == theme) {
-				QFile styleFile(fi.canonicalFilePath());
-				if (styleFile.open(QFile::ReadOnly)) {
-					qApp->setStyleSheet(styleFile.readAll());
-					styleFile.close();
+                QFile f(fi.canonicalFilePath());
+                if (f.open(QFile::ReadOnly)) {
+                    qApp->setStyleSheet(f.readAll());
+                    f.close();
 					success = true;
 					break;
 				}
@@ -161,8 +162,12 @@ int main(int argc, char *argv[])
     QObject::connect(mw._inputLine, &InputLine::settingsDialogRequested,
                      &mw, &MainWidget::hide);
     QObject::connect(mw._inputLine, &InputLine::settingsDialogRequested,
+                     gHotkeyManager, &GlobalHotkey::disable);
+    QObject::connect(mw._inputLine, &InputLine::settingsDialogRequested,
                      [&](){
                             SettingsWidget *sw = new SettingsWidget(&mw);
+                            QObject::connect(sw, &QWidget::destroyed,
+                                             gHotkeyManager, &GlobalHotkey::enable);
                             sw->show();
                           });
 
