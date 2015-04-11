@@ -20,6 +20,7 @@
 #include <QStandardPaths>
 #include <QMessageBox>
 #include <QCloseEvent>
+#include <QShortcut>
 #include <QDesktopWidget>
 #include <QFocusEvent>
 #include "globalhotkey.h"
@@ -36,7 +37,7 @@ SettingsWidget::SettingsWidget(QWidget * parent, Qt::WindowFlags f)
 	ui.setupUi(this);
     setWindowFlags(Qt::Window|Qt::WindowCloseButtonHint);
     setAttribute(Qt::WA_DeleteOnClose);
-//    setWindowModality(Qt::ApplicationModal);
+    new QShortcut(Qt::Key_Escape, this, SLOT(close()));
 
 
     /*
@@ -166,9 +167,10 @@ void SettingsWidget::openPluginConfig()
                 QWidget *w = dynamic_cast<GenericPluginInterface*>(spec.loader->instance())->widget();
                 w->setParent(this);
                 w->setWindowTitle("Plugin configuration");
-                w->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint |Qt::WindowCloseButtonHint);
+                w->setWindowFlags(Qt::Window|Qt::WindowCloseButtonHint);
                 w->setAttribute(Qt::WA_DeleteOnClose);
                 w->setWindowModality(Qt::ApplicationModal);
+                new QShortcut(Qt::Key_Escape, w, SLOT(close()));
                 w->move(w->parentWidget()->window()->frameGeometry().topLeft() +
                         w->parentWidget()->window()->rect().center() -
                         w->rect().center());
@@ -332,4 +334,5 @@ void SettingsWidget::closeEvent(QCloseEvent *event)
         event->ignore();
         return;
     }
+    event->accept();
 }

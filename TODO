@@ -1,6 +1,4 @@
 TODO:
-    Rewrite old stuff: Files
-    Split UI
     Fuzzy again is broken
     implement help.. somehow
     MULTITHREADING FUN
@@ -14,10 +12,16 @@ TODO:
     Twitterplugin
     Drop X!!Extras by using completeley only XCB
 
-    Make order changeable
+    Make websearch order changeable
+    Rewrite old stuff: Actions
+    python
+    Rewrite old stuff: Files (fstree)
+    qstyleditem with qprop
+    Split UI
 
 DONE (Changelog):
 0.7
+    Let settingswidgets be ESC closable
     Rewrite old stuff: WebSearch
     Fix library resource bug (unique names!)
     Rewrite old stuff: ChromeBookmarks
