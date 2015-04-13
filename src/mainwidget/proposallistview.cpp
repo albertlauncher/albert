@@ -114,10 +114,10 @@ public:
 ProposalListView::ProposalListView(QWidget *parent) :
 	QListView(parent)
 {
-	_itemDelegate = new ProposalListView::ItemDelegate;
-	setItemDelegate(_itemDelegate);
-	setUniformItemSizes(true);
-	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    _itemDelegate = new ProposalListView::ItemDelegate;
+    setItemDelegate(_itemDelegate);
+    setUniformItemSizes(true);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
 
 /****************************************************************************///
@@ -152,7 +152,7 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
             if (key == Qt::Key_Up && (!currentIndex().isValid() || currentIndex().row()==0))
                 return false;
 
-            QListView::keyPressEvent(keyEvent);
+            ProposalListView::keyPressEvent(keyEvent);
             return true;
         }
 
@@ -191,7 +191,6 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 QSize ProposalListView::sizeHint() const
 {
     if (model() == nullptr) return QSize();
-	if (model()->rowCount() == 0) return QSize(width(), 0);
     int nToShow = std::min(gSettings->value(CFG_MAX_PROPOSALS, CFG_MAX_PROPOSALS_DEF).toInt(), model()->rowCount());
 	return QSize(width(), nToShow*sizeHintForRow(0));
 }
@@ -201,17 +200,17 @@ void ProposalListView::reset()
 {
     if (model() == nullptr) return;
 
-	// Reset the  views state
-	QListView::reset();
+    // Reset the  views state
+    QListView::reset();
 
-	// Make the size of this widget be adjusted (size hint changed)
-	updateGeometry();
+    // Make the size of this widget be adjusted (size hint changed)
+    updateGeometry();
 
-	// Show if not empty and make first item current
-	if ( model()->rowCount() > 0 ){
-		show();
-		setCurrentIndex(model()->index(0,0));
-	}
-	else
-		hide();
+    // Show if not empty and make first item current
+    if ( model()->rowCount() > 0 ){
+        setCurrentIndex(model()->index(0,0));
+        show();
+    }
+    else
+        hide();
 }
