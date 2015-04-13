@@ -128,75 +128,63 @@ ProposalListView::~ProposalListView()
 /****************************************************************************///
 bool ProposalListView::eventFilter(QObject*, QEvent *event)
 {
-    if (model() == nullptr) return false;
+    if (model() == nullptr)
+        return false;
 
-	if (event->type() == QEvent::KeyPress)
-	{
-		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-		int key = keyEvent->key();
+    if (event->type() == QEvent::KeyPress)
+    {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+        int key = keyEvent->key();
 
-		// Display different subtexts according to the KeyboardModifiers
-		if ( (key == Qt::Key_Control || key == Qt::Key_Meta || key == Qt::Key_Alt)){
-
+        // Display different subtexts according to the KeyboardModifiers
+        if ( (key == Qt::Key_Control || key == Qt::Key_Meta || key == Qt::Key_Alt)){
             _itemDelegate->mods = keyEvent->modifiers();
             update(currentIndex());
-			return true;
-		}
+            return true;
+        }
 
-		// Navigation
-		if (key == Qt::Key_Up || key == Qt::Key_Down
-			|| key == Qt::Key_PageDown || key == Qt::Key_PageUp) {
+        // Navigation
+        if (key == Qt::Key_Up || key == Qt::Key_Down
+            || key == Qt::Key_PageDown || key == Qt::Key_PageUp) {
 
-			/* I this is the first item pass key up through for the
-			 * command history */
-			if (key == Qt::Key_Up && (!currentIndex().isValid() || currentIndex().row()==0))
-				return false;
+            /* I this is the first item pass key up through for the
+             * command history */
+            if (key == Qt::Key_Up && (!currentIndex().isValid() || currentIndex().row()==0))
+                return false;
 
-			QListView::keyPressEvent(keyEvent);
-			return true;
-		}
+            QListView::keyPressEvent(keyEvent);
+            return true;
+        }
 
-		// Selection
-		if (key == Qt::Key_Return || key == Qt::Key_Enter) {
-			if (!currentIndex().isValid()){
+        // Selection
+        if (key == Qt::Key_Return || key == Qt::Key_Enter) {
+            if (!currentIndex().isValid()){
                 if (model()->rowCount() > 0)
                     setCurrentIndex(model()->index(0,0));
                 else // TODO: Not so easy anymore with  informational results
-					return true;
+                    return true;
             }
             model()->data(currentIndex(), Qt::UserRole + keyEvent->modifiers());
             window()->hide();
 //			// Do not accept since the inpuline needs
 //			// to store the request in history
-//			return false;
-		}
+            return false;
+        }
+    }
 
-//		// Completion
-//		if (key == Qt::Key_Tab) {
-//			if (!currentIndex().isValid())
-//				if (model()->rowCount() > 0)
-//					emit completion(model()->data(model()->index(0,0), Qt::UserRole).toString());
-//				else
-//					return true;
-//			else
-//				emit completion(model()->data(currentIndex(), Qt::UserRole).toString());
-//			return true;
-//		}
-	}
+    if (event->type() == QEvent::KeyRelease)
+    {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+        int key = keyEvent->key();
 
-	if (event->type() == QEvent::KeyRelease)
-	{
-		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-		int key = keyEvent->key();
-
-		// Display different subtexts according to the KeyboardModifiers
-		if ( (key == Qt::Key_Control || key == Qt::Key_Meta || key == Qt::Key_Alt)){
+        // Display different subtexts according to the KeyboardModifiers
+        if ( (key == Qt::Key_Control || key == Qt::Key_Meta || key == Qt::Key_Alt)){
             _itemDelegate->mods = keyEvent->modifiers();
             update(currentIndex());
-			return true;
-		}
-	}
-	return false;
+            return true;
+        }
+    }
+    return false;
 }
 
 /****************************************************************************///

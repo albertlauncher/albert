@@ -37,12 +37,11 @@ set(SRCS
     src/pluginhandler.cpp
     src/globalhotkey.cpp
     src/globalhotkey_p.h
-    src/history.cpp
     src/ui/mainwidget.cpp
     src/ui/proposallistview.cpp
     src/ui/inputline.cpp
     src/ui/grabkeybutton.cpp
-    src/ui/settingsbutton.cpp
+    src/ui/settingsbutton.h
     src/ui/settingsdialog.cpp
     src/common/query.cpp
     src/common/extensioninterface.h
@@ -65,6 +64,7 @@ set(LIBS
 
 qt5_wrap_ui(UIS
     src/ui/settingsdialog.ui
+    src/ui/mainwidget.ui
 #	src/util/search/searchwidget.ui
 #	src/services/appindex/appindexwidget.ui
 #	src/services/bookmarkindex/bookmarkindexwidget.ui
@@ -87,7 +87,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
     # INSTALL
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
-    install(DIRECTORY src/resources/icons DESTINATION share/${PROJECT_NAME} COMPONENT config)
     install(DIRECTORY src/resources/themes DESTINATION share/${PROJECT_NAME} COMPONENT config)
     install(FILES src/resources/albert.desktop DESTINATION share/applications COMPONENT desktop)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")

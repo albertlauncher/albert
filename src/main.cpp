@@ -15,25 +15,19 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QApplication>
-#include <QFileSystemWatcher>
-#include <QStandardPaths>
 #include <QDir>
+#include <QStandardPaths>
 #include <QMessageBox>
 #include <QDebug>
+#include <QFileSystemWatcher>
+
+#include <functional>
 
 #include "mainwidget.h"
-#include "extensionhandler.h"
 #include "settingsdialog.h"
 #include "settings.h"
 #include "globalhotkey.h"
-
-#define ANSI_COLOR_RED     "\x1b[31m"
-#define ANSI_COLOR_GREEN   "\x1b[32m"
-#define ANSI_COLOR_YELLOW  "\x1b[33m"
-#define ANSI_COLOR_BLUE    "\x1b[34m"
-#define ANSI_COLOR_MAGENTA "\x1b[35m"
-#define ANSI_COLOR_CYAN    "\x1b[36m"
-#define ANSI_COLOR_RESET   "\x1b[0m"
+#include "extensionhandler.h"
 
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
@@ -65,7 +59,7 @@ int main(int argc, char *argv[])
 
     qInstallMessageHandler(myMessageOutput);
     QApplication          a(argc, argv);
-	QCoreApplication::setApplicationName(QString::fromLocal8Bit("albert"));
+    QCoreApplication::setApplicationName(QString::fromLocal8Bit("albert"));
 	a.setWindowIcon(QIcon(":app_icon"));
 	a.setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
@@ -85,38 +79,38 @@ int main(int argc, char *argv[])
     }
 
 
-	/*
-	 *  THEME
-	 */
+    /*
+     *  THEME
+     */
 
-    MainWidget mw;
+    MainWidget *w = new MainWidget;
 
-	{
+    {
         QString theme = gSettings->value(CFG_THEME, CFG_THEME_DEF).toString();
-		QFileInfoList themes;
-		QStringList themeDirs = QStandardPaths::locateAll(
-			QStandardPaths::DataLocation, "themes", QStandardPaths::LocateDirectory
-		);
-		for (QDir d : themeDirs)
-			themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
-		// Find and apply the theme
-		bool success = false;
-		for (QFileInfo fi : themes){
-			if (fi.baseName() == theme) {
+        QFileInfoList themes;
+        QStringList themeDirs = QStandardPaths::locateAll(
+            QStandardPaths::DataLocation, "themes", QStandardPaths::LocateDirectory
+        );
+        for (QDir d : themeDirs)
+            themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
+        // Find and apply the theme
+        bool success = false;
+        for (QFileInfo fi : themes){
+            if (fi.baseName() == theme) {
                 QFile f(fi.canonicalFilePath());
                 if (f.open(QFile::ReadOnly)) {
                     qApp->setStyleSheet(f.readAll());
                     f.close();
-					success = true;
-					break;
-				}
-			}
-		}
-		if (!success) {
-			qFatal("FATAL: Stylefile not found: %s", theme.toStdString().c_str());
-			exit(EXIT_FAILURE);
-		}
-	}
+                    success = true;
+                    break;
+                }
+            }
+        }
+        if (!success) {
+            qFatal("FATAL: Stylefile not found: %s", theme.toStdString().c_str());
+            exit(EXIT_FAILURE);
+        }
+    }
 
 
     /*
@@ -127,12 +121,12 @@ int main(int argc, char *argv[])
     gHotkeyManager->registerHotkey(gSettings->value(CFG_HOTKEY, CFG_HOTKEY_DEF).toString());
     if (gHotkeyManager->hotkeys().empty()) {
         QMessageBox msgBox(QMessageBox::Critical, "Error",
-                           "Hotkey is invalid, please set it. Press ok to "\
+                           "Hotkey is invalid, please set it. Press ok to "
                            "open the settings or press close to quit albert.",
                            QMessageBox::Close|QMessageBox::Ok);
         msgBox.exec();
         if ( msgBox.result() == QMessageBox::Ok ){
-            SettingsWidget *sw = new SettingsWidget(&mw);
+            SettingsWidget *sw = new SettingsWidget(w);
             sw->ui.tabs->setCurrentIndex(0);
             sw->show();
         }
@@ -141,56 +135,81 @@ int main(int argc, char *argv[])
     }
 
 
-	/*
-	 *  SETUP SIGNAL FLOW
-	 */
+    /*
+     *  SETUP SIGNAL FLOW
+     */
 
     ExtensionHandler      extensionHandler;
     extensionHandler.initialize();
 
-	// Show mainwidget if hotkey is pressed
+    // Show mainwidget if hotkey is pressed
     QObject::connect(gHotkeyManager, &GlobalHotkey::hotKeyPressed,
-                     &mw, &MainWidget::toggleVisibility);
+                     w, &MainWidget::toggleVisibility);
 
-	// Setup and teardown query sessions with the state of the widget
-    QObject::connect(&mw, &MainWidget::widgetShown,
-					 &extensionHandler, &ExtensionHandler::setupSession);
-    QObject::connect(&mw, &MainWidget::widgetHidden,
-					 &extensionHandler, &ExtensionHandler::teardownSession);
+    // Setup and teardown query sessions with the state of the widget
+    QObject::connect(w, &MainWidget::widgetShown,
+                     &extensionHandler, &ExtensionHandler::setupSession);
+    QObject::connect(w, &MainWidget::widgetHidden,
+                     &extensionHandler, &ExtensionHandler::teardownSession);
 
-	// settingsDialogRequested closes albert + opens settings dialog
-    QObject::connect(mw._inputLine, &InputLine::settingsDialogRequested,
-                     &mw, &MainWidget::hide);
-    QObject::connect(mw._inputLine, &InputLine::settingsDialogRequested,
+    // Click on _settingsButton (or shortcut) closes albert + opens settings dialog
+    QObject::connect(w->ui.inputLine->_settingsButton, &QPushButton::clicked,
+                     w, &MainWidget::hide);
+    QObject::connect(w->ui.inputLine->_settingsButton, &QPushButton::clicked,
                      gHotkeyManager, &GlobalHotkey::disable);
-    QObject::connect(mw._inputLine, &InputLine::settingsDialogRequested,
+    QObject::connect(w->ui.inputLine->_settingsButton, &QPushButton::clicked,
                      [&](){
-                            SettingsWidget *sw = new SettingsWidget(&mw);
+                            SettingsWidget *sw = new SettingsWidget(w);
                             QObject::connect(sw, &QWidget::destroyed,
                                              gHotkeyManager, &GlobalHotkey::enable);
                             sw->show();
                           });
 
-	// A change in text triggers requests
-    QObject::connect(mw._inputLine, &QLineEdit::textChanged,
-					 &extensionHandler, &ExtensionHandler::startQuery);
+    // A change in text triggers requests
+    QObject::connect(w->ui.inputLine, &QLineEdit::textChanged,
+                     &extensionHandler, &ExtensionHandler::startQuery);
 
-	// Make the list show the results of the current query
-	QObject::connect(&extensionHandler, &ExtensionHandler::currentQueryChanged,
-                     mw._proposalListView, &ProposalListView::setModel);
+    // Make the list show the results of the current query
+    QObject::connect(&extensionHandler, &ExtensionHandler::currentQueryChanged,
+                     w->ui.proposalList, &ProposalListView::setModel);
 
 
-	/*
-	 *  E N T E R   T H E   L O O P
-	 */
+    /*
+     *  DESERIALIZATION
+     */
+    QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/history.dat");
+    if (f.open(QIODevice::ReadOnly| QIODevice::Text)) {
+        QDataStream in(&f);
+        QStringList SL;
+        in >> SL;
+        w->ui.inputLine->setHistory(SL.toStdList());
+        f.close();
+    } else qWarning() << "Could not open file" << f.fileName();
+
+
+    /*
+     *  E N T E R   T H E   L O O P
+     */
 
     int ret = a.exec();
 
 
-	/*
-	 *  CLEANUP
-	 */
-	extensionHandler.finalize();
+    /*
+     *  SERIALIZATION
+     */
+    f.setFileName(QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/history.dat");
+    if (f.open(QIODevice::ReadWrite| QIODevice::Text)){
+        QDataStream out( &f );
+        qDebug() << QStringList::fromStdList(w->ui.inputLine->getHistory());
+        out << QStringList::fromStdList(w->ui.inputLine->getHistory());
+        f.close();
+    } else qCritical() << "Could not write to " << f.fileName();
+
+
+    /*
+     *  CLEANUP
+     */
+    extensionHandler.finalize();
     gSettings->sync();
     return ret;
 }

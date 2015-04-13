@@ -16,31 +16,36 @@
 
 #pragma once
 #include <QLineEdit>
+#include <list>
+using std::list;
 #include "settingsbutton.h"
-#include "history.h"
 
 class InputLine final : public QLineEdit
 {
-	Q_OBJECT
-	friend class SettingsWidget;
-
+    Q_OBJECT
 public:
-	explicit InputLine(QWidget *parent = 0);
-	~InputLine();
+    explicit InputLine(QWidget *parent = 0);
+    ~InputLine();
 
-	void saveSettings(QSettings &s) const;
-	void loadSettings(QSettings &s);
-	void serilizeData(QDataStream &out) const;
-	void deserilizeData(QDataStream &in);
-    void reset();
+    const list<QString>& getHistory() const { return _lines; }
+    void setHistory(const list<QString> & h) { _lines = h; }
+    void clearHistory() { _lines.clear(); }
+    void clear();
+
+    SettingsButton   *_settingsButton;
 
 private:
-	void resizeEvent(QResizeEvent*) override;
-	void keyPressEvent(QKeyEvent*) override;
+    void keyPressEvent(QKeyEvent*) override;
+    void wheelEvent(QWheelEvent *);
+    void resizeEvent(QResizeEvent*) override;
 
-	SettingsButton *_settingsButton;
-	History		   _history;
+    void resetIterator();
+    void next();
+    void prev();
 
-signals:
-	void settingsDialogRequested();
+
+    list<QString> _lines; // NOTE fix this in 5.5, qt has no reverse iterators
+    list<QString>::const_reverse_iterator _currentLine;
+
+    static constexpr const char * SETTINGS_SHORTCUT = "Alt+,";
 };

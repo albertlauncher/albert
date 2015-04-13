@@ -17,10 +17,10 @@ TODO:
     python
     Rewrite old stuff: Files (fstree)
     qstyleditem with qprop
-    Split UI
 
 DONE (Changelog):
 0.7
+    Split UI
     Let settingswidgets be ESC closable
     Rewrite old stuff: WebSearch
     Fix library resource bug (unique names!)

@@ -15,104 +15,102 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "inputline.h"
-#include "settingsdialog.h"
-#include <QString>
-#include <QKeyEvent>
-#include <QFocusEvent>
 #include <QResizeEvent>
+#include <QDebug>
+#include <QKeyEvent>
 
-/****************************************************************************///
+/** ***************************************************************************/
 InputLine::InputLine(QWidget *parent) : QLineEdit(parent)
 {
-	_settingsButton = new SettingsButton(this);
-	_settingsButton->setFocusPolicy(Qt::NoFocus);
+    _settingsButton = new SettingsButton(this);
+    _settingsButton->setObjectName("settingsbutton");
+    _settingsButton->setFocusPolicy(Qt::NoFocus);
+    _settingsButton->setShortcut(QKeySequence(SETTINGS_SHORTCUT));
 
-	connect(_settingsButton, &QPushButton::clicked, this, &InputLine::settingsDialogRequested);
-	connect(this, &QLineEdit::textEdited, &_history, &History::reset);
+    _currentLine = _lines.crend(); // This means historymode is not active
+
+    connect(this, &QLineEdit::textEdited,
+            this, &InputLine::resetIterator);
 }
 
-/****************************************************************************///
+/** ***************************************************************************/
 InputLine::~InputLine()
 {
-	delete _settingsButton;
+    _settingsButton->deleteLater();
 }
 
-/****************************************************************************///
-void InputLine::saveSettings(QSettings &s) const
+/** ***************************************************************************/
+void InputLine::clear()
 {
-	_history.saveSettings(s);
+    resetIterator();
+    QLineEdit::clear();
 }
 
-/****************************************************************************///
-void InputLine::loadSettings(QSettings &s)
+/** ***************************************************************************/
+void InputLine::resetIterator()
 {
-	_history.loadSettings(s);
+    _currentLine = _lines.crend();
 }
 
-/****************************************************************************///
-void InputLine::serilizeData(QDataStream &out) const
+/** ***************************************************************************/
+void InputLine::next()
 {
-	_history.serilizeData(out);
+    if ( _lines.empty() ) // (1) implies _lines.crbegin() !=_lines.crend()
+        return;
+
+    if (_currentLine == _lines.crend()) // Not in history mode
+        _currentLine = _lines.crbegin(); // This may still be crend!
+    else
+        if (++_currentLine == _lines.crend())
+            --_currentLine;
+    setText(*_currentLine);
 }
 
-/****************************************************************************///
-void InputLine::deserilizeData(QDataStream &in)
+/** ***************************************************************************/
+void InputLine::prev()
 {
-	_history.deserilizeData(in);
+    if ( _lines.empty() ) // (1) implies _lines.crbegin() !=_lines.crend()
+        return;
+
+    if (_currentLine == _lines.crend()) // Not in history mode
+        _currentLine = _lines.crbegin(); // This may still be crend!
+    else
+        if (_currentLine != _lines.crbegin())
+            --_currentLine;
+    setText(*_currentLine);
 }
 
-/****************************************************************************///
-void InputLine::resizeEvent(QResizeEvent *event)
-{
-	_settingsButton->move(event->size().width()-_settingsButton->width(),0);
-}
 
-/****************************************************************************///
+/** ***************************************************************************/
 void InputLine::keyPressEvent(QKeyEvent *e)
 {
-	int key = e->key();
-	Qt::KeyboardModifiers mods = e->modifiers();
-
-	// Open settings dialog
-	if (mods == Qt::AltModifier && key == Qt::Key_Comma ) {
-		emit settingsDialogRequested();
-		return;
-	}
-
-	// Quit application
-	if (/*mods == Qt::AltModifier && */key == Qt::Key_F4 ) {
-		window()->hide();
-		qApp->quit();
-		return;
-	}
-
-	// Hide window
-	if (mods == Qt::NoModifier && key == Qt::Key_Escape ) {
-		window()->hide();
-		return;
-	}
-
-	// Navigation in history
-	if (key == Qt::Key_Up) {
-		if (_history.hasNext()){
-			setText(_history.next());
-			selectAll();
-		}
-		return;
-	}
-
-	// Selection (history)
-	if (key == Qt::Key_Return || key == Qt::Key_Enter) {
-		_history.insert(text());
-		return;
-	}
-
-	QLineEdit::keyPressEvent(e);
+    qDebug() << QKeySequence(e->modifiers()|e->key()).toString();
+    switch (e->key()) {
+    case Qt::Key_Up:
+        next();
+        return;
+    case Qt::Key_Down:
+        prev();
+        return;
+    case Qt::Key_Enter:
+    case Qt::Key_Return:
+        _lines.remove(text()); // Make entries uniq
+        _lines.push_back(text()); // Remember this entry
+        break;
+    }
+    e->ignore();
+    QLineEdit::keyPressEvent(e);
 }
 
-/****************************************************************************///
-void InputLine::reset()
+/** ***************************************************************************/
+void InputLine::wheelEvent(QWheelEvent *e)
 {
-	_history.reset();
-	QLineEdit::clear();
+    e->angleDelta().ry()<0 ? prev() : next();
+}
+
+/** ***************************************************************************/
+void InputLine::resizeEvent(QResizeEvent *event)
+{
+    //Let settingsbutton be in top right corner
+    _settingsButton->move(event->size().width()-_settingsButton->width(),0);
 }

@@ -29,137 +29,120 @@ MainWidget::MainWidget(QWidget *parent)
 	: QWidget(parent)
 {
 	// INITIALIZE UI
-	setWindowTitle(QString::fromLocal8Bit("Albert"));
-	setAttribute(Qt::WA_TranslucentBackground);
-	setWindowFlags( Qt::CustomizeWindowHint
-					| Qt::FramelessWindowHint
-					| Qt::WindowStaysOnTopHint
-					| Qt::Tool
-					);
+    ui.setupUi(this);
+    setWindowTitle(qAppName());
+    setAttribute(Qt::WA_TranslucentBackground);
+    setWindowFlags(Qt::Tool
+                   | Qt::WindowStaysOnTopHint
+                   | Qt::WindowCloseButtonHint // No close event w/o this
+                   | Qt::FramelessWindowHint);
 
-	QVBoxLayout *l2 = new QVBoxLayout;
-	l2->setMargin(0);
-	l2->setSizeConstraint(QLayout::SetFixedSize);
-	l2->setAlignment(Qt::AlignHCenter|Qt::AlignTop);
-	this->setLayout(l2);
+    ui.bottomLayout->setSizeConstraint(QLayout::SetFixedSize);
 
-	_frame2 = new QFrame;
-	_frame2->setObjectName(QString::fromLocal8Bit("bottomframe"));
-	_frame2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-	l2->addWidget(_frame2);
+    // TODO BREAK OBJECT NAMMING IN THEMES SOME DAY
+    ui.bottomFrame->setObjectName("bottomframe");
+    ui.topFrame->setObjectName("topframe");
+    ui.inputLine->setObjectName("inputline");
+    ui.proposalList->setObjectName("proposallist");
 
-	QVBoxLayout *l1 = new QVBoxLayout;
-	l1->setMargin(0);
-	l1->setAlignment(Qt::AlignHCenter|Qt::AlignTop);
-	_frame2->setLayout(l1);
+    ui.bottomLayout->setAlignment (Qt::AlignHCenter | Qt::AlignTop);
+    ui.topLayout->setAlignment    (Qt::AlignHCenter | Qt::AlignTop);
+    ui.contentLayout->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
 
-	_frame1 = new QFrame;
-	_frame1->setObjectName(QString::fromLocal8Bit("topframe"));
-	_frame1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-	l1->addWidget(_frame1);
+    ui.bottomFrame->setSizePolicy (QSizePolicy::Expanding, QSizePolicy::Fixed);
+    ui.topFrame->setSizePolicy    (QSizePolicy::Expanding, QSizePolicy::Fixed);
+    ui.inputLine->setSizePolicy   (QSizePolicy::Expanding, QSizePolicy::Fixed);
+    ui.proposalList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-	QVBoxLayout *contentLayout = new QVBoxLayout();
-	contentLayout->setMargin(0);
-	contentLayout->setAlignment(Qt::AlignHCenter|Qt::AlignTop);
-	_frame1->setLayout(contentLayout);
+    // Do not allow context menues (they cause focus out events)
+    ui.inputLine->setContextMenuPolicy(Qt::NoContextMenu);
+    ui.proposalList->setContextMenuPolicy(Qt::NoContextMenu);
 
-	_inputLine = new InputLine;
-	_inputLine->setObjectName(QString::fromLocal8Bit("inputline"));
-	_inputLine->setContextMenuPolicy(Qt::NoContextMenu);
-	_inputLine->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-	contentLayout->addWidget(_inputLine);
+    // Let proposalList not accept keyboard focus
+    ui.proposalList->setFocusPolicy(Qt::NoFocus);
 
-	_proposalListView = new ProposalListView;
-	_proposalListView->setObjectName("proposallist");
-	_proposalListView->setFocusPolicy(Qt::NoFocus);
-	_proposalListView->setFocusProxy(_inputLine);
-	_proposalListView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    _proposalListView->hide();
-	contentLayout->addWidget(_proposalListView);
-	// _proposalListView->setModel(_engine);
-	// Proposallistview intercepts inputline's events (Navigation with keys, pressed modifiers, etc)
-	_inputLine->installEventFilter(_proposalListView);
+    // Let inputLine get focus when proposallist gets it.
+    ui.proposalList->setFocusProxy(ui.inputLine);
 
+    // Proposallistview intercepts inputline's events (Navigation with keys, pressed modifiers, etc)
+    ui.inputLine->installEventFilter(ui.proposalList);
 
-	// LOAD SETTINGS
-	QSettings s(QSettings::UserScope, "albert", "albert");
-//	_proposalListView->loadSettings(s);
-    _inputLine->loadSettings(s);
-
-
-	// SETUP SIGNAL FLOW
-	// Proposallistview tells Inputline to change text on completion.
-//	connect(_proposalListView, &ProposalListView::completion,
-//			_inputLine, &QLineEdit::setText);
-
-
+    ui.proposalList->hide();
 }
 
 /****************************************************************************///
 MainWidget::~MainWidget()
 {
-	/*
-	 *  SAVE SETTINGS
-	 */
-
-//	QSettings settings(QSettings::UserScope, "albert", "albert");
-
-//	_engine->saveSettings(settings);
-//	_proposalListView->saveSettings(settings);
-//	_inputLine->saveSettings(settings);
 }
+
 
 /*****************************************************************************/
 /********************************* S L O T S *********************************/
 /****************************************************************************///
 void MainWidget::show()
 {
-	_inputLine->reset();
-	QWidget::show();
+    ui.inputLine->clear();
+    QWidget::show();
     if (gSettings->value(CFG_CENTERED, CFG_CENTERED_DEF).toBool())
-		this->move(QApplication::desktop()->screenGeometry().center()
-				   -QPoint(rect().right()/2,192 ));
-	this->raise();
-	this->activateWindow();
-	_inputLine->setFocus();
-	emit widgetShown();
+        this->move(QApplication::desktop()->screenGeometry().center()
+                   -QPoint(rect().right()/2,192 ));
+    this->raise();
+    this->activateWindow();
+    ui.inputLine->setFocus();
+    emit widgetShown();
 }
 /****************************************************************************///
 void MainWidget::hide()
 {
-	QWidget::hide();
-	emit widgetHidden();
+    QWidget::hide();
+    emit widgetHidden();
 }
 
 /****************************************************************************///
 void MainWidget::toggleVisibility()
 {
-	this->isVisible() ? this->hide() : this->show();
+    this->isVisible() ? this->hide() : this->show();
 }
+
 
 /*****************************************************************************/
 /**************************** O V E R R I D E S ******************************/
 /****************************************************************************///
 
+/** ***************************************************************************/
+void MainWidget::closeEvent(QCloseEvent *event)
+{
+    event->accept();
+    qApp->quit();
+}
+
+/** ***************************************************************************/
+void MainWidget::keyPressEvent(QKeyEvent *e)
+{
+    // Hide window on escape key
+    if (e->modifiers() == Qt::NoModifier && e->key() == Qt::Key_Escape ) {
+        hide();
+        e->accept();
+    }
+    QWidget::keyPressEvent(e);
+}
 
 #ifdef Q_OS_LINUX
 #include "xcb/xcb.h"
-#endif
-/***************************************************************************//**
+/** ****************************************************************************
  * @brief MainWidget::nativeEvent
  *
  * The purpose of this function is to hide in special casesonly.
  */
 bool MainWidget::nativeEvent(const QByteArray &eventType, void *message, long *)
 {
-#ifdef Q_OS_LINUX
-	if (eventType == "xcb_generic_event_t")
-	{
-		xcb_generic_event_t* event = static_cast<xcb_generic_event_t *>(message);
-		switch (event->response_type & 127)
-		{
-		case XCB_FOCUS_OUT: {
-			xcb_focus_out_event_t *fe = (xcb_focus_out_event_t *)event;
+    if (eventType == "xcb_generic_event_t")
+    {
+        xcb_generic_event_t* event = static_cast<xcb_generic_event_t *>(message);
+        switch (event->response_type & 127)
+        {
+        case XCB_FOCUS_OUT: {
+            xcb_focus_out_event_t *fe = (xcb_focus_out_event_t *)event;
 //			std::cout << "MainWidget::nativeEvent::XCB_FOCUS_OUT\t";
 //			switch (fe->mode) {
 //			case XCB_NOTIFY_MODE_NORMAL: std::cout << "XCB_NOTIFY_MODE_NORMAL";break;
@@ -179,42 +162,14 @@ bool MainWidget::nativeEvent(const QByteArray &eventType, void *message, long *)
 //			case XCB_NOTIFY_DETAIL_VIRTUAL: std::cout << "VIRTUAL";break;
 //			}
 //			std::cout << std::endl;
-			if (((fe->mode==XCB_NOTIFY_MODE_GRAB && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR)
-					|| (fe->mode==XCB_NOTIFY_MODE_NORMAL && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR )))
+            if (((fe->mode==XCB_NOTIFY_MODE_GRAB && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR)
+                    || (fe->mode==XCB_NOTIFY_MODE_NORMAL && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR )))
 //					&& !_settingsDialog->isVisible())
-				hide();
-			break;
-		}
-		}
-	}
-#endif
-	return false;
+                hide();
+            break;
+        }
+        }
+    }
+    return false;
 }
-
-
-
-/////////////////////////////////////////////TRASH//////////////////////////////
-
-//	QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db");
-//	if (f.open(QIODevice::ReadOnly| QIODevice::Text)) {
-//		qDebug() << "Deserializing from" << f.fileName();
-//		QDataStream in(&f);
-//		_engine->deserilizeData(in);
-//		_inputLine->deserilizeData(in);
-//		f.close();
-//	} else {
-//		qWarning() << "Could not open file" << f.fileName();
-//		_engine->initialize();
-//	}
-
-//	QString path = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/albert.db";
-//	QFile f(path);
-//	if (f.open(QIODevice::ReadWrite| QIODevice::Text)){
-//		qDebug() << "Serializing to " << path;
-//		QDataStream out( &f );
-//		_engine->serilizeData(out);
-//		_inputLine->serilizeData(out);
-//		f.close();
-//	}
-//	else
-//		qFatal("FATAL: Could not write to %s", path.toStdString().c_str());
+#endif

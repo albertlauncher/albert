@@ -50,24 +50,24 @@
             <string>General</string>
            </property>
            <layout class="QGridLayout" name="gridLayout1" columnstretch="2,1">
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_2">
+            <item row="2" column="0" colspan="2">
+             <widget class="QCheckBox" name="checkBox_center">
               <property name="text">
-               <string>&amp;Max. # of propoals</string>
-              </property>
-              <property name="buddy">
-               <cstring>spinBox_proposals</cstring>
+               <string>Always center Albert</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="GrabKeyButton" name="grabKeyButton_hotkey">
+            <item row="4" column="0" colspan="2">
+             <widget class="QCheckBox" name="checkBox_showAction">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="text">
-               <string/>
+               <string>Show action below selected item</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="1">
+            <item row="1" column="1">
              <widget class="QSpinBox" name="spinBox_proposals">
               <property name="suffix">
                <string/>
@@ -90,23 +90,14 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
-             <widget class="QSpinBox" name="spinBox_maxHistory"/>
-            </item>
-            <item row="6" column="1">
-             <widget class="QComboBox" name="comboBox_themes"/>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_10">
+            <item row="3" column="0" colspan="2">
+             <widget class="QCheckBox" name="checkBox_showInfo">
               <property name="text">
-               <string>Maximum history</string>
-              </property>
-              <property name="buddy">
-               <cstring>spinBox_maxHistory</cstring>
+               <string>Show informations below items</string>
               </property>
              </widget>
             </item>
-            <item row="6" column="0">
+            <item row="5" column="0">
              <widget class="QLabel" name="label_11">
               <property name="text">
                <string>&amp;Theme</string>
@@ -116,27 +107,23 @@
               </property>
              </widget>
             </item>
-            <item row="5" column="0" colspan="2">
-             <widget class="QCheckBox" name="checkBox_showAction">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
+            <item row="5" column="1">
+             <widget class="QComboBox" name="comboBox_themes"/>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_2">
               <property name="text">
-               <string>Show action below selected item</string>
+               <string>&amp;Max. # of propoals</string>
+              </property>
+              <property name="buddy">
+               <cstring>spinBox_proposals</cstring>
               </property>
              </widget>
             </item>
-            <item row="4" column="0" colspan="2">
-             <widget class="QCheckBox" name="checkBox_showInfo">
+            <item row="0" column="1">
+             <widget class="GrabKeyButton" name="grabKeyButton_hotkey">
               <property name="text">
-               <string>Show informations below items</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0" colspan="2">
-             <widget class="QCheckBox" name="checkBox_center">
-              <property name="text">
-               <string>Always center Albert</string>
+               <string/>
               </property>
              </widget>
             </item>
@@ -500,7 +487,6 @@ p, li { white-space: pre-wrap; }
  <tabstops>
   <tabstop>tabs</tabstop>
   <tabstop>grabKeyButton_hotkey</tabstop>
-  <tabstop>spinBox_maxHistory</tabstop>
   <tabstop>spinBox_proposals</tabstop>
   <tabstop>checkBox_center</tabstop>
   <tabstop>checkBox_showInfo</tabstop>

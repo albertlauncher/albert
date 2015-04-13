@@ -23,8 +23,6 @@
 // GENERAL
 #define CFG_HOTKEY              "hotkey"
 #define CFG_HOTKEY_DEF          ""
-#define CFG_MAX_HISTORY         "maxHistory"
-#define CFG_MAX_HISTORY_DEF     5
 #define CFG_CENTERED            "showCentered"
 #define CFG_CENTERED_DEF        true
 #define CFG_THEME               "theme"

@@ -16,8 +16,10 @@
 
 #pragma once
 #include <QWidget>
-#include "inputline.h"
+#include <QLineEdit>
 #include "proposallistview.h"
+#include "inputline.h"
+#include "ui_mainwidget.h"
 
 class MainWidget final : public QWidget
 {
@@ -31,16 +33,16 @@ public:
     void hide();
     void toggleVisibility();
 
-	InputLine        *_inputLine;
-	ProposalListView *_proposalListView;
+    Ui::MainWidget ui;
 
 private:
+    void closeEvent(QCloseEvent * event);
+    void keyPressEvent(QKeyEvent * event);
     bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
 
-	QFrame  *_frame1,*_frame2;
-	QString _theme;
+    QString _theme;
 
 signals:
-	void widgetShown();
-	void widgetHidden();
+    void widgetShown();
+    void widgetHidden();
 };

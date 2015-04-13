@@ -33,7 +33,6 @@
 SettingsWidget::SettingsWidget(QWidget * parent, Qt::WindowFlags f)
     : QWidget(parent,f)
 {
-    qDebug() << "Call to SettingsWidget::ctor";
 	ui.setupUi(this);
     setWindowFlags(Qt::Window|Qt::WindowCloseButtonHint);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -54,12 +53,6 @@ SettingsWidget::SettingsWidget(QWidget * parent, Qt::WindowFlags f)
            gHotkeyManager, &GlobalHotkey::disable);
    connect(ui.grabKeyButton_hotkey, &GrabKeyButton::keyCombinationPressed,
            this, &SettingsWidget::changeHotkey);
-
-
-   // MAX HISTORY
-   ui.spinBox_maxHistory->setValue(gSettings->value(CFG_MAX_HISTORY, CFG_MAX_HISTORY_DEF).toInt());
-   connect(ui.spinBox_maxHistory, (void (QSpinBox::*)(int))&QSpinBox::valueChanged,
-           [](int i){ gSettings->setValue(CFG_MAX_HISTORY, i); });
 
 
    // MAX PROPOSALS
@@ -137,8 +130,6 @@ SettingsWidget::SettingsWidget(QWidget * parent, Qt::WindowFlags f)
 /****************************************************************************///
 SettingsWidget::~SettingsWidget()
 {
-    qDebug() << "Call to SettingsWidget::dtor";
-
 }
 
 /** ***************************************************************************/
@@ -149,8 +140,14 @@ void SettingsWidget::openPluginHelp()
         for (const PluginSpec& spec : PluginHandler::instance()->getPluginSpecs()){
             if (spec.path == path) { // MUST HAPPEN
                 QWidget *w = dynamic_cast<GenericPluginInterface*>(spec.loader->instance())->widget();
+                w->setParent(this);
+                w->setWindowTitle("Plugin help");
                 w->setWindowFlags(Qt::Window|Qt::WindowCloseButtonHint);
                 w->setAttribute(Qt::WA_DeleteOnClose);
+                new QShortcut(Qt::Key_Escape, w, SLOT(close()));
+                w->move(w->parentWidget()->window()->frameGeometry().topLeft() +
+                        w->parentWidget()->window()->rect().center() -
+                        w->rect().center());
                 w->show();
             }
         }
