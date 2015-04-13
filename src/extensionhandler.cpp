@@ -25,12 +25,13 @@
 void ExtensionHandler::startQuery(const QString &term)
 {
 	_lastSearchTerm = term.trimmed();
-	qDebug() << "Query started" << _lastSearchTerm;
 
 	Query *q;
-    if (_recentQueries.contains(_lastSearchTerm))
+    if (_recentQueries.contains(_lastSearchTerm)){
+        qDebug() << "Query loaded" << _lastSearchTerm;
         q = _recentQueries.value(_lastSearchTerm);
-    else {
+    } else {
+        qDebug() << "Query started" << _lastSearchTerm;
         q = new Query(_lastSearchTerm);
         _recentQueries.insert(_lastSearchTerm, q);
 
