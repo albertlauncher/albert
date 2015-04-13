@@ -24,7 +24,7 @@
 #include <functional>
 
 #include "mainwidget.h"
-#include "settingsdialog.h"
+#include "settingswidget.h"
 #include "settings.h"
 #include "globalhotkey.h"
 #include "extensionhandler.h"

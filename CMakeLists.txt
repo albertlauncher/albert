@@ -23,8 +23,10 @@ find_package(Qt5Svg REQUIRED)
 
 include_directories(
     src/
-    src/ui/
     src/common/
+    src/hotkey/
+    src/mainwidget/
+    src/settingswidget/
 )
 
 set(SRCS
@@ -35,14 +37,14 @@ set(SRCS
 #    src/fstreenode.cpp
     src/extensionhandler.cpp
     src/pluginhandler.cpp
-    src/globalhotkey.cpp
-    src/globalhotkey_p.h
-    src/ui/mainwidget.cpp
-    src/ui/proposallistview.cpp
-    src/ui/inputline.cpp
-    src/ui/grabkeybutton.cpp
-    src/ui/settingsbutton.h
-    src/ui/settingsdialog.cpp
+    src/hotkey/globalhotkey.cpp
+    src/hotkey/globalhotkey_p.h
+    src/mainwidget/mainwidget.cpp
+    src/mainwidget/proposallistview.cpp
+    src/mainwidget/inputline.cpp
+    src/settingswidget/grabkeybutton.cpp
+    src/settingswidget/settingsbutton.h
+    src/settingswidget/settingswidget.cpp
     src/common/query.cpp
     src/common/extensioninterface.h
 )
@@ -63,8 +65,8 @@ set(LIBS
 #)
 
 qt5_wrap_ui(UIS
-    src/ui/settingsdialog.ui
-    src/ui/mainwidget.ui
+    src/settingswidget/settingswidget.ui
+    src/mainwidget/mainwidget.ui
 #	src/util/search/searchwidget.ui
 #	src/services/appindex/appindexwidget.ui
 #	src/services/bookmarkindex/bookmarkindexwidget.ui
@@ -81,7 +83,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     # BUILD
     #find_library(muparser REQUIRED)
     find_package(Qt5X11Extras REQUIRED)
-    set(SRCS ${SRCS} src/globalhotkey_x11.cpp)
+    set(SRCS ${SRCS} src/hotkey/globalhotkey_x11.cpp)
     add_executable(${PROJECT_NAME} ${SRCS} ${UIS} ${DATA} ${RSRC})
     target_link_libraries(${PROJECT_NAME} ${LIBS})
 
