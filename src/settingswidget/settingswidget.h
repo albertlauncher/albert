@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include "ui_settingsdialog.h"
+#include "ui_settingswidget.h"
 
 class SettingsWidget final : public QWidget
 {
