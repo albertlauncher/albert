@@ -51,10 +51,6 @@ set(SRCS
 
 set(LIBS
     ${Qt5Widgets_LIBRARIES}
-    ${Qt5X11Extras_LIBRARIES}
-    Qt5::X11Extras
-    #muparser
-    X11
 )
 
 #set(data
@@ -79,39 +75,28 @@ qt5_add_resources(RSRC
     src/resources.qrc
 )
 
+
+# Do platform specific stuff
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    # BUILD
-    #find_library(muparser REQUIRED)
-    find_package(Qt5X11Extras REQUIRED)
+    find_package(Qt5X11Extras 5.1 REQUIRED)
     set(SRCS ${SRCS} src/hotkey/globalhotkey_x11.cpp)
-    add_executable(${PROJECT_NAME} ${SRCS} ${UIS} ${DATA} ${RSRC})
-    target_link_libraries(${PROJECT_NAME} ${LIBS})
-
-    # INSTALL
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
-    install(DIRECTORY src/resources/themes DESTINATION share/${PROJECT_NAME} COMPONENT config)
+    set(LIBS ${LIBS} ${Qt5X11Extras_LIBRARIES} X11)
     install(FILES src/resources/albert.desktop DESTINATION share/applications COMPONENT desktop)
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    add_library(muparser STATIC IMPORTED)
-    set_property(TARGET muparser PROPERTY
-        IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/muparser/lib/libmuparser.a")
-
-    # Add platformspecific stuff
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(SRCS ${SRCS} src/util/hotkey/globalhotkey_win.cpp)
-
-    #Use unicode
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")
-
-    # Define targets and linked libs
-    add_executable(${PROJECT_NAME} ${SRCS} ${UIS} ${DATA} ${RSRC})
-    target_link_libraries(${PROJECT_NAME} Qt5::Widgets muparser)
-
-    # Define make install target
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
+
+## Define targets and linked libraries
+add_executable(${PROJECT_NAME} ${SRCS} ${UIS} ${DATA} ${RSRC})
+target_link_libraries(${PROJECT_NAME} ${LIBS})
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+install(DIRECTORY src/resources/themes DESTINATION share/${PROJECT_NAME} COMPONENT config)
+# TODO PLUGINS?
+
+
+# Build plugins
 add_subdirectory(plugins/chromebookmarks)
 add_subdirectory(plugins/applauncher)
 add_subdirectory(plugins/websearch)
