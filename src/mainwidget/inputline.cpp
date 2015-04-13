@@ -94,8 +94,10 @@ void InputLine::keyPressEvent(QKeyEvent *e)
         return;
     case Qt::Key_Enter:
     case Qt::Key_Return:
-        _lines.remove(text()); // Make entries uniq
-        _lines.push_back(text()); // Remember this entry
+        if (!text().isEmpty()){
+            _lines.remove(text()); // Make entries uniq
+            _lines.push_back(text()); // Remember this entry
+        }
         break;
     }
     e->ignore();
