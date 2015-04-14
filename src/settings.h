@@ -43,5 +43,7 @@ public:
 	~Settings(){}
 
 private:
-	Settings() : QSettings(QSettings::UserScope, "albert", "albert") {}
+    Settings() : QSettings(QSettings::UserScope, "albert", "albert") {
+        setIniCodec("UTF-8");
+    }
 };
