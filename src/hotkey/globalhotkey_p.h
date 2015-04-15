@@ -26,12 +26,15 @@ class GlobalHotkey::GlobalHotkeyPrivate final: public QObject, public QAbstractN
 
 public:
 	GlobalHotkeyPrivate(QObject* parent = 0);
+    ~GlobalHotkeyPrivate();
 
-	bool registerNativeHotkey(const int hk);
-    void unregisterNativeHotkey(const int hk);
+    bool registerNativeHotkey(quint32 hk);
+    void unregisterNativeHotkey(quint32 hk);
 
 private:
     bool nativeEventFilter(const QByteArray&, void*, long*) override;
+    static QSet<quint32> nativeKeycodes(quint32 QtKey);
+    static quint32 nativeModifiers(quint32 QtKbdMods);
 
 signals:
 	 void hotKeyPressed();

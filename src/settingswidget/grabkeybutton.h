@@ -29,6 +29,7 @@ public:
 
 private:
     bool _waitingForHotkey;
+    QString _oldText;
 
     void grabAll();
     void releaseAll();

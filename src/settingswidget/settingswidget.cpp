@@ -36,7 +36,6 @@ SettingsWidget::SettingsWidget(QWidget * parent, Qt::WindowFlags f)
 	ui.setupUi(this);
     setWindowFlags(Qt::Window|Qt::WindowCloseButtonHint);
     setAttribute(Qt::WA_DeleteOnClose);
-    new QShortcut(Qt::Key_Escape, this, SLOT(close()));
 
 
     /*
@@ -261,19 +260,13 @@ void SettingsWidget::updatePluginInformations()
 /****************************************************************************///
 void SettingsWidget::changeHotkey(int newhk)
 {
-    int oldhk = *gHotkeyManager->hotkeys().begin(); //OMG
-
-    // Cancel
-    if (newhk == Qt::Key_Escape){
-        ui.grabKeyButton_hotkey->setText(QKeySequence(oldhk).toString());
-        gHotkeyManager->enable();
-        return;
-    }
+    int oldhk = *gHotkeyManager->hotkeys().begin(); //TODO Make cool sharesdpointer design
 
     // Try to set the hotkey
     if (gHotkeyManager->registerHotkey(newhk)) {
-        ui.grabKeyButton_hotkey->setText(QKeySequence(newhk).toString());
-        gSettings->setValue(CFG_HOTKEY, QKeySequence(newhk).toString());
+        QString hkText(QKeySequence((newhk&~Qt::GroupSwitchModifier)).toString());//QTBUG-45568
+        ui.grabKeyButton_hotkey->setText(hkText);
+        gSettings->setValue(CFG_HOTKEY, hkText);
         gHotkeyManager->unregisterHotkey(oldhk);
     }
     else
@@ -283,7 +276,6 @@ void SettingsWidget::changeHotkey(int newhk)
                     QKeySequence(newhk).toString()
                     + " could not be registered.").exec();
     }
-    gHotkeyManager->enable();
 }
 
 /****************************************************************************///
@@ -312,6 +304,14 @@ void SettingsWidget::show()
 /******************************************************************************/
 /*                            O V E R R I D E S                               */
 /******************************************************************************/
+
+/** ***************************************************************************/
+void SettingsWidget::keyPressEvent(QKeyEvent *event)
+{
+    if (event->modifiers() == Qt::NoModifier && event->key() == Qt::Key_Escape ) {
+        close();
+    }
+}
 
 /** ***************************************************************************/
 void SettingsWidget::closeEvent(QCloseEvent *event)

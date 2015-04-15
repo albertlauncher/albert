@@ -29,6 +29,7 @@ public:
     Ui::SettingsDialog ui;
 
 private:
+    void keyPressEvent(QKeyEvent * event) override;
     void closeEvent(QCloseEvent * event) override;
     void updatePluginList();
     void updatePluginInformations();

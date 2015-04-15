@@ -20,251 +20,232 @@
 #include "X11/XKBlib.h"
 #include "xcb/xcb.h"
 #include <QtX11Extras/QX11Info>
+#include <QMap>
 #include <QSet>
+#include <QKeySequence>
 #include <QAbstractEventDispatcher>
 
-struct Masks {
-    unsigned int alt;
-    unsigned int meta;
-    unsigned int super;
-    unsigned int hyper;
-    unsigned int numlock;
-};
+namespace
+{
+    static bool failed;
+    QSet<QPair<unsigned int,int>> grabbedKeys;
 
-struct Qt_XK_Keygroup {
-    char num;
-    int sym[3];
-};
+    static struct Masks {
+        unsigned int alt;
+        unsigned int meta;
+        unsigned int numlock;
+        unsigned int super;
+        unsigned int hyper;
+        unsigned int iso_level3_shift;
+    } masks;
 
-struct Qt_XK_Keymap {
-    int key;
-    Qt_XK_Keygroup xk;
-};
+    // http://cep.xray.aps.anl.gov/software/qt4-x11-4.2.2-browser/dc/d02/qkeymapper__x11_8cpp-source.html
+    static QMap<quint32, QSet<quint32>> QtToXSymsMap =
+    {
+        { Qt::Key_Escape,       { XK_Escape }}, // misc keys
+        { Qt::Key_Tab,          { XK_Tab }},
+        //{ Qt::Key_Backtab,  { XK_}},
+        { Qt::Key_Backspace,    { XK_BackSpace }},
+        { Qt::Key_Return,       { XK_Return }},
+        { Qt::Key_Enter,        { XK_KP_Enter }},
+        { Qt::Key_Insert,       { XK_Insert, }},
+        { Qt::Key_Delete,       { XK_Delete }},
+        { Qt::Key_Pause,        { XK_Pause }},
+        { Qt::Key_Print,        { XK_Print }},
+        { Qt::Key_SysReq,       { XK_Sys_Req}},
+        { Qt::Key_Clear,        { XK_Clear}},
+        { Qt::Key_Home,         { XK_Home}},// cursor movement
+        { Qt::Key_End,          { XK_End }},
+        { Qt::Key_Left,         { XK_Left }},
+        { Qt::Key_Up,           { XK_Up }},
+        { Qt::Key_Right,        { XK_Right }},
+        { Qt::Key_Down,         { XK_Down }},
+        { Qt::Key_PageUp,       { XK_Prior }},
+        { Qt::Key_PageDown,     { XK_Next }},
+        { Qt::Key_Shift,        { XK_Shift_L, XK_Shift_R, XK_Shift_Lock  }},// modifiers
+        { Qt::Key_Control,      { XK_Control_L, XK_Control_R }},
+        { Qt::Key_Meta,         { XK_Meta_L, XK_Meta_R }},
+        { Qt::Key_Alt,          { XK_Alt_L, XK_Alt_R }},
+        { Qt::Key_CapsLock,     { XK_Caps_Lock }},
+        { Qt::Key_NumLock,      { XK_Num_Lock }},
+        { Qt::Key_ScrollLock,   { XK_Scroll_Lock }},
+        { Qt::Key_F1,           { XK_F1 }},          // function keys
+        { Qt::Key_F2,           { XK_F2 }},
+        { Qt::Key_F3,           { XK_F3 }},
+        { Qt::Key_F4,           { XK_F4 }},
+        { Qt::Key_F5,           { XK_F5 }},
+        { Qt::Key_F6,           { XK_F6 }},
+        { Qt::Key_F7,           { XK_F7 }},
+        { Qt::Key_F8,           { XK_F8 }},
+        { Qt::Key_F9,           { XK_F9 }},
+        { Qt::Key_F10,          { XK_F10 }},
+        { Qt::Key_F11,          { XK_F11 }},
+        { Qt::Key_F12,          { XK_F12 }},
+        { Qt::Key_F13,          { XK_F13 }},
+        { Qt::Key_F14,          { XK_F14 }},
+        { Qt::Key_F15,          { XK_F15 }},
+        { Qt::Key_F16,          { XK_F16 }},
+        { Qt::Key_F17,          { XK_F17 }},
+        { Qt::Key_F18,          { XK_F18 }},
+        { Qt::Key_F19,          { XK_F19 }},
+        { Qt::Key_F20,          { XK_F20 }},
+        { Qt::Key_F21,          { XK_F21 }},
+        { Qt::Key_F22,          { XK_F22 }},
+        { Qt::Key_F23,          { XK_F23 }},
+        { Qt::Key_F24,          { XK_F24 }},
+        { Qt::Key_F25,          { XK_F25 }},  // F25 .. F35 only on X11
+        { Qt::Key_F26,          { XK_F26 }},
+        { Qt::Key_F27,          { XK_F27 }},
+        { Qt::Key_F28,          { XK_F28 }},
+        { Qt::Key_F29,          { XK_F29 }},
+        { Qt::Key_F30,          { XK_F30 }},
+        { Qt::Key_F31,          { XK_F31 }},
+        { Qt::Key_F32,          { XK_F32 }},
+        { Qt::Key_F33,          { XK_F33 }},
+        { Qt::Key_F34,          { XK_F34 }},
+        { Qt::Key_F35,          { XK_F35 }},
+        { Qt::Key_Super_L,      { XK_Super_L }},      // extra keys
+        { Qt::Key_Super_R,      { XK_Super_R }},
+        { Qt::Key_Menu,         { XK_Menu }},
+        { Qt::Key_Hyper_L,      { XK_Hyper_L }},
+        { Qt::Key_Hyper_R,      { XK_Hyper_R }},
+        { Qt::Key_Help,         { XK_Help }},
+//        { Qt::Key_Direction_L,  { XK_}},
+//        { Qt::Key_Direction_R,  { XK_}}
+        /* ascii 0x20 to 0xff */
+    };
 
-static Qt_XK_Keymap Qt_XKSym_table[] = {
-    { Qt::Key_Escape,      {1, { XK_Escape }}},
-    { Qt::Key_F1,          {1, { XK_F1 }}},
-    { Qt::Key_F2,          {1, { XK_F2 }}},
-    { Qt::Key_F3,          {1, { XK_F3 }}},
-    { Qt::Key_F4,          {1, { XK_F4 }}},
-    { Qt::Key_F5,          {1, { XK_F5 }}},
-    { Qt::Key_F6,          {1, { XK_F6 }}},
-    { Qt::Key_F7,          {1, { XK_F7 }}},
-    { Qt::Key_F8,          {1, { XK_F8 }}},
-    { Qt::Key_F9,          {1, { XK_F9 }}},
-    { Qt::Key_F10,         {1, { XK_F10 }}},
-    { Qt::Key_F11,         {1, { XK_F11 }}},
-    { Qt::Key_F12,         {1, { XK_F12 }}},
-    { Qt::Key_Pause,       {1, { XK_Pause }}},
-    { Qt::Key_ScrollLock,  {1, { XK_Scroll_Lock }}},
-    { Qt::Key_Print,       {1, { XK_Print }}},
-    { Qt::Key_Insert,      {1, { XK_Insert, }}},
-    { Qt::Key_Delete,      {1, { XK_Delete }}},
-    { Qt::Key_Home,        {1, { XK_Home}}},
-    { Qt::Key_End,         {1, { XK_End }}},
-    { Qt::Key_PageUp,      {1, { XK_Prior }}},
-    { Qt::Key_PageDown,    {1, { XK_Next }}},
-    { Qt::Key_Left,        {1, { XK_Left }}},
-    { Qt::Key_Up,          {1, { XK_Up }}},
-    { Qt::Key_Right,       {1, { XK_Right }}},
-    { Qt::Key_Down,        {1, { XK_Down }}},
-    { Qt::Key_AsciiCircum, {1, { XK_dead_circumflex }}},
-    { Qt::Key_Tab,         {1, { XK_Tab }}},
-    { Qt::Key_CapsLock,    {1, { XK_Caps_Lock }}},
-    { Qt::Key_Shift,       {3, { XK_Shift_L, XK_Shift_R, XK_Shift_Lock  }}},
-    { Qt::Key_Control,     {2, { XK_Control_L, XK_Control_R }}},
-    { Qt::Key_Meta,        {2, { XK_Meta_L, XK_Meta_R }}},
-    { Qt::Key_Alt,         {2, { XK_Alt_L, XK_Alt_R }}},
-    { Qt::Key_Menu,        {1, { XK_Menu }}},
-    { Qt::Key_Space,       {1, { XK_space }}},
-    { Qt::Key_Return,      {1, { XK_Return }}},
-    { Qt::Key_Asterisk,    {1, { XK_asterisk }}},
-    { Qt::Key_Backspace,   {1, { XK_BackSpace }}},
-    { Qt::Key_Enter,       {1, { XK_KP_Enter }}},
-    { Qt::Key_NumLock,     {1, { XK_Num_Lock }}},
-    { Qt::Key_Comma,       {1, { XK_comma }}},
-    { Qt::Key_Period,      {1, { XK_period }}},
-    { Qt::Key_Minus,       {1, { XK_minus }}},
-    { Qt::Key_Plus,        {1, { XK_plus }}},
-    { Qt::Key_unknown,     {0, { 0 }}},
-};
-static bool failed;
-static Masks masks;
-QSet<QPair<unsigned int,int>> grabbedKeys;
-
-
-/****************************************************************************///
-static int XGrabErrorHandler(Display *, XErrorEvent *){
-    failed = true;
-    return 0;
-}
-
-/****************************************************************************///
-static void initializeMasks(){
-    // open Xlib stuff
-    Display* dpy = QX11Info::display();
-    if (dpy == NULL) {
-        fprintf(stderr, "Error, unable to open X display: %s\n", XDisplayName(NULL));
-        exit(EXIT_FAILURE);
+    /** ***********************************************************************/
+    static int XGrabErrorHandler(Display *, XErrorEvent *){
+        failed = true;
+        return 0;
     }
 
-    // GET CORRECT MODIFIERS
-    XModifierKeymap* map = XGetModifierMapping(dpy);
-    if (map) {
-        int min_keycode, max_keycode, keysyms_per_keycode = 1;
-        XDisplayKeycodes (dpy, &min_keycode, &max_keycode);
-        XFree(XGetKeyboardMapping (dpy, (KeyCode)min_keycode, (max_keycode - min_keycode + 1), &keysyms_per_keycode));
+    /** ***********************************************************************/
+    static void initialize()
+    {
+        Display* dpy = QX11Info::display();
+//        xcb_connection_t* conn = QX11Info::connection();
+//        xcb_generic_error_t **e = nullptr ;
 
-        int i, maskIndex = 0, mapIndex = 0;
-        for (maskIndex = 0; maskIndex < 8; maskIndex++) {
-            for (i = 0; i < map->max_keypermod; i++) {
-                if (map->modifiermap[mapIndex]) {
-                    KeySym sym;
-                    int symIndex = 0;
-                    do {
-                        sym = XkbKeycodeToKeysym(dpy, map->modifiermap[mapIndex], 0, symIndex);
-                        symIndex++;
-                    } while ( sym == NoSymbol && symIndex < keysyms_per_keycode);
-                    if (masks.alt == 0 && (sym == XK_Alt_L || sym == XK_Alt_R)) {
-                        masks.alt = 1 << maskIndex;
-                    }
-                    if (masks.meta == 0 && (sym == XK_Meta_L || sym == XK_Meta_R)) {
-                        masks.meta = 1 << maskIndex;
-                    }
-                    if (masks.super == 0 && (sym == XK_Super_L || sym == XK_Super_R)) {
-                        masks.super = 1 << maskIndex;
-                    }
-                    if (masks.hyper == 0 && (sym == XK_Hyper_L || sym == XK_Hyper_R)) {
-                        masks.hyper = 1 << maskIndex;
-                    }
-                    if (masks.numlock == 0 && (sym == XK_Num_Lock)) {
-                        masks.numlock = 1 << maskIndex;
+        XModifierKeymap* map = XGetModifierMapping(dpy); // Contains the keys being used as modifiers.
+        // TODO
+//        xcb_get_modifier_mapping_cookie_t mmc = xcb_get_modifier_mapping(conn);
+//        xcb_get_modifier_mapping_reply_t *mmr = xcb_get_modifier_mapping_reply (conn, mmc, e);
+
+        if (map) {
+            /* The XDisplayKeycodes() function returns the min-keycodes and
+            max-keycodes supported by the specified display. The minimum number
+            of KeyCodes returned is never less than 8, and the maximum number
+            of KeyCodes returned is never greater than 255. Not all KeyCodes in
+            this range are required to have corresponding keys.*/
+            int min_keycode, max_keycode;
+            XDisplayKeycodes (dpy, &min_keycode, &max_keycode);
+//          min_keycode = xcb_get_setup(QX11Info::connection())->min_keycode;
+//          max_keycode = xcb_get_setup(QX11Info::connection())->max_keycode;
+
+            /* The XGetKeyboardMapping() function returns the symbols for the
+            specified number of KeyCodes starting with first_keycode.
+            KeySym number N, counting from zero, for KeyCode K has the following
+            index in the list, counting from zero:
+                    (K - first_code) * keysyms_per_code_return + N
+            A special KeySym value of NoSymbol is used to fill in unused
+            elements for individual KeyCodes. To free the storage returned by
+            XGetKeyboardMapping(), use XFree(). */
+            int keysyms_per_keycode;
+            XFree(XGetKeyboardMapping (dpy,
+                                       (KeyCode)min_keycode,
+                                       (max_keycode- min_keycode + 1),
+                                       &keysyms_per_keycode));
+//            uint8_t keysyms_per_keycode;
+//            xcb_get_keyboard_mapping_cookie_t kmc =
+//            xcb_get_keyboard_mapping_unchecked(X11Info::connection(),
+//                                               (xcb_keycode_t)min_keycode,
+//                                               (max_keycode- min_keycode + 1));
+//            xcb_get_keyboard_mapping_reply_t *kmr =
+//            xcb_get_keyboard_mapping_reply (X11Info::connection(),kmc,NULL);
+//            keysyms_per_keycode = kmr->keysyms_per_keycode;
+//            free(kmr);
+
+            KeyCode kc;
+            for (int maskIndex = 0; maskIndex < 8; maskIndex++){
+                for (int i = 0; i < map->max_keypermod; i++){
+                    kc = map->modifiermap[maskIndex*map->max_keypermod+i];
+                    if (kc){
+                        KeySym sym;
+                        int symIndex = 0;
+                        do {
+                            sym = XkbKeycodeToKeysym(dpy, kc, 0, symIndex);
+                            qDebug() <<  XKeysymToString(sym);
+                            symIndex++;
+                        } while ( sym == NoSymbol && symIndex < keysyms_per_keycode);
+                        if (masks.alt == 0 && (sym == XK_Alt_L || sym == XK_Alt_R))
+                            masks.alt = 1 << maskIndex;
+                        if (masks.meta == 0 && (sym == XK_Meta_L || sym == XK_Meta_R))
+                            masks.meta = 1 << maskIndex;
+                        if (masks.super == 0 && (sym == XK_Super_L || sym == XK_Super_R))
+                            masks.super = 1 << maskIndex;
+                        if (masks.hyper == 0 && (sym == XK_Hyper_L || sym == XK_Hyper_R))
+                            masks.hyper = 1 << maskIndex;
+                        if (masks.numlock == 0 && (sym == XK_Num_Lock))
+                            masks.numlock = 1 << maskIndex;
+//                        if (masks.iso_level3_shift == 0 && (sym == XK_ISO_Level3_Shift))
+//                            masks.iso_level3_shift = 1 << maskIndex;
                     }
                 }
-                mapIndex++;
             }
-        }
+            XFreeModifiermap(map);
 
-        XFreeModifiermap(map);
-
-        // logic from qt source see gui/kernel/qkeymapper_x11.cpp
-        if (masks.meta == 0 || masks.meta == masks.alt) {
-            // no meta keys... s,meta,super,
-            masks.meta = masks.super;
+            // logic from qt source see gui/kernel/qkeymapper_x11.cpp
             if (masks.meta == 0 || masks.meta == masks.alt) {
-                // no super keys either? guess we'll use hyper then
-                masks.meta = masks.hyper;
+                // no meta keys... s,meta,super,
+                masks.meta = masks.super;
+                if (masks.meta == 0 || masks.meta == masks.alt) {
+                    // no super keys either? guess we'll use hyper then
+                    masks.meta = masks.hyper;
+                }
             }
         }
-    }
-    else {
-        // assume defaults
-        masks.super = Mod1Mask;
-        masks.meta = Mod4Mask;
-    }
-
-
-/***                    CODE BIN                     ***/
-//     TODO SCROLLOCK?
-
-//    	// Based on code from xbindkeys: grab_key.c (GPLv2)
-//    	int i;
-//    	XModifierKeymap *modmap;
-//    	KeyCode nlock, slock;
-//    	static int mask_table[8] = {
-//    		ShiftMask, LockMask, ControlMask, Mod1Mask,
-//    		Mod2Mask, Mod3Mask, Mod4Mask, Mod5Mask
-//    	};
-//    	_lmasks.numlock = 0;
-//    	_lmasks.scrolllock = 0;
-//    	_lmasks.capslock = 0;
-
-//    	nlock = XKeysymToKeycode (_display, XK_Num_Lock);
-//    	slock = XKeysymToKeycode (_display, XK_Scroll_Lock);
-
-//    	modmap = XGetModifierMapping (_display);
-
-//    	if (modmap != NULL && modmap->max_keypermod > 0) {
-//    		for (i = 0; i < 8 * modmap->max_keypermod; i++) {
-//    			if (modmap->modifiermap[i] == nlock && nlock != 0)
-//    				_lmasks.numlock = mask_table[i / modmap->max_keypermod];
-//    			else if (modmap->modifiermap[i] == slock && slock != 0)
-//    				_lmasks.scrolllock = mask_table[i / modmap->max_keypermod];
-//    		}
-//    	}
-
-//    	_lmasks.capslock = LockMask;
-
-//    	if (modmap)
-//    		XFreeModifiermap (modmap);
-}
-
-/****************************************************************************///
-static bool qtKeyToNatives(const int keyQ, QList<int> *keysX, unsigned int *modsX)
-{
-    int keyQt = keyQ & ~Qt::KeyboardModifierMask;
-    int modQt = keyQ &  Qt::KeyboardModifierMask;
-
-    /* Translate modifiers ( Qt -> X ) */
-    *modsX = 0;
-    if (modQt & Qt::META)  *modsX |= masks.meta;
-    if (modQt & Qt::SHIFT) *modsX |= ShiftMask;
-    if (modQt & Qt::CTRL)  *modsX |= ControlMask;
-    if (modQt & Qt::ALT)   *modsX |= masks.alt;
-
-
-    /* Translate key symbol ( Qt -> X ) */
-    Qt_XK_Keygroup kg;
-    kg.num = 0;
-    kg.sym[0] = 0;
-
-    keyQt &= ~Qt::KeyboardModifierMask;
-
-    bool found = false;
-    for (int n = 0; Qt_XKSym_table[n].key != Qt::Key_unknown; ++n) {
-        if (Qt_XKSym_table[n].key == keyQt) {
-            kg = Qt_XKSym_table[n].xk;
-            found = true;
-            break;
+        else {
+            // assume defaults
+            masks.alt     = Mod1Mask;
+            masks.meta    = Mod1Mask;
+            masks.numlock = Mod2Mask;
+            masks.super   = Mod4Mask;
+            masks.hyper   = Mod4Mask;
+//            masks.iso_level3_shift = Mod5Mask;
         }
     }
 
-    if (!found) {
-        // try latin1
-        if (keyQt >= 0x20 && keyQt <= 0x7f) {
-            kg.num = 1;
-            kg.sym[0] = keyQt;
-        }
+    /** ***********************************************************************/
+    QSet<quint32> offendingMasks(){
+        return QSet<unsigned int>() << 0 << LockMask << masks.numlock << (LockMask|masks.numlock);
     }
-
-    if (!kg.num)
-        return false;
-
-    for (int i=0;i<kg.num;++i)
-        keysX->append(kg.sym[i]);
-    return true;
 }
 
-QSet<unsigned int> offendingMasks(){
-    return QSet<unsigned int>() << 0 << LockMask << masks.numlock << (LockMask|masks.numlock);
-}
-
-/****************************************************************************///
-/****************************************************************************///
-/****************************************************************************///
+/** ***************************************************************************/
 GlobalHotkey::GlobalHotkeyPrivate::GlobalHotkeyPrivate(QObject *parent)
     : QObject(parent)
 {
-    initializeMasks();
+    initialize();
     QAbstractEventDispatcher::instance()->installNativeEventFilter(this);
 }
 
-/****************************************************************************///
-bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const int hk)
+/** ***************************************************************************/
+GlobalHotkey::GlobalHotkeyPrivate::~GlobalHotkeyPrivate()
 {
-    QList<int> keysX;
-    unsigned int modsX;
-    qtKeyToNatives(hk, &keysX, &modsX);
+}
+
+/** ***************************************************************************/
+bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(quint32 hotkey)
+{
+//    QList<int> keysX;
+//    unsigned int modsX;
+//    qtKeyToNatives(hk, &keysX, &modsX);
+
+    QSet<quint32> keysX = nativeKeycodes(hotkey & ~Qt::KeyboardModifierMask);
+    quint32       modsX = nativeModifiers(hotkey &  Qt::KeyboardModifierMask);
+    if (keysX.isEmpty()) return false;
 
     // Set own errorhandler
     XErrorHandler savedErrorHandler = XSetErrorHandler(XGrabErrorHandler);
@@ -274,8 +255,8 @@ bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const int hk)
     Display* dpy = QX11Info::display();
     Window root = QX11Info::appRootWindow();
     QSet<QPair<unsigned int, int>> tmpGrabbedKeys;
-    for (int n = 0; !failed && n < keysX.size(); ++n) {
-        KeyCode  XKCode = XKeysymToKeycode(QX11Info::display(), keysX[n]);
+    for (QSet<quint32>::const_iterator it = keysX.cbegin(); !failed && it != keysX.cend(); ++it) {
+        KeyCode  XKCode = XKeysymToKeycode(QX11Info::display(), *it);
         for (unsigned int mask : offendingMasks()) {
             XGrabKey(dpy, XKCode, modsX|mask, root, true, GrabModeAsync, GrabModeAsync);
             if (!failed)
@@ -296,14 +277,31 @@ bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const int hk)
     }
     grabbedKeys.unite(tmpGrabbedKeys);
     return true;
+
+    //    xcb_void_cookie_t ck = xcb_grab_key(
+    //                QX11Info::connection(),
+    //                true,
+    //                QX11Info::appRootWindow(),
+    //                uint16_t modifiers,
+    //                xcb_keycode_t key,
+    //                XCB_GRAB_MODE_ASYNC,
+    //                XCB_GRAB_MODE_ASYNC
+    //                );
+
+
+    //    xcb_generic_error_t *err = xcb_request_check (QX11Info::connection(), ck);
+    //    if (err != NULL){
+    //        qWarning("X11 error %d", err->error_code);
+    //        free (err);
+    //    }
 }
 
-/****************************************************************************///
-void GlobalHotkey::GlobalHotkeyPrivate::unregisterNativeHotkey(const int hk)
+/** ***************************************************************************/
+void GlobalHotkey::GlobalHotkeyPrivate::unregisterNativeHotkey(quint32 hotkey)
 {
-    QList<int> keysX;
-    unsigned int modsX;
-    qtKeyToNatives(hk, &keysX, &modsX);
+    QSet<quint32> keysX = nativeKeycodes(hotkey & ~Qt::KeyboardModifierMask);
+    quint32       modsX = nativeModifiers(hotkey &  Qt::KeyboardModifierMask);
+    if (keysX.isEmpty()) qCritical() << "keysX should not be empty";
 
     // Set own errorhandler
     XErrorHandler savedErrorHandler = XSetErrorHandler(XGrabErrorHandler);
@@ -311,8 +309,8 @@ void GlobalHotkey::GlobalHotkeyPrivate::unregisterNativeHotkey(const int hk)
     /* UNgrab the key combos (potenzmenge aus mods und keys) */
     Display* dpy = QX11Info::display();
     Window root = QX11Info::appRootWindow();
-    for (int n = 0; n < keysX.size(); ++n) {
-        KeyCode  XKCode = XKeysymToKeycode(QX11Info::display(), keysX[n]);
+    for (QSet<quint32>::const_iterator it = keysX.cbegin(); it != keysX.cend(); ++it) {
+        KeyCode  XKCode = XKeysymToKeycode(QX11Info::display(), *it);
         for (unsigned int mask : offendingMasks()) {
             XUngrabKey(dpy, XKCode, modsX|mask, root);
             grabbedKeys.remove({modsX|mask, XKCode});
@@ -325,7 +323,39 @@ void GlobalHotkey::GlobalHotkeyPrivate::unregisterNativeHotkey(const int hk)
     XSetErrorHandler(savedErrorHandler);
 }
 
-/****************************************************************************///
+/** ***************************************************************************/
+QSet<quint32> GlobalHotkey::GlobalHotkeyPrivate::nativeKeycodes(quint32 qtKey)
+{
+    /* Translate key symbol ( Qt -> X ) */
+    // Use latin if possible
+    if (qtKey >= 0x20 && qtKey <= 0xff)
+        return QSet<quint32>({qtKey});
+    else  // else check the handcrafted table for fancy keys
+        if (QtToXSymsMap.contains(qtKey))
+            return QtToXSymsMap.value(qtKey);
+        else{
+            qCritical() << "Could not translate key!"<< QKeySequence(qtKey).toString();
+            return QSet<quint32>();
+        }
+}
+
+/** ***************************************************************************/
+quint32 GlobalHotkey::GlobalHotkeyPrivate::nativeModifiers(quint32 qtMods)
+{
+    quint32 ret = 0;
+    //    if (qtMods & Qt::ShiftModifier)       ret |= XCB_MOD_MASK_SHIFT;
+    //    if (qtMods & Qt::ControlModifier)     ret |= XCB_MOD_MASK_CONTROL;
+    if (qtMods & Qt::ShiftModifier)       ret |= ShiftMask;
+    if (qtMods & Qt::ControlModifier)     ret |= ControlMask;
+    if (qtMods & Qt::AltModifier)         ret |= masks.alt;
+    if (qtMods & Qt::MetaModifier)        ret |= masks.super;
+//    if (qtMods & Qt::KeypadModifier)      ret |= masks.meta;
+//    if (qtMods & Qt::GroupSwitchModifier) ret |= masks.iso_level3_shift;
+    return ret;
+}
+
+
+/** ***************************************************************************/
 bool GlobalHotkey::GlobalHotkeyPrivate::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
 {
     Q_UNUSED(result);

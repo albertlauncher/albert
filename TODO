@@ -6,6 +6,8 @@ TODO:
     verbosity in debugmessages
     Spin gear until search is finished
     Theming overwirte all settings
+    Make cool sharedpointer design for hotkeys
+    Use exceptions to propagate errors of the hotkeys
     Uniform Resource Identifier (Plugin?)
     Metatypes for styleditemdelegate (qss)
     Sympy for mathematics

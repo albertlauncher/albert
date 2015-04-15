@@ -33,6 +33,7 @@ GrabKeyButton::~GrabKeyButton()
 /****************************************************************************///
 void GrabKeyButton::onClick()
 {
+    _oldText = text();
     setText("?");
     grabAll();
 }
@@ -56,24 +57,30 @@ void GrabKeyButton::releaseAll()
 /****************************************************************************///
 void GrabKeyButton::keyPressEvent(QKeyEvent *event)
 {
-    int key = event->key();
-    int mods = event->modifiers();
-
     if ( _waitingForHotkey )
     {
         // Modifier pressed -> update the label
-        if(key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta) {
-            setText(QKeySequence(mods|Qt::Key_Question).toString());
+        int key = event->key();
+        int mods = event->modifiers();
+        if(key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta ) {
+            setText(QKeySequence((mods&~Qt::GroupSwitchModifier)|Qt::Key_Question).toString());//QTBUG-45568
+            event->accept();
             return;
         }
 
+        if(key == Qt::Key_Escape) {
+            event->accept();
+            setText(_oldText);
+            releaseAll(); // Can not be before since window closes on esc
+            return;
+        }
         releaseAll();
-        setText(QKeySequence(mods|key).toString());
+
+        setText(QKeySequence((mods&~Qt::GroupSwitchModifier)|key).toString()); //QTBUG-45568
         emit keyCombinationPressed(mods|key);
         return;
     }
-
-    QWidget::keyPressEvent( event );
+//    QWidget::keyPressEvent( event );
 }
 
 /****************************************************************************///
@@ -84,7 +91,8 @@ void GrabKeyButton::keyReleaseEvent(QKeyEvent *event)
         // Modifier released -> update the label
         int key = event->key();
         if(key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta) {
-            setText(QKeySequence(event->modifiers()|Qt::Key_Question).toString());
+            setText(QKeySequence((event->modifiers()&~Qt::GroupSwitchModifier)|Qt::Key_Question).toString());//QTBUG-45568
+            event->accept();
             return;
         }
         return;
