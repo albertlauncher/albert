@@ -58,8 +58,10 @@ int main(int argc, char *argv[])
 	 */
 
     qInstallMessageHandler(myMessageOutput);
-    QApplication          a(argc, argv);
-    QCoreApplication::setApplicationName(QString::fromLocal8Bit("albert"));
+    QApplication a(argc, argv);
+    a.setApplicationName("albert");
+    a.setApplicationDisplayName("Albert");
+    a.setApplicationVersion("0.6");
 	a.setWindowIcon(QIcon(":app_icon"));
 	a.setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
@@ -126,7 +128,10 @@ int main(int argc, char *argv[])
                            QMessageBox::Close|QMessageBox::Ok);
         msgBox.exec();
         if ( msgBox.result() == QMessageBox::Ok ){
+            gHotkeyManager->disable();
             SettingsWidget *sw = new SettingsWidget(w);
+            QObject::connect(sw, &QWidget::destroyed,
+                             gHotkeyManager, &GlobalHotkey::enable);
             sw->ui.tabs->setCurrentIndex(0);
             sw->show();
         }
