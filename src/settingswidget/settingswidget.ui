@@ -50,6 +50,21 @@
             <string>General</string>
            </property>
            <layout class="QGridLayout" name="gridLayout1" columnstretch="2,1">
+            <property name="sizeConstraint">
+             <enum>QLayout::SetFixedSize</enum>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item row="2" column="0" colspan="2">
              <widget class="QCheckBox" name="checkBox_center">
               <property name="text">
