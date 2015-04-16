@@ -86,7 +86,7 @@ private:
     static constexpr const char* DATA_FILE      = "chromebookmarks.dat";
     static constexpr const char* CFG_BOOKMARKS  = "ChromeBookmarks/bookmarkfile";
     static constexpr const char* CFG_FUZZY      = "ChromeBookmarks/fuzzy";
-    static constexpr const bool  CFG_FUZZY_DEF  = true;
+    static constexpr const bool  CFG_FUZZY_DEF  = false;
     static constexpr const uint  UPDATE_TIMEOUT = 1000;
 
 signals:
