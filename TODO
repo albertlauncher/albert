@@ -17,11 +17,11 @@ TODO:
     Group searches in folder
     Use QTreeview to show actions
     Rewrite old stuff: Files (fstree)
-    Make standard item which has a 100% relevance (currently in extIF)
 
 DONE (Changelog):
 0.7
 
+    Make standard item which has a 100% relevance (currently in extIF)
     Split items from extensions
     Split stuff in extensioninterface.
     Make a folder for plugininterfaces.
