@@ -117,6 +117,7 @@ SettingsWidget::SettingsWidget(QWidget * parent, Qt::WindowFlags f)
         else
             blackSet.insert(item->text(0));
         gSettings->setValue(CFG_BLACKLIST, QVariant(QStringList::fromSet(blackSet)));
+        ui.label_restart->setVisible(true);
     });
 
     connect(ui.pushButton_pluginHelp, &QPushButton::clicked,
