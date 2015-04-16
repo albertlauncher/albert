@@ -124,6 +124,9 @@ SettingsWidget::SettingsWidget(QWidget * parent, Qt::WindowFlags f)
 
     connect(ui.pushButton_pluginConfig, &QPushButton::clicked,
             this, &SettingsWidget::openPluginConfig);
+
+    connect(ui.treeWidget_plugins, &QTreeWidget::itemDoubleClicked,
+            this, &SettingsWidget::openPluginConfig);
 }
 
 /****************************************************************************///
