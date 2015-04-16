@@ -27,8 +27,9 @@
 #include <QJsonDocument>
 #include <functional>
 
-#include "query.h"
+#include "item.h"
 #include "configwidget.h"
+#include "query.h"
 
 /** ***************************************************************************/
 void Extension::setPath(const QString &s)

@@ -15,26 +15,21 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <functional>
-#include <QString>
-#include <QList>
-#include "plugininterfaces/iteminterface.h"
+#include <QtPlugin>
+#include "abstractplugininterface.h"
 
-#define SEPARATOR "\\W+" // TODO MAKE CONFIGURABLE
+class Query;
 
-template<class C>
-class AbstractSearch
+class ExtensionInterface : public AbstractPluginInterface
 {
 public:
-    AbstractSearch() = delete;
-    explicit AbstractSearch(const C &idx, std::function<QString(SharedItemPtr)> f)
-        : _index(idx), _textFunctor(f) {}
-    virtual ~AbstractSearch(){}
+    ExtensionInterface() {}
+    virtual ~ExtensionInterface() {}
 
-    virtual void buildIndex() = 0;
-    virtual SharedItemPtrList find(const QString &req) const = 0;
-
-protected:
-    const C & _index;
-    std::function<QString(SharedItemPtr)> _textFunctor;
+    virtual void     setupSession() {}
+    virtual void     teardownSession() {}
+    virtual void     handleQuery(Query *q) = 0;
 };
+
+#define ALBERT_EXTENSION_IID        "org.manuelschneid3r.albert.extensioninterface"
+Q_DECLARE_INTERFACE(ExtensionInterface, ALBERT_EXTENSION_IID)

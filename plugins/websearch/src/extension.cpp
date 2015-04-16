@@ -24,6 +24,7 @@
 //#include <QGuiApplication>
 #include <QFile>
 
+#include "item.h"
 #include "query.h"
 #include "configwidget.h"
 

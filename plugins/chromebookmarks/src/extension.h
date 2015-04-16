@@ -16,18 +16,13 @@
 
 #pragma once
 #include <QObject>
-#include <QtPlugin>
-#include <QString>
 #include <QTimer>
 #include <QIcon>
 #include <QFileSystemWatcher>
-
 #include <memory>
-using std::shared_ptr;
-
+#include "plugininterfaces/extensioninterface.h"
 #include "fuzzysearch.h"
 #include "prefixsearch.h"
-#include "extensioninterface.h"
 
 class Bookmark;
 class ConfigWidget;
@@ -39,7 +34,7 @@ class Extension final : public QObject, public ExtensionInterface
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "../src/metadata.json")
     Q_INTERFACES(ExtensionInterface)
 
-    typedef shared_ptr<Bookmark> SharedBookmarkPtr;
+    typedef std::shared_ptr<Bookmark> SharedBookmarkPtr;
     typedef QList<SharedBookmarkPtr> SharedBookmarkPtrList;
     typedef AbstractSearch<SharedBookmarkPtrList> BookmarkSearch;
 
@@ -96,28 +91,4 @@ private:
 
 signals:
     void pathChanged(const QString&);
-};
-
-/** ***************************************************************************/
-class Bookmark final : public ItemInterface
-{
-    friend class Extension;
-
-public:
-    Bookmark() = delete;
-    explicit Bookmark(Extension *ext) : _extension(ext) {}
-    ~Bookmark(){}
-
-    void         action    (const Query &q, Qt::KeyboardModifiers mods) override { ++_usage; _extension->action(*this, q, mods); }
-    QString      actionText(const Query &q, Qt::KeyboardModifiers mods) const override { return _extension->actionText(*this, q, mods); }
-    QString      titleText (const Query &q) const override { return _extension->titleText(*this, q); }
-    QString      infoText  (const Query &q) const override { return _extension->infoText(*this, q); }
-    const QIcon  &icon     () const override { return _extension->icon(*this); }
-    uint         usage     () const override { return _usage; }
-
-private:
-    QString    _url;
-    QString    _name;
-    uint       _usage;
-    Extension* _extension; // Should never be invalid since the extension must not unload
 };

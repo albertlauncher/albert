@@ -16,25 +16,15 @@
 
 #pragma once
 #include <QObject>
-#include <QtPlugin>
-#include <QSet>
-#include <QHash>
-#include <QList>
-#include <QIcon>
 #include <QTimer>
-#include <QString>
+#include <QIcon>
 #include <QFileSystemWatcher>
 #include <QAbstractTableModel>
 #include <memory>
-using std::shared_ptr;
-#include "extensioninterface.h"
+#include "plugininterfaces/extensioninterface.h"
 
 class SearchEngine;
 class ConfigWidget;
-
-typedef shared_ptr<SearchEngine> SharedSearchPtr;
-typedef QList<SharedSearchPtr> SharedSearchPtrList;
-
 
 /** ***************************************************************************/
 class Extension final : public QAbstractTableModel, public ExtensionInterface
@@ -43,6 +33,8 @@ class Extension final : public QAbstractTableModel, public ExtensionInterface
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "../src/metadata.json")
     Q_INTERFACES(ExtensionInterface)
 
+    typedef std::shared_ptr<SearchEngine> SharedSearchPtr;
+    typedef QList<SharedSearchPtr> SharedSearchPtrList;
     enum class Section{Enabled, Name, Trigger, URL};
     static constexpr unsigned int cColumnCount = 4;
 
@@ -95,34 +87,4 @@ private:
 
     /* constexpr */
     static constexpr const char* DATA_FILE      = "websearch.dat";
-};
-
-
-/** ***************************************************************************/
-class SearchEngine final : public ItemInterface
-{
-    friend class Extension;
-
-public:
-    SearchEngine() = delete;
-    explicit SearchEngine(Extension *ext) : _extension(ext), _enabled(false), _usage(0) {}
-    ~SearchEngine(){}
-
-    void         action    (const Query &q, Qt::KeyboardModifiers mods) override { ++_usage; _extension->action(*this, q, mods); }
-    QString      actionText(const Query &q, Qt::KeyboardModifiers mods) const override { return _extension->actionText(*this, q, mods); }
-    QString      titleText (const Query &q) const override { return _extension->titleText(*this, q); }
-    QString      infoText  (const Query &q) const override { return _extension->infoText(*this, q); }
-    const QIcon  &icon     () const override { return _icon; }
-    uint         usage     () const override { return _usage; }
-
-private:
-    Extension*  _extension; // Should never be invalid since the extension must not unload
-    bool        _enabled;
-    QString     _name;
-    QString     _url;
-    QString     _trigger;
-    QString     _searchTerm;
-    QString     _iconPath;
-    QIcon       _icon;
-    uint        _usage;
 };

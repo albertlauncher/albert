@@ -27,7 +27,7 @@
 #include "mainwidget.h"
 #include "pluginhandler.h"
 #include "settings.h"
-#include "extensioninterface.h"
+#include "plugininterfaces/extensioninterface.h"
 
 /****************************************************************************///
 SettingsWidget::SettingsWidget(QWidget * parent, Qt::WindowFlags f)
@@ -138,7 +138,7 @@ void SettingsWidget::openPluginHelp()
         QString path = ui.treeWidget_plugins->currentItem()->data(0,Qt::UserRole).toString();
         for (const PluginSpec& spec : PluginHandler::instance()->getPluginSpecs()){
             if (spec.path == path) { // MUST HAPPEN
-                QWidget *w = dynamic_cast<GenericPluginInterface*>(spec.loader->instance())->widget();
+                QWidget *w = dynamic_cast<AbstractPluginInterface*>(spec.loader->instance())->widget();
                 w->setParent(this);
                 w->setWindowTitle("Plugin help");
                 w->setWindowFlags(Qt::Window|Qt::WindowCloseButtonHint);
@@ -160,7 +160,7 @@ void SettingsWidget::openPluginConfig()
         QString path = ui.treeWidget_plugins->currentItem()->data(0,Qt::UserRole).toString();
         for (const PluginSpec& spec : PluginHandler::instance()->getPluginSpecs()){
             if (spec.path == path) { // MUST HAPPEN
-                QWidget *w = dynamic_cast<GenericPluginInterface*>(spec.loader->instance())->widget();
+                QWidget *w = dynamic_cast<AbstractPluginInterface*>(spec.loader->instance())->widget();
                 w->setParent(this);
                 w->setWindowTitle("Plugin configuration");
                 w->setWindowFlags(Qt::Window|Qt::WindowCloseButtonHint);

@@ -15,34 +15,16 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QString>
-#include <QAbstractListModel>
-#include "stdint.h"
-#include "plugininterfaces/iteminterface.h"
+#include <QWidget>
 
 /** ***************************************************************************/
-class Query final : public QAbstractListModel
+class AbstractPluginInterface
 {
-	Q_OBJECT
-
 public:
-    explicit Query(QString term) : _searchTerm(term), _dynamicSort(false) {}
-	~Query(){}
+    AbstractPluginInterface() {}
+    virtual ~AbstractPluginInterface() {}
 
-    void addResults(const SharedItemPtrList &&results);
-    void addResult(SharedItemPtr &&result);
-
-    int      rowCount(const QModelIndex & = QModelIndex()) const override;
-    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
-    void     sort();
-
-    void     setDynamicSearch(bool b){ _dynamicSort = b; }
-    bool     dynamicSearch() const { return _dynamicSort; }
-
-    const QString& searchTerm() const {return _searchTerm;}
-
-private:
-    SharedItemPtrList _results;
-    QString           _searchTerm;
-    bool              _dynamicSort;
+    virtual QWidget* widget() = 0;
+    virtual void     initialize() = 0;  // TODO remove due to RAII?
+    virtual void     finalize() = 0;
 };

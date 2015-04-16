@@ -15,26 +15,25 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <functional>
 #include <QString>
-#include <QList>
-#include "plugininterfaces/iteminterface.h"
+#include <QIcon>
+#include <memory>
 
-#define SEPARATOR "\\W+" // TODO MAKE CONFIGURABLE
+class Query;
 
-template<class C>
-class AbstractSearch
+class ItemInterface
 {
 public:
-    AbstractSearch() = delete;
-    explicit AbstractSearch(const C &idx, std::function<QString(SharedItemPtr)> f)
-        : _index(idx), _textFunctor(f) {}
-    virtual ~AbstractSearch(){}
+    ItemInterface() {}
+    virtual ~ItemInterface(){}
 
-    virtual void buildIndex() = 0;
-    virtual SharedItemPtrList find(const QString &req) const = 0;
-
-protected:
-    const C & _index;
-    std::function<QString(SharedItemPtr)> _textFunctor;
+    virtual void         action    (const Query &, Qt::KeyboardModifiers) {}
+    virtual QString      actionText(const Query &, Qt::KeyboardModifiers) const = 0;
+    virtual QString      titleText (const Query &) const = 0;
+    virtual QString      infoText  (const Query &) const = 0;
+    virtual const QIcon  &icon     () const = 0;
+    virtual uint         usage     () const { return 0;}
 };
+
+typedef std::shared_ptr<ItemInterface> SharedItemPtr;
+typedef QList<SharedItemPtr> SharedItemPtrList;

@@ -14,15 +14,17 @@ TODO:
     Fuzzy again is broken
     Rewrite old stuff: Actions
     Python
-    Make plugininterfaces folder in common. Rename extensioninterface to extension.
     Group searches in folder
-    Make standard item which has a 100% relevance (currently in extIF)
     Use QTreeview to show actions
     Rewrite old stuff: Files (fstree)
+    Make standard item which has a 100% relevance (currently in extIF)
 
 DONE (Changelog):
 0.7
 
+    Split items from extensions
+    Split stuff in extensioninterface.
+    Make a folder for plugininterfaces.
     Split UI
     Let settingswidgets be ESC closable
     Rewrite old stuff: WebSearch

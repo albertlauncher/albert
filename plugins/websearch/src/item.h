@@ -15,34 +15,34 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QString>
-#include <QAbstractListModel>
-#include "stdint.h"
 #include "plugininterfaces/iteminterface.h"
+class Extension;
 
 /** ***************************************************************************/
-class Query final : public QAbstractListModel
+class SearchEngine final : public ItemInterface
 {
-	Q_OBJECT
+    friend class Extension;
 
 public:
-    explicit Query(QString term) : _searchTerm(term), _dynamicSort(false) {}
-	~Query(){}
+    SearchEngine() = delete;
+    explicit SearchEngine(Extension *ext) : _extension(ext), _enabled(false), _usage(0) {}
+    ~SearchEngine(){}
 
-    void addResults(const SharedItemPtrList &&results);
-    void addResult(SharedItemPtr &&result);
-
-    int      rowCount(const QModelIndex & = QModelIndex()) const override;
-    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
-    void     sort();
-
-    void     setDynamicSearch(bool b){ _dynamicSort = b; }
-    bool     dynamicSearch() const { return _dynamicSort; }
-
-    const QString& searchTerm() const {return _searchTerm;}
+    void         action    (const Query &q, Qt::KeyboardModifiers mods) override;
+    QString      actionText(const Query &q, Qt::KeyboardModifiers mods) const override;
+    QString      titleText (const Query &q) const override;
+    QString      infoText  (const Query &q) const override;
+    const QIcon  &icon     () const override;
+    uint         usage     () const override;
 
 private:
-    SharedItemPtrList _results;
-    QString           _searchTerm;
-    bool              _dynamicSort;
+    Extension*  _extension; // Should never be invalid since the extension must not unload
+    bool        _enabled;
+    QString     _name;
+    QString     _url;
+    QString     _trigger;
+    QString     _searchTerm;
+    QString     _iconPath;
+    QIcon       _icon;
+    uint        _usage;
 };

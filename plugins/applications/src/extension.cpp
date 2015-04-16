@@ -22,8 +22,10 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <memory>
-#include "query.h"
+
+#include "item.h"
 #include "configwidget.h"
+#include "query.h"
 
 /** ***************************************************************************/
 bool Extension::addPath(const QString & path)

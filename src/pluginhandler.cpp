@@ -20,7 +20,7 @@
 #include <QJsonArray>
 #include <QStandardPaths>
 #include "settings.h"
-#include "extensioninterface.h"
+#include "plugininterfaces/extensioninterface.h"
 
 #define PLUGINFOLDER "plugins"
 

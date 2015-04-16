@@ -23,7 +23,7 @@
 #include <QMap>
 
 #include "query.h"
-#include "extensioninterface.h"
+#include "plugininterfaces/extensioninterface.h"
 
 class ExtensionHandler final : public QObject
 {

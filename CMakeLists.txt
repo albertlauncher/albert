@@ -45,7 +45,11 @@ set(SRCS
     src/settingswidget/settingsbutton.h
     src/settingswidget/settingswidget.cpp
     src/common/query.cpp
-    src/common/extensioninterface.h
+    src/common/informationalitem.h
+    src/common/plugininterfaces/abstractplugininterface.h
+    src/common/plugininterfaces/iteminterface.h
+    src/common/plugininterfaces/extensioninterface.h
+    src/common/plugininterfaces/extensionproviderinterface.h
 )
 
 set(LIBS

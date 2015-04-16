@@ -16,20 +16,13 @@
 
 #pragma once
 #include <QObject>
-#include <QtPlugin>
 #include <QList>
-#include <QString>
-#include <QIcon>
 #include <QTimer>
-#include <QWidget>
 #include <QFileSystemWatcher>
-
 #include <memory>
-using std::shared_ptr;
-
+#include "plugininterfaces/extensioninterface.h"
 #include "fuzzysearch.h"
 #include "prefixsearch.h"
-#include "extensioninterface.h"
 
 class AppInfo;
 class ConfigWidget;
@@ -41,7 +34,7 @@ class Extension final : public QObject, public ExtensionInterface
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "../src/metadata.json")
     Q_INTERFACES(ExtensionInterface)
 
-    typedef shared_ptr<AppInfo> SharedAppPtr;
+    typedef std::shared_ptr<AppInfo> SharedAppPtr;
     typedef QList<SharedAppPtr> SharedAppPtrList;
     typedef AbstractSearch<SharedAppPtrList> AppSearch;
 
@@ -98,31 +91,4 @@ private:
     static constexpr const char* DATA_FILE      = "applications.dat";
     static constexpr const bool  CFG_FUZZY_DEF  = true;
     static constexpr const uint  UPDATE_TIMEOUT = 1000;
-};
-
-/** ***************************************************************************/
-class AppInfo final : public ItemInterface
-{
-    friend class Extension;
-
-public:
-    AppInfo() = delete;
-    explicit AppInfo(Extension *ext) : _extension(ext) {}
-    ~AppInfo(){}
-
-    void         action    (const Query &q, Qt::KeyboardModifiers mods) override { ++_usage; _extension->action(*this, q, mods); }
-    QString      actionText(const Query &q, Qt::KeyboardModifiers mods) const override { return _extension->actionText(*this, q, mods); }
-    QString      titleText (const Query &q) const override { return _extension->titleText(*this, q); }
-    QString      infoText  (const Query &q) const override { return _extension->infoText(*this, q); }
-    const QIcon  &icon     () const override { return _extension->icon(*this); }
-    uint         usage     () const override { return _usage; }
-
-private:
-    QString    _path;
-    QString    _name;
-    QString    _altName;
-    QString    _exec;
-    QIcon      _icon;
-    uint       _usage;
-    Extension* _extension; // Should never be invalid since the extension must not unload
 };
