@@ -93,9 +93,9 @@ private:
     QStringList            _toBeUpdated;
 
     /* constexpr */
-    static constexpr const char* CFG_PATHS      = "AppLauncher/paths";
-    static constexpr const char* CFG_FUZZY      = "AppLauncher/fuzzy";
-    static constexpr const char* DATA_FILE      = "applauncher.dat";
+    static constexpr const char* CFG_PATHS      = "Applications/paths";
+    static constexpr const char* CFG_FUZZY      = "Applications/fuzzy";
+    static constexpr const char* DATA_FILE      = "applications.dat";
     static constexpr const bool  CFG_FUZZY_DEF  = true;
     static constexpr const uint  UPDATE_TIMEOUT = 1000;
 };

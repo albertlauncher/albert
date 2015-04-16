@@ -253,7 +253,7 @@ QWidget *Extension::widget()
 /** ***************************************************************************/
 void Extension::initialize()
 {
-    qDebug() << "Initialize extension 'AppLauncher'";
+    qDebug() << "Initialize extension 'Applications'";
     QSettings s(QSettings::UserScope, "albert", "albert");
 
     /* Deserialze data */
@@ -310,7 +310,7 @@ void Extension::initialize()
 /** ***************************************************************************/
 void Extension::finalize()
 {
-    qDebug() << "Finalize extension 'AppLauncher'";
+    qDebug() << "Finalize extension 'Applications'";
     QSettings s(QSettings::UserScope, "albert", "albert");
 
     /* Serialze data */

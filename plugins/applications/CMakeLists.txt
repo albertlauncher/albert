@@ -1,7 +1,7 @@
 #http://doc.qt.io/qt-5/cmake-manual.html
 cmake_minimum_required(VERSION 2.8.12)
 
-project(applauncher)
+project(applications)
 
 SET(TARGET_VERSION_MAJOR 1)
 SET(TARGET_VERSION_MINOR 0)

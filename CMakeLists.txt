@@ -34,7 +34,6 @@ set(SRCS
     src/main.cpp
     src/settings.h
     src/singleton.h
-#    src/fstreenode.cpp
     src/extensionhandler.cpp
     src/pluginhandler.cpp
     src/hotkey/globalhotkey.cpp
@@ -83,9 +82,9 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(LIBS ${LIBS} ${Qt5X11Extras_LIBRARIES} X11)
     install(FILES src/resources/albert.desktop DESTINATION share/applications COMPONENT desktop)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    set(SRCS ${SRCS} src/util/hotkey/globalhotkey_win.cpp)
+    set(SRCS ${SRCS} src/hotkey/globalhotkey_win.cpp)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 
 ## Define targets and linked libraries
@@ -98,5 +97,7 @@ install(DIRECTORY src/resources/themes DESTINATION share/${PROJECT_NAME} COMPONE
 
 # Build plugins
 add_subdirectory(plugins/chromebookmarks)
-add_subdirectory(plugins/applauncher)
+add_subdirectory(plugins/applications)
 add_subdirectory(plugins/websearch)
+#add_subdirectory(plugins/files)
+#add_subdirectory(plugins/PythonExtensions)
