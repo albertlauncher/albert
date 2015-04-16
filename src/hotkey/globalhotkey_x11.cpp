@@ -176,7 +176,7 @@ namespace
                         int symIndex = 0;
                         do {
                             sym = XkbKeycodeToKeysym(dpy, kc, 0, symIndex);
-                            qDebug() <<  XKeysymToString(sym);
+//                            qDebug() <<  XKeysymToString(sym);
                             symIndex++;
                         } while ( sym == NoSymbol && symIndex < keysyms_per_keycode);
                         if (masks.alt == 0 && (sym == XK_Alt_L || sym == XK_Alt_R))
