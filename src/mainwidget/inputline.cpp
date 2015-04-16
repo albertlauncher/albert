@@ -84,7 +84,6 @@ void InputLine::prev()
 /** ***************************************************************************/
 void InputLine::keyPressEvent(QKeyEvent *e)
 {
-    qDebug() << QKeySequence(e->modifiers()|e->key()).toString();
     switch (e->key()) {
     case Qt::Key_Up:
         next();
