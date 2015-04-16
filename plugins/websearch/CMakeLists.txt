@@ -6,22 +6,24 @@ project(websearch)
 SET(TARGET_VERSION_MAJOR 1)
 SET(TARGET_VERSION_MINOR 0)
 
-## Find includes in corresponding build directories
-#set(CMAKE_INCLUDE_CURRENT_DIR ON)
-## Instruct CMake to run moc automatically when needed.
-#set(CMAKE_AUTOMOC ON)
-#set( CMAKE_VERBOSE_MAKEFILE on )
-## Set additional compiler flags
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -pedantic -Wextra")
-#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-#set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT ")
+# Find includes in corresponding build directories
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+# Instruct CMake to run moc automatically when needed.
+set(CMAKE_AUTOMOC ON)
+set( CMAKE_VERBOSE_MAKEFILE on )
+
+# Set additional compiler flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -pedantic -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT ")
 
 find_package(Qt5Widgets 5.1 REQUIRED)
 find_package(Qt5Svg REQUIRED)
 
 include_directories(
-	../../src/common
 	src/
+	../../src/common
 )
 
 set(${PROJECT_NAME}_SRCS
