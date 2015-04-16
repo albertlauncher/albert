@@ -21,8 +21,8 @@
 #include <QFileSystemWatcher>
 #include <memory>
 #include "plugininterfaces/extensioninterface.h"
-#include "fuzzysearch.h"
-#include "prefixsearch.h"
+#include "search/fuzzysearch.h"
+#include "search/prefixsearch.h"
 
 class Bookmark;
 class ConfigWidget;

@@ -14,13 +14,13 @@ TODO:
     Fuzzy again is broken
     Rewrite old stuff: Actions
     Python
-    Group searches in folder
     Use QTreeview to show actions
     Rewrite old stuff: Files (fstree)
 
 DONE (Changelog):
 0.7
 
+    Group searches in folder
     Make standard item which has a 100% relevance (currently in extIF)
     Split items from extensions
     Split stuff in extensioninterface.

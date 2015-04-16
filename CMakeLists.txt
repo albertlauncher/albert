@@ -50,6 +50,9 @@ set(SRCS
     src/common/plugininterfaces/iteminterface.h
     src/common/plugininterfaces/extensioninterface.h
     src/common/plugininterfaces/extensionproviderinterface.h
+    src/common/search/abstractsearch.h
+    src/common/search/fuzzysearch.h
+    src/common/search/prefixsearch.h
 )
 
 set(LIBS
