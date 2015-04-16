@@ -1,27 +1,28 @@
 TODO:
-    Fuzzy again is broken
-    implement help.. somehow
-    MULTITHREADING FUN
-    QUrl::toPercentEncoding in Websearch polugino
-    verbosity in debugmessages
-    Spin gear until search is finished
-    Theming overwirte all settings
-    Make cool sharedpointer design for hotkeys
-    Use exceptions to propagate errors of the hotkeys
-    Uniform Resource Identifier (Plugin?)
-    Metatypes for styleditemdelegate (qss)
-    Sympy for mathematics
-    Twitterplugin
-    Drop X!!Extras by using completeley only XCB
 
-    Make websearch order changeable
+    Spin gear until search is finished
+    Twitterplugin
+    Drop X11Extras by using completeley only XCB
+    implement help.. somehow
+    Make websearch order changeable // Depends on actions
+    Make cool sharedpointer design for hotkeys
+    Metatypes for styleditemdelegate (qss)   Make subline stylable too
+    QUrl::toPercentEncoding in Websearch polugino
+    MULTITHREADING FUN
+    Use exceptions to propagate errors of the hotkeys
+    Sympy for mathematics
+    Fuzzy again is broken
     Rewrite old stuff: Actions
-    python
+    Python
+    Make plugininterfaces folder in common. Rename extensioninterface to extension.
+    Group searches in folder
+    Make standard item which has a 100% relevance (currently in extIF)
+    Use QTreeview to show actions
     Rewrite old stuff: Files (fstree)
-    qstyleditem with qprop
 
 DONE (Changelog):
 0.7
+
     Split UI
     Let settingswidgets be ESC closable
     Rewrite old stuff: WebSearch
@@ -35,4 +36,34 @@ DONE (Changelog):
     Rewrite old stuff: Settings
     Plugin infrastucture
 
+
+EXTENSION Properties
+             hasTriggers (run exclusively)   | efficiency
+             | startOnlyIfTriggered            | heavy output or resource consumption
+             | | usageIsTracked                  | relevance
+             | | | providesFallback                | convenience
+             | | | | hasSearchIndex                  | performance
+             | | | | | fuzzySearchable                 | tolerance
+             ^ ^ ^ ^ ^ ^
+             0 1 2 3 4 5
+Files        - - + - + +
+Apps         - - + - + +
+Bookmarks    - - + - + +
+ssh          + - + - - +
+WebSearch    + - + + - -
+Calc         + - - - - - I
+Terminal     + + - ? - -
+FileFinder   + + - - - -
+Translate    + - - - - - I
+Blogs        + - + - - -
+System       - - + - - -
+Dict         + ? - - - - I
+Thunderbird  + - - - - -
+Google       + + - - - -
+Rhythmbox    - - - - - -  < kommt drauf an
+
+
+
+Constraints for developers:
+- Name plugins according the data they provide
 
