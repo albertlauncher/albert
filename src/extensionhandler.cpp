@@ -28,10 +28,8 @@ void ExtensionHandler::startQuery(const QString &term)
 
 	Query *q;
     if (_recentQueries.contains(_lastSearchTerm)){
-        qDebug() << "Query loaded" << _lastSearchTerm;
         q = _recentQueries.value(_lastSearchTerm);
     } else {
-        qDebug() << "Query started" << _lastSearchTerm;
         q = new Query(_lastSearchTerm);
         _recentQueries.insert(_lastSearchTerm, q);
 
@@ -57,8 +55,6 @@ void ExtensionHandler::initialize()
 
     qDebug() << "Initialize extenstions.";
     for (ExtensionInterface *e : extensions){
-        if (_extensions.contains(e))
-            continue;
         _extensions.insert(e);
         e->initialize();
     }
@@ -76,7 +72,6 @@ void ExtensionHandler::finalize()
 void ExtensionHandler::setupSession(){
 	for (ExtensionInterface *e : _extensions)
 		e->setupSession();
-	qDebug() << "Session set up.";
 }
 
 /****************************************************************************///
@@ -86,5 +81,4 @@ void ExtensionHandler::teardownSession(){
 		delete q;
 	for (ExtensionInterface *e : _extensions)
 		e->teardownSession();
-	qDebug() << "Session teared down.";
 }
