@@ -16,7 +16,7 @@ options=()
 install=
 source=(https://github.com/ManuelSchneid3r/albert/archive/${pkgver}.tar.gz)
 noextract=()
-md5sums=('6bd72b03a5ff5116e535a24999f4113b')
+md5sums=('bfa4af4b105e2d3bfa0c70eaae43ffbe')
 
 build() {
   [[ -d "${srcdir}/${pkgname}-${pkgver}/build" ]]\
