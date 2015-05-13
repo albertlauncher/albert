@@ -11,10 +11,11 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
-set( CMAKE_VERBOSE_MAKEFILE on )
+set(CMAKE_VERBOSE_MAKEFILE ON)
+enable_testing()
 
 # Set additional compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -pedantic -Wextra -Wconversion -Werror")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -pedantic -Wextra -Wconversion -Werror")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT ")
 
@@ -32,25 +33,23 @@ include_directories(
 set(SRCS
     TODO
     src/main.cpp
-    src/settings.h
-    src/singleton.h
     src/extensionhandler.cpp
     src/pluginhandler.cpp
-    src/hotkey/globalhotkey.cpp
-    src/hotkey/globalhotkey_p.h
+    src/hotkey/hotkeymanager.cpp
+    src/hotkey/hotkeymanager_p.h
     src/mainwidget/mainwidget.cpp
-    src/mainwidget/proposallistview.cpp
+    src/mainwidget/proposallist.cpp
     src/mainwidget/inputline.cpp
     src/settingswidget/grabkeybutton.cpp
     src/settingswidget/settingsbutton.h
     src/settingswidget/settingswidget.cpp
+    src/common/objects.h
     src/common/query.cpp
-    src/common/informationalitem.h
-    src/common/plugininterfaces/abstractplugininterface.h
-    src/common/plugininterfaces/iteminterface.h
-    src/common/plugininterfaces/extensioninterface.h
-    src/common/plugininterfaces/extensionproviderinterface.h
-    src/common/search/abstractsearch.h
+    src/common/plugininterfaces/plugin_if.h
+    src/common/plugininterfaces/extension_if.h
+    src/common/plugininterfaces/extensionprovider_if.h
+    src/common/search/search.h
+    src/common/search/search_impl.h
     src/common/search/fuzzysearch.h
     src/common/search/prefixsearch.h
 )
@@ -85,11 +84,11 @@ qt5_add_resources(RSRC
 # Do platform specific stuff
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     find_package(Qt5X11Extras 5.1 REQUIRED)
-    set(SRCS ${SRCS} src/hotkey/globalhotkey_x11.cpp)
+    set(SRCS ${SRCS} src/hotkey/hotkeymanager_x11.cpp)
     set(LIBS ${LIBS} ${Qt5X11Extras_LIBRARIES} X11)
     install(FILES src/resources/albert.desktop DESTINATION share/applications COMPONENT desktop)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    set(SRCS ${SRCS} src/hotkey/globalhotkey_win.cpp)
+    set(SRCS ${SRCS} src/hotkey/hotkeymanager_win.cpp)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
@@ -103,8 +102,8 @@ install(DIRECTORY src/resources/themes DESTINATION share/${PROJECT_NAME} COMPONE
 
 
 # Build plugins
-add_subdirectory(plugins/chromebookmarks)
-add_subdirectory(plugins/applications)
-add_subdirectory(plugins/websearch)
-#add_subdirectory(plugins/files)
+add_subdirectory(plugins/files)
+#add_subdirectory(plugins/applications)
+#add_subdirectory(plugins/chromebookmarks)
+#add_subdirectory(plugins/websearch)
 #add_subdirectory(plugins/PythonExtensions)

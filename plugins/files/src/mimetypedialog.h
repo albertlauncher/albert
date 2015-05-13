@@ -15,33 +15,22 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
-#include <QString>
-#include <QStringList>
-#include <QPluginLoader>
-#include <QDebug>
-#include <QMap>
-#include <QIdentityProxyModel>
+#include <QDialog>
 
-#include "query.h"
-#include "plugininterfaces/extension_if.h"
+namespace Files{
+namespace Ui {
+class MimeTypeDialog;
+}
 
-class ExtensionHandler final : public QIdentityProxyModel  {
+class MimeTypeDialog : public QDialog
+{
     Q_OBJECT
 
 public:
-    ExtensionHandler();
-    ~ExtensionHandler();
-
-    void startQuery(const QString &term);
-    void setupSession();
-    void teardownSession();
-
-    void registerExtension(QObject *);
-    void unregisterExtension(QObject *);
+    explicit MimeTypeDialog(QWidget *parent = 0);
+    ~MimeTypeDialog();
 
 private:
-    QSet<ExtensionInterface*> _extensions;
-    QMap<QString, Query*> _recentQueries;
-    QString _lastSearchTerm;
+    Ui::MimeTypeDialog *ui;
 };
+}

@@ -22,7 +22,6 @@
 #include <QApplication>
 #include <QVBoxLayout>
 #include "mainwidget.h"
-#include "settings.h"
 
 /****************************************************************************///
 MainWidget::MainWidget(QWidget *parent)
@@ -68,11 +67,24 @@ MainWidget::MainWidget(QWidget *parent)
     ui.inputLine->installEventFilter(ui.proposalList);
 
     ui.proposalList->hide();
+
+    // Settings
+    QSettings s;
+    _showCentered = s.value(CFG_CENTERED, CFG_CENTERED_DEF).toBool();
+    _theme = s.value(CFG_THEME, CFG_THEME_DEF).toString();
+    if (!setTheme(_theme)){
+        qFatal("FATAL: Stylefile not found: %s", _theme.toStdString().c_str());
+        exit(EXIT_FAILURE);
+    }
 }
 
 /****************************************************************************///
 MainWidget::~MainWidget()
 {
+    // Save settings
+    QSettings s;
+    s.setValue(CFG_CENTERED, _showCentered);
+    s.setValue(CFG_THEME, _theme);
 }
 
 
@@ -83,7 +95,7 @@ void MainWidget::show()
 {
     ui.inputLine->clear();
     QWidget::show();
-    if (gSettings->value(CFG_CENTERED, CFG_CENTERED_DEF).toBool())
+    if (_showCentered)
         this->move(QApplication::desktop()->screenGeometry().center()
                    -QPoint(rect().right()/2,192 ));
     this->raise();
@@ -98,10 +110,58 @@ void MainWidget::hide()
     emit widgetHidden();
 }
 
-/****************************************************************************///
-void MainWidget::toggleVisibility()
-{
+
+
+/** ***************************************************************************/
+void MainWidget::toggleVisibility() {
     this->isVisible() ? this->hide() : this->show();
+}
+
+
+
+/** ***************************************************************************/
+void MainWidget::setShowCentered(bool b) {
+    _showCentered = b;
+}
+
+
+
+/** ***************************************************************************/
+bool MainWidget::showCenterd() const {
+    return _showCentered;
+}
+
+
+
+/** ***************************************************************************/
+const QString &MainWidget::theme() const {
+    return _theme;
+}
+
+
+
+/** ***************************************************************************/
+bool MainWidget::setTheme(const QString &theme) {
+    _theme = theme;
+    QFileInfoList themes;
+    QStringList themeDirs = QStandardPaths::locateAll(
+        QStandardPaths::DataLocation, "themes", QStandardPaths::LocateDirectory);
+    for (QDir d : themeDirs)
+        themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
+    // Find and apply the theme
+    bool success = false;
+    for (QFileInfo fi : themes){
+        if (fi.baseName() == _theme) {
+            QFile f(fi.canonicalFilePath());
+            if (f.open(QFile::ReadOnly)) {
+                qApp->setStyleSheet(f.readAll());
+                f.close();
+                success = true;
+                break;
+            }
+        }
+    }
+    return success;
 }
 
 

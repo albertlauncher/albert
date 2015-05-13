@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,28 +14,23 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef FILEINDEXBUILDER_H
-#define FILEINDEXBUILDER_H
+#pragma once
+#include <QDialog>
 
-#include <QThread>
-#include "abstractservice.h"
+namespace Files{
+namespace Ui {
+class MimeTypeChooser;
+}
 
-class FileIndex;
-class FileIndexBuilder : public QThread
+class MimeTypeChooser : public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	FileIndexBuilder() = delete;
-	explicit FileIndexBuilder(const FileIndex * ref) : _ref(ref){}
-	virtual ~FileIndexBuilder(){}
-	FileIndex const * const _ref;
+    explicit MimeTypeChooser(QWidget *parent = 0);
+    ~MimeTypeChooser();
 
-	void run();
-	QList<Service::Item*> _result;
-
-signals:
-	void fileIndexingDone();
+private:
+    Ui::MimeTypeChooser *ui;
 };
-
-#endif // FILEINDEXBUILDER_H
+}

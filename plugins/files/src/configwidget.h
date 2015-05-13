@@ -15,21 +15,30 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QtPlugin>
-#include "abstractplugininterface.h"
+#include <QWidget>
+#include <QTimer>
+#include "ui_configwidget.h"
 
-class Query;
-
-class ExtensionInterface : public AbstractPluginInterface
+namespace Files{
+class ConfigWidget final : public QWidget
 {
+    Q_OBJECT
 public:
-    ExtensionInterface() {}
-    virtual ~ExtensionInterface() {}
+    explicit ConfigWidget(QWidget *parent = 0);
+    ~ConfigWidget();
+    void setVanishingInfo(const QString&);
 
-    virtual void     setupSession() {}
-    virtual void     teardownSession() {}
-    virtual void     handleQuery(Query *q) = 0;
+    Ui::ConfigWidget ui;
+    QTimer _vanishTimer;
+
+private:
+    void onButton_PathAdd();
+    void onButton_PathRemove();
+    void onButton_RestorePaths();
+    void onButton_Advanced();
+
+signals:
+    void requestAddPath(const QString&);
+    void requestRemovePath(const QString&);
 };
-
-#define ALBERT_EXTENSION_IID        "org.manuelschneid3r.albert.extensioninterface"
-Q_DECLARE_INTERFACE(ExtensionInterface, ALBERT_EXTENSION_IID)
+}

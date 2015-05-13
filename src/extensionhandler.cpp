@@ -18,14 +18,23 @@
 #include <QDirIterator>
 #include <QDebug>
 #include <QJsonArray>
-#include "settings.h"
 #include "pluginhandler.h"
 
-/****************************************************************************///
-void ExtensionHandler::startQuery(const QString &term)
-{
-	_lastSearchTerm = term.trimmed();
+/** ***************************************************************************/
+ExtensionHandler::ExtensionHandler() {
+}
 
+
+
+/** ***************************************************************************/
+ExtensionHandler::~ExtensionHandler() {
+}
+
+
+
+/** ***************************************************************************/
+void ExtensionHandler::startQuery(const QString &term) {
+	_lastSearchTerm = term.trimmed();
 	Query *q;
     if (_recentQueries.contains(_lastSearchTerm)){
         q = _recentQueries.value(_lastSearchTerm);
@@ -44,41 +53,51 @@ void ExtensionHandler::startQuery(const QString &term)
 
         // Enable dynmic mode so that lame plugings can still add sorted
     }
-	emit currentQueryChanged(q);
+    this->setSourceModel(q);
 }
 
-/****************************************************************************///
-void ExtensionHandler::initialize()
-{
-    QList<ExtensionInterface*> extensions =
-            PluginHandler::instance()->getLoadedPlugins<ExtensionInterface*>();
 
-    qDebug() << "Initialize extenstions.";
-    for (ExtensionInterface *e : extensions){
-        _extensions.insert(e);
-        e->initialize();
+
+/** ***************************************************************************/
+void ExtensionHandler::setupSession() {
+	for (ExtensionInterface *e : _extensions)
+ 		e->setupSession();
+}
+
+
+
+/** ***************************************************************************/
+void ExtensionHandler::teardownSession() {
+	for (ExtensionInterface *e : _extensions)
+		e->teardownSession();
+    this->setSourceModel(nullptr);
+	for (Query *q : _recentQueries)
+        delete q;
+    _recentQueries.clear();
+}
+
+
+
+/** ***************************************************************************/
+void ExtensionHandler::registerExtension(QObject *o) {
+    ExtensionInterface* e = qobject_cast<ExtensionInterface*>(o);
+    if (e){
+        if(_extensions.contains(e))
+            qCritical() << "Extension registered twice!";
+        else
+            _extensions.insert(e);
     }
 }
 
-/****************************************************************************///
-void ExtensionHandler::finalize()
-{
-	qDebug() << "Finalize extenstions.";
-	for (ExtensionInterface *e : _extensions)
-		e->finalize();
-}
 
-/****************************************************************************///
-void ExtensionHandler::setupSession(){
-	for (ExtensionInterface *e : _extensions)
-		e->setupSession();
-}
 
-/****************************************************************************///
-void ExtensionHandler::teardownSession(){
-	_recentQueries.clear();
-	for (Query *q : _recentQueries)
-		delete q;
-	for (ExtensionInterface *e : _extensions)
-		e->teardownSession();
+/** ***************************************************************************/
+void ExtensionHandler::unregisterExtension(QObject *o) {
+    ExtensionInterface* e = qobject_cast<ExtensionInterface*>(o);
+    if (e){
+        if(_extensions.contains(e))
+            qCritical() << "Unregistered unregistered extension! (Duplicate unregistration?)";
+        else
+            _extensions.remove(e);
+    }
 }

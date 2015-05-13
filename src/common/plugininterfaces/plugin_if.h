@@ -18,13 +18,13 @@
 #include <QWidget>
 
 /** ***************************************************************************/
-class AbstractPluginInterface
+class PluginInterface
 {
 public:
-    AbstractPluginInterface() {}
-    virtual ~AbstractPluginInterface() {}
+    PluginInterface() {}
+    virtual ~PluginInterface() {}
 
-    virtual QWidget* widget() = 0;
-    virtual void     initialize() = 0;  // TODO remove due to RAII?
+    virtual void     initialize() = 0;
     virtual void     finalize() = 0;
+    virtual QWidget* widget() = 0;
 };

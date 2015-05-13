@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,29 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "fileindexbuilder.h"
-#include "fileindex.h"
-#include "fileitem.h"
-#include <QDebug>
-#include <QDirIterator>
+#pragma once
+#include "hotkeymanager.h"
+#include <QObject>
+#include <QSet>
+#include <QAbstractNativeEventFilter>
 
-void FileIndexBuilder::run() {
+class HotkeyManager::HotkeyManagerPrivate final: public QObject, public QAbstractNativeEventFilter
+{
+    Q_OBJECT
 
-	for(Service::Item *i : _result)
-		delete i;
-	_result.clear();
+public:
+	HotkeyManagerPrivate(QObject* parent = 0);
+    ~HotkeyManagerPrivate();
 
-	qDebug() << "[FileIndex]\tLooking in: " << _ref->paths();
+    bool registerNativeHotkey(quint32 hk);
+    void unregisterNativeHotkey(quint32 hk);
 
-	for ( const QString &p : _ref->paths()) {
-		QDirIterator it(p, QDirIterator::Subdirectories);
-		while (it.hasNext()) {
-			it.next();
-			if (it.fileInfo().isHidden() && !_ref->indexHiddenFiles())
-				continue;
-			_result.push_back(new FileIndex::Item(it.fileInfo()));
-		}
-	}
-	qDebug() << "[FileIndex]\tFound " << _result.size() << " files.";
-	emit fileIndexingDone();
-}
+private:
+    bool nativeEventFilter(const QByteArray&, void*, long*) override;
+    static QSet<quint32> nativeKeycodes(quint32 QtKey);
+    static quint32 nativeModifiers(quint32 QtKbdMods);
+
+signals:
+	 void hotKeyPressed();
+};

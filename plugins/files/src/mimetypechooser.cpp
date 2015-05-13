@@ -14,28 +14,26 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
-#include "globalhotkey.h"
-#include <QObject>
-#include <QSet>
-#include <QAbstractNativeEventFilter>
+#include "mimetypechooser.h"
+#include "ui_mimetypechooser.h"
+#include <QMimeDatabase>
 
-class GlobalHotkey::GlobalHotkeyPrivate final: public QObject, public QAbstractNativeEventFilter
+namespace Files{
+MimeTypeChooser::MimeTypeChooser(QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::MimeTypeChooser)
 {
-    Q_OBJECT
+    ui->setupUi(this);
+    for (QMimeType m : QMimeDatabase().allMimeTypes()) {
+        if (m.isValid()){
+            new QListWidgetItem(m.name(),ui->listWidget_mimeTypes);
+            ui->listWidget_mimeTypes->sortItems();
+        }
+    }
+}
 
-public:
-	GlobalHotkeyPrivate(QObject* parent = 0);
-    ~GlobalHotkeyPrivate();
-
-    bool registerNativeHotkey(quint32 hk);
-    void unregisterNativeHotkey(quint32 hk);
-
-private:
-    bool nativeEventFilter(const QByteArray&, void*, long*) override;
-    static QSet<quint32> nativeKeycodes(quint32 QtKey);
-    static quint32 nativeModifiers(quint32 QtKbdMods);
-
-signals:
-	 void hotKeyPressed();
-};
+MimeTypeChooser::~MimeTypeChooser()
+{
+    delete ui;
+}
+}

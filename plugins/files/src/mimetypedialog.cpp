@@ -14,34 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
-#include <QObject>
-#include <QString>
-#include <QStringList>
-#include <QPluginLoader>
-#include <QDebug>
-#include <QMap>
-#include <QIdentityProxyModel>
+#include "mimetypedialog.h"
+#include "ui_mimetypedialog.h"
 
-#include "query.h"
-#include "plugininterfaces/extension_if.h"
+namespace Files{
+MimeTypeDialog::MimeTypeDialog(QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::MimeTypeDialog)
+{
+    ui->setupUi(this);
+}
 
-class ExtensionHandler final : public QIdentityProxyModel  {
-    Q_OBJECT
-
-public:
-    ExtensionHandler();
-    ~ExtensionHandler();
-
-    void startQuery(const QString &term);
-    void setupSession();
-    void teardownSession();
-
-    void registerExtension(QObject *);
-    void unregisterExtension(QObject *);
-
-private:
-    QSet<ExtensionInterface*> _extensions;
-    QMap<QString, Query*> _recentQueries;
-    QString _lastSearchTerm;
-};
+MimeTypeDialog::~MimeTypeDialog()
+{
+    delete ui;
+}
+}

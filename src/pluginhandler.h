@@ -19,13 +19,14 @@
 #include <QString>
 #include <QStringList>
 #include <QPluginLoader>
-#include "singleton.h"
 
-struct PluginSpec
-{
+struct PluginSpec {
     enum class Status{NotLoaded, Error, Loaded};
     QString path;
+    Status  status;
+    QPluginLoader * loader;
     QString IID;
+    QString id;
     QString name;
     QString version;
     QString platform;
@@ -33,19 +34,21 @@ struct PluginSpec
     QString copyright;
     QString description;
     QStringList dependencies;
-    Status  status;
-    QPluginLoader * loader;
 };
 
-class PluginHandler final : public Singleton<PluginHandler>
-{
-    friend class Singleton<PluginHandler>;
+class PluginHandler final : public QObject {
+    Q_OBJECT
 
 public:
-    ~PluginHandler(){}
-    const QList<PluginSpec> & getPluginSpecs(){ return _plugins; }
+    PluginHandler();
+    ~PluginHandler();
 
-    template<typename T>
+    const QList<PluginSpec*> & pluginSpecs();
+    void loadPlugins();
+    void unloadPlugins();
+    QStringList &blacklist();
+
+    template<class T>
     QList<T> getLoadedPlugins(){
         QList<T> res;
         for (PluginSpec& ps : _plugins)
@@ -55,8 +58,12 @@ public:
     }
 
 private:
-    PluginHandler() { loadPlugins(); }
-    void loadPlugins();
+    QList<PluginSpec*> _plugins;
+    QStringList _blacklist;
 
-    QList<PluginSpec> _plugins;
+    static const constexpr char* CFG_BLACKLIST = "blacklist";
+
+signals:
+    void pluginLoaded(QObject*);
+    void pluginAboutToBeUnloaded(QObject*);
 };

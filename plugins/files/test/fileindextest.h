@@ -15,26 +15,19 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <functional>
-#include <QString>
-#include <QList>
-#include "plugininterfaces/iteminterface.h"
+#include <QObject>
+#include <QtTest/QtTest>
 
-#define SEPARATOR "\\W+" // TODO MAKE CONFIGURABLE
-
-template<class C>
-class AbstractSearch
+class FileIndexTest : public QObject
 {
-public:
-    AbstractSearch() = delete;
-    explicit AbstractSearch(const C &idx, std::function<QString(SharedItemPtr)> f)
-        : _index(idx), _textFunctor(f) {}
-    virtual ~AbstractSearch(){}
+    Q_OBJECT
+private slots:
 
-    virtual void buildIndex() = 0;
-    virtual SharedItemPtrList find(const QString &req) const = 0;
-
-protected:
-    const C & _index;
-    std::function<QString(SharedItemPtr)> _textFunctor;
+    void initTestCase(){}
+    void test1(){QVERIFY(true);}
+    void test2(){QVERIFY(true);}
+    void cleanupTestCase(){}
 };
+
+QTEST_MAIN(FileIndexTest)
+//#include "files_test.moc"

@@ -16,16 +16,21 @@
 
 #pragma once
 #include <QtPlugin>
-#include "abstractplugin.h"
+#include "plugin_if.h"
+#include "query.h"
 
-class ExtensionProviderInterface : public AbstractGenericPluginInterface
+
+class ExtensionInterface : public PluginInterface
 {
 public:
-    LanguageBindingInterface() {}
-    virtual ~LanguageBindingInterface() {}
+    ExtensionInterface() {}
+    virtual ~ExtensionInterface() {}
 
-    // TODO FILL
+    virtual void setupSession() {}
+    virtual void teardownSession() {}
+    virtual void setFuzzy(bool b) = 0;
+    virtual void handleQuery(Query *q) = 0;
 };
 
-#define ALBERT_EXTENSION_PROVIDER_IID "org.manuelschneid3r.albert.languageprovider"
-Q_DECLARE_INTERFACE(LanguageBindingInterface, ALBERT_LANGUAGE_BINDING_IID)
+#define ALBERT_EXTENSION_IID "org.manuelschneid3r.albert.extension"
+Q_DECLARE_INTERFACE(ExtensionInterface, ALBERT_EXTENSION_IID)

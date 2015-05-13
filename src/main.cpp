@@ -25,8 +25,8 @@
 
 #include "mainwidget.h"
 #include "settingswidget.h"
-#include "settings.h"
-#include "globalhotkey.h"
+#include "hotkeymanager.h"
+#include "pluginhandler.h"
 #include "extensionhandler.h"
 
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message)
@@ -50,6 +50,14 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
     }
 }
 
+
+
+//SettingsWidget* openSettings(MainWidget *mainWidget, HotkeyManager *hotkeyManager, PluginHandler *pluginHandler) {
+//    return new SettingsWidget(mainWidget, hotkeyManager, pluginHandler);
+//}
+
+
+
 int main(int argc, char *argv[])
 {
 
@@ -58,19 +66,35 @@ int main(int argc, char *argv[])
 	 */
 
     qInstallMessageHandler(myMessageOutput);
-    QApplication a(argc, argv);
-    a.setApplicationName("albert");
-    a.setApplicationDisplayName("Albert");
-    a.setApplicationVersion("0.6");
-	a.setWindowIcon(QIcon(":app_icon"));
-	a.setQuitOnLastWindowClosed(false); // Dont quit after settings close
+    QApplication application(argc, argv);
+    application.setOrganizationDomain("manuelschneid3r");
+    application.setApplicationName("albert");
+    application.setApplicationDisplayName("Albert");
+    application.setApplicationVersion("0.6");
+	application.setWindowIcon(QIcon(":app_icon"));
+	application.setQuitOnLastWindowClosed(false); // Dont quit after settings close
+
+    MainWidget *mainWidget = new MainWidget;
+    HotkeyManager *hotkeyManager = new HotkeyManager;
+    PluginHandler *pluginHandler = new PluginHandler;
+    ExtensionHandler *extensionHandler = new ExtensionHandler;
+
+    std::function<SettingsWidget*()> openSettings = [=](){
+        SettingsWidget *sw = new SettingsWidget(mainWidget, hotkeyManager, pluginHandler);
+        sw->show();
+        return sw;
+    };
+
 
 
     /*
-     *  MAKE SURE THE NEEDED DIRECTORIES EXIST
+     * INITIALISATION
      */
 
     {
+        QSettings s;
+
+        // MAKE SURE THE NEEDED DIRECTORIES EXIST
         QDir data(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
         if (!data.exists())
             data.mkpath(".");
@@ -78,143 +102,71 @@ int main(int argc, char *argv[])
                   +"/"+ qApp->applicationName());
         if (!conf.exists())
             conf.mkpath(".");
-    }
 
 
-    /*
-     *  THEME
-     */
-
-    MainWidget *w = new MainWidget;
-
-    {
-        QString theme = gSettings->value(CFG_THEME, CFG_THEME_DEF).toString();
-        QFileInfoList themes;
-        QStringList themeDirs = QStandardPaths::locateAll(
-            QStandardPaths::DataLocation, "themes", QStandardPaths::LocateDirectory
-        );
-        for (QDir d : themeDirs)
-            themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
-        // Find and apply the theme
-        bool success = false;
-        for (QFileInfo fi : themes){
-            if (fi.baseName() == theme) {
-                QFile f(fi.canonicalFilePath());
-                if (f.open(QFile::ReadOnly)) {
-                    qApp->setStyleSheet(f.readAll());
-                    f.close();
-                    success = true;
-                    break;
-                }
+        //  HOTKEY  //  Albert without hotkey is useless. Force it!
+        hotkeyManager->registerHotkey(s.value("hotkey").toString());
+        if (hotkeyManager->hotkeys().empty()) {
+            QMessageBox msgBox(QMessageBox::Critical, "Error",
+                               "Hotkey is not set or invalid. Press ok to open "
+                               "the settings or press close to quit albert.",
+                               QMessageBox::Close|QMessageBox::Ok);
+            msgBox.exec();
+            if ( msgBox.result() == QMessageBox::Ok ){
+                hotkeyManager->disable();
+                SettingsWidget *sw = openSettings();
+                QObject::connect(sw, &QWidget::destroyed, hotkeyManager, &HotkeyManager::enable);
+                sw->ui.tabs->setCurrentIndex(0);
+                sw->show();
             }
-        }
-        if (!success) {
-            qFatal("FATAL: Stylefile not found: %s", theme.toStdString().c_str());
-            exit(EXIT_FAILURE);
+            else
+                exit(0);
         }
     }
 
-
-    /*
-     *  HOTKEY
-     */
-
-    // Albert without hotkey is useless. Force it!
-    gHotkeyManager->registerHotkey(gSettings->value(CFG_HOTKEY, CFG_HOTKEY_DEF).toString());
-    if (gHotkeyManager->hotkeys().empty()) {
-        QMessageBox msgBox(QMessageBox::Critical, "Error",
-                           "Hotkey is invalid, please set it. Press ok to "
-                           "open the settings or press close to quit albert.",
-                           QMessageBox::Close|QMessageBox::Ok);
-        msgBox.exec();
-        if ( msgBox.result() == QMessageBox::Ok ){
-            gHotkeyManager->disable();
-            SettingsWidget *sw = new SettingsWidget(w);
-            QObject::connect(sw, &QWidget::destroyed,
-                             gHotkeyManager, &GlobalHotkey::enable);
-            sw->ui.tabs->setCurrentIndex(0);
-            sw->show();
-        }
-        else
-            exit(0);
-    }
 
 
     /*
      *  SETUP SIGNAL FLOW
      */
 
-    ExtensionHandler      extensionHandler;
-    extensionHandler.initialize();
-
     // Show mainwidget if hotkey is pressed
-    QObject::connect(gHotkeyManager, &GlobalHotkey::hotKeyPressed,
-                     w, &MainWidget::toggleVisibility);
+    QObject::connect(hotkeyManager, &HotkeyManager::hotKeyPressed,mainWidget, &MainWidget::toggleVisibility);
 
     // Setup and teardown query sessions with the state of the widget
-    QObject::connect(w, &MainWidget::widgetShown,
-                     &extensionHandler, &ExtensionHandler::setupSession);
-    QObject::connect(w, &MainWidget::widgetHidden,
-                     &extensionHandler, &ExtensionHandler::teardownSession);
+    QObject::connect(mainWidget, &MainWidget::widgetShown, extensionHandler, &ExtensionHandler::setupSession);
+    QObject::connect(mainWidget, &MainWidget::widgetHidden, extensionHandler, &ExtensionHandler::teardownSession);
 
     // Click on _settingsButton (or shortcut) closes albert + opens settings dialog
-    QObject::connect(w->ui.inputLine->_settingsButton, &QPushButton::clicked,
-                     w, &MainWidget::hide);
-    QObject::connect(w->ui.inputLine->_settingsButton, &QPushButton::clicked,
-                     gHotkeyManager, &GlobalHotkey::disable);
-    QObject::connect(w->ui.inputLine->_settingsButton, &QPushButton::clicked,
-                     [&](){
-                            SettingsWidget *sw = new SettingsWidget(w);
-                            QObject::connect(sw, &QWidget::destroyed,
-                                             gHotkeyManager, &GlobalHotkey::enable);
-                            sw->show();
-                          });
+    QObject::connect(mainWidget->ui.inputLine->_settingsButton, &QPushButton::clicked, mainWidget, &MainWidget::hide);
+    QObject::connect(mainWidget->ui.inputLine->_settingsButton, &QPushButton::clicked, openSettings);
 
     // A change in text triggers requests
-    QObject::connect(w->ui.inputLine, &QLineEdit::textChanged,
-                     &extensionHandler, &ExtensionHandler::startQuery);
+    QObject::connect(mainWidget->ui.inputLine, &QLineEdit::textChanged, extensionHandler, &ExtensionHandler::startQuery);
 
-    // Make the list show the results of the current query
-    QObject::connect(&extensionHandler, &ExtensionHandler::currentQueryChanged,
-                     w->ui.proposalList, &ProposalListView::setModel);
+    // Publish loaded plugins to the specific interface handlers
+    QObject::connect(pluginHandler, &PluginHandler::pluginLoaded, extensionHandler, &ExtensionHandler::registerExtension);
+    QObject::connect(pluginHandler, &PluginHandler::pluginAboutToBeUnloaded, extensionHandler, &ExtensionHandler::unregisterExtension);
 
-
-    /*
-     *  DESERIALIZATION
-     */
-    QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/history.dat");
-    if (f.open(QIODevice::ReadOnly| QIODevice::Text)) {
-        QDataStream in(&f);
-        QStringList SL;
-        in >> SL;
-        w->ui.inputLine->setHistory(SL.toStdList());
-        f.close();
-    } else qWarning() << "Could not open file" << f.fileName();
 
 
     /*
-     *  E N T E R   T H E   L O O P
+     * START THE ALBERT MACHINERY
      */
 
-    int ret = a.exec();
+    mainWidget->ui.proposalList->setModel(extensionHandler); // View results
+    pluginHandler->loadPlugins(); // Load the plugins
+    int ret = application.exec();
 
-
-    /*
-     *  SERIALIZATION
-     */
-    f.setFileName(QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/history.dat");
-    if (f.open(QIODevice::ReadWrite| QIODevice::Text)){
-        QDataStream out( &f );
-        qDebug() << QStringList::fromStdList(w->ui.inputLine->getHistory());
-        out << QStringList::fromStdList(w->ui.inputLine->getHistory());
-        f.close();
-    } else qCritical() << "Could not write to " << f.fileName();
 
 
     /*
      *  CLEANUP
      */
-    extensionHandler.finalize();
-    gSettings->sync();
+
+    delete hotkeyManager;
+    delete extensionHandler;
+    delete pluginHandler;
+    delete mainWidget;
     return ret;
 }

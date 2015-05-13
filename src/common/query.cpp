@@ -18,6 +18,8 @@
 #include <QDebug>
 #include <algorithm>
 
+
+
 /** ****************************************************************************
  * @brief The UsageCompare struct
  * This funtion object compares two items. A n item is larger than others if
@@ -28,11 +30,9 @@ struct UsageCompare {
     UsageCompare() = delete;
     UsageCompare(Query *q) : _q (q){}
 
-    inline bool operator()(const SharedItemPtr &lhs, const SharedItemPtr &rhs) const {
+    inline bool operator()(const shared_ptr<AlbertObject> &lhs, const shared_ptr<AlbertObject> &rhs) const {
         if (lhs->usage() == rhs->usage())
-            return QString::compare(lhs->titleText(*_q),
-                                    rhs->titleText(*_q),
-                                    Qt::CaseInsensitive) < 0;
+            return QString::compare(lhs->name(), rhs->name(), Qt::CaseInsensitive) < 0;
         else
             return lhs->usage() > rhs->usage();
     }
@@ -41,12 +41,11 @@ private:
 };
 
 
+
 /** ***************************************************************************/
-void Query::addResults(const SharedItemPtrList &&results)
-{
-    if (_dynamicSort){
+void Query::addResults(const QList<shared_ptr<AlbertObject>> &&results) {
+    if (_dynamicSort)
         throw "Not implemented yet.";
-    }
     else {
         beginInsertRows(QModelIndex(), _results.size(), _results.size()+results.size()-1);
         _results.append(results);
@@ -54,12 +53,12 @@ void Query::addResults(const SharedItemPtrList &&results)
     }
 }
 
+
+
 /** ***************************************************************************/
-void Query::addResult(SharedItemPtr &&result)
-{
-    if (_dynamicSort){
+void Query::addResult(shared_ptr<AlbertObject> &&result) {
+    if (_dynamicSort)
         throw "Not implemented yet.";
-    }
     else {
         beginInsertRows(QModelIndex(), _results.size(), _results.size());
         _results.append(result);
@@ -67,40 +66,43 @@ void Query::addResult(SharedItemPtr &&result)
     }
 }
 
+
+
 /** ***************************************************************************/
-QVariant Query::data(const QModelIndex &index, int role) const
-{
+int Query::rowCount(const QModelIndex &parent) const {
+    return _results.size();
+}
+
+
+
+/** ***************************************************************************/
+QVariant Query::data(const QModelIndex &index, int role) const {
     // Strip out modifiers
-    Qt::KeyboardModifiers mods = static_cast<Qt::KeyboardModifiers>(role & Qt::KeyboardModifierMask);
+//    Qt::KeyboardModifiers mods = static_cast<Qt::KeyboardModifiers>(role & Qt::KeyboardModifierMask);//TODO 0.7
     role = role & ~Qt::KeyboardModifierMask;
 
 	if (!index.isValid())
 		return QVariant();
 	if (role == Qt::DisplayRole)
-        return _results[index.row()]->titleText(*this);
+        return _results[index.row()]->name();
 	if (role == Qt::ToolTipRole)
-        return _results[index.row()]->infoText(*this);
+        return _results[index.row()]->description();
     if (role == Qt::DecorationRole)
         return _results[index.row()]->icon();
-    if (role == Qt::UserRole)
-        _results[index.row()]->action(*this, mods);
-    if (role == Qt::UserRole + 1)
-        return _results[index.row()]->actionText(*this, mods);
+//    if (role == Qt::UserRole)
+//        _results[index.row()]->action(*this, mods);
+//    if (role == Qt::UserRole + 1)
+//        return _results[index.row()]->actionText(*this, mods);////TODO 0.7
     if (role == Qt::UserRole + 2)
         return _results[index.row()]->usage();
     return QVariant();
 }
 
+
+
 /** ***************************************************************************/
-void Query::sort()
-{
+void Query::sort() {
     beginResetModel();
     std::stable_sort(_results.begin(), _results.end(), UsageCompare(this));
     endResetModel();
-}
-
-/** ***************************************************************************/
-int Query::rowCount(const QModelIndex&) const
-{
-	return _results.size();
 }

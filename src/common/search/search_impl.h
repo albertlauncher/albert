@@ -15,33 +15,19 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
 #include <QString>
-#include <QStringList>
-#include <QPluginLoader>
-#include <QDebug>
-#include <QMap>
-#include <QIdentityProxyModel>
+#include <QList>
+#include "objects.h"
 
-#include "query.h"
-#include "plugininterfaces/extension_if.h"
+#define SEPARATOR_REGEX  "\\W+"
 
-class ExtensionHandler final : public QIdentityProxyModel  {
-    Q_OBJECT
-
+template <class T>
+class SearchImpl
+{
 public:
-    ExtensionHandler();
-    ~ExtensionHandler();
-
-    void startQuery(const QString &term);
-    void setupSession();
-    void teardownSession();
-
-    void registerExtension(QObject *);
-    void unregisterExtension(QObject *);
-
-private:
-    QSet<ExtensionInterface*> _extensions;
-    QMap<QString, Query*> _recentQueries;
-    QString _lastSearchTerm;
+    virtual ~SearchImpl(){}
+    virtual void add(const T &t, const QStringList &aliases) = 0;
+    virtual void remove(const T &t) = 0;
+    virtual void reset() = 0;
+    virtual QList<T> search(const QString &req) const = 0;
 };

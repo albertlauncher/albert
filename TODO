@@ -1,45 +1,89 @@
 TODO:
 
-    Spin gear until search is finished
-    Twitterplugin
-    Drop X11Extras by using completeley only XCB
-    implement help.. somehow
-    Make websearch order changeable // Depends on actions
-    Make cool sharedpointer design for hotkeys
-    Metatypes for styleditemdelegate (qss)   Make subline stylable too
-    QUrl::toPercentEncoding in Websearch polugino
-    MULTITHREADING FUN
-    Use exceptions to propagate errors of the hotkeys
-    Sympy for mathematics
-    Fuzzy again is broken
-    Rewrite old stuff: Actions
-    Python
-    Use QTreeview to show actions
-    Rewrite old stuff: Files (fstree)
+  ~/.config/user-dirs.dirs ansprecvhen
 
-DONE (Changelog):
+
+Issues independant of versioning:
+    Twitterplugin
+    Implement help.. somehow
+    Make websearch order changeable // Depends on actions
+    Metatypes for styleditemdelegate (qss)   Make subline stylable too
+    Spin gear until search is finished
+    Move filedb to ram option
+
+    Make qsett8ng standaer dponstrucable
+
+Goal:  Port to way more flexible qml
+
+    Check the QtQuick standard project
+
+Goal:  Final hotkey refinement (xcb)
+
+    Make hotkeymanager a real manager, i.e. ability for multiple indep. hotkeys
+    #Make cool sharedpointer design for hotkeys
+    Use exceptions to propagate errors of the hotkeys (feedback to user)
+    Maybe dropX11Extras by using completeley only XCB
+    make all  noexcept
+
+Goal: Pluginprofioler
+
+Goal:  Python integration
+
+    Implement some examples: Calc (Sympy), Terminal, ssh
+    Implement the Python Extension Provider
+
+Goal:  Allow plugins to provide fallbacks L={*}
+
+Goal...
+
+    MULTITHREADING
+
+GOAL
+
+    Check all usage counter + incrementers
+    Fuzzy again is broken
+    Use QTreeview to show actions
+    check if removeing math worked
+    rename all inteface files to ..._if.h
+    Print Native Shiobn ohtkey
+    Rewrite old stuff: Actions
+    [app] use fallback if no icon in destkop file
+    [Applauncher]  Rewrite module to extension
+    [WebSearch]  Rewrite module to extension
+    [WebSearch]  Fix library resource bug (unique names!)
+    [ChromeBookmarks]  Rewrite module to extension
+
+
+    [Core] Pluignblacklist in plugin area (config)
+    [Core] Make a plugin class
+    [Files]  Make the indexing fingrained by mimetype
+    [Files]  Let indexed files be watched for 100 % synchronous index
+
+________________________________________________________________________________
+DONE (Changelog; features only):
+
 0.7
 
-    Group searches in folder
-    Make standard item which has a 100% relevance (currently in extIF)
-    Split items from extensions
-    Split stuff in extensioninterface.
-    Make a folder for plugininterfaces.
-    Split UI
-    Let settingswidgets be ESC closable
-    Rewrite old stuff: WebSearch
-    Fix library resource bug (unique names!)
-    Rewrite old stuff: ChromeBookmarks
-    Elide text in plugin settings
-    Rewrite old stuff: Applauncher
-    Implement a cool messge logger
-    Implement plugin settings
-    Rewrite old stuff: Fuzzy search
-    Rewrite old stuff: Settings
-    Plugin infrastucture
 
 
+    [Core] Read settings on instantiaton (faster, cleaner, no singletons)
+    [Core] Implement actions
+    [Files]  Filter indexed files by type
+    [Files]  Let the index be build in background thread
+    [Core]  Implement incremental update of the search index
+    [Files]  Rewrite module to extension (sqlite based)
+    [Core]  Make standard item which has a 100% relevance (currently in extIF)
+    [Core]  Let settingswidgets be ESC closable
+    [Core]  Elide text in plugin settings
+    [Core]  Implement a cool messge logger
+    [Core]  Implement plugin settings
+    [Core]  Plugin infrastucture
+
+0.6
+
+________________________________________________________________________________
 EXTENSION Properties
+
              hasTriggers (run exclusively)   | efficiency
              | startOnlyIfTriggered            | heavy output or resource consumption
              | | usageIsTracked                  | relevance
@@ -48,7 +92,7 @@ EXTENSION Properties
              | | | | | fuzzySearchable                 | tolerance
              ^ ^ ^ ^ ^ ^
              0 1 2 3 4 5
-Files        - - + - + +
+Files        - - + - + +      MIME
 Apps         - - + - + +
 Bookmarks    - - + - + +
 ssh          + - + - - +
@@ -64,8 +108,84 @@ Thunderbird  + - - - - -
 Google       + + - - - -
 Rhythmbox    - - - - - -  < kommt drauf an
 
+________________________________________________________________________________
 
 
+
+
+
+
+
+
+
+________________________________________________________________________________
 Constraints for developers:
+- If it is not performance critical use python, since it will not depend on binary apis that much
 - Name plugins according the data they provide
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+pub
+    void setWatched();
+    void setTimed();
+
+    bool addDir(const QString &, bool recIndexUnindexed);
+    bool removeDir(const QString &);
+    void restoreDirs();
+
+    void update();
+
+
+
+
+priv
+    void indexDir(const QString &, bool recIndexUnindexed);
+    void cleanDir(const QString &, bool);
+
+    QHash<QString, bool> _rootPaths;
+    QSet<QString>        _indexedDirs;
+
+    SharedFilePtrList    _index;
+
+    bool                 _indexIsWatched;
+
+
+
+
+
+
+
+
+
+
+
+
+
 

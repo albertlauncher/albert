@@ -17,7 +17,7 @@
 #pragma once
 #include <QWidget>
 #include <QLineEdit>
-#include "proposallistview.h"
+#include "proposallist.h"
 #include "inputline.h"
 #include "ui_mainwidget.h"
 
@@ -33,6 +33,12 @@ public:
     void hide();
     void toggleVisibility();
 
+    bool showCenterd() const;
+    void setShowCentered(bool b = true);
+
+    const QString &theme() const;
+    bool setTheme(const QString& theme);
+
     Ui::MainWidget ui;
 
 private:
@@ -41,6 +47,12 @@ private:
     bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
 
     QString _theme;
+    bool _showCentered;
+
+    static const constexpr char* CFG_CENTERED     = "showCentered";
+    static const constexpr bool  CFG_CENTERED_DEF = true;
+    static const constexpr char* CFG_THEME        = "theme";
+    static const constexpr char* CFG_THEME_DEF    = "Standard";
 
 signals:
     void widgetShown();

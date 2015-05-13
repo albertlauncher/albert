@@ -15,25 +15,15 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QString>
-#include <QIcon>
-#include <memory>
+#include <QtPlugin>
+#include "plugin_if.h"
 
-class Query;
-
-class ItemInterface
+class ExtensionProviderInterface : public PluginInterface
 {
 public:
-    ItemInterface() {}
-    virtual ~ItemInterface(){}
-
-    virtual void         action    (const Query &, Qt::KeyboardModifiers) {}
-    virtual QString      actionText(const Query &, Qt::KeyboardModifiers) const = 0;
-    virtual QString      titleText (const Query &) const = 0;
-    virtual QString      infoText  (const Query &) const = 0;
-    virtual const QIcon  &icon     () const = 0;
-    virtual uint         usage     () const { return 0;}
+    ExtensionProviderInterface() {}
+    virtual ~ExtensionProviderInterface() {}
 };
 
-typedef std::shared_ptr<ItemInterface> SharedItemPtr;
-typedef QList<SharedItemPtr> SharedItemPtrList;
+#define ALBERT_EXTENSION_PROVIDER_IID "org.manuelschneid3r.albert.extensionprovider"
+Q_DECLARE_INTERFACE(ExtensionProviderInterface, ALBERT_EXTENSION_PROVIDER_IID)

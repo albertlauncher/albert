@@ -18,10 +18,10 @@
 #include <QResizeEvent>
 #include <QDebug>
 #include <QKeyEvent>
+#include <QStandardPaths>
 
 /** ***************************************************************************/
-InputLine::InputLine(QWidget *parent) : QLineEdit(parent)
-{
+InputLine::InputLine(QWidget *parent) : QLineEdit(parent) {
     _settingsButton = new SettingsButton(this);
     _settingsButton->setObjectName("settingsbutton");
     _settingsButton->setFocusPolicy(Qt::NoFocus);
@@ -29,32 +29,53 @@ InputLine::InputLine(QWidget *parent) : QLineEdit(parent)
 
     _currentLine = _lines.crend(); // This means historymode is not active
 
-    connect(this, &QLineEdit::textEdited,
-            this, &InputLine::resetIterator);
+    connect(this, &QLineEdit::textEdited, this, &InputLine::resetIterator);
+
+    // DESERIALIZATION
+    QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/history.dat");
+    if (f.open(QIODevice::ReadOnly| QIODevice::Text)) {
+        QDataStream in(&f);
+        QStringList SL;
+        in >> SL;
+        _lines = SL.toStdList();
+        f.close();
+    } else qWarning() << "Could not open file" << f.fileName();
 }
 
+
+
 /** ***************************************************************************/
-InputLine::~InputLine()
-{
+InputLine::~InputLine() {
+    // SERIALIZATION
+    QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/history.dat");
+    if (f.open(QIODevice::ReadWrite| QIODevice::Text)){
+        QDataStream out(&f);
+        out << QStringList::fromStdList(_lines);
+        f.close();
+    } else qCritical() << "Could not write to " << f.fileName();
+
     _settingsButton->deleteLater();
 }
 
+
+
 /** ***************************************************************************/
-void InputLine::clear()
-{
+void InputLine::clear() {
     resetIterator();
     QLineEdit::clear();
 }
 
+
+
 /** ***************************************************************************/
-void InputLine::resetIterator()
-{
+void InputLine::resetIterator() {
     _currentLine = _lines.crend();
 }
 
+
+
 /** ***************************************************************************/
-void InputLine::next()
-{
+void InputLine::next() {
     if ( _lines.empty() ) // (1) implies _lines.crbegin() !=_lines.crend()
         return;
 
@@ -66,9 +87,10 @@ void InputLine::next()
     setText(*_currentLine);
 }
 
+
+
 /** ***************************************************************************/
-void InputLine::prev()
-{
+void InputLine::prev() {
     if ( _lines.empty() ) // (1) implies _lines.crbegin() !=_lines.crend()
         return;
 
@@ -81,9 +103,9 @@ void InputLine::prev()
 }
 
 
+
 /** ***************************************************************************/
-void InputLine::keyPressEvent(QKeyEvent *e)
-{
+void InputLine::keyPressEvent(QKeyEvent *e) {
     switch (e->key()) {
     case Qt::Key_Up:
         next();
@@ -103,15 +125,17 @@ void InputLine::keyPressEvent(QKeyEvent *e)
     QLineEdit::keyPressEvent(e);
 }
 
+
+
 /** ***************************************************************************/
-void InputLine::wheelEvent(QWheelEvent *e)
-{
+void InputLine::wheelEvent(QWheelEvent *e) {
     e->angleDelta().ry()<0 ? prev() : next();
 }
 
+
+
 /** ***************************************************************************/
-void InputLine::resizeEvent(QResizeEvent *event)
-{
+void InputLine::resizeEvent(QResizeEvent *event) {
     //Let settingsbutton be in top right corner
     _settingsButton->move(event->size().width()-_settingsButton->width(),0);
 }

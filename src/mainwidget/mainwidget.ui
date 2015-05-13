@@ -60,7 +60,7 @@
           <widget class="InputLine" name="inputLine"/>
          </item>
          <item>
-          <widget class="ProposalListView" name="proposalList"/>
+          <widget class="ProposalList" name="proposalList"/>
          </item>
         </layout>
        </widget>
@@ -77,9 +77,9 @@
    <header>inputline.h</header>
   </customwidget>
   <customwidget>
-   <class>ProposalListView</class>
+   <class>ProposalList</class>
    <extends>QListView</extends>
-   <header>proposallistview.h</header>
+   <header>proposallist.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

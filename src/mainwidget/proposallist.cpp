@@ -14,21 +14,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "proposallistview.h"
-#include "math.h"
+#include "proposallist.h"
 #include <QStyledItemDelegate>
 #include <QPainter>
 #include <QDebug>
-#include "settings.h"
 
 /******************************************************************************/
 /************************  B E G I N   P R I V A T E  *************************/
 /******************************************************************************/
 /****************************************************************************///
-class ProposalListView::ItemDelegate final : public QStyledItemDelegate
+class ProposalList::ItemDelegate final : public QStyledItemDelegate
 {
 public:
     Qt::KeyboardModifiers mods;
+    bool showInfo;
+    bool showAction;
 
 	void paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const override
 	{
@@ -50,7 +50,7 @@ public:
         painter->drawPixmap(iconRect, index.data(Qt::DecorationRole + mods).value<QIcon>().pixmap(option.decorationSize));
 
 		/* Drawing text differs dependent on the mode and selection */
-        if (gSettings->value(CFG_SHOW_INFO, CFG_SHOW_INFO_DEF).toBool())
+        if (showInfo)
 		{
 			/*
 			 * fm(x) := fontmetrics of x
@@ -83,8 +83,7 @@ public:
 			painter->setFont(font);
 			text = QFontMetrics(font).elidedText(
                         index.data(
-                            ((option.state & QStyle::State_Selected)
-                             && gSettings->value(CFG_SHOW_ACTION, CFG_SHOW_ACTION_DEF).toBool())
+                            ((option.state & QStyle::State_Selected) && showAction)
                             ? Qt::UserRole+1 + mods : Qt::ToolTipRole + mods)
                         .toString(),
 						option.textElideMode,
@@ -110,23 +109,35 @@ public:
 /******************************************************************************/
 
 
-/****************************************************************************///
-ProposalListView::ProposalListView(QWidget *parent) :
-	QListView(parent)
-{
-    _itemDelegate = new ProposalListView::ItemDelegate;
+
+/** ***************************************************************************/
+ProposalList::ProposalList(QWidget *parent) : QListView(parent) {
+    QSettings s;
+    _itemDelegate = new ProposalList::ItemDelegate;
+    _itemDelegate->mods = Qt::NoModifier;
+    _itemDelegate->showInfo = s.value(CFG_SHOW_INFO, CFG_SHOW_INFO_DEF).toBool();
+    _itemDelegate->showAction = s.value(CFG_SHOW_ACTION, CFG_SHOW_ACTION_DEF).toBool();
+    _maxItems  = s.value(CFG_MAX_PROPOSALS, CFG_MAX_PROPOSALS_DEF).toUInt();
+
     setItemDelegate(_itemDelegate);
     setUniformItemSizes(true);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
 
-/****************************************************************************///
-ProposalListView::~ProposalListView()
-{
+
+
+/** ***************************************************************************/
+ProposalList::~ProposalList() {
+    QSettings s;
+    s.setValue(CFG_SHOW_INFO, _itemDelegate->showInfo);
+    s.setValue(CFG_SHOW_ACTION, _itemDelegate->showAction);
+    s.setValue(CFG_MAX_PROPOSALS, _maxItems);
 }
 
-/****************************************************************************///
-bool ProposalListView::eventFilter(QObject*, QEvent *event)
+
+
+/** ***************************************************************************/
+bool ProposalList::eventFilter(QObject*, QEvent *event)
 {
     if (model() == nullptr)
         return false;
@@ -152,7 +163,7 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
             if (key == Qt::Key_Up && (!currentIndex().isValid() || currentIndex().row()==0))
                 return false;
 
-            ProposalListView::keyPressEvent(keyEvent);
+            ProposalList::keyPressEvent(keyEvent);
             return true;
         }
 
@@ -170,6 +181,13 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
 //			// to store the request in history
             return false;
         }
+
+//        // Show actions
+//        if (key == Qt::Key_Tab) {
+//            if (currentIndex().isValid())
+//                (isExpanded(currentIndex())) ? collapse(currentIndex()) : expand(currentIndex());
+//            return true;
+//        }
     }
 
     if (event->type() == QEvent::KeyRelease)
@@ -187,20 +205,33 @@ bool ProposalListView::eventFilter(QObject*, QEvent *event)
     return false;
 }
 
-/****************************************************************************///
-QSize ProposalListView::sizeHint() const
+
+
+/** ***************************************************************************/
+void ProposalList::resizeEvent(QResizeEvent *e)
+{
+    qDebug() << e->oldSize() << e->size() << this->size();
+}
+
+
+
+/** ***************************************************************************/
+QSize ProposalList::sizeHint() const
 {
     if (model() == nullptr) return QSize();
-    int nToShow = std::min(gSettings->value(CFG_MAX_PROPOSALS, CFG_MAX_PROPOSALS_DEF).toInt(), model()->rowCount());
+    uint curr = model()->rowCount();
+    int nToShow = _maxItems<curr?_maxItems:curr;
 	return QSize(width(), nToShow*sizeHintForRow(0));
 }
 
-/****************************************************************************///
-void ProposalListView::reset()
+
+
+/** ***************************************************************************/
+void ProposalList::reset()
 {
     if (model() == nullptr) return;
 
-    // Reset the  views state
+    // Reset the views state
     QListView::reset();
 
     // Make the size of this widget be adjusted (size hint changed)
@@ -213,4 +244,46 @@ void ProposalListView::reset()
     }
     else
         hide();
+}
+
+
+
+/** ***************************************************************************/
+void ProposalList::setShowInfo(bool b) {
+    _itemDelegate->showInfo=b;
+}
+
+
+
+/** ***************************************************************************/
+void ProposalList::setShowAction(bool b) {
+    _itemDelegate->showAction=b;
+}
+
+
+
+/** ***************************************************************************/
+void ProposalList::setMaxItems(uint maxItems) {
+    _maxItems = maxItems;
+}
+
+
+
+/** ***************************************************************************/
+bool ProposalList::showInfo() const {
+    return _itemDelegate->showInfo;
+}
+
+
+
+/** ***************************************************************************/
+bool ProposalList::showAction() const {
+    return _itemDelegate->showAction;
+}
+
+
+
+/** ***************************************************************************/
+bool ProposalList::maxItems() const {
+    return _maxItems;
 }

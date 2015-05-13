@@ -14,34 +14,34 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "globalhotkey.h"
-#include "globalhotkey_p.h"
+#include "hotkeymanager.h"
+#include "hotkeymanager_p.h"
 
 #include <QKeySequence>
 
 /****************************************************************************///
-GlobalHotkey::GlobalHotkey(QObject *parent) :
+HotkeyManager::HotkeyManager(QObject *parent) :
 	QObject(parent)
 {
-	_impl = new GlobalHotkeyPrivate;
-	connect(_impl, &GlobalHotkeyPrivate::hotKeyPressed, this, &GlobalHotkey::onHotkeyPressed);
+	_impl = new HotkeyManagerPrivate;
+	connect(_impl, &HotkeyManagerPrivate::hotKeyPressed, this, &HotkeyManager::onHotkeyPressed);
 	_enabled = true;
 }
 
 /****************************************************************************///
-GlobalHotkey::~GlobalHotkey()
+HotkeyManager::~HotkeyManager()
 {
 	delete _impl;
 }
 
 /****************************************************************************///
-bool GlobalHotkey::registerHotkey(const QString &hk)
+bool HotkeyManager::registerHotkey(const QString &hk)
 {
 	return registerHotkey(QKeySequence(hk));
 }
 
 /****************************************************************************///
-bool GlobalHotkey::registerHotkey(const QKeySequence &hk)
+bool HotkeyManager::registerHotkey(const QKeySequence &hk)
 {
 	if (hk.count() != 1)
 		return false;
@@ -49,7 +49,7 @@ bool GlobalHotkey::registerHotkey(const QKeySequence &hk)
 }
 
 /****************************************************************************///
-bool GlobalHotkey::registerHotkey(const int hk)
+bool HotkeyManager::registerHotkey(const int hk)
 {
     if (_hotkeys.contains(hk))
         return true;
@@ -61,13 +61,13 @@ bool GlobalHotkey::registerHotkey(const int hk)
 }
 
 /****************************************************************************///
-bool GlobalHotkey::unregisterHotkey(const QString &hk)
+bool HotkeyManager::unregisterHotkey(const QString &hk)
 {
     return unregisterHotkey(QKeySequence(hk));
 }
 
 /****************************************************************************///
-bool GlobalHotkey::unregisterHotkey(const QKeySequence &hk)
+bool HotkeyManager::unregisterHotkey(const QKeySequence &hk)
 {
     if (hk.count() != 1)
         return false;
@@ -76,7 +76,7 @@ bool GlobalHotkey::unregisterHotkey(const QKeySequence &hk)
 }
 
 /****************************************************************************///
-void GlobalHotkey::unregisterHotkey(const int hk)
+void HotkeyManager::unregisterHotkey(const int hk)
 {
     if (!_hotkeys.contains(hk))
         return;
@@ -85,7 +85,7 @@ void GlobalHotkey::unregisterHotkey(const int hk)
 }
 
 /****************************************************************************///
-void GlobalHotkey::onHotkeyPressed()
+void HotkeyManager::onHotkeyPressed()
 {
 	if (_enabled)
 		emit hotKeyPressed();

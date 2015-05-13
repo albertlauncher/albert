@@ -16,33 +16,34 @@
 
 #pragma once
 #include <QString>
-#include <QAbstractListModel>
+#include <QAbstractItemModel>
 #include "stdint.h"
-#include "plugininterfaces/iteminterface.h"
+#include "objects.h"
+using std::shared_ptr;
 
-/** ***************************************************************************/
-class Query final : public QAbstractListModel
-{
+class Query final : public QAbstractItemModel {
 	Q_OBJECT
 
 public:
     explicit Query(QString term) : _searchTerm(term), _dynamicSort(false) {}
 	~Query(){}
 
-    void addResults(const SharedItemPtrList &&results);
-    void addResult(SharedItemPtr &&result);
-
-    int      rowCount(const QModelIndex & = QModelIndex()) const override;
-    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
-    void     sort();
-
-    void     setDynamicSearch(bool b){ _dynamicSort = b; }
-    bool     dynamicSearch() const { return _dynamicSort; }
-
+    void addResults(const QList<shared_ptr<AlbertObject>> &&results);
+    void addResult(shared_ptr<AlbertObject> &&result);
+    void setDynamicSearch(bool b){ _dynamicSort = b; }
+    bool dynamicSearch() const { return _dynamicSort; }
     const QString& searchTerm() const {return _searchTerm;}
+    void sort();
+
+    QModelIndex index(int row, int column, const QModelIndex & parent = QModelIndex()) const override;
+    QModelIndex parent(const QModelIndex & index) const override;
+    int rowCount(const QModelIndex & parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex & parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
+    bool hasChildren(const QModelIndex & parent = QModelIndex()) const override;
 
 private:
-    SharedItemPtrList _results;
-    QString           _searchTerm;
-    bool              _dynamicSort;
+    QList<shared_ptr<AlbertObject>> _results;
+    QString _searchTerm;
+    bool _dynamicSort;
 };

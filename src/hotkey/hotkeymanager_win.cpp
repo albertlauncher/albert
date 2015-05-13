@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "globalhotkey_p.h"
+#include "hotkeymanager_p.h"
 #include "windows.h"
 #include <QSet>
 #include <QAbstractEventDispatcher>
@@ -127,7 +127,7 @@ static Qt_VK_Keymap Qt_VK_table[] = { // TODO make this hold groups too e.g. MET
 /**************************************************************************/
 /**************************************************************************/
 /**************************************************************************/
-GlobalHotkey::GlobalHotkeyPrivate::GlobalHotkeyPrivate(QObject *parent)
+GlobalHotkey::HotkeyManagerPrivate::HotkeyManagerPrivate(QObject *parent)
     : QObject(parent)
 {
 
@@ -135,7 +135,7 @@ GlobalHotkey::GlobalHotkeyPrivate::GlobalHotkeyPrivate(QObject *parent)
 }
 
 /**************************************************************************/
-bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const int hk)
+bool GlobalHotkey::HotkeyManagerPrivate::registerNativeHotkey(const int hk)
 {
     int keyQt = hk & ~Qt::KeyboardModifierMask;
     int modQt = hk &  Qt::KeyboardModifierMask;
@@ -182,14 +182,14 @@ bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(const int hk)
 }
 
 /**************************************************************************/
-void GlobalHotkey::GlobalHotkeyPrivate::unregisterNativeHotkeys()
+void GlobalHotkey::HotkeyManagerPrivate::unregisterNativeHotkeys()
 {
     for ( int i : sGrabbedIds)
         UnregisterHotKey(NULL, i);
 }
 
 /**************************************************************************/
-bool GlobalHotkey::GlobalHotkeyPrivate::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
+bool GlobalHotkey::HotkeyManagerPrivate::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
 {
     if (eventType == "windows_generic_MSG") {
         MSG* msg = static_cast<MSG *>(message);

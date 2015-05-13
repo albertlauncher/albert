@@ -16,13 +16,16 @@
 
 #pragma once
 #include "ui_settingswidget.h"
+#include "hotkeymanager.h"
+#include "mainwidget.h"
+#include "pluginhandler.h"
 
 class SettingsWidget final : public QWidget
 {
     Q_OBJECT
 
 public:
-    SettingsWidget(QWidget * parent = 0, Qt::WindowFlags f = 0);
+    SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyManager, PluginHandler *pluginHandler, QWidget * parent = 0, Qt::WindowFlags f = 0);
     ~SettingsWidget();
     void show();
 
@@ -37,4 +40,9 @@ private:
     void onThemeChanged(int);
     void openPluginHelp();
     void openPluginConfig();
+    void onPluginItemChanged(QTreeWidgetItem *item, int column);
+
+    MainWidget *_mainWidget;
+    HotkeyManager *_hotkeyManager;
+    PluginHandler *_pluginHandler;
 };

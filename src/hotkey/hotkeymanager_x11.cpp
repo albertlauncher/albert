@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDebug>
-#include "globalhotkey_p.h"
+#include "hotkeymanager_p.h"
 #include "X11/Xutil.h"
 #include "X11/XKBlib.h"
 #include "xcb/xcb.h"
@@ -224,7 +224,7 @@ namespace
 }
 
 /** ***************************************************************************/
-GlobalHotkey::GlobalHotkeyPrivate::GlobalHotkeyPrivate(QObject *parent)
+HotkeyManager::HotkeyManagerPrivate::HotkeyManagerPrivate(QObject *parent)
     : QObject(parent)
 {
     initialize();
@@ -232,12 +232,12 @@ GlobalHotkey::GlobalHotkeyPrivate::GlobalHotkeyPrivate(QObject *parent)
 }
 
 /** ***************************************************************************/
-GlobalHotkey::GlobalHotkeyPrivate::~GlobalHotkeyPrivate()
+HotkeyManager::HotkeyManagerPrivate::~HotkeyManagerPrivate()
 {
 }
 
 /** ***************************************************************************/
-bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(quint32 hotkey)
+bool HotkeyManager::HotkeyManagerPrivate::registerNativeHotkey(quint32 hotkey)
 {
 //    QList<int> keysX;
 //    unsigned int modsX;
@@ -297,7 +297,7 @@ bool GlobalHotkey::GlobalHotkeyPrivate::registerNativeHotkey(quint32 hotkey)
 }
 
 /** ***************************************************************************/
-void GlobalHotkey::GlobalHotkeyPrivate::unregisterNativeHotkey(quint32 hotkey)
+void HotkeyManager::HotkeyManagerPrivate::unregisterNativeHotkey(quint32 hotkey)
 {
     QSet<quint32> keysX = nativeKeycodes(hotkey & ~Qt::KeyboardModifierMask);
     quint32       modsX = nativeModifiers(hotkey &  Qt::KeyboardModifierMask);
@@ -324,7 +324,7 @@ void GlobalHotkey::GlobalHotkeyPrivate::unregisterNativeHotkey(quint32 hotkey)
 }
 
 /** ***************************************************************************/
-QSet<quint32> GlobalHotkey::GlobalHotkeyPrivate::nativeKeycodes(quint32 qtKey)
+QSet<quint32> HotkeyManager::HotkeyManagerPrivate::nativeKeycodes(quint32 qtKey)
 {
     /* Translate key symbol ( Qt -> X ) */
     // Use latin if possible
@@ -340,7 +340,7 @@ QSet<quint32> GlobalHotkey::GlobalHotkeyPrivate::nativeKeycodes(quint32 qtKey)
 }
 
 /** ***************************************************************************/
-quint32 GlobalHotkey::GlobalHotkeyPrivate::nativeModifiers(quint32 qtMods)
+quint32 HotkeyManager::HotkeyManagerPrivate::nativeModifiers(quint32 qtMods)
 {
     quint32 ret = 0;
     //    if (qtMods & Qt::ShiftModifier)       ret |= XCB_MOD_MASK_SHIFT;
@@ -356,7 +356,7 @@ quint32 GlobalHotkey::GlobalHotkeyPrivate::nativeModifiers(quint32 qtMods)
 
 
 /** ***************************************************************************/
-bool GlobalHotkey::GlobalHotkeyPrivate::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
+bool HotkeyManager::HotkeyManagerPrivate::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
 {
     Q_UNUSED(result);
     if (eventType == "xcb_generic_event_t") {

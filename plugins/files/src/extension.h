@@ -16,32 +16,40 @@
 
 #pragma once
 #include <QObject>
-#include <QString>
-#include <QStringList>
-#include <QPluginLoader>
-#include <QDebug>
-#include <QMap>
-#include <QIdentityProxyModel>
-
-#include "query.h"
 #include "plugininterfaces/extension_if.h"
+#include "search/search.h"
+#include "fileindex.h"
 
-class ExtensionHandler final : public QIdentityProxyModel  {
+namespace Files{
+class ConfigWidget;
+/** ***************************************************************************/
+class Extension final : public QObject, public ExtensionInterface
+{
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "../src/metadata.json")
+    Q_INTERFACES(ExtensionInterface)
 
 public:
-    ExtensionHandler();
-    ~ExtensionHandler();
+    Extension();
+    ~Extension();
 
-    void startQuery(const QString &term);
-    void setupSession();
+    // ExtensionInterface
     void teardownSession();
+    void handleQuery(Query*) override;
+    void setFuzzy(bool b = true) override;
 
-    void registerExtension(QObject *);
-    void unregisterExtension(QObject *);
+    // GenericPluginInterface
+    void initialize() override;
+    void finalize() override;
+    QWidget *widget() override;
 
 private:
-    QSet<ExtensionInterface*> _extensions;
-    QMap<QString, Query*> _recentQueries;
-    QString _lastSearchTerm;
+    QPointer<ConfigWidget> _widget;
+    FileIndex _fileIndex;
+    Search<uint> _fileSearch;
+
+    /* constexpr */
+    static constexpr const char* CFG_FUZZY            = "Files/fuzzy";
+    static constexpr const bool  CFG_FUZZY_DEF        = false;
 };
+}

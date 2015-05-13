@@ -15,28 +15,47 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QListWidget>
+#include <QListView>
 #include <QEvent>
 #include <QKeyEvent>
 #include <QArrayData>
 #include <QSettings>
 
-class ProposalListView final: public QListView
+class ProposalList final: public QListView
 {
 	Q_OBJECT
 
 	class ItemDelegate;
 
 public:
-	explicit ProposalListView(QWidget *parent = 0);
-	~ProposalListView();
+	explicit ProposalList(QWidget *parent = 0);
+	~ProposalList();
 	QSize sizeHint() const override;
 	void reset() override;
 
+    void setShowInfo(bool);
+    void setShowAction(bool);
+    void setMaxItems(uint);
+
+    bool showInfo() const;
+    bool showAction() const;
+    bool maxItems() const;
+
+
+
 private:
 	bool eventFilter(QObject*, QEvent *event) override;
+    void resizeEvent(QResizeEvent* e) override;
 
     ItemDelegate *_itemDelegate;
+    uint _maxItems;
+
+    static const constexpr char* CFG_SHOW_INFO         = "showInfo";
+    static const constexpr bool  CFG_SHOW_INFO_DEF     = true;
+    static const constexpr char* CFG_SHOW_ACTION       = "showInfo";
+    static const constexpr bool  CFG_SHOW_ACTION_DEF   = true;
+    static const constexpr char* CFG_MAX_PROPOSALS     = "itemCount";
+    static const constexpr uint  CFG_MAX_PROPOSALS_DEF = 5;
 
 signals:
 	void completion(QString);

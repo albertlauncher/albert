@@ -27,8 +27,6 @@ public:
     explicit InputLine(QWidget *parent = 0);
     ~InputLine();
 
-    const list<QString>& getHistory() const { return _lines; }
-    void setHistory(const list<QString> & h) { _lines = h; }
     void clearHistory() { _lines.clear(); }
     void clear();
 
@@ -47,5 +45,5 @@ private:
     list<QString> _lines; // NOTE fix this in 5.5, qt has no reverse iterators
     list<QString>::const_reverse_iterator _currentLine;
 
-    static constexpr const char * SETTINGS_SHORTCUT = "Alt+,";
+    static constexpr const char * SETTINGS_SHORTCUT = "Alt+,"; // FIXME
 };
