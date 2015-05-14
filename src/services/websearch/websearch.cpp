@@ -91,6 +91,19 @@ void WebSearch::restoreDefaults()
 			i->_iconPath = s;
 	}
 	_searchEngines.push_back(i);
+
+	// GitHub
+	i = new Item;
+	i->_lastAccess = 1;
+	i->_name       = "GitHub";
+	i->_url        = "https://github.com/search?utf8=✓&q=%s";
+	i->_shortcut   = "gh";
+	for (QString s : QStandardPaths::standardLocations(QStandardPaths::DataLocation)) {
+		QFile f(s.append("/icons/octocat.svg"));
+		if (f.exists())
+			i->_iconPath = s;
+	}
+	_searchEngines.push_back(i);
 }
 
 /**************************************************************************/
