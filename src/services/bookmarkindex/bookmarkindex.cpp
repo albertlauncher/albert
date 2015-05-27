@@ -139,7 +139,7 @@ void BookmarkIndex::buildIndex()
 
 	QFile f(_path);
 	if (!f.open(QIODevice::ReadOnly)) {
-		qWarning() << "[BookmarkIndex]\tCould not open" << _path;
+		qWarning() << "[BookmarkIndex]\tCould not open " << _path;
 		return;
 	}
 
