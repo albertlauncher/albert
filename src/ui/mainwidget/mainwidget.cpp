@@ -120,7 +120,7 @@ MainWidget::MainWidget(QWidget *parent)
 	if (_hotkeyManager.hotkey() == 0)
 	{
 		QMessageBox msgBox(QMessageBox::Critical, "Error",
-						   "Hotkey is invalid, please set it. Press Ok to open"\
+						   "Hotkey is invalid, please set it. Press Ok to open "\
 						   "the settings, or press Cancel to quit albert.",
 						   QMessageBox::Close|QMessageBox::Ok);
 		msgBox.exec();
