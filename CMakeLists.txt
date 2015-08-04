@@ -34,6 +34,7 @@ set(SRCS
     TODO
     src/main.cpp
     src/extensionhandler.cpp
+    src/pluginloader.cpp
     src/pluginhandler.cpp
     src/hotkey/hotkeymanager.cpp
     src/hotkey/hotkeymanager_p.h

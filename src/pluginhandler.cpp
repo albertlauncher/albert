@@ -17,16 +17,14 @@
 #include "pluginhandler.h"
 #include <QDirIterator>
 #include <QDebug>
-#include <QJsonArray>
 #include <QStandardPaths>
 #include <QSettings>
-#include "plugininterfaces/extension_if.h"
 
-#define PLUGINFOLDER "plugins"
 
 /** ***************************************************************************/
 PluginHandler::PluginHandler() {
     _blacklist = QSettings().value(CFG_BLACKLIST).toStringList();
+
 }
 
 
@@ -39,82 +37,74 @@ PluginHandler::~PluginHandler() {
 
 
 /** ***************************************************************************/
-const QList<PluginSpec*> &PluginHandler::pluginSpecs() {
+const QMap<QString, PluginLoader *> &PluginHandler::plugins() {
     return _plugins;
 }
 
 
 
 /** ***************************************************************************/
+void PluginHandler::enable(const QString &path){
+    _blacklist.removeAll(path);
+}
+
+
+
+/** ***************************************************************************/
+void PluginHandler::disable(const QString &path){
+    if (!_blacklist.contains(path))
+        _blacklist.append(path);
+}
+
+
+/** ***************************************************************************/
+bool PluginHandler::isEnabled(const QString &path){
+    return !_blacklist.contains(path);
+}
+
+
+
+/** ***************************************************************************/
 void PluginHandler::loadPlugins() {
-    QSettings s;
-    QStringList pluginDirs = QStandardPaths::locateAll(
-                QStandardPaths::DataLocation,
-                "plugins",
-                QStandardPaths::LocateDirectory);
+    qDebug() << "Loading plugins";
 
-    qDebug() << "Loading plugins in" << pluginDirs;
-
-    for (QString pluginDir : pluginDirs)
-    {
+    // Iterate overall files in the plugindirs
+    QStringList pluginDirs = QStandardPaths::locateAll(QStandardPaths::DataLocation, "plugins", QStandardPaths::LocateDirectory);
+    for (QString pluginDir : pluginDirs) {
         QDirIterator dirIterator(pluginDir, QDir::Files);
-        while (dirIterator.hasNext())
-        {
+        while (dirIterator.hasNext()) {
             QString path = dirIterator.next();
 
-            // Check if this is a lib
+            // Check if this path is a lib
             if (!QLibrary::isLibrary(path)) {
-                qDebug() << "Not a library:" << path;
+                qWarning() << "Not a library:" << path;
                 continue;
             }
 
-            // Fill pluginspec
-            PluginSpec *ps = new PluginSpec;
-            ps->loader = new QPluginLoader(path);
-            QJsonObject metaData = ps->loader->metaData()["MetaData"].toObject();
-            ps->path = path;
-            ps->IID = ps->loader->metaData()["IID"].toString();
-            ps->id = metaData["id"].toString();
-            ps->name = metaData["name"].toString();
-            ps->version = metaData["version"].toString();
-            ps->platform = metaData["platform"].toString();
-            ps->group = metaData["group"].toString();
-            ps->copyright = metaData["copyright"].toString();
-            ps->description = metaData["description"].toString();
-            for (const QJsonValue &v : metaData["dependencies"].toArray()){
-                QString dep = v.toString();
-                if (!dep.isEmpty()) // hä?
-                    ps->dependencies << dep; // TODO CHECK THEM
-            }
+//            // Check if this lib is an albert extension plugin
+//            if (! ps->loader->metaData()["IID"].toString().compare(ALBERT_EXTENSION_IID)==0 ){
+//                qWarning() << "Extension incompatible:" << path << ps->IID << ALBERT_EXTENSION_IID;
+//                delete ps->loader;
+//                delete ps;
+//                continue;
+//            }
 
-            // Check if this lib is an albert extension plugin
-            if (! ps->loader->metaData()["IID"].toString().compare(ALBERT_EXTENSION_IID)==0 ){
-                qWarning() << "Extension incompatible:" << path << ps->IID << ALBERT_EXTENSION_IID;
-                delete ps->loader;
-                delete ps;
-                continue;
-            }
+            PluginLoader *plugin = new PluginLoader(path);
 
             // Store the plugin
-            _plugins.append(ps);
+            _plugins.insert(path, plugin);
 
-            // Check if this extension is blacklisted
-            if (s.value(CFG_BLACKLIST).toStringList().contains(ps->name)){
-                qDebug() << "Extension blacklisted:" << path;
-                ps->status = PluginSpec::Status::NotLoaded;
+            // Load if not blacklisted
+            if (_blacklist.contains(path))
                 continue;
-            }
 
-            // Load the plugin
-            if (!ps->loader->load()){
-                qWarning() << "WARNING: Loading extension failed:" << path << ps->loader->errorString();
-                ps->status = PluginSpec::Status::Error;
-                continue;
-            }
+            plugin->load();
 
-            qDebug() << "Extension loaded:" <<  path;
-            ps->status = PluginSpec::Status::Loaded;
-            emit pluginLoaded(ps->loader->instance());
+            // Test for success and propagate this
+            if (plugin->status() == PluginLoader::Status::Loaded){
+                qDebug() << "Extension loaded:" <<  plugin->name();
+                emit pluginLoaded(plugin->instance());
+            }
         }
     }
 }
@@ -123,17 +113,11 @@ void PluginHandler::loadPlugins() {
 
 /** ***************************************************************************/
 void PluginHandler::unloadPlugins() {
-    for (PluginSpec *ps :_plugins){
-        emit pluginAboutToBeUnloaded(ps->loader->instance()); // THIS HAS TO BE BLOCKING
-        ps->loader->unload();
-        delete ps->loader;
-        delete ps;
+    for (PluginLoader *plugin : _plugins){
+        if (plugin->status() == PluginLoader::Status::Loaded){
+            emit pluginAboutToBeUnloaded(plugin->instance()); // THIS HAS TO BE BLOCKING
+            plugin->unload();
+            delete plugin;
+        }
     }
-}
-
-
-
-/** ***************************************************************************/
-QStringList &PluginHandler::blacklist(){
-    return _blacklist;
 }

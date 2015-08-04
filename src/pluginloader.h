@@ -15,32 +15,38 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QMap>
+#include <QList>
 #include <QString>
-#include "pluginloader.h"
+#include <QStringList>
+#include <QJsonArray>
+#include <QPluginLoader>
 
 
-class PluginHandler final : public QObject {
-    Q_OBJECT
+#include <QSettings>
+class PluginLoader : public QPluginLoader {
 
 public:
-    PluginHandler();
-    ~PluginHandler();
+    enum class Status{NotLoaded, Error, Loaded};
 
-    void loadPlugins();
-    void unloadPlugins();
-    const QMap<QString, PluginLoader*> & plugins();
+    PluginLoader(QString path);
+    PluginLoader(const PluginLoader&) = delete;
+    ~PluginLoader();
 
-    void enable(const QString &path);
-    void disable(const QString &path);
-    bool isEnabled(const QString &path);
+    QObject *instance();
+    void load();
+    void unload();
+
+    Status  status() const;
+    QString IID() const;
+    QString id() const;
+    QString name() const;
+    QString version() const;
+    QString platform() const;
+    QString group() const;
+    QString copyright() const;
+    QString description() const;
+    QStringList dependencies() const;
 
 private:
-    QMap<QString, PluginLoader*> _plugins;
-    QStringList _blacklist;
-    static const constexpr char* CFG_BLACKLIST = "blacklist";
-
-signals:
-    void pluginLoaded(QObject*);
-    void pluginAboutToBeUnloaded(QObject*);
+    Status _status;
 };
