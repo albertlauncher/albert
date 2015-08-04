@@ -19,76 +19,58 @@
 #include <QList>
 #include <QTimer>
 #include <QFileSystemWatcher>
-#include <memory>
-#include "plugininterfaces/extensioninterface.h"
-#include "search/fuzzysearch.h"
-#include "search/prefixsearch.h"
+#include "plugininterfaces/extension_if.h"
+#include "search/search.h"
+#include "application.h"
 
-class AppInfo;
+namespace Applications {
+
 class ConfigWidget;
 
-/** ***************************************************************************/
 class Extension final : public QObject, public ExtensionInterface
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "../src/metadata.json")
     Q_INTERFACES(ExtensionInterface)
 
-    typedef std::shared_ptr<AppInfo> SharedAppPtr;
-    typedef QList<SharedAppPtr> SharedAppPtrList;
-    typedef AbstractSearch<SharedAppPtrList> AppSearch;
-
 public:
-    explicit Extension() : _search(nullptr) {}
-    ~Extension() {if (_search) delete _search;}
+    Extension(){}
+    ~Extension(){}
 
-    bool addPath(const QString &);
-    bool removePath(const QString &);
+    // GenericPluginInterface
+    void initialize() override;
+    void finalize() override;
+    QWidget *widget() override;
+
+    // ExtensionInterface
+    void handleQuery(Query*) override;
+    void setFuzzy(bool b = true) override;
+
+    // API special to this extension
+    void addDir(const QString &dirPath);
+    void removeDir(const QString &dirPath);
     void restorePaths();
-    void setFuzzy(bool b = true);
-
-    /*
-     * Item management
-     */
-    void        action    (const AppInfo&, const Query&, Qt::KeyboardModifiers mods) const;
-    QString     actionText(const AppInfo&, const Query&, Qt::KeyboardModifiers mods) const;
-    QString     titleText (const AppInfo&, const Query&) const;
-    QString     infoText  (const AppInfo&, const Query&) const;
-    const QIcon &icon     (const AppInfo&) const;
-
-    /*
-     * ExtensionInterface
-     */
-    void        handleQuery(Query*) override;
-
-    /*
-     * GenericPluginInterface
-     */
-    QWidget*    widget() override;
-    void        initialize() override;
-    void        finalize() override;
+    void updateIndex();
 
 private:
-    void        update(const QString &);
-    void        clean();
-    static bool getAppInfo(const QString &path, AppInfo *appInfo);
+    static bool getAppInfo(const QString &path, SharedApp appInfo);
 
-    /* Configurable */
-    QStringList _paths;
-    bool        _fuzzy;
-    AppSearch*  _search;
-
-    /* Core elements */
-    SharedAppPtrList       _index;
     QPointer<ConfigWidget> _widget;
+    QStringList            _rootDirs;
+    Search<SharedApp>      _searchIndex;
+    QList<SharedApp>       _appIndex;
     QFileSystemWatcher     _watcher;
-    QTimer                 _timer;
-    QStringList            _toBeUpdated;
+    QTimer                 _updateDelayTimer;
 
     /* constexpr */
     static constexpr const char* CFG_PATHS      = "Applications/paths";
     static constexpr const char* CFG_FUZZY      = "Applications/fuzzy";
-    static constexpr const char* DATA_FILE      = "applications.dat";
     static constexpr const bool  CFG_FUZZY_DEF  = false;
-    static constexpr const uint  UPDATE_TIMEOUT = 1000;
+    static constexpr const char* DATA_FILE      = "applications.dat";
+    static constexpr const bool  UPDATE_DELAY   = 60000;
+
+signals:
+    void rootDirsChanged(const QStringList&);
+    void statusInfo(const QString&);
 };
+}

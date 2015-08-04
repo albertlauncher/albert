@@ -15,26 +15,32 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QWidget>
-#include "ui_configwidget.h"
+#include "objects.h"
 
-namespace Applications
-{
-class ConfigWidget final : public QWidget
-{
-    Q_OBJECT
+namespace Applications {
+
+class Application : public AlbertObject {
+
+    friend class Extension;
+
 public:
-    explicit ConfigWidget(QWidget *parent = 0);
-    ~ConfigWidget();
-    Ui::ConfigWidget ui;
+    Application();
+
+    QString name() override;
+    QString description() override;
+    QStringList alises() override;
+    QIcon icon() override;
+    uint usage() override;
+    QList<std::shared_ptr<Action>> actions() override;
 
 private:
-    void onButton_PathAdd();
-    void onButton_PathRemove();
-    void onButton_RestorePaths();
-
-signals:
-    void requestAddPath(const QString&);
-    void requestRemovePath(const QString&);
+    QString _path;
+    QString _name;
+    QString _altName;
+    QString _exec;
+    QIcon _icon;
+    uint _usage;
+    static QHash<QString, QIcon> _iconCache;
 };
+typedef QSharedPointer<Application> SharedApp;
 }

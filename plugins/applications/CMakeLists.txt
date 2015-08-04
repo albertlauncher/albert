@@ -28,9 +28,13 @@ include_directories(
 
 set(${PROJECT_NAME}_SRCS
     src/metadata.json
+
     src/extension.cpp
-    src/item.cpp
 	src/configwidget.cpp
+    src/application.cpp
+
+	../../src/common/objects.h
+	../../src/common/search/search.h
 )
 
 qt5_wrap_ui(${PROJECT_NAME}_UIS

@@ -18,6 +18,8 @@
 #include <QFileDialog>
 #include <QStandardPaths>
 
+namespace Applications
+{
 /** ***************************************************************************/
 ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent)
 {
@@ -56,4 +58,5 @@ void ConfigWidget::onButton_PathRemove()
     if (ui.listWidget_paths->currentItem() == nullptr)
         return;
     emit requestRemovePath(ui.listWidget_paths->currentItem()->text());
+}
 }
