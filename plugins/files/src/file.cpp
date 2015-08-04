@@ -22,8 +22,18 @@ namespace Files {
 QHash<QString, QIcon> File::_iconCache;
 
 /** ***************************************************************************/
+File::File(const QString &path, QMimeType mimetype){
+    _path = path.toStdString();
+    _path.shrink_to_fit();
+    _mimetype = mimetype;
+    _usage = 0;
+}
+
+
+
+/** ***************************************************************************/
 QString File::name(){
-    return _name;
+    return QFileInfo(QString::fromStdString(_path)).fileName();
 }
 
 
@@ -37,7 +47,7 @@ QString File::description(){
 
 /** ***************************************************************************/
 QStringList File::alises(){
-    return QStringList() << _path << _mimetype.suffixes();
+    return QStringList();
 }
 
 
@@ -65,16 +75,23 @@ uint File::usage(){
 
 
 /** ***************************************************************************/
-QList<std::shared_ptr<Action>> File::actions()
-{
+QList<std::shared_ptr<Action>> File::actions(){
     return { std::make_shared<OpenFileAction>(*this), std::make_shared<RevealFileAction>(*this) };
 }
 
 
 
 /** ***************************************************************************/
-QString File::path(){
-    return _path+'/'+_name;
+QString File::path()
+{
+    return QFileInfo(QString::fromStdString(_path)).path();
+}
+
+
+
+/** ***************************************************************************/
+QString File::absolutePath(){
+    return QString::fromStdString(_path);
 }
 
 
@@ -88,7 +105,7 @@ QMimeType File::mimetype(){
 
 /** ***************************************************************************/
 bool File::isDir(){
-    return QFileInfo(_path+'/'+_name).isDir();
+    return QFileInfo(QString::fromStdString(_path)).isDir();
 }
 
 

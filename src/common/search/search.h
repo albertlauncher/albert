@@ -20,8 +20,8 @@
 #include "fuzzysearch.h"
 
 template <class T>
-class Search final
-{
+class Search final {
+
 public:
 
     /**
@@ -85,8 +85,8 @@ public:
      * @param t The amount of error tolerance
      */
     void setDelta(double d) {
-        FuzzySearch<T>* f;
-        if (f = dynamic_cast<FuzzySearch<T>*>(_impl))
+        FuzzySearch<T>* f = dynamic_cast<FuzzySearch<T>*>(_impl);
+        if (f)
             f->setDelta(d);
     }
 
@@ -97,8 +97,8 @@ public:
      * @return The amount of error tolerance if search is fuzzy 0 else.
      */
     double delta(){
-        FuzzySearch<T>* f;
-        if (f = dynamic_cast<FuzzySearch<T>*>(_impl))
+        FuzzySearch<T>* f = dynamic_cast<FuzzySearch<T>*>(_impl);
+        if (f)
             return f->delta();
         return 0;
     }
@@ -106,31 +106,20 @@ public:
 
 
     /**
-     * @brief Add an item to the search index
-     * @param t The item to index
-     * @param The searchterm that link to the item
+     * @brief Build the search index
+     * @param The items to index
      */
-    inline void add(const T &t, const QStringList &aliases){
-        _impl->add(t,aliases);
+    inline void build(const QList<T>& lso){
+        _impl->build(lso);
     }
 
 
 
     /**
-     * @brief Remove an item to the search index
-     * @param t The item to remove
+     * @brief Clear the search index
      */
-    inline void remove(const T &t) {
-        _impl->remove(t);
-    }
-
-
-
-    /**
-     * @brief Remove the search index
-     */
-    inline void reset() {
-        _impl->reset();
+    inline void clear() {
+        _impl->clear();
     }
 
 
@@ -139,7 +128,7 @@ public:
      * @brief Perform a search on the index
      * @param req The query string
      */
-    inline QList<T> search(const QString &req) const {
+    inline QList<SharedObject> search(const QString &req) const {
         return _impl->search(req);
     }
 

@@ -35,6 +35,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
     if (context.function)
         suffix = QString("  --  [%1]").arg(context.function);
     switch (type) {
+    case QtInfoMsg:
     case QtDebugMsg:
         fprintf(stderr, "%s\n", message.toLocal8Bit().constData());
         break;
@@ -49,14 +50,6 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
         abort();
     }
 }
-
-
-
-//SettingsWidget* openSettings(MainWidget *mainWidget, HotkeyManager *hotkeyManager, PluginHandler *pluginHandler) {
-//    return new SettingsWidget(mainWidget, hotkeyManager, pluginHandler);
-//}
-
-
 
 int main(int argc, char *argv[])
 {
@@ -157,6 +150,7 @@ int main(int argc, char *argv[])
     mainWidget->ui.proposalList->setModel(extensionHandler); // View results
     pluginHandler->loadPlugins(); // Load the plugins
     int ret = application.exec();
+    pluginHandler->unloadPlugins(); // Unload the plugins
 
 
 

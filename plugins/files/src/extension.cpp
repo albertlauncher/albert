@@ -16,42 +16,134 @@
 
 #include "extension.h"
 #include <QDebug>
-#include <QProcess>
-#include <QDirIterator>
-#include <QStandardPaths>
+#include <QList>
 #include <QMessageBox>
+#include <QMutex>
+#include <QStandardPaths>
 #include <QSettings>
-#include <QDesktopServices>
-#include <QUrl>
-#include <memory>
-#include <functional>
-//#include <QList>
-//#include <QTimer>
-//#include <QMutex>
-//#include <QThread>
-
+#include <QThreadPool>
+#include <QTimer>
+#include "scanworker.h"
 #include "configwidget.h"
 #include "query.h"
 #include "file.h"
 
 namespace Files{
+
+
 /** ***************************************************************************/
 Extension::Extension() {
-    qDebug() << "Initialize extension 'Files'";
-    _fileSearch.setFuzzy(QSettings().value(CFG_FUZZY, CFG_FUZZY_DEF).toBool());
-    connect(&_fileIndex, &FileIndex::fileAdded, _fileSearch, SLOT(&Search<uint>::add);
-    connect(&_fileIndex, &FileIndex::fileAdded, [&](uint i, const QStringList& l){_fileSearch.add(i,l);});
-    connect(&_fileIndex, &FileIndex::fileRemoved, [&](uint i){_fileSearch.remove(i);});
-    connect(&_fileIndex, &FileIndex::indexReset, [&](){_fileSearch.reset();});
-    _fileIndex.reportAllFilesOnce();
+    _fileIndex = new QList<SharedFile>;
 }
 
 
 
 /** ***************************************************************************/
 Extension::~Extension() {
+    delete _fileIndex;
+}
+
+
+
+/** ***************************************************************************/
+void Extension::initialize() {
+    qDebug() << "Initialize extension 'Files'";
+
+    // Load settings
+    QSettings s;
+    s.beginGroup(CFG_GROUP);
+    _indexOptions.indexAudio = s.value(CFG_INDEX_AUDIO, CFG_INDEX_AUDIO_DEF).toBool();
+    _indexOptions.indexVideo = s.value(CFG_INDEX_VIDEO, CFG_INDEX_VIDEO_DEF).toBool();
+    _indexOptions.indexImage = s.value(CFG_INDEX_IMAGE, CFG_INDEX_IMAGE_DEF).toBool();
+    _indexOptions.indexDocs  = s.value(CFG_INDEX_DOC, CFG_INDEX_DOC_DEF).toBool();
+    _indexOptions.indexDirs  = s.value(CFG_INDEX_DIR, CFG_INDEX_DIR_DEF).toBool();
+    _indexOptions.indexHidden= s.value(CFG_INDEX_HIDDEN, CFG_INDEX_HIDDEN_DEF).toBool();
+    _searchIndex.setFuzzy(s.value(CFG_FUZZY, CFG_FUZZY_DEF).toBool());
+
+    // Create index
+    QVariant v = s.value(CFG_PATHS);
+    if (v.isValid() && v.canConvert(QMetaType::QStringList))
+        _rootDirs = v.toStringList();
+    else
+        restorePaths();
+
+    // scan interval timer
+    connect(&_intervalTimer, &QTimer::timeout, this, &Extension::updateIndex);
+    _intervalTimer.setInterval(s.value(CFG_SCAN_INTERVAL, CFG_SCAN_INTERVAL_DEF).toUInt()*60000);
+    _intervalTimer.start();
+
+    // Initial update
+    updateIndex();
+
+    s.endGroup();
+}
+
+
+
+/** ***************************************************************************/
+void Extension::finalize() {
     qDebug() << "Finalize extension 'Files'";
-    QSettings().setValue(CFG_FUZZY, _fileSearch.fuzzy());
+
+    /* Save settings */
+    QSettings s;
+    s.beginGroup(CFG_GROUP);
+    s.setValue(CFG_FUZZY, _searchIndex.fuzzy());
+    s.setValue(CFG_PATHS, _rootDirs);
+    s.setValue(CFG_INDEX_AUDIO, _indexOptions.indexAudio);
+    s.setValue(CFG_INDEX_VIDEO, _indexOptions.indexVideo);
+    s.setValue(CFG_INDEX_IMAGE, _indexOptions.indexImage);
+    s.setValue(CFG_INDEX_DIR, _indexOptions.indexDirs);
+    s.setValue(CFG_INDEX_DOC, _indexOptions.indexDocs);
+    s.setValue(CFG_INDEX_HIDDEN,_indexOptions.indexHidden);
+    s.setValue(CFG_SCAN_INTERVAL,_intervalTimer.interval()/60000);
+    s.endGroup();
+}
+
+
+
+/** ***************************************************************************/
+QWidget *Extension::widget() {
+    if (_widget.isNull()){
+        _widget = new ConfigWidget;
+
+        // Paths
+        _widget->ui.listWidget_paths->addItems(_rootDirs);
+        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::clear);
+        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::addItems);
+        connect(_widget, &ConfigWidget::requestAddPath, this, &Extension::addDir);
+        connect(_widget, &ConfigWidget::requestRemovePath, this, &Extension::removeDir);
+        connect(_widget->ui.pushButton_restore, &QPushButton::clicked, this, &Extension::restorePaths);
+        connect(_widget->ui.pushButton_update, &QPushButton::clicked, this, &Extension::updateIndex);
+
+        // Checkboxes
+        _widget->ui.checkBox_audio->setChecked(_indexOptions.indexAudio);
+        connect(_widget->ui.checkBox_audio, &QCheckBox::toggled, this, &Extension::setIndexOptionAudio);
+
+        _widget->ui.checkBox_video->setChecked(_indexOptions.indexVideo);
+        connect(_widget->ui.checkBox_video, &QCheckBox::toggled, this, &Extension::setIndexOptionVideo);
+
+        _widget->ui.checkBox_image->setChecked(_indexOptions.indexImage);
+        connect(_widget->ui.checkBox_image, &QCheckBox::toggled, this, &Extension::setIndexOptionImage);
+
+        _widget->ui.checkBox_docs->setChecked(_indexOptions.indexDocs);
+        connect(_widget->ui.checkBox_docs, &QCheckBox::toggled, this, &Extension::setIndexOptionDocs);
+
+        _widget->ui.checkBox_dirs->setChecked(_indexOptions.indexDirs);
+        connect(_widget->ui.checkBox_dirs, &QCheckBox::toggled, this, &Extension::setIndexOptionDirs);
+
+        _widget->ui.checkBox_hidden->setChecked(_indexOptions.indexHidden);
+        connect(_widget->ui.checkBox_hidden, &QCheckBox::toggled, this, &Extension::setIndexOptionHidden);
+
+        _widget->ui.checkBox_fuzzy->setChecked(_searchIndex.fuzzy());
+        connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
+
+        _widget->ui.spinBox_interval->setValue(scanInterval());
+        connect(_widget->ui.spinBox_interval, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Extension::setScanInterval);
+
+        // Info
+        connect(this, &Extension::statusInfo, _widget->ui.label_info, &QLabel::setText);
+    }
+    return _widget;
 }
 
 
@@ -65,114 +157,140 @@ void Extension::teardownSession() {
 
 /** ***************************************************************************/
 void Extension::handleQuery(Query *q) {
-    QList<uint> ids = _fileSearch.search(q->searchTerm());
-    for (uint i : ids)
-        q->addResult(_fileIndex.getFile(i));
+    _mutex.lock();
+    q->addResults(_searchIndex.search(q->searchTerm()));
+    _mutex.unlock();
 }
 
 
 
 /** ***************************************************************************/
 void Extension::setFuzzy(bool b) {
-    _fileSearch.setFuzzy(b);
+    _mutex.lock();
+    _searchIndex.setFuzzy(b);
+    _mutex.unlock();
 }
 
 
 
-/** ***************************************************************************/
-void Extension::initialize() {
-}
+/** ***************************************************************************
+ * @brief addDir
+ * @param dirPath
+ * @return 0 success, 1 does not exist, 2 is not a dir, 3 already watched,
+ * 4 is sub dir of other root
+ */
+void Extension::addDir(const QString &dirPath) {
+    qDebug() << "Add path" << dirPath;
 
+    QFileInfo fileInfo(dirPath);
 
+    // Get an absolute file path
+    QString absPath = fileInfo.absoluteFilePath();
 
-/** ***************************************************************************/
-void Extension::finalize() {
-}
-
-
-
-/** ***************************************************************************/
-QWidget *Extension::widget() {
-    if (_widget.isNull()){
-        _widget = new ConfigWidget;
-
-        // Paths <--
-        _widget->ui.listWidget_paths->addItems(_fileIndex.rootDirs());
-        connect(&_fileIndex, &FileIndex::rootDirAdded, _widget->ui.listWidget_paths, (void (QListWidget::*)(const QString &))&QListWidget::addItem);
-        // Paths -->
-        connect(_widget, &ConfigWidget::requestAddPath, &_fileIndex, &FileIndex::addDir);
-        connect(_widget, &ConfigWidget::requestRemovePath, &_fileIndex, &FileIndex::removeDir);
-        connect(_widget->ui.pushButton_restore, &QPushButton::clicked, &_fileIndex, &FileIndex::restorePaths);
-        connect(_widget->ui.pushButton_update, &QPushButton::clicked, &_fileIndex, &FileIndex::completeUpdate);
-
-        // Checkboxes
-        _widget->ui.checkBox_fuzzy->setChecked(_fileSearch.fuzzy());
-        connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
-
-        _widget->ui.checkBox_audio->setChecked(_fileIndex.indexOption(FileIndex::IndexOption::Audio));
-        connect(_widget->ui.checkBox_audio, &QCheckBox::toggled, [this](bool b){_fileIndex.setIndexOption(FileIndex::IndexOption::Audio, b);});
-
-        _widget->ui.checkBox_video->setChecked(_fileIndex.indexOption(FileIndex::IndexOption::Video));
-        connect(_widget->ui.checkBox_video, &QCheckBox::toggled, [this](bool b){_fileIndex.setIndexOption(FileIndex::IndexOption::Video, b);});
-
-        _widget->ui.checkBox_image->setChecked(_fileIndex.indexOption(FileIndex::IndexOption::Image));
-        connect(_widget->ui.checkBox_image, &QCheckBox::toggled, [this](bool b){_fileIndex.setIndexOption(FileIndex::IndexOption::Image, b);});
-
-        _widget->ui.checkBox_docs->setChecked(_fileIndex.indexOption(FileIndex::IndexOption::Docs));
-        connect(_widget->ui.checkBox_docs, &QCheckBox::toggled, [this](bool b){_fileIndex.setIndexOption(FileIndex::IndexOption::Docs, b);});
-
-        _widget->ui.checkBox_dirs->setChecked(_fileIndex.indexOption(FileIndex::IndexOption::Dirs));
-        connect(_widget->ui.checkBox_dirs, &QCheckBox::toggled, [this](bool b){_fileIndex.setIndexOption(FileIndex::IndexOption::Dirs, b);});
-
-        _widget->ui.checkBox_hidden->setChecked(_fileIndex.indexOption(FileIndex::IndexOption::Hidden));
-        connect(_widget->ui.checkBox_hidden, &QCheckBox::toggled, [this](bool b){_fileIndex.setIndexOption(FileIndex::IndexOption::Hidden, b);});
-
-        // Info
-        connect(&_fileIndex, &FileIndex::statusInfo, _widget, &ConfigWidget::setVanishingInfo);
+    // Check existance
+    if (!fileInfo.exists()){
+        QMessageBox(QMessageBox::Critical, "Error", absPath + " does not exist.").exec();
+        return;
     }
-    return _widget;
+
+    // Check type
+    if(!fileInfo.isDir()){
+        QMessageBox(QMessageBox::Critical, "Error", absPath + " is not a directory.").exec();
+        return;
+    }
+
+    // Check if there is an identical existing path
+    if (_rootDirs.contains(absPath)){
+        QMessageBox(QMessageBox::Critical, "Error", absPath + " has already been indexed.").exec();
+        return;
+    }
+
+    // Check if this dir is a subdir of an existing dir
+    for (const QString &p: _rootDirs)
+        if (absPath.startsWith(p + '/')){
+            QMessageBox(QMessageBox::Critical, "Error", absPath + " is subdirectory of " + p).exec();
+            return;
+        }
+
+    // Check if this dir is a superdir of an existing dir, in case delete subdir
+    for (QStringList::iterator it = _rootDirs.begin(); it != _rootDirs.end();)
+        if (it->startsWith(absPath + '/')){
+            QMessageBox(QMessageBox::Warning, "Warning",
+                        (*it) + " is subdirectory of " + absPath + ". " + (*it) + " will be removed.").exec();
+            it = _rootDirs.erase(it);
+        } else ++it;
+
+    // Add the path. This is the only add on rootDirs. And existance has been
+    // checked before so neo reason for a set
+    _rootDirs << absPath;
+
+    // Inform observers
+    emit rootDirsChanged(_rootDirs);
+}
+
+
+
+/** ***************************************************************************/
+void Extension::removeDir(const QString &dirPath) {
+    qDebug() << "Remove path" << dirPath;
+
+    // Get an absolute file path
+    QString absPath = QFileInfo(dirPath).absoluteFilePath();
+
+    // Check existance
+    if (!_rootDirs.contains(absPath))
+        return;
+
+    // Remove the path.
+    _rootDirs.removeAll(absPath);
+
+    // Update the widget, if it is visible atm
+    emit rootDirsChanged(_rootDirs);
+}
+
+
+
+/** ***************************************************************************/
+void Extension::restorePaths() {
+    qDebug() << "Restore paths to default";
+
+    // Add standard paths
+    _rootDirs.clear();
+    addDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation));
+}
+
+
+
+/** ***************************************************************************/
+void Extension::updateIndex() {
+
+    // If thread is running, stop it and start this functoin after termination
+    if (!_scanWorker.isNull()){
+        _scanWorker->abort();
+        connect(_scanWorker, &ScanWorker::destroyed, this, &Extension::updateIndex);
+    } else {
+        // Cretae a new scanning runnable for the threadpool
+        _scanWorker = new ScanWorker(&_fileIndex, &_searchIndex, _rootDirs, _indexOptions, &_mutex);
+
+        //  Run it
+        QThreadPool::globalInstance()->start(_scanWorker);
+
+        // Reset timer to full time
+        _intervalTimer.start();
+
+        // If widget is visible show the information in the status bat
+        if (!_widget.isNull())
+            connect(_scanWorker, &ScanWorker::statusInfo, _widget->ui.label_info, &QLabel::setText);
+    }
+}
+
+
+
+/** ***************************************************************************/
+void Extension::setScanInterval(uint minutes){
+    if (minutes == 0)
+        _intervalTimer.stop();
+    else
+        _intervalTimer.start(minutes*60000);
 }
 }
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-//SharedFilePtr FileIndex::getFile(uint id)
-//{
-//    shared_ptr<File> p = std::make_shared<File>();
-//    QString mimetype;
-//    _fileDB.getInfoById(id, &p->_path, &p->_name, &mimetype, &p->_usage);
-//    p->_mimetype = _mimeDB.mimeTypeForName(mimetype);
-//    p->_filesindex = this;
-//    return p;
-//}
-//    /* Deserialze data */
-//    QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + DATA_FILE);
-//    if (f.open(QIODevice::ReadOnly| QIODevice::Text)) {
-//        qDebug() << "Deserializing from" << f.fileName();
-//        QDataStream in(&f);
-//        quint64 size;
-//        in >> size;
-//        for (quint64 i = 0; i < size; ++i) {
-//            SharedFilePtr p(new FileInfo(this));
-//            in >> p->_filePath >> p->_usage;
-//            p->_mimeType = _mimeDatabase.mimeTypeForFile(p->_filePath);
-//            _index.push_back(p);
-//        }
-//        f.close();
-//    } else
-//        qWarning() << "Could not open file: " << f.fileName();
-//QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + DATA_FILE);
-//if (f.open(QIODevice::ReadWrite| QIODevice::Text)) {
-//    qDebug() << "Serializing to " << f.fileName();
-//    QDataStream out( &f );
-//    out << static_cast<quint64>(_index.size());
-//    for (SharedFilePtr p : _index)
-//        out << p->_filePath << p->_usage;
-//    f.close();
-//} else
-//    qCritical() << "Could not write to " << f.fileName();
-

@@ -26,8 +26,7 @@ class SearchImpl
 {
 public:
     virtual ~SearchImpl(){}
-    virtual void add(const T &t, const QStringList &aliases) = 0;
-    virtual void remove(const T &t) = 0;
-    virtual void reset() = 0;
-    virtual QList<T> search(const QString &req) const = 0;
+    virtual void build(const QList<T>& lso) = 0;
+    virtual void clear() = 0;
+    virtual QList<SharedObject> search(const QString &req) const = 0;
 };

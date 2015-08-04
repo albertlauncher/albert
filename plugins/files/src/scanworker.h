@@ -1,4 +1,3 @@
-
 // albert - a simple application launcher for linux
 // Copyright (C) 2014-2015 Manuel Schneider
 //
@@ -16,30 +15,38 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QWidget>
-#include <QTimer>
-#include "ui_configwidget.h"
+#include <QRunnable>
+#include <QMimeDatabase>
+#include <QMutex>
+#include <QList>
+#include "./search/search.h"
+#include "file.h"
 
 namespace Files{
-class ConfigWidget final : public QWidget
-{
-    Q_OBJECT
-public:
-    explicit ConfigWidget(QWidget *parent = 0);
-    ~ConfigWidget();
 
-    Ui::ConfigWidget ui;
+class IndexOptions;
+
+class ScanWorker final : public QObject, public QRunnable {
+
+    Q_OBJECT
+
+public:
+    ScanWorker(QList<SharedFile>** fileIndex, Search<SharedFile>* searchIndex, const QStringList& rootPaths, const IndexOptions& indexOptions, QMutex* searchLock);
+    void run() override;
+    inline void abort(){ _abort = true; }
 
 private:
-    void onButton_PathAdd();
-    void onButton_PathRemove();
-    void onButton_RestorePaths();
-    void onButton_Advanced();
+    void indexRecursive(const QFileInfo& fi, QList<SharedFile>* result);
 
+    QMimeDatabase        _mimeDatabase;
+    QList<SharedFile>**  _fileIndex;
+    Search<SharedFile>*  _searchIndex;
+    const QStringList&   _rootDirs;
+    const IndexOptions&  _indexOptions;
+    QMutex*              _mutex;
+    bool _abort;
 
 signals:
-    void requestAddPath(const QString&);
-    void requestRemovePath(const QString&);
-
+    void statusInfo(const QString&);
 };
 }

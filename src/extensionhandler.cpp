@@ -84,8 +84,10 @@ void ExtensionHandler::registerExtension(QObject *o) {
     if (e){
         if(_extensions.contains(e))
             qCritical() << "Extension registered twice!";
-        else
+        else{
             _extensions.insert(e);
+            e->initialize();
+        }
     }
 }
 
@@ -95,9 +97,11 @@ void ExtensionHandler::registerExtension(QObject *o) {
 void ExtensionHandler::unregisterExtension(QObject *o) {
     ExtensionInterface* e = qobject_cast<ExtensionInterface*>(o);
     if (e){
-        if(_extensions.contains(e))
+        if(!_extensions.contains(e))
             qCritical() << "Unregistered unregistered extension! (Duplicate unregistration?)";
-        else
+        else{
             _extensions.remove(e);
+            e->finalize();
+        }
     }
 }

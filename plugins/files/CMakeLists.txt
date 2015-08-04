@@ -12,7 +12,6 @@ SET(TARGET_VERSION_MINOR 0)
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_VERBOSE_MAKEFILE ON)
-enable_testing()
 
 # Set additional compiler flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -pedantic -Wextra -Wconversion -Werror")
@@ -29,19 +28,17 @@ include_directories(
 )
 
 set(${PROJECT_NAME}_SRCS
-	test/fileindextest.cpp
     src/metadata.json
+
     src/extension.cpp
+	src/file.cpp
+	src/scanworker.cpp
 	src/configwidget.cpp
 	src/mimetypedialog.cpp
 	src/mimetypechooser.cpp
-	src/file.cpp
-	src/fileindex.cpp
+
 	../../src/common/objects.h
 	../../src/common/search/search.h
-	../../src/common/search/search_impl.h
-	../../src/common/search/prefixsearch.h
-	../../src/common/search/fuzzysearch.h
 )
 
 qt5_wrap_ui(${PROJECT_NAME}_UIS
@@ -53,7 +50,3 @@ qt5_wrap_ui(${PROJECT_NAME}_UIS
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_UIS})
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE C)
 target_link_libraries(${PROJECT_NAME} ${Qt5Widgets_LIBRARIES} ${Qt5Sql_LIBRARIES})
-
-
-
-add_subdirectory(test/)

@@ -28,10 +28,9 @@ ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent)
     connect(ui.pushButton_add, &QPushButton::clicked, this, &ConfigWidget::onButton_PathAdd);
     connect(ui.pushButton_remove, &QPushButton::clicked, this, &ConfigWidget::onButton_PathRemove);
     connect(ui.pushButton_advanced, &QPushButton::clicked, this, &ConfigWidget::onButton_Advanced);
-    _vanishTimer.setInterval(5000);
-    _vanishTimer.setSingleShot(true);
-    connect(&_vanishTimer, &QTimer::timeout,  ui.label_info, &QLabel::clear);
 }
+
+
 
 /** ***************************************************************************/
 ConfigWidget::~ConfigWidget()
@@ -39,12 +38,7 @@ ConfigWidget::~ConfigWidget()
 
 }
 
-/** ***************************************************************************/
-void ConfigWidget::setVanishingInfo(const QString &t)
-{
-    ui.label_info->setText(t);
-    _vanishTimer.start();
-}
+
 
 /** ***************************************************************************/
 void ConfigWidget::onButton_PathAdd()
@@ -60,15 +54,17 @@ void ConfigWidget::onButton_PathAdd()
     emit requestAddPath(path);
 }
 
+
+
 /** ***************************************************************************/
 void ConfigWidget::onButton_PathRemove()
 {
     if (ui.listWidget_paths->currentItem() == nullptr)
         return;
     emit requestRemovePath(ui.listWidget_paths->currentItem()->text());
-    // Remove works always
-    delete ui.listWidget_paths->currentItem();
 }
+
+
 
 /** ***************************************************************************/
 void ConfigWidget::onButton_Advanced()

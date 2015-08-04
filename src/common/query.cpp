@@ -30,7 +30,7 @@ struct UsageCompare {
     UsageCompare() = delete;
     UsageCompare(Query *q) : _q (q){}
 
-    inline bool operator()(const shared_ptr<AlbertObject> &lhs, const shared_ptr<AlbertObject> &rhs) const {
+    inline bool operator()(const SharedObject &lhs, const SharedObject &rhs) const {
         if (lhs->usage() == rhs->usage())
             return QString::compare(lhs->name(), rhs->name(), Qt::CaseInsensitive) < 0;
         else
@@ -43,7 +43,7 @@ private:
 
 
 /** ***************************************************************************/
-void Query::addResults(const QList<shared_ptr<AlbertObject>> &&results) {
+void Query::addResults(const QList<SharedObject> &results) {
     if (_dynamicSort)
         throw "Not implemented yet.";
     else {
@@ -56,7 +56,7 @@ void Query::addResults(const QList<shared_ptr<AlbertObject>> &&results) {
 
 
 /** ***************************************************************************/
-void Query::addResult(shared_ptr<AlbertObject> &&result) {
+void Query::addResult(SharedObject &result) {
     if (_dynamicSort)
         throw "Not implemented yet.";
     else {
@@ -69,7 +69,7 @@ void Query::addResult(shared_ptr<AlbertObject> &&result) {
 
 
 /** ***************************************************************************/
-int Query::rowCount(const QModelIndex &parent) const {
+int Query::rowCount(const QModelIndex &) const {
     return _results.size();
 }
 

@@ -58,22 +58,9 @@ set(LIBS
     ${Qt5Widgets_LIBRARIES}
 )
 
-#set(data
-#	data/icons/youtube.svg
-#	data/icons/google.svg
-#	data/icons/ebay.svg
-#	data/icons/amazon.svg
-#)
-
 qt5_wrap_ui(UIS
     src/settingswidget/settingswidget.ui
     src/mainwidget/mainwidget.ui
-#	src/util/search/searchwidget.ui
-#	src/services/appindex/appindexwidget.ui
-#	src/services/bookmarkindex/bookmarkindexwidget.ui
-#	src/services/calculator/calculatorwidget.ui
-#	src/services/fileindex/fileindexwidget.ui
-#	src/services/websearch/websearchwidget.ui
 )
 
 qt5_add_resources(RSRC

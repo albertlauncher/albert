@@ -16,34 +16,30 @@
 
 #pragma once
 #include <QString>
-#include <QAbstractItemModel>
+#include <QAbstractListModel>
 #include "stdint.h"
 #include "objects.h"
 using std::shared_ptr;
 
-class Query final : public QAbstractItemModel {
+class Query final : public QAbstractListModel {
 	Q_OBJECT
 
 public:
     explicit Query(QString term) : _searchTerm(term), _dynamicSort(false) {}
 	~Query(){}
 
-    void addResults(const QList<shared_ptr<AlbertObject>> &&results);
-    void addResult(shared_ptr<AlbertObject> &&result);
+    void addResults(const QList<SharedObject> &results);
+    void addResult(SharedObject &result);
     void setDynamicSearch(bool b){ _dynamicSort = b; }
     bool dynamicSearch() const { return _dynamicSort; }
     const QString& searchTerm() const {return _searchTerm;}
     void sort();
 
-    QModelIndex index(int row, int column, const QModelIndex & parent = QModelIndex()) const override;
-    QModelIndex parent(const QModelIndex & index) const override;
     int rowCount(const QModelIndex & parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex & parent = QModelIndex()) const override;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
-    bool hasChildren(const QModelIndex & parent = QModelIndex()) const override;
 
 private:
-    QList<shared_ptr<AlbertObject>> _results;
+    QList<SharedObject> _results;
     QString _searchTerm;
     bool _dynamicSort;
 };

@@ -15,41 +15,51 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include "objects.h"
 #include <QDesktopServices>
 #include <QUrl>
+#include <string>
+using std::string;
+#include "objects.h"
 
 class QString;
 class QIcon;
 class QMimeType;
-class QMimeType;
+
 namespace Files {
-class FileIndex;
-
-
 
 class File final : public AlbertObject {
-    friend class FileIndex;
+
+    friend class ScanWorker;
+
 public:
+    explicit File(const QString &path, QMimeType mimetype);
+
     QString name() override;
     QString description() override;
     QStringList alises() override;
     QIcon icon() override;
     uint usage() override;
     QList<std::shared_ptr<Action>> actions() override;
+
     QString path();
+    QString absolutePath();
     QMimeType mimetype();
     bool isDir();
     static void clearIconCache();
-protected:
-    int _id;
-    QString _name;
-    QString _path;
+
+private:
+    string _path;
     QMimeType _mimetype;
     uint _usage;
-    FileIndex *_fileIndex;
     static QHash<QString, QIcon> _iconCache;
 };
+
+
+
+
+
+
+
 
 
 
@@ -63,7 +73,7 @@ public:
     QStringList alises() override { return QStringList(); }
     QIcon icon() override { return QIcon(); }
     AlbertObject* object() const override { return &_file; }
-    void execute() const override { QDesktopServices::openUrl(QUrl("file:///"+_file.path()+"/"+_file.name())); }
+    void execute() const override { QDesktopServices::openUrl(QUrl("file://"+_file.absolutePath())); }
 private:
     File& _file;
 };
@@ -86,6 +96,6 @@ private:
 };
 
 
-typedef std::shared_ptr<File> SharedFilePtr;
+typedef QSharedPointer<File> SharedFile;
 
 }

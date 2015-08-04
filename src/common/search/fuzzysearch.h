@@ -14,12 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
 #include "prefixsearch.h"
 
 template<class T>
-class FuzzySearch final : public PrefixSearch<T>
-{
+class FuzzySearch final : public PrefixSearch<T> {
 public:
 
     /** ***********************************************************************/
@@ -29,11 +27,9 @@ public:
 
 
     /** ***********************************************************************/
-    explicit FuzzySearch(const PrefixSearch<T>& rhs, unsigned int q = 3, double d = 2)
-        : PrefixSearch<T>(rhs), _q(q), _delta(d) {
+    explicit FuzzySearch(const PrefixSearch<T>& rhs, unsigned int q = 3, double d = 2) : PrefixSearch<T>(rhs), _q(q), _delta(d) {
         // Iterate over the inverted index and build the qGramindex
-        for (typename PrefixSearch<T>::InvertedIndex::const_iterator it = this->_invertedIndex.constBegin();
-             it != this->_invertedIndex.constEnd(); ++it){
+        for (typename PrefixSearch<T>::InvertedIndex::const_iterator it = this->_invertedIndex.constBegin(); it != this->_invertedIndex.constEnd(); ++it){
             QString spaced = QString(_q-1,' ').append(it.key());
             for (unsigned int i = 0 ; i < static_cast<unsigned int>(it.key().size()); ++i)
                 ++_qGramIndex[spaced.mid(i,_q)][it.key()];
@@ -46,70 +42,35 @@ public:
     ~FuzzySearch(){
     }
 
-    /** ************************************************************************
-    * @brief Adds an object to the search index
-    * @param t the object which is to be added to the searchindex
-    */
-    void add(const T &t, const QStringList &aliases) override {
-        // Add a mappings to the inverted index which maps on t.
-        for (const QString & str : aliases) {
-            QStringList words = str.split(SEPARATOR_REGEX, QString::SkipEmptyParts);
-            for (QString& w : words) {
-
-                // Make this search case insensitive
-                w.toLower();
-
-                // Add word to inverted index (map word to item)
-                this->_invertedIndex[w].insert(t);
-
-                // Build a qGram index (map substring to word)
-                QString spaced = QString(_q-1,' ').append(w);
-                for (unsigned int i = 0 ; i < static_cast<unsigned int>(w.size()); ++i)
-                    ++_qGramIndex[spaced.mid(i,_q)][w]; //FIXME Currently occurences are not uses
-            }
-        }
-    }
-
-
-
-    /** ************************************************************************
-    * @brief Removes an object from the search index
-    * @param t the object which is to be removed from the searchindex
-    */
-    void remove(const T &t) override {
-        // Remove all mappings from the inverted index which map on t. If the mapped
-        // set is emtpy remove the entire mapping. Additionaly remove the qGrams
-        // which build the word of each mapping. Further remove qGram mapping too
-        // if the mapped set is empty.
-        typename PrefixSearch<T>::InvertedIndex::iterator it = this->_invertedIndex.begin();
-        while (it != this->_invertedIndex.end()) {
-            if (it->contains(t)){
-                QString word = it.key();
-                word.toLower();
-                word.prepend(QString(_q-1,' '));
-                for (unsigned int i = 0 ; i < static_cast<unsigned int>(word.size()); ++i){
-                    QString qgram = word.mid(i,_q);
-                    --_qGramIndex[qgram][word];
-                    if (_qGramIndex[qgram][word] == 0){
-                        _qGramIndex[qgram].remove(word);
-                        if (_qGramIndex[qgram].isEmpty())
-                            _qGramIndex.remove(qgram);
-                    }
-                }
-                it->remove(t);
-                if (it->empty()){
-                    it = this->_invertedIndex.erase(it);
-                    continue;
-                }
-            }
-            ++it;
-        }
-    }
-
 
 
     /** ***********************************************************************/
-    void reset() override
+    void build(const QList<T>& lso) override {
+        for (T obj : lso){
+            // Add a mappings to the inverted index which maps on t.
+            QStringList aliases = obj->alises() << obj->name();
+            for (const QString & str : aliases) {
+                QStringList words = str.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
+                 for (QString& w : words) {
+
+                    // Make this search case insensitive
+                    w.toLower();
+
+                    // Add word to inverted index (map word to item)
+                    this->_invertedIndex[w].insert(obj);
+
+                    // Build a qGram index (map substring to word)
+                    QString spaced = QString(_q-1,' ').append(w);
+                    for (unsigned int i = 0 ; i < static_cast<unsigned int>(w.size()); ++i)
+                        ++_qGramIndex[spaced.mid(i,_q)][w]; //FIXME Currently occurences are not uses
+                }
+            }
+        }
+    }
+
+
+    /** ***********************************************************************/
+    void clear() override
     {
         this->_invertedIndex.clear();
         _qGramIndex.clear();
@@ -118,15 +79,15 @@ public:
 
 
     /** ***********************************************************************/
-    QList<T> search(const QString &req) const override
+    QList<SharedObject> search(const QString &req) const override
     {
         QVector<QString> words;
         for (QString &word : req.split(SEPARATOR_REGEX, QString::SkipEmptyParts))
             words.append(word.toLower());
-        QVector<QMap<T, unsigned int>> resultsPerWord;
+        QVector<QMap<SharedObject, unsigned int>> resultsPerWord;
 
         // Quit if there are no words in query
-        if (words.empty()) return QList<T>();
+        if (words.empty()) return QList<SharedObject>();
 
         // Split the query into words
         for (QString &word : words)
@@ -155,8 +116,8 @@ public:
             }
 
             // Allocate a new set
-            resultsPerWord.push_back(QMap<T, unsigned int>());
-            QMap<T, unsigned int>& resultsRef = resultsPerWord.back();
+            resultsPerWord.push_back(QMap<SharedObject, unsigned int>());
+            QMap<SharedObject, unsigned int>& resultsRef = resultsPerWord.back();
 
             // Unite the items referenced by the words accumulating their #matches
             for (QMap<QString, unsigned int>::const_iterator wm = wordMatches.begin(); wm != wordMatches.cend(); ++wm)
@@ -170,7 +131,7 @@ public:
                     continue;
 
 
-                for(T item : this->_invertedIndex[wm.key()])
+                for(SharedObject item : this->_invertedIndex[wm.key()])
                 {
                     resultsRef[item] += wm.value();
                 }
@@ -180,7 +141,7 @@ public:
         // Intersect the set of items references by the (referenced) words
         // This assusmes that there is at least one word (the query would not have
         // been started elsewise)
-        QVector<QPair<T, unsigned int>> finalResult;
+        QVector<QPair<SharedObject, unsigned int>> finalResult;
         if (resultsPerWord.size() > 1)
         {
             // Get the smallest list for intersection (performance)
@@ -190,7 +151,7 @@ public:
                     smallest = i;
 
             bool allResultsContainEntry;
-            for (typename QMap<T, unsigned int>::const_iterator r = resultsPerWord[smallest].begin(); r != resultsPerWord[smallest].cend(); ++r)
+            for (QMap<SharedObject, unsigned int>::const_iterator r = resultsPerWord[smallest].begin(); r != resultsPerWord[smallest].cend(); ++r)
             {
                 // Check if all results contain this entry
                 allResultsContainEntry=true;
@@ -218,31 +179,28 @@ public:
                     continue;
 
                 // Finally this match is common an can be put into the results
-                finalResult.append(QPair<T, unsigned int>(r.key(), accMatches));
+                finalResult.append(QPair<SharedObject, unsigned int>(r.key(), accMatches));
             }
         }
         else // Else do it without intersction
         {
-            for (typename QMap<T, unsigned int>::const_iterator r = resultsPerWord[0].begin(); r != resultsPerWord[0].cend(); ++r)
-                finalResult.append(QPair<T, unsigned int>(r.key(), r.value()));
+            for (QMap<SharedObject, unsigned int>::const_iterator r = resultsPerWord[0].begin(); r != resultsPerWord[0].cend(); ++r)
+                finalResult.append(QPair<SharedObject, unsigned int>(r.key(), r.value()));
         }
 
         // Sort em by relevance // TODO INTRODUCE RELEVANCE TO ITEMS
         //        std::sort(finalResult.begin(), finalResult.end(),
         //                  [&](QPair<T, unsigned int> x, QPair<T, unsigned int> y)
         //                    {return x.second > y.second;});
-        QList<T> result;
-        for (QPair<T, unsigned int> pair : finalResult){
+        QList<SharedObject> result;
+        for (QPair<SharedObject, unsigned int> pair : finalResult){
             result << pair.first;
         }
         return result;
     }
 
-//	// Length of the grams
-//	inline unsigned int q() const {return _q;}
-//	inline void setQ(unsigned int q){_q=q; buildIndex();}
 
-	// Max allowed errors
+    /** ***********************************************************************/
 	inline double delta() const {return _delta;}
 	inline void setDelta(double d){_delta=d;}
 
@@ -285,6 +243,7 @@ private:
         return result;
     }
 
+    /** ***********************************************************************/
     // Map of qGrams, containing their word references and #occurences
     typedef QMap<QString, QMap<QString, unsigned int>> QGramIndex;
 	QGramIndex _qGramIndex;

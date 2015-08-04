@@ -19,6 +19,7 @@
 #include <QString>
 #include <QMimeType>
 #include <memory>
+#include <QMetaType>
 
 /** ****************************************************************************/
 struct Object {
@@ -30,19 +31,18 @@ struct Object {
     virtual uint usage() {return 0;}
 };
 
-class AlbertObject;
+/** ****************************************************************************/
+class Action;
+struct AlbertObject : public Object {
+    virtual ~AlbertObject(){}
+    virtual QList<std::shared_ptr<Action>> actions() = 0;
+};
+typedef QSharedPointer<Object> SharedObject;
+
 
 /** ****************************************************************************/
 struct Action : public Object {
     virtual ~Action(){}
     virtual AlbertObject* object() const = 0;
     virtual void execute() const = 0;
-};
-
-
-
-/** ****************************************************************************/
-struct AlbertObject : public Object {
-    virtual ~AlbertObject(){}
-    virtual QList<std::shared_ptr<Action>> actions() = 0;
 };
