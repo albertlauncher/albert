@@ -28,7 +28,7 @@
 #include "file.h"
 #include "scanworker.h"
 
-namespace Files{
+namespace Files {
 
 struct IndexOptions {
     bool indexAudio;
@@ -63,7 +63,7 @@ public:
     void handleQuery(Query*) override;
     void setFuzzy(bool b = true) override;
 
-    // Widget API
+    // API special to this extension
     void addDir(const QString &dirPath);
     void removeDir(const QString &dirPath);
     void restorePaths();

@@ -47,7 +47,7 @@ Extension::~Extension() {
 
 /** ***************************************************************************/
 void Extension::initialize() {
-    qDebug() << "Initialize extension 'Files'";
+    qDebug() << "[Files] Initialize extension";
 
     // Load settings
     QSettings s;
@@ -60,7 +60,7 @@ void Extension::initialize() {
     _indexOptions.indexHidden= s.value(CFG_INDEX_HIDDEN, CFG_INDEX_HIDDEN_DEF).toBool();
     _searchIndex.setFuzzy(s.value(CFG_FUZZY, CFG_FUZZY_DEF).toBool());
 
-    // Create index
+    // Load the paths or set a default
     QVariant v = s.value(CFG_PATHS);
     if (v.isValid() && v.canConvert(QMetaType::QStringList))
         _rootDirs = v.toStringList();
@@ -82,9 +82,9 @@ void Extension::initialize() {
 
 /** ***************************************************************************/
 void Extension::finalize() {
-    qDebug() << "Finalize extension 'Files'";
+    qDebug() << "[Files] Finalize extension";
 
-    /* Save settings */
+    // Save settings
     QSettings s;
     s.beginGroup(CFG_GROUP);
     s.setValue(CFG_FUZZY, _searchIndex.fuzzy());
@@ -108,6 +108,7 @@ QWidget *Extension::widget() {
 
         // Paths
         _widget->ui.listWidget_paths->addItems(_rootDirs);
+        _widget->ui.label_info->setText(QString("%1 files indexed.").arg(_fileIndex->size()));
         connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::clear);
         connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::addItems);
         connect(_widget, &ConfigWidget::requestAddPath, this, &Extension::addDir);
@@ -180,7 +181,7 @@ void Extension::setFuzzy(bool b) {
  * 4 is sub dir of other root
  */
 void Extension::addDir(const QString &dirPath) {
-    qDebug() << "Add path" << dirPath;
+    qDebug() << "[Files] Adding dir" << dirPath;
 
     QFileInfo fileInfo(dirPath);
 
@@ -220,8 +221,7 @@ void Extension::addDir(const QString &dirPath) {
             it = _rootDirs.erase(it);
         } else ++it;
 
-    // Add the path. This is the only add on rootDirs. And existance has been
-    // checked before so neo reason for a set
+    // Add the path to root dirs
     _rootDirs << absPath;
 
     // Inform observers
@@ -232,7 +232,7 @@ void Extension::addDir(const QString &dirPath) {
 
 /** ***************************************************************************/
 void Extension::removeDir(const QString &dirPath) {
-    qDebug() << "Remove path" << dirPath;
+    qDebug() << "[Files] Removing path" << dirPath;
 
     // Get an absolute file path
     QString absPath = QFileInfo(dirPath).absoluteFilePath();
@@ -241,7 +241,7 @@ void Extension::removeDir(const QString &dirPath) {
     if (!_rootDirs.contains(absPath))
         return;
 
-    // Remove the path.
+    // Remove the path
     _rootDirs.removeAll(absPath);
 
     // Update the widget, if it is visible atm
@@ -252,7 +252,7 @@ void Extension::removeDir(const QString &dirPath) {
 
 /** ***************************************************************************/
 void Extension::restorePaths() {
-    qDebug() << "Restore paths to default";
+    qDebug() << "[Files] Restore paths to defaults";
 
     // Add standard paths
     _rootDirs.clear();
@@ -263,6 +263,7 @@ void Extension::restorePaths() {
 
 /** ***************************************************************************/
 void Extension::updateIndex() {
+    qDebug() << "[Files] Updating index";
 
     // If thread is running, stop it and start this functoin after termination
     if (!_scanWorker.isNull()){

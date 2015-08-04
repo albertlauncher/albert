@@ -15,17 +15,16 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QDesktopServices>
-#include <QUrl>
+#include <QString>
+#include <QIcon>
+#include <QMimeType>
 #include <string>
 using std::string;
 #include "objects.h"
 
-class QString;
-class QIcon;
-class QMimeType;
 
 namespace Files {
+
 
 class File final : public AlbertObject {
 
@@ -53,49 +52,7 @@ private:
     uint _usage;
     static QHash<QString, QIcon> _iconCache;
 };
-
-
-
-
-
-
-
-
-
-
-class OpenFileAction final : public Action {
-public:
-    OpenFileAction(File& file) : _file(file) {}
-    ~OpenFileAction() {}
-
-    QString name() override { return "Open file"; }
-    QString description() override { return QString("Open %1 in default application.").arg(_file.name()); }
-    QStringList alises() override { return QStringList(); }
-    QIcon icon() override { return QIcon(); }
-    AlbertObject* object() const override { return &_file; }
-    void execute() const override { QDesktopServices::openUrl(QUrl("file://"+_file.absolutePath())); }
-private:
-    File& _file;
-};
-
-
-
-class RevealFileAction final : public Action {
-public:
-    RevealFileAction(File& file) : _file(file) {}
-    ~RevealFileAction() {}
-
-    QString name() override { return "Reveal file in filebrowser"; }
-    QString description() override { return QString("Open %1's folder in default file browser.").arg(_file.name()); }
-    QStringList alises() override { return QStringList(); }
-    QIcon icon() override { return QIcon(); }
-    AlbertObject* object() const override { return &_file; }
-    void execute() const override { QDesktopServices::openUrl(QUrl("file:///"+_file.path()+"/")); }
-private:
-    File& _file;
-};
-
-
 typedef QSharedPointer<File> SharedFile;
+
 
 }

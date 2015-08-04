@@ -19,7 +19,6 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT ")
 
 find_package(Qt5Widgets REQUIRED)
-find_package(Qt5Sql REQUIRED)
 find_package(Qt5Svg REQUIRED)
 
 include_directories(
@@ -31,9 +30,10 @@ set(${PROJECT_NAME}_SRCS
     src/metadata.json
 
     src/extension.cpp
-	src/file.cpp
-	src/scanworker.cpp
 	src/configwidget.cpp
+	src/file.cpp
+	src/actions.cpp
+	src/scanworker.cpp
 	src/mimetypedialog.cpp
 	src/mimetypechooser.cpp
 
@@ -49,4 +49,4 @@ qt5_wrap_ui(${PROJECT_NAME}_UIS
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_UIS})
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE C)
-target_link_libraries(${PROJECT_NAME} ${Qt5Widgets_LIBRARIES} ${Qt5Sql_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${Qt5Widgets_LIBRARIES} )

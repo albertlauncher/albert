@@ -16,6 +16,7 @@
 
 #include <QFileInfo>
 #include "file.h"
+#include "actions.h"
 
 namespace Files {
 

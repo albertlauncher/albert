@@ -44,10 +44,8 @@ ScanWorker::ScanWorker(QList<SharedFile>** fileIndex, Search<SharedFile> *search
 void ScanWorker::run() {
     // Get a new index [O(n)]
     QList<SharedFile>* newIndex = new QList<SharedFile>;
-    for (const QString& path : _rootDirs){
-        qDebug() << path;
+    for (const QString& path : _rootDirs)
         indexRecursive(QFileInfo(path), newIndex);
-    }
 
     // Sort the new index  [O(n*log(n))]
     std::sort(newIndex->begin(), newIndex->end(), Comp());
@@ -97,7 +95,6 @@ void ScanWorker::indexRecursive(const QFileInfo& fi, QList<SharedFile>* result) 
         ||(_indexOptions.indexDocs && mimeName.startsWith("application")))) {
         result->append(sf);
     } else if (fi.isDir()) {
-        qDebug() << fi.absoluteFilePath();
         emit statusInfo(QString("Indexing %1.").arg(fi.absoluteFilePath()));
 
         // If is a dir and matches index options index it
