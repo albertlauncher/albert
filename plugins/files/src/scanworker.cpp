@@ -101,14 +101,34 @@ void ScanWorker::indexRecursive(const QFileInfo& fi, QList<SharedFile>* result) 
         if (_indexOptions.indexDirs)
             result->append(sf);
 
+        // Read .albertignore
+        // http://doc.qt.io/qt-5/qregexp.html#wildcard-matching
+        QList<QRegExp> ignores;
+        QFile file(fi.filePath() + "/.albertignore");
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)){
+            QTextStream in(&file);
+            while (!in.atEnd())
+                ignores.append(QRegExp(in.readLine(), Qt::CaseSensitive, QRegExp::Wildcard));
+        }
+
+        //  Ignore ignorefile by default
+        ignores.append(QRegExp(".albertignore", Qt::CaseSensitive, QRegExp::Wildcard));
+
         // Iterate over all files in the dir and do recursion
         QDir::Filters filters = QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot|QDir::NoSymLinks;
-        if (_indexOptions.indexHidden)
-            filters |= QDir::Hidden;
+        if (_indexOptions.indexHidden) filters |= QDir::Hidden;
         QDirIterator dirIterator(fi.absoluteFilePath(), filters);
         while (dirIterator.hasNext() && !_abort) {
             dirIterator.next();
+
+            // Skip if this file matches one of the ignore patterns
+            for (QRegExp ignore : ignores) // Todo wait for  http://stackoverflow.com/questions/31830589/qregexp-weird-behaviour-in-for-loop
+                if(ignore.exactMatch(dirIterator.fileName()))
+                    goto CONTINUE;
+
             indexRecursive(dirIterator.fileInfo(), result);
+            CONTINUE:
+            continue; // gnah does not compile without this ...
         }
     }
 }
