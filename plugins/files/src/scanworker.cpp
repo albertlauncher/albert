@@ -108,7 +108,7 @@ void ScanWorker::indexRecursive(const QFileInfo& fi, QList<SharedFile>* result) 
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)){
             QTextStream in(&file);
             while (!in.atEnd())
-                ignores.append(QRegExp(in.readLine(), Qt::CaseSensitive, QRegExp::Wildcard));
+                ignores.append(QRegExp(in.readLine().trimmed(), Qt::CaseSensitive, QRegExp::Wildcard));
         }
 
         //  Ignore ignorefile by default
@@ -122,7 +122,7 @@ void ScanWorker::indexRecursive(const QFileInfo& fi, QList<SharedFile>* result) 
             dirIterator.next();
 
             // Skip if this file matches one of the ignore patterns
-            for (QRegExp ignore : ignores) // Todo wait for  http://stackoverflow.com/questions/31830589/qregexp-weird-behaviour-in-for-loop
+            for (QRegExp& ignore : ignores)
                 if(ignore.exactMatch(dirIterator.fileName()))
                     goto CONTINUE;
 
