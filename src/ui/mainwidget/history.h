@@ -20,6 +20,7 @@
 #include <QObject>
 #include <QStringList>
 #include <QSettings>
+#include <QDataStream>
 
 class History : public QObject
 {
