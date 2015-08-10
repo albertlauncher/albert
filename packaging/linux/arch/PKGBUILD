@@ -14,7 +14,7 @@ replaces=()
 backup=()
 options=()
 install=
-source=(https://github.com/ManuelSchneid3r/albert/archive/${pkgver}.tar.gz)
+source=(https://github.com/ManuelSchneid3r/albert/archive/v${pkgver}.tar.gz)
 noextract=()
 md5sums=('51ef5b080a3fce8d561d3f2d26b52949')
 
