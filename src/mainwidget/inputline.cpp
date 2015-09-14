@@ -23,7 +23,7 @@
 /** ***************************************************************************/
 InputLine::InputLine(QWidget *parent) : QLineEdit(parent) {
     _settingsButton = new SettingsButton(this);
-    _settingsButton->setObjectName("settingsbutton");
+    _settingsButton->setObjectName("settingsButton");
     _settingsButton->setFocusPolicy(Qt::NoFocus);
     _settingsButton->setShortcut(QKeySequence(SETTINGS_SHORTCUT));
 

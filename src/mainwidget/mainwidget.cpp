@@ -38,12 +38,6 @@ MainWidget::MainWidget(QWidget *parent)
 
     ui.bottomLayout->setSizeConstraint(QLayout::SetFixedSize);
 
-    // TODO BREAK OBJECT NAMMING IN THEMES SOME DAY
-    ui.bottomFrame->setObjectName("bottomframe");
-    ui.topFrame->setObjectName("topframe");
-    ui.inputLine->setObjectName("inputline");
-    ui.proposalList->setObjectName("proposallist");
-
     ui.bottomLayout->setAlignment (Qt::AlignHCenter | Qt::AlignTop);
     ui.topLayout->setAlignment    (Qt::AlignHCenter | Qt::AlignTop);
     ui.contentLayout->setAlignment(Qt::AlignHCenter | Qt::AlignTop);

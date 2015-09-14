@@ -4,13 +4,13 @@
  * Gray  : #eee
  */
 
-#bottomframe *{
+#bottomFrame *{
   font-family:"DejaVu Sans";
   font-weight:200;
 }
 
 
-#bottomframe {
+#bottomFrame {
 	width:640px;
 	min-width:640px;
 	max-width:640px;
@@ -19,13 +19,13 @@
 	background-color: rgba(0, 0, 0, 64);
 }
 
-#topframe {
+#topFrame {
 	background-color: rgba(0, 0, 0, 224);
 	padding: 7px;
 	border-radius: 4px;
 }
 
-#inputline {
+#inputLine {
 	padding: 2px;
 	font-size: 36px;
 	border: none;
@@ -35,7 +35,7 @@
 	selection-background-color: #ccc;
 }
 
-#settingsbutton {
+#settingsButton {
 	min-width:14px;
 	min-height:14px;
 	max-width:14px;
@@ -46,13 +46,13 @@
 	background-color: transparent;
 }
 
-#settingsbutton:hover {
+#settingsButton:hover {
 	background-color: #020202;
 }
 
-/********** PROPOSALLIST **********/
+/********** proposalList **********/
 
-#proposallist {
+#proposalList {
 	icon-size:44px;
 	font-size: 26px;
 	border-radius: 5px;
@@ -60,36 +60,36 @@
 	background-color: transparent;
 }
 
-#proposallist::item{
+#proposalList::item{
 	height:48px;
 	border: 0px solid transparent;
 }
 
-#proposallist::item:selected{
+#proposalList::item:selected{
 	border: 0px solid #ccc;
 	background: #111;
 }
 
-#proposallist::item:hover{}
-#proposallist::item:selected:!active{}
-#proposallist::item:selected:active{}
-#proposallist::item:alternate{}
+#proposalList::item:hover{}
+#proposalList::item:selected:!active{}
+#proposalList::item:selected:active{}
+#proposalList::item:alternate{}
 
 /********** SCROLLBAR **********/
 
-#proposallist QScrollBar:vertical  {
+#proposalList QScrollBar:vertical  {
 	width: 5px;
 	background: transparent;
 }
 
-#proposallist QScrollBar::handle:vertical  {
+#proposalList QScrollBar::handle:vertical  {
 	background: #111;
 	min-height: 24px;
 }
 
-#proposallist QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
-#proposallist QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical,
-#proposallist QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+#proposalList QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
+#proposalList QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical,
+#proposalList QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 	border: 0px;
 	width: 0px;
 	height: 0px;
