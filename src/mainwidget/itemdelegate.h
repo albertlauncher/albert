@@ -15,32 +15,15 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
-#include <QString>
-#include <QStringList>
-#include <QPluginLoader>
+#include <QStyledItemDelegate>
+#include <QPainter>
 #include <QDebug>
-#include <QMap>
-#include <QIdentityProxyModel>
 
-#include "query.h"
-#include "plugininterfaces/extension_if.h"
-
-class ExtensionHandler final : public QIdentityProxyModel  {
-    Q_OBJECT
-
+class ItemDelegate : public QStyledItemDelegate
+{
 public:
-    void startQuery(const QString &term);
-    void setupSession();
-    void teardownSession();
+    bool showInfo;
+    bool showAction;
 
-    void registerExtension(QObject *);
-    void unregisterExtension(QObject *);
-
-    void activate(const QModelIndex & index);
-
-private:
-    QSet<ExtensionInterface*> _extensions;
-    QMap<QString, Query*> _recentQueries;
-    QString _lastSearchTerm;
+    void paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const override;
 };

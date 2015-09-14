@@ -44,7 +44,6 @@ public:
 private:
     void closeEvent(QCloseEvent * event);
     void keyPressEvent(QKeyEvent * event);
-    bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
 
     QString _theme;
     bool _showCentered;

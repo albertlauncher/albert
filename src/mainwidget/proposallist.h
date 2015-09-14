@@ -20,18 +20,17 @@
 #include <QKeyEvent>
 #include <QArrayData>
 #include <QSettings>
+#include "itemdelegate.h"
 
 class ProposalList final: public QListView
 {
-	Q_OBJECT
-
-	class ItemDelegate;
+    Q_OBJECT
 
 public:
-	explicit ProposalList(QWidget *parent = 0);
-	~ProposalList();
-	QSize sizeHint() const override;
-	void reset() override;
+    explicit ProposalList(QWidget *parent = 0);
+    ~ProposalList();
+    QSize sizeHint() const override;
+    void reset() override;
 
     void setShowInfo(bool);
     void setShowAction(bool);
@@ -44,8 +43,7 @@ public:
 
 
 private:
-	bool eventFilter(QObject*, QEvent *event) override;
-    void resizeEvent(QResizeEvent* e) override;
+    bool eventFilter(QObject*, QEvent *event) override;
 
     ItemDelegate *_itemDelegate;
     uint _maxItems;
@@ -56,7 +54,4 @@ private:
     static const constexpr bool  CFG_SHOW_ACTION_DEF   = true;
     static const constexpr char* CFG_MAX_PROPOSALS     = "itemCount";
     static const constexpr uint  CFG_MAX_PROPOSALS_DEF = 5;
-
-signals:
-	void completion(QString);
 };

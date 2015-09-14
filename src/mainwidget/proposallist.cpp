@@ -15,106 +15,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "proposallist.h"
-#include <QStyledItemDelegate>
-#include <QPainter>
 #include <QDebug>
-
-/******************************************************************************/
-/************************  B E G I N   P R I V A T E  *************************/
-/******************************************************************************/
-/****************************************************************************///
-class ProposalList::ItemDelegate final : public QStyledItemDelegate
-{
-public:
-    Qt::KeyboardModifiers mods;
-    bool showInfo;
-    bool showAction;
-
-	void paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const override
-	{
-		QStyleOptionViewItemV4 option = options;
-		initStyleOption(&option, index);
-
-		//	QStyledItemDelegate::paint(painter, option, index);
-		painter->save();
-		QStyle *style = option.widget->style();
-		style->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
-//		QRect contentsRect = style->subElementRect(QStyle::SE_ItemViewItemText,
-//												   &option,
-//												   option.widget);
-
-		/* Draw icon */
-//		QRect iconRect(contentsRect.topLeft(), option.decorationSize);
-//		iconRect.translate( (a-option.decorationSize.width())/2, (a-option.decorationSize.height())/2);
-		QRect iconRect = option.widget->style()->subElementRect(QStyle::SE_ItemViewItemDecoration, &option, option.widget);
-        painter->drawPixmap(iconRect, index.data(Qt::DecorationRole + mods).value<QIcon>().pixmap(option.decorationSize));
-
-		/* Drawing text differs dependent on the mode and selection */
-        if (showInfo)
-		{
-			/*
-			 * fm(x) := fontmetrics of x
-			 * DR := DisplayRole
-			 * UR := UserRole
-			 *  +---------------------+----------------------------------------+
-			 *  |                     |                                        |
-			 *  |   +-------------+   |                                        |
-			 *  |   |             |   |                                        |
-			 *  |   |             |   |a*fm(DR)/(fm(DR)+fm(UR))    DisplayRole |
-			 * a|   |     icon    |   |                                        |
-			 *  |   |             |   |                                        |
-			 *  |   |             |   +----------------------------------------+
-			 *  |   |             |   |                                        |
-			 *  |   +-------------+   |a*fm(UR)/(fm(DR)+fm(UR))     UserRole+x |
-			 *  |                     |                                        |
-			 * +---------------------------------------------------------------+
-			 */
-
-			QRect DisplayRect = option.widget->style()->subElementRect(QStyle::SE_ItemViewItemText, &option, option.widget);
-			DisplayRect.adjust(3,0,0,-5);  // Empirical
-			QFont font = option.font;
-			painter->setFont(font);
-			QString text = QFontMetrics(font).elidedText(
-                        index.data(Qt::DisplayRole + mods).toString(),
-						option.textElideMode,
-						DisplayRect.width());
-			painter->drawText(DisplayRect, Qt::AlignTop|Qt::AlignLeft, text);
-			font.setPixelSize(12);
-			painter->setFont(font);
-			text = QFontMetrics(font).elidedText(
-                        index.data(
-                            ((option.state & QStyle::State_Selected) && showAction)
-                            ? Qt::UserRole+1 + mods : Qt::ToolTipRole + mods)
-                        .toString(),
-						option.textElideMode,
-						DisplayRect.width());
-			painter->drawText(DisplayRect, Qt::AlignBottom|Qt::AlignLeft, text);
-		}
-        else
-        {
-            QRect DisplayRect = option.widget->style()->subElementRect(QStyle::SE_ItemViewItemText, &option, option.widget);
-            QString text = QFontMetrics(option.font).elidedText(
-                        index.data(Qt::DisplayRole + mods).toString(),
-                        option.textElideMode,
-                        DisplayRect.width());
-            painter->drawText(DisplayRect, Qt::AlignVCenter|Qt::AlignLeft, text);
-        }
-		painter->restore();
-	}
-};
-
-
-/******************************************************************************/
-/**************************  E N D   P R I V A T E  ***************************/
-/******************************************************************************/
-
-
 
 /** ***************************************************************************/
 ProposalList::ProposalList(QWidget *parent) : QListView(parent) {
     QSettings s;
-    _itemDelegate = new ProposalList::ItemDelegate;
-    _itemDelegate->mods = Qt::NoModifier;
+    _itemDelegate = new ItemDelegate;
     _itemDelegate->showInfo = s.value(CFG_SHOW_INFO, CFG_SHOW_INFO_DEF).toBool();
     _itemDelegate->showAction = s.value(CFG_SHOW_ACTION, CFG_SHOW_ACTION_DEF).toBool();
     _maxItems  = s.value(CFG_MAX_PROPOSALS, CFG_MAX_PROPOSALS_DEF).toUInt();
@@ -147,47 +53,48 @@ bool ProposalList::eventFilter(QObject*, QEvent *event)
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
         int key = keyEvent->key();
 
-        // Display different subtexts according to the KeyboardModifiers
-        if ( (key == Qt::Key_Control || key == Qt::Key_Meta || key == Qt::Key_Alt)){
-            _itemDelegate->mods = keyEvent->modifiers();
+        // Mods changed -> refresh
+        if (key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta){
             update(currentIndex());
             return true;
         }
 
         // Navigation
-        if (key == Qt::Key_Up || key == Qt::Key_Down
-            || key == Qt::Key_PageDown || key == Qt::Key_PageUp) {
-
-            /* I this is the first item pass key up through for the
-             * command history */
-            if (key == Qt::Key_Up && (!currentIndex().isValid() || currentIndex().row()==0))
-                return false;
-
-            ProposalList::keyPressEvent(keyEvent);
+        if (key == Qt::Key_Down
+                || (key == Qt::Key_Up && currentIndex().isValid()) /* No current -> command history */
+                || key == Qt::Key_PageDown
+                || key == Qt::Key_PageUp) {
+            keyPressEvent(keyEvent);
             return true;
         }
 
         // Selection
         if (key == Qt::Key_Return || key == Qt::Key_Enter) {
-            if (!currentIndex().isValid()){
-                if (model()->rowCount() > 0)
-                    setCurrentIndex(model()->index(0,0));
-                else // TODO: Not so easy anymore with  informational results
-                    return true;
-            }
-            model()->data(currentIndex(), Qt::UserRole + keyEvent->modifiers());
-            window()->hide();
-//			// Do not accept since the inpuline needs
-//			// to store the request in history
+            // Ignore empty results
+            if (model()->rowCount() == 0)
+                return true;
+
+            // Select first if none is selected
+            if (!currentIndex().isValid())
+                setCurrentIndex(model()->index(0,0));
+
+            keyPressEvent(keyEvent); // emits activated
+            // Do not accept since the inpuline needs
+            //to store the request in history
+            window()->hide(); // TODO: Decision of extensions
             return false;
         }
 
-//        // Show actions
-//        if (key == Qt::Key_Tab) {
-//            if (currentIndex().isValid())
-//                (isExpanded(currentIndex())) ? collapse(currentIndex()) : expand(currentIndex());
-//            return true;
-//        }
+        // Show actions
+        if (key == Qt::Key_Tab){
+            if (!rootIndex().isValid()){
+                if (currentIndex().isValid())
+                    setRootIndex(currentIndex());
+            }
+            else
+                setRootIndex(QModelIndex());
+            return true;
+        }
     }
 
     if (event->type() == QEvent::KeyRelease)
@@ -196,21 +103,12 @@ bool ProposalList::eventFilter(QObject*, QEvent *event)
         int key = keyEvent->key();
 
         // Display different subtexts according to the KeyboardModifiers
-        if ( (key == Qt::Key_Control || key == Qt::Key_Meta || key == Qt::Key_Alt)){
-            _itemDelegate->mods = keyEvent->modifiers();
+        if (key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta){
             update(currentIndex());
             return true;
         }
     }
     return false;
-}
-
-
-
-/** ***************************************************************************/
-void ProposalList::resizeEvent(QResizeEvent *e)
-{
-    qDebug() << e->oldSize() << e->size() << this->size();
 }
 
 

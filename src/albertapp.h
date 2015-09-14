@@ -15,32 +15,31 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
-#include <QString>
-#include <QStringList>
-#include <QPluginLoader>
-#include <QDebug>
-#include <QMap>
-#include <QIdentityProxyModel>
+#include <QApplication>
+#include "mainwidget.h"
+#include "settingswidget.h"
+#include "hotkeymanager.h"
+#include "pluginhandler.h"
+#include "extensionhandler.h"
 
-#include "query.h"
-#include "plugininterfaces/extension_if.h"
-
-class ExtensionHandler final : public QIdentityProxyModel  {
+class AlbertApp final : public QApplication
+{
     Q_OBJECT
-
 public:
-    void startQuery(const QString &term);
-    void setupSession();
-    void teardownSession();
+    AlbertApp(int &argc, char *argv[]);
+    ~AlbertApp();
 
-    void registerExtension(QObject *);
-    void unregisterExtension(QObject *);
-
-    void activate(const QModelIndex & index);
+    int exec();
 
 private:
-    QSet<ExtensionInterface*> _extensions;
-    QMap<QString, Query*> _recentQueries;
-    QString _lastSearchTerm;
+    void openSettings();
+    void onQuit();
+    void onStateChange(Qt::ApplicationState state);
+
+    MainWidget *mainWidget;
+    HotkeyManager *hotkeyManager;
+    PluginHandler *pluginHandler;
+    ExtensionHandler *extensionHandler;
+    QPointer<SettingsWidget> settingsWidget;
 };
+

@@ -1,23 +1,12 @@
 #http://doc.qt.io/qt-5/cmake-manual.html
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 2.8.11)
 
 PROJECT(albert)
-
 SET(TARGET_VERSION_MAJOR 0)
 SET(TARGET_VERSION_MINOR 6)
 
-# Find includes in corresponding build directories
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-# Instruct CMake to run moc automatically when needed.
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_VERBOSE_MAKEFILE ON)
-enable_testing()
-
-# Set additional compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -pedantic -Wextra -Wconversion -Werror")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT ")
+include(./global_cmake_settings.txt OPTIONAL)
 
 find_package(Qt5Widgets 5.1 REQUIRED)
 find_package(Qt5Svg REQUIRED)
@@ -33,6 +22,7 @@ include_directories(
 set(SRCS
     TODO
     src/main.cpp
+    src/albertapp.cpp
     src/extensionhandler.cpp
     src/pluginloader.cpp
     src/pluginhandler.cpp
@@ -40,6 +30,7 @@ set(SRCS
     src/hotkey/hotkeymanager_p.h
     src/mainwidget/mainwidget.cpp
     src/mainwidget/proposallist.cpp
+    src/mainwidget/itemdelegate.cpp
     src/mainwidget/inputline.cpp
     src/settingswidget/grabkeybutton.cpp
     src/settingswidget/settingsbutton.h
@@ -91,7 +82,7 @@ install(DIRECTORY src/resources/themes DESTINATION share/${PROJECT_NAME} COMPONE
 
 # Build plugins
 add_subdirectory(plugins/files)
-add_subdirectory(plugins/applications)
+#add_subdirectory(plugins/applications)
 #add_subdirectory(plugins/chromebookmarks)
 #add_subdirectory(plugins/websearch)
 #add_subdirectory(plugins/PythonExtensions)
