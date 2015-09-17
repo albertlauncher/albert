@@ -211,20 +211,15 @@ void Extension::addDir(const QString &dirPath) {
         return;
     }
 
-    // Check if this dir is a subdir of an existing dir
+    /* Check if this dir is a sub/superdir of an existing dir. This is fine
+       since user may have choosen to ignore some dirs (.albertignore). This is
+       more complex but also more flexible. At least inform the user */
     for (const QString &p: _rootDirs)
-        if (absPath.startsWith(p + '/')){
-            QMessageBox(QMessageBox::Critical, "Error", absPath + " is subdirectory of " + p).exec();
-            return;
-        }
-
-    // Check if this dir is a superdir of an existing dir, in case delete subdir
-    for (QStringList::iterator it = _rootDirs.begin(); it != _rootDirs.end();)
-        if (it->startsWith(absPath + '/')){
-            QMessageBox(QMessageBox::Warning, "Warning",
-                        (*it) + " is subdirectory of " + absPath + ". " + (*it) + " will be removed.").exec();
-            it = _rootDirs.erase(it);
-        } else ++it;
+        if (absPath.startsWith(p + '/'))
+            QMessageBox(QMessageBox::Warning, "Warning", absPath + " is subdirectory of " + p).exec();
+    for (const QString &p: _rootDirs)
+        if (p.startsWith(absPath + '/'))
+            QMessageBox(QMessageBox::Warning, "Warning", p + " is subdirectory of " + absPath).exec();
 
     // Add the path to root dirs
     _rootDirs << absPath;
