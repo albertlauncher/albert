@@ -21,9 +21,9 @@
 ProposalList::ProposalList(QWidget *parent) : QListView(parent) {
     QSettings s;
     _itemDelegate = new ItemDelegate;
-    _itemDelegate->showInfo = s.value(CFG_SHOW_INFO, CFG_SHOW_INFO_DEF).toBool();
-    _itemDelegate->showAction = s.value(CFG_SHOW_ACTION, CFG_SHOW_ACTION_DEF).toBool();
-    _maxItems  = s.value(CFG_MAX_PROPOSALS, CFG_MAX_PROPOSALS_DEF).toUInt();
+    _itemDelegate->showInfo   = s.value(CFG_SHOW_INFO, CFG_SHOW_INFO_DEF).toBool();
+    _itemDelegate->showForSelectedOnly = s.value(CFG_SELECTED_ONLY, CFG_SELECTED_ONLY_DEF).toBool();
+    _maxItems  = s.value(CFG_MAX_PROPOSALS, CFG_MAX_PROPOSALS_DEF).toInt();
 
     setItemDelegate(_itemDelegate);
     setUniformItemSizes(true);
@@ -36,7 +36,7 @@ ProposalList::ProposalList(QWidget *parent) : QListView(parent) {
 ProposalList::~ProposalList() {
     QSettings s;
     s.setValue(CFG_SHOW_INFO, _itemDelegate->showInfo);
-    s.setValue(CFG_SHOW_ACTION, _itemDelegate->showAction);
+    s.setValue(CFG_SELECTED_ONLY, _itemDelegate->showForSelectedOnly);
     s.setValue(CFG_MAX_PROPOSALS, _maxItems);
 }
 
@@ -70,29 +70,42 @@ bool ProposalList::eventFilter(QObject*, QEvent *event)
 
         // Selection
         if (key == Qt::Key_Return || key == Qt::Key_Enter) {
+
             // Ignore empty results
-            if (model()->rowCount() == 0)
+            if (!model()->hasChildren(rootIndex()))
                 return true;
 
             // Select first if none is selected
             if (!currentIndex().isValid())
-                setCurrentIndex(model()->index(0,0));
+                setCurrentIndex(model()->index(0, 0, rootIndex()));
 
             keyPressEvent(keyEvent); // emits activated
             // Do not accept since the inpuline needs
             //to store the request in history
-            window()->hide(); // TODO: Decision of extensions
             return false;
         }
 
         // Show actions
         if (key == Qt::Key_Tab){
-            if (!rootIndex().isValid()){
-                if (currentIndex().isValid())
-                    setRootIndex(currentIndex());
-            }
-            else
+
+            // Ignore empty results
+            if (!model()->hasChildren(rootIndex()))
+                return true;
+
+            // Select first if none is selected
+            if (!currentIndex().isValid())
+                setCurrentIndex(model()->index(0, 0, rootIndex()));
+
+            // Change view
+            if (rootIndex().isValid()){ // Change to Toplevel
                 setRootIndex(QModelIndex());
+                setCurrentIndex(currentIndex().parent());
+            } else { // Change to actions
+                setRootIndex(currentIndex());
+                setCurrentIndex(model()->index(0, 0, rootIndex()));
+            }
+
+            updateGeometry();
             return true;
         }
     }
@@ -116,10 +129,11 @@ bool ProposalList::eventFilter(QObject*, QEvent *event)
 /** ***************************************************************************/
 QSize ProposalList::sizeHint() const
 {
-    if (model() == nullptr) return QSize();
-    uint curr = model()->rowCount();
-    int nToShow = _maxItems<curr?_maxItems:curr;
-	return QSize(width(), nToShow*sizeHintForRow(0));
+    if (model() == nullptr)
+        return QSize();
+    int cnt = model()->rowCount(rootIndex());
+    int nToShow = (_maxItems < cnt) ? _maxItems : cnt;
+    return QSize(width(), nToShow*sizeHintForRow(0));
 }
 
 
@@ -127,18 +141,16 @@ QSize ProposalList::sizeHint() const
 /** ***************************************************************************/
 void ProposalList::reset()
 {
-    if (model() == nullptr) return;
-
     // Reset the views state
     QListView::reset();
 
-    // Make the size of this widget be adjusted (size hint changed)
-    updateGeometry();
+    if (model() == nullptr) return;
 
     // Show if not empty and make first item current
-    if ( model()->rowCount() > 0 ){
-        setCurrentIndex(model()->index(0,0));
+    if (model()->hasChildren(rootIndex())){
         show();
+        // Make the size of this widget be adjusted (size hint changed)
+        updateGeometry();
     }
     else
         hide();
@@ -154,20 +166,6 @@ void ProposalList::setShowInfo(bool b) {
 
 
 /** ***************************************************************************/
-void ProposalList::setShowAction(bool b) {
-    _itemDelegate->showAction=b;
-}
-
-
-
-/** ***************************************************************************/
-void ProposalList::setMaxItems(uint maxItems) {
-    _maxItems = maxItems;
-}
-
-
-
-/** ***************************************************************************/
 bool ProposalList::showInfo() const {
     return _itemDelegate->showInfo;
 }
@@ -175,13 +173,27 @@ bool ProposalList::showInfo() const {
 
 
 /** ***************************************************************************/
-bool ProposalList::showAction() const {
-    return _itemDelegate->showAction;
+void ProposalList::setSelectedOnly(bool b) {
+    _itemDelegate->showForSelectedOnly=b;
 }
 
 
 
 /** ***************************************************************************/
-bool ProposalList::maxItems() const {
+bool ProposalList::selectedOnly() const {
+    return _itemDelegate->showForSelectedOnly;
+}
+
+
+
+/** ***************************************************************************/
+void ProposalList::setMaxItems(int maxItems) {
+    _maxItems = maxItems;
+}
+
+
+
+/** ***************************************************************************/
+int ProposalList::maxItems() const {
     return _maxItems;
 }

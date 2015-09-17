@@ -14,10 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#pragma once
 #include "prefixsearch.h"
+#include <QVector>
+#include <QString>
+#include <QStringList>
+#include <QMap>
+#include <QList>
 
-template<class T>
-class FuzzySearch final : public PrefixSearch<T> {
+class FuzzySearch final : public PrefixSearch {
 public:
 
     /** ***********************************************************************/
@@ -27,9 +32,9 @@ public:
 
 
     /** ***********************************************************************/
-    explicit FuzzySearch(const PrefixSearch<T>& rhs, unsigned int q = 3, double d = 2) : PrefixSearch<T>(rhs), _q(q), _delta(d) {
+    explicit FuzzySearch(const PrefixSearch& rhs, unsigned int q = 3, double d = 2) : PrefixSearch(rhs), _q(q), _delta(d) {
         // Iterate over the inverted index and build the qGramindex
-        for (typename PrefixSearch<T>::InvertedIndex::const_iterator it = this->_invertedIndex.constBegin(); it != this->_invertedIndex.constEnd(); ++it){
+        for (typename PrefixSearch::InvertedIndex::const_iterator it = this->_invertedIndex.constBegin(); it != this->_invertedIndex.constEnd(); ++it){
             QString spaced = QString(_q-1,' ').append(it.key());
             for (unsigned int i = 0 ; i < static_cast<unsigned int>(it.key().size()); ++i)
                 ++_qGramIndex[spaced.mid(i,_q)][it.key()];
@@ -45,25 +50,23 @@ public:
 
 
     /** ***********************************************************************/
-    void build(const QList<T>& lso) override {
-        for (T obj : lso){
-            // Add a mappings to the inverted index which maps on t.
-            QStringList aliases = obj->alises() << obj->name();
-            for (const QString & str : aliases) {
-                QStringList words = str.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
-                 for (QString& w : words) {
+    void add(IIndexable* idxble) override {
+        // Add a mappings to the inverted index which maps on t.
+        QStringList aliases = idxble->aliases();
+        for (const QString & str : aliases) {
+            QStringList words = str.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
+             for (QString& w : words) {
 
-                    // Make this search case insensitive
-                    w.toLower();
+                // Make this search case insensitive
+                w.toLower();
 
-                    // Add word to inverted index (map word to item)
-                    this->_invertedIndex[w].insert(obj);
+                // Add word to inverted index (map word to item)
+                this->_invertedIndex[w].insert(idxble);
 
-                    // Build a qGram index (map substring to word)
-                    QString spaced = QString(_q-1,' ').append(w);
-                    for (unsigned int i = 0 ; i < static_cast<unsigned int>(w.size()); ++i)
-                        ++_qGramIndex[spaced.mid(i,_q)][w]; //FIXME Currently occurences are not uses
-                }
+                // Build a qGram index (map substring to word)
+                QString spaced = QString(_q-1,' ').append(w);
+                for (unsigned int i = 0 ; i < static_cast<unsigned int>(w.size()); ++i)
+                    ++_qGramIndex[spaced.mid(i,_q)][w]; //FIXME Currently occurences are not uses
             }
         }
     }
@@ -79,15 +82,15 @@ public:
 
 
     /** ***********************************************************************/
-    QList<SharedObject> search(const QString &req) const override
+    QList<IIndexable*> search(const QString &req) const override
     {
         QVector<QString> words;
-        for (QString &word : req.split(SEPARATOR_REGEX, QString::SkipEmptyParts))
+        for (QString &word : req.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts))
             words.append(word.toLower());
-        QVector<QMap<SharedObject, unsigned int>> resultsPerWord;
+        QVector<QMap<IIndexable*, unsigned int>> resultsPerWord;
 
         // Quit if there are no words in query
-        if (words.empty()) return QList<SharedObject>();
+        if (words.empty()) return QList<IIndexable*>();
 
         // Split the query into words
         for (QString &word : words)
@@ -116,8 +119,8 @@ public:
             }
 
             // Allocate a new set
-            resultsPerWord.push_back(QMap<SharedObject, unsigned int>());
-            QMap<SharedObject, unsigned int>& resultsRef = resultsPerWord.back();
+            resultsPerWord.push_back(QMap<IIndexable*, unsigned int>());
+            QMap<IIndexable*, unsigned int>& resultsRef = resultsPerWord.back();
 
             // Unite the items referenced by the words accumulating their #matches
             for (QMap<QString, unsigned int>::const_iterator wm = wordMatches.begin(); wm != wordMatches.cend(); ++wm)
@@ -131,7 +134,7 @@ public:
                     continue;
 
 
-                for(SharedObject item : this->_invertedIndex[wm.key()])
+                for(IIndexable *item : this->_invertedIndex[wm.key()])
                 {
                     resultsRef[item] += wm.value();
                 }
@@ -141,7 +144,7 @@ public:
         // Intersect the set of items references by the (referenced) words
         // This assusmes that there is at least one word (the query would not have
         // been started elsewise)
-        QVector<QPair<SharedObject, unsigned int>> finalResult;
+        QVector<QPair<IIndexable*, unsigned int>> finalResult;
         if (resultsPerWord.size() > 1)
         {
             // Get the smallest list for intersection (performance)
@@ -151,7 +154,7 @@ public:
                     smallest = i;
 
             bool allResultsContainEntry;
-            for (QMap<SharedObject, unsigned int>::const_iterator r = resultsPerWord[smallest].begin(); r != resultsPerWord[smallest].cend(); ++r)
+            for (QMap<IIndexable*, unsigned int>::const_iterator r = resultsPerWord[smallest].begin(); r != resultsPerWord[smallest].cend(); ++r)
             {
                 // Check if all results contain this entry
                 allResultsContainEntry=true;
@@ -179,21 +182,21 @@ public:
                     continue;
 
                 // Finally this match is common an can be put into the results
-                finalResult.append(QPair<SharedObject, unsigned int>(r.key(), accMatches));
+                finalResult.append(QPair<IIndexable*, unsigned int>(r.key(), accMatches));
             }
         }
         else // Else do it without intersction
         {
-            for (QMap<SharedObject, unsigned int>::const_iterator r = resultsPerWord[0].begin(); r != resultsPerWord[0].cend(); ++r)
-                finalResult.append(QPair<SharedObject, unsigned int>(r.key(), r.value()));
+            for (QMap<IIndexable*, unsigned int>::const_iterator r = resultsPerWord[0].begin(); r != resultsPerWord[0].cend(); ++r)
+                finalResult.append(QPair<IIndexable*, unsigned int>(r.key(), r.value()));
         }
 
         // Sort em by relevance // TODO INTRODUCE RELEVANCE TO ITEMS
         //        std::sort(finalResult.begin(), finalResult.end(),
         //                  [&](QPair<T, unsigned int> x, QPair<T, unsigned int> y)
         //                    {return x.second > y.second;});
-        QList<SharedObject> result;
-        for (QPair<SharedObject, unsigned int> pair : finalResult){
+        QList<IIndexable*> result;
+        for (QPair<IIndexable*, unsigned int> pair : finalResult){
             result << pair.first;
         }
         return result;

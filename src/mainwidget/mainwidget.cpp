@@ -60,8 +60,6 @@ MainWidget::MainWidget(QWidget *parent)
     // Proposallistview intercepts inputline's events (Navigation with keys, pressed modifiers, etc)
     ui.inputLine->installEventFilter(ui.proposalList);
 
-    ui.proposalList->hide();
-
     // Settings
     QSettings s;
     _showCentered = s.value(CFG_CENTERED, CFG_CENTERED_DEF).toBool();

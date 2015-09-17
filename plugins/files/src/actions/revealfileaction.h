@@ -15,15 +15,22 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QtPlugin>
-#include "plugin_if.h"
+#include "abstractfileaction.h"
+#include <QString>
+#include <QIcon>
+class Query;
 
-class ExtensionProviderInterface : public PluginInterface
+namespace Files {
+class RevealFileAction final : public AbtractFileAction
 {
 public:
-    ExtensionProviderInterface() {}
-    virtual ~ExtensionProviderInterface() {}
+    RevealFileAction(File *file) : AbtractFileAction(file) {}
+    QString name(Query const *q) const override;
+    QString description(Query const *q) const override;
+    QIcon   icon() const override;
+    void    activate(Query const *q) override;
+    uint    usage() const override;
+protected:
+    static unsigned int usageCounter;
 };
-
-#define ALBERT_EXTENSION_PROVIDER_IID "org.manuelschneid3r.albert.extensionprovider"
-Q_DECLARE_INTERFACE(ExtensionProviderInterface, ALBERT_EXTENSION_PROVIDER_IID)
+}

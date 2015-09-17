@@ -15,18 +15,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QString>
-#include <QList>
-#include "objects.h"
+#include <QStringList>
 
-#define SEPARATOR_REGEX  "\\W+"
-
-template <class T>
-class SearchImpl
+/** ***************************************************************************/
+struct IIndexable
 {
-public:
-    virtual ~SearchImpl(){}
-    virtual void build(const QList<T>& lso) = 0;
-    virtual void clear() = 0;
-    virtual QList<SharedObject> search(const QString &req) const = 0;
+    virtual ~IIndexable() {}
+    virtual QStringList aliases() const = 0;
 };

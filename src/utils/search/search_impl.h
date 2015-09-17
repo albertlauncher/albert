@@ -14,7 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "actions.h"
+#pragma once
+#include <QString>
+#include <QList>
+#define SEPARATOR_REGEX  "\\W+"
+class IIndexable;
 
-
-
+class SearchImpl
+{
+public:
+    virtual ~SearchImpl(){}
+    virtual void add(IIndexable* idxble) = 0;
+    virtual void clear() = 0;
+    virtual QList<IIndexable*> search(const QString &req) const = 0;
+};

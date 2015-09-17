@@ -16,11 +16,17 @@
 
 #pragma once
 #include <QApplication>
-#include "mainwidget.h"
-#include "settingswidget.h"
-#include "hotkeymanager.h"
-#include "pluginhandler.h"
-#include "extensionhandler.h"
+#include <QPointer>
+class MainWidget;
+class HotkeyManager;
+class PluginHandler;
+class ExtensionHandler;
+class SettingsWidget;
+
+#if defined(qApp)
+#undef qApp
+#endif
+#define qApp (static_cast<AlbertApp*>(QCoreApplication::instance()))
 
 class AlbertApp final : public QApplication
 {
@@ -31,15 +37,19 @@ public:
 
     int exec();
 
-private:
+    // Global facade. Acessible to all subsystems
     void openSettings();
-    void onQuit();
+    void showWidget();
+    void hideWidget();
+
+private slots:
     void onStateChange(Qt::ApplicationState state);
 
-    MainWidget *mainWidget;
-    HotkeyManager *hotkeyManager;
-    PluginHandler *pluginHandler;
-    ExtensionHandler *extensionHandler;
-    QPointer<SettingsWidget> settingsWidget;
+private:
+    MainWidget               *_mainWidget;
+    HotkeyManager            *_hotkeyManager;
+    PluginHandler            *_pluginHandler;
+    ExtensionHandler         *_extensionHandler;
+    QPointer<SettingsWidget> _settingsWidget;
 };
 

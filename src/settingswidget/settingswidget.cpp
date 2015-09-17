@@ -26,7 +26,7 @@
 #include "hotkeymanager.h"
 #include "mainwidget.h"
 #include "pluginhandler.h"
-#include "plugininterfaces/extension_if.h"
+#include "interfaces.h"
 
 
 /** ***************************************************************************/
@@ -61,9 +61,9 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
     // INFO BELOW ITEM
     ui.checkBox_showInfo->setChecked(mainWidget->ui.proposalList->showInfo());
     connect(ui.checkBox_showInfo, &QCheckBox::toggled, mainWidget->ui.proposalList, &ProposalList::setShowInfo);
-    // SUBTEXT UNSELECTED
-    ui.checkBox_showAction->setChecked(mainWidget->ui.proposalList->showAction());
-    connect(ui.checkBox_showAction, &QCheckBox::toggled, mainWidget->ui.proposalList, &ProposalList::setShowAction);
+    // INFO FOR UNSELECTED
+    ui.checkBox_selectedOnly->setChecked(mainWidget->ui.proposalList->selectedOnly());
+    connect(ui.checkBox_selectedOnly, &QCheckBox::toggled, mainWidget->ui.proposalList, &ProposalList::setSelectedOnly);
 
 
     // THEMES

@@ -24,7 +24,7 @@
 #include <QIdentityProxyModel>
 
 #include "query.h"
-#include "plugininterfaces/extension_if.h"
+#include "interfaces.h"
 
 class ExtensionHandler final : public QIdentityProxyModel  {
     Q_OBJECT

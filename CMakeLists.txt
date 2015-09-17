@@ -13,7 +13,6 @@ find_package(Qt5Svg REQUIRED)
 
 include_directories(
     src/
-    src/common/
     src/hotkey/
     src/mainwidget/
     src/settingswidget/
@@ -26,6 +25,13 @@ set(SRCS
     src/extensionhandler.cpp
     src/pluginloader.cpp
     src/pluginhandler.cpp
+    src/query.cpp
+    src/interfaces.h
+    src/utils/search/search.h
+    src/utils/search/search_impl.h
+    src/utils/search/fuzzysearch.h
+    src/utils/search/prefixsearch.h
+    src/utils/search/prefixsearch.h
     src/hotkey/hotkeymanager.cpp
     src/hotkey/hotkeymanager_p.h
     src/mainwidget/mainwidget.cpp
@@ -35,15 +41,6 @@ set(SRCS
     src/settingswidget/grabkeybutton.cpp
     src/settingswidget/settingsbutton.h
     src/settingswidget/settingswidget.cpp
-    src/common/objects.h
-    src/common/query.cpp
-    src/common/plugininterfaces/plugin_if.h
-    src/common/plugininterfaces/extension_if.h
-    src/common/plugininterfaces/extensionprovider_if.h
-    src/common/search/search.h
-    src/common/search/search_impl.h
-    src/common/search/fuzzysearch.h
-    src/common/search/prefixsearch.h
 )
 
 set(LIBS

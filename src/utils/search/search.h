@@ -16,10 +16,10 @@
 
 #pragma once
 #include "search_impl.h"
+#include "iindexable.h"
 #include "prefixsearch.h"
 #include "fuzzysearch.h"
 
-template <class T>
 class Search final {
 
 public:
@@ -29,7 +29,7 @@ public:
      * @param fuzzy Sets the type of the search. Defaults to false.
      */
     Search(bool fuzzy = false) {
-        (fuzzy) ? _impl = new FuzzySearch<T>() : _impl = new PrefixSearch<T>();
+        (fuzzy) ? _impl = new FuzzySearch() : _impl = new PrefixSearch();
     }
 
 
@@ -49,15 +49,15 @@ public:
      * @param The type to set. Defaults to true.
      */
     void setFuzzy(bool fuzzy = true) {
-        if (dynamic_cast<FuzzySearch<T>*>(_impl)){
+        if (dynamic_cast<FuzzySearch*>(_impl)){
             if (fuzzy) return;
-            FuzzySearch<T> *old = dynamic_cast<FuzzySearch<T>*>(_impl);
-            _impl = new PrefixSearch<T>(*old);
+            FuzzySearch *old = dynamic_cast<FuzzySearch*>(_impl);
+            _impl = new PrefixSearch(*old);
             delete old;
         }else {
             if (!fuzzy) return;
-            PrefixSearch<T> *old = dynamic_cast<PrefixSearch<T>*>(_impl);
-            _impl = new FuzzySearch<T>(*old);
+            PrefixSearch *old = dynamic_cast<PrefixSearch*>(_impl);
+            _impl = new FuzzySearch(*old);
             delete old;
         }
     }
@@ -69,7 +69,7 @@ public:
      * @return True if the search is fuzzy else false.
      */
     bool fuzzy() {
-        return dynamic_cast<FuzzySearch<T>*>(_impl) != nullptr;
+        return dynamic_cast<FuzzySearch*>(_impl) != nullptr;
     }
 
 
@@ -85,7 +85,7 @@ public:
      * @param t The amount of error tolerance
      */
     void setDelta(double d) {
-        FuzzySearch<T>* f = dynamic_cast<FuzzySearch<T>*>(_impl);
+        FuzzySearch* f = dynamic_cast<FuzzySearch*>(_impl);
         if (f)
             f->setDelta(d);
     }
@@ -97,7 +97,7 @@ public:
      * @return The amount of error tolerance if search is fuzzy 0 else.
      */
     double delta(){
-        FuzzySearch<T>* f = dynamic_cast<FuzzySearch<T>*>(_impl);
+        FuzzySearch* f = dynamic_cast<FuzzySearch*>(_impl);
         if (f)
             return f->delta();
         return 0;
@@ -109,8 +109,8 @@ public:
      * @brief Build the search index
      * @param The items to index
      */
-    inline void build(const QList<T>& lso){
-        _impl->build(lso);
+    inline void add(IIndexable* idxble){
+        _impl->add(idxble);
     }
 
 
@@ -128,12 +128,12 @@ public:
      * @brief Perform a search on the index
      * @param req The query string
      */
-    inline QList<SharedObject> search(const QString &req) const {
+    inline QList<IIndexable*> search(const QString &req) const {
         return _impl->search(req);
     }
 
 private:
-    SearchImpl<T> *_impl;
+    SearchImpl *_impl;
 };
 
 

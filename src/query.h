@@ -16,30 +16,36 @@
 
 #pragma once
 #include <QString>
-#include <QAbstractListModel>
-#include "stdint.h"
-#include "objects.h"
-using std::shared_ptr;
+#include <QAbstractItemModel>
+#include "interfaces.h"
 
-class Query final : public QAbstractListModel {
+class Query final : public QAbstractItemModel {
 	Q_OBJECT
 
 public:
     explicit Query(QString term) : _searchTerm(term), _dynamicSort(false) {}
 	~Query(){}
 
-    void addResults(const QList<SharedObject> &results);
-    void addResult(SharedObject &result);
-    void setDynamicSearch(bool b){ _dynamicSort = b; }
-    bool dynamicSearch() const { return _dynamicSort; }
+    void addResult(INode *result);
+    //void setDynamicSearch(bool b){ _dynamicSort = b; }
+    //bool dynamicSearch() const { return _dynamicSort; }
     const QString& searchTerm() const {return _searchTerm;}
     void sort();
 
-    int rowCount(const QModelIndex & parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
+    void activate(const QModelIndex & index);
+
+    // QAbstractItemModel interface
+    QModelIndex index(int row, int column = 0, const QModelIndex & parent = QModelIndex()) const override;
+    QModelIndex parent(const QModelIndex & index) const override;
+    int rowCount(const QModelIndex & index = QModelIndex()) const override;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex & index, int role) const override;
+    Qt::ItemFlags flags(const QModelIndex & index) const override;
+    bool hasChildren(const QModelIndex & parent) const override;
+
 
 private:
-    QList<SharedObject> _results;
+    QList<INode*> _results;
     QString _searchTerm;
     bool _dynamicSort;
 };

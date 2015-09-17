@@ -1,87 +1,70 @@
 TODO:
+    TAG! albert-0.6.3-alpha
 
-  ~/.config/user-dirs.dirs ansprecvhen
-
-
-Issues independant of versioning:
+Ideas:
+    ~/.config/user-dirs.dirs ansprecvhen in files help
     Twitterplugin
-    Implement help.. somehow
-    Make websearch order changeable // Depends on actions
-    Metatypes for styleditemdelegate (qss)   Make subline stylable too
     Spin gear until search is finished
-    Move filedb to ram option
+    Use fallback if no icon in destkop file
+    Split repo for plugins from core
+    [Common,Files]  Split search, make common matcherobjects (prefix fuzzy) and use qgrams only for files
+    Object == string ? Uniform Resource Identifier etc
+    metatypes for styleditemdelegate (qss)
 
-    Make qsett8ng standaer dponstrucable
-
-Goal:  Port to way more flexible qml
-
-    Check the QtQuick standard project
-
-Goal:  Final hotkey refinement (xcb)
-
-    Make hotkeymanager a real manager, i.e. ability for multiple indep. hotkeys
-    #Make cool sharedpointer design for hotkeys
-    Use exceptions to propagate errors of the hotkeys (feedback to user)
-    Maybe dropX11Extras by using completeley only XCB
-    make all  noexcept
-
-Goal: Pluginprofioler
-
-Goal:  Python integration
-
-    Implement some examples: Calc (Sympy), Terminal, ssh
-    Implement the Python Extension Provider
-
-Goal:  Allow plugins to provide fallbacks L={*}
-
-Goal...
-
-    MULTITHREADING
-
-GOAL
-
-    Check all usage counter + incrementers
-    Fuzzy again is broken
-    Use QTreeview to show actions
-    check if removeing math worked
-    rename all inteface files to ..._if.h
-    Print Native Shiobn ohtkey
-    Rewrite old stuff: Actions
-    [app] use fallback if no icon in destkop file
-    [Applauncher]  Rewrite module to extension
-    [WebSearch]  Rewrite module to extension
-    [WebSearch]  Fix library resource bug (unique names!)
-    [ChromeBookmarks]  Rewrite module to extension
+Facts:
+    Avg pathlenth in home = 30.9 [L=0;C=0;for i in $(find /home/manuel/documents/ -not -path '*/\.*'); do ((++L)); C=$(($C+${#i})); done; bc <<< "scale=1;$C/$L"]
 
 
-    [Core] Pluignblacklist in plugin area (config)
-    [Core] Make a plugin class
-    [Files]  Make the indexing fingrained by mimetype
-    [Files]  Let indexed files be watched for 100 % synchronous index
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-________________________________________________________________________________
-DONE (Changelog; features only):
+------------------------------- RELEASE 0.13 -----------------------------------
+------------------------------- RELEASE 0.12 -----------------------------------
+------------------------------- RELEASE 0.11 -----------------------------------
+------------------------------- RELEASE 0.10 -----------------------------------
+------------------------------- RELEASE 0.9 ------------------------------------
+------------------------------- RELEASE 0.8 ------------------------------------
 
-0.7
+[TASK] - dropX11Extras by using completeley only XCB
+[TASK] - Multithreading
+[TASK] - Use matchers - Only large indexes have search indexes (Files), [ needs profiler ]
+[TASK] - Fuzzy again is broken
+[FEAT] - port to way more flexible qml - Check the QtQuick standard project
+[FEAT] - final hotkey refinement (XCB) - multiple independant hotkeys, qxtglobalshortcut,
+[FEAT] - Pluginmanager as treeview (Group, Extension, Subextension) - with QDataWidgetMapper
+[FEAT] - python integration - special plugin interface, (Calc (Sympy), Terminal, ssh)
+[FEAT] - Plugin Interdependenciea - https://doc-snapshots.qt.io/qtcreator-extending/extensionsystem-pluginspec.html#details
+[FEAT] - Make the indexing fingrained by mimetype
+[FEAT] - Profiler - Extensionhandler profiles extensions (SQLITE backend), Dummy extension with 1M results
+[FEAT] - [#8] QDesktopWidget * QApplication::desktop()
+[FEAT] - [Actions][modifier] - Configurable actionmap
+[FEAT] - [Actions][Interdep.] - e.g. open files with app actions
+[FEAT] - better scoring
+
+
+------------------------------- RELEASE 0.7 ------------------------------------
+- Ignore folders .albertignore
+- Filter indexed files by type
+- Let the index be build in background thread
+- Use raw instead shared pointers - (lame as hell 6x-10x, delete-later-mechanism that deletes item on session teardown)
+- [Actions][Builtin] - Extension can offer actions
+- Search without template and static downcast
+- [Actions] ListView("->" show actions, "<-" show results)
+x Plugin infrastucture - Port all modules
+
+Getting things done!
+--------------------
+- Port files
+ - Serialization
+- Port apps
+- Port bookmarks
+- Port calculator
+- Port websearch
+ - [FEAT][Actions][Global]  Fallback actions - needs only queryterm
 
 
 
-    [Core] Read settings on instantiaton (faster, cleaner, no singletons)
-    [Core] Implement actions
-    [Files]  Filter indexed files by type
-    [Files]  Let the index be build in background thread
-    [Core]  Implement incremental update of the search index
-    [Files]  Rewrite module to extension (sqlite based)
-    [Core]  Make standard item which has a 100% relevance (currently in extIF)
-    [Core]  Let settingswidgets be ESC closable
-    [Core]  Elide text in plugin settings
-    [Core]  Implement a cool messge logger
-    [Core]  Implement plugin settings
-    [Core]  Plugin infrastucture
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-0.6
-
-________________________________________________________________________________
 EXTENSION Properties
 
              hasTriggers (run exclusively)   | efficiency
@@ -108,81 +91,11 @@ Thunderbird  + - - - - -
 Google       + + - - - -
 Rhythmbox    - - - - - -  < kommt drauf an
 
-________________________________________________________________________________
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-
-
-
-
-
-
-
-
-________________________________________________________________________________
 Constraints for developers:
 - If it is not performance critical use python, since it will not depend on binary apis that much
 - Name plugins according the data they provide
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-pub
-    void setWatched();
-    void setTimed();
-
-    bool addDir(const QString &, bool recIndexUnindexed);
-    bool removeDir(const QString &);
-    void restoreDirs();
-
-    void update();
-
-
-
-
-priv
-    void indexDir(const QString &, bool recIndexUnindexed);
-    void cleanDir(const QString &, bool);
-
-    QHash<QString, bool> _rootPaths;
-    QSet<QString>        _indexedDirs;
-
-    SharedFilePtrList    _index;
-
-    bool                 _indexIsWatched;
-
-
-
-
-
-
-
-
 
 
 

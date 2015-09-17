@@ -27,7 +27,7 @@ namespace Files{
 
 /** ***************************************************************************/
 struct Comp {
-    inline bool operator()(const SharedFile &lhs, const SharedFile &rhs) const {
+    inline bool operator()(const File *lhs, const File *rhs) const {
         return QString::compare(lhs->absolutePath(), rhs->absolutePath(), Qt::CaseInsensitive) < 0;
     }
 };
@@ -35,7 +35,7 @@ struct Comp {
 
 
 /** ***************************************************************************/
-ScanWorker::ScanWorker(QList<SharedFile>** fileIndex, Search<SharedFile> *searchIndex, const QStringList& rootPaths, const IndexOptions& indexOptions, QMutex* searchLock) :
+ScanWorker::ScanWorker(QList<File *>** fileIndex, Search *searchIndex, const QStringList& rootPaths, const IndexOptions& indexOptions, QMutex* searchLock) :
     _fileIndex(fileIndex), _searchIndex(searchIndex), _rootDirs(rootPaths), _indexOptions(indexOptions), _mutex(searchLock), _abort(false) {}
 
 
@@ -43,7 +43,7 @@ ScanWorker::ScanWorker(QList<SharedFile>** fileIndex, Search<SharedFile> *search
 /** ***************************************************************************/
 void ScanWorker::run() {
     // Get a new index [O(n)]
-    QList<SharedFile>* newIndex = new QList<SharedFile>;
+    QList<File *>* newIndex = new QList<File *>;
     for (const QString& path : _rootDirs)
         indexRecursive(QFileInfo(path), newIndex);
 
@@ -67,10 +67,13 @@ void ScanWorker::run() {
     _mutex->lock();
     std::swap(*_fileIndex, newIndex);
     _searchIndex->clear();
-    _searchIndex->build(**_fileIndex);
+    for (IIndexable *i : **_fileIndex)
+        _searchIndex->add(i);
     _mutex->unlock();
 
     // Delete the old index
+    for (File* f : *newIndex)
+        delete f;
     delete newIndex;
     emit statusInfo(QString("Done. Indexed %1 files.").arg((*_fileIndex)->size()));
 }
@@ -78,14 +81,9 @@ void ScanWorker::run() {
 
 
 /** ***************************************************************************/
-void ScanWorker::indexRecursive(const QFileInfo& fi, QList<SharedFile>* result) {
-
-    /*
-     * TODO:
-     * - Check for a .albertignore file
-     */
-
-    SharedFile sf = SharedFile::create(fi.absoluteFilePath(), _mimeDatabase.mimeTypeForFile(fi));
+void ScanWorker::indexRecursive(const QFileInfo& fi, QList<File *>* result)
+{
+    File *sf = new File(fi.absoluteFilePath(), _mimeDatabase.mimeTypeForFile(fi));
     QString mimeName = sf->mimetype().name();
 
     // If is a file and matches index options index it

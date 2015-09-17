@@ -23,8 +23,8 @@
 #include <QFileInfo>
 #include <QPointer>
 #include <QTimer>
-#include "plugininterfaces/extension_if.h"
-#include "search/search.h"
+#include "interfaces.h"
+#include "utils/search/search.h"
 #include "file.h"
 #include "scanworker.h"
 
@@ -93,8 +93,8 @@ private:
     QTimer                 _intervalTimer;
     QPointer<ScanWorker>   _scanWorker;
     QMutex                 _mutex;
-    Search<SharedFile>     _searchIndex;
-    QList<SharedFile>*     _fileIndex;
+    Search                 _searchIndex;
+    QList<File*>*          _fileIndex;
 
     /* constexpr */
     static constexpr const char* CFG_GROUP             = "Files";

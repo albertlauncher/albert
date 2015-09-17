@@ -15,46 +15,48 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QFileInfo>
+#include <QApplication>
 #include "file.h"
-#include "actions.h"
+#include "actions/openfileaction.h"
+#include "actions/revealfileaction.h"
+#include "actions/copyfileaction.h"
+#include "actions/copypathaction.h"
+#include "extension.h"
 
 namespace Files {
 
 QHash<QString, QIcon> File::_iconCache;
 
 /** ***************************************************************************/
-File::File(const QString &path, QMimeType mimetype){
-    _path = path.toStdString();
-    _path.shrink_to_fit();
-    _mimetype = mimetype;
-    _usage = 0;
+File::File(const QString &path, QMimeType mimetype)
+    : _path(path), _mimetype(mimetype), _usage(0), _actions(nullptr) {}
+
+
+
+/** ***************************************************************************/
+QString File::name(const Query *) const {
+    return QFileInfo(_path).fileName();
 }
 
 
 
 /** ***************************************************************************/
-QString File::name(){
-    return QFileInfo(QString::fromStdString(_path)).fileName();
+QString File::description(const Query *) const {
+    return _path;
 }
 
 
 
 /** ***************************************************************************/
-QString File::description(){
-    return _mimetype.comment();
+void File::activate(const Query *q) {
+//    Qt::KeyboardModifiers mods = QApplication::keyboardModifiers(); // TODO:ActionMap
+    OpenFileAction(this).activate(q);
 }
 
 
 
 /** ***************************************************************************/
-QStringList File::alises(){
-    return QStringList();
-}
-
-
-
-/** ***************************************************************************/
-QIcon File::icon(){
+QIcon File::icon() const {
     if (!_iconCache.contains(_mimetype.iconName())){
         if (QIcon::hasThemeIcon(_mimetype.iconName()))
             _iconCache.insert(_mimetype.iconName(), QIcon::fromTheme(_mimetype.iconName()));
@@ -69,50 +71,62 @@ QIcon File::icon(){
 
 
 /** ***************************************************************************/
-uint File::usage(){
+QStringList File::aliases() const {
+    return QStringList() << QFileInfo(_path).fileName();
+}
+
+
+
+/** ***************************************************************************/
+uint File::usage() const {
     return _usage;
 }
 
 
 
 /** ***************************************************************************/
-QList<std::shared_ptr<Action>> File::actions(){
-    return { std::make_shared<OpenFileAction>(*this), std::make_shared<RevealFileAction>(*this) };
+QList<INode *> File::children() {
+    if (_actions == nullptr){
+        _actions = new QList<INode*>({new OpenFileAction(this),
+                                     new RevealFileAction(this),
+                                     new CopyFileAction(this),
+                                     new CopyPathAction(this)});
+    }
+    return *_actions;
 }
 
 
 
 /** ***************************************************************************/
-QString File::path()
-{
-    return QFileInfo(QString::fromStdString(_path)).path();
+QString File::path() const {
+    return QFileInfo(_path).path();
 }
 
 
 
 /** ***************************************************************************/
-QString File::absolutePath(){
-    return QString::fromStdString(_path);
+QString File::absolutePath() const {
+    return _path;
 }
 
 
 
 /** ***************************************************************************/
-QMimeType File::mimetype(){
+QMimeType File::mimetype() const {
     return _mimetype;
 }
 
 
 
 /** ***************************************************************************/
-bool File::isDir(){
-    return QFileInfo(QString::fromStdString(_path)).isDir();
+bool File::isDir() const {
+    return QFileInfo(_path).isDir();
 }
 
 
 
 /** ***************************************************************************/
-void File::clearIconCache(){
+void File::clearIconCache() {
     _iconCache.clear();
 }
 }

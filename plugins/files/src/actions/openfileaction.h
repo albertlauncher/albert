@@ -15,22 +15,22 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QtPlugin>
-#include "plugin_if.h"
-#include "query.h"
+#include "abstractfileaction.h"
+#include <QString>
+#include <QIcon>
+class Query;
 
-
-class ExtensionInterface : public PluginInterface
+namespace Files {
+class OpenFileAction final : public AbtractFileAction
 {
 public:
-    ExtensionInterface() {}
-    virtual ~ExtensionInterface() {}
-
-    virtual void setupSession() {}
-    virtual void teardownSession() {}
-    virtual void setFuzzy(bool b) = 0;
-    virtual void handleQuery(Query *q) = 0;
+    OpenFileAction(File *file) : AbtractFileAction(file) {}
+    QString name(Query const *q) const override;
+    QString description(Query const *q) const override;
+    QIcon   icon() const override;
+    void    activate(Query const *q) override;
+    uint    usage() const override;
+protected:
+    static unsigned int usageCounter;
 };
-
-#define ALBERT_EXTENSION_IID "org.manuelschneid3r.albert.extension"
-Q_DECLARE_INTERFACE(ExtensionInterface, ALBERT_EXTENSION_IID)
+}

@@ -15,35 +15,22 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QLineEdit>
-#include <list>
-using std::list;
-#include "settingsbutton.h"
+#include "abstractfileaction.h"
+#include <QString>
+#include <QIcon>
+class Query;
 
-class InputLine final : public QLineEdit
+namespace Files {
+class CopyFileAction final : public AbtractFileAction
 {
-    Q_OBJECT
 public:
-    explicit InputLine(QWidget *parent = 0);
-    ~InputLine();
-
-    void clearHistory() { _lines.clear(); }
-    void clear();
-
-    SettingsButton   *_settingsButton;
-
-private:
-    void keyPressEvent(QKeyEvent*) override;
-    void wheelEvent(QWheelEvent *);
-    void resizeEvent(QResizeEvent*) override;
-
-    void resetIterator();
-    void next();
-    void prev();
-
-
-    list<QString> _lines; // NOTE fix this in 5.6, qt has no reverse iterators https://codereview.qt-project.org/#/c/109850/
-    list<QString>::const_reverse_iterator _currentLine;
-
-    static constexpr const char * SETTINGS_SHORTCUT = "Alt+,"; // FIXME
+    CopyFileAction(File *file) : AbtractFileAction(file) {}
+    QString name(Query const *q) const override;
+    QString description(Query const *q) const override;
+    QIcon   icon() const override;
+    void    activate(Query const *q) override;
+    uint    usage() const override;
+protected:
+    static unsigned int usageCounter;
 };
+}

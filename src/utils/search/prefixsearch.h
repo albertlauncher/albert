@@ -18,9 +18,10 @@
 #include "search_impl.h"
 #include <QSet>
 #include <QMap>
+#include <QRegularExpression>
 
-template<class T>
-class PrefixSearch : public SearchImpl<T> {
+class PrefixSearch : public SearchImpl
+{
 public:
 
 
@@ -31,7 +32,8 @@ public:
 
 
     /** ***********************************************************************/
-    PrefixSearch(const PrefixSearch &rhs){
+    PrefixSearch(const PrefixSearch &rhs)
+    {
         _invertedIndex = rhs._invertedIndex;
     }
 
@@ -43,16 +45,14 @@ public:
 
 
     /** ***********************************************************************/
-    void build(const QList<T>& lso) override {
-        for (SharedObject obj : lso){
-            QStringList aliases = obj->alises() << obj->name();
-            for (const QString &str : aliases) {
-                // Build an inverted index
-                QStringList words = str.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
-                for (QString &w : words){
-                    w.toLower();
-                    _invertedIndex[w].insert(obj);
-                }
+    void add(IIndexable* idxble) override
+    {
+        QStringList aliases = idxble->aliases();
+        for (const QString &str : aliases) {
+            // Build an inverted index
+            QStringList words = str.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
+            for (QString &w : words){
+                _invertedIndex[w.toLower()].insert(idxble);
             }
         }
     }
@@ -60,36 +60,40 @@ public:
 
 
     /** ***********************************************************************/
-    void clear() override {
+    void clear() override
+    {
         _invertedIndex.clear();
     }
 
 
 
     /** ***********************************************************************/
-    QList<SharedObject> search(const QString &req) const override {
-        QSet<SharedObject>* resSet = nullptr; // Constraint (1): resSet == nullptr
-        QStringList words = req.split(SEPARATOR_REGEX, QString::SkipEmptyParts);
-        if (words.empty()) return QList<SharedObject>(); // Constraint (2): words is not empty
+    QList<IIndexable*> search(const QString &req) const override
+    {
+        QSet<IIndexable*>* resSet = nullptr; // Constraint (1): resSet == nullptr
+        QStringList words = req.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
+        if (words.empty())
+            return QList<IIndexable*>(); // Constraint (2): words is not empty
         for (QString &w : words) {
+            w=w.toLower();
             InvertedIndex::const_iterator lb;
-            QSet<SharedObject> tmpSet;
+            QSet<IIndexable*> tmpSet;
             lb = _invertedIndex.lowerBound(w);
             while (lb != _invertedIndex.cend() && lb.key().startsWith(w))
                 tmpSet.unite(lb++.value());
             if (resSet == nullptr)		// (1)&&(2)  |-  Constraint resSet != nullptr (3)
-                resSet = new QSet<SharedObject>(tmpSet);
+                resSet = new QSet<IIndexable*>(tmpSet);
             else
                 resSet->intersect(tmpSet);
         }
         // Safe to not check resSet != nullptr since (3) holds
-        QList<SharedObject> res = resSet->toList();
+        QList<IIndexable*> res = resSet->toList();
         delete resSet;
         return res;
     }
 
 protected:
-    typedef QMap<QString, QSet<SharedObject>> InvertedIndex;
+    typedef QMap<QString, QSet<IIndexable*>> InvertedIndex;
     InvertedIndex _invertedIndex;
 };
 

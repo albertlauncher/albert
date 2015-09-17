@@ -19,40 +19,40 @@
 #include <QIcon>
 #include <QMimeType>
 #include <string>
-using std::string;
-#include "objects.h"
+#include "interfaces.h"
+#include "utils/search/iindexable.h"
 
 
 namespace Files {
 
+class Extension;
 
-class File final : public AlbertObject {
-
+class File final : public RootNode, public IIndexable
+{
     friend class ScanWorker;
 
 public:
     explicit File(const QString &path, QMimeType mimetype);
 
-    QString name() override;
-    QString description() override;
-    QStringList alises() override;
-    QIcon icon() override;
-    uint usage() override;
-    QList<std::shared_ptr<Action>> actions() override;
+    QString       name(const Query *) const override;
+    QString       description(const Query *) const override;
+    QIcon         icon() const override;
+    void          activate(const Query *) override;
+    uint          usage() const override;
+    QList<INode*> children() override;
+    QStringList   aliases() const override;
 
-    QString path();
-    QString absolutePath();
-    QMimeType mimetype();
-    bool isDir();
+    QString path() const;
+    QString absolutePath() const;
+    QMimeType mimetype() const;
+    bool isDir() const;
     static void clearIconCache();
 
 private:
-    string _path;
+    QString _path;
     QMimeType _mimetype;
     uint _usage;
+    QList<INode*> *_actions;
     static QHash<QString, QIcon> _iconCache;
 };
-typedef QSharedPointer<File> SharedFile;
-
-
 }

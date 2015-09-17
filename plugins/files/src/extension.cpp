@@ -33,7 +33,7 @@ namespace Files{
 
 /** ***************************************************************************/
 Extension::Extension() {
-    _fileIndex = new QList<SharedFile>;
+    _fileIndex = new QList<File*>;
 }
 
 
@@ -158,9 +158,14 @@ void Extension::teardownSession() {
 
 /** ***************************************************************************/
 void Extension::handleQuery(Query *q) {
+    // Search for matches. Lock memory against scanworker
     _mutex.lock();
-    q->addResults(_searchIndex.search(q->searchTerm()));
+    QList<IIndexable*> indexables = _searchIndex.search(q->searchTerm());
     _mutex.unlock();
+
+    // Add results to query. This cast is safe since index holds files only
+    for (IIndexable *obj : indexables)
+        q->addResult(static_cast<File*>(obj));
 }
 
 

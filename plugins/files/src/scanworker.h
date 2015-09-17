@@ -19,7 +19,7 @@
 #include <QMimeDatabase>
 #include <QMutex>
 #include <QList>
-#include "./search/search.h"
+#include "utils/search/search.h"
 #include "file.h"
 
 namespace Files{
@@ -31,19 +31,19 @@ class ScanWorker final : public QObject, public QRunnable {
     Q_OBJECT
 
 public:
-    ScanWorker(QList<SharedFile>** fileIndex, Search<SharedFile>* searchIndex, const QStringList& rootPaths, const IndexOptions& indexOptions, QMutex* searchLock);
+    ScanWorker(QList<File *>** fileIndex, Search* searchIndex, const QStringList& rootPaths, const IndexOptions& indexOptions, QMutex* searchLock);
     void run() override;
     inline void abort(){ _abort = true; }
 
 private:
-    void indexRecursive(const QFileInfo& fi, QList<SharedFile>* result);
+    void indexRecursive(const QFileInfo& fi, QList<File *>* result);
 
-    QMimeDatabase        _mimeDatabase;
-    QList<SharedFile>**  _fileIndex;
-    Search<SharedFile>*  _searchIndex;
-    const QStringList&   _rootDirs;
-    const IndexOptions&  _indexOptions;
-    QMutex*              _mutex;
+    QMimeDatabase       _mimeDatabase;
+    QList<File*>        **_fileIndex;
+    Search              *_searchIndex;
+    const QStringList   &_rootDirs;
+    const IndexOptions  &_indexOptions;
+    QMutex              *_mutex;
     bool _abort;
 
 signals:

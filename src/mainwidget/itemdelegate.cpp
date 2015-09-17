@@ -35,22 +35,22 @@ void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &options,
     painter->drawPixmap(iconRect, index.data(Qt::DecorationRole).value<QIcon>().pixmap(option.decorationSize));
 
     /* Drawing text differs dependent on the mode and selection */
-    if (showInfo)
+    if (showInfo && (!showForSelectedOnly || option.state.testFlag(QStyle::State_Selected)) )
     {
         /*
          * fm(x) := fontmetrics of x
          * DR := DisplayRole
-         * UR := UserRole
+         * TR := ToolTipRole
          *  +---------------------+----------------------------------------+
          *  |                     |                                        |
          *  |   +-------------+   |                                        |
          *  |   |             |   |                                        |
-         *  |   |             |   |a*fm(DR)/(fm(DR)+fm(UR))    DisplayRole |
+         *  |   |             |   |a*fm(DR)/(fm(DR)+fm(TR))    DisplayRole |
          * a|   |     icon    |   |                                        |
          *  |   |             |   |                                        |
          *  |   |             |   +----------------------------------------+
          *  |   |             |   |                                        |
-         *  |   +-------------+   |a*fm(UR)/(fm(DR)+fm(UR))     UserRole+x |
+         *  |   +-------------+   |a*fm(TR)/(fm(DR)+fm(TR))  ToolTipRole+x |
          *  |                     |                                        |
          * +---------------------------------------------------------------+
          */
@@ -67,9 +67,7 @@ void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &options,
         font.setPixelSize(12);
         painter->setFont(font);
         text = QFontMetrics(font).elidedText(
-                    index.data(
-                        ((option.state & QStyle::State_Selected) && showAction)
-                        ? Qt::UserRole : Qt::ToolTipRole) // Action or normal description
+                    index.data(Qt::ToolTipRole)
                     .toString(),
                     option.textElideMode,
                     DisplayRect.width());

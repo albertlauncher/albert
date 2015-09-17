@@ -15,16 +15,22 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QWidget>
+#include "abstractfileaction.h"
+#include <QString>
+#include <QIcon>
+class Query;
 
-/** ***************************************************************************/
-class PluginInterface
+namespace Files {
+class CopyPathAction final : public AbtractFileAction
 {
 public:
-    PluginInterface() {}
-    virtual ~PluginInterface() {}
-
-    virtual void     initialize() = 0;
-    virtual void     finalize() = 0;
-    virtual QWidget* widget() = 0;
+    CopyPathAction(File *file) : AbtractFileAction(file) {}
+    QString name(Query const *q) const override;
+    QString description(Query const *q) const override;
+    QIcon   icon() const override;
+    void    activate(Query const *q) override;
+    uint    usage() const override;
+protected:
+    static unsigned int usageCounter;
 };
+}

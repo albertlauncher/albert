@@ -22,8 +22,7 @@
 class ItemDelegate : public QStyledItemDelegate
 {
 public:
-    bool showInfo;
-    bool showAction;
-
     void paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const override;
+    bool showInfo;
+    bool showForSelectedOnly;
 };

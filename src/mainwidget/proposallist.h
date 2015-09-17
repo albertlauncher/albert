@@ -33,12 +33,13 @@ public:
     void reset() override;
 
     void setShowInfo(bool);
-    void setShowAction(bool);
-    void setMaxItems(uint);
-
     bool showInfo() const;
-    bool showAction() const;
-    bool maxItems() const;
+
+    void setSelectedOnly(bool);
+    bool selectedOnly() const;
+
+    void setMaxItems(int);
+    int maxItems() const;
 
 
 
@@ -46,12 +47,12 @@ private:
     bool eventFilter(QObject*, QEvent *event) override;
 
     ItemDelegate *_itemDelegate;
-    uint _maxItems;
+    int _maxItems;
 
     static const constexpr char* CFG_SHOW_INFO         = "showInfo";
     static const constexpr bool  CFG_SHOW_INFO_DEF     = true;
-    static const constexpr char* CFG_SHOW_ACTION       = "showInfo";
-    static const constexpr bool  CFG_SHOW_ACTION_DEF   = true;
+    static const constexpr char* CFG_SELECTED_ONLY     = "showForSelectedOnly";
+    static const constexpr bool  CFG_SELECTED_ONLY_DEF = false;
     static const constexpr char* CFG_MAX_PROPOSALS     = "itemCount";
-    static const constexpr uint  CFG_MAX_PROPOSALS_DEF = 5;
+    static const constexpr int   CFG_MAX_PROPOSALS_DEF = 5;
 };
