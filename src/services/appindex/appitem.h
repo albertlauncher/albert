@@ -43,6 +43,8 @@ protected:
 	QString _iconName;
 	QString _exec;
 	bool    _term;
+	static QString _termEmu;
+	static QString _suHelper;
 
 	// Serialization
 	void serialize (QDataStream &out) const override;
