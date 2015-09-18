@@ -128,27 +128,29 @@ GlobalHotkey::GlobalHotkeyPrivate::GlobalHotkeyPrivate(QObject *parent)
 		for (maskIndex = 0; maskIndex < 8; maskIndex++) {
 			for (i = 0; i < map->max_keypermod; i++) {
 				if (map->modifiermap[mapIndex]) {
-					KeySym sym;
+					KeySym *sym = NULL;
+                                        int keysym_return;
 					int symIndex = 0;
 					do {
-						sym = XKeycodeToKeysym(dpy, map->modifiermap[mapIndex], symIndex);
+                                                sym = XGetKeyboardMapping(dpy, map->modifiermap[mapIndex], symIndex, &keysym_return);
 						symIndex++;
 					} while ( !sym && symIndex < keysyms_per_keycode);
-					if (_alt_mask == 0 && (sym == XK_Alt_L || sym == XK_Alt_R)) {
+					if (_alt_mask == 0 && (*sym == XK_Alt_L || *sym == XK_Alt_R)) {
 						_alt_mask = 1 << maskIndex;
 					}
-					if (_meta_mask == 0 && (sym == XK_Meta_L || sym == XK_Meta_R)) {
+					if (_meta_mask == 0 && (*sym == XK_Meta_L || *sym == XK_Meta_R)) {
 						_meta_mask = 1 << maskIndex;
 					}
-					if (_super_mask == 0 && (sym == XK_Super_L || sym == XK_Super_R)) {
+					if (_super_mask == 0 && (*sym == XK_Super_L || *sym == XK_Super_R)) {
 						_super_mask = 1 << maskIndex;
 					}
-					if (_hyper_mask == 0 && (sym == XK_Hyper_L || sym == XK_Hyper_R)) {
+					if (_hyper_mask == 0 && (*sym == XK_Hyper_L || *sym == XK_Hyper_R)) {
 						_hyper_mask = 1 << maskIndex;
 					}
-					if (_numlock_mask == 0 && (sym == XK_Num_Lock)) {
+					if (_numlock_mask == 0 && (*sym == XK_Num_Lock)) {
 						_numlock_mask = 1 << maskIndex;
 					}
+                                        XFree(sym);
 				}
 				mapIndex++;
 			}
