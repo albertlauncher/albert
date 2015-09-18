@@ -58,6 +58,8 @@ void AppIndex::restoreDefaults()
 void AppIndex::saveSettings(QSettings &s) const
 {
 	// Save settings
+	s.setValue("Terminal", Item::_termEmu);
+	s.setValue("SuHelper", Item::_suHelper);
 	s.beginGroup("AppIndex");
 	s.setValue("Paths", _paths);
 	s.setValue("SearchType", static_cast<int>(searchType()));
@@ -68,6 +70,8 @@ void AppIndex::saveSettings(QSettings &s) const
 void AppIndex::loadSettings(QSettings &s)
 {
 	// Load settings
+	Item::_termEmu = s.value("Terminal", "konsole").toString();
+	Item::_suHelper = s.value("SuHelper", "kdesu").toString();
 	s.beginGroup("AppIndex");
 	_paths = s.value("Paths", QStandardPaths::standardLocations(
 						 QStandardPaths::ApplicationsLocation)).toStringList();

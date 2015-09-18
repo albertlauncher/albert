@@ -22,12 +22,15 @@
 #include <QDebug>
 #include <QStandardPaths>
 
+QString AppIndex::Item::_termEmu;
+QString AppIndex::Item::_suHelper;
+
 /**************************************************************************/
 void AppIndex::Item::action()
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
 	if (_term)
-		QProcess::startDetached("konsole -e " + _exec);
+		QProcess::startDetached(_termEmu + " -e " + _exec);
 	else
 		QProcess::startDetached(_exec);
 
@@ -44,9 +47,9 @@ void AppIndex::Item::altAction()
 {
 	_lastAccess = std::chrono::system_clock::now().time_since_epoch().count();
 	if (_term)
-		QProcess::startDetached("kdesu konsole -e " + _exec);
+		QProcess::startDetached(_suHelper + " " + _termEmu + " -e " + _exec);
 	else
-		QProcess::startDetached("kdesu " + _exec);
+		QProcess::startDetached(_suHelper + " " + _exec);
 }
 
 /**************************************************************************/
