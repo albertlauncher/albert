@@ -8,6 +8,7 @@ url="https://github.com/ManuelSchneid3r/albert"
 license=('GPL')
 depends=('qt5-base' 'libx11' 'muparser' 'qt5-x11extras')
 makedepends=('cmake' 'qt5-base' 'qt5-tools')
+optdepends=('qt5-svg')
 provides=()
 conflicts=()
 replaces=()
