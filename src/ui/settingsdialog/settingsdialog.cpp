@@ -165,7 +165,7 @@ void SettingsWidget::closeEvent(QCloseEvent *event)
 {
 	if (_mainWidget->_hotkeyManager.hotkey() == 0){
 		QMessageBox msgBox(QMessageBox::Critical, "Error",
-						   "Hotkey is invalid, please set it. Press Ok to go"\
+						   "Hotkey is invalid, please set it. Press Ok to go "\
 						   "back to the settings, or press Cancel to quit albert.",
 						   QMessageBox::Close|QMessageBox::Ok);
 		msgBox.exec();
