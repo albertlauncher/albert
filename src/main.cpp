@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,33 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QApplication>
-#include <QStandardPaths>
-#include <QDir>
-#include "mainwidget.h"
+#include "albertapp.h"
 
-
-int main(int argc, char *argv[])
-{
-	// Application
-	QApplication a(argc, argv);
-	QCoreApplication::setApplicationName(QString::fromLocal8Bit("albert"));
-	a.setWindowIcon(QIcon(":app_icon"));
-	a.setQuitOnLastWindowClosed(false); // Dont quit after settings close
-
-
-	{ // FIRST RUN STUFF
-		QDir data(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
-		if (!data.exists())
-			data.mkpath(".");
-		QDir conf(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
-				  +"/"+qApp->applicationName());
-		if (!conf.exists())
-			conf.mkpath(".");
-	}
-
-	MainWidget *w = new MainWidget;
-	int retval = a.exec();
-	delete w;
-	return retval;
+int main(int argc, char *argv[]) {
+    AlbertApp app(argc, argv);
+    return app.exec();
 }

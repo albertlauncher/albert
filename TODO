@@ -1,7 +1,103 @@
-TODO setEARCH IS buull
-TODO Make webserachitems proirity changeable
-TODO Command history
-TODO Read setting once at startup and write once on close
-TODO Virtualize actions, define global actions, make em customizable
-TODO Connect listview to engine to run actions using signals.
-TODO komma punkt in calc
+TODO:
+    TAG! albert-0.6.3-alpha
+
+Ideas:
+    ~/.config/user-dirs.dirs ansprecvhen in files help
+    Twitterplugin
+    Spin gear until search is finished
+    Use fallback if no icon in destkop file
+    Split repo for plugins from core
+    [Common,Files]  Split search, make common matcherobjects (prefix fuzzy) and use qgrams only for files
+    Object == string ? Uniform Resource Identifier etc
+    metatypes for styleditemdelegate (qss)
+
+Facts:
+    Avg pathlenth in home = 30.9 [L=0;C=0;for i in $(find /home/manuel/documents/ -not -path '*/\.*'); do ((++L)); C=$(($C+${#i})); done; bc <<< "scale=1;$C/$L"]
+
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+------------------------------- RELEASE 0.13 -----------------------------------
+------------------------------- RELEASE 0.12 -----------------------------------
+------------------------------- RELEASE 0.11 -----------------------------------
+------------------------------- RELEASE 0.10 -----------------------------------
+------------------------------- RELEASE 0.9 ------------------------------------
+------------------------------- RELEASE 0.8 ------------------------------------
+
+[TASK] - dropX11Extras by using completeley only XCB
+[TASK] - Multithreading
+[TASK] - Use matchers - Only large indexes have search indexes (Files), [ needs profiler ]
+[TASK] - Fuzzy again is broken
+[FEAT] - port to way more flexible qml - Check the QtQuick standard project
+[FEAT] - final hotkey refinement (XCB) - multiple independant hotkeys, qxtglobalshortcut,
+[FEAT] - Pluginmanager as treeview (Group, Extension, Subextension) - with QDataWidgetMapper
+[FEAT] - python integration - special plugin interface, (Calc (Sympy), Terminal, ssh)
+[FEAT] - Plugin Interdependenciea - https://doc-snapshots.qt.io/qtcreator-extending/extensionsystem-pluginspec.html#details
+[FEAT] - Make the indexing fingrained by mimetype
+[FEAT] - Profiler - Extensionmanager profiles extensions (SQLITE backend), Dummy extension with 1M results
+[FEAT] - [#8] QDesktopWidget * QApplication::desktop()
+[FEAT] - [Actions][modifier] - Configurable actionmap
+[FEAT] - [Actions][Interdep.] - e.g. open files with app actions
+[FEAT] - better scoring
+
+
+------------------------------- RELEASE 0.7 ------------------------------------
+- Ignore folders .albertignore
+- Filter indexed files by type
+- Let the index be build in background thread
+- Use raw instead shared pointers - (lame as hell 6x-10x, delete-later-mechanism that deletes item on session teardown)
+- [Actions][Builtin] - Extension can offer actions
+- Search without template and static downcast
+- [Actions] ListView("->" show actions, "<-" show results)
+- Split file in file and fileitem
+- Move the datamodelling to core by not let parent()/children() be part of IItem
+x Plugin infrastucture - Port all modules
+ x Port files
+  -> Serialization
+ x Port apps
+ x Port bookmarks
+ x Port calculator
+ x Port websearch
+  x [FEAT][Actions][Global]  Fallback actions - needs only queryterm
+ x Check that paths are created safely with QDir(dirPath).filePath(fileName);
+ x make use of mutable make interface const
+ scanworker still may cause exception if winsow is visible
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+EXTENSION Properties
+
+             hasTriggers (run exclusively)   | efficiency
+             | startOnlyIfTriggered            | heavy output or resource consumption
+             | | usageIsTracked                  | relevance
+             | | | providesFallback                | convenience
+             | | | | hasSearchIndex                  | performance
+             | | | | | fuzzySearchable                 | tolerance
+             ^ ^ ^ ^ ^ ^
+             0 1 2 3 4 5
+Files        - - + - + +      MIME
+Apps         - - + - + +
+Bookmarks    - - + - + +
+ssh          + - + - - +
+WebSearch    + - + + - -
+Calc         + - - - - - I
+Terminal     + + - ? - -
+FileFinder   + + - - - -
+Translate    + - - - - - I
+Blogs        + - + - - -
+System       - - + - - -
+Dict         + ? - - - - I
+Thunderbird  + - - - - -
+Google       + + - - - -
+Rhythmbox    - - - - - -  < kommt drauf an
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+Constraints for developers:
+- If it is not performance critical use python, since it will not depend on binary apis that much
+- Name plugins according the data they provide
+
+
+
+
+
+

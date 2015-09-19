@@ -1,0 +1,9 @@
+{
+    "name" :            "WebSearch",
+    "version" :         "1.0",
+    "platform" :        "All",
+    "group" :           "Extensions",
+    "copyright" :       "(C) 2015 Manuel Schneider",
+    "description" :     "Configure and run websearches via albert.",
+    "dependencies" :    []
+}

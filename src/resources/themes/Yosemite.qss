@@ -1,0 +1,97 @@
+/*
+ * Yosemite Theme
+ * Main colors: Black white
+ * Gray  : #eee
+ */
+
+#bottomFrame *{
+  font-family:"DejaVu Sans";
+  font-weight:100;
+}
+
+
+#bottomFrame {
+	width:640px;
+	min-width:640px;
+	max-width:640px;
+	padding: 1px;
+	border-radius: 5px;
+	background-color: rgba(0, 0, 0, 32);
+}
+
+#topFrame {
+	background-color: #fff;
+	padding: 7px;
+	border-radius: 4px;
+}
+
+#inputLine {
+	padding: 2px;
+	font-size: 36px;
+	border: none;
+	color : #000;
+	background-color: #fff;
+	selection-color: #fff;
+	selection-background-color: #000;
+}
+
+#settingsButton {
+	min-width:14px;
+	min-height:14px;
+	max-width:14px;
+	max-height:14px;
+	border: none;
+	border-radius: 2px;
+	color: #eee;
+	background-color: transparent;
+}
+
+#settingsButton:hover {
+	background-color: #ccc;
+}
+
+/********** proposalList **********/
+
+#proposalList {
+	icon-size:44px;
+	font-size: 26px;
+	border-radius: 5px;
+	color: #000;
+	background-color: transparent;
+}
+
+#proposalList::item{
+	height:48px;
+	border: 0px solid transparent;
+}
+
+#proposalList::item:selected{
+	border: 0px solid #000;
+	background: #eee;
+}
+
+#proposalList::item:hover{}
+#proposalList::item:selected:!active{}
+#proposalList::item:selected:active{}
+#proposalList::item:alternate{}
+
+/********** SCROLLBAR **********/
+
+#proposalList QScrollBar:vertical  {
+	width: 5px;
+	background: transparent;
+}
+
+#proposalList QScrollBar::handle:vertical  {
+	background: #eee;
+	min-height: 24px;
+}
+
+#proposalList QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
+#proposalList QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical,
+#proposalList QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+	border: 0px;
+	width: 0px;
+	height: 0px;
+	background: transparent;
+}

@@ -1,0 +1,9 @@
+{
+    "name" :            "ChromeBookmarks",
+    "version" :         "1.0",
+    "platform" :        "Linux",
+    "group" :           "Extensions",
+    "copyright" :       "(C) 2015 Manuel Schneider",
+    "description" :     "Indexes chrome bookmarks and makes them runnable via albert.",
+    "dependencies" :    ["chromium"]
+}
