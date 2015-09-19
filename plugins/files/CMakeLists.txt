@@ -6,7 +6,7 @@ project(files)
 SET(TARGET_VERSION_MAJOR 1)
 SET(TARGET_VERSION_MINOR 0)
 
-include(./global_cmake_settings.txt OPTIONAL)
+include(../../global_cmake_settings.txt REQUIRED)
 
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Svg REQUIRED)
@@ -14,26 +14,23 @@ find_package(Qt5Svg REQUIRED)
 include_directories(
 	src/
         src/actions
-        ../../src/
+        ../../src/interfaces/
 )
 
 set(${PROJECT_NAME}_SRCS
     src/metadata.json
 
     src/extension.cpp
-    src/configwidget.cpp
     src/file.cpp
+    src/fileitem.cpp
     src/scanworker.cpp
+    src/configwidget.cpp
     src/mimetypedialog.cpp
     src/mimetypechooser.cpp
-    src/actions/abstractfileaction.h
     src/actions/openfileaction.cpp
     src/actions/revealfileaction.cpp
     src/actions/copyfileaction.cpp
     src/actions/copypathaction.cpp
-
-    ../../src/interfaces.h
-    ../../src/utils/search/search.h
 )
 
 qt5_wrap_ui(${PROJECT_NAME}_UIS

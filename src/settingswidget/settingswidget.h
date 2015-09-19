@@ -18,14 +18,14 @@
 #include "ui_settingswidget.h"
 #include "hotkeymanager.h"
 #include "mainwidget.h"
-#include "pluginhandler.h"
+#include "pluginmanager.h"
 
 class SettingsWidget final : public QWidget
 {
     Q_OBJECT
 
 public:
-    SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyManager, PluginHandler *pluginHandler, QWidget * parent = 0, Qt::WindowFlags f = 0);
+    SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyManager, PluginManager *pluginManager, QWidget * parent = 0, Qt::WindowFlags f = 0);
     ~SettingsWidget();
     void show();
 
@@ -44,5 +44,5 @@ private:
 
     MainWidget *_mainWidget;
     HotkeyManager *_hotkeyManager;
-    PluginHandler *_pluginHandler;
+    PluginManager *_pluginManager;
 };

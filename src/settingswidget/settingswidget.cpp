@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "settingswidget.h"
 #include <QDir>
 #include <QDebug>
 #include <QStandardPaths>
@@ -23,15 +22,16 @@
 #include <QShortcut>
 #include <QDesktopWidget>
 #include <QFocusEvent>
+#include "settingswidget.h"
 #include "hotkeymanager.h"
 #include "mainwidget.h"
-#include "pluginhandler.h"
-#include "interfaces.h"
+#include "pluginmanager.h"
+#include "interfaces/iextension.h"
 
 
 /** ***************************************************************************/
-SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyManager, PluginHandler *pluginHandler, QWidget *parent, Qt::WindowFlags f)
-    : QWidget(parent, f), _mainWidget(mainWidget), _hotkeyManager(hotkeyManager), _pluginHandler(pluginHandler) {
+SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyManager, PluginManager *pluginManager, QWidget *parent, Qt::WindowFlags f)
+    : QWidget(parent, f), _mainWidget(mainWidget), _hotkeyManager(hotkeyManager), _pluginManager(pluginManager) {
 
     ui.setupUi(this);
     setWindowFlags(Qt::Window|Qt::WindowCloseButtonHint);
@@ -123,9 +123,9 @@ SettingsWidget::~SettingsWidget() {
 void SettingsWidget::openPluginHelp() {
 //    if (ui.treeWidget_plugins->currentIndex().isValid()){
 //        QString path = ui.treeWidget_plugins->currentItem()->data(0,Qt::UserRole).toString();
-//        for (PluginLoader *plugin : _pluginHandler->plugins()){
+//        for (PluginLoader *plugin : _pluginManager->plugins()){
 //            if (plugin->fileName() == path) { // MUST HAPPEN
-//                QWidget *w = dynamic_cast<PluginInterface*>(plugin->instance())->widget();
+//                QWidget *w = dynamic_cast<IPlugin*>(plugin->instance())->widget();
 //                w->setParent(this);
 //                w->setWindowTitle("Plugin help");
 //                w->setWindowFlags(Qt::Window|Qt::WindowCloseButtonHint);
@@ -147,9 +147,9 @@ void SettingsWidget::openPluginConfig() {
     // If the corresponding plugin is loaded open preferences
     if (ui.treeWidget_plugins->currentIndex().isValid()){
         QString path = ui.treeWidget_plugins->currentItem()->data(0,Qt::UserRole).toString();
-        if (_pluginHandler->plugins().contains(path)
-                && _pluginHandler->plugins()[path]->status() == PluginLoader::Status::Loaded){
-            QWidget *w = dynamic_cast<PluginInterface*>(_pluginHandler->plugins()[path]->instance())->widget();
+        if (_pluginManager->plugins().contains(path)
+                && _pluginManager->plugins()[path]->status() == PluginLoader::Status::Loaded){
+            QWidget *w = dynamic_cast<IPlugin*>(_pluginManager->plugins()[path]->instance())->widget();
             w->setParent(this);
             w->setWindowTitle("Plugin configuration");
             w->setWindowFlags(Qt::Window|Qt::WindowCloseButtonHint);
@@ -169,9 +169,9 @@ void SettingsWidget::openPluginConfig() {
 /** ***************************************************************************/
 void SettingsWidget::onPluginItemChanged(QTreeWidgetItem *item, int column) {
     if ( static_cast<bool>(item->checkState(column)) )
-        _pluginHandler->enable(item->data(0, Qt::UserRole).toString());
+        _pluginManager->enable(item->data(0, Qt::UserRole).toString());
     else
-        _pluginHandler->disable(item->data(0, Qt::UserRole).toString());
+        _pluginManager->disable(item->data(0, Qt::UserRole).toString());
     ui.label_restart->setVisible(true);
 }
 
@@ -179,7 +179,7 @@ void SettingsWidget::onPluginItemChanged(QTreeWidgetItem *item, int column) {
 
 /** ***************************************************************************/
 void SettingsWidget::updatePluginList() {
-    const QMap<QString, PluginLoader*>& plugins = _pluginHandler->plugins();
+    const QMap<QString, PluginLoader*>& plugins = _pluginManager->plugins();
     for (const PluginLoader* plugin : plugins){
 
         // Get the top level item of this group, make sure it exists
@@ -203,7 +203,7 @@ void SettingsWidget::updatePluginList() {
         child->setData(0, Qt::DisplayRole, plugin->name());
         child->setData(0, Qt::ToolTipRole, plugin->description());
         child->setData(1, Qt::ToolTipRole, "Check to load at boot");
-        child->setCheckState(1, (_pluginHandler->isEnabled(plugin->fileName()))?Qt::Checked:Qt::Unchecked);
+        child->setCheckState(1, (_pluginManager->isEnabled(plugin->fileName()))?Qt::Checked:Qt::Unchecked);
         switch (plugin->status()) {
         case PluginLoader::Status::Loaded:
             child->setData(0, Qt::DecorationRole, QIcon(":plugin_loaded"));
@@ -231,8 +231,8 @@ void SettingsWidget::updatePluginInformations() {
     if (isTopLevelItem) return;
 
     QString path = ui.treeWidget_plugins->currentItem()->data(0,Qt::UserRole).toString();
-    if (_pluginHandler->plugins().contains(path)){
-        PluginLoader* plugin = _pluginHandler->plugins()[path];
+    if (_pluginManager->plugins().contains(path)){
+        PluginLoader* plugin = _pluginManager->plugins()[path];
         ui.label_pluginName->setText(plugin->name());
         ui.label_pluginVersion->setText(plugin->version());
         ui.label_pluginCopyright->setText(plugin->copyright());

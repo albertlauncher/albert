@@ -16,43 +16,21 @@
 
 #pragma once
 #include <QString>
-#include <QIcon>
 #include <QMimeType>
-#include <string>
-#include "interfaces.h"
+#include <QFileInfo>
 #include "utils/search/iindexable.h"
-
 
 namespace Files {
 
-class Extension;
-
-class File final : public RootNode, public IIndexable
+struct File final : public IIndexable
 {
-    friend class ScanWorker;
+    QStringList   aliases() const override {
+        return QStringList() << QFileInfo(_path).fileName();
+    }
 
-public:
-    explicit File(const QString &path, QMimeType mimetype);
-
-    QString       name(const Query *) const override;
-    QString       description(const Query *) const override;
-    QIcon         icon() const override;
-    void          activate(const Query *) override;
-    uint          usage() const override;
-    QList<INode*> children() override;
-    QStringList   aliases() const override;
-
-    QString path() const;
-    QString absolutePath() const;
-    QMimeType mimetype() const;
-    bool isDir() const;
-    static void clearIconCache();
-
-private:
     QString _path;
     QMimeType _mimetype;
-    uint _usage;
-    QList<INode*> *_actions;
-    static QHash<QString, QIcon> _iconCache;
+    mutable unsigned short _usage;
 };
+
 }

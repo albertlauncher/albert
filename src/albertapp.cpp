@@ -22,8 +22,8 @@
 #include "mainwidget.h"
 #include "settingswidget.h"
 #include "hotkeymanager.h"
-#include "pluginhandler.h"
-#include "extensionhandler.h"
+#include "pluginmanager.h"
+#include "extensionmanager.h"
 
 
 /** ***************************************************************************/
@@ -67,8 +67,8 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv)
 
     _mainWidget = new MainWidget;
     _hotkeyManager = new HotkeyManager;
-    _pluginHandler = new PluginHandler;
-    _extensionHandler = new ExtensionHandler;
+    _pluginManager = new PluginManager;
+    _extensionManager = new ExtensionManager;
 
 
     /*
@@ -76,7 +76,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv)
      */
 
     // View results
-    _mainWidget->ui.proposalList->setModel(_extensionHandler);
+    _mainWidget->ui.proposalList->setModel(_extensionManager);
 
 
     // MAKE SURE THE NEEDED DIRECTORIES EXIST
@@ -97,28 +97,28 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv)
     QObject::connect(_hotkeyManager, &HotkeyManager::hotKeyPressed,_mainWidget, &MainWidget::toggleVisibility);
 
     // Setup and teardown query sessions with the state of the widget
-    QObject::connect(_mainWidget, &MainWidget::widgetShown,  _extensionHandler, &ExtensionHandler::setupSession);
-    QObject::connect(_mainWidget, &MainWidget::widgetHidden, _extensionHandler, &ExtensionHandler::teardownSession);
+    QObject::connect(_mainWidget, &MainWidget::widgetShown,  _extensionManager, &ExtensionManager::setupSession);
+    QObject::connect(_mainWidget, &MainWidget::widgetHidden, _extensionManager, &ExtensionManager::teardownSession);
 
     // Click on _settingsButton (or shortcut) closes albert + opens settings dialog
     QObject::connect(_mainWidget->ui.inputLine->_settingsButton, &QPushButton::clicked, _mainWidget, &MainWidget::hide);
     QObject::connect(_mainWidget->ui.inputLine->_settingsButton, &QPushButton::clicked, this, &AlbertApp::openSettings);
 
     // A change in text triggers requests
-    QObject::connect(_mainWidget->ui.inputLine, &InputLine::textChanged, _extensionHandler, &ExtensionHandler::startQuery);
+    QObject::connect(_mainWidget->ui.inputLine, &InputLine::textChanged, _extensionManager, &ExtensionManager::startQuery);
 
     // Enter triggers action
-    QObject::connect(_mainWidget->ui.proposalList, &ProposalList::activated, _extensionHandler, &ExtensionHandler::activate);
+    QObject::connect(_mainWidget->ui.proposalList, &ProposalList::activated, _extensionManager, &ExtensionManager::activate);
 
     // Publish loaded plugins to the specific interface handlers
-    QObject::connect(_pluginHandler, &PluginHandler::pluginLoaded, _extensionHandler, &ExtensionHandler::registerExtension);
-    QObject::connect(_pluginHandler, &PluginHandler::pluginAboutToBeUnloaded, _extensionHandler, &ExtensionHandler::unregisterExtension);
+    QObject::connect(_pluginManager, &PluginManager::pluginLoaded, _extensionManager, &ExtensionManager::registerExtension);
+    QObject::connect(_pluginManager, &PluginManager::pluginAboutToBeUnloaded, _extensionManager, &ExtensionManager::unregisterExtension);
 
     // Hide on focus loss
 //    QObject::connect(this, &QApplication::applicationStateChanged, this, &AlbertApp::onStateChange);
 
     // Load the plugins
-    _pluginHandler->loadPlugins();
+    _pluginManager->loadPlugins();
 
     // TESTING AREA
 
@@ -130,10 +130,10 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv)
 AlbertApp::~AlbertApp()
 {
     // Unload the plugins
-    _pluginHandler->unloadPlugins();
+    _pluginManager->unloadPlugins();
     delete _hotkeyManager;
-    delete _extensionHandler;
-    delete _pluginHandler;
+    delete _extensionManager;
+    delete _pluginManager;
     delete _mainWidget;
 }
 
@@ -168,7 +168,7 @@ int AlbertApp::exec()
 void AlbertApp::openSettings()
 {
     if (!_settingsWidget)
-        _settingsWidget = new SettingsWidget(_mainWidget, _hotkeyManager, _pluginHandler);
+        _settingsWidget = new SettingsWidget(_mainWidget, _hotkeyManager, _pluginManager);
     _settingsWidget->show();
 }
 

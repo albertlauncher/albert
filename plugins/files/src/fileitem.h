@@ -15,17 +15,34 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include "interfaces.h"
-#include "file.h"
-
+#include <QVariant>
+#include <QList>
+#include "interfaces/iitem.h"
+class IExtension;
+class IQuery;
 
 namespace Files {
-class AbtractFileAction : public LeafNode
+
+class File;
+
+class FileItem final : public IItem
 {
 public:
-    AbtractFileAction(File *file) : _file(file) {}
-    inline INode* parent() const override final {return _file ;}
-protected:
-    File *_file;
+    FileItem(File *file, IExtension *ext, IQuery *qry);
+    ~FileItem();
+
+    QVariant       data(int role = Qt::DisplayRole) const override;
+    void           activate() override;
+    unsigned short score() const override;
+    QList<IItem*>  children() override;
+    bool           hasChildren() const override;
+    static void    clearIconCache();
+
+private:
+    File          *_file;      // No ownership
+    IExtension    *_extension; // No ownership
+    IQuery        *_query;     // No ownership
+    QList<IItem*> *_actions;   // No ownership
+    static QHash<QString, QIcon> _iconCache;
 };
 }

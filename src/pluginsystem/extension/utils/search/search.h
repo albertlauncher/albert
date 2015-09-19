@@ -46,7 +46,7 @@ public:
 
     /**
      * @brief Sets the type of the search to fuzzy
-     * @param The type to set. Defaults to true.
+     * @param fuzzy The type to set. Defaults to true.
      */
     void setFuzzy(bool fuzzy = true) {
         if (dynamic_cast<FuzzySearch*>(_impl)){

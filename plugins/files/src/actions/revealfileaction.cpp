@@ -19,43 +19,36 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include "revealfileaction.h"
+#include "file.h"
 #include "albertapp.h"
 
-unsigned int Files::RevealFileAction::usageCounter = 0;
+unsigned short Files::RevealFileAction::usageCounter = 0;
 
 /** ***************************************************************************/
-QString Files::RevealFileAction::name(const Query *q) const {
-    Q_UNUSED(q);
-    return "Reveal file in default filebrowser";
+QVariant Files::RevealFileAction::data(int role) const {
+    switch (role) {
+    case Qt::DisplayRole:
+        return "Reveal file in default filebrowser";
+    case Qt::ToolTipRole:
+        return _file->_path;
+    case Qt::DecorationRole:
+        return QApplication::style()->standardIcon(QStyle::SP_DirIcon);
+    default:
+        return QVariant();
+    }
 }
 
 
 
 /** ***************************************************************************/
-QString Files::RevealFileAction::description(const Query *q) const {
-    Q_UNUSED(q);
-    return _file->absolutePath();
-}
-
-
-
-/** ***************************************************************************/
-QIcon Files::RevealFileAction::icon() const {
-    return QApplication::style()->standardIcon(QStyle::SP_DirIcon);
-}
-
-
-
-/** ***************************************************************************/
-void Files::RevealFileAction::activate(const Query *q) {
-    Q_UNUSED(q);
-    QDesktopServices::openUrl(QUrl("file://" + _file->path() + "/"));
+void Files::RevealFileAction::activate() {
+    QDesktopServices::openUrl(QUrl("file://" + QFileInfo(_file->_path).path() + "/"));
     qApp->hideWidget();
 }
 
 
 
 /** ***************************************************************************/
-uint Files::RevealFileAction::usage() const {
+unsigned short Files::RevealFileAction::score() const {
     return usageCounter;
 }

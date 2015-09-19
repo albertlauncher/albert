@@ -28,7 +28,7 @@ namespace Files{
 /** ***************************************************************************/
 struct Comp {
     inline bool operator()(const File *lhs, const File *rhs) const {
-        return QString::compare(lhs->absolutePath(), rhs->absolutePath(), Qt::CaseInsensitive) < 0;
+        return QString::compare(lhs->_path, rhs->_path, Qt::CaseInsensitive) < 0;
     }
 };
 
@@ -53,12 +53,12 @@ void ScanWorker::run() {
     // Copy the usagecounters  [O(n)]
     int i=0, j=0;
     while (i < (*_fileIndex)->size() && j < newIndex->size()) {
-        if ((**_fileIndex)[i]->absolutePath()==(*newIndex)[j]->absolutePath()){
+        if ((**_fileIndex)[i]->_path==(*newIndex)[j]->_path){
             (*newIndex)[j]->_usage = (**_fileIndex)[i]->_usage;
             ++i;++j;
-        } else if ((**_fileIndex)[i]->absolutePath() < (*newIndex)[j]->absolutePath()){
+        } else if ((**_fileIndex)[i]->_path < (*newIndex)[j]->_path){
             ++i;
-        } else {// if ((*_fileIndex)[i]->absolutePath() > (*newIndex)[j]->absolutePath()){
+        } else {// if ((*_fileIndex)[i]->_path > (*newIndex)[j]->_path){
             ++j;
         }
     }
@@ -83,8 +83,10 @@ void ScanWorker::run() {
 /** ***************************************************************************/
 void ScanWorker::indexRecursive(const QFileInfo& fi, QList<File *>* result)
 {
-    File *sf = new File(fi.absoluteFilePath(), _mimeDatabase.mimeTypeForFile(fi));
-    QString mimeName = sf->mimetype().name();
+    File *sf = new File;
+    sf->_path = fi.absoluteFilePath();
+    sf->_mimetype = _mimeDatabase.mimeTypeForFile(fi);
+    QString mimeName = sf->_mimetype.name();
 
     // If is a file and matches index options index it
     if (fi.isFile() && ((_indexOptions.indexAudio && mimeName.startsWith("audio"))

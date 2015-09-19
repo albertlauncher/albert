@@ -23,12 +23,15 @@
 #include <QFileInfo>
 #include <QPointer>
 #include <QTimer>
-#include "interfaces.h"
+#include "interfaces/iextension.h"
 #include "utils/search/search.h"
-#include "file.h"
-#include "scanworker.h"
+
 
 namespace Files {
+
+class File;
+class ConfigWidget;
+class ScanWorker;
 
 struct IndexOptions {
     bool indexAudio;
@@ -39,28 +42,25 @@ struct IndexOptions {
     bool indexHidden;
     // TODO configurable follow symlinks
 };
-enum IndexOption {Audio, Video, Image, Docs, Dirs, Hidden};
-class ConfigWidget;
 
-class Extension final : public QObject, public ExtensionInterface
+class Extension final : public QObject, public IExtension
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "../src/metadata.json")
-    Q_INTERFACES(ExtensionInterface)
-
+    Q_INTERFACES(IExtension)
 
 public:
     Extension();
     ~Extension();
 
     // GenericPluginInterface
-    void initialize() override;
-    void finalize() override;
     QWidget *widget() override;
 
-    // ExtensionInterface
+    // IExtension
+    void initialize(IExtensionManager *em) override;
+    void finalize() override;
     void teardownSession();
-    void handleQuery(Query*) override;
+    void handleQuery(IQuery*) override;
     void setFuzzy(bool b = true) override;
 
     // API special to this extension
@@ -96,8 +96,11 @@ private:
     Search                 _searchIndex;
     QList<File*>*          _fileIndex;
 
+    // Manager of this plugin
+    IExtensionManager *_manager;
+
     /* constexpr */
-    static constexpr const char* CFG_GROUP             = "Files";
+    static constexpr const char* EXT_NAME              = "files";
     static constexpr const char* CFG_PATHS             = "paths";
     static constexpr const char* CFG_FUZZY             = "fuzzy";
     static constexpr const bool  CFG_FUZZY_DEF         = false;

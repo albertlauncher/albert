@@ -15,32 +15,25 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QMap>
-#include <QString>
-#include "pluginloader.h"
+#include <QWidget>
+class IQuery;
+class IExtensionManager;
 
-
-class PluginHandler final : public QObject {
-    Q_OBJECT
-
-public:
-    PluginHandler();
-    ~PluginHandler();
-
-    void loadPlugins();
-    void unloadPlugins();
-    const QMap<QString, PluginLoader*> & plugins();
-
-    void enable(const QString &path);
-    void disable(const QString &path);
-    bool isEnabled(const QString &path);
-
-private:
-    QMap<QString, PluginLoader*> _plugins;
-    QStringList _blacklist;
-    static const constexpr char* CFG_BLACKLIST = "blacklist";
-
-signals:
-    void pluginLoaded(QObject*);
-    void pluginAboutToBeUnloaded(QObject*);
+struct IPlugin
+{
+    virtual ~IPlugin() {}
+    virtual QWidget* widget() = 0;
 };
+
+struct IExtension : public IPlugin
+{
+    virtual ~IExtension() {}
+    virtual void initialize(IExtensionManager *) {}
+    virtual void finalize() {}
+    virtual void setupSession() {}
+    virtual void teardownSession() {}
+    virtual void setFuzzy(bool b) = 0;
+    virtual void handleQuery(IQuery *q) = 0;
+};
+#define ALBERT_EXTENSION_IID "org.manuelschneid3r.albert.extension"
+Q_DECLARE_INTERFACE(IExtension, ALBERT_EXTENSION_IID)

@@ -15,32 +15,18 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
 #include <QString>
-#include <QStringList>
-#include <QPluginLoader>
-#include <QDebug>
-#include <QMap>
-#include <QIdentityProxyModel>
+#include <QIcon>
+#include <QList>
+class IQuery;
 
-#include "query.h"
-#include "interfaces.h"
+struct IItem
+{
+    virtual ~IItem() {}
+    virtual QVariant       data(int role = Qt::DisplayRole) const = 0;
+    virtual void           activate() = 0;
+    virtual unsigned short score() const = 0;
+    virtual bool           hasChildren() const {return false;}
+    virtual QList<IItem*>  children() {return QList<IItem*>();}
 
-class ExtensionHandler final : public QIdentityProxyModel  {
-    Q_OBJECT
-
-public:
-    void startQuery(const QString &term);
-    void setupSession();
-    void teardownSession();
-
-    void registerExtension(QObject *);
-    void unregisterExtension(QObject *);
-
-    void activate(const QModelIndex & index);
-
-private:
-    QSet<ExtensionInterface*> _extensions;
-    QMap<QString, Query*> _recentQueries;
-    QString _lastSearchTerm;
 };

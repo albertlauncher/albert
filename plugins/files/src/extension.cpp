@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "extension.h"
 #include <QDebug>
 #include <QList>
 #include <QMessageBox>
@@ -23,10 +22,13 @@
 #include <QSettings>
 #include <QThreadPool>
 #include <QTimer>
+#include <QDir>
+#include "extension.h"
 #include "scanworker.h"
 #include "configwidget.h"
 #include "query.h"
 #include "file.h"
+#include "fileitem.h"
 
 namespace Files{
 
@@ -46,12 +48,14 @@ Extension::~Extension() {
 
 
 /** ***************************************************************************/
-void Extension::initialize() {
+void Extension::initialize(IExtensionManager *em) {
     qDebug() << "[Files] Initialize extension";
+
+    _manager = em;
 
     // Load settings
     QSettings s;
-    s.beginGroup(CFG_GROUP);
+    s.beginGroup(EXT_NAME);
     _indexOptions.indexAudio = s.value(CFG_INDEX_AUDIO, CFG_INDEX_AUDIO_DEF).toBool();
     _indexOptions.indexVideo = s.value(CFG_INDEX_VIDEO, CFG_INDEX_VIDEO_DEF).toBool();
     _indexOptions.indexImage = s.value(CFG_INDEX_IMAGE, CFG_INDEX_IMAGE_DEF).toBool();
@@ -69,8 +73,41 @@ void Extension::initialize() {
 
     // scan interval timer
     connect(&_intervalTimer, &QTimer::timeout, this, &Extension::updateIndex);
-    _intervalTimer.setInterval(s.value(CFG_SCAN_INTERVAL, CFG_SCAN_INTERVAL_DEF).toUInt()*60000);
-    _intervalTimer.start();
+    setScanInterval(s.value(CFG_SCAN_INTERVAL, CFG_SCAN_INTERVAL_DEF).toUInt()*60000);
+
+//    /* Deserialze data */
+//    QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + DATA_FILE);
+//    if (f.open(QIODevice::ReadOnly| QIODevice::Text)) {
+//        qDebug() << "Deserializing from" << f.fileName();
+//        QDataStream in(&f);
+//        quint64 size;
+//        in >> size;
+//        for (quint64 i = 0; i < size; ++i) {
+//            SharedAppPtr app(new AppInfo(this));
+//            in >> app->_path >> app->_usage;
+//            if (getAppInfo(app->_path, app.get()))
+//                _index.push_back(app);
+//        }
+//        f.close();
+//    } else
+//        qWarning() << "Could not open file: " << f.fileName();
+
+//    -	// Deserialize the index
+//    -	int size;
+//    -	in	>> size;
+//    -	FileIndex::Item *it;
+//    -	for (int i = 0; i < size; ++i) {
+//    -		it = new FileIndex::Item;
+//    -		it->deserialize(in);
+//    -		_index.push_back(it);
+//    -	}
+//    -	emit endBuildIndex();
+//    -	qDebug() << "[FileIndex]\tLoaded " << _index.size() << " files.";
+
+
+
+
+
 
     // Initial update
     updateIndex();
@@ -86,7 +123,7 @@ void Extension::finalize() {
 
     // Save settings
     QSettings s;
-    s.beginGroup(CFG_GROUP);
+    s.beginGroup(EXT_NAME);
     s.setValue(CFG_FUZZY, _searchIndex.fuzzy());
     s.setValue(CFG_PATHS, _rootDirs);
     s.setValue(CFG_INDEX_AUDIO, _indexOptions.indexAudio);
@@ -97,6 +134,22 @@ void Extension::finalize() {
     s.setValue(CFG_INDEX_HIDDEN,_indexOptions.indexHidden);
     s.setValue(CFG_SCAN_INTERVAL,_intervalTimer.interval()/60000);
     s.endGroup();
+
+//    // Serialize data
+//    QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
+//            filePath(EXT_NAME  + ".dat"));
+
+//    if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
+//        qDebug() << "Serializing to " << dataFile.fileName();
+//        QDataStream out( &dataFile );
+//        out	<< _fileIndex.size();
+//        for (File *f : _fileIndex)
+//            out << f->_path
+//                << f->_usage
+//                << f->_mimetype.name();
+//        f.close();
+//    } else
+//        qCritical() << "Could not write to " << f.fileName();
 }
 
 
@@ -151,13 +204,13 @@ QWidget *Extension::widget() {
 
 /** ***************************************************************************/
 void Extension::teardownSession() {
-    File::clearIconCache();
+    FileItem::clearIconCache();
 }
 
 
 
 /** ***************************************************************************/
-void Extension::handleQuery(Query *q) {
+void Extension::handleQuery(IQuery *q) {
     // Search for matches. Lock memory against scanworker
     _mutex.lock();
     QList<IIndexable*> indexables = _searchIndex.search(q->searchTerm());
@@ -165,7 +218,7 @@ void Extension::handleQuery(Query *q) {
 
     // Add results to query. This cast is safe since index holds files only
     for (IIndexable *obj : indexables)
-        q->addResult(static_cast<File*>(obj));
+        q->add(new FileItem(static_cast<File*>(obj), this, q));
 }
 
 

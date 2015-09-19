@@ -19,8 +19,8 @@
 #include <QPointer>
 class MainWidget;
 class HotkeyManager;
-class PluginHandler;
-class ExtensionHandler;
+class PluginManager;
+class ExtensionManager;
 class SettingsWidget;
 
 #if defined(qApp)
@@ -48,8 +48,8 @@ private slots:
 private:
     MainWidget               *_mainWidget;
     HotkeyManager            *_hotkeyManager;
-    PluginHandler            *_pluginHandler;
-    ExtensionHandler         *_extensionHandler;
+    PluginManager            *_pluginManager;
+    ExtensionManager         *_extensionManager;
     QPointer<SettingsWidget> _settingsWidget;
 };
 

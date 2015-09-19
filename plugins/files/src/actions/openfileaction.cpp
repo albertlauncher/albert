@@ -16,45 +16,44 @@
 
 #include <QDesktopServices>
 #include <QUrl>
+#include <QIcon>
 #include "openfileaction.h"
+#include "file.h"
 #include "albertapp.h"
 
-unsigned int Files::OpenFileAction::usageCounter = 0;
+unsigned short Files::OpenFileAction::usageCounter = 0;
 
 /** ***************************************************************************/
-QString Files::OpenFileAction::name(const Query *q) const {
-    Q_UNUSED(q);
-    return "Open file in default application";
+QVariant Files::OpenFileAction::data(int role) const  {
+    switch (role) {
+    case Qt::DisplayRole:
+        return "Open file in default application";
+    case Qt::ToolTipRole:
+        return _file->_path;
+    case Qt::DecorationRole:
+        if (QIcon::hasThemeIcon(_file->_mimetype.iconName()))
+            return QIcon::fromTheme(_file->_mimetype.iconName());
+        else if(QIcon::hasThemeIcon(_file->_mimetype.genericIconName()))
+            return QIcon::fromTheme(_file->_mimetype.genericIconName());
+        else
+            return QIcon::fromTheme("unknown");
+    default:
+        return QVariant();
+    }
 }
 
 
 
 /** ***************************************************************************/
-QString Files::OpenFileAction::description(const Query *q) const {
-    Q_UNUSED(q);
-    return _file->absolutePath();
-}
-
-
-
-/** ***************************************************************************/
-QIcon Files::OpenFileAction::icon() const {
-    return parent()->icon();
-}
-
-
-
-/** ***************************************************************************/
-void Files::OpenFileAction::activate(const Query *q) {
-    Q_UNUSED(q);
-    QDesktopServices::openUrl(QUrl("file://" + _file->absolutePath()));
+void Files::OpenFileAction::activate() {
+    QDesktopServices::openUrl(QUrl("file://" + _file->_path));
     qApp->hideWidget();
 }
 
 
 
 /** ***************************************************************************/
-uint Files::OpenFileAction::usage() const {
+unsigned short Files::OpenFileAction::score() const {
     return usageCounter;
 }
 

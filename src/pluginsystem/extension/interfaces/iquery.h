@@ -15,25 +15,21 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QVariant>
-#include "interfaces/iitem.h"
+#include <QString>
+class IItem;
 
-namespace Files {
-
-class File;
-
-class CopyFileAction final : public IItem
+struct IQuery
 {
-public:
-    CopyFileAction(File *file) : _file(file) {}
+    virtual ~IQuery() {}
 
-    QVariant       data(int role = Qt::DisplayRole) const override;
-    void           activate() override;
-    unsigned short score() const override;
+    /**
+     * @brief Add a top-level/root node to the albert tree
+     * @param node The amount of error tolerance
+     */
+    virtual void add(IItem *node) = 0;
 
-protected:
-    File *_file;
-    static unsigned short usageCounter;
+    /**
+     * @brief Returns the search term of this query
+     */
+    virtual const QString& searchTerm() const = 0;
 };
-
-}

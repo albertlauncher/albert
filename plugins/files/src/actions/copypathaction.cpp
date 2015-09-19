@@ -18,44 +18,37 @@
 #include <QApplication>
 #include <QClipboard>
 #include "copypathaction.h"
+#include "file.h"
 #include "albertapp.h"
 
-unsigned int Files::CopyPathAction::usageCounter = 0;
+unsigned short Files::CopyPathAction::usageCounter = 0;
 
 /** ***************************************************************************/
-QString Files::CopyPathAction::name(const Query *q) const {
-    Q_UNUSED(q);
-    return "Copy path to clipboard";
+QVariant Files::CopyPathAction::data(int role) const  {
+    switch (role) {
+    case Qt::DisplayRole:
+        return "Copy path to clipboard";
+    case Qt::ToolTipRole:
+        return _file->_path;
+    case Qt::DecorationRole:
+        return QIcon::fromTheme("edit-copy");
+    default:
+        return QVariant();
+    }
 }
 
 
 
 /** ***************************************************************************/
-QString Files::CopyPathAction::description(const Query *q) const {
-    Q_UNUSED(q);
-    return _file->absolutePath();
-}
-
-
-
-/** ***************************************************************************/
-QIcon Files::CopyPathAction::icon() const {
-    return QIcon::fromTheme("edit-copy");
-}
-
-
-
-/** ***************************************************************************/
-void Files::CopyPathAction::activate(const Query *q) {
-    Q_UNUSED(q);
+void Files::CopyPathAction::activate() {
     // Ownership of the data is transferred to the clipboard.
-    QApplication::clipboard()->setText(_file->absolutePath());
+    QApplication::clipboard()->setText(_file->_path);
     qApp->hideWidget();
 }
 
 
 
 /** ***************************************************************************/
-uint Files::CopyPathAction::usage() const {
+unsigned short Files::CopyPathAction::score() const {
     return usageCounter;
 }

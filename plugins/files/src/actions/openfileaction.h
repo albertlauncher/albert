@@ -15,22 +15,25 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include "abstractfileaction.h"
-#include <QString>
-#include <QIcon>
-class Query;
+#include <QVariant>
+#include "interfaces/iitem.h"
 
 namespace Files {
-class OpenFileAction final : public AbtractFileAction
+
+class File;
+
+class OpenFileAction final : public IItem
 {
 public:
-    OpenFileAction(File *file) : AbtractFileAction(file) {}
-    QString name(Query const *q) const override;
-    QString description(Query const *q) const override;
-    QIcon   icon() const override;
-    void    activate(Query const *q) override;
-    uint    usage() const override;
+    OpenFileAction(File *file) : _file(file) {}
+
+    QVariant       data(int role = Qt::DisplayRole) const override;
+    void           activate() override;
+    unsigned short score() const override;
+
 protected:
-    static unsigned int usageCounter;
+    File *_file;
+    static unsigned short usageCounter;
 };
+
 }

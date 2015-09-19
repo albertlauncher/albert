@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "pluginhandler.h"
+#include "pluginmanager.h"
 #include <QDirIterator>
 #include <QDebug>
 #include <QStandardPaths>
@@ -22,7 +22,7 @@
 
 
 /** ***************************************************************************/
-PluginHandler::PluginHandler() {
+PluginManager::PluginManager() {
     _blacklist = QSettings().value(CFG_BLACKLIST).toStringList();
 
 }
@@ -30,42 +30,42 @@ PluginHandler::PluginHandler() {
 
 
 /** ***************************************************************************/
-PluginHandler::~PluginHandler() {
+PluginManager::~PluginManager() {
     QSettings().setValue(CFG_BLACKLIST, _blacklist);
 }
 
 
 
 /** ***************************************************************************/
-const QMap<QString, PluginLoader *> &PluginHandler::plugins() {
+const QMap<QString, PluginLoader *> &PluginManager::plugins() {
     return _plugins;
 }
 
 
 
 /** ***************************************************************************/
-void PluginHandler::enable(const QString &path){
+void PluginManager::enable(const QString &path){
     _blacklist.removeAll(path);
 }
 
 
 
 /** ***************************************************************************/
-void PluginHandler::disable(const QString &path){
+void PluginManager::disable(const QString &path){
     if (!_blacklist.contains(path))
         _blacklist.append(path);
 }
 
 
 /** ***************************************************************************/
-bool PluginHandler::isEnabled(const QString &path){
+bool PluginManager::isEnabled(const QString &path){
     return !_blacklist.contains(path);
 }
 
 
 
 /** ***************************************************************************/
-void PluginHandler::loadPlugins() {
+void PluginManager::loadPlugins() {
     qDebug() << "Loading plugins";
 
     // Iterate overall files in the plugindirs
@@ -112,7 +112,7 @@ void PluginHandler::loadPlugins() {
 
 
 /** ***************************************************************************/
-void PluginHandler::unloadPlugins() {
+void PluginManager::unloadPlugins() {
     for (PluginLoader *plugin : _plugins){
         if (plugin->status() == PluginLoader::Status::Loaded){
             emit pluginAboutToBeUnloaded(plugin->instance()); // THIS HAS TO BE BLOCKING

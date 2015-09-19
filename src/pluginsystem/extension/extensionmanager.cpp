@@ -14,24 +14,31 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "extensionhandler.h"
 #include <QDebug>
-#include "pluginhandler.h"
+#include "extensionmanager.h"
+#include "query.h"
+#include "interfaces/iextension.h"
 
 
 /** ***************************************************************************/
-void ExtensionHandler::startQuery(const QString &term)
-{
-	_lastSearchTerm = term.trimmed();
-	Query *q;
-    if (_recentQueries.contains(_lastSearchTerm)){
-        q = _recentQueries.value(_lastSearchTerm);
+ExtensionManager::ExtensionManager() : _sessionIsActive(false) {
+
+}
+
+
+
+/** ***************************************************************************/
+void ExtensionManager::startQuery(const QString &term) {
+    Query *q;
+	_currentSearchTerm = term.trimmed();
+    if (_recentQueries.contains(_currentSearchTerm)){
+        q = _recentQueries.value(_currentSearchTerm);
     } else {
-        q = new Query(_lastSearchTerm);
-        _recentQueries.insert(_lastSearchTerm, q);
+        q = new Query(_currentSearchTerm);
+        _recentQueries.insert(_currentSearchTerm, q);
 
         // TODO INTRODUCE MULTITHREADING HERE
-        for (ExtensionInterface *e : _extensions)
+        for (IExtension *e : _extensions)
             e->handleQuery(q);
 
         // Wait for highspeed threads to finish
@@ -47,37 +54,36 @@ void ExtensionHandler::startQuery(const QString &term)
 
 
 /** ***************************************************************************/
-void ExtensionHandler::setupSession()
-{
-	for (ExtensionInterface *e : _extensions)
+void ExtensionManager::setupSession() {
+    _sessionIsActive = true;
+    for (IExtension *e : _extensions)
  		e->setupSession();
 }
 
 
 
 /** ***************************************************************************/
-void ExtensionHandler::teardownSession()
-{
-	for (ExtensionInterface *e : _extensions)
+void ExtensionManager::teardownSession() {
+    for (IExtension *e : _extensions)
 		e->teardownSession();
     this->setSourceModel(nullptr);
 	for (Query *q : _recentQueries)
         delete q;
     _recentQueries.clear();
+    _sessionIsActive = false;
 }
 
 
 
 /** ***************************************************************************/
-void ExtensionHandler::registerExtension(QObject *o)
-{
-    ExtensionInterface* e = qobject_cast<ExtensionInterface*>(o);
+void ExtensionManager::registerExtension(QObject *o) {
+    IExtension* e = qobject_cast<IExtension*>(o);
     if (e){
         if(_extensions.contains(e))
             qCritical() << "Extension registered twice!";
         else{
             _extensions.insert(e);
-            e->initialize();
+            e->initialize(this);
         }
     }
 }
@@ -85,9 +91,8 @@ void ExtensionHandler::registerExtension(QObject *o)
 
 
 /** ***************************************************************************/
-void ExtensionHandler::unregisterExtension(QObject *o)
-{
-    ExtensionInterface* e = qobject_cast<ExtensionInterface*>(o);
+void ExtensionManager::unregisterExtension(QObject *o) {
+    IExtension* e = qobject_cast<IExtension*>(o);
     if (e){
         if(!_extensions.contains(e))
             qCritical() << "Unregistered unregistered extension! (Duplicate unregistration?)";
@@ -101,7 +106,13 @@ void ExtensionHandler::unregisterExtension(QObject *o)
 
 
 /** ***************************************************************************/
-void ExtensionHandler::activate(const QModelIndex &index)
-{
-    _recentQueries[_lastSearchTerm]->activate(index);
+void ExtensionManager::activate(const QModelIndex &index) {
+    _recentQueries[_currentSearchTerm]->activate(index);
+}
+
+
+
+/** ***************************************************************************/
+bool ExtensionManager::sessionIsActive() const {
+    return _sessionIsActive;
 }

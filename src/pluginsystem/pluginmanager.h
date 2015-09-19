@@ -15,25 +15,32 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QVariant>
-#include "interfaces/iitem.h"
+#include <QMap>
+#include <QString>
+#include "pluginloader.h"
 
-namespace Files {
 
-class File;
+class PluginManager final : public QObject {
+    Q_OBJECT
 
-class CopyFileAction final : public IItem
-{
 public:
-    CopyFileAction(File *file) : _file(file) {}
+    PluginManager();
+    ~PluginManager();
 
-    QVariant       data(int role = Qt::DisplayRole) const override;
-    void           activate() override;
-    unsigned short score() const override;
+    void loadPlugins();
+    void unloadPlugins();
+    const QMap<QString, PluginLoader*> & plugins();
 
-protected:
-    File *_file;
-    static unsigned short usageCounter;
+    void enable(const QString &path);
+    void disable(const QString &path);
+    bool isEnabled(const QString &path);
+
+private:
+    QMap<QString, PluginLoader*> _plugins;
+    QStringList _blacklist;
+    static const constexpr char* CFG_BLACKLIST = "blacklist";
+
+signals:
+    void pluginLoaded(QObject*);
+    void pluginAboutToBeUnloaded(QObject*);
 };
-
-}

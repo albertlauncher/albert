@@ -15,25 +15,36 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QVariant>
-#include "interfaces/iitem.h"
+#include <QIdentityProxyModel>
+#include <QSet>
+#include <QMap>
+#include <QString>
+#include "interfaces/iextensionmanager.h"
+class Query;
+class IExtension;
+class IExtensionManager;
 
-namespace Files {
-
-class File;
-
-class CopyFileAction final : public IItem
+class ExtensionManager final : public QIdentityProxyModel, public IExtensionManager
 {
+    Q_OBJECT
+
 public:
-    CopyFileAction(File *file) : _file(file) {}
+    ExtensionManager();
 
-    QVariant       data(int role = Qt::DisplayRole) const override;
-    void           activate() override;
-    unsigned short score() const override;
+    void startQuery(const QString &term);
+    void setupSession();
+    void teardownSession();
 
-protected:
-    File *_file;
-    static unsigned short usageCounter;
+    void registerExtension(QObject *);
+    void unregisterExtension(QObject *);
+
+    void activate(const QModelIndex & index);
+
+    bool sessionIsActive() const override;
+
+private:
+    QSet<IExtension*> _extensions;
+    QMap<QString, Query*> _recentQueries;
+    QString _currentSearchTerm;
+    bool _sessionIsActive;
 };
-
-}

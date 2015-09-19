@@ -15,25 +15,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QVariant>
-#include "interfaces/iitem.h"
 
-namespace Files {
-
-class File;
-
-class CopyFileAction final : public IItem
+struct IExtensionManager
 {
-public:
-    CopyFileAction(File *file) : _file(file) {}
-
-    QVariant       data(int role = Qt::DisplayRole) const override;
-    void           activate() override;
-    unsigned short score() const override;
-
-protected:
-    File *_file;
-    static unsigned short usageCounter;
+    virtual ~IExtensionManager() {}
+    virtual bool sessionIsActive() const = 0;
 };
 
-}
+

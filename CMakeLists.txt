@@ -5,8 +5,7 @@ PROJECT(albert)
 SET(TARGET_VERSION_MAJOR 0)
 SET(TARGET_VERSION_MINOR 6)
 
-
-include(./global_cmake_settings.txt OPTIONAL)
+include(./global_cmake_settings.txt REQUIRED)
 
 find_package(Qt5Widgets 5.1 REQUIRED)
 find_package(Qt5Svg REQUIRED)
@@ -15,31 +14,45 @@ include_directories(
     src/
     src/hotkey/
     src/mainwidget/
+    src/interfaces/
+    src/pluginsystem/
+    src/pluginsystem/extension/
     src/settingswidget/
 )
 
 set(SRCS
     TODO
+
     src/main.cpp
     src/albertapp.cpp
-    src/extensionhandler.cpp
-    src/pluginloader.cpp
-    src/pluginhandler.cpp
-    src/query.cpp
-    src/interfaces.h
-    src/utils/search/search.h
-    src/utils/search/search_impl.h
-    src/utils/search/fuzzysearch.h
-    src/utils/search/prefixsearch.h
-    src/utils/search/prefixsearch.h
+
     src/hotkey/hotkeymanager.cpp
     src/hotkey/hotkeymanager_p.h
+
+    src/mainwidget/inputline.cpp
+    src/mainwidget/itemdelegate.cpp
     src/mainwidget/mainwidget.cpp
     src/mainwidget/proposallist.cpp
-    src/mainwidget/itemdelegate.cpp
-    src/mainwidget/inputline.cpp
+    src/mainwidget/settingsbutton.h
+
+    src/pluginsystem/pluginloader.cpp
+    src/pluginsystem/pluginmanager.cpp
+
+    src/pluginsystem/extension/extensionmanager.cpp
+    src/pluginsystem/extension/query.cpp
+
+    src/pluginsystem/extension/interfaces/iextension.h
+    src/pluginsystem/extension/interfaces/iextensionmanager.h
+    src/pluginsystem/extension/interfaces/iitem.h
+    src/pluginsystem/extension/interfaces/iquery.h
+
+    src/pluginsystem/extension/utils/search/fuzzysearch.h
+    src/pluginsystem/extension/utils/search/iindexable.h
+    src/pluginsystem/extension/utils/search/prefixsearch.h
+    src/pluginsystem/extension/utils/search/search.h
+    src/pluginsystem/extension/utils/search/search_impl.h
+
     src/settingswidget/grabkeybutton.cpp
-    src/settingswidget/settingsbutton.h
     src/settingswidget/settingswidget.cpp
 )
 
@@ -48,8 +61,8 @@ set(LIBS
 )
 
 qt5_wrap_ui(UIS
-    src/settingswidget/settingswidget.ui
     src/mainwidget/mainwidget.ui
+    src/settingswidget/settingswidget.ui
 )
 
 qt5_add_resources(RSRC

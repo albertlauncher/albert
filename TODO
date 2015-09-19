@@ -34,7 +34,7 @@ Facts:
 [FEAT] - python integration - special plugin interface, (Calc (Sympy), Terminal, ssh)
 [FEAT] - Plugin Interdependenciea - https://doc-snapshots.qt.io/qtcreator-extending/extensionsystem-pluginspec.html#details
 [FEAT] - Make the indexing fingrained by mimetype
-[FEAT] - Profiler - Extensionhandler profiles extensions (SQLITE backend), Dummy extension with 1M results
+[FEAT] - Profiler - Extensionmanager profiles extensions (SQLITE backend), Dummy extension with 1M results
 [FEAT] - [#8] QDesktopWidget * QApplication::desktop()
 [FEAT] - [Actions][modifier] - Configurable actionmap
 [FEAT] - [Actions][Interdep.] - e.g. open files with app actions
@@ -49,20 +49,19 @@ Facts:
 - [Actions][Builtin] - Extension can offer actions
 - Search without template and static downcast
 - [Actions] ListView("->" show actions, "<-" show results)
+- Split file in file and fileitem
+- Move the datamodelling to core by not let parent()/children() be part of IItem
 x Plugin infrastucture - Port all modules
-
-Getting things done!
---------------------
-- Port files
- - Serialization
-- Port apps
-- Port bookmarks
-- Port calculator
-- Port websearch
- - [FEAT][Actions][Global]  Fallback actions - needs only queryterm
-
-
-
+ x Port files
+  -> Serialization
+ x Port apps
+ x Port bookmarks
+ x Port calculator
+ x Port websearch
+  x [FEAT][Actions][Global]  Fallback actions - needs only queryterm
+ x Check that paths are created safely with QDir(dirPath).filePath(fileName);
+ x make use of mutable make interface const
+ scanworker still may cause exception if winsow is visible
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 EXTENSION Properties

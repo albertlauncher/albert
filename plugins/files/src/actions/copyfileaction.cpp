@@ -19,37 +19,29 @@
 #include <QClipboard>
 #include <QUrl>
 #include "copyfileaction.h"
+#include "file.h"
 #include "albertapp.h"
 
-unsigned int Files::CopyFileAction::usageCounter = 0;
+unsigned short Files::CopyFileAction::usageCounter = 0;
 
 /** ***************************************************************************/
-QString Files::CopyFileAction::name(const Query *q) const {
-    Q_UNUSED(q);
-    return "Copy file to clipboard";
+QVariant Files::CopyFileAction::data(int role) const  {
+    switch (role) {
+    case Qt::DisplayRole:
+        return "Copy file to clipboard";
+    case Qt::ToolTipRole:
+        return _file->_path;
+    case Qt::DecorationRole:
+        return QIcon::fromTheme("edit-copy");
+    default:
+        return QVariant();
+    }
 }
 
 
 
 /** ***************************************************************************/
-QString Files::CopyFileAction::description(const Query *q) const {
-    Q_UNUSED(q);
-    return _file->absolutePath();
-}
-
-
-
-/** ***************************************************************************/
-QIcon Files::CopyFileAction::icon() const {
-    return QIcon::fromTheme("edit-copy");
-}
-
-
-
-/** ***************************************************************************/
-void Files::CopyFileAction::activate(const Query *q) {
-    Q_UNUSED(q);
-
+void Files::CopyFileAction::activate() {
     //  Get clipboard
     QClipboard *cb = QApplication::clipboard();
 
@@ -62,13 +54,13 @@ void Files::CopyFileAction::activate(const Query *q) {
         newMimeData->setData(f, oldMimeData->data(f));
 
     // Copy path of file
-    newMimeData->setText(_file->absolutePath());
+    newMimeData->setText(_file->_path);
 
     // Copy file
-    newMimeData->setUrls({QUrl::fromLocalFile(_file->absolutePath())});
+    newMimeData->setUrls({QUrl::fromLocalFile(_file->_path)});
 
     // Copy file (f*** you gnome)
-    QByteArray gnomeFormat = QByteArray("copy\n").append(QUrl::fromLocalFile(_file->absolutePath()).toEncoded());
+    QByteArray gnomeFormat = QByteArray("copy\n").append(QUrl::fromLocalFile(_file->_path).toEncoded());
     newMimeData->setData("x-special/gnome-copied-files", gnomeFormat);
 
     // Set the mimedata
@@ -80,6 +72,6 @@ void Files::CopyFileAction::activate(const Query *q) {
 
 
 /** ***************************************************************************/
-uint Files::CopyFileAction::usage() const {
+unsigned short Files::CopyFileAction::score() const {
     return usageCounter;
 }
