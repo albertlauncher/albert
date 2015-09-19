@@ -2,4 +2,5 @@ CMakeLists.txt.user*
 build*
 LicenseTemplate
 packaging
+design
 
