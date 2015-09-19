@@ -329,9 +329,6 @@ void Extension::updateIndex() {
         //  Run it
         QThreadPool::globalInstance()->start(_scanWorker);
 
-        // Reset timer to full time
-        _intervalTimer.start();
-
         // If widget is visible show the information in the status bat
         if (!_widget.isNull())
             connect(_scanWorker, &ScanWorker::statusInfo, _widget->ui.label_info, &QLabel::setText);
