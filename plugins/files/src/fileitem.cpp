@@ -44,22 +44,22 @@ FileItem::~FileItem() {}
 QVariant FileItem::data(int role) const {
     switch (role) {
     case Qt::DisplayRole:
-        return QFileInfo(_file->_path).fileName();
+        return QFileInfo(_file->path).fileName();
     case Qt::ToolTipRole:
-        return _file->_path;
+        return _file->path;
     case Qt:: DecorationRole:
-        if (!_iconCache.contains(_file->_mimetype.iconName())){
-            if (QIcon::hasThemeIcon(_file->_mimetype.iconName()))
-                _iconCache.insert(_file->_mimetype.iconName(),
-                                  QIcon::fromTheme(_file->_mimetype.iconName()));
-            else if(QIcon::hasThemeIcon(_file->_mimetype.genericIconName()))
-                _iconCache.insert(_file->_mimetype.iconName(),
-                                  QIcon::fromTheme(_file->_mimetype.genericIconName()));
+        if (!_iconCache.contains(_file->mimetype.iconName())){
+            if (QIcon::hasThemeIcon(_file->mimetype.iconName()))
+                _iconCache.insert(_file->mimetype.iconName(),
+                                  QIcon::fromTheme(_file->mimetype.iconName()));
+            else if(QIcon::hasThemeIcon(_file->mimetype.genericIconName()))
+                _iconCache.insert(_file->mimetype.iconName(),
+                                  QIcon::fromTheme(_file->mimetype.genericIconName()));
             else
-                _iconCache.insert(_file->_mimetype.iconName(),
+                _iconCache.insert(_file->mimetype.iconName(),
                                   QIcon::fromTheme("unknown"));
         }
-        return _iconCache[_file->_mimetype.iconName()];
+        return _iconCache[_file->mimetype.iconName()];
     default:
         return QVariant();
     }
@@ -79,7 +79,7 @@ void FileItem::activate() {
 
 /** ***************************************************************************/
 unsigned short FileItem::score() const {
-    return _file->_usage;
+    return _file->usage;
 }
 
 

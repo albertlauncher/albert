@@ -28,7 +28,7 @@ namespace Files{
 /** ***************************************************************************/
 struct Comp {
     inline bool operator()(const File *lhs, const File *rhs) const {
-        return QString::compare(lhs->_path, rhs->_path, Qt::CaseInsensitive) < 0;
+        return QString::compare(lhs->path, rhs->path, Qt::CaseInsensitive) < 0;
     }
 };
 
@@ -53,12 +53,12 @@ void ScanWorker::run() {
     // Copy the usagecounters  [O(n)]
     int i=0, j=0;
     while (i < (*_fileIndex)->size() && j < newIndex->size()) {
-        if ((**_fileIndex)[i]->_path==(*newIndex)[j]->_path){
-            (*newIndex)[j]->_usage = (**_fileIndex)[i]->_usage;
+        if ((**_fileIndex)[i]->path==(*newIndex)[j]->path){
+            (*newIndex)[j]->usage = (**_fileIndex)[i]->usage;
             ++i;++j;
-        } else if ((**_fileIndex)[i]->_path < (*newIndex)[j]->_path){
+        } else if ((**_fileIndex)[i]->path < (*newIndex)[j]->path){
             ++i;
-        } else {// if ((*_fileIndex)[i]->_path > (*newIndex)[j]->_path){
+        } else {// if ((*_fileIndex)[i]->path > (*newIndex)[j]->path){
             ++j;
         }
     }
@@ -83,23 +83,21 @@ void ScanWorker::run() {
 /** ***************************************************************************/
 void ScanWorker::indexRecursive(const QFileInfo& fi, QList<File *>* result)
 {
-    File *sf = new File;
-    sf->_path = fi.absoluteFilePath();
-    sf->_mimetype = _mimeDatabase.mimeTypeForFile(fi);
-    QString mimeName = sf->_mimetype.name();
+    File f(fi.absoluteFilePath(), _mimeDatabase.mimeTypeForFile(fi));
+    QString mimeName = f.mimetype.name();
 
     // If is a file and matches index options index it
     if (fi.isFile() && ((_indexOptions.indexAudio && mimeName.startsWith("audio"))
         ||(_indexOptions.indexVideo && mimeName.startsWith("video"))
         ||(_indexOptions.indexImage && mimeName.startsWith("image"))
         ||(_indexOptions.indexDocs && mimeName.startsWith("application")))) {
-        result->append(sf);
+        result->append(new File(f));
     } else if (fi.isDir()) {
         emit statusInfo(QString("Indexing %1.").arg(fi.absoluteFilePath()));
 
         // If is a dir and matches index options index it
         if (_indexOptions.indexDirs)
-            result->append(sf);
+            result->append(new File(f));
 
         // Read .albertignore
         // http://doc.qt.io/qt-5/qregexp.html#wildcard-matching

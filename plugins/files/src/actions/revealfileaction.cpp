@@ -30,7 +30,7 @@ QVariant Files::RevealFileAction::data(int role) const {
     case Qt::DisplayRole:
         return "Reveal file in default filebrowser";
     case Qt::ToolTipRole:
-        return _file->_path;
+        return _file->path;
     case Qt::DecorationRole:
         return QApplication::style()->standardIcon(QStyle::SP_DirIcon);
     default:
@@ -42,7 +42,7 @@ QVariant Files::RevealFileAction::data(int role) const {
 
 /** ***************************************************************************/
 void Files::RevealFileAction::activate() {
-    QDesktopServices::openUrl(QUrl("file://" + QFileInfo(_file->_path).path() + "/"));
+    QDesktopServices::openUrl(QUrl("file://" + QFileInfo(_file->path).path() + "/"));
     qApp->hideWidget();
 }
 

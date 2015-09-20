@@ -30,7 +30,7 @@ QVariant Files::CopyFileAction::data(int role) const  {
     case Qt::DisplayRole:
         return "Copy file to clipboard";
     case Qt::ToolTipRole:
-        return _file->_path;
+        return _file->path;
     case Qt::DecorationRole:
         return QIcon::fromTheme("edit-copy");
     default:
@@ -54,13 +54,13 @@ void Files::CopyFileAction::activate() {
         newMimeData->setData(f, oldMimeData->data(f));
 
     // Copy path of file
-    newMimeData->setText(_file->_path);
+    newMimeData->setText(_file->path);
 
     // Copy file
-    newMimeData->setUrls({QUrl::fromLocalFile(_file->_path)});
+    newMimeData->setUrls({QUrl::fromLocalFile(_file->path)});
 
     // Copy file (f*** you gnome)
-    QByteArray gnomeFormat = QByteArray("copy\n").append(QUrl::fromLocalFile(_file->_path).toEncoded());
+    QByteArray gnomeFormat = QByteArray("copy\n").append(QUrl::fromLocalFile(_file->path).toEncoded());
     newMimeData->setData("x-special/gnome-copied-files", gnomeFormat);
 
     // Set the mimedata

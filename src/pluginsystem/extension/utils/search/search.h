@@ -54,11 +54,13 @@ public:
             FuzzySearch *old = dynamic_cast<FuzzySearch*>(_impl);
             _impl = new PrefixSearch(*old);
             delete old;
-        }else {
+        } else if (dynamic_cast<PrefixSearch*>(_impl)){
             if (!fuzzy) return;
             PrefixSearch *old = dynamic_cast<PrefixSearch*>(_impl);
             _impl = new FuzzySearch(*old);
             delete old;
+        } else {
+            throw; //should not happen
         }
     }
 

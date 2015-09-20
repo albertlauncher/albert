@@ -29,12 +29,12 @@ QVariant Files::OpenFileAction::data(int role) const  {
     case Qt::DisplayRole:
         return "Open file in default application";
     case Qt::ToolTipRole:
-        return _file->_path;
+        return _file->path;
     case Qt::DecorationRole:
-        if (QIcon::hasThemeIcon(_file->_mimetype.iconName()))
-            return QIcon::fromTheme(_file->_mimetype.iconName());
-        else if(QIcon::hasThemeIcon(_file->_mimetype.genericIconName()))
-            return QIcon::fromTheme(_file->_mimetype.genericIconName());
+        if (QIcon::hasThemeIcon(_file->mimetype.iconName()))
+            return QIcon::fromTheme(_file->mimetype.iconName());
+        else if(QIcon::hasThemeIcon(_file->mimetype.genericIconName()))
+            return QIcon::fromTheme(_file->mimetype.genericIconName());
         else
             return QIcon::fromTheme("unknown");
     default:
@@ -46,7 +46,7 @@ QVariant Files::OpenFileAction::data(int role) const  {
 
 /** ***************************************************************************/
 void Files::OpenFileAction::activate() {
-    QDesktopServices::openUrl(QUrl("file://" + _file->_path));
+    QDesktopServices::openUrl(QUrl("file://" + _file->path));
     qApp->hideWidget();
 }
 

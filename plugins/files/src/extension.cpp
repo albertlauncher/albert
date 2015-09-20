@@ -84,7 +84,7 @@ void Extension::initialize(IExtensionManager *em) {
 //        in >> size;
 //        for (quint64 i = 0; i < size; ++i) {
 //            SharedAppPtr app(new AppInfo(this));
-//            in >> app->_path >> app->_usage;
+//            in >> app->_path >> app->usage;
 //            if (getAppInfo(app->_path, app.get()))
 //                _index.push_back(app);
 //        }
@@ -145,8 +145,8 @@ void Extension::finalize() {
 //        out	<< _fileIndex.size();
 //        for (File *f : _fileIndex)
 //            out << f->_path
-//                << f->_usage
-//                << f->_mimetype.name();
+//                << f->usage
+//                << f->mimetype.name();
 //        f.close();
 //    } else
 //        qCritical() << "Could not write to " << f.fileName();
@@ -328,6 +328,9 @@ void Extension::updateIndex() {
 
         //  Run it
         QThreadPool::globalInstance()->start(_scanWorker);
+
+        if (_intervalTimer.interval() != 0)
+            _intervalTimer.start();
 
         // If widget is visible show the information in the status bat
         if (!_widget.isNull())

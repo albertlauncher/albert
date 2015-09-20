@@ -38,6 +38,7 @@ ProposalList::~ProposalList() {
     s.setValue(CFG_SHOW_INFO, _itemDelegate->showInfo);
     s.setValue(CFG_SELECTED_ONLY, _itemDelegate->showForSelectedOnly);
     s.setValue(CFG_MAX_PROPOSALS, _maxItems);
+    delete _itemDelegate;
 }
 
 

@@ -29,7 +29,7 @@ QVariant Files::CopyPathAction::data(int role) const  {
     case Qt::DisplayRole:
         return "Copy path to clipboard";
     case Qt::ToolTipRole:
-        return _file->_path;
+        return _file->path;
     case Qt::DecorationRole:
         return QIcon::fromTheme("edit-copy");
     default:
@@ -42,7 +42,7 @@ QVariant Files::CopyPathAction::data(int role) const  {
 /** ***************************************************************************/
 void Files::CopyPathAction::activate() {
     // Ownership of the data is transferred to the clipboard.
-    QApplication::clipboard()->setText(_file->_path);
+    QApplication::clipboard()->setText(_file->path);
     qApp->hideWidget();
 }
 
