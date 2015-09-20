@@ -102,7 +102,7 @@ void Extension::update()
 
     QFile f(_bookmarksFile);
     if (!f.open(QIODevice::ReadOnly)) {
-        qWarning() << "Could not open" << _bookmarksFile;
+        qWarning() << "Could not open " << _bookmarksFile;
         return;
     }
 
