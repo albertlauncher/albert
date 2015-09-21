@@ -93,22 +93,25 @@ void Extension::initialize(IExtensionManager *em) {
     connect(this, &Extension::rootDirsChanged, &_updateDelayTimer, static_cast<void(QTimer::*)()>(&QTimer::start));
     connect(&_updateDelayTimer, &QTimer::timeout, this, &Extension::updateIndex);
 
-    /* Deserialze data
-    QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + DATA_FILE);
-    if (f.open(QIODevice::ReadOnly| QIODevice::Text)) {
-        qDebug() << "Deserializing from" << f.fileName();
-        QDataStream in(&f);
-        quint64 size;
+    // Deserialze data
+    QFile dataFile(
+                QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
+                filePath(QString("%1.dat").arg(EXT_NAME))
+                );
+    if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
+        qDebug() << "[Applications] Deserializing from" << dataFile.fileName();
+        QDataStream in(&dataFile);
+        App app;
+        int size;
         in >> size;
-        for (quint64 i = 0; i < size; ++i) {
-            SharedAppPtr app(new Item(this));
-            in >> app->_path >> app->_usage;
-            if (getAppInfo(app->_path, app.get()))
-                _index.push_back(app);
+        for (int i = 0; i < size; ++i) {
+            in >> app.path >> app.usage;
+//            if (getAppInfo(app.path, &app)) // Not necessry if index is updated after this
+            _appIndex.push_back(new App(app));
         }
-        f.close();
+        dataFile.close();
     } else
-        qWarning() << "Could not open file: " << f.fileName();*/
+        qWarning() << "Could not open file: " << dataFile.fileName();
 
     // Initial update
     updateIndex();
@@ -127,17 +130,20 @@ void Extension::finalize() {
     s.setValue(CFG_FUZZY, _searchIndex.fuzzy());
     s.setValue(CFG_PATHS, _rootDirs);
 
-    /* Serialze data
-    QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + DATA_FILE);
-    if (f.open(QIODevice::ReadWrite| QIODevice::Text)) {
-        qDebug() << "Serializing to " << f.fileName();
-        QDataStream out( &f );
-        out << static_cast<quint64>(_index.size());
-        for (SharedAppPtr app : _index)
-            out << app->_path << app->_usage;
-        f.close();
+    // Serialze data
+    QFile dataFile(
+                QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
+                filePath(QString("%1.dat").arg(EXT_NAME))
+                );
+    if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
+        qDebug() << "[Applications] Deserializing from" << dataFile.fileName();
+        QDataStream out( &dataFile );
+        out << _appIndex.size();
+        for (App *app : _appIndex)
+            out << app->path << app->usage;
+        dataFile.close();
     } else
-        qCritical() << "Could not write to " << f.fileName();*/
+        qCritical() << "Could not write to " << dataFile.fileName();
 
     qDebug() << "[Applications] Extension finalized";
 }

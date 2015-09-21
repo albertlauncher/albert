@@ -67,7 +67,7 @@ Facts:
   ✔ Can't open files with spaces in the filepath. Closes #35
  ✔ Port apps
   ✔ AppIndex needs rebuilding every time. Closes #45
-  ✘ Serialization
+  ✔ Serialization
   ✘ Quicklist actions
  ✘ Port bookmarks
   ✘ Path to bookmarks file not intialized correctly. Closes #44
