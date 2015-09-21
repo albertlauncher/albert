@@ -73,43 +73,34 @@ void Extension::initialize(IExtensionManager *em) {
     else
         restorePaths();
 
+    // Deserialze data
+    QFile dataFile(
+                QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
+                filePath(QString("%1.dat").arg(EXT_NAME))
+                );
+    if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
+        qDebug() << "[Files] Deserializing from" << dataFile.fileName();
+        QDataStream in(&dataFile);
+        File *f;
+        QString mimename;
+        int size;
+        in >> size;
+        QMimeDatabase db;
+        for (int i = 0; i < size; ++i) {
+            f = new File;
+            in >> f->path
+                    >> mimename
+                    >> f->usage;
+            f->mimetype = db.mimeTypeForName(mimename);
+            _fileIndex->push_back(f);
+        }
+        dataFile.close();
+    } else
+        qWarning() << "Could not open file: " << dataFile.fileName();
+
     // scan interval timer
     connect(&_minuteTimer, &QTimer::timeout, this, &Extension::onMinuteTick);
     setScanInterval(s.value(CFG_SCAN_INTERVAL, CFG_SCAN_INTERVAL_DEF).toUInt());
-
-//    /* Deserialze data */
-//    QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + DATA_FILE);
-//    if (f.open(QIODevice::ReadOnly| QIODevice::Text)) {
-//        qDebug() << "Deserializing from" << f.fileName();
-//        QDataStream in(&f);
-//        quint64 size;
-//        in >> size;
-//        for (quint64 i = 0; i < size; ++i) {
-//            SharedAppPtr app(new AppInfo(this));
-//            in >> app->_path >> app->usage;
-//            if (getAppInfo(app->_path, app.get()))
-//                _index.push_back(app);
-//        }
-//        f.close();
-//    } else
-//        qWarning() << "Could not open file: " << f.fileName();
-
-//    -	// Deserialize the index
-//    -	int size;
-//    -	in	>> size;
-//    -	FileIndex::Item *it;
-//    -	for (int i = 0; i < size; ++i) {
-//    -		it = new FileIndex::Item;
-//    -		it->deserialize(in);
-//    -		_index.push_back(it);
-//    -	}
-//    -	emit endBuildIndex();
-//    -	qDebug() << "[FileIndex]\tLoaded " << _index.size() << " files.";
-
-
-
-
-
 
     // Initial update
     updateIndex();
@@ -123,6 +114,8 @@ void Extension::initialize(IExtensionManager *em) {
 /** ***************************************************************************/
 void Extension::finalize() {
     qDebug() << "[Files] Finalize extension";
+
+    _minuteTimer.stop();
 
     // Save settings
     QSettings s;
@@ -139,21 +132,25 @@ void Extension::finalize() {
     s.setValue(CFG_SCAN_INTERVAL,_scanInterval);
     s.endGroup();
 
-//    // Serialize data
-//    QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-//            filePath(EXT_NAME  + ".dat"));
+    // Serialize data
+    QFile dataFile(
+                QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
+                filePath(QString("%1.dat").arg(EXT_NAME))
+                );
+    if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
+        qDebug() << "[Files] Serializing to " << dataFile.fileName();
+        QDataStream out( &dataFile );
+        _mutex.lock();
+        out	<< _fileIndex->size();
+        for (File *f : *_fileIndex)
+            out << f->path
+                << f->mimetype.name()
+                << f->usage;
+        dataFile.close();
+        _mutex.unlock();
+    } else
+        qCritical() << "Could not write to " << dataFile.fileName();
 
-//    if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
-//        qDebug() << "Serializing to " << dataFile.fileName();
-//        QDataStream out( &dataFile );
-//        out	<< _fileIndex.size();
-//        for (File *f : _fileIndex)
-//            out << f->_path
-//                << f->usage
-//                << f->mimetype.name();
-//        f.close();
-//    } else
-//        qCritical() << "Could not write to " << f.fileName();
     qDebug() << "[Files] Extension finalized";
 }
 
