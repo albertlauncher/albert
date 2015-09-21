@@ -44,6 +44,8 @@ void Files::CopyPathAction::activate() {
     // Ownership of the data is transferred to the clipboard.
     QApplication::clipboard()->setText(_file->path);
     qApp->hideWidget();
+    ++usageCounter;
+    ++_file->usage;
 }
 
 

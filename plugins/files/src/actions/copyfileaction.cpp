@@ -67,6 +67,8 @@ void Files::CopyFileAction::activate() {
     cb->setMimeData(newMimeData);
 
     qApp->hideWidget();
+    ++usageCounter;
+    ++_file->usage;
 }
 
 
