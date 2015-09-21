@@ -17,16 +17,16 @@
 #include "mimetypedialog.h"
 #include "ui_mimetypedialog.h"
 
-namespace Files{
-MimeTypeDialog::MimeTypeDialog(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::MimeTypeDialog)
-{
+
+/** ***************************************************************************/
+Files::MimeTypeDialog::MimeTypeDialog(QWidget *parent) :
+    QDialog(parent), ui(new Ui::MimeTypeDialog) {
     ui->setupUi(this);
 }
 
-MimeTypeDialog::~MimeTypeDialog()
-{
+
+
+/** ***************************************************************************/
+Files::MimeTypeDialog::~MimeTypeDialog() {
     delete ui;
-}
 }

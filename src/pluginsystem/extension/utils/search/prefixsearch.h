@@ -51,7 +51,7 @@ public:
         for (const QString &str : aliases) {
             // Build an inverted index
             QStringList words = str.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
-            for (QString &w : words){
+            for (QString &w : words) {
                 _invertedIndex[w.toLower()].insert(idxble);
             }
         }
@@ -164,7 +164,7 @@ protected:
 //		a = pre.cbegin();
 //		b = rhs.cbegin();
 //		QChar ca,cb;
-//		while (a != pre.cend() && b != rhs.cend()){
+//		while (a != pre.cend() && b != rhs.cend()) {
 //			ca = a++->toLower();
 //			cb = b++->toLower();
 //			if (ca < cb)

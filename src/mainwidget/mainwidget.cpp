@@ -24,10 +24,10 @@
 #include <QAbstractItemModel>
 #include "mainwidget.h"
 
-/****************************************************************************///
+
+/** ***************************************************************************/
 MainWidget::MainWidget(QWidget *parent)
-	: QWidget(parent)
-{
+    : QWidget(parent) {
 	// INITIALIZE UI
     ui.setupUi(this);
     setWindowTitle(qAppName());
@@ -68,15 +68,16 @@ MainWidget::MainWidget(QWidget *parent)
     QSettings s;
     _showCentered = s.value(CFG_CENTERED, CFG_CENTERED_DEF).toBool();
     _theme = s.value(CFG_THEME, CFG_THEME_DEF).toString();
-    if (!setTheme(_theme)){
+    if (!setTheme(_theme)) {
         qFatal("FATAL: Stylefile not found: %s", _theme.toStdString().c_str());
         exit(EXIT_FAILURE);
     }
 }
 
-/****************************************************************************///
-MainWidget::~MainWidget()
-{
+
+
+/** ***************************************************************************/
+MainWidget::~MainWidget() {
     // Save settings
     QSettings s;
     s.setValue(CFG_CENTERED, _showCentered);
@@ -84,11 +85,9 @@ MainWidget::~MainWidget()
 }
 
 
-/*****************************************************************************/
-/********************************* S L O T S *********************************/
-/****************************************************************************///
-void MainWidget::show()
-{
+
+/** ***************************************************************************/
+void MainWidget::show() {
     ui.inputLine->clear();
     QWidget::show();
     if (_showCentered)
@@ -99,9 +98,11 @@ void MainWidget::show()
     ui.inputLine->setFocus();
     emit widgetShown();
 }
-/****************************************************************************///
-void MainWidget::hide()
-{
+
+
+
+/** ***************************************************************************/
+void MainWidget::hide() {
     QWidget::hide();
     emit widgetHidden();
 }
@@ -116,8 +117,7 @@ void MainWidget::toggleVisibility() {
 
 
 /** ***************************************************************************/
-void MainWidget::setModel(QAbstractItemModel *m)
-{
+void MainWidget::setModel(QAbstractItemModel *m) {
     QItemSelectionModel *sm = ui.proposalList->selectionModel();
     ui.proposalList->setModel(m);
     delete sm;
@@ -156,7 +156,7 @@ bool MainWidget::setTheme(const QString &theme) {
         themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
     // Find and apply the theme
     bool success = false;
-    for (QFileInfo fi : themes){
+    for (QFileInfo fi : themes) {
         if (fi.baseName() == _theme) {
             QFile f(fi.canonicalFilePath());
             if (f.open(QFile::ReadOnly)) {
@@ -171,20 +171,17 @@ bool MainWidget::setTheme(const QString &theme) {
 }
 
 
-/*****************************************************************************/
-/**************************** O V E R R I D E S ******************************/
-/****************************************************************************///
 
 /** ***************************************************************************/
-void MainWidget::closeEvent(QCloseEvent *event)
-{
+void MainWidget::closeEvent(QCloseEvent *event) {
     event->accept();
     qApp->quit();
 }
 
+
+
 /** ***************************************************************************/
-void MainWidget::keyPressEvent(QKeyEvent *e)
-{
+void MainWidget::keyPressEvent(QKeyEvent *e) {
     // Hide window on escape key
     if (e->modifiers() == Qt::NoModifier && e->key() == Qt::Key_Escape ) {
         hide();

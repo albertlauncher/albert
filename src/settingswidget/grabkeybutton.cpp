@@ -16,47 +16,51 @@
 
 #include "grabkeybutton.h"
 
-/****************************************************************************///
+/** ***************************************************************************/
 
-GrabKeyButton::GrabKeyButton(QWidget * parent) : QPushButton(parent)
-{
+GrabKeyButton::GrabKeyButton(QWidget * parent) : QPushButton(parent) {
     _waitingForHotkey = false;
     connect(this, &QPushButton::clicked,
             this, &GrabKeyButton::onClick);
 }
 
-/****************************************************************************///
-GrabKeyButton::~GrabKeyButton()
-{    
+
+
+/** ***************************************************************************/
+GrabKeyButton::~GrabKeyButton() {
 }
 
-/****************************************************************************///
-void GrabKeyButton::onClick()
-{
+
+
+/** ***************************************************************************/
+void GrabKeyButton::onClick() {
     _oldText = text();
     setText("?");
     grabAll();
 }
 
-/****************************************************************************///
-void GrabKeyButton::grabAll()
-{
+
+
+/** ***************************************************************************/
+void GrabKeyButton::grabAll() {
     grabKeyboard();
     grabMouse();
     _waitingForHotkey = true;
 }
 
-/****************************************************************************///
-void GrabKeyButton::releaseAll()
-{
+
+
+/** ***************************************************************************/
+void GrabKeyButton::releaseAll() {
     releaseKeyboard();
     releaseMouse();
     _waitingForHotkey = false;
 }
 
-/****************************************************************************///
-void GrabKeyButton::keyPressEvent(QKeyEvent *event)
-{
+
+
+/** ***************************************************************************/
+void GrabKeyButton::keyPressEvent(QKeyEvent *event) {
     if ( _waitingForHotkey )
     {
         // Modifier pressed -> update the label
@@ -83,9 +87,10 @@ void GrabKeyButton::keyPressEvent(QKeyEvent *event)
 //    QWidget::keyPressEvent( event );
 }
 
-/****************************************************************************///
-void GrabKeyButton::keyReleaseEvent(QKeyEvent *event)
-{
+
+
+/** ***************************************************************************/
+void GrabKeyButton::keyReleaseEvent(QKeyEvent *event) {
     if ( _waitingForHotkey )
     {
         // Modifier released -> update the label

@@ -28,7 +28,7 @@ Query::Query(QString term)
 
 
 /** ***************************************************************************/
-Query::~Query(){
+Query::~Query() {
     delete _rootItem;
 }
 

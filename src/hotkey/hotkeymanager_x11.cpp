@@ -25,10 +25,12 @@
 #include <QKeySequence>
 #include <QAbstractEventDispatcher>
 
-namespace
-{
+namespace {
+
     static bool failed;
     QSet<QPair<unsigned int,int>> grabbedKeys;
+
+
 
     static struct Masks {
         unsigned int alt;
@@ -38,6 +40,8 @@ namespace
         unsigned int hyper;
         unsigned int iso_level3_shift;
     } masks;
+
+
 
     // http://cep.xray.aps.anl.gov/software/qt4-x11-4.2.2-browser/dc/d02/qkeymapper__x11_8cpp-source.html
     static QMap<quint32, QSet<quint32>> QtToXSymsMap =
@@ -115,15 +119,18 @@ namespace
         /* ascii 0x20 to 0xff */
     };
 
+
+
     /** ***********************************************************************/
-    static int XGrabErrorHandler(Display *, XErrorEvent *){
+    static int XGrabErrorHandler(Display *, XErrorEvent *) {
         failed = true;
         return 0;
     }
 
+
+
     /** ***********************************************************************/
-    static void initialize()
-    {
+    static void initialize() {
         Display* dpy = QX11Info::display();
 //        xcb_connection_t* conn = QX11Info::connection();
 //        xcb_generic_error_t **e = nullptr ;
@@ -168,10 +175,10 @@ namespace
 //            free(kmr);
 
             KeyCode kc;
-            for (int maskIndex = 0; maskIndex < 8; maskIndex++){
-                for (int i = 0; i < map->max_keypermod; i++){
+            for (int maskIndex = 0; maskIndex < 8; maskIndex++) {
+                for (int i = 0; i < map->max_keypermod; i++) {
                     kc = map->modifiermap[maskIndex*map->max_keypermod+i];
-                    if (kc){
+                    if (kc) {
                         KeySym sym;
                         int symIndex = 0;
                         do {
@@ -218,27 +225,30 @@ namespace
     }
 
     /** ***********************************************************************/
-    QSet<quint32> offendingMasks(){
+    QSet<quint32> offendingMasks() {
         return QSet<unsigned int>() << 0 << LockMask << masks.numlock << (LockMask|masks.numlock);
     }
 }
 
+
+
 /** ***************************************************************************/
 HotkeyManager::HotkeyManagerPrivate::HotkeyManagerPrivate(QObject *parent)
-    : QObject(parent)
-{
+    : QObject(parent) {
     initialize();
     QAbstractEventDispatcher::instance()->installNativeEventFilter(this);
 }
 
-/** ***************************************************************************/
-HotkeyManager::HotkeyManagerPrivate::~HotkeyManagerPrivate()
-{
-}
+
 
 /** ***************************************************************************/
-bool HotkeyManager::HotkeyManagerPrivate::registerNativeHotkey(quint32 hotkey)
-{
+HotkeyManager::HotkeyManagerPrivate::~HotkeyManagerPrivate() {
+}
+
+
+
+/** ***************************************************************************/
+bool HotkeyManager::HotkeyManagerPrivate::registerNativeHotkey(quint32 hotkey) {
 //    QList<int> keysX;
 //    unsigned int modsX;
 //    qtKeyToNatives(hk, &keysX, &modsX);
@@ -270,7 +280,7 @@ bool HotkeyManager::HotkeyManagerPrivate::registerNativeHotkey(quint32 hotkey)
     XSetErrorHandler(savedErrorHandler);
 
     // Unregister the partial registration
-    if (failed){
+    if (failed) {
         for (const QPair<unsigned int,int> &p : tmpGrabbedKeys)
             XUngrabKey(dpy, p.second, p.first, root);
         return false;
@@ -290,15 +300,16 @@ bool HotkeyManager::HotkeyManagerPrivate::registerNativeHotkey(quint32 hotkey)
 
 
     //    xcb_generic_error_t *err = xcb_request_check (QX11Info::connection(), ck);
-    //    if (err != NULL){
+    //    if (err != NULL) {
     //        qWarning("X11 error %d", err->error_code);
     //        free (err);
     //    }
 }
 
+
+
 /** ***************************************************************************/
-void HotkeyManager::HotkeyManagerPrivate::unregisterNativeHotkey(quint32 hotkey)
-{
+void HotkeyManager::HotkeyManagerPrivate::unregisterNativeHotkey(quint32 hotkey) {
     QSet<quint32> keysX = nativeKeycodes(hotkey & ~Qt::KeyboardModifierMask);
     quint32       modsX = nativeModifiers(hotkey &  Qt::KeyboardModifierMask);
     if (keysX.isEmpty()) qCritical() << "keysX should not be empty";
@@ -323,9 +334,10 @@ void HotkeyManager::HotkeyManagerPrivate::unregisterNativeHotkey(quint32 hotkey)
     XSetErrorHandler(savedErrorHandler);
 }
 
+
+
 /** ***************************************************************************/
-QSet<quint32> HotkeyManager::HotkeyManagerPrivate::nativeKeycodes(quint32 qtKey)
-{
+QSet<quint32> HotkeyManager::HotkeyManagerPrivate::nativeKeycodes(quint32 qtKey) {
     /* Translate key symbol ( Qt -> X ) */
     // Use latin if possible
     if (qtKey >= 0x20 && qtKey <= 0xff)
@@ -339,9 +351,10 @@ QSet<quint32> HotkeyManager::HotkeyManagerPrivate::nativeKeycodes(quint32 qtKey)
         }
 }
 
+
+
 /** ***************************************************************************/
-quint32 HotkeyManager::HotkeyManagerPrivate::nativeModifiers(quint32 qtMods)
-{
+quint32 HotkeyManager::HotkeyManagerPrivate::nativeModifiers(quint32 qtMods) {
     quint32 ret = 0;
     //    if (qtMods & Qt::ShiftModifier)       ret |= XCB_MOD_MASK_SHIFT;
     //    if (qtMods & Qt::ControlModifier)     ret |= XCB_MOD_MASK_CONTROL;
@@ -355,9 +368,9 @@ quint32 HotkeyManager::HotkeyManagerPrivate::nativeModifiers(quint32 qtMods)
 }
 
 
+
 /** ***************************************************************************/
-bool HotkeyManager::HotkeyManagerPrivate::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
-{
+bool HotkeyManager::HotkeyManagerPrivate::nativeEventFilter(const QByteArray &eventType, void *message, long *result) {
     Q_UNUSED(result);
     if (eventType == "xcb_generic_event_t") {
         xcb_generic_event_t* ev = static_cast<xcb_generic_event_t *>(message);

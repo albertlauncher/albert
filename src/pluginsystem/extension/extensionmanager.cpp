@@ -31,7 +31,7 @@ ExtensionManager::ExtensionManager() : _sessionIsActive(false) {
 void ExtensionManager::startQuery(const QString &term) {
     Query *q;
 	_currentSearchTerm = term.trimmed();
-    if (_recentQueries.contains(_currentSearchTerm)){
+    if (_recentQueries.contains(_currentSearchTerm)) {
         q = _recentQueries.value(_currentSearchTerm);
     } else {
         q = new Query(_currentSearchTerm);
@@ -78,7 +78,7 @@ void ExtensionManager::teardownSession() {
 /** ***************************************************************************/
 void ExtensionManager::registerExtension(QObject *o) {
     IExtension* e = qobject_cast<IExtension*>(o);
-    if (e){
+    if (e) {
         if(_extensions.contains(e))
             qCritical() << "Extension registered twice!";
         else{
@@ -93,7 +93,7 @@ void ExtensionManager::registerExtension(QObject *o) {
 /** ***************************************************************************/
 void ExtensionManager::unregisterExtension(QObject *o) {
     IExtension* e = qobject_cast<IExtension*>(o);
-    if (e){
+    if (e) {
         if(!_extensions.contains(e))
             qCritical() << "Unregistered unregistered extension! (Duplicate unregistration?)";
         else{

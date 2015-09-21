@@ -25,20 +25,19 @@ PluginLoader::PluginLoader(QString path) : QPluginLoader(path) {
 
 
 /** ***************************************************************************/
-PluginLoader::~PluginLoader(){
+PluginLoader::~PluginLoader() {
 
 }
 
 
 /** ***************************************************************************/
-QObject *PluginLoader::instance()
-{
+QObject *PluginLoader::instance() {
     load();
     return QPluginLoader::isLoaded() ? QPluginLoader::instance() : nullptr;
 }
 
 /** ***************************************************************************/
-void PluginLoader::load(){
+void PluginLoader::load() {
     if (QPluginLoader::load())
         _status = Status::Loaded;
     else {
@@ -50,7 +49,7 @@ void PluginLoader::load(){
 
 
 /** ***************************************************************************/
-void PluginLoader::unload(){
+void PluginLoader::unload() {
     if (QPluginLoader::unload())
         _status = Status::NotLoaded;
     else

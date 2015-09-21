@@ -44,21 +44,21 @@ const QMap<QString, PluginLoader *> &PluginManager::plugins() {
 
 
 /** ***************************************************************************/
-void PluginManager::enable(const QString &path){
+void PluginManager::enable(const QString &path) {
     _blacklist.removeAll(path);
 }
 
 
 
 /** ***************************************************************************/
-void PluginManager::disable(const QString &path){
+void PluginManager::disable(const QString &path) {
     if (!_blacklist.contains(path))
         _blacklist.append(path);
 }
 
 
 /** ***************************************************************************/
-bool PluginManager::isEnabled(const QString &path){
+bool PluginManager::isEnabled(const QString &path) {
     return !_blacklist.contains(path);
 }
 
@@ -82,7 +82,7 @@ void PluginManager::loadPlugins() {
             }
 
 //            // Check if this lib is an albert extension plugin
-//            if (! ps->loader->metaData()["IID"].toString().compare(ALBERT_EXTENSION_IID)==0 ){
+//            if (! ps->loader->metaData()["IID"].toString().compare(ALBERT_EXTENSION_IID)==0 ) {
 //                qWarning() << "Extension incompatible:" << path << ps->IID << ALBERT_EXTENSION_IID;
 //                delete ps->loader;
 //                delete ps;
@@ -101,7 +101,7 @@ void PluginManager::loadPlugins() {
             plugin->load();
 
             // Test for success and propagate this
-            if (plugin->status() == PluginLoader::Status::Loaded){
+            if (plugin->status() == PluginLoader::Status::Loaded) {
                 qDebug() << "Plugin loaded:" <<  plugin->name();
                 emit pluginLoaded(plugin->instance());
             }
@@ -113,8 +113,8 @@ void PluginManager::loadPlugins() {
 
 /** ***************************************************************************/
 void PluginManager::unloadPlugins() {
-    for (PluginLoader *plugin : _plugins){
-        if (plugin->status() == PluginLoader::Status::Loaded){
+    for (PluginLoader *plugin : _plugins) {
+        if (plugin->status() == PluginLoader::Status::Loaded) {
             emit pluginAboutToBeUnloaded(plugin->instance()); // THIS HAS TO BE BLOCKING
             plugin->unload();
             delete plugin;

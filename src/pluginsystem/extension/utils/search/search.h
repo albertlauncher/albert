@@ -49,12 +49,12 @@ public:
      * @param fuzzy The type to set. Defaults to true.
      */
     void setFuzzy(bool fuzzy = true) {
-        if (dynamic_cast<FuzzySearch*>(_impl)){
+        if (dynamic_cast<FuzzySearch*>(_impl)) {
             if (fuzzy) return;
             FuzzySearch *old = dynamic_cast<FuzzySearch*>(_impl);
             _impl = new PrefixSearch(*old);
             delete old;
-        } else if (dynamic_cast<PrefixSearch*>(_impl)){
+        } else if (dynamic_cast<PrefixSearch*>(_impl)) {
             if (!fuzzy) return;
             PrefixSearch *old = dynamic_cast<PrefixSearch*>(_impl);
             _impl = new FuzzySearch(*old);
@@ -98,7 +98,7 @@ public:
      * @brief The error tolerance of the fuzzy search
      * @return The amount of error tolerance if search is fuzzy 0 else.
      */
-    double delta(){
+    double delta() {
         FuzzySearch* f = dynamic_cast<FuzzySearch*>(_impl);
         if (f)
             return f->delta();
@@ -111,7 +111,7 @@ public:
      * @brief Build the search index
      * @param The items to index
      */
-    inline void add(IIndexable* idxble){
+    inline void add(IIndexable* idxble) {
         _impl->add(idxble);
     }
 

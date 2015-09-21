@@ -24,12 +24,11 @@
 #include "actions/copyfileaction.h"
 #include "actions/copypathaction.h"
 
-namespace Files {
-
-QHash<QString, QIcon> Item::_iconCache;
+QHash<QString, QIcon> Files::Item::_iconCache;
 
 /** ***************************************************************************/
-Item::Item(File *file, IExtension *ext, IQuery *qry)
+
+Files::Item::Item(File *file, IExtension *ext, IQuery *qry)
     : _file(file), _extension(ext), _query(qry) {
 
 }
@@ -37,21 +36,21 @@ Item::Item(File *file, IExtension *ext, IQuery *qry)
 
 
 /** ***************************************************************************/
-Item::~Item() {
+Files::Item::~Item() {
 
 }
 
 
 
 /** ***************************************************************************/
-QVariant Item::data(int role) const {
+QVariant Files::Item::data(int role) const {
     switch (role) {
     case Qt::DisplayRole:
         return QFileInfo(_file->path).fileName();
     case Qt::ToolTipRole:
         return _file->path;
     case Qt:: DecorationRole:
-        if (!_iconCache.contains(_file->mimetype.iconName())){
+        if (!_iconCache.contains(_file->mimetype.iconName())) {
             if (QIcon::hasThemeIcon(_file->mimetype.iconName()))
                 _iconCache.insert(_file->mimetype.iconName(),
                                   QIcon::fromTheme(_file->mimetype.iconName()));
@@ -71,7 +70,7 @@ QVariant Item::data(int role) const {
 
 
 /** ***************************************************************************/
-void Item::activate() {
+void Files::Item::activate() {
 //    Qt::KeyboardModifiers mods = QApplication::keyboardModifiers(); // TODO:ActionMap
 
     // Standard action for a file
@@ -81,14 +80,14 @@ void Item::activate() {
 
 
 /** ***************************************************************************/
-unsigned short Item::score() const {
+unsigned short Files::Item::score() const {
     return _file->usage;
 }
 
 
 
 /** ***************************************************************************/
-QList<IItem *> Item::children() {
+QList<IItem *> Files::Item::children() {
     // Lazy instaciate actions
     // NO OWNERSHIP
     return QList<IItem*>({new OpenFileAction(_file),
@@ -100,15 +99,13 @@ QList<IItem *> Item::children() {
 
 
 /** ***************************************************************************/
-bool Item::hasChildren() const {
+bool Files::Item::hasChildren() const {
     return true;
 }
 
 
 
 /** ***************************************************************************/
-void Item::clearIconCache() {
+void Files::Item::clearIconCache() {
     _iconCache.clear();
-}
-
 }

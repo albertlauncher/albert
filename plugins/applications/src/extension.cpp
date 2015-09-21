@@ -26,26 +26,25 @@
 #include "app.h"
 #include "query.h"
 
-namespace Applications {
-
 
 /** ***************************************************************************/
-Extension::Extension() : _updateOnTearDown(false) {
+Applications::Extension::Extension() : _updateOnTearDown(false) {
 
 }
 
 
 
 /** ***************************************************************************/
-Extension::~Extension(){
+
+Applications::Extension::~Extension() {
 
 }
 
 
 
 /** ***************************************************************************/
-QWidget *Extension::widget() {
-    if (_widget.isNull()){
+QWidget *Applications::Extension::widget() {
+    if (_widget.isNull()) {
         _widget = new ConfigWidget;
 
         // Paths
@@ -70,7 +69,7 @@ QWidget *Extension::widget() {
 
 
 /** ***************************************************************************/
-void Extension::initialize(IExtensionManager *em) {
+void Applications::Extension::initialize(IExtensionManager *em) {
     qDebug() << "[Applications] Initialize extension";
 
     _manager = em;
@@ -122,7 +121,7 @@ void Extension::initialize(IExtensionManager *em) {
 
 
 /** ***************************************************************************/
-void Extension::finalize() {
+void Applications::Extension::finalize() {
     qDebug() << "[Applications] Finalize extension";
 
     // Save settings
@@ -151,9 +150,8 @@ void Extension::finalize() {
 
 
 /** ***************************************************************************/
-void Extension::teardownSession()
-{
-    if (_updateOnTearDown){
+void Applications::Extension::teardownSession() {
+    if (_updateOnTearDown) {
         updateIndex();
         _updateOnTearDown=false;
     }
@@ -162,7 +160,7 @@ void Extension::teardownSession()
 
 
 /** ***************************************************************************/
-void Extension::handleQuery(IQuery *q) {
+void Applications::Extension::handleQuery(IQuery *q) {
     // Search for matches. Lock memory against scanworker
     QList<IIndexable*> indexables = _searchIndex.search(q->searchTerm());
 
@@ -174,7 +172,7 @@ void Extension::handleQuery(IQuery *q) {
 
 
 /** ***************************************************************************/
-void Extension::addDir(const QString & dirPath) {
+void Applications::Extension::addDir(const QString & dirPath) {
     qDebug() << "[Applications] Adding dir" << dirPath;
 
     QFileInfo fileInfo(dirPath);
@@ -183,33 +181,33 @@ void Extension::addDir(const QString & dirPath) {
     QString absPath = fileInfo.absoluteFilePath();
 
     // Check existance
-    if (!fileInfo.exists()){
+    if (!fileInfo.exists()) {
         QMessageBox(QMessageBox::Critical, "Error", absPath + " does not exist.").exec();
         return;
     }
 
     // Check type
-    if(!fileInfo.isDir()){
+    if(!fileInfo.isDir()) {
         QMessageBox(QMessageBox::Critical, "Error", absPath + " is not a directory.").exec();
         return;
     }
 
     // Check if there is an identical existing path
-    if (_rootDirs.contains(absPath)){
+    if (_rootDirs.contains(absPath)) {
         QMessageBox(QMessageBox::Critical, "Error", absPath + " has already been indexed.").exec();
         return;
     }
 
     // Check if this dir is a subdir of an existing dir
     for (const QString &p: _rootDirs)
-        if (absPath.startsWith(p + '/')){
+        if (absPath.startsWith(p + '/')) {
             QMessageBox(QMessageBox::Critical, "Error", absPath + " is subdirectory of " + p).exec();
             return;
         }
 
     // Check if this dir is a superdir of an existing dir, in case delete subdir
     for (QStringList::iterator it = _rootDirs.begin(); it != _rootDirs.end();)
-        if (it->startsWith(absPath + '/')){
+        if (it->startsWith(absPath + '/')) {
             QMessageBox(QMessageBox::Warning, "Warning",
                         (*it) + " is subdirectory of " + absPath + ". " + (*it) + " will be removed.").exec();
             it = _rootDirs.erase(it);
@@ -225,7 +223,7 @@ void Extension::addDir(const QString & dirPath) {
 
 
 /** ***************************************************************************/
-void Extension::removeDir(const QString &dirPath) {
+void Applications::Extension::removeDir(const QString &dirPath) {
     qDebug() << "[Applications] Removing path" << dirPath;
 
     // Get an absolute file path
@@ -245,7 +243,7 @@ void Extension::removeDir(const QString &dirPath) {
 
 
 /** ***************************************************************************/
-void Extension::restorePaths() {
+void Applications::Extension::restorePaths() {
     qDebug() << "[Applications] Restore paths to defaults";
 
     // Add standard paths
@@ -259,8 +257,8 @@ void Extension::restorePaths() {
 
 
 /** ***************************************************************************/
-void Extension::updateIndex() {
-    if (_manager->sessionIsActive()){
+void Applications::Extension::updateIndex() {
+    if (_manager->sessionIsActive()) {
         _updateOnTearDown=true;
         return;
     }
@@ -321,22 +319,21 @@ void Extension::updateIndex() {
 
 
 /** ***************************************************************************/
-bool Extension::fuzzy() {
+bool Applications::Extension::fuzzy() {
     return _searchIndex.fuzzy();
 }
 
 
 
 /** ***************************************************************************/
-void Extension::setFuzzy(bool b) {
+void Applications::Extension::setFuzzy(bool b) {
     _searchIndex.setFuzzy(b);
 }
 
 
 
 /** ***************************************************************************/
-bool Extension::getAppInfo(const QString &path, App *app)
-{
+bool Applications::Extension::getAppInfo(const QString &path, App *app) {
 	// TYPES http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s05.html
 	QSettings s(path, QSettings::NativeFormat);
     s.setIniCodec("UTF-8");
@@ -365,7 +362,7 @@ bool Extension::getAppInfo(const QString &path, App *app)
 
     // Try to get the command
     v = s.value("Exec");
-    if (v.isValid() && v.canConvert(QMetaType::QString)){
+    if (v.isValid() && v.canConvert(QMetaType::QString)) {
         app->exec = v.toString();
     } else
         return false;
@@ -386,7 +383,7 @@ bool Extension::getAppInfo(const QString &path, App *app)
      */
 
     v = s.value("Icon");
-    if (v.isValid() && v.canConvert(QMetaType::QString)){
+    if (v.isValid() && v.canConvert(QMetaType::QString)) {
         QString iconName = v.toString();
         // If it is a full path
         if (iconName.startsWith('/'))
@@ -397,7 +394,7 @@ bool Extension::getAppInfo(const QString &path, App *app)
         else{
             QString currentTheme = QIcon::themeName(); // missing fallback (qt-bug)
             QIcon::setThemeName("hicolor");
-            if (QIcon::hasThemeIcon(iconName)){
+            if (QIcon::hasThemeIcon(iconName)) {
                 app->icon = QIcon::fromTheme(iconName);
                 QIcon::setThemeName(currentTheme);
             }
@@ -410,13 +407,13 @@ bool Extension::getAppInfo(const QString &path, App *app)
                 while (it.hasNext()) {
                     it.next();
                     QFileInfo fi = it.fileInfo();
-                    if (fi.isFile() && (fi.fileName() == iconName || fi.baseName() == iconName)){
+                    if (fi.isFile() && (fi.fileName() == iconName || fi.baseName() == iconName)) {
                         app->icon = QIcon(fi.canonicalFilePath());
                         found = true;
                         break;
                     }
                 }
-                if (!found){
+                if (!found) {
                     // If it is still not found use a generic one
                     qWarning() << "Unknown icon:" << iconName;
                     app->icon = QIcon::fromTheme("exec");
@@ -443,5 +440,4 @@ bool Extension::getAppInfo(const QString &path, App *app)
 
     app->path = path;
 	return true;
-}
 }

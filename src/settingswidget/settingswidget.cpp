@@ -74,7 +74,7 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
                                       QStandardPaths::LocateDirectory);
     for (QDir d : themeDirs)
         themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
-    for (QFileInfo fi : themes){
+    for (QFileInfo fi : themes) {
         ui.comboBox_themes->addItem(fi.baseName(), fi.canonicalFilePath());
         if ( fi.baseName() == mainWidget->theme())
             ui.comboBox_themes->setCurrentIndex(i);
@@ -121,9 +121,9 @@ SettingsWidget::~SettingsWidget() {
 
 /** ***************************************************************************/
 void SettingsWidget::openPluginHelp() {
-//    if (ui.treeWidget_plugins->currentIndex().isValid()){
+//    if (ui.treeWidget_plugins->currentIndex().isValid()) {
 //        QString path = ui.treeWidget_plugins->currentItem()->data(0,Qt::UserRole).toString();
-//        for (PluginLoader *plugin : _pluginManager->plugins()){
+//        for (PluginLoader *plugin : _pluginManager->plugins()) {
 //            if (plugin->fileName() == path) { // MUST HAPPEN
 //                QWidget *w = dynamic_cast<IPlugin*>(plugin->instance())->widget();
 //                w->setParent(this);
@@ -145,10 +145,10 @@ void SettingsWidget::openPluginHelp() {
 /** ***************************************************************************/
 void SettingsWidget::openPluginConfig() {
     // If the corresponding plugin is loaded open preferences
-    if (ui.treeWidget_plugins->currentIndex().isValid()){
+    if (ui.treeWidget_plugins->currentIndex().isValid()) {
         QString path = ui.treeWidget_plugins->currentItem()->data(0,Qt::UserRole).toString();
         if (_pluginManager->plugins().contains(path)
-                && _pluginManager->plugins()[path]->status() == PluginLoader::Status::Loaded){
+                && _pluginManager->plugins()[path]->status() == PluginLoader::Status::Loaded) {
             QWidget *w = dynamic_cast<IPlugin*>(_pluginManager->plugins()[path]->instance())->widget();
             w->setParent(this);
             w->setWindowTitle("Plugin configuration");
@@ -180,14 +180,14 @@ void SettingsWidget::onPluginItemChanged(QTreeWidgetItem *item, int column) {
 /** ***************************************************************************/
 void SettingsWidget::updatePluginList() {
     const QMap<QString, PluginLoader*>& plugins = _pluginManager->plugins();
-    for (const PluginLoader* plugin : plugins){
+    for (const PluginLoader* plugin : plugins) {
 
         // Get the top level item of this group, make sure it exists
         QList<QTreeWidgetItem *> tlis = ui.treeWidget_plugins->findItems(plugin->group(), Qt::MatchExactly);
         if (tlis.size() > 1) // MUST NOT HAPPEN
             qCritical() << "Found multiple identical TopLevelItems in PluginList";
         QTreeWidgetItem *tli;
-        if (tlis.size() == 0){
+        if (tlis.size() == 0) {
             tli= new QTreeWidgetItem({plugin->group()});
             tli->setFlags(Qt::ItemIsEnabled);
             ui.treeWidget_plugins->addTopLevelItem(tli);
@@ -231,7 +231,7 @@ void SettingsWidget::updatePluginInformations() {
     if (isTopLevelItem) return;
 
     QString path = ui.treeWidget_plugins->currentItem()->data(0,Qt::UserRole).toString();
-    if (_pluginManager->plugins().contains(path)){
+    if (_pluginManager->plugins().contains(path)) {
         PluginLoader* plugin = _pluginManager->plugins()[path];
         ui.label_pluginName->setText(plugin->name());
         ui.label_pluginVersion->setText(plugin->version());
@@ -278,10 +278,10 @@ void SettingsWidget::changeHotkey(int newhk) {
 void SettingsWidget::onThemeChanged(int i) {
     // Apply and save the theme
     QString currentTheme = _mainWidget->theme();
-    if (!_mainWidget->setTheme(ui.comboBox_themes->itemText(i))){
+    if (!_mainWidget->setTheme(ui.comboBox_themes->itemText(i))) {
         QMessageBox msgBox(QMessageBox::Critical, "Error", "Could not apply theme.");
         msgBox.exec();
-        if (!_mainWidget->setTheme(currentTheme)){
+        if (!_mainWidget->setTheme(currentTheme)) {
            qFatal("Rolling back theme failed.");
         }
     }
@@ -297,12 +297,6 @@ void SettingsWidget::show() {
 
 
 
-/******************************************************************************/
-/*                            O V E R R I D E S                               */
-/******************************************************************************/
-
-
-
 /** ***************************************************************************/
 void SettingsWidget::keyPressEvent(QKeyEvent *event) {
     if (event->modifiers() == Qt::NoModifier && event->key() == Qt::Key_Escape ) {
@@ -314,13 +308,13 @@ void SettingsWidget::keyPressEvent(QKeyEvent *event) {
 
 /** ***************************************************************************/
 void SettingsWidget::closeEvent(QCloseEvent *event) {
-    if (_hotkeyManager->hotkeys().empty()){
+    if (_hotkeyManager->hotkeys().empty()) {
         QMessageBox msgBox(QMessageBox::Critical, "Error",
                            "Hotkey is invalid, please set it. Press Ok to go "\
                            "back to the settings, or press Cancel to quit albert.",
                            QMessageBox::Close|QMessageBox::Ok);
         msgBox.exec();
-        if ( msgBox.result() == QMessageBox::Ok ){
+        if ( msgBox.result() == QMessageBox::Ok ) {
             ui.tabs->setCurrentIndex(0);
             this->show();
         }

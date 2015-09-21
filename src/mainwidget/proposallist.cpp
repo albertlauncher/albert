@@ -44,8 +44,7 @@ ProposalList::~ProposalList() {
 
 
 /** ***************************************************************************/
-bool ProposalList::eventFilter(QObject*, QEvent *event)
-{
+bool ProposalList::eventFilter(QObject*, QEvent *event) {
     if (model() == nullptr)
         return false;
 
@@ -55,7 +54,7 @@ bool ProposalList::eventFilter(QObject*, QEvent *event)
         int key = keyEvent->key();
 
         // Mods changed -> refresh
-        if (key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta){
+        if (key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta) {
             update(currentIndex());
             return true;
         }
@@ -87,7 +86,7 @@ bool ProposalList::eventFilter(QObject*, QEvent *event)
         }
 
         // Show actions
-        if (key == Qt::Key_Tab){
+        if (key == Qt::Key_Tab) {
 
             // Ignore empty results
             if (!model()->hasChildren(rootIndex()))
@@ -117,7 +116,7 @@ bool ProposalList::eventFilter(QObject*, QEvent *event)
         int key = keyEvent->key();
 
         // Display different subtexts according to the KeyboardModifiers
-        if (key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta){
+        if (key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta) {
             update(currentIndex());
             return true;
         }
@@ -128,8 +127,7 @@ bool ProposalList::eventFilter(QObject*, QEvent *event)
 
 
 /** ***************************************************************************/
-QSize ProposalList::sizeHint() const
-{
+QSize ProposalList::sizeHint() const {
     if (model() == nullptr)
         return QSize();
     int cnt = model()->rowCount(rootIndex());
@@ -140,14 +138,13 @@ QSize ProposalList::sizeHint() const
 
 
 /** ***************************************************************************/
-void ProposalList::reset()
-{
+void ProposalList::reset() {
     // Reset the views state
     QListView::reset();
     scrollToTop(); // Why is this needed?
 
     // Show if not empty and make first item current
-    if (model()!=nullptr && model()->hasChildren(rootIndex())){
+    if (model()!=nullptr && model()->hasChildren(rootIndex())) {
         show();
         // Make the size of this widget be adjusted (size hint changed)
         updateGeometry();

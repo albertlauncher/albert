@@ -48,7 +48,7 @@ InputLine::InputLine(QWidget *parent) : QLineEdit(parent) {
 InputLine::~InputLine() {
     // SERIALIZATION
     QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/history.dat");
-    if (f.open(QIODevice::ReadWrite| QIODevice::Text)){
+    if (f.open(QIODevice::ReadWrite| QIODevice::Text)) {
         QDataStream out(&f);
         out << QStringList::fromStdList(_lines);
         f.close();
@@ -115,7 +115,7 @@ void InputLine::keyPressEvent(QKeyEvent *e) {
         return;
     case Qt::Key_Enter:
     case Qt::Key_Return:
-        if (!text().isEmpty()){
+        if (!text().isEmpty()) {
             _lines.remove(text()); // Make entries uniq
             _lines.push_back(text()); // Remember this entry
         }

@@ -26,7 +26,7 @@ class FuzzySearch final : public PrefixSearch {
 public:
 
     /** ***********************************************************************/
-    explicit FuzzySearch(unsigned int q = 3, double d = 2) : _q(q), _delta(d){
+    explicit FuzzySearch(unsigned int q = 3, double d = 2) : _q(q), _delta(d) {
     }
 
 
@@ -34,7 +34,7 @@ public:
     /** ***********************************************************************/
     explicit FuzzySearch(const PrefixSearch& rhs, unsigned int q = 3, double d = 2) : PrefixSearch(rhs), _q(q), _delta(d) {
         // Iterate over the inverted index and build the qGramindex
-        for (typename PrefixSearch::InvertedIndex::const_iterator it = this->_invertedIndex.constBegin(); it != this->_invertedIndex.constEnd(); ++it){
+        for (typename PrefixSearch::InvertedIndex::const_iterator it = this->_invertedIndex.constBegin(); it != this->_invertedIndex.constEnd(); ++it) {
             QString spaced = QString(_q-1,' ').append(it.key());
             for (unsigned int i = 0 ; i < static_cast<unsigned int>(it.key().size()); ++i)
                 ++_qGramIndex[spaced.mid(i,_q)][it.key()];
@@ -44,7 +44,7 @@ public:
 
 
     /** ***********************************************************************/
-    ~FuzzySearch(){
+    ~FuzzySearch() {
     }
 
 
@@ -196,7 +196,7 @@ public:
         //                  [&](QPair<T, unsigned int> x, QPair<T, unsigned int> y)
         //                    {return x.second > y.second;});
         QList<IIndexable*> result;
-        for (QPair<IIndexable*, unsigned int> pair : finalResult){
+        for (QPair<IIndexable*, unsigned int> pair : finalResult) {
             result << pair.first;
         }
         return result;

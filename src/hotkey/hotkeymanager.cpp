@@ -19,38 +19,33 @@
 
 #include <QKeySequence>
 
-/****************************************************************************///
+/** ***************************************************************************/
 HotkeyManager::HotkeyManager(QObject *parent) :
-	QObject(parent)
-{
+    QObject(parent) {
 	_impl = new HotkeyManagerPrivate;
 	connect(_impl, &HotkeyManagerPrivate::hotKeyPressed, this, &HotkeyManager::onHotkeyPressed);
 	_enabled = true;
 }
 
-/****************************************************************************///
-HotkeyManager::~HotkeyManager()
-{
+/** ***************************************************************************/
+HotkeyManager::~HotkeyManager() {
 	delete _impl;
 }
 
-/****************************************************************************///
-bool HotkeyManager::registerHotkey(const QString &hk)
-{
+/** ***************************************************************************/
+bool HotkeyManager::registerHotkey(const QString &hk) {
 	return registerHotkey(QKeySequence(hk));
 }
 
-/****************************************************************************///
-bool HotkeyManager::registerHotkey(const QKeySequence &hk)
-{
+/** ***************************************************************************/
+bool HotkeyManager::registerHotkey(const QKeySequence &hk) {
 	if (hk.count() != 1)
 		return false;
 	return registerHotkey(hk[0]);
 }
 
-/****************************************************************************///
-bool HotkeyManager::registerHotkey(const int hk)
-{
+/** ***************************************************************************/
+bool HotkeyManager::registerHotkey(const int hk) {
     if (_hotkeys.contains(hk))
         return true;
 	if (_impl->registerNativeHotkey(hk)) {
@@ -60,33 +55,29 @@ bool HotkeyManager::registerHotkey(const int hk)
     return false;
 }
 
-/****************************************************************************///
-bool HotkeyManager::unregisterHotkey(const QString &hk)
-{
+/** ***************************************************************************/
+bool HotkeyManager::unregisterHotkey(const QString &hk) {
     return unregisterHotkey(QKeySequence(hk));
 }
 
-/****************************************************************************///
-bool HotkeyManager::unregisterHotkey(const QKeySequence &hk)
-{
+/** ***************************************************************************/
+bool HotkeyManager::unregisterHotkey(const QKeySequence &hk) {
     if (hk.count() != 1)
         return false;
     unregisterHotkey(hk[0]);
     return true;
 }
 
-/****************************************************************************///
-void HotkeyManager::unregisterHotkey(const int hk)
-{
+/** ***************************************************************************/
+void HotkeyManager::unregisterHotkey(const int hk) {
     if (!_hotkeys.contains(hk))
         return;
     _impl->unregisterNativeHotkey(hk);
     _hotkeys.remove(hk);
 }
 
-/****************************************************************************///
-void HotkeyManager::onHotkeyPressed()
-{
+/** ***************************************************************************/
+void HotkeyManager::onHotkeyPressed() {
 	if (_enabled)
 		emit hotKeyPressed();
 }

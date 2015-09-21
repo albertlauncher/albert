@@ -27,8 +27,7 @@
 
 
 /** ***************************************************************************/
-void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message)
-{
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message) {
     QString suffix;
     if (context.function)
         suffix = QString("  --  [%1]").arg(context.function);
@@ -51,8 +50,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 
 
 /** ***************************************************************************/
-AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv)
-{
+AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     /*
      *  INITIALIZE APPLICATION
      */
@@ -123,8 +121,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv)
 
 
 /** ***************************************************************************/
-AlbertApp::~AlbertApp()
-{
+AlbertApp::~AlbertApp() {
     // Unload the plugins
     _pluginManager->unloadPlugins();
     delete _hotkeyManager;
@@ -136,8 +133,7 @@ AlbertApp::~AlbertApp()
 
 
 /** ***************************************************************************/
-int AlbertApp::exec()
-{
+int AlbertApp::exec() {
     //  HOTKEY  //  Albert without hotkey is useless. Force it!
     QSettings s;
     _hotkeyManager->registerHotkey(s.value("hotkey").toString());
@@ -147,7 +143,7 @@ int AlbertApp::exec()
                            "the settings or press close to quit albert.",
                            QMessageBox::Close|QMessageBox::Ok);
         msgBox.exec();
-        if ( msgBox.result() == QMessageBox::Ok ){
+        if ( msgBox.result() == QMessageBox::Ok ) {
             //hotkeyManager->disable();
             openSettings();
             //QObject::connect(settingsWidget, &QWidget::destroyed, hotkeyManager, &HotkeyManager::enable);
@@ -161,8 +157,7 @@ int AlbertApp::exec()
 
 
 /** ***************************************************************************/
-void AlbertApp::openSettings()
-{
+void AlbertApp::openSettings() {
     if (!_settingsWidget)
         _settingsWidget = new SettingsWidget(_mainWidget, _hotkeyManager, _pluginManager);
     _settingsWidget->show();
@@ -171,24 +166,21 @@ void AlbertApp::openSettings()
 
 
 /** ***************************************************************************/
-void AlbertApp::showWidget()
-{
+void AlbertApp::showWidget() {
     _mainWidget->show();
 }
 
 
 
 /** ***************************************************************************/
-void AlbertApp::hideWidget()
-{
+void AlbertApp::hideWidget() {
     _mainWidget->hide();
 }
 
 
 
 /** ***************************************************************************/
-void AlbertApp::onStateChange(Qt::ApplicationState state)
-{
+void AlbertApp::onStateChange(Qt::ApplicationState state) {
     if (state==Qt::ApplicationInactive)
         _mainWidget->hide();
 }

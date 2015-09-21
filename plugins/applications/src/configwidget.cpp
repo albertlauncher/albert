@@ -18,11 +18,8 @@
 #include <QFileDialog>
 #include <QStandardPaths>
 
-namespace Applications
-{
 /** ***************************************************************************/
-ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent)
-{
+Applications::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
     ui.setupUi(this);
 
     connect(ui.pushButton_addPath, &QPushButton::clicked,
@@ -32,15 +29,17 @@ ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent)
             this, &ConfigWidget::onButton_PathRemove);
 }
 
+
+
 /** ***************************************************************************/
-ConfigWidget::~ConfigWidget()
-{
+Applications::ConfigWidget::~ConfigWidget() {
 
 }
 
+
+
 /** ***************************************************************************/
-void ConfigWidget::onButton_PathAdd()
-{
+void Applications::ConfigWidget::onButton_PathAdd() {
     QString path = QFileDialog::getExistingDirectory(
                 this,
                 tr("Choose path"),
@@ -52,11 +51,11 @@ void ConfigWidget::onButton_PathAdd()
     emit requestAddPath(path);
 }
 
+
+
 /** ***************************************************************************/
-void ConfigWidget::onButton_PathRemove()
-{
+void Applications::ConfigWidget::onButton_PathRemove() {
     if (ui.listWidget_paths->currentItem() == nullptr)
         return;
     emit requestRemovePath(ui.listWidget_paths->currentItem()->text());
-}
 }

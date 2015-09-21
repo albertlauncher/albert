@@ -33,15 +33,15 @@ class Query final : public QAbstractItemModel, public IQuery
         TreeItem(IItem *d = nullptr, TreeItem *p = nullptr, std::vector<TreeItem*> *c = nullptr)
             : data(d), parent(p), children(c) {}
         ~TreeItem(){ // Recursively kill the tree
-            if (children){
+            if (children) {
                 for (TreeItem *t : *children)
                     delete t;
                 delete children;
             }
             delete data;
         }
-        void lazyLoadChildren(){
-            if (!children && data->hasChildren()){
+        void lazyLoadChildren() {
+            if (!children && data->hasChildren()) {
                 children = new std::vector<TreeItem*>();
                 for (IItem *i : data->children()) // Mem allocated
                     children->push_back(new TreeItem(i, this));

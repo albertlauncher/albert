@@ -21,27 +21,14 @@
 #include "extension.h"
 
 
-namespace Files{
-
-
-
 /** ***************************************************************************/
-struct Comp {
-    inline bool operator()(const File *lhs, const File *rhs) const {
-        return QString::compare(lhs->path, rhs->path, Qt::CaseInsensitive) < 0;
-    }
-};
-
-
-
-/** ***************************************************************************/
-ScanWorker::ScanWorker(QList<File *>** fileIndex, Search *searchIndex, const QStringList& rootPaths, const IndexOptions& indexOptions, QMutex* searchLock) :
+Files::ScanWorker::ScanWorker(QList<File *>** fileIndex, Search *searchIndex, const QStringList& rootPaths, const IndexOptions& indexOptions, QMutex* searchLock) :
     _fileIndex(fileIndex), _searchIndex(searchIndex), _rootDirs(rootPaths), _indexOptions(indexOptions), _mutex(searchLock), _abort(false) {}
 
 
 
 /** ***************************************************************************/
-void ScanWorker::run() {
+void Files::ScanWorker::run() {
     qDebug() << "[Files] Scanning files...";
     // Get a new index [O(n)]
     QList<File *>* newIndex = new QList<File *>;
@@ -49,17 +36,19 @@ void ScanWorker::run() {
         scan(QFileInfo(path), newIndex);
 
     // Sort the new index  [O(n*log(n))]
-    std::sort(newIndex->begin(), newIndex->end(), Comp());
+    std::sort(newIndex->begin(), newIndex->end(), [](const File *lhs, const File *rhs) {
+                  return QString::compare(lhs->path, rhs->path, Qt::CaseInsensitive) < 0;
+              });
 
     // Copy the usagecounters  [O(n)]
     int i=0, j=0;
     while (i < (*_fileIndex)->size() && j < newIndex->size()) {
-        if ((**_fileIndex)[i]->path==(*newIndex)[j]->path){
+        if ((**_fileIndex)[i]->path==(*newIndex)[j]->path) {
             (*newIndex)[j]->usage = (**_fileIndex)[i]->usage;
             ++i;++j;
-        } else if ((**_fileIndex)[i]->path < (*newIndex)[j]->path){
+        } else if ((**_fileIndex)[i]->path < (*newIndex)[j]->path) {
             ++i;
-        } else {// if ((*_fileIndex)[i]->path > (*newIndex)[j]->path){
+        } else {// if ((*_fileIndex)[i]->path > (*newIndex)[j]->path) {
             ++j;
         }
     }
@@ -84,7 +73,7 @@ void ScanWorker::run() {
 
 
 /** ***************************************************************************/
-void ScanWorker::scan(const QFileInfo& root, QList<File *>* result) {
+void Files::ScanWorker::scan(const QFileInfo& root, QList<File *>* result) {
     // Prepare
     QDir::Filters filters = QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot;
     if (_indexOptions.indexHidden)
@@ -103,10 +92,10 @@ void ScanWorker::scan(const QFileInfo& root, QList<File *>* result) {
 
         // Handle the ignore files
         // http://doc.qt.io/qt-5/qregexp.html#wildcard-matching
-        if (!ignoreMap.contains(dirIt.path())){
+        if (!ignoreMap.contains(dirIt.path())) {
             QList<QRegExp> ignores;
             QFile file(QDir(dirIt.path()).filePath(IGNOREFILE));
-            if (file.open(QIODevice::ReadOnly | QIODevice::Text)){
+            if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
                 QTextStream in(&file);
                 while (!in.atEnd())
                     ignores.append(QRegExp(in.readLine().trimmed(), Qt::CaseSensitive, QRegExp::Wildcard));
@@ -122,7 +111,7 @@ void ScanWorker::scan(const QFileInfo& root, QList<File *>* result) {
                 continue;
 
         // If is a file and matches index options index it
-        if (dirIt.fileInfo().isFile()){
+        if (dirIt.fileInfo().isFile()) {
             f.mimetype = _mimeDatabase.mimeTypeForFile(f.path);
             QString mimeName = f.mimetype.name();
             if ((_indexOptions.indexAudio && mimeName.startsWith("audio"))
@@ -134,11 +123,10 @@ void ScanWorker::scan(const QFileInfo& root, QList<File *>* result) {
         } else if (dirIt.fileInfo().isDir()) {
             emit statusInfo(QString("Indexing %1.").arg(f.path));
             // If is a dir and matches index options index it
-            if (_indexOptions.indexDirs){
+            if (_indexOptions.indexDirs) {
                 f.mimetype = _mimeDatabase.mimeTypeForFile(f.path);
                 result->append(new File(f));
             }
         }
     }
-}
 }

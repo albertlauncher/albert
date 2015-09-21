@@ -28,6 +28,8 @@ public:
     explicit ConfigWidget(QWidget *parent = 0);
     ~ConfigWidget();
 
+    void setInfo(const QString &);
+
     Ui::ConfigWidget ui;
 
 private:

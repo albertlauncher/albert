@@ -20,10 +20,8 @@
 #include <QStandardPaths>
 #include "mimetypechooser.h"
 
-namespace Files{
 /** ***************************************************************************/
-ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent)
-{
+Files::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
     ui.setupUi(this);
     connect(ui.pushButton_add, &QPushButton::clicked, this, &ConfigWidget::onButton_PathAdd);
     connect(ui.pushButton_remove, &QPushButton::clicked, this, &ConfigWidget::onButton_PathRemove);
@@ -33,16 +31,21 @@ ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent)
 
 
 /** ***************************************************************************/
-ConfigWidget::~ConfigWidget()
-{
+Files::ConfigWidget::~ConfigWidget() {
 
 }
 
 
 
 /** ***************************************************************************/
-void ConfigWidget::onButton_PathAdd()
-{
+void Files::ConfigWidget::setInfo(const QString &info) {
+    ui.label_info->setText(ui.label_info->fontMetrics().elidedText(info, Qt::ElideMiddle, ui.label_info->width()));
+}
+
+
+
+/** ***************************************************************************/
+void Files::ConfigWidget::onButton_PathAdd() {
     QString path = QFileDialog::getExistingDirectory(
                 this,
                 tr("Choose path"),
@@ -57,8 +60,7 @@ void ConfigWidget::onButton_PathAdd()
 
 
 /** ***************************************************************************/
-void ConfigWidget::onButton_PathRemove()
-{
+void Files::ConfigWidget::onButton_PathRemove() {
     if (ui.listWidget_paths->currentItem() == nullptr)
         return;
     emit requestRemovePath(ui.listWidget_paths->currentItem()->text());
@@ -67,9 +69,7 @@ void ConfigWidget::onButton_PathRemove()
 
 
 /** ***************************************************************************/
-void ConfigWidget::onButton_Advanced()
-{
+void Files::ConfigWidget::onButton_Advanced() {
     MimeTypeChooser *c = new MimeTypeChooser;
     c->show();
-}
 }

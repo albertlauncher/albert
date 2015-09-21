@@ -28,11 +28,9 @@
 #include "query.h"
 #include "scanworker.h"
 
-namespace Files{
-
 
 /** ***************************************************************************/
-Extension::Extension() {
+Files::Extension::Extension() {
     _fileIndex = new QList<File*>;
     _minuteTimer.setInterval(60000);
 }
@@ -40,15 +38,15 @@ Extension::Extension() {
 
 
 /** ***************************************************************************/
-Extension::~Extension() {
+Files::Extension::~Extension() {
     delete _fileIndex;
 }
 
 
 
 /** ***************************************************************************/
-QWidget *Extension::widget() {
-    if (_widget.isNull()){
+QWidget *Files::Extension::widget() {
+    if (_widget.isNull()) {
         _widget = new ConfigWidget;
 
         // Paths
@@ -98,7 +96,7 @@ QWidget *Extension::widget() {
 
 
 /** ***************************************************************************/
-void Extension::initialize(IExtensionManager *em) {
+void Files::Extension::initialize(IExtensionManager *em) {
     qDebug() << "[Files] Initialize extension";
 
     _manager = em;
@@ -161,7 +159,7 @@ void Extension::initialize(IExtensionManager *em) {
 
 
 /** ***************************************************************************/
-void Extension::finalize() {
+void Files::Extension::finalize() {
     qDebug() << "[Files] Finalize extension";
 
     _minuteTimer.stop();
@@ -206,14 +204,14 @@ void Extension::finalize() {
 
 
 /** ***************************************************************************/
-void Extension::teardownSession() {
+void Files::Extension::teardownSession() {
     Item::clearIconCache();
 }
 
 
 
 /** ***************************************************************************/
-void Extension::handleQuery(IQuery *q) {
+void Files::Extension::handleQuery(IQuery *q) {
     // Search for matches. Lock memory against scanworker
     _mutex.lock();
     QList<IIndexable*> indexables = _searchIndex.search(q->searchTerm());
@@ -227,7 +225,7 @@ void Extension::handleQuery(IQuery *q) {
 
 
 /** ***************************************************************************/
-void Extension::addDir(const QString &dirPath) {
+void Files::Extension::addDir(const QString &dirPath) {
     qDebug() << "[Files] Adding dir" << dirPath;
 
     QFileInfo fileInfo(dirPath);
@@ -236,19 +234,19 @@ void Extension::addDir(const QString &dirPath) {
     QString absPath = fileInfo.absoluteFilePath();
 
     // Check existance
-    if (!fileInfo.exists()){
+    if (!fileInfo.exists()) {
         QMessageBox(QMessageBox::Critical, "Error", absPath + " does not exist.").exec();
         return;
     }
 
     // Check type
-    if(!fileInfo.isDir()){
+    if(!fileInfo.isDir()) {
         QMessageBox(QMessageBox::Critical, "Error", absPath + " is not a directory.").exec();
         return;
     }
 
     // Check if there is an identical existing path
-    if (_rootDirs.contains(absPath)){
+    if (_rootDirs.contains(absPath)) {
         QMessageBox(QMessageBox::Critical, "Error", absPath + " has already been indexed.").exec();
         return;
     }
@@ -273,7 +271,7 @@ void Extension::addDir(const QString &dirPath) {
 
 
 /** ***************************************************************************/
-void Extension::removeDir(const QString &dirPath) {
+void Files::Extension::removeDir(const QString &dirPath) {
     qDebug() << "[Files] Removing path" << dirPath;
 
     // Get an absolute file path
@@ -293,7 +291,7 @@ void Extension::removeDir(const QString &dirPath) {
 
 
 /** ***************************************************************************/
-void Extension::restorePaths() {
+void Files::Extension::restorePaths() {
     qDebug() << "[Files] Restore paths to defaults";
 
     // Add standard paths
@@ -304,11 +302,11 @@ void Extension::restorePaths() {
 
 
 /** ***************************************************************************/
-void Extension::updateIndex() {
+void Files::Extension::updateIndex() {
     qDebug() << "[Files] Index update triggered";
 
     // If thread is running, stop it and start this functoin after termination
-    if (!_scanWorker.isNull()){
+    if (!_scanWorker.isNull()) {
         _scanWorker->abort();
         _widget->ui.label_info->setText("Waiting for indexer to shut down ...");
         connect(_scanWorker, &ScanWorker::destroyed, this, &Extension::updateIndex);
@@ -332,7 +330,7 @@ void Extension::updateIndex() {
 
 
 /** ***************************************************************************/
-void Extension::setScanInterval(uint minutes) {
+void Files::Extension::setScanInterval(uint minutes) {
     _scanInterval=minutes;
     _minuteCounter=0;
     (minutes == 0) ? _minuteTimer.stop() : _minuteTimer.start();
@@ -342,14 +340,14 @@ void Extension::setScanInterval(uint minutes) {
 
 
 /** ***************************************************************************/
-bool Extension::fuzzy() {
+bool Files::Extension::fuzzy() {
     return _searchIndex.fuzzy();
 }
 
 
 
 /** ***************************************************************************/
-void Extension::setFuzzy(bool b) {
+void Files::Extension::setFuzzy(bool b) {
     _mutex.lock();
     _searchIndex.setFuzzy(b);
     _mutex.unlock();
@@ -358,9 +356,8 @@ void Extension::setFuzzy(bool b) {
 
 
 /** ***************************************************************************/
-void Extension::onMinuteTick(){
+void Files::Extension::onMinuteTick() {
     ++_minuteCounter;
     if (_minuteCounter == _scanInterval)
         updateIndex(); // resets _minuteCounter
-}
 }

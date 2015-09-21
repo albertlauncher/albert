@@ -18,22 +18,22 @@
 #include "ui_mimetypechooser.h"
 #include <QMimeDatabase>
 
-namespace Files{
-MimeTypeChooser::MimeTypeChooser(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::MimeTypeChooser)
-{
+
+/** ***************************************************************************/
+Files::MimeTypeChooser::MimeTypeChooser(QWidget *parent) :
+    QDialog(parent), ui(new Ui::MimeTypeChooser) {
     ui->setupUi(this);
     for (QMimeType m : QMimeDatabase().allMimeTypes()) {
-        if (m.isValid()){
+        if (m.isValid()) {
             new QListWidgetItem(m.name(),ui->listWidget_mimeTypes);
             ui->listWidget_mimeTypes->sortItems();
         }
     }
 }
 
-MimeTypeChooser::~MimeTypeChooser()
-{
+
+
+/** ***************************************************************************/
+Files::MimeTypeChooser::~MimeTypeChooser() {
     delete ui;
-}
 }
