@@ -102,7 +102,7 @@ void PluginManager::loadPlugins() {
 
             // Test for success and propagate this
             if (plugin->status() == PluginLoader::Status::Loaded){
-                qDebug() << "Extension loaded:" <<  plugin->name();
+                qDebug() << "Plugin loaded:" <<  plugin->name();
                 emit pluginLoaded(plugin->instance());
             }
         }

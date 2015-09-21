@@ -49,34 +49,36 @@ Facts:
 
 
 ------------------------------- RELEASE 0.7 ------------------------------------
-- Ignore folders .albertignore
-- Filter indexed files by type
-- Let the index be build in background thread
-- Use raw instead shared pointers - (lame as hell 6x-10x, delete-later-mechanism that deletes item on session teardown)
-- [Actions][Builtin] - Extension can offer actions
-- Search without template and static downcast
-- [Actions] ListView("->" show actions, "<-" show results). Closes #42
-- Split file in file and fileitem
-- Move the datamodelling to core by not let parent()/children() be part of IItem
-x Plugin infrastucture - Port all modules
- x Port files
-  x Follow Symlinks
-  x Detect link loops
-  x Scan interval overrun bug
-  x Serialization
-  x Can't open files with spaces in the filepath. Closes #35
- x Port apps
-  - AppIndex needs rebuilding every time. Closes #45
- x Port bookmarks
-  - Path to bookmarks file not intialized correctly. Closes #44
- x Port calculator
-  - Internationalisation in calculator module. Closes #46
- x Port websearch
-  x [FEAT][Actions][Global]  Fallback actions - needs only queryterm
- x Check that paths are created safely with QDir(dirPath).filePath(fileName);
- x make use of mutable make interface const
- - scanworker still may cause exception if winsow is visible
- - settings are not saved (alpha 0.5). Closes #12
+✔ Ignore folders .albertignore
+✔ Filter indexed files by type
+✔ Let the index be build in background thread
+✔ Use raw instead shared pointers - (lame as hell 6x-10x, delete-later-mechanism that deletes item on session teardown)
+✔ [Actions][Builtin] - Extension can offer actions
+✔ Search without template and static downcast
+✔ [Actions] ListView("->" show actions, "<-" show results). Closes #42
+✔ Split file in file and item
+✔ Move the datamodelling to core by not let parent()/children() be part of IItem
+✔ Plugin infrastucture - Port all modules
+ ✔ Port files
+  ✔ Follow Symlinks
+  ✔ Detect link loops
+  ✔ Scan interval overrun bug
+  ✔ Serialization
+  ✔ Can't open files with spaces in the filepath. Closes #35
+ ✔ Port apps
+  ✔ AppIndex needs rebuilding every time. Closes #45
+  ✘ Serialization
+  ✘ Quicklist actions
+ ✘ Port bookmarks
+  ✘ Path to bookmarks file not intialized correctly. Closes #44
+ ✘ Port calculator
+  ✘ Internationalisation in calculator module. Closes #46
+ ✘ Port websearch
+  ✘ [FEAT][Actions][Global]  Fallback actions - needs only queryterm
+ ✘ Check that paths are created safely with QDir(dirPath).filePath(fileName);
+ ✘ make use of mutable make interface const
+ ✘ scanworker still may cause exception if winsow is visible
+ ✘ settings are not saved (alpha 0.5). Closes #12
 
 
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

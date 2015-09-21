@@ -14,24 +14,66 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "extension.h"
 #include <QDebug>
-#include <QProcess>
 #include <QDirIterator>
 #include <QStandardPaths>
 #include <QMessageBox>
 #include <QSettings>
-#include <memory>
+#include "item.h"
+#include "extension.h"
 #include "configwidget.h"
+#include "interfaces/iextensionmanager.h"
+#include "app.h"
 #include "query.h"
-
 
 namespace Applications {
 
 
 /** ***************************************************************************/
-void Extension::initialize() {
+Extension::Extension() : _updateOnTearDown(false) {
+
+}
+
+
+
+/** ***************************************************************************/
+Extension::~Extension(){
+
+}
+
+
+
+/** ***************************************************************************/
+QWidget *Extension::widget() {
+    if (_widget.isNull()){
+        _widget = new ConfigWidget;
+
+        // Paths
+        _widget->ui.listWidget_paths->addItems(_rootDirs);
+        _widget->ui.label_info->setText(QString("%1 applications indexed.").arg(_appIndex.size()));
+        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::clear);
+        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::addItems);
+        connect(_widget, &ConfigWidget::requestAddPath, this, &Extension::addDir);
+        connect(_widget, &ConfigWidget::requestRemovePath, this, &Extension::removeDir);
+        connect(_widget->ui.pushButton_restorePaths, &QPushButton::clicked, this, &Extension::restorePaths);
+
+        // Fuzzy
+        _widget->ui.checkBox_fuzzy->setChecked(_searchIndex.fuzzy());
+        connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
+
+        // Info
+        connect(this, &Extension::statusInfo, _widget->ui.label_info, &QLabel::setText);
+    }
+    return _widget;
+}
+
+
+
+/** ***************************************************************************/
+void Extension::initialize(IExtensionManager *em) {
     qDebug() << "[Applications] Initialize extension";
+
+    _manager = em;
 
     // Load settings
     QSettings s;
@@ -70,6 +112,8 @@ void Extension::initialize() {
 
     // Initial update
     updateIndex();
+
+    qDebug() << "[Applications] Extension initialized";
 }
 
 
@@ -94,55 +138,40 @@ void Extension::finalize() {
         f.close();
     } else
         qCritical() << "Could not write to " << f.fileName();*/
+
+    qDebug() << "[Applications] Extension finalized";
 }
 
 
 
 /** ***************************************************************************/
-QWidget *Extension::widget() {
-    if (_widget.isNull()){
-        _widget = new ConfigWidget;
-
-        // Paths
-        _widget->ui.listWidget_paths->addItems(_rootDirs);
-        _widget->ui.label_info->setText(QString("%1 applications indexed.").arg(_appIndex.size()));
-        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::clear);
-        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::addItems);
-        connect(_widget, &ConfigWidget::requestAddPath, this, &Extension::addDir);
-        connect(_widget, &ConfigWidget::requestRemovePath, this, &Extension::removeDir);
-        connect(_widget->ui.pushButton_restorePaths, &QPushButton::clicked, this, &Extension::restorePaths);
-
-        // Fuzzy
-        _widget->ui.checkBox_fuzzy->setChecked(_searchIndex.fuzzy());
-        connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
-
-        // Info
-        connect(this, &Extension::statusInfo, _widget->ui.label_info, &QLabel::setText);
+void Extension::teardownSession()
+{
+    if (_updateOnTearDown){
+        updateIndex();
+        _updateOnTearDown=false;
     }
-    return _widget;
 }
 
 
 
 /** ***************************************************************************/
-void Extension::handleQuery(Query *q) {
-    q->addResults(_searchIndex.search(q->searchTerm()));
+void Extension::handleQuery(IQuery *q) {
+    // Search for matches. Lock memory against scanworker
+    QList<IIndexable*> indexables = _searchIndex.search(q->searchTerm());
+
+    // Add results to query. This cast is safe since index holds files only
+    for (IIndexable *obj : indexables)
+        q->add(new Item(static_cast<App*>(obj), this , q));
 }
 
 
 
 /** ***************************************************************************/
-void Extension::setFuzzy(bool b) {
-    _searchIndex.setFuzzy(b);
-}
+void Extension::addDir(const QString & dirPath) {
+    qDebug() << "[Applications] Adding dir" << dirPath;
 
-
-
-/** ***************************************************************************/
-void Extension::addDir(const QString & path) {
-    qDebug() << "[Applications] Adding path" << path;
-
-    QFileInfo fileInfo(path);
+    QFileInfo fileInfo(dirPath);
 
     // Get an absolute file path
     QString absPath = fileInfo.absoluteFilePath();
@@ -187,12 +216,14 @@ void Extension::addDir(const QString & path) {
     emit rootDirsChanged(_rootDirs);
 }
 
+
+
 /** ***************************************************************************/
-void Extension::removeDir(const QString & path) {
-    qDebug() << "[Applications] Removing path" << path;
+void Extension::removeDir(const QString &dirPath) {
+    qDebug() << "[Applications] Removing path" << dirPath;
 
     // Get an absolute file path
-    QString absPath = QFileInfo(path).absoluteFilePath();
+    QString absPath = QFileInfo(dirPath).absoluteFilePath();
 
     // Check existance
     if (!_rootDirs.contains(absPath))
@@ -204,6 +235,8 @@ void Extension::removeDir(const QString & path) {
     // Update the widget, if it is visible atm
     emit rootDirsChanged(_rootDirs);
 }
+
+
 
 /** ***************************************************************************/
 void Extension::restorePaths() {
@@ -218,39 +251,53 @@ void Extension::restorePaths() {
 }
 
 
+
 /** ***************************************************************************/
 void Extension::updateIndex() {
-    qDebug() << "[Applications] Updating index";
+    if (_manager->sessionIsActive()){
+        _updateOnTearDown=true;
+        return;
+    }
+
+    qDebug() << "[Applications] Scanning applications...";
+    emit statusInfo(QString("Indexing applications...").arg(_appIndex.size()));
 
     /*
      * Go through the directory entries matching the .desktop suffix. This is
      * complex bullshit O(N²), but the amount of apps will not get that large.
      */
 
-    QList<SharedApp> newIndex;
+    QList<App*> newIndex;
+    App app;
     for (const QString &path : _rootDirs) {
-        QDirIterator fit(path, QStringList("*.desktop"), QDir::Files);
-        while (fit.hasNext()) {
+        QDirIterator fIt(path, QStringList("*.desktop"), QDir::Files);
+        while (fIt.hasNext()) {
+            // Try to read the desktop file
+            if (!getAppInfo(fIt.next(), &app))
+                continue;
 
-            // Create a new app object
-            QString filePath = fit.next();
-            SharedApp sa(new Application());
-            if (getAppInfo(filePath, sa))
-                newIndex.append(sa);
-
-            // If it is in the index copy the usagecounter
-            QList<SharedApp>::iterator it;
+            // If it is alread in the index copy the usagecounter
+            QList<App*>::iterator it;
             it = std::find_if(_appIndex.begin(), _appIndex.end(),
-                              [=](SharedApp ai){return ai->_path == filePath;});
+                              [&](App* app){ return app->path == fIt.filePath();});
             if (it != _appIndex.end())
-                sa->_usage=it->data()->usage();
+                app.usage = (*it)->usage;
+
+            // Everthing okay, index it
+            newIndex.append(new App(app));
         }
     }
 
-    // Set the new index
-    _appIndex=newIndex;
+    // Build the offline index
     _searchIndex.clear();
-    _searchIndex.build(_appIndex);
+    for (App *app : newIndex)
+        _searchIndex.add(app);
+
+    // Set the new index
+    std::swap(_appIndex, newIndex);
+
+    for (App *app : newIndex)
+        delete app;
 
     // Finally update the watches
     _watcher.removePaths(_watcher.directories());
@@ -261,12 +308,28 @@ void Extension::updateIndex() {
             _watcher.addPath(dit.next());
     }
 
+    qDebug() << "[Applications] Scanning applications done.";
     emit statusInfo(QString("Indexed %1 applications.").arg(_appIndex.size()));
 }
 
 
+
 /** ***************************************************************************/
-bool Extension::getAppInfo(const QString &path, SharedApp appInfo)
+bool Extension::fuzzy() {
+    return _searchIndex.fuzzy();
+}
+
+
+
+/** ***************************************************************************/
+void Extension::setFuzzy(bool b) {
+    _searchIndex.setFuzzy(b);
+}
+
+
+
+/** ***************************************************************************/
+bool Extension::getAppInfo(const QString &path, App *app)
 {
 	// TYPES http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s05.html
 	QSettings s(path, QSettings::NativeFormat);
@@ -289,7 +352,7 @@ bool Extension::getAppInfo(const QString &path, SharedApp appInfo)
     if (((v = s.value(QString("Name[%1]").arg(locale))).isValid() && v.canConvert(QMetaType::QString))
             || ((v = s.value(QString("Name[%1]").arg(shortLocale))).isValid() && v.canConvert(QMetaType::QString))
             || ((v = s.value("Name")).isValid() && v.canConvert(QMetaType::QString)))
-        appInfo->_name = v.toString();
+        app->name = v.toString();
     else
         return false;
 
@@ -297,11 +360,11 @@ bool Extension::getAppInfo(const QString &path, SharedApp appInfo)
     // Try to get the command
     v = s.value("Exec");
     if (v.isValid() && v.canConvert(QMetaType::QString)){
-        appInfo->_exec = v.toString();
+        app->exec = v.toString();
     } else
         return false;
-    appInfo->_exec.replace("%c", appInfo->_name);
-    appInfo->_exec.remove(QRegExp("%."));
+    app->exec.replace("%c", app->name);
+    app->exec.remove(QRegExp("%."));
 
 
     // Try to get the icon name
@@ -316,23 +379,20 @@ bool Extension::getAppInfo(const QString &path, SharedApp appInfo)
      * locate the icon. oh funny qt-bug h8 u
      */
 
-    qDebug() << QIcon::themeName();
-    qDebug() << QIcon::themeSearchPaths();
-
     v = s.value("Icon");
     if (v.isValid() && v.canConvert(QMetaType::QString)){
         QString iconName = v.toString();
         // If it is a full path
         if (iconName.startsWith('/'))
-            appInfo->_icon = QIcon(iconName);
+            app->icon = QIcon(iconName);
         // If it is in the theme
         else if (QIcon::hasThemeIcon(iconName))
-            appInfo->_icon = QIcon::fromTheme(iconName);
+            app->icon = QIcon::fromTheme(iconName);
         else{
             QString currentTheme = QIcon::themeName(); // missing fallback (qt-bug)
             QIcon::setThemeName("hicolor");
             if (QIcon::hasThemeIcon(iconName)){
-                appInfo->_icon = QIcon::fromTheme(iconName);
+                app->icon = QIcon::fromTheme(iconName);
                 QIcon::setThemeName(currentTheme);
             }
             else
@@ -345,7 +405,7 @@ bool Extension::getAppInfo(const QString &path, SharedApp appInfo)
                     it.next();
                     QFileInfo fi = it.fileInfo();
                     if (fi.isFile() && (fi.fileName() == iconName || fi.baseName() == iconName)){
-                        appInfo->_icon = QIcon(fi.canonicalFilePath());
+                        app->icon = QIcon(fi.canonicalFilePath());
                         found = true;
                         break;
                     }
@@ -353,13 +413,13 @@ bool Extension::getAppInfo(const QString &path, SharedApp appInfo)
                 if (!found){
                     // If it is still not found use a generic one
                     qWarning() << "Unknown icon:" << iconName;
-                    appInfo->_icon = QIcon::fromTheme("exec");
+                    app->icon = QIcon::fromTheme("exec");
                 }
             }
         }
     } else{
         qWarning() << "No icon specified in " << path;
-        appInfo->_icon = QIcon::fromTheme("exec");
+        app->icon = QIcon::fromTheme("exec");
     }
 
 
@@ -370,12 +430,12 @@ bool Extension::getAppInfo(const QString &path, SharedApp appInfo)
             || ((v = s.value(QString("GenericName[%1]").arg(locale))).isValid() && v.canConvert(QMetaType::QString))
             || ((v = s.value(QString("GenericName[%1]").arg(shortLocale))).isValid() && v.canConvert(QMetaType::QString))
             || ((v = s.value("GenericName")).isValid() && v.canConvert(QMetaType::QString)))
-        appInfo->_altName = v.toString();
+        app->altName = v.toString();
     else
-        appInfo->_altName = appInfo->_exec;
+        app->altName = app->exec;
 	s.endGroup();
 
-    appInfo->_path = path;
+    app->path = path;
 	return true;
 }
 }

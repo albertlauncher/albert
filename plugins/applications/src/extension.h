@@ -17,34 +17,36 @@
 #pragma once
 #include <QObject>
 #include <QList>
+#include <QString>
+#include <QPointer>
 #include <QTimer>
 #include <QFileSystemWatcher>
-#include "plugininterfaces/extension_if.h"
-#include "search/search.h"
-#include "application.h"
+#include "interfaces/iextension.h"
+#include "utils/search/search.h"
 
 namespace Applications {
 
+class App;
 class ConfigWidget;
 
-class Extension final : public QObject, public ExtensionInterface
+class Extension final : public QObject, public IExtension
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "../src/metadata.json")
-    Q_INTERFACES(ExtensionInterface)
+    Q_INTERFACES(IExtension)
 
 public:
-    Extension(){}
-    ~Extension(){}
+    Extension();
+    ~Extension();
 
     // GenericPluginInterface
-    void initialize() override;
-    void finalize() override;
     QWidget *widget() override;
 
-    // ExtensionInterface
-    void handleQuery(Query*) override;
-    void setFuzzy(bool b = true) override;
+    // IExtension
+    void initialize(IExtensionManager *em) override;
+    void finalize() override;
+    void teardownSession();
+    void handleQuery(IQuery*) override;
 
     // API special to this extension
     void addDir(const QString &dirPath);
@@ -52,15 +54,23 @@ public:
     void restorePaths();
     void updateIndex();
 
-private:
-    static bool getAppInfo(const QString &path, SharedApp appInfo);
 
+    // Properties
+    bool fuzzy();
+    void setFuzzy(bool b = true);
+
+private:
+    static bool getAppInfo(const QString &path, App *app);
+
+    IExtensionManager      *_manager;
     QPointer<ConfigWidget> _widget;
+    QList<App*>            _appIndex;
+    Search                 _searchIndex;
+
     QStringList            _rootDirs;
-    Search<SharedApp>      _searchIndex;
-    QList<SharedApp>       _appIndex;
     QFileSystemWatcher     _watcher;
     QTimer                 _updateDelayTimer;
+    bool                   _updateOnTearDown;
 
     /* constexpr */
     static constexpr const char* CFG_PATHS      = "Applications/paths";

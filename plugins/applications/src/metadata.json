@@ -1,9 +1,10 @@
 {
+    "id" :              "org.manuelschneid3r.albert.extension.applications",
     "name" :            "Applications",
-    "version" :         "1.0",
+    "version" :         "1.1",
     "platform" :        "Linux",
     "group" :           "Extensions",
     "copyright" :       "(C) 2015 Manuel Schneider",
-    "description" :     "Indexes the dektop applications and makes them runnable via albert.",
+    "description" :     "Indexes desktop applications and makes them runnable via albert.",
     "dependencies" :    ["gksu"]
 }
