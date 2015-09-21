@@ -36,6 +36,7 @@ namespace Files{
 /** ***************************************************************************/
 Extension::Extension() {
     _fileIndex = new QList<File*>;
+    _minuteTimer.setInterval(60000);
 }
 
 
@@ -73,8 +74,8 @@ void Extension::initialize(IExtensionManager *em) {
         restorePaths();
 
     // scan interval timer
-    connect(&_intervalTimer, &QTimer::timeout, this, &Extension::updateIndex);
-    setScanInterval(s.value(CFG_SCAN_INTERVAL, CFG_SCAN_INTERVAL_DEF).toUInt()*60000);
+    connect(&_minuteTimer, &QTimer::timeout, this, &Extension::onMinuteTick);
+    setScanInterval(s.value(CFG_SCAN_INTERVAL, CFG_SCAN_INTERVAL_DEF).toUInt());
 
 //    /* Deserialze data */
 //    QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + DATA_FILE);
@@ -114,6 +115,7 @@ void Extension::initialize(IExtensionManager *em) {
     updateIndex();
 
     s.endGroup();
+    qDebug() << "[Files] Extension initialized";
 }
 
 
@@ -134,7 +136,7 @@ void Extension::finalize() {
     s.setValue(CFG_INDEX_DOC, _indexOptions.indexDocs);
     s.setValue(CFG_INDEX_HIDDEN,_indexOptions.indexHidden);
     s.setValue(CFG_FOLLOW_SYMLINKS,_indexOptions.followSymlinks);
-    s.setValue(CFG_SCAN_INTERVAL,_intervalTimer.interval()/60000);
+    s.setValue(CFG_SCAN_INTERVAL,_scanInterval);
     s.endGroup();
 
 //    // Serialize data
@@ -152,6 +154,7 @@ void Extension::finalize() {
 //        f.close();
 //    } else
 //        qCritical() << "Could not write to " << f.fileName();
+    qDebug() << "[Files] Extension finalized";
 }
 
 
@@ -196,7 +199,7 @@ QWidget *Extension::widget() {
         _widget->ui.checkBox_fuzzy->setChecked(_searchIndex.fuzzy());
         connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
 
-        _widget->ui.spinBox_interval->setValue(scanInterval());
+        _widget->ui.spinBox_interval->setValue(_scanInterval);
         connect(_widget->ui.spinBox_interval, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Extension::setScanInterval);
 
         // Info
@@ -335,8 +338,9 @@ void Extension::updateIndex() {
         //  Run it
         QThreadPool::globalInstance()->start(_scanWorker);
 
-        if (_intervalTimer.interval() != 0)
-            _intervalTimer.start();
+        // Reset the timer
+        _minuteCounter = 0;
+        _minuteTimer.start();
 
         // If widget is visible show the information in the status bat
         if (!_widget.isNull())
@@ -347,10 +351,19 @@ void Extension::updateIndex() {
 
 
 /** ***************************************************************************/
-void Extension::setScanInterval(uint minutes){
-    if (minutes == 0)
-        _intervalTimer.stop();
-    else
-        _intervalTimer.start(minutes*60000);
+void Extension::setScanInterval(uint minutes) {
+    _scanInterval=minutes;
+    _minuteCounter=0;
+    (minutes == 0) ? _minuteTimer.stop() : _minuteTimer.start();
+    qDebug() << "[Files] Scan interval set to" << _scanInterval << "minutes.";
+}
+
+
+
+/** ***************************************************************************/
+void Extension::onMinuteTick(){
+    ++_minuteCounter;
+    if (_minuteCounter == _scanInterval)
+        updateIndex(); // resets _minuteCounter
 }
 }

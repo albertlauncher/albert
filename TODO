@@ -62,6 +62,7 @@ x Plugin infrastucture - Port all modules
  x Port files
   x Follow Symlinks
   x Detect link loops
+  x Scan interval overrun bug
   - Serialization
   - Can't open files with spaces in the filepath. Closes #35
  x Port apps

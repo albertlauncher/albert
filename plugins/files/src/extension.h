@@ -50,6 +50,8 @@ class Extension final : public QObject, public IExtension
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "../src/metadata.json")
     Q_INTERFACES(IExtension)
 
+    Q_PROPERTY(unsigned int scanInterval MEMBER _scanInterval WRITE setScanInterval)
+
 public:
     Extension();
     ~Extension();
@@ -86,14 +88,15 @@ public:
     inline void setIndexOptionHidden(bool b = true)  { _indexOptions.indexHidden = b; }
     inline void setFollowSymlinks(bool b = true)  { _indexOptions.followSymlinks = b; }
 
-    inline void setScanInterval(uint minutes);
-    inline uint scanInterval(){ return _intervalTimer.interval()/60000; }
+    void setScanInterval(uint minutes);
 
 private:
     QPointer<ConfigWidget> _widget;
     QStringList            _rootDirs;
     IndexOptions           _indexOptions;
-    QTimer                 _intervalTimer;
+    QTimer                 _minuteTimer;
+    unsigned int           _minuteCounter;
+    unsigned int           _scanInterval;
     QPointer<ScanWorker>   _scanWorker;
     QMutex                 _mutex;
     Search                 _searchIndex;
@@ -127,5 +130,8 @@ private:
 signals:
     void rootDirsChanged(const QStringList&);
     void statusInfo(const QString&);
+
+private slots:
+    void onMinuteTick();
 };
 }
