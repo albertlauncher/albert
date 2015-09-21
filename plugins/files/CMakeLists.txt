@@ -24,7 +24,7 @@ set(${PROJECT_NAME}_SRCS
     src/item.cpp
     src/configwidget.cpp
 
-    src/file.cpp
+    src/file.h
     src/scanworker.cpp
     src/mimetypedialog.cpp
     src/mimetypechooser.cpp

@@ -27,12 +27,10 @@ struct File final : public IIndexable
     File() {}
     File(QString path, QMimeType mimetype)
         : path(path), mimetype(mimetype), usage(0){}
-    File(const File &other)
-        : path(other.path), mimetype(other.mimetype), usage(other.usage){}
     ~File(){}
 
 
-    QStringList   aliases() const override {
+    QStringList aliases() const override {
         return QStringList() << QFileInfo(path).fileName();
     }
 

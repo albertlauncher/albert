@@ -15,20 +15,18 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDebug>
-#include <QList>
 #include <QMessageBox>
-#include <QMutex>
 #include <QStandardPaths>
 #include <QSettings>
 #include <QThreadPool>
-#include <QTimer>
 #include <QDir>
-#include "extension.h"
-#include "scanworker.h"
-#include "configwidget.h"
-#include "query.h"
-#include "file.h"
 #include "item.h"
+#include "extension.h"
+#include "configwidget.h"
+#include "interfaces/iextensionmanager.h"
+#include "file.h"
+#include "query.h"
+#include "scanworker.h"
 
 namespace Files{
 
@@ -44,6 +42,57 @@ Extension::Extension() {
 /** ***************************************************************************/
 Extension::~Extension() {
     delete _fileIndex;
+}
+
+
+
+/** ***************************************************************************/
+QWidget *Extension::widget() {
+    if (_widget.isNull()){
+        _widget = new ConfigWidget;
+
+        // Paths
+        _widget->ui.listWidget_paths->addItems(_rootDirs);
+        _widget->ui.label_info->setText(QString("%1 files indexed.").arg(_fileIndex->size()));
+        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::clear);
+        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::addItems);
+        connect(_widget, &ConfigWidget::requestAddPath, this, &Extension::addDir);
+        connect(_widget, &ConfigWidget::requestRemovePath, this, &Extension::removeDir);
+        connect(_widget->ui.pushButton_restore, &QPushButton::clicked, this, &Extension::restorePaths);
+        connect(_widget->ui.pushButton_update, &QPushButton::clicked, this, &Extension::updateIndex);
+
+        // Checkboxes
+        _widget->ui.checkBox_audio->setChecked(indexAudio());
+        connect(_widget->ui.checkBox_audio, &QCheckBox::toggled, this, &Extension::setIndexAudio);
+
+        _widget->ui.checkBox_video->setChecked(indexVideo());
+        connect(_widget->ui.checkBox_video, &QCheckBox::toggled, this, &Extension::setIndexVideo);
+
+        _widget->ui.checkBox_image->setChecked(indexImage());
+        connect(_widget->ui.checkBox_image, &QCheckBox::toggled, this, &Extension::setIndexImage);
+
+        _widget->ui.checkBox_docs->setChecked(indexDocs());
+        connect(_widget->ui.checkBox_docs, &QCheckBox::toggled, this, &Extension::setIndexDocs);
+
+        _widget->ui.checkBox_dirs->setChecked(indexDirs());
+        connect(_widget->ui.checkBox_dirs, &QCheckBox::toggled, this, &Extension::setIndexDirs);
+
+        _widget->ui.checkBox_hidden->setChecked(indexHidden());
+        connect(_widget->ui.checkBox_hidden, &QCheckBox::toggled, this, &Extension::setIndexHidden);
+
+        _widget->ui.checkBox_followSymlinks->setChecked(followSymlinks());
+        connect(_widget->ui.checkBox_followSymlinks, &QCheckBox::toggled, this, &Extension::setFollowSymlinks);
+
+        _widget->ui.checkBox_fuzzy->setChecked(fuzzy());
+        connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
+
+        _widget->ui.spinBox_interval->setValue(scanInterval());
+        connect(_widget->ui.spinBox_interval, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Extension::setScanInterval);
+
+        // Info
+        connect(this, &Extension::statusInfo, _widget->ui.label_info, &QLabel::setText);
+    }
+    return _widget;
 }
 
 
@@ -157,57 +206,6 @@ void Extension::finalize() {
 
 
 /** ***************************************************************************/
-QWidget *Extension::widget() {
-    if (_widget.isNull()){
-        _widget = new ConfigWidget;
-
-        // Paths
-        _widget->ui.listWidget_paths->addItems(_rootDirs);
-        _widget->ui.label_info->setText(QString("%1 files indexed.").arg(_fileIndex->size()));
-        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::clear);
-        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::addItems);
-        connect(_widget, &ConfigWidget::requestAddPath, this, &Extension::addDir);
-        connect(_widget, &ConfigWidget::requestRemovePath, this, &Extension::removeDir);
-        connect(_widget->ui.pushButton_restore, &QPushButton::clicked, this, &Extension::restorePaths);
-        connect(_widget->ui.pushButton_update, &QPushButton::clicked, this, &Extension::updateIndex);
-
-        // Checkboxes
-        _widget->ui.checkBox_audio->setChecked(indexAudio());
-        connect(_widget->ui.checkBox_audio, &QCheckBox::toggled, this, &Extension::setIndexAudio);
-
-        _widget->ui.checkBox_video->setChecked(indexVideo());
-        connect(_widget->ui.checkBox_video, &QCheckBox::toggled, this, &Extension::setIndexVideo);
-
-        _widget->ui.checkBox_image->setChecked(indexImage());
-        connect(_widget->ui.checkBox_image, &QCheckBox::toggled, this, &Extension::setIndexImage);
-
-        _widget->ui.checkBox_docs->setChecked(indexDocs());
-        connect(_widget->ui.checkBox_docs, &QCheckBox::toggled, this, &Extension::setIndexDocs);
-
-        _widget->ui.checkBox_dirs->setChecked(indexDirs());
-        connect(_widget->ui.checkBox_dirs, &QCheckBox::toggled, this, &Extension::setIndexDirs);
-
-        _widget->ui.checkBox_hidden->setChecked(indexHidden());
-        connect(_widget->ui.checkBox_hidden, &QCheckBox::toggled, this, &Extension::setIndexHidden);
-
-        _widget->ui.checkBox_followSymlinks->setChecked(followSymlinks());
-        connect(_widget->ui.checkBox_followSymlinks, &QCheckBox::toggled, this, &Extension::setFollowSymlinks);
-
-        _widget->ui.checkBox_fuzzy->setChecked(fuzzy());
-        connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
-
-        _widget->ui.spinBox_interval->setValue(scanInterval());
-        connect(_widget->ui.spinBox_interval, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Extension::setScanInterval);
-
-        // Info
-        connect(this, &Extension::statusInfo, _widget->ui.label_info, &QLabel::setText);
-    }
-    return _widget;
-}
-
-
-
-/** ***************************************************************************/
 void Extension::teardownSession() {
     Item::clearIconCache();
 }
@@ -228,12 +226,7 @@ void Extension::handleQuery(IQuery *q) {
 
 
 
-/** ***************************************************************************
- * @brief addDir
- * @param dirPath
- * @return 0 success, 1 does not exist, 2 is not a dir, 3 already watched,
- * 4 is sub dir of other root
- */
+/** ***************************************************************************/
 void Extension::addDir(const QString &dirPath) {
     qDebug() << "[Files] Adding dir" << dirPath;
 

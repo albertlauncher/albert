@@ -16,13 +16,11 @@
 
 #pragma once
 #include <QObject>
+#include <QList>
 #include <QString>
-#include <QThread>
-#include <QMutex>
-#include <QQueue>
-#include <QFileInfo>
 #include <QPointer>
 #include <QTimer>
+#include <QMutex>
 #include "interfaces/iextension.h"
 #include "utils/search/search.h"
 
@@ -97,7 +95,11 @@ public:
     void setFuzzy(bool b = true);
 
 private:
+    IExtensionManager      *_manager;
     QPointer<ConfigWidget> _widget;
+    QList<File*>*          _fileIndex;
+    Search                 _searchIndex;
+
     QStringList            _rootDirs;
     IndexOptions           _indexOptions;
     QTimer                 _minuteTimer;
@@ -105,11 +107,6 @@ private:
     unsigned int           _scanInterval;
     QPointer<ScanWorker>   _scanWorker;
     QMutex                 _mutex;
-    Search                 _searchIndex;
-    QList<File*>*          _fileIndex;
-
-    // Manager of this plugin
-    IExtensionManager *_manager;
 
     /* constexpr */
     static constexpr const char* EXT_NAME                = "files";

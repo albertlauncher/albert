@@ -17,13 +17,12 @@
 #include <QApplication>
 #include <QList>
 #include <QIcon>
+#include "item.h"
+#include "file.h"
 #include "actions/openfileaction.h"
 #include "actions/revealfileaction.h"
 #include "actions/copyfileaction.h"
 #include "actions/copypathaction.h"
-#include "item.h"
-#include "file.h"
-#include "interfaces/iitem.h"
 
 namespace Files {
 
@@ -31,12 +30,16 @@ QHash<QString, QIcon> Item::_iconCache;
 
 /** ***************************************************************************/
 Item::Item(File *file, IExtension *ext, IQuery *qry)
-    : _file(file), _extension(ext), _query(qry) {}
+    : _file(file), _extension(ext), _query(qry) {
+
+}
 
 
 
 /** ***************************************************************************/
-Item::~Item() {}
+Item::~Item() {
+
+}
 
 
 

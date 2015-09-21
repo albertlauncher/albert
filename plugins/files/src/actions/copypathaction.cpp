@@ -41,9 +41,9 @@ QVariant Files::CopyPathAction::data(int role) const  {
 
 /** ***************************************************************************/
 void Files::CopyPathAction::activate() {
+    qApp->hideWidget();
     // Ownership of the data is transferred to the clipboard.
     QApplication::clipboard()->setText(_file->path);
-    qApp->hideWidget();
     ++usageCounter;
     ++_file->usage;
 }

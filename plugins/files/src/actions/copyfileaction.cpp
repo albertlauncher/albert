@@ -42,6 +42,8 @@ QVariant Files::CopyFileAction::data(int role) const  {
 
 /** ***************************************************************************/
 void Files::CopyFileAction::activate() {
+    qApp->hideWidget();
+
     //  Get clipboard
     QClipboard *cb = QApplication::clipboard();
 
@@ -66,7 +68,6 @@ void Files::CopyFileAction::activate() {
     // Set the mimedata
     cb->setMimeData(newMimeData);
 
-    qApp->hideWidget();
     ++usageCounter;
     ++_file->usage;
 }
