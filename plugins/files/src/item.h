@@ -25,11 +25,11 @@ namespace Files {
 
 class File;
 
-class FileItem final : public IItem
+class Item final : public IItem
 {
 public:
-    FileItem(File *file, IExtension *ext, IQuery *qry);
-    ~FileItem();
+    Item(File *file, IExtension *ext, IQuery *qry);
+    ~Item();
 
     QVariant       data(int role = Qt::DisplayRole) const override;
     void           activate() override;

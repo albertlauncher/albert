@@ -21,27 +21,27 @@
 #include "actions/revealfileaction.h"
 #include "actions/copyfileaction.h"
 #include "actions/copypathaction.h"
-#include "fileitem.h"
+#include "item.h"
 #include "file.h"
 #include "interfaces/iitem.h"
 
 namespace Files {
 
-QHash<QString, QIcon> FileItem::_iconCache;
+QHash<QString, QIcon> Item::_iconCache;
 
 /** ***************************************************************************/
-FileItem::FileItem(File *file, IExtension *ext, IQuery *qry)
+Item::Item(File *file, IExtension *ext, IQuery *qry)
     : _file(file), _extension(ext), _query(qry), _actions(nullptr) {}
 
 
 
 /** ***************************************************************************/
-FileItem::~FileItem() {}
+Item::~Item() {}
 
 
 
 /** ***************************************************************************/
-QVariant FileItem::data(int role) const {
+QVariant Item::data(int role) const {
     switch (role) {
     case Qt::DisplayRole:
         return QFileInfo(_file->path).fileName();
@@ -68,7 +68,7 @@ QVariant FileItem::data(int role) const {
 
 
 /** ***************************************************************************/
-void FileItem::activate() {
+void Item::activate() {
 //    Qt::KeyboardModifiers mods = QApplication::keyboardModifiers(); // TODO:ActionMap
 
     // Standard action for a file
@@ -78,14 +78,14 @@ void FileItem::activate() {
 
 
 /** ***************************************************************************/
-unsigned short FileItem::score() const {
+unsigned short Item::score() const {
     return _file->usage;
 }
 
 
 
 /** ***************************************************************************/
-QList<IItem *> FileItem::children() {
+QList<IItem *> Item::children() {
     // Lazy instaciate actions
     // NO OWNERSHIP
     return QList<IItem*>({new OpenFileAction(_file),
@@ -97,14 +97,14 @@ QList<IItem *> FileItem::children() {
 
 
 /** ***************************************************************************/
-bool FileItem::hasChildren() const {
+bool Item::hasChildren() const {
     return true;
 }
 
 
 
 /** ***************************************************************************/
-void FileItem::clearIconCache() {
+void Item::clearIconCache() {
     _iconCache.clear();
 }
 

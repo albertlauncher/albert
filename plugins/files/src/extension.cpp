@@ -28,7 +28,7 @@
 #include "configwidget.h"
 #include "query.h"
 #include "file.h"
-#include "fileitem.h"
+#include "item.h"
 
 namespace Files{
 
@@ -209,7 +209,7 @@ QWidget *Extension::widget() {
 
 /** ***************************************************************************/
 void Extension::teardownSession() {
-    FileItem::clearIconCache();
+    Item::clearIconCache();
 }
 
 
@@ -223,7 +223,7 @@ void Extension::handleQuery(IQuery *q) {
 
     // Add results to query. This cast is safe since index holds files only
     for (IIndexable *obj : indexables)
-        q->add(new FileItem(static_cast<File*>(obj), this, q));
+        q->add(new Item(static_cast<File*>(obj), this, q));
 }
 
 

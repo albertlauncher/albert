@@ -21,10 +21,11 @@ set(${PROJECT_NAME}_SRCS
     src/metadata.json
 
     src/extension.cpp
-    src/file.cpp
-    src/fileitem.cpp
-    src/scanworker.cpp
+    src/item.cpp
     src/configwidget.cpp
+
+    src/file.cpp
+    src/scanworker.cpp
     src/mimetypedialog.cpp
     src/mimetypechooser.cpp
     src/actions/openfileaction.cpp
