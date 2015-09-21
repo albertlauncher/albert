@@ -40,6 +40,7 @@ struct IndexOptions {
     bool indexDocs;
     bool indexDirs;
     bool indexHidden;
+    bool followSymlinks;
     // TODO configurable follow symlinks
 };
 
@@ -75,6 +76,7 @@ public:
     inline bool indexOptionDocs() { return _indexOptions.indexDocs; }
     inline bool indexOptionDirs() { return _indexOptions.indexDirs; }
     inline bool indexOptionHidden() { return _indexOptions.indexHidden; }
+    inline bool followSymlinks() { return _indexOptions.followSymlinks; }
 
     inline void setIndexOptionAudio(bool b = true)  { _indexOptions.indexAudio = b; }
     inline void setIndexOptionVideo(bool b = true)  { _indexOptions.indexVideo = b; }
@@ -82,6 +84,7 @@ public:
     inline void setIndexOptionDocs(bool b = true)  { _indexOptions.indexDocs = b; }
     inline void setIndexOptionDirs(bool b = true)  { _indexOptions.indexDirs = b; }
     inline void setIndexOptionHidden(bool b = true)  { _indexOptions.indexHidden = b; }
+    inline void setFollowSymlinks(bool b = true)  { _indexOptions.followSymlinks = b; }
 
     inline void setScanInterval(uint minutes);
     inline uint scanInterval(){ return _intervalTimer.interval()/60000; }
@@ -100,24 +103,26 @@ private:
     IExtensionManager *_manager;
 
     /* constexpr */
-    static constexpr const char* EXT_NAME              = "files";
-    static constexpr const char* CFG_PATHS             = "paths";
-    static constexpr const char* CFG_FUZZY             = "fuzzy";
-    static constexpr const bool  CFG_FUZZY_DEF         = false;
-    static constexpr const char* CFG_INDEX_AUDIO       = "index_audio";
-    static constexpr const bool  CFG_INDEX_AUDIO_DEF   = false;
-    static constexpr const char* CFG_INDEX_VIDEO       = "index_video";
-    static constexpr const bool  CFG_INDEX_VIDEO_DEF   = false;
-    static constexpr const char* CFG_INDEX_IMAGE       = "index_image";
-    static constexpr const bool  CFG_INDEX_IMAGE_DEF   = false;
-    static constexpr const char* CFG_INDEX_DOC         = "index_docs";
-    static constexpr const bool  CFG_INDEX_DOC_DEF     = false;
-    static constexpr const char* CFG_INDEX_DIR         = "index_dirs";
-    static constexpr const bool  CFG_INDEX_DIR_DEF     = false;
-    static constexpr const char* CFG_INDEX_HIDDEN      = "index_hidden";
-    static constexpr const bool  CFG_INDEX_HIDDEN_DEF  = false;
-    static constexpr const char* CFG_SCAN_INTERVAL     = "scan_interval";
-    static constexpr const uint  CFG_SCAN_INTERVAL_DEF = 60;
+    static constexpr const char* EXT_NAME                = "files";
+    static constexpr const char* CFG_PATHS               = "paths";
+    static constexpr const char* CFG_FUZZY               = "fuzzy";
+    static constexpr const bool  CFG_FUZZY_DEF           = false;
+    static constexpr const char* CFG_INDEX_AUDIO         = "index_audio";
+    static constexpr const bool  CFG_INDEX_AUDIO_DEF     = false;
+    static constexpr const char* CFG_INDEX_VIDEO         = "index_video";
+    static constexpr const bool  CFG_INDEX_VIDEO_DEF     = false;
+    static constexpr const char* CFG_INDEX_IMAGE         = "index_image";
+    static constexpr const bool  CFG_INDEX_IMAGE_DEF     = false;
+    static constexpr const char* CFG_INDEX_DOC           = "index_docs";
+    static constexpr const bool  CFG_INDEX_DOC_DEF       = false;
+    static constexpr const char* CFG_INDEX_DIR           = "index_dirs";
+    static constexpr const bool  CFG_INDEX_DIR_DEF       = false;
+    static constexpr const char* CFG_INDEX_HIDDEN        = "index_hidden";
+    static constexpr const bool  CFG_INDEX_HIDDEN_DEF    = false;
+    static constexpr const char* CFG_FOLLOW_SYMLINKS     = "follow_symlinks";
+    static constexpr const bool  CFG_FOLLOW_SYMLINKS_DEF = true;
+    static constexpr const char* CFG_SCAN_INTERVAL       = "scan_interval";
+    static constexpr const uint  CFG_SCAN_INTERVAL_DEF   = 60;
 
 signals:
     void rootDirsChanged(const QStringList&);

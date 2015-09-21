@@ -59,9 +59,10 @@ void Extension::initialize(IExtensionManager *em) {
     _indexOptions.indexAudio = s.value(CFG_INDEX_AUDIO, CFG_INDEX_AUDIO_DEF).toBool();
     _indexOptions.indexVideo = s.value(CFG_INDEX_VIDEO, CFG_INDEX_VIDEO_DEF).toBool();
     _indexOptions.indexImage = s.value(CFG_INDEX_IMAGE, CFG_INDEX_IMAGE_DEF).toBool();
-    _indexOptions.indexDocs  = s.value(CFG_INDEX_DOC, CFG_INDEX_DOC_DEF).toBool();
-    _indexOptions.indexDirs  = s.value(CFG_INDEX_DIR, CFG_INDEX_DIR_DEF).toBool();
-    _indexOptions.indexHidden= s.value(CFG_INDEX_HIDDEN, CFG_INDEX_HIDDEN_DEF).toBool();
+    _indexOptions.indexDocs = s.value(CFG_INDEX_DOC, CFG_INDEX_DOC_DEF).toBool();
+    _indexOptions.indexDirs = s.value(CFG_INDEX_DIR, CFG_INDEX_DIR_DEF).toBool();
+    _indexOptions.indexHidden = s.value(CFG_INDEX_HIDDEN, CFG_INDEX_HIDDEN_DEF).toBool();
+    _indexOptions.followSymlinks = s.value(CFG_FOLLOW_SYMLINKS, CFG_FOLLOW_SYMLINKS_DEF).toBool();
     _searchIndex.setFuzzy(s.value(CFG_FUZZY, CFG_FUZZY_DEF).toBool());
 
     // Load the paths or set a default
@@ -132,6 +133,7 @@ void Extension::finalize() {
     s.setValue(CFG_INDEX_DIR, _indexOptions.indexDirs);
     s.setValue(CFG_INDEX_DOC, _indexOptions.indexDocs);
     s.setValue(CFG_INDEX_HIDDEN,_indexOptions.indexHidden);
+    s.setValue(CFG_FOLLOW_SYMLINKS,_indexOptions.followSymlinks);
     s.setValue(CFG_SCAN_INTERVAL,_intervalTimer.interval()/60000);
     s.endGroup();
 
@@ -187,6 +189,9 @@ QWidget *Extension::widget() {
 
         _widget->ui.checkBox_hidden->setChecked(_indexOptions.indexHidden);
         connect(_widget->ui.checkBox_hidden, &QCheckBox::toggled, this, &Extension::setIndexOptionHidden);
+
+        _widget->ui.checkBox_followSymlinks->setChecked(_indexOptions.followSymlinks);
+        connect(_widget->ui.checkBox_followSymlinks, &QCheckBox::toggled, this, &Extension::setFollowSymlinks);
 
         _widget->ui.checkBox_fuzzy->setChecked(_searchIndex.fuzzy());
         connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
@@ -321,6 +326,7 @@ void Extension::updateIndex() {
     // If thread is running, stop it and start this functoin after termination
     if (!_scanWorker.isNull()){
         _scanWorker->abort();
+        _widget->ui.label_info->setText("Waiting for indexer to shut down ...");
         connect(_scanWorker, &ScanWorker::destroyed, this, &Extension::updateIndex);
     } else {
         // Cretae a new scanning runnable for the threadpool

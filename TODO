@@ -24,21 +24,28 @@ Facts:
 ------------------------------- RELEASE 0.9 ------------------------------------
 ------------------------------- RELEASE 0.8 ------------------------------------
 
-[TASK] - dropX11Extras by using completeley only XCB
-[TASK] - Multithreading
-[TASK] - Use matchers - Only large indexes have search indexes (Files), [ needs profiler ]
-[TASK] - Fuzzy again is broken
-[FEAT] - port to way more flexible qml - Check the QtQuick standard project
-[FEAT] - final hotkey refinement (XCB) - multiple independant hotkeys, qxtglobalshortcut,
-[FEAT] - Pluginmanager as treeview (Group, Extension, Subextension) - with QDataWidgetMapper
-[FEAT] - python integration - special plugin interface, (Calc (Sympy), Terminal, ssh)
-[FEAT] - Plugin Interdependenciea - https://doc-snapshots.qt.io/qtcreator-extending/extensionsystem-pluginspec.html#details
-[FEAT] - Make the indexing fingrained by mimetype
-[FEAT] - Profiler - Extensionmanager profiles extensions (SQLITE backend), Dummy extension with 1M results
-[FEAT] - [#8] QDesktopWidget * QApplication::desktop()
-[FEAT] - [Actions][modifier] - Configurable actionmap
-[FEAT] - [Actions][Interdep.] - e.g. open files with app actions
-[FEAT] - better scoring
+- dropX11Extras by using completeley only XCB
+- Multithreading
+- Use matchers - Only large indexes have search indexes (Files), [ needs profiler ]
+- Fuzzy again is broken
+- port to way more flexible qml - Check the QtQuick standard project
+- final hotkey refinement (XCB) - multiple independant hotkeys, qxtglobalshortcut,
+- Pluginmanager as treeview (Group, Extension, Subextension) - with QDataWidgetMapper
+- python integration - special plugin interface, (Calc (Sympy), Terminal, ssh). Closes #13
+- Plugin Interdependenciea - https://doc-snapshots.qt.io/qtcreator-extending/extensionsystem-pluginspec.html#details
+- Make the indexing fingrained by mimetype
+- Profiler - Extensionmanager profiles extensions (SQLITE backend), Dummy extension with 1M results
+- [#8] QDesktopWidget * QApplication::desktop()
+- [Actions][modifier] - Configurable actionmap
+- [Actions][Interdep.] - e.g. open files with app actions
+- better scoring
+- Port Hotkeymanager to xcb (http://xcb.freedesktop.org/) ask peole to start something like qxt-community
+
+- Open on screen with mouse. Remember window position preference #33, #8
+- Allow only one instance of Albert #23
+- Please allow fuzzy matching of spaces to underscores #40
+
+
 
 
 ------------------------------- RELEASE 0.7 ------------------------------------
@@ -48,20 +55,29 @@ Facts:
 - Use raw instead shared pointers - (lame as hell 6x-10x, delete-later-mechanism that deletes item on session teardown)
 - [Actions][Builtin] - Extension can offer actions
 - Search without template and static downcast
-- [Actions] ListView("->" show actions, "<-" show results)
+- [Actions] ListView("->" show actions, "<-" show results). Closes #42
 - Split file in file and fileitem
 - Move the datamodelling to core by not let parent()/children() be part of IItem
 x Plugin infrastucture - Port all modules
  x Port files
-  -> Serialization
+  x Follow Symlinks
+  x Detect link loops
+  - Serialization
+  - Can't open files with spaces in the filepath. Closes #35
  x Port apps
+  - AppIndex needs rebuilding every time. Closes #45
  x Port bookmarks
+  - Path to bookmarks file not intialized correctly. Closes #44
  x Port calculator
+  - Internationalisation in calculator module. Closes #46
  x Port websearch
   x [FEAT][Actions][Global]  Fallback actions - needs only queryterm
  x Check that paths are created safely with QDir(dirPath).filePath(fileName);
  x make use of mutable make interface const
- scanworker still may cause exception if winsow is visible
+ - scanworker still may cause exception if winsow is visible
+ - settings are not saved (alpha 0.5). Closes #12
+
+
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 EXTENSION Properties
@@ -80,7 +96,7 @@ Bookmarks    - - + - + +
 ssh          + - + - - +
 WebSearch    + - + + - -
 Calc         + - - - - - I
-Terminal     + + - ? - -
+Terminal #18 + + - ? - -
 FileFinder   + + - - - -
 Translate    + - - - - - I
 Blogs        + - + - - -

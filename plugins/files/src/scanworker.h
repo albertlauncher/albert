@@ -36,7 +36,7 @@ public:
     inline void abort(){ _abort = true; }
 
 private:
-    void indexRecursive(const QFileInfo& fi, QList<File *>* result);
+    void scan(const QFileInfo& fi, QList<File *>* result);
 
     QMimeDatabase       _mimeDatabase;
     QList<File*>        **_fileIndex;
@@ -45,6 +45,8 @@ private:
     const IndexOptions  &_indexOptions;
     QMutex              *_mutex;
     bool _abort;
+
+    static constexpr const char* IGNOREFILE = ".albertignore";
 
 signals:
     void statusInfo(const QString&);

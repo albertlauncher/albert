@@ -239,6 +239,13 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="checkBox_followSymlinks">
+            <property name="text">
+             <string>Follow symlinks</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

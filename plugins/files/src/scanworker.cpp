@@ -45,7 +45,7 @@ void ScanWorker::run() {
     // Get a new index [O(n)]
     QList<File *>* newIndex = new QList<File *>;
     for (const QString& path : _rootDirs)
-        indexRecursive(QFileInfo(path), newIndex);
+        scan(QFileInfo(path), newIndex);
 
     // Sort the new index  [O(n*log(n))]
     std::sort(newIndex->begin(), newIndex->end(), Comp());
@@ -81,52 +81,60 @@ void ScanWorker::run() {
 
 
 /** ***************************************************************************/
-void ScanWorker::indexRecursive(const QFileInfo& fi, QList<File *>* result)
-{
-    File f(fi.absoluteFilePath(), _mimeDatabase.mimeTypeForFile(fi));
-    QString mimeName = f.mimetype.name();
+void ScanWorker::scan(const QFileInfo& root, QList<File *>* result) {
+    // Prepare
+    QDir::Filters filters = QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot;
+    if (_indexOptions.indexHidden)
+        filters |= QDir::Hidden;
+    QDirIterator::IteratorFlags flags = QDirIterator::Subdirectories;
+    if (!_indexOptions.followSymlinks)
+        flags |= QDirIterator::FollowSymlinks;
 
-    // If is a file and matches index options index it
-    if (fi.isFile() && ((_indexOptions.indexAudio && mimeName.startsWith("audio"))
-        ||(_indexOptions.indexVideo && mimeName.startsWith("video"))
-        ||(_indexOptions.indexImage && mimeName.startsWith("image"))
-        ||(_indexOptions.indexDocs && mimeName.startsWith("application")))) {
-        result->append(new File(f));
-    } else if (fi.isDir()) {
-        emit statusInfo(QString("Indexing %1.").arg(fi.absoluteFilePath()));
+    File f;
+    QMap<QString, QList<QRegExp>> ignoreMap;
 
-        // If is a dir and matches index options index it
-        if (_indexOptions.indexDirs)
-            result->append(new File(f));
+    // Iterate over all files in the dir and do recursion
+    QDirIterator dirIt(root.absoluteFilePath(), filters, flags);
+    while (dirIt.hasNext() && !_abort) {
+        f.path = dirIt.next();
 
-        // Read .albertignore
+        // Handle the ignore files
         // http://doc.qt.io/qt-5/qregexp.html#wildcard-matching
-        QList<QRegExp> ignores;
-        QFile file(fi.filePath() + "/.albertignore");
-        if (file.open(QIODevice::ReadOnly | QIODevice::Text)){
-            QTextStream in(&file);
-            while (!in.atEnd())
-                ignores.append(QRegExp(in.readLine().trimmed(), Qt::CaseSensitive, QRegExp::Wildcard));
+        if (!ignoreMap.contains(dirIt.path())){
+            QList<QRegExp> ignores;
+            QFile file(QDir(dirIt.path()).filePath(IGNOREFILE));
+            if (file.open(QIODevice::ReadOnly | QIODevice::Text)){
+                QTextStream in(&file);
+                while (!in.atEnd())
+                    ignores.append(QRegExp(in.readLine().trimmed(), Qt::CaseSensitive, QRegExp::Wildcard));
+            }
+            //  Ignore ignorefile by default
+            ignores.append(QRegExp(".albertignore", Qt::CaseSensitive, QRegExp::Wildcard));
+            ignoreMap.insert(dirIt.path(), ignores);
         }
 
-        //  Ignore ignorefile by default
-        ignores.append(QRegExp(".albertignore", Qt::CaseSensitive, QRegExp::Wildcard));
+        // Skip if this file matches one of the ignore patterns
+        for (QRegExp& ignore : ignoreMap[dirIt.path()])
+            if(ignore.exactMatch(dirIt.fileName()))
+                continue;
 
-        // Iterate over all files in the dir and do recursion
-        QDir::Filters filters = QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot|QDir::NoSymLinks;
-        if (_indexOptions.indexHidden) filters |= QDir::Hidden;
-        QDirIterator dirIterator(fi.absoluteFilePath(), filters);
-        while (dirIterator.hasNext() && !_abort) {
-            dirIterator.next();
-
-            // Skip if this file matches one of the ignore patterns
-            for (QRegExp& ignore : ignores)
-                if(ignore.exactMatch(dirIterator.fileName()))
-                    goto CONTINUE;
-
-            indexRecursive(dirIterator.fileInfo(), result);
-            CONTINUE:
-            continue; // gnah does not compile without this ...
+        // If is a file and matches index options index it
+        if (dirIt.fileInfo().isFile()){
+            f.mimetype = _mimeDatabase.mimeTypeForFile(f.path);
+            QString mimeName = f.mimetype.name();
+            if ((_indexOptions.indexAudio && mimeName.startsWith("audio"))
+                    ||(_indexOptions.indexVideo && mimeName.startsWith("video"))
+                    ||(_indexOptions.indexImage && mimeName.startsWith("image"))
+                    ||(_indexOptions.indexDocs && mimeName.startsWith("application"))) {
+                result->append(new File(f));
+            }
+        } else if (dirIt.fileInfo().isDir()) {
+            emit statusInfo(QString("Indexing %1.").arg(f.path));
+            // If is a dir and matches index options index it
+            if (_indexOptions.indexDirs){
+                f.mimetype = _mimeDatabase.mimeTypeForFile(f.path);
+                result->append(new File(f));
+            }
         }
     }
 }
