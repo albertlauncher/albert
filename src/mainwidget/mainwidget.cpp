@@ -21,6 +21,7 @@
 #include <QDebug>
 #include <QApplication>
 #include <QVBoxLayout>
+#include <QAbstractItemModel>
 #include "mainwidget.h"
 
 /****************************************************************************///
@@ -59,6 +60,9 @@ MainWidget::MainWidget(QWidget *parent)
 
     // Proposallistview intercepts inputline's events (Navigation with keys, pressed modifiers, etc)
     ui.inputLine->installEventFilter(ui.proposalList);
+
+    // Hide list
+    ui.proposalList->hide();
 
     // Settings
     QSettings s;
@@ -107,6 +111,16 @@ void MainWidget::hide()
 /** ***************************************************************************/
 void MainWidget::toggleVisibility() {
     this->isVisible() ? this->hide() : this->show();
+}
+
+
+
+/** ***************************************************************************/
+void MainWidget::setModel(QAbstractItemModel *m)
+{
+    QItemSelectionModel *sm = ui.proposalList->selectionModel();
+    ui.proposalList->setModel(m);
+    delete sm;
 }
 
 

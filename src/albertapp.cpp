@@ -75,10 +75,6 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv)
      * INITIALISATION
      */
 
-    // View results
-    _mainWidget->ui.proposalList->setModel(_extensionManager);
-
-
     // MAKE SURE THE NEEDED DIRECTORIES EXIST
     QDir data(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
     if (!data.exists())
@@ -96,17 +92,17 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv)
     // Show mainwidget if hotkey is pressed
     QObject::connect(_hotkeyManager, &HotkeyManager::hotKeyPressed,_mainWidget, &MainWidget::toggleVisibility);
 
+    // Extrension manager signals new proposals
+    QObject::connect(_extensionManager, &ExtensionManager::newModel, _mainWidget, &MainWidget::setModel);
+
     // Setup and teardown query sessions with the state of the widget
     QObject::connect(_mainWidget, &MainWidget::widgetShown,  _extensionManager, &ExtensionManager::setupSession);
     QObject::connect(_mainWidget, &MainWidget::widgetHidden, _extensionManager, &ExtensionManager::teardownSession);
-
     // Click on _settingsButton (or shortcut) closes albert + opens settings dialog
     QObject::connect(_mainWidget->ui.inputLine->_settingsButton, &QPushButton::clicked, _mainWidget, &MainWidget::hide);
     QObject::connect(_mainWidget->ui.inputLine->_settingsButton, &QPushButton::clicked, this, &AlbertApp::openSettings);
-
     // A change in text triggers requests
     QObject::connect(_mainWidget->ui.inputLine, &InputLine::textChanged, _extensionManager, &ExtensionManager::startQuery);
-
     // Enter triggers action
     QObject::connect(_mainWidget->ui.proposalList, &ProposalList::activated, _extensionManager, &ExtensionManager::activate);
 
@@ -185,7 +181,7 @@ void AlbertApp::showWidget()
 /** ***************************************************************************/
 void AlbertApp::hideWidget()
 {
-   _mainWidget->hide();
+    _mainWidget->hide();
 }
 
 

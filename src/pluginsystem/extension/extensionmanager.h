@@ -15,16 +15,17 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QIdentityProxyModel>
+#include <QObject>
 #include <QSet>
 #include <QMap>
 #include <QString>
 #include "interfaces/iextensionmanager.h"
 class Query;
 class IExtension;
+class QAbstractItemModel;
 class IExtensionManager;
 
-class ExtensionManager final : public QIdentityProxyModel, public IExtensionManager
+class ExtensionManager final : public QObject, public IExtensionManager
 {
     Q_OBJECT
 
@@ -47,4 +48,7 @@ private:
     QMap<QString, Query*> _recentQueries;
     QString _currentSearchTerm;
     bool _sessionIsActive;
+
+signals:
+    void newModel(QAbstractItemModel *);
 };

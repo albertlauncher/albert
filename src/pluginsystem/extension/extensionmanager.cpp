@@ -48,7 +48,7 @@ void ExtensionManager::startQuery(const QString &term) {
 
         // Enable dynmic mode so that lame plugings can still add sorted
     }
-    this->setSourceModel(q);
+    emit newModel(q);
 }
 
 
@@ -65,9 +65,9 @@ void ExtensionManager::setupSession() {
 /** ***************************************************************************/
 void ExtensionManager::teardownSession() {
     for (IExtension *e : _extensions)
-		e->teardownSession();
-    this->setSourceModel(nullptr);
-	for (Query *q : _recentQueries)
+        e->teardownSession();
+    emit newModel(nullptr);
+    for (Query *q : _recentQueries)
         delete q;
     _recentQueries.clear();
     _sessionIsActive = false;

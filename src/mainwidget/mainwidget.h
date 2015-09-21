@@ -20,6 +20,7 @@
 #include "proposallist.h"
 #include "inputline.h"
 #include "ui_mainwidget.h"
+class QAbstractItemModel;
 
 class MainWidget final : public QWidget
 {
@@ -32,6 +33,7 @@ public:
     void show();
     void hide();
     void toggleVisibility();
+    void setModel(QAbstractItemModel *);
 
     bool showCenterd() const;
     void setShowCentered(bool b = true);

@@ -144,11 +144,10 @@ void ProposalList::reset()
 {
     // Reset the views state
     QListView::reset();
-
-    if (model() == nullptr) return;
+    scrollToTop(); // Why is this needed?
 
     // Show if not empty and make first item current
-    if (model()->hasChildren(rootIndex())){
+    if (model()!=nullptr && model()->hasChildren(rootIndex())){
         show();
         // Make the size of this widget be adjusted (size hint changed)
         updateGeometry();
