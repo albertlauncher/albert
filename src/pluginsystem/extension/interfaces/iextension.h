@@ -32,7 +32,6 @@ struct IExtension : public IPlugin
     virtual void finalize() {}
     virtual void setupSession() {}
     virtual void teardownSession() {}
-    virtual void setFuzzy(bool b) = 0;
     virtual void handleQuery(IQuery *q) = 0;
 };
 #define ALBERT_EXTENSION_IID "org.manuelschneid3r.albert.extension"

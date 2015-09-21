@@ -42,7 +42,6 @@ private:
     File          *_file;      // No ownership
     IExtension    *_extension; // No ownership
     IQuery        *_query;     // No ownership
-    QList<IItem*> *_actions;   // No ownership
     static QHash<QString, QIcon> _iconCache;
 };
 }

@@ -41,7 +41,6 @@ struct IndexOptions {
     bool indexDirs;
     bool indexHidden;
     bool followSymlinks;
-    // TODO configurable follow symlinks
 };
 
 class Extension final : public QObject, public IExtension
@@ -49,8 +48,6 @@ class Extension final : public QObject, public IExtension
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "../src/metadata.json")
     Q_INTERFACES(IExtension)
-
-    Q_PROPERTY(unsigned int scanInterval MEMBER _scanInterval WRITE setScanInterval)
 
 public:
     Extension();
@@ -64,7 +61,6 @@ public:
     void finalize() override;
     void teardownSession();
     void handleQuery(IQuery*) override;
-    void setFuzzy(bool b = true) override;
 
     // API special to this extension
     void addDir(const QString &dirPath);
@@ -72,23 +68,33 @@ public:
     void restorePaths();
     void updateIndex();
 
-    inline bool indexOptionAudio() { return _indexOptions.indexAudio; }
-    inline bool indexOptionVideo() { return _indexOptions.indexVideo; }
-    inline bool indexOptionImage() { return _indexOptions.indexImage; }
-    inline bool indexOptionDocs() { return _indexOptions.indexDocs; }
-    inline bool indexOptionDirs() { return _indexOptions.indexDirs; }
-    inline bool indexOptionHidden() { return _indexOptions.indexHidden; }
-    inline bool followSymlinks() { return _indexOptions.followSymlinks; }
+    // Properties
+    inline bool indexAudio() { return _indexOptions.indexAudio; }
+    inline void setIndexAudio(bool b = true)  { _indexOptions.indexAudio = b; }
 
-    inline void setIndexOptionAudio(bool b = true)  { _indexOptions.indexAudio = b; }
-    inline void setIndexOptionVideo(bool b = true)  { _indexOptions.indexVideo = b; }
-    inline void setIndexOptionImage(bool b = true)  { _indexOptions.indexImage = b; }
-    inline void setIndexOptionDocs(bool b = true)  { _indexOptions.indexDocs = b; }
-    inline void setIndexOptionDirs(bool b = true)  { _indexOptions.indexDirs = b; }
-    inline void setIndexOptionHidden(bool b = true)  { _indexOptions.indexHidden = b; }
+    inline bool indexVideo() { return _indexOptions.indexVideo; }
+    inline void setIndexVideo(bool b = true)  { _indexOptions.indexVideo = b; }
+
+    inline void setIndexImage(bool b = true)  { _indexOptions.indexImage = b; }
+    inline bool indexImage() { return _indexOptions.indexImage; }
+
+    inline bool indexDocs() { return _indexOptions.indexDocs; }
+    inline void setIndexDocs(bool b = true)  { _indexOptions.indexDocs = b; }
+
+    inline bool indexDirs() { return _indexOptions.indexDirs; }
+    inline void setIndexDirs(bool b = true)  { _indexOptions.indexDirs = b; }
+
+    inline bool indexHidden() { return _indexOptions.indexHidden; }
+    inline void setIndexHidden(bool b = true)  { _indexOptions.indexHidden = b; }
+
+    inline bool followSymlinks() { return _indexOptions.followSymlinks; }
     inline void setFollowSymlinks(bool b = true)  { _indexOptions.followSymlinks = b; }
 
+    inline unsigned int scanInterval() { return _scanInterval; }
     void setScanInterval(uint minutes);
+
+    bool fuzzy();
+    void setFuzzy(bool b = true);
 
 private:
     QPointer<ConfigWidget> _widget;

@@ -31,7 +31,7 @@ QHash<QString, QIcon> Item::_iconCache;
 
 /** ***************************************************************************/
 Item::Item(File *file, IExtension *ext, IQuery *qry)
-    : _file(file), _extension(ext), _query(qry), _actions(nullptr) {}
+    : _file(file), _extension(ext), _query(qry) {}
 
 
 

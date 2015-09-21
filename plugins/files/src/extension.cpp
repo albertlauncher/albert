@@ -172,31 +172,31 @@ QWidget *Extension::widget() {
         connect(_widget->ui.pushButton_update, &QPushButton::clicked, this, &Extension::updateIndex);
 
         // Checkboxes
-        _widget->ui.checkBox_audio->setChecked(_indexOptions.indexAudio);
-        connect(_widget->ui.checkBox_audio, &QCheckBox::toggled, this, &Extension::setIndexOptionAudio);
+        _widget->ui.checkBox_audio->setChecked(indexAudio());
+        connect(_widget->ui.checkBox_audio, &QCheckBox::toggled, this, &Extension::setIndexAudio);
 
-        _widget->ui.checkBox_video->setChecked(_indexOptions.indexVideo);
-        connect(_widget->ui.checkBox_video, &QCheckBox::toggled, this, &Extension::setIndexOptionVideo);
+        _widget->ui.checkBox_video->setChecked(indexVideo());
+        connect(_widget->ui.checkBox_video, &QCheckBox::toggled, this, &Extension::setIndexVideo);
 
-        _widget->ui.checkBox_image->setChecked(_indexOptions.indexImage);
-        connect(_widget->ui.checkBox_image, &QCheckBox::toggled, this, &Extension::setIndexOptionImage);
+        _widget->ui.checkBox_image->setChecked(indexImage());
+        connect(_widget->ui.checkBox_image, &QCheckBox::toggled, this, &Extension::setIndexImage);
 
-        _widget->ui.checkBox_docs->setChecked(_indexOptions.indexDocs);
-        connect(_widget->ui.checkBox_docs, &QCheckBox::toggled, this, &Extension::setIndexOptionDocs);
+        _widget->ui.checkBox_docs->setChecked(indexDocs());
+        connect(_widget->ui.checkBox_docs, &QCheckBox::toggled, this, &Extension::setIndexDocs);
 
-        _widget->ui.checkBox_dirs->setChecked(_indexOptions.indexDirs);
-        connect(_widget->ui.checkBox_dirs, &QCheckBox::toggled, this, &Extension::setIndexOptionDirs);
+        _widget->ui.checkBox_dirs->setChecked(indexDirs());
+        connect(_widget->ui.checkBox_dirs, &QCheckBox::toggled, this, &Extension::setIndexDirs);
 
-        _widget->ui.checkBox_hidden->setChecked(_indexOptions.indexHidden);
-        connect(_widget->ui.checkBox_hidden, &QCheckBox::toggled, this, &Extension::setIndexOptionHidden);
+        _widget->ui.checkBox_hidden->setChecked(indexHidden());
+        connect(_widget->ui.checkBox_hidden, &QCheckBox::toggled, this, &Extension::setIndexHidden);
 
-        _widget->ui.checkBox_followSymlinks->setChecked(_indexOptions.followSymlinks);
+        _widget->ui.checkBox_followSymlinks->setChecked(followSymlinks());
         connect(_widget->ui.checkBox_followSymlinks, &QCheckBox::toggled, this, &Extension::setFollowSymlinks);
 
-        _widget->ui.checkBox_fuzzy->setChecked(_searchIndex.fuzzy());
+        _widget->ui.checkBox_fuzzy->setChecked(fuzzy());
         connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
 
-        _widget->ui.spinBox_interval->setValue(_scanInterval);
+        _widget->ui.spinBox_interval->setValue(scanInterval());
         connect(_widget->ui.spinBox_interval, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Extension::setScanInterval);
 
         // Info
@@ -224,15 +224,6 @@ void Extension::handleQuery(IQuery *q) {
     // Add results to query. This cast is safe since index holds files only
     for (IIndexable *obj : indexables)
         q->add(new Item(static_cast<File*>(obj), this, q));
-}
-
-
-
-/** ***************************************************************************/
-void Extension::setFuzzy(bool b) {
-    _mutex.lock();
-    _searchIndex.setFuzzy(b);
-    _mutex.unlock();
 }
 
 
@@ -353,6 +344,22 @@ void Extension::setScanInterval(uint minutes) {
     _minuteCounter=0;
     (minutes == 0) ? _minuteTimer.stop() : _minuteTimer.start();
     qDebug() << "[Files] Scan interval set to" << _scanInterval << "minutes.";
+}
+
+
+
+/** ***************************************************************************/
+bool Extension::fuzzy() {
+    return _searchIndex.fuzzy();
+}
+
+
+
+/** ***************************************************************************/
+void Extension::setFuzzy(bool b) {
+    _mutex.lock();
+    _searchIndex.setFuzzy(b);
+    _mutex.unlock();
 }
 
 
