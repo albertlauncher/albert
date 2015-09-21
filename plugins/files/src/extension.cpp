@@ -321,7 +321,7 @@ void Extension::restorePaths() {
 
 /** ***************************************************************************/
 void Extension::updateIndex() {
-    qDebug() << "[Files] Updating index";
+    qDebug() << "[Files] Index update triggered";
 
     // If thread is running, stop it and start this functoin after termination
     if (!_scanWorker.isNull()){

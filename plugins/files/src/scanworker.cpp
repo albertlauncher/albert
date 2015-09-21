@@ -42,6 +42,7 @@ ScanWorker::ScanWorker(QList<File *>** fileIndex, Search *searchIndex, const QSt
 
 /** ***************************************************************************/
 void ScanWorker::run() {
+    qDebug() << "[Files] Scanning files...";
     // Get a new index [O(n)]
     QList<File *>* newIndex = new QList<File *>;
     for (const QString& path : _rootDirs)
@@ -75,7 +76,9 @@ void ScanWorker::run() {
     for (File* f : *newIndex)
         delete f;
     delete newIndex;
+
     emit statusInfo(QString("Done. Indexed %1 files.").arg((*_fileIndex)->size()));
+    qDebug() << "[Files] Scanning files done.";
 }
 
 
