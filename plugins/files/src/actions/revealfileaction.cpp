@@ -42,7 +42,7 @@ QVariant Files::RevealFileAction::data(int role) const {
 
 /** ***************************************************************************/
 void Files::RevealFileAction::activate() {
-    QDesktopServices::openUrl(QUrl("file://" + QFileInfo(_file->path).path() + "/"));
+    QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(_file->path).path()));
     qApp->hideWidget();
     ++usageCounter;
     ++_file->usage;

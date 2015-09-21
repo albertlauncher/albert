@@ -46,7 +46,7 @@ QVariant Files::OpenFileAction::data(int role) const  {
 
 /** ***************************************************************************/
 void Files::OpenFileAction::activate() {
-    QDesktopServices::openUrl(QUrl("file://" + _file->path));
+    QDesktopServices::openUrl(QUrl::fromLocalFile(_file->path));
     qApp->hideWidget();
     ++usageCounter;
     ++_file->usage;
