@@ -31,6 +31,7 @@ struct App final : public IIndexable
     QString        name;
     QString        altName;
     QString        exec;
+    bool           terminal;
     QIcon          icon;
     mutable ushort usage;
 };

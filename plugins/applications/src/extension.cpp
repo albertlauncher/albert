@@ -366,6 +366,9 @@ bool Extension::getAppInfo(const QString &path, App *app)
     app->exec.replace("%c", app->name);
     app->exec.remove(QRegExp("%."));
 
+    // Determine if app runs in terminal
+    app->terminal = s.value("Terminal", false).toBool();
+
 
     // Try to get the icon name
 
