@@ -75,6 +75,7 @@ private:
     /* constexpr */
     static constexpr const char* CFG_PATHS      = "Applications/paths";
     static constexpr const char* CFG_FUZZY      = "Applications/fuzzy";
+    static constexpr const char* CFG_TERM       = "Applications/terminal";
     static constexpr const bool  CFG_FUZZY_DEF  = false;
     static constexpr const char* DATA_FILE      = "applications.dat";
     static constexpr const bool  UPDATE_DELAY   = 60000;

@@ -40,10 +40,17 @@ QVariant Applications::LaunchAppAction::data(int role) const  {
 /** ***************************************************************************/
 void Applications::LaunchAppAction::activate() {
     qApp->hideWidget();
-    if(_app->terminal)
-        QProcess::startDetached("xterm -e " + _app->exec);
-    else
-        QProcess::startDetached(_app->exec);
+    QProcess::startDetached(_app->exec);
+    ++usageCounter;
+    ++_app->usage;
+}
+
+
+
+/** ***************************************************************************/
+void Applications::LaunchAppAction::activateTerminal(QString terminal) {
+    qApp->hideWidget();
+    QProcess::startDetached(terminal.arg(_app->exec));
     ++usageCounter;
     ++_app->usage;
 }

@@ -78,6 +78,7 @@ void Extension::initialize(IExtensionManager *em) {
     // Load settings
     QSettings s;
     _searchIndex.setFuzzy(s.value(CFG_FUZZY, CFG_FUZZY_DEF).toBool());
+    Item::terminal = s.value(CFG_TERM, "xterm -e %1").toString();
 
     // Load the paths or set a default
     QVariant v = s.value(CFG_PATHS);
@@ -126,6 +127,7 @@ void Extension::finalize() {
     QSettings s;
     s.setValue(CFG_FUZZY, _searchIndex.fuzzy());
     s.setValue(CFG_PATHS, _rootDirs);
+    s.setValue(CFG_TERM, Item::terminal);
 
     /* Serialze data
     QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + DATA_FILE);

@@ -35,6 +35,8 @@ public:
     QList<IItem*>  children() override;
     bool           hasChildren() const override;
 
+    static QString terminal;
+
 private:
     App           *_app;       // No ownership
     IExtension    *_extension; // No ownership
