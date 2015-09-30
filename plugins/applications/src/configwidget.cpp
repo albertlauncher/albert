@@ -15,7 +15,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "configwidget.h"
+#include "item.h"
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QStandardPaths>
 
 namespace Applications
@@ -30,6 +32,9 @@ ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent)
 
     connect(ui.pushButton_removePath, &QPushButton::clicked,
             this, &ConfigWidget::onButton_PathRemove);
+
+    connect(ui.pushButton_terminal, &QPushButton::clicked,
+            this, &ConfigWidget::onButton_Terminal);
 }
 
 /** ***************************************************************************/
@@ -58,5 +63,21 @@ void ConfigWidget::onButton_PathRemove()
     if (ui.listWidget_paths->currentItem() == nullptr)
         return;
     emit requestRemovePath(ui.listWidget_paths->currentItem()->text());
+}
+
+/** ***************************************************************************/
+void ConfigWidget::onButton_Terminal()
+{
+    QString newterm = QInputDialog::getText(
+                this,
+                tr("Terminal command"),
+                tr("Terminal"),
+                QLineEdit::Normal,
+                Item::terminal);
+
+    if(newterm.isEmpty())
+        return;
+
+    Item::terminal = newterm;
 }
 }

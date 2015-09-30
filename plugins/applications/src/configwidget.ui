@@ -94,6 +94,13 @@
           </property>
          </spacer>
         </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_terminal">
+          <property name="text">
+           <string>Terminal</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>
