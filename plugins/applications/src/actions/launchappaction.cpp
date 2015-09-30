@@ -48,6 +48,16 @@ void Applications::LaunchAppAction::activate() {
 
 
 /** ***************************************************************************/
+void Applications::LaunchAppAction::activateTerminal(QString terminal) {
+    qApp->hideWidget();
+    QProcess::startDetached(terminal.arg(_app->exec));
+    ++usageCounter;
+    ++_app->usage;
+}
+
+
+
+/** ***************************************************************************/
 unsigned short Applications::LaunchAppAction::score() const {
     return usageCounter;
 }

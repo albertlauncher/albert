@@ -21,6 +21,7 @@
 
 
 
+QString Applications::Item::terminal;
 
 /** ***************************************************************************/
 Applications::Item::Item(App *app, IExtension *ext, IQuery *qry)
@@ -52,7 +53,10 @@ QVariant Applications::Item::data(int role) const {
 /** ***************************************************************************/
 void Applications::Item::activate() {
     // Standard action
-    LaunchAppAction(_app).activate();
+    if(_app->terminal)
+        LaunchAppAction(_app).activateTerminal(terminal);
+    else
+        LaunchAppAction(_app).activate();
 }
 
 

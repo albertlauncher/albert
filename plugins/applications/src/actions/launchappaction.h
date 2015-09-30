@@ -29,6 +29,7 @@ public:
 
     QVariant       data(int role = Qt::DisplayRole) const override;
     void           activate() override;
+    void           activateTerminal(QString);
     unsigned short score() const override;
 
 protected:
