@@ -20,7 +20,7 @@
 #include <QTimer>
 #include "ui_configwidget.h"
 
-namespace Files{
+namespace Files {
 class ConfigWidget final : public QWidget
 {
     Q_OBJECT

@@ -61,8 +61,7 @@ void GrabKeyButton::releaseAll() {
 
 /** ***************************************************************************/
 void GrabKeyButton::keyPressEvent(QKeyEvent *event) {
-    if ( _waitingForHotkey )
-    {
+    if ( _waitingForHotkey ) {
         // Modifier pressed -> update the label
         int key = event->key();
         int mods = event->modifiers();
@@ -91,8 +90,7 @@ void GrabKeyButton::keyPressEvent(QKeyEvent *event) {
 
 /** ***************************************************************************/
 void GrabKeyButton::keyReleaseEvent(QKeyEvent *event) {
-    if ( _waitingForHotkey )
-    {
+    if ( _waitingForHotkey ) {
         // Modifier released -> update the label
         int key = event->key();
         if(key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta) {

@@ -34,8 +34,7 @@ void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &options,
     painter->drawPixmap(iconRect, index.data(Qt::DecorationRole).value<QIcon>().pixmap(option.decorationSize));
 
     /* Drawing text differs dependent on the mode and selection */
-    if (showInfo && (!showForSelectedOnly || option.state.testFlag(QStyle::State_Selected)) )
-    {
+    if (showInfo && (!showForSelectedOnly || option.state.testFlag(QStyle::State_Selected)) ) {
         /*
          * fm(x) := fontmetrics of x
          * DR := DisplayRole
@@ -71,9 +70,7 @@ void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &options,
                     option.textElideMode,
                     DisplayRect.width());
         painter->drawText(DisplayRect, Qt::AlignBottom|Qt::AlignLeft, text);
-    }
-    else
-    {
+    } else {
         QRect DisplayRect = option.widget->style()->subElementRect(QStyle::SE_ItemViewItemText, &option, option.widget);
         QString text = QFontMetrics(option.font).elidedText(
                     index.data(Qt::DisplayRole).toString(),

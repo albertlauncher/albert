@@ -262,9 +262,7 @@ void SettingsWidget::changeHotkey(int newhk) {
         ui.grabKeyButton_hotkey->setText(hkText);
         QSettings().setValue("hotkey", hkText);
         _hotkeyManager->unregisterHotkey(oldhk);
-    }
-    else
-    {
+    } else {
         ui.grabKeyButton_hotkey->setText(QKeySequence(oldhk).toString());
         QMessageBox(QMessageBox::Critical, "Error",
                     QKeySequence(newhk).toString()

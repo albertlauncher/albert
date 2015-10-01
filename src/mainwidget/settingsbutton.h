@@ -30,8 +30,7 @@ public:
         QPushButton(parent){}
 
 private:
-    void paintEvent(QPaintEvent *event) override
-    {
+    void paintEvent(QPaintEvent *event) override {
         QPushButton::paintEvent(event);
         QStyleOptionButton option;
         option.initFrom(this);

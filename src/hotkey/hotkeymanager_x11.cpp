@@ -345,7 +345,7 @@ QSet<quint32> HotkeyManager::HotkeyManagerPrivate::nativeKeycodes(quint32 qtKey)
     else  // else check the handcrafted table for fancy keys
         if (QtToXSymsMap.contains(qtKey))
             return QtToXSymsMap.value(qtKey);
-        else{
+        else {
             qCritical() << "Could not translate key!"<< QKeySequence(qtKey).toString();
             return QSet<quint32>();
         }
@@ -374,13 +374,11 @@ bool HotkeyManager::HotkeyManagerPrivate::nativeEventFilter(const QByteArray &ev
     Q_UNUSED(result);
     if (eventType == "xcb_generic_event_t") {
         xcb_generic_event_t* ev = static_cast<xcb_generic_event_t *>(message);
-        if ((ev->response_type & 127) == XCB_KEY_PRESS)
-        {
+        if ((ev->response_type & 127) == XCB_KEY_PRESS) {
             xcb_key_press_event_t *k = (xcb_key_press_event_t *)ev;
             // Check if the key is one of the registered
             for (const QPair<int,int> &p: grabbedKeys)
-                if (k->detail == p.second && k->state == p.first)
-                {
+                if (k->detail == p.second && k->state == p.first) {
                     emit hotKeyPressed();
                     return true;
                 }

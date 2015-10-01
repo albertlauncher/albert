@@ -48,8 +48,7 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
     if (model() == nullptr)
         return false;
 
-    if (event->type() == QEvent::KeyPress)
-    {
+    if (event->type() == QEvent::KeyPress) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
         int key = keyEvent->key();
 
@@ -110,8 +109,7 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
         }
     }
 
-    if (event->type() == QEvent::KeyRelease)
-    {
+    if (event->type() == QEvent::KeyRelease) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
         int key = keyEvent->key();
 

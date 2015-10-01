@@ -122,7 +122,7 @@ QString PluginLoader::description() const {
 
 
 /** ***************************************************************************/
-QStringList PluginLoader::dependencies()const{
+QStringList PluginLoader::dependencies() const {
     QStringList res;
     for (const QJsonValue &v : metaData()["MetaData"].toObject()["dependencies"].toArray())
         res << v.toString();
