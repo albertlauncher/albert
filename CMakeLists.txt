@@ -40,11 +40,10 @@ set(SRCS
 
     src/pluginsystem/extension/extensionmanager.cpp
     src/pluginsystem/extension/query.cpp
+    src/pluginsystem/extension/query_p.h
 
     src/pluginsystem/extension/interfaces/iextension.h
-    src/pluginsystem/extension/interfaces/iextensionmanager.h
-    src/pluginsystem/extension/interfaces/iitem.h
-    src/pluginsystem/extension/interfaces/iquery.h
+    src/pluginsystem/extension/interfaces/baseobjects.h
 
     src/pluginsystem/extension/utils/search/fuzzysearch.h
     src/pluginsystem/extension/utils/search/iindexable.h
@@ -96,3 +95,4 @@ add_subdirectory(plugins/applications)
 #add_subdirectory(plugins/chromebookmarks)
 #add_subdirectory(plugins/websearch)
 #add_subdirectory(plugins/PythonExtensions)
+add_subdirectory(plugins/templateExtension)

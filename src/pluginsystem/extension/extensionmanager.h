@@ -16,16 +16,15 @@
 
 #pragma once
 #include <QObject>
+#include <QAbstractItemModel>
 #include <QSet>
 #include <QMap>
 #include <QString>
-#include "interfaces/iextensionmanager.h"
-class Query;
+#include <memory>
 class IExtension;
-class QAbstractItemModel;
-class IExtensionManager;
+class Query;
 
-class ExtensionManager final : public QObject, public IExtensionManager
+class ExtensionManager final : public QObject
 {
     Q_OBJECT
 
@@ -41,12 +40,11 @@ public:
 
     void activate(const QModelIndex & index);
 
-    bool sessionIsActive() const override;
+    bool sessionIsActive() const;
 
 private:
     QSet<IExtension*> _extensions;
-    QMap<QString, Query*> _recentQueries;
-    QString _currentSearchTerm;
+    std::shared_ptr<Query> _currentQuery;
     bool _sessionIsActive;
 
 signals:

@@ -27,7 +27,6 @@ Facts:
 - dropX11Extras by using completeley only XCB
 - Multithreading
 - Use matchers - Only large indexes have search indexes (Files), [ needs profiler ]
-- Fuzzy again is broken
 - port to way more flexible qml - Check the QtQuick standard project
 - final hotkey refinement (XCB) - multiple independant hotkeys, qxtglobalshortcut,
 - Pluginmanager as treeview (Group, Extension, Subextension) - with QDataWidgetMapper
@@ -36,7 +35,8 @@ Facts:
 - Make the indexing fingrained by mimetype
 - Profiler - Extensionmanager profiles extensions (SQLITE backend), Dummy extension with 1M results
 - [#8] QDesktopWidget * QApplication::desktop()
-- [Actions][modifier] - Configurable actionmap
+- [Actions][Modifier] Preset modifier to action map
+- [Actions][Modifier] Configurable modifier to action map
 - [Actions][Interdep.] - e.g. open files with app actions
 - better scoring
 - Port Hotkeymanager to xcb (http://xcb.freedesktop.org/) ask peole to start something like qxt-community
@@ -57,28 +57,26 @@ Facts:
 ✔ Search without template and static downcast
 ✔ [Actions] ListView("->" show actions, "<-" show results). Closes #42
 ✔ Split file in file and item
-✔ Move the datamodelling to core by not let parent()/children() be part of IItem
+✔ Move the datamodelling to core by not let parent()/children() be part of Item
+✔ Fix fuzzy
+✘ settings are not saved (alpha 0.5). Closes #12
 ✔ Plugin infrastucture - Port all modules
  ✔ Port files
   ✔ Follow Symlinks
-  ✔ Detect link loops
   ✔ Scan interval overrun bug
   ✔ Serialization
   ✔ Can't open files with spaces in the filepath. Closes #35
+  ✔ Detect link loops (Qt loop detection is bulls***)
  ✔ Port apps
   ✔ AppIndex needs rebuilding every time. Closes #45
   ✔ Serialization
-  ✘ Quicklist actions
+  ✔ Quicklist actions
  ✘ Port bookmarks
   ✘ Path to bookmarks file not intialized correctly. Closes #44
  ✘ Port calculator
   ✘ Internationalisation in calculator module. Closes #46
  ✘ Port websearch
   ✘ [FEAT][Actions][Global]  Fallback actions - needs only queryterm
- ✘ Check that paths are created safely with QDir(dirPath).filePath(fileName);
- ✘ make use of mutable make interface const
- ✘ scanworker still may cause exception if winsow is visible
- ✘ settings are not saved (alpha 0.5). Closes #12
 
 
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -108,6 +106,21 @@ Dict         + ? - - - - I
 Thunderbird  + - - - - -
 Google       + + - - - -
 Rhythmbox    - - - - - -  < kommt drauf an
+
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ITEM Properties
+
+-
+
+- temporary/permanent
+ > permanent items are somehow stored (DB, index, etc..)
+  - static/dynamic
+   > static items don't change - pretty easy handling
+   > dynamic items may be mutated by actions -  references need to to be handles properly
+ > temporary items are generated while a query
+-
 
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 

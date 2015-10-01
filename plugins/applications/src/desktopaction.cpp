@@ -14,66 +14,43 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "item.h"
-#include "app.h"
-#include "actions/launchappaction.h"
-
-
-
+#include "application.h"
+#include "desktopaction.h"
+#include "albertapp.h"
 
 
 /** ***************************************************************************/
-Applications::Item::Item(App *app, IExtension *ext, IQuery *qry)
-    : _app(app), _extension(ext), _query(qry) {
+Applications::DesktopAction::DesktopAction(Application *app, const QString &name, const QString &exec, const QIcon &icon)
+    : app_(app), name_(name), exec_(exec), icon_(icon) {
 
 }
 
 
 
 /** ***************************************************************************/
-Applications::Item::~Item() {
-
+QString Applications::DesktopAction::name() const {
+    return name_;
 }
 
 
 
 /** ***************************************************************************/
-QVariant Applications::Item::data(int role) const {
-    switch (role) {
-    case Qt::DisplayRole:    return _app->name;
-    case Qt::ToolTipRole:    return _app->altName;
-    case Qt::DecorationRole: return _app->icon;
-    default: return QVariant();
-    }
+QString Applications::DesktopAction::info() const {
+    return exec_;
 }
 
 
 
 /** ***************************************************************************/
-void Applications::Item::activate() {
-    // Standard action
-    LaunchAppAction(_app).activate();
+QIcon Applications::DesktopAction::icon() const {
+    return icon_;
 }
 
 
 
 /** ***************************************************************************/
-unsigned short Applications::Item::score() const {
-    return _app->usage;
-}
-
-
-
-/** ***************************************************************************/
-QList<IItem *> Applications::Item::children() {
-    // Lazy instaciate actions
-    // NO OWNERSHIP
-    return QList<IItem*>({new LaunchAppAction(_app)});
-}
-
-
-
-/** ***************************************************************************/
-bool Applications::Item::hasChildren() const {
-    return true;
+void Applications::DesktopAction::activate() {
+    qApp->hideWidget();
+    return CommandAction(exec_).activate();
+    app_->incUsage();
 }

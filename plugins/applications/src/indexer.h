@@ -15,18 +15,28 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QString>
-#include <QIcon>
-#include <QList>
-class IQuery;
+#include <QObject>
+#include <QRunnable>
+#include <QMutex>
 
-struct IItem
+namespace Applications {
+class Extension;
+
+class Indexer final : public QObject,  public QRunnable
 {
-    virtual ~IItem() {}
-    virtual QVariant       data(int role = Qt::DisplayRole) const = 0;
-    virtual void           activate() = 0;
-    virtual unsigned short score() const = 0;
-    virtual bool           hasChildren() const {return false;}
-    virtual QList<IItem*>  children() {return QList<IItem*>();}
+    Q_OBJECT
+public:
+    Indexer(Extension *ext)
+        : _extension(ext), _abort(false) {}
+    void run() override;
+    void abort(){_abort=true;}
 
+private:
+    Extension *_extension;
+    bool _abort;
+
+signals:
+    void statusInfo(const QString&);
 };
+
+}

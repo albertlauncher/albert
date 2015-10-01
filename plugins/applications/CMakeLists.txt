@@ -13,19 +13,18 @@ find_package(Qt5Svg REQUIRED)
 
 include_directories(
 	src/
-        src/actions
-        ../../src/interfaces/
+    ../../src/interfaces/
 )
 
 set(${PROJECT_NAME}_SRCS
     src/metadata.json
 
-    src/extension.cpp
-    src/item.cpp
     src/configwidget.cpp
+    src/extension.cpp
 
-    src/app.h
-    src/actions/launchappaction.cpp
+    src/application.cpp
+    src/desktopaction.cpp
+    src/indexer.cpp
 )
 
 qt5_wrap_ui(${PROJECT_NAME}_UIS

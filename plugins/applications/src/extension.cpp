@@ -14,21 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QSettings>
 #include <QDebug>
-#include <QDirIterator>
 #include <QStandardPaths>
 #include <QMessageBox>
-#include <QSettings>
-#include "item.h"
-#include "extension.h"
+#include <QThreadPool>
+#include <QDir>
+#include <memory>
 #include "configwidget.h"
-#include "interfaces/iextensionmanager.h"
-#include "app.h"
+#include "extension.h"
+#include "indexer.h"
+#include "application.h"
 #include "query.h"
 
 
 /** ***************************************************************************/
-Applications::Extension::Extension() : _updateOnTearDown(false) {
+Applications::Extension::Extension() {
 
 }
 
@@ -49,7 +50,7 @@ QWidget *Applications::Extension::widget() {
 
         // Paths
         _widget->ui.listWidget_paths->addItems(_rootDirs);
-        _widget->ui.label_info->setText(QString("%1 applications indexed.").arg(_appIndex.size()));
+        _widget->ui.label_info->setText(QString("%1 Applications indexed.").arg(_appIndex.size()));
         connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::clear);
         connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::addItems);
         connect(_widget, &ConfigWidget::requestAddPath, this, &Extension::addDir);
@@ -67,12 +68,14 @@ QWidget *Applications::Extension::widget() {
 }
 
 
-
 /** ***************************************************************************/
-void Applications::Extension::initialize(IExtensionManager *em) {
+void Applications::Extension::initialize() {
     qDebug() << "[Applications] Initialize extension";
 
-    _manager = em;
+    // Add the userspace icons dir which is not covered in the specs
+    QFileInfo userSpaceIconsPath(QDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)).filePath("icons"));
+    if (userSpaceIconsPath.exists() && userSpaceIconsPath.isDir())
+        QIcon::setThemeSearchPaths(QStringList(userSpaceIconsPath.absoluteFilePath()) << QIcon::themeSearchPaths());
 
     // Load settings
     QSettings s;
@@ -85,7 +88,7 @@ void Applications::Extension::initialize(IExtensionManager *em) {
     else
         restorePaths();
 
-    // Keep the applications in sync with the OS
+    // Keep the Applications in sync with the OS
     _updateDelayTimer.setInterval(UPDATE_DELAY);
     _updateDelayTimer.setSingleShot(true);
     connect(&_watcher, &QFileSystemWatcher::directoryChanged, &_updateDelayTimer, static_cast<void(QTimer::*)()>(&QTimer::start));
@@ -100,13 +103,14 @@ void Applications::Extension::initialize(IExtensionManager *em) {
     if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
         qDebug() << "[Applications] Deserializing from" << dataFile.fileName();
         QDataStream in(&dataFile);
-        App app;
-        int size;
+        quint64 size;
         in >> size;
-        for (int i = 0; i < size; ++i) {
-            in >> app.path >> app.usage;
-//            if (getAppInfo(app.path, &app)) // Not necessry if index is updated after this
-            _appIndex.push_back(new App(app));
+        QString path;
+        short usage;
+        for (quint64 i = 0; i < size; ++i) {
+            in >> path >> usage;
+            // index is updated after this
+            _appIndex.push_back(std::make_shared<Application>(path, usage));
         }
         dataFile.close();
     } else
@@ -137,9 +141,13 @@ void Applications::Extension::finalize() {
     if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
         qDebug() << "[Applications] Deserializing from" << dataFile.fileName();
         QDataStream out( &dataFile );
-        out << _appIndex.size();
-        for (App *app : _appIndex)
-            out << app->path << app->usage;
+
+        // Lock index against indexer
+        QMutexLocker locker(&_indexAccess);
+
+        out << static_cast<quint64>(_appIndex.size());
+        for (shared_ptr<Application> &de : _appIndex)
+            out << de->path() << de->usage();
         dataFile.close();
     } else
         qCritical() << "Could not write to " << dataFile.fileName();
@@ -150,23 +158,30 @@ void Applications::Extension::finalize() {
 
 
 /** ***************************************************************************/
-void Applications::Extension::teardownSession() {
-    if (_updateOnTearDown) {
-        updateIndex();
-        _updateOnTearDown=false;
-    }
+void Applications::Extension::setupSession(){
+
 }
 
 
 
 /** ***************************************************************************/
-void Applications::Extension::handleQuery(IQuery *q) {
+void Applications::Extension::teardownSession() {
+
+}
+
+
+
+/** ***************************************************************************/
+void Applications::Extension::handleQuery(shared_ptr<Query> query) {
     // Search for matches. Lock memory against scanworker
-    QList<IIndexable*> indexables = _searchIndex.search(q->searchTerm());
+    _indexAccess.lock();
+    vector<shared_ptr<IIndexable>> indexables = _searchIndex.search(query->searchTerm());
+    _indexAccess.unlock();
 
     // Add results to query. This cast is safe since index holds files only
-    for (IIndexable *obj : indexables)
-        q->add(new Item(static_cast<App*>(obj), this , q));
+    for (shared_ptr<IIndexable> obj : indexables)
+        query->addMatch(std::static_pointer_cast<Application>(obj),
+                        std::static_pointer_cast<Application>(obj)->usage());
 }
 
 
@@ -258,62 +273,24 @@ void Applications::Extension::restorePaths() {
 
 /** ***************************************************************************/
 void Applications::Extension::updateIndex() {
-    if (_manager->sessionIsActive()) {
-        _updateOnTearDown=true;
-        return;
+    qDebug() << "[Applications] Index update triggered";
+
+    // If thread is running, stop it and start this functoin after termination
+    if (!_indexer.isNull()) {
+        _indexer->abort();
+        _widget->ui.label_info->setText("Waiting for indexer to shut down ...");
+        connect(_indexer, &Indexer::destroyed, this, &Extension::updateIndex);
+    } else {
+        // Create a new scanning runnable for the threadpool
+        _indexer = new Indexer(this);
+
+        //  Run it
+        QThreadPool::globalInstance()->start(_indexer);
+
+        // If widget is visible show the information in the status bat
+        if (!_widget.isNull())
+            connect(_indexer, &Indexer::statusInfo, _widget->ui.label_info, &QLabel::setText);
     }
-
-    qDebug() << "[Applications] Scanning applications...";
-    emit statusInfo(QString("Indexing applications...").arg(_appIndex.size()));
-
-    /*
-     * Go through the directory entries matching the .desktop suffix. This is
-     * complex bullshit O(N²), but the amount of apps will not get that large.
-     */
-
-    QList<App*> newIndex;
-    App app;
-    for (const QString &path : _rootDirs) {
-        QDirIterator fIt(path, QStringList("*.desktop"), QDir::Files);
-        while (fIt.hasNext()) {
-            // Try to read the desktop file
-            if (!getAppInfo(fIt.next(), &app))
-                continue;
-
-            // If it is alread in the index copy the usagecounter
-            QList<App*>::iterator it;
-            it = std::find_if(_appIndex.begin(), _appIndex.end(),
-                              [&](App* app){ return app->path == fIt.filePath();});
-            if (it != _appIndex.end())
-                app.usage = (*it)->usage;
-
-            // Everthing okay, index it
-            newIndex.append(new App(app));
-        }
-    }
-
-    // Build the offline index
-    _searchIndex.clear();
-    for (App *app : newIndex)
-        _searchIndex.add(app);
-
-    // Set the new index
-    std::swap(_appIndex, newIndex);
-
-    for (App *app : newIndex)
-        delete app;
-
-    // Finally update the watches
-    _watcher.removePaths(_watcher.directories());
-    _watcher.addPaths(_rootDirs);
-    for (const QString &path : _rootDirs) {
-        QDirIterator dit(path, QDir::Dirs|QDir::NoDotAndDotDot);
-        while (dit.hasNext())
-            _watcher.addPath(dit.next());
-    }
-
-    qDebug() << "[Applications] Scanning applications done.";
-    emit statusInfo(QString("Indexed %1 applications.").arg(_appIndex.size()));
 }
 
 
@@ -331,113 +308,3 @@ void Applications::Extension::setFuzzy(bool b) {
 }
 
 
-
-/** ***************************************************************************/
-bool Applications::Extension::getAppInfo(const QString &path, App *app) {
-	// TYPES http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s05.html
-	QSettings s(path, QSettings::NativeFormat);
-    s.setIniCodec("UTF-8");
-
-	s.beginGroup("Desktop Entry");
-
-	if (s.value("NoDisplay", false).toBool())
-        return false;
-	if (s.value("Term", false).toBool())
-        return false;
-
-    QVariant v;
-	QString locale = QLocale().name();
-    QString shortLocale = QLocale().name();
-    shortLocale.truncate(2);
-
-
-	// Try to get the (localized name)
-    if (((v = s.value(QString("Name[%1]").arg(locale))).isValid() && v.canConvert(QMetaType::QString))
-            || ((v = s.value(QString("Name[%1]").arg(shortLocale))).isValid() && v.canConvert(QMetaType::QString))
-            || ((v = s.value("Name")).isValid() && v.canConvert(QMetaType::QString)))
-        app->name = v.toString();
-    else
-        return false;
-
-
-    // Try to get the command
-    v = s.value("Exec");
-    if (v.isValid() && v.canConvert(QMetaType::QString)) {
-        app->exec = v.toString();
-    } else
-        return false;
-    app->exec.replace("%c", app->name);
-    app->exec.remove(QRegExp("%."));
-
-
-    // Try to get the icon name
-
-    // http://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
-    // http://standards.freedesktop.org/desktop-entry-spec/latest/
-
-    /*
-     * Icon to display in file manager, menus, etc. If the name is an absolute
-     * path, the given file will be used. If the name is not an absolute path,
-     * the algorithm described in the Icon Theme Specification will be used to
-     * locate the icon. oh funny qt-bug h8 u
-     */
-
-    v = s.value("Icon");
-    if (v.isValid() && v.canConvert(QMetaType::QString)) {
-        QString iconName = v.toString();
-        // If it is a full path
-        if (iconName.startsWith('/'))
-            app->icon = QIcon(iconName);
-        // If it is in the theme
-        else if (QIcon::hasThemeIcon(iconName))
-            app->icon = QIcon::fromTheme(iconName);
-        else{
-            QString currentTheme = QIcon::themeName(); // missing fallback (qt-bug)
-            QIcon::setThemeName("hicolor");
-            if (QIcon::hasThemeIcon(iconName)) {
-                app->icon = QIcon::fromTheme(iconName);
-                QIcon::setThemeName(currentTheme);
-            }
-            else
-            {
-                QIcon::setThemeName(currentTheme);
-                // if it is in the pixmaps
-                QDirIterator it("/usr/share/pixmaps", QDir::Files, QDirIterator::Subdirectories);
-                bool found = false;
-                while (it.hasNext()) {
-                    it.next();
-                    QFileInfo fi = it.fileInfo();
-                    if (fi.isFile() && (fi.fileName() == iconName || fi.baseName() == iconName)) {
-                        app->icon = QIcon(fi.canonicalFilePath());
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    // If it is still not found use a generic one
-                    qWarning() << "Unknown icon:" << iconName;
-                    app->icon = QIcon::fromTheme("exec");
-                }
-            }
-        }
-    } else{
-        qWarning() << "No icon specified in " << path;
-        app->icon = QIcon::fromTheme("exec");
-    }
-
-
-    // Try to get any [localized] secondary information comment
-    if (((v = s.value(QString("Comment[%1]").arg(locale))).isValid() && v.canConvert(QMetaType::QString))
-            || ((v = s.value(QString("Comment[%1]").arg(shortLocale))).isValid() && v.canConvert(QMetaType::QString))
-            || ((v = s.value("Comment")).isValid() && v.canConvert(QMetaType::QString))
-            || ((v = s.value(QString("GenericName[%1]").arg(locale))).isValid() && v.canConvert(QMetaType::QString))
-            || ((v = s.value(QString("GenericName[%1]").arg(shortLocale))).isValid() && v.canConvert(QMetaType::QString))
-            || ((v = s.value("GenericName")).isValid() && v.canConvert(QMetaType::QString)))
-        app->altName = v.toString();
-    else
-        app->altName = app->exec;
-	s.endGroup();
-
-    app->path = path;
-	return true;
-}

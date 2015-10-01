@@ -16,36 +16,28 @@
 
 #pragma once
 #include <QObject>
-#include <QList>
 #include <QString>
 #include <QPointer>
 #include <QTimer>
 #include <QMutex>
+#include <vector>
 #include "interfaces/iextension.h"
 #include "utils/search/search.h"
-
+#include "utils/search/search.h"
 
 namespace Files {
 
 class File;
 class ConfigWidget;
-class ScanWorker;
-
-struct IndexOptions {
-    bool indexAudio;
-    bool indexVideo;
-    bool indexImage;
-    bool indexDocs;
-    bool indexDirs;
-    bool indexHidden;
-    bool followSymlinks;
-};
+class Indexer;
 
 class Extension final : public QObject, public IExtension
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "../src/metadata.json")
     Q_INTERFACES(IExtension)
+
+    friend class Indexer;
 
 public:
     Extension();
@@ -55,10 +47,11 @@ public:
     QWidget *widget() override;
 
     // IExtension
-    void initialize(IExtensionManager *em) override;
+    void initialize(/*CoreApi *coreApi*/) override;
     void finalize() override;
-    void teardownSession();
-    void handleQuery(IQuery*) override;
+    void setupSession() override;
+    void teardownSession() override;
+    void handleQuery(shared_ptr<Query> query) override;
 
     // API special to this extension
     void addDir(const QString &dirPath);
@@ -67,26 +60,26 @@ public:
     void updateIndex();
 
     // Properties
-    inline bool indexAudio() { return _indexOptions.indexAudio; }
-    inline void setIndexAudio(bool b = true)  { _indexOptions.indexAudio = b; }
+    inline bool indexAudio() { return _indexAudio; }
+    inline void setIndexAudio(bool b = true)  { _indexAudio = b; }
 
-    inline bool indexVideo() { return _indexOptions.indexVideo; }
-    inline void setIndexVideo(bool b = true)  { _indexOptions.indexVideo = b; }
+    inline bool indexVideo() { return _indexVideo; }
+    inline void setIndexVideo(bool b = true)  { _indexVideo = b; }
 
-    inline void setIndexImage(bool b = true)  { _indexOptions.indexImage = b; }
-    inline bool indexImage() { return _indexOptions.indexImage; }
+    inline void setIndexImage(bool b = true)  { _indexImage = b; }
+    inline bool indexImage() { return _indexImage; }
 
-    inline bool indexDocs() { return _indexOptions.indexDocs; }
-    inline void setIndexDocs(bool b = true)  { _indexOptions.indexDocs = b; }
+    inline bool indexDocs() { return _indexDocs; }
+    inline void setIndexDocs(bool b = true)  { _indexDocs = b; }
 
-    inline bool indexDirs() { return _indexOptions.indexDirs; }
-    inline void setIndexDirs(bool b = true)  { _indexOptions.indexDirs = b; }
+    inline bool indexDirs() { return _indexDirs; }
+    inline void setIndexDirs(bool b = true)  { _indexDirs = b; }
 
-    inline bool indexHidden() { return _indexOptions.indexHidden; }
-    inline void setIndexHidden(bool b = true)  { _indexOptions.indexHidden = b; }
+    inline bool indexHidden() { return _indexHidden; }
+    inline void setIndexHidden(bool b = true)  { _indexHidden = b; }
 
-    inline bool followSymlinks() { return _indexOptions.followSymlinks; }
-    inline void setFollowSymlinks(bool b = true)  { _indexOptions.followSymlinks = b; }
+    inline bool followSymlinks() { return _followSymlinks; }
+    inline void setFollowSymlinks(bool b = true)  { _followSymlinks = b; }
 
     inline unsigned int scanInterval() { return _scanInterval; }
     void setScanInterval(uint minutes);
@@ -95,18 +88,24 @@ public:
     void setFuzzy(bool b = true);
 
 private:
-    IExtensionManager      *_manager;
     QPointer<ConfigWidget> _widget;
-    QList<File*>*          _fileIndex;
-    Search                 _searchIndex;
+    vector<shared_ptr<File>> _fileIndex;
+    Search _searchIndex;
+    QMutex _indexAccess;
+    QPointer<Indexer> _indexer;
+    QTimer _minuteTimer;
+    unsigned int _minuteCounter;
 
-    QStringList            _rootDirs;
-    IndexOptions           _indexOptions;
-    QTimer                 _minuteTimer;
-    unsigned int           _minuteCounter;
-    unsigned int           _scanInterval;
-    QPointer<ScanWorker>   _scanWorker;
-    QMutex                 _mutex;
+    // Index Properties
+    QStringList _rootDirs;
+    bool _indexAudio;
+    bool _indexVideo;
+    bool _indexImage;
+    bool _indexDocs;
+    bool _indexDirs;
+    bool _indexHidden;
+    bool _followSymlinks;
+    unsigned int _scanInterval;
 
     /* constexpr */
     static constexpr const char* EXT_NAME                = "files";
@@ -129,6 +128,7 @@ private:
     static constexpr const bool  CFG_FOLLOW_SYMLINKS_DEF = true;
     static constexpr const char* CFG_SCAN_INTERVAL       = "scan_interval";
     static constexpr const uint  CFG_SCAN_INTERVAL_DEF   = 60;
+    static constexpr const char* IGNOREFILE              = ".albertignore";
 
 signals:
     void rootDirsChanged(const QStringList&);

@@ -14,24 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QDebug>
-#include <QMessageBox>
-#include <QStandardPaths>
 #include <QSettings>
+#include <QDebug>
+#include <QStandardPaths>
+#include <QMessageBox>
 #include <QThreadPool>
 #include <QDir>
-#include "item.h"
-#include "extension.h"
+#include <memory>
 #include "configwidget.h"
-#include "interfaces/iextensionmanager.h"
+#include "extension.h"
+#include "indexer.h"
 #include "file.h"
 #include "query.h"
-#include "scanworker.h"
 
 
 /** ***************************************************************************/
 Files::Extension::Extension() {
-    _fileIndex = new QList<File*>;
     _minuteTimer.setInterval(60000);
 }
 
@@ -39,7 +37,6 @@ Files::Extension::Extension() {
 
 /** ***************************************************************************/
 Files::Extension::~Extension() {
-    delete _fileIndex;
 }
 
 
@@ -51,7 +48,7 @@ QWidget *Files::Extension::widget() {
 
         // Paths
         _widget->ui.listWidget_paths->addItems(_rootDirs);
-        _widget->ui.label_info->setText(QString("%1 files indexed.").arg(_fileIndex->size()));
+        _widget->ui.label_info->setText(QString("%1 files indexed.").arg(_fileIndex.size()));
         connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::clear);
         connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::addItems);
         connect(_widget, &ConfigWidget::requestAddPath, this, &Extension::addDir);
@@ -96,21 +93,19 @@ QWidget *Files::Extension::widget() {
 
 
 /** ***************************************************************************/
-void Files::Extension::initialize(IExtensionManager *em) {
+void Files::Extension::initialize() {
     qDebug() << "[Files] Initialize extension";
-
-    _manager = em;
 
     // Load settings
     QSettings s;
     s.beginGroup(EXT_NAME);
-    _indexOptions.indexAudio = s.value(CFG_INDEX_AUDIO, CFG_INDEX_AUDIO_DEF).toBool();
-    _indexOptions.indexVideo = s.value(CFG_INDEX_VIDEO, CFG_INDEX_VIDEO_DEF).toBool();
-    _indexOptions.indexImage = s.value(CFG_INDEX_IMAGE, CFG_INDEX_IMAGE_DEF).toBool();
-    _indexOptions.indexDocs = s.value(CFG_INDEX_DOC, CFG_INDEX_DOC_DEF).toBool();
-    _indexOptions.indexDirs = s.value(CFG_INDEX_DIR, CFG_INDEX_DIR_DEF).toBool();
-    _indexOptions.indexHidden = s.value(CFG_INDEX_HIDDEN, CFG_INDEX_HIDDEN_DEF).toBool();
-    _indexOptions.followSymlinks = s.value(CFG_FOLLOW_SYMLINKS, CFG_FOLLOW_SYMLINKS_DEF).toBool();
+    _indexAudio = s.value(CFG_INDEX_AUDIO, CFG_INDEX_AUDIO_DEF).toBool();
+    _indexVideo = s.value(CFG_INDEX_VIDEO, CFG_INDEX_VIDEO_DEF).toBool();
+    _indexImage = s.value(CFG_INDEX_IMAGE, CFG_INDEX_IMAGE_DEF).toBool();
+    _indexDocs = s.value(CFG_INDEX_DOC, CFG_INDEX_DOC_DEF).toBool();
+    _indexDirs = s.value(CFG_INDEX_DIR, CFG_INDEX_DIR_DEF).toBool();
+    _indexHidden = s.value(CFG_INDEX_HIDDEN, CFG_INDEX_HIDDEN_DEF).toBool();
+    _followSymlinks = s.value(CFG_FOLLOW_SYMLINKS, CFG_FOLLOW_SYMLINKS_DEF).toBool();
     _searchIndex.setFuzzy(s.value(CFG_FUZZY, CFG_FUZZY_DEF).toBool());
 
     // Load the paths or set a default
@@ -128,18 +123,14 @@ void Files::Extension::initialize(IExtensionManager *em) {
     if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
         qDebug() << "[Files] Deserializing from" << dataFile.fileName();
         QDataStream in(&dataFile);
-        File *f;
-        QString mimename;
-        int size;
-        in >> size;
         QMimeDatabase db;
-        for (int i = 0; i < size; ++i) {
-            f = new File;
-            in >> f->path
-                    >> mimename
-                    >> f->usage;
-            f->mimetype = db.mimeTypeForName(mimename);
-            _fileIndex->push_back(f);
+        QString path, mimename;
+        short usage;
+        quint64 size;
+        in >> size;
+        for (quint64 i = 0; i < size; ++i) {
+            in >> path >> mimename >> usage;
+            _fileIndex.push_back(std::make_shared<File>(path, db.mimeTypeForName(mimename), usage));
         }
         dataFile.close();
     } else
@@ -169,13 +160,13 @@ void Files::Extension::finalize() {
     s.beginGroup(EXT_NAME);
     s.setValue(CFG_FUZZY, _searchIndex.fuzzy());
     s.setValue(CFG_PATHS, _rootDirs);
-    s.setValue(CFG_INDEX_AUDIO, _indexOptions.indexAudio);
-    s.setValue(CFG_INDEX_VIDEO, _indexOptions.indexVideo);
-    s.setValue(CFG_INDEX_IMAGE, _indexOptions.indexImage);
-    s.setValue(CFG_INDEX_DIR, _indexOptions.indexDirs);
-    s.setValue(CFG_INDEX_DOC, _indexOptions.indexDocs);
-    s.setValue(CFG_INDEX_HIDDEN,_indexOptions.indexHidden);
-    s.setValue(CFG_FOLLOW_SYMLINKS,_indexOptions.followSymlinks);
+    s.setValue(CFG_INDEX_AUDIO, _indexAudio);
+    s.setValue(CFG_INDEX_VIDEO, _indexVideo);
+    s.setValue(CFG_INDEX_IMAGE, _indexImage);
+    s.setValue(CFG_INDEX_DIR, _indexDirs);
+    s.setValue(CFG_INDEX_DOC, _indexDocs);
+    s.setValue(CFG_INDEX_HIDDEN,_indexHidden);
+    s.setValue(CFG_FOLLOW_SYMLINKS,_followSymlinks);
     s.setValue(CFG_SCAN_INTERVAL,_scanInterval);
     s.endGroup();
 
@@ -187,14 +178,14 @@ void Files::Extension::finalize() {
     if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
         qDebug() << "[Files] Serializing to " << dataFile.fileName();
         QDataStream out( &dataFile );
-        _mutex.lock();
-        out	<< _fileIndex->size();
-        for (File *f : *_fileIndex)
-            out << f->path
-                << f->mimetype.name()
-                << f->usage;
+
+        // Lock index against indexer
+        QMutexLocker locker(&_indexAccess);
+
+        out	<< static_cast<quint64>(_fileIndex.size());
+        for (shared_ptr<File> f : _fileIndex)
+            out << f->path_ << f->mimetype_.name() << f->usage_;
         dataFile.close();
-        _mutex.unlock();
     } else
         qCritical() << "Could not write to " << dataFile.fileName();
 
@@ -204,22 +195,30 @@ void Files::Extension::finalize() {
 
 
 /** ***************************************************************************/
-void Files::Extension::teardownSession() {
-    Item::clearIconCache();
+void Files::Extension::setupSession() {
+
 }
 
 
 
 /** ***************************************************************************/
-void Files::Extension::handleQuery(IQuery *q) {
-    // Search for matches. Lock memory against scanworker
-    _mutex.lock();
-    QList<IIndexable*> indexables = _searchIndex.search(q->searchTerm());
-    _mutex.unlock();
+void Files::Extension::teardownSession() {
+    File::clearIconCache();
+}
+
+
+
+/** ***************************************************************************/
+void Files::Extension::handleQuery(shared_ptr<Query> query) {
+    // Search for matches. Lock memory against indexer
+    _indexAccess.lock();
+    vector<shared_ptr<IIndexable>> indexables = _searchIndex.search(query->searchTerm());
+    _indexAccess.unlock();
 
     // Add results to query. This cast is safe since index holds files only
-    for (IIndexable *obj : indexables)
-        q->add(new Item(static_cast<File*>(obj), this, q));
+    for (shared_ptr<IIndexable> obj : indexables)
+        query->addMatch(std::static_pointer_cast<File>(obj),
+                        std::static_pointer_cast<File>(obj)->usage());
 }
 
 
@@ -306,16 +305,16 @@ void Files::Extension::updateIndex() {
     qDebug() << "[Files] Index update triggered";
 
     // If thread is running, stop it and start this functoin after termination
-    if (!_scanWorker.isNull()) {
-        _scanWorker->abort();
+    if (!_indexer.isNull()) {
+        _indexer->abort();
         _widget->ui.label_info->setText("Waiting for indexer to shut down ...");
-        connect(_scanWorker, &ScanWorker::destroyed, this, &Extension::updateIndex);
+        connect(_indexer, &Indexer::destroyed, this, &Extension::updateIndex);
     } else {
-        // Cretae a new scanning runnable for the threadpool
-        _scanWorker = new ScanWorker(&_fileIndex, &_searchIndex, _rootDirs, _indexOptions, &_mutex);
+        // Create a new scanning runnable for the threadpool
+        _indexer = new Indexer(this);
 
         //  Run it
-        QThreadPool::globalInstance()->start(_scanWorker);
+        QThreadPool::globalInstance()->start(_indexer);
 
         // Reset the timer
         _minuteCounter = 0;
@@ -323,7 +322,7 @@ void Files::Extension::updateIndex() {
 
         // If widget is visible show the information in the status bat
         if (!_widget.isNull())
-            connect(_scanWorker, &ScanWorker::statusInfo, _widget->ui.label_info, &QLabel::setText);
+            connect(_indexer, &Indexer::statusInfo, _widget->ui.label_info, &QLabel::setText);
     }
 }
 
@@ -348,9 +347,9 @@ bool Files::Extension::fuzzy() {
 
 /** ***************************************************************************/
 void Files::Extension::setFuzzy(bool b) {
-    _mutex.lock();
+    _indexAccess.lock();
     _searchIndex.setFuzzy(b);
-    _mutex.unlock();
+    _indexAccess.unlock();
 }
 
 

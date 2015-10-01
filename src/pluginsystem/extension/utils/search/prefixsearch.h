@@ -15,25 +15,29 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include "search_impl.h"
-#include <QSet>
-#include <QMap>
 #include <QRegularExpression>
+#include <algorithm>
+#include <vector>
+#include <set>
+#include <map>
+#include <memory>
+using std::vector;
+using std::set;
+using std::map;
+using std::shared_ptr;
+using std::unique_ptr;
+#include "search_impl.h"
 
 class PrefixSearch : public SearchImpl
 {
 public:
-
-
-
     /** ***********************************************************************/
     PrefixSearch(){}
 
 
 
     /** ***********************************************************************/
-    PrefixSearch(const PrefixSearch &rhs)
-    {
+    PrefixSearch(const PrefixSearch &rhs) {
         _invertedIndex = rhs._invertedIndex;
     }
 
@@ -45,9 +49,8 @@ public:
 
 
     /** ***********************************************************************/
-    void add(IIndexable* idxble) override
-    {
-        QStringList aliases = idxble->aliases();
+    void add(shared_ptr<IIndexable> idxble) override {
+        vector<QString> aliases = idxble->aliases();
         for (const QString &str : aliases) {
             // Build an inverted index
             QStringList words = str.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
@@ -60,40 +63,63 @@ public:
 
 
     /** ***********************************************************************/
-    void clear() override
-    {
+    void clear() override {
         _invertedIndex.clear();
     }
 
 
 
     /** ***********************************************************************/
-    QList<IIndexable*> search(const QString &req) const override
-    {
-        QSet<IIndexable*>* resSet = nullptr; // Constraint (1): resSet == nullptr
+    vector<shared_ptr<IIndexable>> search(const QString &req) const override {
+
+
+        // Split the query into words W
         QStringList words = req.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
+
+        // Skip if there arent any // CONSTRAINT (2): |W| > 0
         if (words.empty())
-            return QList<IIndexable*>(); // Constraint (2): words is not empty
-        for (QString &w : words) {
-            w=w.toLower();
-            InvertedIndex::const_iterator lb;
-            QSet<IIndexable*> tmpSet;
-            lb = _invertedIndex.lowerBound(w);
-            while (lb != _invertedIndex.cend() && lb.key().startsWith(w))
-                tmpSet.unite(lb++.value());
-            if (resSet == nullptr)		// (1)&&(2)  |-  Constraint resSet != nullptr (3)
-                resSet = new QSet<IIndexable*>(tmpSet);
-            else
-                resSet->intersect(tmpSet);
+            return vector<shared_ptr<IIndexable>>();
+
+        set<shared_ptr<IIndexable>> resultsSet;
+        QStringList::iterator wordIterator = words.begin();
+
+        // Make lower for case insensitivity
+        QString word = wordIterator++->toLower();
+
+        // Get a word mapping once before goint to handle intersections
+        for (InvertedIndex::const_iterator lb = _invertedIndex.lower_bound(word);
+             lb != _invertedIndex.cend() && lb->first.startsWith(word); ++lb)
+            resultsSet.insert(lb->second.begin(), lb->second.end());
+
+
+        for (;wordIterator != words.end(); ++wordIterator) {
+
+            // Make lower for case insensitivity
+            word = wordIterator->toLower();
+
+            // Unite the sets that are mapped by words that begin with word
+            // w ∈ W. This set is called U_w
+            set<shared_ptr<IIndexable>> wordMappingsUnion;
+            for (InvertedIndex::const_iterator lb = _invertedIndex.lower_bound(word);
+                 lb != _invertedIndex.cend() && lb->first.startsWith(word); ++lb)
+                wordMappingsUnion.insert(lb->second.begin(), lb->second.end());
+
+
+            // Intersect all sets U_w with the results
+            set<shared_ptr<IIndexable>> intersection;
+            std::set_intersection(resultsSet.begin(), resultsSet.end(),
+                                  wordMappingsUnion.begin(), wordMappingsUnion.end(),
+                                  std::inserter(intersection, intersection.begin()));
+            resultsSet = std::move(intersection);
         }
-        // Safe to not check resSet != nullptr since (3) holds
-        QList<IIndexable*> res = resSet->toList();
-        delete resSet;
-        return res;
+
+        // Convert to a std::vector
+        vector<shared_ptr<IIndexable>> resultsVector(resultsSet.begin(), resultsSet.end());
+        return resultsVector;
     }
 
 protected:
-    typedef QMap<QString, QSet<IIndexable*>> InvertedIndex;
+    typedef map<QString, set<shared_ptr<IIndexable>>> InvertedIndex;
     InvertedIndex _invertedIndex;
 };
 

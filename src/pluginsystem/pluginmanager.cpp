@@ -53,7 +53,7 @@ void PluginManager::enable(const QString &path) {
 /** ***************************************************************************/
 void PluginManager::disable(const QString &path) {
     if (!_blacklist.contains(path))
-        _blacklist.append(path);
+        _blacklist.push_back(path);
 }
 
 
@@ -73,7 +73,9 @@ void PluginManager::loadPlugins() {
     for (QString pluginDir : pluginDirs) {
         QDirIterator dirIterator(pluginDir, QDir::Files);
         while (dirIterator.hasNext()) {
-            QString path = dirIterator.next();
+            dirIterator.next();
+            QString path = dirIterator.fileInfo().canonicalFilePath();
+
 
             // Check if this path is a lib
             if (!QLibrary::isLibrary(path)) {
@@ -102,7 +104,7 @@ void PluginManager::loadPlugins() {
 
             // Test for success and propagate this
             if (plugin->status() == PluginLoader::Status::Loaded) {
-                qDebug() << "Plugin loaded:" <<  plugin->name();
+                qDebug() << "[Pluginloader] Plugin loaded:" <<  plugin->name();
                 emit pluginLoaded(plugin->instance());
             }
         }

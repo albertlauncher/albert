@@ -16,99 +16,61 @@
 
 #pragma once
 #include <QString>
-#include <QAbstractItemModel>
-#include "interfaces/iitem.h"
-#include "interfaces/iquery.h"
+#include <memory>
+using std::shared_ptr;
+#include <vector>
 
-class Query final : public QAbstractItemModel, public IQuery
+class QueryPrivate;
+class A2Item;
+class IExtension;
+
+class Query final
 {
-	Q_OBJECT
-
-    /** ****************************************************************************
-     * @brief The TreeItem struct
-     * The albert data model
-     */
-    struct TreeItem final
-    { // Dont mess with the memory!
-        TreeItem(IItem *d = nullptr, TreeItem *p = nullptr, std::vector<TreeItem*> *c = nullptr)
-            : data(d), parent(p), children(c) {}
-        ~TreeItem(){ // Recursively kill the tree
-            if (children) {
-                for (TreeItem *t : *children)
-                    delete t;
-                delete children;
-            }
-            delete data;
-        }
-        void lazyLoadChildren() {
-            if (!children && data->hasChildren()) {
-                children = new std::vector<TreeItem*>();
-                for (IItem *i : data->children()) // Mem allocated
-                    children->push_back(new TreeItem(i, this));
-            }
-        }
-        IItem *data; // OWNER!!!
-        TreeItem *parent;
-        std::vector<TreeItem*> *children; //Lazy instantiation
-    };
-
-    /** ****************************************************************************
-     * @brief The UsageCompare struct
-     * This funtion object compares two items. A n item is larger than others if
-     * the usage couter is greater. In case of equality the lexicographical string
-     * comparison of the title is used.
-     */
-    struct UsageCompare
-    {
-        UsageCompare() = delete;
-        UsageCompare(Query *q) : _q (q){}
-        inline bool operator()(const TreeItem *lhs, const TreeItem *rhs) const {
-            return lhs->data->score() > rhs->data->score();
-        }
-    private:
-        Query *_q;
-    };
-
 public:
-    explicit Query(QString term);
+    friend class ExtensionManager;
+
+    Query(const QString &term);
     ~Query();
 
     /**
      * @brief Add a top-level/root node to the albert tree
-     * The query takes the ownerhip of the node.
+     * This does not take the ownership of the item. Remember to keep the item
+     * live as long as the session is active.
      * @param node The amount of error tolerance
      */
-    void add(IItem *node);
+    void addMatch(shared_ptr<A2Item> item, short score);
+
+    /**
+     * @brief Reset the query
+     * Note: Not clear what it comprises in the future, but at least clears the
+     * matches
+     */
+    void reset();
+
+
+    /**
+     * @brief setValid sets the validity of the query.
+     * Running handler will stop long operations and discard their matsches,
+     * if the query is invalid.
+     * @param b
+     */
+    void setValid(bool b = true);
+
+
+    /**
+     * @brief isValid gets the validity of the query.
+     * Running handler will stop long operations and discard their matsches,
+     * if the query is invalid.
+     * @return
+     */
+    bool isValid();
 
     /**
      * @brief Returns the search term of this query
      */
-    const QString& searchTerm() const;
-
-    /**
-     * @brief Exectute the action of the referenced node
-     * @param index The node reference
-     */
-    void activate(const QModelIndex & index);
-
-    // TODO
-    //bool dynamicSearch() const { return _dynamicSort; }
-    //void setDynamicSearch(bool b){ _dynamicSort = b; }
-
-
-    // Todo mocec this to EM
-    // QAbstractItemModel interface
-    int rowCount(const QModelIndex & index = QModelIndex()) const override;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex & index, int role) const override;
-    Qt::ItemFlags flags(const QModelIndex & index) const override;
-    QModelIndex parent(const QModelIndex & index) const override;
-    QModelIndex index(int row, int column = 0, const QModelIndex & index = QModelIndex()) const override;
-    bool hasChildren(const QModelIndex & parent) const override;
-    void sort(int column = 0, Qt::SortOrder order = Qt::AscendingOrder) override;
+    const QString &searchTerm() const;
 
 private:
-    TreeItem* _rootItem;
-    QString _searchTerm;
-    bool _dynamicSort;
+    QueryPrivate *impl;
 };
+

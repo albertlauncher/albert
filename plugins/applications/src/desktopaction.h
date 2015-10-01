@@ -16,24 +16,26 @@
 
 #pragma once
 #include <QVariant>
-#include "interfaces/iitem.h"
+#include "interfaces/baseobjects.h"
 
-namespace Files {
+namespace Applications {
+class Application;
 
-class File;
-
-class CopyFileAction final : public IItem
+class DesktopAction final : public A2Leaf
 {
 public:
-    CopyFileAction(File *file) : _file(file) {}
+    DesktopAction(Application *app, const QString &name, const QString &exec, const QIcon &icon);
 
-    QVariant       data(int role = Qt::DisplayRole) const override;
-    void           activate() override;
-    unsigned short score() const override;
+    QString name() const override;
+    QString info() const override;
+    QIcon icon() const override;
+    void activate() override;
 
-protected:
-    File *_file;
-    static unsigned short usageCounter;
+private:
+    Application * const app_;
+    const QString name_;
+    const QString exec_;
+    const QIcon icon_;
 };
 
 }

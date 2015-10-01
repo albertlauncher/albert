@@ -19,6 +19,8 @@
 #include "iindexable.h"
 #include "prefixsearch.h"
 #include "fuzzysearch.h"
+#include <vector>
+#include <memory>
 
 class Search final {
 
@@ -111,7 +113,7 @@ public:
      * @brief Build the search index
      * @param The items to index
      */
-    inline void add(IIndexable* idxble) {
+    inline void add(std::shared_ptr<IIndexable> idxble) {
         _impl->add(idxble);
     }
 
@@ -130,7 +132,7 @@ public:
      * @brief Perform a search on the index
      * @param req The query string
      */
-    inline QList<IIndexable*> search(const QString &req) const {
+    inline std::vector<std::shared_ptr<IIndexable>> search(const QString &req) const {
         return _impl->search(req);
     }
 

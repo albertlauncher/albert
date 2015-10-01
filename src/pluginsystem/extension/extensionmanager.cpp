@@ -17,38 +17,39 @@
 #include <QDebug>
 #include "extensionmanager.h"
 #include "query.h"
+#include "query_p.h"
 #include "interfaces/iextension.h"
 
 
 /** ***************************************************************************/
 ExtensionManager::ExtensionManager() : _sessionIsActive(false) {
-
 }
 
 
 
 /** ***************************************************************************/
 void ExtensionManager::startQuery(const QString &term) {
-    Query *q;
-	_currentSearchTerm = term.trimmed();
-    if (_recentQueries.contains(_currentSearchTerm)) {
-        q = _recentQueries.value(_currentSearchTerm);
-    } else {
-        q = new Query(_currentSearchTerm);
-        _recentQueries.insert(_currentSearchTerm, q);
+    _currentQuery = std::make_shared<Query>(term.trimmed());
 
-        // TODO INTRODUCE MULTITHREADING HERE
-        for (IExtension *e : _extensions)
-            e->handleQuery(q);
+      // ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
+    // ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
+    // TODO INTRODUCE MULTITHREADING HERE
+    for (IExtension *e : _extensions)
+        e->handleQuery(_currentQuery);
 
-        // Wait for highspeed threads to finish
 
-        // Sort
-        q->sort();
+    // This is a conceptual hack for v0.7, the query should sor itself when the
+    // remove friend query  and query_p
+    std::stable_sort(_currentQuery->impl->matches_.begin(),
+                     _currentQuery->impl->matches_.end(),
+                     [&](const Match &lhs, const Match &rhs) {
+                        return lhs.score > rhs.score;
+                     });
+    emit newModel(_currentQuery->impl);
 
-        // Enable dynmic mode so that lame plugings can still add sorted
-    }
-    emit newModel(q);
+
+    // ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
+    // ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
 }
 
 
@@ -67,9 +68,6 @@ void ExtensionManager::teardownSession() {
     for (IExtension *e : _extensions)
         e->teardownSession();
     emit newModel(nullptr);
-    for (Query *q : _recentQueries)
-        delete q;
-    _recentQueries.clear();
     _sessionIsActive = false;
 }
 
@@ -81,9 +79,9 @@ void ExtensionManager::registerExtension(QObject *o) {
     if (e) {
         if(_extensions.contains(e))
             qCritical() << "Extension registered twice!";
-        else{
+        else {
             _extensions.insert(e);
-            e->initialize(this);
+            e->initialize();
         }
     }
 }
@@ -96,7 +94,7 @@ void ExtensionManager::unregisterExtension(QObject *o) {
     if (e) {
         if(!_extensions.contains(e))
             qCritical() << "Unregistered unregistered extension! (Duplicate unregistration?)";
-        else{
+        else {
             _extensions.remove(e);
             e->finalize();
         }
@@ -107,7 +105,7 @@ void ExtensionManager::unregisterExtension(QObject *o) {
 
 /** ***************************************************************************/
 void ExtensionManager::activate(const QModelIndex &index) {
-    _recentQueries[_currentSearchTerm]->activate(index);
+    _currentQuery->impl->activate(index);
 }
 
 

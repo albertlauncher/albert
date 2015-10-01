@@ -15,38 +15,27 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+#include <QObject>
 #include <QRunnable>
 #include <QMimeDatabase>
 #include <QMutex>
-#include <QList>
-#include "utils/search/search.h"
-#include "file.h"
 
-namespace Files{
+namespace Files {
+class Extension;
 
-class IndexOptions;
-
-class ScanWorker final : public QObject, public QRunnable {
-
+class Indexer final : public QObject, public QRunnable
+{
     Q_OBJECT
-
 public:
-    ScanWorker(QList<File *>** fileIndex, Search* searchIndex, const QStringList& rootPaths, const IndexOptions& indexOptions, QMutex* searchLock);
+    Indexer(Extension *ext)
+        : _extension(ext), _abort(false) {}
     void run() override;
-    inline void abort(){ _abort = true; }
+    void abort(){_abort=true;}
 
 private:
-    void scan(const QFileInfo& fi, QList<File *>* result);
-
-    QMimeDatabase       _mimeDatabase;
-    QList<File*>        **_fileIndex;
-    Search              *_searchIndex;
-    const QStringList   &_rootDirs;
-    const IndexOptions  &_indexOptions;
-    QMutex              *_mutex;
+    Extension *_extension;
+    QMimeDatabase _mimeDatabase;
     bool _abort;
-
-    static constexpr const char* IGNOREFILE = ".albertignore";
 
 signals:
     void statusInfo(const QString&);

@@ -16,11 +16,14 @@
 
 #pragma once
 #include "prefixsearch.h"
-#include <QVector>
 #include <QString>
-#include <QStringList>
-#include <QMap>
-#include <QList>
+#include <map>
+using std::map;
+#include <vector>
+using std::vector;
+#include <memory>
+#include <iostream>
+using std::shared_ptr;
 
 class FuzzySearch final : public PrefixSearch {
 public:
@@ -34,10 +37,10 @@ public:
     /** ***********************************************************************/
     explicit FuzzySearch(const PrefixSearch& rhs, unsigned int q = 3, double d = 2) : PrefixSearch(rhs), _q(q), _delta(d) {
         // Iterate over the inverted index and build the qGramindex
-        for (typename PrefixSearch::InvertedIndex::const_iterator it = this->_invertedIndex.constBegin(); it != this->_invertedIndex.constEnd(); ++it) {
-            QString spaced = QString(_q-1,' ').append(it.key());
-            for (unsigned int i = 0 ; i < static_cast<unsigned int>(it.key().size()); ++i)
-                ++_qGramIndex[spaced.mid(i,_q)][it.key()];
+        for (typename PrefixSearch::InvertedIndex::const_iterator it = this->_invertedIndex.cbegin(); it != this->_invertedIndex.cend(); ++it) {
+            QString spaced = QString(_q-1,' ').append(it->first);
+            for (unsigned int i = 0 ; i < static_cast<unsigned int>(it->first.size()); ++i)
+                ++_qGramIndex[spaced.mid(i,_q)][it->first];
         }
     }
 
@@ -50,9 +53,9 @@ public:
 
 
     /** ***********************************************************************/
-    void add(IIndexable* idxble) override {
+    void add(shared_ptr<IIndexable> idxble) override {
         // Add a mappings to the inverted index which maps on t.
-        QStringList aliases = idxble->aliases();
+        std::vector<QString> aliases = idxble->aliases();
         for (const QString & str : aliases) {
             QStringList words = str.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
              for (QString& w : words) {
@@ -73,8 +76,7 @@ public:
 
 
     /** ***********************************************************************/
-    void clear() override
-    {
+    void clear() override {
         this->_invertedIndex.clear();
         _qGramIndex.clear();
     }
@@ -82,23 +84,22 @@ public:
 
 
     /** ***********************************************************************/
-    QList<IIndexable*> search(const QString &req) const override
-    {
-        QVector<QString> words;
+    vector<shared_ptr<IIndexable>> search(const QString &req) const override {
+        vector<QString> words;
         for (QString &word : req.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts))
-            words.append(word.toLower());
-        QVector<QMap<IIndexable*, unsigned int>> resultsPerWord;
+            words.push_back(word.toLower());
+        vector<map<shared_ptr<IIndexable>, unsigned int>> resultsPerWord;
 
         // Quit if there are no words in query
-        if (words.empty()) return QList<IIndexable*>();
+        if (words.empty())
+            return vector<shared_ptr<IIndexable>>();
 
         // Split the query into words
-        for (QString &word : words)
-        {
+        for (QString &word : words) {
             unsigned int delta = static_cast<unsigned int>((_delta < 1)? word.size()/_delta : _delta);
 
             // Generate the qGrams of this word
-            QMap<QString, unsigned int> qGrams;
+            map<QString, unsigned int> qGrams;
             QString spaced(_q-1,' ');
             spaced.append(word.toLower());
             for (unsigned int i = 0 ; i < static_cast<unsigned int>(word.size()); ++i)
@@ -107,36 +108,41 @@ public:
             // Get the words referenced by each qGram an increment their
             // reference counter
             // Iterate over the set of qgrams in the word
-            QMap<QString, unsigned int> wordMatches;
-            for (QMap<QString, unsigned int>::const_iterator it = qGrams.cbegin(); it != qGrams.end(); ++it)
-            {
+            map<QString, unsigned int> wordMatches;
+            for (map<QString, unsigned int>::const_iterator it = qGrams.cbegin(); it != qGrams.end(); ++it) {
+
+                // Check for existance (std::map::at throws)
+                if (_qGramIndex.count(it->first) == 0)
+                    continue;
+
                 // Iterate over the set of words referenced by this qGram
-                for (QMap<QString, unsigned int>::const_iterator wit = _qGramIndex[it.key()].begin(); wit != _qGramIndex[it.key()].cend(); ++wit)
-                {
+                for (map<QString, unsigned int>::const_iterator wit = _qGramIndex.at(it->first).cbegin();
+                     wit != _qGramIndex.at(it->first).cend(); ++wit) {
                     // CRUCIAL: The match can contain only the commom amount of qGrams
-                    wordMatches[wit.key()] += (it.value() < wit.value()) ? it.value() : wit.value();
+                    wordMatches[wit->first] += (it->second < wit->second) ? it->second : wit->second;
                 }
             }
 
             // Allocate a new set
-            resultsPerWord.push_back(QMap<IIndexable*, unsigned int>());
-            QMap<IIndexable*, unsigned int>& resultsRef = resultsPerWord.back();
+            resultsPerWord.push_back(map<shared_ptr<IIndexable>, unsigned int>());
+            map<shared_ptr<IIndexable>, unsigned int>& resultsRef = resultsPerWord.back();
 
             // Unite the items referenced by the words accumulating their #matches
-            for (QMap<QString, unsigned int>::const_iterator wm = wordMatches.begin(); wm != wordMatches.cend(); ++wm)
-            {
+            for (map<QString, unsigned int>::const_iterator wm = wordMatches.begin(); wm != wordMatches.end(); ++wm) {
                 //			// Do some kind of (cheap) preselection by mathematical bound
                 //			if (wm.value() < qGrams.size()-delta*_q)
                 //				continue;
 
                 // Now check the (expensive) prefix edit distance
-                if (!checkPrefixEditDistance(word, wm.key(), delta))
+                if (!checkPrefixEditDistance(word, wm->first, delta))
                     continue;
 
+                // Check for existance (std::map::at throws)
+                if (_invertedIndex.count(wm->first) == 0)
+                    continue;
 
-                for(IIndexable *item : this->_invertedIndex[wm.key()])
-                {
-                    resultsRef[item] += wm.value();
+                for(const shared_ptr<IIndexable> &item : _invertedIndex.at(wm->first)) {
+                    resultsRef[item] += wm->second;
                 }
             }
         }
@@ -144,9 +150,8 @@ public:
         // Intersect the set of items references by the (referenced) words
         // This assusmes that there is at least one word (the query would not have
         // been started elsewise)
-        QVector<QPair<IIndexable*, unsigned int>> finalResult;
-        if (resultsPerWord.size() > 1)
-        {
+        vector<std::pair<shared_ptr<IIndexable>, unsigned int>> finalResult;
+        if (resultsPerWord.size() > 1) {
             // Get the smallest list for intersection (performance)
             unsigned int smallest=0;
             for (unsigned int i = 1; i < static_cast<unsigned int>(resultsPerWord.size()); ++i)
@@ -154,22 +159,20 @@ public:
                     smallest = i;
 
             bool allResultsContainEntry;
-            for (QMap<IIndexable*, unsigned int>::const_iterator r = resultsPerWord[smallest].begin(); r != resultsPerWord[smallest].cend(); ++r)
-            {
+            for (map<shared_ptr<IIndexable>, unsigned int>::const_iterator r = resultsPerWord[smallest].begin();
+                 r != resultsPerWord[smallest].cend(); ++r) {
                 // Check if all results contain this entry
                 allResultsContainEntry=true;
-                unsigned int accMatches = resultsPerWord[smallest][r.key()];
-                for (unsigned int i = 0; i < static_cast<unsigned int>(resultsPerWord.size()); ++i)
-                {
+                unsigned int accMatches = resultsPerWord[smallest][r->first];
+                for (unsigned int i = 0; i < static_cast<unsigned int>(resultsPerWord.size()); ++i) {
                     // Ignore itself
                     if (i==smallest)
                         continue;
 
                     // If it is in: check next relutlist
-                    if (resultsPerWord[i].contains(r.key()))
-                    {
+                    if (resultsPerWord[i].find(r->first) != resultsPerWord[i].end() ) {
                         // Accumulate matches
-                        accMatches += resultsPerWord[i][r.key()];
+                        accMatches += resultsPerWord[i][r->first];
                         continue;
                     }
 
@@ -182,22 +185,21 @@ public:
                     continue;
 
                 // Finally this match is common an can be put into the results
-                finalResult.append(QPair<IIndexable*, unsigned int>(r.key(), accMatches));
+                finalResult.push_back(std::make_pair(r->first, accMatches));
             }
-        }
-        else // Else do it without intersction
-        {
-            for (QMap<IIndexable*, unsigned int>::const_iterator r = resultsPerWord[0].begin(); r != resultsPerWord[0].cend(); ++r)
-                finalResult.append(QPair<IIndexable*, unsigned int>(r.key(), r.value()));
+        } else {// Else do it without intersction
+            for (map<shared_ptr<IIndexable>, unsigned int>::const_iterator r = resultsPerWord[0].begin();
+                 r != resultsPerWord[0].cend(); ++r)
+                finalResult.push_back(std::make_pair(r->first, r->second));
         }
 
         // Sort em by relevance // TODO INTRODUCE RELEVANCE TO ITEMS
         //        std::sort(finalResult.begin(), finalResult.end(),
         //                  [&](QPair<T, unsigned int> x, QPair<T, unsigned int> y)
         //                    {return x.second > y.second;});
-        QList<IIndexable*> result;
-        for (QPair<IIndexable*, unsigned int> pair : finalResult) {
-            result << pair.first;
+        vector<shared_ptr<IIndexable>> result;
+        for (std::pair<shared_ptr<IIndexable>, unsigned int> pair : finalResult) {
+            result.push_back(pair.first);
         }
         return result;
     }
@@ -209,8 +211,7 @@ public:
 
 private:
     /** ***********************************************************************/
-    static bool checkPrefixEditDistance(const QString& prefix, const QString& str, unsigned int delta)
-    {
+    static bool checkPrefixEditDistance(const QString& prefix, const QString& str, unsigned int delta) {
         bool result = false;
         unsigned int n = prefix.size() + 1;
         unsigned int m = std::min(prefix.size() + delta + 1, static_cast<unsigned int>(str.size()) + 1);
@@ -236,8 +237,7 @@ private:
         }
         // Check the last row if there is an entry <= delta.
         for (unsigned int j = 0; j < m; ++j) {
-            if (matrix[(n-1)+j] <= delta) {
-                //		qDebug() << prefix << "~" << str << matrix[n - 1][j];
+            if (matrix[(n-1)*m+j] <= delta) {
                 result = true;
                 break;
             }
@@ -248,7 +248,7 @@ private:
 
     /** ***********************************************************************/
     // Map of qGrams, containing their word references and #occurences
-    typedef QMap<QString, QMap<QString, unsigned int>> QGramIndex;
+    typedef map<QString, map<QString, unsigned int>> QGramIndex;
 	QGramIndex _qGramIndex;
 
     unsigned int _q; // Size of the slices

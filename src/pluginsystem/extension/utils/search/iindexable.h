@@ -15,11 +15,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QStringList>
+#include <QString>
+#include <vector>
 
 /** ***************************************************************************/
 struct IIndexable
 {
     virtual ~IIndexable() {}
-    virtual QStringList aliases() const = 0;
+    virtual std::vector<QString> aliases() const = 0;
 };
