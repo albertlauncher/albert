@@ -26,7 +26,6 @@ using std::shared_ptr;
 using std::unique_ptr;
 #include <vector>
 using std::vector;
-class IQuery;
 class IExtension;
 
 
@@ -119,11 +118,16 @@ struct A2Leaf : public A2Item {
 
 
 /** ***************************************************************************/
-class OpenUrlAction final : public Action
+class UrlAction final : public Action
 {
 public:
-    OpenUrlAction(QUrl url) : url_(url) {}
-    void activate() override { QDesktopServices::openUrl(url_); }
+    UrlAction(QUrl url) : url_(url) {}
+    UrlAction(QString url) : url_(QUrl(url)) {}
+    void activate() override {
+        QDesktopServices::openUrl(url_);
+        //QProcess::startDetached(QString("kstart --activate chromium %1").arg(QUrl(_url).toString()));
+        //QProcess::startDetached(QString("chromium %1").arg(QUrl(b._url).toString()));
+    }
 private:
     QUrl url_;
 };

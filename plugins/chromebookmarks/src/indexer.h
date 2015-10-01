@@ -15,23 +15,27 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QWidget>
-#include "ui_configwidget.h"
+#include <QObject>
+#include <QRunnable>
+#include <QMutex>
 
 namespace ChromeBookmarks {
+class Extension;
 
-class ConfigWidget final : public QWidget
+class Indexer final : public QObject,  public QRunnable
 {
     Q_OBJECT
 public:
-    explicit ConfigWidget(QWidget *parent = 0);
-    ~ConfigWidget();
-    Ui::ConfigWidget ui;
+    Indexer(Extension *ext)
+        : _extension(ext), _abort(false) {}
+    void run() override;
+    void abort(){_abort=true;}
 
 private:
-    void onButton_EditPath();
+    Extension *_extension;
+    bool _abort;
 
 signals:
-    void requestEditPath(const QString&);
+    void statusInfo(const QString&);
 };
 }

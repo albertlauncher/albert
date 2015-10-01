@@ -15,29 +15,38 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include "plugininterfaces/iteminterface.h"
-class Extension;
+#include <QString>
+#include <QIcon>
+#include "interfaces/baseobjects.h"
+#include "utils/search/iindexable.h"
 
-/** ***************************************************************************/
-class Bookmark final : public ItemInterface
+
+namespace ChromeBookmarks {
+
+class Bookmark final : public A2Leaf, public IIndexable
 {
     friend class Extension;
+    friend class Indexer;
 
 public:
     Bookmark() = delete;
-    explicit Bookmark(Extension *ext) : _extension(ext) {}
-    ~Bookmark(){}
+    Bookmark(const Bookmark &) = delete;
+    Bookmark(const QString &name, const QString &url, short usage = 0)
+        : name_(name), url_(url), usage_(usage) {}
 
-    void         action    (const Query &q, Qt::KeyboardModifiers mods) override;
-    QString      actionText(const Query &q, Qt::KeyboardModifiers mods) const override;
-    QString      titleText (const Query &q) const override;
-    QString      infoText  (const Query &q) const override;
-    const QIcon  &icon     () const override;
-    uint         usage     () const override;
+    QString name() const override;
+    QString info() const override;
+    QIcon icon() const override;
+    void activate() override;
+    vector<QString> aliases() const override;
+
+    ushort usage() const {return usage_;}
+    const QString &url() const {return url_;}
 
 private:
-    QString    _url;
-    QString    _name;
-    uint       _usage;
-    Extension* _extension; // Should never be invalid since the extension must not unload
+    QString      name_;
+    QString      url_;
+    ushort       usage_;
+    static QIcon icon_;
 };
+}

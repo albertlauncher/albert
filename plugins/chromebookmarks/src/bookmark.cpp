@@ -14,41 +14,43 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "item.h"
-#include "extension.h"
+#include "bookmark.h"
+#include "albertapp.h"
+
+QIcon ChromeBookmarks::Bookmark::icon_;
+
 
 /** ***************************************************************************/
-void Bookmark::action(const Query &q, Qt::KeyboardModifiers mods)
-{
-    ++_usage; _extension->action(*this, q, mods);
+QString ChromeBookmarks::Bookmark::name() const {
+    return name_;
 }
 
-/** ***************************************************************************/
-QString Bookmark::actionText(const Query &q, Qt::KeyboardModifiers mods) const
-{
-    return _extension->actionText(*this, q, mods);
-}
+
 
 /** ***************************************************************************/
-QString Bookmark::titleText(const Query &q) const
-{
-    return _extension->titleText(*this, q);
+QString ChromeBookmarks::Bookmark::info() const {
+    return url_;
 }
 
-/** ***************************************************************************/
-QString Bookmark::infoText(const Query &q) const
-{
-    return _extension->infoText(*this, q);
-}
+
 
 /** ***************************************************************************/
-const QIcon &Bookmark::icon() const
-{
-    return _extension->icon(*this);
+QIcon ChromeBookmarks::Bookmark::icon() const {
+    return icon_;
 }
 
+
+
 /** ***************************************************************************/
-uint Bookmark::usage() const
-{
-    return _usage;
+void ChromeBookmarks::Bookmark::activate() {
+    qApp->hideWidget();
+    UrlAction(url_).activate();
+    ++usage_;
+}
+
+
+
+/** ***************************************************************************/
+vector<QString> ChromeBookmarks::Bookmark::aliases() const {
+    return std::vector<QString>({name_});
 }

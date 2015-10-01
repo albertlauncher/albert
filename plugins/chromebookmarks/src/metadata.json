@@ -1,9 +1,10 @@
 {
+    "id" :              "org.manuelschneid3r.albert.extension.chromebookmarks",
     "name" :            "ChromeBookmarks",
     "version" :         "1.0",
     "platform" :        "Linux",
     "group" :           "Extensions",
     "copyright" :       "(C) 2015 Manuel Schneider",
-    "description" :     "Indexes chrome bookmarks and makes them runnable via albert.",
-    "dependencies" :    ["chromium"]
+    "description" :     "Indexes chrome bookmarks and makes them accessible via albert.",
+    "dependencies" :    []
 }

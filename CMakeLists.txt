@@ -92,7 +92,7 @@ install(DIRECTORY src/resources/themes DESTINATION share/${PROJECT_NAME} COMPONE
 # Build plugins
 add_subdirectory(plugins/files)
 add_subdirectory(plugins/applications)
-#add_subdirectory(plugins/chromebookmarks)
+add_subdirectory(plugins/chromebookmarks)
 #add_subdirectory(plugins/websearch)
 #add_subdirectory(plugins/PythonExtensions)
 add_subdirectory(plugins/templateExtension)

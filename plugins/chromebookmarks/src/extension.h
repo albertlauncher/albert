@@ -17,78 +17,65 @@
 #pragma once
 #include <QObject>
 #include <QTimer>
-#include <QIcon>
+#include <QPointer>
+#include <QMutex>
 #include <QFileSystemWatcher>
+#include <vector>
+using std::vector;
 #include <memory>
-#include "plugininterfaces/extensioninterface.h"
-#include "search/fuzzysearch.h"
-#include "search/prefixsearch.h"
+#include "interfaces/iextension.h"
+#include "utils/search/search.h"
+
+namespace ChromeBookmarks {
 
 class Bookmark;
 class ConfigWidget;
+class Indexer;
 
-/** ***************************************************************************/
-class Extension final : public QObject, public ExtensionInterface
+class Extension final : public QObject, public IExtension
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "../src/metadata.json")
-    Q_INTERFACES(ExtensionInterface)
+    Q_INTERFACES(IExtension)
 
-    typedef std::shared_ptr<Bookmark> SharedBookmarkPtr;
-    typedef QList<SharedBookmarkPtr> SharedBookmarkPtrList;
-    typedef AbstractSearch<SharedBookmarkPtrList> BookmarkSearch;
+    friend class Indexer;
 
 public:
-    explicit Extension() : _search(nullptr) {}
-    ~Extension() {if (_search) delete _search;}
+    // GenericPluginInterface
+    QWidget *widget() override;
 
+    // IExtension
+    void initialize(/*CoreApi *coreApi*/) override;
+    void finalize() override;
+    void setupSession() override;
+    void teardownSession() override;
+    void handleQuery(shared_ptr<Query> query) override;
+
+    const QString &path();
     void setPath(const QString &s);
     void restorePath();
+
+    void updateIndex();
+
+    bool fuzzy();
     void setFuzzy(bool b = true);
 
-    /*
-     * Item management
-     */
-    void        action    (const Bookmark&, const Query&, Qt::KeyboardModifiers mods) const;
-    QString     actionText(const Bookmark&, const Query&, Qt::KeyboardModifiers mods) const;
-    QString     titleText (const Bookmark&b, const Query&) const;
-    QString     infoText  (const Bookmark&b, const Query&) const;
-    const QIcon &icon     (const Bookmark&b) const;
-
-    /*
-     * ExtensionInterface
-     */
-    void        handleQuery(Query*) override;
-
-    /*
-     * GenericPluginInterface
-     */
-    QWidget*    widget() override;
-    void        initialize() override;
-    void        finalize() override;
-
 private:
-    void                         update();
-
-    /* Configurable */
-    QString         _bookmarksFile;
-    bool            _fuzzy;
-    BookmarkSearch* _search;
-
-    /* Core elements */
-    SharedBookmarkPtrList  _index;
     QPointer<ConfigWidget> _widget;
-    QFileSystemWatcher     _watcher;
-    QTimer                 _timer;
-    QIcon                  _favicon;
+    vector<shared_ptr<Bookmark>> _index;
+    Search _searchIndex;
+    QMutex _indexAccess;
+    QPointer<Indexer> _indexer;
+    QString _bookmarksFile;
+    QFileSystemWatcher _watcher;
 
     /* constexpr */
-    static constexpr const char* DATA_FILE      = "chromebookmarks.dat";
-    static constexpr const char* CFG_BOOKMARKS  = "ChromeBookmarks/bookmarkfile";
-    static constexpr const char* CFG_FUZZY      = "ChromeBookmarks/fuzzy";
+    static constexpr const char* EXT_NAME       = "chromebookmarks";
+    static constexpr const char* CFG_BOOKMARKS  = "bookmarkfile";
+    static constexpr const char* CFG_FUZZY      = "fuzzy";
     static constexpr const bool  CFG_FUZZY_DEF  = false;
-    static constexpr const uint  UPDATE_TIMEOUT = 1000;
 
 signals:
     void pathChanged(const QString&);
 };
+}

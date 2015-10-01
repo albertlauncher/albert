@@ -14,26 +14,165 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "extension.h"
-#include <QDebug>
+#include <QStandardPaths>
+#include <QThreadPool>
+#include <QFileInfo>
 #include <QSettings>
 #include <QProcess>
-#include <QStandardPaths>
-#include <QUrl>
+#include <QDebug>
 #include <QFile>
-#include <QFileInfo>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QJsonDocument>
-#include <functional>
-
-#include "item.h"
+#include <QDir>
 #include "configwidget.h"
+#include "extension.h"
+#include "indexer.h"
+#include "bookmark.h"
 #include "query.h"
 
+
+
 /** ***************************************************************************/
-void Extension::setPath(const QString &s)
-{
+QWidget *ChromeBookmarks::Extension::widget() {
+    if (_widget.isNull()){
+        _widget = new ConfigWidget;
+
+        // Paths
+        _widget->ui.lineEdit_path->setText(_bookmarksFile);
+        connect(_widget, &ConfigWidget::requestEditPath, this, &Extension::setPath);
+        connect(this, &Extension::pathChanged, _widget->ui.lineEdit_path, &QLineEdit::setText);
+
+        // Fuzzy
+        _widget->ui.checkBox_fuzzy->setChecked(fuzzy());
+        connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
+    }
+    return _widget;
+}
+
+
+
+/** ***************************************************************************/
+void ChromeBookmarks::Extension::initialize() {
+    qDebug() << "[ChromeBookmarks] Initialize extension";
+
+    // Load settings
+    QSettings s;
+    s.beginGroup(EXT_NAME);
+    _searchIndex.setFuzzy(s.value(CFG_FUZZY, CFG_FUZZY_DEF).toBool());
+
+    /* Load path */
+    QVariant v = s.value(CFG_BOOKMARKS);
+    if (v.isValid() && v.canConvert(QMetaType::QString))
+        setPath(v.toString());
+    else
+        restorePath();
+
+    // Deserialize data
+    QFile dataFile(
+                QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
+                filePath(QString("%1.dat").arg(EXT_NAME))
+                );
+    if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
+        qDebug() << "[ChromeBookmarks] Deserializing from" << dataFile.fileName();
+        QDataStream in(&dataFile);
+        quint64 size;
+        QString name, url;
+        short usage;
+        in >> size;
+        for (quint64 i = 0; i < size; ++i) {
+            in >> name >> url >> usage;
+            _index.push_back(std::make_shared<Bookmark>(name, url , usage));
+        }
+        dataFile.close();
+    } else
+        qWarning() << "Could not open file: " << dataFile.fileName();
+
+    // Keep in sync with the bookmarkfile
+    connect(&_watcher, &QFileSystemWatcher::fileChanged, this, &Extension::updateIndex);
+
+    // Get a generic favicon
+    Bookmark::icon_ = QIcon::fromTheme("favorites", QIcon(":favicon"));
+
+    // Update the bookmarks
+    updateIndex();
+
+    qDebug() << "[ChromeBookmarks] Extension initialized";
+}
+
+
+
+/** ***************************************************************************/
+void ChromeBookmarks::Extension::finalize() {
+    qDebug() << "[ChromeBookmarks] Finalize extension";
+
+    // Save settings
+    QSettings s;
+    s.beginGroup(EXT_NAME);
+    s.setValue(CFG_FUZZY, _searchIndex.fuzzy());
+    s.setValue(CFG_BOOKMARKS, _bookmarksFile);
+
+    // Serialize data
+    QFile dataFile(
+                QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
+                filePath(QString("%1.dat").arg(EXT_NAME))
+                );
+    if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
+        qDebug() << "[ChromeBookmarks] Serializing to" << dataFile.fileName();
+        QDataStream out( &dataFile );
+
+        // Lock index against indexer
+        QMutexLocker locker(&_indexAccess);
+
+        // Serialize
+        out << static_cast<quint64>(_index.size());
+        for (shared_ptr<Bookmark> b : _index)
+            out << b->name_ << b->url_ << b->usage_;
+
+        dataFile.close();
+    } else
+        qCritical() << "Could not write to " << dataFile.fileName();
+
+    qDebug() << "[ChromeBookmarks] Extension finalized";
+}
+
+
+
+/** ***************************************************************************/
+void ChromeBookmarks::Extension::setupSession() {
+
+}
+
+
+
+/** ***************************************************************************/
+void ChromeBookmarks::Extension::teardownSession() {
+
+}
+
+
+
+/** ***************************************************************************/
+void ChromeBookmarks::Extension::handleQuery(shared_ptr<Query> query) {
+    // Search for matches. Lock memory against indexer
+    _indexAccess.lock();
+    vector<shared_ptr<IIndexable>> indexables = _searchIndex.search(query->searchTerm());
+    _indexAccess.unlock();
+
+    // Add results to query. This cast is safe since index holds files only
+    for (shared_ptr<IIndexable> obj : indexables)
+        query->addMatch(std::static_pointer_cast<Bookmark>(obj),
+                        std::static_pointer_cast<Bookmark>(obj)->usage());
+}
+
+
+
+/** ***************************************************************************/
+const QString &ChromeBookmarks::Extension::path() {
+    return _bookmarksFile;
+}
+
+
+
+/** ***************************************************************************/
+void ChromeBookmarks::Extension::setPath(const QString &s) {
     QFileInfo fi(s);
     // Only let _existing_ _files_ in
     if (!(fi.exists() && fi.isFile()))
@@ -43,236 +182,52 @@ void Extension::setPath(const QString &s)
         qCritical() << s <<  "could not be watched. Changes in this path will not be noticed.";
 
     _bookmarksFile = s;
-    update();
+    updateIndex();
 
     // And update the widget, if it is visible atm
     emit pathChanged(s);
 }
 
+
+
 /** ***************************************************************************/
-void Extension::restorePath()
-{
+void ChromeBookmarks::Extension::restorePath() {
     setPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
             + "/chromium/Default/Bookmarks");
 }
 
-/** ***************************************************************************/
-void Extension::setFuzzy(bool b)
-{
-    qDebug() << "Set fuzzy search to" << b;
 
-    _fuzzy = b;
-    auto nameFunctor = [](const SharedItemPtr ip) -> QString {
-        return std::static_pointer_cast<Bookmark>(ip)->_name;
-    };
-    if (_fuzzy)
-        _search = new FuzzySearch<SharedBookmarkPtrList> (_index, nameFunctor);
-    else
-        _search = new PrefixSearch<SharedBookmarkPtrList> (_index, nameFunctor);
-    _search->buildIndex();
-}
 
 /** ***************************************************************************/
-void Extension::update()
-{
-    qDebug() << "Update 'ChromeBookmarks'";
+void ChromeBookmarks::Extension::updateIndex() {
+    qDebug() << "[ChromeBookmarks] Index update triggered";
 
-    /*
-     * First get a complete new index
-     */
+    // If thread is running, stop it and start this functoin after termination
+    if (!_indexer.isNull()) {
+        _indexer->abort();
+        connect(_indexer, &Indexer::destroyed, this, &Extension::updateIndex);
+    } else {
+        // Create a new scanning runnable for the threadpool
+        _indexer = new Indexer(this);
 
-    std::function<void(const QJsonObject &json, SharedBookmarkPtrList *sbmpl)> rec_bmsearch =
-            [&] (const QJsonObject &json, SharedBookmarkPtrList *sbmpl) {
-        QJsonValue type = json["type"];
-        if (type == QJsonValue::Undefined)
-            return;
-        if (type.toString() == "folder"){
-            QJsonArray jarr = json["children"].toArray();
-            for (const QJsonValue &i : jarr)
-                rec_bmsearch(i.toObject(), sbmpl);
-        }
-        if (type.toString() == "url") {
-            SharedBookmarkPtr b(new Bookmark(this));
-            b->_name = json["name"].toString();// TODO ADD THE FOLDERS to the aliases
-            b->_url  = json["url"].toString();
-            b->_usage = 0;
-            sbmpl->push_back(b);
-        }
-    };
-
-    QFile f(_bookmarksFile);
-    if (!f.open(QIODevice::ReadOnly)) {
-        qWarning() << "Could not open " << _bookmarksFile;
-        return;
+        //  Run it
+        QThreadPool::globalInstance()->start(_indexer);
     }
-
-    SharedBookmarkPtrList res;
-    QJsonObject json = QJsonDocument::fromJson(f.readAll()).object();
-    QJsonObject roots = json.value("roots").toObject();
-    for (const QJsonValue &i : roots)
-        if (i.isObject())
-            rec_bmsearch(i.toObject(), &res);
-
-    f.close();
-
-    /*
-     * Then update the usages ( Well  O(N²), but is N of relevant size? )
-     */
-
-    for (SharedBookmarkPtrList::iterator it = res.begin(); it != res.end(); ++it){
-        SharedBookmarkPtrList::const_iterator cit =
-                std::find_if(_index.begin(), _index.end(),
-                             [=](SharedBookmarkPtr bm){return (bm->_url==(*it)->_url);});
-        if (cit == _index.cend())// Does not exist
-            (*it)->_usage = 0;
-        else // Does exist
-            (*it)->_usage = (*cit)->_usage;
-    }
-
-    // Well done now replace...
-    _index = res;
-
-    // Rebuild the search index
-    _search->buildIndex();
-
 }
 
-/******************************************************************************/
-/*                          INTERFACE IMPLEMENTATION                          */
-/******************************************************************************/
+
 
 /** ***************************************************************************/
-QWidget *Extension::widget()
-{
-    if (_widget.isNull()){
-        _widget = new ConfigWidget;
-
-        // Paths
-        _widget->ui.lineEdit_path->setText(_bookmarksFile);
-        connect(_widget, &ConfigWidget::requestEditPath,
-                this, &Extension::setPath);
-        connect(this, &Extension::pathChanged,
-                _widget->ui.lineEdit_path, &QLineEdit::setText);
-
-        // Fuzzy
-        _widget->ui.checkBox_fuzzy->setChecked(_fuzzy);
-        connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled,
-                this, &Extension::setFuzzy);
-    }
-    return _widget;
+bool ChromeBookmarks::Extension::fuzzy() {
+    return _searchIndex.fuzzy();
 }
+
+
 
 /** ***************************************************************************/
-void Extension::initialize()
-{
-    qDebug() << "Initialize extension 'ChromeBookmarks'";
-    QSettings s(QSettings::UserScope, "albert", "albert");
-
-    /* Deserialze data */
-    QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + DATA_FILE);
-    if (f.open(QIODevice::ReadOnly| QIODevice::Text)) {
-        qDebug() << "Deserializing from" << f.fileName();
-        QDataStream in(&f);
-        quint64 size;
-        in >> size;
-        for (quint64 i = 0; i < size; ++i) {
-            SharedBookmarkPtr bm(new Bookmark(this));
-            in >> bm->_url >> bm->_name >> bm->_usage;
-            _index.push_back(bm);
-        }
-        f.close();
-    } else
-        qWarning() << "Could not open file: " << f.fileName();
-
-    /* Initialize the search index */
-    setFuzzy(s.value(CFG_FUZZY, CFG_FUZZY_DEF).toBool());
-
-    /* Load path */
-    QVariant v = s.value(CFG_BOOKMARKS);
-    if (v.isValid() && v.canConvert(QMetaType::QString))
-        setPath(v.toString());
-    else
-        restorePath();
-
-    /* Keep in sync with the bookmarkfile */
-    _timer.setInterval(UPDATE_TIMEOUT);
-    _timer.setSingleShot(true);
-
-    connect(&_watcher, &QFileSystemWatcher::fileChanged, [&](const QString &path){
-        qDebug() << path << "changed! Starting timer";
-        _timer.start();
-    });
-
-    connect(&_timer, &QTimer::timeout,[this](){
-        qDebug() << "Timeout! Updating bookmarks in" << _bookmarksFile;
-        // QFileSystemWatcher stops monitoring files once they have been
-        // renamed or removed from disk, hence rewatch.
-        if(!_watcher.addPath(_bookmarksFile))
-            restorePath();
-        update();
-    });
-
-    /* Get a generic favicon */
-    _favicon = QIcon::fromTheme("favorites", QIcon(":favicon"));
+void ChromeBookmarks::Extension::setFuzzy(bool b) {
+    _indexAccess.lock();
+    _searchIndex.setFuzzy(b);
+    _indexAccess.unlock();
 }
 
-/** ***************************************************************************/
-void Extension::finalize()
-{
-    qDebug() << "Finalize extension 'ChromeBookmarks'";
-    QSettings s(QSettings::UserScope, "albert", "albert");
-
-    /* Serialze data */
-    QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + DATA_FILE);
-    if (f.open(QIODevice::ReadWrite| QIODevice::Text)) {
-        qDebug() << "Serializing to " << f.fileName();
-        QDataStream out( &f );
-        out << static_cast<quint64>(_index.size());
-        for (SharedBookmarkPtr bm : _index)
-            out << bm->_url << bm->_name << bm->_usage;
-        f.close();
-    } else
-        qCritical() << "Could not write to " << f.fileName();
-
-    /* Save settings */
-    s.setValue(CFG_FUZZY, _fuzzy);
-    s.setValue(CFG_BOOKMARKS, _bookmarksFile);
-}
-
-/** ***************************************************************************/
-void Extension::handleQuery(Query *q)
-{
-    q->addResults(_search->find(q->searchTerm()));
-}
-
-/** ***************************************************************************/
-void Extension::action(const Bookmark& b, const Query &, Qt::KeyboardModifiers) const
-{
-    //QDesktopServices::openUrl(QUrl(_url));
-    //QProcess::startDetached(QString("kstart --activate chromium %1").arg(QUrl(_url).toString()));
-    QProcess::startDetached(QString("chromium %1").arg(QUrl(b._url).toString()));
-}
-
-/** ***************************************************************************/
-QString Extension::actionText(const Bookmark& b, const Query &, Qt::KeyboardModifiers) const
-{
-    return QString("Visit '%1'.").arg(b._name);
-}
-
-/** ***************************************************************************/
-QString Extension::titleText(const Bookmark &b, const Query &) const
-{
-    return b._name;
-}
-
-/** ***************************************************************************/
-QString Extension::infoText(const Bookmark &b, const Query &) const
-{
-    return b._url;
-}
-
-/** ***************************************************************************/
-const QIcon &Extension::icon(const Bookmark &) const
-{
-    return _favicon;
-}
