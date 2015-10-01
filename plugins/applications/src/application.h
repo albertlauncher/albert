@@ -22,7 +22,6 @@ using std::vector;
 #include "utils/search/iindexable.h"
 #include "interfaces/baseobjects.h"
 class IExtension;
-class IQuery;
 
 namespace Applications{
 
@@ -36,7 +35,8 @@ class Application final : public A2Item, public IIndexable
 public:
     Application() = delete;
     Application(const Application &) = delete;
-    Application(const QString &path, short usage = 0);
+    Application(const QString &path, short usage = 0)
+        : _path(path), _usage(usage) {}
 
     QString name() const override;
     QString info() const override;

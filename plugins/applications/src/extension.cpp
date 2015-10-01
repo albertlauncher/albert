@@ -14,11 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QStandardPaths>
+#include <QThreadPool>
+#include <QMessageBox>
 #include <QSettings>
 #include <QDebug>
-#include <QStandardPaths>
-#include <QMessageBox>
-#include <QThreadPool>
+#include <QFile>
 #include <QDir>
 #include <memory>
 #include "configwidget.h"
@@ -95,7 +96,7 @@ void Applications::Extension::initialize() {
     connect(this, &Extension::rootDirsChanged, &_updateDelayTimer, static_cast<void(QTimer::*)()>(&QTimer::start));
     connect(&_updateDelayTimer, &QTimer::timeout, this, &Extension::updateIndex);
 
-    // Deserialze data
+    // Deserialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
                 filePath(QString("%1.dat").arg(EXT_NAME))
@@ -133,21 +134,23 @@ void Applications::Extension::finalize() {
     s.setValue(CFG_FUZZY, _searchIndex.fuzzy());
     s.setValue(CFG_PATHS, _rootDirs);
 
-    // Serialze data
+    // Serialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
                 filePath(QString("%1.dat").arg(EXT_NAME))
                 );
     if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
-        qDebug() << "[Applications] Deserializing from" << dataFile.fileName();
+        qDebug() << "[Applications] Serializing to" << dataFile.fileName();
         QDataStream out( &dataFile );
 
         // Lock index against indexer
         QMutexLocker locker(&_indexAccess);
 
+        // Serialize
         out << static_cast<quint64>(_appIndex.size());
         for (shared_ptr<Application> &de : _appIndex)
             out << de->path() << de->usage();
+
         dataFile.close();
     } else
         qCritical() << "Could not write to " << dataFile.fileName();

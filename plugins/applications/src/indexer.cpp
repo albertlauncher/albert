@@ -54,7 +54,7 @@ void Applications::Indexer::run() {
             vector<shared_ptr<Application>>::iterator indexIt =
                     std::find_if(_extension->_appIndex.begin(),
                                 _extension->_appIndex.end(),
-                                [&](const shared_ptr<Application>& de){
+                                [&path](const shared_ptr<Application>& de){
                                     return de->path()== path;
                                 });
             if (indexIt != _extension->_appIndex.end())

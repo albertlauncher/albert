@@ -115,7 +115,7 @@ void Files::Extension::initialize() {
     else
         restorePaths();
 
-    // Deserialze data
+    // Deserialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
                 filePath(QString("%1.dat").arg(EXT_NAME))
@@ -182,9 +182,11 @@ void Files::Extension::finalize() {
         // Lock index against indexer
         QMutexLocker locker(&_indexAccess);
 
+        // Serialize
         out	<< static_cast<quint64>(_fileIndex.size());
         for (shared_ptr<File> f : _fileIndex)
             out << f->path_ << f->mimetype_.name() << f->usage_;
+
         dataFile.close();
     } else
         qCritical() << "Could not write to " << dataFile.fileName();

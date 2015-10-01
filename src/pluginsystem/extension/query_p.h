@@ -139,7 +139,7 @@ public:
         QMutexLocker locker(&mutex_);
         beginResetModel();
         std::stable_sort(matches_.begin(), matches_.end(),
-                         [&](const Match &lhs, const Match &rhs) {
+                         [](const Match &lhs, const Match &rhs) {
                             return lhs.score > rhs.score;
                          });
         endResetModel();
@@ -213,7 +213,7 @@ public:
                         std::distance(matches_.begin(),
                                       std::find_if(matches_.begin(),
                                                    matches_.end(),
-                                                   [&](const Match &m){
+                                                   [&parentNode](const Match &m){
                                                        return &m.item==parentNode;
                                                    })
                                       )
@@ -227,7 +227,7 @@ public:
                         std::distance(grandParentNode->children.begin(),
                                       std::find_if(grandParentNode->children.begin(),
                                                    grandParentNode->children.end(),
-                                                   [&](const unique_ptr<TreeItem> &u){
+                                                   [&parentNode](const unique_ptr<TreeItem> &u){
                                                        return u.get()==parentNode;
                                                    })
                                       )

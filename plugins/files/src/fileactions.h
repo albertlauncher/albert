@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QDesktopServices>
 #include <QIcon>
 #include <QMimeData>
 #include <QApplication>
@@ -57,7 +56,7 @@ public:
 
     void activate() override {
         qApp->hideWidget();
-        QDesktopServices::openUrl(QUrl::fromLocalFile(_file->path()));
+        UrlAction(QUrl::fromLocalFile(_file->path())).activate();
         _file->incUsage();
     }
 };
@@ -80,7 +79,7 @@ public:
 
     void activate() override {
         qApp->hideWidget();
-        QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(_file->path()).path()));
+        UrlAction(QUrl::fromLocalFile(QFileInfo(_file->path()).path())).activate();
         _file->incUsage();
     }
 };

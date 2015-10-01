@@ -43,7 +43,7 @@ void ChromeBookmarks::Indexer::run() {
 
     // Define a recursive bookmark indexing lambda
     std::function<void(const QJsonObject &json)> rec_bmsearch =
-            [&] (const QJsonObject &json) {
+            [&rec_bmsearch, &newIndex](const QJsonObject &json) {
         QJsonValue type = json["type"];
         if (type == QJsonValue::Undefined)
             return;

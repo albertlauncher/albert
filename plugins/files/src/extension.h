@@ -23,7 +23,6 @@
 #include <vector>
 #include "interfaces/iextension.h"
 #include "utils/search/search.h"
-#include "utils/search/search.h"
 
 namespace Files {
 
@@ -57,6 +56,7 @@ public:
     void addDir(const QString &dirPath);
     void removeDir(const QString &dirPath);
     void restorePaths();
+
     void updateIndex();
 
     // Properties

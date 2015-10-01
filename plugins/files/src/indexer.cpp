@@ -42,13 +42,14 @@ void Files::Indexer::run() {
         flags = QDirIterator::FollowSymlinks;
 
 
-    // Get a new index [O(n)]
+    // Get a new index
     std::vector<shared_ptr<File>> newIndex;
     std::set<QString> indexedDirs;
 
 
     // Anonymous function that implemnents the index recursion
-    std::function<void(const QFileInfo&)> indexRecursion = [&](const QFileInfo& fileInfo){
+    std::function<void(const QFileInfo&)> indexRecursion =
+            [this, &newIndex, &indexedDirs, &filters, &flags, &indexRecursion](const QFileInfo& fileInfo){
         if (_abort) return;
 
         QString canonicalPath = fileInfo.canonicalFilePath();
@@ -70,7 +71,6 @@ void Files::Indexer::run() {
         } else if (fileInfo.isDir()) {
 
             emit statusInfo(QString("Indexing %1.").arg(canonicalPath));
-
 
             // Skip if this dir has already been indexed
             if (indexedDirs.find(canonicalPath)!=indexedDirs.end()){
@@ -128,7 +128,7 @@ void Files::Indexer::run() {
 
     // Sort the new index for linear usage copy [O(n*log(n))]
     emit statusInfo("Sorting ... ");
-    std::sort(newIndex.begin(), newIndex.end(), [&](const shared_ptr<File> lhs, const shared_ptr<File> rhs) {
+    std::sort(newIndex.begin(), newIndex.end(), [](const shared_ptr<File> &lhs, const shared_ptr<File> &rhs) {
                   return QString::compare(lhs->path(), rhs->path(), Qt::CaseInsensitive) < 0;
               });
 

@@ -42,7 +42,7 @@ void ExtensionManager::startQuery(const QString &term) {
     // remove friend query  and query_p
     std::stable_sort(_currentQuery->impl->matches_.begin(),
                      _currentQuery->impl->matches_.end(),
-                     [&](const Match &lhs, const Match &rhs) {
+                     [](const Match &lhs, const Match &rhs) {
                         return lhs.score > rhs.score;
                      });
     emit newModel(_currentQuery->impl);

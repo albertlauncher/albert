@@ -195,7 +195,7 @@ public:
 
         // Sort em by relevance // TODO INTRODUCE RELEVANCE TO ITEMS
         //        std::sort(finalResult.begin(), finalResult.end(),
-        //                  [&](QPair<T, unsigned int> x, QPair<T, unsigned int> y)
+        //                  [](QPair<T, unsigned int> x, QPair<T, unsigned int> y)
         //                    {return x.second > y.second;});
         vector<shared_ptr<IIndexable>> result;
         for (std::pair<shared_ptr<IIndexable>, unsigned int> pair : finalResult) {

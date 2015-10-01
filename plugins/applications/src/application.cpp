@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QString>
 #include <QDebug>
 #include <QFile>
 #include <QTextStream>
@@ -26,12 +25,6 @@ using std::map;
 #include "application.h"
 #include "desktopaction.h"
 #include "albertapp.h"
-
-
-/** ***************************************************************************/
-Applications::Application::Application(const QString &path, short usage)
-    : _path(path), _usage(usage) {}
-
 
 
 /** ***************************************************************************/
