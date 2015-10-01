@@ -1,0 +1,10 @@
+{
+    "id" :              "org.manuelschneid3r.albert.extension.template",
+    "name" :            "Template",
+    "version" :         "1.0",
+    "platform" :        "All",
+    "group" :           "Extensions",
+    "copyright" :       "(C) 2015 Manuel Schneider",
+    "description" :     "Template plugin for plugin developers.",
+    "dependencies" :    [""]
+}
