@@ -188,6 +188,15 @@ void Websearch::Extension::restoreDefaults() {
 
     se = std::make_shared<SearchEngine>();
     se->enabled_    = true;
+    se->name_       = "GitHub";
+    se->url_        = "https://github.com/search?utf8=✓&q=%s";
+    se->trigger_    = "gh";
+    se->iconPath_   = ":github";
+    se->icon_       = QIcon(se->iconPath_);
+    index_.push_back(se);
+
+    se = std::make_shared<SearchEngine>();
+    se->enabled_    = true;
     se->name_       = "Wolfram Alpha";
     se->url_        = "https://www.wolframalpha.com/input/?i=%s";
     se->trigger_    = "=";
