@@ -18,6 +18,8 @@
 #include <QWidget>
 #include "ui_configwidget.h"
 
+namespace Websearch {
+
 class ConfigWidget final : public QWidget
 {
     Q_OBJECT
@@ -29,3 +31,5 @@ public:
 private:
     void onButton_SetIcon();
 };
+
+}

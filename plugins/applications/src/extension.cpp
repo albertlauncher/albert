@@ -22,26 +22,11 @@
 #include <QFile>
 #include <QDir>
 #include <memory>
-#include "configwidget.h"
 #include "extension.h"
-#include "indexer.h"
+#include "configwidget.h"
 #include "application.h"
+#include "indexer.h"
 #include "query.h"
-
-
-/** ***************************************************************************/
-Applications::Extension::Extension() {
-
-}
-
-
-
-/** ***************************************************************************/
-
-Applications::Extension::~Extension() {
-
-}
-
 
 
 /** ***************************************************************************/

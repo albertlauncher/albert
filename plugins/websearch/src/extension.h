@@ -15,76 +15,57 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
-#include <QTimer>
-#include <QIcon>
-#include <QFileSystemWatcher>
 #include <QAbstractTableModel>
+#include <QFileSystemWatcher>
+#include <QPointer>
+#include <QIcon>
 #include <memory>
-#include "plugininterfaces/extensioninterface.h"
+#include "interfaces/iextension.h"
+#include "utils/search/search.h"
+
+namespace Websearch {
 
 class SearchEngine;
 class ConfigWidget;
 
-/** ***************************************************************************/
-class Extension final : public QAbstractTableModel, public ExtensionInterface
+class Extension final : public QAbstractTableModel, public IExtension
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "../src/metadata.json")
-    Q_INTERFACES(ExtensionInterface)
-
-    typedef std::shared_ptr<SearchEngine> SharedSearchPtr;
-    typedef QList<SharedSearchPtr> SharedSearchPtrList;
-    enum class Section{Enabled, Name, Trigger, URL};
-    static constexpr unsigned int cColumnCount = 4;
+    Q_INTERFACES(IExtension)
 
 public:
-    explicit Extension() {}
-    ~Extension() {}
+    // GenericPluginInterface
+    QWidget *widget() override;
 
+    // IExtension
+    void initialize(/*CoreApi *coreApi*/) override;
+    void finalize() override;
+    void setupSession() override;
+    void teardownSession() override;
+    void handleQuery(shared_ptr<Query> query) override;
+
+    // API special to this extension
     void restoreDefaults();
 
-    // TODO GLOBAL ACTIONS
-
-
-    /*
-     * Item management
-     */
-    void        action    (const SearchEngine&, const Query&, Qt::KeyboardModifiers mods) const;
-    QString     actionText(const SearchEngine&, const Query&, Qt::KeyboardModifiers mods) const;
-    QString     titleText (const SearchEngine&, const Query&) const;
-    QString     infoText  (const SearchEngine&, const Query&) const;
-
-    /*
-     * Modelinterface
-     */
+    // Modelinterface
     int rowCount(const QModelIndex & parent = QModelIndex()) const override;
     int columnCount(const QModelIndex & parent = QModelIndex()) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole) override;
+    Qt::ItemFlags flags(const QModelIndex & index) const override;
     bool insertRows (int position, int rows, const QModelIndex & parent = QModelIndex()) override;
     bool removeRows (int position, int rows, const QModelIndex & parent = QModelIndex()) override;
-    Qt::ItemFlags flags(const QModelIndex & index) const override;
-
-    /*
-     * ExtensionInterface
-     */
-    void        handleQuery(Query*) override;
-
-    /*
-     * GenericPluginInterface
-     */
-    QWidget*    widget() override;
-    void        initialize() override;
-    void        finalize() override;
-
 
 private:
-    /* Core elements */
-    SharedSearchPtrList     _index;
-    QPointer<ConfigWidget>  _widget;
+    QPointer<ConfigWidget> widget_;
+    vector<shared_ptr<SearchEngine>> index_;
 
     /* constexpr */
-    static constexpr const char* DATA_FILE      = "websearch.dat";
+    static constexpr const char* EXT_NAME = "websearch";
+    static constexpr const int   COL_COUNT = 4;
+    enum class Section{Enabled, Name, Trigger, URL};
 };
+
+}

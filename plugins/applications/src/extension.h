@@ -15,13 +15,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+#include <QFileSystemWatcher>
+#include <QPointer>
 #include <QObject>
-#include <QList>
 #include <QString>
 #include <QMutex>
-#include <QPointer>
 #include <QTimer>
-#include <QFileSystemWatcher>
+#include <QList>
 #include <map>
 #include "interfaces/iextension.h"
 #include "utils/search/search.h"
@@ -41,9 +41,6 @@ class Extension final : public QObject, public IExtension
     friend class Indexer;
 
 public:
-    Extension();
-    ~Extension();
-
     // GenericPluginInterface
     QWidget *widget() override;
 

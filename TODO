@@ -44,9 +44,11 @@ Facts:
 - Open on screen with mouse. Remember window position preference #33, #8
 - Allow only one instance of Albert #23
 - Please allow fuzzy matching of spaces to underscores #40
+✘ [Bookmarks]Path to bookmarks file not intialized correctly. Closes #44
 
 
 
+------------------------------- RELEASE 0.8 ------------------------------------
 
 ------------------------------- RELEASE 0.7 ------------------------------------
 ✔ Ignore folders .albertignore
@@ -72,10 +74,9 @@ Facts:
   ✔ Serialization
   ✔ Quicklist actions
  ✔ Port bookmarks
-  ✘ Path to bookmarks file not intialized correctly. Closes #44
  ✔ Port calculator
   ✔ Internationalisation in calculator module. Closes #46
- ✘ Port websearch
+ ✔ Port websearch
   ✘ [FEAT][Actions][Global]  Fallback actions - needs only queryterm
 
 

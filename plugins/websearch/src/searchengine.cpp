@@ -14,41 +14,34 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "item.h"
-#include "extension.h"
+#include "searchengine.h"
+#include "albertapp.h"
+
 
 /** ***************************************************************************/
-void SearchEngine::action(const Query &q, Qt::KeyboardModifiers mods)
-{
-    ++_usage; _extension->action(*this, q, mods);
+QString Websearch::SearchEngine::name() const {
+    return QString("Search '%1' in %2").arg(((searchTerm_.isEmpty()) ? "..." : searchTerm_), name_);
 }
 
-/** ***************************************************************************/
-QString SearchEngine::actionText(const Query &q, Qt::KeyboardModifiers mods) const
-{
-    return _extension->actionText(*this, q, mods);
-}
+
 
 /** ***************************************************************************/
-QString SearchEngine::titleText(const Query &q) const
-{
-    return _extension->titleText(*this, q);
+QString Websearch::SearchEngine::info() const {
+    return QString(url_).replace("%s", searchTerm_);
 }
 
-/** ***************************************************************************/
-QString SearchEngine::infoText(const Query &q) const
-{
-    return _extension->infoText(*this, q);
-}
+
 
 /** ***************************************************************************/
-const QIcon &SearchEngine::icon() const
-{
-    return _icon;
+QIcon Websearch::SearchEngine::icon() const {
+    return icon_;
 }
 
+
+
 /** ***************************************************************************/
-uint SearchEngine::usage() const
-{
-    return _usage;
+void Websearch::SearchEngine::activate() {
+    qApp->hideWidget();
+    UrlAction(QString(url_).replace("%s", searchTerm_)).activate();
+    ++usage_;
 }

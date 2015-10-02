@@ -19,8 +19,7 @@
 #include <QStandardPaths>
 
 /** ***************************************************************************/
-ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent)
-{
+Websearch::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
     ui.setupUi(this);
     ui.tableView_searches->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui.tableView_searches->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -36,14 +35,12 @@ ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent)
 }
 
 /** ***************************************************************************/
-ConfigWidget::~ConfigWidget()
-{
+Websearch::ConfigWidget::~ConfigWidget() {
 
 }
 
 /** ***************************************************************************/
-void ConfigWidget::onButton_SetIcon()
-{
+void Websearch::ConfigWidget::onButton_SetIcon() {
     int row = ui.tableView_searches->currentIndex().row();
     if (row < 0 || ui.tableView_searches->model()->rowCount() <= row)
         return;

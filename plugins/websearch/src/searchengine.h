@@ -15,50 +15,32 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QString>
-#include <QIcon>
-#include <vector>
-using std::vector;
-#include "utils/search/iindexable.h"
 #include "interfaces/baseobjects.h"
+class Extension;
 
-namespace Applications{
+namespace Websearch {
 
-class DesktopAction;
-
-class Application final : public A2Item, public IIndexable
+class SearchEngine final : public A2Leaf
 {
     friend class Extension;
-    friend class Indexer;
 
 public:
-    Application() = delete;
-    Application(const Application &) = delete;
-    Application(const QString &path, short usage = 0)
-        : _path(path), _usage(usage) {}
+    SearchEngine() : enabled_(false), usage_(0) {}
 
     QString name() const override;
     QString info() const override;
     QIcon icon() const override;
     void activate() override;
-    bool hasChildren() const override;
-    vector<shared_ptr<A2Item>> children() override;
-    vector<QString> aliases() const override;
-
-    bool readDesktopEntry();
-    const QString& path() const {return _path;}
-    ushort usage() const {return _usage;}
-    void incUsage() {++_usage;}
 
 private:
-    static QIcon getIcon(const QString &iconStr);
-
-    QString _path;
-    QString _name;
-    QString _altName;
-    QIcon   _icon;
-    QString _exec;
-    mutable ushort _usage;
-    vector<shared_ptr<A2Item>> _actions;
+    bool    enabled_;
+    QString name_;
+    QString url_;
+    QString trigger_;
+    QString searchTerm_;
+    QString iconPath_;
+    QIcon   icon_;
+    uint    usage_;
 };
+
 }
