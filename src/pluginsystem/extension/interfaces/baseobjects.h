@@ -16,17 +16,18 @@
 
 #pragma once
 #include <QDesktopServices>
+#include <QClipboard>
 #include <QProcess>
 #include <QUrl>
 #include <QString>
 #include <QIcon>
 #include <QVariant>
 #include <memory>
+#include <vector>
 using std::shared_ptr;
 using std::unique_ptr;
-#include <vector>
 using std::vector;
-class IExtension;
+#include "albertapp.h"
 
 
 /** ****************************************************************************
@@ -40,7 +41,7 @@ struct Action {
      * @brief Exectute the Action.
      * Reimplement this if you want your item to do some actions on activation
      */
-    virtual void activate() {}
+    virtual void activate() = 0;
 };
 
 
@@ -146,25 +147,43 @@ private:
 };
 
 
+/** ***************************************************************************/
+class CopyToClipboardAction final : public Action
+{
+public:
+    CopyToClipboardAction(QString text) : text_(text) {}
+    void activate() override {
+        QApplication::clipboard()->setText(text_);
+    }
+private:
+    QString text_;
+};
 
-///** ***************************************************************************
-// * @brief Standard action item
-// * Takes an action (plus ownership) and encapsulates it in an item which can be
-// * pushed into the albert query.
-// * @param action The encapsulated action
-// */
-//struct ActionItem final : public A2Leaf
-// {
-//    ActionItem(IExtension *ext, Action * action) : A2Leaf(ext), action_(action) {}
-//    ActionItem() : action_(action) {}
-//    ActionItem(const ActionItem&) = delete;
-//    virtual ~ActionItem() { delete action_;}
 
-//    QVariant data(int role = Qt::DisplayRole) const {return action_->data(role);}
-//    void activate() {action_->activate();}
 
-//private:
-//    unique_ptr<ActionItem> action_;
-//};
+/** ***************************************************************************/
+class StandardItem final : public A2Leaf
+{
+public:
+    StandardItem(){}
+    QString name() const override { return name_; }
+    QString info() const override { return info_; }
+    QIcon icon() const override { return icon_; }
+    void activate() override {
+        action_->activate();
+        qApp->hideWidget();
+    }
+
+    void setName(QString name){name_ = name;}
+    void setInfo(QString info){info_ = info;}
+    void setIcon(QIcon icon){icon_ = icon;}
+    void setAction(unique_ptr<Action> action){ action_ = std::move(action);}
+
+private:
+    QString name_;
+    QString info_;
+    QIcon icon_;
+    unique_ptr<Action> action_;
+};
 
 

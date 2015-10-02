@@ -71,10 +71,10 @@ Facts:
   ✔ AppIndex needs rebuilding every time. Closes #45
   ✔ Serialization
   ✔ Quicklist actions
- ✘ Port bookmarks
+ ✔ Port bookmarks
   ✘ Path to bookmarks file not intialized correctly. Closes #44
- ✘ Port calculator
-  ✘ Internationalisation in calculator module. Closes #46
+ ✔ Port calculator
+  ✔ Internationalisation in calculator module. Closes #46
  ✘ Port websearch
   ✘ [FEAT][Actions][Global]  Fallback actions - needs only queryterm
 

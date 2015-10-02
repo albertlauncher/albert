@@ -149,10 +149,8 @@ public:
 
     void activate() override {
         qApp->hideWidget();
-        // Ownership of the data is transferred to the clipboard.
         QApplication::clipboard()->setText(_file->path());
         _file->incUsage();
-
     }
 };
 
