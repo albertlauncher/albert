@@ -67,6 +67,7 @@ private:
     QMutex _indexAccess;
     QPointer<Indexer> _indexer;
     QString _bookmarksFile;
+    vector<QString> _bookmarkFiles;
     QFileSystemWatcher _watcher;
 
     /* constexpr */

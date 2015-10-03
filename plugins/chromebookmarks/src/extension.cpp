@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QStandardPaths>
+#include <QDirIterator>
 #include <QThreadPool>
 #include <QFileInfo>
 #include <QSettings>
@@ -58,9 +59,10 @@ void ChromeBookmarks::Extension::initialize() {
     s.beginGroup(EXT_NAME);
     _searchIndex.setFuzzy(s.value(CFG_FUZZY, CFG_FUZZY_DEF).toBool());
 
-    /* Load path */
+
+    // Load and set a valid path
     QVariant v = s.value(CFG_BOOKMARKS);
-    if (v.isValid() && v.canConvert(QMetaType::QString))
+    if (v.isValid() && v.canConvert(QMetaType::QString) && QFileInfo(v.toString()).exists())
         setPath(v.toString());
     else
         restorePath();
@@ -192,8 +194,15 @@ void ChromeBookmarks::Extension::setPath(const QString &s) {
 
 /** ***************************************************************************/
 void ChromeBookmarks::Extension::restorePath() {
-    setPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
-            + "/chromium/Default/Bookmarks");
+    // Find a bookmark file (Take first one)
+    for (QString browser : {"chromium","google-chrome"}){
+        QString root = QDir(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)).filePath(browser);
+        QDirIterator it(root, {"Bookmarks"}, QDir::Files, QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            setPath(it.next());
+            return;
+        }
+    }
 }
 
 
