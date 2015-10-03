@@ -141,6 +141,7 @@ bool Applications::Application::readDesktopEntry() {
     _exec.replace("%c", _name);
     _exec.remove(QRegExp("%.")); // Todo standard conform http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s06.html
 
+	_term = values["Desktop Entry"]["Terminal"] == "true";
 
     // Try to get the icon
     if (values["Desktop Entry"].count("Icon"))
