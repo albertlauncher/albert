@@ -118,8 +118,7 @@ bool Applications::Application::readDesktopEntry() {
     } else return false;
 
 
-    if (values["Desktop Entry"]["NoDisplay"] == "true"
-            || values["Desktop Entry"]["Term"] == "true")
+    if (values["Desktop Entry"]["NoDisplay"] == "true")
         return false;
 
 
