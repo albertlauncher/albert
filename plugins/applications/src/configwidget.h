@@ -32,6 +32,7 @@ private:
     void onButton_PathAdd();
     void onButton_PathRemove();
     void onButton_RestorePaths();
+    void onButton_Terminal();
 
 signals:
     void requestAddPath(const QString&);

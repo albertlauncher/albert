@@ -27,6 +27,8 @@ using std::map;
 #include "albertapp.h"
 
 
+QString Applications::Application::terminal;
+
 /** ***************************************************************************/
 QString Applications::Application::name() const {
     return _name;
@@ -52,7 +54,10 @@ QIcon Applications::Application::icon() const {
 void Applications::Application::activate() {
     // Standard action
     qApp->hideWidget();
-    CommandAction(_exec).activate();
+    if(_term)
+        CommandAction(terminal.arg(_exec)).activate();
+    else
+        CommandAction(_exec).activate();
     ++_usage;
 }
 
