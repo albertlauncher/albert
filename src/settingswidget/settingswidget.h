@@ -16,9 +16,10 @@
 
 #pragma once
 #include "ui_settingswidget.h"
-#include "hotkeymanager.h"
-#include "mainwidget.h"
-#include "pluginmanager.h"
+
+class MainWidget;
+class HotkeyManager;
+class PluginManager;
 
 class SettingsWidget final : public QWidget
 {

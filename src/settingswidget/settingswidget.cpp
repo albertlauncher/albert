@@ -109,6 +109,12 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
 
     connect(ui.treeWidget_plugins, &QTreeWidget::itemDoubleClicked,
             this, &SettingsWidget::openPluginConfig);
+
+
+    /*
+     * ABOUT TAB
+     */
+    ui.about_text->setText(QString(ui.about_text->text()).replace("___versionstring___", qApp->applicationVersion()));
 }
 
 
