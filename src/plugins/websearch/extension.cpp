@@ -139,6 +139,19 @@ void Websearch::Extension::handleQuery(shared_ptr<Query> query) {
 }
 
 
+
+/** ***************************************************************************/
+void Websearch::Extension::handleFallbackQuery(shared_ptr<Query> query) {
+    for (const shared_ptr<SearchEngine>& se : index_) {
+        if (se->enabled_) {
+            se->searchTerm_ = query->searchTerm();
+            query->addMatch(se,3);
+        }
+    }
+}
+
+
+
 /** ***************************************************************************/
 void Websearch::Extension::restoreDefaults() {
     /* Init std searches */

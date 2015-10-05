@@ -79,7 +79,7 @@ Facts:
  ✔ Port calculator
   ✔ Internationalisation in calculator module. Closes #46
  ✔ Port websearch
-  ✘ [FEAT][Actions][Global]  Fallback actions - needs only queryterm
+  ✔ Fallback actions. Needs only queryterm
   
 
 

@@ -61,6 +61,13 @@ struct IExtension : public IPlugin
      * @param query Holds the query context
      */
     virtual void handleQuery(shared_ptr<Query> query) = 0;
+
+    /**
+     * @brief Fallback handling
+     * Called if the preceeding query yielded no results.
+     * @param query Holds the query context
+     */
+    virtual void handleFallbackQuery(shared_ptr<Query> query) = 0;
 };
 #define ALBERT_EXTENSION_IID "org.manuelschneid3r.albert.extension"
 Q_DECLARE_INTERFACE(IExtension, ALBERT_EXTENSION_IID)

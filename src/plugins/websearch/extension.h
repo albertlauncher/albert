@@ -44,6 +44,7 @@ public:
     void setupSession() override;
     void teardownSession() override;
     void handleQuery(shared_ptr<Query> query) override;
+    void handleFallbackQuery(shared_ptr<Query> query) override;
 
     // API special to this extension
     void restoreDefaults();

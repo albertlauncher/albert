@@ -31,25 +31,24 @@ ExtensionManager::ExtensionManager() : _sessionIsActive(false) {
 void ExtensionManager::startQuery(const QString &term) {
     _currentQuery = std::make_shared<Query>(term.trimmed());
 
-      // ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
-    // ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
-    // TODO INTRODUCE MULTITHREADING HERE
+    //  ▼ TODO INTRODUCE MULTITHREADING HERE ▼
     for (IExtension *e : _extensions)
         e->handleQuery(_currentQuery);
 
+    if (_currentQuery->impl->matches_.size()==0)
+        for (IExtension *e : _extensions)
+            e->handleFallbackQuery(_currentQuery);
+    else
+        // This is a conceptual hack for v0.7, the query should sor itself when the
+        // remove friend query  and query_p
+        std::stable_sort(_currentQuery->impl->matches_.begin(),
+                         _currentQuery->impl->matches_.end(),
+                         [](const Match &lhs, const Match &rhs) {
+                            return lhs.score > rhs.score;
+                         });
+    //  ▲ INTRODUCE MULTITHREADING HERE ▲
 
-    // This is a conceptual hack for v0.7, the query should sor itself when the
-    // remove friend query  and query_p
-    std::stable_sort(_currentQuery->impl->matches_.begin(),
-                     _currentQuery->impl->matches_.end(),
-                     [](const Match &lhs, const Match &rhs) {
-                        return lhs.score > rhs.score;
-                     });
     emit newModel(_currentQuery->impl);
-
-
-    // ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
-    // ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
 }
 
 
