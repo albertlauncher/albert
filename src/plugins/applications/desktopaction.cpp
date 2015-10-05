@@ -21,8 +21,8 @@
 
 
 /** ***************************************************************************/
-Applications::DesktopAction::DesktopAction(Application *app, const QString &name, const QString &exec, const QIcon &icon)
-    : app_(app), name_(name), exec_(exec), icon_(icon) {
+Applications::DesktopAction::DesktopAction(Application *app, const QString &name, const QString &exec, const QIcon &icon, const bool term)
+    : app_(app), name_(name), exec_(exec), icon_(icon), term_(term) {
 
 }
 
@@ -52,6 +52,9 @@ QIcon Applications::DesktopAction::icon() const {
 /** ***************************************************************************/
 void Applications::DesktopAction::activate() {
     qApp->hideWidget();
-    return CommandAction(exec_).activate();
+    if(term_)
+        return CommandAction(Application::terminal.arg(exec_)).activate();
+    else
+        return CommandAction(exec_).activate();
     app_->incUsage();
 }

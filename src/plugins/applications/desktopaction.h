@@ -24,7 +24,7 @@ class Application;
 class DesktopAction final : public A2Leaf
 {
 public:
-    DesktopAction(Application *app, const QString &name, const QString &exec, const QIcon &icon);
+    DesktopAction(Application *app, const QString &name, const QString &exec, const QIcon &icon, const bool term=false);
 
     QString name() const override;
     QString info() const override;
@@ -36,6 +36,7 @@ private:
     const QString name_;
     const QString exec_;
     const QIcon icon_;
+    const bool term_;
 };
 
 }

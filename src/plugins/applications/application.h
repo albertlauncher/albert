@@ -50,6 +50,8 @@ public:
     ushort usage() const {return _usage;}
     void incUsage() {++_usage;}
 
+    static QString terminal;
+
 private:
     static QIcon getIcon(const QString &iconStr);
 
@@ -58,6 +60,7 @@ private:
     QString _altName;
     QIcon   _icon;
     QString _exec;
+    bool    _term;
     mutable ushort _usage;
     vector<shared_ptr<A2Item>> _actions;
 };

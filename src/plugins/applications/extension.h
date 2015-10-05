@@ -76,6 +76,8 @@ private:
     static constexpr const char* CFG_PATHS      = "applications/paths";
     static constexpr const char* CFG_FUZZY      = "applications/fuzzy";
     static constexpr const bool  CFG_FUZZY_DEF  = false;
+    static constexpr const char* CFG_TERM       = "applications/terminal";
+    static constexpr const char* CFG_TERM_DEF   = "xterm -e %1";
     static constexpr const bool  UPDATE_DELAY   = 60000;
 
 signals:
