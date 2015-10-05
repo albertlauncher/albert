@@ -87,21 +87,28 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
         // Show actions
         if (key == Qt::Key_Tab) {
 
-            // Ignore empty results
+            // Skip if view is empty
             if (!model()->hasChildren(rootIndex()))
                 return true;
 
-            // Select first if none is selected
-            if (!currentIndex().isValid())
-                setCurrentIndex(model()->index(0, 0, rootIndex()));
+            // If none is selected use the first
+            QModelIndex midx;
+            if (currentIndex().isValid())
+                midx = currentIndex();
+            else
+                midx = model()->index(0, 0, rootIndex());
 
-            // Change view
-            if (rootIndex().isValid()){ // Change to Toplevel
+            // If view is in a subtree...
+            if (rootIndex().isValid()){
+                // Change to Toplevel
                 setRootIndex(QModelIndex());
-                setCurrentIndex(currentIndex().parent());
-            } else { // Change to actions
-                setRootIndex(currentIndex());
-                setCurrentIndex(model()->index(0, 0, rootIndex()));
+                setCurrentIndex(midx.parent());
+            } else {
+                // Change to children if there are any
+                if (model()->hasChildren(midx)){
+                    setRootIndex(midx);
+                    setCurrentIndex(QModelIndex());
+                }
             }
 
             updateGeometry();
