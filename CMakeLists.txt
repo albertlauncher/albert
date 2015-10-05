@@ -1,99 +1,34 @@
 #http://doc.qt.io/qt-5/cmake-manual.html
 cmake_minimum_required(VERSION 2.8.11)
 
-PROJECT(albert)
-SET(TARGET_VERSION_MAJOR 0)
-SET(TARGET_VERSION_MINOR 6)
+# Find includes in corresponding build directories
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-include(./global_cmake_settings.txt REQUIRED)
+# Instruct CMake to run moc automatically when needed.
+set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5Widgets 5.1 REQUIRED)
-find_package(Qt5Svg REQUIRED)
+# Set additional compiler flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Wconversion -Wunused -pedantic")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -DQT_NO_DEBUG_OUTPUT ")
 
-include_directories(
-    src/
-    src/hotkey/
-    src/mainwidget/
-    src/interfaces/
-    src/pluginsystem/
-    src/pluginsystem/extension/
-    src/settingswidget/
-)
+# Color make output
+SET(CMAKE_COLOR_MAKEFILE ON)
 
-set(SRCS
-    TODO
+# Suppress gcc details
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    SET(CMAKE_VERBOSE_MAKEFILE ON)
+else(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    SET(CMAKE_VERBOSE_MAKEFILE OFF)
+endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
-    src/main.cpp
-    src/albertapp.cpp
+# Put the binaries in dedicated toplevel directories
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-    src/hotkey/hotkeymanager.cpp
-    src/hotkey/hotkeymanager_p.h
-
-    src/mainwidget/inputline.cpp
-    src/mainwidget/itemdelegate.cpp
-    src/mainwidget/mainwidget.cpp
-    src/mainwidget/proposallist.cpp
-    src/mainwidget/settingsbutton.h
-
-    src/pluginsystem/pluginloader.cpp
-    src/pluginsystem/pluginmanager.cpp
-
-    src/pluginsystem/extension/extensionmanager.cpp
-    src/pluginsystem/extension/query.cpp
-    src/pluginsystem/extension/query_p.h
-
-    src/pluginsystem/extension/interfaces/iextension.h
-    src/pluginsystem/extension/interfaces/baseobjects.h
-
-    src/pluginsystem/extension/utils/search/fuzzysearch.h
-    src/pluginsystem/extension/utils/search/iindexable.h
-    src/pluginsystem/extension/utils/search/prefixsearch.h
-    src/pluginsystem/extension/utils/search/search.h
-    src/pluginsystem/extension/utils/search/search_impl.h
-
-    src/settingswidget/grabkeybutton.cpp
-    src/settingswidget/settingswidget.cpp
-)
-
-set(LIBS
-    ${Qt5Widgets_LIBRARIES}
-)
-
-qt5_wrap_ui(UIS
-    src/mainwidget/mainwidget.ui
-    src/settingswidget/settingswidget.ui
-)
-
-qt5_add_resources(RSRC
-    src/resources.qrc
-)
+# Build project
+add_subdirectory(src/application/)
+add_subdirectory(src/plugins/)
 
 
-# Do platform specific stuff
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    find_package(Qt5X11Extras 5.1 REQUIRED)
-    set(SRCS ${SRCS} src/hotkey/hotkeymanager_x11.cpp)
-    set(LIBS ${LIBS} ${Qt5X11Extras_LIBRARIES} X11)
-    install(FILES src/resources/albert.desktop DESTINATION share/applications COMPONENT desktop)
-elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    set(SRCS ${SRCS} src/hotkey/hotkeymanager_win.cpp)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")
-endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-
-
-## Define targets and linked libraries
-add_executable(${PROJECT_NAME} ${SRCS} ${UIS} ${DATA} ${RSRC})
-target_link_libraries(${PROJECT_NAME} ${LIBS})
-install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
-install(DIRECTORY src/resources/themes DESTINATION share/${PROJECT_NAME} COMPONENT config)
-# TODO PLUGINS?
-
-
-# Build plugins
-add_subdirectory(plugins/files)
-add_subdirectory(plugins/applications)
-add_subdirectory(plugins/chromebookmarks)
-add_subdirectory(plugins/calculator)
-add_subdirectory(plugins/websearch)
-#add_subdirectory(plugins/PythonExtensions)
-add_subdirectory(plugins/templateExtension)

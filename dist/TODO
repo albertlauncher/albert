@@ -1,0 +1,139 @@
+TODO:
+    TAG! albert-0.6.3-alpha
+
+Ideas:
+    ~/.config/user-dirs.dirs ansprecvhen in files help
+    Twitterplugin
+    Spin gear until search is finished
+    Use fallback if no icon in destkop file
+    Split repo for plugins from core
+    [Common,Files]  Split search, make common matcherobjects (prefix fuzzy) and use qgrams only for files
+    Object == string ? Uniform Resource Identifier etc
+    metatypes for styleditemdelegate (qss)
+
+Facts:
+    Avg pathlenth in home = 30.9 [L=0;C=0;for i in $(find /home/manuel/documents/ -not -path '*/\.*'); do ((++L)); C=$(($C+${#i})); done; bc <<< "scale=1;$C/$L"]
+
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+------------------------------- RELEASE 0.13 -----------------------------------
+------------------------------- RELEASE 0.12 -----------------------------------
+------------------------------- RELEASE 0.11 -----------------------------------
+------------------------------- RELEASE 0.10 -----------------------------------
+------------------------------- RELEASE 0.9 ------------------------------------
+------------------------------- RELEASE 0.8 ------------------------------------
+
+- X11Extras. Drop them. Using completeley only XCB (http://xcb.freedesktop.org/)
+- Multithreading
+- QML. Check the QtQuick standard project
+- Hotkey refinement (XCB) - multiple independant hotkeys, qxtglobalshortcut,
+- Pluginmanager treeview. (Group, Extension, Subextension) - with QDataWidgetMapper
+- Profiler. Extensionmanager profiles extensions (SQLITE backend), Dummy extension with 1M results
+- Actionmodifier. Preset modifier to action map
+- Actionmodifier. Configurable modifier to action map
+- Plugin Interdependencies. https://doc-snapshots.qt.io/qtcreator-extending/extensionsystem-pluginspec.html#details
+- Actioninterdependencies. E.g. open files with app actions
+- Matchers - Only large indexes have search indexes (Files), [ needs profiler ]
+- Scoring. Improve them using matcher classes.
+
+- Python. Special plugin interface, (Calc (Sympy), Terminal, ssh). Closes #13
+- Single instance. Closes #23
+- settings are not saved (alpha 0.5). Closes #12
+- Mousemoveability (input box)
+- teardown/setupsession not guaranteed before handleQuery
+- Show actions only if there are some
+
+
+
+------------------------------- RELEASE 0.8 ------------------------------------
+✘ Current screen. QDesktopWidget * QApplication::desktop().Remember window position. Closes #33, #8
+✘ Open on screen with mouse. 
+✘ Please allow fuzzy matching of spaces to underscores #40
+
+------------------------------- RELEASE 0.7 ------------------------------------
+✔ Ignore folders .albertignore
+✔ Filter indexed files by type
+✔ Let the index be build in background thread
+✔ Use raw instead shared pointers - (lame as hell 6x-10x, delete-later-mechanism that deletes item on session teardown)
+✔ [Actions][Builtin] - Extension can offer actions
+✔ Search without template and static downcast
+✔ [Actions] ListView("->" show actions, "<-" show results). Closes #42
+✔ Split file in file and item
+✔ Move the datamodelling to core by not let parent()/children() be part of Item
+✔ Fix fuzzy
+✔ New directory structure
+✔ Plugin infrastucture - Port all modules
+ ✔ Port files
+  ✔ Follow Symlinks
+  ✔ Scan interval overrun bug
+  ✔ Serialization
+  ✔ Can't open files with spaces in the filepath. Closes #35
+  ✔ Detect link loops (Qt loop detection is bulls***)
+ ✔ Port apps
+  ✔ AppIndex needs rebuilding every time. Closes #45
+  ✔ Serialization
+  ✔ Quicklist actions
+ ✔ Port bookmarks
+  ✔ [Bookmarks] Path to bookmarks file not intialized correctly. Closes #44
+ ✔ Port calculator
+  ✔ Internationalisation in calculator module. Closes #46
+ ✔ Port websearch
+  ✘ [FEAT][Actions][Global]  Fallback actions - needs only queryterm
+  
+
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+EXTENSION Properties
+
+             hasTriggers (run exclusively)   | efficiency
+             | startOnlyIfTriggered            | heavy output or resource consumption
+             | | usageIsTracked                  | relevance
+             | | | providesFallback                | convenience
+             | | | | hasSearchIndex                  | performance
+             | | | | | fuzzySearchable                 | tolerance
+             ^ ^ ^ ^ ^ ^
+             0 1 2 3 4 5
+Files        - - + - + +      MIME
+Apps         - - + - + +
+Bookmarks    - - + - + +
+ssh          + - + - - +
+WebSearch    + - + + - -
+Calc         + - - - - - I
+Terminal #18 + + - ? - -
+FileFinder   + + - - - -
+Translate    + - - - - - I
+Blogs        + - + - - -
+System       - - + - - -
+Dict         + ? - - - - I
+Thunderbird  + - - - - -
+Google       + + - - - -
+Rhythmbox    - - - - - -  < kommt drauf an
+
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ITEM Properties
+
+-
+
+- temporary/permanent
+ > permanent items are somehow stored (DB, index, etc..)
+  - static/dynamic
+   > static items don't change - pretty easy handling
+   > dynamic items may be mutated by actions -  references need to to be handles properly
+ > temporary items are generated while a query
+-
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+Constraints for developers:
+- If it is not performance critical use python, since it will not depend on binary apis that much
+- Name plugins according the data they provide
+
+
+
+
+
+
