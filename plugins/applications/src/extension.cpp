@@ -74,6 +74,9 @@ void Applications::Extension::initialize() {
     else
         restorePaths();
 
+    // Set terminal emulator
+    Applications::Application::terminal = s.value(CFG_TERM, CFG_TERM_DEF).toString();
+
     // Keep the Applications in sync with the OS
     _updateDelayTimer.setInterval(UPDATE_DELAY);
     _updateDelayTimer.setSingleShot(true);
@@ -118,6 +121,7 @@ void Applications::Extension::finalize() {
     QSettings s;
     s.setValue(CFG_FUZZY, _searchIndex.fuzzy());
     s.setValue(CFG_PATHS, _rootDirs);
+    s.setValue(CFG_TERM, Applications::Application::terminal);
 
     // Serialize data
     QFile dataFile(

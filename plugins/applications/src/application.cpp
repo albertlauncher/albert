@@ -27,6 +27,8 @@ using std::map;
 #include "albertapp.h"
 
 
+QString Applications::Application::terminal;
+
 /** ***************************************************************************/
 QString Applications::Application::name() const {
     return _name;
@@ -52,7 +54,10 @@ QIcon Applications::Application::icon() const {
 void Applications::Application::activate() {
     // Standard action
     qApp->hideWidget();
-    CommandAction(_exec).activate();
+    if(_term)
+        CommandAction(terminal.arg(_exec)).activate();
+    else
+        CommandAction(_exec).activate();
     ++_usage;
 }
 
@@ -113,8 +118,7 @@ bool Applications::Application::readDesktopEntry() {
     } else return false;
 
 
-    if (values["Desktop Entry"]["NoDisplay"] == "true"
-            || values["Desktop Entry"]["Term"] == "true")
+    if (values["Desktop Entry"]["NoDisplay"] == "true")
         return false;
 
 
@@ -137,6 +141,7 @@ bool Applications::Application::readDesktopEntry() {
     _exec.replace("%c", _name);
     _exec.remove(QRegExp("%.")); // Todo standard conform http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s06.html
 
+    _term = values["Desktop Entry"]["Terminal"] == "true";
 
     // Try to get the icon
     if (values["Desktop Entry"].count("Icon"))
@@ -165,7 +170,15 @@ bool Applications::Application::readDesktopEntry() {
 
 
     // Default action
-    _actions.push_back(std::make_shared<DesktopAction>(this, QString("Run %1").arg(_name), _exec, _icon));
+    _actions.push_back(std::make_shared<DesktopAction>(this,
+                                                       QString("Run %1").arg(_name),
+                                                       _exec,
+                                                       _icon,
+                                                       _term));
+
+    // No additional actions for terminal apps
+    if(_term)
+        return true;
 
     // Root actions
     QStringList graphicalSudos({"gksu", "kdesu"});
