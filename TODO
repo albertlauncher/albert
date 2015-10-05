@@ -51,37 +51,6 @@ Facts:
 ✘ Open on screen with mouse. 
 ✘ Please allow fuzzy matching of spaces to underscores #40
 
-------------------------------- RELEASE 0.7 ------------------------------------
-✔ Ignore folders .albertignore
-✔ Filter indexed files by type
-✔ Let the index be build in background thread
-✔ Use raw instead shared pointers - (lame as hell 6x-10x, delete-later-mechanism that deletes item on session teardown)
-✔ [Actions][Builtin] - Extension can offer actions
-✔ Search without template and static downcast
-✔ [Actions] ListView("->" show actions, "<-" show results). Closes #42
-✔ Split file in file and item
-✔ Move the datamodelling to core by not let parent()/children() be part of Item
-✔ Fix fuzzy
-✔ New directory structure
-✔ Plugin infrastucture - Port all modules
- ✔ Port files
-  ✔ Follow Symlinks
-  ✔ Scan interval overrun bug
-  ✔ Serialization
-  ✔ Can't open files with spaces in the filepath. Closes #35
-  ✔ Detect link loops (Qt loop detection is bulls***)
- ✔ Port apps
-  ✔ AppIndex needs rebuilding every time. Closes #45
-  ✔ Serialization
-  ✔ Quicklist actions
- ✔ Port bookmarks
-  ✔ [Bookmarks] Path to bookmarks file not intialized correctly. Closes #44
- ✔ Port calculator
-  ✔ Internationalisation in calculator module. Closes #46
- ✔ Port websearch
-  ✔ Fallback actions. Needs only queryterm
-  
-
 
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
