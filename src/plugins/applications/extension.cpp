@@ -75,7 +75,17 @@ void Applications::Extension::initialize() {
         restorePaths();
 
     // Set terminal emulator
-    Applications::Application::terminal = s.value(CFG_TERM, CFG_TERM_DEF).toString();
+    v = s.value(CFG_TERM);
+    if (v.isValid() && v.canConvert(QMetaType::QString))
+        Application::terminal = v.toString();
+    else{
+        Application::terminal = getenv("TERM");
+        if (Application::terminal.isEmpty())
+            Application::terminal = CFG_TERM_DEF;
+        else
+            Application::terminal.append(" -e %1");
+    }
+
 
     // Keep the Applications in sync with the OS
     _updateDelayTimer.setInterval(UPDATE_DELAY);
