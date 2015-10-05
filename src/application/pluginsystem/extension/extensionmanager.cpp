@@ -29,7 +29,16 @@ ExtensionManager::ExtensionManager() : _sessionIsActive(false) {
 
 /** ***************************************************************************/
 void ExtensionManager::startQuery(const QString &term) {
-    _currentQuery = std::make_shared<Query>(term.trimmed());
+    // Trim spaces
+    QString searchterm = term.trimmed();
+
+    // Ignore empty queries
+    if (searchterm.isEmpty()){
+        emit newModel(nullptr);
+        return;
+    }
+
+    _currentQuery = std::make_shared<Query>(searchterm);
 
     //  ▼ TODO INTRODUCE MULTITHREADING HERE ▼
     for (IExtension *e : _extensions)
