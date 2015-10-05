@@ -48,7 +48,6 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
         ui.grabKeyButton_hotkey->setText("Press to set hotkey");
     else
         ui.grabKeyButton_hotkey->setText(QKeySequence(*hks.begin()).toString()); // OMG
-    connect(ui.grabKeyButton_hotkey, &GrabKeyButton::clicked, hotkeyManager, &HotkeyManager::disable);
     connect(ui.grabKeyButton_hotkey, &GrabKeyButton::keyCombinationPressed, this, &SettingsWidget::changeHotkey);
 
 

@@ -136,8 +136,9 @@ AlbertApp::~AlbertApp() {
 int AlbertApp::exec() {
     //  HOTKEY  //  Albert without hotkey is useless. Force it!
     QSettings s;
-    _hotkeyManager->registerHotkey(s.value("hotkey").toString());
-    if (_hotkeyManager->hotkeys().empty()) {
+    QVariant v;
+    if (!(s.contains("hotkey") && (v=s.value("hotkey")).canConvert(QMetaType::QString)
+            && _hotkeyManager->registerHotkey(v.toString()))){
         QMessageBox msgBox(QMessageBox::Critical, "Error",
                            "Hotkey is not set or invalid. Press ok to open "
                            "the settings or press close to quit albert.",
