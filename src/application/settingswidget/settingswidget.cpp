@@ -48,21 +48,29 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
         ui.grabKeyButton_hotkey->setText("Press to set hotkey");
     else
         ui.grabKeyButton_hotkey->setText(QKeySequence(*hks.begin()).toString()); // OMG
-    connect(ui.grabKeyButton_hotkey, &GrabKeyButton::keyCombinationPressed, this, &SettingsWidget::changeHotkey);
+    connect(ui.grabKeyButton_hotkey, &GrabKeyButton::keyCombinationPressed,
+            this, &SettingsWidget::changeHotkey);
 
 
     // ALWAYS CENTER
     ui.checkBox_center->setChecked(mainWidget->showCenterd());
-    connect(ui.checkBox_center, &QCheckBox::toggled, mainWidget, &MainWidget::setShowCentered);
+    connect(ui.checkBox_center, &QCheckBox::toggled, mainWidget,
+            &MainWidget::setShowCentered);
+
     // MAX PROPOSALS
     ui.spinBox_proposals->setValue(mainWidget->ui.proposalList->maxItems());
-    connect(ui.spinBox_proposals, (void (QSpinBox::*)(int))&QSpinBox::valueChanged, mainWidget->ui.proposalList, &ProposalList::setMaxItems);
+    connect(ui.spinBox_proposals, (void (QSpinBox::*)(int))&QSpinBox::valueChanged,
+            mainWidget->ui.proposalList, &ProposalList::setMaxItems);
+
     // INFO BELOW ITEM
     ui.checkBox_showInfo->setChecked(mainWidget->ui.proposalList->showInfo());
-    connect(ui.checkBox_showInfo, &QCheckBox::toggled, mainWidget->ui.proposalList, &ProposalList::setShowInfo);
+    connect(ui.checkBox_showInfo, &QCheckBox::toggled,
+            mainWidget->ui.proposalList, &ProposalList::setShowInfo);
+
     // INFO FOR UNSELECTED
     ui.checkBox_selectedOnly->setChecked(mainWidget->ui.proposalList->selectedOnly());
-    connect(ui.checkBox_selectedOnly, &QCheckBox::toggled, mainWidget->ui.proposalList, &ProposalList::setSelectedOnly);
+    connect(ui.checkBox_selectedOnly, &QCheckBox::toggled,
+            mainWidget->ui.proposalList, &ProposalList::setSelectedOnly);
 
 
     // THEMES
@@ -97,8 +105,8 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
             this, &SettingsWidget::updatePluginInformations);
 
     // Blacklist items if the checbox is cklicked
-    connect(ui.treeWidget_plugins, &QTreeWidget::itemChanged, this, &SettingsWidget::onPluginItemChanged);
-
+    connect(ui.treeWidget_plugins, &QTreeWidget::itemChanged,
+            this, &SettingsWidget::onPluginItemChanged);
 
     connect(ui.pushButton_pluginHelp, &QPushButton::clicked,
             this, &SettingsWidget::openPluginHelp);
@@ -106,7 +114,7 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
     connect(ui.pushButton_pluginConfig, &QPushButton::clicked,
             this, &SettingsWidget::openPluginConfig);
 
-    connect(ui.treeWidget_plugins, &QTreeWidget::itemDoubleClicked,
+    connect(ui.treeWidget_plugins, &QTreeWidget::activated,
             this, &SettingsWidget::openPluginConfig);
 
 
@@ -155,6 +163,7 @@ void SettingsWidget::openPluginConfig() {
         if (_pluginManager->plugins().contains(path)
                 && _pluginManager->plugins()[path]->status() == PluginLoader::Status::Loaded) {
             QWidget *w = dynamic_cast<IPlugin*>(_pluginManager->plugins()[path]->instance())->widget();
+            if (!w) return;
             w->setParent(this);
             w->setWindowTitle("Plugin configuration");
             w->setWindowFlags(Qt::Window|Qt::WindowCloseButtonHint);
