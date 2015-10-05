@@ -1,17 +1,11 @@
 #!/usr/bin/env xdg-open
 [Desktop Entry]
 Categories=Utility;
-Comment=Omnilauncher
+Comment=A desktop agnostic launcher
 Exec=albert
 GenericName=Albert
-Icon=/usr/share/albert/icons/icon.svg
+Icon=albert
 Name=Albert
-NoDisplay=false
-Path[$e]=
 StartupNotify=false
-Terminal=0
-TerminalOptions=
 Type=Application
-Version=0.4
-X-KDE-SubstituteUID=false
-X-KDE-Username=
+Version=0.7
