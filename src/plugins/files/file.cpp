@@ -78,7 +78,6 @@ vector<shared_ptr<A2Item>> Files::File::children() {
     // Lazy instaciate actions
     if (!children_){
         children_ = unique_ptr<vector<shared_ptr<A2Item>>>(new vector<shared_ptr<A2Item>>);
-        children_->push_back(std::make_shared<OpenFileAction>(this));
         children_->push_back(std::make_shared<RevealFileAction>(this));
         children_->push_back(std::make_shared<CopyFileAction>(this));
         children_->push_back(std::make_shared<CopyPathAction>(this));

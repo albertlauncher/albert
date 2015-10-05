@@ -169,14 +169,6 @@ bool Applications::Application::readDesktopEntry() {
     else
         _altName = _exec;
 
-
-    // Default action
-    _actions.push_back(std::make_shared<DesktopAction>(this,
-                                                       QString("Run %1").arg(_name),
-                                                       _exec,
-                                                       _icon,
-                                                       _term));
-
     // No additional actions for terminal apps
     if(_term)
         return true;
@@ -190,7 +182,7 @@ bool Applications::Application::readDesktopEntry() {
         if (p.exitCode() == 0)
             _actions.push_back(std::make_shared<DesktopAction>(this,
                                                                QString("Run %1 as root").arg(_name),
-                                                               QString("%1 %2").arg(s, _exec),
+                                                               QString("%1 \"%2\"").arg(s, _exec),
                                                                _icon));
     }
 
