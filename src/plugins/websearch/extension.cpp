@@ -54,7 +54,6 @@ QWidget *Websearch::Extension:: widget() {
 /** ***************************************************************************/
 void Websearch::Extension::initialize() {
     qDebug() << "Initialize extension 'WebSearch'";
-    QSettings s(QSettings::UserScope, "albert", "albert");
 
     // Deserialize data
     QFile dataFile(
@@ -89,7 +88,6 @@ void Websearch::Extension::initialize() {
 /** ***************************************************************************/
 void Websearch::Extension::finalize() {
     qDebug() << "Finalize extension 'WebSearch'";
-    QSettings s(QSettings::UserScope, "albert", "albert");
 
     // Serialize data
     QFile dataFile(
