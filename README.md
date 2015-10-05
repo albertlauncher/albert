@@ -22,11 +22,8 @@ mkdir albert-0.7/build
 cd !$
 cmake ".." -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release && make && sudo make install
 ```
-### Packagemanaged
-####Arch Linux
+### Using package manager
+####Arch Linux AUR
 ```
-cd $(mktemp -d)
-wget https://raw.githubusercontent.com/ManuelSchneid3r/albert/master/dist/linux/arch/PKGBUILD
-makepkg
-sudo pacman -U ^Cbert-0.7-1-x86_64.pkg.tar.xz
+yaout albert
 ```
