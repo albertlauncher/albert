@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QDebug>
 #include "extension.h"
 #include "query.h"
 #include "predefinedobjects.h"
@@ -30,6 +31,7 @@ QWidget *Calculator::Extension::widget() {
 
 /** ***************************************************************************/
 void Calculator::Extension::initialize() {
+    qDebug() << "[Calculator] Initialize extension";
     if (QIcon::hasThemeIcon("calc"))
         calcIcon_ = QIcon::fromTheme("calc");
     else
@@ -37,6 +39,7 @@ void Calculator::Extension::initialize() {
     parser_.reset(new mu::Parser);
     parser_->SetDecSep(loc.decimalPoint().toLatin1());
     parser_->SetThousandsSep(loc.groupSeparator().toLatin1());
+    qDebug() << "[Calculator] Extension initialized";
 }
 
 
@@ -69,7 +72,6 @@ void Calculator::Extension::handleQuery(shared_ptr<Query> query) {
         result = loc.toString(parser_->Eval());
     }
     catch (mu::Parser::exception_type &e) {
-      std::cout << "[muparser] " << e.GetMsg() << std::endl;
       return;
     }
     calcItem->setName(result);

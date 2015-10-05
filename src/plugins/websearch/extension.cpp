@@ -53,7 +53,7 @@ QWidget *Websearch::Extension:: widget() {
 
 /** ***************************************************************************/
 void Websearch::Extension::initialize() {
-    qDebug() << "Initialize extension 'WebSearch'";
+    qDebug() << "[Websearch] Initialize extension";
 
     // Deserialize data
     QFile dataFile(
@@ -81,13 +81,14 @@ void Websearch::Extension::initialize() {
         qWarning() << "Could not open file: " << dataFile.fileName();
         restoreDefaults();
     }
+    qDebug() << "[Websearch] Extension initialized";
 }
 
 
 
 /** ***************************************************************************/
 void Websearch::Extension::finalize() {
-    qDebug() << "Finalize extension 'WebSearch'";
+    qDebug() << "[Websearch] Finalize extension";
 
     // Serialize data
     QFile dataFile(
@@ -108,6 +109,7 @@ void Websearch::Extension::finalize() {
         dataFile.close();
     } else
         qCritical() << "Could not write to " << dataFile.fileName();
+    qDebug() << "[Websearch] Extension finalized";
 }
 
 
