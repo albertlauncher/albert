@@ -1,10 +1,6 @@
 #http://doc.qt.io/qt-5/cmake-manual.html
 cmake_minimum_required(VERSION 2.8.11)
 
-PROJECT(albert)
-SET(TARGET_VERSION_MAJOR 0)
-SET(TARGET_VERSION_MINOR 6)
-
 find_package(Qt5Widgets 5.1 REQUIRED)
 find_package(Qt5Svg REQUIRED)
 

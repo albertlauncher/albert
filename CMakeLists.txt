@@ -1,6 +1,10 @@
 #http://doc.qt.io/qt-5/cmake-manual.html
 cmake_minimum_required(VERSION 2.8.11)
 
+PROJECT(albertapp)
+SET(TARGET_VERSION_MAJOR 0)
+SET(TARGET_VERSION_MINOR 6)
+
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
