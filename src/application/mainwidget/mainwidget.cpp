@@ -16,6 +16,7 @@
 
 #include <QFile>
 #include <QStandardPaths>
+#include <QCursor>
 #include <QDir>
 #include <QDesktopWidget>
 #include <QDebug>
@@ -88,11 +89,14 @@ MainWidget::~MainWidget() {
 
 /** ***************************************************************************/
 void MainWidget::show() {
+
     ui.inputLine->clear();
     QWidget::show();
-    if (_showCentered)
-        this->move(QApplication::desktop()->screenGeometry().center()
+    if (_showCentered){
+        QDesktopWidget *dw = QApplication::desktop();
+        this->move(dw->availableGeometry(dw->screenNumber(QCursor::pos())).center()
                    -QPoint(rect().right()/2,192 ));
+    }
     this->raise();
     this->activateWindow();
     ui.inputLine->setFocus();
