@@ -127,6 +127,15 @@ void Applications::Extension::initialize() {
 void Applications::Extension::finalize() {
     qDebug() << "[Applications] Finalize extension";
 
+    // Stop and wait for background indexer
+    if (!_indexer.isNull()) {
+        _indexer->abort();
+        disconnect(_indexer, &Indexer::destroyed, this, &Extension::updateIndex);
+        QEventLoop loop;
+        connect(_indexer, &Indexer::destroyed, &loop, &QEventLoop::quit);
+        loop.exec();
+    }
+
     // Save settings
     QSettings s;
     s.setValue(CFG_FUZZY, _searchIndex.fuzzy());

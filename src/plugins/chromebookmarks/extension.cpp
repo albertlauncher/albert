@@ -105,6 +105,15 @@ void ChromeBookmarks::Extension::initialize() {
 void ChromeBookmarks::Extension::finalize() {
     qDebug() << "[ChromeBookmarks] Finalize extension";
 
+    // Stop and wait for background indexer
+    if (!_indexer.isNull()) {
+        _indexer->abort();
+        disconnect(_indexer, &Indexer::destroyed, this, &Extension::updateIndex);
+        QEventLoop loop;
+        connect(_indexer, &Indexer::destroyed, &loop, &QEventLoop::quit);
+        loop.exec();
+    }
+
     // Save settings
     QSettings s;
     s.beginGroup(EXT_NAME);

@@ -153,7 +153,15 @@ void Files::Extension::initialize() {
 void Files::Extension::finalize() {
     qDebug() << "[Files] Finalize extension";
 
+    // Stop and wait for background indexer
     _minuteTimer.stop();
+    if (!_indexer.isNull()) {
+        _indexer->abort();
+        disconnect(_indexer, &Indexer::destroyed, this, &Extension::updateIndex);
+        QEventLoop loop;
+        connect(_indexer, &Indexer::destroyed, &loop, &QEventLoop::quit);
+        loop.exec();
+    }
 
     // Save settings
     QSettings s;
