@@ -59,7 +59,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     setOrganizationDomain("manuelschneid3r");
     setApplicationName("albert");
     setApplicationDisplayName("Albert");
-    setApplicationVersion("v0.7");
+    setApplicationVersion("v0.7.1");
     setWindowIcon(QIcon(":app_icon"));
     setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
@@ -109,7 +109,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     QObject::connect(_pluginManager, &PluginManager::pluginAboutToBeUnloaded, _extensionManager, &ExtensionManager::unregisterExtension);
 
     // Hide on focus loss
-//    QObject::connect(this, &QApplication::applicationStateChanged, this, &AlbertApp::onStateChange);
+    QObject::connect(this, &QApplication::applicationStateChanged, this, &AlbertApp::onStateChange);
 
     // Load the plugins
     _pluginManager->loadPlugins();
