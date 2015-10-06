@@ -61,14 +61,14 @@ void Files::Indexer::run() {
             // If the file matches the index options, index it
             QMimeType mimetype = _mimeDatabase.mimeTypeForFile(canonicalPath);
             QString mimeName = mimetype.name();
+            qDebug() << mimeName;
             if ((_extension->_indexAudio && mimeName.startsWith("audio"))
                     ||(_extension->_indexVideo && mimeName.startsWith("video"))
                     ||(_extension->_indexImage && mimeName.startsWith("image"))
-                    ||(_extension->_indexDocs && mimeName.startsWith("application"))) {
+                    ||(_extension->_indexDocs &&
+                       (mimeName.startsWith("application") || mimeName.startsWith("text")))) {
                 newIndex.push_back(std::make_shared<File>(canonicalPath, mimetype));
             }
-
-
         } else if (fileInfo.isDir()) {
 
             emit statusInfo(QString("Indexing %1.").arg(canonicalPath));
