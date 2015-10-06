@@ -61,7 +61,6 @@ void Files::Indexer::run() {
             // If the file matches the index options, index it
             QMimeType mimetype = _mimeDatabase.mimeTypeForFile(canonicalPath);
             QString mimeName = mimetype.name();
-            qDebug() << mimeName;
             if ((_extension->_indexAudio && mimeName.startsWith("audio"))
                     ||(_extension->_indexVideo && mimeName.startsWith("video"))
                     ||(_extension->_indexImage && mimeName.startsWith("image"))
