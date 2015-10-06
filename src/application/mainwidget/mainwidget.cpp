@@ -91,12 +91,12 @@ MainWidget::~MainWidget() {
 void MainWidget::show() {
 
     ui.inputLine->clear();
-    QWidget::show();
     if (_showCentered){
         QDesktopWidget *dw = QApplication::desktop();
         this->move(dw->availableGeometry(dw->screenNumber(QCursor::pos())).center()
                    -QPoint(rect().right()/2,192 ));
     }
+    QWidget::show();
     this->raise();
     this->activateWindow();
     ui.inputLine->setFocus();
