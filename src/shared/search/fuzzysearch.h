@@ -61,7 +61,7 @@ public:
              for (QString& w : words) {
 
                 // Make this search case insensitive
-                w.toLower();
+                w=w.toLower();
 
                 // Add word to inverted index (map word to item)
                 this->_invertedIndex[w].insert(idxble);
