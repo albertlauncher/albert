@@ -18,7 +18,6 @@
 #include <QString>
 #include <vector>
 #include <memory>
-#define SEPARATOR_REGEX  "\\W+"
 class IIndexable;
 
 
@@ -29,4 +28,8 @@ public:
     virtual void add(shared_ptr<IIndexable> idxble) = 0;
     virtual void clear() = 0;
     virtual std::vector<std::shared_ptr<IIndexable>> search(const QString &req) const = 0;
+
+protected:
+    static constexpr const char* SEPARATOR_REGEX  = "[^a-zA-Z0-9]+";
+
 };
