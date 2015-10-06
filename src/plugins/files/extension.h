@@ -90,7 +90,7 @@ public:
 
 private:
     QPointer<ConfigWidget> _widget;
-    vector<shared_ptr<File>> _fileIndex;
+    std::vector<shared_ptr<File>> _fileIndex;
     Search _searchIndex;
     QMutex _indexAccess;
     QPointer<Indexer> _indexer;

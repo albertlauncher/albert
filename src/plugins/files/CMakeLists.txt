@@ -15,6 +15,10 @@ set(SRC
     file.cpp
     fileactions.h
     indexer.cpp
+    ../../shared/search/search.cpp
+    ../../shared/search/search_impl.h
+    ../../shared/search/prefixsearch.h
+    ../../shared/search/fuzzysearch.h
 )
 
 qt5_wrap_ui(UI

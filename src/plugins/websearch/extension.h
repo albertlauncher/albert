@@ -61,7 +61,7 @@ public:
 
 private:
     QPointer<ConfigWidget> widget_;
-    vector<shared_ptr<SearchEngine>> index_;
+    std::vector<shared_ptr<SearchEngine>> index_;
 
     /* constexpr */
     static constexpr const char* EXT_NAME = "websearch";

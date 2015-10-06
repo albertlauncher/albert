@@ -22,7 +22,7 @@
 #include <QMutex>
 #include <QTimer>
 #include <QList>
-#include <map>
+#include <vector>
 #include "iextension.h"
 #include "search/search.h"
 
@@ -64,7 +64,7 @@ public:
 
 private:
     QPointer<ConfigWidget> _widget;
-    vector<shared_ptr<Application>> _appIndex;
+    std::vector<shared_ptr<Application>> _appIndex;
     Search _searchIndex;
     QMutex _indexAccess;
     QPointer<Indexer> _indexer;

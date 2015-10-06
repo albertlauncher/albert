@@ -25,7 +25,7 @@ class SearchImpl
 {
 public:
     virtual ~SearchImpl(){}
-    virtual void add(shared_ptr<IIndexable> idxble) = 0;
+    virtual void add(std::shared_ptr<IIndexable> idxble) = 0;
     virtual void clear() = 0;
     virtual std::vector<std::shared_ptr<IIndexable>> search(const QString &req) const = 0;
 

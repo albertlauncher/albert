@@ -18,6 +18,7 @@
 #include <QDebug>
 #include <QThread>
 #include <map>
+#include <set>
 #include <functional>
 #include "indexer.h"
 #include "file.h"

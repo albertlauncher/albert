@@ -15,68 +15,38 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include "search_impl.h"
-#include "iindexable.h"
-#include "prefixsearch.h"
-#include "fuzzysearch.h"
+#include <QString>
 #include <vector>
 #include <memory>
+class SearchImpl;
+class IIndexable;
 
 class Search final {
 
 public:
-
     /**
      * @brief Contstructs a search
      * @param fuzzy Sets the type of the search. Defaults to false.
      */
-    Search(bool fuzzy = false) {
-        (fuzzy) ? _impl = new FuzzySearch() : _impl = new PrefixSearch();
-    }
-
-
+    Search(bool fuzzy = false);
 
     /**
      * @brief Destructs the search
      * @param
      */
-    ~Search() {
-        delete _impl;
-    }
-
-
+    ~Search();
 
     /**
      * @brief Sets the type of the search to fuzzy
      * @param fuzzy The type to set. Defaults to true.
      */
-    void setFuzzy(bool fuzzy = true) {
-        if (dynamic_cast<FuzzySearch*>(_impl)) {
-            if (fuzzy) return;
-            FuzzySearch *old = dynamic_cast<FuzzySearch*>(_impl);
-            _impl = new PrefixSearch(*old);
-            delete old;
-        } else if (dynamic_cast<PrefixSearch*>(_impl)) {
-            if (!fuzzy) return;
-            PrefixSearch *old = dynamic_cast<PrefixSearch*>(_impl);
-            _impl = new FuzzySearch(*old);
-            delete old;
-        } else {
-            throw; //should not happen
-        }
-    }
-
-
+    void setFuzzy(bool fuzzy = true);
 
     /**
      * @brief Type of the search
      * @return True if the search is fuzzy else false.
      */
-    bool fuzzy() {
-        return dynamic_cast<FuzzySearch*>(_impl) != nullptr;
-    }
-
-
+    bool fuzzy();
 
     /**
      * @brief Set the error tolerance of the fuzzy search
@@ -88,53 +58,30 @@ public:
      *
      * @param t The amount of error tolerance
      */
-    void setDelta(double d) {
-        FuzzySearch* f = dynamic_cast<FuzzySearch*>(_impl);
-        if (f)
-            f->setDelta(d);
-    }
-
-
+    void setDelta(double d);
 
     /**
      * @brief The error tolerance of the fuzzy search
      * @return The amount of error tolerance if search is fuzzy 0 else.
      */
-    double delta() {
-        FuzzySearch* f = dynamic_cast<FuzzySearch*>(_impl);
-        if (f)
-            return f->delta();
-        return 0;
-    }
-
-
+    double delta();
 
     /**
      * @brief Build the search index
      * @param The items to index
      */
-    inline void add(std::shared_ptr<IIndexable> idxble) {
-        _impl->add(idxble);
-    }
-
-
+    void add(std::shared_ptr<IIndexable> idxble);
 
     /**
      * @brief Clear the search index
      */
-    inline void clear() {
-        _impl->clear();
-    }
-
-
+    void clear();
 
     /**
      * @brief Perform a search on the index
      * @param req The query string
      */
-    inline std::vector<std::shared_ptr<IIndexable>> search(const QString &req) const {
-        return _impl->search(req);
-    }
+    std::vector<std::shared_ptr<IIndexable>> search(const QString &req) const;
 
 private:
     SearchImpl *_impl;
