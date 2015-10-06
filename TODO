@@ -1,56 +1,38 @@
-TODO:
-    TAG! albert-0.6.3-alpha
-
-Ideas:
-    ~/.config/user-dirs.dirs ansprecvhen in files help
-    Twitterplugin
-    Spin gear until search is finished
-    Use fallback if no icon in destkop file
-    Split repo for plugins from core
-    [Common,Files]  Split search, make common matcherobjects (prefix fuzzy) and use qgrams only for files
-    Object == string ? Uniform Resource Identifier etc
-    metatypes for styleditemdelegate (qss)
-
 Facts:
     Avg pathlenth in home = 30.9 [L=0;C=0;for i in $(find /home/manuel/documents/ -not -path '*/\.*'); do ((++L)); C=$(($C+${#i})); done; bc <<< "scale=1;$C/$L"]
 
 
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+
+- X11Extras. Drop them. Using completeley only XCB (http://xcb.freedesktop.org/)
+- Hotkey refinement (XCB) - multiple independant hotkeys, qxtglobalshortcut,
+- Actionmodifier. Preset modifier to action map
+- Actionmodifier. Configurable modifier to action map
+- Plugin Interdependencies. https://doc-snapshots.qt.io/qtcreator-extending/extensionsystem-pluginspec.html#details
+- Actioninterdependencies. E.g. open files with app actions
+- Mousemoveability (input box)
+- teardown/setupsession not guaranteed before handleQuery
+
+- Matchers - Only large indexes have search indexes (Files), [ needs profiler ] Scoring. Improve them using matcher classes.
+- Python. Special plugin interface, (Calc (Sympy), Terminal, ssh). Closes #13
+- Single instance. Closes #23
+- Profiler. Extensionmanager profiles extensions (SQLITE backend), Dummy extension with 1M results
+- Multithreading
+- QML. Check the QtQuick standard project
+
 ------------------------------- RELEASE 0.13 -----------------------------------
 ------------------------------- RELEASE 0.12 -----------------------------------
 ------------------------------- RELEASE 0.11 -----------------------------------
 ------------------------------- RELEASE 0.10 -----------------------------------
 ------------------------------- RELEASE 0.9 ------------------------------------
+[ ] Terminal plugin
 ------------------------------- RELEASE 0.8 ------------------------------------
 
-- X11Extras. Drop them. Using completeley only XCB (http://xcb.freedesktop.org/)
-- Multithreading
-- QML. Check the QtQuick standard project
-- Hotkey refinement (XCB) - multiple independant hotkeys, qxtglobalshortcut,
-- Pluginmanager treeview. (Group, Extension, Subextension) - with QDataWidgetMapper
-- Profiler. Extensionmanager profiles extensions (SQLITE backend), Dummy extension with 1M results
-- Actionmodifier. Preset modifier to action map
-- Actionmodifier. Configurable modifier to action map
-- Plugin Interdependencies. https://doc-snapshots.qt.io/qtcreator-extending/extensionsystem-pluginspec.html#details
-- Actioninterdependencies. E.g. open files with app actions
-- Matchers - Only large indexes have search indexes (Files), [ needs profiler ]
-- Scoring. Improve them using matcher classes.
-
-- Python. Special plugin interface, (Calc (Sympy), Terminal, ssh). Closes #13
-- Single instance. Closes #23
-- settings are not saved (alpha 0.5). Closes #12
-- Mousemoveability (input box)
-- teardown/setupsession not guaranteed before handleQuery
-- Show actions only if there are some
-
-
-
-------------------------------- RELEASE 0.8 ------------------------------------
-✘ Current screen. QDesktopWidget * QApplication::desktop().Remember window position. Closes #33, #8
-✘ Open on screen with mouse. 
-✘ Please allow fuzzy matching of spaces to underscores #40
-
+[x] Current screen. Remember window position. Closes #8
+[x] Please allow fuzzy matching of spaces to underscores #40
+[x] Remember position if not centered. Closes #33
+[ ] Triggers
 
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
