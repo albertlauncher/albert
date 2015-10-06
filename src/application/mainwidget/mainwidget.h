@@ -53,6 +53,7 @@ private:
     static const constexpr char* CFG_CENTERED     = "showCentered";
     static const constexpr bool  CFG_CENTERED_DEF = true;
     static const constexpr char* CFG_THEME        = "theme";
+    static const constexpr char* CFG_WND_POS      = "windowPosition";
     static const constexpr char* CFG_THEME_DEF    = "Standard";
 
 signals:

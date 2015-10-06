@@ -73,6 +73,8 @@ MainWidget::MainWidget(QWidget *parent)
         qFatal("FATAL: Stylefile not found: %s", _theme.toStdString().c_str());
         exit(EXIT_FAILURE);
     }
+    if (s.contains(CFG_WND_POS) && s.value(CFG_WND_POS).canConvert(QMetaType::QPoint))
+        move(s.value(CFG_WND_POS).toPoint());
 }
 
 
@@ -82,6 +84,7 @@ MainWidget::~MainWidget() {
     // Save settings
     QSettings s;
     s.setValue(CFG_CENTERED, _showCentered);
+    s.setValue(CFG_WND_POS, pos());
     s.setValue(CFG_THEME, _theme);
 }
 
