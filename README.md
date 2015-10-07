@@ -1,4 +1,4 @@
-#Albert [![IRC](https://img.shields.io/badge/IRC-%23albertlauncher-blue.svg?style=flat-square)](https://kiwiirc.com/client/irc.freenode.net/#albert-launcher)
+#Albert [![IRC](https://img.shields.io/badge/IRC-%23albertlauncher-blue.svg?style=flat-square)](https://kiwiirc.com/client/irc.freenode.net/#albertlauncher)
 ![Image of v0.6](https://raw.githubusercontent.com/ManuelSchneid3r/albert/master/v0.6.gif)
 #How to get it
 Currently albert is, exept for the Arch User Repository, not in any of the major repositories. How ever you can build albert yourself from sources. Make sure the dependencies are installed, download the latest sources, extraxt them, cd to the extracted directory and do the following:
