@@ -277,7 +277,8 @@ void Applications::Extension::restorePaths() {
 
     //  Add standard paths
     for (const QString &path : QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation))
-        addDir(path);
+        if (QFileInfo(path).exists())
+            addDir(path);
 }
 
 
