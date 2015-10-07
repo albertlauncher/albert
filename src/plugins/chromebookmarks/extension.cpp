@@ -38,7 +38,7 @@ QWidget *ChromeBookmarks::Extension::widget() {
 
         // Paths
         _widget->ui.lineEdit_path->setText(_bookmarksFile);
-        connect(_widget, &ConfigWidget::requestEditPath, this, &Extension::setPath);
+        connect(_widget.data(), &ConfigWidget::requestEditPath, this, &Extension::setPath);
         connect(this, &Extension::pathChanged, _widget->ui.lineEdit_path, &QLineEdit::setText);
 
         // Fuzzy
@@ -108,9 +108,9 @@ void ChromeBookmarks::Extension::finalize() {
     // Stop and wait for background indexer
     if (!_indexer.isNull()) {
         _indexer->abort();
-        disconnect(_indexer, &Indexer::destroyed, this, &Extension::updateIndex);
+        disconnect(_indexer.data(), &Indexer::destroyed, this, &Extension::updateIndex);
         QEventLoop loop;
-        connect(_indexer, &Indexer::destroyed, &loop, &QEventLoop::quit);
+        connect(_indexer.data(), &Indexer::destroyed, &loop, &QEventLoop::quit);
         loop.exec();
     }
 
@@ -223,7 +223,7 @@ void ChromeBookmarks::Extension::updateIndex() {
     // If thread is running, stop it and start this functoin after termination
     if (!_indexer.isNull()) {
         _indexer->abort();
-        connect(_indexer, &Indexer::destroyed, this, &Extension::updateIndex);
+        connect(_indexer.data(), &Indexer::destroyed, this, &Extension::updateIndex);
     } else {
         // Create a new scanning runnable for the threadpool
         _indexer = new Indexer(this);

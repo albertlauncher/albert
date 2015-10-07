@@ -39,8 +39,8 @@ QWidget *Applications::Extension::widget() {
         _widget->ui.label_info->setText(QString("%1 Applications indexed.").arg(_appIndex.size()));
         connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::clear);
         connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::addItems);
-        connect(_widget, &ConfigWidget::requestAddPath, this, &Extension::addDir);
-        connect(_widget, &ConfigWidget::requestRemovePath, this, &Extension::removeDir);
+        connect(_widget.data(), &ConfigWidget::requestAddPath, this, &Extension::addDir);
+        connect(_widget.data(), &ConfigWidget::requestRemovePath, this, &Extension::removeDir);
         connect(_widget->ui.pushButton_restorePaths, &QPushButton::clicked, this, &Extension::restorePaths);
 
         // Fuzzy
@@ -130,9 +130,9 @@ void Applications::Extension::finalize() {
     // Stop and wait for background indexer
     if (!_indexer.isNull()) {
         _indexer->abort();
-        disconnect(_indexer, &Indexer::destroyed, this, &Extension::updateIndex);
+        disconnect(_indexer.data(), &Indexer::destroyed, this, &Extension::updateIndex);
         QEventLoop loop;
-        connect(_indexer, &Indexer::destroyed, &loop, &QEventLoop::quit);
+        connect(_indexer.data(), &Indexer::destroyed, &loop, &QEventLoop::quit);
         loop.exec();
     }
 
@@ -290,7 +290,7 @@ void Applications::Extension::updateIndex() {
     if (!_indexer.isNull()) {
         _indexer->abort();
         _widget->ui.label_info->setText("Waiting for indexer to shut down ...");
-        connect(_indexer, &Indexer::destroyed, this, &Extension::updateIndex);
+        connect(_indexer.data(), &Indexer::destroyed, this, &Extension::updateIndex);
     } else {
         // Create a new scanning runnable for the threadpool
         _indexer = new Indexer(this);
@@ -300,7 +300,7 @@ void Applications::Extension::updateIndex() {
 
         // If widget is visible show the information in the status bat
         if (!_widget.isNull())
-            connect(_indexer, &Indexer::statusInfo, _widget->ui.label_info, &QLabel::setText);
+            connect(_indexer.data(), &Indexer::statusInfo, _widget->ui.label_info, &QLabel::setText);
     }
 }
 

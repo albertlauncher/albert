@@ -95,11 +95,10 @@ bool Applications::Application::readDesktopEntry() {
     QFile desktopFile(_path);
     if (desktopFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
         QTextStream stream(&desktopFile);
-        QString line;
         QString key;
         QString value;
         QString currentGroup;
-        while (stream.readLineInto(&line)) {
+        for (QString line=stream.readLine(); !line.isNull(); line=stream.readLine()) {
             line = line.trimmed();
 
             if (line.startsWith('#') || line.isEmpty())

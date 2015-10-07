@@ -32,7 +32,6 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
     if (context.function)
         suffix = QString("  --  [%1]").arg(context.function);
     switch (type) {
-    case QtInfoMsg:
     case QtDebugMsg:
         fprintf(stderr, "%s\n", message.toLocal8Bit().constData());
         break;
