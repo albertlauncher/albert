@@ -141,6 +141,10 @@ QWidget *ChromeBookmarks::Extension::widget(QWidget *parent) {
         // Fuzzy
         _widget->ui.checkBox_fuzzy->setChecked(fuzzy());
         connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
+
+        // Info
+        _widget->ui.label_info->setText(QString("%1 bookmarks indexed.").arg(_index.size()));
+        connect(this, &Extension::statusInfo, _widget->ui.label_info, &QLabel::setText);
     }
     return _widget;
 }
@@ -210,6 +214,7 @@ void ChromeBookmarks::Extension::updateIndex() {
     // If thread is running, stop it and start this functoin after termination
     if (!_indexer.isNull()) {
         _indexer->abort();
+        _widget->ui.label_info->setText("Waiting for indexer to shut down ...");
         connect(_indexer.data(), &Indexer::destroyed, this, &Extension::updateIndex);
     } else {
         // Create a new scanning runnable for the threadpool
@@ -217,6 +222,10 @@ void ChromeBookmarks::Extension::updateIndex() {
 
         //  Run it
         QThreadPool::globalInstance()->start(_indexer);
+
+        // If widget is visible show the information in the status bat
+        if (!_widget.isNull())
+            connect(_indexer.data(), &Indexer::statusInfo, _widget->ui.label_info, &QLabel::setText);
     }
 }
 

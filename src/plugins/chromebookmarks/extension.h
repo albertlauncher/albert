@@ -76,5 +76,6 @@ private:
 
 signals:
     void pathChanged(const QString&);
+    void statusInfo(const QString&);
 };
 }

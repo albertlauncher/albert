@@ -117,10 +117,14 @@ void ChromeBookmarks::Indexer::run() {
     // Unlock the accress
     _extension->_indexAccess.unlock();
 
+    // Finally update the watches (maybe folders changed)
+    _extension->_watcher.removePaths(_extension->_watcher.files());
+    if(!_extension->_watcher.addPath(_extension->_bookmarksFile)) // No clue why this should happen
+        qCritical() << _extension->_bookmarksFile
+                    <<  "could not be watched. Changes in this path will not be noticed.";
     /*
      *  ▲ CRITICAL ▲
      */
-
 
     // Notification
     msg = QString("Indexed %1 bookmarks.").arg(_extension->_index.size());
