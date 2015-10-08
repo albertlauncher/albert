@@ -148,7 +148,6 @@ QWidget *Files::Extension::widget(QWidget *parent) {
 
         // Paths
         _widget->ui.listWidget_paths->addItems(_rootDirs);
-        _widget->ui.label_info->setText(QString("%1 files indexed.").arg(_fileIndex.size()));
         connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::clear);
         connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::addItems);
         connect(_widget.data(), &ConfigWidget::requestAddPath, this, &Extension::addDir);
@@ -185,6 +184,7 @@ QWidget *Files::Extension::widget(QWidget *parent) {
         connect(_widget->ui.spinBox_interval, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Extension::setScanInterval);
 
         // Info
+        _widget->ui.label_info->setText(QString("%1 files indexed.").arg(_fileIndex.size()));
         connect(this, &Extension::statusInfo, _widget->ui.label_info, &QLabel::setText);
     }
     return _widget;

@@ -347,15 +347,11 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QLabel" name="label_info">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <widget class="QLabel" name="label_info">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

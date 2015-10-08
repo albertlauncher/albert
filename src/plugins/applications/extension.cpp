@@ -151,7 +151,6 @@ QWidget *Applications::Extension::widget(QWidget *parent) {
 
         // Paths
         _widget->ui.listWidget_paths->addItems(_rootDirs);
-        _widget->ui.label_info->setText(QString("%1 Applications indexed.").arg(_appIndex.size()));
         connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::clear);
         connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::addItems);
         connect(_widget.data(), &ConfigWidget::requestAddPath, this, &Extension::addDir);
@@ -163,6 +162,7 @@ QWidget *Applications::Extension::widget(QWidget *parent) {
         connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
 
         // Info
+        _widget->ui.label_info->setText(QString("%1 Applications indexed.").arg(_appIndex.size()));
         connect(this, &Extension::statusInfo, _widget->ui.label_info, &QLabel::setText);
     }
     return _widget;

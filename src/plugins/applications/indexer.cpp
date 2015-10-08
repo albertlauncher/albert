@@ -92,11 +92,6 @@ void Applications::Indexer::run() {
     // Unlock the accress
     _extension->_indexAccess.unlock();
 
-    /*
-     *  ▲ CRITICAL ▲
-     */
-
-
     // Finally update the watches (maybe folders changed)
     _extension->_watcher.removePaths(_extension->_watcher.directories());
     for (const QString &path : _extension->_rootDirs) {
@@ -104,6 +99,11 @@ void Applications::Indexer::run() {
         while (dit.hasNext())
             _extension->_watcher.addPath(dit.next());
     }
+
+    /*
+     *  ▲ CRITICAL ▲
+     */
+
 
 
     // Notification
