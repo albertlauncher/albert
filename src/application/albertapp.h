@@ -43,7 +43,7 @@ public:
     void hideWidget();
 
 private slots:
-    void onStateChange(Qt::ApplicationState state);
+//    void onStateChange(Qt::ApplicationState state);
 
 private:
     MainWidget               *_mainWidget;

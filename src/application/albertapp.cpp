@@ -108,7 +108,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     QObject::connect(_pluginManager, &PluginManager::pluginAboutToBeUnloaded, _extensionManager, &ExtensionManager::unregisterExtension);
 
     // Hide on focus loss
-    QObject::connect(this, &QApplication::applicationStateChanged, this, &AlbertApp::onStateChange);
+//    QObject::connect(this, &QApplication::applicationStateChanged, this, &AlbertApp::onStateChange);
 
     // Load the plugins
     _pluginManager->loadPlugins();
@@ -179,8 +179,8 @@ void AlbertApp::hideWidget() {
 
 
 
-/** ***************************************************************************/
-void AlbertApp::onStateChange(Qt::ApplicationState state) {
-    if (state==Qt::ApplicationInactive)
-        _mainWidget->hide();
-}
+///** ***************************************************************************/
+//void AlbertApp::onStateChange(Qt::ApplicationState state) {
+//    if (state==Qt::ApplicationInactive)
+//        _mainWidget->hide();
+//}
