@@ -21,16 +21,9 @@
 #include "abstractobjects.h"
 
 
-/** ***************************************************************************/
-QWidget *Calculator::Extension::widget() {
-    // There is no settings widget
-    return nullptr;
-}
-
-
 
 /** ***************************************************************************/
-void Calculator::Extension::initialize() {
+Calculator::Extension::Extension() {
     qDebug() << "[Calculator] Initialize extension";
     if (QIcon::hasThemeIcon("calc"))
         calcIcon_ = QIcon::fromTheme("calc");
@@ -45,20 +38,8 @@ void Calculator::Extension::initialize() {
 
 
 /** ***************************************************************************/
-void Calculator::Extension::finalize() {
+Calculator::Extension::~Extension() {
     parser_.reset();
-}
-
-
-
-/** ***************************************************************************/
-void Calculator::Extension::setupSession() {
-}
-
-
-
-/** ***************************************************************************/
-void Calculator::Extension::teardownSession() {
 }
 
 

@@ -15,8 +15,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QMap>
 #include <QString>
+#include <QStringList>
+#include <vector>
+#include <memory>
+using std::vector;
+using std::unique_ptr;
 #include "pluginloader.h"
 
 
@@ -27,20 +31,21 @@ public:
     PluginManager();
     ~PluginManager();
 
-    void loadPlugins();
-    void unloadPlugins();
-    const QMap<QString, PluginLoader*> & plugins();
-
-    void enable(const QString &path);
-    void disable(const QString &path);
-    bool isEnabled(const QString &path);
+    void refreshPluginSpecs();
+    const vector<unique_ptr<PluginSpec>> &plugins();
+    void loadPlugin(const unique_ptr<PluginSpec> &plugin);
+    void unloadPlugin(const unique_ptr<PluginSpec> &plugin);
+    void enablePlugin(const unique_ptr<PluginSpec> &plugin);
+    void disablePlugin(const unique_ptr<PluginSpec> &plugin);
+    bool pluginIsEnabled(const unique_ptr<PluginSpec> &plugin);
 
 private:
-    QMap<QString, PluginLoader*> _plugins;
-    QStringList _blacklist;
+    vector<unique_ptr<PluginSpec>> plugins_;
+    QStringList blacklist_;
     static const constexpr char* CFG_BLACKLIST = "blacklist";
 
 signals:
+    void pluginsChanged();
     void pluginLoaded(QObject*);
-    void pluginAboutToBeUnloaded(QObject*);
+    void pluginAboutToBeUnloaded(QObject*); // MUST BLOCK
 };

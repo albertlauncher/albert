@@ -23,63 +23,25 @@
 
 /** ***************************************************************************/
 PluginManager::PluginManager() {
-    _blacklist = QSettings().value(CFG_BLACKLIST).toStringList();
+    qDebug() << "[PluginManager] Loading plugins.";
 
-}
+    // Load settings
+    blacklist_ = QSettings().value(CFG_BLACKLIST).toStringList();
 
-
-
-/** ***************************************************************************/
-PluginManager::~PluginManager() {
-    QSettings().setValue(CFG_BLACKLIST, _blacklist);
-}
-
-
-
-/** ***************************************************************************/
-const QMap<QString, PluginLoader *> &PluginManager::plugins() {
-    return _plugins;
-}
-
-
-
-/** ***************************************************************************/
-void PluginManager::enable(const QString &path) {
-    _blacklist.removeAll(path);
-}
-
-
-
-/** ***************************************************************************/
-void PluginManager::disable(const QString &path) {
-    if (!_blacklist.contains(path))
-        _blacklist.push_back(path);
-}
-
-
-/** ***************************************************************************/
-bool PluginManager::isEnabled(const QString &path) {
-    return !_blacklist.contains(path);
-}
-
-
-
-/** ***************************************************************************/
-void PluginManager::loadPlugins() {
-    qDebug() << "Loading plugins";
-
-    // Iterate overall files in the plugindirs
-    QStringList pluginDirs = QStandardPaths::locateAll(QStandardPaths::DataLocation, "plugins", QStandardPaths::LocateDirectory);
+    // Iterate over all files in the plugindirs
+    QStringList pluginDirs = QStandardPaths::locateAll(
+                QStandardPaths::DataLocation,
+                "plugins",
+                QStandardPaths::LocateDirectory);
     for (QString pluginDir : pluginDirs) {
         QDirIterator dirIterator(pluginDir, QDir::Files);
         while (dirIterator.hasNext()) {
             dirIterator.next();
             QString path = dirIterator.fileInfo().canonicalFilePath();
 
-
             // Check if this path is a lib
             if (!QLibrary::isLibrary(path)) {
-                qWarning() << "Not a library:" << path;
+                qWarning() << "Non-library in plugins path:" << path;
                 continue;
             }
 
@@ -91,22 +53,49 @@ void PluginManager::loadPlugins() {
 //                continue;
 //            }
 
-            PluginLoader *plugin = new PluginLoader(path);
-
-            // Store the plugin
-            _plugins.insert(path, plugin);
+            unique_ptr<PluginSpec> plugin(new PluginSpec(path));
 
             // Load if not blacklisted
-            if (_blacklist.contains(path))
-                continue;
+            if (!blacklist_.contains(plugin->id()))
+                loadPlugin(plugin);
 
-            plugin->load();
+            // Store the plugin
+            plugins_.push_back(std::move(plugin));
+        }
+    }
+    qDebug() << "[PluginManager] Loading plugins done.";
+}
 
-            // Test for success and propagate this
-            if (plugin->status() == PluginLoader::Status::Loaded) {
-                qDebug() << "[Pluginloader] Plugin loaded:" <<  plugin->name();
-                emit pluginLoaded(plugin->instance());
-            }
+
+
+/** ***************************************************************************/
+PluginManager::~PluginManager() {
+    qDebug() << "[PluginManager] Unloading plugins.";
+    QSettings().setValue(CFG_BLACKLIST, blacklist_);
+    for (const unique_ptr<PluginSpec> &plugin : plugins_){
+        unloadPlugin(plugin);
+    }
+    qDebug() << "[PluginManager] Unloading plugins done.";
+}
+
+
+
+/** ***************************************************************************/
+const vector<unique_ptr<PluginSpec> > &PluginManager::plugins() {
+    return plugins_;
+}
+
+
+
+/** ***************************************************************************/
+void PluginManager::loadPlugin(const unique_ptr<PluginSpec> &plugin) {
+    if (!plugin->isLoaded()){
+        plugin->load();
+
+        // Test for success and propagate this
+        if (plugin->status() == PluginSpec::Status::Loaded) {
+            qDebug() << "[Pluginloader] Plugin loaded:" <<  plugin->id();
+            emit pluginLoaded(plugin->instance());
         }
     }
 }
@@ -114,12 +103,34 @@ void PluginManager::loadPlugins() {
 
 
 /** ***************************************************************************/
-void PluginManager::unloadPlugins() {
-    for (PluginLoader *plugin : _plugins) {
-        if (plugin->status() == PluginLoader::Status::Loaded) {
-            emit pluginAboutToBeUnloaded(plugin->instance()); // THIS HAS TO BE BLOCKING
-            plugin->unload();
-            delete plugin;
-        }
+void PluginManager::unloadPlugin(const unique_ptr<PluginSpec> &plugin) {
+    receivers(SIGNAL(pluginAboutToBeUnloaded(QObject*)));
+    if (plugin->isLoaded()){
+        emit pluginAboutToBeUnloaded(plugin->instance());
+        plugin->unload();
     }
+}
+
+
+
+/** ***************************************************************************/
+void PluginManager::enablePlugin(const unique_ptr<PluginSpec> &plugin) {
+    blacklist_.removeAll(plugin->id());
+    loadPlugin(plugin);
+}
+
+
+
+/** ***************************************************************************/
+void PluginManager::disablePlugin(const unique_ptr<PluginSpec> &plugin) {
+    if (!blacklist_.contains(plugin->id()))
+        blacklist_.push_back(plugin->id());
+    unloadPlugin(plugin);
+}
+
+
+
+/** ***************************************************************************/
+bool PluginManager::pluginIsEnabled(const unique_ptr<PluginSpec> &plugin) {
+    return !blacklist_.contains(plugin->id());
 }

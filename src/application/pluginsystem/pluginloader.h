@@ -23,14 +23,14 @@
 
 
 #include <QSettings>
-class PluginLoader : public QPluginLoader {
+class PluginSpec : public QPluginLoader {
 
 public:
     enum class Status{NotLoaded, Error, Loaded};
 
-    PluginLoader(QString path);
-    PluginLoader(const PluginLoader&) = delete;
-    ~PluginLoader();
+    PluginSpec(QString path);
+    PluginSpec(const PluginSpec&) = delete;
+    ~PluginSpec();
 
     QObject *instance();
     void load();
@@ -43,9 +43,9 @@ public:
     QString version() const;
     QString platform() const;
     QString group() const;
-    QString copyright() const;
+    QString author() const;
     QString description() const;
-    QStringList dependencies() const;
+    QString dependencies() const;
 
 private:
     Status _status;

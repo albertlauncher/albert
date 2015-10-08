@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-class QWidget;
+#include <QWidget>
 
 struct IPlugin
 {
@@ -28,6 +28,6 @@ struct IPlugin
      * be no settings widget available in the settings.
      * @return The settings widget
      */
-    virtual QWidget* widget() = 0;
+    virtual QWidget* widget(QWidget *parent = nullptr) {return new QWidget(parent);}
 };
 

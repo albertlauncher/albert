@@ -35,14 +35,13 @@ class Extension final : public QAbstractTableModel, public IExtension
     Q_INTERFACES(IExtension)
 
 public:
+    Extension();
+    ~Extension();
+
     // GenericPluginInterface
-    QWidget *widget() override;
+    QWidget *widget(QWidget *parent = nullptr) override;
 
     // IExtension
-    void initialize(/*CoreApi *coreApi*/) override;
-    void finalize() override;
-    void setupSession() override;
-    void teardownSession() override;
     void handleQuery(shared_ptr<Query> query) override;
     void handleFallbackQuery(shared_ptr<Query> query) override;
 

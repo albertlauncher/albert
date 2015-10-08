@@ -26,6 +26,7 @@
 #include "hotkeymanager.h"
 #include "mainwidget.h"
 #include "pluginmanager.h"
+#include "pluginmodel.h"
 #include "iextension.h"
 
 
@@ -95,28 +96,15 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
      * PLUGIN  TAB
      */
 
-    // PLUGIN  LIST
-    updatePluginList();
-    ui.treeWidget_plugins->expandAll();
-    ui.treeWidget_plugins->header()->setSectionResizeMode(0, QHeaderView::Stretch);
-    ui.treeWidget_plugins->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    // Show the plugins. This* widget takes ownership of the model
+    ui.listView_plugins->setModel(new PluginModel(_pluginManager, ui.listView_plugins));
 
-    connect(ui.treeWidget_plugins, &QTreeWidget::currentItemChanged,
+    // Update infos when item is changed
+    connect(ui.listView_plugins->selectionModel(), &QItemSelectionModel::currentChanged,
             this, &SettingsWidget::updatePluginInformations);
 
-    // Blacklist items if the checbox is cklicked
-    connect(ui.treeWidget_plugins, &QTreeWidget::itemChanged,
-            this, &SettingsWidget::onPluginItemChanged);
-
-    connect(ui.pushButton_pluginHelp, &QPushButton::clicked,
-            this, &SettingsWidget::openPluginHelp);
-
-    connect(ui.pushButton_pluginConfig, &QPushButton::clicked,
-            this, &SettingsWidget::openPluginConfig);
-
-    connect(ui.treeWidget_plugins, &QTreeWidget::activated,
-            this, &SettingsWidget::openPluginConfig);
-
+    connect(ui.listView_plugins->model(), &QAbstractListModel::dataChanged,
+            this, &SettingsWidget::onPluginDataChanged);
 
     /*
      * ABOUT TAB
@@ -127,140 +115,21 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
 
 
 /** ***************************************************************************/
-SettingsWidget::~SettingsWidget() {
-}
+void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
+    // Hidde the placehodler text
+    QLayoutItem *i = ui.widget_pluginInfos->layout()->takeAt(0);
+    delete i->widget();
+    delete i;
 
-
-
-/** ***************************************************************************/
-void SettingsWidget::openPluginHelp() {
-//    if (ui.treeWidget_plugins->currentIndex().isValid()) {
-//        QString path = ui.treeWidget_plugins->currentItem()->data(0,Qt::UserRole).toString();
-//        for (PluginLoader *plugin : _pluginManager->plugins()) {
-//            if (plugin->fileName() == path) { // MUST HAPPEN
-//                QWidget *w = dynamic_cast<IPlugin*>(plugin->instance())->widget();
-//                w->setParent(this);
-//                w->setWindowTitle("Plugin help");
-//                w->setWindowFlags(Qt::Window|Qt::WindowCloseButtonHint);
-//                w->setAttribute(Qt::WA_DeleteOnClose);
-//                new QShortcut(Qt::Key_Escape, w, SLOT(close()));
-//                w->move(w->parentWidget()->window()->frameGeometry().topLeft() +
-//                        w->parentWidget()->window()->rect().center() -
-//                        w->rect().center());
-//                w->show();
-//            }
-//        }
-//    }
-}
-
-
-
-/** ***************************************************************************/
-void SettingsWidget::openPluginConfig() {
-    // If the corresponding plugin is loaded open preferences
-    if (ui.treeWidget_plugins->currentIndex().isValid()) {
-        QString path = ui.treeWidget_plugins->currentItem()->data(0,Qt::UserRole).toString();
-        if (_pluginManager->plugins().contains(path)
-                && _pluginManager->plugins()[path]->status() == PluginLoader::Status::Loaded) {
-            QWidget *w = dynamic_cast<IPlugin*>(_pluginManager->plugins()[path]->instance())->widget();
-            if (!w) return;
-            w->setParent(this);
-            w->setWindowTitle("Plugin configuration");
-            w->setWindowFlags(Qt::Window|Qt::WindowCloseButtonHint);
-            w->setAttribute(Qt::WA_DeleteOnClose);
-            w->setWindowModality(Qt::ApplicationModal);
-            new QShortcut(Qt::Key_Escape, w, SLOT(close()));
-            w->move(w->parentWidget()->window()->frameGeometry().topLeft() +
-                    w->parentWidget()->window()->rect().center() -
-                    w->rect().center());
-            w->show();
-        }
+    if (_pluginManager->plugins()[current.row()]->isLoaded()){
+        ui.widget_pluginInfos->layout()->addWidget(
+                    dynamic_cast<IPlugin*>(_pluginManager->plugins()[current.row()]->instance())->widget()); // Takes ownership
     }
-}
-
-
-
-/** ***************************************************************************/
-void SettingsWidget::onPluginItemChanged(QTreeWidgetItem *item, int column) {
-    if ( static_cast<bool>(item->checkState(column)) )
-        _pluginManager->enable(item->data(0, Qt::UserRole).toString());
-    else
-        _pluginManager->disable(item->data(0, Qt::UserRole).toString());
-    ui.label_restart->setVisible(true);
-}
-
-
-
-/** ***************************************************************************/
-void SettingsWidget::updatePluginList() {
-    const QMap<QString, PluginLoader*>& plugins = _pluginManager->plugins();
-    for (const PluginLoader* plugin : plugins) {
-
-        // Get the top level item of this group, make sure it exists
-        QList<QTreeWidgetItem *> tlis = ui.treeWidget_plugins->findItems(plugin->group(), Qt::MatchExactly);
-        if (tlis.size() > 1) // MUST NOT HAPPEN
-            qCritical() << "Found multiple identical TopLevelItems in PluginList";
-        QTreeWidgetItem *tli;
-        if (tlis.size() == 0) {
-            tli= new QTreeWidgetItem({plugin->group()});
-            tli->setFlags(Qt::ItemIsEnabled);
-            ui.treeWidget_plugins->addTopLevelItem(tli);
-        }
-        else
-            tli = tlis.first();
-
-        // Create the child and insert a childitem
-        QTreeWidgetItem *child = new QTreeWidgetItem();
-        child->setChildIndicatorPolicy(QTreeWidgetItem::QTreeWidgetItem::DontShowIndicatorWhenChildless);
-        child->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-        child->setData(0, Qt::UserRole, plugin->fileName());
-        child->setData(0, Qt::DisplayRole, plugin->name());
-        child->setData(0, Qt::ToolTipRole, plugin->description());
-        child->setData(1, Qt::ToolTipRole, "Check to load at boot");
-        child->setCheckState(1, (_pluginManager->isEnabled(plugin->fileName()))?Qt::Checked:Qt::Unchecked);
-        switch (plugin->status()) {
-        case PluginLoader::Status::Loaded:
-            child->setData(0, Qt::DecorationRole, QIcon(":plugin_loaded"));
-            break;
-        case PluginLoader::Status::NotLoaded:
-            child->setData(0, Qt::DecorationRole, QIcon(":plugin_notloaded"));
-            break;
-        case PluginLoader::Status::Error:
-            child->setData(0, Qt::DecorationRole, QIcon(":plugin_error"));
-            break;
-        default:
-            qCritical() << "Unhandled PluginSpec::Status";
-        }
-        tli->addChild(child);
-    }
-}
-
-
-
-/** ***************************************************************************/
-void SettingsWidget::updatePluginInformations() {
-    // Respect the toplevel items
-    bool isTopLevelItem = !ui.treeWidget_plugins->currentIndex().parent().isValid();
-    ui.widget_pluginInfos->setEnabled(!isTopLevelItem);
-    if (isTopLevelItem) return;
-
-    QString path = ui.treeWidget_plugins->currentItem()->data(0,Qt::UserRole).toString();
-    if (_pluginManager->plugins().contains(path)) {
-        PluginLoader* plugin = _pluginManager->plugins()[path];
-        ui.label_pluginName->setText(plugin->name());
-        ui.label_pluginVersion->setText(plugin->version());
-        ui.label_pluginCopyright->setText(plugin->copyright());
-        ui.label_pluginGroup->setText(plugin->group());
-        ui.label_pluginPath->setText(ui.label_pluginPath->fontMetrics().elidedText(plugin->fileName(), Qt::ElideMiddle,ui.label_pluginPath->width()));
-        ui.label_pluginPath->setToolTip(plugin->fileName());
-        ui.label_pluginPlatform->setText(plugin->platform());
-        QString deps;
-        for (QString s : plugin->dependencies())
-            deps.append(s).append("\n");
-        ui.textBrowser_pluginDependencies->setText(deps);
-        ui.textBrowser_pluginDescription->setText(plugin->description());
-        ui.pushButton_pluginHelp->setEnabled(plugin->status() == PluginLoader::Status::Loaded);
-        ui.pushButton_pluginConfig->setEnabled(plugin->status() == PluginLoader::Status::Loaded);
+    else{
+        QLabel *lbl = new QLabel("Plugin not loaded.");
+        lbl->setEnabled(false);
+        lbl->setAlignment(Qt::AlignCenter);
+        ui.widget_pluginInfos->layout()->addWidget(lbl);
     }
 }
 
@@ -302,9 +171,11 @@ void SettingsWidget::onThemeChanged(int i) {
 
 
 /** ***************************************************************************/
-void SettingsWidget::show() {
-    QWidget::show();
-    this->move(QApplication::desktop()->screenGeometry().center() - rect().center());
+void SettingsWidget::onPluginDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) {
+    if (topLeft == ui.listView_plugins->currentIndex())
+        for (int role : roles)
+            if (role == Qt::CheckStateRole)
+                updatePluginInformations(topLeft);
 }
 
 
@@ -328,7 +199,7 @@ void SettingsWidget::closeEvent(QCloseEvent *event) {
         msgBox.exec();
         if ( msgBox.result() == QMessageBox::Ok ) {
             ui.tabs->setCurrentIndex(0);
-            this->show();
+            show();
         }
         else
             qApp->quit();

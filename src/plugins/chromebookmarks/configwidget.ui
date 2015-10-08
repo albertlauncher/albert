@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>480</width>
-    <height>97</height>
+    <width>800</width>
+    <height>600</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -29,6 +29,18 @@
       <string>Path to bookmarkfile</string>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
       <item>
        <widget class="QLineEdit" name="lineEdit_path">
         <property name="readOnly">
@@ -43,15 +55,28 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QCheckBox" name="checkBox_fuzzy">
+        <property name="text">
+         <string>Fuzzy</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="checkBox_fuzzy">
-     <property name="text">
-      <string>Fuzzy</string>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
      </property>
-    </widget>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>

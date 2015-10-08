@@ -4,7 +4,6 @@
     "version" :         "1.0",
     "platform" :        "All",
     "group" :           "Extensions",
-    "copyright" :       "(C) 2015 Manuel Schneider",
-    "description" :     "Template plugin for plugin developers.",
-    "dependencies" :    [""]
+    "author" :          "Manuel Schneider",
+    "dependencies" :    ""
 }

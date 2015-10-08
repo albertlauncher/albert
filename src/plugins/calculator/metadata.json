@@ -4,7 +4,6 @@
     "version" :         "1.0",
     "platform" :        "All",
     "group" :           "Extensions",
-    "copyright" :       "(C) 2015 Manuel Schneider",
-    "description" :     "Parse and evaluate math expressions in albert.",
-    "dependencies" :    ["libmuparser"]
+    "author" :          "Manuel Schneider",
+    "dependencies" :    "libmuparser"
 }

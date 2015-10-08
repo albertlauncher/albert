@@ -13,7 +13,6 @@ Facts:
 - Actioninterdependencies. E.g. open files with app actions
 - Mousemoveability (input box)
 - teardown/setupsession not guaranteed before handleQuery
-
 - Matchers - Only large indexes have search indexes (Files), [ needs profiler ] Scoring. Improve them using matcher classes.
 - Python. Special plugin interface, (Calc (Sympy), Terminal, ssh). Closes #13
 - Single instance. Closes #23
@@ -28,12 +27,10 @@ Facts:
 ------------------------------- RELEASE 0.9 ------------------------------------
 [ ] Terminal plugin
 ------------------------------- RELEASE 0.8 ------------------------------------
-
 [x] Current screen. Remember window position. Closes #8
 [x] Please allow fuzzy matching of spaces to underscores #40
 [x] Remember position if not centered. Closes #33
 [ ] Triggers
-
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 EXTENSION Properties

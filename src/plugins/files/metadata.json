@@ -4,7 +4,6 @@
     "version" :         "1.1",
     "platform" :        "All",
     "group" :           "Extensions",
-    "copyright" :       "(C) 2015 Manuel Schneider",
-    "description" :     "Indexes files and makes them accessible via albert.",
-    "dependencies" :    [""]
+    "author" :          "Manuel Schneider",
+    "dependencies" :    ""
 }

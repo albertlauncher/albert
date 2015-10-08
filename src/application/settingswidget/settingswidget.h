@@ -27,23 +27,17 @@ class SettingsWidget final : public QWidget
 
 public:
     SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyManager, PluginManager *pluginManager, QWidget * parent = 0, Qt::WindowFlags f = 0);
-    ~SettingsWidget();
-    void show();
-
-    Ui::SettingsDialog ui;
 
 private:
     void keyPressEvent(QKeyEvent * event) override;
     void closeEvent(QCloseEvent * event) override;
-    void updatePluginList();
-    void updatePluginInformations();
-    void changeHotkey(int);
     void onThemeChanged(int);
-    void openPluginHelp();
-    void openPluginConfig();
-    void onPluginItemChanged(QTreeWidgetItem *item, int column);
+    void onPluginDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+    void changeHotkey(int);
+    void updatePluginInformations(const QModelIndex & curr);
 
     MainWidget *_mainWidget;
     HotkeyManager *_hotkeyManager;
     PluginManager *_pluginManager;
+    Ui::SettingsDialog ui;
 };

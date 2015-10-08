@@ -14,31 +14,38 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QDebug>
 #include "extension.h"
 #include "configwidget.h"
 #include "item.h"
 #include "query.h"
 
 
+
 /** ***************************************************************************/
-QWidget *Template::Extension::widget() {
+Template::Extension::Extension() {
+    qDebug() << "[Template] Initialize extension";
+    // Do sth.
+    qDebug() << "[Template] Extension initialized";
+}
+
+
+
+/** ***************************************************************************/
+Template::Extension::~Extension() {
+    qDebug() << "[Template] Finalize extension";
+    // Do sth.
+    qDebug() << "[Template] Extension finalized";
+}
+
+
+
+/** ***************************************************************************/
+QWidget *Template::Extension::widget(QWidget *parent) {
     if (_widget.isNull()) {
-        _widget = new ConfigWidget;
+        _widget = new ConfigWidget(parent);
     }
     return _widget;
-}
-
-
-
-/** ***************************************************************************/
-void Template::Extension::initialize() {
-}
-
-
-
-/** ***************************************************************************/
-void Template::Extension::finalize() {
-
 }
 
 
@@ -61,5 +68,12 @@ void Template::Extension::teardownSession() {
 void Template::Extension::handleQuery(shared_ptr<Query> query) {
     // Avoid annoying warnings
     Q_UNUSED(query)
+}
 
+
+
+/** ***************************************************************************/
+void Template::Extension::handleFallbackQuery(shared_ptr<Query> query) {
+    // Avoid annoying warnings
+    Q_UNUSED(query)
 }

@@ -62,11 +62,6 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     setWindowIcon(QIcon(":app_icon"));
     setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
-    _mainWidget = new MainWidget;
-    _hotkeyManager = new HotkeyManager;
-    _pluginManager = new PluginManager;
-    _extensionManager = new ExtensionManager;
-
 
     /*
      * INITIALISATION
@@ -80,6 +75,16 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
               +"/"+ qApp->applicationName());
     if (!conf.exists())
         conf.mkpath(".");
+
+    _mainWidget = new MainWidget;
+    _hotkeyManager = new HotkeyManager;
+    _pluginManager = new PluginManager;
+    _extensionManager = new ExtensionManager;
+
+    // Propagade the extensions once
+    for (const unique_ptr<PluginSpec> &p : _pluginManager->plugins())
+        if (p->isLoaded())
+            _extensionManager->registerExtension(p->instance());
 
 
     /*
@@ -110,8 +115,6 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     // Hide on focus loss
 //    QObject::connect(this, &QApplication::applicationStateChanged, this, &AlbertApp::onStateChange);
 
-    // Load the plugins
-    _pluginManager->loadPlugins();
 
     // TESTING AREA
 
@@ -122,10 +125,9 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
 /** ***************************************************************************/
 AlbertApp::~AlbertApp() {
     // Unload the plugins
-    _pluginManager->unloadPlugins();
-    delete _hotkeyManager;
     delete _extensionManager;
     delete _pluginManager;
+    delete _hotkeyManager;
     delete _mainWidget;
 }
 

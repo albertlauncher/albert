@@ -38,21 +38,7 @@
 
 
 /** ***************************************************************************/
-QWidget *Websearch::Extension:: widget() {
-    if (widget_.isNull()){
-        widget_ = new ConfigWidget;
-        widget_->ui.tableView_searches->setModel(this);
-
-        connect(widget_->ui.pushButton_restoreDefaults, &QPushButton::clicked,
-                this, &Extension::restoreDefaults);
-    }
-    return widget_;
-}
-
-
-
-/** ***************************************************************************/
-void Websearch::Extension::initialize() {
+Websearch::Extension::Extension() {
     qDebug() << "[Websearch] Initialize extension";
 
     // Deserialize data
@@ -87,7 +73,7 @@ void Websearch::Extension::initialize() {
 
 
 /** ***************************************************************************/
-void Websearch::Extension::finalize() {
+Websearch::Extension::~Extension() {
     qDebug() << "[Websearch] Finalize extension";
 
     // Serialize data
@@ -115,15 +101,15 @@ void Websearch::Extension::finalize() {
 
 
 /** ***************************************************************************/
-void Websearch::Extension::setupSession() {
+QWidget *Websearch::Extension:: widget(QWidget *parent) {
+    if (widget_.isNull()){
+        widget_ = new ConfigWidget(parent);
+        widget_->ui.tableView_searches->setModel(this);
 
-}
-
-
-
-/** ***************************************************************************/
-void Websearch::Extension::teardownSession() {
-
+        connect(widget_->ui.pushButton_restoreDefaults, &QPushButton::clicked,
+                this, &Extension::restoreDefaults);
+    }
+    return widget_;
 }
 
 
@@ -244,14 +230,37 @@ QVariant Websearch::Extension::headerData(int section, Qt::Orientation orientati
 
 
     if (orientation == Qt::Horizontal){
-        switch (role) {
-        case Qt::DisplayRole:
-            switch (static_cast<Section>(section)) {
-            case Section::Name:  return "Name";
-            case Section::Trigger:  return "Trigger";
-            case Section::URL:  return "URL";
+        switch (static_cast<Section>(section)) {
+        case Section::Enabled:{
+            switch (role) {
+            case Qt::ToolTipRole: return "The state of the searchengine.";
             default: return QVariant();
             }
+        }
+        case Section::Name:{
+            switch (role) {
+            case Qt::DisplayRole: return "Name";
+            case Qt::ToolTipRole: return "The name of the searchengine.";
+            default: return QVariant();
+            }
+
+        }
+        case Section::Trigger:{
+            switch (role) {
+            case Qt::DisplayRole: return "Trigger";
+            case Qt::ToolTipRole: return "The term that triggers this searchengine.";
+            default: return QVariant();
+            }
+
+        }
+        case Section::URL:{
+            switch (role) {
+            case Qt::DisplayRole: return "URL";
+            case Qt::ToolTipRole: return "The URL of this searchengine. %s will be replaced by your searchterm.";
+            default: return QVariant();
+            }
+
+        }
         default: return QVariant();
         }
     }

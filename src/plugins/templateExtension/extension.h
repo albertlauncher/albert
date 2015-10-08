@@ -30,16 +30,17 @@ class Extension final : public QObject, public IExtension
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
 public:
-    Extension() {}
-    ~Extension() {}
+    Extension();
+    ~Extension();
 
-    QWidget *widget() override;
-    void initialize(/*CoreApi *coreApi*/) override;
-    void finalize() override;
+    // GenericPluginInterface
+    QWidget *widget(QWidget *parent = nullptr) override;
+
+    // IExtension
     void setupSession() override;
     void teardownSession() override;
     void handleQuery(shared_ptr<Query> query) override;
-    void handleFallbackQuery(shared_ptr<Query>) override {}
+    void handleFallbackQuery(shared_ptr<Query>) override;
 
 private:
     QPointer<ConfigWidget> _widget;

@@ -28,6 +28,7 @@ set(SRC
     pluginsystem/extension/abstractobjects.h
     settingswidget/grabkeybutton.cpp
     settingswidget/settingswidget.cpp
+    settingswidget/pluginmodel.cpp
 )
 
 set(LIB

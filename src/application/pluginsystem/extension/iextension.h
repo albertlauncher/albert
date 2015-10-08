@@ -27,33 +27,18 @@ struct IExtension : public IPlugin
     virtual ~IExtension() {}
 
     /**
-     * @brief Initializes the extension
-     * Gets called once after the extension has been loaded.
-     * Do initial stuff in here.
-     * @param manager A reference to the extension manager
-     */
-    virtual void initialize(/*CoreApi *coreApi*/) = 0;
-
-    /**
-     * @brief Finalizes the extension
-     * Do final stuff in here, e.g. cleanup, serializing etc...
-     * Gets called once before the extension will be unloaded
-     */
-    virtual void finalize() = 0;
-
-    /**
      * @brief Session setup
      * Called when the main window is shown
      * Do short lived preparation stuff in here. E.g. setup connections etc...
      */
-    virtual void setupSession() = 0;
+    virtual void setupSession() {}
 
     /**
      * @brief Session teardown
      * Called when the main window hides/closes
      * Cleanup short lived stuff, or start async indexing here
      */
-    virtual void teardownSession() = 0;
+    virtual void teardownSession() {}
 
     /**
      * @brief Query handling
@@ -67,7 +52,7 @@ struct IExtension : public IPlugin
      * Called if the preceeding query yielded no results.
      * @param query Holds the query context
      */
-    virtual void handleFallbackQuery(shared_ptr<Query> query) = 0;
+    virtual void handleFallbackQuery(shared_ptr<Query> query) {}
 };
 #define ALBERT_EXTENSION_IID "org.manuelschneid3r.albert.extension"
 Q_DECLARE_INTERFACE(IExtension, ALBERT_EXTENSION_IID)

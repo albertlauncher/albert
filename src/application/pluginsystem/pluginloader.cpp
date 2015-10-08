@@ -18,26 +18,26 @@
 #include "pluginloader.h"
 
 /** ***************************************************************************/
-PluginLoader::PluginLoader(QString path) : QPluginLoader(path) {
+PluginSpec::PluginSpec(QString path) : QPluginLoader(path) {
     _status = Status::NotLoaded;
 }
 
 
 
 /** ***************************************************************************/
-PluginLoader::~PluginLoader() {
+PluginSpec::~PluginSpec() {
 
 }
 
 
 /** ***************************************************************************/
-QObject *PluginLoader::instance() {
+QObject *PluginSpec::instance() {
     load();
     return QPluginLoader::isLoaded() ? QPluginLoader::instance() : nullptr;
 }
 
 /** ***************************************************************************/
-void PluginLoader::load() {
+void PluginSpec::load() {
     if (QPluginLoader::load())
         _status = Status::Loaded;
     else {
@@ -49,7 +49,7 @@ void PluginLoader::load() {
 
 
 /** ***************************************************************************/
-void PluginLoader::unload() {
+void PluginSpec::unload() {
     if (QPluginLoader::unload())
         _status = Status::NotLoaded;
     else
@@ -59,73 +59,70 @@ void PluginLoader::unload() {
 
 
 /** ***************************************************************************/
-PluginLoader::Status PluginLoader::status() const {
+PluginSpec::Status PluginSpec::status() const {
     return _status;
 }
 
 
 
 /** ***************************************************************************/
-QString PluginLoader::IID() const {
+QString PluginSpec::IID() const {
     return metaData()["IID"].toString();
 }
 
 
 
 /** ***************************************************************************/
-QString PluginLoader::id() const {
+QString PluginSpec::id() const {
     return metaData()["MetaData"].toObject()["id"].toString();
 }
 
 
 
 /** ***************************************************************************/
-QString PluginLoader::name() const {
+QString PluginSpec::name() const {
     return metaData()["MetaData"].toObject()["name"].toString();
 }
 
 
 
 /** ***************************************************************************/
-QString PluginLoader::version() const {
+QString PluginSpec::version() const {
     return metaData()["MetaData"].toObject()["version"].toString();
 }
 
 
 
 /** ***************************************************************************/
-QString PluginLoader::platform() const {
+QString PluginSpec::platform() const {
     return metaData()["MetaData"].toObject()["platform"].toString();
 }
 
 
 
 /** ***************************************************************************/
-QString PluginLoader::group() const {
+QString PluginSpec::group() const {
     return metaData()["MetaData"].toObject()["group"].toString();
 }
 
 
 
 /** ***************************************************************************/
-QString PluginLoader::copyright() const {
-    return metaData()["MetaData"].toObject()["copyright"].toString();
+QString PluginSpec::author() const {
+    return metaData()["MetaData"].toObject()["author"].toString();
 }
 
 
 
 /** ***************************************************************************/
-QString PluginLoader::description() const {
+QString PluginSpec::description() const {
     return metaData()["MetaData"].toObject()["description"].toString();
 }
 
 
 
 /** ***************************************************************************/
-QStringList PluginLoader::dependencies() const {
-    QStringList res;
-    for (const QJsonValue &v : metaData()["MetaData"].toObject()["dependencies"].toArray())
-        res << v.toString();
-    return res;
+QString PluginSpec::dependencies() const {
+    return metaData()["MetaData"].toObject()["dependencies"].toString();
 }
 

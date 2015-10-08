@@ -32,26 +32,7 @@
 
 
 /** ***************************************************************************/
-QWidget *ChromeBookmarks::Extension::widget() {
-    if (_widget.isNull()){
-        _widget = new ConfigWidget;
-
-        // Paths
-        _widget->ui.lineEdit_path->setText(_bookmarksFile);
-        connect(_widget.data(), &ConfigWidget::requestEditPath, this, &Extension::setPath);
-        connect(this, &Extension::pathChanged, _widget->ui.lineEdit_path, &QLineEdit::setText);
-
-        // Fuzzy
-        _widget->ui.checkBox_fuzzy->setChecked(fuzzy());
-        connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
-    }
-    return _widget;
-}
-
-
-
-/** ***************************************************************************/
-void ChromeBookmarks::Extension::initialize() {
+ChromeBookmarks::Extension::Extension() {
     qDebug() << "[ChromeBookmarks] Initialize extension";
 
     // Load settings
@@ -97,12 +78,13 @@ void ChromeBookmarks::Extension::initialize() {
     updateIndex();
 
     qDebug() << "[ChromeBookmarks] Extension initialized";
+
 }
 
 
 
 /** ***************************************************************************/
-void ChromeBookmarks::Extension::finalize() {
+ChromeBookmarks::Extension::~Extension() {
     qDebug() << "[ChromeBookmarks] Finalize extension";
 
     // Stop and wait for background indexer
@@ -147,15 +129,20 @@ void ChromeBookmarks::Extension::finalize() {
 
 
 /** ***************************************************************************/
-void ChromeBookmarks::Extension::setupSession() {
+QWidget *ChromeBookmarks::Extension::widget(QWidget *parent) {
+    if (_widget.isNull()){
+        _widget = new ConfigWidget(parent);
 
-}
+        // Paths
+        _widget->ui.lineEdit_path->setText(_bookmarksFile);
+        connect(_widget.data(), &ConfigWidget::requestEditPath, this, &Extension::setPath);
+        connect(this, &Extension::pathChanged, _widget->ui.lineEdit_path, &QLineEdit::setText);
 
-
-
-/** ***************************************************************************/
-void ChromeBookmarks::Extension::teardownSession() {
-
+        // Fuzzy
+        _widget->ui.checkBox_fuzzy->setChecked(fuzzy());
+        connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
+    }
+    return _widget;
 }
 
 

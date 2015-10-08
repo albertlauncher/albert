@@ -43,15 +43,11 @@ public:
     ~Extension();
 
     // GenericPluginInterface
-    QWidget *widget() override;
+    QWidget *widget(QWidget *parent = nullptr) override;
 
     // IExtension
-    void initialize(/*CoreApi *coreApi*/) override;
-    void finalize() override;
-    void setupSession() override;
     void teardownSession() override;
     void handleQuery(shared_ptr<Query> query) override;
-    void handleFallbackQuery(shared_ptr<Query>) override {}
 
     // API special to this extension
     void addDir(const QString &dirPath);

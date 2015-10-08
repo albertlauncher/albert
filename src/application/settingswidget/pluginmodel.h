@@ -15,34 +15,17 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
-#include <QLocale>
-#include <QIcon>
-#include <memory>
-#include "iextension.h"
-#include "muParser.h"
+#include <QAbstractListModel>
+class PluginManager;
 
-namespace Calculator {
-
-class ConfigWidget;
-
-class Extension final : public QObject, public IExtension
+class PluginModel : public QAbstractListModel
 {
-    Q_OBJECT
-    Q_INTERFACES(IExtension)
-    Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
-
 public:
-    Extension();
-    ~Extension();
-
-    // IExtension
-    void handleQuery(shared_ptr<Query> query) override;
-
+    PluginModel(PluginManager* pm, QObject *parent = nullptr);
+    int rowCount(const QModelIndex & parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
+    bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole) override;
+    Qt::ItemFlags flags(const QModelIndex & index) const override;
 private:
-    std::unique_ptr<mu::Parser> parser_;
-    QLocale loc;
-    QIcon calcIcon_;
-
+    PluginManager *pluginManager_;
 };
-}

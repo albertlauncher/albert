@@ -29,33 +29,9 @@
 #include "query.h"
 
 
-/** ***************************************************************************/
-QWidget *Applications::Extension::widget() {
-    if (_widget.isNull()) {
-        _widget = new ConfigWidget;
-
-        // Paths
-        _widget->ui.listWidget_paths->addItems(_rootDirs);
-        _widget->ui.label_info->setText(QString("%1 Applications indexed.").arg(_appIndex.size()));
-        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::clear);
-        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::addItems);
-        connect(_widget.data(), &ConfigWidget::requestAddPath, this, &Extension::addDir);
-        connect(_widget.data(), &ConfigWidget::requestRemovePath, this, &Extension::removeDir);
-        connect(_widget->ui.pushButton_restorePaths, &QPushButton::clicked, this, &Extension::restorePaths);
-
-        // Fuzzy
-        _widget->ui.checkBox_fuzzy->setChecked(_searchIndex.fuzzy());
-        connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
-
-        // Info
-        connect(this, &Extension::statusInfo, _widget->ui.label_info, &QLabel::setText);
-    }
-    return _widget;
-}
-
 
 /** ***************************************************************************/
-void Applications::Extension::initialize() {
+Applications::Extension::Extension() {
     qDebug() << "[Applications] Initialize extension";
 
     // Add the userspace icons dir which is not covered in the specs
@@ -124,7 +100,7 @@ void Applications::Extension::initialize() {
 
 
 /** ***************************************************************************/
-void Applications::Extension::finalize() {
+Applications::Extension::~Extension() {
     qDebug() << "[Applications] Finalize extension";
 
     // Stop and wait for background indexer
@@ -169,15 +145,27 @@ void Applications::Extension::finalize() {
 
 
 /** ***************************************************************************/
-void Applications::Extension::setupSession(){
+QWidget *Applications::Extension::widget(QWidget *parent) {
+    if (_widget.isNull()) {
+        _widget = new ConfigWidget(parent);
 
-}
+        // Paths
+        _widget->ui.listWidget_paths->addItems(_rootDirs);
+        _widget->ui.label_info->setText(QString("%1 Applications indexed.").arg(_appIndex.size()));
+        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::clear);
+        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::addItems);
+        connect(_widget.data(), &ConfigWidget::requestAddPath, this, &Extension::addDir);
+        connect(_widget.data(), &ConfigWidget::requestRemovePath, this, &Extension::removeDir);
+        connect(_widget->ui.pushButton_restorePaths, &QPushButton::clicked, this, &Extension::restorePaths);
 
+        // Fuzzy
+        _widget->ui.checkBox_fuzzy->setChecked(_searchIndex.fuzzy());
+        connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
 
-
-/** ***************************************************************************/
-void Applications::Extension::teardownSession() {
-
+        // Info
+        connect(this, &Extension::statusInfo, _widget->ui.label_info, &QLabel::setText);
+    }
+    return _widget;
 }
 
 

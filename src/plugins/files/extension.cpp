@@ -30,71 +30,8 @@
 
 /** ***************************************************************************/
 Files::Extension::Extension() {
-    _minuteTimer.setInterval(60000);
-}
-
-
-
-/** ***************************************************************************/
-Files::Extension::~Extension() {
-}
-
-
-
-/** ***************************************************************************/
-QWidget *Files::Extension::widget() {
-    if (_widget.isNull()) {
-        _widget = new ConfigWidget;
-
-        // Paths
-        _widget->ui.listWidget_paths->addItems(_rootDirs);
-        _widget->ui.label_info->setText(QString("%1 files indexed.").arg(_fileIndex.size()));
-        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::clear);
-        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::addItems);
-        connect(_widget.data(), &ConfigWidget::requestAddPath, this, &Extension::addDir);
-        connect(_widget.data(), &ConfigWidget::requestRemovePath, this, &Extension::removeDir);
-        connect(_widget->ui.pushButton_restore, &QPushButton::clicked, this, &Extension::restorePaths);
-        connect(_widget->ui.pushButton_update, &QPushButton::clicked, this, &Extension::updateIndex);
-
-        // Checkboxes
-        _widget->ui.checkBox_audio->setChecked(indexAudio());
-        connect(_widget->ui.checkBox_audio, &QCheckBox::toggled, this, &Extension::setIndexAudio);
-
-        _widget->ui.checkBox_video->setChecked(indexVideo());
-        connect(_widget->ui.checkBox_video, &QCheckBox::toggled, this, &Extension::setIndexVideo);
-
-        _widget->ui.checkBox_image->setChecked(indexImage());
-        connect(_widget->ui.checkBox_image, &QCheckBox::toggled, this, &Extension::setIndexImage);
-
-        _widget->ui.checkBox_docs->setChecked(indexDocs());
-        connect(_widget->ui.checkBox_docs, &QCheckBox::toggled, this, &Extension::setIndexDocs);
-
-        _widget->ui.checkBox_dirs->setChecked(indexDirs());
-        connect(_widget->ui.checkBox_dirs, &QCheckBox::toggled, this, &Extension::setIndexDirs);
-
-        _widget->ui.checkBox_hidden->setChecked(indexHidden());
-        connect(_widget->ui.checkBox_hidden, &QCheckBox::toggled, this, &Extension::setIndexHidden);
-
-        _widget->ui.checkBox_followSymlinks->setChecked(followSymlinks());
-        connect(_widget->ui.checkBox_followSymlinks, &QCheckBox::toggled, this, &Extension::setFollowSymlinks);
-
-        _widget->ui.checkBox_fuzzy->setChecked(fuzzy());
-        connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
-
-        _widget->ui.spinBox_interval->setValue(scanInterval());
-        connect(_widget->ui.spinBox_interval, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Extension::setScanInterval);
-
-        // Info
-        connect(this, &Extension::statusInfo, _widget->ui.label_info, &QLabel::setText);
-    }
-    return _widget;
-}
-
-
-
-/** ***************************************************************************/
-void Files::Extension::initialize() {
     qDebug() << "[Files] Initialize extension";
+    _minuteTimer.setInterval(60000);
 
     // Load settings
     QSettings s;
@@ -150,7 +87,7 @@ void Files::Extension::initialize() {
 
 
 /** ***************************************************************************/
-void Files::Extension::finalize() {
+Files::Extension::~Extension() {
     qDebug() << "[Files] Finalize extension";
 
     // Stop and wait for background indexer
@@ -205,8 +142,52 @@ void Files::Extension::finalize() {
 
 
 /** ***************************************************************************/
-void Files::Extension::setupSession() {
+QWidget *Files::Extension::widget(QWidget *parent) {
+    if (_widget.isNull()) {
+        _widget = new ConfigWidget(parent);
 
+        // Paths
+        _widget->ui.listWidget_paths->addItems(_rootDirs);
+        _widget->ui.label_info->setText(QString("%1 files indexed.").arg(_fileIndex.size()));
+        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::clear);
+        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::addItems);
+        connect(_widget.data(), &ConfigWidget::requestAddPath, this, &Extension::addDir);
+        connect(_widget.data(), &ConfigWidget::requestRemovePath, this, &Extension::removeDir);
+        connect(_widget->ui.pushButton_restore, &QPushButton::clicked, this, &Extension::restorePaths);
+        connect(_widget->ui.pushButton_update, &QPushButton::clicked, this, &Extension::updateIndex);
+
+        // Checkboxes
+        _widget->ui.checkBox_audio->setChecked(indexAudio());
+        connect(_widget->ui.checkBox_audio, &QCheckBox::toggled, this, &Extension::setIndexAudio);
+
+        _widget->ui.checkBox_video->setChecked(indexVideo());
+        connect(_widget->ui.checkBox_video, &QCheckBox::toggled, this, &Extension::setIndexVideo);
+
+        _widget->ui.checkBox_image->setChecked(indexImage());
+        connect(_widget->ui.checkBox_image, &QCheckBox::toggled, this, &Extension::setIndexImage);
+
+        _widget->ui.checkBox_docs->setChecked(indexDocs());
+        connect(_widget->ui.checkBox_docs, &QCheckBox::toggled, this, &Extension::setIndexDocs);
+
+        _widget->ui.checkBox_dirs->setChecked(indexDirs());
+        connect(_widget->ui.checkBox_dirs, &QCheckBox::toggled, this, &Extension::setIndexDirs);
+
+        _widget->ui.checkBox_hidden->setChecked(indexHidden());
+        connect(_widget->ui.checkBox_hidden, &QCheckBox::toggled, this, &Extension::setIndexHidden);
+
+        _widget->ui.checkBox_followSymlinks->setChecked(followSymlinks());
+        connect(_widget->ui.checkBox_followSymlinks, &QCheckBox::toggled, this, &Extension::setFollowSymlinks);
+
+        _widget->ui.checkBox_fuzzy->setChecked(fuzzy());
+        connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
+
+        _widget->ui.spinBox_interval->setValue(scanInterval());
+        connect(_widget->ui.spinBox_interval, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Extension::setScanInterval);
+
+        // Info
+        connect(this, &Extension::statusInfo, _widget->ui.label_info, &QLabel::setText);
+    }
+    return _widget;
 }
 
 
