@@ -58,7 +58,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     setOrganizationDomain("manuelschneid3r");
     setApplicationName("albert");
     setApplicationDisplayName("Albert");
-    setApplicationVersion("v0.7.3");
+    setApplicationVersion("v0.7.4");
     setWindowIcon(QIcon(":app_icon"));
     setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
