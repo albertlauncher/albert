@@ -45,15 +45,16 @@ PluginManager::PluginManager() {
                 continue;
             }
 
-//            // Check if this lib is an albert extension plugin
-//            if (! ps->loader->metaData()["IID"].toString().compare(ALBERT_EXTENSION_IID)==0 ) {
-//                qWarning() << "Extension incompatible:" << path << ps->IID << ALBERT_EXTENSION_IID;
-//                delete ps->loader;
-//                delete ps;
-//                continue;
-//            }
-
             unique_ptr<PluginSpec> plugin(new PluginSpec(path));
+
+            // Avoid loading duplicate
+            if (std::find_if (plugins_.begin(), plugins_.end(),
+                              [&plugin](const unique_ptr<PluginSpec> &p){
+                                  return p->id() == plugin->id();
+                              }) != plugins_.end()){
+                qWarning() << "Extension of same ID already loaded" << plugin->id();
+                continue;
+            }
 
             // Load if not blacklisted
             if (!blacklist_.contains(plugin->id()))
@@ -104,7 +105,6 @@ void PluginManager::loadPlugin(const unique_ptr<PluginSpec> &plugin) {
 
 /** ***************************************************************************/
 void PluginManager::unloadPlugin(const unique_ptr<PluginSpec> &plugin) {
-    receivers(SIGNAL(pluginAboutToBeUnloaded(QObject*)));
     if (plugin->isLoaded()){
         emit pluginAboutToBeUnloaded(plugin->instance());
         plugin->unload();
