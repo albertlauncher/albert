@@ -49,12 +49,14 @@ QVariant PluginModel::data(const QModelIndex &index, int role) const {
                     "ID: %1\n"
                     "Version: %2\n"
                     "Author: %3\n"
-                    "Platform: %4\n"
-                    "Dependencies: %5"
+                    "Path: %4\n"
+                    "Platform: %5\n"
+                    "Dependencies: %6"
                     ).arg(
                     plugin->id(),
                     plugin->version(),
                     plugin->author(),
+                    plugin->fileName(),
                     plugin->platform(),
                     plugin->dependencies()
                     );
