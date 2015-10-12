@@ -71,10 +71,6 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     QDir data(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
     if (!data.exists())
         data.mkpath(".");
-    QDir conf(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
-              +"/"+ qApp->applicationName());
-    if (!conf.exists())
-        conf.mkpath(".");
 
     _mainWidget = new MainWidget;
     _hotkeyManager = new HotkeyManager;
