@@ -7,30 +7,40 @@ Facts:
 
 - X11Extras. Drop them. Using completeley only XCB (http://xcb.freedesktop.org/)
 - Hotkey refinement (XCB) - multiple independant hotkeys, qxtglobalshortcut,
-- Actionmodifier. Preset modifier to action map
-- Actionmodifier. Configurable modifier to action map
 - Plugin Interdependencies. https://doc-snapshots.qt.io/qtcreator-extending/extensionsystem-pluginspec.html#details
 - Actioninterdependencies. E.g. open files with app actions
 - Mousemoveability (input box)
 - teardown/setupsession not guaranteed before handleQuery
-- Matchers - Only large indexes have search indexes (Files), [ needs profiler ] Scoring. Improve them using matcher classes.
-- Python. Special plugin interface, (Calc (Sympy), Terminal, ssh). Closes #13
-- Single instance. Closes #23
 - Profiler. Extensionmanager profiles extensions (SQLITE backend), Dummy extension with 1M results
-- Multithreading
-- QML. Check the QtQuick standard project
+
+------------------------------- RELEASE 0.15 -----------------------------------
+- Python. Special plugin interface, (Calc (Sympy), Terminal, ssh). Closes #13
+
+------------------------------- RELEASE 0.14 -----------------------------------
+- Terminal plugin
 
 ------------------------------- RELEASE 0.13 -----------------------------------
+- QML. Check the QtQuick standard project
+
 ------------------------------- RELEASE 0.12 -----------------------------------
+- Single instance. Closes #23
+
 ------------------------------- RELEASE 0.11 -----------------------------------
+- Multithreading
+
 ------------------------------- RELEASE 0.10 -----------------------------------
+- Actionmodifier. Preset modifier to action map. Configurable modifier to action map
+
 ------------------------------- RELEASE 0.9 ------------------------------------
-[ ] Terminal plugin
+- Matchers - Only large indexes have search indexes (Files), [ needs profiler ] Scoring. Improve them using matcher classes.
+
 ------------------------------- RELEASE 0.8 ------------------------------------
 [x] Current screen. Remember window position. Closes #8
 [x] Please allow fuzzy matching of spaces to underscores #40
 [x] Remember position if not centered. Closes #33
+[x] Terminate application gracefully on SIGTERM. Closes #65
 [ ] Triggers
+[ ] Websearch movable
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 EXTENSION Properties
@@ -47,7 +57,7 @@ Files        - - + - + +      MIME
 Apps         - - + - + +
 Bookmarks    - - + - + +
 ssh          + - + - - +
-WebSearch    + - + + - -
+WebSearch    + + + + - -
 Calc         + - - - - - I
 Terminal #18 + + - ? - -
 FileFinder   + + - - - -

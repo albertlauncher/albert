@@ -18,6 +18,7 @@
 #include <QStandardPaths>
 #include <QMessageBox>
 #include <QDebug>
+#include <csignal>
 #include "albertapp.h"
 #include "mainwidget.h"
 #include "settingswidget.h"
@@ -81,6 +82,11 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     for (const unique_ptr<PluginSpec> &p : _pluginManager->plugins())
         if (p->isLoaded())
             _extensionManager->registerExtension(p->instance());
+
+    // Quit gracefully on SIGTERM
+    signal(SIGTERM, [](int sig){
+        QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
+    });
 
 
     /*
