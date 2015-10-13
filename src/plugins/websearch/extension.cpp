@@ -138,6 +138,16 @@ void Websearch::Extension::handleFallbackQuery(shared_ptr<Query> query) {
 
 
 /** ***************************************************************************/
+QStringList Websearch::Extension::triggers() const {
+    QStringList triggers;
+    for (auto i : index_)
+        triggers.push_back(i->trigger());
+    return triggers;
+}
+
+
+
+/** ***************************************************************************/
 void Websearch::Extension::restoreDefaults() {
     /* Init std searches */
     index_.clear();

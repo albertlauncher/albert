@@ -45,3 +45,10 @@ void Websearch::SearchEngine::activate() {
     qApp->hideWidget();
     UrlAction(QString(url_).replace("%s", searchTerm_)).activate();
 }
+
+
+
+/** ***************************************************************************/
+QString Websearch::SearchEngine::trigger(){
+    return trigger_;
+}

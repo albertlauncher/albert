@@ -39,8 +39,8 @@ Facts:
 [x] Please allow fuzzy matching of spaces to underscores #40
 [x] Remember position if not centered. Closes #33
 [x] Terminate application gracefully on SIGTERM. Closes #65
+[x] Websearch movable
 [ ] Triggers
-[ ] Websearch movable
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 EXTENSION Properties

@@ -28,22 +28,44 @@ ExtensionManager::ExtensionManager() : _sessionIsActive(false) {
 
 
 /** ***************************************************************************/
-void ExtensionManager::startQuery(const QString &term) {
+void ExtensionManager::startQuery(const QString &searchTerm) {
     // Trim spaces
-    QString searchterm = term.trimmed();
+    QString trimmedTerm = searchTerm.trimmed();
 
     // Ignore empty queries
-    if (searchterm.isEmpty()){
+    if (trimmedTerm.isEmpty()){
         emit newModel(nullptr);
         return;
     }
 
-    _currentQuery = std::make_shared<Query>(searchterm);
+    _currentQuery = std::make_shared<Query>(trimmedTerm);
 
     //  ▼ TODO INTRODUCE MULTITHREADING HERE ▼
+
+    // Check if the query is prefixed with a trigger
+    bool queryIsTriggered = false;
+    QString potentialTrigger = trimmedTerm.section(' ', 0,0);
+    for (IExtension *e : _extensions){
+        if (e->isTriggered()){
+            for (const QString& trigger : e->triggers()){
+                if (trigger==potentialTrigger){
+                    e->handleQuery(_currentQuery);
+                    queryIsTriggered=true;
+                }
+            }
+        }
+    }
+    // If it is triggered skip the full and fallback query
+    if (queryIsTriggered){
+        emit newModel(_currentQuery->impl);
+        return;
+    }
+
+    // Full query
     for (IExtension *e : _extensions)
         e->handleQuery(_currentQuery);
 
+    // Fallback query if results are empty
     if (_currentQuery->impl->matches_.size()==0)
         for (IExtension *e : _extensions)
             e->handleFallbackQuery(_currentQuery);
@@ -55,6 +77,7 @@ void ExtensionManager::startQuery(const QString &term) {
                          [](const Match &lhs, const Match &rhs) {
                             return lhs.score > rhs.score;
                          });
+
     //  ▲ INTRODUCE MULTITHREADING HERE ▲
 
     emit newModel(_currentQuery->impl);

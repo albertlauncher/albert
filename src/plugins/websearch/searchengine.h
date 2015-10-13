@@ -31,6 +31,7 @@ public:
     QString info() const override;
     QIcon icon() const override;
     void activate() override;
+    QString trigger();
 
 private:
     bool    enabled_;

@@ -41,6 +41,19 @@ struct IExtension : public IPlugin
     virtual void teardownSession() {}
 
     /**
+     * @brief Indicates that the extension shall be run only if one of its
+     * triggers is prefix of the query
+     */
+    virtual bool isTriggered() const {return false;}
+
+    /**
+     * @brief The triggers which let the extension be run solely, if one of its
+     * triggers is prefix of the query
+     * @return
+     */
+    virtual QStringList triggers() const {return QStringList();}
+
+    /**
      * @brief Query handling
      * Called for every user input.
      * @param query Holds the query context

@@ -31,7 +31,7 @@ class ExtensionManager final : public QObject
 public:
     ExtensionManager();
 
-    void startQuery(const QString &term);
+    void startQuery(const QString &searchTerm);
     void setupSession();
     void teardownSession();
 
