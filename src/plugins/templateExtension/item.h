@@ -28,8 +28,8 @@ public:
     Item();
     ~Item();
 
-    QString name() const override;
-    QString info() const override;
+    QString text() const override;
+    QString subtext() const override;
     QIcon icon() const override;
     void activate() override;
     bool hasChildren() const override;

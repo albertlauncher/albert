@@ -22,16 +22,29 @@ namespace Websearch {
 
 class SearchEngine final : public A2Leaf
 {
-    friend class Extension;
-
 public:
     SearchEngine() : enabled_(false) {}
+    SearchEngine(QString name, QString url, QString trigger, QString iconPath, bool enabled = true);
 
-    QString name() const override;
-    QString info() const override;
+    QString text() const override;
+    QString subtext() const override;
     QIcon icon() const override;
     void activate() override;
+
     QString trigger();
+    void serialize(QDataStream &out);
+    void deserialize(QDataStream &in);
+
+    bool enabled() const {return enabled_;}
+    void setEnabled(bool b) {enabled_ = b;}
+
+    QString query() const {return searchTerm_;}
+    void setQuery(QString b) {searchTerm_ = b;}
+
+    QString name() const {return name_;}
+    QString trigger() const {return trigger_;}
+    QString url() const {return url_;}
+
 
 private:
     bool    enabled_;

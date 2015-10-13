@@ -6,5 +6,6 @@
         <file alias="google">resources/google.svg</file>
         <file alias="youtube">resources/youtube.svg</file>
         <file alias="github">resources/octocat.svg</file>
+        <file alias="wolfram">resources/wolfram.png</file>
     </qresource>
 </RCC>

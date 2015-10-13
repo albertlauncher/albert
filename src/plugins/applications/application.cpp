@@ -31,14 +31,14 @@ using std::map;
 QString Applications::Application::terminal;
 
 /** ***************************************************************************/
-QString Applications::Application::name() const {
+QString Applications::Application::text() const {
     return _name;
 }
 
 
 
 /** ***************************************************************************/
-QString Applications::Application::info() const {
+QString Applications::Application::subtext() const {
     return _altName;
 }
 

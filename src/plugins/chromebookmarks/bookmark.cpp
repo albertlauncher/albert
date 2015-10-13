@@ -23,14 +23,14 @@ QIcon ChromeBookmarks::Bookmark::icon_;
 
 
 /** ***************************************************************************/
-QString ChromeBookmarks::Bookmark::name() const {
+QString ChromeBookmarks::Bookmark::text() const {
     return name_;
 }
 
 
 
 /** ***************************************************************************/
-QString ChromeBookmarks::Bookmark::info() const {
+QString ChromeBookmarks::Bookmark::subtext() const {
     return url_;
 }
 

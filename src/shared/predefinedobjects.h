@@ -87,8 +87,8 @@ class StandardItem final : public A2Leaf
 {
 public:
     StandardItem(){}
-    QString name() const override { return name_; }
-    QString info() const override { return info_; }
+    QString text() const override { return name_; }
+    QString subtext() const override { return info_; }
     QIcon icon() const override { return icon_; }
     void activate() override {
         action_->activate();

@@ -173,9 +173,9 @@ public:
 
             switch (role) {
             case Qt::DisplayRole:
-                return ti->data->name();
+                return ti->data->text();
             case Qt::ToolTipRole:
-                return ti->data->info();
+                return ti->data->subtext();
             case Qt::DecorationRole:
                 return ti->data->icon();
             }

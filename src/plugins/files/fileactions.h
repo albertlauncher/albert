@@ -32,7 +32,7 @@ class AbstractFileAction : public A2Leaf
 {
 public:
     AbstractFileAction(File *file) : _file(file) {}
-    QString info() const override { return _file->path(); }
+    QString subtext() const override { return _file->path(); }
 
 protected:
     File *_file;
@@ -46,7 +46,7 @@ class OpenFileAction final : public AbstractFileAction
 public:
     OpenFileAction(File *file) : AbstractFileAction(file) {}
 
-    QString name() const override {
+    QString text() const override {
         return "Open file in default application";
     }
 
@@ -69,7 +69,7 @@ class RevealFileAction final : public AbstractFileAction
 public:
     RevealFileAction(File *file) : AbstractFileAction(file) {}
 
-    QString name() const override {
+    QString text() const override {
         return "Reveal file in default filebrowser";
     }
 
@@ -92,7 +92,7 @@ class CopyFileAction final : public AbstractFileAction
 public:
     CopyFileAction(File *file) : AbstractFileAction(file) {}
 
-    QString name() const override {
+    QString text() const override {
         return "Copy file to clipboard";
     }
 
@@ -139,7 +139,7 @@ class CopyPathAction final : public AbstractFileAction
 public:
     CopyPathAction(File *file) : AbstractFileAction(file) {}
 
-    QString name() const override {
+    QString text() const override {
         return "Copy path to clipboard";
     }
 

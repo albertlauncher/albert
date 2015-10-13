@@ -41,8 +41,8 @@ public:
     File(const File &) = delete;
     File(QString path, QMimeType mimetype, short usage = 0);
 
-    QString name() const override;
-    QString info() const override;
+    QString text() const override;
+    QString subtext() const override;
     QIcon icon() const override;
     void activate() override;
     bool hasChildren() const override;

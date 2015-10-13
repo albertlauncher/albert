@@ -34,8 +34,8 @@ public:
     Bookmark(const QString &name, const QString &url, short usage = 0)
         : name_(name), url_(url), usage_(usage) {}
 
-    QString name() const override;
-    QString info() const override;
+    QString text() const override;
+    QString subtext() const override;
     QIcon icon() const override;
     void activate() override;
     vector<QString> aliases() const override;

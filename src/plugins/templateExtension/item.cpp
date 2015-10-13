@@ -32,14 +32,14 @@ Template::Item::~Item(){
 
 
 /** ***************************************************************************/
-QString Template::Item::name() const {
+QString Template::Item::text() const {
     return "Title of item";
 }
 
 
 
 /** ***************************************************************************/
-QString Template::Item::info() const {
+QString Template::Item::subtext() const {
     return "Info about the item";
 }
 

@@ -60,8 +60,8 @@ struct ActionItem : public Action {
      * @param role The types of requested data
      * @return The requested data
      */
-    virtual QString name() const = 0;
-    virtual QString info() const = 0;
+    virtual QString text() const = 0;
+    virtual QString subtext() const = 0;
     virtual QIcon icon() const = 0;
 };
 

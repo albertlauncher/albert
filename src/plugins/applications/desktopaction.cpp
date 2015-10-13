@@ -29,14 +29,14 @@ Applications::DesktopAction::DesktopAction(Application *app, const QString &name
 
 
 /** ***************************************************************************/
-QString Applications::DesktopAction::name() const {
+QString Applications::DesktopAction::text() const {
     return name_;
 }
 
 
 
 /** ***************************************************************************/
-QString Applications::DesktopAction::info() const {
+QString Applications::DesktopAction::subtext() const {
     return exec_;
 }
 

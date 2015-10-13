@@ -37,8 +37,8 @@ public:
     Application(const QString &path, short usage = 0)
         : _path(path), _usage(usage) {}
 
-    QString name() const override;
-    QString info() const override;
+    QString text() const override;
+    QString subtext() const override;
     QIcon icon() const override;
     void activate() override;
     bool hasChildren() const override;

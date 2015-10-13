@@ -29,14 +29,14 @@ Files::File::File(QString path, QMimeType mimetype, short usage)
 
 
 /** ***************************************************************************/
-QString Files::File::name() const {
+QString Files::File::text() const {
     return QFileInfo(path_).fileName();
 }
 
 
 
 /** ***************************************************************************/
-QString Files::File::info() const {
+QString Files::File::subtext() const {
     return path_;
 }
 

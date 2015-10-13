@@ -14,20 +14,29 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QDataStream>
 #include "searchengine.h"
 #include "albertapp.h"
 #include "predefinedobjects.h"
 
 
 /** ***************************************************************************/
-QString Websearch::SearchEngine::name() const {
+Websearch::SearchEngine::SearchEngine(QString name, QString url, QString trigger, QString iconPath, bool enabled)
+    : name_(name), url_(url), trigger_(trigger), iconPath_(iconPath), enabled_(enabled), icon_(QIcon(iconPath_)) {
+
+}
+
+
+
+/** ***************************************************************************/
+QString Websearch::SearchEngine::text() const {
     return QString("Search '%1' in %2").arg(((searchTerm_.isEmpty()) ? "..." : searchTerm_), name_);
 }
 
 
 
 /** ***************************************************************************/
-QString Websearch::SearchEngine::info() const {
+QString Websearch::SearchEngine::subtext() const {
     return QString(url_).replace("%s", searchTerm_);
 }
 
@@ -51,4 +60,27 @@ void Websearch::SearchEngine::activate() {
 /** ***************************************************************************/
 QString Websearch::SearchEngine::trigger(){
     return trigger_;
+}
+
+
+
+/** ***************************************************************************/
+void Websearch::SearchEngine::serialize(QDataStream &out) {
+    out << enabled_
+        << url_
+        << name_
+        << trigger_
+        << iconPath_;
+}
+
+
+
+/** ***************************************************************************/
+void Websearch::SearchEngine::deserialize(QDataStream &in) {
+    in >> enabled_
+       >> url_
+       >> name_
+       >> trigger_
+       >> iconPath_;
+    icon_ = QIcon(iconPath_);
 }
