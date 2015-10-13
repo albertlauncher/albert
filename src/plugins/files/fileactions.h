@@ -28,7 +28,7 @@
 namespace Files {
 
 /** ***************************************************************************/
-class AbstractFileAction : public A2Leaf
+class AbstractFileAction : public ActionLeaf
 {
 public:
     AbstractFileAction(File *file) : _file(file) {}

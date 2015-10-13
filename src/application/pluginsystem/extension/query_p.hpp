@@ -32,11 +32,11 @@ using std::unique_ptr;
 
 struct TreeItem final
 {
-    TreeItem(shared_ptr<A2Item> data)
+    TreeItem(shared_ptr<ActionNode> data)
         : parent(nullptr), data(data), childrenAreLoaded(false) {}
 
     TreeItem *parent;
-    shared_ptr<A2Item> data;
+    shared_ptr<ActionNode> data;
     std::vector<unique_ptr<TreeItem>> children;
     bool childrenAreLoaded;
 };
@@ -63,7 +63,7 @@ public:
 
 
     /** ***********************************************************************/
-    void addMatch(shared_ptr<A2Item> item, short score) {
+    void addMatch(shared_ptr<ActionNode> item, short score) {
         QMutexLocker locker(&mutex_);
         if (dynamicSort_) {
             //beginInsertRows(...);
@@ -250,7 +250,7 @@ public:
 
             // If not done already, lazy load the children
             if (!parentNode->childrenAreLoaded)
-                for (shared_ptr<A2Item> ch : parentNode->data->children()){
+                for (shared_ptr<ActionNode> ch : parentNode->data->children()){
                     unique_ptr<TreeItem> uniqueTreeItem(new TreeItem(ch));
                     uniqueTreeItem->parent = parentNode;
                     parentNode->children.push_back(std::move(uniqueTreeItem));

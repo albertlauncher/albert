@@ -21,7 +21,7 @@
 namespace Applications {
 class Application;
 
-class DesktopAction final : public A2Leaf
+class DesktopAction final : public ActionLeaf
 {
 public:
     DesktopAction(Application *app, const QString &name, const QString &exec, const QIcon &icon, const bool term=false);

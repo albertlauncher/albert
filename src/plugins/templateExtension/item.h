@@ -21,7 +21,7 @@ using std::vector;
 #include "abstractobjects.h"
 
 namespace Template {
-class Item final : public A2Item
+class Item final : public ActionNode
 {
     friend class Extension;
 public:
@@ -33,6 +33,6 @@ public:
     QIcon icon() const override;
     void activate() override;
     bool hasChildren() const override;
-    vector<shared_ptr<A2Item>> children() override;
+    vector<shared_ptr<ActionNode>> children() override;
 };
 }

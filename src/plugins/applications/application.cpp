@@ -73,7 +73,7 @@ bool Applications::Application::hasChildren() const {
 
 
 /** ***************************************************************************/
-vector<shared_ptr<A2Item> > Applications::Application::children() {
+vector<shared_ptr<ActionNode> > Applications::Application::children() {
     return _actions;
 }
 

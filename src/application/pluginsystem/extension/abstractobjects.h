@@ -73,8 +73,8 @@ struct ActionItem : public Action {
  * let your items be visible in the proposal list. Subclass this item to your
  * liking and add it to the query if you think it matches the query context.
  */
-struct A2Item : public ActionItem {
-    virtual ~A2Item() {}
+struct ActionNode : public ActionItem {
+    virtual ~ActionNode() {}
 
     /**
      * @brief Component accessor
@@ -84,14 +84,14 @@ struct A2Item : public ActionItem {
      */
 
     virtual bool hasChildren() const = 0;
-    virtual vector<shared_ptr<A2Item>> children() = 0;
+    virtual vector<shared_ptr<ActionNode>> children() = 0;
 };
 
 
 
 /** ***************************************************************************/
-struct A2Leaf : public A2Item {
-    virtual ~A2Leaf() {}
+struct ActionLeaf : public ActionNode {
+    virtual ~ActionLeaf() {}
 
     /**
      * @brief Component accessor
@@ -104,8 +104,8 @@ struct A2Leaf : public A2Item {
         return false;
     }
 
-    vector<shared_ptr<A2Item>> children() override final {
-        return vector<shared_ptr<A2Item>>();
+    vector<shared_ptr<ActionNode>> children() override final {
+        return vector<shared_ptr<ActionNode>>();
     }
 };
 

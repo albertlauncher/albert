@@ -23,7 +23,7 @@
 
 namespace ChromeBookmarks {
 
-class Bookmark final : public A2Leaf, public IIndexable
+class Bookmark final : public ActionLeaf, public IIndexable
 {
     friend class Extension;
     friend class Indexer;

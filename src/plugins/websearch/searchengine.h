@@ -20,7 +20,7 @@ class Extension;
 
 namespace Websearch {
 
-class SearchEngine final : public A2Leaf
+class SearchEngine final : public ActionLeaf
 {
 public:
     SearchEngine() : enabled_(false) {}
@@ -31,7 +31,6 @@ public:
     QIcon icon() const override;
     void activate() override;
 
-    QString trigger();
     void serialize(QDataStream &out);
     void deserialize(QDataStream &in);
 

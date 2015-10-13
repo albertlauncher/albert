@@ -26,7 +26,7 @@ namespace Applications{
 
 class DesktopAction;
 
-class Application final : public A2Item, public IIndexable
+class Application final : public ActionNode, public IIndexable
 {
     friend class Extension;
     friend class Indexer;
@@ -42,7 +42,7 @@ public:
     QIcon icon() const override;
     void activate() override;
     bool hasChildren() const override;
-    vector<shared_ptr<A2Item>> children() override;
+    vector<shared_ptr<ActionNode>> children() override;
     vector<QString> aliases() const override;
 
     bool readDesktopEntry();
@@ -62,6 +62,6 @@ private:
     QString _exec;
     bool    _term;
     mutable ushort _usage;
-    vector<shared_ptr<A2Item>> _actions;
+    vector<shared_ptr<ActionNode>> _actions;
 };
 }

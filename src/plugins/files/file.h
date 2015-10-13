@@ -31,7 +31,7 @@ using std::unique_ptr;
 
 namespace Files {
 
-class File final : public A2Item, public IIndexable
+class File final : public ActionNode, public IIndexable
 {
     friend class Extension;
     friend class Indexer;
@@ -46,7 +46,7 @@ public:
     QIcon icon() const override;
     void activate() override;
     bool hasChildren() const override;
-    vector<shared_ptr<A2Item>> children() override;
+    vector<shared_ptr<ActionNode>> children() override;
     vector<QString> aliases() const override;
 
     const QString &path() const { return path_; }
@@ -60,7 +60,7 @@ private:
     QString path_;
     QMimeType mimetype_;
     mutable short usage_;
-    unique_ptr<vector<shared_ptr<A2Item>>> children_;
+    unique_ptr<vector<shared_ptr<ActionNode>>> children_;
     static map<QString, QIcon> iconCache_;
 };
 

@@ -58,13 +58,6 @@ void Websearch::SearchEngine::activate() {
 
 
 /** ***************************************************************************/
-QString Websearch::SearchEngine::trigger(){
-    return trigger_;
-}
-
-
-
-/** ***************************************************************************/
 void Websearch::SearchEngine::serialize(QDataStream &out) {
     out << enabled_
         << url_

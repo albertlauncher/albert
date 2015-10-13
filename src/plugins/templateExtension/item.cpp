@@ -69,9 +69,9 @@ bool Template::Item::hasChildren() const {
 
 
 /** ***************************************************************************/
-vector<shared_ptr<A2Item>> Template::Item::children() {
+vector<shared_ptr<ActionNode>> Template::Item::children() {
     // Return the children.
     // Did not want to have children? Subclass A2leaf instead.
-    return vector<shared_ptr<A2Item>>();
+    return vector<shared_ptr<ActionNode>>();
 }
 
