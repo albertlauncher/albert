@@ -29,7 +29,11 @@ public:
     Ui::ConfigWidget ui;
 
 private:
-    void onButton_SetIcon();
+    void onButton_new();
+    void onButton_remove();
+    void onButton_moveUp();
+    void onButton_moveDown();
+    void onButton_setIcon();
 };
 
 }

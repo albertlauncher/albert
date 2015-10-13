@@ -26,21 +26,69 @@ Websearch::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
 
     // Initialize connections
     connect(ui.pushButton_new, &QPushButton::clicked,
-            this, [this](){ui.tableView_searches->model()->insertRow(ui.tableView_searches->currentIndex().row());});
+            this, &ConfigWidget::onButton_new);
+
     connect(ui.pushButton_remove, &QPushButton::clicked,
-            this, [this](){ui.tableView_searches->model()->removeRow(ui.tableView_searches->currentIndex().row());});
+            this, &ConfigWidget::onButton_remove);
+
     connect(ui.pushButton_setIcon, &QPushButton::clicked,
-            this, &ConfigWidget::onButton_SetIcon);
+            this, &ConfigWidget::onButton_setIcon);
+
+    connect(ui.pushButton_moveUp, &QPushButton::clicked,
+            this, &ConfigWidget::onButton_moveUp);
+
+    connect(ui.pushButton_moveDown, &QPushButton::clicked,
+            this, &ConfigWidget::onButton_moveDown);
 
 }
+
+
 
 /** ***************************************************************************/
 Websearch::ConfigWidget::~ConfigWidget() {
 
 }
 
+
+
 /** ***************************************************************************/
-void Websearch::ConfigWidget::onButton_SetIcon() {
+void Websearch::ConfigWidget::onButton_new() {
+    ui.tableView_searches->model()->insertRow(ui.tableView_searches->currentIndex().row());
+}
+
+
+
+/** ***************************************************************************/
+void Websearch::ConfigWidget::onButton_remove() {
+    ui.tableView_searches->model()->removeRow(ui.tableView_searches->currentIndex().row());
+}
+
+
+
+/** ***************************************************************************/
+void Websearch::ConfigWidget::onButton_moveUp() {
+    ui.tableView_searches->model()->moveRows(
+                QModelIndex(), ui.tableView_searches->currentIndex().row(), 1,
+                QModelIndex(), ui.tableView_searches->currentIndex().row()-1);
+    //          v before this (-1)
+    //|..|..|..|..|XX|..|..|
+}
+
+
+
+/** ***************************************************************************/
+void Websearch::ConfigWidget::onButton_moveDown() {
+    ui.tableView_searches->model()->moveRows(
+                QModelIndex(), ui.tableView_searches->currentIndex().row(), 1,
+                QModelIndex(), ui.tableView_searches->currentIndex().row()+2);
+    //             v before this (+2)
+    //|..|..|XX|..|..|..|..|
+}
+
+
+
+/** ***************************************************************************/
+void Websearch::ConfigWidget::onButton_setIcon() {
     int row = ui.tableView_searches->currentIndex().row();
     if (row < 0 || ui.tableView_searches->model()->rowCount() <= row)
         return;

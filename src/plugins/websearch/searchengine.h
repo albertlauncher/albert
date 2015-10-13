@@ -25,7 +25,7 @@ class SearchEngine final : public A2Leaf
     friend class Extension;
 
 public:
-    SearchEngine() : enabled_(false), usage_(0) {}
+    SearchEngine() : enabled_(false) {}
 
     QString name() const override;
     QString info() const override;
@@ -40,7 +40,6 @@ private:
     QString searchTerm_;
     QString iconPath_;
     QIcon   icon_;
-    uint    usage_;
 };
 
 }

@@ -57,8 +57,7 @@ Websearch::Extension::Extension() {
                >> se->url_
                >> se->name_
                >> se->trigger_
-               >> se->iconPath_
-               >> se->usage_;
+               >> se->iconPath_;
             se->icon_ = QIcon(se->iconPath_);
             index_.push_back(se);
         }
@@ -90,8 +89,7 @@ Websearch::Extension::~Extension() {
                 << se->url_
                 << se->name_
                 << se->trigger_
-                << se->iconPath_
-                << se->usage_;
+                << se->iconPath_;
         dataFile.close();
     } else
         qCritical() << "Could not write to " << dataFile.fileName();
@@ -105,7 +103,6 @@ QWidget *Websearch::Extension:: widget(QWidget *parent) {
     if (widget_.isNull()){
         widget_ = new ConfigWidget(parent);
         widget_->ui.tableView_searches->setModel(this);
-
         connect(widget_->ui.pushButton_restoreDefaults, &QPushButton::clicked,
                 this, &Extension::restoreDefaults);
     }
@@ -364,6 +361,8 @@ bool Websearch::Extension::setData(const QModelIndex &index, const QVariant &val
     return false;
 }
 
+
+
 /** ***************************************************************************/
 Qt::ItemFlags Websearch::Extension::flags(const QModelIndex &index) const {
     if (!index.isValid())
@@ -371,22 +370,21 @@ Qt::ItemFlags Websearch::Extension::flags(const QModelIndex &index) const {
 
     switch (static_cast<Section>(index.column())) {
     case Section::Enabled:
-        return Qt::ItemIsEnabled|Qt::ItemIsUserCheckable;
+        return Qt::ItemIsSelectable|Qt::ItemIsEnabled|Qt::ItemIsUserCheckable;
     default:
         return Qt::ItemIsSelectable|Qt::ItemIsEnabled|Qt::ItemIsEditable;
     }
 }
 
+
+
 /** ***************************************************************************/
 bool Websearch::Extension::insertRows(int position, int rows, const QModelIndex &) {
-    if (position > static_cast<int>(index_.size()))
+    if (position<0 || rows<1 || static_cast<int>(index_.size()<=position))
         return false;
 
-    if (position < 0)
-        position = static_cast<int>(index_.size());
-
     beginInsertRows(QModelIndex(), position, position + rows - 1);
-    for (int row = position; row < rows; ++row){
+    for (int row = position; row < position + rows; ++row){
         shared_ptr<SearchEngine> se = std::make_shared<SearchEngine>();
         se->enabled_ = false;
         se->name_ = "Name";
@@ -398,13 +396,35 @@ bool Websearch::Extension::insertRows(int position, int rows, const QModelIndex 
     return true;
 }
 
+
+
 /** ***************************************************************************/
 bool Websearch::Extension::removeRows(int position, int rows, const QModelIndex &) {
-    if (position < 0 || static_cast<int>(index_.size()) <= position)
+    if (position<0 || rows<1 || static_cast<int>(index_.size()<=position+rows))
         return false;
 
-    beginRemoveRows(QModelIndex(), position, position + rows - 1);
+    beginRemoveRows(QModelIndex(), position, position + rows-1);
     index_.erase(index_.begin()+position,index_.begin()+(position+rows));
     endRemoveRows();
+    return true;
+}
+
+
+
+/** ***************************************************************************/
+bool Websearch::Extension::moveRows(const QModelIndex &src, int srcRow, int cnt, const QModelIndex &dst, int dstRow) {
+    if (srcRow<0 || cnt<1 || dstRow<0
+            || static_cast<int>(index_.size()<srcRow+cnt-1)
+            || static_cast<int>(index_.size()<dstRow)
+            || srcRow<=dstRow && dstRow<srcRow+cnt) // If its inside the source do nothing
+        return false;
+
+    std::vector<shared_ptr<SearchEngine>> tmp;
+    beginMoveRows(src, srcRow, srcRow+cnt-1, dst, dstRow);
+    tmp.insert(tmp.end(), make_move_iterator(index_.begin()+srcRow), make_move_iterator(index_.begin() + srcRow+cnt));
+    index_.erase(index_.begin()+srcRow, index_.begin() + srcRow+cnt);
+    const size_t finalDst = dstRow > srcRow ? dstRow - cnt : dstRow;
+    index_.insert(index_.begin()+finalDst , make_move_iterator(tmp.begin()), make_move_iterator(tmp.end()));
+    endMoveRows();
     return true;
 }

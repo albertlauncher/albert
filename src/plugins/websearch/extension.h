@@ -57,6 +57,7 @@ public:
     Qt::ItemFlags flags(const QModelIndex & index) const override;
     bool insertRows (int position, int rows, const QModelIndex & parent = QModelIndex()) override;
     bool removeRows (int position, int rows, const QModelIndex & parent = QModelIndex()) override;
+    bool moveRows(const QModelIndex &sourceRow, int srcRow, int cnt, const QModelIndex & dst, int destinationChild) override;
 
 private:
     QPointer<ConfigWidget> widget_;

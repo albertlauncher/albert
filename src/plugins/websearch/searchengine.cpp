@@ -44,5 +44,4 @@ QIcon Websearch::SearchEngine::icon() const {
 void Websearch::SearchEngine::activate() {
     qApp->hideWidget();
     UrlAction(QString(url_).replace("%s", searchTerm_)).activate();
-    ++usage_;
 }

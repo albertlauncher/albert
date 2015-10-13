@@ -58,15 +58,6 @@
         <property name="sizeAdjustPolicy">
          <enum>QAbstractScrollArea::AdjustToContents</enum>
         </property>
-        <property name="dragEnabled">
-         <bool>true</bool>
-        </property>
-        <property name="dragDropMode">
-         <enum>QAbstractItemView::InternalMove</enum>
-        </property>
-        <property name="defaultDropAction">
-         <enum>Qt::MoveAction</enum>
-        </property>
         <property name="alternatingRowColors">
          <bool>true</bool>
         </property>
@@ -94,9 +85,6 @@
         <attribute name="verticalHeaderVisible">
          <bool>false</bool>
         </attribute>
-        <attribute name="verticalHeaderMinimumSectionSize">
-         <number>12</number>
-        </attribute>
        </widget>
       </item>
       <item>
@@ -116,16 +104,23 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_setIcon">
+         <widget class="QPushButton" name="pushButton_moveUp">
           <property name="text">
-           <string>Set icon</string>
+           <string>Move up</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_restoreDefaults">
+         <widget class="QPushButton" name="pushButton_moveDown">
           <property name="text">
-           <string>Restore</string>
+           <string>Move down</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_setIcon">
+          <property name="text">
+           <string>Set icon</string>
           </property>
          </widget>
         </item>
@@ -141,6 +136,13 @@
            </size>
           </property>
          </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_restoreDefaults">
+          <property name="text">
+           <string>Restore</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
