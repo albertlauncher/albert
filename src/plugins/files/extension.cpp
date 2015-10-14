@@ -57,21 +57,22 @@ Files::Extension::Extension() {
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
                 filePath(QString("%1.dat").arg(EXT_NAME))
                 );
-    if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
-        qDebug() << "[Files] Deserializing from" << dataFile.fileName();
-        QDataStream in(&dataFile);
-        QMimeDatabase db;
-        QString path, mimename;
-        short usage;
-        quint64 size;
-        in >> size;
-        for (quint64 i = 0; i < size; ++i) {
-            in >> path >> mimename >> usage;
-            _fileIndex.push_back(std::make_shared<File>(path, db.mimeTypeForName(mimename), usage));
-        }
-        dataFile.close();
-    } else
-        qWarning() << "Could not open file: " << dataFile.fileName();
+    if (dataFile.exists())
+        if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
+            qDebug() << "[Files] Deserializing from" << dataFile.fileName();
+            QDataStream in(&dataFile);
+            QMimeDatabase db;
+            QString path, mimename;
+            short usage;
+            quint64 size;
+            in >> size;
+            for (quint64 i = 0; i < size; ++i) {
+                in >> path >> mimename >> usage;
+                _fileIndex.push_back(std::make_shared<File>(path, db.mimeTypeForName(mimename), usage));
+            }
+            dataFile.close();
+        } else
+            qWarning() << "Could not open file: " << dataFile.fileName();
 
     // scan interval timer
     connect(&_minuteTimer, &QTimer::timeout, this, &Extension::onMinuteTick);

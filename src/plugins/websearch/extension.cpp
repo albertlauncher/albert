@@ -46,21 +46,22 @@ Websearch::Extension::Extension() {
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
                 filePath(QString("%1.dat").arg(EXT_NAME))
                 );
-    if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
-        qDebug() << "[Websearch] Deserializing from" << dataFile.fileName();
-        QDataStream in(&dataFile);
-        quint64 size;
-        in >> size;
-        for (quint64 i = 0; i < size; ++i) {
-            shared_ptr<SearchEngine> se = std::make_shared<SearchEngine>();
-            se->deserialize(in);
-            index_.push_back(se);
+    if (dataFile.exists())
+        if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
+            qDebug() << "[Websearch] Deserializing from" << dataFile.fileName();
+            QDataStream in(&dataFile);
+            quint64 size;
+            in >> size;
+            for (quint64 i = 0; i < size; ++i) {
+                shared_ptr<SearchEngine> se = std::make_shared<SearchEngine>();
+                se->deserialize(in);
+                index_.push_back(se);
+            }
+            dataFile.close();
+        } else {
+            qWarning() << "Could not open file: " << dataFile.fileName();
+            restoreDefaults();
         }
-        dataFile.close();
-    } else {
-        qWarning() << "Could not open file: " << dataFile.fileName();
-        restoreDefaults();
-    }
     qDebug() << "[Websearch] Extension initialized";
 }
 

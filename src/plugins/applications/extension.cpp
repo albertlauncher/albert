@@ -75,21 +75,22 @@ Applications::Extension::Extension() {
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
                 filePath(QString("%1.dat").arg(EXT_NAME))
                 );
-    if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
-        qDebug() << "[Applications] Deserializing from" << dataFile.fileName();
-        QDataStream in(&dataFile);
-        quint64 size;
-        in >> size;
-        QString path;
-        short usage;
-        for (quint64 i = 0; i < size; ++i) {
-            in >> path >> usage;
-            // index is updated after this
-            _appIndex.push_back(std::make_shared<Application>(path, usage));
-        }
-        dataFile.close();
-    } else
-        qWarning() << "Could not open file: " << dataFile.fileName();
+    if (dataFile.exists())
+        if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
+            qDebug() << "[Applications] Deserializing from" << dataFile.fileName();
+            QDataStream in(&dataFile);
+            quint64 size;
+            in >> size;
+            QString path;
+            short usage;
+            for (quint64 i = 0; i < size; ++i) {
+                in >> path >> usage;
+                // index is updated after this
+                _appIndex.push_back(std::make_shared<Application>(path, usage));
+            }
+            dataFile.close();
+        } else
+            qWarning() << "Could not open file: " << dataFile.fileName();
 
     // Initial update
     updateIndex();

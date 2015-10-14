@@ -53,20 +53,21 @@ ChromeBookmarks::Extension::Extension() {
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
                 filePath(QString("%1.dat").arg(EXT_NAME))
                 );
-    if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
-        qDebug() << "[ChromeBookmarks] Deserializing from" << dataFile.fileName();
-        QDataStream in(&dataFile);
-        quint64 size;
-        QString name, url;
-        short usage;
-        in >> size;
-        for (quint64 i = 0; i < size; ++i) {
-            in >> name >> url >> usage;
-            _index.push_back(std::make_shared<Bookmark>(name, url , usage));
-        }
-        dataFile.close();
-    } else
-        qWarning() << "Could not open file: " << dataFile.fileName();
+    if (dataFile.exists())
+        if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
+            qDebug() << "[ChromeBookmarks] Deserializing from" << dataFile.fileName();
+            QDataStream in(&dataFile);
+            quint64 size;
+            QString name, url;
+            short usage;
+            in >> size;
+            for (quint64 i = 0; i < size; ++i) {
+                in >> name >> url >> usage;
+                _index.push_back(std::make_shared<Bookmark>(name, url , usage));
+            }
+            dataFile.close();
+        } else
+            qWarning() << "Could not open file: " << dataFile.fileName();
 
     // Keep in sync with the bookmarkfile
     connect(&_watcher, &QFileSystemWatcher::fileChanged, this, &Extension::updateIndex);

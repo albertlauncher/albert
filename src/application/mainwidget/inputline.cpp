@@ -16,6 +16,7 @@
 
 #include "inputline.h"
 #include <QResizeEvent>
+#include <QDir>
 #include <QDebug>
 #include <QKeyEvent>
 #include <QStandardPaths>
@@ -32,14 +33,16 @@ InputLine::InputLine(QWidget *parent) : QLineEdit(parent) {
     connect(this, &QLineEdit::textEdited, this, &InputLine::resetIterator);
 
     // DESERIALIZATION
-    QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/history.dat");
-    if (f.open(QIODevice::ReadOnly| QIODevice::Text)) {
-        QDataStream in(&f);
-        QStringList SL;
-        in >> SL;
-        _lines = SL.toStdList();
-        f.close();
-    } else qWarning() << "Could not open file" << f.fileName();
+    QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
+                   filePath(QString("history.dat")));
+    if (dataFile.exists())
+        if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
+            QDataStream in(&dataFile);
+            QStringList SL;
+            in >> SL;
+            _lines = SL.toStdList();
+            dataFile.close();
+        } else qWarning() << "Could not open file" << dataFile.fileName();
 }
 
 
@@ -47,12 +50,13 @@ InputLine::InputLine(QWidget *parent) : QLineEdit(parent) {
 /** ***************************************************************************/
 InputLine::~InputLine() {
     // SERIALIZATION
-    QFile f(QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/history.dat");
-    if (f.open(QIODevice::ReadWrite| QIODevice::Text)) {
-        QDataStream out(&f);
+    QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
+                   filePath(QString("history.dat")));
+    if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
+        QDataStream out(&dataFile);
         out << QStringList::fromStdList(_lines);
-        f.close();
-    } else qCritical() << "Could not write to " << f.fileName();
+        dataFile.close();
+    } else qCritical() << "Could not write to " << dataFile.fileName();
 
     _settingsButton->deleteLater();
 }
