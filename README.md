@@ -14,5 +14,5 @@ sudo make install
 `sudo apt-get install g++ cmake qtbase5-dev libqt5x11extras5-dev libqt5svg5 libmuparser-dev`
 
 ## How to support development
-[![Flattr this](https://button.flattr.com/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=manuelschneid3r&url=https%3A%2F%2Fgithub.com%2FManuelSchneid3r%2Falbert), 
-[![Donate via PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=W74BQPKPGNSNC) or contribute, but please contact me before you code.
+This project is not even close to what I want it to be. I'd like like to invite anyone to be part of the development of this nifty app. Nowadays it is so easy, so grab your keyboard and send me a pull request. But before you cowboycode, make sure to discuss your furture work in irc. If your not familiar with c++ or programing at all you can still [![Flattr this](https://button.flattr.com/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=manuelschneid3r&url=https%3A%2F%2Fgithub.com%2FManuelSchneid3r%2Falbert) or consider a donation via
+[![Donate via PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=W74BQPKPGNSNC).
