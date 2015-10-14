@@ -40,14 +40,6 @@ ChromeBookmarks::Extension::Extension() {
     s.beginGroup(EXT_NAME);
     _searchIndex.setFuzzy(s.value(CFG_FUZZY, CFG_FUZZY_DEF).toBool());
 
-
-    // Load and set a valid path
-    QVariant v = s.value(CFG_BOOKMARKS);
-    if (v.isValid() && v.canConvert(QMetaType::QString) && QFileInfo(v.toString()).exists())
-        setPath(v.toString());
-    else
-        restorePath();
-
     // Deserialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
@@ -69,17 +61,20 @@ ChromeBookmarks::Extension::Extension() {
         } else
             qWarning() << "Could not open file: " << dataFile.fileName();
 
+    // Load and set a valid path (Updates the bookmarks)
+    QVariant v = s.value(CFG_BOOKMARKS);
+    if (v.isValid() && v.canConvert(QMetaType::QString) && QFileInfo(v.toString()).exists())
+        setPath(v.toString());
+    else
+        restorePath();
+
     // Keep in sync with the bookmarkfile
     connect(&_watcher, &QFileSystemWatcher::fileChanged, this, &Extension::updateIndex);
 
     // Get a generic favicon
     Bookmark::icon_ = QIcon::fromTheme("favorites", QIcon(":favicon"));
 
-    // Update the bookmarks
-    updateIndex();
-
     qDebug() << "[ChromeBookmarks] Extension initialized";
-
 }
 
 
