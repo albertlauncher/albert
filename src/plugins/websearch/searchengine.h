@@ -37,12 +37,17 @@ public:
     bool enabled() const {return enabled_;}
     void setEnabled(bool b) {enabled_ = b;}
 
-    QString query() const {return searchTerm_;}
-    void setQuery(QString b) {searchTerm_ = b;}
+    const QString &query() const {return searchTerm_;}
+    void setQuery(QString query) {searchTerm_ = query;}
 
-    QString name() const {return name_;}
-    QString trigger() const {return trigger_;}
-    QString url() const {return url_;}
+    const QString &name() const {return name_;}
+    void setName(QString name) {name_ = name;}
+
+    const QString &trigger() const {return trigger_;}
+    void setTrigger(QString trigger) {trigger_ = trigger;}
+
+    const QString &url() const {return url_;}
+    void setUrl(QString url) {url_ = url;}
 
 
 private:

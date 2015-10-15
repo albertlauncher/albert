@@ -178,7 +178,7 @@ QVariant Websearch::Extension::headerData(int section, Qt::Orientation orientati
         switch (static_cast<Section>(section)) {
         case Section::Enabled:{
             switch (role) {
-            case Qt::ToolTipRole: return "The state of the searchengine.";
+            case Qt::ToolTipRole: return "Enables the searchengine as fallback.";
             default: return QVariant();
             }
         }
@@ -279,15 +279,15 @@ bool Websearch::Extension::setData(const QModelIndex &index, const QVariant &val
         case Section::Enabled:
             return false;
         case Section::Name:
-            index_[index.row()]->name() = s;
+            index_[index.row()]->setName(s);
             dataChanged(index, index, QVector<int>({Qt::DisplayRole}));
             return true;
         case Section::Trigger:
-            index_[index.row()]->trigger() = s;
+            index_[index.row()]->setTrigger(s);
             dataChanged(index, index, QVector<int>({Qt::DisplayRole}));
             return true;
         case Section::URL:
-            index_[index.row()]->url() = s;
+            index_[index.row()]->setUrl(s);
             dataChanged(index, index, QVector<int>({Qt::DisplayRole}));
             return true;
         default:
@@ -328,7 +328,7 @@ Qt::ItemFlags Websearch::Extension::flags(const QModelIndex &index) const {
 
 /** ***************************************************************************/
 bool Websearch::Extension::insertRows(int position, int rows, const QModelIndex &) {
-    if (position<0 || rows<1 || static_cast<int>(index_.size()<=position))
+    if (position<0 || rows<1 || static_cast<int>(index_.size()<position))
         return false;
 
     beginInsertRows(QModelIndex(), position, position + rows - 1);
@@ -349,7 +349,7 @@ bool Websearch::Extension::insertRows(int position, int rows, const QModelIndex 
 
 /** ***************************************************************************/
 bool Websearch::Extension::removeRows(int position, int rows, const QModelIndex &) {
-    if (position<0 || rows<1 || static_cast<int>(index_.size()<=position+rows))
+    if (position<0 || rows<1 || static_cast<int>(index_.size()<position+rows))
         return false;
 
     beginRemoveRows(QModelIndex(), position, position + rows-1);

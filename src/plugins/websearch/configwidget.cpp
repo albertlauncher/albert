@@ -53,7 +53,10 @@ Websearch::ConfigWidget::~ConfigWidget() {
 
 /** ***************************************************************************/
 void Websearch::ConfigWidget::onButton_new() {
-    ui.tableView_searches->model()->insertRow(ui.tableView_searches->currentIndex().row());
+    if (ui.tableView_searches->currentIndex().isValid())
+        ui.tableView_searches->model()->insertRow(ui.tableView_searches->currentIndex().row());
+    else
+        ui.tableView_searches->model()->insertRow(ui.tableView_searches->model()->rowCount());
 }
 
 
