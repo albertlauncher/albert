@@ -165,6 +165,7 @@ void AlbertApp::openSettings() {
     if (!_settingsWidget)
         _settingsWidget = new SettingsWidget(_mainWidget, _hotkeyManager, _pluginManager);
     _settingsWidget->show();
+    _settingsWidget->raise();
 }
 
 
