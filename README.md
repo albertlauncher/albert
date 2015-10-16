@@ -11,6 +11,15 @@ sudo make install
 #### Arch Linux
 `sudo pacman -S --needed gcc cmake qt5-base qt5-x11extras qt5-svg muparser`
 #### Ubuntu 14.04 and newer
+
+##### Install from PPA
+
+    sudo apt-add-repository ppa:flexiondotorg/albert
+    sudo apt-get update
+    sudo apt-get install albert
+
+##### Build from source
+
 `sudo apt-get install g++ cmake qtbase5-dev libqt5x11extras5-dev libqt5svg5 libmuparser-dev`
 
 ## How to support development
