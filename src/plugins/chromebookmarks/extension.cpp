@@ -141,6 +141,10 @@ QWidget *ChromeBookmarks::Extension::widget(QWidget *parent) {
         // Info
         _widget->ui.label_info->setText(QString("%1 bookmarks indexed.").arg(_index.size()));
         connect(this, &Extension::statusInfo, _widget->ui.label_info, &QLabel::setText);
+
+        // If indexer is active connect its statusInfo to the infoLabel
+        if (!_indexer.isNull())
+            connect(_indexer.data(), &Indexer::statusInfo, _widget->ui.label_info, &QLabel::setText);
     }
     return _widget;
 }
