@@ -53,6 +53,8 @@ public:
     static QString terminal;
 
 private:
+    static QString escapeString(const QString &unescaped);
+//    static void parseCommandLine(const QString & cmdLine, QString *program, QStringList *arguments);
     static QIcon getIcon(const QString &iconStr);
 
     QString _path;

@@ -55,10 +55,13 @@ QIcon Applications::Application::icon() const {
 void Applications::Application::activate() {
     // Standard action
     qApp->hideWidget();
+    // Finally since the exec key expects to be interpreted and escapes and
+    // expanded and whatelse a shell does with a commandline it is the easiest
+    // way to just let the shell do it (therminal has a subshell)
     if(_term)
         CommandAction(terminal.arg(_exec)).activate();
     else
-        CommandAction(_exec).activate();
+        CommandAction(QString("sh -c \"%1\"").arg(_exec)).activate();
     ++_usage;
 }
 
@@ -126,22 +129,39 @@ bool Applications::Application::readDesktopEntry() {
     QString locale = QLocale().name();
     QString shortLocale = locale.left(2);
     if (values["Desktop Entry"].count(QString("Name[%1]").arg(locale)))
-        _name = values["Desktop Entry"][QString("Name[%1]").arg(locale)];
+        _name = escapeString(values["Desktop Entry"][QString("Name[%1]").arg(locale)]);
     else if (values["Desktop Entry"].count(QString("Name[%1]").arg(shortLocale)))
-        _name = values["Desktop Entry"][QString("Name[%1]").arg(shortLocale)];
+        _name = escapeString(values["Desktop Entry"][QString("Name[%1]").arg(shortLocale)]);
     else if (values["Desktop Entry"].count("Name"))
-        _name = values["Desktop Entry"]["Name"];
+        _name = escapeString(values["Desktop Entry"]["Name"]);
     else return false;
 
 
-    // Try to get the command
+
+    /*
+     * The Exec Key - pretty complicated stuff
+     * http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s06.html
+     */
     if (values["Desktop Entry"].count("Exec"))
-        _exec = values["Desktop Entry"]["Exec"];
+        _exec = escapeString(values["Desktop Entry"]["Exec"]);
     else return false;
-    _exec.replace("%c", _name);
-    _exec.remove(QRegExp("%.")); // Todo standard conform http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s06.html
 
-    _term = values["Desktop Entry"]["Terminal"] == "true";
+    _exec.replace("%f", ""); // Unhandled TODO
+    _exec.replace("%F", ""); // Unhandled TODO
+    _exec.replace("%u", ""); // Unhandled TODO
+    _exec.replace("%U", ""); // Unhandled TODO
+    _exec.replace("%d", ""); // Deprecated
+    _exec.replace("%D", ""); // Deprecated
+    _exec.replace("%n", ""); // Deprecated
+    _exec.replace("%N", ""); // Deprecated
+    if (values["Desktop Entry"].count("Icon"))
+        _exec.replace("%i", QString("--icon %1").arg(values["Desktop Entry"]["Icon"]));
+    else _exec.replace("%i", "");
+    _exec.replace("%c", _name);
+    _exec.replace("%k", _path);
+    _exec.replace("%v", ""); // Deprecated
+    _exec.replace("%m", ""); // Deprecated
+    _exec.replace("%%", "%");
 
     // Try to get the icon
     if (values["Desktop Entry"].count("Icon"))
@@ -169,6 +189,7 @@ bool Applications::Application::readDesktopEntry() {
         _altName = _exec;
 
     // No additional actions for terminal apps
+    _term = values["Desktop Entry"]["Terminal"] == "true";
     if(_term)
         return true;
 
@@ -215,6 +236,103 @@ bool Applications::Application::readDesktopEntry() {
     }
     return true;
 }
+
+
+
+/** ***************************************************************************/
+QString Applications::Application::escapeString(const QString &unescaped) {
+    QString result = unescaped;
+
+    /*
+     * http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s03.html
+     *
+     * The escape sequences \s, \n, \t, \r, and \\ are supported for values of
+     * type string and localestring, meaning ASCII space, newline, tab, carriage
+     * return, and backslash, respectively.
+     * Some keys can have multiple values. In such a case, the value of the key
+     * is specified as a plural: for example, string(s). The multiple values
+     * should be separated by a semicolon and the value of the key may be
+     * optionally terminated by a semicolon. Trailing empty strings must always
+     * be terminated with a semicolon. Semicolons in these values need to be
+     * escaped using \;.
+     */
+    result.replace("\\s", " ");
+    result.replace("\\n", "\n");
+    result.replace("\\t", "\t");
+    result.replace("\\r", "\r");
+    result.replace("\\\\", "\\");
+    return std::move(result);
+}
+
+
+
+///** ***************************************************************************/
+//void Applications::Application::parseCommandLine(const QString &cmdLine, QString *program, QStringList *arguments) {
+//    *program = cmdLine.section(' ', 0, 0);
+
+//    QString arg;
+//    QString argsString = cmdLine.section(' ', 1);
+//    QString::iterator it = argsString.begin();
+
+//    while(1){
+
+//        // End of sting -> copy last param and quit loop
+//        if (it == argsString.end()){
+//            if (!arg.isEmpty())
+//                arguments->append(arg);
+//            goto quit_loop;
+//        }
+
+//        // Space/parameter delimiter -> copy param
+//        else if (*it == ' '){
+//            if (!arg.isEmpty())
+//                arguments->append(arg);
+//            arg.clear();
+//        }
+
+
+//        // Quotes introduce a unescaped sequence
+//        else if (*it == '"'){
+
+//            ++it;
+
+//            // Iterate until end of sequence is found
+//            while (*it != '"'){
+
+//                // If end of string this command line is invalid. Be tolerant
+//                // and store the last param anyway
+//                if (it == argsString.end()){
+//                    if (!arg.isEmpty())
+//                        arguments->append(arg);
+//                    goto quit_loop;
+//                }
+
+//                // Well no EO, no Quotes -> usual char
+//                arg.append(*it);
+//                ++it;
+//            }
+
+//            // End of sequence, store parameter
+//            if (!arg.isEmpty())
+//                arguments->append(arg);
+//            arg.clear();
+//        }
+
+
+//        // Free (unquoted) escapechar just copy the char after it
+//        else if (*it == '\\'){
+//            ++it;
+//            arg.append(*it);
+//        }
+
+//        // usual character
+//        else
+//            arg.append(*it);
+
+//        ++it;
+//    }
+//    quit_loop:;
+//}
 
 
 
