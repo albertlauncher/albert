@@ -241,7 +241,8 @@ bool Applications::Application::readDesktopEntry() {
 
 /** ***************************************************************************/
 QString Applications::Application::escapeString(const QString &unescaped) {
-    QString result = unescaped;
+    QString result;
+    result.reserve(unescaped.size());
 
     /*
      * http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s03.html
@@ -256,11 +257,27 @@ QString Applications::Application::escapeString(const QString &unescaped) {
      * be terminated with a semicolon. Semicolons in these values need to be
      * escaped using \;.
      */
-    result.replace("\\s", " ");
-    result.replace("\\n", "\n");
-    result.replace("\\t", "\t");
-    result.replace("\\r", "\r");
-    result.replace("\\\\", "\\");
+    QString::const_iterator it = unescaped.begin();
+    while (it != unescaped.end()) {
+        if (*it == '\\'){
+            ++it;
+            if (it == unescaped.end())
+                break;
+            else if (*it=='s')
+                result.append(' ');
+            else if (*it=='n')
+                result.append('\n');
+            else if (*it=='t')
+                result.append('\t');
+            else if (*it=='r')
+                result.append('\r');
+            else if (*it=='\\')
+                result.append('\\');
+        }
+        else
+            result.append(*it);
+        ++it;
+    }
     return std::move(result);
 }
 
