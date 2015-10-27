@@ -10,21 +10,8 @@
     <height>320</height>
    </rect>
   </property>
-  <layout class="QVBoxLayout">
-   <item>
-    <widget class="QLabel" name="label">
-     <property name="pixmap">
-      <pixmap resource="../../../src/resources.qrc">:/app_icon</pixmap>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-   </item>
-  </layout>
+  <layout class="QVBoxLayout"/>
  </widget>
- <resources>
-  <include location="../../../src/resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

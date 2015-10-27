@@ -42,10 +42,10 @@ Template::Extension::~Extension() {
 
 /** ***************************************************************************/
 QWidget *Template::Extension::widget(QWidget *parent) {
-    if (_widget.isNull()) {
-        _widget = new ConfigWidget(parent);
+    if (widget_.isNull()) {
+        widget_ = new ConfigWidget(parent);
     }
-    return _widget;
+    return widget_;
 }
 
 

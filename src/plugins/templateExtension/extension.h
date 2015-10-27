@@ -43,6 +43,6 @@ public:
     void handleFallbackQuery(shared_ptr<Query>) override;
 
 private:
-    QPointer<ConfigWidget> _widget;
+    QPointer<ConfigWidget> widget_;
 };
 }
