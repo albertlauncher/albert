@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="poweroff">resources/poweroff.svg</file>
+        <file alias="reboot">resources/reboot.svg</file>
+        <file alias="suspend">resources/suspend.svg</file>
+        <file alias="hibernate">resources/hibernate.svg</file>
+        <file alias="lock">resources/lock.svg</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,9 @@
+{
+    "id" :              "org.manuelschneid3r.albert.extension.system",
+    "name" :            "System",
+    "version" :         "1.0",
+    "platform" :        "Linux",
+    "group" :           "Extensions",
+    "author" :          "Manuel Schneider",
+    "dependencies" :    ""
+}

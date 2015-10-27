@@ -38,7 +38,7 @@ public:
      * live as long as the session is active.
      * @param node The amount of error tolerance
      */
-    void addMatch(shared_ptr<ActionNode> item, short score);
+    void addMatch(shared_ptr<ActionNode> item, short score = 0);
 
     /**
      * @brief Reset the query
