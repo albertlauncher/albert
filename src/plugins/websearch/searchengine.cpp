@@ -14,10 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QDesktopServices>
+#include <QUrl>
 #include <QDataStream>
 #include "searchengine.h"
 #include "albertapp.h"
-#include "predefinedobjects.h"
 
 
 /** ***************************************************************************/
@@ -52,7 +53,7 @@ QIcon Websearch::SearchEngine::icon() const {
 /** ***************************************************************************/
 void Websearch::SearchEngine::activate() {
     qApp->hideWidget();
-    UrlAction(QString(url_).replace("%s", searchTerm_)).activate();
+    QDesktopServices::openUrl(QUrl(QString(url_).replace("%s", searchTerm_)));
 }
 
 

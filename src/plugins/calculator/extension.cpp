@@ -15,10 +15,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDebug>
+#include <QClipboard>
+#include "albertapp.h"
 #include "extension.h"
 #include "query.h"
-#include "predefinedobjects.h"
-#include "abstractobjects.h"
+#include "objects.hpp"
 
 
 
@@ -46,7 +47,6 @@ Calculator::Extension::~Extension() {
 
 /** ***************************************************************************/
 void Calculator::Extension::handleQuery(shared_ptr<Query> query) {
-    std::shared_ptr<StandardItem> calcItem = std::make_shared<StandardItem>();
     parser_->SetExpr(query->searchTerm().toStdString());
     QString result;
     try {
@@ -55,11 +55,14 @@ void Calculator::Extension::handleQuery(shared_ptr<Query> query) {
     catch (mu::Parser::exception_type &e) {
       return;
     }
-    calcItem->setName(result);
-    calcItem->setInfo(QString("Result of '%1'").arg(query->searchTerm()));
+
+    std::shared_ptr<StandardItem> calcItem = std::make_shared<StandardItem>();
+    calcItem->setText(result);
+    calcItem->setSubtext(QString("Result of '%1'").arg(query->searchTerm()));
     calcItem->setIcon(calcIcon_);
-    calcItem->setAction(std::unique_ptr<CopyToClipboardAction>(
-                            new CopyToClipboardAction(result)
-                            ));
+    calcItem->setAction([result](){
+        QApplication::clipboard()->setText(result);
+        qApp->hideWidget();
+    });
     query->addMatch(calcItem, SHRT_MAX);
 }

@@ -18,24 +18,9 @@
 #include <QString>
 #include <QIcon>
 #include <memory>
-using std::shared_ptr;
-using std::unique_ptr;
 #include <vector>
+using std::shared_ptr;
 using std::vector;
-
-/** ****************************************************************************
-* @brief The Action
-* An activatable AbstractItem
-*/
-struct Action {
-    virtual ~Action() {}
-
-    /**
-     * @brief Exectute the Action.
-     * Reimplement this if you want your item to do some actions on activation
-     */
-    virtual void activate() = 0;
-};
 
 
 
@@ -43,7 +28,7 @@ struct Action {
  * @brief The AbstractItem
  * Displayable base class for all albert items.
  */
-struct ActionItem : public Action {
+struct ActionItem {
     virtual ~ActionItem() {}
 
     /**
@@ -63,6 +48,12 @@ struct ActionItem : public Action {
     virtual QString text() const = 0;
     virtual QString subtext() const = 0;
     virtual QIcon icon() const = 0;
+
+    /**
+     * @brief Exectute the Action.
+     * Reimplement this if you want your item to do some actions on activation
+     */
+    virtual void activate() = 0;
 };
 
 
@@ -83,30 +74,11 @@ struct ActionNode : public ActionItem {
      * @return The i-th component.
      */
 
-    virtual bool hasChildren() const = 0;
-    virtual vector<shared_ptr<ActionNode>> children() = 0;
-};
-
-
-
-/** ***************************************************************************/
-struct ActionLeaf : public ActionNode {
-    virtual ~ActionLeaf() {}
-
-    /**
-     * @brief Component accessor
-     * Return the i-th compontent. Currently albert supports only two layers in
-     * the view. The toplevel items and their children, the actions.
-     * @return The i-th component.
-     */
-
-    bool hasChildren() const override final {
+    virtual bool hasChildren() const {
         return false;
     }
 
-    vector<shared_ptr<ActionNode>> children() override final {
+    virtual vector<shared_ptr<ActionNode>> children() {
         return vector<shared_ptr<ActionNode>>();
     }
 };
-
-

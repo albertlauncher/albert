@@ -26,7 +26,7 @@ using std::vector;
 using std::map;
 using std::shared_ptr;
 using std::unique_ptr;
-#include "abstractobjects.h"
+#include "abstractobjects.hpp"
 #include "search/iindexable.h"
 
 namespace Files {

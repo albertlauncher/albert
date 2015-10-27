@@ -24,7 +24,6 @@
 using std::map;
 #include "application.h"
 #include "desktopaction.h"
-#include "predefinedobjects.h"
 #include "albertapp.h"
 
 
@@ -59,9 +58,9 @@ void Applications::Application::activate() {
     // expanded and whatelse a shell does with a commandline it is the easiest
     // way to just let the shell do it (therminal has a subshell)
     if(_term)
-        CommandAction(terminal.arg(_exec)).activate();
+        QProcess::startDetached(terminal.arg(_exec));
     else
-        CommandAction(QString("sh -c \"%1\"").arg(_exec)).activate();
+        QProcess::startDetached(QString("sh -c \"%1\"").arg(_exec));
     ++_usage;
 }
 

@@ -15,12 +15,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include "abstractobjects.h"
+#include "abstractobjects.hpp"
 class Extension;
 
 namespace Websearch {
 
-class SearchEngine final : public ActionLeaf
+class SearchEngine final : public ActionNode
 {
 public:
     SearchEngine() : enabled_(false) {}

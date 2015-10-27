@@ -17,13 +17,13 @@
 #pragma once
 #include <QString>
 #include <QIcon>
-#include "abstractobjects.h"
+#include "abstractobjects.hpp"
 #include "search/iindexable.h"
 
 
 namespace ChromeBookmarks {
 
-class Bookmark final : public ActionLeaf, public IIndexable
+class Bookmark final : public ActionNode, public IIndexable
 {
     friend class Extension;
     friend class Indexer;

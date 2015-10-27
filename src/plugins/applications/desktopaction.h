@@ -16,12 +16,12 @@
 
 #pragma once
 #include <QVariant>
-#include "abstractobjects.h"
+#include "abstractobjects.hpp"
 
 namespace Applications {
 class Application;
 
-class DesktopAction final : public ActionLeaf
+class DesktopAction final : public ActionNode
 {
 public:
     DesktopAction(Application *app, const QString &name, const QString &exec, const QIcon &icon, const bool term=false);

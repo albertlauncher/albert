@@ -14,9 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QProcess>
 #include "application.h"
 #include "desktopaction.h"
-#include "predefinedobjects.h"
 #include "albertapp.h"
 
 
@@ -53,8 +53,8 @@ QIcon Applications::DesktopAction::icon() const {
 void Applications::DesktopAction::activate() {
     qApp->hideWidget();
     if(term_)
-        return CommandAction(Application::terminal.arg(exec_)).activate();
+        QProcess::startDetached(Application::terminal.arg(exec_));
     else
-        return CommandAction(exec_).activate();
+        QProcess::startDetached(exec_);
     app_->incUsage();
 }

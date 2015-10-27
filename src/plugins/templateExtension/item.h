@@ -18,7 +18,7 @@
 #include <QVariant>
 #include <vector>
 using std::vector;
-#include "abstractobjects.h"
+#include "abstractobjects.hpp"
 
 namespace Template {
 class Item final : public ActionNode

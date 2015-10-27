@@ -14,9 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QDesktopServices>
+#include <QUrl>
 #include "bookmark.h"
 #include "albertapp.h"
-#include "predefinedobjects.h"
 
 
 QIcon ChromeBookmarks::Bookmark::icon_;
@@ -46,7 +47,7 @@ QIcon ChromeBookmarks::Bookmark::icon() const {
 /** ***************************************************************************/
 void ChromeBookmarks::Bookmark::activate() {
     qApp->hideWidget();
-    UrlAction(url_).activate();
+    QDesktopServices::openUrl(QUrl(url_));
     ++usage_;
 }
 

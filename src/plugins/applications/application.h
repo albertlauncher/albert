@@ -20,7 +20,7 @@
 #include <vector>
 using std::vector;
 #include "search/iindexable.h"
-#include "abstractobjects.h"
+#include "abstractobjects.hpp"
 
 namespace Applications{
 

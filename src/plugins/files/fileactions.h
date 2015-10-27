@@ -15,20 +15,19 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QIcon>
-#include <QMimeData>
-#include <QApplication>
+#include <QDesktopServices>
 #include <QClipboard>
+#include <QMimeData>
+#include <QIcon>
 #include <QUrl>
 #include <QStyle>
 #include "albertapp.h"
-#include "predefinedobjects.h"
 #include "file.h"
 
 namespace Files {
 
 /** ***************************************************************************/
-class AbstractFileAction : public ActionLeaf
+class AbstractFileAction : public ActionNode
 {
 public:
     AbstractFileAction(File *file) : _file(file) {}
@@ -56,7 +55,7 @@ public:
 
     void activate() override {
         qApp->hideWidget();
-        UrlAction(QUrl::fromLocalFile(_file->path())).activate();
+        QDesktopServices::openUrl(QUrl::fromLocalFile(_file->path()));
         _file->incUsage();
     }
 };
@@ -79,7 +78,7 @@ public:
 
     void activate() override {
         qApp->hideWidget();
-        UrlAction(QUrl::fromLocalFile(QFileInfo(_file->path()).path())).activate();
+        QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(_file->path()).path()));
         _file->incUsage();
     }
 };

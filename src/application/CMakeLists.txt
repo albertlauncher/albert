@@ -25,7 +25,8 @@ set(SRC
     pluginsystem/extension/query.cpp
     pluginsystem/extension/query_p.hpp
     pluginsystem/extension/iextension.h
-    pluginsystem/extension/abstractobjects.h
+    pluginsystem/extension/abstractobjects.hpp
+    pluginsystem/extension/objects.hpp
     settingswidget/grabkeybutton.cpp
     settingswidget/settingswidget.cpp
     settingswidget/pluginmodel.cpp
