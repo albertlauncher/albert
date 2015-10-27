@@ -34,13 +34,6 @@ Facts:
 ------------------------------- RELEASE 0.9 ------------------------------------
 - Matchers - Only large indexes have search indexes (Files), [ needs profiler ] Scoring. Improve them using matcher classes.
 
-------------------------------- RELEASE 0.8 ------------------------------------
-[x] Current screen. Remember window position. Closes #8
-[x] Please allow fuzzy matching of spaces to underscores #40
-[x] Remember position if not centered. Closes #33
-[x] Terminate application gracefully on SIGTERM. Closes #65
-[x] Websearch movable
-[ ] Triggers
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 EXTENSION Properties
