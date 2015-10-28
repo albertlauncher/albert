@@ -66,7 +66,6 @@ private:
     std::vector<shared_ptr<SearchEngine>> index_;
 
     /* constexpr */
-    static constexpr const char* EXT_NAME = "websearch";
     static constexpr const int   COL_COUNT = 4;
     enum class Section{Enabled, Name, Trigger, URL};
 };

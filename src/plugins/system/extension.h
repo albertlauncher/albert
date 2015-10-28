@@ -61,7 +61,6 @@ private:
     vector<ActionSpec> actions_;
 
     /* constexpr */
-    static constexpr const char* EXT_NAME          = "system";
     static constexpr const char* CFG_POWEROFF      = "poweroff";
     static constexpr const char* CFG_POWEROFF_DEF  = "systemctl poweroff -i";
     static constexpr const char* CFG_REBOOT        = "reboot";

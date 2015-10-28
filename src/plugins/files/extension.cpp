@@ -29,13 +29,17 @@
 
 
 /** ***************************************************************************/
-Files::Extension::Extension() {
-    qDebug() << "[Files] Initialize extension";
+Files::Extension::Extension()
+    : IExtension("org.albert.extension.files",
+                 tr("Files"),
+                 tr("Access your files via albert")) {
+    qDebug() << "Initialize extension:" << id;
+
     _minuteTimer.setInterval(60000);
 
     // Load settings
     QSettings s;
-    s.beginGroup(EXT_NAME);
+    s.beginGroup(id);
     _indexAudio = s.value(CFG_INDEX_AUDIO, CFG_INDEX_AUDIO_DEF).toBool();
     _indexVideo = s.value(CFG_INDEX_VIDEO, CFG_INDEX_VIDEO_DEF).toBool();
     _indexImage = s.value(CFG_INDEX_IMAGE, CFG_INDEX_IMAGE_DEF).toBool();
@@ -55,7 +59,7 @@ Files::Extension::Extension() {
     // Deserialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(EXT_NAME))
+                filePath(QString("%1.dat").arg(id))
                 );
     if (dataFile.exists())
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
@@ -81,15 +85,14 @@ Files::Extension::Extension() {
     // Initial update
     updateIndex();
 
-    s.endGroup();
-    qDebug() << "[Files] Extension initialized";
+    qDebug() << "Initialization done:" << id;
 }
 
 
 
 /** ***************************************************************************/
 Files::Extension::~Extension() {
-    qDebug() << "[Files] Finalize extension";
+    qDebug() << "Finalize extension:" << id;
 
     // Stop and wait for background indexer
     _minuteTimer.stop();
@@ -103,7 +106,7 @@ Files::Extension::~Extension() {
 
     // Save settings
     QSettings s;
-    s.beginGroup(EXT_NAME);
+    s.beginGroup(id);
     s.setValue(CFG_FUZZY, _searchIndex.fuzzy());
     s.setValue(CFG_PATHS, _rootDirs);
     s.setValue(CFG_INDEX_AUDIO, _indexAudio);
@@ -119,7 +122,7 @@ Files::Extension::~Extension() {
     // Serialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(EXT_NAME))
+                filePath(QString("%1.dat").arg(id))
                 );
     if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
         qDebug() << "[Files] Serializing to " << dataFile.fileName();
@@ -137,7 +140,7 @@ Files::Extension::~Extension() {
     } else
         qCritical() << "Could not write to " << dataFile.fileName();
 
-    qDebug() << "[Files] Extension finalized";
+    qDebug() << "Finalization done:" << id;
 }
 
 

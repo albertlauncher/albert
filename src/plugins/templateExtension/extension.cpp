@@ -23,19 +23,22 @@
 
 
 /** ***************************************************************************/
-Template::Extension::Extension() {
-    qDebug() << "[Template] Initialize extension";
+Template::Extension::Extension()
+    : IExtension("org.albert.extension.template",
+                 tr("<Displayable name of your extension>"),
+                 tr("<Desription of the fuctionality of your extension>")) {
+    qDebug() << "Initialize extension:" << id;
     // Do sth.
-    qDebug() << "[Template] Extension initialized";
+    qDebug() << "Initialization done:" << id;
 }
 
 
 
 /** ***************************************************************************/
 Template::Extension::~Extension() {
-    qDebug() << "[Template] Finalize extension";
+    qDebug() << "Finalize extension:" << id;
     // Do sth.
-    qDebug() << "[Template] Extension finalized";
+    qDebug() << "Finalization done:" << id;
 }
 
 

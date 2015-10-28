@@ -31,8 +31,11 @@
 
 
 /** ***************************************************************************/
-Applications::Extension::Extension() {
-    qDebug() << "[Applications] Initialize extension";
+Applications::Extension::Extension()
+    : IExtension("org.albert.extension.applications",
+                 tr("Applications"),
+                 tr("Acces your desktop applications via albert")) {
+    qDebug() << "Initialize extension:" << id;
 
     // Add the userspace icons dir which is not covered in the specs
     QFileInfo userSpaceIconsPath(QDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)).filePath("icons"));
@@ -41,6 +44,7 @@ Applications::Extension::Extension() {
 
     // Load settings
     QSettings s;
+    s.beginGroup(id);
     _searchIndex.setFuzzy(s.value(CFG_FUZZY, CFG_FUZZY_DEF).toBool());
 
     // Load the paths or set a default
@@ -73,7 +77,7 @@ Applications::Extension::Extension() {
     // Deserialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(EXT_NAME))
+                filePath(QString("%1.dat").arg(id))
                 );
     if (dataFile.exists())
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
@@ -95,14 +99,14 @@ Applications::Extension::Extension() {
     // Initial update
     updateIndex();
 
-    qDebug() << "[Applications] Extension initialized";
+    qDebug() << "Initialization done:" << id;
 }
 
 
 
 /** ***************************************************************************/
 Applications::Extension::~Extension() {
-    qDebug() << "[Applications] Finalize extension";
+    qDebug() << "Finalize extension:" << id;
 
     // Stop and wait for background indexer
     if (!_indexer.isNull()) {
@@ -115,6 +119,7 @@ Applications::Extension::~Extension() {
 
     // Save settings
     QSettings s;
+    s.beginGroup(id);
     s.setValue(CFG_FUZZY, _searchIndex.fuzzy());
     s.setValue(CFG_PATHS, _rootDirs);
     s.setValue(CFG_TERM, Applications::Application::terminal);
@@ -122,7 +127,7 @@ Applications::Extension::~Extension() {
     // Serialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(EXT_NAME))
+                filePath(QString("%1.dat").arg(id))
                 );
     if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
         qDebug() << "[Applications] Serializing to" << dataFile.fileName();
@@ -140,7 +145,7 @@ Applications::Extension::~Extension() {
     } else
         qCritical() << "Could not write to " << dataFile.fileName();
 
-    qDebug() << "[Applications] Extension finalized";
+    qDebug() << "Finalization done:" << id;
 }
 
 

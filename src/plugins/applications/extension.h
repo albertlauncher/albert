@@ -71,11 +71,10 @@ private:
     QStringList _rootDirs;
 
     /* constexpr */
-    static constexpr const char* EXT_NAME       = "applications";
-    static constexpr const char* CFG_PATHS      = "applications/paths";
-    static constexpr const char* CFG_FUZZY      = "applications/fuzzy";
+    static constexpr const char* CFG_PATHS      = "paths";
+    static constexpr const char* CFG_FUZZY      = "fuzzy";
     static constexpr const bool  CFG_FUZZY_DEF  = false;
-    static constexpr const char* CFG_TERM       = "applications/terminal";
+    static constexpr const char* CFG_TERM       = "terminal";
     static constexpr const char* CFG_TERM_DEF   = "xterm -e %1";
     static constexpr const bool  UPDATE_DELAY   = 60000;
 

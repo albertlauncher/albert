@@ -1,5 +1,5 @@
 {
-    "id" :              "org.manuelschneid3r.albert.extension.chromebookmarks",
+    "id" :              "org.albert.extension.chromebookmarks",
     "name" :            "ChromeBookmarks",
     "version" :         "1.0",
     "platform" :        "Linux",

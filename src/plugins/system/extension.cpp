@@ -26,13 +26,16 @@
 
 
 /** ***************************************************************************/
-System::Extension::Extension() {
-    qDebug() << "[Template] Initialize extension";
+System::Extension::Extension()
+    : IExtension("org.albert.extension.system",
+                 tr("System"),
+                 tr("Control your system/session via albert")) {
+    qDebug() << "Initialize extension:" << id;
 
     // Load settings
     QSettings s;
+    s.beginGroup(id);
     shared_ptr<StandardItem> sp;
-    s.beginGroup(EXT_NAME);
 
     actions_.push_back({CFG_POWEROFF,
                         "Poweroff",
@@ -64,22 +67,22 @@ System::Extension::Extension() {
                         QIcon::hasThemeIcon("system-lock") ? QIcon::fromTheme("system-lock") : QIcon(":lock"),
                         s.value(CFG_LOCK, CFG_LOCK_DEF).toString()});
 
-    qDebug() << "[Template] Extension initialized";
+    qDebug() << "Initialization done:" << id;
 }
 
 
 
 /** ***************************************************************************/
 System::Extension::~Extension() {
-    qDebug() << "[Template] Finalize extension";
+    qDebug() << "Finalize extension:" << id;
 
     // Save settings
     QSettings s;
-    s.beginGroup(EXT_NAME);
+    s.beginGroup(id);
     for (vector<ActionSpec>::iterator it = actions_.begin(); it != actions_.end(); ++it)
         s.setValue(it->id, it->cmd);
 
-    qDebug() << "[Template] Extension finalized";
+    qDebug() << "Finalization done:" << id;
 }
 
 

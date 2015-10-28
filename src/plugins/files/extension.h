@@ -105,7 +105,6 @@ private:
     unsigned int _scanInterval;
 
     /* constexpr */
-    static constexpr const char* EXT_NAME                = "files";
     static constexpr const char* CFG_PATHS               = "paths";
     static constexpr const char* CFG_FUZZY               = "fuzzy";
     static constexpr const bool  CFG_FUZZY_DEF           = false;

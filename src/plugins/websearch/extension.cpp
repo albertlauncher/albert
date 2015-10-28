@@ -38,13 +38,17 @@
 
 
 /** ***************************************************************************/
-Websearch::Extension::Extension() {
-    qDebug() << "[Websearch] Initialize extension";
+Websearch::Extension::Extension()
+    : IExtension("org.albert.extension.websearch",
+                 tr("Websearch"),
+                 tr("Serch the web with preconfigured search engines")) {
+    qDebug() << "Initialize extension:" << id;
+    // Do sth.
 
     // Deserialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(EXT_NAME))
+                filePath(QString("%1.dat").arg(id))
                 );
     if (dataFile.exists())
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
@@ -62,19 +66,19 @@ Websearch::Extension::Extension() {
             qWarning() << "Could not open file: " << dataFile.fileName();
             restoreDefaults();
         }
-    qDebug() << "[Websearch] Extension initialized";
+    qDebug() << "Initialization done:" << id;
 }
 
 
 
 /** ***************************************************************************/
 Websearch::Extension::~Extension() {
-    qDebug() << "[Websearch] Finalize extension";
+    qDebug() << "Finalize extension:" << id;
 
     // Serialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(EXT_NAME))
+                filePath(QString("%1.dat").arg(id))
                 );
     if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
         qDebug() << "[Websearch] Serializing to" << dataFile.fileName();
@@ -85,7 +89,7 @@ Websearch::Extension::~Extension() {
         dataFile.close();
     } else
         qCritical() << "Could not write to " << dataFile.fileName();
-    qDebug() << "[Websearch] Extension finalized";
+    qDebug() << "Finalization done:" << id;
 }
 
 

@@ -69,7 +69,6 @@ private:
     QFileSystemWatcher _watcher;
 
     /* constexpr */
-    static constexpr const char* EXT_NAME       = "chromebookmarks";
     static constexpr const char* CFG_BOOKMARKS  = "bookmarkfile";
     static constexpr const char* CFG_FUZZY      = "fuzzy";
     static constexpr const bool  CFG_FUZZY_DEF  = false;

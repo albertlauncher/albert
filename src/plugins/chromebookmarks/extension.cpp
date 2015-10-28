@@ -32,18 +32,21 @@
 
 
 /** ***************************************************************************/
-ChromeBookmarks::Extension::Extension() {
-    qDebug() << "[ChromeBookmarks] Initialize extension";
+ChromeBookmarks::Extension::Extension()
+    : IExtension("org.albert.extension.chromebookmarks",
+                 tr("Chrome Bookmarks"),
+                 tr("Access your Google Chrome/Chromium bookmarks via albert")) {
+    qDebug() << "Initialize extension:" << id;
 
     // Load settings
     QSettings s;
-    s.beginGroup(EXT_NAME);
+    s.beginGroup(id);
     _searchIndex.setFuzzy(s.value(CFG_FUZZY, CFG_FUZZY_DEF).toBool());
 
     // Deserialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(EXT_NAME))
+                filePath(QString("%1.dat").arg(id))
                 );
     if (dataFile.exists())
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
@@ -74,14 +77,14 @@ ChromeBookmarks::Extension::Extension() {
     // Get a generic favicon
     Bookmark::icon_ = QIcon::fromTheme("favorites", QIcon(":favicon"));
 
-    qDebug() << "[ChromeBookmarks] Extension initialized";
+    qDebug() << "Initialization done:" << id;
 }
 
 
 
 /** ***************************************************************************/
 ChromeBookmarks::Extension::~Extension() {
-    qDebug() << "[ChromeBookmarks] Finalize extension";
+    qDebug() << "Finalize extension:" << id;
 
     // Stop and wait for background indexer
     if (!_indexer.isNull()) {
@@ -94,14 +97,14 @@ ChromeBookmarks::Extension::~Extension() {
 
     // Save settings
     QSettings s;
-    s.beginGroup(EXT_NAME);
+    s.beginGroup(id);
     s.setValue(CFG_FUZZY, _searchIndex.fuzzy());
     s.setValue(CFG_BOOKMARKS, _bookmarksFile);
 
     // Serialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(EXT_NAME))
+                filePath(QString("%1.dat").arg(id))
                 );
     if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
         qDebug() << "[ChromeBookmarks] Serializing to" << dataFile.fileName();
@@ -119,7 +122,7 @@ ChromeBookmarks::Extension::~Extension() {
     } else
         qCritical() << "Could not write to " << dataFile.fileName();
 
-    qDebug() << "[ChromeBookmarks] Extension finalized";
+    qDebug() << "Finalization done:" << id;
 }
 
 

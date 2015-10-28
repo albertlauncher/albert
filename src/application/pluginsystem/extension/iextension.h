@@ -24,6 +24,9 @@ class CoreApi;
 
 struct IExtension : public IPlugin
 {
+    IExtension() = delete;
+    IExtension(QString _id, QString _name, QString _description)
+        : id(_id), name(_name), description(_description) {}
     virtual ~IExtension() {}
 
     /**
@@ -66,6 +69,10 @@ struct IExtension : public IPlugin
      * @param query Holds the query context
      */
     virtual void handleFallbackQuery(shared_ptr<Query> query) {}
+
+    const QString id;
+    const QString name;
+    const QString description;
 };
 #define ALBERT_EXTENSION_IID "org.manuelschneid3r.albert.extension"
 Q_DECLARE_INTERFACE(IExtension, ALBERT_EXTENSION_IID)

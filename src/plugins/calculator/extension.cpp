@@ -24,8 +24,12 @@
 
 
 /** ***************************************************************************/
-Calculator::Extension::Extension() {
-    qDebug() << "[Calculator] Initialize extension";
+Calculator::Extension::Extension()
+    : IExtension("org.albert.extension.calculator",
+                 tr("Calculator"),
+                 tr("Turn albert into a poewrful calculator")) {
+    qDebug() << "Initialize extension:" << id;
+
     if (QIcon::hasThemeIcon("calc"))
         calcIcon_ = QIcon::fromTheme("calc");
     else
@@ -33,14 +37,17 @@ Calculator::Extension::Extension() {
     parser_.reset(new mu::Parser);
     parser_->SetDecSep(loc.decimalPoint().toLatin1());
     parser_->SetThousandsSep(loc.groupSeparator().toLatin1());
-    qDebug() << "[Calculator] Extension initialized";
+
+    qDebug() << "Initialization done:" << id;
 }
 
 
 
 /** ***************************************************************************/
 Calculator::Extension::~Extension() {
+    qDebug() << "Finalize extension:" << id;
     parser_.reset();
+    qDebug() << "Finalization done:" << id;
 }
 
 

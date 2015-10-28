@@ -1,5 +1,5 @@
 {
-    "id" :              "org.manuelschneid3r.albert.extension.websearch",
+    "id" :              "org.albert.extension.websearch",
     "name" :            "WebSearch",
     "version" :         "1.0",
     "platform" :        "All",
