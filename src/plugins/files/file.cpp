@@ -74,10 +74,10 @@ bool Files::File::hasChildren() const {
 
 
 /** ***************************************************************************/
-vector<shared_ptr<ActionNode>> Files::File::children() {
+vector<shared_ptr<AlbertItem>> Files::File::children() {
     // Lazy instaciate actions
     if (!children_){
-        children_ = unique_ptr<vector<shared_ptr<ActionNode>>>(new vector<shared_ptr<ActionNode>>);
+        children_ = unique_ptr<vector<shared_ptr<AlbertItem>>>(new vector<shared_ptr<AlbertItem>>);
         children_->push_back(std::make_shared<RevealFileAction>(this));
         children_->push_back(std::make_shared<CopyFileAction>(this));
         children_->push_back(std::make_shared<CopyPathAction>(this));
@@ -88,8 +88,8 @@ vector<shared_ptr<ActionNode>> Files::File::children() {
 
 
 /** ***************************************************************************/
-std::vector<QString> Files::File::aliases() const {
-    return std::vector<QString>({QFileInfo(path_).fileName()});
+vector<QString> Files::File::aliases() const {
+    return vector<QString>({QFileInfo(path_).fileName()});
 }
 
 

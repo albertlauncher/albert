@@ -19,18 +19,23 @@
 #include "abstractobjects.hpp"
 using std::function;
 
-class StandardItem final : public ActionNode
+class StandardItem final : public AlbertItem
 {
 public:
     StandardItem(){}
-    StandardItem(const QString &text, const QString &subtext, const QIcon &icon, std::function<void()> f)
-        : text_(text), subtext_(subtext), icon_(icon), action_(f) {}
+    StandardItem(QString text, QString subtext, QIcon icon, std::function<void()> f)
+        : text_(text), subtext_(subtext), aliases_({text}), icon_(icon), action_(f) {}
+    StandardItem(QString text, QString subtext, vector<QString> aliases, QIcon icon, std::function<void()> f)
+        : text_(text), subtext_(subtext), aliases_(aliases), icon_(icon), action_(f) {}
 
     QString text() const override { return text_; }
     void setText(const QString &text){text_ = text;}
 
     QString subtext() const override { return subtext_; }
     void setSubtext(const QString &subtext){subtext_ = subtext;}
+
+    vector<QString> aliases() const override { return aliases_; }
+    void setAliases(const vector<QString> &aliases){aliases_ = aliases;}
 
     QIcon icon() const override { return icon_; }
     void setIcon( const QIcon &icon){icon_ = icon;}
@@ -42,6 +47,7 @@ public:
 private:
     QString text_;
     QString subtext_;
+    vector<QString> aliases_;
     QIcon icon_;
     function<void()> action_;
 };

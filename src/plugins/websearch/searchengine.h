@@ -20,7 +20,7 @@ class Extension;
 
 namespace Websearch {
 
-class SearchEngine final : public ActionNode
+class SearchEngine final : public AlbertItem
 {
 public:
     SearchEngine() : enabled_(false) {}
@@ -28,6 +28,7 @@ public:
 
     QString text() const override;
     QString subtext() const override;
+    vector<QString> aliases() const override;
     QIcon icon() const override;
     void activate() override;
 

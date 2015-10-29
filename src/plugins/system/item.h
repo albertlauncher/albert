@@ -17,11 +17,11 @@
 #pragma once
 #include <QVariant>
 #include <vector>
+#include "abstractobjects.hpp"
 using std::vector;
-#include "objects.hpp"
 
 namespace System {
-class Item final : public ActionNode
+class Item final : public AlbertItem
 {
     friend class Extension;
 public:
@@ -33,6 +33,10 @@ public:
     QIcon icon() const override;
     void activate() override;
     bool hasChildren() const override;
-    vector<shared_ptr<ActionNode>> children() override;
+    vector<shared_ptr<AlbertItem>> children() override;
+
+private:
+    QString cmd_;
+    mutable short usage_;
 };
 }

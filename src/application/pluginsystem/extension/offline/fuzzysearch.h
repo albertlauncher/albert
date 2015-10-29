@@ -53,9 +53,9 @@ public:
 
 
     /** ***********************************************************************/
-    void add(shared_ptr<IIndexable> idxble) override {
+    void add(shared_ptr<AlbertItem> item) override {
         // Add a mappings to the inverted index which maps on t.
-        std::vector<QString> aliases = idxble->aliases();
+        std::vector<QString> aliases = item->aliases();
         for (const QString & str : aliases) {
             QStringList words = str.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
              for (QString& w : words) {
@@ -64,7 +64,7 @@ public:
                 w=w.toLower();
 
                 // Add word to inverted index (map word to item)
-                this->_invertedIndex[w].insert(idxble);
+                this->_invertedIndex[w].insert(item);
 
                 // Build a qGram index (map substring to word)
                 QString spaced = QString(_q-1,' ').append(w);
@@ -84,15 +84,15 @@ public:
 
 
     /** ***********************************************************************/
-    vector<shared_ptr<IIndexable>> search(const QString &req) const override {
+    vector<shared_ptr<AlbertItem>> search(const QString &req) const override {
         vector<QString> words;
         for (QString &word : req.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts))
             words.push_back(word.toLower());
-        vector<map<shared_ptr<IIndexable>, unsigned int>> resultsPerWord;
+        vector<map<shared_ptr<AlbertItem>, unsigned int>> resultsPerWord;
 
         // Quit if there are no words in query
         if (words.empty())
-            return vector<shared_ptr<IIndexable>>();
+            return vector<shared_ptr<AlbertItem>>();
 
         // Split the query into words
         for (QString &word : words) {
@@ -124,8 +124,8 @@ public:
             }
 
             // Allocate a new set
-            resultsPerWord.push_back(map<shared_ptr<IIndexable>, unsigned int>());
-            map<shared_ptr<IIndexable>, unsigned int>& resultsRef = resultsPerWord.back();
+            resultsPerWord.push_back(map<shared_ptr<AlbertItem>, unsigned int>());
+            map<shared_ptr<AlbertItem>, unsigned int>& resultsRef = resultsPerWord.back();
 
             // Unite the items referenced by the words accumulating their #matches
             for (map<QString, unsigned int>::const_iterator wm = wordMatches.begin(); wm != wordMatches.end(); ++wm) {
@@ -141,7 +141,7 @@ public:
                 if (_invertedIndex.count(wm->first) == 0)
                     continue;
 
-                for(const shared_ptr<IIndexable> &item : _invertedIndex.at(wm->first)) {
+                for(const shared_ptr<AlbertItem> &item : _invertedIndex.at(wm->first)) {
                     resultsRef[item] += wm->second;
                 }
             }
@@ -150,7 +150,7 @@ public:
         // Intersect the set of items references by the (referenced) words
         // This assusmes that there is at least one word (the query would not have
         // been started elsewise)
-        vector<std::pair<shared_ptr<IIndexable>, unsigned int>> finalResult;
+        vector<std::pair<shared_ptr<AlbertItem>, unsigned int>> finalResult;
         if (resultsPerWord.size() > 1) {
             // Get the smallest list for intersection (performance)
             unsigned int smallest=0;
@@ -159,7 +159,7 @@ public:
                     smallest = i;
 
             bool allResultsContainEntry;
-            for (map<shared_ptr<IIndexable>, unsigned int>::const_iterator r = resultsPerWord[smallest].begin();
+            for (map<shared_ptr<AlbertItem>, unsigned int>::const_iterator r = resultsPerWord[smallest].begin();
                  r != resultsPerWord[smallest].cend(); ++r) {
                 // Check if all results contain this entry
                 allResultsContainEntry=true;
@@ -188,7 +188,7 @@ public:
                 finalResult.push_back(std::make_pair(r->first, accMatches));
             }
         } else {// Else do it without intersction
-            for (map<shared_ptr<IIndexable>, unsigned int>::const_iterator r = resultsPerWord[0].begin();
+            for (map<shared_ptr<AlbertItem>, unsigned int>::const_iterator r = resultsPerWord[0].begin();
                  r != resultsPerWord[0].cend(); ++r)
                 finalResult.push_back(std::make_pair(r->first, r->second));
         }
@@ -197,8 +197,8 @@ public:
         //        std::sort(finalResult.begin(), finalResult.end(),
         //                  [](QPair<T, unsigned int> x, QPair<T, unsigned int> y)
         //                    {return x.second > y.second;});
-        vector<shared_ptr<IIndexable>> result;
-        for (std::pair<shared_ptr<IIndexable>, unsigned int> pair : finalResult) {
+        vector<shared_ptr<AlbertItem>> result;
+        for (std::pair<shared_ptr<AlbertItem>, unsigned int> pair : finalResult) {
             result.push_back(pair.first);
         }
         return result;

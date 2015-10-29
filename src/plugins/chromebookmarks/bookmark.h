@@ -18,12 +18,10 @@
 #include <QString>
 #include <QIcon>
 #include "abstractobjects.hpp"
-#include "search/iindexable.h"
-
 
 namespace ChromeBookmarks {
 
-class Bookmark final : public ActionNode, public IIndexable
+class Bookmark final : public AlbertItem
 {
     friend class Extension;
     friend class Indexer;

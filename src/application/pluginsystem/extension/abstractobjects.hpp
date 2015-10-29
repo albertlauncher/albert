@@ -28,8 +28,8 @@ using std::vector;
  * @brief The AbstractItem
  * Displayable base class for all albert items.
  */
-struct ActionItem {
-    virtual ~ActionItem() {}
+struct AlbertAction {
+    virtual ~AlbertAction() {}
 
     /**
      * @brief Access to the data to display.
@@ -47,6 +47,7 @@ struct ActionItem {
      */
     virtual QString text() const = 0;
     virtual QString subtext() const = 0;
+    virtual vector<QString> aliases() const { return {text()}; }
     virtual QIcon icon() const = 0;
 
     /**
@@ -64,8 +65,8 @@ struct ActionItem {
  * let your items be visible in the proposal list. Subclass this item to your
  * liking and add it to the query if you think it matches the query context.
  */
-struct ActionNode : public ActionItem {
-    virtual ~ActionNode() {}
+struct AlbertItem : public AlbertAction {
+    virtual ~AlbertItem() {}
 
     /**
      * @brief Component accessor
@@ -78,7 +79,7 @@ struct ActionNode : public ActionItem {
         return false;
     }
 
-    virtual vector<shared_ptr<ActionNode>> children() {
-        return vector<shared_ptr<ActionNode>>();
+    virtual vector<shared_ptr<AlbertItem>> children() {
+        return vector<shared_ptr<AlbertItem>>();
     }
 };

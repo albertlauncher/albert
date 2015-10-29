@@ -35,11 +35,11 @@ void ChromeBookmarks::Indexer::run() {
 
     // Notification
     QString msg("Indexing bookmarks ...");
-    emit statusInfo(msg);
+    emit extension_->statusInfo(msg);
     qDebug() << "[ChromeBookmarks]" << msg;
 
     // Build a new index
-    vector<shared_ptr<Bookmark>> newIndex;
+    vector<shared_ptr<AlbertItem>> newIndex;
 
     // Define a recursive bookmark indexing lambda
     std::function<void(const QJsonObject &json)> rec_bmsearch =
@@ -59,9 +59,9 @@ void ChromeBookmarks::Indexer::run() {
         }
     };
 
-    QFile f(_extension->_bookmarksFile);
+    QFile f(extension_->bookmarksFile_);
     if (!f.open(QIODevice::ReadOnly)) {
-        qWarning() << "Could not open " << _extension->_bookmarksFile;
+        qWarning() << "Could not open " << extension_->bookmarksFile_;
         return;
     }
 
@@ -73,61 +73,49 @@ void ChromeBookmarks::Indexer::run() {
 
     f.close();
 
-
     // Sort the new index for linear usage copy [O(n*log(n))]
-    emit statusInfo("Sorting ... ");
     std::sort(newIndex.begin(), newIndex.end(),
-              [&](const shared_ptr<Bookmark> lhs, const shared_ptr<Bookmark> rhs) {
-                  return QString::compare(lhs->url(), rhs->url(), Qt::CaseInsensitive) < 0;
+              [&](const shared_ptr<AlbertItem> lhs, const shared_ptr<AlbertItem> rhs) {
+                  return QString::compare(std::static_pointer_cast<Bookmark>(lhs)->url(),
+                                          std::static_pointer_cast<Bookmark>(rhs)->url(),
+                                          Qt::CaseInsensitive) < 0;
               });
 
-
     // Copy the usagecounters  [O(n)]
-    emit statusInfo("Copy usage statistics ... ");
     size_t i=0, j=0;
-    while (i < _extension->_index.size() && j < newIndex.size()) {
-        if (_extension->_index[i]->url_ == newIndex[j]->url_) {
-            newIndex[j]->usage_ = _extension->_index[i]->usage_;
+    while (i < extension_->index_.size() && j < newIndex.size()) {
+
+        shared_ptr<Bookmark> oldBookmark
+                = std::static_pointer_cast<Bookmark>(extension_->index_[i]);
+        shared_ptr<Bookmark> newBookmark
+                = std::static_pointer_cast<Bookmark>(newIndex[j]);
+
+        if (oldBookmark->url_ == newBookmark->url_) {
+            newBookmark->usage_ = oldBookmark->usage_;
             ++i;++j;
-        } else if (_extension->_index[i]->url_ < newIndex[j]->url_ ) {
+        } else if (oldBookmark->url_ < newBookmark->url_ ) {
             ++i;
-        } else {// if ((*_fileIndex)[i]->path > (*newIndex)[j]->path) {
+        } else {// if (oldBookmark->url_ > newBookmark->url_ ) {
             ++j;
         }
     }
 
-    /*
-     *  ▼ CRITICAL ▼
-     */
+    // ▼ CRITICAL: Set the new index ▼
+    extension_->indexAccess_.lock();
+    extension_->index_ = std::move(newIndex);
+    extension_->indexAccess_.unlock();
+    // ▲ CRITICAL: Set the new index ▲
 
-    // Lock the access
-    _extension->_indexAccess.lock();
-
-    // Set the new index
-    _extension->_index = std::move(newIndex);
-
-    // Reset the offline index
-    emit statusInfo("Build offline index... ");
-    _extension->_searchIndex.clear();
-
-    // Build the new offline index
-    for (shared_ptr<IIndexable> i : _extension->_index)
-        _extension->_searchIndex.add(i);
-
-    // Unlock the accress
-    _extension->_indexAccess.unlock();
+    emit extension_->staticItemsChanged(extension_);
 
     // Finally update the watches (maybe folders changed)
-    _extension->_watcher.removePaths(_extension->_watcher.files());
-    if(!_extension->_watcher.addPath(_extension->_bookmarksFile)) // No clue why this should happen
-        qCritical() << _extension->_bookmarksFile
+    extension_->watcher_.removePaths(extension_->watcher_.files());
+    if(!extension_->watcher_.addPath(extension_->bookmarksFile_)) // No clue why this should happen
+        qCritical() << extension_->bookmarksFile_
                     <<  "could not be watched. Changes in this path will not be noticed.";
-    /*
-     *  ▲ CRITICAL ▲
-     */
 
     // Notification
-    msg = QString("Indexed %1 bookmarks.").arg(_extension->_index.size());
-    emit statusInfo(msg);
+    msg = QString("Indexed %1 bookmarks.").arg(extension_->index_.size());
+    emit extension_->statusInfo(msg);
     qDebug() << "[ChromeBookmarks]" << msg;
 }

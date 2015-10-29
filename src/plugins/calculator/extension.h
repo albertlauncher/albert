@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
 #include <QLocale>
 #include <QIcon>
 #include <memory>
@@ -26,7 +25,7 @@ namespace Calculator {
 
 class ConfigWidget;
 
-class Extension final : public QObject, public IExtension
+class Extension final : public IExtension
 {
     Q_OBJECT
     Q_INTERFACES(IExtension)
@@ -41,8 +40,7 @@ public:
 
 private:
     std::unique_ptr<mu::Parser> parser_;
-    QLocale loc;
+    QLocale loc_;
     QIcon calcIcon_;
-
 };
 }

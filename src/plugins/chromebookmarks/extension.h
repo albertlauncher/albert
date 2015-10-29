@@ -15,16 +15,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
 #include <QTimer>
 #include <QPointer>
 #include <QMutex>
 #include <QFileSystemWatcher>
 #include <vector>
-using std::vector;
 #include <memory>
 #include "iextension.h"
-#include "search/search.h"
+using std::vector;
 
 namespace ChromeBookmarks {
 
@@ -32,7 +30,7 @@ class Bookmark;
 class ConfigWidget;
 class Indexer;
 
-class Extension final : public QObject, public IExtension
+class Extension final : public IExtension
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
@@ -44,34 +42,26 @@ public:
     Extension();
     ~Extension();
 
-    // GenericPluginInterface
-    QWidget *widget(QWidget *parent = nullptr) override;
-
     // IExtension
-    void handleQuery(shared_ptr<Query> query) override;
+    QWidget *widget(QWidget *parent = nullptr) override;
+    vector<shared_ptr<AlbertItem>> staticItems() const override;
 
+    // API special to this extension
     const QString &path();
     void setPath(const QString &s);
     void restorePath();
-
     void updateIndex();
 
-    bool fuzzy();
-    void setFuzzy(bool b = true);
-
 private:
-    QPointer<ConfigWidget> _widget;
-    vector<shared_ptr<Bookmark>> _index;
-    Search _searchIndex;
-    QMutex _indexAccess;
-    QPointer<Indexer> _indexer;
-    QString _bookmarksFile;
-    QFileSystemWatcher _watcher;
+    QPointer<ConfigWidget> widget_;
+    vector<shared_ptr<AlbertItem>> index_;
+    mutable QMutex indexAccess_;
+    QPointer<Indexer> indexer_;
+    QString bookmarksFile_;
+    QFileSystemWatcher watcher_;
 
     /* constexpr */
     static constexpr const char* CFG_BOOKMARKS  = "bookmarkfile";
-    static constexpr const char* CFG_FUZZY      = "fuzzy";
-    static constexpr const bool  CFG_FUZZY_DEF  = false;
 
 signals:
     void pathChanged(const QString&);

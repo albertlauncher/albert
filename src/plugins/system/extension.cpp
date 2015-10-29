@@ -17,13 +17,22 @@
 #include <QSettings>
 #include <QProcess>
 #include <QDebug>
+#include <functional>
 #include "extension.h"
 #include "configwidget.h"
-#include "item.h"
 #include "query.h"
 #include "objects.hpp"
 #include "albertapp.h"
 
+
+struct CommandAction {
+    CommandAction(QString _cmd) : cmd(_cmd) {}
+    QString cmd;
+    void operator()(){
+        qApp->hideWidget();
+        QProcess::startDetached(cmd);
+    }
+};
 
 /** ***************************************************************************/
 System::Extension::Extension()
@@ -32,40 +41,51 @@ System::Extension::Extension()
                  tr("Control your system/session via albert")) {
     qDebug() << "Initialize extension:" << id;
 
+    titles_ = {
+        "Poweroff",
+        "Reboot",
+        "Suspend",
+        "Hiberate",
+        "Logout",
+        "Lock"
+    };
+    descriptions_ = {
+        "Poweroff the machine.",
+        "Reboot the machine.",
+        "Suspend the machine.",
+        "Hiberate the machine.",
+        "Logout the session.",
+        "Lock the session."
+    };
+    iconpaths_ = {
+        ":poweroff",
+        ":reboot",
+        ":suspend",
+        ":hibernate",
+        ":logout",
+        ":lock"
+    };
+    defaults_ = {
+        "dbus-send --print-reply --dest=org.gnome.SessionManager /org/gnome/SessionManager org.gnome.SessionManager.RequestShutdown",
+        "dbus-send --print-reply --dest=org.gnome.SessionManager /org/gnome/SessionManager org.gnome.SessionManager.RequestReboot",
+        "systemctl suspend -i",
+        "systemctl hibernate -i",
+        "dbus-send --print-reply --dest=org.gnome.SessionManager /org/gnome/SessionManager org.gnome.SessionManager.Logout",
+        "cinnamon-screensaver-command -l"
+    };
+
     // Load settings
     QSettings s;
     s.beginGroup(id);
-    shared_ptr<StandardItem> sp;
 
-    actions_.push_back({CFG_POWEROFF,
-                        "Poweroff",
-                        "Poweroff the machine.",
-                        QIcon::hasThemeIcon("system-shutdown") ? QIcon::fromTheme("system-shutdown") : QIcon(":poweroff"),
-                        s.value(CFG_POWEROFF, CFG_POWEROFF_DEF).toString()});
-
-    actions_.push_back({CFG_REBOOT,
-                        "Reboot",
-                        "Reboot the machine.",
-                        QIcon::hasThemeIcon("system-reboot") ? QIcon::fromTheme("system-reboot") : QIcon(":reboot"),
-                        s.value(CFG_REBOOT, CFG_REBOOT_DEF).toString()});
-
-    actions_.push_back({CFG_SUSPEND,
-                        "Suspend",
-                        "Suspend the machine.",
-                        QIcon::hasThemeIcon("system-suspend") ? QIcon::fromTheme("system-suspend") : QIcon(":suspend"),
-                        s.value(CFG_SUSPEND, CFG_SUSPEND_DEF).toString()});
-
-    actions_.push_back({CFG_HIBERNATE,
-                        "Hiberate",
-                        "Hiberate the machine.",
-                        QIcon::hasThemeIcon("system-suspend-hibernate") ? QIcon::fromTheme("system-suspend-hibernate") : QIcon(":hibernate"),
-                        s.value(CFG_HIBERNATE, CFG_HIBERNATE_DEF).toString()});
-
-    actions_.push_back({CFG_LOCK,
-                        "Lock",
-                        "Lock the session.",
-                        QIcon::hasThemeIcon("system-lock") ? QIcon::fromTheme("system-lock") : QIcon(":lock"),
-                        s.value(CFG_LOCK, CFG_LOCK_DEF).toString()});
+    for (int i = 0; i <  static_cast<int>(Actions::NUM_ACTIONS); ++i) {
+        index_.push_back(std::make_shared<StandardItem>(
+                             titles_[i],
+                             descriptions_[i],
+                             QIcon(iconpaths_[i]),
+                             CommandAction(s.value(titles_[i].toLower(),
+                                                   defaults_[i]).toString())));
+    }
 
     qDebug() << "Initialization done:" << id;
 }
@@ -79,8 +99,9 @@ System::Extension::~Extension() {
     // Save settings
     QSettings s;
     s.beginGroup(id);
-    for (vector<ActionSpec>::iterator it = actions_.begin(); it != actions_.end(); ++it)
-        s.setValue(it->id, it->cmd);
+    for (vector<shared_ptr<AlbertItem>>::iterator it = index_.begin(); it != index_.end(); ++it)
+        s.setValue(std::static_pointer_cast<StandardItem>(*it)->text().toLower(),
+                   std::static_pointer_cast<StandardItem>(*it)->action().target<CommandAction>()->cmd);
 
     qDebug() << "Finalization done:" << id;
 }
@@ -93,30 +114,38 @@ QWidget *System::Extension::widget(QWidget *parent) {
         widget_ = new ConfigWidget(parent);
 
         // poweroff
-        widget_->ui.lineEdit_poweroff->setText(command(CFG_POWEROFF));
+        widget_->ui.lineEdit_poweroff->setText(command(Actions::POWEROFF));
         connect(widget_->ui.lineEdit_poweroff, &QLineEdit::textEdited,
-                [this](const QString &s){setCommand(CFG_POWEROFF, s);});
+                [this](const QString &s){setCommand(Actions::POWEROFF, s);});
 
         // reboot
-        widget_->ui.lineEdit_reboot->setText(command(CFG_REBOOT));
+        widget_->ui.lineEdit_reboot->setText(command(Actions::REBOOT));
         connect(widget_->ui.lineEdit_reboot, &QLineEdit::textEdited,
-                [this](const QString &s){setCommand(CFG_REBOOT, s);});
+                [this](const QString &s){setCommand(Actions::REBOOT, s);});
 
         // suspend
-        widget_->ui.lineEdit_suspend->setText(command(CFG_SUSPEND));
+        widget_->ui.lineEdit_suspend->setText(command(Actions::SUSPEND));
         connect(widget_->ui.lineEdit_suspend, &QLineEdit::textEdited,
-                [this](const QString &s){setCommand(CFG_SUSPEND, s);});
+                [this](const QString &s){setCommand(Actions::SUSPEND, s);});
 
         // hibernate
-        widget_->ui.lineEdit_hibernate->setText(command(CFG_HIBERNATE));
+        widget_->ui.lineEdit_hibernate->setText(command(Actions::HIBERNATE));
         connect(widget_->ui.lineEdit_hibernate, &QLineEdit::textEdited,
-                [this](const QString &s){setCommand(CFG_HIBERNATE, s);});
+                [this](const QString &s){setCommand(Actions::HIBERNATE, s);});
+
+        // logout
+        widget_->ui.lineEdit_logout->setText(command(Actions::LOGOUT));
+        connect(widget_->ui.lineEdit_logout, &QLineEdit::textEdited,
+                [this](const QString &s){setCommand(Actions::LOGOUT, s);});
 
         // lock
-        widget_->ui.lineEdit_lock->setText(command(CFG_LOCK));
+        widget_->ui.lineEdit_lock->setText(command(Actions::LOCK));
         connect(widget_->ui.lineEdit_lock, &QLineEdit::textEdited,
-                [this](const QString &s){setCommand(CFG_LOCK, s);});
+                [this](const QString &s){setCommand(Actions::LOCK, s);});
 
+        // Restore
+        connect(widget_->ui.pushButton_restore, &QPushButton::clicked,
+                this, &Extension::restoreCommands);
     }
     return widget_;
 }
@@ -124,38 +153,30 @@ QWidget *System::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void System::Extension::handleQuery(shared_ptr<Query> query) {
-
-    for (vector<ActionSpec>::iterator it = actions_.begin(); it != actions_.end(); ++it)
-        if (it->name.toLower().startsWith(query->searchTerm()))
-            query->addMatch(std::make_shared<StandardItem>(it->name,
-                                                           it->desc,
-                                                           it->icon,
-                                                           [=](){
-                qApp->hideWidget();
-                QProcess::startDetached(it->cmd);
-            }));
+vector<shared_ptr<AlbertItem> > System::Extension::staticItems() const {
+    return index_;
 }
 
 
 
 /** ***************************************************************************/
-QString System::Extension::command(const QString& id){
-    vector<ActionSpec>::iterator it = std::find_if(actions_.begin(), actions_.end(),
-                 [&id](const ActionSpec& as){
-                     return id==as.id;
-                 });
-    return (it != actions_.end()) ? it->cmd : "";
+QString System::Extension::command(Actions action) {
+    return std::static_pointer_cast<StandardItem>(index_[static_cast<int>(action)])
+            ->action().target<CommandAction>()->cmd;
 }
 
 
 
 /** ***************************************************************************/
-void System::Extension::setCommand(const QString& id, const QString& cmd){
-    vector<ActionSpec>::iterator it = std::find_if(actions_.begin(), actions_.end(),
-                 [&id](const ActionSpec& as){
-                     return id==as.id;
-                 });
-    if (it != actions_.end())
-        it->cmd = cmd;
+void System::Extension::setCommand(Actions action, const QString& cmd){
+    std::static_pointer_cast<StandardItem>(index_[static_cast<int>(action)])
+            ->action().target<CommandAction>()->cmd = cmd;
+}
+
+
+
+/** ***************************************************************************/
+void System::Extension::restoreCommands() {
+    for (int i = 0; i <  static_cast<int>(Actions::NUM_ACTIONS); ++i)
+        setCommand(static_cast<Actions>(i), defaults_[i]);
 }

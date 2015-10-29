@@ -24,7 +24,6 @@ class ConfigWidget final : public QWidget
     Q_OBJECT
 public:
     explicit ConfigWidget(QWidget *parent = 0);
-    ~ConfigWidget();
     Ui::ConfigWidget ui;
 };
 }

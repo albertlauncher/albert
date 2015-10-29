@@ -21,18 +21,22 @@
 #include <QIcon>
 #include <memory>
 #include "iextension.h"
-#include "search/search.h"
+using std::vector;
+using std::shared_ptr;
 
 namespace Websearch {
 
 class SearchEngine;
 class ConfigWidget;
 
-class Extension final : public QAbstractTableModel, public IExtension
+
+
+class Extension final : public IExtension
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
     Q_INTERFACES(IExtension)
+
 
 public:
     Extension();
@@ -44,30 +48,18 @@ public:
     // IExtension
     void handleQuery(shared_ptr<Query> query) override;
     void handleFallbackQuery(shared_ptr<Query> query) override;
-    bool isTriggered() const override {return true;}
+    bool isTriggerOnly() const override {return true;}
+    bool runExclusive() const override {return true;}
     QStringList triggers() const override;
 
     // API special to this extension
     void restoreDefaults();
 
-    // Modelinterface
-    int rowCount(const QModelIndex & parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex & parent = QModelIndex()) const override;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
-    bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole) override;
-    Qt::ItemFlags flags(const QModelIndex & index) const override;
-    bool insertRows (int position, int rows, const QModelIndex & parent = QModelIndex()) override;
-    bool removeRows (int position, int rows, const QModelIndex & parent = QModelIndex()) override;
-    bool moveRows(const QModelIndex &sourceRow, int srcRow, int cnt, const QModelIndex & dst, int destinationChild) override;
 
 private:
     QPointer<ConfigWidget> widget_;
-    std::vector<shared_ptr<SearchEngine>> index_;
+    vector<shared_ptr<SearchEngine>> index_;
 
-    /* constexpr */
-    static constexpr const int   COL_COUNT = 4;
-    enum class Section{Enabled, Name, Trigger, URL};
 };
 
 }

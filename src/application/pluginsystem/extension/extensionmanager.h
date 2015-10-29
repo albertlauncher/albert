@@ -17,10 +17,12 @@
 #pragma once
 #include <QObject>
 #include <QAbstractItemModel>
-#include <QSet>
-#include <QMap>
+#include <set>
 #include <QString>
 #include <memory>
+#include "offline/search.h"
+using std::set;
+using std::shared_ptr;
 class IExtension;
 class Query;
 
@@ -34,18 +36,16 @@ public:
     void startQuery(const QString &searchTerm);
     void setupSession();
     void teardownSession();
-
     void registerExtension(QObject *);
     void unregisterExtension(QObject *);
-
     void activate(const QModelIndex & index);
-
-    bool sessionIsActive() const;
+    void buildOfflineIndex();
 
 private:
-    QSet<IExtension*> _extensions;
-    std::shared_ptr<Query> _currentQuery;
-    bool _sessionIsActive;
+    set<IExtension*> extensions_;
+    shared_ptr<Query> currentQuery_;
+    Search offlineIndex_;
+
 
 signals:
     void newModel(QAbstractItemModel *);

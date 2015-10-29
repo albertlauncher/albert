@@ -17,14 +17,12 @@
 #pragma once
 #include <QFileSystemWatcher>
 #include <QPointer>
-#include <QObject>
 #include <QString>
 #include <QMutex>
 #include <QTimer>
-#include <QList>
 #include <vector>
 #include "iextension.h"
-#include "search/search.h"
+using std::vector;
 
 namespace Applications {
 
@@ -32,7 +30,7 @@ class Application;
 class ConfigWidget;
 class Indexer;
 
-class Extension final : public QObject, public IExtension
+class Extension final : public IExtension
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
@@ -44,11 +42,9 @@ public:
     Extension();
     ~Extension();
 
-    // GenericPluginInterface
-    QWidget *widget(QWidget *parent = nullptr) override;
-
     // IExtension
-    void handleQuery(shared_ptr<Query> query) override;
+    QWidget *widget(QWidget *parent = nullptr) override;
+    vector<shared_ptr<AlbertItem>> staticItems() const override;
 
     // API special to this extension
     void addDir(const QString &dirPath);
@@ -56,24 +52,17 @@ public:
     void restorePaths();
     void updateIndex();
 
-    // Properties
-    bool fuzzy();
-    void setFuzzy(bool b = true);
-
 private:
-    QPointer<ConfigWidget> _widget;
-    std::vector<shared_ptr<Application>> _appIndex;
-    Search _searchIndex;
-    QMutex _indexAccess;
-    QPointer<Indexer> _indexer;
-    QFileSystemWatcher _watcher;
-    QTimer _updateDelayTimer;
-    QStringList _rootDirs;
+    QPointer<ConfigWidget> widget_;
+    vector<shared_ptr<AlbertItem>> index_;
+    mutable QMutex indexAccess_;
+    QPointer<Indexer> indexer_;
+    QFileSystemWatcher watcher_;
+    QTimer updateDelayTimer_;
+    QStringList rootDirs_;
 
     /* constexpr */
     static constexpr const char* CFG_PATHS      = "paths";
-    static constexpr const char* CFG_FUZZY      = "fuzzy";
-    static constexpr const bool  CFG_FUZZY_DEF  = false;
     static constexpr const char* CFG_TERM       = "terminal";
     static constexpr const char* CFG_TERM_DEF   = "xterm -e %1";
     static constexpr const bool  UPDATE_DELAY   = 60000;

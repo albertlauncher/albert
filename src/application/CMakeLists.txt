@@ -27,6 +27,10 @@ set(SRC
     pluginsystem/extension/iextension.h
     pluginsystem/extension/abstractobjects.hpp
     pluginsystem/extension/objects.hpp
+    pluginsystem/extension/offline/search.cpp
+    pluginsystem/extension/offline/search_impl.h
+    pluginsystem/extension/offline/prefixsearch.h
+    pluginsystem/extension/offline/fuzzysearch.h
     settingswidget/grabkeybutton.cpp
     settingswidget/settingswidget.cpp
     settingswidget/pluginmodel.cpp

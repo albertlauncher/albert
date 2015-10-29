@@ -27,7 +27,7 @@
 Calculator::Extension::Extension()
     : IExtension("org.albert.extension.calculator",
                  tr("Calculator"),
-                 tr("Turn albert into a poewrful calculator")) {
+                 tr("Turn albert into a powerful calculator")) {
     qDebug() << "Initialize extension:" << id;
 
     if (QIcon::hasThemeIcon("calc"))
@@ -35,8 +35,8 @@ Calculator::Extension::Extension()
     else
         calcIcon_ = QIcon::fromTheme("unknown");  // FIXME FAVICON RESOURCE
     parser_.reset(new mu::Parser);
-    parser_->SetDecSep(loc.decimalPoint().toLatin1());
-    parser_->SetThousandsSep(loc.groupSeparator().toLatin1());
+    parser_->SetDecSep(loc_.decimalPoint().toLatin1());
+    parser_->SetThousandsSep(loc_.groupSeparator().toLatin1());
 
     qDebug() << "Initialization done:" << id;
 }
@@ -57,7 +57,7 @@ void Calculator::Extension::handleQuery(shared_ptr<Query> query) {
     parser_->SetExpr(query->searchTerm().toStdString());
     QString result;
     try {
-        result = loc.toString(parser_->Eval());
+        result = loc_.toString(parser_->Eval());
     }
     catch (mu::Parser::exception_type &e) {
       return;

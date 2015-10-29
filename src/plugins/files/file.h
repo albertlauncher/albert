@@ -22,16 +22,15 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include "abstractobjects.hpp"
 using std::vector;
 using std::map;
 using std::shared_ptr;
 using std::unique_ptr;
-#include "abstractobjects.hpp"
-#include "search/iindexable.h"
 
 namespace Files {
 
-class File final : public ActionNode, public IIndexable
+class File final : public AlbertItem
 {
     friend class Extension;
     friend class Indexer;
@@ -43,11 +42,11 @@ public:
 
     QString text() const override;
     QString subtext() const override;
+    vector<QString> aliases() const override;
     QIcon icon() const override;
     void activate() override;
     bool hasChildren() const override;
-    vector<shared_ptr<ActionNode>> children() override;
-    vector<QString> aliases() const override;
+    vector<shared_ptr<AlbertItem>> children() override;
 
     const QString &path() const { return path_; }
     const QMimeType &mimetype() const { return mimetype_; }
@@ -60,7 +59,7 @@ private:
     QString path_;
     QMimeType mimetype_;
     mutable short usage_;
-    unique_ptr<vector<shared_ptr<ActionNode>>> children_;
+    unique_ptr<vector<shared_ptr<AlbertItem>>> children_;
     static map<QString, QIcon> iconCache_;
 };
 

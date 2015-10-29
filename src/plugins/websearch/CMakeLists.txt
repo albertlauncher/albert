@@ -3,8 +3,7 @@ set(LIB_NAME websearch)
 find_package(Qt5Widgets 5.1 REQUIRED)
 
 include_directories(
-    ../../application/ #TODO replace by coreapi
-    ../../shared
+    ../../application/
     ../../application/pluginsystem/extension
 )
 
@@ -13,6 +12,7 @@ set(SRC
     extension.cpp
     configwidget.cpp
     searchengine.cpp
+    searchenginesmodel.cpp
 )
 
 qt5_wrap_ui(UI

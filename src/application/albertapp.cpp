@@ -82,6 +82,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     for (const unique_ptr<PluginSpec> &p : _pluginManager->plugins())
         if (p->isLoaded())
             _extensionManager->registerExtension(p->instance());
+    _extensionManager->buildOfflineIndex();
 
     // Quit gracefully on SIGTERM
     signal(SIGTERM, [](int sig){
@@ -113,6 +114,8 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     // Publish loaded plugins to the specific interface handlers
     QObject::connect(_pluginManager, &PluginManager::pluginLoaded, _extensionManager, &ExtensionManager::registerExtension);
     QObject::connect(_pluginManager, &PluginManager::pluginAboutToBeUnloaded, _extensionManager, &ExtensionManager::unregisterExtension);
+    QObject::connect(_pluginManager, &PluginManager::pluginLoaded, _extensionManager, &ExtensionManager::buildOfflineIndex);
+    QObject::connect(_pluginManager, &PluginManager::pluginAboutToBeUnloaded, _extensionManager, &ExtensionManager::buildOfflineIndex);
 
     // Hide on focus loss
 //    QObject::connect(this, &QApplication::applicationStateChanged, this, &AlbertApp::onStateChange);

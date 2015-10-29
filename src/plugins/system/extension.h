@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
 #include <QPointer>
 #include <QIcon>
 #include <vector>
@@ -28,48 +27,35 @@ namespace System {
 
 class ConfigWidget;
 
-class Extension final : public QObject, public IExtension
+class Extension final : public IExtension
 {
     Q_OBJECT
     Q_INTERFACES(IExtension)
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
-    struct ActionSpec {
-        QString id; // lowercase name in most cases
-        QString name;
-        QString desc;
-        QIcon   icon;
-        QString cmd;
-    };
 
 public:
     Extension();
     ~Extension();
 
-    // GenericPluginInterface
-    QWidget *widget(QWidget *parent = nullptr) override;
+    enum class Actions { POWEROFF, REBOOT, SUSPEND, HIBERNATE, LOGOUT, LOCK, NUM_ACTIONS };
 
     // IExtension
-    void handleQuery(shared_ptr<Query> query) override;
+    QWidget *widget(QWidget *parent = nullptr) override;
+    vector<shared_ptr<AlbertItem>> staticItems() const override;
 
     // API special to this extension
-    QString command(const QString& id);
-    void setCommand(const QString& id, const QString& cmd);
+    QString command(Actions action);
+    void setCommand(Actions action, const QString& cmd);
+    void restoreCommands();
 
 private:
     QPointer<ConfigWidget> widget_;
-    vector<ActionSpec> actions_;
+    vector<shared_ptr<AlbertItem>> index_;
 
-    /* constexpr */
-    static constexpr const char* CFG_POWEROFF      = "poweroff";
-    static constexpr const char* CFG_POWEROFF_DEF  = "systemctl poweroff -i";
-    static constexpr const char* CFG_REBOOT        = "reboot";
-    static constexpr const char* CFG_REBOOT_DEF    = "systemctl reboot -i";
-    static constexpr const char* CFG_SUSPEND       = "suspend";
-    static constexpr const char* CFG_SUSPEND_DEF   = "systemctl suspend -i";
-    static constexpr const char* CFG_HIBERNATE     = "hibernate";
-    static constexpr const char* CFG_HIBERNATE_DEF = "systemctl hibernate -i";
-    static constexpr const char* CFG_LOCK          = "lock";
-    static constexpr const char* CFG_LOCK_DEF      = "cinnamon-screensaver-command -l";
+    vector<QString> titles_;
+    vector<QString> descriptions_;
+    vector<QString> iconpaths_;
+    vector<QString> defaults_;
 };
 }

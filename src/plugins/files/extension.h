@@ -15,14 +15,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
 #include <QString>
 #include <QPointer>
 #include <QTimer>
 #include <QMutex>
 #include <vector>
 #include "iextension.h"
-#include "search/search.h"
+using std::vector;
 
 namespace Files {
 
@@ -30,7 +29,7 @@ class File;
 class ConfigWidget;
 class Indexer;
 
-class Extension final : public QObject, public IExtension
+class Extension final : public IExtension
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
@@ -42,72 +41,63 @@ public:
     Extension();
     ~Extension();
 
-    // GenericPluginInterface
-    QWidget *widget(QWidget *parent = nullptr) override;
-
     // IExtension
+    QWidget *widget(QWidget *parent = nullptr) override;
     void teardownSession() override;
-    void handleQuery(shared_ptr<Query> query) override;
+    vector<shared_ptr<AlbertItem>> staticItems() const override;
 
     // API special to this extension
     void addDir(const QString &dirPath);
     void removeDir(const QString &dirPath);
     void restorePaths();
-
     void updateIndex();
 
     // Properties
-    inline bool indexAudio() { return _indexAudio; }
-    inline void setIndexAudio(bool b = true)  { _indexAudio = b; }
+    inline bool indexAudio() { return indexAudio_; }
+    inline void setIndexAudio(bool b = true)  { indexAudio_ = b; }
 
-    inline bool indexVideo() { return _indexVideo; }
-    inline void setIndexVideo(bool b = true)  { _indexVideo = b; }
+    inline bool indexVideo() { return indexVideo_; }
+    inline void setIndexVideo(bool b = true)  { indexVideo_ = b; }
 
-    inline void setIndexImage(bool b = true)  { _indexImage = b; }
-    inline bool indexImage() { return _indexImage; }
+    inline void setIndexImage(bool b = true)  { indexImage_ = b; }
+    inline bool indexImage() { return indexImage_; }
 
-    inline bool indexDocs() { return _indexDocs; }
-    inline void setIndexDocs(bool b = true)  { _indexDocs = b; }
+    inline bool indexDocs() { return indexDocs_; }
+    inline void setIndexDocs(bool b = true)  { indexDocs_ = b; }
 
-    inline bool indexDirs() { return _indexDirs; }
-    inline void setIndexDirs(bool b = true)  { _indexDirs = b; }
+    inline bool indexDirs() { return indexDirs_; }
+    inline void setIndexDirs(bool b = true)  { indexDirs_ = b; }
 
-    inline bool indexHidden() { return _indexHidden; }
-    inline void setIndexHidden(bool b = true)  { _indexHidden = b; }
+    inline bool indexHidden() { return indexHidden_; }
+    inline void setIndexHidden(bool b = true)  { indexHidden_ = b; }
 
-    inline bool followSymlinks() { return _followSymlinks; }
-    inline void setFollowSymlinks(bool b = true)  { _followSymlinks = b; }
+    inline bool followSymlinks() { return followSymlinks_; }
+    inline void setFollowSymlinks(bool b = true)  { followSymlinks_ = b; }
 
-    inline unsigned int scanInterval() { return _scanInterval; }
+    inline unsigned int scanInterval() { return scanInterval_; }
     void setScanInterval(uint minutes);
 
-    bool fuzzy();
-    void setFuzzy(bool b = true);
-
 private:
-    QPointer<ConfigWidget> _widget;
-    std::vector<shared_ptr<File>> _fileIndex;
-    Search _searchIndex;
-    QMutex _indexAccess;
-    QPointer<Indexer> _indexer;
-    QTimer _minuteTimer;
-    unsigned int _minuteCounter;
+    QPointer<ConfigWidget> widget_;
+    vector<shared_ptr<AlbertItem>> index_;
+    mutable QMutex indexAccess_;
+    QPointer<Indexer> indexer_;
+    QTimer minuteTimer_;
+    unsigned int minuteCounter_;
 
     // Index Properties
-    QStringList _rootDirs;
-    bool _indexAudio;
-    bool _indexVideo;
-    bool _indexImage;
-    bool _indexDocs;
-    bool _indexDirs;
-    bool _indexHidden;
-    bool _followSymlinks;
-    unsigned int _scanInterval;
+    QStringList rootDirs_;
+    bool indexAudio_;
+    bool indexVideo_;
+    bool indexImage_;
+    bool indexDocs_;
+    bool indexDirs_;
+    bool indexHidden_;
+    bool followSymlinks_;
+    unsigned int scanInterval_;
 
     /* constexpr */
     static constexpr const char* CFG_PATHS               = "paths";
-    static constexpr const char* CFG_FUZZY               = "fuzzy";
-    static constexpr const bool  CFG_FUZZY_DEF           = false;
     static constexpr const char* CFG_INDEX_AUDIO         = "index_audio";
     static constexpr const bool  CFG_INDEX_AUDIO_DEF     = false;
     static constexpr const char* CFG_INDEX_VIDEO         = "index_video";

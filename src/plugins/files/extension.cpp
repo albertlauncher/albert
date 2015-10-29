@@ -35,24 +35,23 @@ Files::Extension::Extension()
                  tr("Access your files via albert")) {
     qDebug() << "Initialize extension:" << id;
 
-    _minuteTimer.setInterval(60000);
+    minuteTimer_.setInterval(60000);
 
     // Load settings
     QSettings s;
     s.beginGroup(id);
-    _indexAudio = s.value(CFG_INDEX_AUDIO, CFG_INDEX_AUDIO_DEF).toBool();
-    _indexVideo = s.value(CFG_INDEX_VIDEO, CFG_INDEX_VIDEO_DEF).toBool();
-    _indexImage = s.value(CFG_INDEX_IMAGE, CFG_INDEX_IMAGE_DEF).toBool();
-    _indexDocs = s.value(CFG_INDEX_DOC, CFG_INDEX_DOC_DEF).toBool();
-    _indexDirs = s.value(CFG_INDEX_DIR, CFG_INDEX_DIR_DEF).toBool();
-    _indexHidden = s.value(CFG_INDEX_HIDDEN, CFG_INDEX_HIDDEN_DEF).toBool();
-    _followSymlinks = s.value(CFG_FOLLOW_SYMLINKS, CFG_FOLLOW_SYMLINKS_DEF).toBool();
-    _searchIndex.setFuzzy(s.value(CFG_FUZZY, CFG_FUZZY_DEF).toBool());
+    indexAudio_ = s.value(CFG_INDEX_AUDIO, CFG_INDEX_AUDIO_DEF).toBool();
+    indexVideo_ = s.value(CFG_INDEX_VIDEO, CFG_INDEX_VIDEO_DEF).toBool();
+    indexImage_ = s.value(CFG_INDEX_IMAGE, CFG_INDEX_IMAGE_DEF).toBool();
+    indexDocs_ = s.value(CFG_INDEX_DOC, CFG_INDEX_DOC_DEF).toBool();
+    indexDirs_ = s.value(CFG_INDEX_DIR, CFG_INDEX_DIR_DEF).toBool();
+    indexHidden_ = s.value(CFG_INDEX_HIDDEN, CFG_INDEX_HIDDEN_DEF).toBool();
+    followSymlinks_ = s.value(CFG_FOLLOW_SYMLINKS, CFG_FOLLOW_SYMLINKS_DEF).toBool();
 
     // Load the paths or set a default
     QVariant v = s.value(CFG_PATHS);
     if (v.isValid() && v.canConvert(QMetaType::QStringList))
-        _rootDirs = v.toStringList();
+        rootDirs_ = v.toStringList();
     else
         restorePaths();
 
@@ -72,14 +71,14 @@ Files::Extension::Extension()
             in >> size;
             for (quint64 i = 0; i < size; ++i) {
                 in >> path >> mimename >> usage;
-                _fileIndex.push_back(std::make_shared<File>(path, db.mimeTypeForName(mimename), usage));
+                index_.push_back(std::make_shared<File>(path, db.mimeTypeForName(mimename), usage));
             }
             dataFile.close();
         } else
             qWarning() << "Could not open file: " << dataFile.fileName();
 
     // scan interval timer
-    connect(&_minuteTimer, &QTimer::timeout, this, &Extension::onMinuteTick);
+    connect(&minuteTimer_, &QTimer::timeout, this, &Extension::onMinuteTick);
     setScanInterval(s.value(CFG_SCAN_INTERVAL, CFG_SCAN_INTERVAL_DEF).toUInt());
 
     // Initial update
@@ -95,28 +94,27 @@ Files::Extension::~Extension() {
     qDebug() << "Finalize extension:" << id;
 
     // Stop and wait for background indexer
-    _minuteTimer.stop();
-    if (!_indexer.isNull()) {
-        _indexer->abort();
-        disconnect(_indexer.data(), &Indexer::destroyed, this, &Extension::updateIndex);
+    minuteTimer_.stop();
+    if (!indexer_.isNull()) {
+        indexer_->abort();
+        disconnect(indexer_.data(), &Indexer::destroyed, this, &Extension::updateIndex);
         QEventLoop loop;
-        connect(_indexer.data(), &Indexer::destroyed, &loop, &QEventLoop::quit);
+        connect(indexer_.data(), &Indexer::destroyed, &loop, &QEventLoop::quit);
         loop.exec();
     }
 
     // Save settings
     QSettings s;
     s.beginGroup(id);
-    s.setValue(CFG_FUZZY, _searchIndex.fuzzy());
-    s.setValue(CFG_PATHS, _rootDirs);
-    s.setValue(CFG_INDEX_AUDIO, _indexAudio);
-    s.setValue(CFG_INDEX_VIDEO, _indexVideo);
-    s.setValue(CFG_INDEX_IMAGE, _indexImage);
-    s.setValue(CFG_INDEX_DIR, _indexDirs);
-    s.setValue(CFG_INDEX_DOC, _indexDocs);
-    s.setValue(CFG_INDEX_HIDDEN,_indexHidden);
-    s.setValue(CFG_FOLLOW_SYMLINKS,_followSymlinks);
-    s.setValue(CFG_SCAN_INTERVAL,_scanInterval);
+    s.setValue(CFG_PATHS, rootDirs_);
+    s.setValue(CFG_INDEX_AUDIO, indexAudio_);
+    s.setValue(CFG_INDEX_VIDEO, indexVideo_);
+    s.setValue(CFG_INDEX_IMAGE, indexImage_);
+    s.setValue(CFG_INDEX_DIR, indexDirs_);
+    s.setValue(CFG_INDEX_DOC, indexDocs_);
+    s.setValue(CFG_INDEX_HIDDEN,indexHidden_);
+    s.setValue(CFG_FOLLOW_SYMLINKS,followSymlinks_);
+    s.setValue(CFG_SCAN_INTERVAL,scanInterval_);
     s.endGroup();
 
     // Serialize data
@@ -128,13 +126,14 @@ Files::Extension::~Extension() {
         qDebug() << "[Files] Serializing to " << dataFile.fileName();
         QDataStream out( &dataFile );
 
-        // Lock index against indexer
-        QMutexLocker locker(&_indexAccess);
-
-        // Serialize
-        out	<< static_cast<quint64>(_fileIndex.size());
-        for (shared_ptr<File> f : _fileIndex)
-            out << f->path_ << f->mimetype_.name() << f->usage_;
+        // ▼ CRITICAL: Serialize ▼
+        QMutexLocker locker(&indexAccess_);
+        out	<< static_cast<quint64>(index_.size());
+        for (shared_ptr<AlbertItem> f : index_)
+            out << std::static_pointer_cast<File>(f)->path_
+                << std::static_pointer_cast<File>(f)->mimetype_.name()
+                << std::static_pointer_cast<File>(f)->usage_;
+        // ▲ CRITICAL: Serialize ▲
 
         dataFile.close();
     } else
@@ -147,55 +146,48 @@ Files::Extension::~Extension() {
 
 /** ***************************************************************************/
 QWidget *Files::Extension::widget(QWidget *parent) {
-    if (_widget.isNull()) {
-        _widget = new ConfigWidget(parent);
+    if (widget_.isNull()) {
+        widget_ = new ConfigWidget(parent);
 
         // Paths
-        _widget->ui.listWidget_paths->addItems(_rootDirs);
-        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::clear);
-        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::addItems);
-        connect(_widget.data(), &ConfigWidget::requestAddPath, this, &Extension::addDir);
-        connect(_widget.data(), &ConfigWidget::requestRemovePath, this, &Extension::removeDir);
-        connect(_widget->ui.pushButton_restore, &QPushButton::clicked, this, &Extension::restorePaths);
-        connect(_widget->ui.pushButton_update, &QPushButton::clicked, this, &Extension::updateIndex);
+        widget_->ui.listWidget_paths->addItems(rootDirs_);
+        connect(this, &Extension::rootDirsChanged, widget_->ui.listWidget_paths, &QListWidget::clear);
+        connect(this, &Extension::rootDirsChanged, widget_->ui.listWidget_paths, &QListWidget::addItems);
+        connect(widget_.data(), &ConfigWidget::requestAddPath, this, &Extension::addDir);
+        connect(widget_.data(), &ConfigWidget::requestRemovePath, this, &Extension::removeDir);
+        connect(widget_->ui.pushButton_restore, &QPushButton::clicked, this, &Extension::restorePaths);
+        connect(widget_->ui.pushButton_update, &QPushButton::clicked, this, &Extension::updateIndex);
 
         // Checkboxes
-        _widget->ui.checkBox_audio->setChecked(indexAudio());
-        connect(_widget->ui.checkBox_audio, &QCheckBox::toggled, this, &Extension::setIndexAudio);
+        widget_->ui.checkBox_audio->setChecked(indexAudio());
+        connect(widget_->ui.checkBox_audio, &QCheckBox::toggled, this, &Extension::setIndexAudio);
 
-        _widget->ui.checkBox_video->setChecked(indexVideo());
-        connect(_widget->ui.checkBox_video, &QCheckBox::toggled, this, &Extension::setIndexVideo);
+        widget_->ui.checkBox_video->setChecked(indexVideo());
+        connect(widget_->ui.checkBox_video, &QCheckBox::toggled, this, &Extension::setIndexVideo);
 
-        _widget->ui.checkBox_image->setChecked(indexImage());
-        connect(_widget->ui.checkBox_image, &QCheckBox::toggled, this, &Extension::setIndexImage);
+        widget_->ui.checkBox_image->setChecked(indexImage());
+        connect(widget_->ui.checkBox_image, &QCheckBox::toggled, this, &Extension::setIndexImage);
 
-        _widget->ui.checkBox_docs->setChecked(indexDocs());
-        connect(_widget->ui.checkBox_docs, &QCheckBox::toggled, this, &Extension::setIndexDocs);
+        widget_->ui.checkBox_docs->setChecked(indexDocs());
+        connect(widget_->ui.checkBox_docs, &QCheckBox::toggled, this, &Extension::setIndexDocs);
 
-        _widget->ui.checkBox_dirs->setChecked(indexDirs());
-        connect(_widget->ui.checkBox_dirs, &QCheckBox::toggled, this, &Extension::setIndexDirs);
+        widget_->ui.checkBox_dirs->setChecked(indexDirs());
+        connect(widget_->ui.checkBox_dirs, &QCheckBox::toggled, this, &Extension::setIndexDirs);
 
-        _widget->ui.checkBox_hidden->setChecked(indexHidden());
-        connect(_widget->ui.checkBox_hidden, &QCheckBox::toggled, this, &Extension::setIndexHidden);
+        widget_->ui.checkBox_hidden->setChecked(indexHidden());
+        connect(widget_->ui.checkBox_hidden, &QCheckBox::toggled, this, &Extension::setIndexHidden);
 
-        _widget->ui.checkBox_followSymlinks->setChecked(followSymlinks());
-        connect(_widget->ui.checkBox_followSymlinks, &QCheckBox::toggled, this, &Extension::setFollowSymlinks);
+        widget_->ui.checkBox_followSymlinks->setChecked(followSymlinks());
+        connect(widget_->ui.checkBox_followSymlinks, &QCheckBox::toggled, this, &Extension::setFollowSymlinks);
 
-        _widget->ui.checkBox_fuzzy->setChecked(fuzzy());
-        connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
-
-        _widget->ui.spinBox_interval->setValue(scanInterval());
-        connect(_widget->ui.spinBox_interval, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Extension::setScanInterval);
+        widget_->ui.spinBox_interval->setValue(scanInterval());
+        connect(widget_->ui.spinBox_interval, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Extension::setScanInterval);
 
         // Info
-        _widget->ui.label_info->setText(QString("%1 files indexed.").arg(_fileIndex.size()));
-        connect(this, &Extension::statusInfo, _widget->ui.label_info, &QLabel::setText);
-
-        // If indexer is active connect its statusInfo to the infoLabel
-        if (!_indexer.isNull())
-            connect(_indexer.data(), &Indexer::statusInfo, _widget->ui.label_info, &QLabel::setText);
+        widget_->ui.label_info->setText(QString("%1 files indexed.").arg(index_.size()));
+        connect(this, &Extension::statusInfo, widget_->ui.label_info, &QLabel::setText);
     }
-    return _widget;
+    return widget_;
 }
 
 
@@ -208,16 +200,11 @@ void Files::Extension::teardownSession() {
 
 
 /** ***************************************************************************/
-void Files::Extension::handleQuery(shared_ptr<Query> query) {
-    // Search for matches. Lock memory against indexer
-    _indexAccess.lock();
-    vector<shared_ptr<IIndexable>> indexables = _searchIndex.search(query->searchTerm());
-    _indexAccess.unlock();
-
-    // Add results to query. This cast is safe since index holds files only
-    for (shared_ptr<IIndexable> obj : indexables)
-        query->addMatch(std::static_pointer_cast<File>(obj),
-                        std::static_pointer_cast<File>(obj)->usage());
+vector<shared_ptr<AlbertItem> > Files::Extension::staticItems() const {
+    // ▼ CRITICAL: Copy index ▼
+    QMutexLocker locker(&indexAccess_);
+    return index_;
+    // ▲ CRITICAL: Copy index ▲
 }
 
 
@@ -244,7 +231,7 @@ void Files::Extension::addDir(const QString &dirPath) {
     }
 
     // Check if there is an identical existing path
-    if (_rootDirs.contains(absPath)) {
+    if (rootDirs_.contains(absPath)) {
         QMessageBox(QMessageBox::Critical, "Error", absPath + " has already been indexed.").exec();
         return;
     }
@@ -252,18 +239,18 @@ void Files::Extension::addDir(const QString &dirPath) {
     /* Check if this dir is a sub/superdir of an existing dir. This is fine
        since user may have choosen to ignore some dirs (.albertignore). This is
        more complex but also more flexible. At least inform the user */
-    for (const QString &p: _rootDirs)
+    for (const QString &p: rootDirs_)
         if (absPath.startsWith(p + '/'))
             QMessageBox(QMessageBox::Warning, "Warning", absPath + " is subdirectory of " + p).exec();
-    for (const QString &p: _rootDirs)
+    for (const QString &p: rootDirs_)
         if (p.startsWith(absPath + '/'))
             QMessageBox(QMessageBox::Warning, "Warning", p + " is subdirectory of " + absPath).exec();
 
     // Add the path to root dirs
-    _rootDirs << absPath;
+    rootDirs_ << absPath;
 
     // Inform observers
-    emit rootDirsChanged(_rootDirs);
+    emit rootDirsChanged(rootDirs_);
 }
 
 
@@ -276,14 +263,14 @@ void Files::Extension::removeDir(const QString &dirPath) {
     QString absPath = QFileInfo(dirPath).absoluteFilePath();
 
     // Check existance
-    if (!_rootDirs.contains(absPath))
+    if (!rootDirs_.contains(absPath))
         return;
 
     // Remove the path
-    _rootDirs.removeAll(absPath);
+    rootDirs_.removeAll(absPath);
 
     // Update the widget, if it is visible atm
-    emit rootDirsChanged(_rootDirs);
+    emit rootDirsChanged(rootDirs_);
 }
 
 
@@ -293,7 +280,7 @@ void Files::Extension::restorePaths() {
     qDebug() << "[Files] Restore paths to defaults";
 
     // Add standard paths
-    _rootDirs.clear();
+    rootDirs_.clear();
     addDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation));
 }
 
@@ -304,24 +291,20 @@ void Files::Extension::updateIndex() {
     qDebug() << "[Files] Index update triggered";
 
     // If thread is running, stop it and start this functoin after termination
-    if (!_indexer.isNull()) {
-        _indexer->abort();
-        _widget->ui.label_info->setText("Waiting for indexer to shut down ...");
-        connect(_indexer.data(), &Indexer::destroyed, this, &Extension::updateIndex);
+    if (!indexer_.isNull()) {
+        indexer_->abort();
+        widget_->ui.label_info->setText("Waiting for indexer to shut down ...");
+        connect(indexer_.data(), &Indexer::destroyed, this, &Extension::updateIndex);
     } else {
         // Create a new scanning runnable for the threadpool
-        _indexer = new Indexer(this);
+        indexer_ = new Indexer(this);
 
         //  Run it
-        QThreadPool::globalInstance()->start(_indexer);
+        QThreadPool::globalInstance()->start(indexer_);
 
         // Reset the timer
-        _minuteCounter = 0;
-        _minuteTimer.start();
-
-        // If widget is visible show the information in the status bat
-        if (!_widget.isNull())
-            connect(_indexer.data(), &Indexer::statusInfo, _widget->ui.label_info, &QLabel::setText);
+        minuteCounter_ = 0;
+        minuteTimer_.start();
     }
 }
 
@@ -329,33 +312,16 @@ void Files::Extension::updateIndex() {
 
 /** ***************************************************************************/
 void Files::Extension::setScanInterval(uint minutes) {
-    _scanInterval=minutes;
-    _minuteCounter=0;
-    (minutes == 0) ? _minuteTimer.stop() : _minuteTimer.start();
-    qDebug() << "[Files] Scan interval set to" << _scanInterval << "minutes.";
+    scanInterval_=minutes;
+    minuteCounter_=0;
+    (minutes == 0) ? minuteTimer_.stop() : minuteTimer_.start();
+    qDebug() << "[Files] Scan interval set to" << scanInterval_ << "minutes.";
 }
-
-
-
-/** ***************************************************************************/
-bool Files::Extension::fuzzy() {
-    return _searchIndex.fuzzy();
-}
-
-
-
-/** ***************************************************************************/
-void Files::Extension::setFuzzy(bool b) {
-    _indexAccess.lock();
-    _searchIndex.setFuzzy(b);
-    _indexAccess.unlock();
-}
-
 
 
 /** ***************************************************************************/
 void Files::Extension::onMinuteTick() {
-    ++_minuteCounter;
-    if (_minuteCounter == _scanInterval)
+    ++minuteCounter_;
+    if (minuteCounter_ == scanInterval_)
         updateIndex(); // resets _minuteCounter
 }

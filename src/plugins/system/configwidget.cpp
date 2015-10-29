@@ -20,10 +20,3 @@
 System::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
     ui.setupUi(this);
 }
-
-
-
-/** ***************************************************************************/
-System::ConfigWidget::~ConfigWidget() {
-
-}

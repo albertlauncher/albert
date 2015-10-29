@@ -23,19 +23,8 @@
 #include "extension.h"
 #include "configwidget.h"
 #include "searchengine.h"
+#include "searchenginesmodel.h"
 #include "query.h"
-
-
-///**************************************************************************/
-//void Websearch::WebSearch::queryFallback(const QString &req, QVector<Service::Item *> *res) const
-//{
-//	for (Item *w : _searchEngines){
-//		w->_searchTerm = req;
-//		res->push_back(w);
-//	}
-//}
-
-
 
 /** ***************************************************************************/
 Websearch::Extension::Extension()
@@ -50,7 +39,7 @@ Websearch::Extension::Extension()
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
                 filePath(QString("%1.dat").arg(id))
                 );
-    if (dataFile.exists())
+    if (dataFile.exists()){
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
             qDebug() << "[Websearch] Deserializing from" << dataFile.fileName();
             QDataStream in(&dataFile);
@@ -62,10 +51,10 @@ Websearch::Extension::Extension()
                 index_.push_back(se);
             }
             dataFile.close();
-        } else {
-            qWarning() << "Could not open file: " << dataFile.fileName();
-            restoreDefaults();
         }
+    } else
+        restoreDefaults();
+
     qDebug() << "Initialization done:" << id;
 }
 
@@ -89,6 +78,7 @@ Websearch::Extension::~Extension() {
         dataFile.close();
     } else
         qCritical() << "Could not write to " << dataFile.fileName();
+
     qDebug() << "Finalization done:" << id;
 }
 
@@ -98,7 +88,8 @@ Websearch::Extension::~Extension() {
 QWidget *Websearch::Extension:: widget(QWidget *parent) {
     if (widget_.isNull()){
         widget_ = new ConfigWidget(parent);
-        widget_->ui.tableView_searches->setModel(this);
+        widget_->ui.tableView_searches->setModel(
+                    new SearchEnginesModel(index_, widget_->ui.tableView_searches));
         connect(widget_->ui.pushButton_restoreDefaults, &QPushButton::clicked,
                 this, &Extension::restoreDefaults);
     }
@@ -144,240 +135,14 @@ QStringList Websearch::Extension::triggers() const {
 void Websearch::Extension::restoreDefaults() {
     /* Init std searches */
     index_.clear();
-
-    beginResetModel();
     index_.push_back(std::make_shared<SearchEngine>("Google", "https://www.google.com/#q=%s", "gg", ":google"));
     index_.push_back(std::make_shared<SearchEngine>("Youtube", "https://www.youtube.com/results?search_query=%s", "yt", ":youtube"));
     index_.push_back(std::make_shared<SearchEngine>("Amazon", "http://www.amazon.com/s/?field-keywords=%s", "ama", ":amazon"));
     index_.push_back(std::make_shared<SearchEngine>("Ebay", "http://www.ebay.com/sch/i.html?_nkw=%s", "eb", ":ebay"));
     index_.push_back(std::make_shared<SearchEngine>("GitHub", "https://github.com/search?utf8=✓&q=%s", "gh", ":github"));
     index_.push_back(std::make_shared<SearchEngine>("Wolfram Alpha", "https://www.wolframalpha.com/input/?i=%s", "=", ":wolfram"));
-    endResetModel();
+    if (!widget_.isNull())
+        widget_->ui.tableView_searches->setModel(
+                    new SearchEnginesModel(index_, widget_->ui.tableView_searches));
 }
 
-
-
-/** ***************************************************************************/
-int Websearch::Extension::rowCount(const QModelIndex &) const {
-    return static_cast<int>(index_.size());
-}
-
-
-
-/** ***************************************************************************/
-int Websearch::Extension::columnCount(const QModelIndex &) const {
-    return COL_COUNT;
-}
-
-
-
-/** ***************************************************************************/
-QVariant Websearch::Extension::headerData(int section, Qt::Orientation orientation, int role) const {
-    // No sanity check necessary since
-    if ( section<0 || COL_COUNT<=section )
-        return QVariant();
-
-
-    if (orientation == Qt::Horizontal){
-        switch (static_cast<Section>(section)) {
-        case Section::Enabled:{
-            switch (role) {
-            case Qt::ToolTipRole: return "Enables the searchengine as fallback.";
-            default: return QVariant();
-            }
-        }
-        case Section::Name:{
-            switch (role) {
-            case Qt::DisplayRole: return "Name";
-            case Qt::ToolTipRole: return "The name of the searchengine.";
-            default: return QVariant();
-            }
-
-        }
-        case Section::Trigger:{
-            switch (role) {
-            case Qt::DisplayRole: return "Trigger";
-            case Qt::ToolTipRole: return "The term that triggers this searchengine.";
-            default: return QVariant();
-            }
-
-        }
-        case Section::URL:{
-            switch (role) {
-            case Qt::DisplayRole: return "URL";
-            case Qt::ToolTipRole: return "The URL of this searchengine. %s will be replaced by your searchterm.";
-            default: return QVariant();
-            }
-
-        }
-        default: return QVariant();
-        }
-    }
-    return QVariant();
-}
-
-
-
-/** ***************************************************************************/
-QVariant Websearch::Extension::data(const QModelIndex &index, int role) const {
-    if (!index.isValid()
-            || index.row() >= static_cast<int>(index_.size())
-            || index.column() >= static_cast<int>(COL_COUNT))
-        return QVariant();
-
-    switch (role) {
-    case Qt::DisplayRole: {
-        switch (static_cast<Section>(index.column())) {
-        case Section::Name:  return index_[index.row()]->name();
-        case Section::Trigger:  return index_[index.row()]->trigger();
-        case Section::URL:  return index_[index.row()]->url();
-        default: return QVariant();
-        }
-    }
-    case Qt::EditRole: {
-        switch (static_cast<Section>(index.column())) {
-        case Section::Name:  return index_[index.row()]->name();
-        case Section::Trigger:  return index_[index.row()]->trigger();
-        case Section::URL:  return index_[index.row()]->url();
-        default: return QVariant();
-        }
-    }
-    case Qt::DecorationRole: {
-        switch (static_cast<Section>(index.column())) {
-        case Section::Name:  return index_[index.row()]->icon();
-        default: return QVariant();
-        }
-    }
-    case Qt::ToolTipRole: {
-        switch (static_cast<Section>(index.column())) {
-        case Section::Enabled:  return "Check to enable the search engine";
-        default: return "Double click to edit";
-        }
-    }
-    case Qt::CheckStateRole: {
-        switch (static_cast<Section>(index.column())) {
-        case Section::Enabled:  return (index_[index.row()]->enabled())?Qt::Checked:Qt::Unchecked;
-        default: return QVariant();
-        }
-    }
-    default:
-        return QVariant();
-    }
-}
-
-
-
-/** ***************************************************************************/
-bool Websearch::Extension::setData(const QModelIndex &index, const QVariant &value, int role) {
-    if (!index.isValid()
-            || index.row() >= static_cast<int>(index_.size())
-            || index.column() >= static_cast<int>(COL_COUNT))
-        return false;
-
-    switch (role) {
-    case Qt::EditRole: {
-        if ( !value.canConvert(QMetaType::QString) )
-            return false;
-        QString s = value.toString();
-        switch (static_cast<Section>(index.column())) {
-        case Section::Enabled:
-            return false;
-        case Section::Name:
-            index_[index.row()]->setName(s);
-            dataChanged(index, index, QVector<int>({Qt::DisplayRole}));
-            return true;
-        case Section::Trigger:
-            index_[index.row()]->setTrigger(s);
-            dataChanged(index, index, QVector<int>({Qt::DisplayRole}));
-            return true;
-        case Section::URL:
-            index_[index.row()]->setUrl(s);
-            dataChanged(index, index, QVector<int>({Qt::DisplayRole}));
-            return true;
-        default:
-            return false;
-        }
-    }
-    case Qt::CheckStateRole: {
-        switch (static_cast<Section>(index.column())) {
-        case Section::Enabled:
-            index_[index.row()]->setEnabled(value.toBool());
-            return true;
-        default:
-            return false;
-        }
-    }
-    default:
-        return false;
-    }
-    return false;
-}
-
-
-
-/** ***************************************************************************/
-Qt::ItemFlags Websearch::Extension::flags(const QModelIndex &index) const {
-    if (!index.isValid())
-        return Qt::NoItemFlags;
-
-    switch (static_cast<Section>(index.column())) {
-    case Section::Enabled:
-        return Qt::ItemIsSelectable|Qt::ItemIsEnabled|Qt::ItemIsUserCheckable;
-    default:
-        return Qt::ItemIsSelectable|Qt::ItemIsEnabled|Qt::ItemIsEditable;
-    }
-}
-
-
-
-/** ***************************************************************************/
-bool Websearch::Extension::insertRows(int position, int rows, const QModelIndex &) {
-    if (position<0 || rows<1 || static_cast<int>(index_.size()<position))
-        return false;
-
-    beginInsertRows(QModelIndex(), position, position + rows - 1);
-    for (int row = position; row < position + rows; ++row){
-        index_.insert(index_.begin() + row,
-                      std::make_shared<SearchEngine>(
-                          "<name>",
-                          "<http://url/containing/the/?searchexpression=%s>",
-                          "<trigger>",
-                          ":default",
-                          false));
-    }
-    endInsertRows();
-    return true;
-}
-
-
-
-/** ***************************************************************************/
-bool Websearch::Extension::removeRows(int position, int rows, const QModelIndex &) {
-    if (position<0 || rows<1 || static_cast<int>(index_.size()<position+rows))
-        return false;
-
-    beginRemoveRows(QModelIndex(), position, position + rows-1);
-    index_.erase(index_.begin()+position,index_.begin()+(position+rows));
-    endRemoveRows();
-    return true;
-}
-
-
-
-/** ***************************************************************************/
-bool Websearch::Extension::moveRows(const QModelIndex &src, int srcRow, int cnt, const QModelIndex &dst, int dstRow) {
-    if (srcRow<0 || cnt<1 || dstRow<0
-            || static_cast<int>(index_.size()<srcRow+cnt-1)
-            || static_cast<int>(index_.size()<dstRow)
-            || srcRow<=dstRow && dstRow<srcRow+cnt) // If its inside the source do nothing
-        return false;
-
-    std::vector<shared_ptr<SearchEngine>> tmp;
-    beginMoveRows(src, srcRow, srcRow+cnt-1, dst, dstRow);
-    tmp.insert(tmp.end(), make_move_iterator(index_.begin()+srcRow), make_move_iterator(index_.begin() + srcRow+cnt));
-    index_.erase(index_.begin()+srcRow, index_.begin() + srcRow+cnt);
-    const size_t finalDst = dstRow > srcRow ? dstRow - cnt : dstRow;
-    index_.insert(index_.begin()+finalDst , make_move_iterator(tmp.begin()), make_move_iterator(tmp.end()));
-    endMoveRows();
-    return true;
-}

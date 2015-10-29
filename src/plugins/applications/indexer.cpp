@@ -32,33 +32,35 @@ void Applications::Indexer::run() {
 
     // Notification
     QString msg("Indexing desktop entries ...");
-    emit statusInfo(msg);
+    emit extension_->statusInfo(msg);
     qDebug() << "[Applications]" << msg;
 
 
     // Get a new index [O(n)]
-    vector<shared_ptr<Application>> newIndex;
+    vector<shared_ptr<AlbertItem>> newIndex;
 
     // Iterate over all desktop files
-    for (const QString &path : _extension->_rootDirs) {
+    for (const QString &path : extension_->rootDirs_) {
         QDirIterator fIt(path, QStringList("*.desktop"), QDir::Files,
                          QDirIterator::Subdirectories|QDirIterator::FollowSymlinks);
         while (fIt.hasNext()) {
-            if (_abort) return;
+            if (abort_) return;
             QString path = fIt.next();
+
+            emit extension_->statusInfo("Indexing "+fIt.fileName()+"");
 
             // Make new entry
             shared_ptr<Application> application;
 
             // If it is already in the index copy usage
-            vector<shared_ptr<Application>>::iterator indexIt =
-                    std::find_if(_extension->_appIndex.begin(),
-                                _extension->_appIndex.end(),
-                                [&path](const shared_ptr<Application>& de){
-                                    return de->path()== path;
+            vector<shared_ptr<AlbertItem>>::iterator indexIt =
+                    std::find_if(extension_->index_.begin(),
+                                extension_->index_.end(),
+                                [&path](const shared_ptr<AlbertItem>& de){
+                                    return std::static_pointer_cast<Application>(de)->path()== path;
                                 });
-            if (indexIt != _extension->_appIndex.end())
-                application = std::make_shared<Application>(path, (*indexIt)->usage());
+            if (indexIt != extension_->index_.end())
+                application = std::make_shared<Application>(path, std::static_pointer_cast<Application>(*indexIt)->usage());
             else
                 application = std::make_shared<Application>(path, 1);
 
@@ -71,43 +73,24 @@ void Applications::Indexer::run() {
         }
     }
 
+    // ▼ CRITICAL: Set the new index ▼
+    extension_->indexAccess_.lock();
+    extension_->index_ = std::move(newIndex);
+    extension_->indexAccess_.unlock();
+    // ▲ CRITICAL: Set the new index ▲
 
-    /*
-     *  ▼ CRITICAL ▼
-     */
-
-    // Lock the access
-    _extension->_indexAccess.lock();
-
-    // Set the new index
-    _extension->_appIndex = std::move(newIndex);
-
-    // Reset the offline index
-    _extension->_searchIndex.clear();
-
-    // Build the new offline index
-    for (const shared_ptr<Application> &de : _extension->_appIndex)
-        _extension->_searchIndex.add(de);
-
-    // Unlock the accress
-    _extension->_indexAccess.unlock();
+    emit extension_->staticItemsChanged(extension_);
 
     // Finally update the watches (maybe folders changed)
-    _extension->_watcher.removePaths(_extension->_watcher.directories());
-    for (const QString &path : _extension->_rootDirs) {
+    extension_->watcher_.removePaths(extension_->watcher_.directories());
+    for (const QString &path : extension_->rootDirs_) {
         QDirIterator dit(path, QDir::Dirs|QDir::NoDotAndDotDot);
         while (dit.hasNext())
-            _extension->_watcher.addPath(dit.next());
+            extension_->watcher_.addPath(dit.next());
     }
 
-    /*
-     *  ▲ CRITICAL ▲
-     */
-
-
-
     // Notification
-    msg = QString("Indexed %1 desktop entries.").arg(_extension->_appIndex.size());
-    emit statusInfo(msg);
+    msg = QString("Indexed %1 desktop entries.").arg(extension_->index_.size());
+    emit extension_->statusInfo(msg);
     qDebug() << "[Applications]" << msg;
 }

@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
 #include <QPointer>
 #include "iextension.h"
 
@@ -23,7 +22,7 @@ namespace Template {
 
 class ConfigWidget;
 
-class Extension final : public QObject, public IExtension
+class Extension final : public IExtension
 {
     Q_OBJECT
     Q_INTERFACES(IExtension)
@@ -33,14 +32,9 @@ public:
     Extension();
     ~Extension();
 
-    // GenericPluginInterface
-    QWidget *widget(QWidget *parent = nullptr) override;
-
-    // IExtension
-    void setupSession() override;
-    void teardownSession() override;
-    void handleQuery(shared_ptr<Query> query) override;
-    void handleFallbackQuery(shared_ptr<Query>) override;
+    /*
+     * Check "iextension.h" and other extension for reference
+     */
 
 private:
     QPointer<ConfigWidget> widget_;

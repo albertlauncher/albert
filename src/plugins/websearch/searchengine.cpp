@@ -44,6 +44,13 @@ QString Websearch::SearchEngine::subtext() const {
 
 
 /** ***************************************************************************/
+vector<QString> Websearch::SearchEngine::aliases() const {
+    return vector<QString>({name_, trigger_});
+}
+
+
+
+/** ***************************************************************************/
 QIcon Websearch::SearchEngine::icon() const {
     return icon_;
 }

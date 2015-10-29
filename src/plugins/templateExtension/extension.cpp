@@ -32,51 +32,9 @@ Template::Extension::Extension()
     qDebug() << "Initialization done:" << id;
 }
 
-
-
 /** ***************************************************************************/
 Template::Extension::~Extension() {
     qDebug() << "Finalize extension:" << id;
     // Do sth.
     qDebug() << "Finalization done:" << id;
-}
-
-
-
-/** ***************************************************************************/
-QWidget *Template::Extension::widget(QWidget *parent) {
-    if (widget_.isNull()) {
-        widget_ = new ConfigWidget(parent);
-    }
-    return widget_;
-}
-
-
-
-/** ***************************************************************************/
-void Template::Extension::setupSession() {
-
-}
-
-
-
-/** ***************************************************************************/
-void Template::Extension::teardownSession() {
-
-}
-
-
-
-/** ***************************************************************************/
-void Template::Extension::handleQuery(shared_ptr<Query> query) {
-    // Avoid annoying warnings
-    Q_UNUSED(query)
-}
-
-
-
-/** ***************************************************************************/
-void Template::Extension::handleFallbackQuery(shared_ptr<Query> query) {
-    // Avoid annoying warnings
-    Q_UNUSED(query)
 }

@@ -3,8 +3,7 @@ set(LIB_NAME chromebookmarks)
 find_package(Qt5Widgets 5.1 REQUIRED)
 
 include_directories(
-    ../../application/ #TODO replace by coreapi
-    ../../shared
+    ../../application/
     ../../application/pluginsystem/extension
 )
 
@@ -14,10 +13,6 @@ set(SRC
     configwidget.cpp
     bookmark.cpp
     indexer.cpp
-    ../../shared/search/search.cpp
-    ../../shared/search/search_impl.h
-    ../../shared/search/prefixsearch.h
-    ../../shared/search/fuzzysearch.h
 )
 
 qt5_wrap_ui(UI

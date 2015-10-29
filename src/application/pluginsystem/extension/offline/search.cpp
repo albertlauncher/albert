@@ -17,7 +17,7 @@
 
 #include "search.h"
 #include "search_impl.h"
-#include "iindexable.h"
+#include "abstractobjects.hpp"
 #include "prefixsearch.h"
 #include "fuzzysearch.h"
 
@@ -82,8 +82,8 @@ double Search::delta() {
 
 
 /** ***************************************************************************/
-void Search::add(std::shared_ptr<IIndexable> idxble) {
-    _impl->add(idxble);
+void Search::add(std::shared_ptr<AlbertItem> item) {
+    _impl->add(item);
 }
 
 
@@ -96,6 +96,6 @@ void Search::clear() {
 
 
 /** ***************************************************************************/
-std::vector<std::shared_ptr<IIndexable> > Search::search(const QString &req) const {
+std::vector<std::shared_ptr<AlbertItem> > Search::search(const QString &req) const {
     return _impl->search(req);
 }

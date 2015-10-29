@@ -49,13 +49,13 @@ public:
 
 
     /** ***********************************************************************/
-    void add(shared_ptr<IIndexable> idxble) override {
-        vector<QString> aliases = idxble->aliases();
+    void add(shared_ptr<AlbertItem> item) override {
+        vector<QString> aliases = item->aliases();
         for (const QString &str : aliases) {
             // Build an inverted index
             QStringList words = str.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
             for (QString &w : words) {
-                _invertedIndex[w.toLower()].insert(idxble);
+                _invertedIndex[w.toLower()].insert(item);
             }
         }
     }
@@ -70,7 +70,7 @@ public:
 
 
     /** ***********************************************************************/
-    vector<shared_ptr<IIndexable>> search(const QString &req) const override {
+    vector<shared_ptr<AlbertItem>> search(const QString &req) const override {
 
 
         // Split the query into words W
@@ -78,9 +78,9 @@ public:
 
         // Skip if there arent any // CONSTRAINT (2): |W| > 0
         if (words.empty())
-            return vector<shared_ptr<IIndexable>>();
+            return vector<shared_ptr<AlbertItem>>();
 
-        set<shared_ptr<IIndexable>> resultsSet;
+        set<shared_ptr<AlbertItem>> resultsSet;
         QStringList::iterator wordIterator = words.begin();
 
         // Make lower for case insensitivity
@@ -99,14 +99,14 @@ public:
 
             // Unite the sets that are mapped by words that begin with word
             // w ∈ W. This set is called U_w
-            set<shared_ptr<IIndexable>> wordMappingsUnion;
+            set<shared_ptr<AlbertItem>> wordMappingsUnion;
             for (InvertedIndex::const_iterator lb = _invertedIndex.lower_bound(word);
                  lb != _invertedIndex.cend() && lb->first.startsWith(word); ++lb)
                 wordMappingsUnion.insert(lb->second.begin(), lb->second.end());
 
 
             // Intersect all sets U_w with the results
-            set<shared_ptr<IIndexable>> intersection;
+            set<shared_ptr<AlbertItem>> intersection;
             std::set_intersection(resultsSet.begin(), resultsSet.end(),
                                   wordMappingsUnion.begin(), wordMappingsUnion.end(),
                                   std::inserter(intersection, intersection.begin()));
@@ -114,12 +114,12 @@ public:
         }
 
         // Convert to a std::vector
-        vector<shared_ptr<IIndexable>> resultsVector(resultsSet.begin(), resultsSet.end());
+        vector<shared_ptr<AlbertItem>> resultsVector(resultsSet.begin(), resultsSet.end());
         return resultsVector;
     }
 
 protected:
-    typedef map<QString, set<shared_ptr<IIndexable>>> InvertedIndex;
+    typedef map<QString, set<shared_ptr<AlbertItem>>> InvertedIndex;
     InvertedIndex _invertedIndex;
 };
 

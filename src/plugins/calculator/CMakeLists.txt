@@ -3,8 +3,7 @@ set(LIB_NAME calculator)
 find_package(Qt5Widgets 5.1 REQUIRED)
 
 include_directories(
-    ../../application/ #TODO replace by coreapi
-    ../../shared
+    ../../application/
     ../../application/pluginsystem/extension
 )
 

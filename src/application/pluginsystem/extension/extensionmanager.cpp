@@ -22,8 +22,7 @@
 
 
 /** ***************************************************************************/
-ExtensionManager::ExtensionManager() : _sessionIsActive(false) {
-}
+ExtensionManager::ExtensionManager() {}
 
 
 
@@ -38,68 +37,82 @@ void ExtensionManager::startQuery(const QString &searchTerm) {
         return;
     }
 
-    _currentQuery = std::make_shared<Query>(trimmedTerm);
+    currentQuery_ = std::make_shared<Query>(trimmedTerm);
 
     //  ▼ TODO INTRODUCE MULTITHREADING HERE ▼
 
-    // Check if the query is prefixed with a trigger
-    bool queryIsTriggered = false;
+    // Separate the first section of the searchterm
     QString potentialTrigger = trimmedTerm.section(' ', 0,0);
-    for (IExtension *e : _extensions){
-        if (e->isTriggered()){
-            for (const QString& trigger : e->triggers()){
-                if (trigger==potentialTrigger){
-                    e->handleQuery(_currentQuery);
-                    queryIsTriggered=true;
+
+    // Iterate over the triggers of trigger-extensions
+    for (IExtension *e : extensions_) {
+        if (e->isTriggerOnly()) {
+            for (const QString& tr : e->triggers()) {
+
+                // If the trigger matches the first section, run the query
+                if (tr == potentialTrigger) {
+
+                    // ▼ TODO RUN IN BACKGROUND ▼
+                    e->handleQuery(currentQuery_);
+                    // ▲ RUN THIS IN BACKGROUND ▲
+
+                    //  If this extension wants to be run exclusively, return
+                    if (e->runExclusive()){
+                        emit newModel(currentQuery_->impl);
+                        return;
+                    }
                 }
             }
         }
     }
-    // If it is triggered skip the full and fallback query
-    if (queryIsTriggered){
-        emit newModel(_currentQuery->impl);
-        return;
+
+    // Query the static offline index
+    // TODO: Should return matches with precomputed scores
+    for (shared_ptr<AlbertItem> obj : offlineIndex_.search(currentQuery_->searchTerm()))
+        currentQuery_->addMatch(obj, 0); // TODO How to respect usage?
+
+    // Query all nontrigger-extensions
+    for (IExtension *e : extensions_) {
+        if (!e->isTriggerOnly()){
+            // ▼ TODO RUN IN BACKGROUND ▼
+            e->handleQuery(currentQuery_);
+            // ▲ RUN THIS IN BACKGROUND ▲
+        }
     }
 
-    // Full query
-    for (IExtension *e : _extensions)
-        e->handleQuery(_currentQuery);
-
+    // TODO Handle this with proper fallbacks
     // Fallback query if results are empty
-    if (_currentQuery->impl->matches_.size()==0)
-        for (IExtension *e : _extensions)
-            e->handleFallbackQuery(_currentQuery);
+    if (currentQuery_->impl->matches_.size()==0)
+        for (auto &e : extensions_)
+            e->handleFallbackQuery(currentQuery_);
     else
         // This is a conceptual hack for v0.7, the query should sor itself when the
         // remove friend query  and query_p
-        std::stable_sort(_currentQuery->impl->matches_.begin(),
-                         _currentQuery->impl->matches_.end(),
+        std::stable_sort(currentQuery_->impl->matches_.begin(),
+                         currentQuery_->impl->matches_.end(),
                          [](const Match &lhs, const Match &rhs) {
                             return lhs.score > rhs.score;
                          });
 
-    //  ▲ INTRODUCE MULTITHREADING HERE ▲
 
-    emit newModel(_currentQuery->impl);
+    emit newModel(currentQuery_->impl);
 }
 
 
 
 /** ***************************************************************************/
 void ExtensionManager::setupSession() {
-    _sessionIsActive = true;
-    for (IExtension *e : _extensions)
- 		e->setupSession();
+    for (IExtension *e : extensions_)
+        e->setupSession();
 }
 
 
 
 /** ***************************************************************************/
 void ExtensionManager::teardownSession() {
-    for (IExtension *e : _extensions)
+    for (IExtension *e : extensions_)
         e->teardownSession();
     emit newModel(nullptr);
-    _sessionIsActive = false;
 }
 
 
@@ -107,11 +120,15 @@ void ExtensionManager::teardownSession() {
 /** ***************************************************************************/
 void ExtensionManager::registerExtension(QObject *o) {
     IExtension* e = qobject_cast<IExtension*>(o);
-    if (e)
-        if(_extensions.contains(e))
-            qCritical() << "Extension registered twice!";
+    if (e){
+        if(!extensions_.count(e)){
+            extensions_.insert(e);
+            connect(e, &IExtension::staticItemsChanged,
+                    this, &ExtensionManager::buildOfflineIndex);
+        }
         else
-            _extensions.insert(e);
+            qCritical() << "Extension registered twice!";
+    }
 }
 
 
@@ -119,23 +136,33 @@ void ExtensionManager::registerExtension(QObject *o) {
 /** ***************************************************************************/
 void ExtensionManager::unregisterExtension(QObject *o) {
     IExtension* e = qobject_cast<IExtension*>(o);
-    if (e)
-        if(!_extensions.contains(e))
-            qCritical() << "Unregistered unregistered extension! (Duplicate unregistration?)";
+    if (e){
+        if(extensions_.count(e)){
+            extensions_.erase(e);
+            disconnect(e, &IExtension::staticItemsChanged,
+                       this, &ExtensionManager::buildOfflineIndex);
+        }
         else
-            _extensions.remove(e);
+            qCritical() << "Unregistered unregistered extension! (Duplicate unregistration?)";
+    }
 }
 
 
 
 /** ***************************************************************************/
 void ExtensionManager::activate(const QModelIndex &index) {
-    _currentQuery->impl->activate(index);
+    currentQuery_->impl->activate(index);
 }
 
 
 
 /** ***************************************************************************/
-bool ExtensionManager::sessionIsActive() const {
-    return _sessionIsActive;
+void ExtensionManager::buildOfflineIndex() {
+    // NOTE: Could be nicer
+    offlineIndex_.clear();
+    for (IExtension *e : extensions_) {
+        for (shared_ptr<AlbertItem> &ai : e->staticItems()) {
+            offlineIndex_.add(ai);
+        }
+    }
 }
