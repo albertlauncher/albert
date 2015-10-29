@@ -65,7 +65,7 @@ private:
     static constexpr const char* CFG_PATHS      = "paths";
     static constexpr const char* CFG_TERM       = "terminal";
     static constexpr const char* CFG_TERM_DEF   = "xterm -e %1";
-    static constexpr const bool  UPDATE_DELAY   = 60000;
+    static constexpr const uint  UPDATE_DELAY   = 3000;
 
 signals:
     void rootDirsChanged(const QStringList&);

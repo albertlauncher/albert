@@ -84,6 +84,7 @@ void Applications::Indexer::run() {
     // Finally update the watches (maybe folders changed)
     extension_->watcher_.removePaths(extension_->watcher_.directories());
     for (const QString &path : extension_->rootDirs_) {
+        extension_->watcher_.addPath(path);
         QDirIterator dit(path, QDir::Dirs|QDir::NoDotAndDotDot);
         while (dit.hasNext())
             extension_->watcher_.addPath(dit.next());
