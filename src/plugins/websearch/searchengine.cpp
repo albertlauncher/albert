@@ -38,7 +38,7 @@ QString Websearch::SearchEngine::text() const {
 
 /** ***************************************************************************/
 QString Websearch::SearchEngine::subtext() const {
-    return QString(url_).replace("%s", searchTerm_);
+    return QString(url_).replace("%s", QUrl::toPercentEncoding(searchTerm_));
 }
 
 
@@ -60,7 +60,7 @@ QIcon Websearch::SearchEngine::icon() const {
 /** ***************************************************************************/
 void Websearch::SearchEngine::activate() {
     qApp->hideWidget();
-    QDesktopServices::openUrl(QUrl(QString(url_).replace("%s", searchTerm_)));
+    QDesktopServices::openUrl(QUrl(QString(url_).replace("%s", QUrl::toPercentEncoding(searchTerm_))));
 }
 
 
