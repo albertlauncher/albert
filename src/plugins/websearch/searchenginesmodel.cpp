@@ -135,13 +135,16 @@ bool Websearch::SearchEnginesModel::setData(const QModelIndex &index, const QVar
         return false;
 
     switch (role) {
+    case Qt::DecorationRole: {
+        index_[index.row()]->setIcon(value.toString());
+        dataChanged(index, index, QVector<int>({Qt::DecorationRole}));
+        return true;
+    }
     case Qt::EditRole: {
         if ( !value.canConvert(QMetaType::QString) )
             return false;
         QString s = value.toString();
         switch (static_cast<Section>(index.column())) {
-        case Section::Enabled:
-            return false;
         case Section::Name:
             index_[index.row()]->setName(s);
             dataChanged(index, index, QVector<int>({Qt::DisplayRole}));

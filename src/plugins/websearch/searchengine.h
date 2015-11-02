@@ -51,6 +51,8 @@ public:
     const QString &url() const {return url_;}
     void setUrl(QString url) {url_ = url;}
 
+    void setIcon(QString path);
+
 
 private:
     bool    enabled_;

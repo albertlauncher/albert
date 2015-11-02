@@ -16,6 +16,7 @@
 
 #include <QDesktopServices>
 #include <QUrl>
+#include <QDir>
 #include <QDataStream>
 #include "searchengine.h"
 #include "albertapp.h"
@@ -84,4 +85,25 @@ void Websearch::SearchEngine::deserialize(QDataStream &in) {
        >> trigger_
        >> iconPath_;
     icon_ = QIcon(iconPath_);
+}
+
+
+/** ***************************************************************************/
+void Websearch::SearchEngine::setIcon(QString path) {
+    // Make cache dir if not exists
+    QDir cachePath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
+    if (!cachePath.exists())
+        cachePath.mkpath(cachePath.path());
+
+    // Build new collision avoidance path
+    QString newPath = QString("%1/%2-%3.%4")
+            .arg(cachePath.path())
+            .arg(qrand()/10000)
+            .arg(name_)
+            .arg(QFileInfo(path).suffix());
+
+    // Copy file into cache folder
+    QFile::copy(path, newPath);
+    iconPath_ = newPath;
+    icon_ = QIcon(newPath);
 }
