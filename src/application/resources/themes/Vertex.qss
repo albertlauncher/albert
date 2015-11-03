@@ -1,0 +1,93 @@
+/*
+ * Vertex Theme
+ */
+
+#bottomFrame * {
+	color: #FFF;
+    font-weight: 100;
+	background-color: #414243;
+	selection-color:  #FFF;
+	selection-background-color: #4080FB;
+}
+
+#bottomFrame {
+	width:640px;
+	min-width:640px;
+	max-width:640px;
+	border: 1px solid #242526;
+	border-radius: 2px;
+	padding: 5px 0px 5px 0px;
+	background-color: #414243;
+}
+
+#topFrame {
+	padding: 0px;
+}
+
+#inputLine {
+	background-color: #333435;
+	border-top: 1px solid #242526;
+	border-bottom:1px solid #242526;
+	padding: 2px;
+	font-size: 36px;
+}
+
+#settingsButton {
+    border-radius: 9px;
+	color : #404142;
+	background-color: transparent;
+	width:14px;
+	height:14px;
+    border-style: inset;
+	padding: 2px;
+	margin-top: 2px;
+	margin-right: 1px;
+}
+
+#settingsButton:hover {
+	color : #fff;
+	background-color: #3F73D4;
+}
+
+/********** proposalList **********/
+
+#proposalList {
+	icon-size:48px;
+	font-size: 26px;
+	border: none;
+	background-color: transparent;
+	border-bottom:1px solid #242526;
+}
+
+#proposalList::item{
+	padding: 2px 8px 2px 8px;
+	height:48px;
+	border: none;
+}
+
+#proposalList::item:selected{
+	padding-top: 1px;
+	border: none;
+	border-top: 1px solid #3F7CF1;
+	background: qlineargradient(y1:1, y2:0,
+	 stop:0.0 rgba(68, 121, 229, 255),
+	 stop:1.0 rgba(55, 100, 168, 255));
+}
+
+#proposalList::item:hover{}
+#proposalList::item:selected:!active{}
+#proposalList::item:selected:active{}
+#proposalList::item:alternate{}
+
+/********** SCROLLBAR **********/
+
+
+#proposalList QScrollBar:vertical  {
+	width: 0px;
+}
+
+#proposalList QScrollBar::handle:vertical  {}
+
+#proposalList QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
+#proposalList QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical,
+#proposalList QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {}
