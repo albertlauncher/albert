@@ -35,10 +35,13 @@ public:
     void toggleVisibility();
     void setModel(QAbstractItemModel *);
 
-    bool showCenterd() const;
-    void setShowCentered(bool b = true);
+    bool showCentered() const { return _showCentered; }
+    void setShowCentered(bool b = true) { _showCentered = b; }
 
-    const QString &theme() const;
+    bool hideOnFocusLoss() const { return _hideOnFocusLoss; }
+    void setHideOnFocusLoss(bool b = true) { _hideOnFocusLoss = b; }
+
+    const QString &theme() const { return _theme; }
     bool setTheme(const QString& theme);
 
     Ui::MainWidget ui;
@@ -50,9 +53,12 @@ private:
 
     QString _theme;
     bool _showCentered;
+    bool _hideOnFocusLoss;
 
     static const constexpr char* CFG_CENTERED     = "showCentered";
     static const constexpr bool  CFG_CENTERED_DEF = true;
+    static const constexpr char* CFG_HIDEONFOCUSLOSS     = "hideOnFocusLoss";
+    static const constexpr bool  CFG_HIDEONFOCUSLOSS_DEF = true;
     static const constexpr char* CFG_THEME        = "theme";
     static const constexpr char* CFG_WND_POS      = "windowPosition";
     static const constexpr char* CFG_THEME_DEF    = "Standard";

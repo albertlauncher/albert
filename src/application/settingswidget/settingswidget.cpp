@@ -40,6 +40,16 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
 
 
     /*
+     * NEWS
+     */
+    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
+    connect(manager, &QNetworkAccessManager::finished,
+            this, &SettingsWidget::newsReplyReceived);
+    connect(manager, &QNetworkAccessManager::finished,
+            manager, &SettingsWidget::deleteLater);
+    manager->get(QNetworkRequest(QUrl("https://raw.githubusercontent.com/ManuelSchneid3r/albert/master/dist/changes-0.8.txt")));
+
+    /*
      * GENERAL TAB
      */
 
@@ -52,11 +62,15 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
     connect(ui.grabKeyButton_hotkey, &GrabKeyButton::keyCombinationPressed,
             this, &SettingsWidget::changeHotkey);
 
-
     // ALWAYS CENTER
-    ui.checkBox_center->setChecked(mainWidget->showCenterd());
-    connect(ui.checkBox_center, &QCheckBox::toggled, mainWidget,
-            &MainWidget::setShowCentered);
+    ui.checkBox_center->setChecked(mainWidget->showCentered());
+    connect(ui.checkBox_center, &QCheckBox::toggled,
+            mainWidget, &MainWidget::setShowCentered);
+
+    // HIDE ON FOCUS LOSS
+    ui.checkBox_hideOnFocusLoss->setChecked(mainWidget->hideOnFocusLoss());
+    connect(ui.checkBox_hideOnFocusLoss, &QCheckBox::toggled,
+            mainWidget, &MainWidget::setHideOnFocusLoss);
 
     // MAX PROPOSALS
     ui.spinBox_proposals->setValue(mainWidget->ui.proposalList->maxItems());
@@ -131,6 +145,13 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
         lbl->setAlignment(Qt::AlignCenter);
         ui.widget_pluginInfos->layout()->addWidget(lbl);
     }
+}
+
+
+
+/** ***************************************************************************/
+void SettingsWidget::newsReplyReceived(QNetworkReply *reply) {
+    ui.label_news->setText(QString::fromUtf8(reply->readAll()));
 }
 
 

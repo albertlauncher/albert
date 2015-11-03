@@ -15,6 +15,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 #include "ui_settingswidget.h"
 
 class MainWidget;
@@ -35,6 +38,7 @@ private:
     void onPluginDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
     void changeHotkey(int);
     void updatePluginInformations(const QModelIndex & curr);
+    void newsReplyReceived(QNetworkReply * reply);
 
     MainWidget *_mainWidget;
     HotkeyManager *_hotkeyManager;

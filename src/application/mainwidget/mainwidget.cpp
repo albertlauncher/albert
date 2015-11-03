@@ -68,6 +68,7 @@ MainWidget::MainWidget(QWidget *parent)
     // Settings
     QSettings s;
     _showCentered = s.value(CFG_CENTERED, CFG_CENTERED_DEF).toBool();
+    _hideOnFocusLoss = s.value(CFG_HIDEONFOCUSLOSS, CFG_HIDEONFOCUSLOSS_DEF).toBool();
     _theme = s.value(CFG_THEME, CFG_THEME_DEF).toString();
     if (!setTheme(_theme)) {
         qFatal("FATAL: Stylefile not found: %s", _theme.toStdString().c_str());
@@ -83,6 +84,7 @@ MainWidget::MainWidget(QWidget *parent)
 MainWidget::~MainWidget() {
     // Save settings
     QSettings s;
+    s.setValue(CFG_HIDEONFOCUSLOSS, _hideOnFocusLoss);
     s.setValue(CFG_CENTERED, _showCentered);
     s.setValue(CFG_WND_POS, pos());
     s.setValue(CFG_THEME, _theme);
@@ -130,27 +132,6 @@ void MainWidget::setModel(QAbstractItemModel *m) {
     QItemSelectionModel *sm = ui.proposalList->selectionModel();
     ui.proposalList->setModel(m);
     delete sm;
-}
-
-
-
-/** ***************************************************************************/
-void MainWidget::setShowCentered(bool b) {
-    _showCentered = b;
-}
-
-
-
-/** ***************************************************************************/
-bool MainWidget::showCenterd() const {
-    return _showCentered;
-}
-
-
-
-/** ***************************************************************************/
-const QString &MainWidget::theme() const {
-    return _theme;
 }
 
 
@@ -236,8 +217,9 @@ bool MainWidget::nativeEvent(const QByteArray &eventType, void *message, long *)
 //			case XCB_NOTIFY_DETAIL_VIRTUAL: std::cout << "VIRTUAL";break;
 //			}
 //			std::cout << std::endl;
-            if (((fe->mode==XCB_NOTIFY_MODE_GRAB && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR)
-                    || (fe->mode==XCB_NOTIFY_MODE_NORMAL && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR )))
+            if (_hideOnFocusLoss &&
+                    ((fe->mode==XCB_NOTIFY_MODE_GRAB && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR)
+                     || (fe->mode==XCB_NOTIFY_MODE_NORMAL && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR )))
 //					&& !_settingsDialog->isVisible())
                 hide();
             break;
