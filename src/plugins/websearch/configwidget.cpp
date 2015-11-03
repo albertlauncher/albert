@@ -101,7 +101,7 @@ void Websearch::ConfigWidget::onButton_setIcon() {
                 this,
                 tr("Choose icon"),
                 QStandardPaths::writableLocation(QStandardPaths::HomeLocation),
-                tr("Images (*.png *.svg *.jpg"));
+                tr("Images (*.png *.svg *.jpg)"));
     if(fileName.isEmpty())
         return;
 
