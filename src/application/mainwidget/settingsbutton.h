@@ -34,7 +34,7 @@ private:
         QPushButton::paintEvent(event);
         QStyleOptionButton option;
         option.initFrom(this);
-        QRect r = this->rect();
+        QRect r = style()->subElementRect(QStyle::SE_PushButtonContents, &option, this);
 
         // Prepare miage in pixmap using mask
         QPixmap pm(r.size());
@@ -48,6 +48,6 @@ private:
         // Draw pixmap on button
         QPainter p(this);
         p.setRenderHint(QPainter::Antialiasing, true);
-        p.drawPixmap(0,0,pm);
+        p.drawPixmap(r.topLeft(), pm);
     }
 };

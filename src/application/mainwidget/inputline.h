@@ -35,7 +35,6 @@ public:
 private:
     void keyPressEvent(QKeyEvent*) override;
     void wheelEvent(QWheelEvent *);
-    void resizeEvent(QResizeEvent*) override;
 
     void resetIterator();
     void next();

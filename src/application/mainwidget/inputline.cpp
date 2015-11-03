@@ -20,17 +20,31 @@
 #include <QDebug>
 #include <QKeyEvent>
 #include <QStandardPaths>
+#include <QBoxLayout>
 
 /** ***************************************************************************/
 InputLine::InputLine(QWidget *parent) : QLineEdit(parent) {
+
+    // This means historymode is not active
+    _currentLine = _lines.crend();
+    connect(this, &QLineEdit::textEdited, this, &InputLine::resetIterator);
+
+    // Add setting button overlay
     _settingsButton = new SettingsButton(this);
     _settingsButton->setObjectName("settingsButton");
     _settingsButton->setFocusPolicy(Qt::NoFocus);
     _settingsButton->setShortcut(QKeySequence(SETTINGS_SHORTCUT));
+    _settingsButton->setCursor(QCursor(Qt::ArrowCursor));
 
-    _currentLine = _lines.crend(); // This means historymode is not active
-
-    connect(this, &QLineEdit::textEdited, this, &InputLine::resetIterator);
+    QHBoxLayout *hlayout = new QHBoxLayout(this);
+    this->setLayout(hlayout);
+    hlayout->addStretch();
+    hlayout->setMargin(0);
+    QVBoxLayout *vlayout = new QVBoxLayout(this);
+    hlayout->addLayout(vlayout);
+    vlayout->setMargin(0);
+    vlayout->addWidget(_settingsButton);
+    vlayout->addStretch();
 
     // DESERIALIZATION
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
@@ -134,12 +148,4 @@ void InputLine::keyPressEvent(QKeyEvent *e) {
 /** ***************************************************************************/
 void InputLine::wheelEvent(QWheelEvent *e) {
     e->angleDelta().ry()<0 ? prev() : next();
-}
-
-
-
-/** ***************************************************************************/
-void InputLine::resizeEvent(QResizeEvent *event) {
-    //Let settingsbutton be in top right corner
-    _settingsButton->move(event->size().width()-_settingsButton->width(),0);
 }
