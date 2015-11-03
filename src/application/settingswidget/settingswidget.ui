@@ -51,13 +51,13 @@
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
-          <widget class="QGroupBox" name="groupBox_2">
+          <widget class="QGroupBox" name="groupBox_general">
            <property name="title">
             <string>General</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_2">
             <item row="0" column="0">
-             <widget class="QLabel" name="label_3">
+             <widget class="QLabel" name="label_hotkey">
               <property name="text">
                <string>H&amp;otkey</string>
               </property>
@@ -77,7 +77,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QGroupBox" name="groupBox_hotkey">
+          <widget class="QGroupBox" name="groupBox_appearance">
            <property name="title">
             <string>Appearance</string>
            </property>
@@ -202,7 +202,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QGroupBox" name="groupBox">
+          <widget class="QGroupBox" name="groupBox_fuzzy">
            <property name="enabled">
             <bool>false</bool>
            </property>
@@ -272,9 +272,9 @@
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_4">
          <item>
-          <widget class="QGroupBox" name="groupBox_3">
+          <widget class="QGroupBox" name="groupBox_news">
            <property name="title">
-            <string>Changelog</string>
+            <string>News</string>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_8">
             <item>
@@ -439,11 +439,11 @@ p, li { white-space: pre-wrap; }
    <hints>
     <hint type="sourcelabel">
      <x>277</x>
-     <y>185</y>
+     <y>241</y>
     </hint>
     <hint type="destinationlabel">
      <x>277</x>
-     <y>213</y>
+     <y>269</y>
     </hint>
    </hints>
   </connection>
@@ -460,6 +460,38 @@ p, li { white-space: pre-wrap; }
     <hint type="destinationlabel">
      <x>277</x>
      <y>399</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_showInfo</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>label_selectedOnly</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>268</x>
+     <y>231</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>143</x>
+     <y>259</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_fuzzy</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>label_tolerance</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>268</x>
+     <y>355</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>95</x>
+     <y>386</y>
     </hint>
    </hints>
   </connection>

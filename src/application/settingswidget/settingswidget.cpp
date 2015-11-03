@@ -81,11 +81,20 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
     ui.checkBox_showInfo->setChecked(mainWidget->ui.proposalList->showInfo());
     connect(ui.checkBox_showInfo, &QCheckBox::toggled,
             mainWidget->ui.proposalList, &ProposalList::setShowInfo);
+    ui.checkBox_selectedOnly->setEnabled(mainWidget->ui.proposalList->showInfo());
+    ui.label_selectedOnly->setEnabled(mainWidget->ui.proposalList->showInfo());
 
     // INFO FOR UNSELECTED
     ui.checkBox_selectedOnly->setChecked(mainWidget->ui.proposalList->selectedOnly());
     connect(ui.checkBox_selectedOnly, &QCheckBox::toggled,
             mainWidget->ui.proposalList, &ProposalList::setSelectedOnly);
+
+    // FUZZY
+//    ui.checkBox_fuzzy->setChecked();
+//    connect(ui.checkBox_fuzzy, &QCheckBox::toggled,
+//            , );
+//    ui.label_tolerance->setEnabled();
+//    ui.lineEdit_tolerance->setEnabled();
 
 
     // THEMES
