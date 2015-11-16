@@ -25,6 +25,19 @@
 #include "albertapp.h"
 
 
+const QString System::Extension::EXT_NAME          = "system";
+const QString System::Extension::CFG_POWEROFF      = "poweroff";
+const QString System::Extension::CFG_POWEROFF_DEF  = "systemctl poweroff -i";
+const QString System::Extension::CFG_REBOOT        = "reboot";
+const QString System::Extension::CFG_REBOOT_DEF    = "systemctl reboot -i";
+const QString System::Extension::CFG_SUSPEND       = "suspend";
+const QString System::Extension::CFG_SUSPEND_DEF   = "systemctl suspend -i";
+const QString System::Extension::CFG_HIBERNATE     = "hibernate";
+const QString System::Extension::CFG_HIBERNATE_DEF = "systemctl hibernate -i";
+const QString System::Extension::CFG_LOCK          = "lock";
+const QString System::Extension::CFG_LOCK_DEF      = "cinnamon-screensaver-command -l";
+
+
 /** ***************************************************************************/
 System::Extension::Extension() {
     qDebug() << "[Template] Initialize extension";

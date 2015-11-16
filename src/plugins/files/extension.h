@@ -104,28 +104,28 @@ private:
     bool _followSymlinks;
     unsigned int _scanInterval;
 
-    /* constexpr */
-    static constexpr const char* EXT_NAME                = "files";
-    static constexpr const char* CFG_PATHS               = "paths";
-    static constexpr const char* CFG_FUZZY               = "fuzzy";
-    static constexpr const bool  CFG_FUZZY_DEF           = false;
-    static constexpr const char* CFG_INDEX_AUDIO         = "index_audio";
-    static constexpr const bool  CFG_INDEX_AUDIO_DEF     = false;
-    static constexpr const char* CFG_INDEX_VIDEO         = "index_video";
-    static constexpr const bool  CFG_INDEX_VIDEO_DEF     = false;
-    static constexpr const char* CFG_INDEX_IMAGE         = "index_image";
-    static constexpr const bool  CFG_INDEX_IMAGE_DEF     = false;
-    static constexpr const char* CFG_INDEX_DOC           = "index_docs";
-    static constexpr const bool  CFG_INDEX_DOC_DEF       = false;
-    static constexpr const char* CFG_INDEX_DIR           = "index_dirs";
-    static constexpr const bool  CFG_INDEX_DIR_DEF       = false;
-    static constexpr const char* CFG_INDEX_HIDDEN        = "index_hidden";
-    static constexpr const bool  CFG_INDEX_HIDDEN_DEF    = false;
-    static constexpr const char* CFG_FOLLOW_SYMLINKS     = "follow_symlinks";
-    static constexpr const bool  CFG_FOLLOW_SYMLINKS_DEF = true;
-    static constexpr const char* CFG_SCAN_INTERVAL       = "scan_interval";
-    static constexpr const uint  CFG_SCAN_INTERVAL_DEF   = 60;
-    static constexpr const char* IGNOREFILE              = ".albertignore";
+    /* const */
+    static const QString EXT_NAME;
+    static const QString CFG_PATHS;
+    static const QString CFG_FUZZY;
+    static const bool    CFG_FUZZY_DEF;
+    static const QString CFG_INDEX_AUDIO;
+    static const bool    CFG_INDEX_AUDIO_DEF;
+    static const QString CFG_INDEX_VIDEO;
+    static const bool    CFG_INDEX_VIDEO_DEF;
+    static const QString CFG_INDEX_IMAGE;
+    static const bool    CFG_INDEX_IMAGE_DEF;
+    static const QString CFG_INDEX_DOC;
+    static const bool    CFG_INDEX_DOC_DEF;
+    static const QString CFG_INDEX_DIR;
+    static const bool    CFG_INDEX_DIR_DEF;
+    static const QString CFG_INDEX_HIDDEN;
+    static const bool    CFG_INDEX_HIDDEN_DEF;
+    static const QString CFG_FOLLOW_SYMLINKS;
+    static const bool    CFG_FOLLOW_SYMLINKS_DEF;
+    static const QString CFG_SCAN_INTERVAL;
+    static const uint    CFG_SCAN_INTERVAL_DEF;
+    static const QString IGNOREFILE;
 
 signals:
     void rootDirsChanged(const QStringList&);

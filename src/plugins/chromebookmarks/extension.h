@@ -68,11 +68,11 @@ private:
     QString _bookmarksFile;
     QFileSystemWatcher _watcher;
 
-    /* constexpr */
-    static constexpr const char* EXT_NAME       = "chromebookmarks";
-    static constexpr const char* CFG_BOOKMARKS  = "bookmarkfile";
-    static constexpr const char* CFG_FUZZY      = "fuzzy";
-    static constexpr const bool  CFG_FUZZY_DEF  = false;
+    /* const */
+    static const QString EXT_NAME;
+    static const QString CFG_BOOKMARKS;
+    static const QString CFG_FUZZY;
+    static const bool    CFG_FUZZY_DEF;
 
 signals:
     void pathChanged(const QString&);

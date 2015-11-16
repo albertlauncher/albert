@@ -30,6 +30,11 @@
 #include "query.h"
 
 
+const QString ChromeBookmarks::Extension::EXT_NAME       = "chromebookmarks";
+const QString ChromeBookmarks::Extension::CFG_BOOKMARKS  = "bookmarkfile";
+const QString ChromeBookmarks::Extension::CFG_FUZZY      = "fuzzy";
+const bool    ChromeBookmarks::Extension::CFG_FUZZY_DEF  = false;
+
 
 /** ***************************************************************************/
 ChromeBookmarks::Extension::Extension() {

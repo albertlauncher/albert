@@ -60,17 +60,17 @@ private:
     QPointer<ConfigWidget> widget_;
     vector<ActionSpec> actions_;
 
-    /* constexpr */
-    static constexpr const char* EXT_NAME          = "system";
-    static constexpr const char* CFG_POWEROFF      = "poweroff";
-    static constexpr const char* CFG_POWEROFF_DEF  = "systemctl poweroff -i";
-    static constexpr const char* CFG_REBOOT        = "reboot";
-    static constexpr const char* CFG_REBOOT_DEF    = "systemctl reboot -i";
-    static constexpr const char* CFG_SUSPEND       = "suspend";
-    static constexpr const char* CFG_SUSPEND_DEF   = "systemctl suspend -i";
-    static constexpr const char* CFG_HIBERNATE     = "hibernate";
-    static constexpr const char* CFG_HIBERNATE_DEF = "systemctl hibernate -i";
-    static constexpr const char* CFG_LOCK          = "lock";
-    static constexpr const char* CFG_LOCK_DEF      = "cinnamon-screensaver-command -l";
+    /* const*/
+    static const QString EXT_NAME;
+    static const QString CFG_POWEROFF;
+    static const QString CFG_POWEROFF_DEF;
+    static const QString CFG_REBOOT;
+    static const QString CFG_REBOOT_DEF;
+    static const QString CFG_SUSPEND;
+    static const QString CFG_SUSPEND_DEF;
+    static const QString CFG_HIBERNATE;
+    static const QString CFG_HIBERNATE_DEF;
+    static const QString CFG_LOCK;
+    static const QString CFG_LOCK_DEF;
 };
 }

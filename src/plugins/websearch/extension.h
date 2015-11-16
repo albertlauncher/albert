@@ -34,6 +34,8 @@ class Extension final : public QAbstractTableModel, public IExtension
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
     Q_INTERFACES(IExtension)
 
+    enum class Section{Enabled, Name, Trigger, URL, Count};
+
 public:
     Extension();
     ~Extension();
@@ -65,10 +67,8 @@ private:
     QPointer<ConfigWidget> widget_;
     std::vector<shared_ptr<SearchEngine>> index_;
 
-    /* constexpr */
-    static constexpr const char* EXT_NAME = "websearch";
-    static constexpr const int   COL_COUNT = 4;
-    enum class Section{Enabled, Name, Trigger, URL};
+    /* const */
+    static const QString EXT_NAME;
 };
 
 }

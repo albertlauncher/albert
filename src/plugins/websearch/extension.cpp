@@ -25,6 +25,7 @@
 #include "searchengine.h"
 #include "query.h"
 
+const QString Websearch::Extension::EXT_NAME  = "websearch";
 
 ///**************************************************************************/
 //void Websearch::WebSearch::queryFallback(const QString &req, QVector<Service::Item *> *res) const
@@ -162,7 +163,7 @@ int Websearch::Extension::rowCount(const QModelIndex &) const {
 
 /** ***************************************************************************/
 int Websearch::Extension::columnCount(const QModelIndex &) const {
-    return COL_COUNT;
+    return static_cast<int>(Section::Count);
 }
 
 
@@ -170,7 +171,7 @@ int Websearch::Extension::columnCount(const QModelIndex &) const {
 /** ***************************************************************************/
 QVariant Websearch::Extension::headerData(int section, Qt::Orientation orientation, int role) const {
     // No sanity check necessary since
-    if ( section<0 || COL_COUNT<=section )
+    if ( section<0 || static_cast<int>(Section::Count)<=section )
         return QVariant();
 
 
@@ -218,7 +219,7 @@ QVariant Websearch::Extension::headerData(int section, Qt::Orientation orientati
 QVariant Websearch::Extension::data(const QModelIndex &index, int role) const {
     if (!index.isValid()
             || index.row() >= static_cast<int>(index_.size())
-            || index.column() >= static_cast<int>(COL_COUNT))
+            || index.column() >= static_cast<int>(static_cast<int>(Section::Count)))
         return QVariant();
 
     switch (role) {
@@ -267,7 +268,7 @@ QVariant Websearch::Extension::data(const QModelIndex &index, int role) const {
 bool Websearch::Extension::setData(const QModelIndex &index, const QVariant &value, int role) {
     if (!index.isValid()
             || index.row() >= static_cast<int>(index_.size())
-            || index.column() >= static_cast<int>(COL_COUNT))
+            || index.column() >= static_cast<int>(static_cast<int>(Section::Count)))
         return false;
 
     switch (role) {

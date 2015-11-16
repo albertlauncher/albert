@@ -29,6 +29,14 @@
 #include "query.h"
 
 
+const QString Applications::Extension::EXT_NAME       = "applications";
+const QString Applications::Extension::CFG_PATHS      = "applications/paths";
+const QString Applications::Extension::CFG_FUZZY      = "applications/fuzzy";
+const bool    Applications::Extension::CFG_FUZZY_DEF  = false;
+const QString Applications::Extension::CFG_TERM       = "applications/terminal";
+const QString Applications::Extension::CFG_TERM_DEF   = "xterm -e %1";
+const bool    Applications::Extension::UPDATE_DELAY   = 60000;
+
 
 /** ***************************************************************************/
 Applications::Extension::Extension() {

@@ -28,6 +28,29 @@
 #include "query.h"
 
 
+const QString Files::Extension::EXT_NAME                = "files";
+const QString Files::Extension::CFG_PATHS               = "paths";
+const QString Files::Extension::CFG_FUZZY               = "fuzzy";
+const bool    Files::Extension::CFG_FUZZY_DEF           = false;
+const QString Files::Extension::CFG_INDEX_AUDIO         = "index_audio";
+const bool    Files::Extension::CFG_INDEX_AUDIO_DEF     = false;
+const QString Files::Extension::CFG_INDEX_VIDEO         = "index_video";
+const bool    Files::Extension::CFG_INDEX_VIDEO_DEF     = false;
+const QString Files::Extension::CFG_INDEX_IMAGE         = "index_image";
+const bool    Files::Extension::CFG_INDEX_IMAGE_DEF     = false;
+const QString Files::Extension::CFG_INDEX_DOC           = "index_docs";
+const bool    Files::Extension::CFG_INDEX_DOC_DEF       = false;
+const QString Files::Extension::CFG_INDEX_DIR           = "index_dirs";
+const bool    Files::Extension::CFG_INDEX_DIR_DEF       = false;
+const QString Files::Extension::CFG_INDEX_HIDDEN        = "index_hidden";
+const bool    Files::Extension::CFG_INDEX_HIDDEN_DEF    = false;
+const QString Files::Extension::CFG_FOLLOW_SYMLINKS     = "follow_symlinks";
+const bool    Files::Extension::CFG_FOLLOW_SYMLINKS_DEF = true;
+const QString Files::Extension::CFG_SCAN_INTERVAL       = "scan_interval";
+const uint    Files::Extension::CFG_SCAN_INTERVAL_DEF   = 60;
+const QString Files::Extension::IGNOREFILE              = ".albertignore";
+
+
 /** ***************************************************************************/
 Files::Extension::Extension() {
     qDebug() << "[Files] Initialize extension";
