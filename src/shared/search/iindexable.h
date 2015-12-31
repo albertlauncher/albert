@@ -19,8 +19,9 @@
 #include <vector>
 
 /** ***************************************************************************/
-struct IIndexable
+class IIndexable
 {
+public:
     virtual ~IIndexable() {}
     virtual std::vector<QString> aliases() const = 0;
 };

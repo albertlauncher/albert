@@ -35,7 +35,7 @@ InputLine::InputLine(QWidget *parent) : QLineEdit(parent) {
     // DESERIALIZATION
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
                    filePath(QString("history.dat")));
-    if (dataFile.exists())
+    if (dataFile.exists()){
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
             QDataStream in(&dataFile);
             QStringList SL;
@@ -43,6 +43,7 @@ InputLine::InputLine(QWidget *parent) : QLineEdit(parent) {
             _lines = SL.toStdList();
             dataFile.close();
         } else qWarning() << "Could not open file" << dataFile.fileName();
+    }
 }
 
 

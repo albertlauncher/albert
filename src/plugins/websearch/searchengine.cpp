@@ -23,7 +23,7 @@
 
 /** ***************************************************************************/
 Websearch::SearchEngine::SearchEngine(QString name, QString url, QString trigger, QString iconPath, bool enabled)
-    : name_(name), url_(url), trigger_(trigger), iconPath_(iconPath), enabled_(enabled), icon_(QIcon(iconPath_)) {
+    : enabled_(enabled), name_(name), url_(url), trigger_(trigger), iconPath_(iconPath), icon_(QIcon(iconPath_)) {
 
 }
 

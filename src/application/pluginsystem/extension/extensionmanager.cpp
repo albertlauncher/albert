@@ -107,11 +107,12 @@ void ExtensionManager::teardownSession() {
 /** ***************************************************************************/
 void ExtensionManager::registerExtension(QObject *o) {
     IExtension* e = qobject_cast<IExtension*>(o);
-    if (e)
+    if (e) {
         if(_extensions.contains(e))
             qCritical() << "Extension registered twice!";
         else
             _extensions.insert(e);
+    }
 }
 
 
@@ -119,11 +120,12 @@ void ExtensionManager::registerExtension(QObject *o) {
 /** ***************************************************************************/
 void ExtensionManager::unregisterExtension(QObject *o) {
     IExtension* e = qobject_cast<IExtension*>(o);
-    if (e)
+    if (e) {
         if(!_extensions.contains(e))
             qCritical() << "Unregistered unregistered extension! (Duplicate unregistration?)";
         else
             _extensions.remove(e);
+    }
 }
 
 

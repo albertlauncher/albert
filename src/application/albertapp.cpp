@@ -33,6 +33,9 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
     if (context.function)
         suffix = QString("  --  [%1]").arg(context.function);
     switch (type) {
+#if __cplusplus >= 201103L
+    case QtInfoMsg:
+#endif
     case QtDebugMsg:
         fprintf(stderr, "%s\n", message.toLocal8Bit().constData());
         break;
@@ -84,7 +87,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
             _extensionManager->registerExtension(p->instance());
 
     // Quit gracefully on SIGTERM
-    signal(SIGTERM, [](int sig){
+    signal(SIGTERM, [](int){
         QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
     });
 

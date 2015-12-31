@@ -28,7 +28,8 @@ using std::vector;
  * @brief The AbstractItem
  * Displayable base class for all albert items.
  */
-struct ActionItem {
+class ActionItem {
+public:
     virtual ~ActionItem() {}
 
     /**
@@ -64,7 +65,8 @@ struct ActionItem {
  * let your items be visible in the proposal list. Subclass this item to your
  * liking and add it to the query if you think it matches the query context.
  */
-struct ActionNode : public ActionItem {
+class ActionNode : public ActionItem {
+public:
     virtual ~ActionNode() {}
 
     /**

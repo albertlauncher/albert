@@ -242,7 +242,7 @@ private:
                 break;
             }
         }
-        delete matrix;
+        delete[] matrix;
         return result;
     }
 

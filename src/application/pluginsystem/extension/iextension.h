@@ -22,8 +22,9 @@ using std::shared_ptr;
 class Query;
 class CoreApi;
 
-struct IExtension : public IPlugin
+class IExtension : public IPlugin
 {
+public:
     virtual ~IExtension() {}
 
     /**
@@ -65,7 +66,7 @@ struct IExtension : public IPlugin
      * Called if the preceeding query yielded no results.
      * @param query Holds the query context
      */
-    virtual void handleFallbackQuery(shared_ptr<Query> query) {}
+    virtual void handleFallbackQuery(shared_ptr<Query> query) { Q_UNUSED(query)}
 };
 #define ALBERT_EXTENSION_IID "org.manuelschneid3r.albert.extension"
 Q_DECLARE_INTERFACE(IExtension, ALBERT_EXTENSION_IID)

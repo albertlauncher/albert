@@ -50,7 +50,7 @@ ChromeBookmarks::Extension::Extension() {
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
                 filePath(QString("%1.dat").arg(EXT_NAME))
                 );
-    if (dataFile.exists())
+    if (dataFile.exists()) {
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
             qDebug() << "[ChromeBookmarks] Deserializing from" << dataFile.fileName();
             QDataStream in(&dataFile);
@@ -65,6 +65,7 @@ ChromeBookmarks::Extension::Extension() {
             dataFile.close();
         } else
             qWarning() << "Could not open file: " << dataFile.fileName();
+    }
 
     // Load and set a valid path (Updates the bookmarks)
     QVariant v = s.value(CFG_BOOKMARKS);

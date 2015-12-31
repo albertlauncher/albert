@@ -172,6 +172,7 @@ void SettingsWidget::onThemeChanged(int i) {
 
 /** ***************************************************************************/
 void SettingsWidget::onPluginDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) {
+    Q_UNUSED(bottomRight)
     if (topLeft == ui.listView_plugins->currentIndex())
         for (int role : roles)
             if (role == Qt::CheckStateRole)

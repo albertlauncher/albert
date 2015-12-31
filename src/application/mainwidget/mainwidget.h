@@ -44,8 +44,8 @@ public:
     Ui::MainWidget ui;
 
 private:
-    void closeEvent(QCloseEvent * event);
-    void keyPressEvent(QKeyEvent * event);
+    void closeEvent(QCloseEvent * event) override;
+    void keyPressEvent(QKeyEvent * event) override;
     bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
 
     QString _theme;

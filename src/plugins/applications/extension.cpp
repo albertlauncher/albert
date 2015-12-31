@@ -83,7 +83,7 @@ Applications::Extension::Extension() {
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
                 filePath(QString("%1.dat").arg(EXT_NAME))
                 );
-    if (dataFile.exists())
+    if (dataFile.exists()) {
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
             qDebug() << "[Applications] Deserializing from" << dataFile.fileName();
             QDataStream in(&dataFile);
@@ -99,6 +99,7 @@ Applications::Extension::Extension() {
             dataFile.close();
         } else
             qWarning() << "Could not open file: " << dataFile.fileName();
+     }
 
     // Initial update
     updateIndex();

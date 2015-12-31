@@ -80,7 +80,7 @@ Files::Extension::Extension() {
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
                 filePath(QString("%1.dat").arg(EXT_NAME))
                 );
-    if (dataFile.exists())
+    if (dataFile.exists()) {
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
             qDebug() << "[Files] Deserializing from" << dataFile.fileName();
             QDataStream in(&dataFile);
@@ -96,6 +96,7 @@ Files::Extension::Extension() {
             dataFile.close();
         } else
             qWarning() << "Could not open file: " << dataFile.fileName();
+    }
 
     // scan interval timer
     connect(&_minuteTimer, &QTimer::timeout, this, &Extension::onMinuteTick);

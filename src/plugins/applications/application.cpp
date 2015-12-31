@@ -277,7 +277,7 @@ QString Applications::Application::escapeString(const QString &unescaped) {
             result.append(*it);
         ++it;
     }
-    return std::move(result);
+    return result;
 }
 
 

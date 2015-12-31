@@ -47,7 +47,7 @@ Websearch::Extension::Extension() {
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
                 filePath(QString("%1.dat").arg(EXT_NAME))
                 );
-    if (dataFile.exists())
+    if (dataFile.exists()) {
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
             qDebug() << "[Websearch] Deserializing from" << dataFile.fileName();
             QDataStream in(&dataFile);
@@ -63,6 +63,7 @@ Websearch::Extension::Extension() {
             qWarning() << "Could not open file: " << dataFile.fileName();
             restoreDefaults();
         }
+    }
     qDebug() << "[Websearch] Extension initialized";
 }
 
@@ -329,7 +330,7 @@ Qt::ItemFlags Websearch::Extension::flags(const QModelIndex &index) const {
 
 /** ***************************************************************************/
 bool Websearch::Extension::insertRows(int position, int rows, const QModelIndex &) {
-    if (position<0 || rows<1 || static_cast<int>(index_.size()<position))
+    if (position<0 || rows<1 || static_cast<int>(index_.size())<position)
         return false;
 
     beginInsertRows(QModelIndex(), position, position + rows - 1);
@@ -350,7 +351,7 @@ bool Websearch::Extension::insertRows(int position, int rows, const QModelIndex 
 
 /** ***************************************************************************/
 bool Websearch::Extension::removeRows(int position, int rows, const QModelIndex &) {
-    if (position<0 || rows<1 || static_cast<int>(index_.size()<position+rows))
+    if (position<0 || rows<1 || static_cast<int>(index_.size())<position+rows)
         return false;
 
     beginRemoveRows(QModelIndex(), position, position + rows-1);
@@ -364,9 +365,9 @@ bool Websearch::Extension::removeRows(int position, int rows, const QModelIndex 
 /** ***************************************************************************/
 bool Websearch::Extension::moveRows(const QModelIndex &src, int srcRow, int cnt, const QModelIndex &dst, int dstRow) {
     if (srcRow<0 || cnt<1 || dstRow<0
-            || static_cast<int>(index_.size()<srcRow+cnt-1)
-            || static_cast<int>(index_.size()<dstRow)
-            || srcRow<=dstRow && dstRow<srcRow+cnt) // If its inside the source do nothing
+            || static_cast<int>(index_.size())<srcRow+cnt-1
+            || static_cast<int>(index_.size())<dstRow
+            || ( srcRow<=dstRow && dstRow<srcRow+cnt) ) // If its inside the source do nothing
         return false;
 
     std::vector<shared_ptr<SearchEngine>> tmp;
