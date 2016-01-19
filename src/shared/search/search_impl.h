@@ -30,6 +30,6 @@ public:
     virtual std::vector<std::shared_ptr<IIndexable>> search(const QString &req) const = 0;
 
 protected:
-    static constexpr const char* SEPARATOR_REGEX  = "[^a-zA-Z0-9]+";
+    static constexpr const char* SEPARATOR_REGEX  = "[!?<>\"'=+*.:,;\\\\\\/ _\\-]+";
 
 };
