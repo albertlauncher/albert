@@ -63,7 +63,7 @@ Websearch::Extension::Extension() {
             qWarning() << "Could not open file: " << dataFile.fileName();
             restoreDefaults();
         }
-    }
+    } else restoreDefaults(); // Without warning
     qDebug() << "[Websearch] Extension initialized";
 }
 
