@@ -30,7 +30,7 @@ ExtensionManager::ExtensionManager() : _sessionIsActive(false) {
 /** ***************************************************************************/
 void ExtensionManager::startQuery(const QString &searchTerm) {
     // Trim spaces
-    QString trimmedTerm = searchTerm.trimmed();
+    QString trimmedTerm = searchTerm.trimmed().toLower();
 
     // Ignore empty queries
     if (trimmedTerm.isEmpty()){
