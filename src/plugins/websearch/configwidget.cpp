@@ -17,6 +17,7 @@
 #include "configwidget.h"
 #include <QFileDialog>
 #include <QStandardPaths>
+#include <QMessageBox>
 
 /** ***************************************************************************/
 Websearch::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
@@ -63,7 +64,18 @@ void Websearch::ConfigWidget::onButton_new() {
 
 /** ***************************************************************************/
 void Websearch::ConfigWidget::onButton_remove() {
-    ui.tableView_searches->model()->removeRow(ui.tableView_searches->currentIndex().row());
+    // Ask if sure
+    int row = ui.tableView_searches->currentIndex().row();
+    QString engineName = ui.tableView_searches->model()
+            ->data(ui.tableView_searches->model()->index(row, 1)).toString();
+    QMessageBox::StandardButton reply =
+            QMessageBox::question(this, "Test",
+                                  QString("Do you really want to remove '%1' from the search engines?")
+                                  .arg(engineName),
+                                  QMessageBox::Yes|QMessageBox::No);
+    // Remove if sure
+    if (reply == QMessageBox::Yes)
+        ui.tableView_searches->model()->removeRow(ui.tableView_searches->currentIndex().row());
 }
 
 
@@ -101,7 +113,7 @@ void Websearch::ConfigWidget::onButton_setIcon() {
                 this,
                 tr("Choose icon"),
                 QStandardPaths::writableLocation(QStandardPaths::HomeLocation),
-                tr("Images (*.png *.svg"));
+                tr("Images (*.png *.svg)"));
     if(fileName.isEmpty())
         return;
 
