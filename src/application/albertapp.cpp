@@ -33,7 +33,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
     if (context.function)
         suffix = QString("  --  [%1]").arg(context.function);
     switch (type) {
-#if __cplusplus >= 201103L
+#if QT_VERSION >= 0x050500
     case QtInfoMsg:
 #endif
     case QtDebugMsg:
