@@ -52,15 +52,19 @@ QIcon Applications::Application::icon() const {
 
 /** ***************************************************************************/
 void Applications::Application::activate() {
-    // Standard action
     qApp->hideWidget();
-    // Finally since the exec key expects to be interpreted and escapes and
-    // expanded and whatelse a shell does with a commandline it is the easiest
-    // way to just let the shell do it (therminal has a subshell)
-    if(_term)
-        QProcess::startDetached(terminal.arg(_exec));
-    else
-        QProcess::startDetached(QString("sh -c \"%1\"").arg(_exec));
+
+    // QTBUG-51678
+
+    // General escape rule has been applied on parse time
+    // Apply exec escape rule
+    QStringList arguments = execValueEscape( (_term) ? terminal.arg(quoteString(_exec)) : _exec);
+    QString program = arguments.takeFirst();
+
+    // TODO: Apply code fiels expansion (currently done at parese time)
+
+    // Run the application
+    QProcess::startDetached(program, arguments);
     ++_usage;
 }
 
@@ -282,73 +286,126 @@ QString Applications::Application::escapeString(const QString &unescaped) {
 
 
 
-///** ***************************************************************************/
-//void Applications::Application::parseCommandLine(const QString &cmdLine, QString *program, QStringList *arguments) {
-//    *program = cmdLine.section(' ', 0, 0);
-
-//    QString arg;
-//    QString argsString = cmdLine.section(' ', 1);
-//    QString::iterator it = argsString.begin();
-
-//    while(1){
-
-//        // End of sting -> copy last param and quit loop
-//        if (it == argsString.end()){
-//            if (!arg.isEmpty())
-//                arguments->append(arg);
-//            goto quit_loop;
-//        }
-
-//        // Space/parameter delimiter -> copy param
-//        else if (*it == ' '){
-//            if (!arg.isEmpty())
-//                arguments->append(arg);
-//            arg.clear();
-//        }
+/** ***************************************************************************/
+QString Applications::Application::quoteString(const QString &unquoted) {
+    QString result;
+    result.push_back("\"");
+    for (auto & qchar : unquoted){
+        switch (qchar.toLatin1()) {
+        case '"': case '`': case '\\': case '$':
+            result.push_back('\\');
+            break;
+        }
+        result.push_back(qchar);
+    }
+    result.push_back("\"");
+    return result;
+}
 
 
-//        // Quotes introduce a unescaped sequence
-//        else if (*it == '"'){
 
-//            ++it;
+/** ***************************************************************************/
+QStringList Applications::Application::execValueEscape(const QString &execValue) {
 
-//            // Iterate until end of sequence is found
-//            while (*it != '"'){
+    QString part;
+    QStringList result;
+    QString::const_iterator it = execValue.begin();
 
-//                // If end of string this command line is invalid. Be tolerant
-//                // and store the last param anyway
-//                if (it == argsString.end()){
-//                    if (!arg.isEmpty())
-//                        arguments->append(arg);
-//                    goto quit_loop;
-//                }
+    while(it != execValue.end()){
 
-//                // Well no EO, no Quotes -> usual char
-//                arg.append(*it);
-//                ++it;
-//            }
+        // Check for a backslash (escape)
+        if (*it == '\\'){
+            if (++it == execValue.end()){
+                qWarning() << "EOL detected. Excpected one of {\",`,\\,$, ,\\n,\\t,',<,>,~,|,&,;,*,?,#,(,)}";
+                return QStringList();
+            }
 
-//            // End of sequence, store parameter
-//            if (!arg.isEmpty())
-//                arguments->append(arg);
-//            arg.clear();
-//        }
+            switch (it->toLatin1()) {
+            case 'n': part.push_back('\n');
+                break;
+            case 't': part.push_back('\t');
+                break;
+            case ' ':
+            case '\'':
+            case '<':
+            case '>':
+            case '~':
+            case '|':
+            case '&':
+            case ';':
+            case '*':
+            case '?':
+            case '#':
+            case '(':
+            case ')':
+            case '"':
+            case '`':
+            case '\\':
+            case '$': part.push_back(*it);
+                break;
+            default:
+                qWarning() << "Invalid char following \\. Excpected one of {\",`,\\,$, ,\\n,\\t,',<,>,~,|,&,;,*,?,#,(,)}";
+                return QStringList();
+            }
+        }
 
+        // Check for quoted strings
+        else if (*it == '"'){
+            while (true){
+                if (++it == execValue.end()){
+                    qWarning() << "Detected EOL inside a qoute.";
+                    return QStringList();
+                }
 
-//        // Free (unquoted) escapechar just copy the char after it
-//        else if (*it == '\\'){
-//            ++it;
-//            arg.append(*it);
-//        }
+                // Leave the "quotation loop" on double qoute
+                else if (*it == '"')
+                    break;
 
-//        // usual character
-//        else
-//            arg.append(*it);
+                // Check for a backslash (escape)
+                else if (*it == '\\'){
+                    if (++it == execValue.end()){
+                        qWarning() << "EOL detected. Excpected one of {\",`,\\,$}";
+                        return QStringList();
+                    }
 
-//        ++it;
-//    }
-//    quit_loop:;
-//}
+                    switch (it->toLatin1()) {
+                    case '"':
+                    case '`':
+                    case '\\':
+                    case '$': part.push_back(*it);
+                        break;
+                    default:
+                        qWarning() << "Invalid char following \\. Excpected one of {\",`,\\,$}";
+                        return QStringList();
+                    }
+                }
+
+                // Accept everything else
+                else {
+                    part.push_back(*it);
+                }
+            }
+        }
+
+        // Check for spaces (separators)
+        else if (*it == ' '){
+            result.push_back(part);
+            part.clear();
+        }
+
+        // Rest of input alphabet, save and continue
+        else {
+            part.push_back(*it);
+        }
+
+        ++it;
+    }
+
+    if (!part.isEmpty())
+        result.push_back(part);
+
+    return result;
+}
 
 
 
