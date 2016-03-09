@@ -95,6 +95,7 @@ void Applications::Indexer::run() {
     // Finally update the watches (maybe folders changed)
     _extension->_watcher.removePaths(_extension->_watcher.directories());
     for (const QString &path : _extension->_rootDirs) {
+        _extension->_watcher.addPath(path);
         QDirIterator dit(path, QDir::Dirs|QDir::NoDotAndDotDot);
         while (dit.hasNext())
             _extension->_watcher.addPath(dit.next());
@@ -103,7 +104,6 @@ void Applications::Indexer::run() {
     /*
      *  ▲ CRITICAL ▲
      */
-
 
 
     // Notification
