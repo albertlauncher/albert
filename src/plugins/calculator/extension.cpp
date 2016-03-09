@@ -16,23 +16,36 @@
 
 #include <QDebug>
 #include <QClipboard>
+#include <QSettings>
 #include "albertapp.h"
 #include "extension.h"
+#include "configwidget.h"
 #include "query.h"
 #include "objects.hpp"
 
-
+const QString Calculator::Extension::EXT_NAME      = "calculator";
+const QString Calculator::Extension::CFG_SEPS      = "group_separators";
+const bool    Calculator::Extension::CFG_SEPS_DEF  = false;
 
 /** ***************************************************************************/
 Calculator::Extension::Extension() {
     qDebug() << "[Calculator] Initialize extension";
+
+    // Load settings
+    QSettings s;
+    s.beginGroup(EXT_NAME);
+    loc_.setNumberOptions(
+                (s.value(CFG_SEPS, CFG_SEPS_DEF).toBool())
+                ? loc_.numberOptions() & ~QLocale::OmitGroupSeparator
+                : loc_.numberOptions() | QLocale::OmitGroupSeparator );
+
     if (QIcon::hasThemeIcon("calc"))
         calcIcon_ = QIcon::fromTheme("calc");
     else
         calcIcon_ = QIcon::fromTheme("unknown");  // FIXME FAVICON RESOURCE
     parser_.reset(new mu::Parser);
-    parser_->SetDecSep(loc.decimalPoint().toLatin1());
-    parser_->SetThousandsSep(loc.groupSeparator().toLatin1());
+    parser_->SetDecSep(loc_.decimalPoint().toLatin1());
+    parser_->SetThousandsSep(loc_.groupSeparator().toLatin1());
     qDebug() << "[Calculator] Extension initialized";
 }
 
@@ -40,7 +53,32 @@ Calculator::Extension::Extension() {
 
 /** ***************************************************************************/
 Calculator::Extension::~Extension() {
+    qDebug() << "[Calculator] Finalize extension";
+
     parser_.reset();
+
+    // Save settings
+    QSettings s;
+    s.beginGroup(EXT_NAME);
+    s.setValue(CFG_SEPS, !loc_.numberOptions().testFlag(QLocale::OmitGroupSeparator));
+
+    qDebug() << "[Calculator] Extension finalized";
+}
+
+
+
+/** ***************************************************************************/
+QWidget *Calculator::Extension::widget(QWidget *parent) {
+    if (widget_.isNull()){
+        widget_ = new ConfigWidget(parent);
+
+        widget_->ui.checkBox_groupsep->setChecked(!(loc_.numberOptions() & QLocale::OmitGroupSeparator));
+        connect(widget_->ui.checkBox_groupsep, &QCheckBox::toggled, [this](bool checked){
+            this->loc_.setNumberOptions( (checked) ? this->loc_.numberOptions() & ~QLocale::OmitGroupSeparator
+                                                  : this->loc_.numberOptions() | QLocale::OmitGroupSeparator );
+        });
+    }
+    return widget_;
 }
 
 
@@ -50,7 +88,7 @@ void Calculator::Extension::handleQuery(shared_ptr<Query> query) {
     parser_->SetExpr(query->searchTerm().toStdString());
     QString result;
     try {
-        result = loc.toString(parser_->Eval());
+        result = loc_.toString(parser_->Eval(), 'G', 16);
     }
     catch (mu::Parser::exception_type &e) {
       return;

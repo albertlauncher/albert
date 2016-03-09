@@ -15,44 +15,17 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
-#include <QLocale>
-#include <QIcon>
-#include <QPointer>
-#include <memory>
-#include "iextension.h"
-#include "muParser.h"
+#include <QWidget>
+#include "ui_configwidget.h"
 
 namespace Calculator {
 
-class ConfigWidget;
-
-class Extension final : public QObject, public IExtension
+class ConfigWidget final : public QWidget
 {
     Q_OBJECT
-    Q_INTERFACES(IExtension)
-    Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
-
 public:
-    Extension();
-    ~Extension();
-
-    // GenericPluginInterface
-    QWidget *widget(QWidget *parent = nullptr) override;
-
-    // IExtension
-    void handleQuery(shared_ptr<Query> query) override;
-
-    /* const */
-    static const QString EXT_NAME;
-    static const QString CFG_SEPS;
-    static const bool    CFG_SEPS_DEF;
-
-private:
-    QPointer<ConfigWidget> widget_;
-    std::unique_ptr<mu::Parser> parser_;
-    QLocale loc_;
-    QIcon calcIcon_;
-
+    explicit ConfigWidget(QWidget *parent = 0);
+    Ui::ConfigWidget ui;
 };
+
 }
