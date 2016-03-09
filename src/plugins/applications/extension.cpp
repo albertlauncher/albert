@@ -101,7 +101,12 @@ Applications::Extension::Extension() {
             qWarning() << "Could not open file: " << dataFile.fileName();
      }
 
-    // Initial update
+    // Rebuild the offline search index
+    _searchIndex.clear();
+    for (auto &i : _appIndex)
+        _searchIndex.add(i);
+
+    // Trigger an initial update
     updateIndex();
 
     qDebug() << "[Applications] Extension initialized";

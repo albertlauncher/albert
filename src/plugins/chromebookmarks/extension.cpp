@@ -45,6 +45,13 @@ ChromeBookmarks::Extension::Extension() {
     s.beginGroup(EXT_NAME);
     _searchIndex.setFuzzy(s.value(CFG_FUZZY, CFG_FUZZY_DEF).toBool());
 
+    // Load and set a valid path
+    QVariant v = s.value(CFG_BOOKMARKS);
+    if (v.isValid() && v.canConvert(QMetaType::QString) && QFileInfo(v.toString()).exists())
+        setPath(v.toString());
+    else
+        restorePath();
+
     // Deserialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
@@ -67,18 +74,20 @@ ChromeBookmarks::Extension::Extension() {
             qWarning() << "Could not open file: " << dataFile.fileName();
     }
 
-    // Load and set a valid path (Updates the bookmarks)
-    QVariant v = s.value(CFG_BOOKMARKS);
-    if (v.isValid() && v.canConvert(QMetaType::QString) && QFileInfo(v.toString()).exists())
-        setPath(v.toString());
-    else
-        restorePath();
+    // Rebuild the offline search index
+    _searchIndex.clear();
+    for (auto &i : _index)
+        _searchIndex.add(i);
 
     // Keep in sync with the bookmarkfile
     connect(&_watcher, &QFileSystemWatcher::fileChanged, this, &Extension::updateIndex);
+    connect(this, &Extension::pathChanged, this, &Extension::updateIndex);
 
     // Get a generic favicon
     Bookmark::icon_ = QIcon::fromTheme("favorites", QIcon(":favicon"));
+
+    // Trigger an initial update
+    updateIndex();
 
     qDebug() << "[ChromeBookmarks] Extension initialized";
 }
@@ -180,20 +189,21 @@ const QString &ChromeBookmarks::Extension::path() {
 
 
 /** ***************************************************************************/
-void ChromeBookmarks::Extension::setPath(const QString &s) {
-    QFileInfo fi(s);
+void ChromeBookmarks::Extension::setPath(const QString &path) {
+    QFileInfo fi(path);
+
     // Only let _existing_ _files_ in
     if (!(fi.exists() && fi.isFile()))
         return;
 
-    if(!_watcher.addPath(s)) // No clue why this should happen
-        qCritical() << s <<  "could not be watched. Changes in this path will not be noticed.";
+    _bookmarksFile = path;
 
-    _bookmarksFile = s;
-    updateIndex();
+    // Track modifications of this file
+    if(!_watcher.addPath(path)) // No clue why this should happen
+        qCritical() << path <<  "could not be watched. Changes in this path will not be noticed.";
 
     // And update the widget, if it is visible atm
-    emit pathChanged(s);
+    emit pathChanged(path);
 }
 
 

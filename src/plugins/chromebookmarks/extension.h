@@ -51,7 +51,7 @@ public:
     void handleQuery(shared_ptr<Query> query) override;
 
     const QString &path();
-    void setPath(const QString &s);
+    void setPath(const QString &path);
     void restorePath();
 
     void updateIndex();

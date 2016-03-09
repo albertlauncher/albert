@@ -98,11 +98,16 @@ Files::Extension::Extension() {
             qWarning() << "Could not open file: " << dataFile.fileName();
     }
 
-    // scan interval timer
+    // Rebuild the offline search index
+    _searchIndex.clear();
+    for (auto &i : _fileIndex)
+        _searchIndex.add(i);
+
+    // Scan interval timer
     connect(&_minuteTimer, &QTimer::timeout, this, &Extension::onMinuteTick);
     setScanInterval(s.value(CFG_SCAN_INTERVAL, CFG_SCAN_INTERVAL_DEF).toUInt());
 
-    // Initial update
+    // Trigger an initial update
     updateIndex();
 
     s.endGroup();
