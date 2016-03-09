@@ -26,6 +26,8 @@ Files::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
     connect(ui.pushButton_add, &QPushButton::clicked, this, &ConfigWidget::onButton_PathAdd);
     connect(ui.pushButton_remove, &QPushButton::clicked, this, &ConfigWidget::onButton_PathRemove);
     connect(ui.pushButton_advanced, &QPushButton::clicked, this, &ConfigWidget::onButton_Advanced);
+    // TODO: Implement mime filter
+    ui.pushButton_advanced->hide();
 }
 
 
