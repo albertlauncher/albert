@@ -1,9 +1,9 @@
 /*
- * Android Theme
- * Main colors:
- * Green : #9acd00	154, 205, 0
- * Gray  : #6d6e71	109, 110, 113
- * White : #f9f9f9	249, 249, 249
+ * author: Manuel Schneider <https://github.com/ManuelSchneid3r>
+ *
+ * Check http://doc.qt.io/qt-5/stylesheet-syntax.html especially the subtopics:
+ * The Style Sheet Syntax (http://doc.qt.io/qt-5/stylesheet-syntax.html)
+ * Qt Style Sheets Reference (http://doc.qt.io/qt-5/stylesheet-reference.html)
  */
 
 #bottomFrame {

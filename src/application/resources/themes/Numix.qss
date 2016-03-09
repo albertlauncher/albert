@@ -1,3 +1,11 @@
+/*
+ * author: <https://github.com/tepf>
+ *
+ * Check http://doc.qt.io/qt-5/stylesheet-syntax.html especially the subtopics:
+ * The Style Sheet Syntax (http://doc.qt.io/qt-5/stylesheet-syntax.html)
+ * Qt Style Sheets Reference (http://doc.qt.io/qt-5/stylesheet-reference.html)
+ */
+ 
 #bottomFrame * {
 	color : #ccc;
 	background-color: #2d2d2d;
