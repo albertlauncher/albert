@@ -332,7 +332,8 @@ void Files::Extension::updateIndex() {
     // If thread is running, stop it and start this functoin after termination
     if (!_indexer.isNull()) {
         _indexer->abort();
-        _widget->ui.label_info->setText("Waiting for indexer to shut down ...");
+        if (!_widget.isNull())
+            _widget->ui.label_info->setText("Waiting for indexer to shut down ...");
         connect(_indexer.data(), &Indexer::destroyed, this, &Extension::updateIndex);
     } else {
         // Create a new scanning runnable for the threadpool
@@ -345,7 +346,7 @@ void Files::Extension::updateIndex() {
         _minuteCounter = 0;
         _minuteTimer.start();
 
-        // If widget is visible show the information in the status bat
+        // If widget is visible show the information in the status bar
         if (!_widget.isNull())
             connect(_indexer.data(), &Indexer::statusInfo, _widget->ui.label_info, &QLabel::setText);
     }
