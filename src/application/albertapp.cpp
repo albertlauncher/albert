@@ -54,6 +54,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 
 /** ***************************************************************************/
 AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
+
     /*
      *  INITIALIZE APPLICATION
      */
@@ -71,10 +72,26 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
      * INITIALISATION
      */
 
-    // MAKE SURE THE NEEDED DIRECTORIES EXIST
-    QDir data(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
-    if (!data.exists())
-        data.mkpath(".");
+    // Make sure data, cache and config dir exists
+    QDir dir;
+    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+    dir.mkpath(".");
+    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
+    dir.mkpath(".");
+    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation));
+    dir.mkpath(".");
+
+    // Print e message if the app was not terminated graciously
+    QString filePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running";
+    if (QFile::exists(filePath))
+        qCritical() << "Application has not been terminated graciously";
+    else {
+        // Create the running indicator file
+        QFile file(filePath);
+        if (!file.open(QIODevice::WriteOnly))
+            qCritical() << "Could not create file:" << filePath;
+        file.close();
+    }
 
     _mainWidget = new MainWidget;
     _hotkeyManager = new HotkeyManager;
@@ -129,11 +146,18 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
 
 /** ***************************************************************************/
 AlbertApp::~AlbertApp() {
+
+    /*
+     *  FINALIZE APPLICATION
+     */
     // Unload the plugins
     delete _extensionManager;
     delete _pluginManager;
     delete _hotkeyManager;
     delete _mainWidget;
+
+    // Delete the running indicator file
+    QFile::remove(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running");
 }
 
 
