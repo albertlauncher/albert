@@ -192,17 +192,11 @@ const QString &ChromeBookmarks::Extension::path() {
 void ChromeBookmarks::Extension::setPath(const QString &path) {
     QFileInfo fi(path);
 
-    // Only let _existing_ _files_ in
     if (!(fi.exists() && fi.isFile()))
         return;
 
     _bookmarksFile = path;
 
-    // Track modifications of this file
-    if(!_watcher.addPath(path)) // No clue why this should happen
-        qCritical() << path <<  "could not be watched. Changes in this path will not be noticed.";
-
-    // And update the widget, if it is visible atm
     emit pathChanged(path);
 }
 

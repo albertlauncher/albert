@@ -117,8 +117,12 @@ void ChromeBookmarks::Indexer::run() {
     // Unlock the accress
     _extension->_indexAccess.unlock();
 
-    // Finally update the watches (maybe folders changed)
-    _extension->_watcher.removePaths(_extension->_watcher.files());
+    /* Finally update the watches (maybe folders changed)
+     * Note that QFileSystemWatcher stops monitoring files once they have been
+     * renamed or removed from disk, and directories once they have been removed
+     * from disk.
+     * Chromium seems to mv the file (inode change), removing is not necessary.
+     */
     if(!_extension->_watcher.addPath(_extension->_bookmarksFile)) // No clue why this should happen
         qCritical() << _extension->_bookmarksFile
                     <<  "could not be watched. Changes in this path will not be noticed.";
