@@ -78,7 +78,11 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     dir.mkpath(".");
     dir.setPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
     dir.mkpath(".");
+#if QT_VERSION >= 0x050500
     dir.setPath(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation));
+#else
+    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)+"/manuelschneid3r");
+#endif
     dir.mkpath(".");
 
     // Print e message if the app was not terminated graciously
