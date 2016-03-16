@@ -75,7 +75,9 @@ void ExtensionManager::startQuery(const QString &searchTerm) {
         std::stable_sort(_currentQuery->impl->matches_.begin(),
                          _currentQuery->impl->matches_.end(),
                          [](const Match &lhs, const Match &rhs) {
-                            return lhs.score > rhs.score;
+                            return lhs.item.data->importance() > rhs.item.data->importance() // Importance, for e.g. urgent notifications
+                                    || lhs.item.data->usageCount() > rhs.item.data->usageCount() // usage count
+                                    || lhs.score > rhs.score; // percentual match of the query against the item
                          });
 
     //  ▲ INTRODUCE MULTITHREADING HERE ▲

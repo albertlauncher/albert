@@ -175,8 +175,8 @@ void ChromeBookmarks::Extension::handleQuery(shared_ptr<Query> query) {
 
     // Add results to query. This cast is safe since index holds files only
     for (shared_ptr<IIndexable> obj : indexables)
-        query->addMatch(std::static_pointer_cast<Bookmark>(obj),
-                        std::static_pointer_cast<Bookmark>(obj)->usage());
+        // TODO `Search` has to determine the relevance. Set to 0 for now
+        query->addMatch(std::static_pointer_cast<Bookmark>(obj), 0);
 }
 
 

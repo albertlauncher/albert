@@ -38,7 +38,7 @@ QString Applications::Application::text() const {
 
 /** ***************************************************************************/
 QString Applications::Application::subtext() const {
-    return _altName;
+    return (_altName.isNull()) ? _exec : _altName;
 }
 
 
@@ -79,7 +79,7 @@ bool Applications::Application::hasChildren() const {
 
 
 /** ***************************************************************************/
-vector<shared_ptr<ActionNode> > Applications::Application::children() {
+vector<shared_ptr<AlbertItem> > Applications::Application::children() {
     return _actions;
 }
 
@@ -188,8 +188,6 @@ bool Applications::Application::readDesktopEntry() {
         _altName = values["Desktop Entry"][QString("GenericName[%1]").arg(shortLocale)];
     else if (values["Desktop Entry"].count("GenericName"))
         _altName = values["Desktop Entry"]["GenericName"];
-    else
-        _altName = _exec;
 
     // No additional actions for terminal apps
     _term = values["Desktop Entry"]["Terminal"] == "true";

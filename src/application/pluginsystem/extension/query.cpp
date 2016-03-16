@@ -32,7 +32,7 @@ Query::~Query() {
 
 
 /** ***************************************************************************/
-void Query::addMatch(shared_ptr<ActionNode> item, short score) {
+void Query::addMatch(shared_ptr<AlbertItem> item, short score) {
     impl->addMatch(item, score);
 }
 

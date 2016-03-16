@@ -19,7 +19,6 @@
 #include <QDebug>
 #include "extension.h"
 #include "configwidget.h"
-#include "item.h"
 #include "query.h"
 #include "objects.hpp"
 #include "albertapp.h"

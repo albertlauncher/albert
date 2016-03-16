@@ -20,7 +20,7 @@ class Extension;
 
 namespace Websearch {
 
-class SearchEngine final : public ActionNode
+class SearchEngine final : public AlbertItem
 {
 public:
     SearchEngine() : enabled_(false) {}

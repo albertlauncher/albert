@@ -21,7 +21,7 @@
 namespace Applications {
 class Application;
 
-class DesktopAction final : public ActionNode
+class DesktopAction final : public AlbertItem
 {
 public:
     DesktopAction(Application *app, const QString &name, const QString &exec, const QIcon &icon, const bool term=false);

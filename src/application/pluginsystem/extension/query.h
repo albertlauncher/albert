@@ -21,7 +21,7 @@ using std::shared_ptr;
 #include <vector>
 
 class QueryPrivate;
-class ActionNode;
+class AlbertItem;
 class IExtension;
 
 class Query final
@@ -38,7 +38,7 @@ public:
      * live as long as the session is active.
      * @param node The amount of error tolerance
      */
-    void addMatch(shared_ptr<ActionNode> item, short score = 0);
+    void addMatch(shared_ptr<AlbertItem> item, short score = 0);
 
     /**
      * @brief Reset the query

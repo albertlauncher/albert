@@ -111,7 +111,7 @@ void ChromeBookmarks::Indexer::run() {
     _extension->_searchIndex.clear();
 
     // Build the new offline index
-    for (shared_ptr<IIndexable> i : _extension->_index)
+    for (shared_ptr<Bookmark> i : _extension->_index)
         _extension->_searchIndex.add(i);
 
     // Unlock the accress

@@ -19,7 +19,7 @@
 #include "abstractobjects.hpp"
 using std::function;
 
-class StandardItem final : public ActionNode
+class StandardItem final : public AlbertItem
 {
 public:
     StandardItem(){}

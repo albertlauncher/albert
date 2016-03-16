@@ -58,7 +58,7 @@ void Applications::Indexer::run() {
                                     return de->path()== path;
                                 });
             if (indexIt != _extension->_appIndex.end())
-                application = std::make_shared<Application>(path, (*indexIt)->usage());
+                application = std::make_shared<Application>(path, (*indexIt)->usageCount());
             else
                 application = std::make_shared<Application>(path, 1);
 

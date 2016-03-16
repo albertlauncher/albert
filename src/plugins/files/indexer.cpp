@@ -162,7 +162,7 @@ void Files::Indexer::run() {
     _extension->_searchIndex.clear();
 
     // Build the new offline index
-    for (shared_ptr<IIndexable> i : _extension->_fileIndex)
+    for (shared_ptr<File> i : _extension->_fileIndex)
         _extension->_searchIndex.add(i);
 
     // Unlock the accress

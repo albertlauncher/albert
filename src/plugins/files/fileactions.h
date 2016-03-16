@@ -27,7 +27,7 @@
 namespace Files {
 
 /** ***************************************************************************/
-class AbstractFileAction : public ActionNode
+class AbstractFileAction : public AlbertItem
 {
 public:
     AbstractFileAction(File *file) : _file(file) {}

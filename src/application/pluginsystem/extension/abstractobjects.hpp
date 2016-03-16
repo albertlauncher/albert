@@ -28,32 +28,12 @@ using std::vector;
  * @brief The AbstractItem
  * Displayable base class for all albert items.
  */
-class ActionItem {
+class Action{
 public:
-    virtual ~ActionItem() {}
-
-    /**
-     * @brief Access to the data to display.
-     *
-     * Used to supply item data to views and delegates. Generally, models only
-     * need to supply data for Qt::DisplayRole and any application-specific
-     * user roles, but it is also good practice to provide data for
-     * Qt::ToolTipRole, Qt::AccessibleTextRole, and
-     * Qt::AccessibleDescriptionRole. See the Qt::ItemDataRole enum
-     * documentation for information about the types associated with each role.
-     * http://doc.qt.io/qt-5/qt.html#ItemDataRole-enum
-     *
-     * @param role The types of requested data
-     * @return The requested data
-     */
+    virtual ~Action() {}
+    virtual QIcon icon() const = 0;
     virtual QString text() const = 0;
     virtual QString subtext() const = 0;
-    virtual QIcon icon() const = 0;
-
-    /**
-     * @brief Exectute the Action.
-     * Reimplement this if you want your item to do some actions on activation
-     */
     virtual void activate() = 0;
 };
 
@@ -65,22 +45,15 @@ public:
  * let your items be visible in the proposal list. Subclass this item to your
  * liking and add it to the query if you think it matches the query context.
  */
-class ActionNode : public ActionItem {
+class AlbertItem : public Action {
 public:
-    virtual ~ActionNode() {}
+    virtual std::vector<QString> aliases() const {return {text()};}
+    virtual uint16_t usageCount() const {return 0;}
+    virtual uint8_t importance() const {return 0;}
 
-    /**
-     * @brief Component accessor
-     * Return the i-th compontent. Currently albert supports only two layers in
-     * the view. The toplevel items and their children, the actions.
-     * @return The i-th component.
-     */
-
-    virtual bool hasChildren() const {
-        return false;
-    }
-
-    virtual vector<shared_ptr<ActionNode>> children() {
-        return vector<shared_ptr<ActionNode>>();
-    }
+    virtual ~AlbertItem() {}
+    virtual bool hasActions() const {return false;}
+    virtual vector<shared_ptr<Action>> actions() {return vector<shared_ptr<Action>>();}
+    virtual bool hasChildren() const {return false;}
+    virtual vector<shared_ptr<AlbertItem>> children() {return vector<shared_ptr<AlbertItem>>();}
 };
