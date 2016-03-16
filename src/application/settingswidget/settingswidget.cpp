@@ -52,27 +52,27 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
     connect(ui.grabKeyButton_hotkey, &GrabKeyButton::keyCombinationPressed,
             this, &SettingsWidget::changeHotkey);
 
-
     // ALWAYS CENTER
-    ui.checkBox_center->setChecked(mainWidget->showCenterd());
-    connect(ui.checkBox_center, &QCheckBox::toggled, mainWidget,
-            &MainWidget::setShowCentered);
+    ui.checkBox_center->setChecked(mainWidget_->showCentered());
+    connect(ui.checkBox_center, &QCheckBox::toggled,
+            mainWidget_, &MainWidget::setShowCentered);
+
+    // ALWAYS ON TOP
+    ui.checkBox_onTop->setChecked(mainWidget->windowFlags().testFlag(Qt::WindowStaysOnTopHint));
+    connect(ui.checkBox_onTop, &QCheckBox::toggled, [this](bool b){
+        mainWidget_->setWindowFlags(b ? mainWidget_->windowFlags() | Qt::WindowStaysOnTopHint
+                                      : mainWidget_->windowFlags() &~ Qt::WindowStaysOnTopHint);
+    });
+
+    // HIDE ON FOCUS OUT
+    ui.checkBox_hideOnFocusOut->setChecked(mainWidget_->hideOnFocusLoss());
+    connect(ui.checkBox_hideOnFocusOut, &QCheckBox::toggled,
+            mainWidget_, &MainWidget::setHideOnFocusLoss);
 
     // MAX PROPOSALS
     ui.spinBox_proposals->setValue(mainWidget->ui.proposalList->maxItems());
     connect(ui.spinBox_proposals, (void (QSpinBox::*)(int))&QSpinBox::valueChanged,
             mainWidget->ui.proposalList, &ProposalList::setMaxItems);
-
-    // INFO BELOW ITEM
-    ui.checkBox_showInfo->setChecked(mainWidget->ui.proposalList->showInfo());
-    connect(ui.checkBox_showInfo, &QCheckBox::toggled,
-            mainWidget->ui.proposalList, &ProposalList::setShowInfo);
-
-    // INFO FOR UNSELECTED
-    ui.checkBox_selectedOnly->setChecked(mainWidget->ui.proposalList->selectedOnly());
-    connect(ui.checkBox_selectedOnly, &QCheckBox::toggled,
-            mainWidget->ui.proposalList, &ProposalList::setSelectedOnly);
-
 
     // THEMES
     QFileInfoList themes;
@@ -110,6 +110,12 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
      * ABOUT TAB
      */
     ui.about_text->setText(QString(ui.about_text->text()).replace("___versionstring___", qApp->applicationVersion()));
+
+    QDesktopWidget *dw = QApplication::desktop();
+    move(dw->availableGeometry(dw->screenNumber(QCursor::pos())).center()
+                -QPoint(width()/2,height()/2));
+    raise();
+    activateWindow();
 }
 
 

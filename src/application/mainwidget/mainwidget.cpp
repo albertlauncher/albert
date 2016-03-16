@@ -25,6 +25,13 @@
 #include <QAbstractItemModel>
 #include "mainwidget.h"
 
+const QString MainWidget::CFG_WND_POS  = "windowPosition";
+const QString MainWidget::CFG_CENTERED = "showCentered";
+const bool    MainWidget::DEF_CENTERED = true;
+const QString MainWidget::CFG_THEME = "theme";
+const QString MainWidget::DEF_THEME = "Standard";
+const QString MainWidget::CFG_HIDE_ON_FOCUS_LOSS = "hideOnFocusLoss";
+const bool    MainWidget::DEF_HIDE_ON_FOCUS_LOSS = true;
 
 /** ***************************************************************************/
 MainWidget::MainWidget(QWidget *parent)
@@ -67,8 +74,8 @@ MainWidget::MainWidget(QWidget *parent)
 
     // Settings
     QSettings s;
-    _showCentered = s.value(CFG_CENTERED, CFG_CENTERED_DEF).toBool();
-    _theme = s.value(CFG_THEME, CFG_THEME_DEF).toString();
+    _showCentered = s.value(CFG_CENTERED, DEF_CENTERED).toBool();
+    _theme = s.value(CFG_THEME, DEF_THEME).toString();
     if (!setTheme(_theme)) {
         qFatal("FATAL: Stylefile not found: %s", _theme.toStdString().c_str());
         exit(EXIT_FAILURE);
@@ -142,7 +149,7 @@ void MainWidget::setShowCentered(bool b) {
 
 
 /** ***************************************************************************/
-bool MainWidget::showCenterd() const {
+bool MainWidget::showCentered() const {
     return _showCentered;
 }
 
@@ -177,6 +184,20 @@ bool MainWidget::setTheme(const QString &theme) {
         }
     }
     return success;
+}
+
+
+
+/** ***************************************************************************/
+bool MainWidget::hideOnFocusLoss() const {
+    return _hideOnFocusLoss;
+}
+
+
+
+/** ***************************************************************************/
+void MainWidget::setHideOnFocusLoss(bool b) {
+    _hideOnFocusLoss = b;
 }
 
 
@@ -237,7 +258,8 @@ bool MainWidget::nativeEvent(const QByteArray &eventType, void *message, long *)
 //			}
 //			std::cout << std::endl;
             if (((fe->mode==XCB_NOTIFY_MODE_GRAB && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR)
-                    || (fe->mode==XCB_NOTIFY_MODE_NORMAL && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR )))
+                    || (fe->mode==XCB_NOTIFY_MODE_NORMAL && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR ))
+                    && _hideOnFocusLoss)
 //					&& !_settingsDialog->isVisible())
                 hide();
             break;
