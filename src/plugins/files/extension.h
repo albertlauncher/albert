@@ -57,74 +57,74 @@ public:
     void updateIndex();
 
     // Properties
-    inline bool indexAudio() { return _indexAudio; }
-    inline void setIndexAudio(bool b = true)  { _indexAudio = b; }
+    inline bool indexAudio() { return indexAudio_; }
+    inline void setIndexAudio(bool b = true)  { indexAudio_ = b; }
 
-    inline bool indexVideo() { return _indexVideo; }
-    inline void setIndexVideo(bool b = true)  { _indexVideo = b; }
+    inline bool indexVideo() { return indexVideo_; }
+    inline void setIndexVideo(bool b = true)  { indexVideo_ = b; }
 
-    inline void setIndexImage(bool b = true)  { _indexImage = b; }
-    inline bool indexImage() { return _indexImage; }
+    inline void setIndexImage(bool b = true)  { indexImage_ = b; }
+    inline bool indexImage() { return indexImage_; }
 
-    inline bool indexDocs() { return _indexDocs; }
-    inline void setIndexDocs(bool b = true)  { _indexDocs = b; }
+    inline bool indexDocs() { return indexDocs_; }
+    inline void setIndexDocs(bool b = true)  { indexDocs_ = b; }
 
-    inline bool indexDirs() { return _indexDirs; }
-    inline void setIndexDirs(bool b = true)  { _indexDirs = b; }
+    inline bool indexDirs() { return indexDirs_; }
+    inline void setIndexDirs(bool b = true)  { indexDirs_ = b; }
 
-    inline bool indexHidden() { return _indexHidden; }
-    inline void setIndexHidden(bool b = true)  { _indexHidden = b; }
+    inline bool indexHidden() { return indexHidden_; }
+    inline void setIndexHidden(bool b = true)  { indexHidden_ = b; }
 
-    inline bool followSymlinks() { return _followSymlinks; }
-    inline void setFollowSymlinks(bool b = true)  { _followSymlinks = b; }
+    inline bool followSymlinks() { return followSymlinks_; }
+    inline void setFollowSymlinks(bool b = true)  { followSymlinks_ = b; }
 
-    inline unsigned int scanInterval() { return _scanInterval; }
+    inline unsigned int scanInterval() { return scanInterval_; }
     void setScanInterval(uint minutes);
 
     bool fuzzy();
     void setFuzzy(bool b = true);
 
 private:
-    QPointer<ConfigWidget> _widget;
-    std::vector<shared_ptr<File>> _fileIndex;
-    Search _searchIndex;
-    QMutex _indexAccess;
-    QPointer<Indexer> _indexer;
-    QTimer _minuteTimer;
-    unsigned int _minuteCounter;
+    QPointer<ConfigWidget> widget_;
+    std::vector<shared_ptr<File>> fileIndex_;
+    Search searchIndex_;
+    QMutex indexAccess_;
+    QPointer<Indexer> indexer_;
+    QTimer minuteTimer_;
+    unsigned int minuteCounter_;
 
     // Index Properties
-    QStringList _rootDirs;
-    bool _indexAudio;
-    bool _indexVideo;
-    bool _indexImage;
-    bool _indexDocs;
-    bool _indexDirs;
-    bool _indexHidden;
-    bool _followSymlinks;
-    unsigned int _scanInterval;
+    QStringList rootDirs_;
+    bool indexAudio_;
+    bool indexVideo_;
+    bool indexImage_;
+    bool indexDocs_;
+    bool indexDirs_;
+    bool indexHidden_;
+    bool followSymlinks_;
+    unsigned int scanInterval_;
 
     /* const */
     static const QString EXT_NAME;
     static const QString CFG_PATHS;
     static const QString CFG_FUZZY;
-    static const bool    CFG_FUZZY_DEF;
+    static const bool    DEF_FUZZY;
     static const QString CFG_INDEX_AUDIO;
-    static const bool    CFG_INDEX_AUDIO_DEF;
+    static const bool    DEF_INDEX_AUDIO;
     static const QString CFG_INDEX_VIDEO;
-    static const bool    CFG_INDEX_VIDEO_DEF;
+    static const bool    DEF_INDEX_VIDEO;
     static const QString CFG_INDEX_IMAGE;
-    static const bool    CFG_INDEX_IMAGE_DEF;
+    static const bool    DEF_INDEX_IMAGE;
     static const QString CFG_INDEX_DOC;
-    static const bool    CFG_INDEX_DOC_DEF;
+    static const bool    DEF_INDEX_DOC;
     static const QString CFG_INDEX_DIR;
-    static const bool    CFG_INDEX_DIR_DEF;
+    static const bool    DEF_INDEX_DIR;
     static const QString CFG_INDEX_HIDDEN;
-    static const bool    CFG_INDEX_HIDDEN_DEF;
+    static const bool    DEF_INDEX_HIDDEN;
     static const QString CFG_FOLLOW_SYMLINKS;
-    static const bool    CFG_FOLLOW_SYMLINKS_DEF;
+    static const bool    DEF_FOLLOW_SYMLINKS;
     static const QString CFG_SCAN_INTERVAL;
-    static const uint    CFG_SCAN_INTERVAL_DEF;
+    static const uint    DEF_SCAN_INTERVAL;
     static const QString IGNOREFILE;
 
 signals:

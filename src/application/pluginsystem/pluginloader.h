@@ -48,5 +48,5 @@ public:
     QString dependencies() const;
 
 private:
-    Status _status;
+    Status status_;
 };

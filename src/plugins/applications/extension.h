@@ -61,22 +61,22 @@ public:
     void setFuzzy(bool b = true);
 
 private:
-    QPointer<ConfigWidget> _widget;
-    std::vector<shared_ptr<Application>> _appIndex;
-    Search _searchIndex;
-    QMutex _indexAccess;
-    QPointer<Indexer> _indexer;
-    QFileSystemWatcher _watcher;
-    QTimer _updateDelayTimer;
-    QStringList _rootDirs;
+    QPointer<ConfigWidget> widget_;
+    std::vector<shared_ptr<Application>> index_;
+    Search searchIndex_;
+    QMutex indexAccess_;
+    QPointer<Indexer> indexer_;
+    QFileSystemWatcher watcher_;
+    QTimer updateDelayTimer_;
+    QStringList rootDirs_;
 
     /* const */
     static const QString EXT_NAME;
     static const QString CFG_PATHS;
     static const QString CFG_FUZZY;
-    static const bool    CFG_FUZZY_DEF;
+    static const bool    DEF_FUZZY;
     static const QString CFG_TERM;
-    static const QString CFG_TERM_DEF;
+    static const QString DEF_TERM;
     static const bool    UPDATE_DELAY;
 
 signals:

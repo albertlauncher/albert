@@ -249,10 +249,6 @@ HotkeyManager::HotkeyManagerPrivate::~HotkeyManagerPrivate() {
 
 /** ***************************************************************************/
 bool HotkeyManager::HotkeyManagerPrivate::registerNativeHotkey(quint32 hotkey) {
-//    QList<int> keysX;
-//    unsigned int modsX;
-//    qtKeyToNatives(hk, &keysX, &modsX);
-
     QSet<quint32> keysX = nativeKeycodes(hotkey & ~Qt::KeyboardModifierMask);
     quint32       modsX = nativeModifiers(hotkey &  Qt::KeyboardModifierMask);
     if (keysX.isEmpty()) return false;

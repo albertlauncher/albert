@@ -30,11 +30,11 @@ namespace Files {
 class AbstractFileAction : public AlbertItem
 {
 public:
-    AbstractFileAction(File *file) : _file(file) {}
-    QString subtext() const override { return _file->path(); }
+    AbstractFileAction(File *file) : file_(file) {}
+    QString subtext() const override { return file_->path(); }
 
 protected:
-    File *_file;
+    File *file_;
 };
 
 
@@ -50,13 +50,13 @@ public:
     }
 
     QIcon icon() const override {
-        return _file->icon();
+        return file_->icon();
     }
 
     void activate() override {
         qApp->hideWidget();
-        QDesktopServices::openUrl(QUrl::fromLocalFile(_file->path()));
-        _file->incUsage();
+        QDesktopServices::openUrl(QUrl::fromLocalFile(file_->path()));
+        file_->incUsage();
     }
 };
 
@@ -78,8 +78,8 @@ public:
 
     void activate() override {
         qApp->hideWidget();
-        QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(_file->path()).path()));
-        _file->incUsage();
+        QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file_->path()).path()));
+        file_->incUsage();
     }
 };
 
@@ -114,19 +114,19 @@ public:
             newMimeData->setData(f, oldMimeData->data(f));
 
         // Copy path of file
-        newMimeData->setText(_file->path());
+        newMimeData->setText(file_->path());
 
         // Copy file
-        newMimeData->setUrls({QUrl::fromLocalFile(_file->path())});
+        newMimeData->setUrls({QUrl::fromLocalFile(file_->path())});
 
         // Copy file (f*** you gnome)
-        QByteArray gnomeFormat = QByteArray("copy\n").append(QUrl::fromLocalFile(_file->path()).toEncoded());
+        QByteArray gnomeFormat = QByteArray("copy\n").append(QUrl::fromLocalFile(file_->path()).toEncoded());
         newMimeData->setData("x-special/gnome-copied-files", gnomeFormat);
 
         // Set the mimedata
         cb->setMimeData(newMimeData);
 
-        _file->incUsage();
+        file_->incUsage();
     }
 };
 
@@ -148,8 +148,8 @@ public:
 
     void activate() override {
         qApp->hideWidget();
-        QApplication::clipboard()->setText(_file->path());
-        _file->incUsage();
+        QApplication::clipboard()->setText(file_->path());
+        file_->incUsage();
     }
 };
 

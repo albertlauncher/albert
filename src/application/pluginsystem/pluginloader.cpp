@@ -19,7 +19,7 @@
 
 /** ***************************************************************************/
 PluginSpec::PluginSpec(QString path) : QPluginLoader(path) {
-    _status = Status::NotLoaded;
+    status_ = Status::NotLoaded;
 }
 
 
@@ -39,10 +39,10 @@ QObject *PluginSpec::instance() {
 /** ***************************************************************************/
 void PluginSpec::load() {
     if (QPluginLoader::load())
-        _status = Status::Loaded;
+        status_ = Status::Loaded;
     else {
         qWarning() << "Loading extension failed:" << fileName() << errorString();
-        _status = Status::Error;
+        status_ = Status::Error;
     }
 }
 
@@ -51,7 +51,7 @@ void PluginSpec::load() {
 /** ***************************************************************************/
 void PluginSpec::unload() {
     if (QPluginLoader::unload())
-        _status = Status::NotLoaded;
+        status_ = Status::NotLoaded;
     else
         qWarning() << "Unloading extension failed:" << fileName() << errorString();
 }
@@ -60,7 +60,7 @@ void PluginSpec::unload() {
 
 /** ***************************************************************************/
 PluginSpec::Status PluginSpec::status() const {
-    return _status;
+    return status_;
 }
 
 

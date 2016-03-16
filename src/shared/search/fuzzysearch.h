@@ -29,18 +29,18 @@ class FuzzySearch final : public PrefixSearch {
 public:
 
     /** ***********************************************************************/
-    explicit FuzzySearch(unsigned int q = 3, double d = 2) : _q(q), _delta(d) {
+    explicit FuzzySearch(unsigned int q = 3, double d = 2) : q_(q), delta_(d) {
     }
 
 
 
     /** ***********************************************************************/
-    explicit FuzzySearch(const PrefixSearch& rhs, unsigned int q = 3, double d = 2) : PrefixSearch(rhs), _q(q), _delta(d) {
+    explicit FuzzySearch(const PrefixSearch& rhs, unsigned int q = 3, double d = 2) : PrefixSearch(rhs), q_(q), delta_(d) {
         // Iterate over the inverted index and build the qGramindex
-        for (typename PrefixSearch::InvertedIndex::const_iterator it = this->_invertedIndex.cbegin(); it != this->_invertedIndex.cend(); ++it) {
-            QString spaced = QString(_q-1,' ').append(it->first);
+        for (typename PrefixSearch::InvertedIndex::const_iterator it = this->invertedIndex_.cbegin(); it != this->invertedIndex_.cend(); ++it) {
+            QString spaced = QString(q_-1,' ').append(it->first);
             for (unsigned int i = 0 ; i < static_cast<unsigned int>(it->first.size()); ++i)
-                ++_qGramIndex[spaced.mid(i,_q)][it->first];
+                ++qGramIndex_[spaced.mid(i,q_)][it->first];
         }
     }
 
@@ -64,12 +64,12 @@ public:
                 w=w.toLower();
 
                 // Add word to inverted index (map word to item)
-                this->_invertedIndex[w].insert(idxble);
+                this->invertedIndex_[w].insert(idxble);
 
                 // Build a qGram index (map substring to word)
-                QString spaced = QString(_q-1,' ').append(w);
+                QString spaced = QString(q_-1,' ').append(w);
                 for (unsigned int i = 0 ; i < static_cast<unsigned int>(w.size()); ++i)
-                    ++_qGramIndex[spaced.mid(i,_q)][w]; //FIXME Currently occurences are not uses
+                    ++qGramIndex_[spaced.mid(i,q_)][w]; //FIXME Currently occurences are not uses
             }
         }
     }
@@ -77,8 +77,8 @@ public:
 
     /** ***********************************************************************/
     void clear() override {
-        this->_invertedIndex.clear();
-        _qGramIndex.clear();
+        this->invertedIndex_.clear();
+        qGramIndex_.clear();
     }
 
 
@@ -96,14 +96,14 @@ public:
 
         // Split the query into words
         for (QString &word : words) {
-            unsigned int delta = static_cast<unsigned int>((_delta < 1)? word.size()/_delta : _delta);
+            unsigned int delta = static_cast<unsigned int>((delta_ < 1)? word.size()/delta_ : delta_);
 
             // Generate the qGrams of this word
             map<QString, unsigned int> qGrams;
-            QString spaced(_q-1,' ');
+            QString spaced(q_-1,' ');
             spaced.append(word.toLower());
             for (unsigned int i = 0 ; i < static_cast<unsigned int>(word.size()); ++i)
-                ++qGrams[spaced.mid(i,_q)];
+                ++qGrams[spaced.mid(i,q_)];
 
             // Get the words referenced by each qGram an increment their
             // reference counter
@@ -112,12 +112,12 @@ public:
             for (map<QString, unsigned int>::const_iterator it = qGrams.cbegin(); it != qGrams.end(); ++it) {
 
                 // Check for existance (std::map::at throws)
-                if (_qGramIndex.count(it->first) == 0)
+                if (qGramIndex_.count(it->first) == 0)
                     continue;
 
                 // Iterate over the set of words referenced by this qGram
-                for (map<QString, unsigned int>::const_iterator wit = _qGramIndex.at(it->first).cbegin();
-                     wit != _qGramIndex.at(it->first).cend(); ++wit) {
+                for (map<QString, unsigned int>::const_iterator wit = qGramIndex_.at(it->first).cbegin();
+                     wit != qGramIndex_.at(it->first).cend(); ++wit) {
                     // CRUCIAL: The match can contain only the commom amount of qGrams
                     wordMatches[wit->first] += (it->second < wit->second) ? it->second : wit->second;
                 }
@@ -138,10 +138,10 @@ public:
                     continue;
 
                 // Check for existance (std::map::at throws)
-                if (_invertedIndex.count(wm->first) == 0)
+                if (invertedIndex_.count(wm->first) == 0)
                     continue;
 
-                for(const shared_ptr<IIndexable> &item : _invertedIndex.at(wm->first)) {
+                for(const shared_ptr<IIndexable> &item : invertedIndex_.at(wm->first)) {
                     resultsRef[item] += wm->second;
                 }
             }
@@ -206,8 +206,8 @@ public:
 
 
     /** ***********************************************************************/
-	inline double delta() const {return _delta;}
-	inline void setDelta(double d){_delta=d;}
+    inline double delta() const {return delta_;}
+    inline void setDelta(double d){delta_=d;}
 
 private:
     /** ***********************************************************************/
@@ -249,8 +249,8 @@ private:
     /** ***********************************************************************/
     // Map of qGrams, containing their word references and #occurences
     typedef map<QString, map<QString, unsigned int>> QGramIndex;
-	QGramIndex _qGramIndex;
+    QGramIndex qGramIndex_;
 
-    unsigned int _q; // Size of the slices
-    double _delta; // Maximum error
+    unsigned int q_; // Size of the slices
+    double delta_; // Maximum error
 };

@@ -30,7 +30,7 @@ const QString Websearch::Extension::EXT_NAME  = "websearch";
 ///**************************************************************************/
 //void Websearch::WebSearch::queryFallback(const QString &req, QVector<Service::Item *> *res) const
 //{
-//	for (Item *w : _searchEngines){
+//	for (Item *w : searchEngines_){
 //		w->_searchTerm = req;
 //		res->push_back(w);
 //	}

@@ -28,14 +28,14 @@ class Indexer final : public QObject, public QRunnable
     Q_OBJECT
 public:
     Indexer(Extension *ext)
-        : _extension(ext), _abort(false) {}
+        : extension_(ext), abort_(false) {}
     void run() override;
-    void abort(){_abort=true;}
+    void abort(){abort_=true;}
 
 private:
-    Extension *_extension;
-    QMimeDatabase _mimeDatabase;
-    bool _abort;
+    Extension *extension_;
+    QMimeDatabase mimeDatabase_;
+    bool abort_;
 
 signals:
     void statusInfo(const QString&);

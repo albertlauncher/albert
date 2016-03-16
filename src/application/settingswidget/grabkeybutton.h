@@ -28,8 +28,8 @@ public:
     ~GrabKeyButton();
 
 private:
-    bool _waitingForHotkey;
-    QString _oldText;
+    bool waitingForHotkey_;
+    QString oldText_;
 
     void grabAll();
     void releaseAll();

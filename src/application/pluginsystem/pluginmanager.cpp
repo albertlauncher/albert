@@ -20,6 +20,7 @@
 #include <QStandardPaths>
 #include <QSettings>
 
+const QString PluginManager::CFG_BLACKLIST = "blacklist";
 
 /** ***************************************************************************/
 PluginManager::PluginManager() {

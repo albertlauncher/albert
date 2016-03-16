@@ -36,10 +36,10 @@ void Files::Indexer::run() {
 
     // Prepare the iterator properties
     QDir::Filters filters = QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot;
-    if (_extension->_indexHidden)
+    if (extension_->indexHidden_)
         filters |= QDir::Hidden;
     QDirIterator::IteratorFlags flags;
-    if (_extension->_followSymlinks)
+    if (extension_->followSymlinks_)
         flags = QDirIterator::FollowSymlinks;
 
 
@@ -51,7 +51,7 @@ void Files::Indexer::run() {
     // Anonymous function that implemnents the index recursion
     std::function<void(const QFileInfo&)> indexRecursion =
             [this, &newIndex, &indexedDirs, &filters, &flags, &indexRecursion](const QFileInfo& fileInfo){
-        if (_abort) return;
+        if (abort_) return;
 
         QString canonicalPath = fileInfo.canonicalFilePath();
 
@@ -59,12 +59,12 @@ void Files::Indexer::run() {
         if (fileInfo.isFile()) {
 
             // If the file matches the index options, index it
-            QMimeType mimetype = _mimeDatabase.mimeTypeForFile(canonicalPath);
+            QMimeType mimetype = mimeDatabase_.mimeTypeForFile(canonicalPath);
             QString mimeName = mimetype.name();
-            if ((_extension->_indexAudio && mimeName.startsWith("audio"))
-                    ||(_extension->_indexVideo && mimeName.startsWith("video"))
-                    ||(_extension->_indexImage && mimeName.startsWith("image"))
-                    ||(_extension->_indexDocs &&
+            if ((extension_->indexAudio_ && mimeName.startsWith("audio"))
+                    ||(extension_->indexVideo_ && mimeName.startsWith("video"))
+                    ||(extension_->indexImage_ && mimeName.startsWith("image"))
+                    ||(extension_->indexDocs_ &&
                        (mimeName.startsWith("application") || mimeName.startsWith("text")))) {
                 newIndex.push_back(std::make_shared<File>(canonicalPath, mimetype));
             }
@@ -78,17 +78,17 @@ void Files::Indexer::run() {
             }
 
             // If the dir matches the index options, index it
-            if (_extension->_indexDirs) {
-                QMimeType mimetype = _mimeDatabase.mimeTypeForFile(canonicalPath);
+            if (extension_->indexDirs_) {
+                QMimeType mimetype = mimeDatabase_.mimeTypeForFile(canonicalPath);
                 newIndex.push_back(std::make_shared<File>(canonicalPath, mimetype));
             }
 
             // Ignore ignorefile by default
             std::vector<QRegExp> ignores;
-            ignores.push_back(QRegExp(_extension->IGNOREFILE, Qt::CaseSensitive, QRegExp::Wildcard));
+            ignores.push_back(QRegExp(extension_->IGNOREFILE, Qt::CaseSensitive, QRegExp::Wildcard));
 
             // Read the ignore file, see http://doc.qt.io/qt-5/qregexp.html#wildcard-matching
-            QFile file(QDir(canonicalPath).filePath(_extension->IGNOREFILE));
+            QFile file(QDir(canonicalPath).filePath(extension_->IGNOREFILE));
             if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
                 QTextStream in(&file);
                 while (!in.atEnd())
@@ -120,9 +120,9 @@ void Files::Indexer::run() {
 
 
     // Start the indexing
-    for (const QString& rootDir : _extension->_rootDirs) {
+    for (const QString& rootDir : extension_->rootDirs_) {
         indexRecursion(QFileInfo(rootDir));
-        if (_abort) return;
+        if (abort_) return;
     }
 
 
@@ -136,11 +136,11 @@ void Files::Indexer::run() {
     // Copy the usagecounters  [O(n)]
     emit statusInfo("Copy usage statistics ... ");
     size_t i=0, j=0;
-    while (i < _extension->_fileIndex.size() && j < newIndex.size()) {
-        if (_extension->_fileIndex[i]->path_ == newIndex[j]->path_) {
-            newIndex[j]->usage_ = _extension->_fileIndex[i]->usage_;
+    while (i < extension_->fileIndex_.size() && j < newIndex.size()) {
+        if (extension_->fileIndex_[i]->path_ == newIndex[j]->path_) {
+            newIndex[j]->usage_ = extension_->fileIndex_[i]->usage_;
             ++i;++j;
-        } else if (_extension->_fileIndex[i]->path_ < newIndex[j]->path_) {
+        } else if (extension_->fileIndex_[i]->path_ < newIndex[j]->path_) {
             ++i;
         } else {// if ((*_fileIndex)[i]->path > (*newIndex)[j]->path) {
             ++j;
@@ -152,21 +152,21 @@ void Files::Indexer::run() {
      */
 
     // Lock the access
-    _extension->_indexAccess.lock();
+    extension_->indexAccess_.lock();
 
     // Set the new index
-    _extension->_fileIndex = std::move(newIndex);
+    extension_->fileIndex_ = std::move(newIndex);
 
     // Reset the offline index
     emit statusInfo("Build offline index... ");
-    _extension->_searchIndex.clear();
+    extension_->searchIndex_.clear();
 
     // Build the new offline index
-    for (shared_ptr<File> i : _extension->_fileIndex)
-        _extension->_searchIndex.add(i);
+    for (shared_ptr<File> i : extension_->fileIndex_)
+        extension_->searchIndex_.add(i);
 
     // Unlock the accress
-    _extension->_indexAccess.unlock();
+    extension_->indexAccess_.unlock();
 
     /*
      *  ▲ CRITICAL ▲
@@ -174,7 +174,7 @@ void Files::Indexer::run() {
 
 
     // Notification
-    msg = QString("Indexed %1 files.").arg(_extension->_fileIndex.size());
+    msg = QString("Indexed %1 files.").arg(extension_->fileIndex_.size());
     emit statusInfo(msg);
     qDebug() << "[Files]" << msg;
 }

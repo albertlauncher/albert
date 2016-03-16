@@ -38,7 +38,7 @@ public:
 
     /** ***********************************************************************/
     PrefixSearch(const PrefixSearch &rhs) {
-        _invertedIndex = rhs._invertedIndex;
+        invertedIndex_ = rhs.invertedIndex_;
     }
 
 
@@ -55,7 +55,7 @@ public:
             // Build an inverted index
             QStringList words = str.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
             for (QString &w : words) {
-                _invertedIndex[w.toLower()].insert(idxble);
+                invertedIndex_[w.toLower()].insert(idxble);
             }
         }
     }
@@ -64,7 +64,7 @@ public:
 
     /** ***********************************************************************/
     void clear() override {
-        _invertedIndex.clear();
+        invertedIndex_.clear();
     }
 
 
@@ -87,8 +87,8 @@ public:
         QString word = wordIterator++->toLower();
 
         // Get a word mapping once before goint to handle intersections
-        for (InvertedIndex::const_iterator lb = _invertedIndex.lower_bound(word);
-             lb != _invertedIndex.cend() && lb->first.startsWith(word); ++lb)
+        for (InvertedIndex::const_iterator lb = invertedIndex_.lower_bound(word);
+             lb != invertedIndex_.cend() && lb->first.startsWith(word); ++lb)
             resultsSet.insert(lb->second.begin(), lb->second.end());
 
 
@@ -100,8 +100,8 @@ public:
             // Unite the sets that are mapped by words that begin with word
             // w ∈ W. This set is called U_w
             set<shared_ptr<IIndexable>> wordMappingsUnion;
-            for (InvertedIndex::const_iterator lb = _invertedIndex.lower_bound(word);
-                 lb != _invertedIndex.cend() && lb->first.startsWith(word); ++lb)
+            for (InvertedIndex::const_iterator lb = invertedIndex_.lower_bound(word);
+                 lb != invertedIndex_.cend() && lb->first.startsWith(word); ++lb)
                 wordMappingsUnion.insert(lb->second.begin(), lb->second.end());
 
 
@@ -120,7 +120,7 @@ public:
 
 protected:
     typedef map<QString, set<shared_ptr<IIndexable>>> InvertedIndex;
-    InvertedIndex _invertedIndex;
+    InvertedIndex invertedIndex_;
 };
 
 

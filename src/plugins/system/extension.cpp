@@ -24,17 +24,17 @@
 #include "albertapp.h"
 
 
-const QString System::Extension::EXT_NAME          = "system";
-const QString System::Extension::CFG_POWEROFF      = "poweroff";
-const QString System::Extension::CFG_POWEROFF_DEF  = "systemctl poweroff -i";
-const QString System::Extension::CFG_REBOOT        = "reboot";
-const QString System::Extension::CFG_REBOOT_DEF    = "systemctl reboot -i";
-const QString System::Extension::CFG_SUSPEND       = "suspend";
-const QString System::Extension::CFG_SUSPEND_DEF   = "systemctl suspend -i";
-const QString System::Extension::CFG_HIBERNATE     = "hibernate";
-const QString System::Extension::CFG_HIBERNATE_DEF = "systemctl hibernate -i";
-const QString System::Extension::CFG_LOCK          = "lock";
-const QString System::Extension::CFG_LOCK_DEF      = "cinnamon-screensaver-command -l";
+const QString System::Extension::EXT_NAME      = "system";
+const QString System::Extension::CFG_POWEROFF  = "poweroff";
+const QString System::Extension::DEF_POWEROFF  = "systemctl poweroff -i";
+const QString System::Extension::CFG_REBOOT    = "reboot";
+const QString System::Extension::DEF_REBOOT    = "systemctl reboot -i";
+const QString System::Extension::CFG_SUSPEND   = "suspend";
+const QString System::Extension::DEF_SUSPEND   = "systemctl suspend -i";
+const QString System::Extension::CFG_HIBERNATE = "hibernate";
+const QString System::Extension::DEF_HIBERNATE = "systemctl hibernate -i";
+const QString System::Extension::CFG_LOCK      = "lock";
+const QString System::Extension::DEF_LOCK      = "cinnamon-screensaver-command -l";
 
 
 /** ***************************************************************************/
@@ -50,31 +50,31 @@ System::Extension::Extension() {
                         "Poweroff",
                         "Poweroff the machine.",
                         QIcon::hasThemeIcon("system-shutdown") ? QIcon::fromTheme("system-shutdown") : QIcon(":poweroff"),
-                        s.value(CFG_POWEROFF, CFG_POWEROFF_DEF).toString()});
+                        s.value(CFG_POWEROFF, DEF_POWEROFF).toString()});
 
     actions_.push_back({CFG_REBOOT,
                         "Reboot",
                         "Reboot the machine.",
                         QIcon::hasThemeIcon("system-reboot") ? QIcon::fromTheme("system-reboot") : QIcon(":reboot"),
-                        s.value(CFG_REBOOT, CFG_REBOOT_DEF).toString()});
+                        s.value(CFG_REBOOT, DEF_REBOOT).toString()});
 
     actions_.push_back({CFG_SUSPEND,
                         "Suspend",
                         "Suspend the machine.",
                         QIcon::hasThemeIcon("system-suspend") ? QIcon::fromTheme("system-suspend") : QIcon(":suspend"),
-                        s.value(CFG_SUSPEND, CFG_SUSPEND_DEF).toString()});
+                        s.value(CFG_SUSPEND, DEF_SUSPEND).toString()});
 
     actions_.push_back({CFG_HIBERNATE,
                         "Hiberate",
                         "Hiberate the machine.",
                         QIcon::hasThemeIcon("system-suspend-hibernate") ? QIcon::fromTheme("system-suspend-hibernate") : QIcon(":hibernate"),
-                        s.value(CFG_HIBERNATE, CFG_HIBERNATE_DEF).toString()});
+                        s.value(CFG_HIBERNATE, DEF_HIBERNATE).toString()});
 
     actions_.push_back({CFG_LOCK,
                         "Lock",
                         "Lock the session.",
                         QIcon::hasThemeIcon("system-lock") ? QIcon::fromTheme("system-lock") : QIcon(":lock"),
-                        s.value(CFG_LOCK, CFG_LOCK_DEF).toString()});
+                        s.value(CFG_LOCK, DEF_LOCK).toString()});
 
     qDebug() << "[Template] Extension initialized";
 }

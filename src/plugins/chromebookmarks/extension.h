@@ -60,19 +60,19 @@ public:
     void setFuzzy(bool b = true);
 
 private:
-    QPointer<ConfigWidget> _widget;
-    vector<shared_ptr<Bookmark>> _index;
-    Search _searchIndex;
-    QMutex _indexAccess;
-    QPointer<Indexer> _indexer;
-    QString _bookmarksFile;
-    QFileSystemWatcher _watcher;
+    QPointer<ConfigWidget> widget_;
+    vector<shared_ptr<Bookmark>> index_;
+    Search searchIndex_;
+    QMutex indexAccess_;
+    QPointer<Indexer> indexer_;
+    QString bookmarksFile_;
+    QFileSystemWatcher watcher_;
 
     /* const */
     static const QString EXT_NAME;
     static const QString CFG_BOOKMARKS;
     static const QString CFG_FUZZY;
-    static const bool    CFG_FUZZY_DEF;
+    static const bool    DEF_FUZZY;
 
 signals:
     void pathChanged(const QString&);

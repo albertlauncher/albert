@@ -31,21 +31,21 @@ QString Applications::Application::terminal;
 
 /** ***************************************************************************/
 QString Applications::Application::text() const {
-    return _name;
+    return name_;
 }
 
 
 
 /** ***************************************************************************/
 QString Applications::Application::subtext() const {
-    return (_altName.isNull()) ? _exec : _altName;
+    return (altName_.isNull()) ? exec_ : altName_;
 }
 
 
 
 /** ***************************************************************************/
 QIcon Applications::Application::icon() const {
-    return _icon;
+    return icon_;
 }
 
 
@@ -58,14 +58,14 @@ void Applications::Application::activate() {
 
     // General escape rule has been applied on parse time
     // Apply exec escape rule
-    QStringList arguments = execValueEscape( (_term) ? terminal.arg(quoteString(_exec)) : _exec);
+    QStringList arguments = execValueEscape( (term_) ? terminal.arg(quoteString(exec_)) : exec_);
     QString program = arguments.takeFirst();
 
     // TODO: Apply code fiels expansion (currently done at parese time)
 
     // Run the application
     QProcess::startDetached(program, arguments);
-    ++_usage;
+    ++usage_;
 }
 
 
@@ -80,14 +80,14 @@ bool Applications::Application::hasChildren() const {
 
 /** ***************************************************************************/
 vector<shared_ptr<AlbertItem> > Applications::Application::children() {
-    return _actions;
+    return actions_;
 }
 
 
 
 /** ***************************************************************************/
 std::vector<QString> Applications::Application::aliases() const {
-    return std::vector<QString>({_name, _altName, _exec.section(" ",0,0)});
+    return std::vector<QString>({name_, altName_, exec_.section(" ",0,0)});
 }
 
 
@@ -98,7 +98,7 @@ bool Applications::Application::readDesktopEntry() {
     map<QString,map<QString,QString>> values;
 
     // Read the file
-    QFile desktopFile(_path);
+    QFile desktopFile(path_);
     if (desktopFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
         QTextStream stream(&desktopFile);
         QString key;
@@ -132,11 +132,11 @@ bool Applications::Application::readDesktopEntry() {
     QString locale = QLocale().name();
     QString shortLocale = locale.left(2);
     if (values["Desktop Entry"].count(QString("Name[%1]").arg(locale)))
-        _name = escapeString(values["Desktop Entry"][QString("Name[%1]").arg(locale)]);
+        name_ = escapeString(values["Desktop Entry"][QString("Name[%1]").arg(locale)]);
     else if (values["Desktop Entry"].count(QString("Name[%1]").arg(shortLocale)))
-        _name = escapeString(values["Desktop Entry"][QString("Name[%1]").arg(shortLocale)]);
+        name_ = escapeString(values["Desktop Entry"][QString("Name[%1]").arg(shortLocale)]);
     else if (values["Desktop Entry"].count("Name"))
-        _name = escapeString(values["Desktop Entry"]["Name"]);
+        name_ = escapeString(values["Desktop Entry"]["Name"]);
     else return false;
 
 
@@ -146,52 +146,52 @@ bool Applications::Application::readDesktopEntry() {
      * http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s06.html
      */
     if (values["Desktop Entry"].count("Exec"))
-        _exec = escapeString(values["Desktop Entry"]["Exec"]);
+        exec_ = escapeString(values["Desktop Entry"]["Exec"]);
     else return false;
 
-    _exec.replace("%f", ""); // Unhandled TODO
-    _exec.replace("%F", ""); // Unhandled TODO
-    _exec.replace("%u", ""); // Unhandled TODO
-    _exec.replace("%U", ""); // Unhandled TODO
-    _exec.replace("%d", ""); // Deprecated
-    _exec.replace("%D", ""); // Deprecated
-    _exec.replace("%n", ""); // Deprecated
-    _exec.replace("%N", ""); // Deprecated
+    exec_.replace("%f", ""); // Unhandled TODO
+    exec_.replace("%F", ""); // Unhandled TODO
+    exec_.replace("%u", ""); // Unhandled TODO
+    exec_.replace("%U", ""); // Unhandled TODO
+    exec_.replace("%d", ""); // Deprecated
+    exec_.replace("%D", ""); // Deprecated
+    exec_.replace("%n", ""); // Deprecated
+    exec_.replace("%N", ""); // Deprecated
     if (values["Desktop Entry"].count("Icon"))
-        _exec.replace("%i", QString("--icon %1").arg(values["Desktop Entry"]["Icon"]));
-    else _exec.replace("%i", "");
-    _exec.replace("%c", _name);
-    _exec.replace("%k", _path);
-    _exec.replace("%v", ""); // Deprecated
-    _exec.replace("%m", ""); // Deprecated
-    _exec.replace("%%", "%");
+        exec_.replace("%i", QString("--icon %1").arg(values["Desktop Entry"]["Icon"]));
+    else exec_.replace("%i", "");
+    exec_.replace("%c", name_);
+    exec_.replace("%k", path_);
+    exec_.replace("%v", ""); // Deprecated
+    exec_.replace("%m", ""); // Deprecated
+    exec_.replace("%%", "%");
 
     // Try to get the icon
     if (values["Desktop Entry"].count("Icon"))
-        _icon = getIcon(values["Desktop Entry"]["Icon"]);
+        icon_ = getIcon(values["Desktop Entry"]["Icon"]);
     else {
-        qWarning() << "No icon specified in " << _path;
-        _icon = QIcon::fromTheme("exec");
+        qWarning() << "No icon specified in " << path_;
+        icon_ = QIcon::fromTheme("exec");
     }
 
 
     // Try to get any [localized] secondary information comment
     if (values["Desktop Entry"].count(QString("Comment[%1]").arg(locale)))
-        _altName = values["Desktop Entry"][QString("Comment[%1]").arg(locale)];
+        altName_ = values["Desktop Entry"][QString("Comment[%1]").arg(locale)];
     else if (values["Desktop Entry"].count(QString("Comment[%1]").arg(shortLocale)))
-        _altName = values["Desktop Entry"][QString("Comment[%1]").arg(shortLocale)];
+        altName_ = values["Desktop Entry"][QString("Comment[%1]").arg(shortLocale)];
     else if (values["Desktop Entry"].count("Comment"))
-        _altName = values["Desktop Entry"]["Comment"];
+        altName_ = values["Desktop Entry"]["Comment"];
     else if (values["Desktop Entry"].count(QString("GenericName[%1]").arg(locale)))
-        _altName = values["Desktop Entry"][QString("GenericName[%1]").arg(locale)];
+        altName_ = values["Desktop Entry"][QString("GenericName[%1]").arg(locale)];
     else if (values["Desktop Entry"].count(QString("GenericName[%1]").arg(shortLocale)))
-        _altName = values["Desktop Entry"][QString("GenericName[%1]").arg(shortLocale)];
+        altName_ = values["Desktop Entry"][QString("GenericName[%1]").arg(shortLocale)];
     else if (values["Desktop Entry"].count("GenericName"))
-        _altName = values["Desktop Entry"]["GenericName"];
+        altName_ = values["Desktop Entry"]["GenericName"];
 
     // No additional actions for terminal apps
-    _term = values["Desktop Entry"]["Terminal"] == "true";
-    if(_term)
+    term_ = values["Desktop Entry"]["Terminal"] == "true";
+    if(term_)
         return true;
 
     // Root actions
@@ -201,10 +201,10 @@ bool Applications::Application::readDesktopEntry() {
         p.start("which", {s});
         p.waitForFinished(-1);
         if (p.exitCode() == 0)
-            _actions.push_back(std::make_shared<DesktopAction>(this,
-                                                               QString("Run %1 as root").arg(_name),
-                                                               QString("%1 \"%2\"").arg(s, _exec),
-                                                               _icon));
+            actions_.push_back(std::make_shared<DesktopAction>(this,
+                                                               QString("Run %1 as root").arg(name_),
+                                                               QString("%1 \"%2\"").arg(s, exec_),
+                                                               icon_));
     }
 
 
@@ -229,9 +229,9 @@ bool Applications::Application::readDesktopEntry() {
             // Try to get an icon
             group = QString("Desktop Action %1").arg(actionString);
             if (values[group].count("Icon"))
-                _actions.push_back(std::make_shared<DesktopAction>(this, name, exec, getIcon(values[group]["Icon"])));
+                actions_.push_back(std::make_shared<DesktopAction>(this, name, exec, getIcon(values[group]["Icon"])));
             else
-                _actions.push_back(std::make_shared<DesktopAction>(this, name, exec, _icon));
+                actions_.push_back(std::make_shared<DesktopAction>(this, name, exec, icon_));
 
         }
     }

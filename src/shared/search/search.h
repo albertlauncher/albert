@@ -84,7 +84,7 @@ public:
     std::vector<std::shared_ptr<IIndexable>> search(const QString &req) const;
 
 private:
-    SearchImpl *_impl;
+    SearchImpl *impl_;
 };
 
 

@@ -42,7 +42,7 @@ public:
 private:
     vector<unique_ptr<PluginSpec>> plugins_;
     QStringList blacklist_;
-    static const constexpr char* CFG_BLACKLIST = "blacklist";
+    static const QString CFG_BLACKLIST;
 
 signals:
     void pluginsChanged();

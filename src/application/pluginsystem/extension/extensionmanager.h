@@ -39,8 +39,8 @@ public:
     void activate(const QModelIndex & index);
 
 private:
-    set<IExtension*> _extensions;
-    std::shared_ptr<Query> _currentQuery;
+    set<IExtension*> extensions_;
+    std::shared_ptr<Query> currentQuery_;
 
 signals:
     void newModel(QAbstractItemModel *);

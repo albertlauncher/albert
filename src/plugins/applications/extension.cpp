@@ -29,13 +29,13 @@
 #include "query.h"
 
 
-const QString Applications::Extension::EXT_NAME       = "applications";
-const QString Applications::Extension::CFG_PATHS      = "applications/paths";
-const QString Applications::Extension::CFG_FUZZY      = "applications/fuzzy";
-const bool    Applications::Extension::CFG_FUZZY_DEF  = false;
-const QString Applications::Extension::CFG_TERM       = "applications/terminal";
-const QString Applications::Extension::CFG_TERM_DEF   = "xterm -e %1";
-const bool    Applications::Extension::UPDATE_DELAY   = 60000;
+const QString Applications::Extension::EXT_NAME     = "applications";
+const QString Applications::Extension::CFG_PATHS    = "applications/paths";
+const QString Applications::Extension::CFG_FUZZY    = "applications/fuzzy";
+const bool    Applications::Extension::DEF_FUZZY    = false;
+const QString Applications::Extension::CFG_TERM     = "applications/terminal";
+const QString Applications::Extension::DEF_TERM     = "xterm -e %1";
+const bool    Applications::Extension::UPDATE_DELAY = 60000;
 
 
 /** ***************************************************************************/
@@ -49,12 +49,12 @@ Applications::Extension::Extension() {
 
     // Load settings
     QSettings s;
-    _searchIndex.setFuzzy(s.value(CFG_FUZZY, CFG_FUZZY_DEF).toBool());
+    searchIndex_.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
 
     // Load the paths or set a default
     QVariant v = s.value(CFG_PATHS);
     if (v.isValid() && v.canConvert(QMetaType::QStringList))
-        _rootDirs = v.toStringList();
+        rootDirs_ = v.toStringList();
     else
         restorePaths();
 
@@ -65,18 +65,18 @@ Applications::Extension::Extension() {
     else{
         Application::terminal = getenv("TERM");
         if (Application::terminal.isEmpty())
-            Application::terminal = CFG_TERM_DEF;
+            Application::terminal = DEF_TERM;
         else
             Application::terminal.append(" -e %1");
     }
 
 
     // Keep the Applications in sync with the OS
-    _updateDelayTimer.setInterval(UPDATE_DELAY);
-    _updateDelayTimer.setSingleShot(true);
-    connect(&_watcher, &QFileSystemWatcher::directoryChanged, &_updateDelayTimer, static_cast<void(QTimer::*)()>(&QTimer::start));
-    connect(this, &Extension::rootDirsChanged, &_updateDelayTimer, static_cast<void(QTimer::*)()>(&QTimer::start));
-    connect(&_updateDelayTimer, &QTimer::timeout, this, &Extension::updateIndex);
+    updateDelayTimer_.setInterval(UPDATE_DELAY);
+    updateDelayTimer_.setSingleShot(true);
+    connect(&watcher_, &QFileSystemWatcher::directoryChanged, &updateDelayTimer_, static_cast<void(QTimer::*)()>(&QTimer::start));
+    connect(this, &Extension::rootDirsChanged, &updateDelayTimer_, static_cast<void(QTimer::*)()>(&QTimer::start));
+    connect(&updateDelayTimer_, &QTimer::timeout, this, &Extension::updateIndex);
 
     // Deserialize data
     QFile dataFile(
@@ -94,7 +94,7 @@ Applications::Extension::Extension() {
             for (quint64 i = 0; i < size; ++i) {
                 in >> path >> usage;
                 // index is updated after this
-                _appIndex.push_back(std::make_shared<Application>(path, usage));
+                index_.push_back(std::make_shared<Application>(path, usage));
             }
             dataFile.close();
         } else
@@ -102,9 +102,9 @@ Applications::Extension::Extension() {
      }
 
     // Rebuild the offline search index
-    _searchIndex.clear();
-    for (auto &i : _appIndex)
-        _searchIndex.add(i);
+    searchIndex_.clear();
+    for (auto &i : index_)
+        index_.push_back(i);
 
     // Trigger an initial update
     updateIndex();
@@ -119,18 +119,18 @@ Applications::Extension::~Extension() {
     qDebug() << "[Applications] Finalize extension";
 
     // Stop and wait for background indexer
-    if (!_indexer.isNull()) {
-        _indexer->abort();
-        disconnect(_indexer.data(), &Indexer::destroyed, this, &Extension::updateIndex);
+    if (!indexer_.isNull()) {
+        indexer_->abort();
+        disconnect(indexer_.data(), &Indexer::destroyed, this, &Extension::updateIndex);
         QEventLoop loop;
-        connect(_indexer.data(), &Indexer::destroyed, &loop, &QEventLoop::quit);
+        connect(indexer_.data(), &Indexer::destroyed, &loop, &QEventLoop::quit);
         loop.exec();
     }
 
     // Save settings
     QSettings s;
-    s.setValue(CFG_FUZZY, _searchIndex.fuzzy());
-    s.setValue(CFG_PATHS, _rootDirs);
+    s.setValue(CFG_FUZZY, searchIndex_.fuzzy());
+    s.setValue(CFG_PATHS, rootDirs_);
     s.setValue(CFG_TERM, Applications::Application::terminal);
 
     // Serialize data
@@ -143,11 +143,11 @@ Applications::Extension::~Extension() {
         QDataStream out( &dataFile );
 
         // Lock index against indexer
-        QMutexLocker locker(&_indexAccess);
+        QMutexLocker locker(&indexAccess_);
 
         // Serialize
-        out << static_cast<quint64>(_appIndex.size());
-        for (shared_ptr<Application> &de : _appIndex)
+        out << static_cast<quint64>(index_.size());
+        for (shared_ptr<Application> &de : index_)
             out << de->path() << de->usageCount();
 
         dataFile.close();
@@ -161,30 +161,30 @@ Applications::Extension::~Extension() {
 
 /** ***************************************************************************/
 QWidget *Applications::Extension::widget(QWidget *parent) {
-    if (_widget.isNull()) {
-        _widget = new ConfigWidget(parent);
+    if (widget_.isNull()) {
+        widget_ = new ConfigWidget(parent);
 
         // Paths
-        _widget->ui.listWidget_paths->addItems(_rootDirs);
-        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::clear);
-        connect(this, &Extension::rootDirsChanged, _widget->ui.listWidget_paths, &QListWidget::addItems);
-        connect(_widget.data(), &ConfigWidget::requestAddPath, this, &Extension::addDir);
-        connect(_widget.data(), &ConfigWidget::requestRemovePath, this, &Extension::removeDir);
-        connect(_widget->ui.pushButton_restorePaths, &QPushButton::clicked, this, &Extension::restorePaths);
+        widget_->ui.listWidget_paths->addItems(rootDirs_);
+        connect(this, &Extension::rootDirsChanged, widget_->ui.listWidget_paths, &QListWidget::clear);
+        connect(this, &Extension::rootDirsChanged, widget_->ui.listWidget_paths, &QListWidget::addItems);
+        connect(widget_.data(), &ConfigWidget::requestAddPath, this, &Extension::addDir);
+        connect(widget_.data(), &ConfigWidget::requestRemovePath, this, &Extension::removeDir);
+        connect(widget_->ui.pushButton_restorePaths, &QPushButton::clicked, this, &Extension::restorePaths);
 
         // Fuzzy
-        _widget->ui.checkBox_fuzzy->setChecked(_searchIndex.fuzzy());
-        connect(_widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
+        widget_->ui.checkBox_fuzzy->setChecked(searchIndex_.fuzzy());
+        connect(widget_->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
 
         // Info
-        _widget->ui.label_info->setText(QString("%1 Applications indexed.").arg(_appIndex.size()));
-        connect(this, &Extension::statusInfo, _widget->ui.label_info, &QLabel::setText);
+        widget_->ui.label_info->setText(QString("%1 Applications indexed.").arg(index_.size()));
+        connect(this, &Extension::statusInfo, widget_->ui.label_info, &QLabel::setText);
 
         // If indexer is active connect its statusInfo to the infoLabel
-        if (!_indexer.isNull())
-            connect(_indexer.data(), &Indexer::statusInfo, _widget->ui.label_info, &QLabel::setText);
+        if (!indexer_.isNull())
+            connect(indexer_.data(), &Indexer::statusInfo, widget_->ui.label_info, &QLabel::setText);
     }
-    return _widget;
+    return widget_;
 }
 
 
@@ -192,9 +192,9 @@ QWidget *Applications::Extension::widget(QWidget *parent) {
 /** ***************************************************************************/
 void Applications::Extension::handleQuery(shared_ptr<Query> query) {
     // Search for matches. Lock memory against scanworker
-    _indexAccess.lock();
-    vector<shared_ptr<IIndexable>> indexables = _searchIndex.search(query->searchTerm());
-    _indexAccess.unlock();
+    indexAccess_.lock();
+    vector<shared_ptr<IIndexable>> indexables = searchIndex_.search(query->searchTerm());
+    indexAccess_.unlock();
 
     // Add results to query. This cast is safe since index holds files only
     for (shared_ptr<IIndexable> &obj : indexables)
@@ -226,31 +226,31 @@ void Applications::Extension::addDir(const QString & dirPath) {
     }
 
     // Check if there is an identical existing path
-    if (_rootDirs.contains(absPath)) {
+    if (rootDirs_.contains(absPath)) {
         QMessageBox(QMessageBox::Critical, "Error", absPath + " has already been indexed.").exec();
         return;
     }
 
     // Check if this dir is a subdir of an existing dir
-    for (const QString &p: _rootDirs)
+    for (const QString &p: rootDirs_)
         if (absPath.startsWith(p + '/')) {
             QMessageBox(QMessageBox::Critical, "Error", absPath + " is subdirectory of " + p).exec();
             return;
         }
 
     // Check if this dir is a superdir of an existing dir, in case delete subdir
-    for (QStringList::iterator it = _rootDirs.begin(); it != _rootDirs.end();)
+    for (QStringList::iterator it = rootDirs_.begin(); it != rootDirs_.end();)
         if (it->startsWith(absPath + '/')) {
             QMessageBox(QMessageBox::Warning, "Warning",
                         (*it) + " is subdirectory of " + absPath + ". " + (*it) + " will be removed.").exec();
-            it = _rootDirs.erase(it);
+            it = rootDirs_.erase(it);
         } else ++it;
 
     // Add the path to root dirs
-    _rootDirs << absPath;
+    rootDirs_ << absPath;
 
     // Inform observers
-    emit rootDirsChanged(_rootDirs);
+    emit rootDirsChanged(rootDirs_);
 }
 
 
@@ -263,14 +263,14 @@ void Applications::Extension::removeDir(const QString &dirPath) {
     QString absPath = QFileInfo(dirPath).absoluteFilePath();
 
     // Check existance
-    if (!_rootDirs.contains(absPath))
+    if (!rootDirs_.contains(absPath))
         return;
 
     // Remove the path
-    _rootDirs.removeAll(absPath);
+    rootDirs_.removeAll(absPath);
 
     // Update the widget, if it is visible atm
-    emit rootDirsChanged(_rootDirs);
+    emit rootDirsChanged(rootDirs_);
 }
 
 
@@ -280,7 +280,7 @@ void Applications::Extension::restorePaths() {
     qDebug() << "[Applications] Restore paths to defaults";
 
     // Add standard paths
-    _rootDirs.clear();
+    rootDirs_.clear();
 
     //  Add standard paths
     for (const QString &path : QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation))
@@ -295,21 +295,21 @@ void Applications::Extension::updateIndex() {
     qDebug() << "[Applications] Index update triggered";
 
     // If thread is running, stop it and start this functoin after termination
-    if (!_indexer.isNull()) {
-        _indexer->abort();
-        if (!_widget.isNull())
-            _widget->ui.label_info->setText("Waiting for indexer to shut down ...");
-        connect(_indexer.data(), &Indexer::destroyed, this, &Extension::updateIndex);
+    if (!indexer_.isNull()) {
+        indexer_->abort();
+        if (!widget_.isNull())
+            widget_->ui.label_info->setText("Waiting for indexer to shut down ...");
+        connect(indexer_.data(), &Indexer::destroyed, this, &Extension::updateIndex);
     } else {
         // Create a new scanning runnable for the threadpool
-        _indexer = new Indexer(this);
+        indexer_ = new Indexer(this);
 
         //  Run it
-        QThreadPool::globalInstance()->start(_indexer);
+        QThreadPool::globalInstance()->start(indexer_);
 
-        // If widget is visible show the information in the status bar
-        if (!_widget.isNull())
-            connect(_indexer.data(), &Indexer::statusInfo, _widget->ui.label_info, &QLabel::setText);
+        // If widget is visible show the information in the status bat
+        if (!widget_.isNull())
+            connect(indexer_.data(), &Indexer::statusInfo, widget_->ui.label_info, &QLabel::setText);
     }
 }
 
@@ -317,14 +317,14 @@ void Applications::Extension::updateIndex() {
 
 /** ***************************************************************************/
 bool Applications::Extension::fuzzy() {
-    return _searchIndex.fuzzy();
+    return searchIndex_.fuzzy();
 }
 
 
 
 /** ***************************************************************************/
 void Applications::Extension::setFuzzy(bool b) {
-    _searchIndex.setFuzzy(b);
+    searchIndex_.setFuzzy(b);
 }
 
 

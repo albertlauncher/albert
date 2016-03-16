@@ -33,18 +33,18 @@ public:
     bool unregisterHotkey(const QString&);
     bool unregisterHotkey(const QKeySequence&);
     void unregisterHotkey(const int);
-    QSet<int> hotkeys() {return _hotkeys;}
+    QSet<int> hotkeys() {return hotkeys_;}
     void enable(){ setEnabled(true); }
     void disable(){ setEnabled(false); }
-    void setEnabled(bool enabled = true){_enabled = enabled;}
-    bool isEnabled() const {return _enabled;}
+    void setEnabled(bool enabled = true){enabled_ = enabled;}
+    bool isEnabled() const {return enabled_;}
 
 private:
     void onHotkeyPressed();
 
-    bool _enabled;
-    QSet<int> _hotkeys;
-    HotkeyManagerPrivate* _impl;
+    bool enabled_;
+    QSet<int> hotkeys_;
+    HotkeyManagerPrivate* impl_;
 
 signals:
 	void hotKeyPressed();

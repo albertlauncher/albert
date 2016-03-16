@@ -19,7 +19,7 @@
 /** ***************************************************************************/
 
 GrabKeyButton::GrabKeyButton(QWidget * parent) : QPushButton(parent) {
-    _waitingForHotkey = false;
+    waitingForHotkey_ = false;
     connect(this, &QPushButton::clicked,
             this, &GrabKeyButton::onClick);
 }
@@ -34,7 +34,7 @@ GrabKeyButton::~GrabKeyButton() {
 
 /** ***************************************************************************/
 void GrabKeyButton::onClick() {
-    _oldText = text();
+    oldText_ = text();
     setText("?");
     grabAll();
 }
@@ -45,7 +45,7 @@ void GrabKeyButton::onClick() {
 void GrabKeyButton::grabAll() {
     grabKeyboard();
     grabMouse();
-    _waitingForHotkey = true;
+    waitingForHotkey_ = true;
 }
 
 
@@ -54,14 +54,14 @@ void GrabKeyButton::grabAll() {
 void GrabKeyButton::releaseAll() {
     releaseKeyboard();
     releaseMouse();
-    _waitingForHotkey = false;
+    waitingForHotkey_ = false;
 }
 
 
 
 /** ***************************************************************************/
 void GrabKeyButton::keyPressEvent(QKeyEvent *event) {
-    if ( _waitingForHotkey ) {
+    if ( waitingForHotkey_ ) {
         // Modifier pressed -> update the label
         int key = event->key();
         int mods = event->modifiers();
@@ -73,7 +73,7 @@ void GrabKeyButton::keyPressEvent(QKeyEvent *event) {
 
         if(key == Qt::Key_Escape) {
             event->accept();
-            setText(_oldText);
+            setText(oldText_);
             releaseAll(); // Can not be before since window closes on esc
             return;
         }
@@ -90,7 +90,7 @@ void GrabKeyButton::keyPressEvent(QKeyEvent *event) {
 
 /** ***************************************************************************/
 void GrabKeyButton::keyReleaseEvent(QKeyEvent *event) {
-    if ( _waitingForHotkey ) {
+    if ( waitingForHotkey_ ) {
         // Modifier released -> update the label
         int key = event->key();
         if(key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta) {

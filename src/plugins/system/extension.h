@@ -63,14 +63,14 @@ private:
     /* const*/
     static const QString EXT_NAME;
     static const QString CFG_POWEROFF;
-    static const QString CFG_POWEROFF_DEF;
+    static const QString DEF_POWEROFF;
     static const QString CFG_REBOOT;
-    static const QString CFG_REBOOT_DEF;
+    static const QString DEF_REBOOT;
     static const QString CFG_SUSPEND;
-    static const QString CFG_SUSPEND_DEF;
+    static const QString DEF_SUSPEND;
     static const QString CFG_HIBERNATE;
-    static const QString CFG_HIBERNATE_DEF;
+    static const QString DEF_HIBERNATE;
     static const QString CFG_LOCK;
-    static const QString CFG_LOCK_DEF;
+    static const QString DEF_LOCK;
 };
 }

@@ -36,8 +36,8 @@ private:
     void changeHotkey(int);
     void updatePluginInformations(const QModelIndex & curr);
 
-    MainWidget *_mainWidget;
-    HotkeyManager *_hotkeyManager;
-    PluginManager *_pluginManager;
+    MainWidget *mainWidget_;
+    HotkeyManager *hotkeyManager_;
+    PluginManager *pluginManager_;
     Ui::SettingsDialog ui;
 };

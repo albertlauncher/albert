@@ -24,29 +24,29 @@
 
 /** ***************************************************************************/
 Search::Search(bool fuzzy) {
-    (fuzzy) ? _impl = new FuzzySearch() : _impl = new PrefixSearch();
+    (fuzzy) ? impl_ = new FuzzySearch() : impl_ = new PrefixSearch();
 }
 
 
 
 /** ***************************************************************************/
 Search::~Search() {
-    delete _impl;
+    delete impl_;
 }
 
 
 
 /** ***************************************************************************/
 void Search::setFuzzy(bool fuzzy) {
-    if (dynamic_cast<FuzzySearch*>(_impl)) {
+    if (dynamic_cast<FuzzySearch*>(impl_)) {
         if (fuzzy) return;
-        FuzzySearch *old = dynamic_cast<FuzzySearch*>(_impl);
-        _impl = new PrefixSearch(*old);
+        FuzzySearch *old = dynamic_cast<FuzzySearch*>(impl_);
+        impl_ = new PrefixSearch(*old);
         delete old;
-    } else if (dynamic_cast<PrefixSearch*>(_impl)) {
+    } else if (dynamic_cast<PrefixSearch*>(impl_)) {
         if (!fuzzy) return;
-        PrefixSearch *old = dynamic_cast<PrefixSearch*>(_impl);
-        _impl = new FuzzySearch(*old);
+        PrefixSearch *old = dynamic_cast<PrefixSearch*>(impl_);
+        impl_ = new FuzzySearch(*old);
         delete old;
     } else {
         throw; //should not happen
@@ -57,14 +57,14 @@ void Search::setFuzzy(bool fuzzy) {
 
 /** ***************************************************************************/
 bool Search::fuzzy() {
-    return dynamic_cast<FuzzySearch*>(_impl) != nullptr;
+    return dynamic_cast<FuzzySearch*>(impl_) != nullptr;
 }
 
 
 
 /** ***************************************************************************/
 void Search::setDelta(double d) {
-    FuzzySearch* f = dynamic_cast<FuzzySearch*>(_impl);
+    FuzzySearch* f = dynamic_cast<FuzzySearch*>(impl_);
     if (f)
         f->setDelta(d);
 }
@@ -73,7 +73,7 @@ void Search::setDelta(double d) {
 
 /** ***************************************************************************/
 double Search::delta() {
-    FuzzySearch* f = dynamic_cast<FuzzySearch*>(_impl);
+    FuzzySearch* f = dynamic_cast<FuzzySearch*>(impl_);
     if (f)
         return f->delta();
     return 0;
@@ -83,19 +83,19 @@ double Search::delta() {
 
 /** ***************************************************************************/
 void Search::add(std::shared_ptr<IIndexable> idxble) {
-    _impl->add(idxble);
+    impl_->add(idxble);
 }
 
 
 
 /** ***************************************************************************/
 void Search::clear() {
-    _impl->clear();
+    impl_->clear();
 }
 
 
 
 /** ***************************************************************************/
 std::vector<std::shared_ptr<IIndexable> > Search::search(const QString &req) const {
-    return _impl->search(req);
+    return impl_->search(req);
 }

@@ -32,7 +32,7 @@ void ExtensionManager::startQuery(const QString &searchTerm) {
         return;
     }
 
-    _currentQuery = std::make_shared<Query>(trimmedTerm);
+    currentQuery_ = std::make_shared<Query>(trimmedTerm);
 
     //  ▼ TODO INTRODUCE MULTITHREADING HERE ▼
 
@@ -40,15 +40,15 @@ void ExtensionManager::startQuery(const QString &searchTerm) {
     QString potentialTrigger = trimmedTerm.section(' ', 0,0);
 
     // Iterate over the triggers of trigger-extensions
-    for (IExtension *e : _extensions) {
+    for (IExtension *e : extensions_) {
         if (e->isTriggerOnly()) {
             for (const QString& trigger : e->triggers()) {
                 // If the trigger matches the first section, run the query
                 if (trigger == potentialTrigger) {
-                    e->handleQuery(_currentQuery);
+                    e->handleQuery(currentQuery_);
                     //  If this extension wants to be run exclusively, return
                     if (e->runExclusive()){
-                        emit newModel(_currentQuery->impl);
+                        emit newModel(currentQuery_->impl);
                         return;
                     }
                 }
@@ -57,20 +57,20 @@ void ExtensionManager::startQuery(const QString &searchTerm) {
     }
 
     // Query all nontrigger-extensions
-    for (IExtension *e : _extensions)
+    for (IExtension *e : extensions_)
         if (!e->isTriggerOnly())
-            e->handleQuery(_currentQuery);
+            e->handleQuery(currentQuery_);
 
     // TODO Handle this with proper fallbacks
     // Fallback query if results are empty
-    if (_currentQuery->impl->matches_.size()==0)
-        for (IExtension *e : _extensions)
-            e->handleFallbackQuery(_currentQuery);
+    if (currentQuery_->impl->matches_.size()==0)
+        for (IExtension *e : extensions_)
+            e->handleFallbackQuery(currentQuery_);
     else
         // This is a conceptual hack for v0.7, the query should sor itself when the
         // remove friend query  and query_p
-        std::stable_sort(_currentQuery->impl->matches_.begin(),
-                         _currentQuery->impl->matches_.end(),
+        std::stable_sort(currentQuery_->impl->matches_.begin(),
+                         currentQuery_->impl->matches_.end(),
                          [](const Match &lhs, const Match &rhs) {
                             return lhs.item.data->importance() > rhs.item.data->importance() // Importance, for e.g. urgent notifications
                                     || lhs.item.data->usageCount() > rhs.item.data->usageCount() // usage count
@@ -79,14 +79,14 @@ void ExtensionManager::startQuery(const QString &searchTerm) {
 
     //  ▲ INTRODUCE MULTITHREADING HERE ▲
 
-    emit newModel(_currentQuery->impl);
+    emit newModel(currentQuery_->impl);
 }
 
 
 
 /** ***************************************************************************/
 void ExtensionManager::setupSession() {
-    for (IExtension *e : _extensions)
+    for (IExtension *e : extensions_)
  		e->setupSession();
 }
 
@@ -94,7 +94,7 @@ void ExtensionManager::setupSession() {
 
 /** ***************************************************************************/
 void ExtensionManager::teardownSession() {
-    for (IExtension *e : _extensions)
+    for (IExtension *e : extensions_)
         e->teardownSession();
     emit newModel(nullptr);
 }
@@ -105,10 +105,10 @@ void ExtensionManager::teardownSession() {
 void ExtensionManager::registerExtension(QObject *o) {
     IExtension* e = qobject_cast<IExtension*>(o);
     if (e) {
-        if(_extensions.count(e))
+        if(extensions_.count(e))
             qCritical() << "Extension registered twice!";
         else
-            _extensions.insert(e);
+            extensions_.insert(e);
     }
 }
 
@@ -118,10 +118,10 @@ void ExtensionManager::registerExtension(QObject *o) {
 void ExtensionManager::unregisterExtension(QObject *o) {
     IExtension* e = qobject_cast<IExtension*>(o);
     if (e) {
-        if(!_extensions.count(e))
+        if(!extensions_.count(e))
             qCritical() << "Unregistered unregistered extension! (Duplicate unregistration?)";
         else
-            _extensions.erase(e);
+            extensions_.erase(e);
     }
 }
 
@@ -129,5 +129,5 @@ void ExtensionManager::unregisterExtension(QObject *o) {
 
 /** ***************************************************************************/
 void ExtensionManager::activate(const QModelIndex &index) {
-    _currentQuery->impl->activate(index);
+    currentQuery_->impl->activate(index);
 }

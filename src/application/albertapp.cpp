@@ -126,24 +126,20 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     // Setup and teardown query sessions with the state of the widget
     QObject::connect(_mainWidget, &MainWidget::widgetShown,  _extensionManager, &ExtensionManager::setupSession);
     QObject::connect(_mainWidget, &MainWidget::widgetHidden, _extensionManager, &ExtensionManager::teardownSession);
+
     // Click on _settingsButton (or shortcut) closes albert + opens settings dialog
     QObject::connect(_mainWidget->ui.inputLine->_settingsButton, &QPushButton::clicked, _mainWidget, &MainWidget::hide);
     QObject::connect(_mainWidget->ui.inputLine->_settingsButton, &QPushButton::clicked, this, &AlbertApp::openSettings);
+
     // A change in text triggers requests
     QObject::connect(_mainWidget->ui.inputLine, &InputLine::textChanged, _extensionManager, &ExtensionManager::startQuery);
+
     // Enter triggers action
     QObject::connect(_mainWidget->ui.proposalList, &ProposalList::activated, _extensionManager, &ExtensionManager::activate);
 
     // Publish loaded plugins to the specific interface handlers
     QObject::connect(_pluginManager, &PluginManager::pluginLoaded, _extensionManager, &ExtensionManager::registerExtension);
     QObject::connect(_pluginManager, &PluginManager::pluginAboutToBeUnloaded, _extensionManager, &ExtensionManager::unregisterExtension);
-
-    // Hide on focus loss
-//    QObject::connect(this, &QApplication::applicationStateChanged, this, &AlbertApp::onStateChange);
-
-
-    // TESTING AREA
-
 }
 
 

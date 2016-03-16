@@ -35,20 +35,20 @@ public:
     Application() = delete;
     Application(const Application &) = delete;
     Application(const QString &path, short usage = 0)
-        : _path(path), _usage(usage) {}
+        : path_(path), usage_(usage) {}
 
     QString text() const override;
     QString subtext() const override;
     QIcon icon() const override;
-    uint16_t usageCount() const override {return _usage;}
+    uint16_t usageCount() const override {return usage_;}
     void activate() override;
     bool hasChildren() const override;
     vector<shared_ptr<AlbertItem>> children() override;
     vector<QString> aliases() const override;
 
     bool readDesktopEntry();
-    const QString& path() const {return _path;}
-    void incUsage() {++_usage;}
+    const QString& path() const {return path_;}
+    void incUsage() {++usage_;}
 
     static QString terminal;
 
@@ -58,13 +58,13 @@ private:
     static QStringList execValueEscape(const QString &value);
     static QIcon getIcon(const QString &iconStr);
 
-    QString _path;
-    QString _name;
-    QString _altName;
-    QIcon   _icon;
-    QString _exec;
-    bool    _term;
-    mutable ushort _usage;
-    vector<shared_ptr<AlbertItem>> _actions;
+    QString path_;
+    QString name_;
+    QString altName_;
+    QIcon   icon_;
+    QString exec_;
+    bool    term_;
+    mutable uint16_t usage_;
+    vector<shared_ptr<AlbertItem>> actions_;
 };
 }

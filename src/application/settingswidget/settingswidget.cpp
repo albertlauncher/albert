@@ -32,7 +32,7 @@
 
 /** ***************************************************************************/
 SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyManager, PluginManager *pluginManager, QWidget *parent, Qt::WindowFlags f)
-    : QWidget(parent, f), _mainWidget(mainWidget), _hotkeyManager(hotkeyManager), _pluginManager(pluginManager) {
+    : QWidget(parent, f), mainWidget_(mainWidget), hotkeyManager_(hotkeyManager), pluginManager_(pluginManager) {
 
     ui.setupUi(this);
     setWindowFlags(Qt::Window|Qt::WindowCloseButtonHint);
@@ -97,7 +97,7 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
      */
 
     // Show the plugins. This* widget takes ownership of the model
-    ui.listView_plugins->setModel(new PluginModel(_pluginManager, ui.listView_plugins));
+    ui.listView_plugins->setModel(new PluginModel(pluginManager_, ui.listView_plugins));
 
     // Update infos when item is changed
     connect(ui.listView_plugins->selectionModel(), &QItemSelectionModel::currentChanged,
@@ -121,9 +121,9 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
     delete i->widget();
     delete i;
 
-    if (_pluginManager->plugins()[current.row()]->isLoaded()){
+    if (pluginManager_->plugins()[current.row()]->isLoaded()){
         ui.widget_pluginInfos->layout()->addWidget(
-                    dynamic_cast<IPlugin*>(_pluginManager->plugins()[current.row()]->instance())->widget()); // Takes ownership
+                    dynamic_cast<IPlugin*>(pluginManager_->plugins()[current.row()]->instance())->widget()); // Takes ownership
     }
     else{
         QLabel *lbl = new QLabel("Plugin not loaded.");
@@ -137,14 +137,14 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
 
 /** ***************************************************************************/
 void SettingsWidget::changeHotkey(int newhk) {
-    int oldhk = *_hotkeyManager->hotkeys().begin(); //TODO Make cool sharesdpointer design
+    int oldhk = *hotkeyManager_->hotkeys().begin(); //TODO Make cool sharesdpointer design
 
     // Try to set the hotkey
-    if (_hotkeyManager->registerHotkey(newhk)) {
+    if (hotkeyManager_->registerHotkey(newhk)) {
         QString hkText(QKeySequence((newhk&~Qt::GroupSwitchModifier)).toString());//QTBUG-45568
         ui.grabKeyButton_hotkey->setText(hkText);
         QSettings().setValue("hotkey", hkText);
-        _hotkeyManager->unregisterHotkey(oldhk);
+        hotkeyManager_->unregisterHotkey(oldhk);
     } else {
         ui.grabKeyButton_hotkey->setText(QKeySequence(oldhk).toString());
         QMessageBox(QMessageBox::Critical, "Error",
@@ -158,11 +158,11 @@ void SettingsWidget::changeHotkey(int newhk) {
 /** ***************************************************************************/
 void SettingsWidget::onThemeChanged(int i) {
     // Apply and save the theme
-    QString currentTheme = _mainWidget->theme();
-    if (!_mainWidget->setTheme(ui.comboBox_themes->itemText(i))) {
+    QString currentTheme = mainWidget_->theme();
+    if (!mainWidget_->setTheme(ui.comboBox_themes->itemText(i))) {
         QMessageBox msgBox(QMessageBox::Critical, "Error", "Could not apply theme.");
         msgBox.exec();
-        if (!_mainWidget->setTheme(currentTheme)) {
+        if (!mainWidget_->setTheme(currentTheme)) {
            qFatal("Rolling back theme failed.");
         }
     }
@@ -192,7 +192,7 @@ void SettingsWidget::keyPressEvent(QKeyEvent *event) {
 
 /** ***************************************************************************/
 void SettingsWidget::closeEvent(QCloseEvent *event) {
-    if (_hotkeyManager->hotkeys().empty()) {
+    if (hotkeyManager_->hotkeys().empty()) {
         QMessageBox msgBox(QMessageBox::Critical, "Error",
                            "Hotkey is invalid, please set it. Press Ok to go "\
                            "back to the settings, or press Cancel to quit albert.",

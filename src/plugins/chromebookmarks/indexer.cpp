@@ -59,9 +59,9 @@ void ChromeBookmarks::Indexer::run() {
         }
     };
 
-    QFile f(_extension->_bookmarksFile);
+    QFile f(extension_->bookmarksFile_);
     if (!f.open(QIODevice::ReadOnly)) {
-        qWarning() << "Could not open " << _extension->_bookmarksFile;
+        qWarning() << "Could not open " << extension_->bookmarksFile_;
         return;
     }
 
@@ -85,11 +85,11 @@ void ChromeBookmarks::Indexer::run() {
     // Copy the usagecounters  [O(n)]
     emit statusInfo("Copy usage statistics ... ");
     size_t i=0, j=0;
-    while (i < _extension->_index.size() && j < newIndex.size()) {
-        if (_extension->_index[i]->url_ == newIndex[j]->url_) {
-            newIndex[j]->usage_ = _extension->_index[i]->usage_;
+    while (i < extension_->index_.size() && j < newIndex.size()) {
+        if (extension_->index_[i]->url_ == newIndex[j]->url_) {
+            newIndex[j]->usage_ = extension_->index_[i]->usage_;
             ++i;++j;
-        } else if (_extension->_index[i]->url_ < newIndex[j]->url_ ) {
+        } else if (extension_->index_[i]->url_ < newIndex[j]->url_ ) {
             ++i;
         } else {// if ((*_fileIndex)[i]->path > (*newIndex)[j]->path) {
             ++j;
@@ -101,37 +101,38 @@ void ChromeBookmarks::Indexer::run() {
      */
 
     // Lock the access
-    _extension->_indexAccess.lock();
+    extension_->indexAccess_.lock();
 
     // Set the new index
-    _extension->_index = std::move(newIndex);
+    extension_->index_ = std::move(newIndex);
 
     // Reset the offline index
     emit statusInfo("Build offline index... ");
-    _extension->_searchIndex.clear();
+    extension_->searchIndex_.clear();
 
     // Build the new offline index
-    for (shared_ptr<Bookmark> i : _extension->_index)
-        _extension->_searchIndex.add(i);
+    for (shared_ptr<Bookmark> i : extension_->index_)
+        extension_->searchIndex_.add(i);
 
     // Unlock the accress
-    _extension->_indexAccess.unlock();
+    extension_->indexAccess_.unlock();
 
-    /* Finally update the watches (maybe folders changed)
+    /*
+     * Finally update the watches (maybe folders changed)
      * Note that QFileSystemWatcher stops monitoring files once they have been
      * renamed or removed from disk, and directories once they have been removed
      * from disk.
      * Chromium seems to mv the file (inode change), removing is not necessary.
      */
-    if(!_extension->_watcher.addPath(_extension->_bookmarksFile)) // No clue why this should happen
-        qCritical() << _extension->_bookmarksFile
+    if(!extension_->watcher_.addPath(extension_->bookmarksFile_)) // No clue why this should happen
+        qCritical() << extension_->bookmarksFile_
                     <<  "could not be watched. Changes in this path will not be noticed.";
     /*
      *  ▲ CRITICAL ▲
      */
 
     // Notification
-    msg = QString("Indexed %1 bookmarks.").arg(_extension->_index.size());
+    msg = QString("Indexed %1 bookmarks.").arg(extension_->index_.size());
     emit statusInfo(msg);
     qDebug() << "[ChromeBookmarks]" << msg;
 }
