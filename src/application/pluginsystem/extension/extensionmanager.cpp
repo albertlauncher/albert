@@ -22,12 +22,6 @@
 
 
 /** ***************************************************************************/
-ExtensionManager::ExtensionManager() : _sessionIsActive(false) {
-}
-
-
-
-/** ***************************************************************************/
 void ExtensionManager::startQuery(const QString &searchTerm) {
     // Trim spaces
     QString trimmedTerm = searchTerm.trimmed().toLower();
@@ -42,29 +36,32 @@ void ExtensionManager::startQuery(const QString &searchTerm) {
 
     //  ▼ TODO INTRODUCE MULTITHREADING HERE ▼
 
-    // Check if the query is prefixed with a trigger
-    bool queryIsTriggered = false;
+    // Separate the first section of the searchterm
     QString potentialTrigger = trimmedTerm.section(' ', 0,0);
-    for (IExtension *e : _extensions){
-        if (e->isTriggered()){
-            for (const QString& trigger : e->triggers()){
-                if (trigger==potentialTrigger){
+
+    // Iterate over the triggers of trigger-extensions
+    for (IExtension *e : _extensions) {
+        if (e->isTriggerOnly()) {
+            for (const QString& trigger : e->triggers()) {
+                // If the trigger matches the first section, run the query
+                if (trigger == potentialTrigger) {
                     e->handleQuery(_currentQuery);
-                    queryIsTriggered=true;
+                    //  If this extension wants to be run exclusively, return
+                    if (e->runExclusive()){
+                        emit newModel(_currentQuery->impl);
+                        return;
+                    }
                 }
             }
         }
     }
-    // If it is triggered skip the full and fallback query
-    if (queryIsTriggered){
-        emit newModel(_currentQuery->impl);
-        return;
-    }
 
-    // Full query
+    // Query all nontrigger-extensions
     for (IExtension *e : _extensions)
-        e->handleQuery(_currentQuery);
+        if (!e->isTriggerOnly())
+            e->handleQuery(_currentQuery);
 
+    // TODO Handle this with proper fallbacks
     // Fallback query if results are empty
     if (_currentQuery->impl->matches_.size()==0)
         for (IExtension *e : _extensions)
@@ -89,7 +86,6 @@ void ExtensionManager::startQuery(const QString &searchTerm) {
 
 /** ***************************************************************************/
 void ExtensionManager::setupSession() {
-    _sessionIsActive = true;
     for (IExtension *e : _extensions)
  		e->setupSession();
 }
@@ -101,7 +97,6 @@ void ExtensionManager::teardownSession() {
     for (IExtension *e : _extensions)
         e->teardownSession();
     emit newModel(nullptr);
-    _sessionIsActive = false;
 }
 
 
@@ -110,7 +105,7 @@ void ExtensionManager::teardownSession() {
 void ExtensionManager::registerExtension(QObject *o) {
     IExtension* e = qobject_cast<IExtension*>(o);
     if (e) {
-        if(_extensions.contains(e))
+        if(_extensions.count(e))
             qCritical() << "Extension registered twice!";
         else
             _extensions.insert(e);
@@ -123,10 +118,10 @@ void ExtensionManager::registerExtension(QObject *o) {
 void ExtensionManager::unregisterExtension(QObject *o) {
     IExtension* e = qobject_cast<IExtension*>(o);
     if (e) {
-        if(!_extensions.contains(e))
+        if(!_extensions.count(e))
             qCritical() << "Unregistered unregistered extension! (Duplicate unregistration?)";
         else
-            _extensions.remove(e);
+            _extensions.erase(e);
     }
 }
 
@@ -135,11 +130,4 @@ void ExtensionManager::unregisterExtension(QObject *o) {
 /** ***************************************************************************/
 void ExtensionManager::activate(const QModelIndex &index) {
     _currentQuery->impl->activate(index);
-}
-
-
-
-/** ***************************************************************************/
-bool ExtensionManager::sessionIsActive() const {
-    return _sessionIsActive;
 }

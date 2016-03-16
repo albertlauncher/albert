@@ -17,10 +17,10 @@
 #pragma once
 #include <QObject>
 #include <QAbstractItemModel>
-#include <QSet>
-#include <QMap>
 #include <QString>
 #include <memory>
+#include <set>
+using std::set;
 class IExtension;
 class Query;
 
@@ -29,8 +29,6 @@ class ExtensionManager final : public QObject
     Q_OBJECT
 
 public:
-    ExtensionManager();
-
     void startQuery(const QString &searchTerm);
     void setupSession();
     void teardownSession();
@@ -40,12 +38,9 @@ public:
 
     void activate(const QModelIndex & index);
 
-    bool sessionIsActive() const;
-
 private:
-    QSet<IExtension*> _extensions;
+    set<IExtension*> _extensions;
     std::shared_ptr<Query> _currentQuery;
-    bool _sessionIsActive;
 
 signals:
     void newModel(QAbstractItemModel *);

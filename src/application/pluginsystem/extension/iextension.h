@@ -20,7 +20,6 @@
 #include "../iplugin.h"
 using std::shared_ptr;
 class Query;
-class CoreApi;
 
 class IExtension : public IPlugin
 {
@@ -45,7 +44,8 @@ public:
      * @brief Indicates that the extension shall be run only if one of its
      * triggers is prefix of the query
      */
-    virtual bool isTriggered() const {return false;}
+    virtual bool isTriggerOnly() const {return false;}
+    virtual bool runExclusive() const {return false;}
 
     /**
      * @brief The triggers which let the extension be run solely, if one of its
