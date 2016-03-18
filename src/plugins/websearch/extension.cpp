@@ -240,13 +240,13 @@ QVariant Websearch::Extension::data(const QModelIndex &index, int role) const {
     }
     case Qt::DecorationRole: {
         switch (static_cast<Section>(index.column())) {
-        case Section::Name:  return index_[index.row()]->iconPath();
+        case Section::Name:  return QIcon(index_[index.row()]->iconPath());
         default: return QVariant();
         }
     }
     case Qt::ToolTipRole: {
         switch (static_cast<Section>(index.column())) {
-        case Section::Enabled:  return "Check to enable the search engine";
+        case Section::Enabled:  return "Check to use as fallback";
         default: return "Double click to edit";
         }
     }
@@ -302,6 +302,23 @@ bool Websearch::Extension::setData(const QModelIndex &index, const QVariant &val
         default:
             return false;
         }
+    }
+    case Qt::DecorationRole: {
+        QFileInfo fileInfo(value.toString());
+        QString newFilePath;
+        uint i = 0;
+        do {
+        // Build the new path in cache dir
+        newFilePath = QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation))
+                .filePath(QString("%1-%2.%3")
+                            .arg(index_[index.row()]->name())
+                            .arg(i++)
+                            .arg(fileInfo.suffix()));
+        // Copy the file into cache dir
+        } while (!QFile::copy(fileInfo.filePath(), newFilePath));
+        // Set the copied file as icon
+        index_[index.row()]->setIconPath(newFilePath);
+        dataChanged(index, index, QVector<int>({Qt::DecorationRole}));
     }
     default:
         return false;
