@@ -27,38 +27,36 @@
 #include "file.h"
 #include "query.h"
 
-
-const QString Files::Extension::EXT_NAME            = "files";
-const QString Files::Extension::CFG_PATHS           = "paths";
-const QString Files::Extension::CFG_FUZZY           = "fuzzy";
-const bool    Files::Extension::DEF_FUZZY           = false;
-const QString Files::Extension::CFG_INDEX_AUDIO     = "index_audio";
-const bool    Files::Extension::DEF_INDEX_AUDIO     = false;
-const QString Files::Extension::CFG_INDEX_VIDEO     = "index_video";
-const bool    Files::Extension::DEF_INDEX_VIDEO     = false;
-const QString Files::Extension::CFG_INDEX_IMAGE     = "index_image";
-const bool    Files::Extension::DEF_INDEX_IMAGE     = false;
-const QString Files::Extension::CFG_INDEX_DOC       = "index_docs";
-const bool    Files::Extension::DEF_INDEX_DOC       = false;
-const QString Files::Extension::CFG_INDEX_DIR       = "index_dirs";
-const bool    Files::Extension::DEF_INDEX_DIR       = false;
-const QString Files::Extension::CFG_INDEX_HIDDEN    = "index_hidden";
-const bool    Files::Extension::DEF_INDEX_HIDDEN    = false;
-const QString Files::Extension::CFG_FOLLOW_SYMLINKS = "follow_symlinks";
-const bool    Files::Extension::DEF_FOLLOW_SYMLINKS = true;
-const QString Files::Extension::CFG_SCAN_INTERVAL   = "scan_interval";
-const uint    Files::Extension::DEF_SCAN_INTERVAL   = 60;
-const QString Files::Extension::IGNOREFILE          = ".albertignore";
+const char* Files::Extension::CFG_PATHS           = "paths";
+const char* Files::Extension::CFG_FUZZY           = "fuzzy";
+const bool  Files::Extension::DEF_FUZZY           = false;
+const char* Files::Extension::CFG_INDEX_AUDIO     = "index_audio";
+const bool  Files::Extension::DEF_INDEX_AUDIO     = false;
+const char* Files::Extension::CFG_INDEX_VIDEO     = "index_video";
+const bool  Files::Extension::DEF_INDEX_VIDEO     = false;
+const char* Files::Extension::CFG_INDEX_IMAGE     = "index_image";
+const bool  Files::Extension::DEF_INDEX_IMAGE     = false;
+const char* Files::Extension::CFG_INDEX_DOC       = "index_docs";
+const bool  Files::Extension::DEF_INDEX_DOC       = false;
+const char* Files::Extension::CFG_INDEX_DIR       = "index_dirs";
+const bool  Files::Extension::DEF_INDEX_DIR       = false;
+const char* Files::Extension::CFG_INDEX_HIDDEN    = "index_hidden";
+const bool  Files::Extension::DEF_INDEX_HIDDEN    = false;
+const char* Files::Extension::CFG_FOLLOW_SYMLINKS = "follow_symlinks";
+const bool  Files::Extension::DEF_FOLLOW_SYMLINKS = true;
+const char* Files::Extension::CFG_SCAN_INTERVAL   = "scan_interval";
+const uint  Files::Extension::DEF_SCAN_INTERVAL   = 60;
+const char* Files::Extension::IGNOREFILE          = ".albertignore";
 
 
 /** ***************************************************************************/
-Files::Extension::Extension() {
-    qDebug() << "[Files] Initialize extension";
+Files::Extension::Extension() : IExtension("Files") {
+    qDebug("[%s] Initialize extension", name);
     minuteTimer_.setInterval(60000);
 
     // Load settings
     QSettings s;
-    s.beginGroup(EXT_NAME);
+    s.beginGroup(name);
     indexAudio_ = s.value(CFG_INDEX_AUDIO, DEF_INDEX_AUDIO).toBool();
     indexVideo_ = s.value(CFG_INDEX_VIDEO, DEF_INDEX_VIDEO).toBool();
     indexImage_ = s.value(CFG_INDEX_IMAGE, DEF_INDEX_IMAGE).toBool();
@@ -78,7 +76,7 @@ Files::Extension::Extension() {
     // Deserialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(EXT_NAME))
+                filePath(QString("%1.dat").arg(name))
                 );
     if (dataFile.exists()) {
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
@@ -110,15 +108,14 @@ Files::Extension::Extension() {
     // Trigger an initial update
     updateIndex();
 
-    s.endGroup();
-    qDebug() << "[Files] Extension initialized";
+    qDebug("[%s] Extension initialized", name);
 }
 
 
 
 /** ***************************************************************************/
 Files::Extension::~Extension() {
-    qDebug() << "[Files] Finalize extension";
+    qDebug("[%s] Finalize extension", name);
 
     // Stop and wait for background indexer
     minuteTimer_.stop();
@@ -132,7 +129,7 @@ Files::Extension::~Extension() {
 
     // Save settings
     QSettings s;
-    s.beginGroup(EXT_NAME);
+    s.beginGroup(name);
     s.setValue(CFG_FUZZY, searchIndex_.fuzzy());
     s.setValue(CFG_PATHS, rootDirs_);
     s.setValue(CFG_INDEX_AUDIO, indexAudio_);
@@ -143,12 +140,11 @@ Files::Extension::~Extension() {
     s.setValue(CFG_INDEX_HIDDEN,indexHidden_);
     s.setValue(CFG_FOLLOW_SYMLINKS,followSymlinks_);
     s.setValue(CFG_SCAN_INTERVAL,scanInterval_);
-    s.endGroup();
 
     // Serialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(EXT_NAME))
+                filePath(QString("%1.dat").arg(name))
                 );
     if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
         qDebug() << "[Files] Serializing to " << dataFile.fileName();
@@ -166,7 +162,7 @@ Files::Extension::~Extension() {
     } else
         qCritical() << "Could not write to " << dataFile.fileName();
 
-    qDebug() << "[Files] Extension finalized";
+    qDebug("[%s] Extension finalized", name);
 }
 
 

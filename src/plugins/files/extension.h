@@ -104,27 +104,26 @@ private:
     unsigned int scanInterval_;
 
     /* const */
-    static const QString EXT_NAME;
-    static const QString CFG_PATHS;
-    static const QString CFG_FUZZY;
-    static const bool    DEF_FUZZY;
-    static const QString CFG_INDEX_AUDIO;
-    static const bool    DEF_INDEX_AUDIO;
-    static const QString CFG_INDEX_VIDEO;
-    static const bool    DEF_INDEX_VIDEO;
-    static const QString CFG_INDEX_IMAGE;
-    static const bool    DEF_INDEX_IMAGE;
-    static const QString CFG_INDEX_DOC;
-    static const bool    DEF_INDEX_DOC;
-    static const QString CFG_INDEX_DIR;
-    static const bool    DEF_INDEX_DIR;
-    static const QString CFG_INDEX_HIDDEN;
-    static const bool    DEF_INDEX_HIDDEN;
-    static const QString CFG_FOLLOW_SYMLINKS;
-    static const bool    DEF_FOLLOW_SYMLINKS;
-    static const QString CFG_SCAN_INTERVAL;
-    static const uint    DEF_SCAN_INTERVAL;
-    static const QString IGNOREFILE;
+    static const char* CFG_PATHS;
+    static const char* CFG_FUZZY;
+    static const bool  DEF_FUZZY;
+    static const char* CFG_INDEX_AUDIO;
+    static const bool  DEF_INDEX_AUDIO;
+    static const char* CFG_INDEX_VIDEO;
+    static const bool  DEF_INDEX_VIDEO;
+    static const char* CFG_INDEX_IMAGE;
+    static const bool  DEF_INDEX_IMAGE;
+    static const char* CFG_INDEX_DOC;
+    static const bool  DEF_INDEX_DOC;
+    static const char* CFG_INDEX_DIR;
+    static const bool  DEF_INDEX_DIR;
+    static const char* CFG_INDEX_HIDDEN;
+    static const bool  DEF_INDEX_HIDDEN;
+    static const char* CFG_FOLLOW_SYMLINKS;
+    static const bool  DEF_FOLLOW_SYMLINKS;
+    static const char* CFG_SCAN_INTERVAL;
+    static const uint  DEF_SCAN_INTERVAL;
+    static const char* IGNOREFILE;
 
 signals:
     void rootDirsChanged(const QStringList&);

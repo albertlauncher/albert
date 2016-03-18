@@ -65,9 +65,6 @@ public:
 private:
     QPointer<ConfigWidget> widget_;
     std::vector<shared_ptr<SearchEngine>> index_;
-
-    /* const */
-    static const QString EXT_NAME;
 };
 
 }

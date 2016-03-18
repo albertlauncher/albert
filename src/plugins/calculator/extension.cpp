@@ -24,17 +24,16 @@
 #include "objects.hpp"
 #include "iconlookup/xdgiconlookup.h"
 
-const QString Calculator::Extension::EXT_NAME      = "calculator";
 const QString Calculator::Extension::CFG_SEPS      = "group_separators";
 const bool    Calculator::Extension::CFG_SEPS_DEF  = false;
 
 /** ***************************************************************************/
-Calculator::Extension::Extension() {
-    qDebug() << "[Calculator] Initialize extension";
+Calculator::Extension::Extension() : IExtension("Calculator") {
+    qDebug("[%s] Initialize extension", name);
 
     // Load settings
     QSettings s;
-    s.beginGroup(EXT_NAME);
+    s.beginGroup(name);
     loc_.setNumberOptions(
                 (s.value(CFG_SEPS, CFG_SEPS_DEF).toBool())
                 ? loc_.numberOptions() & ~QLocale::OmitGroupSeparator
@@ -45,25 +44,27 @@ Calculator::Extension::Extension() {
     iconPath_ = iconPath.isNull() ? ":calc" : iconPath;
 
     parser_.reset(new mu::Parser);
+
     parser_->SetDecSep(loc_.decimalPoint().toLatin1());
     parser_->SetThousandsSep(loc_.groupSeparator().toLatin1());
-    qDebug() << "[Calculator] Extension initialized";
+
+    qDebug("[%s] Extension initialized", name);
 }
 
 
 
 /** ***************************************************************************/
 Calculator::Extension::~Extension() {
-    qDebug() << "[Calculator] Finalize extension";
-
-    parser_.reset();
+    qDebug("[%s] Finalize extension", name);
 
     // Save settings
     QSettings s;
-    s.beginGroup(EXT_NAME);
+    s.beginGroup(name);
     s.setValue(CFG_SEPS, !loc_.numberOptions().testFlag(QLocale::OmitGroupSeparator));
 
-    qDebug() << "[Calculator] Extension finalized";
+    parser_.reset();
+
+    qDebug("[%s] Extension finalized", name);
 }
 
 

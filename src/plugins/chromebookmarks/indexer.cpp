@@ -34,9 +34,8 @@ using std::vector;
 void ChromeBookmarks::Indexer::run() {
 
     // Notification
-    QString msg("Indexing bookmarks ...");
-    emit statusInfo(msg);
-    qDebug() << "[ChromeBookmarks]" << msg;
+    qDebug("[%s] Start indexing in background thread.", extension_->name);
+    emit statusInfo("Indexing bookmarks ...");
 
     // Build a new index
     vector<shared_ptr<Bookmark>> newIndex;
@@ -132,7 +131,6 @@ void ChromeBookmarks::Indexer::run() {
      */
 
     // Notification
-    msg = QString("Indexed %1 bookmarks.").arg(extension_->index_.size());
-    emit statusInfo(msg);
-    qDebug() << "[ChromeBookmarks]" << msg;
+    qDebug("[%s] Indexing done (%d items)", extension_->name, static_cast<int>(extension_->index_.size()));
+    emit statusInfo(QString("Indexed %1 bookmarks").arg(extension_->index_.size()));
 }

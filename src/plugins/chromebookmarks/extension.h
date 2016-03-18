@@ -69,10 +69,9 @@ private:
     QFileSystemWatcher watcher_;
 
     /* const */
-    static const QString EXT_NAME;
-    static const QString CFG_BOOKMARKS;
-    static const QString CFG_FUZZY;
-    static const bool    DEF_FUZZY;
+    static const char* CFG_BOOKMARKS;
+    static const char* CFG_FUZZY;
+    static const bool  DEF_FUZZY;
 
 signals:
     void pathChanged(const QString&);

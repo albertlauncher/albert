@@ -28,19 +28,16 @@
 #include "indexer.h"
 #include "query.h"
 
-
-const QString Applications::Extension::EXT_NAME     = "applications";
-const QString Applications::Extension::CFG_PATHS    = "applications/paths";
-const QString Applications::Extension::CFG_FUZZY    = "applications/fuzzy";
-const bool    Applications::Extension::DEF_FUZZY    = false;
-const QString Applications::Extension::CFG_TERM     = "applications/terminal";
-const QString Applications::Extension::DEF_TERM     = "xterm -e %1";
-const bool    Applications::Extension::UPDATE_DELAY = 60000;
-
+const char* Applications::Extension::CFG_PATHS    = "paths";
+const char* Applications::Extension::CFG_FUZZY    = "fuzzy";
+const bool  Applications::Extension::DEF_FUZZY    = false;
+const char* Applications::Extension::CFG_TERM     = "terminal";
+const char* Applications::Extension::DEF_TERM     = "xterm -e %1";
+const bool  Applications::Extension::UPDATE_DELAY = 60000;
 
 /** ***************************************************************************/
-Applications::Extension::Extension() {
-    qDebug() << "[Applications] Initialize extension";
+Applications::Extension::Extension() : IExtension("Applications") {
+    qDebug("[%s] Initialize extension", name);
 
     // Add the userspace icons dir which is not covered in the specs
     QFileInfo userSpaceIconsPath(QDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)).filePath("icons"));
@@ -49,6 +46,7 @@ Applications::Extension::Extension() {
 
     // Load settings
     QSettings s;
+    s.beginGroup(name);
     searchIndex_.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
 
     // Load the paths or set a default
@@ -79,10 +77,8 @@ Applications::Extension::Extension() {
     connect(&updateDelayTimer_, &QTimer::timeout, this, &Extension::updateIndex);
 
     // Deserialize data
-    QFile dataFile(
-                QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(EXT_NAME))
-                );
+    QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation))
+                   .filePath(QString("%1.dat").arg(name)));
     if (dataFile.exists()) {
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
             qDebug() << "[Applications] Deserializing from" << dataFile.fileName();
@@ -109,14 +105,14 @@ Applications::Extension::Extension() {
     // Trigger an initial update
     updateIndex();
 
-    qDebug() << "[Applications] Extension initialized";
+    qDebug("[%s] Extension initialized", name);
 }
 
 
 
 /** ***************************************************************************/
 Applications::Extension::~Extension() {
-    qDebug() << "[Applications] Finalize extension";
+    qDebug("[%s] Finalize extension", name);
 
     // Stop and wait for background indexer
     if (!indexer_.isNull()) {
@@ -129,6 +125,7 @@ Applications::Extension::~Extension() {
 
     // Save settings
     QSettings s;
+    s.beginGroup(name);
     s.setValue(CFG_FUZZY, searchIndex_.fuzzy());
     s.setValue(CFG_PATHS, rootDirs_);
     s.setValue(CFG_TERM, Applications::Application::terminal);
@@ -136,7 +133,7 @@ Applications::Extension::~Extension() {
     // Serialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(EXT_NAME))
+                filePath(QString("%1.dat").arg(name))
                 );
     if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
         qDebug() << "[Applications] Serializing to" << dataFile.fileName();
@@ -154,7 +151,7 @@ Applications::Extension::~Extension() {
     } else
         qCritical() << "Could not write to " << dataFile.fileName();
 
-    qDebug() << "[Applications] Extension finalized";
+    qDebug("[%s] Extension finalized", name);
 }
 
 

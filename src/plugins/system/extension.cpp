@@ -24,29 +24,26 @@
 #include "albertapp.h"
 #include "iconlookup/xdgiconlookup.h"
 
-
-const QString System::Extension::EXT_NAME      = "system";
-const QString System::Extension::CFG_POWEROFF  = "poweroff";
-const QString System::Extension::DEF_POWEROFF  = "systemctl poweroff -i";
-const QString System::Extension::CFG_REBOOT    = "reboot";
-const QString System::Extension::DEF_REBOOT    = "systemctl reboot -i";
-const QString System::Extension::CFG_SUSPEND   = "suspend";
-const QString System::Extension::DEF_SUSPEND   = "systemctl suspend -i";
-const QString System::Extension::CFG_HIBERNATE = "hibernate";
-const QString System::Extension::DEF_HIBERNATE = "systemctl hibernate -i";
-const QString System::Extension::CFG_LOCK      = "lock";
-const QString System::Extension::DEF_LOCK      = "cinnamon-screensaver-command -l";
-
+const char* System::Extension::CFG_POWEROFF  = "poweroff";
+const char* System::Extension::DEF_POWEROFF  = "systemctl poweroff -i";
+const char* System::Extension::CFG_REBOOT    = "reboot";
+const char* System::Extension::DEF_REBOOT    = "systemctl reboot -i";
+const char* System::Extension::CFG_SUSPEND   = "suspend";
+const char* System::Extension::DEF_SUSPEND   = "systemctl suspend -i";
+const char* System::Extension::CFG_HIBERNATE = "hibernate";
+const char* System::Extension::DEF_HIBERNATE = "systemctl hibernate -i";
+const char* System::Extension::CFG_LOCK      = "lock";
+const char* System::Extension::DEF_LOCK      = "cinnamon-screensaver-command -l";
 
 /** ***************************************************************************/
-System::Extension::Extension() {
-    qDebug() << "[Template] Initialize extension";
+System::Extension::Extension() : IExtension("System") {
+    qDebug("[%s] Initialize extension", name);
 
     // Load settings
     XdgIconLookup xdg;
     QSettings s;
     QString iconPath;
-    s.beginGroup(EXT_NAME);
+    s.beginGroup(name);
 
     iconPath = xdg.themeIcon("system-shutdown");
     actions_.push_back({CFG_POWEROFF,
@@ -83,22 +80,22 @@ System::Extension::Extension() {
                         iconPath.isNull() ? ":lock" : iconPath,
                         s.value(CFG_LOCK, DEF_LOCK).toString()});
 
-    qDebug() << "[Template] Extension initialized";
+    qDebug("[%s] Extension initialized", name);
 }
 
 
 
 /** ***************************************************************************/
 System::Extension::~Extension() {
-    qDebug() << "[Template] Finalize extension";
+    qDebug("[%s] Finalize extension", name);
 
     // Save settings
     QSettings s;
-    s.beginGroup(EXT_NAME);
+    s.beginGroup(name);
     for (vector<ActionSpec>::iterator it = actions_.begin(); it != actions_.end(); ++it)
         s.setValue(it->id, it->cmd);
 
-    qDebug() << "[Template] Extension finalized";
+    qDebug("[%s] Extension finalized", name);
 }
 
 

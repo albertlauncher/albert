@@ -43,7 +43,6 @@ public:
     void handleQuery(shared_ptr<Query> query) override;
 
     /* const */
-    static const QString EXT_NAME;
     static const QString CFG_SEPS;
     static const bool    CFG_SEPS_DEF;
 

@@ -71,13 +71,12 @@ private:
     QStringList rootDirs_;
 
     /* const */
-    static const QString EXT_NAME;
-    static const QString CFG_PATHS;
-    static const QString CFG_FUZZY;
-    static const bool    DEF_FUZZY;
-    static const QString CFG_TERM;
-    static const QString DEF_TERM;
-    static const bool    UPDATE_DELAY;
+    static const char* CFG_PATHS;
+    static const char* CFG_FUZZY;
+    static const bool  DEF_FUZZY;
+    static const char* CFG_TERM;
+    static const char* DEF_TERM;
+    static const bool  UPDATE_DELAY;
 
 signals:
     void rootDirsChanged(const QStringList&);

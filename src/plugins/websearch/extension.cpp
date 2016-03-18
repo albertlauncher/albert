@@ -25,8 +25,6 @@
 #include "searchengine.h"
 #include "query.h"
 
-const QString Websearch::Extension::EXT_NAME  = "websearch";
-
 ///**************************************************************************/
 //void Websearch::WebSearch::queryFallback(const QString &req, QVector<Service::Item *> *res) const
 //{
@@ -39,13 +37,13 @@ const QString Websearch::Extension::EXT_NAME  = "websearch";
 
 
 /** ***************************************************************************/
-Websearch::Extension::Extension() {
-    qDebug() << "[Websearch] Initialize extension";
+Websearch::Extension::Extension() : IExtension("Websearch")  {
+    qDebug("[%s] Initialize extension", name);
 
     // Deserialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(EXT_NAME))
+                filePath(QString("%1.dat").arg(name))
                 );
     if (dataFile.exists()) {
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
@@ -64,19 +62,19 @@ Websearch::Extension::Extension() {
             restoreDefaults();
         }
     } else restoreDefaults(); // Without warning
-    qDebug() << "[Websearch] Extension initialized";
+    qDebug("[%s] Extension initialized", name);
 }
 
 
 
 /** ***************************************************************************/
 Websearch::Extension::~Extension() {
-    qDebug() << "[Websearch] Finalize extension";
+    qDebug("[%s] Finalize extension", name);
 
     // Serialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(EXT_NAME))
+                filePath(QString("%1.dat").arg(name))
                 );
     if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
         qDebug() << "[Websearch] Serializing to" << dataFile.fileName();
@@ -87,7 +85,7 @@ Websearch::Extension::~Extension() {
         dataFile.close();
     } else
         qCritical() << "Could not write to " << dataFile.fileName();
-    qDebug() << "[Websearch] Extension finalized";
+    qDebug("[%s] Extension finalized", name);
 }
 
 

@@ -23,6 +23,7 @@ class Query;
 class IExtension : public IPlugin
 {
 public:
+    IExtension(const char * extName) : name(extName) {}
     virtual ~IExtension() {}
 
     /**
@@ -66,6 +67,9 @@ public:
      * @param query Holds the query context
      */
     virtual void handleFallbackQuery(shared_ptr<Query> query) { Q_UNUSED(query)}
+
+    /* const */
+    const char* name;
 };
 #define ALBERT_EXTENSION_IID "org.manuelschneid3r.albert.extension"
 Q_DECLARE_INTERFACE(IExtension, ALBERT_EXTENSION_IID)

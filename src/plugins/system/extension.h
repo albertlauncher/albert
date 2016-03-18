@@ -60,16 +60,15 @@ private:
     vector<ActionSpec> actions_;
 
     /* const*/
-    static const QString EXT_NAME;
-    static const QString CFG_POWEROFF;
-    static const QString DEF_POWEROFF;
-    static const QString CFG_REBOOT;
-    static const QString DEF_REBOOT;
-    static const QString CFG_SUSPEND;
-    static const QString DEF_SUSPEND;
-    static const QString CFG_HIBERNATE;
-    static const QString DEF_HIBERNATE;
-    static const QString CFG_LOCK;
-    static const QString DEF_LOCK;
+    static const char* CFG_POWEROFF;
+    static const char* DEF_POWEROFF;
+    static const char* CFG_REBOOT;
+    static const char* DEF_REBOOT;
+    static const char* CFG_SUSPEND;
+    static const char* DEF_SUSPEND;
+    static const char* CFG_HIBERNATE;
+    static const char* DEF_HIBERNATE;
+    static const char* CFG_LOCK;
+    static const char* DEF_LOCK;
 };
 }

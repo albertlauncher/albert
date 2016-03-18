@@ -20,22 +20,20 @@
 #include "item.h"
 #include "query.h"
 
-
-
 /** ***************************************************************************/
-Template::Extension::Extension() {
-    qDebug() << "[Template] Initialize extension";
+Template::Extension::Extension() : IExtension("Template") {
+    qDebug("[%s] Initialize extension", name);
     // Do sth.
-    qDebug() << "[Template] Extension initialized";
+    qDebug("[%s] Extension initialized", name);
 }
 
 
 
 /** ***************************************************************************/
 Template::Extension::~Extension() {
-    qDebug() << "[Template] Finalize extension";
+    qDebug("[%s] Finalize extension", name);
     // Do sth.
-    qDebug() << "[Template] Extension finalized";
+    qDebug("[%s] Extension finalized", name);
 }
 
 

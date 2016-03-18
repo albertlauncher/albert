@@ -31,10 +31,8 @@ using std::shared_ptr;
 void Applications::Indexer::run() {
 
     // Notification
-    QString msg("Indexing desktop entries ...");
-    emit statusInfo(msg);
-    qDebug() << "[Applications]" << msg;
-
+    qDebug("[%s] Start indexing in background thread", extension_->name);
+    emit statusInfo("Indexing desktop entries ...");
 
     // Get a new index [O(n)]
     vector<shared_ptr<Application>> newIndex;
@@ -104,9 +102,7 @@ void Applications::Indexer::run() {
      *  ▲ CRITICAL ▲
      */
 
-
     // Notification
-    msg = QString("Indexed %1 desktop entries.").arg(extension_->index_.size());
-    emit statusInfo(msg);
-    qDebug() << "[Applications]" << msg;
+    qDebug("[%s] Indexing done (%d items)", extension_->name, static_cast<int>(extension_->index_.size()));
+    emit statusInfo(QString("Indexed %1 desktop entries").arg(extension_->index_.size()));
 }

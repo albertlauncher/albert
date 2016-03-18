@@ -29,10 +29,8 @@
 void Files::Indexer::run() {
 
     // Notification
-    QString msg("Indexing files ...");
-    emit statusInfo(msg);
-    qDebug() << "[Files]" << msg;
-
+    qDebug("[%s] Start indexing in background thread", extension_->name);
+    emit statusInfo("Indexing files ...");
 
     // Prepare the iterator properties
     QDir::Filters filters = QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot;
@@ -172,9 +170,7 @@ void Files::Indexer::run() {
      *  ▲ CRITICAL ▲
      */
 
-
     // Notification
-    msg = QString("Indexed %1 files.").arg(extension_->fileIndex_.size());
-    emit statusInfo(msg);
-    qDebug() << "[Files]" << msg;
+    qDebug("[%s] Indexing done (%d items)", extension_->name, static_cast<int>(extension_->fileIndex_.size()));
+    emit statusInfo(QString("Indexed %1 files").arg(extension_->fileIndex_.size()));
 }
