@@ -3,7 +3,7 @@ set(LIB_NAME applications)
 find_package(Qt5Widgets 5.1 REQUIRED)
 
 include_directories(
-    ../../application/ #TODO replace by coreapi
+    ../../application/
     ../../shared
     ../../application/pluginsystem/extension
 )
@@ -19,6 +19,7 @@ set(SRC
     ../../shared/search/search_impl.h
     ../../shared/search/prefixsearch.h
     ../../shared/search/fuzzysearch.h
+    ../../shared/iconlookup/xdgiconlookup.cpp
 )
 
 qt5_wrap_ui(UI

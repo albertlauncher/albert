@@ -16,7 +16,6 @@
 
 #pragma once
 #include <QDebug>
-#include <QIcon>
 #include <QVariant>
 #include <QMutex>
 #include <QTimer>
@@ -177,7 +176,7 @@ public:
             case Qt::ToolTipRole:
                 return ti->data->subtext();
             case Qt::DecorationRole:
-                return ti->data->icon();
+                return ti->data->iconPath();
             }
         }
         return QVariant();

@@ -28,7 +28,7 @@ public:
 
     QString text() const override;
     QString subtext() const override;
-    QIcon icon() const override;
+    QString iconPath() const override;
     void activate() override;
 
     void serialize(QDataStream &out);
@@ -57,7 +57,6 @@ private:
     QString trigger_;
     QString searchTerm_;
     QString iconPath_;
-    QIcon   icon_;
 };
 
 }

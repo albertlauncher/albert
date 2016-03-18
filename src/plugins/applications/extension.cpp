@@ -104,7 +104,7 @@ Applications::Extension::Extension() {
     // Rebuild the offline search index
     searchIndex_.clear();
     for (auto &i : index_)
-        index_.push_back(i);
+        searchIndex_.add(i);
 
     // Trigger an initial update
     updateIndex();

@@ -25,6 +25,7 @@ using std::map;
 #include "application.h"
 #include "desktopaction.h"
 #include "albertapp.h"
+#include "iconlookup/xdgiconlookup.h"
 
 
 QString Applications::Application::terminal;
@@ -44,8 +45,8 @@ QString Applications::Application::subtext() const {
 
 
 /** ***************************************************************************/
-QIcon Applications::Application::icon() const {
-    return icon_;
+QString Applications::Application::iconPath() const {
+    return iconPath_;
 }
 
 
@@ -167,13 +168,22 @@ bool Applications::Application::readDesktopEntry() {
     exec_.replace("%%", "%");
 
     // Try to get the icon
-    if (values["Desktop Entry"].count("Icon"))
-        icon_ = getIcon(values["Desktop Entry"]["Icon"]);
-    else {
-        qWarning() << "No icon specified in " << path_;
-        icon_ = QIcon::fromTheme("exec");
+    XdgIconLookup xdg;
+    QString iconName;
+    if (values["Desktop Entry"].count("Icon")){
+        QString iconName = values["Desktop Entry"]["Icon"];
+        QString iconPath = xdg.themeIcon(iconName);
+        if (!iconPath.isNull())
+            iconPath_ = iconPath;
+        else
+            qWarning() << iconName << "was not found";
+    } else {
+        QString iconPath = xdg.themeIcon("exec");
+        if (!iconPath.isNull())
+            iconPath_ = iconPath;
+        else
+            qWarning() << "exec" << "was not found";
     }
-
 
     // Try to get any [localized] secondary information comment
     if (values["Desktop Entry"].count(QString("Comment[%1]").arg(locale)))
@@ -204,7 +214,7 @@ bool Applications::Application::readDesktopEntry() {
             actions_.push_back(std::make_shared<DesktopAction>(this,
                                                                QString("Run %1 as root").arg(name_),
                                                                QString("%1 \"%2\"").arg(s, exec_),
-                                                               icon_));
+                                                               iconPath_));
     }
 
 
@@ -228,11 +238,16 @@ bool Applications::Application::readDesktopEntry() {
 
             // Try to get an icon
             group = QString("Desktop Action %1").arg(actionString);
-            if (values[group].count("Icon"))
-                actions_.push_back(std::make_shared<DesktopAction>(this, name, exec, getIcon(values[group]["Icon"])));
-            else
-                actions_.push_back(std::make_shared<DesktopAction>(this, name, exec, icon_));
-
+            if (values[group].count("Icon")){
+                QString iconName = values[group]["Icon"];
+                QString iconPath = xdg.themeIcon(iconName);
+                if (!iconPath.isNull()){
+                    actions_.push_back(std::make_shared<DesktopAction>(this, name, exec, iconPath));
+                    break;
+                }
+            }
+            // App icon of none is specified or lookupf failed
+            actions_.push_back(std::make_shared<DesktopAction>(this, name, exec, iconPath_));
         }
     }
     return true;
@@ -407,53 +422,53 @@ QStringList Applications::Application::execValueEscape(const QString &execValue)
 
 
 
-/** ***************************************************************************/
-QIcon Applications::Application::getIcon(const QString &iconName) {
+///** ***************************************************************************/
+//QIcon Applications::Application::getIcon(const QString &iconName) {
 
-    // http://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
-    // http://standards.freedesktop.org/desktop-entry-spec/latest/
+//    // http://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
+//    // http://standards.freedesktop.org/desktop-entry-spec/latest/
 
-    /*
-     * Icon to display in file manager, menus, etc. If the name is an absolute
-     * path, the given file will be used. If the name is not an absolute path,
-     * the algorithm described in the Icon Theme Specification will be used to
-     * locate the icon. oh funny qt-bug h8 u
-     */
+//    /*
+//     * Icon to display in file manager, menus, etc. If the name is an absolute
+//     * path, the given file will be used. If the name is not an absolute path,
+//     * the algorithm described in the Icon Theme Specification will be used to
+//     * locate the icon. oh funny qt-bug h8 u
+//     */
 
-    if (iconName.startsWith('/'))
-        // If it is a full path
-        return QIcon(iconName);
-    else if (QIcon::hasThemeIcon(iconName))
-        // If it is in the theme
-        return QIcon::fromTheme(iconName);
-    else {
-        QIcon result;
-        // Try hicolor
-        QString currentTheme = QIcon::themeName(); // missing fallback (qt-bug)
-        QIcon::setThemeName("hicolor");
-        if (QIcon::hasThemeIcon(iconName)) {
-            result = QIcon::fromTheme(iconName);
-            QIcon::setThemeName(currentTheme);
-        } else {
-            QIcon::setThemeName(currentTheme);
-            // if it is in the pixmaps
-            QDirIterator it("/usr/share/pixmaps", QDir::Files, QDirIterator::Subdirectories);
-            bool found = false;
-            while (it.hasNext()) {
-                it.next();
-                QFileInfo fi = it.fileInfo();
-                if (fi.isFile() && (fi.fileName() == iconName || fi.baseName() == iconName)) {
-                    result = QIcon(fi.canonicalFilePath());
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                // If it is still not found use a generic one
-                qWarning() << "Unknown icon:" << iconName;
-                result = QIcon::fromTheme("exec");
-            }
-        }
-        return result;
-    }
-}
+//    if (iconName.startsWith('/'))
+//        // If it is a full path
+//        return QIcon(iconName);
+//    else if (QIcon::hasThemeIcon(iconName))
+//        // If it is in the theme
+//        return QIcon::fromTheme(iconName);
+//    else {
+//        QIcon result;
+//        // Try hicolor
+//        QString currentTheme = QIcon::themeName(); // missing fallback (qt-bug)
+//        QIcon::setThemeName("hicolor");
+//        if (QIcon::hasThemeIcon(iconName)) {
+//            result = QIcon::fromTheme(iconName);
+//            QIcon::setThemeName(currentTheme);
+//        } else {
+//            QIcon::setThemeName(currentTheme);
+//            // if it is in the pixmaps
+//            QDirIterator it("/usr/share/pixmaps", QDir::Files, QDirIterator::Subdirectories);
+//            bool found = false;
+//            while (it.hasNext()) {
+//                it.next();
+//                QFileInfo fi = it.fileInfo();
+//                if (fi.isFile() && (fi.fileName() == iconName || fi.baseName() == iconName)) {
+//                    result = QIcon(fi.canonicalFilePath());
+//                    found = true;
+//                    break;
+//                }
+//            }
+//            if (!found) {
+//                // If it is still not found use a generic one
+//                qWarning() << "Unknown icon:" << iconName;
+//                result = QIcon::fromTheme("exec");
+//            }
+//        }
+//        return result;
+//    }
+//}

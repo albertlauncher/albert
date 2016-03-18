@@ -3,7 +3,7 @@ set(LIB_NAME template)
 find_package(Qt5Widgets 5.1 REQUIRED)
 
 include_directories(
-    ../../application/ #TODO replace by coreapi
+    ../../application/
     ../../shared
     ../../application/pluginsystem/extension
 )

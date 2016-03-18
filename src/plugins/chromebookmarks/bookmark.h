@@ -16,7 +16,6 @@
 
 #pragma once
 #include <QString>
-#include <QIcon>
 #include "search/iindexable.h"
 #include "abstractobjects.hpp"
 
@@ -36,7 +35,7 @@ public:
 
     QString text() const override;
     QString subtext() const override;
-    QIcon icon() const override;
+    QString iconPath() const override;
     void activate() override;
 
     uint16_t usageCount() const override {return usage_;}
@@ -48,6 +47,5 @@ private:
     QString      name_;
     QString      url_;
     ushort       usage_;
-    static QIcon icon_;
 };
 }

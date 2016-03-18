@@ -22,6 +22,7 @@
 #include "configwidget.h"
 #include "query.h"
 #include "objects.hpp"
+#include "iconlookup/xdgiconlookup.h"
 
 const QString Calculator::Extension::EXT_NAME      = "calculator";
 const QString Calculator::Extension::CFG_SEPS      = "group_separators";
@@ -39,10 +40,10 @@ Calculator::Extension::Extension() {
                 ? loc_.numberOptions() & ~QLocale::OmitGroupSeparator
                 : loc_.numberOptions() | QLocale::OmitGroupSeparator );
 
-    if (QIcon::hasThemeIcon("calc"))
-        calcIcon_ = QIcon::fromTheme("calc");
-    else
-        calcIcon_ = QIcon::fromTheme("unknown");  // FIXME FAVICON RESOURCE
+    XdgIconLookup xdg;
+    QString iconPath = xdg.themeIcon("calc");
+    iconPath_ = iconPath.isNull() ? ":calc" : iconPath;
+
     parser_.reset(new mu::Parser);
     parser_->SetDecSep(loc_.decimalPoint().toLatin1());
     parser_->SetThousandsSep(loc_.groupSeparator().toLatin1());
@@ -97,7 +98,7 @@ void Calculator::Extension::handleQuery(shared_ptr<Query> query) {
     std::shared_ptr<StandardItem> calcItem = std::make_shared<StandardItem>();
     calcItem->setText(result);
     calcItem->setSubtext(QString("Result of '%1'").arg(query->searchTerm()));
-    calcItem->setIcon(calcIcon_);
+    calcItem->setIcon(iconPath_);
     calcItem->setAction([result](){
         QApplication::clipboard()->setText(result);
         qApp->hideWidget();

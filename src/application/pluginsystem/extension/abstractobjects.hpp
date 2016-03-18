@@ -16,7 +16,6 @@
 
 #pragma once
 #include <QString>
-#include <QIcon>
 #include <memory>
 #include <vector>
 using std::shared_ptr;
@@ -31,7 +30,7 @@ using std::vector;
 class Action{
 public:
     virtual ~Action() {}
-    virtual QIcon icon() const = 0;
+    virtual QString iconPath() const = 0;
     virtual QString text() const = 0;
     virtual QString subtext() const = 0;
     virtual void activate() = 0;

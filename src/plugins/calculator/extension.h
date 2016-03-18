@@ -17,7 +17,6 @@
 #pragma once
 #include <QObject>
 #include <QLocale>
-#include <QIcon>
 #include <QPointer>
 #include <memory>
 #include "iextension.h"
@@ -52,7 +51,6 @@ private:
     QPointer<ConfigWidget> widget_;
     std::unique_ptr<mu::Parser> parser_;
     QLocale loc_;
-    QIcon calcIcon_;
-
+    QString iconPath_;
 };
 }

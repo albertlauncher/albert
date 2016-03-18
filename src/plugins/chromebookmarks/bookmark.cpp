@@ -20,9 +20,6 @@
 #include "albertapp.h"
 
 
-QIcon ChromeBookmarks::Bookmark::icon_;
-
-
 /** ***************************************************************************/
 QString ChromeBookmarks::Bookmark::text() const {
     return name_;
@@ -38,8 +35,8 @@ QString ChromeBookmarks::Bookmark::subtext() const {
 
 
 /** ***************************************************************************/
-QIcon ChromeBookmarks::Bookmark::icon() const {
-    return icon_;
+QString ChromeBookmarks::Bookmark::iconPath() const {
+    return ":favicon";
 }
 
 

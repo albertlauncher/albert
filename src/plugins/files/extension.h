@@ -46,7 +46,6 @@ public:
     QWidget *widget(QWidget *parent = nullptr) override;
 
     // IExtension
-    void teardownSession() override;
     void handleQuery(shared_ptr<Query> query) override;
 
     // API special to this extension

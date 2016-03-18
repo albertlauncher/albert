@@ -15,18 +15,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QString>
 #include <QMimeType>
-#include <QFileInfo>
-#include <QIcon>
 #include <vector>
-#include <map>
 #include <memory>
+#include "abstractobjects.hpp"
 using std::vector;
-using std::map;
 using std::shared_ptr;
 using std::unique_ptr;
-#include "abstractobjects.hpp"
 #include "search/iindexable.h"
 
 namespace Files {
@@ -43,7 +38,7 @@ public:
 
     QString text() const override;
     QString subtext() const override;
-    QIcon icon() const override;
+    QString iconPath() const override;
     void activate() override;
 
     uint16_t usageCount() const { return usage_; }
@@ -55,14 +50,11 @@ public:
     const QMimeType &mimetype() const { return mimetype_; }
     void incUsage() {++usage_;}
 
-    static void clearIconCache();
-
 private:
     QString path_;
     QMimeType mimetype_;
     mutable short usage_;
     unique_ptr<vector<shared_ptr<AlbertItem>>> children_;
-    static map<QString, QIcon> iconCache_;
 };
 
 }

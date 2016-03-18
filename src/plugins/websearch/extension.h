@@ -18,7 +18,6 @@
 #include <QAbstractTableModel>
 #include <QFileSystemWatcher>
 #include <QPointer>
-#include <QIcon>
 #include <memory>
 #include "iextension.h"
 #include "search/search.h"

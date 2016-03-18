@@ -21,8 +21,6 @@
 ProposalList::ProposalList(QWidget *parent) : QListView(parent) {
     QSettings s;
     _itemDelegate = new ItemDelegate;
-    _itemDelegate->showInfo   = s.value(CFG_SHOW_INFO, CFG_SHOW_INFO_DEF).toBool();
-    _itemDelegate->showForSelectedOnly = s.value(CFG_SELECTED_ONLY, CFG_SELECTED_ONLY_DEF).toBool();
     _maxItems  = s.value(CFG_MAX_PROPOSALS, CFG_MAX_PROPOSALS_DEF).toInt();
 
     setItemDelegate(_itemDelegate);
@@ -35,8 +33,6 @@ ProposalList::ProposalList(QWidget *parent) : QListView(parent) {
 /** ***************************************************************************/
 ProposalList::~ProposalList() {
     QSettings s;
-    s.setValue(CFG_SHOW_INFO, _itemDelegate->showInfo);
-    s.setValue(CFG_SELECTED_ONLY, _itemDelegate->showForSelectedOnly);
     s.setValue(CFG_MAX_PROPOSALS, _maxItems);
     delete _itemDelegate;
 }
@@ -156,34 +152,6 @@ void ProposalList::reset() {
     }
     else
         hide();
-}
-
-
-
-/** ***************************************************************************/
-void ProposalList::setShowInfo(bool b) {
-    _itemDelegate->showInfo=b;
-}
-
-
-
-/** ***************************************************************************/
-bool ProposalList::showInfo() const {
-    return _itemDelegate->showInfo;
-}
-
-
-
-/** ***************************************************************************/
-void ProposalList::setSelectedOnly(bool b) {
-    _itemDelegate->showForSelectedOnly=b;
-}
-
-
-
-/** ***************************************************************************/
-bool ProposalList::selectedOnly() const {
-    return _itemDelegate->showForSelectedOnly;
 }
 
 

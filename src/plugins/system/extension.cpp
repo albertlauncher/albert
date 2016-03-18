@@ -22,6 +22,7 @@
 #include "query.h"
 #include "objects.hpp"
 #include "albertapp.h"
+#include "iconlookup/xdgiconlookup.h"
 
 
 const QString System::Extension::EXT_NAME      = "system";
@@ -42,38 +43,44 @@ System::Extension::Extension() {
     qDebug() << "[Template] Initialize extension";
 
     // Load settings
+    XdgIconLookup xdg;
     QSettings s;
-    shared_ptr<StandardItem> sp;
+    QString iconPath;
     s.beginGroup(EXT_NAME);
 
+    iconPath = xdg.themeIcon("system-shutdown");
     actions_.push_back({CFG_POWEROFF,
                         "Poweroff",
                         "Poweroff the machine.",
-                        QIcon::hasThemeIcon("system-shutdown") ? QIcon::fromTheme("system-shutdown") : QIcon(":poweroff"),
+                        iconPath.isNull() ? ":poweroff" : iconPath,
                         s.value(CFG_POWEROFF, DEF_POWEROFF).toString()});
 
+    iconPath = xdg.themeIcon("system-reboot");
     actions_.push_back({CFG_REBOOT,
                         "Reboot",
                         "Reboot the machine.",
-                        QIcon::hasThemeIcon("system-reboot") ? QIcon::fromTheme("system-reboot") : QIcon(":reboot"),
+                        iconPath.isNull() ? ":reboot" : iconPath,
                         s.value(CFG_REBOOT, DEF_REBOOT).toString()});
 
+    iconPath = xdg.themeIcon("system-suspend");
     actions_.push_back({CFG_SUSPEND,
                         "Suspend",
                         "Suspend the machine.",
-                        QIcon::hasThemeIcon("system-suspend") ? QIcon::fromTheme("system-suspend") : QIcon(":suspend"),
+                        iconPath.isNull() ? ":suspend" : iconPath,
                         s.value(CFG_SUSPEND, DEF_SUSPEND).toString()});
 
+    iconPath = xdg.themeIcon("system-suspend-hibernate");
     actions_.push_back({CFG_HIBERNATE,
                         "Hiberate",
                         "Hiberate the machine.",
-                        QIcon::hasThemeIcon("system-suspend-hibernate") ? QIcon::fromTheme("system-suspend-hibernate") : QIcon(":hibernate"),
+                        iconPath.isNull() ? ":hibernate" : iconPath,
                         s.value(CFG_HIBERNATE, DEF_HIBERNATE).toString()});
 
+    iconPath = xdg.themeIcon("system-lock");
     actions_.push_back({CFG_LOCK,
                         "Lock",
                         "Lock the session.",
-                        QIcon::hasThemeIcon("system-lock") ? QIcon::fromTheme("system-lock") : QIcon(":lock"),
+                        iconPath.isNull() ? ":lock" : iconPath,
                         s.value(CFG_LOCK, DEF_LOCK).toString()});
 
     qDebug() << "[Template] Extension initialized";
@@ -139,7 +146,7 @@ void System::Extension::handleQuery(shared_ptr<Query> query) {
         if (it->name.toLower().startsWith(query->searchTerm()))
             query->addMatch(std::make_shared<StandardItem>(it->name,
                                                            it->desc,
-                                                           it->icon,
+                                                           it->iconPath,
                                                            [=](){
                 qApp->hideWidget();
                 QProcess::startDetached(it->cmd);

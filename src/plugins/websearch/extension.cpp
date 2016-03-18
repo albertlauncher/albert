@@ -242,7 +242,7 @@ QVariant Websearch::Extension::data(const QModelIndex &index, int role) const {
     }
     case Qt::DecorationRole: {
         switch (static_cast<Section>(index.column())) {
-        case Section::Name:  return index_[index.row()]->icon();
+        case Section::Name:  return index_[index.row()]->iconPath();
         default: return QVariant();
         }
     }
@@ -338,7 +338,7 @@ bool Websearch::Extension::insertRows(int position, int rows, const QModelIndex 
         index_.insert(index_.begin() + row,
                       std::make_shared<SearchEngine>(
                           "<name>",
-                          "<http://url/containing/the/?searchexpression=%s>",
+                          "<http://url/containing/the/?query=%s>",
                           "<trigger>",
                           ":default",
                           false));

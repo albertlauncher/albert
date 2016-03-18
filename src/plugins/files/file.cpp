@@ -15,11 +15,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QApplication>
+#include <QFileInfo>
 #include "file.h"
 #include "fileactions.h"
-
-
-map<QString, QIcon> Files::File::iconCache_;
+#include "iconlookup/xdgiconlookup.h"
 
 
 /** ***************************************************************************/
@@ -43,17 +42,22 @@ QString Files::File::subtext() const {
 
 
 /** ***************************************************************************/
-QIcon Files::File::icon() const {
-    QString iconName = mimetype_.iconName();
-    if (iconCache_.count(iconName) == 0) {
-        if (QIcon::hasThemeIcon(iconName))
-            iconCache_[iconName] = QIcon::fromTheme(iconName);
-        else if(QIcon::hasThemeIcon(mimetype_.genericIconName()))
-            iconCache_[iconName] = QIcon::fromTheme(mimetype_.genericIconName());
-        else
-            iconCache_[iconName] = QIcon::fromTheme("unknown");
-    }
-    return iconCache_[iconName];
+QString Files::File::iconPath() const {
+    XdgIconLookup xdg;
+
+    QString iconPath = xdg.themeIcon(mimetype_.iconName());
+    if (!iconPath.isNull())
+        return iconPath;
+
+    iconPath = xdg.themeIcon(mimetype_.genericIconName());
+    if (!iconPath.isNull())
+        return iconPath;
+
+    iconPath = xdg.themeIcon("unknown");
+    if (!iconPath.isNull())
+        return iconPath;
+
+    return QString();
 }
 
 
@@ -91,11 +95,3 @@ vector<shared_ptr<AlbertItem>> Files::File::children() {
 std::vector<QString> Files::File::aliases() const {
     return std::vector<QString>({QFileInfo(path_).fileName()});
 }
-
-
-
-/** ***************************************************************************/
-void Files::File::clearIconCache() {
-    iconCache_.clear();
-}
-

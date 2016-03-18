@@ -31,52 +31,48 @@ void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &options,
 //		QRect iconRect(contentsRect.topLeft(), option.decorationSize);
 //		iconRect.translate( (a-option.decorationSize.width())/2, (a-option.decorationSize.height())/2);
     QRect iconRect = option.widget->style()->subElementRect(QStyle::SE_ItemViewItemDecoration, &option, option.widget);
-    painter->drawPixmap(iconRect, index.data(Qt::DecorationRole).value<QIcon>().pixmap(option.decorationSize));
+    painter->drawPixmap(iconRect,
+                        QPixmap(index.data(Qt::DecorationRole).value<QString>())
+                        .scaled(option.decorationSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
-    /* Drawing text differs dependent on the mode and selection */
-    if (showInfo && (!showForSelectedOnly || option.state.testFlag(QStyle::State_Selected)) ) {
-        /*
-         * fm(x) := fontmetrics of x
-         * DR := DisplayRole
-         * TR := ToolTipRole
-         *  +---------------------+----------------------------------------+
-         *  |                     |                                        |
-         *  |   +-------------+   |                                        |
-         *  |   |             |   |                                        |
-         *  |   |             |   |a*fm(DR)/(fm(DR)+fm(TR))    DisplayRole |
-         * a|   |     icon    |   |                                        |
-         *  |   |             |   |                                        |
-         *  |   |             |   +----------------------------------------+
-         *  |   |             |   |                                        |
-         *  |   +-------------+   |a*fm(TR)/(fm(DR)+fm(TR))  ToolTipRole+x |
-         *  |                     |                                        |
-         * +---------------------------------------------------------------+
-         */
+    /*
+     * fm(x) := fontmetrics of x
+     * DR := DisplayRole
+     * TR := ToolTipRole
+     *  +---------------------+----------------------------------------+
+     *  |                     |                                        |
+     *  |   +-------------+   |                                        |
+     *  |   |             |   |                                        |
+     *  |   |             |   |a*fm(DR)/(fm(DR)+fm(TR))    DisplayRole |
+     * a|   |     icon    |   |                                        |
+     *  |   |             |   |                                        |
+     *  |   |             |   +----------------------------------------+
+     *  |   |             |   |                                        |
+     *  |   +-------------+   |a*fm(TR)/(fm(DR)+fm(TR))  ToolTipRole+x |
+     *  |                     |                                        |
+     * +---------------------------------------------------------------+
+     */
 
-        QRect DisplayRect = option.widget->style()->subElementRect(QStyle::SE_ItemViewItemText, &option, option.widget);
-        DisplayRect.adjust(3,0,0,-5);  // Empirical
-        QFont font = option.font;
-        painter->setFont(font);
-        QString text = QFontMetrics(font).elidedText(
-                    index.data(Qt::DisplayRole).toString(),
-                    option.textElideMode,
-                    DisplayRect.width());
-        painter->drawText(DisplayRect, Qt::AlignTop|Qt::AlignLeft, text);
-        font.setPixelSize(12);
-        painter->setFont(font);
-        text = QFontMetrics(font).elidedText(
-                    index.data(Qt::ToolTipRole)
-                    .toString(),
-                    option.textElideMode,
-                    DisplayRect.width());
-        painter->drawText(DisplayRect, Qt::AlignBottom|Qt::AlignLeft, text);
-    } else {
-        QRect DisplayRect = option.widget->style()->subElementRect(QStyle::SE_ItemViewItemText, &option, option.widget);
-        QString text = QFontMetrics(option.font).elidedText(
-                    index.data(Qt::DisplayRole).toString(),
-                    option.textElideMode,
-                    DisplayRect.width());
-        painter->drawText(DisplayRect, Qt::AlignVCenter|Qt::AlignLeft, text);
-    }
+    QRect DisplayRect = option.widget->style()->subElementRect(QStyle::SE_ItemViewItemText, &option, option.widget);
+    DisplayRect.adjust(3,0,0,-5);  // Empirical
+
+    // Draw display role
+    painter->setFont(option.font);
+    QString text = QFontMetrics(option.font).elidedText(
+                index.data(Qt::DisplayRole).toString(),
+                option.textElideMode,
+                DisplayRect.width());
+    painter->drawText(DisplayRect, Qt::AlignTop|Qt::AlignLeft, text);
+
+    // Draw tooltip role
+    option.font.setPixelSize(12);
+    painter->setFont(option.font);
+    text = QFontMetrics(option.font).elidedText(
+                index.data(Qt::ToolTipRole)
+                .toString(),
+                option.textElideMode,
+                DisplayRect.width());
+    painter->drawText(DisplayRect, Qt::AlignBottom|Qt::AlignLeft, text);
+
     painter->restore();
 }

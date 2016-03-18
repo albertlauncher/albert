@@ -15,28 +15,21 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include "abstractobjects.hpp"
+#include <QString>
+#include <QMap>
 
-namespace Applications {
-class Application;
-
-class DesktopAction final : public AlbertItem
+class XdgIconLookup
 {
 public:
-    DesktopAction(Application *app, const QString &name, const QString &exec,
-                  const QString &iconPath, const bool term=false);
-
-    QString text() const override;
-    QString subtext() const override;
-    QString iconPath() const override;
-    void activate() override;
+    XdgIconLookup();
+    QString themeIcon(QString iconName);
 
 private:
-    Application * const app_;
-    const QString name_;
-    const QString exec_;
-    const QString iconPath_;
-    const bool term_;
-};
+    static QString themeIconHelper(const QString &iconName, const QString &theme);
+    static QString lookupIconInTheme(const QString &iconName, const QString &themeFile);
+    static QString lookupThemeFile(const QString &themeName);
 
-}
+    static QStringList iconDirs_;
+    static QMap<QString, QString> iconCache_;
+    static QStringList icon_extensions;
+};

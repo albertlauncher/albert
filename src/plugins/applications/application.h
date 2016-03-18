@@ -15,8 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QString>
-#include <QIcon>
 #include <vector>
 using std::vector;
 #include "search/iindexable.h"
@@ -39,7 +37,7 @@ public:
 
     QString text() const override;
     QString subtext() const override;
-    QIcon icon() const override;
+    QString iconPath() const override;
     uint16_t usageCount() const override {return usage_;}
     void activate() override;
     bool hasChildren() const override;
@@ -61,7 +59,7 @@ private:
     QString path_;
     QString name_;
     QString altName_;
-    QIcon   icon_;
+    QString iconPath_;
     QString exec_;
     bool    term_;
     mutable uint16_t usage_;

@@ -227,13 +227,6 @@ QWidget *Files::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void Files::Extension::teardownSession() {
-    File::clearIconCache();
-}
-
-
-
-/** ***************************************************************************/
 void Files::Extension::handleQuery(shared_ptr<Query> query) {
     // Search for matches. Lock memory against indexer
     indexAccess_.lock();

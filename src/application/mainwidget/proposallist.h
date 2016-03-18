@@ -32,16 +32,8 @@ public:
     QSize sizeHint() const override;
     void reset() override;
 
-    void setShowInfo(bool);
-    bool showInfo() const;
-
-    void setSelectedOnly(bool);
-    bool selectedOnly() const;
-
     void setMaxItems(int);
     int maxItems() const;
-
-
 
 private:
     bool eventFilter(QObject*, QEvent *event) override;
@@ -49,10 +41,6 @@ private:
     ItemDelegate *_itemDelegate;
     int _maxItems;
 
-    static const constexpr char* CFG_SHOW_INFO         = "showInfo";
-    static const constexpr bool  CFG_SHOW_INFO_DEF     = true;
-    static const constexpr char* CFG_SELECTED_ONLY     = "showForSelectedOnly";
-    static const constexpr bool  CFG_SELECTED_ONLY_DEF = false;
     static const constexpr char* CFG_MAX_PROPOSALS     = "itemCount";
     static const constexpr int   CFG_MAX_PROPOSALS_DEF = 5;
 };
