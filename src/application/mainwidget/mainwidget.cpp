@@ -19,6 +19,7 @@
 #include <QCursor>
 #include <QDir>
 #include <QDesktopWidget>
+#include <QTimer>
 #include <QDebug>
 #include <QApplication>
 #include <QTimer>
@@ -223,50 +224,37 @@ void MainWidget::keyPressEvent(QKeyEvent *e) {
 
 
 
-#ifdef Q_OS_LINUX
-#include "xcb/xcb.h"
-/** ****************************************************************************
- * @brief MainWidget::nativeEvent
- *
- * The purpose of this function is to hide in special casesonly.
- */
-bool MainWidget::nativeEvent(const QByteArray &eventType, void *message, long *)
-{
-    if (eventType == "xcb_generic_event_t")
-    {
-        xcb_generic_event_t* event = static_cast<xcb_generic_event_t *>(message);
-        switch (event->response_type & 127)
-        {
-        case XCB_FOCUS_OUT: {
-            xcb_focus_out_event_t *fe = (xcb_focus_out_event_t *)event;
-//			std::cout << "MainWidget::nativeEvent::XCB_FOCUS_OUT\t";
-//			switch (fe->mode) {
-//			case XCB_NOTIFY_MODE_NORMAL: std::cout << "XCB_NOTIFY_MODE_NORMAL";break;
-//			case XCB_NOTIFY_MODE_GRAB: std::cout << "XCB_NOTIFY_MODE_GRAB";break;
-//			case XCB_NOTIFY_MODE_UNGRAB: std::cout << "XCB_NOTIFY_MODE_UNGRAB";break;
-//			case XCB_NOTIFY_MODE_WHILE_GRABBED: std::cout << "XCB_NOTIFY_MODE_WHILE_GRABBED";break;
-//			}
-//			std::cout << "\t";
-//			switch (fe->detail) {
-//			case XCB_NOTIFY_DETAIL_ANCESTOR: std::cout << "ANCESTOR";break;
-//			case XCB_NOTIFY_DETAIL_INFERIOR: std::cout << "INFERIOR";break;
-//			case XCB_NOTIFY_DETAIL_NONE: std::cout << "NONE";break;
-//			case XCB_NOTIFY_DETAIL_NONLINEAR: std::cout << "NONLINEAR";break;
-//			case XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL: std::cout << "NONLINEAR_VIRTUAL";break;
-//			case XCB_NOTIFY_DETAIL_POINTER: std::cout << "POINTER";break;break;
-//			case XCB_NOTIFY_DETAIL_POINTER_ROOT: std::cout << "POINTER_ROOT";
-//			case XCB_NOTIFY_DETAIL_VIRTUAL: std::cout << "VIRTUAL";break;
-//			}
-//			std::cout << std::endl;
-            if (((fe->mode==XCB_NOTIFY_MODE_GRAB && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR)
-                    || (fe->mode==XCB_NOTIFY_MODE_NORMAL && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR ))
-                    && hideOnFocusLoss_)
-//					&& !_settingsDialog->isVisible())
-                hide();
-            break;
-        }
+/** ***************************************************************************/
+bool MainWidget::event(QEvent *event) {
+    if (event->type() == QEvent::WindowDeactivate) {
+        qDebug() << "deactivated";
+        /* This is a horribly hackish but working solution.
+
+         A triggered key grab on X11 steals the focus of the window for short
+         period of time. This may result in the following annoying behaviour:
+         When the hotkey is pressed and X11 steals the focus there arises a
+         race condition between the hotkey event and the focus out event.
+         When the app is visible and the focus out event is delivered the app
+         gets hidden. Finally when the hotkey is received the app gets shown
+         again although the user intended to hide the app with the hotkey.
+
+         Solutions:
+         Although X11 differs between the two focus out events, qt does not.
+         One might install a native event filter and use the XCB structs to
+         decide which type of event is delivered, but this approach is not
+         platform independent (unless designed so explicitely, but its a
+         hassle). The behaviour was expected when the app hides on:
+
+         (mode==XCB_NOTIFY_MODE_GRAB && detail==XCB_NOTIFY_DETAIL_NONLINEAR)||
+          (mode==XCB_NOTIFY_MODE_NORMAL && detail==XCB_NOTIFY_DETAIL_NONLINEAR)
+         (Check Xlib Programming Manual)
+
+         The current, much simpler but less elegant solution is to delay the
+         hiding a few milliseconds, so that the hotkey event will always be
+         handled first. */
+        if (hideOnFocusLoss_){
+            QTimer::singleShot(50, this, &MainWidget::hide);
         }
     }
-    return false;
+    return QWidget::event(event);
 }
-#endif

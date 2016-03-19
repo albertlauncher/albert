@@ -27,6 +27,7 @@ class MainWidget final : public QWidget
 	Q_OBJECT
 
 public:
+
 	MainWidget(QWidget *parent = 0);
 	~MainWidget();
 
@@ -46,10 +47,13 @@ public:
 
     Ui::MainWidget ui;
 
-private:
+protected:
+
     void closeEvent(QCloseEvent * event) override;
     void keyPressEvent(QKeyEvent * event) override;
-    bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
+    bool event(QEvent *event) override;
+
+private:
 
     QString theme_;
     bool showCentered_;
