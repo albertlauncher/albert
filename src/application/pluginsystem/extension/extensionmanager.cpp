@@ -50,6 +50,7 @@ void ExtensionManager::startQuery(const QString &searchTerm) {
             if (e->runExclusive())
                 for (const QString& trigger : e->triggers())
                     if (trigger == potentialTrigger){
+                        e->handleQuery(currentQuery_);
                         emit newModel(currentQuery_->impl);
                         return;
                     }
