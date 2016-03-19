@@ -16,45 +16,62 @@
 
 #pragma once
 #include <QMimeType>
-#include <vector>
-#include <memory>
-#include "abstractobjects.hpp"
-using std::vector;
-using std::shared_ptr;
-using std::unique_ptr;
 #include "search/iindexable.h"
+#include "abstractobjects.hpp"
 
 namespace Files {
 
 class File final : public AlbertItem, public IIndexable
 {
-    friend class Extension;
-    friend class Indexer;
+    class OpenFileAction;
+    class RevealFileAction;
+    class CopyFileAction;
+    class CopyPathAction;
 
 public:
-    File() = delete;
-    File(const File &) = delete;
-    File(QString path, QMimeType mimetype, short usage = 0);
+
+    File() : usage_(0) {}
+    File(QString path, QMimeType mimetype, short usage = 0)
+        : path_(path), mimetype_(mimetype), usage_(usage){}
+
+    /*
+     * Implementation of AlbertItem interface
+     */
 
     QString text() const override;
     QString subtext() const override;
     QString iconPath() const override;
-    void activate() override;
-
-    uint16_t usageCount() const { return usage_; }
-    bool hasChildren() const override;
-    vector<shared_ptr<AlbertItem>> children() override;
     vector<QString> aliases() const override;
+    void activate() override;
+    uint16_t usageCount() const { return usage_; }
+    ActionSPtrVec actions() override;
 
+    /*
+     * Item specific members
+     */
+
+    /** Return the path of the file */
     const QString &path() const { return path_; }
+
+    /** Return the usage count */
+    uint16_t usage() const { return usage_; }
+
+    /** Sets the usage count */
+    void setUsage(uint16_t usage) { usage_ = usage; }
+
+    /** Return the mimetype of the file */
     const QMimeType &mimetype() const { return mimetype_; }
-    void incUsage() {++usage_;}
+
+    /** Serialize the desktop entry */
+    void serialize(QDataStream &out);
+
+    /** Deserialize the desktop entry */
+    void deserialize(QDataStream &in);
 
 private:
     QString path_;
     QMimeType mimetype_;
-    mutable short usage_;
-    unique_ptr<vector<shared_ptr<AlbertItem>>> children_;
+    mutable uint16_t usage_;
 };
 
 }

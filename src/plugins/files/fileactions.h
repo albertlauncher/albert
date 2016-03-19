@@ -25,11 +25,11 @@
 namespace Files {
 
 /** ***************************************************************************/
-class AbstractFileAction : public AlbertItem
+class AbstractFileAction : public Action
 {
 public:
     AbstractFileAction(File *file) : file_(file) {}
-    QString subtext() const override { return file_->path(); }
+    ~AbstractFileAction() {}
 
 protected:
     File *file_;
@@ -38,65 +38,44 @@ protected:
 
 
 /** ***************************************************************************/
-class OpenFileAction final : public AbstractFileAction
+class File::OpenFileAction final : public AbstractFileAction
 {
 public:
     OpenFileAction(File *file) : AbstractFileAction(file) {}
 
-    QString text() const override {
-        return "Open file in default application";
-    }
-
-    QString iconPath() const override {
-        return file_->iconPath();
-    }
-
+    QString text() const override { return "Open file in default application"; }
     void activate() override {
         qApp->hideWidget();
         QDesktopServices::openUrl(QUrl::fromLocalFile(file_->path()));
-        file_->incUsage();
+        ++file_->usage_;
     }
 };
 
 
 
 /** ***************************************************************************/
-class RevealFileAction final : public AbstractFileAction
+class File::RevealFileAction final : public AbstractFileAction
 {
 public:
     RevealFileAction(File *file) : AbstractFileAction(file) {}
 
-    QString text() const override {
-        return "Reveal file in default filebrowser";
-    }
-
-    QString iconPath() const override {
-        return QString();// FIXME QApplication::style()->standardIcon(QStyle::SP_DirIcon);
-    }
-
+    QString text() const override { return "Reveal file in default filebrowser"; }
     void activate() override {
         qApp->hideWidget();
         QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file_->path()).path()));
-        file_->incUsage();
+        ++file_->usage_;
     }
 };
 
 
 
 /** ***************************************************************************/
-class CopyFileAction final : public AbstractFileAction
+class File::CopyFileAction final : public AbstractFileAction
 {
 public:
     CopyFileAction(File *file) : AbstractFileAction(file) {}
 
-    QString text() const override {
-        return "Copy file to clipboard";
-    }
-
-    QString iconPath() const override {
-        return QString(); //  FIXME QIcon::fromTheme("edit-copy");
-    }
-
+    QString text() const override { return "Copy file to clipboard"; }
     void activate() override {
         qApp->hideWidget();
 
@@ -124,30 +103,23 @@ public:
         // Set the mimedata
         cb->setMimeData(newMimeData);
 
-        file_->incUsage();
+        ++file_->usage_;
     }
 };
 
 
 
 /** ***************************************************************************/
-class CopyPathAction final : public AbstractFileAction
+class File::CopyPathAction final : public AbstractFileAction
 {
 public:
     CopyPathAction(File *file) : AbstractFileAction(file) {}
 
-    QString text() const override {
-        return "Copy path to clipboard";
-    }
-
-    QString iconPath() const override {
-        return QString();// FIXME QIcon::fromTheme("edit-copy");
-    }
-
+    QString text() const override { return "Copy path to clipboard"; }
     void activate() override {
         qApp->hideWidget();
         QApplication::clipboard()->setText(file_->path());
-        file_->incUsage();
+        ++file_->usage_;
     }
 };
 

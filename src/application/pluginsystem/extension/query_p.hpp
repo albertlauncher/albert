@@ -169,7 +169,6 @@ public:
     QVariant data(const QModelIndex & index, int role) const override {
         if (index.isValid()) {
             TreeItem *ti = static_cast<TreeItem*>(index.internalPointer());
-
             switch (role) {
             case Qt::DisplayRole:
                 return ti->data->text();
@@ -177,9 +176,39 @@ public:
                 return ti->data->subtext();
             case Qt::DecorationRole:
                 return ti->data->iconPath();
+            case Qt::UserRole: {
+                QStringList actionTexts;
+                for (ActionSPtr &action : ti->data->actions())
+                    actionTexts.append(action->text());
+                return actionTexts;
+            }
+            default:
+                return QVariant();
             }
         }
         return QVariant();
+    }
+
+
+
+    /** ***********************************************************************/
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override {
+        if (index.isValid()) {
+            TreeItem *ti = static_cast<TreeItem*>(index.internalPointer());
+            switch (role) {
+            case Qt::UserRole+1: {
+                int actionValue = value.toInt();
+                if (0 <= actionValue && actionValue < static_cast<int>(ti->data->actions().size()))
+                    ti->data->actions()[actionValue]->activate();
+                else
+                    ti->data->activate();
+                return true;
+            }
+            default:
+                return false;
+            }
+        }
+        return false;
     }
 
 

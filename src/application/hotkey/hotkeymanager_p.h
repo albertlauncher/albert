@@ -20,7 +20,7 @@
 #include <QSet>
 #include <QAbstractNativeEventFilter>
 
-class HotkeyManager::HotkeyManagerPrivate final: public QObject, public QAbstractNativeEventFilter
+class HotkeyManager::HotkeyManagerPrivate final : public QObject, public QAbstractNativeEventFilter
 {
     Q_OBJECT
 

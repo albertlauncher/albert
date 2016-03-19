@@ -33,14 +33,19 @@ public:
     Extension();
     ~Extension();
 
-    // GenericPluginInterface
-    QWidget *widget(QWidget *parent = nullptr) override;
+    /*
+     * Implementation of extension interface
+     */
 
-    // IExtension
+    QWidget *widget(QWidget *parent = nullptr) override;
     void setupSession() override;
     void teardownSession() override;
     void handleQuery(shared_ptr<Query> query) override;
     void handleFallbackQuery(shared_ptr<Query>) override;
+
+    /*
+     * Extension specific members
+     */
 
 private:
     QPointer<ConfigWidget> widget_;

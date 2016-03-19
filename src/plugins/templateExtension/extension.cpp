@@ -22,18 +22,18 @@
 
 /** ***************************************************************************/
 Template::Extension::Extension() : IExtension("Template") {
-    qDebug("[%s] Initialize extension", name);
+    qDebug("[%s] Initialize extension", name_);
     // Do sth.
-    qDebug("[%s] Extension initialized", name);
+    qDebug("[%s] Extension initialized", name_);
 }
 
 
 
 /** ***************************************************************************/
 Template::Extension::~Extension() {
-    qDebug("[%s] Finalize extension", name);
+    qDebug("[%s] Finalize extension", name_);
     // Do sth.
-    qDebug("[%s] Extension finalized", name);
+    qDebug("[%s] Extension finalized", name_);
 }
 
 

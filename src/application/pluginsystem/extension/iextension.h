@@ -15,16 +15,25 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+#include <QWidget>
 #include <memory>
-#include "../iplugin.h"
 using std::shared_ptr;
 class Query;
 
-class IExtension : public IPlugin
+class IExtension
 {
 public:
-    IExtension(const char * extName) : name(extName) {}
+    IExtension(const char * name) : name_(name) {}
     virtual ~IExtension() {}
+
+    /**
+     * @brief The settings widget factory
+     * This has to return the widget that is accessible to the user from the
+     * albert settings plugin tab. If the return value is a nullptr there will
+     * be no settings widget available in the settings.
+     * @return The settings widget
+     */
+    virtual QWidget* widget(QWidget *parent = nullptr) {return new QWidget(parent);}
 
     /**
      * @brief Session setup
@@ -41,16 +50,17 @@ public:
     virtual void teardownSession() {}
 
     /**
-     * @brief Indicates that the extension shall be run only if one of its
-     * triggers is prefix of the query
+     * @brief Indicates that the extension shall be the only extension to run
+     * Ignored if the extension has no triggers.
+     * @return True, if the extension shall be run exclusive, else false.
      */
-    virtual bool isTriggerOnly() const {return false;}
     virtual bool runExclusive() const {return false;}
 
     /**
-     * @brief The triggers which let the extension be run solely, if one of its
-     * triggers is prefix of the query
-     * @return
+     * @brief The triggers which let the extension be run.
+     * The extension is not queried unless one of the triggers matches the first
+     * section of the query.
+     * @return Triggers.
      */
     virtual QStringList triggers() const {return QStringList();}
 
@@ -69,7 +79,7 @@ public:
     virtual void handleFallbackQuery(shared_ptr<Query> query) { Q_UNUSED(query)}
 
     /* const */
-    const char* name;
+    const char* name_;
 };
 #define ALBERT_EXTENSION_IID "org.manuelschneid3r.albert.extension"
 Q_DECLARE_INTERFACE(IExtension, ALBERT_EXTENSION_IID)

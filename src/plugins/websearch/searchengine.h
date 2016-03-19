@@ -26,10 +26,18 @@ public:
     SearchEngine() : enabled_(false) {}
     SearchEngine(QString name, QString url, QString trigger, QString iconPath, bool enabled = true);
 
+    /*
+     * Implementation of AlbertItem interface
+     */
+
     QString text() const override;
     QString subtext() const override;
     QString iconPath() const override;
     void activate() override;
+
+    /*
+     * Item specific
+     */
 
     void serialize(QDataStream &out);
     void deserialize(QDataStream &in);

@@ -47,7 +47,7 @@
       <attribute name="title">
        <string>General</string>
       </attribute>
-      <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
+      <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,3">
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,1">
          <item>

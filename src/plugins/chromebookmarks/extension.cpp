@@ -23,8 +23,8 @@
 #include <QDebug>
 #include <QFile>
 #include <QDir>
-#include "configwidget.h"
 #include "extension.h"
+#include "configwidget.h"
 #include "indexer.h"
 #include "bookmark.h"
 #include "query.h"
@@ -35,11 +35,11 @@ const bool  ChromeBookmarks::Extension::DEF_FUZZY      = false;
 
 /** ***************************************************************************/
 ChromeBookmarks::Extension::Extension() : IExtension("Chromebookmarks") {
-    qDebug("[%s] Initialize extension", name);
+    qDebug("[%s] Initialize extension", name_);
 
     // Load settings
     QSettings s;
-    s.beginGroup(name);
+    s.beginGroup(name_);
     searchIndex_.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
 
     // Load and set a valid path
@@ -50,52 +50,52 @@ ChromeBookmarks::Extension::Extension() : IExtension("Chromebookmarks") {
         restorePath();
 
     // Deserialize data
-    QFile dataFile(
-                QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(name))
-                );
+    QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
+                   filePath(QString("%1.dat").arg(name_)));
     if (dataFile.exists()) {
-        if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
-            qDebug() << "[ChromeBookmarks] Deserializing from" << dataFile.fileName();
+        if (dataFile.open(QIODevice::ReadOnly|QIODevice::Text)) {
+            qDebug("[%s] Deserializing from %s", name_, dataFile.fileName().toLocal8Bit().data());
             QDataStream in(&dataFile);
-            quint64 size;
-            QString name, url;
-            short usage;
-            in >> size;
-            for (quint64 i = 0; i < size; ++i) {
-                in >> name >> url >> usage;
-                index_.push_back(std::make_shared<Bookmark>(name, url , usage));
+            quint64 count;
+            for (in >> count ;count != 0; --count){
+                shared_ptr<Bookmark> deshrp = std::make_shared<Bookmark>();
+                deshrp->deserialize(in);
+                index_.push_back(deshrp);
             }
             dataFile.close();
+
+            // Build the offline index
+            for (auto &item : index_)
+                searchIndex_.add(item);
         } else
             qWarning() << "Could not open file: " << dataFile.fileName();
     }
 
-    // Rebuild the offline search index
-    searchIndex_.clear();
-    for (auto &i : index_)
-        searchIndex_.add(i);
-
     // Keep in sync with the bookmarkfile
-    connect(&watcher_, &QFileSystemWatcher::fileChanged, this, &Extension::updateIndex);
-    connect(this, &Extension::pathChanged, this, &Extension::updateIndex);
+    connect(&watcher_, &QFileSystemWatcher::fileChanged, this, &Extension::updateIndex, Qt::QueuedConnection);
+    connect(this, &Extension::pathChanged, this, &Extension::updateIndex, Qt::QueuedConnection);
 
     // Trigger an initial update
     updateIndex();
 
-    qDebug("[%s] Extension initialized", name);
+    qDebug("[%s] Extension initialized", name_);
 }
 
 
 
 /** ***************************************************************************/
 ChromeBookmarks::Extension::~Extension() {
-    qDebug("[%s] Finalize extension", name);
+    qDebug("[%s] Finalize extension", name_);
 
-    // Stop and wait for background indexer
+    /*
+     * Stop and wait for background indexer.
+     * This should be thread safe since this thread is responisble to start the
+     * indexer and, connections to this thread are disconnected in the QObject
+     * destructor and all events for a deleted object are removed from the event
+     * queue.
+     */
     if (!indexer_.isNull()) {
         indexer_->abort();
-        disconnect(indexer_.data(), &Indexer::destroyed, this, &Extension::updateIndex);
         QEventLoop loop;
         connect(indexer_.data(), &Indexer::destroyed, &loop, &QEventLoop::quit);
         loop.exec();
@@ -103,32 +103,24 @@ ChromeBookmarks::Extension::~Extension() {
 
     // Save settings
     QSettings s;
-    s.beginGroup(name);
+    s.beginGroup(name_);
     s.setValue(CFG_FUZZY, searchIndex_.fuzzy());
     s.setValue(CFG_BOOKMARKS, bookmarksFile_);
 
     // Serialize data
-    QFile dataFile(
-                QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(name))
-                );
+    QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
+                   filePath(QString("%1.dat").arg(name_)));
     if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
-        qDebug() << "[ChromeBookmarks] Serializing to" << dataFile.fileName();
+        qDebug("[%s] Serializing to %s", name_, dataFile.fileName().toLocal8Bit().data());
         QDataStream out( &dataFile );
-
-        // Lock index against indexer
-        QMutexLocker locker(&indexAccess_);
-
-        // Serialize
         out << static_cast<quint64>(index_.size());
-        for (shared_ptr<Bookmark> b : index_)
-            out << b->name_ << b->url_ << b->usage_;
-
+        for (auto &item : index_)
+            item->serialize(out);
         dataFile.close();
     } else
         qCritical() << "Could not write to " << dataFile.fileName();
 
-    qDebug("[%s] Extension finalized", name);
+    qDebug("[%s] Extension finalized", name_);
 }
 
 
@@ -220,7 +212,7 @@ void ChromeBookmarks::Extension::updateIndex() {
         indexer_->abort();
         if (!widget_.isNull())
             widget_->ui.label_info->setText("Waiting for indexer to shut down ...");
-        connect(indexer_.data(), &Indexer::destroyed, this, &Extension::updateIndex);
+        connect(indexer_.data(), &Indexer::destroyed, this, &Extension::updateIndex, Qt::QueuedConnection);
     } else {
         // Create a new scanning runnable for the threadpool
         indexer_ = new Indexer(this);

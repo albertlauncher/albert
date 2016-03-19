@@ -94,7 +94,7 @@
         <item>
          <widget class="QPushButton" name="pushButton_terminal">
           <property name="text">
-           <string>Terminal</string>
+           <string>Set terminal</string>
           </property>
          </widget>
         </item>

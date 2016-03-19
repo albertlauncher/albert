@@ -51,9 +51,9 @@ private:
     void keyPressEvent(QKeyEvent * event) override;
     bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
 
-    QString _theme;
-    bool _showCentered;
-    bool _hideOnFocusLoss;
+    QString theme_;
+    bool showCentered_;
+    bool hideOnFocusLoss_;
 
     static const QString CFG_WND_POS;
     static const QString CFG_CENTERED;

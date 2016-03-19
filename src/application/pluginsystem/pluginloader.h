@@ -23,7 +23,7 @@
 
 
 #include <QSettings>
-class PluginSpec : public QPluginLoader {
+class PluginSpec final : public QPluginLoader {
 
 public:
     enum class Status{NotLoaded, Error, Loaded};

@@ -24,7 +24,7 @@
 #include <memory>
 #include "extension.h"
 #include "configwidget.h"
-#include "application.h"
+#include "desktopentry.h"
 #include "indexer.h"
 #include "query.h"
 
@@ -37,7 +37,7 @@ const bool  Applications::Extension::UPDATE_DELAY = 60000;
 
 /** ***************************************************************************/
 Applications::Extension::Extension() : IExtension("Applications") {
-    qDebug("[%s] Initialize extension", name);
+    qDebug("[%s] Initialize extension", name_);
 
     // Add the userspace icons dir which is not covered in the specs
     QFileInfo userSpaceIconsPath(QDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)).filePath("icons"));
@@ -46,7 +46,7 @@ Applications::Extension::Extension() : IExtension("Applications") {
 
     // Load settings
     QSettings s;
-    s.beginGroup(name);
+    s.beginGroup(name_);
     searchIndex_.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
 
     // Load the paths or set a default
@@ -59,65 +59,65 @@ Applications::Extension::Extension() : IExtension("Applications") {
     // Set terminal emulator
     v = s.value(CFG_TERM);
     if (v.isValid() && v.canConvert(QMetaType::QString))
-        Application::terminal = v.toString();
+        DesktopEntry::terminal = v.toString();
     else{
-        Application::terminal = getenv("TERM");
-        if (Application::terminal.isEmpty())
-            Application::terminal = DEF_TERM;
+        DesktopEntry::terminal = getenv("TERM");
+        if (DesktopEntry::terminal.isEmpty())
+            DesktopEntry::terminal = DEF_TERM;
         else
-            Application::terminal.append(" -e %1");
+            DesktopEntry::terminal.append(" -e %1");
     }
-
 
     // Keep the Applications in sync with the OS
     updateDelayTimer_.setInterval(UPDATE_DELAY);
     updateDelayTimer_.setSingleShot(true);
     connect(&watcher_, &QFileSystemWatcher::directoryChanged, &updateDelayTimer_, static_cast<void(QTimer::*)()>(&QTimer::start));
     connect(this, &Extension::rootDirsChanged, &updateDelayTimer_, static_cast<void(QTimer::*)()>(&QTimer::start));
-    connect(&updateDelayTimer_, &QTimer::timeout, this, &Extension::updateIndex);
+    connect(&updateDelayTimer_, &QTimer::timeout, this, &Extension::updateIndex, Qt::QueuedConnection);
 
     // Deserialize data
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation))
-                   .filePath(QString("%1.dat").arg(name)));
+                   .filePath(QString("%1.dat").arg(name_)));
     if (dataFile.exists()) {
-        if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
-            qDebug() << "[Applications] Deserializing from" << dataFile.fileName();
+        if (dataFile.open(QIODevice::ReadOnly|QIODevice::Text)) {
+            qDebug("[%s] Deserializing from %s", name_, dataFile.fileName().toLocal8Bit().data());
             QDataStream in(&dataFile);
-            quint64 size;
-            in >> size;
-            QString path;
-            short usage;
-            for (quint64 i = 0; i < size; ++i) {
-                in >> path >> usage;
-                // index is updated after this
-                index_.push_back(std::make_shared<Application>(path, usage));
+            quint64 count;
+            for (in >> count ;count != 0; --count){
+                shared_ptr<DesktopEntry> deshrp = std::make_shared<DesktopEntry>();
+                deshrp->deserialize(in);
+                index_.push_back(deshrp);
             }
             dataFile.close();
+
+            // Build the offline index
+            for (auto &item : index_)
+                searchIndex_.add(item);
         } else
             qWarning() << "Could not open file: " << dataFile.fileName();
-     }
+    }
 
-    // Rebuild the offline search index
-    searchIndex_.clear();
-    for (auto &i : index_)
-        searchIndex_.add(i);
-
-    // Trigger an initial update
+    // Trigger initial update
     updateIndex();
 
-    qDebug("[%s] Extension initialized", name);
+    qDebug("[%s] Extension initialized", name_);
 }
 
 
 
 /** ***************************************************************************/
 Applications::Extension::~Extension() {
-    qDebug("[%s] Finalize extension", name);
+    qDebug("[%s] Finalize extension", name_);
 
-    // Stop and wait for background indexer
+    /*
+     * Stop and wait for background indexer.
+     * This should be thread safe since this thread is responisble to start the
+     * indexer and, connections to this thread are disconnected in the QObject
+     * destructor and all events for a deleted object are removed from the event
+     * queue.
+     */
     if (!indexer_.isNull()) {
         indexer_->abort();
-        disconnect(indexer_.data(), &Indexer::destroyed, this, &Extension::updateIndex);
         QEventLoop loop;
         connect(indexer_.data(), &Indexer::destroyed, &loop, &QEventLoop::quit);
         loop.exec();
@@ -125,33 +125,25 @@ Applications::Extension::~Extension() {
 
     // Save settings
     QSettings s;
-    s.beginGroup(name);
+    s.beginGroup(name_);
     s.setValue(CFG_FUZZY, searchIndex_.fuzzy());
     s.setValue(CFG_PATHS, rootDirs_);
-    s.setValue(CFG_TERM, Applications::Application::terminal);
+    s.setValue(CFG_TERM, Applications::DesktopEntry::terminal);
 
     // Serialize data
-    QFile dataFile(
-                QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(name))
-                );
+    QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
+                   filePath(QString("%1.dat").arg(name_)));
     if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
-        qDebug() << "[Applications] Serializing to" << dataFile.fileName();
+        qDebug("[%s] Serializing to %s", name_, dataFile.fileName().toLocal8Bit().data());
         QDataStream out( &dataFile );
-
-        // Lock index against indexer
-        QMutexLocker locker(&indexAccess_);
-
-        // Serialize
         out << static_cast<quint64>(index_.size());
-        for (shared_ptr<Application> &de : index_)
-            out << de->path() << de->usageCount();
-
+        for (auto &item : index_)
+            item->serialize(out);
         dataFile.close();
     } else
         qCritical() << "Could not write to " << dataFile.fileName();
 
-    qDebug("[%s] Extension finalized", name);
+    qDebug("[%s] Extension finalized", name_);
 }
 
 
@@ -196,7 +188,7 @@ void Applications::Extension::handleQuery(shared_ptr<Query> query) {
     // Add results to query. This cast is safe since index holds files only
     for (shared_ptr<IIndexable> &obj : indexables)
         // TODO `Search` has to determine the relevance. Set to 0 for now
-        query->addMatch(std::static_pointer_cast<Application>(obj), 0);
+        query->addMatch(std::static_pointer_cast<DesktopEntry>(obj), 0);
 }
 
 
@@ -296,7 +288,7 @@ void Applications::Extension::updateIndex() {
         indexer_->abort();
         if (!widget_.isNull())
             widget_->ui.label_info->setText("Waiting for indexer to shut down ...");
-        connect(indexer_.data(), &Indexer::destroyed, this, &Extension::updateIndex);
+        connect(indexer_.data(), &Indexer::destroyed, this, &Extension::updateIndex, Qt::QueuedConnection);
     } else {
         // Create a new scanning runnable for the threadpool
         indexer_ = new Indexer(this);

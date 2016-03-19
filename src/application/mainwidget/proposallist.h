@@ -22,7 +22,7 @@
 #include <QSettings>
 #include "itemdelegate.h"
 
-class ProposalList final: public QListView
+class ProposalList final : public QListView
 {
     Q_OBJECT
 
@@ -38,8 +38,8 @@ public:
 private:
     bool eventFilter(QObject*, QEvent *event) override;
 
-    ItemDelegate *_itemDelegate;
-    int _maxItems;
+    ItemDelegate *itemDelegate_;
+    int maxItems_;
 
     static const constexpr char* CFG_MAX_PROPOSALS     = "itemCount";
     static const constexpr int   CFG_MAX_PROPOSALS_DEF = 5;

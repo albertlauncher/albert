@@ -30,7 +30,6 @@ namespace ChromeBookmarks {
 
 class Bookmark;
 class ConfigWidget;
-class Indexer;
 
 class Extension final : public QObject, public IExtension
 {
@@ -38,26 +37,30 @@ class Extension final : public QObject, public IExtension
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
     Q_INTERFACES(IExtension)
 
-    friend class Indexer;
+    class Indexer;
 
 public:
+
     Extension();
     ~Extension();
 
-    // GenericPluginInterface
-    QWidget *widget(QWidget *parent = nullptr) override;
+    /*
+     * Implementation of extension interface
+     */
 
-    // IExtension
+    QWidget *widget(QWidget *parent = nullptr) override;
     void handleQuery(shared_ptr<Query> query) override;
+
+    /*
+     * Extension specific members
+     */
 
     const QString &path();
     void setPath(const QString &path);
     void restorePath();
-
-    void updateIndex();
-
     bool fuzzy();
     void setFuzzy(bool b = true);
+    void updateIndex();
 
 private:
     QPointer<ConfigWidget> widget_;

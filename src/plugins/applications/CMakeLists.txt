@@ -12,8 +12,8 @@ set(SRC
     metadata.json
     extension.cpp
     configwidget.cpp
-    application.cpp
-    desktopaction.cpp
+    desktopentry.cpp
+    desktopaction.hpp
     indexer.cpp
     ../../shared/search/search.cpp
     ../../shared/search/search_impl.h

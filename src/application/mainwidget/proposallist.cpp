@@ -20,10 +20,10 @@
 /** ***************************************************************************/
 ProposalList::ProposalList(QWidget *parent) : QListView(parent) {
     QSettings s;
-    _itemDelegate = new ItemDelegate;
-    _maxItems  = s.value(CFG_MAX_PROPOSALS, CFG_MAX_PROPOSALS_DEF).toInt();
+    itemDelegate_ = new ItemDelegate;
+    maxItems_  = s.value(CFG_MAX_PROPOSALS, CFG_MAX_PROPOSALS_DEF).toInt();
 
-    setItemDelegate(_itemDelegate);
+    setItemDelegate(itemDelegate_);
     setUniformItemSizes(true);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
@@ -33,8 +33,8 @@ ProposalList::ProposalList(QWidget *parent) : QListView(parent) {
 /** ***************************************************************************/
 ProposalList::~ProposalList() {
     QSettings s;
-    s.setValue(CFG_MAX_PROPOSALS, _maxItems);
-    delete _itemDelegate;
+    s.setValue(CFG_MAX_PROPOSALS, maxItems_);
+    delete itemDelegate_;
 }
 
 
@@ -132,7 +132,7 @@ QSize ProposalList::sizeHint() const {
     if (model() == nullptr)
         return QSize();
     int cnt = model()->rowCount(rootIndex());
-    int nToShow = (_maxItems < cnt) ? _maxItems : cnt;
+    int nToShow = (maxItems_ < cnt) ? maxItems_ : cnt;
     return QSize(width(), nToShow*sizeHintForRow(0));
 }
 
@@ -158,12 +158,12 @@ void ProposalList::reset() {
 
 /** ***************************************************************************/
 void ProposalList::setMaxItems(int maxItems) {
-    _maxItems = maxItems;
+    maxItems_ = maxItems;
 }
 
 
 
 /** ***************************************************************************/
 int ProposalList::maxItems() const {
-    return _maxItems;
+    return maxItems_;
 }

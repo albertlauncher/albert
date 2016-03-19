@@ -27,10 +27,10 @@ public:
     explicit InputLine(QWidget *parent = 0);
     ~InputLine();
 
-    void clearHistory() { _lines.clear(); }
+    void clearHistory() { lines_.clear(); }
     void clear();
 
-    SettingsButton   *_settingsButton;
+    SettingsButton   *settingsButton_;
 
 private:
     void keyPressEvent(QKeyEvent*) override;
@@ -42,8 +42,8 @@ private:
     void prev();
 
 
-    list<QString> _lines; // NOTE fix this in 5.6, qt has no reverse iterators https://codereview.qt-project.org/#/c/109850/
-    list<QString>::const_reverse_iterator _currentLine;
+    list<QString> lines_; // NOTE fix this in 5.6, qt has no reverse iterators https://codereview.qt-project.org/#/c/109850/
+    list<QString>::const_reverse_iterator currentLine_;
 
     static constexpr const char * SETTINGS_SHORTCUT = "Alt+,"; // FIXME
 };

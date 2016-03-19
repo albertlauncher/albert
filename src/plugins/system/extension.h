@@ -45,13 +45,17 @@ public:
     Extension();
     ~Extension();
 
-    // GenericPluginInterface
-    QWidget *widget(QWidget *parent = nullptr) override;
+    /*
+     * Implementation of extension interface
+     */
 
-    // IExtension
+    QWidget *widget(QWidget *parent = nullptr) override;
     void handleQuery(shared_ptr<Query> query) override;
 
-    // API special to this extension
+    /*
+     * Extension specific members
+     */
+
     QString command(const QString& id);
     void setCommand(const QString& id, const QString& cmd);
 

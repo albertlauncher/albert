@@ -37,13 +37,13 @@ const char* System::Extension::DEF_LOCK      = "cinnamon-screensaver-command -l"
 
 /** ***************************************************************************/
 System::Extension::Extension() : IExtension("System") {
-    qDebug("[%s] Initialize extension", name);
+    qDebug("[%s] Initialize extension", name_);
 
     // Load settings
     XdgIconLookup xdg;
     QSettings s;
     QString iconPath;
-    s.beginGroup(name);
+    s.beginGroup(name_);
 
     iconPath = xdg.themeIcon("system-shutdown");
     actions_.push_back({CFG_POWEROFF,
@@ -80,22 +80,22 @@ System::Extension::Extension() : IExtension("System") {
                         iconPath.isNull() ? ":lock" : iconPath,
                         s.value(CFG_LOCK, DEF_LOCK).toString()});
 
-    qDebug("[%s] Extension initialized", name);
+    qDebug("[%s] Extension initialized", name_);
 }
 
 
 
 /** ***************************************************************************/
 System::Extension::~Extension() {
-    qDebug("[%s] Finalize extension", name);
+    qDebug("[%s] Finalize extension", name_);
 
     // Save settings
     QSettings s;
-    s.beginGroup(name);
+    s.beginGroup(name_);
     for (vector<ActionSpec>::iterator it = actions_.begin(); it != actions_.end(); ++it)
         s.setValue(it->id, it->cmd);
 
-    qDebug("[%s] Extension finalized", name);
+    qDebug("[%s] Extension finalized", name_);
 }
 
 

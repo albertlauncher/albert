@@ -97,15 +97,15 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
         file.close();
     }
 
-    _mainWidget = new MainWidget;
-    _hotkeyManager = new HotkeyManager;
-    _pluginManager = new PluginManager;
-    _extensionManager = new ExtensionManager;
+    mainWidget_ = new MainWidget;
+    hotkeyManager_ = new HotkeyManager;
+    pluginManager_ = new PluginManager;
+    extensionManager_ = new ExtensionManager;
 
     // Propagade the extensions once
-    for (const unique_ptr<PluginSpec> &p : _pluginManager->plugins())
+    for (const unique_ptr<PluginSpec> &p : pluginManager_->plugins())
         if (p->isLoaded())
-            _extensionManager->registerExtension(p->instance());
+            extensionManager_->registerExtension(p->instance());
 
     // Quit gracefully on SIGTERM
     signal(SIGTERM, [](int){
@@ -118,28 +118,28 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
      */
 
     // Show mainwidget if hotkey is pressed
-    QObject::connect(_hotkeyManager, &HotkeyManager::hotKeyPressed,_mainWidget, &MainWidget::toggleVisibility);
+    QObject::connect(hotkeyManager_, &HotkeyManager::hotKeyPressed,mainWidget_, &MainWidget::toggleVisibility);
 
     // Extrension manager signals new proposals
-    QObject::connect(_extensionManager, &ExtensionManager::newModel, _mainWidget, &MainWidget::setModel);
+    QObject::connect(extensionManager_, &ExtensionManager::newModel, mainWidget_, &MainWidget::setModel);
 
     // Setup and teardown query sessions with the state of the widget
-    QObject::connect(_mainWidget, &MainWidget::widgetShown,  _extensionManager, &ExtensionManager::setupSession);
-    QObject::connect(_mainWidget, &MainWidget::widgetHidden, _extensionManager, &ExtensionManager::teardownSession);
+    QObject::connect(mainWidget_, &MainWidget::widgetShown,  extensionManager_, &ExtensionManager::setupSession);
+    QObject::connect(mainWidget_, &MainWidget::widgetHidden, extensionManager_, &ExtensionManager::teardownSession);
 
-    // Click on _settingsButton (or shortcut) closes albert + opens settings dialog
-    QObject::connect(_mainWidget->ui.inputLine->_settingsButton, &QPushButton::clicked, _mainWidget, &MainWidget::hide);
-    QObject::connect(_mainWidget->ui.inputLine->_settingsButton, &QPushButton::clicked, this, &AlbertApp::openSettings);
+    // Click on settingsButton (or shortcut) closes albert + opens settings dialog
+    QObject::connect(mainWidget_->ui.inputLine->settingsButton_, &QPushButton::clicked, mainWidget_, &MainWidget::hide);
+    QObject::connect(mainWidget_->ui.inputLine->settingsButton_, &QPushButton::clicked, this, &AlbertApp::openSettings);
 
     // A change in text triggers requests
-    QObject::connect(_mainWidget->ui.inputLine, &InputLine::textChanged, _extensionManager, &ExtensionManager::startQuery);
+    QObject::connect(mainWidget_->ui.inputLine, &InputLine::textChanged, extensionManager_, &ExtensionManager::startQuery);
 
     // Enter triggers action
-    QObject::connect(_mainWidget->ui.proposalList, &ProposalList::activated, _extensionManager, &ExtensionManager::activate);
+    QObject::connect(mainWidget_->ui.proposalList, &ProposalList::activated, extensionManager_, &ExtensionManager::activate);
 
     // Publish loaded plugins to the specific interface handlers
-    QObject::connect(_pluginManager, &PluginManager::pluginLoaded, _extensionManager, &ExtensionManager::registerExtension);
-    QObject::connect(_pluginManager, &PluginManager::pluginAboutToBeUnloaded, _extensionManager, &ExtensionManager::unregisterExtension);
+    QObject::connect(pluginManager_, &PluginManager::pluginLoaded, extensionManager_, &ExtensionManager::registerExtension);
+    QObject::connect(pluginManager_, &PluginManager::pluginAboutToBeUnloaded, extensionManager_, &ExtensionManager::unregisterExtension);
 }
 
 
@@ -151,10 +151,10 @@ AlbertApp::~AlbertApp() {
      *  FINALIZE APPLICATION
      */
     // Unload the plugins
-    delete _extensionManager;
-    delete _pluginManager;
-    delete _hotkeyManager;
-    delete _mainWidget;
+    delete extensionManager_;
+    delete pluginManager_;
+    delete hotkeyManager_;
+    delete mainWidget_;
 
     // Delete the running indicator file
     QFile::remove(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running");
@@ -168,7 +168,7 @@ int AlbertApp::exec() {
     QSettings s;
     QVariant v;
     if (!(s.contains("hotkey") && (v=s.value("hotkey")).canConvert(QMetaType::QString)
-            && _hotkeyManager->registerHotkey(v.toString()))){
+            && hotkeyManager_->registerHotkey(v.toString()))){
         QMessageBox msgBox(QMessageBox::Critical, "Error",
                            "Hotkey is not set or invalid. Press ok to open "
                            "the settings or press close to quit albert.",
@@ -189,30 +189,22 @@ int AlbertApp::exec() {
 
 /** ***************************************************************************/
 void AlbertApp::openSettings() {
-    if (!_settingsWidget)
-        _settingsWidget = new SettingsWidget(_mainWidget, _hotkeyManager, _pluginManager);
-    _settingsWidget->show();
-    _settingsWidget->raise();
+    if (!settingsWidget_)
+        settingsWidget_ = new SettingsWidget(mainWidget_, hotkeyManager_, pluginManager_);
+    settingsWidget_->show();
+    settingsWidget_->raise();
 }
 
 
 
 /** ***************************************************************************/
 void AlbertApp::showWidget() {
-    _mainWidget->show();
+    mainWidget_->show();
 }
 
 
 
 /** ***************************************************************************/
 void AlbertApp::hideWidget() {
-    _mainWidget->hide();
+    mainWidget_->hide();
 }
-
-
-
-///** ***************************************************************************/
-//void AlbertApp::onStateChange(Qt::ApplicationState state) {
-//    if (state==Qt::ApplicationInactive)
-//        _mainWidget->hide();
-//}

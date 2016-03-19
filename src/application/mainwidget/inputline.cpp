@@ -23,12 +23,12 @@
 
 /** ***************************************************************************/
 InputLine::InputLine(QWidget *parent) : QLineEdit(parent) {
-    _settingsButton = new SettingsButton(this);
-    _settingsButton->setObjectName("settingsButton");
-    _settingsButton->setFocusPolicy(Qt::NoFocus);
-    _settingsButton->setShortcut(QKeySequence(SETTINGS_SHORTCUT));
+    settingsButton_ = new SettingsButton(this);
+    settingsButton_->setObjectName("settingsButton");
+    settingsButton_->setFocusPolicy(Qt::NoFocus);
+    settingsButton_->setShortcut(QKeySequence(SETTINGS_SHORTCUT));
 
-    _currentLine = _lines.crend(); // This means historymode is not active
+    currentLine_ = lines_.crend(); // This means historymode is not active
 
     connect(this, &QLineEdit::textEdited, this, &InputLine::resetIterator);
 
@@ -40,7 +40,7 @@ InputLine::InputLine(QWidget *parent) : QLineEdit(parent) {
             QDataStream in(&dataFile);
             QStringList SL;
             in >> SL;
-            _lines = SL.toStdList();
+            lines_ = SL.toStdList();
             dataFile.close();
         } else qWarning() << "Could not open file" << dataFile.fileName();
     }
@@ -55,11 +55,11 @@ InputLine::~InputLine() {
                    filePath(QString("history.dat")));
     if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
         QDataStream out(&dataFile);
-        out << QStringList::fromStdList(_lines);
+        out << QStringList::fromStdList(lines_);
         dataFile.close();
     } else qCritical() << "Could not write to " << dataFile.fileName();
 
-    _settingsButton->deleteLater();
+    settingsButton_->deleteLater();
 }
 
 
@@ -74,37 +74,37 @@ void InputLine::clear() {
 
 /** ***************************************************************************/
 void InputLine::resetIterator() {
-    _currentLine = _lines.crend();
+    currentLine_ = lines_.crend();
 }
 
 
 
 /** ***************************************************************************/
 void InputLine::next() {
-    if ( _lines.empty() ) // (1) implies _lines.crbegin() !=_lines.crend()
+    if ( lines_.empty() ) // (1) implies lines.crbegin() !=_lines.crend()
         return;
 
-    if (_currentLine == _lines.crend()) // Not in history mode
-        _currentLine = _lines.crbegin(); // This may still be crend!
+    if (currentLine_ == lines_.crend()) // Not in history mode
+        currentLine_ = lines_.crbegin(); // This may still be crend!
     else
-        if (++_currentLine == _lines.crend())
-            --_currentLine;
-    setText(*_currentLine);
+        if (++currentLine_ == lines_.crend())
+            --currentLine_;
+    setText(*currentLine_);
 }
 
 
 
 /** ***************************************************************************/
 void InputLine::prev() {
-    if ( _lines.empty() ) // (1) implies _lines.crbegin() !=_lines.crend()
+    if ( lines_.empty() ) // (1) implies lines.crbegin() !=_lines.crend()
         return;
 
-    if (_currentLine == _lines.crend()) // Not in history mode
-        _currentLine = _lines.crbegin(); // This may still be crend!
+    if (currentLine_ == lines_.crend()) // Not in history mode
+        currentLine_ = lines_.crbegin(); // This may still be crend!
     else
-        if (_currentLine != _lines.crbegin())
-            --_currentLine;
-    setText(*_currentLine);
+        if (currentLine_ != lines_.crbegin())
+            --currentLine_;
+    setText(*currentLine_);
 }
 
 
@@ -121,8 +121,8 @@ void InputLine::keyPressEvent(QKeyEvent *e) {
     case Qt::Key_Enter:
     case Qt::Key_Return:
         if (!text().isEmpty()) {
-            _lines.remove(text()); // Make entries uniq
-            _lines.push_back(text()); // Remember this entry
+            lines_.remove(text()); // Make entries uniq
+            lines_.push_back(text()); // Remember this entry
         }
         break;
     }
@@ -142,5 +142,5 @@ void InputLine::wheelEvent(QWheelEvent *e) {
 /** ***************************************************************************/
 void InputLine::resizeEvent(QResizeEvent *event) {
     //Let settingsbutton be in top right corner
-    _settingsButton->move(event->size().width()-_settingsButton->width(),0);
+    settingsButton_->move(event->size().width()-settingsButton_->width(),0);
 }

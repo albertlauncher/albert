@@ -28,56 +28,61 @@ void ExtensionManager::startQuery(const QString &searchTerm) {
 
     // Ignore empty queries
     if (trimmedTerm.isEmpty()){
+        currentQuery_ = nullptr;
         emit newModel(nullptr);
         return;
     }
 
-    currentQuery_ = std::make_shared<Query>(trimmedTerm);
+//    // Skip if essentially nothing changed
+//    if (currentQuery_ && trimmedTerm==currentQuery_->searchTerm())
+//        return;
 
     //  ▼ TODO INTRODUCE MULTITHREADING HERE ▼
+    currentQuery_ = std::make_shared<Query>(trimmedTerm);
 
-    // Separate the first section of the searchterm
-    QString potentialTrigger = trimmedTerm.section(' ', 0,0);
+//    if (!fallbackOnly) {
 
-    // Iterate over the triggers of trigger-extensions
-    for (IExtension *e : extensions_) {
-        if (e->isTriggerOnly()) {
-            for (const QString& trigger : e->triggers()) {
-                // If the trigger matches the first section, run the query
-                if (trigger == potentialTrigger) {
-                    e->handleQuery(currentQuery_);
-                    //  If this extension wants to be run exclusively, return
-                    if (e->runExclusive()){
+        // Separate the first section of the searchterm
+        QString potentialTrigger = trimmedTerm.section(' ', 0,0);
+
+        // Check if the trigger matches any exclusive extension and run it
+        for (IExtension *e : extensions_)
+            if (e->runExclusive())
+                for (const QString& trigger : e->triggers())
+                    if (trigger == potentialTrigger){
                         emit newModel(currentQuery_->impl);
                         return;
                     }
+
+        // Iterate over the triggers of trigger-extensions
+        for (IExtension *e : extensions_){
+            if (!e->runExclusive()){
+                if (e->triggers().isEmpty()){  // Non triggered extension
+                    e->handleQuery(currentQuery_);
+                } else {  // Extension that requires a trigger
+                    for (const QString& trigger : e->triggers())
+                        if (trigger == potentialTrigger)
+                            e->handleQuery(currentQuery_);
                 }
             }
         }
-    }
 
-    // Query all nontrigger-extensions
-    for (IExtension *e : extensions_)
-        if (!e->isTriggerOnly())
-            e->handleQuery(currentQuery_);
+        // This is a conceptual hack for v0.7, the query should sor itself when the
+        // remove friend query  and query_p
+        std::stable_sort(currentQuery_->impl->matches_.begin(),
+                         currentQuery_->impl->matches_.end(),
+                         [](const Match &lhs, const Match &rhs) {
+                            return lhs.item.data->urgency() > rhs.item.data->urgency() // Urgency, for e.g. notifications, Warnings
+                                    || lhs.item.data->usageCount() > rhs.item.data->usageCount() // usage count
+                                    || lhs.score > rhs.score; // percentual match of the query against the item
+                         });
+//    }
 
     // TODO Handle this with proper fallbacks
     // Fallback query if results are empty
     if (currentQuery_->impl->matches_.size()==0)
         for (IExtension *e : extensions_)
             e->handleFallbackQuery(currentQuery_);
-    else
-        // This is a conceptual hack for v0.7, the query should sor itself when the
-        // remove friend query  and query_p
-        std::stable_sort(currentQuery_->impl->matches_.begin(),
-                         currentQuery_->impl->matches_.end(),
-                         [](const Match &lhs, const Match &rhs) {
-                            return lhs.item.data->importance() > rhs.item.data->importance() // Importance, for e.g. urgent notifications
-                                    || lhs.item.data->usageCount() > rhs.item.data->usageCount() // usage count
-                                    || lhs.score > rhs.score; // percentual match of the query against the item
-                         });
-
-    //  ▲ INTRODUCE MULTITHREADING HERE ▲
 
     emit newModel(currentQuery_->impl);
 }

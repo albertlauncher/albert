@@ -39,19 +39,20 @@ public:
     Extension();
     ~Extension();
 
-    // GenericPluginInterface
-    QWidget *widget(QWidget *parent = nullptr) override;
+    /*
+     * Implementation of extension interface
+     */
 
-    // IExtension
+    QWidget *widget(QWidget *parent = nullptr) override;
     void handleQuery(shared_ptr<Query> query) override;
     void handleFallbackQuery(shared_ptr<Query> query) override;
-    bool isTriggerOnly() const override {return true;}
+    bool runExclusive() const {return true;}
     QStringList triggers() const override;
 
-    // API special to this extension
-    void restoreDefaults();
+    /*
+     * Implementation of extension interface
+     */
 
-    // Modelinterface
     int rowCount(const QModelIndex & parent = QModelIndex()) const override;
     int columnCount(const QModelIndex & parent = QModelIndex()) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
@@ -61,6 +62,12 @@ public:
     bool insertRows (int position, int rows, const QModelIndex & parent = QModelIndex()) override;
     bool removeRows (int position, int rows, const QModelIndex & parent = QModelIndex()) override;
     bool moveRows(const QModelIndex &sourceRow, int srcRow, int cnt, const QModelIndex & dst, int destinationChild) override;
+
+    /*
+     * Extension specific members
+     */
+
+    void restoreDefaults();
 
 private:
     QPointer<ConfigWidget> widget_;

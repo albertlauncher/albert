@@ -19,6 +19,7 @@
 #include "abstractobjects.hpp"
 using std::function;
 
+/** ***************************************************************************/
 class StandardItem final : public AlbertItem
 {
 public:
@@ -35,8 +36,8 @@ public:
     QString iconPath() const override { return iconPath_; }
     void setIcon( const QString &iconPath){iconPath_ = iconPath;}
 
-    std::function<void()> action() { return action_; }
-    void setAction(std::function<void()> action){ action_ = std::move(action);}
+    function<void()> action() { return action_; }
+    void setAction(function<void()> action){ action_ = std::move(action);}
     void activate() override { action_();}
 
 private:
@@ -46,3 +47,22 @@ private:
     function<void()> action_;
 };
 
+/** ***************************************************************************/
+struct StandardAction final : public Action
+{
+public:
+    StandardAction(const QString &text, function<void()> f)
+        : text_(text), action_(f) {}
+
+    QString text() const override { return text_; }
+    void setText(const QString &text){text_ = text;}
+
+    const function<void()>& action() { return action_; }
+    void setAction(function<void()> action){ action_ = std::move(action);}
+
+    void activate() override { action_(); }
+
+private:
+    QString text_;
+    function<void()> action_;
+};

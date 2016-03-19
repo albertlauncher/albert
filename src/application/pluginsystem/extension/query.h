@@ -50,7 +50,7 @@ public:
 
     /**
      * @brief setValid sets the validity of the query.
-     * Running handler will stop long operations and discard their matsches,
+     * Running handler will stop long operations and discard their matches,
      * if the query is invalid.
      * @param b
      */

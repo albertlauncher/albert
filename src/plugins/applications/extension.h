@@ -28,9 +28,8 @@
 
 namespace Applications {
 
-class Application;
+class DesktopEntry;
 class ConfigWidget;
-class Indexer;
 
 class Extension final : public QObject, public IExtension
 {
@@ -38,31 +37,34 @@ class Extension final : public QObject, public IExtension
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
     Q_INTERFACES(IExtension)
 
-    friend class Indexer;
+    class Indexer;
 
 public:
+
     Extension();
     ~Extension();
 
-    // GenericPluginInterface
-    QWidget *widget(QWidget *parent = nullptr) override;
+    /*
+     * Implementation of extension interface
+     */
 
-    // IExtension
+    QWidget *widget(QWidget *parent = nullptr) override;
     void handleQuery(shared_ptr<Query> query) override;
 
-    // API special to this extension
+    /*
+     * Extension specific members
+     */
+
     void addDir(const QString &dirPath);
     void removeDir(const QString &dirPath);
     void restorePaths();
-    void updateIndex();
-
-    // Properties
     bool fuzzy();
     void setFuzzy(bool b = true);
+    void updateIndex();
 
 private:
     QPointer<ConfigWidget> widget_;
-    std::vector<shared_ptr<Application>> index_;
+    std::vector<shared_ptr<DesktopEntry>> index_;
     Search searchIndex_;
     QMutex indexAccess_;
     QPointer<Indexer> indexer_;

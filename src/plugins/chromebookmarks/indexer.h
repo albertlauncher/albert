@@ -18,11 +18,11 @@
 #include <QObject>
 #include <QRunnable>
 #include <QMutex>
+#include "extension.h"
 
 namespace ChromeBookmarks {
-class Extension;
 
-class Indexer final : public QObject,  public QRunnable
+class Extension::Indexer final : public QObject,  public QRunnable
 {
     Q_OBJECT
 public:

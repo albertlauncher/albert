@@ -14,8 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QDesktopServices>
 #include <QUrl>
+#include <QDesktopServices>
+#include <QDataStream>
 #include "bookmark.h"
 #include "albertapp.h"
 
@@ -52,5 +53,21 @@ void ChromeBookmarks::Bookmark::activate() {
 
 /** ***************************************************************************/
 vector<QString> ChromeBookmarks::Bookmark::aliases() const {
-    return std::vector<QString>({name_});
+    // return domain without TLD eg. maps.google for maps.google.de
+    QUrl url(url_);
+    QString host = url.host();
+    return std::vector<QString>({host.left(host.size()-url.topLevelDomain().size())});
+}
+
+
+/** ***************************************************************************/
+void ChromeBookmarks::Bookmark::serialize(QDataStream &out) {
+    out << name_ << url_ << static_cast<quint16>(usage_);
+}
+
+
+
+/** ***************************************************************************/
+void ChromeBookmarks::Bookmark::deserialize(QDataStream &in) {
+    in >> name_ >> url_ >> usage_;
 }

@@ -18,9 +18,11 @@
 #include <QObject>
 #include <QLocale>
 #include <QPointer>
-#include <memory>
 #include "iextension.h"
-#include "muParser.h"
+
+namespace mu{
+    class Parser;
+}
 
 namespace Calculator {
 
@@ -33,14 +35,20 @@ class Extension final : public QObject, public IExtension
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
 public:
+
     Extension();
     ~Extension();
 
-    // GenericPluginInterface
-    QWidget *widget(QWidget *parent = nullptr) override;
+    /*
+     * Implementation of extension interface
+     */
 
-    // IExtension
+    QWidget *widget(QWidget *parent = nullptr) override;
     void handleQuery(shared_ptr<Query> query) override;
+
+    /*
+     * Extension specific members
+     */
 
     /* const */
     static const QString CFG_SEPS;
@@ -48,7 +56,7 @@ public:
 
 private:
     QPointer<ConfigWidget> widget_;
-    std::unique_ptr<mu::Parser> parser_;
+    mu::Parser *parser_;
     QLocale loc_;
     QString iconPath_;
 };

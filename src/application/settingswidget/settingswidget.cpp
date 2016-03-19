@@ -129,7 +129,7 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
 
     if (pluginManager_->plugins()[current.row()]->isLoaded()){
         ui.widget_pluginInfos->layout()->addWidget(
-                    dynamic_cast<IPlugin*>(pluginManager_->plugins()[current.row()]->instance())->widget()); // Takes ownership
+                    dynamic_cast<IExtension*>(pluginManager_->plugins()[current.row()]->instance())->widget()); // Takes ownership
     }
     else{
         QLabel *lbl = new QLabel("Plugin not loaded.");

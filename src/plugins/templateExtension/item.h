@@ -23,7 +23,6 @@ using std::vector;
 namespace Template {
 class Item final : public AlbertItem
 {
-    friend class Extension;
 public:
     Item();
     ~Item();

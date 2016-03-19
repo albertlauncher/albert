@@ -42,14 +42,11 @@ public:
     void showWidget();
     void hideWidget();
 
-private slots:
-//    void onStateChange(Qt::ApplicationState state);
-
 private:
-    MainWidget               *_mainWidget;
-    HotkeyManager            *_hotkeyManager;
-    PluginManager            *_pluginManager;
-    ExtensionManager         *_extensionManager;
-    QPointer<SettingsWidget> _settingsWidget;
+    MainWidget               *mainWidget_;
+    HotkeyManager            *hotkeyManager_;
+    PluginManager            *pluginManager_;
+    ExtensionManager         *extensionManager_;
+    QPointer<SettingsWidget> settingsWidget_;
 };
 

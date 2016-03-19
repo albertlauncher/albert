@@ -226,11 +226,13 @@ QString XdgIconLookup::lookupIconInTheme(const QString &iconName, const QString 
               });
 
     // Well now search for a file beginning with the greatest
+    QString filename;
+    QFile file;
     for (auto &dirAndSize : dirsAndSizes){
         for (const QString &iconDir : iconDirs_){
             for (const QString &ext : icon_extensions){
-                QString filename = QString("%1/%2/%3/%4.%5").arg(iconDir, themeName, dirAndSize.first, iconName, ext);
-                if (QFile(filename).exists()){
+                filename = QString("%1/%2/%3/%4.%5").arg(iconDir, themeName, dirAndSize.first, iconName, ext);
+                if (file.exists(filename)){
                     return filename;
                 }
             }

@@ -15,27 +15,34 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+#include <QProcess>
 #include "abstractobjects.hpp"
+#include "desktopentry.h"
+#include "albertapp.h"
 
 namespace Applications {
-class Application;
 
-class DesktopAction final : public AlbertItem
+class DesktopEntry::DesktopAction final : public Action
 {
 public:
-    DesktopAction(Application *app, const QString &name, const QString &exec,
-                  const QString &iconPath, const bool term=false);
 
-    QString text() const override;
-    QString subtext() const override;
-    QString iconPath() const override;
-    void activate() override;
+    /** Consructor */
+    DesktopAction(DesktopEntry *app, const QString &name, const QString &exec, const bool term=false)
+        : app_(app), description_(name), exec_(exec), term_(term){}
 
-private:
-    Application * const app_;
-    const QString name_;
+    /** Returns the actions description */
+    QString text() const override { return description_; }
+
+    /** Executes the action */
+    void activate() override {
+        qApp->hideWidget();
+        QProcess::startDetached((term_)? DesktopEntry::terminal.arg(exec_) : exec_);
+        ++app_->usage_;
+    }
+
+    DesktopEntry * const app_;
+    const QString description_;
     const QString exec_;
-    const QString iconPath_;
     const bool term_;
 };
 

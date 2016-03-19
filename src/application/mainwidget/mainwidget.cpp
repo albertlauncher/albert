@@ -21,6 +21,7 @@
 #include <QDesktopWidget>
 #include <QDebug>
 #include <QApplication>
+#include <QTimer>
 #include <QVBoxLayout>
 #include <QAbstractItemModel>
 #include "mainwidget.h"
@@ -74,10 +75,10 @@ MainWidget::MainWidget(QWidget *parent)
 
     // Settings
     QSettings s;
-    _showCentered = s.value(CFG_CENTERED, DEF_CENTERED).toBool();
-    _theme = s.value(CFG_THEME, DEF_THEME).toString();
-    if (!setTheme(_theme)) {
-        qFatal("FATAL: Stylefile not found: %s", _theme.toStdString().c_str());
+    showCentered_ = s.value(CFG_CENTERED, DEF_CENTERED).toBool();
+    theme_ = s.value(CFG_THEME, DEF_THEME).toString();
+    if (!setTheme(theme_)) {
+        qFatal("FATAL: Stylefile not found: %s", theme_.toStdString().c_str());
         exit(EXIT_FAILURE);
     }
     if (s.contains(CFG_WND_POS) && s.value(CFG_WND_POS).canConvert(QMetaType::QPoint))
@@ -90,9 +91,9 @@ MainWidget::MainWidget(QWidget *parent)
 MainWidget::~MainWidget() {
     // Save settings
     QSettings s;
-    s.setValue(CFG_CENTERED, _showCentered);
+    s.setValue(CFG_CENTERED, showCentered_);
     s.setValue(CFG_WND_POS, pos());
-    s.setValue(CFG_THEME, _theme);
+    s.setValue(CFG_THEME, theme_);
 }
 
 
@@ -104,7 +105,7 @@ void MainWidget::show() {
     // that have been shown once. Well as long as this does not introduce ugly
     // flicker this may be okay.
     QWidget::show();
-    if (_showCentered){
+    if (showCentered_){
         QDesktopWidget *dw = QApplication::desktop();
         this->move(dw->availableGeometry(dw->screenNumber(QCursor::pos())).center()
                    -QPoint(rect().right()/2,192 ));
@@ -143,28 +144,28 @@ void MainWidget::setModel(QAbstractItemModel *m) {
 
 /** ***************************************************************************/
 void MainWidget::setShowCentered(bool b) {
-    _showCentered = b;
+    showCentered_ = b;
 }
 
 
 
 /** ***************************************************************************/
 bool MainWidget::showCentered() const {
-    return _showCentered;
+    return showCentered_;
 }
 
 
 
 /** ***************************************************************************/
 const QString &MainWidget::theme() const {
-    return _theme;
+    return theme_;
 }
 
 
 
 /** ***************************************************************************/
 bool MainWidget::setTheme(const QString &theme) {
-    _theme = theme;
+    theme_ = theme;
     QFileInfoList themes;
     QStringList themeDirs = QStandardPaths::locateAll(
         QStandardPaths::DataLocation, "themes", QStandardPaths::LocateDirectory);
@@ -173,7 +174,7 @@ bool MainWidget::setTheme(const QString &theme) {
     // Find and apply the theme
     bool success = false;
     for (QFileInfo fi : themes) {
-        if (fi.baseName() == _theme) {
+        if (fi.baseName() == theme_) {
             QFile f(fi.canonicalFilePath());
             if (f.open(QFile::ReadOnly)) {
                 qApp->setStyleSheet(f.readAll());
@@ -190,14 +191,14 @@ bool MainWidget::setTheme(const QString &theme) {
 
 /** ***************************************************************************/
 bool MainWidget::hideOnFocusLoss() const {
-    return _hideOnFocusLoss;
+    return hideOnFocusLoss_;
 }
 
 
 
 /** ***************************************************************************/
 void MainWidget::setHideOnFocusLoss(bool b) {
-    _hideOnFocusLoss = b;
+    hideOnFocusLoss_ = b;
 }
 
 
@@ -259,7 +260,7 @@ bool MainWidget::nativeEvent(const QByteArray &eventType, void *message, long *)
 //			std::cout << std::endl;
             if (((fe->mode==XCB_NOTIFY_MODE_GRAB && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR)
                     || (fe->mode==XCB_NOTIFY_MODE_NORMAL && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR ))
-                    && _hideOnFocusLoss)
+                    && hideOnFocusLoss_)
 //					&& !_settingsDialog->isVisible())
                 hide();
             break;

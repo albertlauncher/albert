@@ -27,15 +27,20 @@ using std::vector;
  * @brief The AbstractItem
  * Displayable base class for all albert items.
  */
-class Action{
+class Action
+{
 public:
+
     virtual ~Action() {}
-    virtual QString iconPath() const = 0;
+
+    /** A description */
     virtual QString text() const = 0;
-    virtual QString subtext() const = 0;
+
+    /** Activates the item */
     virtual void activate() = 0;
 };
-
+typedef shared_ptr<Action> ActionSPtr;
+typedef vector<shared_ptr<Action>> ActionSPtrVec;
 
 
 /** ****************************************************************************
@@ -44,15 +49,44 @@ public:
  * let your items be visible in the proposal list. Subclass this item to your
  * liking and add it to the query if you think it matches the query context.
  */
-class AlbertItem : public Action {
+class AlbertItem : public Action
+{
 public:
-    virtual std::vector<QString> aliases() const {return {text()};}
-    virtual uint16_t usageCount() const {return 0;}
-    virtual uint8_t importance() const {return 0;}
+
+    /** An enumeration of urgency levels */
+    enum class Urgency : unsigned char {
+        Low, // Use this if your extension tends to produce much potentially less relevant items (e.g. files)
+        Normal, // In all other cases use this
+        Notification, // Use this if your items are few, seldom and have to be on top (e.g. calculator output)
+        Alert // Like notification. Gets a visual emphasis
+    };
 
     virtual ~AlbertItem() {}
-    virtual bool hasActions() const {return false;}
-    virtual vector<shared_ptr<Action>> actions() {return vector<shared_ptr<Action>>();}
-    virtual bool hasChildren() const {return false;}
-    virtual vector<shared_ptr<AlbertItem>> children() {return vector<shared_ptr<AlbertItem>>();}
+
+    /** The icon for the item */
+    virtual QString iconPath() const = 0;
+
+    /** The declarative subtext for the item */
+    virtual QString subtext() const = 0;
+
+    /** The usage count used for the ranking in the list */
+    virtual uint16_t usageCount() const { return 0; }
+
+    /** Urgency level of the item, defautls to "Normal" */
+    virtual Urgency urgency() const { return Urgency::Normal; }
+
+    /** The alternative actions of the item*/
+    virtual ActionSPtrVec actions() { return ActionSPtrVec(); }
+
+    /** The children of the item */
+    virtual AlbertItem* parent() { return nullptr; }
+
+    /** The children of the item */
+    virtual vector<shared_ptr<AlbertItem>> children() { return vector<shared_ptr<AlbertItem>>(); }
+
+    /** Indicates if the item has children, for performance  */
+    virtual bool hasChildren() const { return false; }
 };
+typedef shared_ptr<AlbertItem> ItemSPtr;
+typedef vector<shared_ptr<AlbertItem>> ItemSPtrVec;
+

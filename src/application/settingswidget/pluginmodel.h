@@ -18,7 +18,7 @@
 #include <QAbstractListModel>
 class PluginManager;
 
-class PluginModel : public QAbstractListModel
+class PluginModel final : public QAbstractListModel
 {
 public:
     PluginModel(PluginManager* pm, QObject *parent = nullptr);

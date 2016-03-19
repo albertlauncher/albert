@@ -26,10 +26,10 @@
 
 
 /** ***************************************************************************/
-void Files::Indexer::run() {
+void Files::Extension::Indexer::run() {
 
     // Notification
-    qDebug("[%s] Start indexing in background thread", extension_->name);
+    qDebug("[%s] Start indexing in background thread", extension_->name_);
     emit statusInfo("Indexing files ...");
 
     // Prepare the iterator properties
@@ -134,11 +134,11 @@ void Files::Indexer::run() {
     // Copy the usagecounters  [O(n)]
     emit statusInfo("Copy usage statistics ... ");
     size_t i=0, j=0;
-    while (i < extension_->fileIndex_.size() && j < newIndex.size()) {
-        if (extension_->fileIndex_[i]->path_ == newIndex[j]->path_) {
-            newIndex[j]->usage_ = extension_->fileIndex_[i]->usage_;
+    while (i < extension_->index_.size() && j < newIndex.size()) {
+        if (extension_->index_[i]->path() == newIndex[j]->path()) {
+            newIndex[j]->setUsage(extension_->index_[i]->usage());
             ++i;++j;
-        } else if (extension_->fileIndex_[i]->path_ < newIndex[j]->path_) {
+        } else if (extension_->index_[i]->path() < newIndex[j]->path()) {
             ++i;
         } else {// if ((*_fileIndex)[i]->path > (*newIndex)[j]->path) {
             ++j;
@@ -150,27 +150,21 @@ void Files::Indexer::run() {
      */
 
     // Lock the access
-    extension_->indexAccess_.lock();
+    QMutexLocker locker(&extension_->indexAccess_);
 
-    // Set the new index
-    extension_->fileIndex_ = std::move(newIndex);
+    // Abortion requested while block
+    if (abort_)
+        return;
 
-    // Reset the offline index
-    emit statusInfo("Build offline index... ");
+    // Set the new index (use swap to shift destruction out of critical area)
+    std::swap(extension_->index_, newIndex);
+
+    // Rebuild the offline index
     extension_->searchIndex_.clear();
-
-    // Build the new offline index
-    for (shared_ptr<File> i : extension_->fileIndex_)
-        extension_->searchIndex_.add(i);
-
-    // Unlock the accress
-    extension_->indexAccess_.unlock();
-
-    /*
-     *  ▲ CRITICAL ▲
-     */
+    for (auto &item : extension_->index_)
+        extension_->searchIndex_.add(item);
 
     // Notification
-    qDebug("[%s] Indexing done (%d items)", extension_->name, static_cast<int>(extension_->fileIndex_.size()));
-    emit statusInfo(QString("Indexed %1 files").arg(extension_->fileIndex_.size()));
+    qDebug("[%s] Indexing done (%d items)", extension_->name_, static_cast<int>(extension_->index_.size()));
+    emit statusInfo(QString("Indexed %1 files").arg(extension_->index_.size()));
 }
