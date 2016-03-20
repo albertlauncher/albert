@@ -60,7 +60,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
      */
 
     qInstallMessageHandler(myMessageOutput);
-    setOrganizationDomain("manuelschneid3r");
+    setOrganizationDomain("albert");
     setApplicationName("albert");
     setApplicationDisplayName("Albert");
     setApplicationVersion("v0.8.4");
@@ -74,15 +74,11 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
 
     // Make sure data, cache and config dir exists
     QDir dir;
-    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)+"/"+applicationName());
+    dir.mkpath(".");
+    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
     dir.mkpath(".");
     dir.setPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
-    dir.mkpath(".");
-#if QT_VERSION >= 0x050500
-    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation));
-#else
-    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)+"/manuelschneid3r");
-#endif
     dir.mkpath(".");
 
     // Print e message if the app was not terminated graciously

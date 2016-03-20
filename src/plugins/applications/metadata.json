@@ -1,5 +1,5 @@
 {
-    "id" :              "org.manuelschneid3r.albert.extension.applications",
+    "id" :              "org.albert.extension.applications",
     "name" :            "Applications",
     "version" :         "1.1",
     "platform" :        "Linux",

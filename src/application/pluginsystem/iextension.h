@@ -81,5 +81,5 @@ public:
     /* const */
     const char* name_;
 };
-#define ALBERT_EXTENSION_IID "org.manuelschneid3r.albert.extension"
+#define ALBERT_EXTENSION_IID "org.albert.extension"
 Q_DECLARE_INTERFACE(IExtension, ALBERT_EXTENSION_IID)

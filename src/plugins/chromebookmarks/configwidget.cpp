@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QFileDialog>
-#include <QStandardPaths>
 #include <QTimer>
 #include <QMessageBox>
 #include "configwidget.h"
