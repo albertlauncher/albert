@@ -17,7 +17,7 @@
 #pragma once
 #include "ui_settingswidget.h"
 
-class MainWidget;
+class MainWindow;
 class HotkeyManager;
 class PluginManager;
 
@@ -26,7 +26,7 @@ class SettingsWidget final : public QWidget
     Q_OBJECT
 
 public:
-    SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyManager, PluginManager *pluginManager, QWidget * parent = 0, Qt::WindowFlags f = 0);
+    SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyManager, PluginManager *pluginManager, QWidget * parent = 0, Qt::WindowFlags f = 0);
 
 private:
     void keyPressEvent(QKeyEvent * event) override;
@@ -36,7 +36,7 @@ private:
     void changeHotkey(int);
     void updatePluginInformations(const QModelIndex & curr);
 
-    MainWidget *mainWidget_;
+    MainWindow *mainWindow_;
     HotkeyManager *hotkeyManager_;
     PluginManager *pluginManager_;
     Ui::SettingsDialog ui;

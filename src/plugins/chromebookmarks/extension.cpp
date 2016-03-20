@@ -65,7 +65,7 @@ ChromeBookmarks::Extension::Extension() : IExtension("Chromebookmarks") {
             dataFile.close();
 
             // Build the offline index
-            for (auto &item : index_)
+            for (const auto &item : index_)
                 searchIndex_.add(item);
         } else
             qWarning() << "Could not open file: " << dataFile.fileName();
@@ -114,7 +114,7 @@ ChromeBookmarks::Extension::~Extension() {
         qDebug("[%s] Serializing to %s", name_, dataFile.fileName().toLocal8Bit().data());
         QDataStream out( &dataFile );
         out << static_cast<quint64>(index_.size());
-        for (auto &item : index_)
+        for (const auto &item : index_)
             item->serialize(out);
         dataFile.close();
     } else
@@ -160,7 +160,7 @@ void ChromeBookmarks::Extension::handleQuery(shared_ptr<Query> query) {
     indexAccess_.unlock();
 
     // Add results to query. This cast is safe since index holds files only
-    for (shared_ptr<IIndexable> obj : indexables)
+    for (const shared_ptr<IIndexable> &obj : indexables)
         // TODO `Search` has to determine the relevance. Set to 0 for now
         query->addMatch(std::static_pointer_cast<Bookmark>(obj), 0);
 }
@@ -191,7 +191,7 @@ void ChromeBookmarks::Extension::setPath(const QString &path) {
 /** ***************************************************************************/
 void ChromeBookmarks::Extension::restorePath() {
     // Find a bookmark file (Take first one)
-    for (QString browser : {"chromium","google-chrome"}){
+    for (const QString &browser : {"chromium","google-chrome"}){
         QString root = QDir(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)).filePath(browser);
         QDirIterator it(root, {"Bookmarks"}, QDir::Files, QDirIterator::Subdirectories);
         while (it.hasNext()) {

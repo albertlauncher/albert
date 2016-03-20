@@ -87,7 +87,7 @@ public:
 
         // Copy old mimedata
         const QMimeData* oldMimeData = cb->mimeData();
-        for ( const QString &f : oldMimeData->formats())
+        for (const QString &f : oldMimeData->formats())
             newMimeData->setData(f, oldMimeData->data(f));
 
         // Copy path of file

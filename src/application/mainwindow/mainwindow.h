@@ -19,17 +19,17 @@
 #include <QLineEdit>
 #include "proposallist.h"
 #include "inputline.h"
-#include "ui_mainwidget.h"
+#include "ui_mainwindow.h"
 class QAbstractItemModel;
 
-class MainWidget final : public QWidget
+class MainWindow final : public QWidget
 {
 	Q_OBJECT
 
 public:
 
-	MainWidget(QWidget *parent = 0);
-	~MainWidget();
+    MainWindow(QWidget *parent = 0);
+    ~MainWindow();
 
     void show();
     void hide();
@@ -45,7 +45,12 @@ public:
     bool hideOnFocusLoss() const;
     void setHideOnFocusLoss(bool b = true);
 
-    Ui::MainWidget ui;
+    bool alwaysOnTop() const;
+    void setAlwaysOnTop(bool alwaysOnTop);
+
+    uint8_t maxProposals() const;
+    void setMaxProposals(uint8_t max);
+
 
 protected:
 
@@ -58,6 +63,7 @@ private:
     QString theme_;
     bool showCentered_;
     bool hideOnFocusLoss_;
+    Ui::MainWindow ui;
 
     static const QString CFG_WND_POS;
     static const QString CFG_CENTERED;
@@ -66,8 +72,13 @@ private:
     static const QString DEF_THEME;
     static const QString CFG_HIDE_ON_FOCUS_LOSS;
     static const bool    DEF_HIDE_ON_FOCUS_LOSS;
+    static const QString CFG_ALWAYS_ON_TOP;
+    static const bool    DEF_ALWAYS_ON_TOP;
 
 signals:
     void widgetShown();
     void widgetHidden();
+    void startQuery(QString qry);
+    void settingsWindowRequested();
+    void activated(const QModelIndex &index);
 };

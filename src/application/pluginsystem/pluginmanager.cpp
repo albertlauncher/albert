@@ -34,7 +34,7 @@ PluginManager::PluginManager() {
                 QStandardPaths::DataLocation,
                 "plugins",
                 QStandardPaths::LocateDirectory);
-    for (QString pluginDir : pluginDirs) {
+    for (const QString &pluginDir : pluginDirs) {
         QDirIterator dirIterator(pluginDir, QDir::Files);
         while (dirIterator.hasNext()) {
             dirIterator.next();

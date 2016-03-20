@@ -100,7 +100,7 @@ void Files::Extension::Indexer::run() {
                 dirIterator.next();
 
                 // Skip if this file matches one of the ignore patterns
-                for (QRegExp& ignore : ignores){
+                for (const QRegExp& ignore : ignores){
                     QString s = dirIterator.fileName(); // This is insane works only if its a lvalue
                     if(ignore.exactMatch(s))
                         goto SKIP_THIS;
@@ -118,7 +118,7 @@ void Files::Extension::Indexer::run() {
 
 
     // Start the indexing
-    for (const QString& rootDir : extension_->rootDirs_) {
+    for (const QString &rootDir : extension_->rootDirs_) {
         indexRecursion(QFileInfo(rootDir));
         if (abort_) return;
     }

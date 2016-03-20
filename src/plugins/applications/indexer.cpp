@@ -81,7 +81,7 @@ void Applications::Extension::Indexer::run() {
 
     // Rebuild the offline index
     extension_->searchIndex_.clear();
-    for (auto &item : extension_->index_)
+    for (const auto &item : extension_->index_)
         extension_->searchIndex_.add(item);
 
     // Finally update the watches (maybe folders changed)

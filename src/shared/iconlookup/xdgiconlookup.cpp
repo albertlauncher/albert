@@ -216,7 +216,7 @@ QString XdgIconLookup::lookupIconInTheme(const QString &iconName, const QString 
 
     // Get the sizes of the dirs
     std::vector<std::pair<QString, int>> dirsAndSizes;
-    for (const QString& subdir : themeFileParser.directories())
+    for (const QString &subdir : themeFileParser.directories())
         dirsAndSizes.push_back(std::make_pair(subdir, themeFileParser.size(subdir)));
 
     // Sort them by size
@@ -228,7 +228,7 @@ QString XdgIconLookup::lookupIconInTheme(const QString &iconName, const QString 
     // Well now search for a file beginning with the greatest
     QString filename;
     QFile file;
-    for (auto &dirAndSize : dirsAndSizes){
+    for (const auto &dirAndSize : dirsAndSizes){
         for (const QString &iconDir : iconDirs_){
             for (const QString &ext : icon_extensions){
                 filename = QString("%1/%2/%3/%4.%5").arg(iconDir, themeName, dirAndSize.first, iconName, ext);

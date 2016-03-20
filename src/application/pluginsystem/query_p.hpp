@@ -278,7 +278,7 @@ public:
 
             // If not done already, lazy load the children
             if (!parentNode->childrenAreLoaded)
-                for (shared_ptr<AlbertItem> ch : parentNode->data->children()){
+                for (ItemSPtr &ch : parentNode->data->children()){
                     unique_ptr<TreeItem> uniqueTreeItem(new TreeItem(ch));
                     uniqueTreeItem->parent = parentNode;
                     parentNode->children.push_back(std::move(uniqueTreeItem));

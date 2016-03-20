@@ -91,7 +91,7 @@ Applications::Extension::Extension() : IExtension("Applications") {
             dataFile.close();
 
             // Build the offline index
-            for (auto &item : index_)
+            for (const auto &item : index_)
                 searchIndex_.add(item);
         } else
             qWarning() << "Could not open file: " << dataFile.fileName();
@@ -137,7 +137,7 @@ Applications::Extension::~Extension() {
         qDebug("[%s] Serializing to %s", name_, dataFile.fileName().toLocal8Bit().data());
         QDataStream out( &dataFile );
         out << static_cast<quint64>(index_.size());
-        for (auto &item : index_)
+        for (const auto &item : index_)
             item->serialize(out);
         dataFile.close();
     } else
@@ -186,7 +186,7 @@ void Applications::Extension::handleQuery(shared_ptr<Query> query) {
     indexAccess_.unlock();
 
     // Add results to query. This cast is safe since index holds files only
-    for (shared_ptr<IIndexable> &obj : indexables)
+    for (const shared_ptr<IIndexable> &obj : indexables)
         // TODO `Search` has to determine the relevance. Set to 0 for now
         query->addMatch(std::static_pointer_cast<DesktopEntry>(obj), 0);
 }

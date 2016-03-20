@@ -198,7 +198,7 @@ public:
         //                  [](QPair<T, unsigned int> x, QPair<T, unsigned int> y)
         //                    {return x.second > y.second;});
         vector<shared_ptr<IIndexable>> result;
-        for (std::pair<shared_ptr<IIndexable>, unsigned int> pair : finalResult) {
+        for (const std::pair<shared_ptr<IIndexable>, unsigned int> &pair : finalResult) {
             result.push_back(pair.first);
         }
         return result;

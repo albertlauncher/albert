@@ -24,15 +24,15 @@
 #include <QFocusEvent>
 #include "settingswidget.h"
 #include "hotkeymanager.h"
-#include "mainwidget.h"
+#include "mainwindow.h"
 #include "pluginmanager.h"
 #include "pluginmodel.h"
 #include "iextension.h"
 
 
 /** ***************************************************************************/
-SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyManager, PluginManager *pluginManager, QWidget *parent, Qt::WindowFlags f)
-    : QWidget(parent, f), mainWidget_(mainWidget), hotkeyManager_(hotkeyManager), pluginManager_(pluginManager) {
+SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyManager, PluginManager *pluginManager, QWidget *parent, Qt::WindowFlags f)
+    : QWidget(parent, f), mainWindow_(mainWindow), hotkeyManager_(hotkeyManager), pluginManager_(pluginManager) {
 
     ui.setupUi(this);
     setWindowFlags(Qt::Window|Qt::WindowCloseButtonHint);
@@ -40,10 +40,9 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
 
 
     /*
-     * GENERAL TAB
+     * HOTKEY
      */
 
-    // HOTKEY STUFF
     QSet<int> hks = hotkeyManager->hotkeys();
     if (hks.size() < 1)
         ui.grabKeyButton_hotkey->setText("Press to set hotkey");
@@ -52,27 +51,30 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
     connect(ui.grabKeyButton_hotkey, &GrabKeyButton::keyCombinationPressed,
             this, &SettingsWidget::changeHotkey);
 
+
+    /*
+     * MAINWINDOW
+     */
+
     // ALWAYS CENTER
-    ui.checkBox_center->setChecked(mainWidget_->showCentered());
+    ui.checkBox_center->setChecked(mainWindow_->showCentered());
     connect(ui.checkBox_center, &QCheckBox::toggled,
-            mainWidget_, &MainWidget::setShowCentered);
+            mainWindow_, &MainWindow::setShowCentered);
 
     // ALWAYS ON TOP
-    ui.checkBox_onTop->setChecked(mainWidget->windowFlags().testFlag(Qt::WindowStaysOnTopHint));
-    connect(ui.checkBox_onTop, &QCheckBox::toggled, [this](bool b){
-        mainWidget_->setWindowFlags(b ? mainWidget_->windowFlags() | Qt::WindowStaysOnTopHint
-                                      : mainWidget_->windowFlags() &~ Qt::WindowStaysOnTopHint);
-    });
+    ui.checkBox_onTop->setChecked(mainWindow_->alwaysOnTop());
+    connect(ui.checkBox_onTop, &QCheckBox::toggled,
+            mainWindow_, &MainWindow::setAlwaysOnTop);
 
     // HIDE ON FOCUS OUT
-    ui.checkBox_hideOnFocusOut->setChecked(mainWidget_->hideOnFocusLoss());
+    ui.checkBox_hideOnFocusOut->setChecked(mainWindow_->hideOnFocusLoss());
     connect(ui.checkBox_hideOnFocusOut, &QCheckBox::toggled,
-            mainWidget_, &MainWidget::setHideOnFocusLoss);
+            mainWindow_, &MainWindow::setHideOnFocusLoss);
 
     // MAX PROPOSALS
-    ui.spinBox_proposals->setValue(mainWidget->ui.proposalList->maxItems());
+    ui.spinBox_proposals->setValue(mainWindow_->maxProposals());
     connect(ui.spinBox_proposals, (void (QSpinBox::*)(int))&QSpinBox::valueChanged,
-            mainWidget->ui.proposalList, &ProposalList::setMaxItems);
+            mainWindow_, &MainWindow::setMaxProposals);
 
     // THEMES
     QFileInfoList themes;
@@ -80,11 +82,11 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
     QStringList themeDirs =
             QStandardPaths::locateAll(QStandardPaths::DataLocation, "themes",
                                       QStandardPaths::LocateDirectory);
-    for (QDir d : themeDirs)
+    for (const QDir &d : themeDirs)
         themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
-    for (QFileInfo fi : themes) {
+    for (const QFileInfo &fi : themes) {
         ui.comboBox_themes->addItem(fi.baseName(), fi.canonicalFilePath());
-        if ( fi.baseName() == mainWidget->theme())
+        if ( fi.baseName() == mainWindow_->theme())
             ui.comboBox_themes->setCurrentIndex(i);
         ++i;
     }
@@ -93,7 +95,7 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
 
 
     /*
-     * PLUGIN  TAB
+     * PLUGINS
      */
 
     // Show the plugins. This* widget takes ownership of the model
@@ -106,9 +108,11 @@ SettingsWidget::SettingsWidget(MainWidget *mainWidget, HotkeyManager *hotkeyMana
     connect(ui.listView_plugins->model(), &QAbstractListModel::dataChanged,
             this, &SettingsWidget::onPluginDataChanged);
 
+
     /*
-     * ABOUT TAB
+     * ABOUT
      */
+
     ui.about_text->setText(QString(ui.about_text->text()).replace("___versionstring___", qApp->applicationVersion()));
 
     QDesktopWidget *dw = QApplication::desktop();
@@ -164,11 +168,11 @@ void SettingsWidget::changeHotkey(int newhk) {
 /** ***************************************************************************/
 void SettingsWidget::onThemeChanged(int i) {
     // Apply and save the theme
-    QString currentTheme = mainWidget_->theme();
-    if (!mainWidget_->setTheme(ui.comboBox_themes->itemText(i))) {
+    QString currentTheme = mainWindow_->theme();
+    if (!mainWindow_->setTheme(ui.comboBox_themes->itemText(i))) {
         QMessageBox msgBox(QMessageBox::Critical, "Error", "Could not apply theme.");
         msgBox.exec();
-        if (!mainWidget_->setTheme(currentTheme)) {
+        if (!mainWindow_->setTheme(currentTheme)) {
            qFatal("Rolling back theme failed.");
         }
     }

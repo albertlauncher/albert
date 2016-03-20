@@ -25,18 +25,20 @@
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QAbstractItemModel>
-#include "mainwidget.h"
+#include "mainwindow.h"
 
-const QString MainWidget::CFG_WND_POS  = "windowPosition";
-const QString MainWidget::CFG_CENTERED = "showCentered";
-const bool    MainWidget::DEF_CENTERED = true;
-const QString MainWidget::CFG_THEME = "theme";
-const QString MainWidget::DEF_THEME = "Standard";
-const QString MainWidget::CFG_HIDE_ON_FOCUS_LOSS = "hideOnFocusLoss";
-const bool    MainWidget::DEF_HIDE_ON_FOCUS_LOSS = true;
+const QString MainWindow::CFG_WND_POS  = "windowPosition";
+const QString MainWindow::CFG_CENTERED = "showCentered";
+const bool    MainWindow::DEF_CENTERED = true;
+const QString MainWindow::CFG_THEME = "theme";
+const QString MainWindow::DEF_THEME = "Standard";
+const QString MainWindow::CFG_HIDE_ON_FOCUS_LOSS = "hideOnFocusLoss";
+const bool    MainWindow::DEF_HIDE_ON_FOCUS_LOSS = true;
+const QString MainWindow::CFG_ALWAYS_ON_TOP = "alwaysOnTop";
+const bool    MainWindow::DEF_ALWAYS_ON_TOP = true;
 
 /** ***************************************************************************/
-MainWidget::MainWidget(QWidget *parent)
+MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent) {
 	// INITIALIZE UI
     ui.setupUi(this);
@@ -76,31 +78,53 @@ MainWidget::MainWidget(QWidget *parent)
 
     // Settings
     QSettings s;
-    showCentered_ = s.value(CFG_CENTERED, DEF_CENTERED).toBool();
+    if (s.contains(CFG_WND_POS))
+        move(s.value(CFG_WND_POS).toPoint());
+    setShowCentered(s.value(CFG_CENTERED, DEF_CENTERED).toBool());
+    setHideOnFocusLoss(s.value(CFG_HIDE_ON_FOCUS_LOSS, DEF_HIDE_ON_FOCUS_LOSS).toBool());
+    setAlwaysOnTop(s.value(CFG_ALWAYS_ON_TOP, DEF_ALWAYS_ON_TOP).toBool());
     theme_ = s.value(CFG_THEME, DEF_THEME).toString();
     if (!setTheme(theme_)) {
         qFatal("FATAL: Stylefile not found: %s", theme_.toStdString().c_str());
-        exit(EXIT_FAILURE);
+        qApp->quit();
     }
     if (s.contains(CFG_WND_POS) && s.value(CFG_WND_POS).canConvert(QMetaType::QPoint))
         move(s.value(CFG_WND_POS).toPoint());
+
+    /*
+     * Signals
+     */
+
+    // Hide if settings button has been clicked
+    connect(ui.inputLine->settingsButton_, &QPushButton::clicked, this, &MainWindow::hide);
+
+    // Emit signal if settingsWindowRequested, if settings button has been clicked
+    connect(ui.inputLine->settingsButton_, &QPushButton::clicked, this, &MainWindow::settingsWindowRequested);
+
+    // A change in text triggers requests
+    QObject::connect(ui.inputLine, &InputLine::textChanged, this, &MainWindow::startQuery);
+
+    // Enter triggers action
+    QObject::connect(ui.proposalList, &ProposalList::activated, this, &MainWindow::activated);
 }
 
 
 
 /** ***************************************************************************/
-MainWidget::~MainWidget() {
+MainWindow::~MainWindow() {
     // Save settings
     QSettings s;
-    s.setValue(CFG_CENTERED, showCentered_);
+    s.setValue(CFG_CENTERED, showCentered());
+    s.setValue(CFG_HIDE_ON_FOCUS_LOSS, hideOnFocusLoss());
+    s.setValue(CFG_ALWAYS_ON_TOP, alwaysOnTop());
     s.setValue(CFG_WND_POS, pos());
-    s.setValue(CFG_THEME, theme_);
+    s.setValue(CFG_THEME, theme());
 }
 
 
 
 /** ***************************************************************************/
-void MainWidget::show() {
+void MainWindow::show() {
     ui.inputLine->clear();
     // Move widget after showing it since QWidget::move works only on widgets
     // that have been shown once. Well as long as this does not introduce ugly
@@ -120,7 +144,7 @@ void MainWidget::show() {
 
 
 /** ***************************************************************************/
-void MainWidget::hide() {
+void MainWindow::hide() {
     QWidget::hide();
     emit widgetHidden();
 }
@@ -128,14 +152,14 @@ void MainWidget::hide() {
 
 
 /** ***************************************************************************/
-void MainWidget::toggleVisibility() {
+void MainWindow::toggleVisibility() {
     this->isVisible() ? this->hide() : this->show();
 }
 
 
 
 /** ***************************************************************************/
-void MainWidget::setModel(QAbstractItemModel *m) {
+void MainWindow::setModel(QAbstractItemModel *m) {
     QItemSelectionModel *sm = ui.proposalList->selectionModel();
     ui.proposalList->setModel(m);
     delete sm;
@@ -144,37 +168,37 @@ void MainWidget::setModel(QAbstractItemModel *m) {
 
 
 /** ***************************************************************************/
-void MainWidget::setShowCentered(bool b) {
+void MainWindow::setShowCentered(bool b) {
     showCentered_ = b;
 }
 
 
 
 /** ***************************************************************************/
-bool MainWidget::showCentered() const {
+bool MainWindow::showCentered() const {
     return showCentered_;
 }
 
 
 
 /** ***************************************************************************/
-const QString &MainWidget::theme() const {
+const QString &MainWindow::theme() const {
     return theme_;
 }
 
 
 
 /** ***************************************************************************/
-bool MainWidget::setTheme(const QString &theme) {
+bool MainWindow::setTheme(const QString &theme) {
     theme_ = theme;
     QFileInfoList themes;
     QStringList themeDirs = QStandardPaths::locateAll(
         QStandardPaths::DataLocation, "themes", QStandardPaths::LocateDirectory);
-    for (QDir d : themeDirs)
+    for (const QDir &d : themeDirs)
         themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
     // Find and apply the theme
     bool success = false;
-    for (QFileInfo fi : themes) {
+    for (const QFileInfo &fi : themes) {
         if (fi.baseName() == theme_) {
             QFile f(fi.canonicalFilePath());
             if (f.open(QFile::ReadOnly)) {
@@ -191,21 +215,52 @@ bool MainWidget::setTheme(const QString &theme) {
 
 
 /** ***************************************************************************/
-bool MainWidget::hideOnFocusLoss() const {
+bool MainWindow::hideOnFocusLoss() const {
     return hideOnFocusLoss_;
 }
 
 
 
 /** ***************************************************************************/
-void MainWidget::setHideOnFocusLoss(bool b) {
+void MainWindow::setHideOnFocusLoss(bool b) {
     hideOnFocusLoss_ = b;
 }
 
 
 
 /** ***************************************************************************/
-void MainWidget::closeEvent(QCloseEvent *event) {
+bool MainWindow::alwaysOnTop() const {
+    return windowFlags().testFlag(Qt::WindowStaysOnTopHint);
+}
+
+
+
+/** ***************************************************************************/
+void MainWindow::setAlwaysOnTop(bool alwaysOnTop) {
+    alwaysOnTop ? setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint)
+                : setWindowFlags(windowFlags() & ~Qt::WindowStaysOnTopHint);
+    // Flags changed. Update
+    hide();
+}
+
+
+
+/** ***************************************************************************/
+void MainWindow::setMaxProposals(uint8_t max) {
+    ui.proposalList->maxItems_ = max;
+}
+
+
+
+/** ***************************************************************************/
+uint8_t MainWindow::maxProposals() const {
+    return ui.proposalList->maxItems_;
+}
+
+
+
+/** ***************************************************************************/
+void MainWindow::closeEvent(QCloseEvent *event) {
     event->accept();
     qApp->quit();
 }
@@ -213,7 +268,7 @@ void MainWidget::closeEvent(QCloseEvent *event) {
 
 
 /** ***************************************************************************/
-void MainWidget::keyPressEvent(QKeyEvent *e) {
+void MainWindow::keyPressEvent(QKeyEvent *e) {
     // Hide window on escape key
     if (e->modifiers() == Qt::NoModifier && e->key() == Qt::Key_Escape ) {
         hide();
@@ -225,7 +280,7 @@ void MainWidget::keyPressEvent(QKeyEvent *e) {
 
 
 /** ***************************************************************************/
-bool MainWidget::event(QEvent *event) {
+bool MainWindow::event(QEvent *event) {
     if (event->type() == QEvent::WindowDeactivate) {
         qDebug() << "deactivated";
         /* This is a horribly hackish but working solution.
@@ -253,7 +308,7 @@ bool MainWidget::event(QEvent *event) {
          hiding a few milliseconds, so that the hotkey event will always be
          handled first. */
         if (hideOnFocusLoss_){
-            QTimer::singleShot(50, this, &MainWidget::hide);
+            QTimer::singleShot(50, this, &MainWindow::hide);
         }
     }
     return QWidget::event(event);

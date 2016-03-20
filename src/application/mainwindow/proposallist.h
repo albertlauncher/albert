@@ -27,20 +27,20 @@ class ProposalList final : public QListView
     Q_OBJECT
 
 public:
-    explicit ProposalList(QWidget *parent = 0);
+
+    ProposalList(QWidget *parent = 0);
     ~ProposalList();
+
     QSize sizeHint() const override;
     void reset() override;
 
-    void setMaxItems(int);
-    int maxItems() const;
+    uint8_t maxItems_;
 
 private:
     bool eventFilter(QObject*, QEvent *event) override;
 
     ItemDelegate *itemDelegate_;
-    int maxItems_;
 
-    static const constexpr char* CFG_MAX_PROPOSALS     = "itemCount";
-    static const constexpr int   CFG_MAX_PROPOSALS_DEF = 5;
+    static const constexpr char* CFG_MAX_PROPOSALS = "itemCount";
+    static const constexpr uint8_t CFG_MAX_PROPOSALS_DEF = 5;
 };

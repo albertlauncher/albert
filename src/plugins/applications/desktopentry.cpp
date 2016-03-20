@@ -236,7 +236,7 @@ void Applications::DesktopEntry::serialize(QDataStream &out) {
         << name_
         << altName_ << iconPath_ << exec_ << term_;
     out << static_cast<quint64>(actions_.size());
-    for (auto& action : actions_)
+    for (const auto &action : actions_)
         out << static_cast<DesktopAction*>(action.get())->description_
             << static_cast<DesktopAction*>(action.get())->exec_
             << static_cast<DesktopAction*>(action.get())->term_;
@@ -311,7 +311,7 @@ QString Applications::DesktopEntry::escapeString(const QString &unescaped)
 QString Applications::DesktopEntry::quoteString(const QString &unquoted) {
     QString result;
     result.push_back("\"");
-    for (auto & qchar : unquoted){
+    for (const auto &qchar : unquoted){
         switch (qchar.toLatin1()) {
         case '"': case '`': case '\\': case '$':
             result.push_back('\\');

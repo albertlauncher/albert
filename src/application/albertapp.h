@@ -17,7 +17,7 @@
 #pragma once
 #include <QApplication>
 #include <QPointer>
-class MainWidget;
+class MainWindow;
 class HotkeyManager;
 class PluginManager;
 class ExtensionManager;
@@ -43,7 +43,7 @@ public:
     void hideWidget();
 
 private:
-    MainWidget               *mainWidget_;
+    MainWindow               *mainWindow_;
     HotkeyManager            *hotkeyManager_;
     PluginManager            *pluginManager_;
     ExtensionManager         *extensionManager_;

@@ -33,3 +33,12 @@ add_subdirectory(src/application/)
 add_subdirectory(src/plugins/)
 
 
+# Do platform specific post target stuff
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    # Install desktop entry
+    install(FILES data/albert.desktop DESTINATION share/applications )
+    # Install icon
+    install(FILES src/application/resources/icons/albert.svg DESTINATION share/icons/hicolor/scalable/apps)
+    # Define where to install the themes
+    install(DIRECTORY data/themes DESTINATION share/${PROJECT_NAME} COMPONENT config)
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")

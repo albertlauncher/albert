@@ -3,9 +3,9 @@ set(LIB_NAME template)
 find_package(Qt5Widgets 5.1 REQUIRED)
 
 include_directories(
-    ../../application/
+    ../../application
     ../../shared
-    ../../application/pluginsystem/extension
+    ../../application/pluginsystem
 )
 
 set(SRC

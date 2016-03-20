@@ -20,7 +20,7 @@
 #include <QDebug>
 #include <csignal>
 #include "albertapp.h"
-#include "mainwidget.h"
+#include "mainwindow.h"
 #include "settingswidget.h"
 #include "hotkeymanager.h"
 #include "pluginmanager.h"
@@ -97,7 +97,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
         file.close();
     }
 
-    mainWidget_ = new MainWidget;
+    mainWindow_ = new MainWindow;
     hotkeyManager_ = new HotkeyManager;
     pluginManager_ = new PluginManager;
     extensionManager_ = new ExtensionManager;
@@ -117,25 +117,24 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
      *  SETUP SIGNAL FLOW
      */
 
-    // Show mainwidget if hotkey is pressed
-    QObject::connect(hotkeyManager_, &HotkeyManager::hotKeyPressed,mainWidget_, &MainWidget::toggleVisibility);
+    // Show mainwindow if hotkey is pressed
+    QObject::connect(hotkeyManager_, &HotkeyManager::hotKeyPressed,mainWindow_, &MainWindow::toggleVisibility);
 
     // Extrension manager signals new proposals
-    QObject::connect(extensionManager_, &ExtensionManager::newModel, mainWidget_, &MainWidget::setModel);
+    QObject::connect(extensionManager_, &ExtensionManager::newModel, mainWindow_, &MainWindow::setModel);
 
     // Setup and teardown query sessions with the state of the widget
-    QObject::connect(mainWidget_, &MainWidget::widgetShown,  extensionManager_, &ExtensionManager::setupSession);
-    QObject::connect(mainWidget_, &MainWidget::widgetHidden, extensionManager_, &ExtensionManager::teardownSession);
+    QObject::connect(mainWindow_, &MainWindow::widgetShown,  extensionManager_, &ExtensionManager::setupSession);
+    QObject::connect(mainWindow_, &MainWindow::widgetHidden, extensionManager_, &ExtensionManager::teardownSession);
 
     // Click on settingsButton (or shortcut) closes albert + opens settings dialog
-    QObject::connect(mainWidget_->ui.inputLine->settingsButton_, &QPushButton::clicked, mainWidget_, &MainWidget::hide);
-    QObject::connect(mainWidget_->ui.inputLine->settingsButton_, &QPushButton::clicked, this, &AlbertApp::openSettings);
+    QObject::connect(mainWindow_, &MainWindow::settingsWindowRequested, this, &AlbertApp::openSettings);
 
     // A change in text triggers requests
-    QObject::connect(mainWidget_->ui.inputLine, &InputLine::textChanged, extensionManager_, &ExtensionManager::startQuery);
+    QObject::connect(mainWindow_, &MainWindow::startQuery, extensionManager_, &ExtensionManager::startQuery);
 
     // Enter triggers action
-    QObject::connect(mainWidget_->ui.proposalList, &ProposalList::activated, extensionManager_, &ExtensionManager::activate);
+    QObject::connect(mainWindow_, &MainWindow::activated, extensionManager_, &ExtensionManager::activate);
 
     // Publish loaded plugins to the specific interface handlers
     QObject::connect(pluginManager_, &PluginManager::pluginLoaded, extensionManager_, &ExtensionManager::registerExtension);
@@ -154,7 +153,7 @@ AlbertApp::~AlbertApp() {
     delete extensionManager_;
     delete pluginManager_;
     delete hotkeyManager_;
-    delete mainWidget_;
+    delete mainWindow_;
 
     // Delete the running indicator file
     QFile::remove(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running");
@@ -190,7 +189,7 @@ int AlbertApp::exec() {
 /** ***************************************************************************/
 void AlbertApp::openSettings() {
     if (!settingsWidget_)
-        settingsWidget_ = new SettingsWidget(mainWidget_, hotkeyManager_, pluginManager_);
+        settingsWidget_ = new SettingsWidget(mainWindow_, hotkeyManager_, pluginManager_);
     settingsWidget_->show();
     settingsWidget_->raise();
 }
@@ -199,12 +198,12 @@ void AlbertApp::openSettings() {
 
 /** ***************************************************************************/
 void AlbertApp::showWidget() {
-    mainWidget_->show();
+    mainWindow_->show();
 }
 
 
 
 /** ***************************************************************************/
 void AlbertApp::hideWidget() {
-    mainWidget_->hide();
+    mainWindow_->hide();
 }

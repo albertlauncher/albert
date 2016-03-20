@@ -153,17 +153,3 @@ void ProposalList::reset() {
     else
         hide();
 }
-
-
-
-/** ***************************************************************************/
-void ProposalList::setMaxItems(int maxItems) {
-    maxItems_ = maxItems;
-}
-
-
-
-/** ***************************************************************************/
-int ProposalList::maxItems() const {
-    return maxItems_;
-}

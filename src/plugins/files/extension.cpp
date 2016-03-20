@@ -89,7 +89,7 @@ Files::Extension::Extension() : IExtension("Files") {
             dataFile.close();
 
             // Build the offline index
-            for (auto &item : index_)
+            for (const auto &item : index_)
                 searchIndex_.add(item);
         } else
             qWarning() << "Could not open file: " << dataFile.fileName();
@@ -147,7 +147,7 @@ Files::Extension::~Extension() {
         qDebug("[%s] Serializing to %s", name_, dataFile.fileName().toLocal8Bit().data());
         QDataStream out( &dataFile );
         out	<< static_cast<quint64>(index_.size());
-        for (auto &item : index_)
+        for (const auto &item : index_)
             item->serialize(out);
         dataFile.close();
     } else

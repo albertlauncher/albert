@@ -2,10 +2,9 @@ find_package(Qt5Widgets 5.1 REQUIRED)
 
 include_directories(
     hotkey/
-    mainwidget/
+    mainwindow/
     interfaces/
     pluginsystem/
-    pluginsystem/extension/
     settingswidget/
 )
 
@@ -14,19 +13,19 @@ set(SRC
     albertapp.cpp
     hotkey/hotkeymanager.cpp
     hotkey/hotkeymanager_p.h
-    mainwidget/inputline.cpp
-    mainwidget/itemdelegate.cpp
-    mainwidget/mainwidget.cpp
-    mainwidget/proposallist.cpp
-    mainwidget/settingsbutton.h
+    mainwindow/mainwindow.cpp
+    mainwindow/inputline.cpp
+    mainwindow/itemdelegate.cpp
+    mainwindow/proposallist.cpp
+    mainwindow/settingsbutton.h
     pluginsystem/pluginloader.cpp
     pluginsystem/pluginmanager.cpp
-    pluginsystem/extension/extensionmanager.cpp
-    pluginsystem/extension/query.cpp
-    pluginsystem/extension/query_p.hpp
-    pluginsystem/extension/iextension.h
-    pluginsystem/extension/abstractobjects.hpp
-    pluginsystem/extension/objects.hpp
+    pluginsystem/extensionmanager.cpp
+    pluginsystem/query.cpp
+    pluginsystem/query_p.hpp
+    pluginsystem/iextension.h
+    pluginsystem/abstractobjects.hpp
+    pluginsystem/objects.hpp
     settingswidget/grabkeybutton.cpp
     settingswidget/settingswidget.cpp
     settingswidget/pluginmodel.cpp
@@ -37,7 +36,7 @@ set(LIB
 )
 
 qt5_wrap_ui(UI
-    mainwidget/mainwidget.ui
+    mainwindow/mainwindow.ui
     settingswidget/settingswidget.ui
 )
 
@@ -69,11 +68,4 @@ target_link_libraries(${PROJECT_NAME} ${LIB})
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     # Define where to install the binary
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
-    # Install desktop entry
-    install(FILES resources/albert.desktop DESTINATION share/applications )
-    # Install icon
-    install(FILES resources/icons/albert.svg DESTINATION share/icons/hicolor/scalable/apps)
-    # Define where to install the themes
-    install(DIRECTORY resources/themes DESTINATION share/${PROJECT_NAME} COMPONENT config)
-elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")

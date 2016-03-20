@@ -105,7 +105,7 @@ QWidget *Websearch::Extension:: widget(QWidget *parent) {
 
 /** ***************************************************************************/
 void Websearch::Extension::handleQuery(shared_ptr<Query> query) {
-    for (const shared_ptr<SearchEngine>& se : index_)
+    for (const shared_ptr<SearchEngine> &se : index_)
         if (query->searchTerm().section(' ',0,0) == se->trigger()) {
             se->setQuery(query->searchTerm().section(' ', 1, -1, QString::SectionSkipEmpty));
             query->addMatch(se);
@@ -116,7 +116,7 @@ void Websearch::Extension::handleQuery(shared_ptr<Query> query) {
 
 /** ***************************************************************************/
 void Websearch::Extension::handleFallbackQuery(shared_ptr<Query> query) {
-    for (const shared_ptr<SearchEngine>& se : index_) {
+    for (const shared_ptr<SearchEngine> &se : index_) {
         if (se->enabled()) {
             se->setQuery(query->searchTerm());
             query->addMatch(se,3);
@@ -129,7 +129,7 @@ void Websearch::Extension::handleFallbackQuery(shared_ptr<Query> query) {
 /** ***************************************************************************/
 QStringList Websearch::Extension::triggers() const {
     QStringList triggers;
-    for (auto i : index_)
+    for (const auto &i : index_)
         triggers.push_back(i->trigger());
     return triggers;
 }
