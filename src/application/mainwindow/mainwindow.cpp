@@ -282,7 +282,6 @@ void MainWindow::keyPressEvent(QKeyEvent *e) {
 /** ***************************************************************************/
 bool MainWindow::event(QEvent *event) {
     if (event->type() == QEvent::WindowDeactivate) {
-        qDebug() << "deactivated";
         /* This is a horribly hackish but working solution.
 
          A triggered key grab on X11 steals the focus of the window for short

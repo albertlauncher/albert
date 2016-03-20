@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "itemdelegate.h"
+#include "roles.hpp"
 
 void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const {
     QStyleOptionViewItemV4 option = options;
@@ -32,7 +33,7 @@ void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &options,
 //		iconRect.translate( (a-option.decorationSize.width())/2, (a-option.decorationSize.height())/2);
     QRect iconRect = option.widget->style()->subElementRect(QStyle::SE_ItemViewItemDecoration, &option, option.widget);
     painter->drawPixmap(iconRect,
-                        QPixmap(index.data(Qt::DecorationRole).value<QString>())
+                        QPixmap(index.data(Roles::IconPath).value<QString>())
                         .scaled(option.decorationSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
     /*
@@ -59,7 +60,7 @@ void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &options,
     // Draw display role
     painter->setFont(option.font);
     QString text = QFontMetrics(option.font).elidedText(
-                index.data(Qt::DisplayRole).toString(),
+                index.data(Roles::Text).toString(),
                 option.textElideMode,
                 DisplayRect.width());
     painter->drawText(DisplayRect, Qt::AlignTop|Qt::AlignLeft, text);
@@ -68,7 +69,7 @@ void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &options,
     option.font.setPixelSize(12);
     painter->setFont(option.font);
     text = QFontMetrics(option.font).elidedText(
-                index.data(Qt::ToolTipRole)
+                index.data(Roles::SubText)
                 .toString(),
                 option.textElideMode,
                 DisplayRect.width());

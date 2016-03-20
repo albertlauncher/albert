@@ -28,6 +28,7 @@
 using std::shared_ptr;
 using std::unique_ptr;
 #include "abstractobjects.hpp"
+#include "roles.hpp"
 
 struct TreeItem final
 {
@@ -170,13 +171,13 @@ public:
         if (index.isValid()) {
             TreeItem *ti = static_cast<TreeItem*>(index.internalPointer());
             switch (role) {
-            case Qt::DisplayRole:
+            case Roles::Text:
                 return ti->data->text();
-            case Qt::ToolTipRole:
+            case Roles::SubText:
                 return ti->data->subtext();
-            case Qt::DecorationRole:
+            case Roles::IconPath:
                 return ti->data->iconPath();
-            case Qt::UserRole: {
+            case Roles::Actions: {
                 QStringList actionTexts;
                 for (ActionSPtr &action : ti->data->actions())
                     actionTexts.append(action->text());
@@ -196,7 +197,7 @@ public:
         if (index.isValid()) {
             TreeItem *ti = static_cast<TreeItem*>(index.internalPointer());
             switch (role) {
-            case Qt::UserRole+1: {
+            case Roles::Activate: {
                 int actionValue = value.toInt();
                 if (0 <= actionValue && actionValue < static_cast<int>(ti->data->actions().size()))
                     ti->data->actions()[actionValue]->activate();

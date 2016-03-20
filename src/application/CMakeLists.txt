@@ -21,6 +21,7 @@ set(SRC
     pluginsystem/pluginloader.cpp
     pluginsystem/pluginmanager.cpp
     pluginsystem/extensionmanager.cpp
+    pluginsystem/roles.hpp
     pluginsystem/query.cpp
     pluginsystem/query_p.hpp
     pluginsystem/iextension.h
