@@ -60,11 +60,7 @@
           <widget class="InputLine" name="inputLine"/>
          </item>
          <item>
-          <widget class="ProposalList" name="proposalList">
-           <property name="textElideMode">
-            <enum>Qt::ElideMiddle</enum>
-           </property>
-          </widget>
+          <widget class="ProposalList" name="proposalList"/>
          </item>
         </layout>
        </widget>

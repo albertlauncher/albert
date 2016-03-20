@@ -17,24 +17,11 @@
 #include "roles.hpp"
 
 void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const {
+
+    painter->save();
+
     QStyleOptionViewItemV4 option = options;
     initStyleOption(&option, index);
-
-    //	QStyledItemDelegate::paint(painter, option, index);
-    painter->save();
-    QStyle *style = option.widget->style();
-    style->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
-//		QRect contentsRect = style->subElementRect(QStyle::SE_ItemViewItemText,
-//												   &option,
-//												   option.widget);
-
-    /* Draw icon */
-//		QRect iconRect(contentsRect.topLeft(), option.decorationSize);
-//		iconRect.translate( (a-option.decorationSize.width())/2, (a-option.decorationSize.height())/2);
-    QRect iconRect = option.widget->style()->subElementRect(QStyle::SE_ItemViewItemDecoration, &option, option.widget);
-    painter->drawPixmap(iconRect,
-                        QPixmap(index.data(Roles::IconPath).value<QString>())
-                        .scaled(option.decorationSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
     /*
      * fm(x) := fontmetrics of x
@@ -54,26 +41,49 @@ void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &options,
      * +---------------------------------------------------------------+
      */
 
-    QRect DisplayRect = option.widget->style()->subElementRect(QStyle::SE_ItemViewItemText, &option, option.widget);
-    DisplayRect.adjust(3,0,0,-5);  // Empirical
+
+    QRect iconRect = QRect(
+                QPoint((option.rect.height() - option.decorationSize.width())/2 + option.rect.x(),
+                       (option.rect.height() - option.decorationSize.height())/2 + option.rect.y()),
+                option.decorationSize);
+
+
+    QFont font1 = option.font;
+    QFont font2 = option.font;
+    font2.setPixelSize(12);
+
+    QFontMetrics fontMetrics1 = QFontMetrics(font1);
+    QFontMetrics fontMetrics2 = QFontMetrics(font2);
+
+    QRect contentRect = option.rect;
+    contentRect.setLeft(option.rect.height());
+    contentRect.setTop(option.rect.y()+option.rect.height()/2-(fontMetrics1.height()+fontMetrics2.height())/2);
+    contentRect.setBottom(option.rect.y()+option.rect.height()/2+(fontMetrics1.height()+fontMetrics2.height())/2);
+
+    QRect textRect = contentRect.adjusted(0,-2,0,-fontMetrics2.height()-2);
+    QRect subTextRect = contentRect.adjusted(0,fontMetrics1.height()-2,0,-2);
+
+//    // Test
+//    painter->fillRect(iconRect, Qt::magenta);
+//    painter->fillRect(contentRect, Qt::red);
+//    painter->fillRect(textRect, Qt::blue);
+//    painter->fillRect(subTextRect, Qt::yellow);
+
+    // Draw selection
+    option.widget->style()->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
+
+    // Draw icon
+    painter->drawPixmap(iconRect, QPixmap(index.data(Roles::IconPath).value<QString>()).scaled(option.decorationSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
     // Draw display role
-    painter->setFont(option.font);
-    QString text = QFontMetrics(option.font).elidedText(
-                index.data(Roles::Text).toString(),
-                option.textElideMode,
-                DisplayRect.width());
-    painter->drawText(DisplayRect, Qt::AlignTop|Qt::AlignLeft, text);
+    painter->setFont(font1);
+    QString text = fontMetrics1.elidedText(index.data(Roles::Text).toString(), option.textElideMode, textRect.width());
+    painter->drawText(textRect, Qt::AlignTop|Qt::AlignLeft, text);
 
     // Draw tooltip role
-    option.font.setPixelSize(12);
-    painter->setFont(option.font);
-    text = QFontMetrics(option.font).elidedText(
-                index.data(Roles::SubText)
-                .toString(),
-                option.textElideMode,
-                DisplayRect.width());
-    painter->drawText(DisplayRect, Qt::AlignBottom|Qt::AlignLeft, text);
+    painter->setFont(font2);
+    text = fontMetrics2.elidedText(index.data(Roles::SubText).toString(), option.textElideMode, subTextRect.width());
+    painter->drawText(subTextRect   , Qt::AlignBottom|Qt::AlignLeft, text);
 
     painter->restore();
 }
