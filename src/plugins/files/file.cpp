@@ -16,6 +16,8 @@
 
 #include <QApplication>
 #include <QFileInfo>
+#include <QDataStream>
+#include <QMimeDatabase>
 #include "file.h"
 #include "fileactions.h"
 #include "iconlookup/xdgiconlookup.h"
@@ -110,4 +112,23 @@ ActionSPtrVec Files::File::actions() {
 /** ***************************************************************************/
 std::vector<QString> Files::File::aliases() const {
     return std::vector<QString>({QFileInfo(path_).fileName()});
+}
+
+
+
+/** ***************************************************************************/
+void Files::File::serialize(QDataStream &out) {
+    out << path_
+        << static_cast<quint16>(usage_)
+        << mimetype_.name();
+}
+
+
+
+/** ***************************************************************************/
+void Files::File::deserialize(QDataStream &in) {
+    QMimeDatabase db;
+    QString mimetype;
+    in >> path_ >> usage_ >> mimetype;
+    mimetype_ = db.mimeTypeForName(mimetype);
 }
