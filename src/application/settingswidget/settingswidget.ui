@@ -76,7 +76,7 @@
               <item>
                <widget class="QLabel" name="label_hotkey">
                 <property name="text">
-                 <string>H&amp;otkey</string>
+                 <string>&amp;Hotkey</string>
                 </property>
                 <property name="buddy">
                  <cstring>grabKeyButton_hotkey</cstring>
@@ -97,7 +97,7 @@
               <item>
                <widget class="QLabel" name="label_onTop">
                 <property name="text">
-                 <string>A&amp;lways on top</string>
+                 <string>Always on &amp;top</string>
                 </property>
                 <property name="buddy">
                  <cstring>checkBox_onTop</cstring>
@@ -118,7 +118,7 @@
               <item>
                <widget class="QLabel" name="label_hideOnFocusOut">
                 <property name="text">
-                 <string>Hide on focus out</string>
+                 <string>Hide on &amp;focus out</string>
                 </property>
                 <property name="buddy">
                  <cstring>checkBox_hideOnFocusOut</cstring>
@@ -160,7 +160,7 @@
               <item>
                <widget class="QLabel" name="label_proposals">
                 <property name="text">
-                 <string>Max. # of p&amp;ropoals</string>
+                 <string>Max. # of p&amp;roposals</string>
                 </property>
                 <property name="buddy">
                  <cstring>spinBox_proposals</cstring>

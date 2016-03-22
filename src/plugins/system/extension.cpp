@@ -68,8 +68,8 @@ System::Extension::Extension() : IExtension("System") {
 
     iconPath = xdg.themeIcon("system-suspend-hibernate");
     actions_.push_back({CFG_HIBERNATE,
-                        "Hiberate",
-                        "Hiberate the machine.",
+                        "Hibernate",
+                        "Hibernate the machine.",
                         iconPath.isNull() ? ":hibernate" : iconPath,
                         s.value(CFG_HIBERNATE, DEF_HIBERNATE).toString()});
 
