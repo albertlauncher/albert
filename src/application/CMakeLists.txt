@@ -1,4 +1,5 @@
 find_package(Qt5Widgets 5.1 REQUIRED)
+find_package(Qt5Svg 5.1 REQUIRED)
 
 include_directories(
     hotkey/
@@ -17,7 +18,7 @@ set(SRC
     mainwindow/inputline.cpp
     mainwindow/itemdelegate.cpp
     mainwindow/proposallist.cpp
-    mainwindow/settingsbutton.h
+    mainwindow/settingsbutton.cpp
     pluginsystem/pluginloader.cpp
     pluginsystem/pluginmanager.cpp
     pluginsystem/extensionmanager.cpp
@@ -34,6 +35,7 @@ set(SRC
 
 set(LIB
     ${Qt5Widgets_LIBRARIES}
+    ${Qt5Svg_LIBRARIES}
 )
 
 qt5_wrap_ui(UI

@@ -16,38 +16,24 @@
 
 #pragma once
 #include <QPushButton>
-#include <QIcon>
-#include <QRect>
-#include <QPainter>
-#include <QPaintEvent>
-#include <QStyleOptionButton>
+class QPropertyAnimation;
+class QSvgRenderer;
 
 class SettingsButton final : public QPushButton
 {
     Q_OBJECT
+    Q_PROPERTY(int angle MEMBER angle_)
+
 public:
-    explicit SettingsButton(QWidget *parent = 0) :
-        QPushButton(parent){}
+
+    SettingsButton(QWidget *parent = 0);
+    ~SettingsButton();
 
 private:
-    void paintEvent(QPaintEvent *event) override {
-        QPushButton::paintEvent(event);
-        QStyleOptionButton option;
-        option.initFrom(this);
-        QRect r = this->rect();
 
-        // Prepare miage in pixmap using mask
-        QPixmap pm(r.size());
-        pm.fill(Qt::transparent);
-        pm.fill(option.palette.windowText().color());
-        QIcon w(":gear");
-        QPainter ppm(&pm);
-        ppm.setCompositionMode(QPainter::CompositionMode_DestinationIn);
-        ppm.drawPixmap(0,0,w.pixmap(r.size()));
+    void paintEvent(QPaintEvent *event) override;
 
-        // Draw pixmap on button
-        QPainter p(this);
-        p.setRenderHint(QPainter::Antialiasing, true);
-        p.drawPixmap(0,0,pm);
-    }
+    int angle_;
+    QPropertyAnimation *animation_;
+    QSvgRenderer *svgRenderer_;
 };
