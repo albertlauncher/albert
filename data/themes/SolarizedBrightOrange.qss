@@ -1,0 +1,103 @@
+/*
+ * author: Manuel Schneider <https://github.com/ManuelSchneid3r>
+ *
+ * Check http://doc.qt.io/qt-5/stylesheet-syntax.html especially the subtopics:
+ * The Style Sheet Syntax (http://doc.qt.io/qt-5/stylesheet-syntax.html)
+ * Qt Style Sheets Reference (http://doc.qt.io/qt-5/stylesheet-reference.html)
+ */
+
+
+#bottomFrame * {
+	color : #586e75;
+	background-color: #fdf6e3;
+	selection-color: #fdf6e3;
+	selection-background-color: #586e75;
+}
+
+#bottomFrame {
+	width:640px;
+	min-width:640px;
+	max-width:640px;
+	padding: 6px;
+	border-radius: 12px;
+	background-color: #cb4b16;
+}
+
+#topFrame {
+	padding: 6px;
+	border-radius: 6px;
+}
+
+#inputLine {
+	padding: 2px;
+	border-radius: 2px;
+	font-size: 36px;
+	border: none;
+	background-color: #eee8d5;
+}
+
+#settingsButton {
+	min-width:14px;
+	min-height:14px;
+	max-width:14px;
+	max-height:14px;
+	border: none;
+	border-radius: 6px;
+	color : #cb4b16;
+	background-color: transparent;
+  padding: 3px ;
+}
+
+
+/********** proposalList **********/
+
+#proposalList {
+	icon-size:48px;
+	font-size: 26px;
+	border-radius: 5px;
+	background-color: transparent;
+}
+
+#proposalList::item{
+	height:48px;
+	border-radius: 3px;
+	border: 1px solid transparent;
+}
+
+#proposalList::item:selected{
+  color: #cb4b16;
+	border-left: 1px solid #cb4b16;
+	border-right: 1px solid #cb4b16;
+	background: qlineargradient(x1:0, x2:1, stop:0.0 #40cb4b16, stop:0.5 #20cb4b16, stop:1.0 #40cb4b16 );
+}
+
+#proposalList::item:hover{}
+#proposalList::item:selected:!active{}
+#proposalList::item:selected:active{}
+#proposalList::item:alternate{}
+
+/********** SCROLLBAR **********/
+
+#proposalList QScrollBar:vertical  {
+	width: 5px;
+	background: transparent;
+}
+
+#proposalList QScrollBar::handle:vertical  {
+	background: #586e75;
+	min-height: 24px;
+}
+
+#proposalList QScrollBar::handle:vertical:hover  {
+	background: #cb4b16;
+	min-height: 24px;
+}
+
+#proposalList QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
+#proposalList QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical,
+#proposalList QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+	border: 0px;
+	width: 0px;
+	height: 0px;
+	background: transparent;
+}
