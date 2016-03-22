@@ -36,6 +36,8 @@ SettingsButton::SettingsButton(QWidget *parent) : QPushButton(parent) {
     connect(animation_, &QPropertyAnimation::valueChanged, this, static_cast<void (QWidget::*)()>(&QWidget::update));
 
     svgRenderer_ = new QSvgRenderer(QString(":gear"));
+
+    setCursor(Qt::PointingHandCursor);
 }
 
 
