@@ -56,6 +56,8 @@ protected:
 
     void closeEvent(QCloseEvent * event) override;
     void keyPressEvent(QKeyEvent * event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mousePressEvent(QMouseEvent * event) override;
     bool event(QEvent *event) override;
 
 private:
@@ -63,6 +65,7 @@ private:
     QString theme_;
     bool showCentered_;
     bool hideOnFocusLoss_;
+    QPoint clickOffset_;
     Ui::MainWindow ui;
 
     static const QString CFG_WND_POS;

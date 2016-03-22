@@ -280,6 +280,21 @@ void MainWindow::keyPressEvent(QKeyEvent *e) {
 
 
 /** ***************************************************************************/
+void MainWindow::mouseMoveEvent(QMouseEvent *event) {
+    Q_UNUSED(event)
+    this->move(QCursor::pos() - clickOffset_);
+}
+
+
+
+/** ***************************************************************************/
+void MainWindow::mousePressEvent(QMouseEvent *event) {
+    clickOffset_ = event->pos();
+}
+
+
+
+/** ***************************************************************************/
 bool MainWindow::event(QEvent *event) {
     if (event->type() == QEvent::WindowDeactivate) {
         /* This is a horribly hackish but working solution.
