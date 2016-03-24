@@ -27,6 +27,7 @@
 #include <QTimer>
 #include <QVBoxLayout>
 #include "mainwindow.h"
+#include "albertapp.h"
 #include "roles.hpp"
 
 const QString MainWindow::CFG_WND_POS  = "windowPosition";
@@ -44,7 +45,6 @@ const char*   MainWindow::CFG_DISPLAY_SCROLLBAR = "displayScrollbar";
 const bool    MainWindow::DEF_DISPLAY_SCROLLBAR = false;
 const char*   MainWindow::CFG_DISPLAY_ICONS = "displayIcons";
 const bool    MainWindow::DEF_DISPLAY_ICONS = true;
-const char*   MainWindow::SETTINGS_SHORTCUT = "Alt+,";
 
 
 /** ***************************************************************************/
@@ -57,7 +57,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui.setupUi(this);
     setWindowTitle(qAppName());
     setAttribute(Qt::WA_TranslucentBackground);
-    setWindowFlags(Qt::Tool
+    setWindowFlags(Qt::SplashScreen // Tool does not quit on close event, Popup grabs mouse, ToolTip does not accept kbd input
                    | Qt::WindowStaysOnTopHint
                    | Qt::WindowCloseButtonHint // No close event w/o this
                    | Qt::FramelessWindowHint);
@@ -82,7 +82,29 @@ MainWindow::MainWindow(QWidget *parent)
     settingsButton_ = new SettingsButton(this);
     settingsButton_->setObjectName("settingsButton");
     settingsButton_->setFocusPolicy(Qt::NoFocus);
-    settingsButton_->setShortcut(QKeySequence(SETTINGS_SHORTCUT));
+    settingsButton_->setContextMenuPolicy(Qt::ActionsContextMenu);
+
+    // Context menu of settingsbutton
+    QAction *action = new QAction("Settings", settingsButton_);
+    action->setShortcuts({QKeySequence("Ctrl+,"), QKeySequence("Alt+,")});
+    connect(action, &QAction::triggered, this, &MainWindow::hide);
+    connect(action, &QAction::triggered, qApp, &AlbertApp::openSettings);
+    connect(settingsButton_, &QPushButton::clicked, action, &QAction::trigger);
+    settingsButton_->addAction(action);
+
+    action = new QAction("Hide", settingsButton_);
+    action->setShortcut(QKeySequence("Esc"));
+    connect(action, &QAction::triggered, this, &MainWindow::hide);
+    settingsButton_->addAction(action);
+
+    action = new QAction("Separator", settingsButton_);
+    action->setSeparator(true);
+    settingsButton_->addAction(action);
+
+    action = new QAction("Quit", settingsButton_);
+    action->setShortcut(QKeySequence("Alt+F4"));
+    connect(action, &QAction::triggered, qApp, &AlbertApp::quit);
+    settingsButton_->addAction(action);
 
     // History
     history_ = new History(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
@@ -113,12 +135,6 @@ MainWindow::MainWindow(QWidget *parent)
     /*
      * Signals
      */
-
-    // Hide window, if settings button has been clicked
-    connect(settingsButton_, &QPushButton::clicked, this, &MainWindow::hide);
-
-    // Emit settingsWindowRequested, if settings button has been clicked
-    connect(settingsButton_, &QPushButton::clicked, this, &MainWindow::settingsWindowRequested);
 
     // Trigger query, if text changed
     connect(ui.inputLine, &QLineEdit::textChanged, this, &MainWindow::startQuery);
@@ -185,8 +201,10 @@ void MainWindow::show() {
 
 /** ***************************************************************************/
 void MainWindow::hide() {
-    QWidget::hide();
     setShowActions(false);
+    ui.inputLine->clear();
+    setModel(nullptr);
+    QWidget::hide();
     emit widgetHidden();
 }
 
@@ -380,13 +398,6 @@ void MainWindow::setShowActions(bool showActions) {
 }
 
 
-/** ***************************************************************************/
-void MainWindow::closeEvent(QCloseEvent *event) {
-    event->accept();
-    qApp->quit();
-}
-
-
 
 /** ***************************************************************************/
 void MainWindow::resizeEvent(QResizeEvent *event) {
@@ -425,11 +436,6 @@ bool MainWindow::eventFilter(QObject *, QEvent *event) {
         // Toggle actionsview
         case Qt::Key_Tab:
             setShowActions(!actionsAreShown());
-            return true;
-
-        // Hide window on escape key
-        case Qt::Key_Escape:
-            hide();
             return true;
 
         case Qt::Key_Up:{

@@ -66,7 +66,6 @@ public:
 
 protected:
 
-    void closeEvent(QCloseEvent * event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void mousePressEvent(QMouseEvent * event) override;
     void resizeEvent(QResizeEvent* event) override;
@@ -120,11 +119,9 @@ private:
     static const bool    DEF_DISPLAY_SCROLLBAR;
     static const char*   CFG_DISPLAY_ICONS;
     static const bool    DEF_DISPLAY_ICONS;
-    static const char*   SETTINGS_SHORTCUT;
 
 signals:
     void widgetShown();
     void widgetHidden();
     void startQuery(QString qry);
-    void settingsWindowRequested();
 };

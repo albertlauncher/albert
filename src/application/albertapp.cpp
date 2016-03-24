@@ -65,7 +65,6 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     setApplicationDisplayName("Albert");
     setApplicationVersion("v0.8.4");
     setWindowIcon(QIcon(":app_icon"));
-    setQuitOnLastWindowClosed(false); // Dont quit after settings close
 
 
     /*
@@ -122,9 +121,6 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     // Setup and teardown query sessions with the state of the widget
     QObject::connect(mainWindow_, &MainWindow::widgetShown,  extensionManager_, &ExtensionManager::setupSession);
     QObject::connect(mainWindow_, &MainWindow::widgetHidden, extensionManager_, &ExtensionManager::teardownSession);
-
-    // Click on settingsButton (or shortcut) closes albert + opens settings dialog
-    QObject::connect(mainWindow_, &MainWindow::settingsWindowRequested, this, &AlbertApp::openSettings);
 
     // A change in text triggers requests
     QObject::connect(mainWindow_, &MainWindow::startQuery, extensionManager_, &ExtensionManager::startQuery);
