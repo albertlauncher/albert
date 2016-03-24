@@ -51,7 +51,7 @@ void ChromeBookmarks::Extension::Indexer::run() {
                 rec_bmsearch(i.toObject());
         }
         if (type.toString() == "url") {
-            // TODO ADD THE FOLDERS to the aliases
+            // TODO ADD THE FOLDERS to the indexKeywords
             newIndex.push_back(std::make_shared<Bookmark>(
                                  json["name"].toString(), json["url"].toString(), 0));
         }

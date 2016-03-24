@@ -53,8 +53,12 @@ void Applications::DesktopEntry::activate() {
 
 
 /** ***************************************************************************/
-std::vector<QString> Applications::DesktopEntry::aliases() const {
-    return std::vector<QString>({altName_, exec_.section(" ",0,0)});
+std::vector<QString> Applications::DesktopEntry::indexKeywords() const {
+    return std::vector<QString>({
+                                    name_,
+                                    altName_,
+                                    exec_.section(" ",0,0)
+                                });
 }
 
 

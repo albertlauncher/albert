@@ -110,8 +110,8 @@ ActionSPtrVec Files::File::actions() {
 
 
 /** ***************************************************************************/
-std::vector<QString> Files::File::aliases() const {
-    return std::vector<QString>({QFileInfo(path_).fileName()});
+std::vector<QString> Files::File::indexKeywords() const {
+    return std::vector<QString>({ QFileInfo(path_).fileName() });
 }
 
 

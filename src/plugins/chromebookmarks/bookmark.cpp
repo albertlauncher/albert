@@ -52,11 +52,14 @@ void ChromeBookmarks::Bookmark::activate() {
 
 
 /** ***************************************************************************/
-vector<QString> ChromeBookmarks::Bookmark::aliases() const {
+vector<QString> ChromeBookmarks::Bookmark::indexKeywords() const {
     // return domain without TLD eg. maps.google for maps.google.de
     QUrl url(url_);
     QString host = url.host();
-    return std::vector<QString>({host.left(host.size()-url.topLevelDomain().size())});
+    return std::vector<QString>({
+                                    name_,
+                                    host.left(host.size()-url.topLevelDomain().size())
+                                });
 }
 
 

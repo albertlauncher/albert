@@ -37,7 +37,7 @@ public:
     QString iconPath() const override { return iconPath_; }
     QString text() const override{ return name_; }
     QString subtext() const override { return altName(); }
-    vector<QString> aliases() const override;
+    vector<QString> indexKeywords() const override;
     void activate() override;
     uint16_t usageCount() const override {return usage_;}
     ActionSPtrVec actions() override { return actions_; }

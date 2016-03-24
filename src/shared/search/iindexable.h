@@ -23,5 +23,5 @@ class IIndexable
 {
 public:
     virtual ~IIndexable() {}
-    virtual std::vector<QString> aliases() const = 0;
+    virtual std::vector<QString> indexKeywords() const = 0;
 };

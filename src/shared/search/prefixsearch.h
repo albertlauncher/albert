@@ -50,10 +50,10 @@ public:
 
     /** ***********************************************************************/
     void add(shared_ptr<IIndexable> idxble) override {
-        vector<QString> aliases = idxble->aliases();
-        for (const QString &str : aliases) {
+        vector<QString> indexKeywords = idxble->indexKeywords();
+        for (const QString &kw : indexKeywords) {
             // Build an inverted index
-            QStringList words = str.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
+            QStringList words = kw.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
             for (const QString &w : words) {
                 invertedIndex_[w.toLower()].insert(idxble);
             }
