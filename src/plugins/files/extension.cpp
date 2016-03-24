@@ -215,6 +215,11 @@ QWidget *Files::Extension::widget(QWidget *parent) {
 
 /** ***************************************************************************/
 void Files::Extension::handleQuery(shared_ptr<Query> query) {
+
+    // Skip  short terms since they pollute the output
+    if ( query->searchTerm().size() < 3)
+        return;
+
     // Search for matches. Lock memory against indexer
     indexAccess_.lock();
     vector<shared_ptr<IIndexable>> indexables = searchIndex_.search(query->searchTerm());
