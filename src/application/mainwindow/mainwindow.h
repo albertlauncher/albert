@@ -51,6 +51,12 @@ public:
     uint8_t maxProposals() const;
     void setMaxProposals(uint8_t max);
 
+    bool displayIcons() const;
+    void setDisplayIcons(bool value);
+
+    bool displayScrollbar() const;
+    void setDisplayScrollbar(bool value);
+
     void setModel(QAbstractItemModel *);
 
     bool actionsAreShown() const;
@@ -110,6 +116,10 @@ private:
     static const bool    DEF_ALWAYS_ON_TOP;
     static const char*   CFG_MAX_PROPOSALS;
     static const uint8_t DEF_MAX_PROPOSALS;
+    static const char*   CFG_DISPLAY_SCROLLBAR;
+    static const bool    DEF_DISPLAY_SCROLLBAR;
+    static const char*   CFG_DISPLAY_ICONS;
+    static const bool    DEF_DISPLAY_ICONS;
     static const char*   SETTINGS_SHORTCUT;
 
 signals:

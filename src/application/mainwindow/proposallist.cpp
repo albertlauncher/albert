@@ -15,12 +15,28 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QKeyEvent>
+#include <QPainter>
 #include "proposallist.h"
-#include "itemdelegate.hpp"
+#include "roles.hpp"
 
 /** ***************************************************************************/
 ProposalList::ProposalList(QWidget *parent) : ResizingList(parent) {
-    setItemDelegate(new ItemDelegate);
+    setItemDelegate(delegate_ = new ItemDelegate(this));
+}
+
+
+
+/** ***************************************************************************/
+bool ProposalList::displayIcons() const {
+    return delegate_->drawIcon;
+}
+
+
+
+/** ***************************************************************************/
+void ProposalList::setDisplayIcons(bool value) {
+    delegate_->drawIcon = value;
+    update();
 }
 
 
@@ -72,4 +88,79 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
         }
     }
     return false;
+}
+
+
+
+/** ***************************************************************************/
+void ProposalList::ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const {
+
+    painter->save();
+
+    QStyleOptionViewItemV4 option = options;
+    initStyleOption(&option, index);
+
+    /*
+     * fm(x) := fontmetrics of x
+     * DR := DisplayRole
+     * TR := ToolTipRole
+     *  +---------------------+----------------------------------------+
+     *  |                     |                                        |
+     *  |   +-------------+   |                                        |
+     *  |   |             |   |                                        |
+     *  |   |             |   |a*fm(DR)/(fm(DR)+fm(TR))    DisplayRole |
+     * a|   |     icon    |   |                                        |
+     *  |   |             |   |                                        |
+     *  |   |             |   +----------------------------------------+
+     *  |   |             |   |                                        |
+     *  |   +-------------+   |a*fm(TR)/(fm(DR)+fm(TR))  ToolTipRole+x |
+     *  |                     |                                        |
+     * +---------------------------------------------------------------+
+     */
+
+
+    // Draw selection
+    option.widget->style()->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
+
+    // Draw icon
+    if ( drawIcon ){
+        QRect iconRect = QRect(
+                    QPoint((option.rect.height() - option.decorationSize.width())/2 + option.rect.x(),
+                           (option.rect.height() - option.decorationSize.height())/2 + option.rect.y()),
+                    option.decorationSize);
+        painter->drawPixmap(iconRect, QPixmap(index.data(Roles::IconPath).value<QString>()).scaled(option.decorationSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    }
+
+    // Calculate text rects
+    QFont font1 = option.font;
+    QFont font2 = option.font;
+    font2.setPixelSize(12);
+    QFontMetrics fontMetrics1 = QFontMetrics(font1);
+    QFontMetrics fontMetrics2 = QFontMetrics(font2);
+    QRect contentRect = option.rect;
+    contentRect.setLeft(drawIcon ? option.rect.height() : 0);
+    contentRect.setTop(option.rect.y()+option.rect.height()/2-(fontMetrics1.height()+fontMetrics2.height())/2);
+    contentRect.setBottom(option.rect.y()+option.rect.height()/2+(fontMetrics1.height()+fontMetrics2.height())/2);
+    QRect textRect = contentRect.adjusted(0,-2,0,-fontMetrics2.height()-2);
+    QRect subTextRect = contentRect.adjusted(0,fontMetrics1.height()-2,0,-2);
+
+    //    // Test
+    //    painter->fillRect(iconRect, Qt::magenta);
+    //    painter->fillRect(contentRect, Qt::red);
+    //    painter->fillRect(textRect, Qt::blue);
+    //    painter->fillRect(subTextRect, Qt::yellow);
+
+
+    // Draw display role
+    painter->setFont(font1);
+    QString text = fontMetrics1.elidedText(index.data(Roles::Text).toString(), option.textElideMode, textRect.width());
+    option.widget->style()->drawItemText(painter, textRect, option.displayAlignment, option.palette, option.state & QStyle::State_Enabled, text, QPalette::WindowText);
+    //    painter->drawText(textRect, Qt::AlignTop|Qt::AlignLeft, text);
+
+    // Draw tooltip role
+    painter->setFont(font2);
+    text = fontMetrics2.elidedText(index.data(Roles::SubText).toString(), option.textElideMode, subTextRect.width());
+    painter->drawText(subTextRect   , Qt::AlignBottom|Qt::AlignLeft, text);
+
+    painter->restore();
 }

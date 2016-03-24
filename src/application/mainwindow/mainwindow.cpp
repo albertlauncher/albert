@@ -40,7 +40,12 @@ const QString MainWindow::CFG_ALWAYS_ON_TOP = "alwaysOnTop";
 const bool    MainWindow::DEF_ALWAYS_ON_TOP = true;
 const char*   MainWindow::CFG_MAX_PROPOSALS = "itemCount";
 const uint8_t MainWindow::DEF_MAX_PROPOSALS = 5;
+const char*   MainWindow::CFG_DISPLAY_SCROLLBAR = "displayScrollbar";
+const bool    MainWindow::DEF_DISPLAY_SCROLLBAR = false;
+const char*   MainWindow::CFG_DISPLAY_ICONS = "displayIcons";
+const bool    MainWindow::DEF_DISPLAY_ICONS = true;
 const char*   MainWindow::SETTINGS_SHORTCUT = "Alt+,";
+
 
 /** ***************************************************************************/
 MainWindow::MainWindow(QWidget *parent)
@@ -94,6 +99,8 @@ MainWindow::MainWindow(QWidget *parent)
     setHideOnFocusLoss(s.value(CFG_HIDE_ON_FOCUS_LOSS, DEF_HIDE_ON_FOCUS_LOSS).toBool());
     setAlwaysOnTop(s.value(CFG_ALWAYS_ON_TOP, DEF_ALWAYS_ON_TOP).toBool());
     setMaxProposals(s.value(CFG_MAX_PROPOSALS, DEF_MAX_PROPOSALS).toInt());
+    setDisplayScrollbar(s.value(CFG_DISPLAY_SCROLLBAR, DEF_DISPLAY_SCROLLBAR).toBool());
+    setDisplayIcons(s.value(CFG_DISPLAY_ICONS, DEF_DISPLAY_ICONS).toBool());
     theme_ = s.value(CFG_THEME, DEF_THEME).toString();
     if (!setTheme(theme_)) {
         qFatal("FATAL: Stylefile not found: %s", theme_.toStdString().c_str());
@@ -150,6 +157,8 @@ MainWindow::~MainWindow() {
     s.setValue(CFG_WND_POS, pos());
     s.setValue(CFG_THEME, theme());
     s.setValue(CFG_MAX_PROPOSALS, maxProposals());
+    s.setValue(CFG_DISPLAY_SCROLLBAR, displayScrollbar());
+    s.setValue(CFG_DISPLAY_ICONS, displayIcons());
 }
 
 
@@ -278,7 +287,36 @@ void MainWindow::setAlwaysOnTop(bool alwaysOnTop) {
 
 /** ***************************************************************************/
 void MainWindow::setMaxProposals(uint8_t maxItems) {
-     ui.proposalList->setMaxItems(maxItems);
+    ui.proposalList->setMaxItems(maxItems);
+}
+
+
+
+/** ***************************************************************************/
+bool MainWindow::displayIcons() const {
+    return ui.proposalList->displayIcons();
+}
+
+
+
+/** ***************************************************************************/
+void MainWindow::setDisplayIcons(bool value) {
+    ui.proposalList->setDisplayIcons(value);
+}
+
+
+
+/** ***************************************************************************/
+bool MainWindow::displayScrollbar() const {
+    return ui.proposalList->verticalScrollBarPolicy() != Qt::ScrollBarAlwaysOff;
+}
+
+
+
+/** ***************************************************************************/
+void MainWindow::setDisplayScrollbar(bool value) {
+    ui.proposalList->setVerticalScrollBarPolicy(
+                value ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
 }
 
 

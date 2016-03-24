@@ -15,8 +15,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QKeyEvent>
+#include <QPainter>
 #include "actionlist.h"
-#include "actiondelegate.hpp"
+#include "roles.hpp"
 
 /** ***************************************************************************/
 ActionList::ActionList(QWidget *parent) : ResizingList(parent) {
@@ -48,4 +49,29 @@ bool ActionList::eventFilter(QObject*, QEvent *event) {
         }
     }
     return false;
+}
+
+
+
+/** ***************************************************************************/
+void ActionList::ActionDelegate::paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const {
+
+    painter->save();
+
+    QStyleOptionViewItemV4 option = options;
+    initStyleOption(&option, index);
+
+    // Draw selection
+    option.widget->style()->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
+
+    // Draw text
+    QRect textRect = option.widget->style()->subElementRect(QStyle::SE_ItemViewItemText, &option, option.widget);
+    painter->setFont(option.font);
+
+    // Draw text
+    QString text = QFontMetrics(option.font).elidedText(index.data(Roles::Text).toString(), option.textElideMode, textRect.width());
+    option.widget->style()->drawItemText(painter, textRect, Qt::AlignCenter, option.palette, option.state & QStyle::State_Enabled, text, QPalette::WindowText);
+    //    painter->drawText(textRect, Qt::AlignTop|Qt::AlignLeft, text);
+
+    painter->restore();
 }

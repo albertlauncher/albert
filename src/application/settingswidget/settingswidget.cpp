@@ -76,6 +76,16 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyMana
     connect(ui.spinBox_proposals, (void (QSpinBox::*)(int))&QSpinBox::valueChanged,
             mainWindow_, &MainWindow::setMaxProposals);
 
+    // DISPLAY SCROLLBAR
+    ui.checkBox_scrollbar->setChecked(mainWindow_->displayScrollbar());
+    connect(ui.checkBox_scrollbar, &QCheckBox::toggled,
+            mainWindow_, &MainWindow::setDisplayScrollbar);
+
+    // DISPLAY ICONS
+    ui.checkBox_icons->setChecked(mainWindow_->displayIcons());
+    connect(ui.checkBox_icons, &QCheckBox::toggled,
+            mainWindow_, &MainWindow::setDisplayIcons);
+
     // THEMES
     QFileInfoList themes;
     int i = 0 ;

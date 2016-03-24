@@ -16,8 +16,6 @@ set(SRC
     hotkey/hotkeymanager_p.h
     mainwindow/mainwindow.cpp
     mainwindow/history.hpp
-    mainwindow/actiondelegate.hpp
-    mainwindow/itemdelegate.hpp
     mainwindow/resizinglist.cpp
     mainwindow/actionlist.cpp
     mainwindow/proposallist.cpp

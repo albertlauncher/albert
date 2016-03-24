@@ -17,17 +17,38 @@
 #pragma once
 #include <QEvent>
 #include "resizinglist.h"
+#include <QStyledItemDelegate>
 
+/** ***************************************************************************/
 class ProposalList final : public ResizingList
 {
     Q_OBJECT
+    class ItemDelegate;
 
 public:
 
     ProposalList(QWidget *parent = 0);
 
+    bool displayIcons() const;
+    void setDisplayIcons(bool value);
+
 private:
 
     bool eventFilter(QObject*, QEvent *event) override;
 
+    ItemDelegate *delegate_;
+};
+
+
+
+/** ***************************************************************************/
+class ProposalList::ItemDelegate final : public QStyledItemDelegate
+{
+public:
+    ItemDelegate(QObject *parent = nullptr)
+        : QStyledItemDelegate(parent), drawIcon(true) {}
+
+    void paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const override;
+
+    bool drawIcon;
 };
