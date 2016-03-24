@@ -127,14 +127,6 @@ public:
 
 
     /** ***********************************************************************/
-    void activate(const QModelIndex & index) {
-        if (index.isValid())
-            static_cast<TreeItem*>(index.internalPointer())->data->activate();
-    }
-
-
-
-    /** ***********************************************************************/
     void makeDynamic() {
         QMutexLocker locker(&mutex_);
         beginResetModel();

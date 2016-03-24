@@ -15,12 +15,19 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <Qt>
+#include <QEvent>
+#include "resizinglist.h"
 
-enum Roles {
-    Text = Qt::DisplayRole,
-    SubText = Qt::ToolTipRole,
-    IconPath = Qt::DecorationRole,
-    Activate = 1000,
-    Actions = 1100
+class ActionList final : public ResizingList
+{
+    Q_OBJECT
+
+public:
+
+    ActionList(QWidget *parent = 0);
+
+private:
+
+    bool eventFilter(QObject*, QEvent *event) override;
+
 };

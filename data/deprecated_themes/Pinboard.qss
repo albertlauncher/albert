@@ -7,10 +7,10 @@
  */
  
 #bottomFrame * {
-	color : #aaa;
-	background-color: #444;
-	selection-color: #3a3a3a;
-	selection-background-color: #aaa;
+	color : #655332;
+	background-color: #f8edda;
+	selection-color: #f8edda;
+	selection-background-color: #655332;
 }
 
 #bottomFrame {
@@ -19,7 +19,7 @@
 	max-width:640px;
 	padding: 7px;
 	border-radius: 14px;
-	background-color: rgba(192, 192, 192, 64);
+	background-color: rgba(248, 237, 218, 64);
 }
 
 #topFrame {
@@ -32,7 +32,7 @@
 	border-radius: 2px;
 	font: 36px "Ubuntu";
 	border: none;
-	background-color: #3a3a3a;
+	background-color: #f4e3c8;
 }
 
 #settingsButton {
@@ -41,13 +41,12 @@
 	max-width:14px;
 	max-height:14px;
 	border: none;
-	border-radius: 7px;
-	color : #444;
+	border-radius: 2px;
 	background-color: transparent;
 }
 
 #settingsButton:hover {
-	background-color: #282828;
+	background-color: #f8edda;
 }
 
 /********** proposalList **********/
@@ -66,8 +65,7 @@
 }
 
 #proposalList::item:selected{
-	border: 1px solid #888;
-	background: qlineargradient(x1:1, y1:1, x2:0, y2:0, stop:0.0 rgba(0, 0, 0, 0), stop:0.5 rgba(192,192,192,32), stop:1.0 rgba(0, 0, 0, 0));
+	border: 1px solid #e5cba3;
 }
 
 #proposalList::item:hover{}
@@ -83,7 +81,7 @@
 }
 
 #proposalList QScrollBar::handle:vertical  {
-	background: #3a3a3a;
+	background: #655332;
 	min-height: 24px;
 }
 

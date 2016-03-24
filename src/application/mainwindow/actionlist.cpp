@@ -15,31 +15,22 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QKeyEvent>
-#include "proposallist.h"
-#include "itemdelegate.hpp"
+#include "actionlist.h"
+#include "actiondelegate.hpp"
 
 /** ***************************************************************************/
-ProposalList::ProposalList(QWidget *parent) : ResizingList(parent) {
-    setItemDelegate(new ItemDelegate);
+ActionList::ActionList(QWidget *parent) : ResizingList(parent) {
+    setItemDelegate(new ActionDelegate);
 }
 
 
 
 /** ***************************************************************************/
-bool ProposalList::eventFilter(QObject*, QEvent *event) {
+bool ActionList::eventFilter(QObject*, QEvent *event) {
 
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
         switch (keyEvent->key()) {
-
-        // Display different subtexts according to the KeyboardModifiers
-        case Qt::Key_Control:
-        case Qt::Key_Shift:
-        case Qt::Key_Alt:
-        case Qt::Key_Meta:
-            if ( currentIndex().isValid() )
-                update(currentIndex());
-            return false;
 
         // Navigation
         case Qt::Key_Up:
@@ -53,21 +44,6 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
         case Qt::Key_Return:
             if ( keyEvent->modifiers() == Qt::NoModifier )
                 keyPressEvent(keyEvent);
-            return false;
-        }
-    }
-
-    if (event->type() == QEvent::KeyRelease) {
-        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-        switch (keyEvent->key()) {
-
-        // Display different subtexts according to the KeyboardModifiers
-        case Qt::Key_Control:
-        case Qt::Key_Shift:
-        case Qt::Key_Alt:
-        case Qt::Key_Meta:
-            if ( currentIndex().isValid() )
-                update(currentIndex());
             return false;
         }
     }

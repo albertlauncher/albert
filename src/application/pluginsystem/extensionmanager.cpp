@@ -130,10 +130,3 @@ void ExtensionManager::unregisterExtension(QObject *o) {
             extensions_.erase(e);
     }
 }
-
-
-
-/** ***************************************************************************/
-void ExtensionManager::activate(const QModelIndex &index) {
-    currentQuery_->impl->activate(index);
-}

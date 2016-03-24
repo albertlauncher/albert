@@ -2,18 +2,14 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QWidget" name="MainWindow">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>400</width>
-    <height>300</height>
-   </rect>
+  <property name="windowIcon">
+   <iconset resource="../resources.qrc">
+    <normaloff>:/app_icon</normaloff>:/app_icon</iconset>
   </property>
-  <property name="windowTitle">
-   <string>Form</string>
-  </property>
-  <layout class="QVBoxLayout" name="bottomLayout">
+  <layout class="QVBoxLayout" name="frameLayout">
+   <property name="sizeConstraint">
+    <enum>QLayout::SetFixedSize</enum>
+   </property>
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -27,8 +23,8 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QFrame" name="bottomFrame">
-     <layout class="QVBoxLayout" name="topLayout">
+    <widget class="QFrame" name="frame">
+     <layout class="QVBoxLayout" name="contentLayout">
       <property name="leftMargin">
        <number>0</number>
       </property>
@@ -42,27 +38,41 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QFrame" name="topFrame">
-        <layout class="QVBoxLayout" name="contentLayout">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="InputLine" name="inputLine"/>
-         </item>
-         <item>
-          <widget class="ProposalList" name="proposalList"/>
-         </item>
-        </layout>
+       <widget class="QLineEdit" name="inputLine"/>
+      </item>
+      <item>
+       <widget class="ProposalList" name="proposalList">
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="horizontalScrollBarPolicy">
+         <enum>Qt::ScrollBarAlwaysOff</enum>
+        </property>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="uniformItemSizes">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="ActionList" name="actionList">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
      </layout>
@@ -72,16 +82,18 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>InputLine</class>
-   <extends>QLineEdit</extends>
-   <header>inputline.h</header>
-  </customwidget>
-  <customwidget>
    <class>ProposalList</class>
    <extends>QListView</extends>
    <header>proposallist.h</header>
   </customwidget>
+  <customwidget>
+   <class>ActionList</class>
+   <extends>QListView</extends>
+   <header location="global">actionlist.h</header>
+  </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

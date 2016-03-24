@@ -6,34 +6,30 @@
  * Qt Style Sheets Reference (http://doc.qt.io/qt-5/stylesheet-reference.html)
  */
 
-
-#bottomFrame * {
-	color : #93a1a1;
-	background-color: #fdf6e3;
-	selection-color: #fdf6e3;
-	selection-background-color: #93a1a1;
-}
-
 #bottomFrame {
 	width:640px;
 	min-width:640px;
 	max-width:640px;
-	padding: 6px;
+	padding: 7px;
 	border-radius: 14px;
-	background-color: #268bd2;
+	background-color: rgba(154, 205, 0, 128);
 }
 
 #topFrame {
-	padding: 6px;
-	border-radius: 6px;
+	background-color: #f9f9f9;
+	padding: 7px;
+	border-radius: 7px;
 }
 
 #inputLine {
 	padding: 2px;
 	border-radius: 2px;
-	font-size: 36px;
+	font: 36px "Ubuntu";
 	border: none;
-	background-color: #eee8d5;
+	color : #f9f9f9;
+	background-color: #9acd00;
+	selection-color: #9acd00;
+	selection-background-color: #f9f9f9;
 }
 
 #settingsButton {
@@ -42,37 +38,34 @@
 	max-width:14px;
 	max-height:14px;
 	border: none;
-	border-radius: 6px;
-	color : #93a1a1;
+	border-radius: 2px;
+	color: #f9f9f9;
 	background-color: transparent;
-  padding: 3px ;
 }
 
 #settingsButton:hover {
-	color : #268bd2;
-	background-color: #268bd2;
+	background-color: #9acd00;
 }
 
 /********** proposalList **********/
 
 #proposalList {
 	icon-size:48px;
-	font-size: 26px;
+	font: 26px "Ubuntu";
 	border-radius: 5px;
+	color: #6d6e71;
 	background-color: transparent;
 }
 
 #proposalList::item{
 	height:48px;
-	border-radius: 3px;
+	border-radius: 5px;
 	border: 1px solid transparent;
 }
 
 #proposalList::item:selected{
-  color: #268bd2;
-	border-left: 1px solid #268bd2;
-	border-right: 1px solid #268bd2;
-/*	background: qlineargradient(x1:0, x2:1, stop:0.0 #268bd2, stop:1.0 rgba(0, 0, 0, 0));*/
+	border: 1px solid #9acd00;
+	background: qlineargradient(x1:1, y1:1, x2:0, y2:0, stop:0.0 rgba(154, 205, 0, 32), stop:0.5 rgba(0,0,0,0), stop:1.0 rgba(154, 205, 0,32));
 }
 
 #proposalList::item:hover{}
@@ -88,12 +81,7 @@
 }
 
 #proposalList QScrollBar::handle:vertical  {
-	background: #93a1a1;
-	min-height: 24px;
-}
-
-#proposalList QScrollBar::handle:vertical:hover  {
-	background: #268bd2;
+	background: #9acd00;
 	min-height: 24px;
 }
 

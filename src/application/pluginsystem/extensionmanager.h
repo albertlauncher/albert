@@ -29,19 +29,21 @@ class ExtensionManager final : public QObject
     Q_OBJECT
 
 public:
+
     void startQuery(const QString &searchTerm);
+
     void setupSession();
     void teardownSession();
 
     void registerExtension(QObject *);
     void unregisterExtension(QObject *);
 
-    void activate(const QModelIndex & index);
-
 private:
+
     set<IExtension*> extensions_;
     std::shared_ptr<Query> currentQuery_;
 
 signals:
+
     void newModel(QAbstractItemModel *);
 };

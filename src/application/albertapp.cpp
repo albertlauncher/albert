@@ -47,7 +47,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
         break;
     case QtFatalMsg:
         fprintf(stderr, "\x1b[41;30;4mFATAL:\x1b[0;1m %s%s\x1b[0m\n", message.toLocal8Bit().constData(), suffix.toLocal8Bit().constData());
-        abort();
+        exit(1);
     }
 }
 
@@ -128,9 +128,6 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
 
     // A change in text triggers requests
     QObject::connect(mainWindow_, &MainWindow::startQuery, extensionManager_, &ExtensionManager::startQuery);
-
-    // Enter triggers action
-    QObject::connect(mainWindow_, &MainWindow::activated, extensionManager_, &ExtensionManager::activate);
 
     // Publish loaded plugins to the specific interface handlers
     QObject::connect(pluginManager_, &PluginManager::pluginLoaded, extensionManager_, &ExtensionManager::registerExtension);

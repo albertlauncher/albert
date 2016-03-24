@@ -16,9 +16,10 @@
 
 #pragma once
 #include <QWidget>
-#include <QLineEdit>
+#include <QStringListModel>
 #include "proposallist.h"
-#include "inputline.h"
+#include "settingsbutton.h"
+#include "history.hpp"
 #include "ui_mainwindow.h"
 class QAbstractItemModel;
 
@@ -34,7 +35,6 @@ public:
     void show();
     void hide();
     void toggleVisibility();
-    void setModel(QAbstractItemModel *);
 
     bool showCentered() const;
     void setShowCentered(bool b = true);
@@ -51,21 +51,52 @@ public:
     uint8_t maxProposals() const;
     void setMaxProposals(uint8_t max);
 
+    void setModel(QAbstractItemModel *);
+
+    bool actionsAreShown() const;
+    void setShowActions(bool showActions);
+    void showActions() { setShowActions(true); }
+    void hideActions() { setShowActions(false); }
 
 protected:
 
     void closeEvent(QCloseEvent * event) override;
-    void keyPressEvent(QKeyEvent * event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void mousePressEvent(QMouseEvent * event) override;
+    void resizeEvent(QResizeEvent* event) override;
     bool event(QEvent *event) override;
+    bool eventFilter(QObject*, QEvent *event) override;
 
 private:
 
+    /** The name of the current theme */
     QString theme_;
+
+    /** Indicates that the app should be shown centered */
     bool showCentered_;
+
+    /** Indicates that the app should be hidden on focus loss */
     bool hideOnFocusLoss_;
+
+    /** The offset from cursor to topleft. Used when the window is dagged */
     QPoint clickOffset_;
+
+    /** Indcates the state that the app is in */
+    bool actionsShown_;
+
+    /** The model of the action list view */
+    QStringListModel *actionsListModel_;
+
+    /** The button to open the settings dialog */
+    SettingsButton *settingsButton_;
+
+    /** The input history */
+    History *history_;
+
+    /** The modifier used to navigate directly in the history */
+    Qt::KeyboardModifier historyMoveMod_;
+
+    /** The form of the main app */
     Ui::MainWindow ui;
 
     static const QString CFG_WND_POS;
@@ -77,11 +108,13 @@ private:
     static const bool    DEF_HIDE_ON_FOCUS_LOSS;
     static const QString CFG_ALWAYS_ON_TOP;
     static const bool    DEF_ALWAYS_ON_TOP;
+    static const char*   CFG_MAX_PROPOSALS;
+    static const uint8_t DEF_MAX_PROPOSALS;
+    static const char*   SETTINGS_SHORTCUT;
 
 signals:
     void widgetShown();
     void widgetHidden();
     void startQuery(QString qry);
     void settingsWindowRequested();
-    void activated(const QModelIndex &index);
 };

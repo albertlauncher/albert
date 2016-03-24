@@ -15,35 +15,31 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QLineEdit>
-#include <list>
-using std::list;
-#include "settingsbutton.h"
+#include <QListView>
 
-class InputLine final : public QLineEdit
+class ResizingList : public QListView
 {
     Q_OBJECT
+    Q_PROPERTY(int maxItems READ maxItems WRITE setMaxItems MEMBER maxItems_ NOTIFY maxItemsChanged)
+
 public:
-    explicit InputLine(QWidget *parent = 0);
-    ~InputLine();
 
-    void clearHistory() { lines_.clear(); }
-    void clear();
+    ResizingList(QWidget *parent = 0) : QListView(parent), maxItems_(5) {}
+    virtual ~ResizingList() {}
 
-    SettingsButton   *settingsButton_;
+    uint8_t maxItems() const;
+    void setMaxItems(uint8_t maxItems);
+
+    QSize minimumSizeHint() const override;
+    QSize sizeHint() const override;
+    void reset() override;
 
 private:
-    void keyPressEvent(QKeyEvent*) override;
-    void wheelEvent(QWheelEvent *) override;
-    void resizeEvent(QResizeEvent*) override;
 
-    void resetIterator();
-    void next();
-    void prev();
+    uint8_t maxItems_;
 
+signals:
 
-    list<QString> lines_; // NOTE fix this in 5.6, qt has no reverse iterators https://codereview.qt-project.org/#/c/109850/
-    list<QString>::const_reverse_iterator currentLine_;
+    void maxItemsChanged();
 
-    static constexpr const char * SETTINGS_SHORTCUT = "Alt+,"; // FIXME
 };

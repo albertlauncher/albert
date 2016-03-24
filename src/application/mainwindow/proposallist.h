@@ -15,32 +15,19 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QListView>
 #include <QEvent>
-#include <QKeyEvent>
-#include <QArrayData>
-#include <QSettings>
-#include "itemdelegate.h"
+#include "resizinglist.h"
 
-class ProposalList final : public QListView
+class ProposalList final : public ResizingList
 {
     Q_OBJECT
 
 public:
 
     ProposalList(QWidget *parent = 0);
-    ~ProposalList();
-
-    QSize sizeHint() const override;
-    void reset() override;
-
-    uint8_t maxItems_;
 
 private:
+
     bool eventFilter(QObject*, QEvent *event) override;
 
-    ItemDelegate *itemDelegate_;
-
-    static const constexpr char* CFG_MAX_PROPOSALS = "itemCount";
-    static const constexpr uint8_t CFG_MAX_PROPOSALS_DEF = 5;
 };
