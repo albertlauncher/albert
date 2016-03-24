@@ -36,4 +36,5 @@ private:
     int angle_;
     QPropertyAnimation *animation_;
     QSvgRenderer *svgRenderer_;
+
 };

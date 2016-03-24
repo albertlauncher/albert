@@ -23,8 +23,6 @@
 #include <QStyleOptionButton>
 #include <QtSvg/QSvgRenderer>
 
-
-
 /** ***************************************************************************/
 SettingsButton::SettingsButton(QWidget *parent) : QPushButton(parent) {
     animation_ = new QPropertyAnimation(this, "angle");
@@ -52,7 +50,7 @@ SettingsButton::~SettingsButton() {
 
 /** ***************************************************************************/
 void SettingsButton::paintEvent(QPaintEvent *event) {
-    Q_UNUSED(event);
+    QPushButton::paintEvent(event);
 
     QStyleOptionButton option;
     option.initFrom(this);
