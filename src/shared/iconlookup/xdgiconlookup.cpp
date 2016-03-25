@@ -151,45 +151,18 @@ QString XdgIconLookup::themeIcon(QString iconName){
         return iconPath;
 
     // Lookup themefile
-    iconPath = themeIconHelper(iconName, QIcon::themeName());
+    QStringList checkedThemes;
+    iconPath = themeIconHelper(iconName, QIcon::themeName(), &checkedThemes);
     if (!iconPath.isNull()){
         iconCache_.insert(iconName, iconPath);
         return iconPath;
     }
 
     // Lookup in hicolor
-    iconPath = themeIconHelper(iconName, "hicolor");
+    iconPath = themeIconHelper(iconName, "hicolor", &checkedThemes);
     if (!iconPath.isNull()){
         iconCache_.insert(iconName, iconPath);
         return iconPath;
-    }
-
-    // Fallback
-//    return lookupIconInTheme("unkown", "hicolor");
-    return QString();
-}
-
-
-
-/** ***************************************************************************/
-QString XdgIconLookup::themeIconHelper(const QString &iconName, const QString &themeName){
-    QString iconPath;
-
-    // Check if theme exists
-    QString themeFile = lookupThemeFile(themeName);
-    if (themeFile.isNull())
-        return QString();
-
-    // Check if icon exists
-    iconPath = lookupIconInTheme(iconName, themeFile);
-    if (!iconPath.isNull())
-        return iconPath;
-
-    // Check its parents too
-    for (const QString &parent : ThemeFileParser(themeFile).inherits()){
-        iconPath = themeIconHelper(iconName, parent);
-        if (!iconPath.isNull())
-            return iconPath;
     }
 
     // Now search unsorted
@@ -200,6 +173,37 @@ QString XdgIconLookup::themeIconHelper(const QString &iconName, const QString &t
                 return filename;
             }
         }
+    }
+
+    return QString();
+}
+
+
+
+/** ***************************************************************************/
+QString XdgIconLookup::themeIconHelper(const QString &iconName, const QString &themeName, QStringList *checked){
+
+    // Exlude multiple scans
+    if (checked->contains(themeName))
+        return QString();
+    checked->append(themeName);
+
+    // Check if theme exists
+    QString themeFile = lookupThemeFile(themeName);
+    if (themeFile.isNull())
+        return QString();
+
+    // Check if icon exists
+    QString iconPath;
+    iconPath = lookupIconInTheme(iconName, themeFile);
+    if (!iconPath.isNull())
+        return iconPath;
+
+    // Check its parents too
+    for (const QString &parent : ThemeFileParser(themeFile).inherits()){
+        iconPath = themeIconHelper(iconName, parent, checked);
+        if (!iconPath.isNull())
+            return iconPath;
     }
 
     return QString();

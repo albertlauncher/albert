@@ -16,6 +16,8 @@
 
 #pragma once
 #include <QMimeType>
+#include <map>
+#include <chrono>
 #include "search/iindexable.h"
 #include "abstractobjects.hpp"
 
@@ -69,9 +71,15 @@ public:
     void deserialize(QDataStream &in);
 
 private:
+
     QString path_;
     QMimeType mimetype_;
     mutable uint16_t usage_;
+    struct CacheEntry {
+        QString path;
+        std::chrono::system_clock::time_point ctime;
+    };
+    static std::map<QString, CacheEntry> iconCache_;
 };
 
 }

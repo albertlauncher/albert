@@ -56,11 +56,12 @@ MainWindow::MainWindow(QWidget *parent)
 	// INITIALIZE UI
     ui.setupUi(this);
     setWindowTitle(qAppName());
-    setAttribute(Qt::WA_TranslucentBackground);
-    setWindowFlags(Qt::SplashScreen // Tool does not quit on close event, Popup grabs mouse, ToolTip does not accept kbd input
+    setWindowFlags(Qt::Tool   // Tool unsets WA_QuitOnClose (1)
                    | Qt::WindowStaysOnTopHint
                    | Qt::WindowCloseButtonHint // No close event w/o this
                    | Qt::FramelessWindowHint);
+    setAttribute(Qt::WA_QuitOnClose); // (1)
+    setAttribute(Qt::WA_TranslucentBackground);
 
      // Disable tabbing completely
     ui.actionList->setFocusPolicy(Qt::NoFocus);

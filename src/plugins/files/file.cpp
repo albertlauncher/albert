@@ -22,6 +22,7 @@
 #include "fileactions.h"
 #include "iconlookup/xdgiconlookup.h"
 
+std::map<QString, Files::File::CacheEntry> Files::File::iconCache_;
 
 /** ***************************************************************************/
 QString Files::File::text() const {
@@ -39,53 +40,29 @@ QString Files::File::subtext() const {
 
 /** ***************************************************************************/
 QString Files::File::iconPath() const {
+
+    const QString xdgIconName = mimetype_.iconName();
+    CacheEntry ce;
+
+    // First check if icon, not older than 15 minutes, exists
+    if (iconCache_.count(xdgIconName)){
+       ce = iconCache_[xdgIconName];
+       if ((std::chrono::system_clock::now() - std::chrono::minutes(15)) < ce.ctime)
+           return ce.path;
+    }
+
     XdgIconLookup xdg;
-
-    QString iconPath = xdg.themeIcon(mimetype_.iconName());
-    if (!iconPath.isNull())
+    QString iconPath;
+    if ( !(iconPath = xdg.themeIcon(xdgIconName)).isNull()  // Lookup iconName
+         || !(iconPath = xdg.themeIcon(mimetype_.genericIconName())).isNull()  // Lookup genericIconName
+         || !(iconPath = xdg.themeIcon("unknown")).isNull()) {  // Lookup "unknown"
+        ce = {iconPath, std::chrono::system_clock::now()};
+        iconCache_.emplace(xdgIconName, ce);
         return iconPath;
+    }
 
-    iconPath = xdg.themeIcon(mimetype_.genericIconName());
-    if (!iconPath.isNull())
-        return iconPath;
-
-    iconPath = xdg.themeIcon("unknown");
-    if (!iconPath.isNull())
-        return iconPath;
-
+    // Wow nothing found, return empty path
     return QString();
-
-//    // First check cache
-//    QString xdgIconName = mimetype_.iconName();
-//    if (iconCache_.count(xdgIconName))
-//        return iconCache_[xdgIconName];
-
-//    // Lookup iconName
-//    XdgIconLookup xdg;
-//    QString iconPath;
-//    iconPath = xdg.lookupIcon(xdgIconName);
-//    if (!iconPath.isNull()){
-//        iconCache_.emplace(xdgIconName, QUrl::fromLocalFile(iconPath));
-//        return QUrl::fromLocalFile(iconPath);
-//    }
-
-//    // Lookup genericIconName
-//    QString genericIconName = mimetype_.genericIconName();
-//    iconPath = xdg.lookupIcon(genericIconName);
-//    if (!iconPath.isNull()){
-//        iconCache_.emplace(xdgIconName, QUrl::fromLocalFile(iconPath)); // Intended
-//        return QUrl::fromLocalFile(iconPath);
-//    }
-
-//    // Lookup "unknown"
-//    iconPath = xdg.lookupIcon("unknown");
-//    if (!iconPath.isNull()){
-//        iconCache_.emplace(xdgIconName, QUrl::fromLocalFile(iconPath)); // Intended
-//        return QUrl::fromLocalFile(iconPath);
-//    }
-
-//    // Return empty url
-//    return QUrl();
 }
 
 

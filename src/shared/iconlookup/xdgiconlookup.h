@@ -25,7 +25,7 @@ public:
     QString themeIcon(QString iconName);
 
 private:
-    static QString themeIconHelper(const QString &iconName, const QString &theme);
+    static QString themeIconHelper(const QString &iconName, const QString &theme, QStringList *checked);
     static QString lookupIconInTheme(const QString &iconName, const QString &themeFile);
     static QString lookupThemeFile(const QString &themeName);
 
