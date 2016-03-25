@@ -26,7 +26,7 @@
 /** ***************************************************************************/
 SettingsButton::SettingsButton(QWidget *parent) : QPushButton(parent) {
     animation_ = new QPropertyAnimation(this, "angle");
-    animation_->setDuration(15000);
+    animation_->setDuration(10000);
     animation_->setStartValue(0);
     animation_->setEndValue(360);
     animation_->setLoopCount(-1);
