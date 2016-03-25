@@ -495,7 +495,9 @@ bool MainWindow::event(QEvent *event) {
          hiding a few milliseconds, so that the hotkey event will always be
          handled first. */
         if (hideOnFocusLoss_){
-            QTimer::singleShot(50, this, &MainWindow::hide);
+            // Note fix if least LTS goes beyond Qt5.4
+            // QTimer::singleShot(50, this, &MainWindow::hide);
+            QTimer::singleShot(50, this, SLOT(hide()));
         }
     }
     return QWidget::event(event);

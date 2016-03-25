@@ -1,5 +1,5 @@
-find_package(Qt5Widgets 5.1 REQUIRED)
-find_package(Qt5Svg 5.1 REQUIRED)
+find_package(Qt5Widgets 5.2 REQUIRED)
+find_package(Qt5Svg 5.2 REQUIRED)
 
 include_directories(
     hotkey/
