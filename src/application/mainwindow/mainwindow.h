@@ -66,6 +66,7 @@ public:
 
 protected:
 
+    void closeEvent(QCloseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void mousePressEvent(QMouseEvent * event) override;
     void resizeEvent(QResizeEvent* event) override;

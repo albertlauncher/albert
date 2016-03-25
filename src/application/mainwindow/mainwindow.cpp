@@ -400,6 +400,14 @@ void MainWindow::setShowActions(bool showActions) {
 
 
 /** ***************************************************************************/
+void MainWindow::closeEvent(QCloseEvent *event) {
+    event->accept();
+    qApp->quit();
+}
+
+
+
+/** ***************************************************************************/
 void MainWindow::resizeEvent(QResizeEvent *event) {
     // Let settingsbutton be in top right corner of frame
     settingsButton_->move(ui.frame->geometry().topRight() - QPoint(settingsButton_->width()-1,0));
