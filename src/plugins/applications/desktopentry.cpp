@@ -22,15 +22,25 @@
 #include <QDirIterator>
 #include <memory>
 #include <map>
-using std::map;
 #include "desktopentry.h"
 #include "desktopaction.hpp"
 #include "albertapp.h"
 #include "iconlookup/xdgiconlookup.h"
-
+using std::map;
 
 QString Applications::DesktopEntry::terminal;
 QStringList Applications::DesktopEntry::supportedGraphicalSudo = {"gksu", "kdesu"};
+
+/** ***************************************************************************/
+Applications::DesktopEntry::DesktopEntry() : usage_(0), term_(false) { }
+
+
+
+/** ***************************************************************************/
+Applications::DesktopEntry::DesktopEntry(const QString &path, short usage)
+    : path_(path), usage_(usage), term_(false) { }
+
+
 
 /** ***************************************************************************/
 void Applications::DesktopEntry::activate() {

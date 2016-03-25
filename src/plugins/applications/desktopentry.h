@@ -26,9 +26,8 @@ class DesktopEntry final : public AlbertItem, public IIndexable
 
 public:
 
-    DesktopEntry() : usage_(0) {}
-    DesktopEntry(const QString &path, short usage = 0)
-        : path_(path), usage_(usage) {}
+    DesktopEntry();
+    DesktopEntry(const QString &path, short usage = 0);
 
     /*
      * Implementation of AlbertItem interface
