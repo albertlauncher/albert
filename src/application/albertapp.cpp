@@ -65,6 +65,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     setApplicationDisplayName("Albert");
     setApplicationVersion("v0.8.4");
     setWindowIcon(QIcon(":app_icon"));
+    setQuitOnLastWindowClosed(false);
 
 
     /*

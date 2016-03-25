@@ -56,11 +56,10 @@ MainWindow::MainWindow(QWidget *parent)
 	// INITIALIZE UI
     ui.setupUi(this);
     setWindowTitle(qAppName());
-    setWindowFlags(Qt::Tool   // Tool unsets WA_QuitOnClose (1)
+    setWindowFlags(Qt::Tool
                    | Qt::WindowStaysOnTopHint
                    | Qt::WindowCloseButtonHint // No close event w/o this
                    | Qt::FramelessWindowHint);
-    setAttribute(Qt::WA_QuitOnClose); // (1)
     setAttribute(Qt::WA_TranslucentBackground);
 
      // Disable tabbing completely
