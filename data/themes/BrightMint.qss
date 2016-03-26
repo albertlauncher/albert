@@ -65,9 +65,9 @@ QListView QScrollBar::handle:vertical  {
 	min-height: 24px;
 }
 
-QListView ScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
-QListView ScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical,
-QListView ScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+QListView QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
+QListView QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical,
+QListView QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 	border: 0px;
 	width: 0px;
 	height: 0px;
@@ -87,7 +87,7 @@ QListView#actionList::item{
 /********** proposalList **********/
 
 QListView#proposalList {
-	icon-size: 48px;
+	icon-size: 44px;
 	font-size: 26px;
 }
 
