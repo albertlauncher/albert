@@ -41,6 +41,8 @@ Websearch::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
     connect(ui.pushButton_moveDown, &QPushButton::clicked,
             this, &ConfigWidget::onButton_moveDown);
 
+    connect(ui.pushButton_restoreDefaults, &QPushButton::clicked,
+            this, &ConfigWidget::onButton_restoreDefaults);
 }
 
 
@@ -69,7 +71,7 @@ void Websearch::ConfigWidget::onButton_remove() {
     QString engineName = ui.tableView_searches->model()
             ->data(ui.tableView_searches->model()->index(row, 1)).toString();
     QMessageBox::StandardButton reply =
-            QMessageBox::question(this, "Test",
+            QMessageBox::question(this, "Sure?",
                                   QString("Do you really want to remove '%1' from the search engines?")
                                   .arg(engineName),
                                   QMessageBox::Yes|QMessageBox::No);
@@ -118,4 +120,17 @@ void Websearch::ConfigWidget::onButton_setIcon() {
         return;
 
     ui.tableView_searches->model()->setData(ui.tableView_searches->currentIndex(), fileName, Qt::DecorationRole);
+}
+
+
+
+/** ***************************************************************************/
+void Websearch::ConfigWidget::onButton_restoreDefaults() {
+    QMessageBox::StandardButton reply =
+            QMessageBox::question(this, "Sure?",
+                                  QString("Do you really want to restore the default search engines?"),
+                                  QMessageBox::Yes|QMessageBox::No);
+    // Remove if sure
+    if (reply == QMessageBox::Yes)
+        emit restoreDefaults();
 }

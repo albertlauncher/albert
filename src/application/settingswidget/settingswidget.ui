@@ -6,101 +6,78 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>450</height>
+    <width>720</width>
+    <height>480</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>800</width>
-    <height>450</height>
+    <width>720</width>
+    <height>400</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>800</width>
-    <height>450</height>
+    <width>1280</width>
+    <height>720</height>
    </size>
   </property>
   <property name="windowTitle">
-   <string>Albert settings</string>
+   <string>Settings</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
-    <number>4</number>
+    <number>0</number>
    </property>
    <property name="topMargin">
-    <number>4</number>
+    <number>0</number>
    </property>
    <property name="rightMargin">
-    <number>4</number>
+    <number>0</number>
    </property>
    <property name="bottomMargin">
-    <number>4</number>
+    <number>0</number>
    </property>
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabs">
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
        <string>General</string>
       </attribute>
-      <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,3">
+      <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,1">
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,1">
+        <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
-          <widget class="QGroupBox" name="groupBox_hotkey">
+          <widget class="QGroupBox" name="groupBox_2">
            <property name="title">
             <string>Hotkey</string>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_6">
-            <property name="sizeConstraint">
-             <enum>QLayout::SetFixedSize</enum>
-            </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
             <item>
-             <layout class="QHBoxLayout" name="hl_hotkey" stretch="0,0,0">
-              <item>
-               <spacer name="horizontalSpacer">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="GrabKeyButton" name="grabKeyButton_hotkey">
-                <property name="minimumSize">
-                 <size>
-                  <width>120</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_2">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
+             <spacer name="horizontalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="GrabKeyButton" name="grabKeyButton_hotkey">
+              <property name="minimumSize">
+               <size>
+                <width>120</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -112,67 +89,64 @@
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
             <item>
-             <layout class="QHBoxLayout" name="hl_onTop">
+             <layout class="QHBoxLayout" name="hl_maxProp">
               <item>
-               <widget class="QLabel" name="label_onTop">
+               <widget class="QLabel" name="label_proposals">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="text">
-                 <string>Always on &amp;top:</string>
+                 <string>Amount of &amp;proposals:</string>
                 </property>
                 <property name="buddy">
-                 <cstring>checkBox_onTop</cstring>
+                 <cstring>spinBox_proposals</cstring>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="checkBox_onTop">
+               <widget class="QSpinBox" name="spinBox_proposals">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="suffix">
+                 <string/>
+                </property>
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>10</number>
+                </property>
                </widget>
               </item>
              </layout>
             </item>
             <item>
-             <layout class="QHBoxLayout" name="hl_hideOnFocusOut">
+             <layout class="QHBoxLayout" name="hl_style">
               <item>
-               <widget class="QLabel" name="label_hideOnFocusOut">
-                <property name="text">
-                 <string>Hide on &amp;focus out:</string>
-                </property>
-                <property name="buddy">
-                 <cstring>checkBox_hideOnFocusOut</cstring>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="checkBox_hideOnFocusOut">
+               <widget class="QLabel" name="label_style">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="hl_center">
-              <item>
-               <widget class="QLabel" name="label_center">
                 <property name="text">
-                 <string>Always &amp;center Albert:</string>
+                 <string>The&amp;me:</string>
                 </property>
                 <property name="buddy">
-                 <cstring>checkBox_center</cstring>
+                 <cstring>comboBox_themes</cstring>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="checkBox_center">
+               <widget class="QComboBox" name="comboBox_themes">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -187,6 +161,12 @@
              <layout class="QHBoxLayout" name="hl_scrollbar">
               <item>
                <widget class="QLabel" name="label_scrollbar">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="text">
                  <string>Show sc&amp;rollbar:</string>
                 </property>
@@ -211,8 +191,14 @@
              <layout class="QHBoxLayout" name="hl_icons">
               <item>
                <widget class="QLabel" name="label_icons">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="text">
-                 <string>Show icons:</string>
+                 <string>Show i&amp;cons:</string>
                 </property>
                 <property name="buddy">
                  <cstring>checkBox_icons</cstring>
@@ -231,47 +217,108 @@
               </item>
              </layout>
             </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBox_3">
+           <property name="title">
+            <string>Behaviour</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_6">
             <item>
-             <layout class="QHBoxLayout" name="hl_maxProp">
+             <layout class="QHBoxLayout" name="hl_onTop">
               <item>
-               <widget class="QLabel" name="label_proposals">
+               <widget class="QLabel" name="label_onTop">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="text">
-                 <string>Amount of &amp;proposals:</string>
+                 <string>Always on &amp;top:</string>
                 </property>
                 <property name="buddy">
-                 <cstring>spinBox_proposals</cstring>
+                 <cstring>checkBox_onTop</cstring>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QSpinBox" name="spinBox_proposals">
-                <property name="suffix">
+               <widget class="QCheckBox" name="checkBox_onTop">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="layoutDirection">
+                 <enum>Qt::LeftToRight</enum>
+                </property>
+                <property name="text">
                  <string/>
-                </property>
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>10</number>
                 </property>
                </widget>
               </item>
              </layout>
             </item>
             <item>
-             <layout class="QHBoxLayout" name="hl_style">
+             <layout class="QHBoxLayout" name="hl_center">
               <item>
-               <widget class="QLabel" name="label_style">
+               <widget class="QLabel" name="label_center">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="text">
-                 <string>The&amp;me:</string>
+                 <string>Always &amp;center Albert:</string>
                 </property>
                 <property name="buddy">
-                 <cstring>comboBox_themes</cstring>
+                 <cstring>checkBox_center</cstring>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QComboBox" name="comboBox_themes"/>
+               <widget class="QCheckBox" name="checkBox_center">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="hl_hideOnFocusOut">
+              <item>
+               <widget class="QLabel" name="label_hideOnFocusOut">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Hide on &amp;focus out:</string>
+                </property>
+                <property name="buddy">
+                 <cstring>checkBox_hideOnFocusOut</cstring>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="checkBox_hideOnFocusOut">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
               </item>
              </layout>
             </item>
@@ -279,7 +326,7 @@
           </widget>
          </item>
          <item>
-          <spacer name="verticalSpacer">
+          <spacer name="verticalSpacer_2">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
            </property>
@@ -294,27 +341,80 @@
         </layout>
        </item>
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0">
+        <layout class="QVBoxLayout" name="verticalLayout_4">
          <item>
-          <widget class="QLabel" name="label_5">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+          <widget class="QScrollArea" name="scrollArea">
+           <property name="styleSheet">
+            <string notr="true">background-color:transparent;</string>
            </property>
-           <property name="text">
-            <string/>
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
            </property>
-           <property name="pixmap">
-            <pixmap resource="../resources.qrc">:/app_icon</pixmap>
-           </property>
-           <property name="scaledContents">
-            <bool>false</bool>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
+           <widget class="QWidget" name="scrollAreaWidgetContents">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>344</width>
+              <height>429</height>
+             </rect>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_8">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>&lt;html&gt;
+&lt;head/&gt;
+&lt;body&gt;
+&lt;h1&gt;Welcome to Albert&lt;/h1&gt;
+
+&lt;h3&gt;New in v0.8.6&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Feature 1&lt;/li&gt;
+&lt;li&gt;Feature 2&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;New in v0.8.5&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Show alternative actions in seperate widget&lt;/li&gt;
+&lt;li&gt;Context menu for settings button&lt;/li&gt;
+&lt;li&gt;'Always on top' option&lt;/li&gt;
+&lt;li&gt;'Hide on focus loss' option&lt;/li&gt;
+&lt;li&gt;'Display icons' option&lt;/li&gt;
+&lt;li&gt;'Display scrollbar' option&lt;/li&gt;
+&lt;li&gt;Custom icon lookup&lt;/li&gt;
+&lt;li&gt;New standard themes&lt;/li&gt;
+&lt;li&gt;Window is now drag movable&lt;/li&gt;
+&lt;li&gt;Dozens of bug fixes and improvements&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The organisation name of the app is now 'albert' (was 'manuelschneid3r'). I.e. the settings location will change to ~/.config/albert/albert.conf.&lt;/p&gt;
+
+&lt;body&gt;
+&lt;/html&gt;
+</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
           </widget>
          </item>
         </layout>
@@ -397,6 +497,19 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
         <widget class="QLabel" name="about_icon">
          <property name="pixmap">
           <pixmap resource="../resources.qrc">:/app_icon</pixmap>
@@ -431,6 +544,19 @@ p, li { white-space: pre-wrap; }
           <bool>true</bool>
          </property>
         </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>

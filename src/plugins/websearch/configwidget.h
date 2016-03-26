@@ -34,6 +34,11 @@ private:
     void onButton_moveUp();
     void onButton_moveDown();
     void onButton_setIcon();
+    void onButton_restoreDefaults();
+
+signals:
+
+    void restoreDefaults();
 };
 
 }

@@ -95,7 +95,7 @@ QWidget *Websearch::Extension:: widget(QWidget *parent) {
     if (widget_.isNull()){
         widget_ = new ConfigWidget(parent);
         widget_->ui.tableView_searches->setModel(this);
-        connect(widget_->ui.pushButton_restoreDefaults, &QPushButton::clicked,
+        connect(widget_, &ConfigWidget::restoreDefaults,
                 this, &Extension::restoreDefaults);
     }
     return widget_;
