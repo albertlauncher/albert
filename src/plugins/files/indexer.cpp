@@ -51,14 +51,14 @@ void Files::Extension::Indexer::run() {
             [this, &newIndex, &indexedDirs, &filters, &flags, &indexRecursion](const QFileInfo& fileInfo){
         if (abort_) return;
 
-        QString canonicalPath = fileInfo.canonicalFilePath();
+        const QString canonicalPath = fileInfo.canonicalFilePath();
 
 
         if (fileInfo.isFile()) {
 
             // If the file matches the index options, index it
             QMimeType mimetype = mimeDatabase_.mimeTypeForFile(canonicalPath);
-            QString mimeName = mimetype.name();
+            const QString mimeName = mimetype.name();
             if ((extension_->indexAudio_ && mimeName.startsWith("audio"))
                     ||(extension_->indexVideo_ && mimeName.startsWith("video"))
                     ||(extension_->indexImage_ && mimeName.startsWith("image"))
@@ -71,9 +71,11 @@ void Files::Extension::Indexer::run() {
             emit statusInfo(QString("Indexing %1.").arg(canonicalPath));
 
             // Skip if this dir has already been indexed
-            if (indexedDirs.find(canonicalPath)!=indexedDirs.end()){
+            if (indexedDirs.find(canonicalPath)!=indexedDirs.end())
                 return;
-            }
+
+            // Remember that this dir has been indexed to avoid loops
+            indexedDirs.insert(canonicalPath);
 
             // If the dir matches the index options, index it
             if (extension_->indexDirs_) {
@@ -110,9 +112,6 @@ void Files::Extension::Indexer::run() {
                 indexRecursion(dirIterator.fileInfo());
                 SKIP_THIS:;
             }
-
-            // Remember that this dir has been indexed to avoid loops
-            indexedDirs.insert(canonicalPath);
         }
     };
 
