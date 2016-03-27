@@ -188,7 +188,7 @@
               <item>
                <widget class="QLabel" name="label_scrollbar">
                 <property name="text">
-                 <string>Show sc&amp;rollbar:</string>
+                 <string>Show &amp;scrollbar:</string>
                 </property>
                 <property name="buddy">
                  <cstring>checkBox_scrollbar</cstring>
@@ -236,7 +236,7 @@
               <item>
                <widget class="QLabel" name="label_proposals">
                 <property name="text">
-                 <string>Amount of &amp;proposals:</string>
+                 <string>Number of &amp;results:</string>
                 </property>
                 <property name="buddy">
                  <cstring>spinBox_proposals</cstring>
