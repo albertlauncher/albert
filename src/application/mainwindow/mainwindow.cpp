@@ -66,9 +66,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui.actionList->setFocusPolicy(Qt::NoFocus);
     ui.proposalList->setFocusPolicy(Qt::NoFocus);
 
-    // Intercept inputline's events (Navigation with keys, pressed modifiers, etc)
-    ui.inputLine->installEventFilter(this);
+    // Set initial event filter pipeline: window -> proposallist -> lineedit
     ui.inputLine->installEventFilter(ui.proposalList);
+    ui.inputLine->installEventFilter(this);
 
     // Set stringlistmodel for actions view
     actionsListModel_ = new QStringListModel(this);
@@ -150,14 +150,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Trigger default action, if item in proposallist was activated
     QObject::connect(ui.proposalList, &ProposalList::activated, [this](const QModelIndex &index){
-        ui.proposalList->model()->setData(index, -1, Roles::Activate);
         history_->add(ui.inputLine->text());
+        ui.proposalList->model()->setData(index, -1, Roles::Activate);
     });
 
     // Trigger alternative action, if item in actionList was activated
     QObject::connect(ui.actionList, &ActionList::activated, [this](const QModelIndex &index){
-        ui.proposalList->model()->setData(ui.proposalList->currentIndex(), index.row(), Roles::Activate);
         history_->add(ui.inputLine->text());
+        ui.proposalList->model()->setData(ui.proposalList->currentIndex(), index.row(), Roles::Activate);
     });
 }
 
@@ -375,9 +375,11 @@ void MainWindow::setShowActions(bool showActions) {
         ui.actionList->setCurrentIndex(actionsListModel_->index(0, 0, ui.actionList->rootIndex()));
         ui.actionList->show();
 
-        // Make actionlist a event proxy
+        // Change event filter pipeline: window -> _action_list -> lineedit
+        ui.inputLine->removeEventFilter(this);
         ui.inputLine->removeEventFilter(ui.proposalList);
         ui.inputLine->installEventFilter(ui.actionList);
+        ui.inputLine->installEventFilter(this);
 
         // Finally set the state
         actionsShown_ = true;
@@ -388,9 +390,11 @@ void MainWindow::setShowActions(bool showActions) {
 
         ui.actionList->hide();
 
-        // Make proposalList a event proxy
+        // Change event filter pipeline: window -> _proposal_list -> lineedit
+        ui.inputLine->removeEventFilter(this);
         ui.inputLine->removeEventFilter(ui.actionList);
         ui.inputLine->installEventFilter(ui.proposalList);
+        ui.inputLine->installEventFilter(this);
 
         // Finally set the state
         actionsShown_ = false;
@@ -455,7 +459,7 @@ bool MainWindow::eventFilter(QObject *, QEvent *event) {
                 QString next = history_->next();
                 if (!next.isEmpty())
                     ui.inputLine->setText(next);
-                return false;
+                return true;
             }
         }
 
@@ -465,7 +469,7 @@ bool MainWindow::eventFilter(QObject *, QEvent *event) {
                 QString prev = history_->prev();
                 if (!prev.isEmpty())
                     ui.inputLine->setText(prev);
-                return false;
+                return true;
             }
         }
         }
