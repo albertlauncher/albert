@@ -67,8 +67,8 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyMana
 
     // HIDE ON FOCUS OUT
     ui.checkBox_hideOnFocusOut->setChecked(mainWindow_->hideOnFocusLoss());
-    connect(ui.checkBox_hideOnFocusOut, &QCheckBox::toggled,
-            mainWindow_, &MainWindow::setHideOnFocusLoss);
+    mainWindow_->setHideOnFocusLoss(false); // Disabled while settings are open
+
 
     // MAX PROPOSALS
     ui.spinBox_proposals->setValue(mainWindow_->maxProposals());
@@ -129,6 +129,13 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyMana
                 -QPoint(width()/2,height()/2));
     raise();
     activateWindow();
+}
+
+
+
+/** ***************************************************************************/
+SettingsWidget::~SettingsWidget() {
+    mainWindow_->setHideOnFocusLoss(ui.checkBox_hideOnFocusOut->isChecked()); // Disabled while settings are open
 }
 
 

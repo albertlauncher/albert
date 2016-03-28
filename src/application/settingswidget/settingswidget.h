@@ -27,6 +27,7 @@ class SettingsWidget final : public QWidget
 
 public:
     SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyManager, PluginManager *pluginManager, QWidget * parent = 0, Qt::WindowFlags f = 0);
+    ~SettingsWidget();
 
 private:
     void keyPressEvent(QKeyEvent * event) override;
