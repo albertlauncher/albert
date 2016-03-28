@@ -2,14 +2,6 @@
 <ui version="4.0">
  <class>SettingsDialog</class>
  <widget class="QWidget" name="SettingsDialog">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>720</width>
-    <height>480</height>
-   </rect>
-  </property>
   <property name="minimumSize">
    <size>
     <width>720</width>
@@ -184,7 +176,8 @@
                  </sizepolicy>
                 </property>
                 <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If this option is enabled, albert shows the icons provided by the items.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string>If this option is enabled, albert shows 
+icons provided by the icons.</string>
                 </property>
                </widget>
               </item>
@@ -217,7 +210,8 @@
                  </sizepolicy>
                 </property>
                 <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If this option is enabled, albert shows icons provided by the icons.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string>If this option is enabled, albert shows 
+icons provided by the icons.</string>
                 </property>
                </widget>
               </item>
@@ -259,7 +253,8 @@
                  </sizepolicy>
                 </property>
                 <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If this option is enabled, albert will stay on top of all top level windows.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string>If this option is enabled, albert will
+stay on top of all top level windows.</string>
                 </property>
                </widget>
               </item>
@@ -292,7 +287,9 @@
                  </sizepolicy>
                 </property>
                 <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If this option is enabled, albert centers the main window in the screen where the pointer resides.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string>If this option is enabled, albert
+centers the main window in the
+screen where the pointer resides.</string>
                 </property>
                </widget>
               </item>
@@ -325,7 +322,11 @@
                  </sizepolicy>
                 </property>
                 <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hide the main window if it lost keyboard focus, e.g. by clicking on another app or changing the window with Alt+Tab. Note that this feature is automatically disabled as long as the settings widget is open.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string>Hide the main window if it lost keyboard focus, 
+e.g. by clicking on another app or changing the
+window with Alt+Tab. Note that this feature is
+automatically disabled as long as the settings
+widget is open.</string>
                 </property>
                </widget>
               </item>
@@ -359,6 +360,9 @@
            <property name="frameShape">
             <enum>QFrame::NoFrame</enum>
            </property>
+           <property name="horizontalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
+           </property>
            <widget class="QWidget" name="scrollAreaWidgetContents">
             <property name="geometry">
              <rect>
@@ -382,7 +386,7 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QLabel" name="label">
+              <widget class="QLabel" name="news_label">
                <property name="text">
                 <string>&lt;html&gt;
 &lt;head/&gt;
@@ -391,8 +395,9 @@
 
 &lt;h3&gt;New in v0.8.6&lt;/h3&gt;
 &lt;ul&gt;
-&lt;li&gt;Feature 1&lt;/li&gt;
-&lt;li&gt;Feature 2&lt;/li&gt;
+&lt;li&gt;Disable &quot;hide on focus&quot; while settings are open&lt;/li&gt;
+&lt;li&gt;Polish settings widget&lt;/li&gt;
+&lt;li&gt;Bugfixes&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h3&gt;New in v0.8.5&lt;/h3&gt;
