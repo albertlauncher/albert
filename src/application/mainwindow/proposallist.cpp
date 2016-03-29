@@ -20,6 +20,20 @@
 #include "roles.hpp"
 
 /** ***************************************************************************/
+class ProposalList::ItemDelegate final : public QStyledItemDelegate
+{
+public:
+    ItemDelegate(QObject *parent = nullptr)
+        : QStyledItemDelegate(parent), drawIcon(true) {}
+
+    void paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const override;
+
+    bool drawIcon;
+};
+
+
+
+/** ***************************************************************************/
 ProposalList::ProposalList(QWidget *parent) : ResizingList(parent) {
     setItemDelegate(delegate_ = new ItemDelegate(this));
 }
@@ -62,14 +76,11 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
         case Qt::Key_Down:
         case Qt::Key_PageUp:
         case Qt::Key_PageDown:
-        case Qt::Key_Home:
-        case Qt::Key_End:
         // Activation
         case Qt::Key_Enter:
         case Qt::Key_Return:
-            if ( keyEvent->modifiers() == Qt::NoModifier )
-                keyPressEvent(keyEvent);
-            return false;
+            keyPressEvent(keyEvent);
+            return true;
         }
     }
 

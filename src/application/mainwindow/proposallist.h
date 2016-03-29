@@ -19,7 +19,6 @@
 #include "resizinglist.h"
 #include <QStyledItemDelegate>
 
-/** ***************************************************************************/
 class ProposalList final : public ResizingList
 {
     Q_OBJECT
@@ -37,18 +36,4 @@ private:
     bool eventFilter(QObject*, QEvent *event) override;
 
     ItemDelegate *delegate_;
-};
-
-
-
-/** ***************************************************************************/
-class ProposalList::ItemDelegate final : public QStyledItemDelegate
-{
-public:
-    ItemDelegate(QObject *parent = nullptr)
-        : QStyledItemDelegate(parent), drawIcon(true) {}
-
-    void paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const override;
-
-    bool drawIcon;
 };

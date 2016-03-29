@@ -142,7 +142,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Hide the actionview, if text was changed
     connect(ui.inputLine, &QLineEdit::textChanged, this, &MainWindow::hideActions);
 
-    // Reset history, if text changed
+    // Reset history, if text was manually changed
     connect(ui.inputLine, &QLineEdit::textEdited, history_, &History::resetIterator);
 
     // Hide the actionview, if another item gets clicked
@@ -203,6 +203,7 @@ void MainWindow::show() {
 void MainWindow::hide() {
     setShowActions(false);
     ui.inputLine->clear();
+    history_->resetIterator();
     setModel(nullptr);
     QWidget::hide();
     emit widgetHidden();
