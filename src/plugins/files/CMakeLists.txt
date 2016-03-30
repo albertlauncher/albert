@@ -1,10 +1,11 @@
-set(LIB_NAME files)
+cmake_minimum_required(VERSION 2.8.11)
 
-find_package(Qt5Widgets 5.1 REQUIRED)
+PROJECT(files)
+
+find_package(Qt5Widgets 5.2 REQUIRED)
 
 include_directories(
     ../../application
-    ../../shared
     ../../application/pluginsystem
 )
 
@@ -15,22 +16,16 @@ set(SRC
     file.cpp
     fileactions.h
     indexer.cpp
-    ../../shared/search/search.cpp
-    ../../shared/search/search_impl.h
-    ../../shared/search/prefixsearch.h
-    ../../shared/search/fuzzysearch.h
-    ../../shared/iconlookup/xdgiconlookup.cpp
 )
 
 qt5_wrap_ui(UI
     configwidget.ui
 )
 
-add_library(${LIB_NAME} SHARED ${SRC} ${UI})
-set_target_properties(${LIB_NAME} PROPERTIES LINKER_LANGUAGE C)
-target_link_libraries(${LIB_NAME} ${Qt5Widgets_LIBRARIES} )
+add_library(${PROJECT_NAME} SHARED ${SRC} ${UI})
+
+target_link_libraries(${PROJECT_NAME} ${Qt5Widgets_LIBRARIES} offlineindex iconlookup)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    # Define where to install the lib
-    install(TARGETS ${LIB_NAME} LIBRARY DESTINATION share/${PROJECT_NAME}/plugins)
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION share/${PROJECT_NAME}/plugins)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")

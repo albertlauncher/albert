@@ -16,13 +16,14 @@
 
 #include <QSettings>
 #include <QProcess>
+#include <QIcon>
 #include <QDebug>
 #include "extension.h"
 #include "configwidget.h"
 #include "query.h"
 #include "objects.hpp"
 #include "albertapp.h"
-#include "iconlookup/xdgiconlookup.h"
+#include "xdgiconlookup.h"
 
 const char* System::Extension::CFG_POWEROFF  = "poweroff";
 const char* System::Extension::DEF_POWEROFF  = "systemctl poweroff -i";
@@ -40,40 +41,40 @@ System::Extension::Extension() : IExtension("System") {
     qDebug("[%s] Initialize extension", name_);
 
     // Load settings
-    XdgIconLookup xdg;
     QSettings s;
     QString iconPath;
+    QString themeName = QIcon::themeName();
     s.beginGroup(name_);
 
-    iconPath = xdg.themeIcon("system-shutdown");
+    iconPath = XdgIconLookup::instance()->themeIconPath("system-shutdown", themeName);
     actions_.push_back({CFG_POWEROFF,
                         "Poweroff",
                         "Poweroff the machine.",
                         iconPath.isNull() ? ":poweroff" : iconPath,
                         s.value(CFG_POWEROFF, DEF_POWEROFF).toString()});
 
-    iconPath = xdg.themeIcon("system-reboot");
+    iconPath = XdgIconLookup::instance()->themeIconPath("system-reboot", themeName);
     actions_.push_back({CFG_REBOOT,
                         "Reboot",
                         "Reboot the machine.",
                         iconPath.isNull() ? ":reboot" : iconPath,
                         s.value(CFG_REBOOT, DEF_REBOOT).toString()});
 
-    iconPath = xdg.themeIcon("system-suspend");
+    iconPath = XdgIconLookup::instance()->themeIconPath("system-suspend", themeName);
     actions_.push_back({CFG_SUSPEND,
                         "Suspend",
                         "Suspend the machine.",
                         iconPath.isNull() ? ":suspend" : iconPath,
                         s.value(CFG_SUSPEND, DEF_SUSPEND).toString()});
 
-    iconPath = xdg.themeIcon("system-suspend-hibernate");
+    iconPath = XdgIconLookup::instance()->themeIconPath("system-suspend-hibernate", themeName);
     actions_.push_back({CFG_HIBERNATE,
                         "Hibernate",
                         "Hibernate the machine.",
                         iconPath.isNull() ? ":hibernate" : iconPath,
                         s.value(CFG_HIBERNATE, DEF_HIBERNATE).toString()});
 
-    iconPath = xdg.themeIcon("system-lock");
+    iconPath = XdgIconLookup::instance()->themeIconPath("system-lock", themeName);
     actions_.push_back({CFG_LOCK,
                         "Lock",
                         "Lock the session.",

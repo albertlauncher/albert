@@ -22,7 +22,7 @@
 #include "configwidget.h"
 #include "query.h"
 #include "objects.hpp"
-#include "iconlookup/xdgiconlookup.h"
+#include "xdgiconlookup.h"
 #include "muParser.h"
 
 const QString Calculator::Extension::CFG_SEPS      = "group_separators";
@@ -40,8 +40,7 @@ Calculator::Extension::Extension() : IExtension("Calculator") {
                 ? loc_.numberOptions() & ~QLocale::OmitGroupSeparator
                 : loc_.numberOptions() | QLocale::OmitGroupSeparator );
 
-    XdgIconLookup xdg;
-    QString iconPath = xdg.themeIcon("calc");
+    QString iconPath = XdgIconLookup::instance()->themeIconPath("calc", QIcon::themeName());
     iconPath_ = iconPath.isNull() ? ":calc" : iconPath;
 
     parser_ = new mu::Parser;

@@ -21,14 +21,14 @@
 #include <set>
 #include <map>
 #include <memory>
+#include "indeximpl.h"
 using std::vector;
 using std::set;
 using std::map;
 using std::shared_ptr;
 using std::unique_ptr;
-#include "search_impl.h"
 
-class PrefixSearch : public SearchImpl
+class PrefixSearch : public IndexImpl
 {
 public:
     /** ***********************************************************************/

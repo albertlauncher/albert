@@ -18,7 +18,7 @@
 #include <QMimeType>
 #include <map>
 #include <chrono>
-#include "search/iindexable.h"
+#include "iindexable.h"
 #include "abstractobjects.hpp"
 
 namespace Files {

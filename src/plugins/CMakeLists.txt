@@ -5,4 +5,5 @@ add_subdirectory(files)
 add_subdirectory(system)
 add_subdirectory(templateExtension)
 add_subdirectory(websearch)
+add_subdirectory(microsleep)
 

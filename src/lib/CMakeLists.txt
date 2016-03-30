@@ -1,0 +1,2 @@
+add_subdirectory(offlineindex)
+add_subdirectory(iconlookup)

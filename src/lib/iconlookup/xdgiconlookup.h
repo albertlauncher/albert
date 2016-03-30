@@ -21,15 +21,22 @@
 class XdgIconLookup
 {
 public:
-    XdgIconLookup();
-    QString themeIcon(QString iconName);
+
+    QString themeIconPath(QString iconName, QString themeName);
+    static XdgIconLookup *instance();
 
 private:
-    static QString themeIconHelper(const QString &iconName, const QString &theme, QStringList *checked);
-    static QString lookupIconInTheme(const QString &iconName, const QString &themeFile);
-    static QString lookupThemeFile(const QString &themeName);
 
-    static QStringList iconDirs_;
-    static QMap<QString, QString> iconCache_;
+    XdgIconLookup();
+
+    QString doRecursiveIconLookup(const QString &iconName, const QString &theme, QStringList *checked);
+    QString doIconLookup(const QString &iconName, const QString &themeFile);
+    QString lookupThemeFile(const QString &themeName);
+
+    QStringList iconDirs_;
+    QMap<QString, QString> iconCache_;
+
     static QStringList icon_extensions;
+    static XdgIconLookup *instance_;
+
 };

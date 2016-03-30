@@ -15,29 +15,29 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "search.h"
-#include "search_impl.h"
+#include "offlineindex.h"
+#include "indeximpl.h"
 #include "iindexable.h"
-#include "prefixsearch.h"
-#include "fuzzysearch.h"
+#include "prefixsearch.hpp"
+#include "fuzzysearch.hpp"
 
 
 /** ***************************************************************************/
-Search::Search(bool fuzzy) {
+OfflineIndex::OfflineIndex(bool fuzzy) {
     (fuzzy) ? impl_ = new FuzzySearch() : impl_ = new PrefixSearch();
 }
 
 
 
 /** ***************************************************************************/
-Search::~Search() {
+OfflineIndex::~OfflineIndex() {
     delete impl_;
 }
 
 
 
 /** ***************************************************************************/
-void Search::setFuzzy(bool fuzzy) {
+void OfflineIndex::setFuzzy(bool fuzzy) {
     if (dynamic_cast<FuzzySearch*>(impl_)) {
         if (fuzzy) return;
         FuzzySearch *old = dynamic_cast<FuzzySearch*>(impl_);
@@ -56,14 +56,14 @@ void Search::setFuzzy(bool fuzzy) {
 
 
 /** ***************************************************************************/
-bool Search::fuzzy() {
+bool OfflineIndex::fuzzy() {
     return dynamic_cast<FuzzySearch*>(impl_) != nullptr;
 }
 
 
 
 /** ***************************************************************************/
-void Search::setDelta(double d) {
+void OfflineIndex::setDelta(double d) {
     FuzzySearch* f = dynamic_cast<FuzzySearch*>(impl_);
     if (f)
         f->setDelta(d);
@@ -72,7 +72,7 @@ void Search::setDelta(double d) {
 
 
 /** ***************************************************************************/
-double Search::delta() {
+double OfflineIndex::delta() {
     FuzzySearch* f = dynamic_cast<FuzzySearch*>(impl_);
     if (f)
         return f->delta();
@@ -82,20 +82,20 @@ double Search::delta() {
 
 
 /** ***************************************************************************/
-void Search::add(std::shared_ptr<IIndexable> idxble) {
+void OfflineIndex::add(std::shared_ptr<IIndexable> idxble) {
     impl_->add(idxble);
 }
 
 
 
 /** ***************************************************************************/
-void Search::clear() {
+void OfflineIndex::clear() {
     impl_->clear();
 }
 
 
 
 /** ***************************************************************************/
-std::vector<std::shared_ptr<IIndexable> > Search::search(const QString &req) const {
+std::vector<std::shared_ptr<IIndexable> > OfflineIndex::search(const QString &req) const {
     return impl_->search(req);
 }

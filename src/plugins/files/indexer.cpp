@@ -159,9 +159,9 @@ void Files::Extension::Indexer::run() {
     std::swap(extension_->index_, newIndex);
 
     // Rebuild the offline index
-    extension_->searchIndex_.clear();
+    extension_->offlineIndex_.clear();
     for (auto &item : extension_->index_)
-        extension_->searchIndex_.add(item);
+        extension_->offlineIndex_.add(item);
 
     // Notification
     qDebug("[%s] Indexing done (%d items)", extension_->name_, static_cast<int>(extension_->index_.size()));

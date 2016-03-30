@@ -47,7 +47,7 @@ Applications::Extension::Extension() : IExtension("Applications") {
     // Load settings
     QSettings s;
     s.beginGroup(name_);
-    searchIndex_.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
+    offlineIndex_.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
 
     // Load the paths or set a default
     QVariant v = s.value(CFG_PATHS);
@@ -92,7 +92,7 @@ Applications::Extension::Extension() : IExtension("Applications") {
 
             // Build the offline index
             for (const auto &item : index_)
-                searchIndex_.add(item);
+                offlineIndex_.add(item);
         } else
             qWarning() << "Could not open file: " << dataFile.fileName();
     }
@@ -126,7 +126,7 @@ Applications::Extension::~Extension() {
     // Save settings
     QSettings s;
     s.beginGroup(name_);
-    s.setValue(CFG_FUZZY, searchIndex_.fuzzy());
+    s.setValue(CFG_FUZZY, offlineIndex_.fuzzy());
     s.setValue(CFG_PATHS, rootDirs_);
     s.setValue(CFG_TERM, Applications::DesktopEntry::terminal);
 
@@ -162,7 +162,7 @@ QWidget *Applications::Extension::widget(QWidget *parent) {
         connect(widget_->ui.pushButton_restorePaths, &QPushButton::clicked, this, &Extension::restorePaths);
 
         // Fuzzy
-        widget_->ui.checkBox_fuzzy->setChecked(searchIndex_.fuzzy());
+        widget_->ui.checkBox_fuzzy->setChecked(offlineIndex_.fuzzy());
         connect(widget_->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
 
         // Info
@@ -182,7 +182,7 @@ QWidget *Applications::Extension::widget(QWidget *parent) {
 void Applications::Extension::handleQuery(shared_ptr<Query> query) {
     // Search for matches. Lock memory against scanworker
     indexAccess_.lock();
-    vector<shared_ptr<IIndexable>> indexables = searchIndex_.search(query->searchTerm());
+    vector<shared_ptr<IIndexable>> indexables = offlineIndex_.search(query->searchTerm());
     indexAccess_.unlock();
 
     // Add results to query. This cast is safe since index holds files only
@@ -306,14 +306,14 @@ void Applications::Extension::updateIndex() {
 
 /** ***************************************************************************/
 bool Applications::Extension::fuzzy() {
-    return searchIndex_.fuzzy();
+    return offlineIndex_.fuzzy();
 }
 
 
 
 /** ***************************************************************************/
 void Applications::Extension::setFuzzy(bool b) {
-    searchIndex_.setFuzzy(b);
+    offlineIndex_.setFuzzy(b);
 }
 
 

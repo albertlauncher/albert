@@ -15,12 +15,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QApplication>
+#include <QIcon>
 #include <QFileInfo>
 #include <QDataStream>
 #include <QMimeDatabase>
 #include "file.h"
 #include "fileactions.h"
-#include "iconlookup/xdgiconlookup.h"
+#include "xdgiconlookup.h"
 
 std::map<QString, Files::File::CacheEntry> Files::File::iconCache_;
 
@@ -51,11 +52,11 @@ QString Files::File::iconPath() const {
            return ce.path;
     }
 
-    XdgIconLookup xdg;
     QString iconPath;
-    if ( !(iconPath = xdg.themeIcon(xdgIconName)).isNull()  // Lookup iconName
-         || !(iconPath = xdg.themeIcon(mimetype_.genericIconName())).isNull()  // Lookup genericIconName
-         || !(iconPath = xdg.themeIcon("unknown")).isNull()) {  // Lookup "unknown"
+    QString themeName = QIcon::themeName();
+    if ( !(iconPath = XdgIconLookup::instance()->themeIconPath(xdgIconName,themeName)).isNull()  // Lookup iconName
+         || !(iconPath = XdgIconLookup::instance()->themeIconPath(mimetype_.genericIconName(),themeName)).isNull()  // Lookup genericIconName
+         || !(iconPath = XdgIconLookup::instance()->themeIconPath("unknown",themeName)).isNull()) {  // Lookup "unknown"
         ce = {iconPath, std::chrono::system_clock::now()};
         iconCache_.emplace(xdgIconName, ce);
         return iconPath;

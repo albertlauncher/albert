@@ -64,7 +64,7 @@ Files::Extension::Extension() : IExtension("Files") {
     indexDirs_ = s.value(CFG_INDEX_DIR, DEF_INDEX_DIR).toBool();
     indexHidden_ = s.value(CFG_INDEX_HIDDEN, DEF_INDEX_HIDDEN).toBool();
     followSymlinks_ = s.value(CFG_FOLLOW_SYMLINKS, DEF_FOLLOW_SYMLINKS).toBool();
-    searchIndex_.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
+    offlineIndex_.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
 
     // Load the paths or set a default
     QVariant v = s.value(CFG_PATHS);
@@ -90,7 +90,7 @@ Files::Extension::Extension() : IExtension("Files") {
 
             // Build the offline index
             for (const auto &item : index_)
-                searchIndex_.add(item);
+                offlineIndex_.add(item);
         } else
             qWarning() << "Could not open file: " << dataFile.fileName();
     }
@@ -129,7 +129,7 @@ Files::Extension::~Extension() {
     // Save settings
     QSettings s;
     s.beginGroup(name_);
-    s.setValue(CFG_FUZZY, searchIndex_.fuzzy());
+    s.setValue(CFG_FUZZY, offlineIndex_.fuzzy());
     s.setValue(CFG_PATHS, rootDirs_);
     s.setValue(CFG_INDEX_AUDIO, indexAudio_);
     s.setValue(CFG_INDEX_VIDEO, indexVideo_);
@@ -222,7 +222,7 @@ void Files::Extension::handleQuery(shared_ptr<Query> query) {
 
     // Search for matches. Lock memory against indexer
     indexAccess_.lock();
-    vector<shared_ptr<IIndexable>> indexables = searchIndex_.search(query->searchTerm());
+    vector<shared_ptr<IIndexable>> indexables = offlineIndex_.search(query->searchTerm());
     indexAccess_.unlock();
 
     // Add results to query. This cast is safe since index holds files only
@@ -351,7 +351,7 @@ void Files::Extension::setScanInterval(uint minutes) {
 
 /** ***************************************************************************/
 bool Files::Extension::fuzzy() {
-    return searchIndex_.fuzzy();
+    return offlineIndex_.fuzzy();
 }
 
 
@@ -359,7 +359,7 @@ bool Files::Extension::fuzzy() {
 /** ***************************************************************************/
 void Files::Extension::setFuzzy(bool b) {
     indexAccess_.lock();
-    searchIndex_.setFuzzy(b);
+    offlineIndex_.setFuzzy(b);
     indexAccess_.unlock();
 }
 

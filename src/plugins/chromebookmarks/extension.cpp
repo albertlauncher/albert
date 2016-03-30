@@ -40,7 +40,7 @@ ChromeBookmarks::Extension::Extension() : IExtension("Chromebookmarks") {
     // Load settings
     QSettings s;
     s.beginGroup(name_);
-    searchIndex_.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
+    offlineIndex_.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
 
     // Load and set a valid path
     QVariant v = s.value(CFG_BOOKMARKS);
@@ -66,7 +66,7 @@ ChromeBookmarks::Extension::Extension() : IExtension("Chromebookmarks") {
 
             // Build the offline index
             for (const auto &item : index_)
-                searchIndex_.add(item);
+                offlineIndex_.add(item);
         } else
             qWarning() << "Could not open file: " << dataFile.fileName();
     }
@@ -104,7 +104,7 @@ ChromeBookmarks::Extension::~Extension() {
     // Save settings
     QSettings s;
     s.beginGroup(name_);
-    s.setValue(CFG_FUZZY, searchIndex_.fuzzy());
+    s.setValue(CFG_FUZZY, offlineIndex_.fuzzy());
     s.setValue(CFG_BOOKMARKS, bookmarksFile_);
 
     // Serialize data
@@ -156,7 +156,7 @@ QWidget *ChromeBookmarks::Extension::widget(QWidget *parent) {
 void ChromeBookmarks::Extension::handleQuery(shared_ptr<Query> query) {
     // Search for matches. Lock memory against indexer
     indexAccess_.lock();
-    vector<shared_ptr<IIndexable>> indexables = searchIndex_.search(query->searchTerm());
+    vector<shared_ptr<IIndexable>> indexables = offlineIndex_.search(query->searchTerm());
     indexAccess_.unlock();
 
     // Add results to query. This cast is safe since index holds files only
@@ -230,7 +230,7 @@ void ChromeBookmarks::Extension::updateIndex() {
 
 /** ***************************************************************************/
 bool ChromeBookmarks::Extension::fuzzy() {
-    return searchIndex_.fuzzy();
+    return offlineIndex_.fuzzy();
 }
 
 
@@ -238,7 +238,7 @@ bool ChromeBookmarks::Extension::fuzzy() {
 /** ***************************************************************************/
 void ChromeBookmarks::Extension::setFuzzy(bool b) {
     indexAccess_.lock();
-    searchIndex_.setFuzzy(b);
+    offlineIndex_.setFuzzy(b);
     indexAccess_.unlock();
 }
 

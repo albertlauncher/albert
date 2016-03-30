@@ -20,7 +20,6 @@
 #include <QPointer>
 #include <memory>
 #include "iextension.h"
-#include "search/search.h"
 
 namespace Websearch {
 

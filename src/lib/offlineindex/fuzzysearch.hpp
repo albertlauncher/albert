@@ -15,14 +15,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include "prefixsearch.h"
+#include "prefixsearch.hpp"
 #include <QString>
 #include <map>
-using std::map;
 #include <vector>
-using std::vector;
 #include <memory>
 #include <iostream>
+using std::map;
+using std::vector;
 using std::shared_ptr;
 
 class FuzzySearch final : public PrefixSearch {

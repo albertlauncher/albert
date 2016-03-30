@@ -80,9 +80,9 @@ void Applications::Extension::Indexer::run() {
     std::swap(extension_->index_, newIndex);
 
     // Rebuild the offline index
-    extension_->searchIndex_.clear();
+    extension_->offlineIndex_.clear();
     for (const auto &item : extension_->index_)
-        extension_->searchIndex_.add(item);
+        extension_->offlineIndex_.add(item);
 
     // Finally update the watches (maybe folders changed)
     if (!extension_->watcher_.directories().isEmpty())

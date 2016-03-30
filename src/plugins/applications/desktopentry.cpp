@@ -16,6 +16,7 @@
 
 #include <QDebug>
 #include <QFile>
+#include <QIcon>
 #include <QTextStream>
 #include <QDataStream>
 #include <QProcess>
@@ -25,7 +26,7 @@
 #include "desktopentry.h"
 #include "desktopaction.hpp"
 #include "albertapp.h"
-#include "iconlookup/xdgiconlookup.h"
+#include "xdgiconlookup.h"
 using std::map;
 
 QString Applications::DesktopEntry::terminal;
@@ -161,10 +162,9 @@ bool Applications::DesktopEntry::parseDesktopEntry() {
     exec_.replace("%%", "%");
 
     // Try to get the icon
-    XdgIconLookup xdg;
     QString iconPath;
     if ((valueIterator = valueMap.find("Icon")) != valueMap.end()){
-        iconPath = xdg.themeIcon(valueIterator->second);
+        iconPath = XdgIconLookup::instance()->themeIconPath(valueIterator->second, QIcon::themeName());
         if (!iconPath.isNull())
             iconPath_ = iconPath;
         else{
@@ -175,7 +175,7 @@ bool Applications::DesktopEntry::parseDesktopEntry() {
 
     // Try to get a default icon if iconUrl_ is still empty
     if (iconPath_.isEmpty()) {
-        iconPath = xdg.themeIcon("exec");
+        iconPath = XdgIconLookup::instance()->themeIconPath("exec", QIcon::themeName());
         if (!iconPath.isNull())
             iconPath_ = iconPath;
         else

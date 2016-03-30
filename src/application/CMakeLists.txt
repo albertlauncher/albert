@@ -52,7 +52,7 @@ qt5_add_resources(QRC
 # Do platform specific pre target stuff
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     # Make sure x11 module is present
-    find_package(Qt5X11Extras 5.1 REQUIRED)
+    find_package(Qt5X11Extras 5.2 REQUIRED)
     # Platform switches
     set(SRC ${SRC} hotkey/hotkeymanager_x11.cpp)
     set(LIB ${LIB} ${Qt5X11Extras_LIBRARIES} X11)

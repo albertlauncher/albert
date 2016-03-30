@@ -18,23 +18,23 @@
 #include <QString>
 #include <vector>
 #include <memory>
-class SearchImpl;
+class IndexImpl;
 class IIndexable;
 
-class Search final {
+class OfflineIndex final {
 
 public:
     /**
      * @brief Contstructs a search
      * @param fuzzy Sets the type of the search. Defaults to false.
      */
-    Search(bool fuzzy = false);
+    OfflineIndex(bool fuzzy = false);
 
     /**
      * @brief Destructs the search
      * @param
      */
-    ~Search();
+    ~OfflineIndex();
 
     /**
      * @brief Sets the type of the search to fuzzy
@@ -84,7 +84,7 @@ public:
     std::vector<std::shared_ptr<IIndexable>> search(const QString &req) const;
 
 private:
-    SearchImpl *impl_;
+    IndexImpl *impl_;
 };
 
 

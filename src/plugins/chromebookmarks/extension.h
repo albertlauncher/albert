@@ -24,7 +24,7 @@
 using std::vector;
 #include <memory>
 #include "iextension.h"
-#include "search/search.h"
+#include "offlineindex.h"
 
 namespace ChromeBookmarks {
 
@@ -65,7 +65,7 @@ public:
 private:
     QPointer<ConfigWidget> widget_;
     vector<shared_ptr<Bookmark>> index_;
-    Search searchIndex_;
+    OfflineIndex offlineIndex_;
     QMutex indexAccess_;
     QPointer<Indexer> indexer_;
     QString bookmarksFile_;

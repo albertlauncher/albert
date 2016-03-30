@@ -22,7 +22,7 @@
 #include <QMutex>
 #include <vector>
 #include "iextension.h"
-#include "search/search.h"
+#include "offlineindex.h"
 
 namespace Files {
 
@@ -89,7 +89,7 @@ public:
 private:
     QPointer<ConfigWidget> widget_;
     std::vector<shared_ptr<File>> index_;
-    Search searchIndex_;
+    OfflineIndex offlineIndex_;
     QMutex indexAccess_;
     QPointer<Indexer> indexer_;
     QTimer minuteTimer_;

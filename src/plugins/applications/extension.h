@@ -24,7 +24,7 @@
 #include <QList>
 #include <vector>
 #include "iextension.h"
-#include "search/search.h"
+#include "offlineindex.h"
 
 namespace Applications {
 
@@ -65,7 +65,7 @@ public:
 private:
     QPointer<ConfigWidget> widget_;
     std::vector<shared_ptr<DesktopEntry>> index_;
-    Search searchIndex_;
+    OfflineIndex offlineIndex_;
     QMutex indexAccess_;
     QPointer<Indexer> indexer_;
     QFileSystemWatcher watcher_;
