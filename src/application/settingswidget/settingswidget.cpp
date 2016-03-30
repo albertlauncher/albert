@@ -117,6 +117,9 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyMana
     connect(ui.listView_plugins->model(), &QAbstractListModel::dataChanged,
             this, &SettingsWidget::onPluginDataChanged);
 
+    // Initially hide the title label
+    ui.label_pluginTitle->hide();
+
 
     /*
      * ABOUT
@@ -143,21 +146,25 @@ SettingsWidget::~SettingsWidget() {
 /** ***************************************************************************/
 void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
     // Hidde the placehodler text
-    QLayoutItem *i = ui.widget_pluginInfos->layout()->takeAt(0);
+    QLayoutItem *i = ui.widget_pluginInfos->layout()->takeAt(1);
     delete i->widget();
     delete i;
 
     if (pluginManager_->plugins()[current.row()]->isLoaded()){
-        QWidget *pw = dynamic_cast<IExtension*>(pluginManager_->plugins()[current.row()]->instance())->widget();
+        IExtension *e = dynamic_cast<IExtension*>(pluginManager_->plugins()[current.row()]->instance());
+        QWidget *pw = e->widget();
+        if ( pw->layout() != nullptr)
+            pw->layout()->setMargin(0);
         ui.widget_pluginInfos->layout()->addWidget(pw);// Takes ownership
-        pw->layout()->setMargin(0);
-
+        ui.label_pluginTitle->setText(e->name_);
+        ui.label_pluginTitle->show();
     }
     else{
         QLabel *lbl = new QLabel("Plugin not loaded.");
         lbl->setEnabled(false);
         lbl->setAlignment(Qt::AlignCenter);
         ui.widget_pluginInfos->layout()->addWidget(lbl);
+        ui.label_pluginTitle->hide();
     }
 }
 

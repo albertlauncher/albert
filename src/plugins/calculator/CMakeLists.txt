@@ -23,7 +23,7 @@ qt5_wrap_ui(UI
     configwidget.ui
 )
 
-add_library(${PROJECT_NAME} SHARED ${SRC} ${UI})
+add_library(${PROJECT_NAME} SHARED ${SRC} ${QRC} ${UI})
 
 target_link_libraries(${PROJECT_NAME} ${Qt5Widgets_LIBRARIES} muparser iconlookup)
 
