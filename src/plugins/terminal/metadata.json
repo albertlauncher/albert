@@ -1,0 +1,9 @@
+{
+    "id" :              "org.albert.extension.terminal",
+    "name" :            "Terminal",
+    "version" :         "1.0",
+    "platform" :        "Linux",
+    "group" :           "Extensions",
+    "author" :          "Manuel Schneider",
+    "dependencies" :    ""
+}
