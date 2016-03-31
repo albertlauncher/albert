@@ -393,6 +393,12 @@ widget is open.</string>
 &lt;body&gt;
 &lt;h1&gt;Welcome to Albert&lt;/h1&gt;
 
+&lt;h3&gt;New in v0.8.7&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Terminal extension&lt;/li&gt;
+&lt;li&gt;Bugfixes&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3&gt;New in v0.8.6&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;Disable &quot;hide on focus&quot; while settings are open&lt;/li&gt;
