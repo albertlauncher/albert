@@ -91,10 +91,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>Amount of &amp;proposals:</string>
-                </property>
-                <property name="buddy">
-                 <cstring>spinBox_proposals</cstring>
+                 <string>Amount of proposals:</string>
                 </property>
                </widget>
               </item>
@@ -130,10 +127,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>The&amp;me:</string>
-                </property>
-                <property name="buddy">
-                 <cstring>comboBox_themes</cstring>
+                 <string>Theme:</string>
                 </property>
                </widget>
               </item>
@@ -160,10 +154,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>Show sc&amp;rollbar:</string>
-                </property>
-                <property name="buddy">
-                 <cstring>checkBox_scrollbar</cstring>
+                 <string>Show scrollbar:</string>
                 </property>
                </widget>
               </item>
@@ -194,10 +185,7 @@ icons provided by the icons.</string>
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>Show i&amp;cons:</string>
-                </property>
-                <property name="buddy">
-                 <cstring>checkBox_icons</cstring>
+                 <string>Show icons:</string>
                 </property>
                </widget>
               </item>
@@ -237,10 +225,7 @@ icons provided by the icons.</string>
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>Always on &amp;top:</string>
-                </property>
-                <property name="buddy">
-                 <cstring>checkBox_onTop</cstring>
+                 <string>Always on top:</string>
                 </property>
                </widget>
               </item>
@@ -271,10 +256,7 @@ stay on top of all top level windows.</string>
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>Always &amp;center Albert:</string>
-                </property>
-                <property name="buddy">
-                 <cstring>checkBox_center</cstring>
+                 <string>Always center Albert:</string>
                 </property>
                </widget>
               </item>
@@ -306,10 +288,7 @@ screen where the pointer resides.</string>
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>Hide on &amp;focus out:</string>
-                </property>
-                <property name="buddy">
-                 <cstring>checkBox_hideOnFocusOut</cstring>
+                 <string>Hide on focus out:</string>
                 </property>
                </widget>
               </item>

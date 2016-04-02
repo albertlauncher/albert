@@ -3,7 +3,10 @@ add_subdirectory(calculator)
 add_subdirectory(chromebookmarks)
 add_subdirectory(files)
 add_subdirectory(system)
-add_subdirectory(templateExtension)
 add_subdirectory(websearch)
-add_subdirectory(microsleep)
+add_subdirectory(terminal)
+
+# Non-release plugins
+#add_subdirectory(templateExtension)
+#add_subdirectory(microsleep)
 
