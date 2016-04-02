@@ -66,6 +66,8 @@ public:
      * Extension specific members
      */
 
+public slots:
+
     void restoreDefaults();
 
 private:
