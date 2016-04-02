@@ -183,8 +183,9 @@ void SettingsWidget::changeHotkey(int newhk) {
     } else {
         ui.grabKeyButton_hotkey->setText(QKeySequence(oldhk).toString());
         QMessageBox(QMessageBox::Critical, "Error",
-                    QKeySequence(newhk).toString()
-                    + " could not be registered.").exec();
+                    QKeySequence(newhk).toString() + " could not be registered.",
+                    QMessageBox::NoButton,
+                    this).exec();
     }
 }
 
@@ -195,8 +196,10 @@ void SettingsWidget::onThemeChanged(int i) {
     // Apply and save the theme
     QString currentTheme = mainWindow_->theme();
     if (!mainWindow_->setTheme(ui.comboBox_themes->itemText(i))) {
-        QMessageBox msgBox(QMessageBox::Critical, "Error", "Could not apply theme.");
-        msgBox.exec();
+        QMessageBox(QMessageBox::Critical, "Error",
+                    "Could not apply theme.",
+                    QMessageBox::NoButton,
+                    this).exec();
         if (!mainWindow_->setTheme(currentTheme)) {
            qFatal("Rolling back theme failed.");
         }
@@ -231,7 +234,8 @@ void SettingsWidget::closeEvent(QCloseEvent *event) {
         QMessageBox msgBox(QMessageBox::Critical, "Error",
                            "Hotkey is invalid, please set it. Press Ok to go "\
                            "back to the settings, or press Cancel to quit albert.",
-                           QMessageBox::Close|QMessageBox::Ok);
+                           QMessageBox::Close|QMessageBox::Ok,
+                           this);
         msgBox.exec();
         if ( msgBox.result() == QMessageBox::Ok ) {
             ui.tabs->setCurrentIndex(0);

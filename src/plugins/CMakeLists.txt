@@ -7,6 +7,6 @@ add_subdirectory(websearch)
 add_subdirectory(terminal)
 
 # Non-release plugins
-#add_subdirectory(templateExtension)
-#add_subdirectory(microsleep)
+add_subdirectory(templateExtension)
+add_subdirectory(microsleep)
 

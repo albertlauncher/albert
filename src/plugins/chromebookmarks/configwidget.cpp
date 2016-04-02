@@ -16,7 +16,6 @@
 
 #include <QFileDialog>
 #include <QTimer>
-#include <QMessageBox>
 #include "configwidget.h"
 
 /** ***************************************************************************/
