@@ -107,21 +107,28 @@ XdgIconLookup::XdgIconLookup()
     /* Icons and themes are looked for in a set of directories. By default,
     apps should look in $HOME/.icons (for backwards compatibility), in
     $XDG_DATA_DIRS/icons and in /usr/share/pixmaps (in that order). */
-    QString path;
+    QStringList pathToCheck;
 
-    path = "~/.icons";
-    if (QFile::exists(path))
-        iconDirs_.append(path);
+    auto addDirs = [](QStandardPaths::StandardLocation locationType, const QString &subFolder){
+        QStringList result;
+        QStringList list = QStandardPaths::standardLocations(locationType);
+        std::transform(list.begin(), list.end(), std::back_inserter(result), [=](const QString &path){
+            return QDir(path).filePath(subFolder);
+        });
 
-    for (const QString &basedir : QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)){
-        path = QDir(basedir).filePath("icons");
-        if (QFile::exists(path))
-            iconDirs_.append(path);
+        return result;
+    };
+
+    pathToCheck << addDirs(QStandardPaths::HomeLocation, ".icons");
+    pathToCheck << addDirs(QStandardPaths::GenericDataLocation, "icons");
+    pathToCheck << "/usr/share/pixmaps";
+
+    for (const QString &path : pathToCheck) {
+        if (QDir(path).exists()) {
+            iconDirs_ << path;
+        }
     }
 
-    path = "/usr/share/pixmaps";
-    if (QFile::exists(path))
-        iconDirs_.append(path);
 }
 
 
@@ -153,19 +160,16 @@ QString XdgIconLookup::themeIconPath(QString iconName, QString themeName){
     if (!iconPath.isNull())
         return iconPath;
 
-    // Lookup themefile
+    // Lookup themefiles
     QStringList checkedThemes;
-    iconPath = doRecursiveIconLookup(iconName, themeName, &checkedThemes);
-    if (!iconPath.isNull()){
-        iconCache_.insert(iconName, iconPath);
-        return iconPath;
-    }
+    QList<QString> toCheck {themeName, "hicolor", "default"};
 
-    // Lookup in hicolor
-    iconPath = doRecursiveIconLookup(iconName, "hicolor", &checkedThemes);
-    if (!iconPath.isNull()){
-        iconCache_.insert(iconName, iconPath);
-        return iconPath;
+    for (const QString &theme : toCheck) {
+        iconPath = doRecursiveIconLookup(iconName, theme, &checkedThemes);
+        if (!iconPath.isNull()){
+            iconCache_.insert(iconName, iconPath);
+            return iconPath;
+        }
     }
 
     // Now search unsorted
