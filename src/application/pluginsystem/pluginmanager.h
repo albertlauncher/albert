@@ -38,6 +38,7 @@ public:
     void enablePlugin(const unique_ptr<PluginSpec> &plugin);
     void disablePlugin(const unique_ptr<PluginSpec> &plugin);
     bool pluginIsEnabled(const unique_ptr<PluginSpec> &plugin);
+    void storeConfiguration();
 
 private:
     vector<unique_ptr<PluginSpec>> plugins_;
