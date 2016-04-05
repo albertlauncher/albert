@@ -73,7 +73,7 @@ PluginManager::PluginManager() {
 /** ***************************************************************************/
 PluginManager::~PluginManager() {
     qDebug() << "[PluginManager] Unloading plugins.";
-    QSettings().setValue(CFG_BLACKLIST, blacklist_);
+    storeConfiguration();
     for (const unique_ptr<PluginSpec> &plugin : plugins_){
         unloadPlugin(plugin);
     }
@@ -134,4 +134,11 @@ void PluginManager::disablePlugin(const unique_ptr<PluginSpec> &plugin) {
 /** ***************************************************************************/
 bool PluginManager::pluginIsEnabled(const unique_ptr<PluginSpec> &plugin) {
     return !blacklist_.contains(plugin->id());
+}
+
+
+
+/** ***************************************************************************/
+void PluginManager::storeConfiguration() {
+    QSettings().setValue(CFG_BLACKLIST, blacklist_);
 }

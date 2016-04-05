@@ -139,6 +139,7 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyMana
 /** ***************************************************************************/
 SettingsWidget::~SettingsWidget() {
     mainWindow_->setHideOnFocusLoss(ui.checkBox_hideOnFocusOut->isChecked()); // Disabled while settings are open
+    pluginManager_->storeConfiguration();
 }
 
 
