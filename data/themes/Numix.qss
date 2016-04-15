@@ -9,8 +9,6 @@
 * {
   color : #ccc;
   background-color: #2d2d2d;
-  selection-color: #333;
-  selection-background-color: #2d2d2d;
 }
 
 #frame {
