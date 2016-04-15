@@ -19,25 +19,25 @@
   background-color: #2d2d2d;
   border: 1px solid #555;
   
-   /* Workaround for Qt to get fixed size button*/
+  /* Workaround for Qt to get fixed size button*/
 	min-width:640px;
 	max-width:640px;
 }
 
 #inputLine {
 	padding: 2px;
-    font: 36px "Source Sans Pro Bold";
+  font: 36px "Source Sans Pro Bold";
 	selection-color: #fdf6e3;
 	selection-background-color: #586e75;
-    border: none;
-    background-color: #2d2d2d;
+  border: none;
+  background-color: #2d2d2d;
 }
 
 #settingsButton {
-    border: none;
-    border-radius: 7px;
-    color : #555;
-    background-color: transparent;
+  border: none;
+  border-radius: 7px;
+  color : #555;
+  background-color: transparent;
 
   /* Respect the frame border */
   margin: 6px 6px 0px 0px;
@@ -45,71 +45,71 @@
   border-bottom-left-radius: 10px;
 
   /* Workaround for Qt to get fixed size button*/
-     min-width:14px;
-     min-height:14px;
-     max-width:14px;
-     max-height:14px;
+  min-width:14px;
+  min-height:14px;
+  max-width:14px;
+  max-height:14px;
 }
 
 #settingsButton:hover {
-	background-color: #2d2d2d;
+  background-color: #2d2d2d;
 }
 
 
 /********** ListViews **********/
 QListView::item:selected {
- border: none;
- background: qlineargradient(x1:0, x2:1, stop:0.0 #3a3a3a, stop:0.5 #3a3a3a, stop:1.0 #3a3a3a );
+  border: none;
+  background: qlineargradient(x1:0, x2:1, stop:0.0 #3a3a3a, stop:0.5 #3a3a3a, stop:1.0 #3a3a3a );
 }
 
 QListView QScrollBar:vertical  {
-	width: 5px;
-	background: transparent;
+  width: 5px;
+  background: transparent;
 }
 
 QListView QScrollBar::handle:vertical  {
-	background: #AAAAAA;
-	min-height: 24px;
+  background: #AAAAAA;
+  min-height: 24px;
 }
 
 QListView QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
 QListView QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical,
 QListView QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-        border: 0px;
-        width: 0px;
-        height: 0px;
-        background: transparent;
+  border: 0px;
+  width: 0px;
+  height: 0px;
+  background: transparent;
 }
 
 
 /********** actionList **********/
 
 QListView#actionList {
-	font-size: 20px;
+  font-size: 20px;
 }
 
 QListView#actionList::item{
-	height:28px;
-    margin:50px;
+  height:28px;
+  margin:50px;
 }
 
 /********** proposalList **********/
 
 QListView#proposalList {
-	icon-size: 36px;
-	font-size: 26px;
-    font: 20px "Source Sans Pro Bold";
-    background-color: transparent;
-    border: none;
+  icon-size: 36px;
+  font-size: 26px;
+  font: 20px "Source Sans Pro Bold";
+  background-color: transparent;
+  border: none;
 }
 
 QListView#proposalList::item{
-	height:48px;
-     padding: 4px;
-     border-bottom: 1px dotted #555;
+  height:48px;
+  padding: 4px;
+  border-bottom: 1px dotted #555;
 }
 
 QListView#proposalList::item:selected{
-        border: none;
-        background: #3a3a3a;
+  border: none;
+  background: #3a3a3a;
 }
