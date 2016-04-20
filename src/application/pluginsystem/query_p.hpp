@@ -191,10 +191,13 @@ public:
             switch (role) {
             case Roles::Activate: {
                 int actionValue = value.toInt();
+
+                shared_ptr<AlbertItem> data = ti->data;
+
                 if (0 <= actionValue && actionValue < static_cast<int>(ti->data->actions().size()))
-                    ti->data->actions()[actionValue]->activate();
+                    data->actions()[actionValue]->activate();
                 else
-                    ti->data->activate();
+                    data->activate();
                 return true;
             }
             default:
