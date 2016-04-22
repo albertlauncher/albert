@@ -18,8 +18,8 @@
 #include "query_p.hpp"
 
 /** ***************************************************************************/
-Query::Query(const QString &term) {
-    impl = new QueryPrivate(term);
+Query::Query(const QString &term, const QString &originalTerm) {
+    impl = new QueryPrivate(term, originalTerm);
 }
 
 
@@ -62,4 +62,11 @@ bool Query::isValid() {
 /** ***************************************************************************/
 const QString &Query::searchTerm() const {
     return impl->searchTerm();
+}
+
+
+
+/** ***************************************************************************/
+const QString &Query::originalSearchTerm() const {
+    return impl->originalSearchTerm();
 }

@@ -54,8 +54,8 @@ class QueryPrivate final : public QAbstractItemModel
 
 public:
     /** ***********************************************************************/
-    QueryPrivate(const QString &term)
-        : searchTerm_(term), dynamicSort_(false) {
+    QueryPrivate(const QString &term, const QString &originalTerm)
+        : searchTerm_(term), orig_(originalTerm), dynamicSort_(false) {
         // Use this when muoltithreadeing
 //        QTimer::singleShot(50, this, &QueryPrivate::makeDynamic);
     }
@@ -122,6 +122,13 @@ public:
     /** ***********************************************************************/
     const QString &searchTerm() const {
         return searchTerm_;
+    }
+
+
+
+    /** ***********************************************************************/
+    const QString &originalSearchTerm() const {
+        return orig_;
     }
 
 
@@ -307,6 +314,7 @@ public:
 
 private:
     QString searchTerm_;
+    QString orig_;
     std::vector<Match> matches_;
     bool isValid_;
     QMutex mutex_;
