@@ -18,7 +18,6 @@
 #include <QProcess>
 #include "abstractobjects.hpp"
 #include "desktopentry.h"
-#include "albertapp.h"
 
 namespace Applications {
 
@@ -35,7 +34,6 @@ public:
 
     /** Executes the action */
     void activate() override {
-        qApp->hideWidget();
         QProcess::startDetached((term_)? DesktopEntry::terminal.arg(exec_) : exec_);
         ++app_->usage_;
     }

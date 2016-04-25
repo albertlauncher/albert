@@ -22,7 +22,6 @@
 #include "configwidget.h"
 #include "query.h"
 #include "objects.hpp"
-#include "albertapp.h"
 #include "xdgiconlookup.h"
 
 const char* System::Extension::CFG_POWEROFF  = "poweroff";
@@ -147,7 +146,6 @@ void System::Extension::handleQuery(shared_ptr<Query> query) {
                                                            it->desc,
                                                            it->iconPath,
                                                            [cmd](){
-                qApp->hideWidget();
                 QProcess::startDetached(cmd);
             }));
         }

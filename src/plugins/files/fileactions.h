@@ -19,7 +19,6 @@
 #include <QClipboard>
 #include <QMimeData>
 #include <QUrl>
-#include "albertapp.h"
 #include "file.h"
 
 namespace Files {
@@ -45,7 +44,6 @@ public:
 
     QString text() const override { return "Open file in default application"; }
     void activate() override {
-        qApp->hideWidget();
         QDesktopServices::openUrl(QUrl::fromLocalFile(file_->path()));
         ++file_->usage_;
     }
@@ -61,7 +59,6 @@ public:
 
     QString text() const override { return "Reveal file in default filebrowser"; }
     void activate() override {
-        qApp->hideWidget();
         QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file_->path()).path()));
         ++file_->usage_;
     }
@@ -77,8 +74,6 @@ public:
 
     QString text() const override { return "Copy file to clipboard"; }
     void activate() override {
-        qApp->hideWidget();
-
         //  Get clipboard
         QClipboard *cb = QApplication::clipboard();
 
@@ -117,7 +112,6 @@ public:
 
     QString text() const override { return "Copy path to clipboard"; }
     void activate() override {
-        qApp->hideWidget();
         QApplication::clipboard()->setText(file_->path());
         ++file_->usage_;
     }

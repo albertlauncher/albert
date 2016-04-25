@@ -18,7 +18,6 @@
 #include <QDesktopServices>
 #include <QDataStream>
 #include "bookmark.h"
-#include "albertapp.h"
 
 
 /** ***************************************************************************/
@@ -44,7 +43,6 @@ QString ChromeBookmarks::Bookmark::iconPath() const {
 
 /** ***************************************************************************/
 void ChromeBookmarks::Bookmark::activate() {
-    qApp->hideWidget();
     QDesktopServices::openUrl(QUrl(url_));
     ++usage_;
 }

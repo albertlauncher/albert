@@ -18,7 +18,6 @@
 #include <QUrl>
 #include <QDataStream>
 #include "searchengine.h"
-#include "albertapp.h"
 
 
 /** ***************************************************************************/
@@ -52,7 +51,6 @@ QString Websearch::SearchEngine::iconPath() const {
 
 /** ***************************************************************************/
 void Websearch::SearchEngine::activate() {
-    qApp->hideWidget();
     QDesktopServices::openUrl(QUrl(QString(url_).replace("%s", searchTerm_)));
 }
 
