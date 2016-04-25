@@ -48,5 +48,6 @@ private:
     PluginManager            *pluginManager_;
     ExtensionManager         *extensionManager_;
     QPointer<SettingsWidget> settingsWidget_;
+    bool                     fullySetup;
 };
 
