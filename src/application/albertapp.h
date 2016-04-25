@@ -39,6 +39,8 @@ public:
 
     // Global facade. Acessible to all subsystems
     void openSettings();
+
+    // Declaring as slots to invoke it per QMetaObject
 public Q_SLOTS:
     void showWidget();
     void hideWidget();

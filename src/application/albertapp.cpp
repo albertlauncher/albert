@@ -84,24 +84,32 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
 
     bool performFullSetup = true;
 
-    // Print e message if the app was not terminated graciously
+    // Check if running-indicator-file exists
     QString filePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running";
     if (QFile::exists(filePath)) {
+        // Yep, it does!
         QFile file(filePath);
         if (!file.open(QIODevice::ReadOnly)) {
             qCritical() << "Could not open pid-file: " << filePath;
         } else {
+            // Extracting PID from indicator file
             int pid = -1;
             file.read((char*) &pid, sizeof(int));
             if (pid == -1)
                 qCritical() << "This failed though!";
             else {
+                // Check if this process is still running
+                //     or was uncleanly terminated
                 int result = kill(pid, 0);
                 if (result == 0) {
-                    // Process is already running
+                    // Process is running
+                    // Set the flag to indicate that the application should not
+                    //     perform a setup
                     performFullSetup = false;
                     kill(pid, SIGUSR1);
                 } else {
+                    // Process is not running
+                    // Print error message
                     qCritical() << "Application has not been terminated graciously";
                 }
             }
@@ -113,6 +121,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
         if (!file.open(QIODevice::WriteOnly))
             qCritical() << "Could not create file:" << filePath;
         else {
+            // .. and write the PID into it.
             int pid = getpid();
             file.write((char*) &pid, sizeof(int));
         }
@@ -120,7 +129,9 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
         file.close();
     }
 
+    // Check if a full setup should be performed
     if (performFullSetup) {
+        // And do so
 
         mainWindow_ = new MainWindow;
         hotkeyManager_ = new HotkeyManager;
@@ -137,6 +148,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
             QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
         });
 
+        // Bring the widget to front when receiving SIGUSR1
         signal(SIGUSR1, [](int){
             QMetaObject::invokeMethod(qApp, "showWidget", Qt::QueuedConnection);
         });
