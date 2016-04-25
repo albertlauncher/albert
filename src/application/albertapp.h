@@ -39,6 +39,7 @@ public:
 
     // Global facade. Acessible to all subsystems
     void openSettings();
+public Q_SLOTS:
     void showWidget();
     void hideWidget();
 

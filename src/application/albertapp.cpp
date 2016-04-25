@@ -100,6 +100,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
                 if (result == 0) {
                     // Process is already running
                     performFullSetup = false;
+                    kill(pid, SIGUSR1);
                 } else {
                     qCritical() << "Application has not been terminated graciously";
                 }
@@ -136,6 +137,9 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
             QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
         });
 
+        signal(SIGUSR1, [](int){
+            QMetaObject::invokeMethod(qApp, "showWidget", Qt::QueuedConnection);
+        });
 
         /*
          *  SETUP SIGNAL FLOW
