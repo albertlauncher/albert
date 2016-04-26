@@ -107,16 +107,23 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
                     //     perform a setup
                     performFullSetup = false;
                 } else {
-                    // The signal was not correctly delivered. This meqans the
+                    // The signal was not correctly delivered. This means the
                     //     process is not running.
                     // Therefore print the error message
                     qCritical() << "Application has not been terminated graciously";
+
                     // But the file has still the wrong PID
                     // Update it!
                     file.close();
-                    file.open(QIODevice::WriteOnly);
-                    pid = getpid();
-                    file.write((char*) &pid, sizeof(int));
+                    if (file.open(QIODevice::WriteOnly)) {
+                        pid = getpid();
+                        int wrote = file.write((char*) &pid, sizeof(int));
+                        if (wrote == -1 || wrote != sizeof(int)) {
+                            qCritical() << "Write-operation failed!";
+                        }
+                    } else {
+                        qCritical() << "Could not write pid into pid-file";
+                    }
                 }
             }
         }
@@ -129,7 +136,10 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
         else {
             // .. and write the PID into it.
             int pid = getpid();
-            file.write((char*) &pid, sizeof(int));
+            int wrote = file.write((char*) &pid, sizeof(int));
+            if (wrote == -1 || wrote != sizeof(int)) {
+                qCritical() << "Write-operation failed!";
+            }
         }
 
         file.close();
