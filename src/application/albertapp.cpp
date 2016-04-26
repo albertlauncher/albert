@@ -98,19 +98,25 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
             if (pid == -1)
                 qCritical() << "This failed though!";
             else {
-                // Check if this process is still running
-                //     or was uncleanly terminated
-                int result = kill(pid, 0);
+                // Send the process a SIGUSR1 to bring it to front.
+                int result = kill(pid, SIGUSR1);
                 if (result == 0) {
-                    // Process is running
+                    // The signal was correctly delivered. This means the
+                    //     process is running.
                     // Set the flag to indicate that the application should not
                     //     perform a setup
                     performFullSetup = false;
-                    kill(pid, SIGUSR1);
                 } else {
-                    // Process is not running
-                    // Print error message
+                    // The signal was not correctly delivered. This meqans the
+                    //     process is not running.
+                    // Therefore print the error message
                     qCritical() << "Application has not been terminated graciously";
+                    // But the file has still the wrong PID
+                    // Update it!
+                    file.close();
+                    file.open(QIODevice::WriteOnly);
+                    pid = getpid();
+                    file.write((char*) &pid, sizeof(int));
                 }
             }
         }
