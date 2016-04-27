@@ -33,7 +33,7 @@ public:
     QString text() const override;
     QString subtext() const override;
     QString iconPath() const override;
-    void activate() override;
+    void activate(ExecutionFlags *) override;
 
     /*
      * Item specific

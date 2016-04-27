@@ -30,6 +30,12 @@ using std::vector;
 class Action
 {
 public:
+    struct ExecutionFlags {
+        // Mainwidget will be hidden after the action has been exectuted
+        bool hideWidget = true;
+        // Inputline will be cleared after the action has been exectuted
+        bool clearInput = true;
+    };
 
     virtual ~Action() {}
 
@@ -37,7 +43,7 @@ public:
     virtual QString text() const = 0;
 
     /** Activates the item */
-    virtual void activate() = 0;
+    virtual void activate(ExecutionFlags *) = 0;
 };
 typedef shared_ptr<Action> ActionSPtr;
 typedef vector<shared_ptr<Action>> ActionSPtrVec;

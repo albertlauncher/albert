@@ -213,3 +213,10 @@ void AlbertApp::showWidget() {
 void AlbertApp::hideWidget() {
     mainWindow_->hide();
 }
+
+
+
+/** ***************************************************************************/
+void AlbertApp::clearInput() {
+    mainWindow_->setInput("");
+}

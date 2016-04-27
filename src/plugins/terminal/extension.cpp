@@ -24,7 +24,6 @@
 #include "extension.h"
 #include "xdgiconlookup.h"
 #include "configwidget.h"
-#include "albertapp.h"
 #include "objects.hpp"
 #include "query.h"
 
@@ -95,7 +94,6 @@ void Terminal::Extension::handleQuery(shared_ptr<Query> query) {
         item->setIcon(iconPath_);
         item->setAction([program, arguments](){
             QProcess::startDetached(program, arguments);
-            qApp->hideWidget();
         });
         query->addMatch(item, 0);
         ++it;

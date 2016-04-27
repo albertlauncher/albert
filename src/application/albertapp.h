@@ -41,6 +41,7 @@ public:
     void openSettings();
     void showWidget();
     void hideWidget();
+    void clearInput();
 
 private:
     MainWindow               *mainWindow_;

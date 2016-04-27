@@ -38,7 +38,7 @@ public:
 
     function<void()> action() { return action_; }
     void setAction(function<void()> action){ action_ = std::move(action);}
-    void activate() override { action_();}
+    void activate(ExecutionFlags *) override { action_();}
 
 private:
     QString text_;
@@ -60,7 +60,7 @@ public:
     const function<void()>& action() { return action_; }
     void setAction(function<void()> action){ action_ = std::move(action);}
 
-    void activate() override { action_(); }
+    void activate(ExecutionFlags *) override { action_(); }
 
 private:
     QString text_;

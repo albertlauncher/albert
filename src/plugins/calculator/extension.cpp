@@ -17,7 +17,6 @@
 #include <QDebug>
 #include <QClipboard>
 #include <QSettings>
-#include "albertapp.h"
 #include "extension.h"
 #include "configwidget.h"
 #include "query.h"
@@ -102,7 +101,6 @@ void Calculator::Extension::handleQuery(shared_ptr<Query> query) {
     calcItem->setIcon(iconPath_);
     calcItem->setAction([result](){
         QApplication::clipboard()->setText(result);
-        qApp->hideWidget();
     });
     query->addMatch(calcItem, SHRT_MAX);
 }

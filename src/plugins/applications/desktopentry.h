@@ -37,7 +37,7 @@ public:
     QString text() const override{ return name_; }
     QString subtext() const override { return altName(); }
     vector<QString> indexKeywords() const override;
-    void activate() override;
+    void activate(ExecutionFlags *) override;
     uint16_t usageCount() const override {return usage_;}
     ActionSPtrVec actions() override { return actions_; }
 
