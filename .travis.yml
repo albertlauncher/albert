@@ -1,0 +1,18 @@
+language: cpp
+sudo: required
+dist: trusty
+compiler:
+  - clang
+  - gcc
+
+before_install:
+    - sudo apt-get install -qq cmake qtbase5-dev libqt5x11extras5-dev libqt5svg5-dev libmuparser-dev
+ 
+before_script:
+  - mkdir build
+  - cd build
+  - cmake ..  -DCMAKE_BUILD_TYPE=Release 
+  
+script:
+    - make
+    
