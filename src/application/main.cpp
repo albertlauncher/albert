@@ -17,6 +17,11 @@
 #include "albertapp.h"
 
 int main(int argc, char *argv[]) {
+    QLocalSocket socket;
+    socket.connectToServer("albertapp");
+    if (socket.waitForConnected(500))
+        return EXIT_SUCCESS;
+
     AlbertApp app(argc, argv);
     return app.exec();
 }

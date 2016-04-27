@@ -113,6 +113,16 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     hotkeyManager_ = new HotkeyManager;
     pluginManager_ = new PluginManager;
     extensionManager_ = new ExtensionManager;
+    localServer_ = new QLocalServer(this);
+
+    // Start server so second instances will close
+    QLocalServer::removeServer("albertapp");
+    localServer_->listen("albertapp");
+
+    QObject::connect(localServer_, &QLocalServer::newConnection, [=] () {
+        mainWindow_->show();
+        localServer_->nextPendingConnection()->close();
+    });
 
     // Propagade the extensions once
     for (const unique_ptr<PluginSpec> &p : pluginManager_->plugins())
