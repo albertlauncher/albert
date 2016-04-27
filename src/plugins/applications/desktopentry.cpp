@@ -162,29 +162,18 @@ bool Applications::DesktopEntry::parseDesktopEntry() {
     exec_.replace("%%", "%");
 
     // Try to get the icon
-    QString iconPath;
     if ((valueIterator = valueMap.find("Icon")) != valueMap.end()){
-        iconPath = XdgIconLookup::instance()->themeIconPath(valueIterator->second, QIcon::themeName());
-        if (!iconPath.isNull())
-            iconPath_ = iconPath;
-        else{
-            iconPath_ = QString();
-            qWarning() << valueIterator->second << "was not found";
-        }
+        iconPath_ = XdgIconLookup::instance()->themeIconPath(valueIterator->second, QIcon::themeName());
     }
 
     // Try to get a default icon if iconUrl_ is still empty
     if (iconPath_.isEmpty()) {
-        iconPath = XdgIconLookup::instance()->themeIconPath("exec", QIcon::themeName());
-        if (!iconPath.isNull())
-            iconPath_ = iconPath;
-        else
-            qWarning() << "exec" << "was not found";
+        iconPath_ = XdgIconLookup::instance()->themeIconPath("exec", QIcon::themeName());
     }
 
-    // Skip this desktop entry, icons are mandatory
+    // Use bundled icon if default icon not found
     if (iconPath_.isEmpty())
-        return false;
+        iconPath_ = ":application-x-executable";
 
     // Try to get any [localized] secondary information comment
     if ( (valueIterator = valueMap.find(QString("Comment[%1]").arg(locale))) != valueMap.end()
