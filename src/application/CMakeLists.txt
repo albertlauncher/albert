@@ -1,5 +1,6 @@
 find_package(Qt5Widgets 5.2 REQUIRED)
 find_package(Qt5Svg 5.2 REQUIRED)
+find_package(Qt5Network REQUIRED)
 
 include_directories(
     hotkey/
@@ -37,6 +38,7 @@ set(SRC
 set(LIB
     ${Qt5Widgets_LIBRARIES}
     ${Qt5Svg_LIBRARIES}
+    ${Qt5Network_LIBRARIES}
 )
 
 qt5_wrap_ui(UI
