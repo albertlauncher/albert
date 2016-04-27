@@ -19,7 +19,6 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <csignal>
-#include <unistd.h>
 #include "albertapp.h"
 #include "mainwindow.h"
 #include "settingswidget.h"
@@ -91,10 +90,12 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
         QFile file(filePath);
         if (!file.open(QIODevice::ReadOnly)) {
             qCritical() << "Could not open pid-file: " << filePath;
+            file.close();
         } else {
             // Extracting PID from indicator file
-            int pid = -1;
-            file.read((char*) &pid, sizeof(int));
+            qint64 pid = -1;
+            file.read((char*) &pid, sizeof(qint64));
+            file.close();
             if (pid == -1)
                 qCritical() << "This failed though!";
             else {
@@ -128,35 +129,13 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
 
                     // But the file has still the wrong PID
                     // Update it!
-                    file.close();
-                    if (file.open(QIODevice::WriteOnly)) {
-                        pid = getpid();
-                        int wrote = file.write((char*) &pid, sizeof(int));
-                        if (wrote == -1 || wrote != sizeof(int)) {
-                            qCritical() << "Write-operation failed!";
-                        }
-                    } else {
-                        qCritical() << "Could not write pid into pid-file";
-                    }
+                    writePidFile(filePath);
                 }
             }
         }
-        file.close();
     } else {
         // Create the running indicator file
-        QFile file(filePath);
-        if (!file.open(QIODevice::WriteOnly))
-            qCritical() << "Could not create file:" << filePath;
-        else {
-            // .. and write the PID into it.
-            int pid = getpid();
-            int wrote = file.write((char*) &pid, sizeof(int));
-            if (wrote == -1 || wrote != sizeof(int)) {
-                qCritical() << "Write-operation failed!";
-            }
-        }
-
-        file.close();
+        writePidFile(filePath);
     }
 
     // Check if a full setup should be performed
@@ -232,6 +211,23 @@ AlbertApp::~AlbertApp() {
         // Delete the running indicator file
         QFile::remove(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running");
     }
+}
+
+
+
+/** ***************************************************************************/
+void AlbertApp::writePidFile(QString &filename) {
+    QFile pidFile(filename);
+    if (pidFile.open(QFile::WriteOnly)) {
+        qint64 pid = applicationPid();
+        int wrote = pidFile.write((char*) &pid, sizeof(qint64));
+        if (wrote != sizeof(qint64)) {
+            qCritical("Failed to write pidfile!");
+        }
+    } else {
+        qCritical("Could not open pidfile for write!");
+    }
+    pidFile.close();
 }
 
 

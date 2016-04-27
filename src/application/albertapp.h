@@ -52,5 +52,7 @@ private:
     ExtensionManager         *extensionManager_;
     QPointer<SettingsWidget> settingsWidget_;
     bool                     fullySetup;
+
+    void writePidFile(QString& filename);
 };
 
