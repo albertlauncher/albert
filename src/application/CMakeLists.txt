@@ -1,6 +1,6 @@
 find_package(Qt5Widgets 5.2 REQUIRED)
 find_package(Qt5Svg 5.2 REQUIRED)
-find_package(Qt5Network)
+find_package(Qt5Network REQUIRED)
 
 include_directories(
     hotkey/
