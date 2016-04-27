@@ -30,6 +30,10 @@ using std::vector;
 class Action
 {
 public:
+    struct ExecutionFlags
+    {
+        bool hideWidget = true;
+    };
 
     virtual ~Action() {}
 
@@ -38,6 +42,11 @@ public:
 
     /** Activates the item */
     virtual void activate() = 0;
+
+    ExecutionFlags &executionFlags() { return executionFlags_; }
+
+protected:
+    ExecutionFlags executionFlags_;
 };
 typedef shared_ptr<Action> ActionSPtr;
 typedef vector<shared_ptr<Action>> ActionSPtrVec;

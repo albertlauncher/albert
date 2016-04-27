@@ -25,7 +25,6 @@
 #include <map>
 #include "desktopentry.h"
 #include "desktopaction.hpp"
-#include "albertapp.h"
 #include "xdgiconlookup.h"
 using std::map;
 
@@ -45,8 +44,6 @@ Applications::DesktopEntry::DesktopEntry(const QString &path, short usage)
 
 /** ***************************************************************************/
 void Applications::DesktopEntry::activate() {
-    qApp->hideWidget();
-
     // QTBUG-51678
 
     // General escape rule has been applied on parse time

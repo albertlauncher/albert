@@ -29,6 +29,7 @@ using std::shared_ptr;
 using std::unique_ptr;
 #include "abstractobjects.hpp"
 #include "roles.hpp"
+#include "albertapp.h"
 
 struct TreeItem final
 {
@@ -191,10 +192,8 @@ public:
             switch (role) {
             case Roles::Activate: {
                 int actionValue = value.toInt();
-                if (0 <= actionValue && actionValue < static_cast<int>(ti->data->actions().size()))
-                    ti->data->actions()[actionValue]->activate();
-                else
-                    ti->data->activate();
+                executeAction(ti->data, actionValue);
+
                 return true;
             }
             default:
@@ -204,6 +203,19 @@ public:
         return false;
     }
 
+
+    /** ***********************************************************************/
+    void executeAction(shared_ptr<AlbertItem> action, int actionValue) const {
+        shared_ptr<Action> activatedAction;
+        if (0 <= actionValue && actionValue < static_cast<int>(action->actions().size()))
+            activatedAction = action->actions()[actionValue];
+        else
+            activatedAction = action;
+
+        activatedAction->activate();
+        if (activatedAction->executionFlags().hideWidget)
+            qApp->hideWidget();
+    }
 
 
     /** ***********************************************************************/
