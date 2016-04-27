@@ -134,10 +134,6 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
         QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
     });
 
-    // Show albert on SIGHUP
-    signal(SIGHUP, [](int){
-        QMetaObject::invokeMethod(qApp, "showWidget", Qt::QueuedConnection);
-    });
 
     /*
      *  SETUP SIGNAL FLOW
