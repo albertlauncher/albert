@@ -75,7 +75,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
 
     // Make sure data, cache and config dir exists
     QDir dir;
-    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)+"/"+applicationName());
+    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/" + applicationName());
     dir.mkpath(".");
     dir.setPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
     dir.mkpath(".");
@@ -111,6 +111,20 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
                     //     process is not running.
                     // Therefore print the error message
                     qCritical() << "Application has not been terminated graciously";
+                    QSettings s;
+                    if (s.value("warnAboutNonGraciousQuit") != false){
+                        QMessageBox msgBox(QMessageBox::Critical, "Error",
+                                           "Albert has not been quit graciously! This "
+                                           "means your settings and data have not been "
+                                           "saved. If you did not kill albert yourself, "
+                                           "albert most likely crashed. Please report this "
+                                           "on github. Do you want to ignore this warnings "
+                                           "in future?",
+                                           QMessageBox::Yes|QMessageBox::No);
+                        msgBox.exec();
+                        if ( msgBox.result() == QMessageBox::Yes )
+                            s.setValue("warnAboutNonGraciousQuit", false);
+                    }
 
                     // But the file has still the wrong PID
                     // Update it!
