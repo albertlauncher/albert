@@ -81,70 +81,112 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     dir.setPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
     dir.mkpath(".");
 
-    // Print e message if the app was not terminated graciously
+    bool performFullSetup = true;
+
+    // Check if running-indicator-file exists
     QString filePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running";
-    if (QFile::exists(filePath)){
-        qCritical() << "Application has not been terminated graciously.";
-        QSettings s;
-        if (s.value("warnAboutNonGraciousQuit") != false){
-            QMessageBox msgBox(QMessageBox::Critical, "Error",
-                               "Albert has not been quit graciously! This "
-                               "means your settings and data have not been "
-                               "saved. If you did not kill albert yourself, "
-                               "albert most likely crashed. Please report this "
-                               "on github. Do you want to ignore this warnings "
-                               "in future?",
-                               QMessageBox::Yes|QMessageBox::No);
-            msgBox.exec();
-            if ( msgBox.result() == QMessageBox::Yes )
-                s.setValue("warnAboutNonGraciousQuit", false);
-        }
-    }
-
-    else {
-        // Create the running indicator file
+    if (QFile::exists(filePath)) {
+        // Yep, it does!
         QFile file(filePath);
-        if (!file.open(QIODevice::WriteOnly))
-            qCritical() << "Could not create file:" << filePath;
-        file.close();
+        if (!file.open(QIODevice::ReadOnly)) {
+            qCritical() << "Could not open pid-file: " << filePath;
+            file.close();
+        } else {
+            // Extracting PID from indicator file
+            qint64 pid = -1;
+            file.read((char*) &pid, sizeof(qint64));
+            file.close();
+            if (pid == -1)
+                qCritical() << "This failed though!";
+            else {
+                // Send the process a SIGUSR1 to bring it to front.
+                int result = kill(pid, SIGUSR1);
+                if (result == 0) {
+                    // The signal was correctly delivered. This means the
+                    //     process is running.
+                    // Set the flag to indicate that the application should not
+                    //     perform a setup
+                    performFullSetup = false;
+                } else {
+                    // The signal was not correctly delivered. This means the
+                    //     process is not running.
+                    // Therefore print the error message
+                    qCritical() << "Application has not been terminated graciously";
+                    QSettings s;
+                    if (s.value("warnAboutNonGraciousQuit") != false){
+                        QMessageBox msgBox(QMessageBox::Critical, "Error",
+                                           "Albert has not been quit graciously! This "
+                                           "means your settings and data have not been "
+                                           "saved. If you did not kill albert yourself, "
+                                           "albert most likely crashed. Please report this "
+                                           "on github. Do you want to ignore this warnings "
+                                           "in future?",
+                                           QMessageBox::Yes|QMessageBox::No);
+                        msgBox.exec();
+                        if ( msgBox.result() == QMessageBox::Yes )
+                            s.setValue("warnAboutNonGraciousQuit", false);
+                    }
+
+                    // But the file has still the wrong PID
+                    // Update it!
+                    writePidFile(filePath);
+                }
+            }
+        }
+    } else {
+        // Create the running indicator file
+        writePidFile(filePath);
     }
 
-    mainWindow_ = new MainWindow;
-    hotkeyManager_ = new HotkeyManager;
-    pluginManager_ = new PluginManager;
-    extensionManager_ = new ExtensionManager;
+    // Check if a full setup should be performed
+    if (performFullSetup) {
+        // And do so
 
-    // Propagade the extensions once
-    for (const unique_ptr<PluginSpec> &p : pluginManager_->plugins())
-        if (p->isLoaded())
-            extensionManager_->registerExtension(p->instance());
+        mainWindow_ = new MainWindow;
+        hotkeyManager_ = new HotkeyManager;
+        pluginManager_ = new PluginManager;
+        extensionManager_ = new ExtensionManager;
 
-    // Quit gracefully on SIGTERM
-    signal(SIGTERM, [](int){
-        QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
-    });
+        // Propagade the extensions once
+        for (const unique_ptr<PluginSpec> &p : pluginManager_->plugins())
+            if (p->isLoaded())
+                extensionManager_->registerExtension(p->instance());
 
+        // Quit gracefully on SIGTERM
+        signal(SIGTERM, [](int){
+            QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
+        });
 
-    /*
-     *  SETUP SIGNAL FLOW
-     */
+        // Bring the widget to front when receiving SIGUSR1
+        signal(SIGUSR1, [](int){
+            QMetaObject::invokeMethod(qApp, "showWidget", Qt::QueuedConnection);
+        });
 
-    // Show mainwindow if hotkey is pressed
-    QObject::connect(hotkeyManager_, &HotkeyManager::hotKeyPressed,mainWindow_, &MainWindow::toggleVisibility);
+        /*
+         *  SETUP SIGNAL FLOW
+         */
 
-    // Extrension manager signals new proposals
-    QObject::connect(extensionManager_, &ExtensionManager::newModel, mainWindow_, &MainWindow::setModel);
+        // Show mainwindow if hotkey is pressed
+        QObject::connect(hotkeyManager_, &HotkeyManager::hotKeyPressed,mainWindow_, &MainWindow::toggleVisibility);
 
-    // Setup and teardown query sessions with the state of the widget
-    QObject::connect(mainWindow_, &MainWindow::widgetShown,  extensionManager_, &ExtensionManager::setupSession);
-    QObject::connect(mainWindow_, &MainWindow::widgetHidden, extensionManager_, &ExtensionManager::teardownSession);
+        // Extrension manager signals new proposals
+        QObject::connect(extensionManager_, &ExtensionManager::newModel, mainWindow_, &MainWindow::setModel);
 
-    // A change in text triggers requests
-    QObject::connect(mainWindow_, &MainWindow::startQuery, extensionManager_, &ExtensionManager::startQuery);
+        // Setup and teardown query sessions with the state of the widget
+        QObject::connect(mainWindow_, &MainWindow::widgetShown,  extensionManager_, &ExtensionManager::setupSession);
+        QObject::connect(mainWindow_, &MainWindow::widgetHidden, extensionManager_, &ExtensionManager::teardownSession);
 
-    // Publish loaded plugins to the specific interface handlers
-    QObject::connect(pluginManager_, &PluginManager::pluginLoaded, extensionManager_, &ExtensionManager::registerExtension);
-    QObject::connect(pluginManager_, &PluginManager::pluginAboutToBeUnloaded, extensionManager_, &ExtensionManager::unregisterExtension);
+        // A change in text triggers requests
+        QObject::connect(mainWindow_, &MainWindow::startQuery, extensionManager_, &ExtensionManager::startQuery);
+
+        // Publish loaded plugins to the specific interface handlers
+        QObject::connect(pluginManager_, &PluginManager::pluginLoaded, extensionManager_, &ExtensionManager::registerExtension);
+        QObject::connect(pluginManager_, &PluginManager::pluginAboutToBeUnloaded, extensionManager_, &ExtensionManager::unregisterExtension);
+
+        this->fullySetup = true;
+    } else {
+        this->fullySetup = false;
+    }
 }
 
 
@@ -155,20 +197,48 @@ AlbertApp::~AlbertApp() {
     /*
      *  FINALIZE APPLICATION
      */
-    // Unload the plugins
-    delete extensionManager_;
-    delete pluginManager_;
-    delete hotkeyManager_;
-    delete mainWindow_;
 
-    // Delete the running indicator file
-    QFile::remove(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running");
+    // Only attempt to delete this when the application has performed a full setup
+    // else this will fail because the objects are not instantiated.
+    // Also the running-file should not be deleted
+    if (this->fullySetup) {
+        // Unload the plugins
+        delete extensionManager_;
+        delete pluginManager_;
+        delete hotkeyManager_;
+        delete mainWindow_;
+
+        // Delete the running indicator file
+        QFile::remove(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running");
+    }
+}
+
+
+
+/** ***************************************************************************/
+void AlbertApp::writePidFile(QString &filename) {
+    QFile pidFile(filename);
+    if (pidFile.open(QFile::WriteOnly)) {
+        qint64 pid = applicationPid();
+        int wrote = pidFile.write((char*) &pid, sizeof(qint64));
+        if (wrote != sizeof(qint64)) {
+            qCritical("Failed to write pidfile!");
+        }
+    } else {
+        qCritical("Could not open pidfile for write!");
+    }
+    pidFile.close();
 }
 
 
 
 /** ***************************************************************************/
 int AlbertApp::exec() {
+    if (!this->fullySetup) {
+        // There was not full setup performed...
+        // This means that this is a secondary instance
+        return EXIT_SUCCESS;
+    }
     //  HOTKEY  //  Albert without hotkey is useless. Force it!
     QSettings s;
     QVariant v;

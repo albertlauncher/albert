@@ -39,6 +39,9 @@ public:
 
     // Global facade. Acessible to all subsystems
     void openSettings();
+
+    // Declaring as slots to invoke it per QMetaObject
+public Q_SLOTS:
     void showWidget();
     void hideWidget();
 
@@ -48,5 +51,8 @@ private:
     PluginManager            *pluginManager_;
     ExtensionManager         *extensionManager_;
     QPointer<SettingsWidget> settingsWidget_;
+    bool                     fullySetup;
+
+    void writePidFile(QString& filename);
 };
 
