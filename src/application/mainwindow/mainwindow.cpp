@@ -219,6 +219,13 @@ void MainWindow::toggleVisibility() {
 
 
 /** ***************************************************************************/
+void MainWindow::setInput(const QString &input) {
+    ui.inputLine->setText(input);
+}
+
+
+
+/** ***************************************************************************/
 void MainWindow::setModel(QAbstractItemModel *m) {
     //TODO Check this
     QItemSelectionModel *sm = ui.proposalList->selectionModel();

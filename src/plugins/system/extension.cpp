@@ -22,7 +22,6 @@
 #include "configwidget.h"
 #include "query.h"
 #include "objects.hpp"
-#include "albertapp.h"
 #include "xdgiconlookup.h"
 
 const char* System::Extension::CFG_POWEROFF  = "poweroff";
@@ -141,14 +140,15 @@ QWidget *System::Extension::widget(QWidget *parent) {
 void System::Extension::handleQuery(shared_ptr<Query> query) {
 
     for (vector<ActionSpec>::iterator it = actions_.begin(); it != actions_.end(); ++it)
-        if (it->name.toLower().startsWith(query->searchTerm()))
+        if (it->name.toLower().startsWith(query->searchTerm())) {
+            QString cmd = it->cmd;
             query->addMatch(std::make_shared<StandardItem>(it->name,
                                                            it->desc,
                                                            it->iconPath,
-                                                           [=](){
-                qApp->hideWidget();
-                QProcess::startDetached(it->cmd);
+                                                           [cmd](){
+                QProcess::startDetached(cmd);
             }));
+        }
 }
 
 

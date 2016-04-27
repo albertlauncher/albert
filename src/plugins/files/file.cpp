@@ -69,10 +69,10 @@ QString Files::File::iconPath() const {
 
 
 /** ***************************************************************************/
-void Files::File::activate() {
+void Files::File::activate(ExecutionFlags *flags) {
 //    Qt::KeyboardModifiers mods = QApplication::keyboardModifiers(); // TODO:ActionMap
     // Standard action for a file
-    OpenFileAction(this).activate();
+    OpenFileAction(this).activate(flags);
 }
 
 

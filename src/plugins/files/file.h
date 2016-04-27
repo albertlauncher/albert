@@ -44,7 +44,7 @@ public:
     QString subtext() const override;
     QString iconPath() const override;
     vector<QString> indexKeywords() const override;
-    void activate() override;
+    void activate(ExecutionFlags *) override;
     uint16_t usageCount() const { return usage_; }
     ActionSPtrVec actions() override;
 
