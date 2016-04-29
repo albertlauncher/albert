@@ -36,6 +36,8 @@ public:
     void hide();
     void toggleVisibility();
 
+    void setInput(const QString&);
+
     bool showCentered() const;
     void setShowCentered(bool b = true);
 

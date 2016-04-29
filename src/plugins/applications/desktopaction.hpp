@@ -18,7 +18,6 @@
 #include <QProcess>
 #include "abstractobjects.hpp"
 #include "desktopentry.h"
-#include "albertapp.h"
 
 namespace Applications {
 
@@ -34,8 +33,7 @@ public:
     QString text() const override { return description_; }
 
     /** Executes the action */
-    void activate() override {
-        qApp->hideWidget();
+    void activate(ExecutionFlags *) override {
         QProcess::startDetached((term_)? DesktopEntry::terminal.arg(exec_) : exec_);
         ++app_->usage_;
     }

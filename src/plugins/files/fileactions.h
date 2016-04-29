@@ -19,7 +19,6 @@
 #include <QClipboard>
 #include <QMimeData>
 #include <QUrl>
-#include "albertapp.h"
 #include "file.h"
 
 namespace Files {
@@ -44,8 +43,7 @@ public:
     OpenFileAction(File *file) : AbstractFileAction(file) {}
 
     QString text() const override { return "Open file in default application"; }
-    void activate() override {
-        qApp->hideWidget();
+    void activate(ExecutionFlags *) override {
         QDesktopServices::openUrl(QUrl::fromLocalFile(file_->path()));
         ++file_->usage_;
     }
@@ -60,8 +58,7 @@ public:
     RevealFileAction(File *file) : AbstractFileAction(file) {}
 
     QString text() const override { return "Reveal file in default filebrowser"; }
-    void activate() override {
-        qApp->hideWidget();
+    void activate(ExecutionFlags *) override {
         QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file_->path()).path()));
         ++file_->usage_;
     }
@@ -76,9 +73,7 @@ public:
     CopyFileAction(File *file) : AbstractFileAction(file) {}
 
     QString text() const override { return "Copy file to clipboard"; }
-    void activate() override {
-        qApp->hideWidget();
-
+    void activate(ExecutionFlags *) override {
         //  Get clipboard
         QClipboard *cb = QApplication::clipboard();
 
@@ -116,8 +111,7 @@ public:
     CopyPathAction(File *file) : AbstractFileAction(file) {}
 
     QString text() const override { return "Copy path to clipboard"; }
-    void activate() override {
-        qApp->hideWidget();
+    void activate(ExecutionFlags *) override {
         QApplication::clipboard()->setText(file_->path());
         ++file_->usage_;
     }

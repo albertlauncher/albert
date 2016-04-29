@@ -16,6 +16,8 @@
 
 #pragma once
 #include <QApplication>
+#include <QtNetwork/QLocalServer>
+#include <QtNetwork/QLocalSocket>
 #include <QPointer>
 class MainWindow;
 class HotkeyManager;
@@ -41,6 +43,7 @@ public:
     void openSettings();
     void showWidget();
     void hideWidget();
+    void clearInput();
 
 private:
     MainWindow               *mainWindow_;
@@ -48,5 +51,6 @@ private:
     PluginManager            *pluginManager_;
     ExtensionManager         *extensionManager_;
     QPointer<SettingsWidget> settingsWidget_;
+    QLocalServer             *localServer_;
 };
 
