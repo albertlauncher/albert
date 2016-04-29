@@ -18,6 +18,8 @@
 #include <QObject>
 #include <QPointer>
 #include "iextension.h"
+#include "player.h"
+#include "command.h"
 
 namespace MPRIS {
 
@@ -48,6 +50,13 @@ public:
      */
 
 private:
+    static bool pairsort(QPair<int, QString>, QPair<int, QString>);
+
     QPointer<ConfigWidget> widget_;
+    //QStringList mediaPlayers;
+    QList<Player> mediaPlayers;
+    QString playIcon_;
+    QStringList commands;
+    QMap<QString, Command> commandObjects;
 };
 }
