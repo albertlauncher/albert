@@ -156,7 +156,7 @@ QWidget *ChromeBookmarks::Extension::widget(QWidget *parent) {
 void ChromeBookmarks::Extension::handleQuery(shared_ptr<Query> query) {
     // Search for matches. Lock memory against indexer
     indexAccess_.lock();
-    vector<shared_ptr<IIndexable>> indexables = offlineIndex_.search(query->searchTerm());
+    vector<shared_ptr<IIndexable>> indexables = offlineIndex_.search(query->searchTerm().toLower());
     indexAccess_.unlock();
 
     // Add results to query. This cast is safe since index holds files only
