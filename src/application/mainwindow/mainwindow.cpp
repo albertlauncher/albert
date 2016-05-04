@@ -37,6 +37,8 @@ const QString MainWindow::CFG_THEME = "theme";
 const QString MainWindow::DEF_THEME = "Bright";
 const QString MainWindow::CFG_HIDE_ON_FOCUS_LOSS = "hideOnFocusLoss";
 const bool    MainWindow::DEF_HIDE_ON_FOCUS_LOSS = true;
+const char*   MainWindow::CFG_HIDE_ON_CLOSE = "hideOnClose";
+const bool    MainWindow::DEF_HIDE_ON_CLOSE = false;
 const QString MainWindow::CFG_ALWAYS_ON_TOP = "alwaysOnTop";
 const bool    MainWindow::DEF_ALWAYS_ON_TOP = true;
 const char*   MainWindow::CFG_MAX_PROPOSALS = "itemCount";
@@ -119,6 +121,7 @@ MainWindow::MainWindow(QWidget *parent)
         move(s.value(CFG_WND_POS).toPoint());
     setShowCentered(s.value(CFG_CENTERED, DEF_CENTERED).toBool());
     setHideOnFocusLoss(s.value(CFG_HIDE_ON_FOCUS_LOSS, DEF_HIDE_ON_FOCUS_LOSS).toBool());
+    setHideOnClose(s.value(CFG_HIDE_ON_CLOSE, CFG_HIDE_ON_CLOSE).toBool());
     setAlwaysOnTop(s.value(CFG_ALWAYS_ON_TOP, DEF_ALWAYS_ON_TOP).toBool());
     setMaxProposals(s.value(CFG_MAX_PROPOSALS, DEF_MAX_PROPOSALS).toInt());
     setDisplayScrollbar(s.value(CFG_DISPLAY_SCROLLBAR, DEF_DISPLAY_SCROLLBAR).toBool());
@@ -169,6 +172,7 @@ MainWindow::~MainWindow() {
     QSettings s;
     s.setValue(CFG_CENTERED, showCentered());
     s.setValue(CFG_HIDE_ON_FOCUS_LOSS, hideOnFocusLoss());
+    s.setValue(CFG_HIDE_ON_CLOSE, hideOnClose());
     s.setValue(CFG_ALWAYS_ON_TOP, alwaysOnTop());
     s.setValue(CFG_WND_POS, pos());
     s.setValue(CFG_THEME, theme());
@@ -297,6 +301,20 @@ void MainWindow::setHideOnFocusLoss(bool b) {
 
 
 /** ***************************************************************************/
+bool MainWindow::hideOnClose() const {
+    return hideOnClose_;
+}
+
+
+
+/** ***************************************************************************/
+void MainWindow::setHideOnClose(bool b) {
+    hideOnClose_ = b;
+}
+
+
+
+/** ***************************************************************************/
 bool MainWindow::alwaysOnTop() const {
     return windowFlags().testFlag(Qt::WindowStaysOnTopHint);
 }
@@ -414,7 +432,8 @@ void MainWindow::setShowActions(bool showActions) {
 /** ***************************************************************************/
 void MainWindow::closeEvent(QCloseEvent *event) {
     event->accept();
-    qApp->quit();
+    if (!hideOnClose_)
+        qApp->quit();
 }
 
 

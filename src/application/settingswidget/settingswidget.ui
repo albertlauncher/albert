@@ -301,11 +301,42 @@ screen where the pointer resides.</string>
                  </sizepolicy>
                 </property>
                 <property name="toolTip">
-                 <string>Hide the main window if it lost keyboard focus, 
+                 <string>Hide the main window, if it lost keyboard focus, 
 e.g. by clicking on another app or changing the
 window with Alt+Tab. Note that this feature is
 automatically disabled as long as the settings
 widget is open.</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="hl_hideOnClose">
+              <item>
+               <widget class="QLabel" name="label_hideOnClose">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Hide on close:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="checkBox_hideOnClose">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string notr="true">If the user closes the main window, the main window
+gets hidden instead of the application getting quit.</string>
                 </property>
                </widget>
               </item>
