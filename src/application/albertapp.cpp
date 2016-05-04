@@ -129,11 +129,10 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
         if (p->isLoaded())
             extensionManager_->registerExtension(p->instance());
 
-    // Quit gracefully on SIGTERM
-    signal(SIGTERM, [](int){
-        QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
-    });
-
+    // Quit gracefully on unix signals
+    auto shutdownHandler = [](int){ QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection); };
+    signal(SIGINT, shutdownHandler);
+    signal(SIGTERM, shutdownHandler);
 
     /*
      *  SETUP SIGNAL FLOW

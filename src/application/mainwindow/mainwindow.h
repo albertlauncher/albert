@@ -47,6 +47,9 @@ public:
     bool hideOnFocusLoss() const;
     void setHideOnFocusLoss(bool b = true);
 
+    bool hideOnClose() const;
+    void setHideOnClose(bool b = true);
+
     bool alwaysOnTop() const;
     void setAlwaysOnTop(bool alwaysOnTop);
 
@@ -86,6 +89,9 @@ private:
     /** Indicates that the app should be hidden on focus loss */
     bool hideOnFocusLoss_;
 
+    /** Indicates that the app should be hidden on close event */
+    bool hideOnClose_;
+
     /** The offset from cursor to topleft. Used when the window is dagged */
     QPoint clickOffset_;
 
@@ -114,6 +120,8 @@ private:
     static const QString DEF_THEME;
     static const QString CFG_HIDE_ON_FOCUS_LOSS;
     static const bool    DEF_HIDE_ON_FOCUS_LOSS;
+    static const char*   CFG_HIDE_ON_CLOSE;
+    static const bool    DEF_HIDE_ON_CLOSE;
     static const QString CFG_ALWAYS_ON_TOP;
     static const bool    DEF_ALWAYS_ON_TOP;
     static const char*   CFG_MAX_PROPOSALS;

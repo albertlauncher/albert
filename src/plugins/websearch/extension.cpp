@@ -107,7 +107,7 @@ QWidget *Websearch::Extension:: widget(QWidget *parent) {
 /** ***************************************************************************/
 void Websearch::Extension::handleQuery(shared_ptr<Query> query) {
     for (const shared_ptr<SearchEngine> &se : index_)
-        if (query->searchTerm().section(' ',0,0) == se->trigger()) {
+        if (query->searchTerm().toLower().section(' ',0,0) == se->trigger()) {
             se->setQuery(query->searchTerm().section(' ', 1, -1, QString::SectionSkipEmpty));
             query->addMatch(se);
         }

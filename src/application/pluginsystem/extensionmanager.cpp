@@ -24,7 +24,7 @@
 /** ***************************************************************************/
 void ExtensionManager::startQuery(const QString &searchTerm) {
     // Trim spaces
-    QString trimmedTerm = searchTerm.trimmed().toLower();
+    QString trimmedTerm = searchTerm.trimmed();
 
     // Ignore empty queries
     if (trimmedTerm.isEmpty()){

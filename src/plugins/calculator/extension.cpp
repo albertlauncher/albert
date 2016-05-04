@@ -86,7 +86,7 @@ QWidget *Calculator::Extension::widget(QWidget *parent) {
 
 /** ***************************************************************************/
 void Calculator::Extension::handleQuery(shared_ptr<Query> query) {
-    parser_->SetExpr(query->searchTerm().toStdString());
+    parser_->SetExpr(query->searchTerm().toLower().toStdString());
     QString result;
     try {
         result = loc_.toString(parser_->Eval(), 'G', 16);
