@@ -2,8 +2,8 @@
 #define MPRIS_COMMAND_H
 
 #include <QString>
+#include <QVariant>
 #include <functional>
-#include "item.h"
 #include "query.h"
 #include "objects.hpp"
 #include "player.h"
