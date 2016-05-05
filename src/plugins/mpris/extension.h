@@ -55,7 +55,6 @@ private:
     QPointer<ConfigWidget> widget_;
     //QStringList mediaPlayers;
     QList<Player> mediaPlayers;
-    QString playIcon_;
     QStringList commands;
     QMap<QString, Command> commandObjects;
 };

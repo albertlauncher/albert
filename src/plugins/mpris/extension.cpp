@@ -29,7 +29,6 @@
 MPRIS::Extension::Extension() : IExtension("MPRIS Control Center") {
     qDebug("[%s] Initialize extension", name_);
     // Do sth.
-    playIcon_ = XdgIconLookup::instance()->themeIconPath("media-playback-start.png", QIcon::themeName());
     commands.append("play");
     commandObjects.insert("play",
                           Command(
