@@ -29,7 +29,7 @@ class Query final
 public:
     friend class ExtensionManager;
 
-    Query(const QString &term, const QString &originalTerm);
+    Query(const QString &term);
     ~Query();
 
     /**
@@ -69,12 +69,6 @@ public:
      * @brief Returns the search term of this query
      */
     const QString &searchTerm() const;
-
-    /**
-     * @brief Returns the original search term of this query.
-     * The original search term is the raw user input.
-     */
-    const QString &originalSearchTerm() const;
 
 private:
     QueryPrivate *impl;
