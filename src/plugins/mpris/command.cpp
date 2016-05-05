@@ -54,6 +54,7 @@ bool Command::closesWhenHit()
 
 std::shared_ptr<StandardItem> Command::produceStandardItem(Player &player)
 {
+    // Create a StandardItem instance for this command on the given player
     std::shared_ptr<StandardItem> ptr = std::make_shared<StandardItem>();
     ptr->setIcon(iconpath_);
     ptr->setSubtext(player.getName());
@@ -70,24 +71,31 @@ std::shared_ptr<StandardItem> Command::produceStandardItem(Player &player)
 
 bool Command::isApplicable(Player &p)
 {
+    // Check the applicable-option if given
     if (!applicableCheck_)
         return true;
 
+    // split DBus interface and property into seperate strings
     int splitAt = property_.lastIndexOf('.');
     QString ifaceName = property_.left(splitAt);
     QString propertyName = property_.right(property_.length() - splitAt -1);
 
+    // Compose Get-Property-Message
     QDBusMessage mesg = QDBusMessage::createMethodCall(
                 p.getBusId(), //"org.mpris.MediaPlayer2.rhythmbox",
                 path_, //"/org/mpris/MediaPlayer2",
                 "org.freedesktop.DBus.Properties",
                 "Get");
     QList<QVariant> args;
+    // Specify DBus interface to get the property from and the property-name
     args.append(ifaceName); //"org.mpris.MediaPlayer2.Player");
     args.append(propertyName); //"CanGoNext");
     mesg.setArguments(args);
+
+    // Query the property
     QDBusMessage reply = QDBusConnection::sessionBus().call(mesg);
 
+    // Check if the result is as expected
     QVariant result = reply.arguments().at(0).value<QDBusVariant>().variant();
     return (result == expectedValue_) == positivity_;
 }

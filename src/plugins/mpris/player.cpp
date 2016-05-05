@@ -6,6 +6,7 @@ namespace MPRIS {
 
 Player::Player(QString &busid) : busid_(busid), name_(busid)
 {
+    // Query the name of the media player of which we have the bus id.
     QDBusInterface iface(busid, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2");
     QVariant prop = iface.property("Identity");
     QString name = prop.toString();

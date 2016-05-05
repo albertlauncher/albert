@@ -28,7 +28,8 @@
 /** ***************************************************************************/
 MPRIS::Extension::Extension() : IExtension("MPRIS Control Center") {
     qDebug("[%s] Initialize extension", name_);
-    // Do sth.
+
+    // Setup the DBus commands
     commands.append("play");
     commandObjects.insert("play",
                           Command(
