@@ -54,10 +54,10 @@ public:
     bool closesWhenHit();
 
     /**
-     * @brief produceStandardItem   Produces an instance of StandardItem for this command to invoke on a given Player.
-     * @return                      Returns a shared_ptr on this StandardItem.
+     * @brief produceStandardItem   Produces an instance of AlbertItem for this command to invoke on a given Player.
+     * @return                      Returns a shared_ptr on this AlbertItem.
      */
-    std::shared_ptr<StandardItem> produceStandardItem(Player&);
+    std::shared_ptr<AlbertItem> produceAlbertItem(Player &);
 
     /**
      * @brief isApplicable  If configured, checks if the given property meets the expected criteria.

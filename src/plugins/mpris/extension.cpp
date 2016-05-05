@@ -189,7 +189,7 @@ void MPRIS::Extension::handleQuery(shared_ptr<Query> query) {
         Command& toExec = commandObjects.find(cmd.second).value();
         for (Player p: mediaPlayers) {
             if (toExec.isApplicable(p))
-                query->addMatch(toExec.produceStandardItem(p), SHRT_MAX);
+                query->addMatch(toExec.produceAlbertItem(p), SHRT_MAX);
         }
     }
 }

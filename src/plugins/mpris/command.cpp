@@ -4,6 +4,7 @@
 #include <QtDBus/QDBusInterface>
 #include <QDebug>
 #include "albertapp.h"
+#include "item.h"
 
 namespace MPRIS {
 
@@ -52,8 +53,14 @@ bool Command::closesWhenHit()
     return closeOnEnter_;
 }
 
-std::shared_ptr<StandardItem> Command::produceStandardItem(Player &player)
+std::shared_ptr<AlbertItem> Command::produceAlbertItem(Player &player)
 {
+    QDBusMessage msg = QDBusMessage::createMethodCall(player.getBusId(), "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", method_);
+    //std::shared_ptr<StandardItem> ptr = std::make_shared<Template::Item>(player, title_, iconpath_, msg, closeOnEnter_);
+    std::shared_ptr<AlbertItem> ptr(new Template::Item(player, title_, iconpath_, msg, closeOnEnter_));
+    return ptr;
+
+/*
     // Create a StandardItem instance for this command on the given player
     std::shared_ptr<StandardItem> ptr = std::make_shared<StandardItem>();
     ptr->setIcon(iconpath_);
@@ -66,7 +73,7 @@ std::shared_ptr<StandardItem> Command::produceStandardItem(Player &player)
             qApp->hideWidget();
         //fireCallback_();
     });
-    return ptr;
+    return ptr;*/
 }
 
 bool Command::isApplicable(Player &p)
