@@ -38,7 +38,7 @@ void ExtensionManager::startQuery(const QString &searchTerm) {
 //        return;
 
     //  ▼ TODO INTRODUCE MULTITHREADING HERE ▼
-    currentQuery_ = std::make_shared<Query>(trimmedTerm, searchTerm);
+    currentQuery_ = std::make_shared<Query>(trimmedTerm);
 
 //    if (!fallbackOnly) {
 
