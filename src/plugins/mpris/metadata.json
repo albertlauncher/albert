@@ -2,8 +2,8 @@
     "id" :              "org.albert.extension.mpris",
     "name" :            "MPRIS Control Center",
     "version" :         "1.0",
-    "platform" :        "Linux with DBus",
+    "platform" :        "Linux",
     "group" :           "Extensions",
     "author" :          "Martin Buergmann",
-    "dependencies" :    ""
+    "dependencies" :    "DBus"
 }
