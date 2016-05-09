@@ -54,10 +54,12 @@ QString Template::Item::iconPath() const {
 
 
 /** ***************************************************************************/
-void Template::Item::activate(ExecutionFlags *) {
+void Template::Item::activate(ExecutionFlags *flags) {
     QDBusConnection::sessionBus().send(message_);
-    if (hideAfter_)
-        qApp->hideWidget();
+    flags->hideWidget = hideAfter_;
+    flags->clearInput = hideAfter_;
+//    if (hideAfter_)
+//        qApp->hideWidget();
 }
 
 
