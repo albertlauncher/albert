@@ -62,6 +62,13 @@ MainWindow::MainWindow(QWidget *parent)
                    | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
 
+    QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect();
+    effect->setBlurRadius(18);
+    effect->setColor(QColor(0, 0, 0, 180));
+    effect->setXOffset(0.0);
+    effect->setYOffset(3.0);
+    setGraphicsEffect(effect);
+
      // Disable tabbing completely
     ui.actionList->setFocusPolicy(Qt::NoFocus);
     ui.proposalList->setFocusPolicy(Qt::NoFocus);
