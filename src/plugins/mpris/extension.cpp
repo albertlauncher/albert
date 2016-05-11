@@ -36,7 +36,7 @@ MPRIS::Extension::Extension() : IExtension("MPRIS Control Center") {
                               "play",
                               "Start playing",
                               "Play",
-                              XdgIconLookup::instance()->themeIconPath("media-playback-start.png", QIcon::themeName()))
+                              XdgIconLookup::instance()->themeIconPath("media-playback-start", QIcon::themeName()))
                           .applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.PlaybackStatus", QVariant("Playing"), false)
                           .closeWhenHit()
                           );
@@ -47,7 +47,7 @@ MPRIS::Extension::Extension() : IExtension("MPRIS Control Center") {
                               "pause",
                               "Pause",
                               "Pause",
-                              XdgIconLookup::instance()->themeIconPath("media-playback-pause.png", QIcon::themeName()))
+                              XdgIconLookup::instance()->themeIconPath("media-playback-pause", QIcon::themeName()))
                           .applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.PlaybackStatus", QVariant("Playing"), true)
                           .closeWhenHit()
                           );
@@ -58,7 +58,7 @@ MPRIS::Extension::Extension() : IExtension("MPRIS Control Center") {
                               "stop",
                               "Stop playing",
                               "Stop",
-                              XdgIconLookup::instance()->themeIconPath("media-playback-stop.png", QIcon::themeName()))
+                              XdgIconLookup::instance()->themeIconPath("media-playback-stop", QIcon::themeName()))
                           .applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.PlaybackStatus", QVariant("Playing"), true)
                           .closeWhenHit()
                           );
@@ -69,7 +69,7 @@ MPRIS::Extension::Extension() : IExtension("MPRIS Control Center") {
                               "next",
                               "Next track",
                               "Next",
-                              XdgIconLookup::instance()->themeIconPath("media-skip-forward.png", QIcon::themeName()))
+                              XdgIconLookup::instance()->themeIconPath("media-skip-forward", QIcon::themeName()))
                           .applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.CanGoNext", QVariant(true), true)
                           //.fireCallback([](){qDebug("NEXT");})
                           );
@@ -80,7 +80,7 @@ MPRIS::Extension::Extension() : IExtension("MPRIS Control Center") {
                               "previous",
                               "Previous track",
                               "Previous",
-                              XdgIconLookup::instance()->themeIconPath("media-skip-backward.png", QIcon::themeName()))
+                              XdgIconLookup::instance()->themeIconPath("media-skip-backward", QIcon::themeName()))
                           .applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.CanGoPrevious", QVariant(true), true)
                           );
 
