@@ -20,41 +20,41 @@
 
 
 /** ***************************************************************************/
-Template::Item::Item(Player &p, QString &subtext, QString &iconPath, QDBusMessage &msg, bool hideAfter)
+MPRIS::Item::Item(Player &p, QString &subtext, QString &iconPath, QDBusMessage &msg, bool hideAfter)
     : player_(p), subtext_(subtext), iconPath_(iconPath), message_(msg), hideAfter_(hideAfter)
 {
     text_ = p.getName();
 }
 
-Template::Item::~Item(){
+MPRIS::Item::~Item(){
 
 }
 
 
 
 /** ***************************************************************************/
-QString Template::Item::text() const {
+QString MPRIS::Item::text() const {
     return text_;
 }
 
 
 
 /** ***************************************************************************/
-QString Template::Item::subtext() const {
+QString MPRIS::Item::subtext() const {
     return subtext_;
 }
 
 
 
 /** ***************************************************************************/
-QString Template::Item::iconPath() const {
+QString MPRIS::Item::iconPath() const {
     return iconPath_;
 }
 
 
 
 /** ***************************************************************************/
-void Template::Item::activate(ExecutionFlags *flags) {
+void MPRIS::Item::activate(ExecutionFlags *flags) {
     QDBusConnection::sessionBus().send(message_);
     flags->hideWidget = hideAfter_;
     flags->clearInput = hideAfter_;
@@ -65,7 +65,7 @@ void Template::Item::activate(ExecutionFlags *flags) {
 
 
 /** ***************************************************************************/
-bool Template::Item::hasChildren() const {
+bool MPRIS::Item::hasChildren() const {
     // Performance measure.
     return false;
 }
@@ -73,7 +73,7 @@ bool Template::Item::hasChildren() const {
 
 
 /** ***************************************************************************/
-vector<shared_ptr<AlbertItem>> Template::Item::children() {
+vector<shared_ptr<AlbertItem>> MPRIS::Item::children() {
     // Return the children.
     // Did not want to have children? Subclass A2leaf instead.
     return vector<shared_ptr<AlbertItem>>();

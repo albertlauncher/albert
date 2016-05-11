@@ -72,8 +72,8 @@ bool Command::closesWhenHit()
 std::shared_ptr<AlbertItem> Command::produceAlbertItem(Player &player)
 {
     QDBusMessage msg = QDBusMessage::createMethodCall(player.getBusId(), "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", method_);
-    //std::shared_ptr<StandardItem> ptr = std::make_shared<Template::Item>(player, title_, iconpath_, msg, closeOnEnter_);
-    std::shared_ptr<AlbertItem> ptr(new Template::Item(player, title_, iconpath_, msg, closeOnEnter_));
+    //std::shared_ptr<StandardItem> ptr = std::make_shared<MPRIS::Item>(player, title_, iconpath_, msg, closeOnEnter_);
+    std::shared_ptr<AlbertItem> ptr(new MPRIS::Item(player, title_, iconpath_, msg, closeOnEnter_));
     return ptr;
 
 /*

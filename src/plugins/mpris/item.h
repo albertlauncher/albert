@@ -20,10 +20,9 @@
 using std::vector;
 #include "abstractobjects.hpp"
 #include "player.h"
-using MPRIS::Player;
 #include <QDBusMessage>
 
-namespace Template {
+namespace MPRIS {
 class Item final : public AlbertItem
 {
 public:
