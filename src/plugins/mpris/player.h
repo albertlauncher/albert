@@ -1,5 +1,5 @@
-#ifndef MPRIS_PLAYER_H
-#define MPRIS_PLAYER_H
+
+#pragma once
 
 #include <QString>
 
@@ -18,4 +18,3 @@ private:
 
 } // namespace MPRIS
 
-#endif // MPRIS_PLAYER_H

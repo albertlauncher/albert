@@ -1,5 +1,5 @@
-#ifndef MPRIS_COMMAND_H
-#define MPRIS_COMMAND_H
+
+#pragma once
 
 #include <QString>
 #include <QVariant>
@@ -77,5 +77,3 @@ private:
 };
 
 } // namespace MPRIS
-
-#endif // MPRIS_COMMAND_H
