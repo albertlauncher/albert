@@ -33,13 +33,7 @@ class Extension final : public QObject, public IExtension
     Q_INTERFACES(IExtension)
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
-    struct ActionSpec {
-        QString id; // lowercase name in most cases
-        QString name;
-        QString desc;
-        QString iconPath;
-        QString cmd;
-    };
+    enum SupportedCommands { LOCK, LOGOUT, SUSPEND, HIBERNATE, REBOOT, POWEROFF, NUMCOMMANDS };
 
 public:
     Extension();
@@ -52,27 +46,11 @@ public:
     QWidget *widget(QWidget *parent = nullptr) override;
     void handleQuery(shared_ptr<Query> query) override;
 
-    /*
-     * Extension specific members
-     */
-
-    QString command(const QString& id);
-    void setCommand(const QString& id, const QString& cmd);
-
 private:
-    QPointer<ConfigWidget> widget_;
-    vector<ActionSpec> actions_;
+    QString defaultCommand(SupportedCommands command);
 
-    /* const*/
-    static const char* CFG_POWEROFF;
-    static const char* DEF_POWEROFF;
-    static const char* CFG_REBOOT;
-    static const char* DEF_REBOOT;
-    static const char* CFG_SUSPEND;
-    static const char* DEF_SUSPEND;
-    static const char* CFG_HIBERNATE;
-    static const char* DEF_HIBERNATE;
-    static const char* CFG_LOCK;
-    static const char* DEF_LOCK;
+    QPointer<ConfigWidget> widget_;
+    vector<QString> iconPaths;
+    vector<QString> commands;
 };
 }

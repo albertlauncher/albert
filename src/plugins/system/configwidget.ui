@@ -13,7 +13,10 @@
   <layout class="QVBoxLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="6" column="1">
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="lineEdit_lock"/>
+     </item>
+     <item row="7" column="1">
       <spacer name="verticalSpacer">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -26,36 +29,7 @@
        </property>
       </spacer>
      </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="label_lock">
-       <property name="text">
-        <string>Lock:</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-       <property name="buddy">
-        <cstring>lineEdit_lock</cstring>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="lineEdit_reboot"/>
-     </item>
      <item row="2" column="0">
-      <widget class="QLabel" name="label_reboot">
-       <property name="text">
-        <string>Reboot:</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-       <property name="buddy">
-        <cstring>lineEdit_reboot</cstring>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
       <widget class="QLabel" name="label_suspend">
        <property name="text">
         <string>Suspend:</string>
@@ -63,42 +37,82 @@
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
-       <property name="buddy">
-        <cstring>lineEdit_suspend</cstring>
-       </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="lineEdit_poweroff"/>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_poweroff">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_lock">
        <property name="text">
-        <string>Poweroff:</string>
+        <string>Lock:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
-       <property name="buddy">
-        <cstring>lineEdit_poweroff</cstring>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="lineEdit_reboot"/>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="lineEdit_suspend"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_logout">
+       <property name="text">
+        <string>Logout:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
      </item>
-     <item row="5" column="1">
-      <widget class="QLineEdit" name="lineEdit_lock"/>
-     </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="lineEdit_suspend"/>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_shutdown">
+       <property name="text">
+        <string>Shutdown:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
      </item>
      <item row="4" column="0">
+      <widget class="QLabel" name="label_reboot">
+       <property name="text">
+        <string>Reboot:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="lineEdit_logout"/>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLineEdit" name="lineEdit_shutdown"/>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="lineEdit_hibernate"/>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#808080;&quot;&gt;Be aware that on most distributions the standard commands to control your systems state (e.g. reboot, shutdown, systemctl etc) do not shutdown your desktop session gracefully. Try to use your desktop session managers interface. If you think you know good defaults for your desktop environment, please suggest it on &lt;/span&gt;&lt;a href=&quot;https://github.com/ManuelSchneid3r/albert/issues&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;github&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; color:#808080;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
       <widget class="QLabel" name="label_hibernate">
        <property name="text">
         <string>Hibernate:</string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
       </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QLineEdit" name="lineEdit_hibernate"/>
      </item>
     </layout>
    </item>

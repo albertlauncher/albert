@@ -403,6 +403,20 @@ gets hidden instead of the application getting quit.</string>
 &lt;body&gt;
 &lt;h1&gt;Welcome to Albert&lt;/h1&gt;
 
+&lt;h3&gt;New in v0.8.9&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Add &quot;hide on close&quot; option&lt;/li&gt;
+&lt;li&gt;Normal termination on Ctrl+C&lt;/li&gt;
+&lt;li&gt;Bugfixes&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3&gt;New in v0.8.8&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Allow only one instance&lt;/li&gt;
+&lt;li&gt;Numix theme&lt;/li&gt;
+&lt;li&gt;Bugfixes&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3&gt;New in v0.8.7&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;Terminal extension&lt;/li&gt;
