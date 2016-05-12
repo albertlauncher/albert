@@ -434,6 +434,7 @@ gets hidden instead of the application getting quit.</string>
 
 &lt;h3&gt;New in v0.8.9&lt;/h3&gt;
 &lt;ul&gt;
+&lt;li&gt;Add &quot;display shadow&quot; option&lt;/li&gt;
 &lt;li&gt;Add &quot;hide on close&quot; option&lt;/li&gt;
 &lt;li&gt;Normal termination on Ctrl+C&lt;/li&gt;
 &lt;li&gt;Bugfixes&lt;/li&gt;
