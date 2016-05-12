@@ -89,6 +89,11 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyMana
     connect(ui.checkBox_icons, &QCheckBox::toggled,
             mainWindow_, &MainWindow::setDisplayIcons);
 
+    // DISPLAY SHADOW
+    ui.checkBox_shadow->setChecked(mainWindow_->displayShadow());
+    connect(ui.checkBox_shadow, &QCheckBox::toggled,
+            mainWindow_, &MainWindow::setDisplayShadow);
+
     // THEMES
     QFileInfoList themes;
     int i = 0 ;
