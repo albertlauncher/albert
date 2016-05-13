@@ -180,9 +180,9 @@ void MPRIS::Extension::handleQuery(shared_ptr<Query> query) {
 
     // For every option create entries for every player
     short percentage = 0;
-    for (QPair<int, QString>& cmd: cmds) {
-        Command& toExec = commandObjects.find(cmd.second).value();
-        percentage = (float)q.length() / (float)cmd.second.length() *100;
+    for (QString& cmd: cmds) {
+        Command& toExec = commandObjects.find(cmd).value();
+        percentage = (float)q.length() / (float)cmd.length() *100;
         for (Player p: mediaPlayers) {
             if (toExec.isApplicable(p))
                 query->addMatch(toExec.produceAlbertItem(p), percentage);
