@@ -25,6 +25,9 @@ MPRIS::Item::Item(Player &p, QString &subtext, QString &iconPath, QDBusMessage &
     text_ = p.getName();
 }
 
+
+
+/** ***************************************************************************/
 MPRIS::Item::~Item() {
 
 }

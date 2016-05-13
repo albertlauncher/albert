@@ -22,20 +22,30 @@
 #include "albertapp.h"
 #include "item.h"
 
+/** ***************************************************************************/
 MPRIS::Command::Command(QString &label, QString &title, QString &method, QString &iconpath)
     : label_(label), title_(title), method_(method), iconpath_(iconpath), closeOnEnter_(false) {
 //    fireCallback([](){});
 }
 
+
+
+/** ***************************************************************************/
 MPRIS::Command::Command(const char *label, const char *title, const char *method, QString iconpath)
     : label_(label), title_(title), method_(method), iconpath_(iconpath), closeOnEnter_(false) {
 //    fireCallback([](){});
 }
 
+
+
+/** ***************************************************************************/
 QString& MPRIS::Command::getIconPath() {
     return iconpath_;
 }
 
+
+
+/** ***************************************************************************/
 Command &MPRIS::Command::applicableWhen(const char* path, const char *property, QVariant expectedValue, bool positivity) {
     path_ = path;
     property_ = property;
@@ -45,22 +55,32 @@ Command &MPRIS::Command::applicableWhen(const char* path, const char *property, 
     return *this;
 }
 
+
+
+/** ***************************************************************************/
 Command &MPRIS::Command::closeWhenHit() {
     closeOnEnter_ = true;
     return *this;
 }
 
-/*
-Command &MPRIS::Command::fireCallback(function<void ()> clbk) {
+
+
+/** ***************************************************************************/
+/*Command &MPRIS::Command::fireCallback(function<void ()> clbk) {
     fireCallback_ = std::move(clbk);
     return *this;
-}
-*/
+}*/
 
+
+
+/** ***************************************************************************/
 bool MPRIS::Command::closesWhenHit() {
     return closeOnEnter_;
 }
 
+
+
+/** ***************************************************************************/
 std::shared_ptr<AlbertItem> MPRIS::Command::produceAlbertItem(Player &player) {
     QDBusMessage msg = QDBusMessage::createMethodCall(player.getBusId(), "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", method_);
     //std::shared_ptr<StandardItem> ptr = std::make_shared<MPRIS::Item>(player, title_, iconpath_, msg, closeOnEnter_);
@@ -83,6 +103,9 @@ std::shared_ptr<AlbertItem> MPRIS::Command::produceAlbertItem(Player &player) {
     return ptr;*/
 }
 
+
+
+/** ***************************************************************************/
 bool MPRIS::Command::isApplicable(Player &p) {
     // Check the applicable-option if given
     if (!applicableCheck_)
@@ -113,14 +136,23 @@ bool MPRIS::Command::isApplicable(Player &p) {
     return (result == expectedValue_) == positivity_;
 }
 
+
+
+/** ***************************************************************************/
 QString& MPRIS::Command::getLabel() {
     return label_;
 }
 
+
+
+/** ***************************************************************************/
 QString& MPRIS::Command::getMethod() {
     return method_;
 }
 
+
+
+/** ***************************************************************************/
 QString& MPRIS::Command::getTitle() {
     return title_;
 }
