@@ -18,9 +18,7 @@
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusInterface>
 
-namespace MPRIS {
-
-Player::Player(QString &busid) : busid_(busid), name_(busid)
+MPRIS::Player::Player(QString &busid) : busid_(busid), name_(busid)
 {
     // Query the name of the media player of which we have the bus id.
     QDBusInterface iface(busid, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2");
@@ -33,12 +31,10 @@ Player::Player(QString &busid) : busid_(busid), name_(busid)
     }
 }
 
-QString& Player::getBusId() {
+QString& MPRIS::Player::getBusId() {
     return busid_;
 }
 
-QString& Player::getName() {
+QString& MPRIS::Player::getName() {
     return name_;
 }
-
-} // namespace MPRIS

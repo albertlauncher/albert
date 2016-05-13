@@ -22,25 +22,23 @@
 #include "albertapp.h"
 #include "item.h"
 
-namespace MPRIS {
-
-Command::Command(QString &label, QString &title, QString &method, QString &iconpath)
+MPRIS::Command::Command(QString &label, QString &title, QString &method, QString &iconpath)
     : label_(label), title_(title), method_(method), iconpath_(iconpath), closeOnEnter_(false)
 {
 //    fireCallback([](){});
 }
 
-Command::Command(const char *label, const char *title, const char *method, QString iconpath)
+MPRIS::Command::Command(const char *label, const char *title, const char *method, QString iconpath)
     : label_(label), title_(title), method_(method), iconpath_(iconpath), closeOnEnter_(false)
 {
 //    fireCallback([](){});
 }
 
-QString& Command::getIconPath() {
+QString& MPRIS::Command::getIconPath() {
     return iconpath_;
 }
 
-Command &Command::applicableWhen(const char* path, const char *property, QVariant expectedValue, bool positivity)
+Command &MPRIS::Command::applicableWhen(const char* path, const char *property, QVariant expectedValue, bool positivity)
 {
     path_ = path;
     property_ = property;
@@ -50,26 +48,26 @@ Command &Command::applicableWhen(const char* path, const char *property, QVarian
     return *this;
 }
 
-Command &Command::closeWhenHit()
+Command &MPRIS::Command::closeWhenHit()
 {
     closeOnEnter_ = true;
     return *this;
 }
 
 /*
-Command &Command::fireCallback(function<void ()> clbk)
+Command &MPRIS::Command::fireCallback(function<void ()> clbk)
 {
     fireCallback_ = std::move(clbk);
     return *this;
 }
 */
 
-bool Command::closesWhenHit()
+bool MPRIS::Command::closesWhenHit()
 {
     return closeOnEnter_;
 }
 
-std::shared_ptr<AlbertItem> Command::produceAlbertItem(Player &player)
+std::shared_ptr<AlbertItem> MPRIS::Command::produceAlbertItem(Player &player)
 {
     QDBusMessage msg = QDBusMessage::createMethodCall(player.getBusId(), "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", method_);
     //std::shared_ptr<StandardItem> ptr = std::make_shared<MPRIS::Item>(player, title_, iconpath_, msg, closeOnEnter_);
@@ -92,7 +90,7 @@ std::shared_ptr<AlbertItem> Command::produceAlbertItem(Player &player)
     return ptr;*/
 }
 
-bool Command::isApplicable(Player &p)
+bool MPRIS::Command::isApplicable(Player &p)
 {
     // Check the applicable-option if given
     if (!applicableCheck_)
@@ -123,16 +121,15 @@ bool Command::isApplicable(Player &p)
     return (result == expectedValue_) == positivity_;
 }
 
-QString& Command::getLabel() {
+QString& MPRIS::Command::getLabel() {
     return label_;
 }
 
-QString& Command::getMethod() {
+QString& MPRIS::Command::getMethod() {
     return method_;
 }
 
-QString& Command::getTitle() {
+QString& MPRIS::Command::getTitle() {
     return title_;
 }
 
-} // namespace MPRIS
