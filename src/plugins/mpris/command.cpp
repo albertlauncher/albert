@@ -46,7 +46,7 @@ QString& MPRIS::Command::getIconPath() {
 
 
 /** ***************************************************************************/
-Command &MPRIS::Command::applicableWhen(const char* path, const char *property, QVariant expectedValue, bool positivity) {
+MPRIS::Command &MPRIS::Command::applicableWhen(const char* path, const char *property, QVariant expectedValue, bool positivity) {
     path_ = path;
     property_ = property;
     expectedValue_ = expectedValue;
@@ -58,7 +58,7 @@ Command &MPRIS::Command::applicableWhen(const char* path, const char *property, 
 
 
 /** ***************************************************************************/
-Command &MPRIS::Command::closeWhenHit() {
+MPRIS::Command &MPRIS::Command::closeWhenHit() {
     closeOnEnter_ = true;
     return *this;
 }
