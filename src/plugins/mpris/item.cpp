@@ -21,12 +21,11 @@
 
 /** ***************************************************************************/
 MPRIS::Item::Item(Player &p, QString &subtext, QString &iconPath, QDBusMessage &msg, bool hideAfter)
-    : player_(p), subtext_(subtext), iconPath_(iconPath), message_(msg), hideAfter_(hideAfter)
-{
+    : player_(p), subtext_(subtext), iconPath_(iconPath), message_(msg), hideAfter_(hideAfter) {
     text_ = p.getName();
 }
 
-MPRIS::Item::~Item(){
+MPRIS::Item::~Item() {
 
 }
 
