@@ -168,28 +168,24 @@ void MPRIS::Extension::handleQuery(shared_ptr<Query> query) {
     if (mediaPlayers.isEmpty())
         return;
 
-    // Filter all applicable commands
-    QString q = query->searchTerm();
-    QRegExp rx(q);
-    QStringList possibleCommands = commands.filter(rx);
+    const QString& q = query->searchTerm();
 
-
-    // Sort them by their occurence index
-    // If the user types 's'
-    // 'stop' is before 'pause'
-    // Both contains a 's' but it occures earlier in 'stop'
-    QList<QPair<int, QString>> cmds;
-    for (QString& str: possibleCommands)
-        cmds.append(QPair<int, QString>(rx.indexIn(str), str));
-    qSort(cmds.begin(), cmds.end(), &pairsort);
+    // Filter applicable commands
+    QStringList cmds;
+    for (QString& cmd : commands) {
+        if (cmd.startsWith(q))
+            cmds.append(cmd);
+    }
 
 
     // For every option create entries for every player
+    short percentage = 0;
     for (QPair<int, QString>& cmd: cmds) {
         Command& toExec = commandObjects.find(cmd.second).value();
+        percentage = (float)q.length() / (float)cmd.second.length() *100;
         for (Player p: mediaPlayers) {
             if (toExec.isApplicable(p))
-                query->addMatch(toExec.produceAlbertItem(p), SHRT_MAX);
+                query->addMatch(toExec.produceAlbertItem(p), percentage);
         }
     }
 }
