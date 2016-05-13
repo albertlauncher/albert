@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014-2015 Manuel Schneider
+// Copyright (C) 2014-2016 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     setOrganizationDomain("albert");
     setApplicationName("albert");
     setApplicationDisplayName("Albert");
-    setApplicationVersion("v0.8.8");
+    setApplicationVersion("v0.8.9");
     setWindowIcon(QIcon(":app_icon"));
     setQuitOnLastWindowClosed(false);
 

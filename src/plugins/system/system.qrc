@@ -5,5 +5,6 @@
         <file alias="suspend">resources/suspend.svg</file>
         <file alias="hibernate">resources/hibernate.svg</file>
         <file alias="lock">resources/lock.svg</file>
+        <file alias="logout">resources/logout.svg</file>
     </qresource>
 </RCC>

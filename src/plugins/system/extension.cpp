@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014-2015 Manuel Schneider
+// Copyright (C) 2014-2016 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -24,16 +24,44 @@
 #include "objects.hpp"
 #include "xdgiconlookup.h"
 
-const char* System::Extension::CFG_POWEROFF  = "poweroff";
-const char* System::Extension::DEF_POWEROFF  = "systemctl poweroff -i";
-const char* System::Extension::CFG_REBOOT    = "reboot";
-const char* System::Extension::DEF_REBOOT    = "systemctl reboot -i";
-const char* System::Extension::CFG_SUSPEND   = "suspend";
-const char* System::Extension::DEF_SUSPEND   = "systemctl suspend -i";
-const char* System::Extension::CFG_HIBERNATE = "hibernate";
-const char* System::Extension::DEF_HIBERNATE = "systemctl hibernate -i";
-const char* System::Extension::CFG_LOCK      = "lock";
-const char* System::Extension::DEF_LOCK      = "cinnamon-screensaver-command -l";
+namespace {
+
+    vector<QString> configNames = {
+        "lock",
+        "logout",
+        "suspend",
+        "hibernate",
+        "reboot",
+        "shutdown"
+    };
+
+    vector<QString> itemTitles = {
+        "Lock",
+        "Logout",
+        "Suspend",
+        "Hibernate",
+        "Reboot",
+        "Shutdown"
+    };
+
+    vector<QString> itemDescriptions = {
+        "Lock the session.",
+        "Quit the session.",
+        "Suspend the machine.",
+        "Hibernate the machine.",
+        "Reboot the machine.",
+        "Shutdown the machine.",
+    };
+
+    vector<QString> iconNames = {
+        "system-lock-screen",
+        "system-log-out",
+        "system-suspend",
+        "system-suspend-hibernate",
+        "system-reboot",
+        "system-shutdown"
+    };
+}
 
 /** ***************************************************************************/
 System::Extension::Extension() : IExtension("System") {
@@ -41,44 +69,12 @@ System::Extension::Extension() : IExtension("System") {
 
     // Load settings
     QSettings s;
-    QString iconPath;
     QString themeName = QIcon::themeName();
     s.beginGroup(name_);
-
-    iconPath = XdgIconLookup::instance()->themeIconPath("system-shutdown", themeName);
-    actions_.push_back({CFG_POWEROFF,
-                        "Poweroff",
-                        "Poweroff the machine.",
-                        iconPath.isNull() ? ":poweroff" : iconPath,
-                        s.value(CFG_POWEROFF, DEF_POWEROFF).toString()});
-
-    iconPath = XdgIconLookup::instance()->themeIconPath("system-reboot", themeName);
-    actions_.push_back({CFG_REBOOT,
-                        "Reboot",
-                        "Reboot the machine.",
-                        iconPath.isNull() ? ":reboot" : iconPath,
-                        s.value(CFG_REBOOT, DEF_REBOOT).toString()});
-
-    iconPath = XdgIconLookup::instance()->themeIconPath("system-suspend", themeName);
-    actions_.push_back({CFG_SUSPEND,
-                        "Suspend",
-                        "Suspend the machine.",
-                        iconPath.isNull() ? ":suspend" : iconPath,
-                        s.value(CFG_SUSPEND, DEF_SUSPEND).toString()});
-
-    iconPath = XdgIconLookup::instance()->themeIconPath("system-suspend-hibernate", themeName);
-    actions_.push_back({CFG_HIBERNATE,
-                        "Hibernate",
-                        "Hibernate the machine.",
-                        iconPath.isNull() ? ":hibernate" : iconPath,
-                        s.value(CFG_HIBERNATE, DEF_HIBERNATE).toString()});
-
-    iconPath = XdgIconLookup::instance()->themeIconPath("system-lock", themeName);
-    actions_.push_back({CFG_LOCK,
-                        "Lock",
-                        "Lock the session.",
-                        iconPath.isNull() ? ":lock" : iconPath,
-                        s.value(CFG_LOCK, DEF_LOCK).toString()});
+    for (int i = 0; i < NUMCOMMANDS; ++i) {
+        iconPaths.push_back(XdgIconLookup::instance()->themeIconPath(iconNames[i], themeName));
+        commands.push_back(s.value(configNames[i], defaultCommand(static_cast<SupportedCommands>(i))).toString());
+    }
 
     qDebug("[%s] Extension initialized", name_);
 }
@@ -92,8 +88,8 @@ System::Extension::~Extension() {
     // Save settings
     QSettings s;
     s.beginGroup(name_);
-    for (vector<ActionSpec>::iterator it = actions_.begin(); it != actions_.end(); ++it)
-        s.setValue(it->id, it->cmd);
+    for (int i = 0; i < NUMCOMMANDS; ++i)
+        s.setValue(configNames[i], commands[i]);
 
     qDebug("[%s] Extension finalized", name_);
 }
@@ -105,31 +101,31 @@ QWidget *System::Extension::widget(QWidget *parent) {
     if (widget_.isNull()) {
         widget_ = new ConfigWidget(parent);
 
-        // poweroff
-        widget_->ui.lineEdit_poweroff->setText(command(CFG_POWEROFF));
-        connect(widget_->ui.lineEdit_poweroff, &QLineEdit::textEdited,
-                [this](const QString &s){setCommand(CFG_POWEROFF, s);});
+        // Initialize the content and connect the signals
 
-        // reboot
-        widget_->ui.lineEdit_reboot->setText(command(CFG_REBOOT));
-        connect(widget_->ui.lineEdit_reboot, &QLineEdit::textEdited,
-                [this](const QString &s){setCommand(CFG_REBOOT, s);});
-
-        // suspend
-        widget_->ui.lineEdit_suspend->setText(command(CFG_SUSPEND));
-        connect(widget_->ui.lineEdit_suspend, &QLineEdit::textEdited,
-                [this](const QString &s){setCommand(CFG_SUSPEND, s);});
-
-        // hibernate
-        widget_->ui.lineEdit_hibernate->setText(command(CFG_HIBERNATE));
-        connect(widget_->ui.lineEdit_hibernate, &QLineEdit::textEdited,
-                [this](const QString &s){setCommand(CFG_HIBERNATE, s);});
-
-        // lock
-        widget_->ui.lineEdit_lock->setText(command(CFG_LOCK));
+        widget_->ui.lineEdit_lock->setText(commands[LOCK]);
         connect(widget_->ui.lineEdit_lock, &QLineEdit::textEdited,
-                [this](const QString &s){setCommand(CFG_LOCK, s);});
+                [this](const QString &s){commands[LOCK]= s;});
 
+        widget_->ui.lineEdit_logout->setText(commands[LOGOUT]);
+        connect(widget_->ui.lineEdit_logout, &QLineEdit::textEdited,
+                [this](const QString &s){commands[LOGOUT]= s;});
+
+        widget_->ui.lineEdit_suspend->setText(commands[SUSPEND]);
+        connect(widget_->ui.lineEdit_suspend, &QLineEdit::textEdited,
+                [this](const QString &s){commands[SUSPEND]= s;});
+
+        widget_->ui.lineEdit_hibernate->setText(commands[HIBERNATE]);
+        connect(widget_->ui.lineEdit_hibernate, &QLineEdit::textEdited,
+                [this](const QString &s){commands[HIBERNATE]= s;});
+
+        widget_->ui.lineEdit_reboot->setText(commands[REBOOT]);
+        connect(widget_->ui.lineEdit_reboot, &QLineEdit::textEdited,
+                [this](const QString &s){commands[REBOOT]= s;});
+
+        widget_->ui.lineEdit_shutdown->setText(commands[POWEROFF]);
+        connect(widget_->ui.lineEdit_shutdown, &QLineEdit::textEdited,
+                [this](const QString &s){commands[POWEROFF]= s;});
     }
     return widget_;
 }
@@ -139,37 +135,86 @@ QWidget *System::Extension::widget(QWidget *parent) {
 /** ***************************************************************************/
 void System::Extension::handleQuery(shared_ptr<Query> query) {
 
-    for (vector<ActionSpec>::iterator it = actions_.begin(); it != actions_.end(); ++it)
-        if (it->name.toLower().startsWith(query->searchTerm().toLower())) {
-            QString cmd = it->cmd;
-            query->addMatch(std::make_shared<StandardItem>(it->name,
-                                                           it->desc,
-                                                           it->iconPath,
-                                                           [cmd](){
-                QProcess::startDetached(cmd);
-            }));
+    for (int i = 0; i < NUMCOMMANDS; ++i) {
+        if (configNames[i].startsWith(query->searchTerm().toLower())) {
+            QString cmd = commands[i];
+            query->addMatch(std::make_shared<StandardItem>(
+                                itemTitles[i],
+                                itemDescriptions[i],
+                                iconPaths[i],
+                                [cmd](){QProcess::startDetached(cmd);}
+            ));
         }
+    }
 }
 
 
 
 /** ***************************************************************************/
-QString System::Extension::command(const QString& id){
-    vector<ActionSpec>::iterator it = std::find_if(actions_.begin(), actions_.end(),
-                 [&id](const ActionSpec& as){
-                     return id==as.id;
-                 });
-    return (it != actions_.end()) ? it->cmd : "";
-}
+QString System::Extension::defaultCommand(SupportedCommands command){
 
+    QString de = getenv("XDG_CURRENT_DESKTOP");
 
+    switch (command) {
+    case LOCK:
+        if (de == "X-Cinnamon")
+            return "cinnamon-screensaver-command -l";
+        else
+            return "notify-send \"Error.\" \"Lock command is not set.\" --icon=system-lock-screen";
 
-/** ***************************************************************************/
-void System::Extension::setCommand(const QString& id, const QString& cmd){
-    vector<ActionSpec>::iterator it = std::find_if(actions_.begin(), actions_.end(),
-                 [&id](const ActionSpec& as){
-                     return id==as.id;
-                 });
-    if (it != actions_.end())
-        it->cmd = cmd;
+    case LOGOUT:
+        if (de == "Unity" || de == "Pantheon" || de == "Gnome")
+            return "gnome-session-quit --logout";
+        else if (de == "kde-plasma")
+            return "qdbus org.kde.ksmserver /KSMServer logout 0 0 0";
+        else if (de == "X-Cinnamon")
+            return "cinnamon-session-quit --logout --no-prompt";
+        else if (de == "XFCE")
+            return "gnome-session-quit --logout --no-prompt";
+        else
+            return "notify-send \"Error.\" \"Logout command is not set.\" --icon=system-log-out";
+
+    case SUSPEND:
+        if (de == "XFCE")
+            return "xfce4-session-logout --suspend";
+        else
+            return "systemctl suspend -i";
+
+    case HIBERNATE:
+        if (de == "XFCE")
+            return "xfce4-session-logout --hibernate";
+        else
+            return "systemctl hibernate -i";
+
+    case REBOOT:
+        if (de == "Unity" || de == "Pantheon" || de == "Gnome")
+            return "gnome-session-quit --reboot";
+        else if (de == "kde-plasma")
+            return "qdbus org.kde.ksmserver /KSMServer logout 0 1 0";
+        else if (de == "X-Cinnamon")
+            return "cinnamon-session-quit --reboot";
+        else if (de == "XFCE")
+            return "xfce4-session-logout --reboot";
+        else
+            return "notify-send \"Error.\" \"Reboot command is not set.\" --icon=system-reboot";
+
+    case POWEROFF:
+        if (de == "Unity" || de == "Pantheon" || de == "Gnome")
+            return "gnome-session-quit --power-off --no-prompt";
+        else if (de == "kde-plasma")
+            return "qdbus org.kde.ksmserver /KSMServer logout 0 2 0";
+        else if (de == "X-Cinnamon")
+            return "cinnamon-session-quit --power-off --no-prompt";
+        else if (de == "XFCE")
+            return "xfce4-session-logout --halt";
+        else
+            return "notify-send \"Error.\" \"Poweroff command is not set.\" --icon=system-shutdown";
+
+    case NUMCOMMANDS:
+        // NEVER REACHED;
+        return "";
+    }
+
+    // NEVER REACHED;
+    return "";
 }

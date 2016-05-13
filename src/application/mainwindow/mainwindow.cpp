@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014-2015 Manuel Schneider
+// Copyright (C) 2014-2016 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QAbstractItemModel>
+#include <QGraphicsDropShadowEffect>
 #include <QApplication>
 #include <QCloseEvent>
 #include <QCursor>
@@ -30,16 +31,16 @@
 #include "albertapp.h"
 #include "roles.hpp"
 
-const QString MainWindow::CFG_WND_POS  = "windowPosition";
-const QString MainWindow::CFG_CENTERED = "showCentered";
+const char*   MainWindow::CFG_WND_POS  = "windowPosition";
+const char*   MainWindow::CFG_CENTERED = "showCentered";
 const bool    MainWindow::DEF_CENTERED = true;
-const QString MainWindow::CFG_THEME = "theme";
-const QString MainWindow::DEF_THEME = "Bright";
-const QString MainWindow::CFG_HIDE_ON_FOCUS_LOSS = "hideOnFocusLoss";
+const char*   MainWindow::CFG_THEME = "theme";
+const char*   MainWindow::DEF_THEME = "Bright";
+const char*   MainWindow::CFG_HIDE_ON_FOCUS_LOSS = "hideOnFocusLoss";
 const bool    MainWindow::DEF_HIDE_ON_FOCUS_LOSS = true;
 const char*   MainWindow::CFG_HIDE_ON_CLOSE = "hideOnClose";
 const bool    MainWindow::DEF_HIDE_ON_CLOSE = false;
-const QString MainWindow::CFG_ALWAYS_ON_TOP = "alwaysOnTop";
+const char*   MainWindow::CFG_ALWAYS_ON_TOP = "alwaysOnTop";
 const bool    MainWindow::DEF_ALWAYS_ON_TOP = true;
 const char*   MainWindow::CFG_MAX_PROPOSALS = "itemCount";
 const uint8_t MainWindow::DEF_MAX_PROPOSALS = 5;
@@ -47,6 +48,8 @@ const char*   MainWindow::CFG_DISPLAY_SCROLLBAR = "displayScrollbar";
 const bool    MainWindow::DEF_DISPLAY_SCROLLBAR = false;
 const char*   MainWindow::CFG_DISPLAY_ICONS = "displayIcons";
 const bool    MainWindow::DEF_DISPLAY_ICONS = true;
+const char*   MainWindow::CFG_DISPLAY_SHADOW = "displayShadow";
+const bool    MainWindow::DEF_DISPLAY_SHADOW = true;
 
 
 /** ***************************************************************************/
@@ -63,6 +66,14 @@ MainWindow::MainWindow(QWidget *parent)
                    | Qt::WindowCloseButtonHint // No close event w/o this
                    | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
+    setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect();
+    effect->setBlurRadius(20);
+    effect->setColor(QColor(0, 0, 0 , 192 ))  ;
+    effect->setXOffset(0.0);
+    effect->setYOffset(3.0);
+    setGraphicsEffect(effect);
 
      // Disable tabbing completely
     ui.actionList->setFocusPolicy(Qt::NoFocus);
@@ -126,6 +137,7 @@ MainWindow::MainWindow(QWidget *parent)
     setMaxProposals(s.value(CFG_MAX_PROPOSALS, DEF_MAX_PROPOSALS).toInt());
     setDisplayScrollbar(s.value(CFG_DISPLAY_SCROLLBAR, DEF_DISPLAY_SCROLLBAR).toBool());
     setDisplayIcons(s.value(CFG_DISPLAY_ICONS, DEF_DISPLAY_ICONS).toBool());
+    setDisplayShadow(s.value(CFG_DISPLAY_SHADOW, DEF_DISPLAY_SHADOW).toBool());
     theme_ = s.value(CFG_THEME, DEF_THEME).toString();
     if (!setTheme(theme_)) {
         qFatal("FATAL: Stylefile not found: %s", theme_.toStdString().c_str());
@@ -179,6 +191,7 @@ MainWindow::~MainWindow() {
     s.setValue(CFG_MAX_PROPOSALS, maxProposals());
     s.setValue(CFG_DISPLAY_SCROLLBAR, displayScrollbar());
     s.setValue(CFG_DISPLAY_ICONS, displayIcons());
+    s.setValue(CFG_DISPLAY_SHADOW, displayShadow());
 }
 
 
@@ -361,6 +374,22 @@ bool MainWindow::displayScrollbar() const {
 void MainWindow::setDisplayScrollbar(bool value) {
     ui.proposalList->setVerticalScrollBarPolicy(
                 value ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
+}
+
+
+
+/** ***************************************************************************/
+bool MainWindow::displayShadow() const {
+    return displayShadow_;
+}
+
+
+
+/** ***************************************************************************/
+void MainWindow::setDisplayShadow(bool value) {
+    displayShadow_ = value;
+    graphicsEffect()->setEnabled(value);
+    value ? setContentsMargins(20,20,20,20) : setContentsMargins(0,0,0,0);
 }
 
 

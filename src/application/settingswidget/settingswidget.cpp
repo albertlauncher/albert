@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014-2015 Manuel Schneider
+// Copyright (C) 2014-2016 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -88,6 +88,11 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyMana
     ui.checkBox_icons->setChecked(mainWindow_->displayIcons());
     connect(ui.checkBox_icons, &QCheckBox::toggled,
             mainWindow_, &MainWindow::setDisplayIcons);
+
+    // DISPLAY SHADOW
+    ui.checkBox_shadow->setChecked(mainWindow_->displayShadow());
+    connect(ui.checkBox_shadow, &QCheckBox::toggled,
+            mainWindow_, &MainWindow::setDisplayShadow);
 
     // THEMES
     QFileInfoList themes;
