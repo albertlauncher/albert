@@ -83,15 +83,6 @@ public:
 
     /** The alternative actions of the item*/
     virtual ActionSPtrVec actions() { return ActionSPtrVec(); }
-
-    /** The children of the item */
-    virtual AlbertItem* parent() { return nullptr; }
-
-    /** The children of the item */
-    virtual vector<shared_ptr<AlbertItem>> children() { return vector<shared_ptr<AlbertItem>>(); }
-
-    /** Indicates if the item has children, for performance  */
-    virtual bool hasChildren() const { return false; }
 };
 typedef shared_ptr<AlbertItem> ItemSPtr;
 typedef vector<shared_ptr<AlbertItem>> ItemSPtrVec;

@@ -20,7 +20,7 @@
 #include <QMutex>
 #include <QTimer>
 #include <QMutexLocker>
-#include <QAbstractItemModel>
+#include <QAbstractListModel>
 #include <utility>
 #include <algorithm>
 #include <vector>
@@ -31,24 +31,13 @@ using std::unique_ptr;
 #include "roles.hpp"
 #include "albertapp.h"
 
-struct TreeItem final
-{
-    TreeItem(shared_ptr<AlbertItem> data)
-        : parent(nullptr), data(data), childrenAreLoaded(false) {}
-
-    TreeItem *parent;
-    shared_ptr<AlbertItem> data;
-    std::vector<unique_ptr<TreeItem>> children;
-    bool childrenAreLoaded;
-};
-
 struct Match {
-    TreeItem item;
+    ItemSPtr item;
     short score;
 };
 
 /** ***************************************************************************/
-class QueryPrivate final : public QAbstractItemModel
+class QueryPrivate final : public QAbstractListModel
 {
     Q_OBJECT
     friend class ExtensionManager;
@@ -59,7 +48,7 @@ public:
         : searchTerm_(term), dynamicSort_(false) {
         // Use this when muoltithreadeing
 //        QTimer::singleShot(50, this, &QueryPrivate::makeDynamic);
-    }
+        }
 
 
 
@@ -107,7 +96,6 @@ public:
 
     /** ***********************************************************************/
     void setValid(bool b = true) {
-        QMutexLocker locker(&mutex_);
         isValid_ = b;
     }
 
@@ -141,38 +129,27 @@ public:
 
 
 
-    /** ***********************************************************************/
-    int rowCount(const QModelIndex & parent = QModelIndex()) const override {
-        if (parent.isValid()) // Child level
-            return static_cast<int>(static_cast<TreeItem*>(parent.internalPointer())->data->children().size());
-        else // Root level
-            return static_cast<int>(matches_.size());
-    }
-
-
 
     /** ***********************************************************************/
-    int columnCount(const QModelIndex &parent = QModelIndex()) const override {
-        Q_UNUSED(parent)
-        return 1;
+    int rowCount(const QModelIndex &) const override {
+        return static_cast<int>(matches_.size());
     }
-
 
 
     /** ***********************************************************************/
     QVariant data(const QModelIndex & index, int role) const override {
-        if (index.isValid()) {
-            TreeItem *ti = static_cast<TreeItem*>(index.internalPointer());
+         if (index.isValid()) {
+            ItemSPtr item = matches_[index.row()].item;
             switch (role) {
             case Roles::Text:
-                return ti->data->text();
+                return item->text();
             case Roles::SubText:
-                return ti->data->subtext();
+                return item->subtext();
             case Roles::IconPath:
-                return ti->data->iconPath();
+                return item->iconPath();
             case Roles::Actions: {
                 QStringList actionTexts;
-                for (ActionSPtr &action : ti->data->actions())
+                for (ActionSPtr &action : item->actions())
                     actionTexts.append(action->text());
                 return actionTexts;
             }
@@ -188,12 +165,11 @@ public:
     /** ***********************************************************************/
     bool setData(const QModelIndex &index, const QVariant &value, int role) override {
         if (index.isValid()) {
-            TreeItem *ti = static_cast<TreeItem*>(index.internalPointer());
+            ItemSPtr item = matches_[index.row()].item;
             switch (role) {
             case Roles::Activate: {
                 int actionValue = value.toInt();
-                executeAction(ti->data, actionValue);
-
+                executeAction(item, actionValue);
                 return true;
             }
             default:
@@ -202,6 +178,7 @@ public:
         }
         return false;
     }
+
 
 
     /** ***********************************************************************/
@@ -217,106 +194,6 @@ public:
 
         if (flags.clearInput)
             qApp->clearInput();
-    }
-
-
-    /** ***********************************************************************/
-    Qt::ItemFlags flags(const QModelIndex & index) const override {
-        // Does root need flags?
-        Q_UNUSED(index)
-        return Qt::ItemIsEnabled|Qt::ItemIsSelectable;
-    }
-
-
-
-    /** ***********************************************************************/
-    QModelIndex parent(const QModelIndex & index) const override {
-        // Return if this index is invalid
-        if (!index.isValid())
-            return QModelIndex();
-
-        // Get the parentnode if it exists
-        TreeItem *parentNode = static_cast<TreeItem*>(index.internalPointer())->parent;
-        if (parentNode == nullptr) // Result is top level item -> parent is invalid
-            return QModelIndex();
-
-        // Get the grandparentnode
-        TreeItem *grandParentNode = parentNode->parent;
-        if (grandParentNode == nullptr) { // Parent is on root level
-            // Get the position of the item, Search in matches
-            int row = static_cast<int>(
-                        std::distance(matches_.begin(),
-                                      std::find_if(matches_.begin(),
-                                                   matches_.end(),
-                                                   [&parentNode](const Match &m){
-                                                       return &m.item==parentNode;
-                                                   })
-                                      )
-                        );
-            // Parent of node
-            return createIndex(row, 0, static_cast<void*>(parentNode));
-        }
-        else { // Parent is a child itself
-            // Get the position of the item
-            int row = static_cast<int>(
-                        std::distance(grandParentNode->children.begin(),
-                                      std::find_if(grandParentNode->children.begin(),
-                                                   grandParentNode->children.end(),
-                                                   [&parentNode](const unique_ptr<TreeItem> &u){
-                                                       return u.get()==parentNode;
-                                                   })
-                                      )
-                        );
-
-            // Parent of node
-            return createIndex(row, 0, static_cast<void*>(parentNode));
-        }
-    }
-
-
-
-    /** ***********************************************************************/
-    QModelIndex index(int row, int column = 0, const QModelIndex & parent = QModelIndex()) const override {
-        Q_UNUSED(column)
-
-        if (parent.isValid()) { // Child level
-            // Get parent treeitem
-            TreeItem *parentNode = static_cast<TreeItem*>(parent.internalPointer());
-
-            // If not done already, lazy load the children
-            if (!parentNode->childrenAreLoaded)
-                for (ItemSPtr &ch : parentNode->data->children()){
-                    unique_ptr<TreeItem> uniqueTreeItem(new TreeItem(ch));
-                    uniqueTreeItem->parent = parentNode;
-                    parentNode->children.push_back(std::move(uniqueTreeItem));
-                }
-
-            // Get the child if it exists
-            if (static_cast<size_t>(row) < parentNode->children.size())
-                return createIndex(row, 0, static_cast<void*>(parentNode->children[row].get()));
-            else
-                return QModelIndex();
-        }
-        else { // Root level
-            // Get the child if it exists
-            if (static_cast<size_t>(row) < matches_.size())
-                // have to const cast this. since this function is const, "this"
-                // is const, matches is const, operator [] returns const, item
-                // is const and can therefore not be casted to void
-                return createIndex(row, 0, static_cast<void*>(const_cast<TreeItem*>(&matches_[row].item)));
-            else
-                return QModelIndex();
-        }
-    }
-
-
-
-    /** ***********************************************************************/
-    bool hasChildren(const QModelIndex & parent) const override {
-        if (parent.isValid())
-            return static_cast<TreeItem*>(parent.internalPointer())->data->hasChildren();
-        else
-            return matches_.size() != 0; // Root has always children
     }
 
 private:
