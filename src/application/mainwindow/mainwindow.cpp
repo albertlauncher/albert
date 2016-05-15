@@ -128,11 +128,11 @@ MainWindow::MainWindow(QWidget *parent)
      */
 
     QSettings s;
-    if (s.contains(CFG_WND_POS))
-        move(s.value(CFG_WND_POS).toPoint());
     setShowCentered(s.value(CFG_CENTERED, DEF_CENTERED).toBool());
+    if (!showCentered() && s.contains(CFG_WND_POS) && s.value(CFG_WND_POS).canConvert(QMetaType::QPoint))
+        move(s.value(CFG_WND_POS).toPoint());
     setHideOnFocusLoss(s.value(CFG_HIDE_ON_FOCUS_LOSS, DEF_HIDE_ON_FOCUS_LOSS).toBool());
-    setHideOnClose(s.value(CFG_HIDE_ON_CLOSE, CFG_HIDE_ON_CLOSE).toBool());
+    setHideOnClose(s.value(CFG_HIDE_ON_CLOSE, DEF_HIDE_ON_CLOSE).toBool());
     setAlwaysOnTop(s.value(CFG_ALWAYS_ON_TOP, DEF_ALWAYS_ON_TOP).toBool());
     setMaxProposals(s.value(CFG_MAX_PROPOSALS, DEF_MAX_PROPOSALS).toInt());
     setDisplayScrollbar(s.value(CFG_DISPLAY_SCROLLBAR, DEF_DISPLAY_SCROLLBAR).toBool());
@@ -143,8 +143,6 @@ MainWindow::MainWindow(QWidget *parent)
         qFatal("FATAL: Stylefile not found: %s", theme_.toStdString().c_str());
         qApp->quit();
     }
-    if (s.contains(CFG_WND_POS) && s.value(CFG_WND_POS).canConvert(QMetaType::QPoint))
-        move(s.value(CFG_WND_POS).toPoint());
 
 
     /*
