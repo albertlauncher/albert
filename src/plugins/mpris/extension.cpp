@@ -156,13 +156,6 @@ void MPRIS::Extension::teardownSession() {
 
 
 /** ***************************************************************************/
-bool MPRIS::Extension::pairsort(QPair<int, QString> left, QPair<int, QString> right) {
-    return left.first < right.first;
-}
-
-
-
-/** ***************************************************************************/
 void MPRIS::Extension::handleQuery(shared_ptr<Query> query) {
     // Do not proceed if there are no players running. Why would you even?
     if (mediaPlayers.isEmpty())

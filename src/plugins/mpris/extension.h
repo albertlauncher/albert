@@ -50,8 +50,6 @@ public:
      */
 
 private:
-    static bool pairsort(QPair<int, QString>, QPair<int, QString>);
-
     QPointer<ConfigWidget> widget_;
     //QStringList mediaPlayers;
     QList<Player> mediaPlayers;
