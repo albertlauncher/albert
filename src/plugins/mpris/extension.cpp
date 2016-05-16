@@ -15,8 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDebug>
-#include <QtDBus/QDBusConnection>
-#include <QtDBus/QDBusMessage>
 #include "extension.h"
 #include "configwidget.h"
 #include "query.h"
@@ -24,6 +22,9 @@
 #include "albertapp.h"
 #include "xdgiconlookup.h"
 #include "command.h"
+
+QRegExp MPRIS::Extension::filterRegex("org\\.mpris\\.MediaPlayer2\\.(.*)");
+QDBusMessage MPRIS::Extension::findPlayerMsg = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "ListNames");
 
 /** ***************************************************************************/
 MPRIS::Extension::Extension() : IExtension("MPRIS Control Center") {
@@ -92,7 +93,14 @@ MPRIS::Extension::Extension() : IExtension("MPRIS Control Center") {
 /** ***************************************************************************/
 MPRIS::Extension::~Extension() {
     qDebug("[%s] Finalize extension", name_);
-    // Do sth.
+
+    // If there are still media player objects, delete them
+    if (!mediaPlayers.isEmpty()) {
+        for (Player* p: mediaPlayers) {
+            delete p;
+        }
+    }
+
     qDebug("[%s] Extension finalized", name_);
 }
 
@@ -110,8 +118,16 @@ QWidget *MPRIS::Extension::widget(QWidget *parent) {
 
 /** ***************************************************************************/
 void MPRIS::Extension::setupSession() {
-    static QRegExp filterRegex("org\\.mpris\\.MediaPlayer2\\.(.*)");
-    static QDBusMessage findPlayerMsg = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "ListNames");
+
+    // Clean the memory
+    for (Player* p: mediaPlayers) {
+        delete p;
+    }
+    mediaPlayers.clear();
+
+    // If there is no session bus, abort
+    if (!QDBusConnection::sessionBus().isConnected())
+        return;
 
     // Querying the DBus to list all available services
     QDBusMessage response = QDBusConnection::sessionBus().call(findPlayerMsg);
@@ -128,12 +144,6 @@ void MPRIS::Extension::setupSession() {
 
                     // Filter all mpris capable
                     names = names.filter(filterRegex);
-
-                    // Clean the memory
-                    for (Player* p: mediaPlayers) {
-                        delete p;
-                    }
-                    mediaPlayers.clear();
 
                     for (QString& busid : names) {
                         // And add their player object to the list

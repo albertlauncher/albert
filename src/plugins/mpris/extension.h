@@ -20,6 +20,8 @@
 #include "iextension.h"
 #include "player.h"
 #include "command.h"
+#include <QDBusMessage>
+#include <QDBusConnection>
 
 namespace MPRIS {
 
@@ -50,6 +52,8 @@ public:
      */
 
 private:
+    static QRegExp filterRegex;
+    static QDBusMessage findPlayerMsg;
     QPointer<ConfigWidget> widget_;
     //QStringList mediaPlayers;
     QList<Player*> mediaPlayers;
