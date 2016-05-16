@@ -52,7 +52,7 @@ public:
 private:
     QPointer<ConfigWidget> widget_;
     //QStringList mediaPlayers;
-    QList<Player> mediaPlayers;
+    QList<Player*> mediaPlayers;
     QStringList commands;
     QMap<QString, Command> commandObjects;
 };

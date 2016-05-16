@@ -110,8 +110,10 @@ QWidget *MPRIS::Extension::widget(QWidget *parent) {
 
 /** ***************************************************************************/
 void MPRIS::Extension::setupSession() {
+    static QRegExp filterRegex("org\\.mpris\\.MediaPlayer2\\.(.*)");
+    static QDBusMessage findPlayerMsg = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "ListNames");
+
     // Querying the DBus to list all available services
-    QDBusMessage findPlayerMsg = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "ListNames");
     QDBusMessage response = QDBusConnection::sessionBus().call(findPlayerMsg);
 
     // Do some error checking
@@ -125,11 +127,17 @@ void MPRIS::Extension::setupSession() {
                     // No errors
 
                     // Filter all mpris capable
-                    names = names.filter(QRegExp("org\\.mpris\\.MediaPlayer2\\.(.*)"));
+                    names = names.filter(filterRegex);
+
+                    // Clean the memory
+                    for (Player* p: mediaPlayers) {
+                        delete p;
+                    }
                     mediaPlayers.clear();
-                    for (QString busid : names) {
+
+                    for (QString& busid : names) {
                         // And add their player object to the list
-                        mediaPlayers.append(Player(busid));
+                        mediaPlayers.append(new Player(busid));
                     }
 
 
@@ -180,11 +188,11 @@ void MPRIS::Extension::handleQuery(shared_ptr<Query> query) {
         // Get the command
         Command& toExec = commandObjects.find(cmd).value();
         // For every player:
-        for (Player p: mediaPlayers) {
+        for (Player* p: mediaPlayers) {
             // See if it's applicable for this player
-            if (toExec.isApplicable(p))
+            if (toExec.isApplicable(*p))
                 // And add a match if so
-                query->addMatch(toExec.produceAlbertItem(p), percentage);
+                query->addMatch(toExec.produceAlbertItem(*p), percentage);
         }
     }
 }
