@@ -181,10 +181,16 @@ void MPRIS::Extension::handleQuery(shared_ptr<Query> query) {
     // For every option create entries for every player
     short percentage = 0;
     for (QString& cmd: cmds) {
-        Command& toExec = commandObjects.find(cmd).value();
+        // Calculate how many percent of the query match the command
         percentage = (float)q.length() / (float)cmd.length() *100;
+
+        // Get the command
+        Command& toExec = commandObjects.find(cmd).value();
+        // For every player:
         for (Player p: mediaPlayers) {
+            // See if it's applicable for this player
             if (toExec.isApplicable(p))
+                // And add a match if so
                 query->addMatch(toExec.produceAlbertItem(p), percentage);
         }
     }
