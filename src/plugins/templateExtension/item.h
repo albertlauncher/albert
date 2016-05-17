@@ -30,8 +30,6 @@ public:
     QString text() const override;
     QString subtext() const override;
     QString iconPath() const override;
-    void activate() override;
-    bool hasChildren() const override;
-    vector<shared_ptr<AlbertItem>> children() override;
+    void activate(ExecutionFlags *) override;
 };
 }
