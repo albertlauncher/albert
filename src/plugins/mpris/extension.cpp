@@ -30,60 +30,60 @@ QDBusMessage MPRIS::Extension::findPlayerMsg = QDBusMessage::createMethodCall("o
 MPRIS::Extension::Extension() : IExtension("MPRIS Control Center") {
     qDebug("[%s] Initialize extension", name_);
 
+    // Local cache field
+    QString iconThemeName = QIcon::themeName();
+    XdgIconLookup* iconlookup = XdgIconLookup::instance();
+
     // Setup the DBus commands
+    Command* nextToAdd = new Command(
+                "play", // Label
+                "Start playing", // Title
+                "Play", // DBus Method
+                iconlookup->themeIconPath("media-playback-start", iconThemeName)
+                );
+    nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.PlaybackStatus", "Playing", false);
+    nextToAdd->closesWhenHit();
     commands.append("play");
-    commandObjects.insert("play",
-                          Command(
-                              "play",
-                              "Start playing",
-                              "Play",
-                              XdgIconLookup::instance()->themeIconPath("media-playback-start", QIcon::themeName()))
-                          .applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.PlaybackStatus", QVariant("Playing"), false)
-                          .closeWhenHit()
-                          );
+    commandObjects.insert("play", *nextToAdd);
 
+    nextToAdd = new Command(
+                "pause",
+                "Pause",
+                "Pause",
+                iconlookup->themeIconPath("media-playback-pause", iconThemeName));
+    nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.PlaybackStatus", "Playing", true);
+    nextToAdd->closeWhenHit();
     commands.append("pause");
-    commandObjects.insert("pause",
-                          Command(
-                              "pause",
-                              "Pause",
-                              "Pause",
-                              XdgIconLookup::instance()->themeIconPath("media-playback-pause", QIcon::themeName()))
-                          .applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.PlaybackStatus", QVariant("Playing"), true)
-                          .closeWhenHit()
-                          );
+    commandObjects.insert("pause", *nextToAdd);
 
+    nextToAdd = new Command(
+                "stop",
+                "Stop playing",
+                "Stop",
+                iconlookup->themeIconPath("media-playback-stop", iconThemeName));
+    nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.PlaybackStatus", "Playing", true);
+    nextToAdd->closeWhenHit();
     commands.append("stop");
-    commandObjects.insert("stop",
-                          Command(
-                              "stop",
-                              "Stop playing",
-                              "Stop",
-                              XdgIconLookup::instance()->themeIconPath("media-playback-stop", QIcon::themeName()))
-                          .applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.PlaybackStatus", QVariant("Playing"), true)
-                          .closeWhenHit()
-                          );
+    commandObjects.insert("stop", *nextToAdd);
 
+    nextToAdd = new Command(
+                "next",
+                "Next track",
+                "Next",
+                iconlookup->themeIconPath("media-skip-forward", iconThemeName));
+    nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.CanGoNext", true, true);
+    //.fireCallback([](){qDebug("NEXT");})
     commands.append("next");
-    commandObjects.insert("next",
-                          Command(
-                              "next",
-                              "Next track",
-                              "Next",
-                              XdgIconLookup::instance()->themeIconPath("media-skip-forward", QIcon::themeName()))
-                          .applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.CanGoNext", QVariant(true), true)
-                          //.fireCallback([](){qDebug("NEXT");})
-                          );
+    commandObjects.insert("next", *nextToAdd);
 
+    nextToAdd = new Command(
+                "previous",
+                "Previous track",
+                "Previous",
+                iconlookup->themeIconPath("media-skip-backward", iconThemeName));
+    nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.CanGoPrevious", true, true);
     commands.append("previous");
-    commandObjects.insert("previous",
-                          Command(
-                              "previous",
-                              "Previous track",
-                              "Previous",
-                              XdgIconLookup::instance()->themeIconPath("media-skip-backward", QIcon::themeName()))
-                          .applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.CanGoPrevious", QVariant(true), true)
-                          );
+    commandObjects.insert("previous", *nextToAdd);
 
     qDebug("[%s] Extension initialized", name_);
 }
@@ -100,6 +100,9 @@ MPRIS::Extension::~Extension() {
             delete p;
         }
     }
+
+    // Don't need to destruct the command objects.
+    // This is done by the destructor of QMap
 
     qDebug("[%s] Extension finalized", name_);
 }

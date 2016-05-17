@@ -53,6 +53,8 @@ public:
      * @return                  Returns itself, but now configured for applicability-check
      */
     Command& applicableWhen(const char *path, const char* property, QVariant expectedValue, bool positivity);
+    Command& applicableWhen(const char *path, const char* property, const char* expectedValue, bool positivity);
+    Command& applicableWhen(const char *path, const char* property, bool expectedValue, bool positivity);
 
     /**
      * @brief closeWhenHit  Configure this command to close the albert widget when activated.

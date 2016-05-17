@@ -58,6 +58,20 @@ MPRIS::Command &MPRIS::Command::applicableWhen(const char* path, const char *pro
 
 
 /** ***************************************************************************/
+MPRIS::Command &MPRIS::Command::applicableWhen(const char* path, const char *property, const char* expectedValue, bool positivity) {
+    return applicableWhen(path, property, QVariant(expectedValue), positivity);
+}
+
+
+
+/** ***************************************************************************/
+MPRIS::Command &MPRIS::Command::applicableWhen(const char* path, const char *property, bool expectedValue, bool positivity) {
+    return applicableWhen(path, property, QVariant(expectedValue), positivity);
+}
+
+
+
+/** ***************************************************************************/
 MPRIS::Command &MPRIS::Command::closeWhenHit() {
     closeOnEnter_ = true;
     return *this;
