@@ -23,7 +23,7 @@
 #include "xdgiconlookup.h"
 #include "command.h"
 
-QRegExp MPRIS::Extension::filterRegex("org\\.mpris\\.MediaPlayer2\\.(.*)");
+//QRegExp MPRIS::Extension::filterRegex("org\\.mpris\\.MediaPlayer2\\.(.*)");
 QDBusMessage MPRIS::Extension::findPlayerMsg = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "ListNames");
 
 /** ***************************************************************************/
@@ -141,14 +141,19 @@ void MPRIS::Extension::setupSession() {
         if (args.length() == 1) {
             QVariant arg = args.at(0);
             if (!arg.isNull() && arg.isValid()) {
-                QStringList names = arg.toStringList();
-                if (!names.isEmpty()) {
+                QStringList runningBusEndpoints = arg.toStringList();
+                if (!runningBusEndpoints.isEmpty()) {
                     // No errors
 
                     // Filter all mpris capable
-                    names = names.filter(filterRegex);
+                    //names = names.filter(filterRegex);
+                    QStringList busids;
+                    for (QString& id: runningBusEndpoints) {
+                        if (id.startsWith("org.mpris.MediaPlayer2."))
+                            busids.append(id);
+                    }
 
-                    for (QString& busid : names) {
+                    for (QString& busid : busids) {
                         // And add their player object to the list
                         mediaPlayers.append(new Player(busid));
                     }

@@ -52,7 +52,7 @@ public:
      */
 
 private:
-    static QRegExp filterRegex;
+    //static QRegExp filterRegex;
     static QDBusMessage findPlayerMsg;
     QPointer<ConfigWidget> widget_;
     //QStringList mediaPlayers;
