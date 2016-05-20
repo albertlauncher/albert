@@ -98,11 +98,11 @@ void Files::Extension::Indexer::run() {
             while (dirIterator.hasNext()) {
                 skip = false;
                 dirIterator.next();
+                const QString fileName = dirIterator.fileName();
 
                 // Skip if this file matches one of the ignore patterns
                 for (const QRegExp& ignore : ignores){
-                    QString s = dirIterator.fileName(); // This is insane works only if its a lvalue
-                    if(ignore.exactMatch(s)) {
+                    if(ignore.exactMatch(fileName)) {
                         // Skip if it matches a pattern
                         skip = true;
                         // And forget the other patterns
