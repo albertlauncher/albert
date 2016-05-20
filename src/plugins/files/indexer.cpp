@@ -111,7 +111,7 @@ void Files::Extension::Indexer::run() {
                 }
 
                 // Skip if this file is a symlink and we shoud skip symlinks
-                if (dirIterator.fileInfo().isSymLink() && !extension_->followSymlinks_)
+                if (!skip && !extension_->followSymlinks_ && dirIterator.fileInfo().isSymLink())
                     skip = true;
 
                 // Index this file if the skip flag was not set
