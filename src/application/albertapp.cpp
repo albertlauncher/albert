@@ -26,6 +26,7 @@
 #include "pluginmanager.h"
 #include "extensionmanager.h"
 
+namespace {
 
 /** ***************************************************************************/
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message) {
@@ -49,6 +50,11 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
         fprintf(stderr, "\x1b[41;30;4mFATAL:\x1b[0;1m %s%s\x1b[0m\n", message.toLocal8Bit().constData(), suffix.toLocal8Bit().constData());
         exit(1);
     }
+}
+
+void shutdownHandler(int) {
+    QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
+}
 }
 
 
@@ -130,9 +136,8 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
             extensionManager_->registerExtension(p->instance());
 
     // Quit gracefully on unix signals
-    auto shutdownHandler = [](int){ QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection); };
-    signal(SIGINT, shutdownHandler);
-    signal(SIGTERM, shutdownHandler);
+    for ( int sig : {SIGINT, SIGTERM, SIGHUP} )
+        signal(sig, shutdownHandler);
 
     /*
      *  SETUP SIGNAL FLOW
