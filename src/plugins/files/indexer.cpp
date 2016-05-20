@@ -94,23 +94,29 @@ void Files::Extension::Indexer::run() {
 
             // Index all children in the dir
             QDirIterator dirIterator(canonicalPath, filters, QDirIterator::NoIteratorFlags);
+            bool skip = false;
             while (dirIterator.hasNext()) {
+                skip = false;
                 dirIterator.next();
 
                 // Skip if this file matches one of the ignore patterns
                 for (const QRegExp& ignore : ignores){
                     QString s = dirIterator.fileName(); // This is insane works only if its a lvalue
-                    if(ignore.exactMatch(s))
-                        goto SKIP_THIS;
+                    if(ignore.exactMatch(s)) {
+                        // Skip if it matches a pattern
+                        skip = true;
+                        // And forget the other patterns
+                        break;
+                    }
                 }
 
                 // Skip if this file is a symlink and we shoud skip symlinks
                 if (dirIterator.fileInfo().isSymLink() && !extension_->followSymlinks_)
-                    goto SKIP_THIS;
+                    skip = true;
 
-                // Index this file
-                indexRecursion(dirIterator.fileInfo());
-                SKIP_THIS:;
+                // Index this file if the skip flag was not set
+                if (!skip)
+                    indexRecursion(dirIterator.fileInfo());
             }
         }
     };
