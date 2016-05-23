@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-PROJECT(template)
+PROJECT(virtualbox)
 
 find_package(Qt5Widgets 5.2 REQUIRED)
 
@@ -12,17 +12,15 @@ include_directories(
 set(SRC
     metadata.json
     extension.cpp
-    configwidget.cpp
-    item.cpp
 )
 
-qt5_wrap_ui(UI
-    configwidget.ui
+qt5_add_resources(QRC
+    ${PROJECT_NAME}.qrc
 )
 
-add_library(${PROJECT_NAME} SHARED ${SRC} ${UI})
+add_library(${PROJECT_NAME} SHARED ${SRC} ${QRC} )
 
-target_link_libraries(${PROJECT_NAME} ${Qt5Widgets_LIBRARIES} )
+target_link_libraries(${PROJECT_NAME} ${Qt5Widgets_LIBRARIES} iconlookup)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION share/albert/plugins)

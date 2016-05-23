@@ -54,24 +54,6 @@ QString Template::Item::iconPath() const {
 
 
 /** ***************************************************************************/
-void Template::Item::activate() {
+void Template::Item::activate(ExecutionFlags *) {
     // Do sth cool...
 }
-
-
-
-/** ***************************************************************************/
-bool Template::Item::hasChildren() const {
-    // Performance measure.
-    return false;
-}
-
-
-
-/** ***************************************************************************/
-vector<shared_ptr<AlbertItem>> Template::Item::children() {
-    // Return the children.
-    // Did not want to have children? Subclass A2leaf instead.
-    return vector<shared_ptr<AlbertItem>>();
-}
-

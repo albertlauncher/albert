@@ -73,8 +73,8 @@ void ExtensionManager::startQuery(const QString &searchTerm) {
         std::stable_sort(currentQuery_->impl->matches_.begin(),
                          currentQuery_->impl->matches_.end(),
                          [](const Match &lhs, const Match &rhs) {
-                            return lhs.item.data->urgency() > rhs.item.data->urgency() // Urgency, for e.g. notifications, Warnings
-                                    || lhs.item.data->usageCount() > rhs.item.data->usageCount() // usage count
+                            return lhs.item->urgency() > rhs.item->urgency() // Urgency, for e.g. notifications, Warnings
+                                    || lhs.item->usageCount() > rhs.item->usageCount() // usage count
                                     || lhs.score > rhs.score; // percentual match of the query against the item
                          });
 //    }

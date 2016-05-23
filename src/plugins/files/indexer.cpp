@@ -36,10 +36,6 @@ void Files::Extension::Indexer::run() {
     QDir::Filters filters = QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot;
     if (extension_->indexHidden_)
         filters |= QDir::Hidden;
-    QDirIterator::IteratorFlags flags;
-    if (extension_->followSymlinks_)
-        flags = QDirIterator::FollowSymlinks;
-
 
     // Get a new index
     std::vector<shared_ptr<File>> newIndex;
@@ -48,7 +44,7 @@ void Files::Extension::Indexer::run() {
 
     // Anonymous function that implemnents the index recursion
     std::function<void(const QFileInfo&)> indexRecursion =
-            [this, &newIndex, &indexedDirs, &filters, &flags, &indexRecursion](const QFileInfo& fileInfo){
+            [this, &newIndex, &indexedDirs, &filters, &indexRecursion](const QFileInfo& fileInfo){
         if (abort_) return;
 
         const QString canonicalPath = fileInfo.canonicalFilePath();
@@ -97,7 +93,7 @@ void Files::Extension::Indexer::run() {
             }
 
             // Index all children in the dir
-            QDirIterator dirIterator(canonicalPath, filters, flags);
+            QDirIterator dirIterator(canonicalPath, filters, QDirIterator::NoIteratorFlags);
             while (dirIterator.hasNext()) {
                 dirIterator.next();
 
@@ -107,6 +103,10 @@ void Files::Extension::Indexer::run() {
                     if(ignore.exactMatch(s))
                         goto SKIP_THIS;
                 }
+
+                // Skip if this file is a symlink and we shoud skip symlinks
+                if (dirIterator.fileInfo().isSymLink() && !extension_->followSymlinks_)
+                    goto SKIP_THIS;
 
                 // Index this file
                 indexRecursion(dirIterator.fileInfo());

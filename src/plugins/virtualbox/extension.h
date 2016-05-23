@@ -15,21 +15,35 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QVariant>
-#include <vector>
-using std::vector;
-#include "abstractobjects.hpp"
+#include <QObject>
+#include <QPointer>
+#include "iextension.h"
 
-namespace Template {
-class Item final : public AlbertItem
+namespace VirtualBox {
+
+class ConfigWidget;
+
+class Extension final : public QObject, public IExtension
 {
-public:
-    Item();
-    ~Item();
+    Q_OBJECT
+    Q_INTERFACES(IExtension)
+    Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
-    QString text() const override;
-    QString subtext() const override;
-    QString iconPath() const override;
-    void activate(ExecutionFlags *) override;
+public:
+    Extension();
+
+    /*
+     * Implementation of extension interface
+     */
+
+    void setupSession() override;
+    void handleQuery(shared_ptr<Query> query) override;
+
+private:
+
+    std::vector<QString> names_;
+    std::vector<QString> uuids_;
+    QString iconPath_;
+
 };
 }
