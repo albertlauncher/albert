@@ -23,7 +23,6 @@
 #include <QDir>
 #include <QEvent>
 #include <QFile>
-#include <QSettings>
 #include <QStandardPaths>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -127,7 +126,7 @@ MainWindow::MainWindow(QWidget *parent)
      * Settings
      */
 
-    QSettings s;
+    QSettings &s = *qApp->settings();
     setShowCentered(s.value(CFG_CENTERED, DEF_CENTERED).toBool());
     if (!showCentered() && s.contains(CFG_WND_POS) && s.value(CFG_WND_POS).canConvert(QMetaType::QPoint))
         move(s.value(CFG_WND_POS).toPoint());
@@ -179,7 +178,7 @@ MainWindow::MainWindow(QWidget *parent)
 /** ***************************************************************************/
 MainWindow::~MainWindow() {
     // Save settings
-    QSettings s;
+    QSettings &s = *qApp->settings();
     s.setValue(CFG_CENTERED, showCentered());
     s.setValue(CFG_HIDE_ON_FOCUS_LOSS, hideOnFocusLoss());
     s.setValue(CFG_HIDE_ON_CLOSE, hideOnClose());

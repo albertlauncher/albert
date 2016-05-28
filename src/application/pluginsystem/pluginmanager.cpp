@@ -14,11 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "pluginmanager.h"
 #include <QDirIterator>
 #include <QDebug>
 #include <QStandardPaths>
-#include <QSettings>
+#include "pluginmanager.h"
+#include "albertapp.h"
 
 const QString PluginManager::CFG_BLACKLIST = "blacklist";
 
@@ -27,7 +27,7 @@ PluginManager::PluginManager() {
     qDebug() << "[PluginManager] Loading plugins.";
 
     // Load settings
-    blacklist_ = QSettings().value(CFG_BLACKLIST).toStringList();
+    blacklist_ = qApp->settings()->value(CFG_BLACKLIST).toStringList();
 
     // Iterate over all files in the plugindirs
     QStringList pluginDirs = QStandardPaths::locateAll(
@@ -73,7 +73,7 @@ PluginManager::PluginManager() {
 /** ***************************************************************************/
 PluginManager::~PluginManager() {
     qDebug() << "[PluginManager] Unloading plugins.";
-    QSettings().setValue(CFG_BLACKLIST, blacklist_);
+    qApp->settings()->setValue(CFG_BLACKLIST, blacklist_);
     for (const unique_ptr<PluginSpec> &plugin : plugins_){
         unloadPlugin(plugin);
     }

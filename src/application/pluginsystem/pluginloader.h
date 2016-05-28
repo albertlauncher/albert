@@ -22,7 +22,6 @@
 #include <QPluginLoader>
 
 
-#include <QSettings>
 class PluginSpec final : public QPluginLoader {
 
 public:

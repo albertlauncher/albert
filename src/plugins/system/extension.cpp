@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QSettings>
 #include <QProcess>
 #include <QIcon>
 #include <QDebug>
@@ -23,6 +22,8 @@
 #include "query.h"
 #include "objects.hpp"
 #include "xdgiconlookup.h"
+#include "albertapp.h"
+
 
 namespace {
 
@@ -68,13 +69,13 @@ System::Extension::Extension() : IExtension("System") {
     qDebug("[%s] Initialize extension", name_);
 
     // Load settings
-    QSettings s;
     QString themeName = QIcon::themeName();
-    s.beginGroup(name_);
+    qApp->settings()->beginGroup(name_);
     for (int i = 0; i < NUMCOMMANDS; ++i) {
         iconPaths.push_back(XdgIconLookup::instance()->themeIconPath(iconNames[i], themeName));
-        commands.push_back(s.value(configNames[i], defaultCommand(static_cast<SupportedCommands>(i))).toString());
+        commands.push_back(qApp->settings()->value(configNames[i], defaultCommand(static_cast<SupportedCommands>(i))).toString());
     }
+    qApp->settings()->endGroup();
 
     qDebug("[%s] Extension initialized", name_);
 }
@@ -86,10 +87,10 @@ System::Extension::~Extension() {
     qDebug("[%s] Finalize extension", name_);
 
     // Save settings
-    QSettings s;
-    s.beginGroup(name_);
+    qApp->settings()->beginGroup(name_);
     for (int i = 0; i < NUMCOMMANDS; ++i)
-        s.setValue(configNames[i], commands[i]);
+        qApp->settings()->setValue(configNames[i], commands[i]);
+    qApp->settings()->endGroup();
 
     qDebug("[%s] Extension finalized", name_);
 }

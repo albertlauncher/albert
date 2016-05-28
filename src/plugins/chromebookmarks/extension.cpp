@@ -18,7 +18,6 @@
 #include <QDirIterator>
 #include <QThreadPool>
 #include <QFileInfo>
-#include <QSettings>
 #include <QProcess>
 #include <QDebug>
 #include <QFile>
@@ -28,6 +27,7 @@
 #include "indexer.h"
 #include "bookmark.h"
 #include "query.h"
+#include "albertapp.h"
 
 const char* ChromeBookmarks::Extension::CFG_BOOKMARKS  = "bookmarkfile";
 const char* ChromeBookmarks::Extension::CFG_FUZZY      = "fuzzy";
@@ -38,16 +38,17 @@ ChromeBookmarks::Extension::Extension() : IExtension("Chromebookmarks") {
     qDebug("[%s] Initialize extension", name_);
 
     // Load settings
-    QSettings s;
-    s.beginGroup(name_);
-    offlineIndex_.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
+    qApp->settings()->beginGroup(name_);
+    offlineIndex_.setFuzzy(qApp->settings()->value(CFG_FUZZY, DEF_FUZZY).toBool());
 
     // Load and set a valid path
-    QVariant v = s.value(CFG_BOOKMARKS);
+    QVariant v = qApp->settings()->value(CFG_BOOKMARKS);
     if (v.isValid() && v.canConvert(QMetaType::QString) && QFileInfo(v.toString()).exists())
         setPath(v.toString());
     else
         restorePath();
+
+    qApp->settings()->endGroup();
 
     // Deserialize data
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
@@ -102,10 +103,10 @@ ChromeBookmarks::Extension::~Extension() {
     }
 
     // Save settings
-    QSettings s;
-    s.beginGroup(name_);
-    s.setValue(CFG_FUZZY, offlineIndex_.fuzzy());
-    s.setValue(CFG_BOOKMARKS, bookmarksFile_);
+    qApp->settings()->beginGroup(name_);
+    qApp->settings()->setValue(CFG_FUZZY, offlineIndex_.fuzzy());
+    qApp->settings()->setValue(CFG_BOOKMARKS, bookmarksFile_);
+    qApp->settings()->endGroup();
 
     // Serialize data
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).

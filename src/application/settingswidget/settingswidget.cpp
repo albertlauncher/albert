@@ -28,6 +28,7 @@
 #include "pluginmanager.h"
 #include "pluginmodel.h"
 #include "iextension.h"
+#include "albertapp.h"
 
 
 /** ***************************************************************************/
@@ -187,7 +188,7 @@ void SettingsWidget::changeHotkey(int newhk) {
     if (hotkeyManager_->registerHotkey(newhk)) {
         QString hkText(QKeySequence((newhk&~Qt::GroupSwitchModifier)).toString());//QTBUG-45568
         ui.grabKeyButton_hotkey->setText(hkText);
-        QSettings().setValue("hotkey", hkText);
+        qApp->settings()->setValue("hotkey", hkText);
         hotkeyManager_->unregisterHotkey(oldhk);
     } else {
         ui.grabKeyButton_hotkey->setText(QKeySequence(oldhk).toString());

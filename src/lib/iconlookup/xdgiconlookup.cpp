@@ -16,10 +16,10 @@
 
 #include "xdgiconlookup.h"
 #include <QString>
-#include <QSettings>
 #include <QStandardPaths>
 #include <QDir>
 #include <QFileInfo>
+#include <QSettings>
 
 
 /** ***************************************************************************/

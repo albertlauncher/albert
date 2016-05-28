@@ -18,6 +18,7 @@
 #include <QApplication>
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QLocalSocket>
+#include <QSettings>
 #include <QPointer>
 class MainWindow;
 class HotkeyManager;
@@ -44,6 +45,7 @@ public:
     void showWidget();
     void hideWidget();
     void clearInput();
+    QSettings *settings();
 
 private:
     MainWindow               *mainWindow_;
@@ -52,5 +54,6 @@ private:
     ExtensionManager         *extensionManager_;
     QPointer<SettingsWidget> settingsWidget_;
     QLocalServer             *localServer_;
+    QSettings                *settings_;
 };
 

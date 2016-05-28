@@ -17,6 +17,7 @@
 #include <QDir>
 #include <QStandardPaths>
 #include <QMessageBox>
+#include <QCommandLineParser>
 #include <QDebug>
 #include <csignal>
 #include "albertapp.h"
@@ -74,6 +75,23 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     setQuitOnLastWindowClosed(false);
 
 
+
+    /*
+     *  PARSE COMMANDLINE
+     */
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription("Albert launcher");
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addOptions({
+        {{"c", "config"}, "The config file to use.", "file"}
+    });
+    parser.process(*this);
+
+    settings_ = parser.isSet("c") ? new QSettings(parser.value("c")) : new QSettings;
+
+
     /*
      * INITIALISATION
      */
@@ -91,8 +109,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     QString filePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running";
     if (QFile::exists(filePath)){
         qCritical() << "Application has not been terminated graciously.";
-        QSettings s;
-        if (s.value("warnAboutNonGraciousQuit") != false){
+        if (qApp->settings()->value("warnAboutNonGraciousQuit") != false){
             QMessageBox msgBox(QMessageBox::Critical, "Error",
                                "Albert has not been quit graciously! This "
                                "means your settings and data have not been "
@@ -103,7 +120,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
                                QMessageBox::Yes|QMessageBox::No);
             msgBox.exec();
             if ( msgBox.result() == QMessageBox::Yes )
-                s.setValue("warnAboutNonGraciousQuit", false);
+                qApp->settings()->setValue("warnAboutNonGraciousQuit", false);
         }
     }
 
@@ -184,10 +201,10 @@ AlbertApp::~AlbertApp() {
 /** ***************************************************************************/
 int AlbertApp::exec() {
     //  HOTKEY  //  Albert without hotkey is useless. Force it!
-    QSettings s;
     QVariant v;
-    if (!(s.contains("hotkey") && (v=s.value("hotkey")).canConvert(QMetaType::QString)
-            && hotkeyManager_->registerHotkey(v.toString()))){
+    if (!(qApp->settings()->contains("hotkey")
+          && (v=qApp->settings()->value("hotkey")).canConvert(QMetaType::QString)
+          && hotkeyManager_->registerHotkey(v.toString()))){
         QMessageBox msgBox(QMessageBox::Critical, "Error",
                            "Hotkey is not set or invalid. Press ok to open "
                            "the settings or press close to quit albert.",
@@ -233,4 +250,11 @@ void AlbertApp::hideWidget() {
 /** ***************************************************************************/
 void AlbertApp::clearInput() {
     mainWindow_->setInput("");
+}
+
+
+
+/** ***************************************************************************/
+QSettings *AlbertApp::settings() {
+    return settings_;
 }
