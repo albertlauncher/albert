@@ -77,6 +77,24 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     setQuitOnLastWindowClosed(false);
 
 
+    /*
+     *  SINGLE INSTANCE CHECK
+     */
+
+    QLocalSocket socket;
+    socket.connectToServer(applicationName());
+    if (socket.waitForConnected(500))
+        exit(EXIT_SUCCESS);
+
+    // Start server so second instances will close
+    QLocalServer::removeServer("albertapp");
+    localServer_ = new QLocalServer(this);
+    localServer_->listen("albertapp");
+    QObject::connect(localServer_, &QLocalServer::newConnection, [=] () {
+        mainWindow_->show();
+        localServer_->nextPendingConnection()->close();
+    });
+
 
     /*
      *  PARSE COMMANDLINE
@@ -95,17 +113,24 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
 
 
     /*
-     * INITIALISATION
+     *  UNIX STUFF THAT SHOULD BE IN A PIMPL OR SUBCLASS
      */
 
-    // Make sure data, cache and config dir exists
-    QDir dir;
-    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/" + applicationName());
-    dir.mkpath(".");
-    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
-    dir.mkpath(".");
-    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
-    dir.mkpath(".");
+    // Set terminal emulator
+    QVariant v = qApp->settings()->value(CFG_TERM);
+    if (v.isValid() && v.canConvert(QMetaType::QString))
+        terminal_ = v.toString();
+    else{
+        terminal_ = getenv("TERM");
+        if (terminal_.isEmpty())
+            terminal_ = DEF_TERM;
+        else
+            terminal_.append(" -e %1");
+    }
+
+    // Quit gracefully on unix signals
+    for ( int sig : {SIGINT, SIGTERM, SIGHUP} )
+        signal(sig, shutdownHandler);
 
     // Print e message if the app was not terminated graciously
     QString filePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running";
@@ -124,9 +149,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
             if ( msgBox.result() == QMessageBox::Yes )
                 qApp->settings()->setValue("warnAboutNonGraciousQuit", false);
         }
-    }
-
-    else {
+    } else {
         // Create the running indicator file
         QFile file(filePath);
         if (!file.open(QIODevice::WriteOnly))
@@ -134,62 +157,55 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
         file.close();
     }
 
-    // Set terminal emulator
-    QVariant v = qApp->settings()->value(CFG_TERM);
-    if (v.isValid() && v.canConvert(QMetaType::QString))
-        terminal_ = v.toString();
-    else{
-        terminal_ = getenv("TERM");
-        if (terminal_.isEmpty())
-            terminal_ = DEF_TERM;
-        else
-            terminal_.append(" -e %1");
-    }
+
+    /*
+     * INITIALIZE PATHS
+     */
+
+    // Make sure data, cache and config dir exists
+    QDir dir;
+    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/" + applicationName());
+    dir.mkpath(".");
+    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
+    dir.mkpath(".");
+    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
+    dir.mkpath(".");
+
+
+    /*
+     * INITIALIZE MODULES
+     */
 
     mainWindow_ = new MainWindow;
     hotkeyManager_ = new HotkeyManager;
-    pluginManager_ = new PluginManager;
     extensionManager_ = new ExtensionManager;
-    localServer_ = new QLocalServer(this);
+    pluginManager_ = new PluginManager;
 
-    // Start server so second instances will close
-    QLocalServer::removeServer("albertapp");
-    localServer_->listen("albertapp");
+    QObject::connect(hotkeyManager_, &HotkeyManager::hotKeyPressed,
+                     mainWindow_, &MainWindow::toggleVisibility);
 
-    QObject::connect(localServer_, &QLocalServer::newConnection, [=] () {
-        mainWindow_->show();
-        localServer_->nextPendingConnection()->close();
-    });
+    QObject::connect(mainWindow_, &MainWindow::widgetShown,
+                     extensionManager_, &ExtensionManager::setupSession);
 
-    // Propagade the extensions once
+    QObject::connect(mainWindow_, &MainWindow::widgetHidden,
+                     extensionManager_, &ExtensionManager::teardownSession);
+
+    QObject::connect(mainWindow_, &MainWindow::startQuery,
+                     extensionManager_, &ExtensionManager::startQuery);
+
+    QObject::connect(extensionManager_, &ExtensionManager::newModel,
+                     mainWindow_, &MainWindow::setModel);
+
+    QObject::connect(pluginManager_, &PluginManager::pluginLoaded,
+                     extensionManager_, &ExtensionManager::registerExtension);
+
+    QObject::connect(pluginManager_, &PluginManager::pluginAboutToBeUnloaded,
+                     extensionManager_, &ExtensionManager::unregisterExtension);
+
+    // Propagade the extensions once TODO this is bullshitty design
     for (const unique_ptr<PluginSpec> &p : pluginManager_->plugins())
         if (p->isLoaded())
             extensionManager_->registerExtension(p->instance());
-
-    // Quit gracefully on unix signals
-    for ( int sig : {SIGINT, SIGTERM, SIGHUP} )
-        signal(sig, shutdownHandler);
-
-    /*
-     *  SETUP SIGNAL FLOW
-     */
-
-    // Show mainwindow if hotkey is pressed
-    QObject::connect(hotkeyManager_, &HotkeyManager::hotKeyPressed,mainWindow_, &MainWindow::toggleVisibility);
-
-    // Extrension manager signals new proposals
-    QObject::connect(extensionManager_, &ExtensionManager::newModel, mainWindow_, &MainWindow::setModel);
-
-    // Setup and teardown query sessions with the state of the widget
-    QObject::connect(mainWindow_, &MainWindow::widgetShown,  extensionManager_, &ExtensionManager::setupSession);
-    QObject::connect(mainWindow_, &MainWindow::widgetHidden, extensionManager_, &ExtensionManager::teardownSession);
-
-    // A change in text triggers requests
-    QObject::connect(mainWindow_, &MainWindow::startQuery, extensionManager_, &ExtensionManager::startQuery);
-
-    // Publish loaded plugins to the specific interface handlers
-    QObject::connect(pluginManager_, &PluginManager::pluginLoaded, extensionManager_, &ExtensionManager::registerExtension);
-    QObject::connect(pluginManager_, &PluginManager::pluginAboutToBeUnloaded, extensionManager_, &ExtensionManager::unregisterExtension);
 }
 
 
