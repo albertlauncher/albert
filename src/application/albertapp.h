@@ -46,6 +46,8 @@ public:
     void hideWidget();
     void clearInput();
     QSettings *settings();
+    QString term();
+    void setTerm(const QString&);
 
 private:
     MainWindow               *mainWindow_;
@@ -55,5 +57,11 @@ private:
     QPointer<SettingsWidget> settingsWidget_;
     QLocalServer             *localServer_;
     QSettings                *settings_;
+    QString                  terminal_;
+
+    static const char* CFG_TERM;
+    static const char* DEF_TERM;
 };
+
+
 

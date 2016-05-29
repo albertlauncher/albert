@@ -17,6 +17,7 @@
 #pragma once
 #include <QProcess>
 #include "abstractobjects.hpp"
+#include "albertapp.h"
 #include "desktopentry.h"
 
 namespace Applications {
@@ -34,7 +35,7 @@ public:
 
     /** Executes the action */
     void activate(ExecutionFlags *) override {
-        QProcess::startDetached((term_)? DesktopEntry::terminal.arg(exec_) : exec_);
+        QProcess::startDetached((term_)? qApp->term().arg(exec_) : exec_);
         ++app_->usage_;
     }
 

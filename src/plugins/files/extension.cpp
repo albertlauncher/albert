@@ -73,6 +73,11 @@ Files::Extension::Extension() : IExtension("Files") {
     else
         restorePaths();
 
+    // If the root dirs change write it to the settings
+    connect(this, &Extension::rootDirsChanged, [this](const QStringList& dirs){
+        qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_PATHS), dirs);
+    });
+
     // Deserialize data
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
                    filePath(QString("%1.dat").arg(name_)));
@@ -125,20 +130,6 @@ Files::Extension::~Extension() {
         connect(indexer_.data(), &Indexer::destroyed, &loop, &QEventLoop::quit);
         loop.exec();
     }
-
-    // Save settings
-    qApp->settings()->beginGroup(name_);
-    qApp->settings()->setValue(CFG_FUZZY, offlineIndex_.fuzzy());
-    qApp->settings()->setValue(CFG_PATHS, rootDirs_);
-    qApp->settings()->setValue(CFG_INDEX_AUDIO, indexAudio_);
-    qApp->settings()->setValue(CFG_INDEX_VIDEO, indexVideo_);
-    qApp->settings()->setValue(CFG_INDEX_IMAGE, indexImage_);
-    qApp->settings()->setValue(CFG_INDEX_DIR, indexDirs_);
-    qApp->settings()->setValue(CFG_INDEX_DOC, indexDocs_);
-    qApp->settings()->setValue(CFG_INDEX_HIDDEN,indexHidden_);
-    qApp->settings()->setValue(CFG_FOLLOW_SYMLINKS,followSymlinks_);
-    qApp->settings()->setValue(CFG_SCAN_INTERVAL,scanInterval_);
-    qApp->settings()->endGroup();
 
     // Serialize data
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
@@ -340,7 +331,64 @@ void Files::Extension::updateIndex() {
 
 
 /** ***************************************************************************/
+void Files::Extension::setIndexAudio(bool b)  {
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_INDEX_AUDIO), b);
+    indexAudio_ = b;
+}
+
+
+
+/** ***************************************************************************/
+void Files::Extension::setIndexVideo(bool b)  {
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_INDEX_VIDEO), b);
+    indexVideo_ = b;
+}
+
+
+
+/** ***************************************************************************/
+void Files::Extension::setIndexImage(bool b)  {
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_INDEX_IMAGE), b);
+    indexImage_ = b;
+}
+
+
+
+/** ***************************************************************************/
+void Files::Extension::setIndexDocs(bool b)  {
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_INDEX_DOC), b);
+    indexDocs_ = b;
+}
+
+
+
+/** ***************************************************************************/
+void Files::Extension::setIndexDirs(bool b)  {
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_INDEX_DIR), b);
+    indexDirs_ = b;
+}
+
+
+
+/** ***************************************************************************/
+void Files::Extension::setIndexHidden(bool b)  {
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_INDEX_HIDDEN), b);
+    indexHidden_ = b;
+}
+
+
+
+/** ***************************************************************************/
+void Files::Extension::setFollowSymlinks(bool b)  {
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_FOLLOW_SYMLINKS), b);
+    followSymlinks_ = b;
+}
+
+
+
+/** ***************************************************************************/
 void Files::Extension::setScanInterval(uint minutes) {
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_SCAN_INTERVAL), minutes);
     scanInterval_=minutes;
     minuteCounter_=0;
     (minutes == 0) ? minuteTimer_.stop() : minuteTimer_.start();
@@ -350,15 +398,9 @@ void Files::Extension::setScanInterval(uint minutes) {
 
 
 /** ***************************************************************************/
-bool Files::Extension::fuzzy() {
-    return offlineIndex_.fuzzy();
-}
-
-
-
-/** ***************************************************************************/
 void Files::Extension::setFuzzy(bool b) {
     indexAccess_.lock();
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_FUZZY), b);
     offlineIndex_.setFuzzy(b);
     indexAccess_.unlock();
 }

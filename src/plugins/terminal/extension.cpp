@@ -44,13 +44,6 @@ Terminal::Extension::Extension() : IExtension("Terminal"), dirtyFlag_(false) {
 
 
 /** ***************************************************************************/
-Terminal::Extension::~Extension() {
-    qDebug("[%s] Extension finalized", name_);
-}
-
-
-
-/** ***************************************************************************/
 QWidget *Terminal::Extension::widget(QWidget *parent) {
     if (widget_.isNull())
         widget_ = new ConfigWidget(parent);

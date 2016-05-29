@@ -95,6 +95,11 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyMana
     connect(ui.checkBox_shadow, &QCheckBox::toggled,
             mainWindow_, &MainWindow::setDisplayShadow);
 
+    // TERM CMD
+    ui.lineEdit_term->setText(qApp->term());
+    connect(ui.lineEdit_term, &QLineEdit::textEdited,
+            qApp, &AlbertApp::setTerm);
+
     // THEMES
     QFileInfoList themes;
     int i = 0 ;

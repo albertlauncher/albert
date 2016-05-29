@@ -58,6 +58,8 @@ void shutdownHandler(int) {
 }
 }
 
+const char* AlbertApp::CFG_TERM = "terminal";
+const char* AlbertApp::DEF_TERM = "xterm -e %1";
 
 /** ***************************************************************************/
 AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
@@ -130,6 +132,18 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
         if (!file.open(QIODevice::WriteOnly))
             qCritical() << "Could not create file:" << filePath;
         file.close();
+    }
+
+    // Set terminal emulator
+    QVariant v = qApp->settings()->value(CFG_TERM);
+    if (v.isValid() && v.canConvert(QMetaType::QString))
+        terminal_ = v.toString();
+    else{
+        terminal_ = getenv("TERM");
+        if (terminal_.isEmpty())
+            terminal_ = DEF_TERM;
+        else
+            terminal_.append(" -e %1");
     }
 
     mainWindow_ = new MainWindow;
@@ -257,4 +271,19 @@ void AlbertApp::clearInput() {
 /** ***************************************************************************/
 QSettings *AlbertApp::settings() {
     return settings_;
+}
+
+
+
+/** ***************************************************************************/
+QString AlbertApp::term(){
+    return terminal_;
+}
+
+
+
+/** ***************************************************************************/
+void AlbertApp::setTerm(const QString &terminal){
+    qApp->settings()->setValue(CFG_TERM, terminal);
+    terminal_ = terminal;
 }

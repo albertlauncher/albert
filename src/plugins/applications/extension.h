@@ -58,8 +58,10 @@ public:
     void addDir(const QString &dirPath);
     void removeDir(const QString &dirPath);
     void restorePaths();
-    bool fuzzy();
+
+    bool fuzzy() { return offlineIndex_.fuzzy(); }
     void setFuzzy(bool b = true);
+
     void updateIndex();
 
 private:
@@ -76,8 +78,6 @@ private:
     static const char* CFG_PATHS;
     static const char* CFG_FUZZY;
     static const bool  DEF_FUZZY;
-    static const char* CFG_TERM;
-    static const char* DEF_TERM;
     static const bool  UPDATE_DELAY;
 
 signals:

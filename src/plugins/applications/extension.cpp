@@ -31,8 +31,6 @@
 const char* Applications::Extension::CFG_PATHS    = "paths";
 const char* Applications::Extension::CFG_FUZZY    = "fuzzy";
 const bool  Applications::Extension::DEF_FUZZY    = false;
-const char* Applications::Extension::CFG_TERM     = "terminal";
-const char* Applications::Extension::DEF_TERM     = "xterm -e %1";
 const bool  Applications::Extension::UPDATE_DELAY = 60000;
 
 /** ***************************************************************************/
@@ -55,19 +53,10 @@ Applications::Extension::Extension() : IExtension("Applications") {
     else
         restorePaths();
 
-    qApp->settings()->endGroup();
-
-    // Set terminal emulator
-    v = qApp->settings()->value(CFG_TERM);
-    if (v.isValid() && v.canConvert(QMetaType::QString))
-        DesktopEntry::terminal = v.toString();
-    else{
-        DesktopEntry::terminal = getenv("TERM");
-        if (DesktopEntry::terminal.isEmpty())
-            DesktopEntry::terminal = DEF_TERM;
-        else
-            DesktopEntry::terminal.append(" -e %1");
-    }
+    // If the root dirs change write it to the settings
+    connect(this, &Extension::rootDirsChanged, [this](const QStringList& dirs){
+        qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_PATHS), dirs);
+    });
 
     qApp->settings()->endGroup();
 
@@ -125,13 +114,6 @@ Applications::Extension::~Extension() {
         connect(indexer_.data(), &Indexer::destroyed, &loop, &QEventLoop::quit);
         loop.exec();
     }
-
-    // Save settings
-    qApp->settings()->beginGroup(name_);
-    qApp->settings()->setValue(CFG_FUZZY, offlineIndex_.fuzzy());
-    qApp->settings()->setValue(CFG_PATHS, rootDirs_);
-    qApp->settings()->setValue(CFG_TERM, Applications::DesktopEntry::terminal);
-    qApp->settings()->endGroup();
 
     // Serialize data
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
@@ -305,18 +287,8 @@ void Applications::Extension::updateIndex() {
     }
 }
 
-
-
-/** ***************************************************************************/
-bool Applications::Extension::fuzzy() {
-    return offlineIndex_.fuzzy();
-}
-
-
-
 /** ***************************************************************************/
 void Applications::Extension::setFuzzy(bool b) {
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_FUZZY), b);
     offlineIndex_.setFuzzy(b);
 }
-
-

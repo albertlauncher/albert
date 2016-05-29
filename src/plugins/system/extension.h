@@ -37,7 +37,6 @@ class Extension final : public QObject, public IExtension
 
 public:
     Extension();
-    ~Extension();
 
     /*
      * Implementation of extension interface

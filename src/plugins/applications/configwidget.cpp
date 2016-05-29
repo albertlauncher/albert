@@ -14,11 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "configwidget.h"
-#include "desktopentry.h"
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QStandardPaths>
+#include "configwidget.h"
+#include "desktopentry.h"
 
 /** ***************************************************************************/
 Applications::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
@@ -29,9 +29,6 @@ Applications::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
 
     connect(ui.pushButton_removePath, &QPushButton::clicked,
             this, &ConfigWidget::onButton_PathRemove);
-
-    connect(ui.pushButton_terminal, &QPushButton::clicked,
-            this, &ConfigWidget::onButton_Terminal);
 }
 
 
@@ -56,20 +53,4 @@ void Applications::ConfigWidget::onButton_PathRemove() {
     if (ui.listWidget_paths->currentItem() == nullptr)
         return;
     emit requestRemovePath(ui.listWidget_paths->currentItem()->text());
-}
-
-
-
-/** ***************************************************************************/
-void Applications::ConfigWidget::onButton_Terminal() {
-    QString newterm = QInputDialog::getText(
-                this,
-                tr("Terminal Command"),
-                tr("Terminal"),
-                QLineEdit::Normal,
-                Applications::DesktopEntry::terminal);
-
-    if(newterm.isEmpty())
-        return;
-    Applications::DesktopEntry::terminal = newterm;
 }

@@ -30,7 +30,6 @@ class MainWindow final : public QWidget
 public:
 
     MainWindow(QWidget *parent = 0);
-    ~MainWindow();
 
     void show();
     void hide();

@@ -83,21 +83,6 @@ System::Extension::Extension() : IExtension("System") {
 
 
 /** ***************************************************************************/
-System::Extension::~Extension() {
-    qDebug("[%s] Finalize extension", name_);
-
-    // Save settings
-    qApp->settings()->beginGroup(name_);
-    for (int i = 0; i < NUMCOMMANDS; ++i)
-        qApp->settings()->setValue(configNames[i], commands[i]);
-    qApp->settings()->endGroup();
-
-    qDebug("[%s] Extension finalized", name_);
-}
-
-
-
-/** ***************************************************************************/
 QWidget *System::Extension::widget(QWidget *parent) {
     if (widget_.isNull()) {
         widget_ = new ConfigWidget(parent);
@@ -106,27 +91,45 @@ QWidget *System::Extension::widget(QWidget *parent) {
 
         widget_->ui.lineEdit_lock->setText(commands[LOCK]);
         connect(widget_->ui.lineEdit_lock, &QLineEdit::textEdited,
-                [this](const QString &s){commands[LOCK]= s;});
+                [this](const QString &s){
+            commands[LOCK]= s;
+            qApp->settings()->setValue(QString("%1/%2").arg(name_, configNames[LOCK]), s);
+        });
 
         widget_->ui.lineEdit_logout->setText(commands[LOGOUT]);
         connect(widget_->ui.lineEdit_logout, &QLineEdit::textEdited,
-                [this](const QString &s){commands[LOGOUT]= s;});
+                [this](const QString &s){
+            commands[LOGOUT]= s;
+            qApp->settings()->setValue(QString("%1/%2").arg(name_, configNames[LOGOUT]), s);
+        });
 
         widget_->ui.lineEdit_suspend->setText(commands[SUSPEND]);
         connect(widget_->ui.lineEdit_suspend, &QLineEdit::textEdited,
-                [this](const QString &s){commands[SUSPEND]= s;});
+                [this](const QString &s){
+            commands[SUSPEND]= s;
+            qApp->settings()->setValue(QString("%1/%2").arg(name_, configNames[SUSPEND]), s);
+        });
 
         widget_->ui.lineEdit_hibernate->setText(commands[HIBERNATE]);
         connect(widget_->ui.lineEdit_hibernate, &QLineEdit::textEdited,
-                [this](const QString &s){commands[HIBERNATE]= s;});
+                [this](const QString &s){
+            commands[HIBERNATE]= s;
+            qApp->settings()->setValue(QString("%1/%2").arg(name_, configNames[HIBERNATE]), s);
+        });
 
         widget_->ui.lineEdit_reboot->setText(commands[REBOOT]);
         connect(widget_->ui.lineEdit_reboot, &QLineEdit::textEdited,
-                [this](const QString &s){commands[REBOOT]= s;});
+                [this](const QString &s){
+            commands[REBOOT]= s;
+            qApp->settings()->setValue(QString("%1/%2").arg(name_, configNames[REBOOT]), s);
+        });
 
         widget_->ui.lineEdit_shutdown->setText(commands[POWEROFF]);
         connect(widget_->ui.lineEdit_shutdown, &QLineEdit::textEdited,
-                [this](const QString &s){commands[POWEROFF]= s;});
+                [this](const QString &s){
+            commands[POWEROFF]= s;
+            qApp->settings()->setValue(QString("%1/%2").arg(name_, configNames[POWEROFF]), s);
+        });
     }
     return widget_;
 }

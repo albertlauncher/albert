@@ -56,11 +56,6 @@ Calculator::Extension::Extension() : IExtension("Calculator") {
 Calculator::Extension::~Extension() {
     qDebug("[%s] Finalize extension", name_);
 
-    // Save settings
-    qApp->settings()->beginGroup(name_);
-    qApp->settings()->setValue(CFG_SEPS, !loc_.numberOptions().testFlag(QLocale::OmitGroupSeparator));
-    qApp->settings()->endGroup();
-
     delete parser_;
 
     qDebug("[%s] Extension finalized", name_);
@@ -75,6 +70,7 @@ QWidget *Calculator::Extension::widget(QWidget *parent) {
 
         widget_->ui.checkBox_groupsep->setChecked(!(loc_.numberOptions() & QLocale::OmitGroupSeparator));
         connect(widget_->ui.checkBox_groupsep, &QCheckBox::toggled, [this](bool checked){
+            qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_SEPS), checked);
             this->loc_.setNumberOptions( (checked) ? this->loc_.numberOptions() & ~QLocale::OmitGroupSeparator
                                                   : this->loc_.numberOptions() | QLocale::OmitGroupSeparator );
         });
