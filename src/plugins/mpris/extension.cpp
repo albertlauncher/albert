@@ -176,12 +176,6 @@ void MPRIS::Extension::setupSession() {
 
 
 /** ***************************************************************************/
-void MPRIS::Extension::teardownSession() {
-}
-
-
-
-/** ***************************************************************************/
 void MPRIS::Extension::handleQuery(shared_ptr<Query> query) {
     // Do not proceed if there are no players running. Why would you even?
     if (mediaPlayers.isEmpty())
@@ -213,12 +207,4 @@ void MPRIS::Extension::handleQuery(shared_ptr<Query> query) {
                 query->addMatch(toExec.produceAlbertItem(*p), percentage);
         }
     }
-}
-
-
-
-/** ***************************************************************************/
-void MPRIS::Extension::handleFallbackQuery(shared_ptr<Query> query) {
-    // Avoid annoying warnings
-    Q_UNUSED(query)
 }
