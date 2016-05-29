@@ -60,24 +60,5 @@ void MPRIS::Item::activate(ExecutionFlags *flags) {
     QDBusConnection::sessionBus().send(message_);
     flags->hideWidget = hideAfter_;
     flags->clearInput = hideAfter_;
-//    if (hideAfter_)
-//        qApp->hideWidget();
-}
-
-
-
-/** ***************************************************************************/
-bool MPRIS::Item::hasChildren() const {
-    // Performance measure.
-    return false;
-}
-
-
-
-/** ***************************************************************************/
-vector<shared_ptr<AlbertItem>> MPRIS::Item::children() {
-    // Return the children.
-    // Did not want to have children? Subclass A2leaf instead.
-    return vector<shared_ptr<AlbertItem>>();
 }
 

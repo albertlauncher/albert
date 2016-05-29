@@ -33,8 +33,6 @@ public:
     QString subtext() const override;
     QString iconPath() const override;
     void activate(ExecutionFlags *) override;
-    bool hasChildren() const override;
-    vector<shared_ptr<AlbertItem>> children() override;
 
 private:
     Player& player_;
