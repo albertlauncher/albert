@@ -163,6 +163,8 @@ QString System::Extension::defaultCommand(SupportedCommands command){
     case LOCK:
         if (de == "X-Cinnamon")
             return "cinnamon-screensaver-command -l";
+        else if (de == "MATE")
+            return "mate-screensaver-command --lock";
         else
             return "notify-send \"Error.\" \"Lock command is not set.\" --icon=system-lock-screen";
 
@@ -175,18 +177,24 @@ QString System::Extension::defaultCommand(SupportedCommands command){
             return "cinnamon-session-quit --logout --no-prompt";
         else if (de == "XFCE")
             return "gnome-session-quit --logout --no-prompt";
+        else if (de == "MATE")
+            return "mate-session-save --logout";
         else
             return "notify-send \"Error.\" \"Logout command is not set.\" --icon=system-log-out";
 
     case SUSPEND:
         if (de == "XFCE")
             return "xfce4-session-logout --suspend";
+        else if (de == "MATE")
+            return "sh -c \"mate-screensaver-command --lock && systemctl suspend -i\"";
         else
             return "systemctl suspend -i";
 
     case HIBERNATE:
         if (de == "XFCE")
             return "xfce4-session-logout --hibernate";
+        else if (de == "MATE")
+            return "sh -c \"mate-screensaver-command --lock && systemctl hibernate -i\"";
         else
             return "systemctl hibernate -i";
 
@@ -199,6 +207,8 @@ QString System::Extension::defaultCommand(SupportedCommands command){
             return "cinnamon-session-quit --reboot";
         else if (de == "XFCE")
             return "xfce4-session-logout --reboot";
+        else if (de == "MATE")
+            return "mate-session-save --shutdown-dialog";
         else
             return "notify-send \"Error.\" \"Reboot command is not set.\" --icon=system-reboot";
 
@@ -211,6 +221,8 @@ QString System::Extension::defaultCommand(SupportedCommands command){
             return "cinnamon-session-quit --power-off --no-prompt";
         else if (de == "XFCE")
             return "xfce4-session-logout --halt";
+        else if (de == "MATE")
+            return "mate-session-save --shutdown-dialog";
         else
             return "notify-send \"Error.\" \"Poweroff command is not set.\" --icon=system-shutdown";
 
