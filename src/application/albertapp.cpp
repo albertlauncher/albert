@@ -78,38 +78,76 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
 
 
     /*
+     *  PARSE COMMANDLINE
+     */
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription("Albert is still in alpha. These options "
+                                     "may change in future versions.");
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addOptions({
+                          {{"c", "config"}, "The config file to use.", "file"},
+                          {{"k", "hotkey"}, "Overwrite the hotkey to use.", "hotkey"},
+    });
+    parser.addPositionalArgument("command", "Command to send to a running instance, if any. (show, hide, toggle)", "[command]");
+    parser.process(*this);
+    const QStringList args = parser.positionalArguments();
+    if ( args.count() > 1)
+        qFatal("Invalid amount of arguments");
+
+    if ( parser.isSet("config") ) {
+        settings_ = new QSettings(parser.value("c"));
+    } else {
+        settings_ = new QSettings;
+    }
+
+    if ( parser.isSet("hotkey") ) {
+        settings_->setValue("hotkey", parser.value("hotkey"));
+    }
+
+
+    /*
      *  SINGLE INSTANCE CHECK
      */
 
     QLocalSocket socket;
     socket.connectToServer(applicationName());
-    if (socket.waitForConnected(500))
-        exit(EXIT_SUCCESS);
+    if ( socket.waitForConnected(500) ) {
+        qDebug("There is another instance of albert running.");
+
+        // If there is a command send it
+        if ( args.count() == 1 ){
+            socket.write(args.at(0).toLocal8Bit());
+            socket.flush();
+            qDebug("Command sent to the running instance.");
+        }
+        socket.close();
+        ::exit(EXIT_SUCCESS);
+    } else if ( args.count() == 1 ) {
+        qDebug("There is no other instance of albert running.");
+        ::exit(EXIT_FAILURE);
+    }
 
     // Start server so second instances will close
-    QLocalServer::removeServer("albertapp");
+    QLocalServer::removeServer(applicationName());
     localServer_ = new QLocalServer(this);
-    localServer_->listen("albertapp");
-    QObject::connect(localServer_, &QLocalServer::newConnection, [=] () {
-        mainWindow_->show();
-        localServer_->nextPendingConnection()->close();
+    localServer_->listen(applicationName());
+    QObject::connect(localServer_, &QLocalServer::newConnection, [this] () {
+        QLocalSocket* socket = localServer_->nextPendingConnection(); // Should be safe
+        socket->waitForReadyRead(500);
+        if (socket->bytesAvailable()) {
+            QString msg = QString::fromLocal8Bit(socket->readAll());
+            socket->close();
+            socket->deleteLater();
+            if ( msg == "show")
+                mainWindow_->show();
+            else if ( msg == "hide")
+                mainWindow_->hide();
+            else if ( msg == "toggle")
+                mainWindow_->toggleVisibility();
+        }
     });
-
-
-    /*
-     *  PARSE COMMANDLINE
-     */
-
-    QCommandLineParser parser;
-    parser.setApplicationDescription("Albert launcher");
-    parser.addHelpOption();
-    parser.addVersionOption();
-    parser.addOptions({
-        {{"c", "config"}, "The config file to use.", "file"}
-    });
-    parser.process(*this);
-
-    settings_ = parser.isSet("c") ? new QSettings(parser.value("c")) : new QSettings;
 
 
     /*
