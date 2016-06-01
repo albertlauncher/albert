@@ -108,20 +108,22 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
 
 
     /*
-     *  SINGLE INSTANCE CHECK
+     *  SINGLE INSTANCE / IPC
      */
 
     QLocalSocket socket;
     socket.connectToServer(applicationName());
     if ( socket.waitForConnected(500) ) {
-        qDebug("There is another instance of albert running.");
-
         // If there is a command send it
         if ( args.count() == 1 ){
             socket.write(args.at(0).toLocal8Bit());
             socket.flush();
-            qDebug("Command sent to the running instance.");
+            socket.waitForReadyRead(500);
+            if (socket.bytesAvailable())
+                qDebug(socket.readAll());
         }
+        else
+            qDebug("There is another instance of albert running.");
         socket.close();
         ::exit(EXIT_SUCCESS);
     } else if ( args.count() == 1 ) {
@@ -138,15 +140,21 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
         socket->waitForReadyRead(500);
         if (socket->bytesAvailable()) {
             QString msg = QString::fromLocal8Bit(socket->readAll());
-            socket->close();
-            socket->deleteLater();
-            if ( msg == "show")
+            if ( msg == "show") {
                 mainWindow_->show();
-            else if ( msg == "hide")
+                socket->write("Application set visible.");
+            } else if ( msg == "hide") {
                 mainWindow_->hide();
-            else if ( msg == "toggle")
-                mainWindow_->toggleVisibility();
+                socket->write("Application set invisible.");
+            } else if ( msg == "toggle") {
+                mainWindow_->setVisible(!mainWindow_->isVisible());
+                socket->write("Visibility toggled.");
+            } else
+                socket->write("Command not supported.");
         }
+        socket->flush();
+        socket->close();
+        socket->deleteLater();
     });
 
 
@@ -219,8 +227,10 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     extensionManager_ = new ExtensionManager;
     pluginManager_ = new PluginManager;
 
-    QObject::connect(hotkeyManager_, &HotkeyManager::hotKeyPressed,
-                     mainWindow_, &MainWindow::toggleVisibility);
+    // toggle visibility
+    QObject::connect(hotkeyManager_, &HotkeyManager::hotKeyPressed,[this](){
+        mainWindow_->setVisible(!mainWindow_->isVisible());
+    });
 
     QObject::connect(mainWindow_, &MainWindow::widgetShown,
                      extensionManager_, &ExtensionManager::setupSession);

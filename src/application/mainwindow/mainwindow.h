@@ -31,9 +31,7 @@ public:
 
     MainWindow(QWidget *parent = 0);
 
-    void show();
-    void hide();
-    void toggleVisibility();
+    void setVisible(bool visible) override;
 
     void setInput(const QString&);
 

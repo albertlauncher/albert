@@ -176,42 +176,35 @@ MainWindow::MainWindow(QWidget *parent)
 
 
 /** ***************************************************************************/
-void MainWindow::show() {
-    ui.inputLine->clear();
-    // Move widget after showing it since QWidget::move works only on widgets
-    // that have been shown once. Well as long as this does not introduce ugly
-    // flicker this may be okay.
-    QWidget::show();
-    if (showCentered_){
-        QDesktopWidget *dw = QApplication::desktop();
-        this->move(dw->availableGeometry(dw->screenNumber(QCursor::pos())).center()
-                   -QPoint(rect().right()/2,192 ));
+void MainWindow::setVisible(bool visible) {
+
+    // Skip if nothing to do
+    if ( (isVisible() && visible) || !(isVisible() || visible) )
+        return;
+
+    QWidget::setVisible(visible);
+
+    if (visible) {
+        // Move widget after showing it since QWidget::move works only on widgets
+        // that have been shown once. Well as long as this does not introduce ugly
+        // flicker this may be okay.
+        if (showCentered_){
+            QDesktopWidget *dw = QApplication::desktop();
+            this->move(dw->availableGeometry(dw->screenNumber(QCursor::pos())).center()
+                       -QPoint(rect().right()/2,192 ));
+        }
+        this->raise();
+        this->activateWindow();
+        ui.inputLine->setFocus();
+        emit widgetShown();
+    } else {
+        setShowActions(false);
+        ui.inputLine->clear();
+        history_->resetIterator();
+        setModel(nullptr);
+        emit widgetHidden();
     }
-    this->raise();
-    this->activateWindow();
-    ui.inputLine->setFocus();
-    emit widgetShown();
 }
-
-
-
-/** ***************************************************************************/
-void MainWindow::hide() {
-    setShowActions(false);
-    ui.inputLine->clear();
-    history_->resetIterator();
-    setModel(nullptr);
-    QWidget::hide();
-    emit widgetHidden();
-}
-
-
-
-/** ***************************************************************************/
-void MainWindow::toggleVisibility() {
-    this->isVisible() ? this->hide() : this->show();
-}
-
 
 
 /** ***************************************************************************/
