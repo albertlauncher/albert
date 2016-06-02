@@ -371,6 +371,26 @@ gets hidden instead of the application getting quit.</string>
               </item>
              </layout>
             </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <item>
+               <widget class="QLabel" name="label_term">
+                <property name="text">
+                 <string>Terminal command:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="lineEdit_term">
+                <property name="toolTip">
+                 <string>This is the command that is used to start
+terminal applications, i.e. applications
+that use a textual user interface.</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
            </layout>
           </widget>
          </item>

@@ -16,13 +16,13 @@
 
 #include <QDebug>
 #include <QClipboard>
-#include <QSettings>
 #include "extension.h"
 #include "configwidget.h"
 #include "query.h"
 #include "objects.hpp"
 #include "xdgiconlookup.h"
 #include "muParser.h"
+#include "albertapp.h"
 
 const QString Calculator::Extension::CFG_SEPS      = "group_separators";
 const bool    Calculator::Extension::CFG_SEPS_DEF  = false;
@@ -32,12 +32,12 @@ Calculator::Extension::Extension() : IExtension("Calculator") {
     qDebug("[%s] Initialize extension", name_);
 
     // Load settings
-    QSettings s;
-    s.beginGroup(name_);
+    qApp->settings()->beginGroup(name_);
     loc_.setNumberOptions(
-                (s.value(CFG_SEPS, CFG_SEPS_DEF).toBool())
+                (qApp->settings()->value(CFG_SEPS, CFG_SEPS_DEF).toBool())
                 ? loc_.numberOptions() & ~QLocale::OmitGroupSeparator
                 : loc_.numberOptions() | QLocale::OmitGroupSeparator );
+    qApp->settings()->endGroup();
 
     QString iconPath = XdgIconLookup::instance()->themeIconPath("calc", QIcon::themeName());
     iconPath_ = iconPath.isNull() ? ":calc" : iconPath;
@@ -56,11 +56,6 @@ Calculator::Extension::Extension() : IExtension("Calculator") {
 Calculator::Extension::~Extension() {
     qDebug("[%s] Finalize extension", name_);
 
-    // Save settings
-    QSettings s;
-    s.beginGroup(name_);
-    s.setValue(CFG_SEPS, !loc_.numberOptions().testFlag(QLocale::OmitGroupSeparator));
-
     delete parser_;
 
     qDebug("[%s] Extension finalized", name_);
@@ -75,6 +70,7 @@ QWidget *Calculator::Extension::widget(QWidget *parent) {
 
         widget_->ui.checkBox_groupsep->setChecked(!(loc_.numberOptions() & QLocale::OmitGroupSeparator));
         connect(widget_->ui.checkBox_groupsep, &QCheckBox::toggled, [this](bool checked){
+            qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_SEPS), checked);
             this->loc_.setNumberOptions( (checked) ? this->loc_.numberOptions() & ~QLocale::OmitGroupSeparator
                                                   : this->loc_.numberOptions() | QLocale::OmitGroupSeparator );
         });

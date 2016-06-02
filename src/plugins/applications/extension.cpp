@@ -17,7 +17,6 @@
 #include <QStandardPaths>
 #include <QThreadPool>
 #include <QMessageBox>
-#include <QSettings>
 #include <QDebug>
 #include <QFile>
 #include <QDir>
@@ -27,12 +26,11 @@
 #include "desktopentry.h"
 #include "indexer.h"
 #include "query.h"
+#include "albertapp.h"
 
 const char* Applications::Extension::CFG_PATHS    = "paths";
 const char* Applications::Extension::CFG_FUZZY    = "fuzzy";
 const bool  Applications::Extension::DEF_FUZZY    = false;
-const char* Applications::Extension::CFG_TERM     = "terminal";
-const char* Applications::Extension::DEF_TERM     = "xterm -e %1";
 const bool  Applications::Extension::UPDATE_DELAY = 60000;
 
 /** ***************************************************************************/
@@ -45,28 +43,22 @@ Applications::Extension::Extension() : IExtension("Applications") {
         QIcon::setThemeSearchPaths(QStringList(userSpaceIconsPath.absoluteFilePath()) << QIcon::themeSearchPaths());
 
     // Load settings
-    QSettings s;
-    s.beginGroup(name_);
-    offlineIndex_.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
+    qApp->settings()->beginGroup(name_);
+    offlineIndex_.setFuzzy(qApp->settings()->value(CFG_FUZZY, DEF_FUZZY).toBool());
 
     // Load the paths or set a default
-    QVariant v = s.value(CFG_PATHS);
+    QVariant v = qApp->settings()->value(CFG_PATHS);
     if (v.isValid() && v.canConvert(QMetaType::QStringList))
         rootDirs_ = v.toStringList();
     else
         restorePaths();
 
-    // Set terminal emulator
-    v = s.value(CFG_TERM);
-    if (v.isValid() && v.canConvert(QMetaType::QString))
-        DesktopEntry::terminal = v.toString();
-    else{
-        DesktopEntry::terminal = getenv("TERM");
-        if (DesktopEntry::terminal.isEmpty())
-            DesktopEntry::terminal = DEF_TERM;
-        else
-            DesktopEntry::terminal.append(" -e %1");
-    }
+    // If the root dirs change write it to the settings
+    connect(this, &Extension::rootDirsChanged, [this](const QStringList& dirs){
+        qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_PATHS), dirs);
+    });
+
+    qApp->settings()->endGroup();
 
     // Keep the Applications in sync with the OS
     updateDelayTimer_.setInterval(UPDATE_DELAY);
@@ -122,13 +114,6 @@ Applications::Extension::~Extension() {
         connect(indexer_.data(), &Indexer::destroyed, &loop, &QEventLoop::quit);
         loop.exec();
     }
-
-    // Save settings
-    QSettings s;
-    s.beginGroup(name_);
-    s.setValue(CFG_FUZZY, offlineIndex_.fuzzy());
-    s.setValue(CFG_PATHS, rootDirs_);
-    s.setValue(CFG_TERM, Applications::DesktopEntry::terminal);
 
     // Serialize data
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
@@ -302,18 +287,8 @@ void Applications::Extension::updateIndex() {
     }
 }
 
-
-
-/** ***************************************************************************/
-bool Applications::Extension::fuzzy() {
-    return offlineIndex_.fuzzy();
-}
-
-
-
 /** ***************************************************************************/
 void Applications::Extension::setFuzzy(bool b) {
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_FUZZY), b);
     offlineIndex_.setFuzzy(b);
 }
-
-

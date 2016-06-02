@@ -23,7 +23,6 @@
 #include <QDir>
 #include <QEvent>
 #include <QFile>
-#include <QSettings>
 #include <QStandardPaths>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -127,7 +126,7 @@ MainWindow::MainWindow(QWidget *parent)
      * Settings
      */
 
-    QSettings s;
+    QSettings &s = *qApp->settings();
     setShowCentered(s.value(CFG_CENTERED, DEF_CENTERED).toBool());
     if (!showCentered() && s.contains(CFG_WND_POS) && s.value(CFG_WND_POS).canConvert(QMetaType::QPoint))
         move(s.value(CFG_WND_POS).toPoint());
@@ -177,60 +176,35 @@ MainWindow::MainWindow(QWidget *parent)
 
 
 /** ***************************************************************************/
-MainWindow::~MainWindow() {
-    // Save settings
-    QSettings s;
-    s.setValue(CFG_CENTERED, showCentered());
-    s.setValue(CFG_HIDE_ON_FOCUS_LOSS, hideOnFocusLoss());
-    s.setValue(CFG_HIDE_ON_CLOSE, hideOnClose());
-    s.setValue(CFG_ALWAYS_ON_TOP, alwaysOnTop());
-    s.setValue(CFG_WND_POS, pos());
-    s.setValue(CFG_THEME, theme());
-    s.setValue(CFG_MAX_PROPOSALS, maxProposals());
-    s.setValue(CFG_DISPLAY_SCROLLBAR, displayScrollbar());
-    s.setValue(CFG_DISPLAY_ICONS, displayIcons());
-    s.setValue(CFG_DISPLAY_SHADOW, displayShadow());
-}
+void MainWindow::setVisible(bool visible) {
 
+    // Skip if nothing to do
+    if ( (isVisible() && visible) || !(isVisible() || visible) )
+        return;
 
+    QWidget::setVisible(visible);
 
-/** ***************************************************************************/
-void MainWindow::show() {
-    ui.inputLine->clear();
-    // Move widget after showing it since QWidget::move works only on widgets
-    // that have been shown once. Well as long as this does not introduce ugly
-    // flicker this may be okay.
-    QWidget::show();
-    if (showCentered_){
-        QDesktopWidget *dw = QApplication::desktop();
-        this->move(dw->availableGeometry(dw->screenNumber(QCursor::pos())).center()
-                   -QPoint(rect().right()/2,192 ));
+    if (visible) {
+        // Move widget after showing it since QWidget::move works only on widgets
+        // that have been shown once. Well as long as this does not introduce ugly
+        // flicker this may be okay.
+        if (showCentered_){
+            QDesktopWidget *dw = QApplication::desktop();
+            this->move(dw->availableGeometry(dw->screenNumber(QCursor::pos())).center()
+                       -QPoint(rect().right()/2,192 ));
+        }
+        this->raise();
+        this->activateWindow();
+        ui.inputLine->setFocus();
+        emit widgetShown();
+    } else {
+        setShowActions(false);
+        ui.inputLine->clear();
+        history_->resetIterator();
+        setModel(nullptr);
+        emit widgetHidden();
     }
-    this->raise();
-    this->activateWindow();
-    ui.inputLine->setFocus();
-    emit widgetShown();
 }
-
-
-
-/** ***************************************************************************/
-void MainWindow::hide() {
-    setShowActions(false);
-    ui.inputLine->clear();
-    history_->resetIterator();
-    setModel(nullptr);
-    QWidget::hide();
-    emit widgetHidden();
-}
-
-
-
-/** ***************************************************************************/
-void MainWindow::toggleVisibility() {
-    this->isVisible() ? this->hide() : this->show();
-}
-
 
 
 /** ***************************************************************************/
@@ -252,6 +226,7 @@ void MainWindow::setModel(QAbstractItemModel *m) {
 
 /** ***************************************************************************/
 void MainWindow::setShowCentered(bool b) {
+    qApp->settings()->setValue(CFG_CENTERED, b);
     showCentered_ = b;
 }
 
@@ -285,6 +260,7 @@ bool MainWindow::setTheme(const QString &theme) {
         if (fi.baseName() == theme_) {
             QFile f(fi.canonicalFilePath());
             if (f.open(QFile::ReadOnly)) {
+                qApp->settings()->setValue(CFG_THEME, theme_);
                 setStyleSheet(f.readAll());
                 f.close();
                 success = true;
@@ -306,6 +282,7 @@ bool MainWindow::hideOnFocusLoss() const {
 
 /** ***************************************************************************/
 void MainWindow::setHideOnFocusLoss(bool b) {
+    qApp->settings()->setValue(CFG_HIDE_ON_FOCUS_LOSS, b);
     hideOnFocusLoss_ = b;
 }
 
@@ -320,6 +297,7 @@ bool MainWindow::hideOnClose() const {
 
 /** ***************************************************************************/
 void MainWindow::setHideOnClose(bool b) {
+    qApp->settings()->setValue(CFG_HIDE_ON_CLOSE, b);
     hideOnClose_ = b;
 }
 
@@ -334,6 +312,7 @@ bool MainWindow::alwaysOnTop() const {
 
 /** ***************************************************************************/
 void MainWindow::setAlwaysOnTop(bool alwaysOnTop) {
+    qApp->settings()->setValue(CFG_ALWAYS_ON_TOP, alwaysOnTop);
     alwaysOnTop ? setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint)
                 : setWindowFlags(windowFlags() & ~Qt::WindowStaysOnTopHint);
 }
@@ -342,6 +321,7 @@ void MainWindow::setAlwaysOnTop(bool alwaysOnTop) {
 
 /** ***************************************************************************/
 void MainWindow::setMaxProposals(uint8_t maxItems) {
+    qApp->settings()->setValue(CFG_MAX_PROPOSALS, maxItems);
     ui.proposalList->setMaxItems(maxItems);
 }
 
@@ -356,6 +336,7 @@ bool MainWindow::displayIcons() const {
 
 /** ***************************************************************************/
 void MainWindow::setDisplayIcons(bool value) {
+    qApp->settings()->setValue(CFG_DISPLAY_ICONS, value);
     ui.proposalList->setDisplayIcons(value);
 }
 
@@ -370,6 +351,7 @@ bool MainWindow::displayScrollbar() const {
 
 /** ***************************************************************************/
 void MainWindow::setDisplayScrollbar(bool value) {
+    qApp->settings()->setValue(CFG_DISPLAY_SCROLLBAR, value);
     ui.proposalList->setVerticalScrollBarPolicy(
                 value ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
 }
@@ -385,6 +367,7 @@ bool MainWindow::displayShadow() const {
 
 /** ***************************************************************************/
 void MainWindow::setDisplayShadow(bool value) {
+    qApp->settings()->setValue(CFG_DISPLAY_SHADOW, value);
     displayShadow_ = value;
     graphicsEffect()->setEnabled(value);
     value ? setContentsMargins(20,20,20,20) : setContentsMargins(0,0,0,0);
@@ -477,7 +460,8 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
 /** ***************************************************************************/
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
     // Move the wisget with the mouse
-    this->move(event->globalPos() - clickOffset_);
+    move(event->globalPos() - clickOffset_);
+    qApp->settings()->setValue(CFG_WND_POS, pos());
     QWidget::mouseMoveEvent(event);
 }
 

@@ -58,8 +58,10 @@ public:
     const QString &path();
     void setPath(const QString &path);
     void restorePath();
-    bool fuzzy();
+
+    bool fuzzy() { return offlineIndex_.fuzzy(); }
     void setFuzzy(bool b = true);
+
     void updateIndex();
 
 private:
@@ -72,7 +74,7 @@ private:
     QFileSystemWatcher watcher_;
 
     /* const */
-    static const char* CFG_BOOKMARKS;
+    static const char* CFG_PATH;
     static const char* CFG_FUZZY;
     static const bool  DEF_FUZZY;
 

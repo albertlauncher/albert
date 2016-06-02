@@ -60,30 +60,30 @@ public:
 
     // Properties
     inline bool indexAudio() { return indexAudio_; }
-    inline void setIndexAudio(bool b = true)  { indexAudio_ = b; }
+    inline void setIndexAudio(bool b = true);
 
     inline bool indexVideo() { return indexVideo_; }
-    inline void setIndexVideo(bool b = true)  { indexVideo_ = b; }
+    inline void setIndexVideo(bool b = true);
 
-    inline void setIndexImage(bool b = true)  { indexImage_ = b; }
     inline bool indexImage() { return indexImage_; }
+    inline void setIndexImage(bool b = true);
 
     inline bool indexDocs() { return indexDocs_; }
-    inline void setIndexDocs(bool b = true)  { indexDocs_ = b; }
+    inline void setIndexDocs(bool b = true);
 
     inline bool indexDirs() { return indexDirs_; }
-    inline void setIndexDirs(bool b = true)  { indexDirs_ = b; }
+    inline void setIndexDirs(bool b = true);
 
     inline bool indexHidden() { return indexHidden_; }
-    inline void setIndexHidden(bool b = true)  { indexHidden_ = b; }
+    inline void setIndexHidden(bool b = true);
 
     inline bool followSymlinks() { return followSymlinks_; }
-    inline void setFollowSymlinks(bool b = true)  { followSymlinks_ = b; }
+    inline void setFollowSymlinks(bool b = true);
 
     inline unsigned int scanInterval() { return scanInterval_; }
     void setScanInterval(uint minutes);
 
-    bool fuzzy();
+    bool fuzzy() { return offlineIndex_.fuzzy(); }
     void setFuzzy(bool b = true);
 
 private:

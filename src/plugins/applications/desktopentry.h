@@ -78,9 +78,6 @@ public:
     /** Deserialize the desktop entry */
     void deserialize(QDataStream &in);
 
-    /** The command to start applications in a terminal */
-    static QString terminal;
-
 private:
     /** Translate escape sequences in a string */
     static QString escapeString(const QString &unescaped);

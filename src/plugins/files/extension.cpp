@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QSettings>
 #include <QDebug>
 #include <QStandardPaths>
 #include <QMessageBox>
@@ -26,6 +25,7 @@
 #include "indexer.h"
 #include "file.h"
 #include "query.h"
+#include "albertapp.h"
 
 const char* Files::Extension::CFG_PATHS           = "paths";
 const char* Files::Extension::CFG_FUZZY           = "fuzzy";
@@ -55,23 +55,28 @@ Files::Extension::Extension() : IExtension("Files") {
     minuteTimer_.setInterval(60000);
 
     // Load settings
-    QSettings s;
-    s.beginGroup(name_);
-    indexAudio_ = s.value(CFG_INDEX_AUDIO, DEF_INDEX_AUDIO).toBool();
-    indexVideo_ = s.value(CFG_INDEX_VIDEO, DEF_INDEX_VIDEO).toBool();
-    indexImage_ = s.value(CFG_INDEX_IMAGE, DEF_INDEX_IMAGE).toBool();
-    indexDocs_ = s.value(CFG_INDEX_DOC, DEF_INDEX_DOC).toBool();
-    indexDirs_ = s.value(CFG_INDEX_DIR, DEF_INDEX_DIR).toBool();
-    indexHidden_ = s.value(CFG_INDEX_HIDDEN, DEF_INDEX_HIDDEN).toBool();
-    followSymlinks_ = s.value(CFG_FOLLOW_SYMLINKS, DEF_FOLLOW_SYMLINKS).toBool();
-    offlineIndex_.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
+    qApp->settings()->beginGroup(name_);
+    indexAudio_ = qApp->settings()->value(CFG_INDEX_AUDIO, DEF_INDEX_AUDIO).toBool();
+    indexVideo_ = qApp->settings()->value(CFG_INDEX_VIDEO, DEF_INDEX_VIDEO).toBool();
+    indexImage_ = qApp->settings()->value(CFG_INDEX_IMAGE, DEF_INDEX_IMAGE).toBool();
+    indexDocs_ =  qApp->settings()->value(CFG_INDEX_DOC, DEF_INDEX_DOC).toBool();
+    indexDirs_ =  qApp->settings()->value(CFG_INDEX_DIR, DEF_INDEX_DIR).toBool();
+    indexHidden_ = qApp->settings()->value(CFG_INDEX_HIDDEN, DEF_INDEX_HIDDEN).toBool();
+    followSymlinks_ = qApp->settings()->value(CFG_FOLLOW_SYMLINKS, DEF_FOLLOW_SYMLINKS).toBool();
+    offlineIndex_.setFuzzy(qApp->settings()->value(CFG_FUZZY, DEF_FUZZY).toBool());
+    qApp->settings()->endGroup();
 
     // Load the paths or set a default
-    QVariant v = s.value(CFG_PATHS);
+    QVariant v = qApp->settings()->value(CFG_PATHS);
     if (v.isValid() && v.canConvert(QMetaType::QStringList))
         rootDirs_ = v.toStringList();
     else
         restorePaths();
+
+    // If the root dirs change write it to the settings
+    connect(this, &Extension::rootDirsChanged, [this](const QStringList& dirs){
+        qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_PATHS), dirs);
+    });
 
     // Deserialize data
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
@@ -97,7 +102,7 @@ Files::Extension::Extension() : IExtension("Files") {
 
     // scan interval timer
     connect(&minuteTimer_, &QTimer::timeout, this, &Extension::onMinuteTick);
-    setScanInterval(s.value(CFG_SCAN_INTERVAL, DEF_SCAN_INTERVAL).toUInt());
+    setScanInterval(qApp->settings()->value(CFG_SCAN_INTERVAL, DEF_SCAN_INTERVAL).toUInt());
 
     // Trigger an initial update
     updateIndex();
@@ -125,20 +130,6 @@ Files::Extension::~Extension() {
         connect(indexer_.data(), &Indexer::destroyed, &loop, &QEventLoop::quit);
         loop.exec();
     }
-
-    // Save settings
-    QSettings s;
-    s.beginGroup(name_);
-    s.setValue(CFG_FUZZY, offlineIndex_.fuzzy());
-    s.setValue(CFG_PATHS, rootDirs_);
-    s.setValue(CFG_INDEX_AUDIO, indexAudio_);
-    s.setValue(CFG_INDEX_VIDEO, indexVideo_);
-    s.setValue(CFG_INDEX_IMAGE, indexImage_);
-    s.setValue(CFG_INDEX_DIR, indexDirs_);
-    s.setValue(CFG_INDEX_DOC, indexDocs_);
-    s.setValue(CFG_INDEX_HIDDEN,indexHidden_);
-    s.setValue(CFG_FOLLOW_SYMLINKS,followSymlinks_);
-    s.setValue(CFG_SCAN_INTERVAL,scanInterval_);
 
     // Serialize data
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
@@ -340,7 +331,64 @@ void Files::Extension::updateIndex() {
 
 
 /** ***************************************************************************/
+void Files::Extension::setIndexAudio(bool b)  {
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_INDEX_AUDIO), b);
+    indexAudio_ = b;
+}
+
+
+
+/** ***************************************************************************/
+void Files::Extension::setIndexVideo(bool b)  {
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_INDEX_VIDEO), b);
+    indexVideo_ = b;
+}
+
+
+
+/** ***************************************************************************/
+void Files::Extension::setIndexImage(bool b)  {
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_INDEX_IMAGE), b);
+    indexImage_ = b;
+}
+
+
+
+/** ***************************************************************************/
+void Files::Extension::setIndexDocs(bool b)  {
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_INDEX_DOC), b);
+    indexDocs_ = b;
+}
+
+
+
+/** ***************************************************************************/
+void Files::Extension::setIndexDirs(bool b)  {
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_INDEX_DIR), b);
+    indexDirs_ = b;
+}
+
+
+
+/** ***************************************************************************/
+void Files::Extension::setIndexHidden(bool b)  {
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_INDEX_HIDDEN), b);
+    indexHidden_ = b;
+}
+
+
+
+/** ***************************************************************************/
+void Files::Extension::setFollowSymlinks(bool b)  {
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_FOLLOW_SYMLINKS), b);
+    followSymlinks_ = b;
+}
+
+
+
+/** ***************************************************************************/
 void Files::Extension::setScanInterval(uint minutes) {
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_SCAN_INTERVAL), minutes);
     scanInterval_=minutes;
     minuteCounter_=0;
     (minutes == 0) ? minuteTimer_.stop() : minuteTimer_.start();
@@ -350,15 +398,9 @@ void Files::Extension::setScanInterval(uint minutes) {
 
 
 /** ***************************************************************************/
-bool Files::Extension::fuzzy() {
-    return offlineIndex_.fuzzy();
-}
-
-
-
-/** ***************************************************************************/
 void Files::Extension::setFuzzy(bool b) {
     indexAccess_.lock();
+    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_FUZZY), b);
     offlineIndex_.setFuzzy(b);
     indexAccess_.unlock();
 }

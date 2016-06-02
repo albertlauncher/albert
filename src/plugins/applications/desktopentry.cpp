@@ -28,7 +28,6 @@
 #include "xdgiconlookup.h"
 using std::map;
 
-QString Applications::DesktopEntry::terminal;
 QStringList Applications::DesktopEntry::supportedGraphicalSudo = {"gksu", "kdesu"};
 
 /** ***************************************************************************/
@@ -48,7 +47,7 @@ void Applications::DesktopEntry::activate(ExecutionFlags *) {
 
     // General escape rule has been applied on parse time
     // Apply exec escape rule
-    QStringList arguments = execValueEscape( (term_) ? terminal.arg(quoteString(exec_)) : exec_);
+    QStringList arguments = execValueEscape( (term_) ? qApp->term().arg(quoteString(exec_)) : exec_);
     QString program = arguments.takeFirst();
 
     // TODO: Apply code fiels expansion (currently done at parese time)

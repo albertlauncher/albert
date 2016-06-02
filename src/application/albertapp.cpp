@@ -17,6 +17,7 @@
 #include <QDir>
 #include <QStandardPaths>
 #include <QMessageBox>
+#include <QCommandLineParser>
 #include <QDebug>
 #include <csignal>
 #include "albertapp.h"
@@ -57,6 +58,8 @@ void shutdownHandler(int) {
 }
 }
 
+const char* AlbertApp::CFG_TERM = "terminal";
+const char* AlbertApp::DEF_TERM = "xterm -e %1";
 
 /** ***************************************************************************/
 AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
@@ -75,7 +78,134 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
 
 
     /*
-     * INITIALISATION
+     *  PARSE COMMANDLINE
+     */
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription("Albert is still in alpha. These options "
+                                     "may change in future versions.");
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addOptions({
+                          {{"c", "config"}, "The config file to use.", "file"},
+                          {{"k", "hotkey"}, "Overwrite the hotkey to use.", "hotkey"},
+    });
+    parser.addPositionalArgument("command", "Command to send to a running instance, if any. (show, hide, toggle)", "[command]");
+    parser.process(*this);
+    const QStringList args = parser.positionalArguments();
+    if ( args.count() > 1)
+        qFatal("Invalid amount of arguments");
+
+    if ( parser.isSet("config") ) {
+        settings_ = new QSettings(parser.value("c"));
+    } else {
+        settings_ = new QSettings;
+    }
+
+    if ( parser.isSet("hotkey") ) {
+        settings_->setValue("hotkey", parser.value("hotkey"));
+    }
+
+
+    /*
+     *  SINGLE INSTANCE / IPC
+     */
+
+    QLocalSocket socket;
+    socket.connectToServer(applicationName());
+    if ( socket.waitForConnected(500) ) {
+        // If there is a command send it
+        if ( args.count() == 1 ){
+            socket.write(args.at(0).toLocal8Bit());
+            socket.flush();
+            socket.waitForReadyRead(500);
+            if (socket.bytesAvailable())
+                qDebug(socket.readAll());
+        }
+        else
+            qDebug("There is another instance of albert running.");
+        socket.close();
+        ::exit(EXIT_SUCCESS);
+    } else if ( args.count() == 1 ) {
+        qDebug("There is no other instance of albert running.");
+        ::exit(EXIT_FAILURE);
+    }
+
+    // Start server so second instances will close
+    QLocalServer::removeServer(applicationName());
+    localServer_ = new QLocalServer(this);
+    localServer_->listen(applicationName());
+    QObject::connect(localServer_, &QLocalServer::newConnection, [this] () {
+        QLocalSocket* socket = localServer_->nextPendingConnection(); // Should be safe
+        socket->waitForReadyRead(500);
+        if (socket->bytesAvailable()) {
+            QString msg = QString::fromLocal8Bit(socket->readAll());
+            if ( msg == "show") {
+                mainWindow_->show();
+                socket->write("Application set visible.");
+            } else if ( msg == "hide") {
+                mainWindow_->hide();
+                socket->write("Application set invisible.");
+            } else if ( msg == "toggle") {
+                mainWindow_->setVisible(!mainWindow_->isVisible());
+                socket->write("Visibility toggled.");
+            } else
+                socket->write("Command not supported.");
+        }
+        socket->flush();
+        socket->close();
+        socket->deleteLater();
+    });
+
+
+    /*
+     *  UNIX STUFF THAT SHOULD BE IN A PIMPL OR SUBCLASS
+     */
+
+    // Set terminal emulator
+    QVariant v = qApp->settings()->value(CFG_TERM);
+    if (v.isValid() && v.canConvert(QMetaType::QString))
+        terminal_ = v.toString();
+    else{
+        terminal_ = getenv("TERM");
+        if (terminal_.isEmpty())
+            terminal_ = DEF_TERM;
+        else
+            terminal_.append(" -e %1");
+    }
+
+    // Quit gracefully on unix signals
+    for ( int sig : {SIGINT, SIGTERM, SIGHUP} )
+        signal(sig, shutdownHandler);
+
+    // Print e message if the app was not terminated graciously
+    QString filePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running";
+    if (QFile::exists(filePath)){
+        qCritical() << "Application has not been terminated graciously.";
+        if (qApp->settings()->value("warnAboutNonGraciousQuit") != false){
+            QMessageBox msgBox(QMessageBox::Critical, "Error",
+                               "Albert has not been quit graciously! This "
+                               "means your settings and data have not been "
+                               "saved. If you did not kill albert yourself, "
+                               "albert most likely crashed. Please report this "
+                               "on github. Do you want to ignore this warnings "
+                               "in future?",
+                               QMessageBox::Yes|QMessageBox::No);
+            msgBox.exec();
+            if ( msgBox.result() == QMessageBox::Yes )
+                qApp->settings()->setValue("warnAboutNonGraciousQuit", false);
+        }
+    } else {
+        // Create the running indicator file
+        QFile file(filePath);
+        if (!file.open(QIODevice::WriteOnly))
+            qCritical() << "Could not create file:" << filePath;
+        file.close();
+    }
+
+
+    /*
+     * INITIALIZE PATHS
      */
 
     // Make sure data, cache and config dir exists
@@ -87,78 +217,43 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     dir.setPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
     dir.mkpath(".");
 
-    // Print e message if the app was not terminated graciously
-    QString filePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running";
-    if (QFile::exists(filePath)){
-        qCritical() << "Application has not been terminated graciously.";
-        QSettings s;
-        if (s.value("warnAboutNonGraciousQuit") != false){
-            QMessageBox msgBox(QMessageBox::Critical, "Error",
-                               "Albert has not been quit graciously! This "
-                               "means your settings and data have not been "
-                               "saved. If you did not kill albert yourself, "
-                               "albert most likely crashed. Please report this "
-                               "on github. Do you want to ignore this warnings "
-                               "in future?",
-                               QMessageBox::Yes|QMessageBox::No);
-            msgBox.exec();
-            if ( msgBox.result() == QMessageBox::Yes )
-                s.setValue("warnAboutNonGraciousQuit", false);
-        }
-    }
 
-    else {
-        // Create the running indicator file
-        QFile file(filePath);
-        if (!file.open(QIODevice::WriteOnly))
-            qCritical() << "Could not create file:" << filePath;
-        file.close();
-    }
+    /*
+     * INITIALIZE MODULES
+     */
 
     mainWindow_ = new MainWindow;
     hotkeyManager_ = new HotkeyManager;
-    pluginManager_ = new PluginManager;
     extensionManager_ = new ExtensionManager;
-    localServer_ = new QLocalServer(this);
+    pluginManager_ = new PluginManager;
 
-    // Start server so second instances will close
-    QLocalServer::removeServer("albertapp");
-    localServer_->listen("albertapp");
-
-    QObject::connect(localServer_, &QLocalServer::newConnection, [=] () {
-        mainWindow_->show();
-        localServer_->nextPendingConnection()->close();
+    // toggle visibility
+    QObject::connect(hotkeyManager_, &HotkeyManager::hotKeyPressed,[this](){
+        mainWindow_->setVisible(!mainWindow_->isVisible());
     });
 
-    // Propagade the extensions once
+    QObject::connect(mainWindow_, &MainWindow::widgetShown,
+                     extensionManager_, &ExtensionManager::setupSession);
+
+    QObject::connect(mainWindow_, &MainWindow::widgetHidden,
+                     extensionManager_, &ExtensionManager::teardownSession);
+
+    QObject::connect(mainWindow_, &MainWindow::startQuery,
+                     extensionManager_, &ExtensionManager::startQuery);
+
+    QObject::connect(extensionManager_, &ExtensionManager::newModel,
+                     mainWindow_, &MainWindow::setModel);
+
+    QObject::connect(pluginManager_, &PluginManager::pluginLoaded,
+                     extensionManager_, &ExtensionManager::registerExtension);
+
+    QObject::connect(pluginManager_, &PluginManager::pluginAboutToBeUnloaded,
+                     extensionManager_, &ExtensionManager::unregisterExtension);
+
+    // Propagade the extensions once TODO this is bullshitty design
     for (const unique_ptr<PluginSpec> &p : pluginManager_->plugins())
         if (p->isLoaded())
             extensionManager_->registerExtension(p->instance());
-
-    // Quit gracefully on unix signals
-    for ( int sig : {SIGINT, SIGTERM, SIGHUP} )
-        signal(sig, shutdownHandler);
-
-    /*
-     *  SETUP SIGNAL FLOW
-     */
-
-    // Show mainwindow if hotkey is pressed
-    QObject::connect(hotkeyManager_, &HotkeyManager::hotKeyPressed,mainWindow_, &MainWindow::toggleVisibility);
-
-    // Extrension manager signals new proposals
-    QObject::connect(extensionManager_, &ExtensionManager::newModel, mainWindow_, &MainWindow::setModel);
-
-    // Setup and teardown query sessions with the state of the widget
-    QObject::connect(mainWindow_, &MainWindow::widgetShown,  extensionManager_, &ExtensionManager::setupSession);
-    QObject::connect(mainWindow_, &MainWindow::widgetHidden, extensionManager_, &ExtensionManager::teardownSession);
-
-    // A change in text triggers requests
-    QObject::connect(mainWindow_, &MainWindow::startQuery, extensionManager_, &ExtensionManager::startQuery);
-
-    // Publish loaded plugins to the specific interface handlers
-    QObject::connect(pluginManager_, &PluginManager::pluginLoaded, extensionManager_, &ExtensionManager::registerExtension);
-    QObject::connect(pluginManager_, &PluginManager::pluginAboutToBeUnloaded, extensionManager_, &ExtensionManager::unregisterExtension);
 }
 
 
@@ -184,10 +279,10 @@ AlbertApp::~AlbertApp() {
 /** ***************************************************************************/
 int AlbertApp::exec() {
     //  HOTKEY  //  Albert without hotkey is useless. Force it!
-    QSettings s;
     QVariant v;
-    if (!(s.contains("hotkey") && (v=s.value("hotkey")).canConvert(QMetaType::QString)
-            && hotkeyManager_->registerHotkey(v.toString()))){
+    if (!(qApp->settings()->contains("hotkey")
+          && (v=qApp->settings()->value("hotkey")).canConvert(QMetaType::QString)
+          && hotkeyManager_->registerHotkey(v.toString()))){
         QMessageBox msgBox(QMessageBox::Critical, "Error",
                            "Hotkey is not set or invalid. Press ok to open "
                            "the settings or press close to quit albert.",
@@ -233,4 +328,26 @@ void AlbertApp::hideWidget() {
 /** ***************************************************************************/
 void AlbertApp::clearInput() {
     mainWindow_->setInput("");
+}
+
+
+
+/** ***************************************************************************/
+QSettings *AlbertApp::settings() {
+    return settings_;
+}
+
+
+
+/** ***************************************************************************/
+QString AlbertApp::term(){
+    return terminal_;
+}
+
+
+
+/** ***************************************************************************/
+void AlbertApp::setTerm(const QString &terminal){
+    qApp->settings()->setValue(CFG_TERM, terminal);
+    terminal_ = terminal;
 }

@@ -28,6 +28,7 @@
 #include "pluginmanager.h"
 #include "pluginmodel.h"
 #include "iextension.h"
+#include "albertapp.h"
 
 
 /** ***************************************************************************/
@@ -93,6 +94,11 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyMana
     ui.checkBox_shadow->setChecked(mainWindow_->displayShadow());
     connect(ui.checkBox_shadow, &QCheckBox::toggled,
             mainWindow_, &MainWindow::setDisplayShadow);
+
+    // TERM CMD
+    ui.lineEdit_term->setText(qApp->term());
+    connect(ui.lineEdit_term, &QLineEdit::textEdited,
+            qApp, &AlbertApp::setTerm);
 
     // THEMES
     QFileInfoList themes;
@@ -187,7 +193,7 @@ void SettingsWidget::changeHotkey(int newhk) {
     if (hotkeyManager_->registerHotkey(newhk)) {
         QString hkText(QKeySequence((newhk&~Qt::GroupSwitchModifier)).toString());//QTBUG-45568
         ui.grabKeyButton_hotkey->setText(hkText);
-        QSettings().setValue("hotkey", hkText);
+        qApp->settings()->setValue("hotkey", hkText);
         hotkeyManager_->unregisterHotkey(oldhk);
     } else {
         ui.grabKeyButton_hotkey->setText(QKeySequence(oldhk).toString());
