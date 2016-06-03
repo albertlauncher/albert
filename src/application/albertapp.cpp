@@ -86,12 +86,11 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
                                      "may change in future versions.");
     parser.addHelpOption();
     parser.addVersionOption();
-    parser.addOptions({
-                          {{"c", "config"}, "The config file to use.", "file"},
-                          {{"k", "hotkey"}, "Overwrite the hotkey to use.", "hotkey"},
-    });
+    parser.addOption({{"c", "config"}, "The config file to use.", "file"});
+    parser.addOption({{"k", "hotkey"}, "Overwrite the hotkey to use.", "hotkey"});
     parser.addPositionalArgument("command", "Command to send to a running instance, if any. (show, hide, toggle)", "[command]");
     parser.process(*this);
+
     const QStringList args = parser.positionalArguments();
     if ( args.count() > 1)
         qFatal("Invalid amount of arguments");
@@ -120,7 +119,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
             socket.flush();
             socket.waitForReadyRead(500);
             if (socket.bytesAvailable())
-                qDebug(socket.readAll());
+                qDebug() << socket.readAll();
         }
         else
             qDebug("There is another instance of albert running.");
