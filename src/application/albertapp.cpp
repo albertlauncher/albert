@@ -86,8 +86,8 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
                                      "may change in future versions.");
     parser.addHelpOption();
     parser.addVersionOption();
-    parser.addOption({{"c", "config"}, "The config file to use.", "file"});
-    parser.addOption({{"k", "hotkey"}, "Overwrite the hotkey to use.", "hotkey"});
+    parser.addOption(QCommandLineOption({"c", "config"}, "The config file to use.", "file"));
+    parser.addOption(QCommandLineOption({"k", "hotkey"}, "Overwrite the hotkey to use.", "hotkey"));
     parser.addPositionalArgument("command", "Command to send to a running instance, if any. (show, hide, toggle)", "[command]");
     parser.process(*this);
 
