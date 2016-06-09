@@ -43,7 +43,7 @@ const bool  Files::Extension::DEF_INDEX_DIR       = true;
 const char* Files::Extension::CFG_INDEX_HIDDEN    = "index_hidden";
 const bool  Files::Extension::DEF_INDEX_HIDDEN    = false;
 const char* Files::Extension::CFG_FOLLOW_SYMLINKS = "follow_symlinks";
-const bool  Files::Extension::DEF_FOLLOW_SYMLINKS = true;
+const bool  Files::Extension::DEF_FOLLOW_SYMLINKS = false;
 const char* Files::Extension::CFG_SCAN_INTERVAL   = "scan_interval";
 const uint  Files::Extension::DEF_SCAN_INTERVAL   = 60;
 const char* Files::Extension::IGNOREFILE          = ".albertignore";
@@ -64,7 +64,6 @@ Files::Extension::Extension() : IExtension("Files") {
     indexHidden_ = qApp->settings()->value(CFG_INDEX_HIDDEN, DEF_INDEX_HIDDEN).toBool();
     followSymlinks_ = qApp->settings()->value(CFG_FOLLOW_SYMLINKS, DEF_FOLLOW_SYMLINKS).toBool();
     offlineIndex_.setFuzzy(qApp->settings()->value(CFG_FUZZY, DEF_FUZZY).toBool());
-    qApp->settings()->endGroup();
 
     // Load the paths or set a default
     QVariant v = qApp->settings()->value(CFG_PATHS);
@@ -72,6 +71,8 @@ Files::Extension::Extension() : IExtension("Files") {
         rootDirs_ = v.toStringList();
     else
         restorePaths();
+
+    qApp->settings()->endGroup();
 
     // If the root dirs change write it to the settings
     connect(this, &Extension::rootDirsChanged, [this](const QStringList& dirs){
