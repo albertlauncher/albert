@@ -333,6 +333,7 @@ void AlbertApp::clearInput() {
 
 /** ***************************************************************************/
 QSettings *AlbertApp::settings() {
+    settings_->endGroup();
     return settings_;
 }
 
