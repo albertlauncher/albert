@@ -73,7 +73,6 @@ PluginManager::PluginManager() {
 /** ***************************************************************************/
 PluginManager::~PluginManager() {
     qDebug() << "[PluginManager] Unloading plugins.";
-    qApp->settings()->setValue(CFG_BLACKLIST, blacklist_);
     for (const unique_ptr<PluginSpec> &plugin : plugins_){
         unloadPlugin(plugin);
     }
@@ -117,6 +116,7 @@ void PluginManager::unloadPlugin(const unique_ptr<PluginSpec> &plugin) {
 /** ***************************************************************************/
 void PluginManager::enablePlugin(const unique_ptr<PluginSpec> &plugin) {
     blacklist_.removeAll(plugin->id());
+    qApp->settings()->setValue(CFG_BLACKLIST, blacklist_);
     loadPlugin(plugin);
 }
 
@@ -124,8 +124,10 @@ void PluginManager::enablePlugin(const unique_ptr<PluginSpec> &plugin) {
 
 /** ***************************************************************************/
 void PluginManager::disablePlugin(const unique_ptr<PluginSpec> &plugin) {
-    if (!blacklist_.contains(plugin->id()))
+    if (!blacklist_.contains(plugin->id())){
         blacklist_.push_back(plugin->id());
+        qApp->settings()->setValue(CFG_BLACKLIST, blacklist_);
+    }
     unloadPlugin(plugin);
 }
 
