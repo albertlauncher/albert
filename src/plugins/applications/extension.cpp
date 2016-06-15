@@ -53,6 +53,20 @@ Applications::Extension::Extension() : IExtension("Applications") {
     else
         restorePaths();
 
+    // If the root dirs change write it to the settings
+    connect(this, &Extension::rootDirsChanged, [this](const QStringList& dirs){
+        qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_PATHS), dirs);
+    });
+
+    qApp->settings()->endGroup();
+
+    // Keep the Applications in sync with the OS
+    updateDelayTimer_.setInterval(UPDATE_DELAY);
+    updateDelayTimer_.setSingleShot(true);
+    connect(&watcher_, &QFileSystemWatcher::directoryChanged, &updateDelayTimer_, static_cast<void(QTimer::*)()>(&QTimer::start));
+    connect(this, &Extension::rootDirsChanged, &updateDelayTimer_, static_cast<void(QTimer::*)()>(&QTimer::start));
+    connect(&updateDelayTimer_, &QTimer::timeout, this, &Extension::updateIndex, Qt::QueuedConnection);
+
     // Deserialize data
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation))
                    .filePath(QString("%1.dat").arg(name_)));
@@ -74,24 +88,6 @@ Applications::Extension::Extension() : IExtension("Applications") {
         } else
             qWarning() << "Could not open file: " << dataFile.fileName();
     }
-
-    // Keep the Applications in sync with the OS
-    updateDelayTimer_.setInterval(UPDATE_DELAY);
-    updateDelayTimer_.setSingleShot(true);
-
-    // If the filesystem changed, trigger the update delay
-    connect(&watcher_, &QFileSystemWatcher::directoryChanged, &updateDelayTimer_, static_cast<void(QTimer::*)()>(&QTimer::start));
-
-    // If the root dirs changed, trigger the update delay
-    connect(this, &Extension::rootDirsChanged, &updateDelayTimer_, static_cast<void(QTimer::*)()>(&QTimer::start));
-
-    // If the update delay passed, update the index
-    connect(&updateDelayTimer_, &QTimer::timeout, this, &Extension::updateIndex, Qt::QueuedConnection);
-
-    // If the root dirs change write it to the settings
-    connect(this, &Extension::rootDirsChanged, [this](const QStringList& dirs){
-        qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_PATHS), dirs);
-    });
 
     // Trigger initial update
     updateIndex();

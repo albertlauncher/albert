@@ -75,6 +75,7 @@ System::Extension::Extension() : IExtension("System") {
         iconPaths.push_back(XdgIconLookup::instance()->themeIconPath(iconNames[i], themeName));
         commands.push_back(qApp->settings()->value(configNames[i], defaultCommand(static_cast<SupportedCommands>(i))).toString());
     }
+    qApp->settings()->endGroup();
 
     qDebug("[%s] Extension initialized", name_);
 }

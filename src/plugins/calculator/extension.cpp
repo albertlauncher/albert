@@ -37,6 +37,7 @@ Calculator::Extension::Extension() : IExtension("Calculator") {
                 (qApp->settings()->value(CFG_SEPS, CFG_SEPS_DEF).toBool())
                 ? loc_.numberOptions() & ~QLocale::OmitGroupSeparator
                 : loc_.numberOptions() | QLocale::OmitGroupSeparator );
+    qApp->settings()->endGroup();
 
     QString iconPath = XdgIconLookup::instance()->themeIconPath("calc", QIcon::themeName());
     iconPath_ = iconPath.isNull() ? ":calc" : iconPath;
