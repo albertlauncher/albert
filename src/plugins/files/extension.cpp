@@ -64,6 +64,7 @@ Files::Extension::Extension() : IExtension("Files") {
     indexHidden_ = qApp->settings()->value(CFG_INDEX_HIDDEN, DEF_INDEX_HIDDEN).toBool();
     followSymlinks_ = qApp->settings()->value(CFG_FOLLOW_SYMLINKS, DEF_FOLLOW_SYMLINKS).toBool();
     offlineIndex_.setFuzzy(qApp->settings()->value(CFG_FUZZY, DEF_FUZZY).toBool());
+    setScanInterval(qApp->settings()->value(CFG_SCAN_INTERVAL, DEF_SCAN_INTERVAL).toUInt());
 
     // Load the paths or set a default
     QVariant v = qApp->settings()->value(CFG_PATHS);
@@ -73,11 +74,6 @@ Files::Extension::Extension() : IExtension("Files") {
         restorePaths();
 
     qApp->settings()->endGroup();
-
-    // If the root dirs change write it to the settings
-    connect(this, &Extension::rootDirsChanged, [this](const QStringList& dirs){
-        qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_PATHS), dirs);
-    });
 
     // Deserialize data
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
@@ -101,9 +97,13 @@ Files::Extension::Extension() : IExtension("Files") {
             qWarning() << "Could not open file: " << dataFile.fileName();
     }
 
-    // scan interval timer
+    // Minute tick timer
     connect(&minuteTimer_, &QTimer::timeout, this, &Extension::onMinuteTick);
-    setScanInterval(qApp->settings()->value(CFG_SCAN_INTERVAL, DEF_SCAN_INTERVAL).toUInt());
+
+    // If the root dirs change write it to the settings
+    connect(this, &Extension::rootDirsChanged, [this](const QStringList& dirs){
+        qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_PATHS), dirs);
+    });
 
     // Trigger an initial update
     updateIndex();
