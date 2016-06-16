@@ -53,6 +53,8 @@ ChromeBookmarks::Extension::Extension() : IExtension("Chromebookmarks") {
         qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_PATH), path);
     });
 
+    qApp->settings()->endGroup();
+
     // Deserialize data
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
                    filePath(QString("%1.dat").arg(name_)));

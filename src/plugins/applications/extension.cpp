@@ -53,6 +53,8 @@ Applications::Extension::Extension() : IExtension("Applications") {
     else
         restorePaths();
 
+    qApp->settings()->endGroup();
+
     // Deserialize data
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation))
                    .filePath(QString("%1.dat").arg(name_)));

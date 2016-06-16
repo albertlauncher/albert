@@ -73,6 +73,8 @@ Files::Extension::Extension() : IExtension("Files") {
     else
         restorePaths();
 
+    qApp->settings()->endGroup();
+
     // Deserialize data
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
                    filePath(QString("%1.dat").arg(name_)));
@@ -95,7 +97,7 @@ Files::Extension::Extension() : IExtension("Files") {
             qWarning() << "Could not open file: " << dataFile.fileName();
     }
 
-    // scan interval timer
+    // Minute tick timer
     connect(&minuteTimer_, &QTimer::timeout, this, &Extension::onMinuteTick);
 
     // If the root dirs change write it to the settings
