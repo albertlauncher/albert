@@ -38,10 +38,15 @@ private:
     void onButton_RestorePaths();
     void onButton_Advanced();
 
+    void onButton_PathAddIgnore();
+    void onButton_PathRemoveIgnore();
+
 
 signals:
     void requestAddPath(const QString&);
     void requestRemovePath(const QString&);
+    void requestAddIgnorePath(const QString&);
+    void requestRemoveIgnorePath(const QString&);
 
 };
 }

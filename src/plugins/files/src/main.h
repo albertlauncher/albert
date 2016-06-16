@@ -62,6 +62,8 @@ public:
 
     void addDir(const QString &dirPath);
     void removeDir(const QString &dirPath);
+    void addIgnoreDir(const QString &regex);
+    void removeIgnoreDir(const QString &regex);
     void restorePaths();
     void updateIndex();
 
@@ -93,6 +95,8 @@ public:
     bool fuzzy();
     void setFuzzy(bool b = true);
 
+    QStringList& getIgnoreRegexes() { return ignores_; }
+
 private:
     QPointer<ConfigWidget> widget_;
     vector<shared_ptr<File>> index_;
@@ -100,6 +104,7 @@ private:
     QMutex indexAccess_;
     QPointer<Indexer> indexer_;
     QTimer indexIntervalTimer_;
+    QStringList ignores_;
 
     // Index Properties
     QStringList rootDirs_;
@@ -113,6 +118,7 @@ private:
 
     /* const */
     static const char* CFG_PATHS;
+    static const char* CFG_IGNORES;
     static const char* CFG_FUZZY;
     static const bool  DEF_FUZZY;
     static const char* CFG_INDEX_AUDIO;
@@ -135,6 +141,7 @@ private:
 
 signals:
     void rootDirsChanged(const QStringList&);
+    void ignoreDirsChanged(const QStringList&);
     void statusInfo(const QString&);
 
 private slots:
