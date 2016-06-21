@@ -20,9 +20,9 @@
 #include "extension.h"
 #include "queryhandler.h"
 
-namespace Template {
+namespace ProjectNamespace {
 
-class TemplatePrivate;
+class ProjectNamespacePrivate;
 class ConfigWidget;
 
 class Extension final :
@@ -54,7 +54,7 @@ public:
 
 private:
 
-    std::unique_ptr<TemplatePrivate> d;
+    std::unique_ptr<ProjectNamespacePrivate> d;
 
 };
 }

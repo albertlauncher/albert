@@ -17,13 +17,13 @@
 #include "configwidget.h"
 
 /** ***************************************************************************/
-Template::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
+ProjectNamespace::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
     ui.setupUi(this);
 }
 
 
 
 /** ***************************************************************************/
-Template::ConfigWidget::~ConfigWidget() {
+ProjectNamespace::ConfigWidget::~ConfigWidget() {
 
 }
