@@ -21,7 +21,7 @@
 #include "query.h"
 
 /** ***************************************************************************/
-Template::Extension::Extension() : IExtension("Template") {
+##NAMESPACE##::Extension::Extension() : IExtension("##PRETTYNAME##") {
     qDebug("[%s] Initialize extension", name_);
     // Do sth.
     qDebug("[%s] Extension initialized", name_);
@@ -30,7 +30,7 @@ Template::Extension::Extension() : IExtension("Template") {
 
 
 /** ***************************************************************************/
-Template::Extension::~Extension() {
+##NAMESPACE##::Extension::~Extension() {
     qDebug("[%s] Finalize extension", name_);
     // Do sth.
     qDebug("[%s] Extension finalized", name_);
@@ -39,7 +39,7 @@ Template::Extension::~Extension() {
 
 
 /** ***************************************************************************/
-QWidget *Template::Extension::widget(QWidget *parent) {
+QWidget *##NAMESPACE##::Extension::widget(QWidget *parent) {
     if (widget_.isNull()) {
         widget_ = new ConfigWidget(parent);
     }
@@ -49,21 +49,21 @@ QWidget *Template::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void Template::Extension::setupSession() {
+void ##NAMESPACE##::Extension::setupSession() {
 
 }
 
 
 
 /** ***************************************************************************/
-void Template::Extension::teardownSession() {
+void ##NAMESPACE##::Extension::teardownSession() {
 
 }
 
 
 
 /** ***************************************************************************/
-void Template::Extension::handleQuery(shared_ptr<Query> query) {
+void ##NAMESPACE##::Extension::handleQuery(shared_ptr<Query> query) {
     // Avoid annoying warnings
     Q_UNUSED(query)
 }
@@ -71,7 +71,7 @@ void Template::Extension::handleQuery(shared_ptr<Query> query) {
 
 
 /** ***************************************************************************/
-void Template::Extension::handleFallbackQuery(shared_ptr<Query> query) {
+void ##NAMESPACE##::Extension::handleFallbackQuery(shared_ptr<Query> query) {
     // Avoid annoying warnings
     Q_UNUSED(query)
 }

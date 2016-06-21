@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-PROJECT(template)
+PROJECT(##ID##)
 
 find_package(Qt5Widgets 5.2 REQUIRED)
 
