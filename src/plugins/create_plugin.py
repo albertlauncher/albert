@@ -13,14 +13,14 @@ PRETTYNAME_KEYWORD = "##PRETTYNAME##"
 LOC_BASE = "https://raw.githubusercontent.com/idkCpp/albert/create_plugin_py/src/plugins/templateExtension/"
 LOC_INDEX_FILE = "index"
 
-id_string = sys.argv[1]
-namespace_string = sys.argv[2]
-prettyname_string = sys.argv[3]
-
 if len(sys.argv) != 4:
     u = "Usage: create_plugin.py <id [a-z0-9]> <namespace> <Pretty Name>"
     sys.stderr.write(u)
     sys.exit(1)
+
+id_string = sys.argv[1]
+namespace_string = sys.argv[2]
+prettyname_string = sys.argv[3]
 
 
 raw_input("Are we in the src/plugins directory? If not do not proceed because it won't work! ")
