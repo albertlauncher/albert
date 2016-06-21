@@ -18,7 +18,7 @@
 #include <QWidget>
 #include "ui_configwidget.h"
 
-namespace Template {
+namespace ##NAMESPACE## {
 class ConfigWidget final : public QWidget
 {
     Q_OBJECT

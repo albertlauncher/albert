@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import urllib
+import string
 
 ID_KEYWORD = "##ID##"
 NAMESPACE_KEYWORD = "##NAMESPACE##"
@@ -22,7 +23,7 @@ if len(sys.argv) != 4:
     sys.exit(1)
 
 
-input("Are we in the src/plugins directory? If not do not proceed because it won't work! ")
+raw_input("Are we in the src/plugins directory? If not do not proceed because it won't work! ")
 
 print("Creating directory . . .")
 os.mkdir(id_string)
@@ -35,6 +36,19 @@ downloadedFiles = []
 
 with open(LOC_INDEX_FILE) as indexFile:
     for line in indexFile:
+        line = string.replace(line, "\n", "")
         print("Downloading file " + line)
         urllib.urlretrieve(LOC_BASE + line, line)
         downloadedFiles.append(line)
+
+for localFile in downloadedFiles:
+    print("Preparing file " + localFile)
+    with open(localFile) as fd:
+        tmpfile = localFile + ".tmp"
+        tmp = open(tmpfile, "w")
+        for line in fd:
+            tmp.write(re.sub(ID_KEYWORD, id_string, 
+                    re.sub(NAMESPACE_KEYWORD, namespace_string, 
+                            re.sub(PRETTYNAME_KEYWORD, prettyname_string, line))))
+        tmp.close()
+        os.rename(tmpfile, localFile)

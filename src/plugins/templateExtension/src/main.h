@@ -20,7 +20,7 @@
 #include "extension.h"
 #include "queryhandler.h"
 
-namespace Template {
+namespace ##NAMESPACE## {
 
 class TemplatePrivate;
 class ConfigWidget;

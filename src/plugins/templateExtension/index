@@ -4,7 +4,6 @@ configwidget.h
 configwidget.ui
 extension.cpp
 extension.h
-index
 item.cpp
 item.h
 metadata.json

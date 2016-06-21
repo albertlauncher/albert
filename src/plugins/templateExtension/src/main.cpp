@@ -24,7 +24,7 @@
 
 
 
-class Template::TemplatePrivate
+class ##NAMESPACE##::##NAMESPACE##Private
 {
 public:
     QPointer<ConfigWidget> widget;
@@ -33,8 +33,8 @@ public:
 
 
 /** ***************************************************************************/
-Template::Extension::Extension()
-    : Core::Extension("org.albert.extension.template"),
+##NAMESPACE##::Extension::Extension()
+    : Core::Extension("org.albert.extension.##ID##"),
       Core::QueryHandler(Core::Extension::id),
       d(new TemplatePrivate) {
 
@@ -44,20 +44,19 @@ Template::Extension::Extension()
     throw QString( "Description of error." );
     throw "Description of error.";
     throw; // Whatever prints "unknown error"
-
 }
 
 
 
 /** ***************************************************************************/
-Template::Extension::~Extension() {
-
+##NAMESPACE##::Extension::~Extension() {
+    delete d;
 }
 
 
 
 /** ***************************************************************************/
-QWidget *Template::Extension::widget(QWidget *parent) {
+QWidget *##NAMESPACE##::Extension::widget(QWidget *parent) {
     if (d->widget.isNull()) {
         d->widget = new ConfigWidget(parent);
     }
@@ -67,21 +66,21 @@ QWidget *Template::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void Template::Extension::setupSession() {
+void ##NAMESPACE##::Extension::setupSession() {
 
 }
 
 
 
 /** ***************************************************************************/
-void Template::Extension::teardownSession() {
+void ##NAMESPACE##::Extension::teardownSession() {
 
 }
 
 
 
 /** ***************************************************************************/
-void Template::Extension::handleQuery(Core::Query * query) {
+void ##NAMESPACE##::Extension::handleQuery(Core::Query * query) {
     // Avoid annoying warnings
     Q_UNUSED(query)
 }
