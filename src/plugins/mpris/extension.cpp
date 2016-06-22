@@ -95,11 +95,7 @@ MPRIS::Extension::~Extension() {
     qDebug("[%s] Finalize extension", name_);
 
     // If there are still media player objects, delete them
-    if (!mediaPlayers.isEmpty()) {
-        for (Player* p: mediaPlayers) {
-            delete p;
-        }
-    }
+    qDeleteAll(mediaPlayers);
 
     // Don't need to destruct the command objects.
     // This is done by the destructor of QMap
@@ -123,9 +119,7 @@ QWidget *MPRIS::Extension::widget(QWidget *parent) {
 void MPRIS::Extension::setupSession() {
 
     // Clean the memory
-    for (Player* p: mediaPlayers) {
-        delete p;
-    }
+    qDeleteAll(mediaPlayers);
     mediaPlayers.clear();
 
     // If there is no session bus, abort
