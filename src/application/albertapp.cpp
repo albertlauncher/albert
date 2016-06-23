@@ -72,7 +72,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     setOrganizationDomain("albert");
     setApplicationName("albert");
     setApplicationDisplayName("Albert");
-    setApplicationVersion("v0.8.9");
+    setApplicationVersion("v0.8.10");
     setWindowIcon(QIcon(":app_icon"));
     setQuitOnLastWindowClosed(false);
 

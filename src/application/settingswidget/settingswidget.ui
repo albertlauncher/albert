@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>SettingsDialog</class>
  <widget class="QWidget" name="SettingsDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>720</width>
+    <height>528</height>
+   </rect>
+  </property>
   <property name="minimumSize">
    <size>
     <width>720</width>
@@ -451,6 +459,13 @@ that use a textual user interface.</string>
 &lt;head/&gt;
 &lt;body&gt;
 &lt;h1&gt;Welcome to Albert&lt;/h1&gt;
+
+&lt;h3&gt;New in v0.8.10&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;VirtualBox extension&lt;/li&gt;
+&lt;li&gt;Basic command line interface&lt;/li&gt;
+&lt;li&gt;Bugfixes&lt;/li&gt;
+&lt;/ul&gt;
 
 &lt;h3&gt;New in v0.8.9&lt;/h3&gt;
 &lt;ul&gt;
