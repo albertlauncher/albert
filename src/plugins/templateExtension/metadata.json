@@ -1,9 +1,9 @@
 {
-    "id" :              "org.albert.extension.template",
-    "name" :            "Template",
+    "id" :              "org.albert.extension.##ID##",
+    "name" :            "##PRETTYNAME##",
     "version" :         "1.0",
     "platform" :        "All",
     "group" :           "Extensions",
-    "author" :          "Manuel Schneider",
+    "author" :          "Author missing",
     "dependencies" :    ""
 }

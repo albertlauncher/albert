@@ -18,35 +18,35 @@
 
 
 /** ***************************************************************************/
-Template::Item::Item(){
+##NAMESPACE##::Item::Item(){
 
 }
 
 
 
 /** ***************************************************************************/
-Template::Item::~Item(){
+##NAMESPACE##::Item::~Item(){
 
 }
 
 
 
 /** ***************************************************************************/
-QString Template::Item::text() const {
+QString ##NAMESPACE##::Item::text() const {
     return "Title of item";
 }
 
 
 
 /** ***************************************************************************/
-QString Template::Item::subtext() const {
+QString ##NAMESPACE##::Item::subtext() const {
     return "Info about the item";
 }
 
 
 
 /** ***************************************************************************/
-QString Template::Item::iconPath() const {
+QString ##NAMESPACE##::Item::iconPath() const {
     // Icon of item
     return QString();
 }
@@ -54,6 +54,6 @@ QString Template::Item::iconPath() const {
 
 
 /** ***************************************************************************/
-void Template::Item::activate(ExecutionFlags *) {
+void ##NAMESPACE##::Item::activate(ExecutionFlags *) {
     // Do sth cool...
 }

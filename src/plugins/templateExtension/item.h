@@ -20,7 +20,7 @@
 using std::vector;
 #include "abstractobjects.hpp"
 
-namespace Template {
+namespace ##NAMESPACE## {
 class Item final : public AlbertItem
 {
 public:

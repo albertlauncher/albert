@@ -19,7 +19,7 @@
 #include <QPointer>
 #include "iextension.h"
 
-namespace Template {
+namespace ##NAMESPACE## {
 
 class ConfigWidget;
 
