@@ -43,8 +43,7 @@ bool ActionList::eventFilter(QObject*, QEvent *event) {
         // Activation
         case Qt::Key_Enter:
         case Qt::Key_Return:
-            if ( keyEvent->modifiers() == Qt::NoModifier )
-                keyPressEvent(keyEvent);
+            keyPressEvent(keyEvent);
             return false;
         }
     }
