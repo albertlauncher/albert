@@ -3,7 +3,7 @@
 Categories=Utility;
 Comment=A desktop agnostic launcher
 Exec=albert
-GenericName=Albert
+GenericName=Launcher
 Icon=albert
 Name=Albert
 StartupNotify=false
