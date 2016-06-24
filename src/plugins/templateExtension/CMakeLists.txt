@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.12)
 
-PROJECT(##ID##)
+PROJECT(PROJECTID)
 
 FILE(GLOB_RECURSE SRC src/* metadata.json)
 

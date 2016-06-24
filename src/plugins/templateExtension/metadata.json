@@ -1,6 +1,6 @@
 {
-    "id" :              "org.albert.extension.##ID##",
-    "name" :            "##PRETTYNAME##",
+    "id" :              "org.albert.extension.PROJECTID",
+    "name" :            "PROJECTPRETTYNAME",
     "version" :         "1.0",
     "platform" :        "All",
     "group" :           "Extensions",

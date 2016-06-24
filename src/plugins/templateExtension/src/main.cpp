@@ -24,7 +24,7 @@
 
 
 
-class ##NAMESPACE##::##NAMESPACE##Private
+class PROJECTNAMESPACE::PROJECTNAMESPACEPrivate
 {
 public:
     QPointer<ConfigWidget> widget;
@@ -33,7 +33,7 @@ public:
 
 
 /** ***************************************************************************/
-##NAMESPACE##::Extension::Extension()
+PROJECTNAMESPACE::Extension::Extension()
     : Core::Extension("org.albert.extension.##ID##"),
       Core::QueryHandler(Core::Extension::id),
       d(new TemplatePrivate) {
@@ -49,14 +49,14 @@ public:
 
 
 /** ***************************************************************************/
-##NAMESPACE##::Extension::~Extension() {
+PROJECTNAMESPACE::Extension::~Extension() {
     delete d;
 }
 
 
 
 /** ***************************************************************************/
-QWidget *##NAMESPACE##::Extension::widget(QWidget *parent) {
+QWidget *PROJECTNAMESPACE::Extension::widget(QWidget *parent) {
     if (d->widget.isNull()) {
         d->widget = new ConfigWidget(parent);
     }
@@ -66,21 +66,21 @@ QWidget *##NAMESPACE##::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void ##NAMESPACE##::Extension::setupSession() {
+void PROJECTNAMESPACE::Extension::setupSession() {
 
 }
 
 
 
 /** ***************************************************************************/
-void ##NAMESPACE##::Extension::teardownSession() {
+void PROJECTNAMESPACE::Extension::teardownSession() {
 
 }
 
 
 
 /** ***************************************************************************/
-void ##NAMESPACE##::Extension::handleQuery(Core::Query * query) {
+void PROJECTNAMESPACE::Extension::handleQuery(Core::Query * query) {
     // Avoid annoying warnings
     Q_UNUSED(query)
 }
