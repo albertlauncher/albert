@@ -17,8 +17,10 @@
 #pragma once
 #include <QObject>
 #include <QPointer>
+#include <QList>
 #include "extension.h"
 #include "queryhandler.h"
+#include "vm.h"
 
 namespace VirtualBox {
 
@@ -46,9 +48,10 @@ public:
 
 private:
 
-    std::vector<QString> names_;
-    std::vector<QString> uuids_;
+//    std::vector<QString> names_;
+//    std::vector<QString> uuids_;
     QString iconPath_;
+    QList<VM*> vms_;
 
 };
 }
