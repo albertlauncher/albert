@@ -1,5 +1,6 @@
 // albert - a simple application launcher for linux
 // Copyright (C) 2014-2015 Manuel Schneider
+// Contributed to by 2016 Martin Buergmann
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
