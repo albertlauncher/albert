@@ -143,6 +143,7 @@ MainWindow::MainWindow(QWidget *parent)
         qApp->quit();
     }
 
+    createTrayIcon();
 
     /*
      * Signals
@@ -173,6 +174,29 @@ MainWindow::MainWindow(QWidget *parent)
     });
 }
 
+void MainWindow::createTrayIcon()
+{
+    trayIconMenu_ = new QMenu(this);
+
+    quitAction_ = new QAction("Quit", this);
+    showAction_ = new QAction("Show", this);
+    settingsAction_ = new QAction("Settings", this);
+
+    trayIconMenu_->addAction(showAction_);
+    trayIconMenu_->addAction(settingsAction_);
+    trayIconMenu_->addSeparator();
+
+    trayIconMenu_->addAction(quitAction_);
+
+    connect(showAction_, &QAction::triggered, this, &QWidget::show);
+    connect(settingsAction_, &QAction::triggered, qApp, &AlbertApp::openSettings);
+    connect(quitAction_, &QAction::triggered, qApp, &QCoreApplication::quit);
+
+    trayIcon_ = new QSystemTrayIcon(QIcon(":app_icon"),this);
+    trayIcon_->setContextMenu(trayIconMenu_);
+    trayIcon_->setVisible(true);
+    trayIcon_->show();
+}
 
 
 /** ***************************************************************************/
