@@ -10,5 +10,4 @@ add_subdirectory(websearch)
 # Non-release plugins
 if(${BUILD_DEBUG_EXTENSIONS})
     add_subdirectory(templateExtension)
-    add_subdirectory(microsleep)
 endif(${BUILD_DEBUG_EXTENSIONS})
