@@ -137,7 +137,7 @@ void Websearch::Extension::restoreDefaults() {
     index_.clear();
 
     beginResetModel();
-    index_.push_back(std::make_shared<SearchEngine>("Google", "https://www.google.com/#q=%s", "gg", ":google"));
+    index_.push_back(std::make_shared<SearchEngine>("Google", "https://www.google.com/search?q=%s", "gg", ":google"));
     index_.push_back(std::make_shared<SearchEngine>("Youtube", "https://www.youtube.com/results?search_query=%s", "yt", ":youtube"));
     index_.push_back(std::make_shared<SearchEngine>("Amazon", "http://www.amazon.com/s/?field-keywords=%s", "ama", ":amazon"));
     index_.push_back(std::make_shared<SearchEngine>("Ebay", "http://www.ebay.com/sch/i.html?_nkw=%s", "eb", ":ebay"));
