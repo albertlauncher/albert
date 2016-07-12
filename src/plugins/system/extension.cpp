@@ -65,19 +65,16 @@ namespace {
 }
 
 /** ***************************************************************************/
-System::Extension::Extension() : IExtension("System") {
-    qDebug("[%s] Initialize extension", name_);
+System::Extension::Extension() : IExtension("org.albert.extension.system") {
 
     // Load settings
     QString themeName = QIcon::themeName();
-    qApp->settings()->beginGroup(name_);
+    qApp->settings()->beginGroup(id);
     for (int i = 0; i < NUMCOMMANDS; ++i) {
         iconPaths.push_back(XdgIconLookup::instance()->themeIconPath(iconNames[i], themeName));
         commands.push_back(qApp->settings()->value(configNames[i], defaultCommand(static_cast<SupportedCommands>(i))).toString());
     }
     qApp->settings()->endGroup();
-
-    qDebug("[%s] Extension initialized", name_);
 }
 
 
@@ -93,42 +90,42 @@ QWidget *System::Extension::widget(QWidget *parent) {
         connect(widget_->ui.lineEdit_lock, &QLineEdit::textEdited,
                 [this](const QString &s){
             commands[LOCK]= s;
-            qApp->settings()->setValue(QString("%1/%2").arg(name_, configNames[LOCK]), s);
+            qApp->settings()->setValue(QString("%1/%2").arg(id, configNames[LOCK]), s);
         });
 
         widget_->ui.lineEdit_logout->setText(commands[LOGOUT]);
         connect(widget_->ui.lineEdit_logout, &QLineEdit::textEdited,
                 [this](const QString &s){
             commands[LOGOUT]= s;
-            qApp->settings()->setValue(QString("%1/%2").arg(name_, configNames[LOGOUT]), s);
+            qApp->settings()->setValue(QString("%1/%2").arg(id, configNames[LOGOUT]), s);
         });
 
         widget_->ui.lineEdit_suspend->setText(commands[SUSPEND]);
         connect(widget_->ui.lineEdit_suspend, &QLineEdit::textEdited,
                 [this](const QString &s){
             commands[SUSPEND]= s;
-            qApp->settings()->setValue(QString("%1/%2").arg(name_, configNames[SUSPEND]), s);
+            qApp->settings()->setValue(QString("%1/%2").arg(id, configNames[SUSPEND]), s);
         });
 
         widget_->ui.lineEdit_hibernate->setText(commands[HIBERNATE]);
         connect(widget_->ui.lineEdit_hibernate, &QLineEdit::textEdited,
                 [this](const QString &s){
             commands[HIBERNATE]= s;
-            qApp->settings()->setValue(QString("%1/%2").arg(name_, configNames[HIBERNATE]), s);
+            qApp->settings()->setValue(QString("%1/%2").arg(id, configNames[HIBERNATE]), s);
         });
 
         widget_->ui.lineEdit_reboot->setText(commands[REBOOT]);
         connect(widget_->ui.lineEdit_reboot, &QLineEdit::textEdited,
                 [this](const QString &s){
             commands[REBOOT]= s;
-            qApp->settings()->setValue(QString("%1/%2").arg(name_, configNames[REBOOT]), s);
+            qApp->settings()->setValue(QString("%1/%2").arg(id, configNames[REBOOT]), s);
         });
 
         widget_->ui.lineEdit_shutdown->setText(commands[POWEROFF]);
         connect(widget_->ui.lineEdit_shutdown, &QLineEdit::textEdited,
                 [this](const QString &s){
             commands[POWEROFF]= s;
-            qApp->settings()->setValue(QString("%1/%2").arg(name_, configNames[POWEROFF]), s);
+            qApp->settings()->setValue(QString("%1/%2").arg(id, configNames[POWEROFF]), s);
         });
     }
     return widget_;

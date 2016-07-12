@@ -17,6 +17,8 @@
 #include <QDirIterator>
 #include <QDebug>
 #include <QStandardPaths>
+#include <QSettings>
+#include <chrono>
 #include "pluginmanager.h"
 #include "albertapp.h"
 
@@ -24,8 +26,6 @@ const QString PluginManager::CFG_BLACKLIST = "blacklist";
 
 /** ***************************************************************************/
 PluginManager::PluginManager() {
-    qDebug() << "[PluginManager] Loading plugins.";
-
     // Load settings
     blacklist_ = qApp->settings()->value(CFG_BLACKLIST).toStringList();
 
@@ -65,7 +65,6 @@ PluginManager::PluginManager() {
             plugins_.push_back(std::move(plugin));
         }
     }
-    qDebug() << "[PluginManager] Loading plugins done.";
 }
 
 
@@ -91,13 +90,18 @@ const vector<unique_ptr<PluginSpec> > &PluginManager::plugins() {
 /** ***************************************************************************/
 void PluginManager::loadPlugin(const unique_ptr<PluginSpec> &plugin) {
     if (!plugin->isLoaded()){
+
+        auto start = std::chrono::system_clock::now();
         plugin->load();
 
         // Test for success and propagate this
         if (plugin->status() == PluginSpec::Status::Loaded) {
-            qDebug() << "[Pluginloader] Plugin loaded:" <<  plugin->id();
+            auto now = std::chrono::system_clock::now();
+            auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(now-start);
+            qDebug("Loading %s done in %d milliseconds", plugin->id().toLocal8Bit().data(), (int)msecs.count());
             emit pluginLoaded(plugin->instance());
-        }
+        } else
+            qDebug("Loading %s failed. (%s)", plugin->id().toLocal8Bit().data(), plugin->errorString().toLocal8Bit().data());
     }
 }
 

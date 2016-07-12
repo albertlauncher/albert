@@ -37,6 +37,7 @@ public:
      * Implementation of extension interface
      */
 
+    QString name() const override { return "Template"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     void setupSession() override;
     void teardownSession() override;

@@ -21,19 +21,15 @@
 #include "query.h"
 
 /** ***************************************************************************/
-Template::Extension::Extension() : IExtension("Template") {
-    qDebug("[%s] Initialize extension", name_);
+Template::Extension::Extension() : IExtension("org.albert.extension.template") {
     // Do sth.
-    qDebug("[%s] Extension initialized", name_);
 }
 
 
 
 /** ***************************************************************************/
 Template::Extension::~Extension() {
-    qDebug("[%s] Finalize extension", name_);
     // Do sth.
-    qDebug("[%s] Extension finalized", name_);
 }
 
 

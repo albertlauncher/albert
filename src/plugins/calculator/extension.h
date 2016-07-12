@@ -43,6 +43,7 @@ public:
      * Implementation of extension interface
      */
 
+    QString name() const override { return "Calculator"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     void handleQuery(shared_ptr<Query> query) override;
 

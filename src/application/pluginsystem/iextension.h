@@ -20,11 +20,21 @@
 using std::shared_ptr;
 class Query;
 
-class IExtension
+struct IExtension
 {
-public:
-    IExtension(const char * name) : name_(name) {}
+    IExtension(const char * id) : id(id) {}
     virtual ~IExtension() {}
+
+    /**
+     * @brief An application-wide unique identifier
+     */
+    const char* id;
+
+    /**
+     * @brief A human readable name of the extension
+     * @return The human readable name
+     */
+    virtual QString name() const = 0;
 
     /**
      * @brief The settings widget factory
@@ -78,8 +88,6 @@ public:
      */
     virtual void handleFallbackQuery(shared_ptr<Query> query) { Q_UNUSED(query)}
 
-    /* const */
-    const char* name_;
 };
 #define ALBERT_EXTENSION_IID "org.albert.extension"
 Q_DECLARE_INTERFACE(IExtension, ALBERT_EXTENSION_IID)

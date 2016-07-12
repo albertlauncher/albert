@@ -171,7 +171,7 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
         if ( pw->layout() != nullptr)
             pw->layout()->setMargin(0);
         ui.widget_pluginInfos->layout()->addWidget(pw);// Takes ownership
-        ui.label_pluginTitle->setText(e->name_);
+        ui.label_pluginTitle->setText(e->name());
         ui.label_pluginTitle->show();
     }
     else{

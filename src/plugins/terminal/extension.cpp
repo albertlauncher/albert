@@ -28,8 +28,9 @@
 #include "query.h"
 
 /** ***************************************************************************/
-Terminal::Extension::Extension() : IExtension("Terminal"), dirtyFlag_(false) {
-    qDebug("[%s] Initialize extension", name_);
+Terminal::Extension::Extension() : IExtension("org.albert.extension.terminal") {
+
+    dirtyFlag_ = false;
 
     QString iconPath = XdgIconLookup::instance()->themeIconPath("terminal", QIcon::themeName());
     iconPath_ = iconPath.isNull() ? ":calc" : iconPath;
@@ -38,7 +39,6 @@ Terminal::Extension::Extension() : IExtension("Terminal"), dirtyFlag_(false) {
 
     rebuildIndex();
 
-    qDebug("[%s] Extension initialized", name_);
 }
 
 

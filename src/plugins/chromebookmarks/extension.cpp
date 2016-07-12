@@ -34,11 +34,10 @@ const char* ChromeBookmarks::Extension::CFG_FUZZY      = "fuzzy";
 const bool  ChromeBookmarks::Extension::DEF_FUZZY      = false;
 
 /** ***************************************************************************/
-ChromeBookmarks::Extension::Extension() : IExtension("Chromebookmarks") {
-    qDebug("[%s] Initialize extension", name_);
+ChromeBookmarks::Extension::Extension() : IExtension("org.albert.extension.chromebookmarks") {
 
     // Load settings
-    qApp->settings()->beginGroup(name_);
+    qApp->settings()->beginGroup(id);
     offlineIndex_.setFuzzy(qApp->settings()->value(CFG_FUZZY, DEF_FUZZY).toBool());
 
     // Load and set a valid path
@@ -50,17 +49,17 @@ ChromeBookmarks::Extension::Extension() : IExtension("Chromebookmarks") {
 
     // If the path changed write it to the settings
     connect(this, &Extension::pathChanged, [this](const QString& path){
-        qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_PATH), path);
+        qApp->settings()->setValue(QString("%1/%2").arg(id, CFG_PATH), path);
     });
 
     qApp->settings()->endGroup();
 
     // Deserialize data
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                   filePath(QString("%1.dat").arg(name_)));
+                   filePath(QString("%1.dat").arg(id)));
     if (dataFile.exists()) {
         if (dataFile.open(QIODevice::ReadOnly|QIODevice::Text)) {
-            qDebug("[%s] Deserializing from %s", name_, dataFile.fileName().toLocal8Bit().data());
+            qDebug("[%s] Deserializing from %s", id, dataFile.fileName().toLocal8Bit().data());
             QDataStream in(&dataFile);
             quint64 count;
             for (in >> count ;count != 0; --count){
@@ -83,15 +82,12 @@ ChromeBookmarks::Extension::Extension() : IExtension("Chromebookmarks") {
 
     // Trigger an initial update
     updateIndex();
-
-    qDebug("[%s] Extension initialized", name_);
 }
 
 
 
 /** ***************************************************************************/
 ChromeBookmarks::Extension::~Extension() {
-    qDebug("[%s] Finalize extension", name_);
 
     /*
      * Stop and wait for background indexer.
@@ -109,9 +105,9 @@ ChromeBookmarks::Extension::~Extension() {
 
     // Serialize data
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                   filePath(QString("%1.dat").arg(name_)));
+                   filePath(QString("%1.dat").arg(id)));
     if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
-        qDebug("[%s] Serializing to %s", name_, dataFile.fileName().toLocal8Bit().data());
+        qDebug("[%s] Serializing to %s", id, dataFile.fileName().toLocal8Bit().data());
         QDataStream out( &dataFile );
         out << static_cast<quint64>(index_.size());
         for (const auto &item : index_)
@@ -119,8 +115,6 @@ ChromeBookmarks::Extension::~Extension() {
         dataFile.close();
     } else
         qCritical() << "Could not write to " << dataFile.fileName();
-
-    qDebug("[%s] Extension finalized", name_);
 }
 
 
@@ -205,8 +199,6 @@ void ChromeBookmarks::Extension::restorePath() {
 
 /** ***************************************************************************/
 void ChromeBookmarks::Extension::updateIndex() {
-    qDebug() << "[ChromeBookmarks] Index update triggered";
-
     // If thread is running, stop it and start this functoin after termination
     if (!indexer_.isNull()) {
         indexer_->abort();
@@ -231,7 +223,7 @@ void ChromeBookmarks::Extension::updateIndex() {
 /** ***************************************************************************/
 void ChromeBookmarks::Extension::setFuzzy(bool b) {
     indexAccess_.lock();
-    qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_FUZZY), b);
+    qApp->settings()->setValue(QString("%1/%2").arg(id, CFG_FUZZY), b);
     offlineIndex_.setFuzzy(b);
     indexAccess_.unlock();
 }

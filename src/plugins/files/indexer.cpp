@@ -29,7 +29,7 @@
 void Files::Extension::Indexer::run() {
 
     // Notification
-    qDebug("[%s] Start indexing in background thread", extension_->name_);
+    qDebug("[%s] Start indexing in background thread", extension_->id);
     emit statusInfo("Indexing files ...");
 
     // Prepare the iterator properties
@@ -162,6 +162,6 @@ void Files::Extension::Indexer::run() {
         extension_->offlineIndex_.add(item);
 
     // Notification
-    qDebug("[%s] Indexing done (%d items)", extension_->name_, static_cast<int>(extension_->index_.size()));
+    qDebug("[%s] Indexing done (%d items)", extension_->id, static_cast<int>(extension_->index_.size()));
     emit statusInfo(QString("Indexed %1 files").arg(extension_->index_.size()));
 }

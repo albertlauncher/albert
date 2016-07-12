@@ -28,11 +28,10 @@ const QString Calculator::Extension::CFG_SEPS      = "group_separators";
 const bool    Calculator::Extension::CFG_SEPS_DEF  = false;
 
 /** ***************************************************************************/
-Calculator::Extension::Extension() : IExtension("Calculator") {
-    qDebug("[%s] Initialize extension", name_);
+Calculator::Extension::Extension() : IExtension("org.albert.extension.calculator") {
 
     // Load settings
-    qApp->settings()->beginGroup(name_);
+    qApp->settings()->beginGroup(id);
     loc_.setNumberOptions(
                 (qApp->settings()->value(CFG_SEPS, CFG_SEPS_DEF).toBool())
                 ? loc_.numberOptions() & ~QLocale::OmitGroupSeparator
@@ -46,19 +45,14 @@ Calculator::Extension::Extension() : IExtension("Calculator") {
 
     parser_->SetDecSep(loc_.decimalPoint().toLatin1());
     parser_->SetThousandsSep(loc_.groupSeparator().toLatin1());
-
-    qDebug("[%s] Extension initialized", name_);
 }
 
 
 
 /** ***************************************************************************/
 Calculator::Extension::~Extension() {
-    qDebug("[%s] Finalize extension", name_);
 
     delete parser_;
-
-    qDebug("[%s] Extension finalized", name_);
 }
 
 
@@ -70,7 +64,7 @@ QWidget *Calculator::Extension::widget(QWidget *parent) {
 
         widget_->ui.checkBox_groupsep->setChecked(!(loc_.numberOptions() & QLocale::OmitGroupSeparator));
         connect(widget_->ui.checkBox_groupsep, &QCheckBox::toggled, [this](bool checked){
-            qApp->settings()->setValue(QString("%1/%2").arg(name_, CFG_SEPS), checked);
+            qApp->settings()->setValue(QString("%1/%2").arg(id, CFG_SEPS), checked);
             this->loc_.setNumberOptions( (checked) ? this->loc_.numberOptions() & ~QLocale::OmitGroupSeparator
                                                   : this->loc_.numberOptions() | QLocale::OmitGroupSeparator );
         });

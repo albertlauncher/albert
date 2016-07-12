@@ -33,7 +33,7 @@ using std::vector;
 void ChromeBookmarks::Extension::Indexer::run() {
 
     // Notification
-    qDebug("[%s] Start indexing in background thread.", extension_->name_);
+    qDebug("[%s] Start indexing in background thread.", extension_->id);
     emit statusInfo("Indexing bookmarks ...");
 
     // Build a new index
@@ -125,6 +125,6 @@ void ChromeBookmarks::Extension::Indexer::run() {
                     <<  "could not be watched. Changes in this path will not be noticed.";
 
     // Notification
-    qDebug("[%s] Indexing done (%d items)", extension_->name_, static_cast<int>(extension_->index_.size()));
-    emit statusInfo(QString("Indexed %1 bookmarks").arg(extension_->index_.size()));
+    qDebug("[%s] Indexing done (%d items)", extension_->id, static_cast<int>(extension_->index_.size()));
+   emit statusInfo(QString("Indexed %1 bookmarks").arg(extension_->index_.size()));
 }

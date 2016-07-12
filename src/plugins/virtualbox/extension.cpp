@@ -23,10 +23,11 @@
 #include "xdgiconlookup.h"
 
 /** ***************************************************************************/
-VirtualBox::Extension::Extension() : IExtension("Virtual Box") {
+VirtualBox::Extension::Extension() : IExtension("org.albert.extension.virtualbox") {
     QString iconPath = XdgIconLookup::instance()->themeIconPath("virtualbox", QIcon::themeName());
     iconPath_ = iconPath.isNull() ? ":vbox" : iconPath;
 }
+
 
 
 /** ***************************************************************************/

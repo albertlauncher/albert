@@ -36,17 +36,16 @@
 
 
 /** ***************************************************************************/
-Websearch::Extension::Extension() : IExtension("Websearch")  {
-    qDebug("[%s] Initialize extension", name_);
+Websearch::Extension::Extension() : IExtension("org.albert.extension.websearch")  {
 
     // Deserialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(name_))
+                filePath(QString("%1.dat").arg(id))
                 );
     if (dataFile.exists()) {
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
-            qDebug() << "[Websearch] Deserializing from" << dataFile.fileName();
+            qDebug("[%s] Deserializing from %s", id, dataFile.fileName().toLocal8Bit().data());
             QDataStream in(&dataFile);
             quint64 size;
             in >> size;
@@ -61,22 +60,19 @@ Websearch::Extension::Extension() : IExtension("Websearch")  {
             restoreDefaults();
         }
     } else restoreDefaults(); // Without warning
-    qDebug("[%s] Extension initialized", name_);
 }
 
 
 
 /** ***************************************************************************/
 Websearch::Extension::~Extension() {
-    qDebug("[%s] Finalize extension", name_);
-
     // Serialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(name_))
+                filePath(QString("%1.dat").arg(id))
                 );
     if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
-        qDebug() << "[Websearch] Serializing to" << dataFile.fileName();
+        qDebug("[%s] Serializing to %s", id, dataFile.fileName().toLocal8Bit().data());
         QDataStream out( &dataFile );
         out << static_cast<quint64>(index_.size());
         for (const shared_ptr<SearchEngine> &se : index_)
@@ -84,7 +80,6 @@ Websearch::Extension::~Extension() {
         dataFile.close();
     } else
         qCritical() << "Could not write to " << dataFile.fileName();
-    qDebug("[%s] Extension finalized", name_);
 }
 
 
