@@ -36,6 +36,9 @@ public:
 /** ***************************************************************************/
 ProposalList::ProposalList(QWidget *parent) : ResizingList(parent) {
     setItemDelegate(delegate_ = new ItemDelegate(this));
+
+    // Single click activation (segfaults without queued connection)
+    connect(this, &ProposalList::clicked, this, &ProposalList::activated, Qt::QueuedConnection);
 }
 
 
@@ -108,7 +111,7 @@ void ProposalList::ItemDelegate::paint(QPainter *painter, const QStyleOptionView
 
     painter->save();
 
-    QStyleOptionViewItemV4 option = options;
+    QStyleOptionViewItem option = options;
     initStyleOption(&option, index);
 
     /*
@@ -129,6 +132,9 @@ void ProposalList::ItemDelegate::paint(QPainter *painter, const QStyleOptionView
      * +---------------------------------------------------------------+
      */
 
+
+    // Avoid ugly dark blue mouseover background
+    option.state.setFlag(QStyle::State_MouseOver, false);
 
     // Draw selection
     option.widget->style()->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
