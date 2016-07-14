@@ -253,6 +253,8 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     for (const unique_ptr<PluginSpec> &p : pluginManager_->plugins())
         if (p->isLoaded())
             extensionManager_->registerExtension(p->instance());
+    createTrayIcon();
+    trayIcon_->show();
 }
 
 
@@ -350,3 +352,28 @@ void AlbertApp::setTerm(const QString &terminal){
     qApp->settings()->setValue(CFG_TERM, terminal);
     terminal_ = terminal;
 }
+
+/** ***************************************************************************/
+void AlbertApp::createTrayIcon()
+{
+    auto trayIconMenu_ = new QMenu(mainWindow_);
+
+    auto quitAction = new QAction("Quit", mainWindow_);
+    auto showAction = new QAction("Show", mainWindow_);
+    auto settingsAction = new QAction("Settings", mainWindow_);
+
+    trayIconMenu_->addAction(showAction);
+    trayIconMenu_->addAction(settingsAction);
+    trayIconMenu_->addSeparator();
+
+    trayIconMenu_->addAction(quitAction);
+
+    connect(showAction, &QAction::triggered, mainWindow_, &QWidget::show);
+    connect(settingsAction, &QAction::triggered, this, &AlbertApp::openSettings);
+    connect(quitAction, &QAction::triggered, this, &QCoreApplication::quit);
+
+    trayIcon_ = new QSystemTrayIcon(QIcon(":app_icon"),mainWindow_);
+    trayIcon_->setContextMenu(trayIconMenu_);
+    trayIcon_->setVisible(true);
+}
+

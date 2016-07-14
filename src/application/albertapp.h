@@ -20,6 +20,8 @@
 #include <QtNetwork/QLocalSocket>
 #include <QSettings>
 #include <QPointer>
+#include <QSystemTrayIcon>
+
 class MainWindow;
 class HotkeyManager;
 class PluginManager;
@@ -48,6 +50,7 @@ public:
     QSettings *settings();
     QString term();
     void setTerm(const QString&);
+    void createTrayIcon();
 
 private:
     MainWindow               *mainWindow_;
@@ -58,6 +61,8 @@ private:
     QLocalServer             *localServer_;
     QSettings                *settings_;
     QString                  terminal_;
+
+    QSystemTrayIcon *trayIcon_;
 
     static const char* CFG_TERM;
     static const char* DEF_TERM;
