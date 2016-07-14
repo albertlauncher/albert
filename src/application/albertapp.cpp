@@ -19,6 +19,7 @@
 #include <QMessageBox>
 #include <QCommandLineParser>
 #include <QDebug>
+#include <QMenu>
 #include <csignal>
 #include "albertapp.h"
 #include "mainwindow.h"
