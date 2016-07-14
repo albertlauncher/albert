@@ -1,10 +1,10 @@
-{{ $BASE_IMAGE := (or .BASE_IMAGE "ubuntu:16.04") }}
-{{ $BUILD_TYPE := (or .BUILD_TYPE "Release") }}
-{{ $JOBS := (or .JOBS "1") }}
-{{ $COMMIT:= (or .COMMIT "dev") }}
+{{$BASE_IMAGE := (or .BASE_IMAGE "ubuntu:16.04")}}
+{{$BUILD_TYPE := (or .BUILD_TYPE "Release")}}
+{{$JOBS := (or .JOBS "1")}}
+{{$COMMIT:= (or .COMMIT "dev")}}
 
 # build image
-FROM {{ $BASE_IMAGE }}
+FROM {{$BASE_IMAGE}}
 
 RUN apt update
 RUN apt upgrade -y --force-yes
@@ -17,25 +17,27 @@ RUN mkdir -p /tmp/output
 {{ end }}
 
 RUN mkdir -p /tmp/output/src
-{{ if .SOURCE_DIR }}
+{{if .SOURCE_DIR}}
   MOUNT {{ .SOURCE_DIR }}:/tmp/output/src
-{{ else }}
+{{else}}
   WORKDIR /tmp/output/src
   RUN git clone https://github.com/aacebedo/albert /tmp/output/src
-  RUN git checkout {{ $COMMIT }}
-{{ end }}
+  RUN git checkout {{$COMMIT}}
+{{end}}
 
 RUN mkdir -p /tmp/output/build
 WORKDIR /tmp/output/build
-RUN cmake /tmp/output/src -DCMAKE_INSTALL_PREFIX=/tmp/output/install -DCMAKE_BUILD_TYPE={{ $BUILD_TYPE }}
-RUN make install -j{{ $JOBS }}
+RUN cmake /tmp/output/src -DCMAKE_INSTALL_PREFIX=/tmp/output/install -DCMAKE_BUILD_TYPE={{$BUILD_TYPE}}
+RUN make install -j{{$JOBS}}
 WORKDIR /tmp/output/src
 RUN mkdir /tmp/output/packages
-ATTACH bash
+
 RUN fpm -s dir -t deb -C  /tmp/output/install \
-        -p "/tmp/output/packages/albert_$(if version=$(git describe --contains HEAD &>/dev/null); then echo $version; else echo dev; fi)_amd64.deb" \
-        -n albert --prefix /usr/local -d libmuparser -d libqt5svg5 -d libqt5x11extras5 bin share
+-p "/tmp/output/packages/albert_$(if version=$(git describe --contains HEAD 2>/dev/null); then echo $version; else echo "dev"; fi)_amd64.deb" \
+-n albert --prefix /usr/local -d libmuparser2v5 -d libqt5svg5 -d libqt5x11extras5 bin share
+
 RUN fpm -s dir -t tar -C  /tmp/output/install \
-        -p "/tmp/output/packages/albert_$(if version=$(git describe --contains HEAD &>/dev/null); then echo $version; else echo dev; fi)_amd64.tar" \
-        -n albert --prefix /usr/local bin share
+-p "/tmp/output/packages/albert_$(if version=$(git describe --contains HEAD 2>/dev/null); then echo $version; else echo "dev"; fi)_amd64.tar" \
+-n albert --prefix /usr/local bin share
+TAG albert-buildenv:{{$COMMIT}}
 
