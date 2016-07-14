@@ -81,7 +81,7 @@ public:
     inline bool followSymlinks() { return followSymlinks_; }
     inline void setFollowSymlinks(bool b = true);
 
-    inline unsigned int scanInterval() { return scanInterval_; }
+    inline unsigned int scanInterval() { return indexIntervalTimer_.interval()/60000; }
     void setScanInterval(uint minutes);
 
     bool fuzzy() { return offlineIndex_.fuzzy(); }
@@ -93,8 +93,7 @@ private:
     OfflineIndex offlineIndex_;
     QMutex indexAccess_;
     QPointer<Indexer> indexer_;
-    QTimer minuteTimer_;
-    unsigned int minuteCounter_;
+    QTimer indexIntervalTimer_;
 
     // Index Properties
     QStringList rootDirs_;
@@ -105,7 +104,6 @@ private:
     bool indexDirs_;
     bool indexHidden_;
     bool followSymlinks_;
-    unsigned int scanInterval_;
 
     /* const */
     static const char* CFG_PATHS;

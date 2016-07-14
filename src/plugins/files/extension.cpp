@@ -52,8 +52,6 @@ const char* Files::Extension::IGNOREFILE          = ".albertignore";
 /** ***************************************************************************/
 Files::Extension::Extension() : IExtension("org.albert.extension.files") {
 
-    minuteTimer_.setInterval(60000);
-
     // Load settings
     qApp->settings()->beginGroup(id);
     indexAudio_ = qApp->settings()->value(CFG_INDEX_AUDIO, DEF_INDEX_AUDIO).toBool();
@@ -64,15 +62,10 @@ Files::Extension::Extension() : IExtension("org.albert.extension.files") {
     indexHidden_ = qApp->settings()->value(CFG_INDEX_HIDDEN, DEF_INDEX_HIDDEN).toBool();
     followSymlinks_ = qApp->settings()->value(CFG_FOLLOW_SYMLINKS, DEF_FOLLOW_SYMLINKS).toBool();
     offlineIndex_.setFuzzy(qApp->settings()->value(CFG_FUZZY, DEF_FUZZY).toBool());
-    setScanInterval(qApp->settings()->value(CFG_SCAN_INTERVAL, DEF_SCAN_INTERVAL).toUInt());
-
-    // Load the paths or set a default
-    QVariant v = qApp->settings()->value(CFG_PATHS);
-    if (v.isValid() && v.canConvert(QMetaType::QStringList))
-        rootDirs_ = v.toStringList();
-    else
+    indexIntervalTimer_.setInterval(qApp->settings()->value(CFG_SCAN_INTERVAL, DEF_SCAN_INTERVAL).toInt()*60000); // Will be started in the initial index update
+    rootDirs_ = qApp->settings()->value(CFG_PATHS).toStringList();
+    if (rootDirs_.isEmpty())
         restorePaths();
-
     qApp->settings()->endGroup();
 
     // Deserialize data
@@ -98,7 +91,7 @@ Files::Extension::Extension() : IExtension("org.albert.extension.files") {
     }
 
     // Minute tick timer
-    connect(&minuteTimer_, &QTimer::timeout, this, &Extension::onMinuteTick);
+    connect(&indexIntervalTimer_, &QTimer::timeout, this, &Extension::updateIndex);
 
     // If the root dirs change write it to the settings
     connect(this, &Extension::rootDirsChanged, [this](const QStringList& dirs){
@@ -121,7 +114,7 @@ Files::Extension::~Extension() {
      * destructor and all events for a deleted object are removed from the event
      * queue.
      */
-    minuteTimer_.stop();
+    indexIntervalTimer_.stop();
     if (!indexer_.isNull()) {
         indexer_->abort();
         QEventLoop loop;
@@ -308,9 +301,9 @@ void Files::Extension::updateIndex() {
         //  Run it
         QThreadPool::globalInstance()->start(indexer_);
 
-        // Reset the timer
-        minuteCounter_ = 0;
-        minuteTimer_.start();
+        // Restart the timer (Index update may have been started manually)
+        if (indexIntervalTimer_.interval() != 0)
+            indexIntervalTimer_.start();
 
         // If widget is visible show the information in the status bat
         if (!widget_.isNull())
@@ -379,9 +372,7 @@ void Files::Extension::setFollowSymlinks(bool b)  {
 /** ***************************************************************************/
 void Files::Extension::setScanInterval(uint minutes) {
     qApp->settings()->setValue(QString("%1/%2").arg(id, CFG_SCAN_INTERVAL), minutes);
-    scanInterval_=minutes;
-    minuteCounter_=0;
-    (minutes == 0) ? minuteTimer_.stop() : minuteTimer_.start();
+    (minutes == 0) ? indexIntervalTimer_.stop() : indexIntervalTimer_.start(minutes*60000);
 }
 
 
@@ -392,13 +383,4 @@ void Files::Extension::setFuzzy(bool b) {
     qApp->settings()->setValue(QString("%1/%2").arg(id, CFG_FUZZY), b);
     offlineIndex_.setFuzzy(b);
     indexAccess_.unlock();
-}
-
-
-
-/** ***************************************************************************/
-void Files::Extension::onMinuteTick() {
-    ++minuteCounter_;
-    if (minuteCounter_ == scanInterval_)
-        updateIndex(); // resets minuteCounter
 }
