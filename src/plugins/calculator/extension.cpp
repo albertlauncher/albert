@@ -16,7 +16,12 @@
 
 #include <QDebug>
 #include <QClipboard>
+
+#include <vector>
+using std::vector;
+
 #include "extension.h"
+#include "action.h"
 #include "configwidget.h"
 #include "query.h"
 #include "objects.hpp"
@@ -122,13 +127,36 @@ void Calculator::Extension::handleQuery(Query query) {
 //      ecINTERNAL_ERROR	35	Internal error of any kind.
     }
 
-    std::shared_ptr<StandardItem> calcItem = std::make_shared<StandardItem>();
-    calcItem->setId("calc");
+    SharedStdItem calcItem = std::make_shared<StandardItem>("muparser-eval");
     calcItem->setText(result);
     calcItem->setSubtext(QString("Result of '%1'").arg(query.searchTerm()));
     calcItem->setIcon(iconPath_);
-    calcItem->setAction([result](){
-        QApplication::clipboard()->setText(result);
-    });
+
+    // Build actions
+    vector<ActionSPtr> actions;
+
+    SharedStdAction action = std::make_shared<StandardAction>();
+    action->setText(QString("Copy '%1' to clipboard").arg(result));
+    action->setAction([=](ExecutionFlags*, const QString&){
+        QApplication::clipboard()->setText(result); });
+    actions.push_back(action);
+
+    // Make searchterm a lvalue that can be captured by the lambda
+    QString text = query.searchTerm();
+    action = std::make_shared<StandardAction>();
+    action->setText(QString("Copy '%1' to clipboard").arg(text));
+    action->setAction([=](ExecutionFlags*, const QString&){
+        QApplication::clipboard()->setText(text); });
+    actions.push_back(action);
+
+    text = QString("%1 = %2").arg(query.searchTerm(), result);
+    action = std::make_shared<StandardAction>();
+    action->setText(QString("Copy '%1' to clipboard").arg(text));
+    action->setAction([=](ExecutionFlags*, const QString&){
+        QApplication::clipboard()->setText(text); });
+    actions.push_back(action);
+
+    calcItem->setActions(actions);
+
     query.addMatch(calcItem, SHRT_MAX);
 }

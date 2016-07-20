@@ -92,12 +92,11 @@ void Debug::Extension::handleQuery(Query query) {
         if (!query.isValid())
             return;
 
-        std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>();
-        item->setId(QString::number(i));
+        std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(QString::number(i));
         item->setText(QString("Das Item #%1").arg(i));
         item->setSubtext(QString("Toll, das Item #%1").arg(i));
         item->setIcon("");
-        item->setAction([](){});
+        item->setActions(vector<ActionSPtr>());
         query.addMatch(item, 0);
     }
 }

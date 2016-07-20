@@ -64,14 +64,10 @@ void Terminal::Extension::teardownSession() {
 /** ***************************************************************************/
 void Terminal::Extension::handleQuery(Query query) {
 
-    QStringList arguments  = query.searchTerm().split(' ', QString::SkipEmptyParts);
-
-    if (arguments.size() < 1)
-        return;
-
-    // Extract data from input string: [0] trigger [1] program. The rest: args
-    QString potentialProgram = arguments.takeFirst();
-    QString argumentsString = arguments.join(' ');
+    // Extract data from input string: [0] program. The rest: args
+    QString potentialProgram = query.searchTerm().section(' ', 0, 0);
+    QString argsString = query.searchTerm().section(' ', 1);
+    QStringList args = argsString.split(' ', QString::SkipEmptyParts);
 
     // Search first match
     std::set<QString>::iterator it = std::lower_bound(index_.begin(), index_.end(), potentialProgram);
@@ -80,13 +76,17 @@ void Terminal::Extension::handleQuery(Query query) {
     QString program;
     while (it != index_.end() && it->startsWith(potentialProgram)){
         program = *it;
-        std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>();
-        item->setId(program);
-        item->setText(QString("%1 %2").arg(program, argumentsString));
-        item->setSubtext(QString("Run '%1 %2'").arg(program, argumentsString));
+        std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(program);
+        item->setText(QString("%1 %2").arg(program, argsString));
+        item->setSubtext(QString("Run '%1 %2'").arg(program, argsString));
         item->setIcon(iconPath_);
-        item->setAction([program, arguments](){
-            QProcess::startDetached(program, arguments);
+        item->setActions({
+            std::make_shared<StandardAction>(
+                    item->subtext(""),
+                    [program, args](ExecutionFlags *, const QString&){
+                        QProcess::startDetached(program, args);
+                    }
+            )
         });
         query.addMatch(item, 0);
         ++it;

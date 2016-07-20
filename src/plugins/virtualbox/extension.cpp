@@ -56,17 +56,24 @@ void VirtualBox::Extension::setupSession() {
 
 /** ***************************************************************************/
 void VirtualBox::Extension::handleQuery(Query query) {
-    for (uint i = 0; i < names_.size(); ++i){
-        if (names_[i].startsWith(query.searchTerm(), Qt::CaseInsensitive)) {
-            std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>();
-            item->setId(uuids_[i]);
-            item->setText(names_[i]);
-            item->setSubtext(QString("Start '%1'").arg(names_[i]));
-            item->setIcon(iconPath_);
-            item->setAction([this, i](){
-                QProcess::startDetached("VBoxManage", {"startvm", uuids_[i]});
-            });
-            query.addMatch(item);
-        }
+
+   for (uint i = 0; i < names_.size(); ++i){
+       if (names_[i].startsWith(query.searchTerm(), Qt::CaseInsensitive)) {
+
+           std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(uuids_[i]);
+           item->setText(names_[i]);
+           item->setSubtext(QString("'%1' aka '%2'").arg(names_[i], uuids_[i]));
+           item->setIcon(iconPath_);
+
+           std::shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
+           action->setText(QString("Start '%1'").arg(names_[i]));
+           action->setAction([this, i](ExecutionFlags *, const QString&){
+               QProcess::startDetached("VBoxManage", {"startvm", uuids_[i]});
+           });
+
+           item->setActions({action});
+
+           query.addMatch(item);
+       }
     }
 }

@@ -19,6 +19,21 @@
 #include <memory>
 #include <vector>
 
+
+/** ****************************************************************************
+ * @brief The AbstractItem
+ * Displayable base class for all albert items.
+ * Determines the bahaviour of the app after the action has been executed
+ */
+struct ExecutionFlags {
+    /** Mainwidget will be hidden */
+    bool hideWidget = true;
+    /** Inputline will be cleared */
+    bool clearInput = true;
+};
+
+
+
 /** ****************************************************************************
  * @brief The action interface
  * A base class for actions (and items)
@@ -26,12 +41,6 @@
 class Action
 {
 public:
-    struct ExecutionFlags {
-        // Mainwidget will be hidden after the action has been exectuted
-        bool hideWidget = true;
-        // Inputline will be cleared after the action has been exectuted
-        bool clearInput = true;
-    };
 
     virtual ~Action() {}
 

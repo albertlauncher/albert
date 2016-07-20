@@ -135,19 +135,26 @@ QWidget *System::Extension::widget(QWidget *parent) {
 
 /** ***************************************************************************/
 void System::Extension::handleQuery(Query query) {
-
-    for (int i = 0; i < NUMCOMMANDS; ++i) {
+   for (int i = 0; i < NUMCOMMANDS; ++i) {
         if (configNames[i].startsWith(query.searchTerm().toLower())) {
-            QString cmd = commands[i];
-            query.addMatch(std::make_shared<StandardItem>(
-                               configNames[i],
-                               itemTitles[i],
-                               itemDescriptions[i],
-                               iconPaths[i],
-                               [cmd](){QProcess::startDetached(cmd);}
-            ));
-        }
-    }
+
+            std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(configNames[i]);
+            item->setText(itemTitles[i]);
+            item->setSubtext(itemDescriptions[i]);
+            item->setIcon(iconPaths[i]);
+
+           QString cmd = commands[i];
+            std::shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
+            action->setText(itemDescriptions[i]);
+            action->setAction([=](ExecutionFlags *, const QString&){
+                QProcess::startDetached(cmd);
+            });
+
+            item->setActions({action});
+
+            query.addMatch(item);
+       }
+   }
 }
 
 

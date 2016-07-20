@@ -201,7 +201,7 @@ public:
             case Qt::UserRole: {
 
                 int actionValue = value.toInt();
-                Action::ExecutionFlags flags;
+                ExecutionFlags flags;
 
                 if (0 <= actionValue && actionValue < static_cast<int>(item->actions().size()))
                     item->actions()[actionValue]->activate(&flags, searchTerm_);
