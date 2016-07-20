@@ -32,15 +32,17 @@ class AlbertItem : public Action
 {
 public:
 
-    /** An enumeration of urgency levels */
-    enum class Urgency : unsigned char {
-        Low, // Use this if your extension tends to produce much potentially less relevant items (e.g. files)
-        Normal, // In all other cases use this
-        Notification, // Use this if your items are few, seldom and have to be on top (e.g. calculator output)
-        Alert // Like notification. Gets a visual emphasis
-    };
+    /**
+     * An enumeration of urgency levels
+     * Notifications are placed on top. Alert too but additionally get an visual
+     * emphasis. Normal items are not handled in a special way.
+     */
+    enum class Urgency : unsigned char { Normal, Notification, Alert };
 
     virtual ~AlbertItem() {}
+
+    /** An persistant, extensionwide unique identifier, "" if item is dynamic */
+    virtual QString id() const = 0;
 
     /** The icon for the item */
     virtual QString iconPath() const = 0;

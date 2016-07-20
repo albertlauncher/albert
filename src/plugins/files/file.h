@@ -47,6 +47,7 @@ public:
      * Implementation of AlbertItem interface
      */
 
+    QString id() const override { return path_; }
     QString text(const QString &) const override;
     QString subtext(const QString &) const override;
     QString iconPath() const override;

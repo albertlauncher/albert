@@ -93,6 +93,7 @@ void Debug::Extension::handleQuery(Query query) {
             return;
 
         std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>();
+        item->setId(QString::number(i));
         item->setText(QString("Das Item #%1").arg(i));
         item->setSubtext(QString("Toll, das Item #%1").arg(i));
         item->setIcon("");

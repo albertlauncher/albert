@@ -52,8 +52,14 @@ void ChromeBookmarks::Extension::Indexer::run() {
         }
         if (type.toString() == "url") {
             // TODO ADD THE FOLDERS to the indexKeywords
-            newIndex.push_back(std::make_shared<Bookmark>(
-                                 json["name"].toString(), json["url"].toString(), 0));
+            newIndex.push_back(
+                    std::make_shared<Bookmark>(
+                            json["id"].toString(),
+                            json["name"].toString(),
+                            json["url"].toString(),
+                            0
+                    )
+            );
         }
     };
 

@@ -30,6 +30,7 @@ public:
      * Implementation of AlbertItem interface
      */
 
+    QString id() const override { return url_; } // FIXME not an id, is there any at all? Ship of Theseus?
     QString text(const QString &query) const override;
     QString subtext(const QString &query) const override;
     QString iconPath() const override;

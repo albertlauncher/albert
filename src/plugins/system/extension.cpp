@@ -140,10 +140,11 @@ void System::Extension::handleQuery(Query query) {
         if (configNames[i].startsWith(query.searchTerm().toLower())) {
             QString cmd = commands[i];
             query.addMatch(std::make_shared<StandardItem>(
-                                itemTitles[i],
-                                itemDescriptions[i],
-                                iconPaths[i],
-                                [cmd](){QProcess::startDetached(cmd);}
+                               configNames[i],
+                               itemTitles[i],
+                               itemDescriptions[i],
+                               iconPaths[i],
+                               [cmd](){QProcess::startDetached(cmd);}
             ));
         }
     }

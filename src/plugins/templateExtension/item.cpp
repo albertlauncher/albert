@@ -32,6 +32,13 @@ Template::Item::~Item(){
 
 
 /** ***************************************************************************/
+QString Template::Item::id() const {
+    return "Id of item";
+}
+
+
+
+/** ***************************************************************************/
 QString Template::Item::text(const QString &) const {
     return "Title of item";
 }

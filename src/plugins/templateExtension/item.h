@@ -31,6 +31,7 @@ public:
     Item();
     ~Item();
 
+    QString id() const override;
     QString text(const QString&) const override;
     QString subtext(const QString&) const override;
     QString iconPath() const override;

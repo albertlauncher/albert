@@ -25,13 +25,14 @@ class Bookmark final : public AlbertItem, public IIndexable
 public:
 
     Bookmark() : usage_(0) {}
-    Bookmark(const QString &name, const QString &url, short usage = 0)
-        : name_(name), url_(url), usage_(usage) {}
+    Bookmark(const QString &id, const QString &name, const QString &url, short usage = 0)
+        : id_(id), name_(name), url_(url), usage_(usage) {}
 
     /*
      * Implementation of AlbertItem interface
      */
 
+    QString id() const override { return id_; }
     QString text(const QString&) const override;
     QString subtext(const QString&) const override;
     QString iconPath() const override;
@@ -68,6 +69,7 @@ public:
     void deserialize(QDataStream &in);
 
 private:
+    QString id_;
     QString name_;
     QString url_;
     mutable uint16_t usage_;

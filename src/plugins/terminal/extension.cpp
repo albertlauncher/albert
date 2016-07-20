@@ -81,6 +81,7 @@ void Terminal::Extension::handleQuery(Query query) {
     while (it != index_.end() && it->startsWith(potentialProgram)){
         program = *it;
         std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>();
+        item->setId(program);
         item->setText(QString("%1 %2").arg(program, argumentsString));
         item->setSubtext(QString("Run '%1 %2'").arg(program, argumentsString));
         item->setIcon(iconPath_);

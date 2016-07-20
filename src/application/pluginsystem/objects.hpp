@@ -24,8 +24,11 @@ class StandardItem final : public AlbertItem
 {
 public:
     StandardItem(){}
-    StandardItem(const QString &text, const QString &subtext, const QString &iconPath, std::function<void()> f)
-        : text_(text), subtext_(subtext), iconPath_(iconPath), action_(f) {}
+    StandardItem(const QString &id, const QString &text, const QString &subtext, const QString &iconPath, std::function<void()> f)
+        : id_(id), text_(text), subtext_(subtext), iconPath_(iconPath), action_(f) {}
+
+    QString id() const override { return id_; }
+    void setId(const QString &id){id_ = id;}
 
     QString text(const QString &) const override { return text_; }
     void setText(const QString &text){text_ = text;}
@@ -41,6 +44,7 @@ public:
     void activate(ExecutionFlags *, const QString &) override { action_();}
 
 private:
+    QString id_;
     QString text_;
     QString subtext_;
     QString iconPath_;

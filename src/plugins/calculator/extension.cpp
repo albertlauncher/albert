@@ -123,6 +123,7 @@ void Calculator::Extension::handleQuery(Query query) {
     }
 
     std::shared_ptr<StandardItem> calcItem = std::make_shared<StandardItem>();
+    calcItem->setId("calc");
     calcItem->setText(result);
     calcItem->setSubtext(QString("Result of '%1'").arg(query.searchTerm()));
     calcItem->setIcon(iconPath_);
