@@ -1,0 +1,9 @@
+{
+    "id" :              "org.albert.extension.debug",
+    "name" :            "Debug",
+    "version" :         "1.0",
+    "platform" :        "All",
+    "group" :           "Extensions",
+    "author" :          "Manuel Schneider",
+    "dependencies" :    ""
+}
