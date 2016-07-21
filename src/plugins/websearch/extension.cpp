@@ -115,8 +115,8 @@ QStringList Websearch::Extension::triggers() const {
 
 
 /** ***************************************************************************/
-ItemSPtrVec Websearch::Extension::fallbacks() const {
-    ItemSPtrVec res;
+vector<SharedItem> Websearch::Extension::fallbacks() const {
+    vector<SharedItem> res;
     for (const shared_ptr<SearchEngine> &se : index_)
         if (se->enabled())
             res.push_back(se);

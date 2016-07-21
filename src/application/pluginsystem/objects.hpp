@@ -61,7 +61,7 @@ public:
 
     StandardItem(const QString &id) : id_(id) {}
     StandardItem(const QString &id, const QString &text, const QString &subtext,
-                 const QString &iconPath, vector<ActionSPtr> actions)
+                 const QString &iconPath, vector<SharedAction> actions)
         : id_(id), text_(text), subtext_(subtext), iconPath_(iconPath), actions_(actions) {}
 
     QString id() const override { return id_; }
@@ -75,8 +75,8 @@ public:
     QString iconPath() const override { return iconPath_; }
     void setIcon( const QString &iconPath){iconPath_ = iconPath;}
 
-    vector<ActionSPtr> actions() { return vector<ActionSPtr>(); }
-    void setActions(vector<ActionSPtr> actions){ actions_ = std::move(actions);}
+    vector<SharedAction> actions() { return vector<SharedAction>(); }
+    void setActions(vector<SharedAction> actions){ actions_ = std::move(actions);}
 
     void activate(ExecutionFlags *flags, const QString& term) override {
         if (!actions_.empty()) actions_[0]->activate(flags, term);
@@ -88,7 +88,7 @@ private:
     QString text_;
     QString subtext_;
     QString iconPath_;
-    vector<ActionSPtr> actions_;
+    vector<SharedAction> actions_;
 
 };
 typedef shared_ptr<StandardItem> SharedStdItem;

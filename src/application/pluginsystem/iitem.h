@@ -57,9 +57,8 @@ public:
     virtual Urgency urgency() const { return Urgency::Normal; }
 
     /** The alternative actions of the item*/
-    virtual ActionSPtrVec actions() { return ActionSPtrVec(); }
+    virtual vector<SharedAction> actions() { return vector<SharedAction>(); }
 
 };
-typedef shared_ptr<AlbertItem> ItemSPtr;
-typedef vector<shared_ptr<AlbertItem>> ItemSPtrVec;
+typedef shared_ptr<AlbertItem> SharedItem;
 

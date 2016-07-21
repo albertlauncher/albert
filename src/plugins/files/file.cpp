@@ -77,8 +77,8 @@ void Files::File::activate(ExecutionFlags *flags, const QString &q) {
 
 
 /** ***************************************************************************/
-ActionSPtrVec Files::File::actions() {
-    ActionSPtrVec actions;
+vector<SharedAction> Files::File::actions() {
+    vector<SharedAction> actions;
     actions.push_back(std::make_shared<RevealFileAction>(this));
     actions.push_back(std::make_shared<CopyFileAction>(this));
     actions.push_back(std::make_shared<CopyPathAction>(this));

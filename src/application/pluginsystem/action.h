@@ -17,7 +17,7 @@
 #pragma once
 #include <QString>
 #include <memory>
-#include <vector>
+using std::shared_ptr;
 
 
 /** ****************************************************************************
@@ -50,5 +50,4 @@ public:
     /** Activates the item */
     virtual void activate(ExecutionFlags *, const QString& query) = 0;
 };
-typedef std::shared_ptr<Action> ActionSPtr;
-typedef std::vector<std::shared_ptr<Action>> ActionSPtrVec;
+typedef shared_ptr<Action> SharedAction;

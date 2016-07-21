@@ -36,7 +36,7 @@ using std::vector;
 
 
 struct Match {
-    ItemSPtr item;
+    SharedItem item;
     short score;
 };
 
@@ -167,7 +167,7 @@ public:
     QVariant data(const QModelIndex & index, int role) const override {
         if (index.isValid()) {
             mutex_.lock();
-            ItemSPtr item = matches_[index.row()].item;
+            SharedItem item = matches_[index.row()].item;
             mutex_.unlock();
             switch (role) {
             case Qt::DisplayRole:
@@ -178,7 +178,7 @@ public:
                 return item->iconPath();
             case Qt::UserRole: {
                 QStringList actionTexts;
-                for (ActionSPtr &action : item->actions())
+                for (SharedAction &action : item->actions())
                     actionTexts.append(action->text(searchTerm_));
                 return actionTexts;
             }
@@ -195,7 +195,7 @@ public:
     bool setData(const QModelIndex &index, const QVariant &value, int role) override {
         if (index.isValid()) {
             mutex_.lock();
-            ItemSPtr item = matches_[index.row()].item;
+            SharedItem item = matches_[index.row()].item;
             mutex_.unlock();
             switch (role) {
             case Qt::UserRole: {

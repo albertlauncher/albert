@@ -96,7 +96,7 @@ void Debug::Extension::handleQuery(Query query) {
         item->setText(QString("Das Item #%1").arg(i));
         item->setSubtext(QString("Toll, das Item #%1").arg(i));
         item->setIcon("");
-        item->setActions(vector<ActionSPtr>());
+        item->setActions(vector<SharedAction>());
         query.addMatch(item, 0);
     }
 }

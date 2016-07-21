@@ -54,7 +54,7 @@ public:
     vector<QString> indexKeywords() const override;
     void activate(ExecutionFlags *, const QString &) override;
     uint16_t usageCount() const { return usage_; }
-    ActionSPtrVec actions() override;
+    vector<SharedAction> actions() override;
 
     /*
      * Item specific members

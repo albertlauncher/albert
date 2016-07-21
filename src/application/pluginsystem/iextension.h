@@ -101,7 +101,7 @@ public:
      * @brief Fallbacks of this extension
      * This items show up if a query yields no results
      */
-    virtual ItemSPtrVec fallbacks() const {return ItemSPtrVec();}
+    virtual vector<SharedItem> fallbacks() const {return vector<SharedItem>();}
 
 signals:
 

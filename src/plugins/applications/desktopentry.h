@@ -42,7 +42,7 @@ public:
     vector<QString> indexKeywords() const override;
     void activate(ExecutionFlags *, const QString&) override;
     uint16_t usageCount() const override {return usage_;}
-    ActionSPtrVec actions() override { return actions_; }
+    vector<SharedAction> actions() override { return actions_; }
 
     /*
      * Item specific members
@@ -97,7 +97,7 @@ private:
     QString iconPath_;
     QString exec_;
     bool term_;
-    ActionSPtrVec actions_;
+    vector<SharedAction> actions_;
 
     /** The list of supported graphical sudo applications */
     static QStringList supportedGraphicalSudo;

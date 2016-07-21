@@ -133,7 +133,7 @@ void Calculator::Extension::handleQuery(Query query) {
     calcItem->setIcon(iconPath_);
 
     // Build actions
-    vector<ActionSPtr> actions;
+    vector<SharedAction> actions;
 
     SharedStdAction action = std::make_shared<StandardAction>();
     action->setText(QString("Copy '%1' to clipboard").arg(result));
