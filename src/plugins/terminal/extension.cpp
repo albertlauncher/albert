@@ -65,8 +65,8 @@ void Terminal::Extension::teardownSession() {
 void Terminal::Extension::handleQuery(Query query) {
 
     // Extract data from input string: [0] program. The rest: args
-    QString potentialProgram = query.searchTerm().section(' ', 0, 0);
-    QString argsString = query.searchTerm().section(' ', 1);
+    QString potentialProgram = query.searchTerm().section(' ', 0, 0, QString::SectionSkipEmpty);
+    QString argsString = query.searchTerm().section(' ', 1, -1, QString::SectionSkipEmpty);
     QStringList args = argsString.split(' ', QString::SkipEmptyParts);
 
     // Search first match
@@ -74,7 +74,7 @@ void Terminal::Extension::handleQuery(Query query) {
 
     // Iterate over matches
     QString program;
-    while (it != index_.end() && it->startsWith(potentialProgram)){
+     while (it != index_.end() && it->startsWith(potentialProgram)){
         program = *it;
         std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(program);
         item->setText(QString("%1 %2").arg(program, argsString));
