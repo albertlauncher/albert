@@ -60,11 +60,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui.setupUi(this);
     setWindowTitle(qAppName());
     setWindowFlags(Qt::Tool
-                   | Qt::WindowStaysOnTopHint
                    | Qt::WindowCloseButtonHint // No close event w/o this
                    | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
-    setAttribute(Qt::WA_TransparentForMouseEvents);
 
     QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect();
     effect->setBlurRadius(20);
@@ -309,8 +307,8 @@ bool MainWindow::alwaysOnTop() const {
 /** ***************************************************************************/
 void MainWindow::setAlwaysOnTop(bool alwaysOnTop) {
     qApp->settings()->setValue(CFG_ALWAYS_ON_TOP, alwaysOnTop);
-    alwaysOnTop ? setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint)
-                : setWindowFlags(windowFlags() & ~Qt::WindowStaysOnTopHint);
+    alwaysOnTop ? setWindowFlags(windowFlags().setFlag(Qt::WindowStaysOnTopHint))
+                : setWindowFlags(windowFlags().setFlag(Qt::WindowStaysOnTopHint, false));
 }
 
 
