@@ -28,6 +28,11 @@
 #include "pluginmanager.h"
 #include "extensionmanager.h"
 
+const char* AlbertApp::CFG_TERM = "terminal";
+const char* AlbertApp::DEF_TERM = "xterm -e %1";
+const char* AlbertApp::CFG_SHOWTRAY = "showTray";
+const bool  AlbertApp::DEF_SHOWTRAY = true;
+
 namespace {
 
 /** ***************************************************************************/
@@ -59,15 +64,23 @@ void shutdownHandler(int) {
 }
 }
 
-const char* AlbertApp::CFG_TERM = "terminal";
-const char* AlbertApp::DEF_TERM = "xterm -e %1";
-
 /** ***************************************************************************/
-AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
+AlbertApp::AlbertApp(int &argc, char *argv[])
+    : QApplication(argc, argv),
+      mainWindow_(nullptr),
+      hotkeyManager_(nullptr),
+      pluginManager_(nullptr),
+      extensionManager_(nullptr),
+      localServer_(nullptr),
+      settings_(nullptr),
+      trayIcon_(nullptr),
+      trayIconMenu_(nullptr) {
+
 
     /*
      *  INITIALIZE APPLICATION
      */
+
 
     qInstallMessageHandler(myMessageOutput);
     setOrganizationDomain("albert");
@@ -78,9 +91,11 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     setQuitOnLastWindowClosed(false);
 
 
+
     /*
      *  PARSE COMMANDLINE
      */
+
 
     QCommandLineParser parser;
     parser.setApplicationDescription("Albert is still in alpha. These options "
@@ -107,9 +122,11 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
     }
 
 
+
     /*
      *  SINGLE INSTANCE / IPC
      */
+
 
     QLocalSocket socket;
     socket.connectToServer(applicationName());
@@ -159,11 +176,72 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
 
 
     /*
+     * INITIALIZE PATHS
+     */
+
+    // Make sure data, cache and config dir exists
+    QDir dir;
+    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/" + applicationName());
+    dir.mkpath(".");
+    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
+    dir.mkpath(".");
+    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
+    dir.mkpath(".");
+
+
+
+    /*
+     * INITIALIZE APPLICATION
+     */
+
+
+    mainWindow_ = new MainWindow;
+    hotkeyManager_ = new HotkeyManager;
+    extensionManager_ = new ExtensionManager;
+    pluginManager_ = new PluginManager;
+
+    // toggle visibility
+    QObject::connect(hotkeyManager_, &HotkeyManager::hotKeyPressed,[this](){
+        mainWindow_->setVisible(!mainWindow_->isVisible());
+    });
+
+    QObject::connect(mainWindow_, &MainWindow::widgetShown,
+                     extensionManager_, &ExtensionManager::setupSession);
+
+    QObject::connect(mainWindow_, &MainWindow::widgetHidden,
+                     extensionManager_, &ExtensionManager::teardownSession);
+
+    QObject::connect(mainWindow_, &MainWindow::startQuery,
+                     extensionManager_, &ExtensionManager::startQuery);
+
+    QObject::connect(extensionManager_, &ExtensionManager::newModel,
+                     mainWindow_, &MainWindow::setModel);
+
+    QObject::connect(pluginManager_, &PluginManager::pluginLoaded,
+                     extensionManager_, &ExtensionManager::registerExtension);
+
+    QObject::connect(pluginManager_, &PluginManager::pluginAboutToBeUnloaded,
+                     extensionManager_, &ExtensionManager::unregisterExtension);
+
+    // Propagade the extensions once TODO this is bullshitty design
+    for (const unique_ptr<PluginSpec> &p : pluginManager_->plugins())
+        if (p->isLoaded())
+            extensionManager_->registerExtension(p->instance());
+
+    // Enable the tray icon
+    QVariant v = qApp->settings()->value(CFG_SHOWTRAY, DEF_SHOWTRAY);
+    if (v.isValid() && v.canConvert(QMetaType::Bool))
+        enableTrayIcon(v.toBool());
+
+
+
+    /*
      *  UNIX STUFF THAT SHOULD BE IN A PIMPL OR SUBCLASS
      */
 
+
     // Set terminal emulator
-    QVariant v = qApp->settings()->value(CFG_TERM);
+    v = qApp->settings()->value(CFG_TERM);
     if (v.isValid() && v.canConvert(QMetaType::QString))
         terminal_ = v.toString();
     else{
@@ -202,60 +280,6 @@ AlbertApp::AlbertApp(int &argc, char *argv[]) : QApplication(argc, argv) {
             qCritical() << "Could not create file:" << filePath;
         file.close();
     }
-
-
-    /*
-     * INITIALIZE PATHS
-     */
-
-    // Make sure data, cache and config dir exists
-    QDir dir;
-    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/" + applicationName());
-    dir.mkpath(".");
-    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
-    dir.mkpath(".");
-    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
-    dir.mkpath(".");
-
-
-    /*
-     * INITIALIZE MODULES
-     */
-
-    mainWindow_ = new MainWindow;
-    hotkeyManager_ = new HotkeyManager;
-    extensionManager_ = new ExtensionManager;
-    pluginManager_ = new PluginManager;
-
-    // toggle visibility
-    QObject::connect(hotkeyManager_, &HotkeyManager::hotKeyPressed,[this](){
-        mainWindow_->setVisible(!mainWindow_->isVisible());
-    });
-
-    QObject::connect(mainWindow_, &MainWindow::widgetShown,
-                     extensionManager_, &ExtensionManager::setupSession);
-
-    QObject::connect(mainWindow_, &MainWindow::widgetHidden,
-                     extensionManager_, &ExtensionManager::teardownSession);
-
-    QObject::connect(mainWindow_, &MainWindow::startQuery,
-                     extensionManager_, &ExtensionManager::startQuery);
-
-    QObject::connect(extensionManager_, &ExtensionManager::newModel,
-                     mainWindow_, &MainWindow::setModel);
-
-    QObject::connect(pluginManager_, &PluginManager::pluginLoaded,
-                     extensionManager_, &ExtensionManager::registerExtension);
-
-    QObject::connect(pluginManager_, &PluginManager::pluginAboutToBeUnloaded,
-                     extensionManager_, &ExtensionManager::unregisterExtension);
-
-    // Propagade the extensions once TODO this is bullshitty design
-    for (const unique_ptr<PluginSpec> &p : pluginManager_->plugins())
-        if (p->isLoaded())
-            extensionManager_->registerExtension(p->instance());
-    createTrayIcon();
-    trayIcon_->show();
 }
 
 
@@ -354,27 +378,47 @@ void AlbertApp::setTerm(const QString &terminal){
     terminal_ = terminal;
 }
 
+
+
 /** ***************************************************************************/
-void AlbertApp::createTrayIcon()
-{
-    auto trayIconMenu_ = new QMenu(mainWindow_);
+void AlbertApp::enableTrayIcon(bool enable) {
+    settings()->setValue(CFG_SHOWTRAY, enable);
+    if (enable && trayIcon_ == nullptr)
+    {
+        // They cannot be parented since QMenu want QWidget as parent.
+        trayIcon_ = new QSystemTrayIcon(QIcon(":app_icon"), this);
+        trayIconMenu_ = new QMenu();
 
-    auto quitAction = new QAction("Quit", mainWindow_);
-    auto showAction = new QAction("Show", mainWindow_);
-    auto settingsAction = new QAction("Settings", mainWindow_);
+        QAction* quitAction     = new QAction("Quit", trayIconMenu_);
+        QAction* showAction     = new QAction("Show", trayIconMenu_);
+        QAction* settingsAction = new QAction("Settings", trayIconMenu_);
 
-    trayIconMenu_->addAction(showAction);
-    trayIconMenu_->addAction(settingsAction);
-    trayIconMenu_->addSeparator();
+        connect(showAction,     &QAction::triggered, this, &AlbertApp::showWidget);
+        connect(settingsAction, &QAction::triggered, this, &AlbertApp::openSettings);
+        connect(quitAction,     &QAction::triggered, this, &QCoreApplication::quit);
 
-    trayIconMenu_->addAction(quitAction);
+        trayIconMenu_->addAction(showAction);
+        trayIconMenu_->addAction(settingsAction);
+        trayIconMenu_->addSeparator();
+        trayIconMenu_->addAction(quitAction);
 
-    connect(showAction, &QAction::triggered, mainWindow_, &QWidget::show);
-    connect(settingsAction, &QAction::triggered, this, &AlbertApp::openSettings);
-    connect(quitAction, &QAction::triggered, this, &QCoreApplication::quit);
+        trayIcon_->setContextMenu(trayIconMenu_);
+        trayIcon_->setVisible(true);
+    }
+    else if (trayIcon_ != nullptr)
+    {
+        trayIcon_->setVisible(false);
+        trayIcon_->deleteLater();
+        trayIconMenu_->deleteLater();
+        trayIcon_ = nullptr;
+        trayIconMenu_ = nullptr;
+    }
+}
 
-    trayIcon_ = new QSystemTrayIcon(QIcon(":app_icon"),mainWindow_);
-    trayIcon_->setContextMenu(trayIconMenu_);
-    trayIcon_->setVisible(true);
+
+
+/** ***************************************************************************/
+bool AlbertApp::trayIconEnabled() {
+    return trayIcon_ != nullptr;
 }
 

@@ -21,6 +21,7 @@
 #include <QSettings>
 #include <QPointer>
 #include <QSystemTrayIcon>
+#include <QMenu>
 
 class MainWindow;
 class HotkeyManager;
@@ -35,8 +36,11 @@ class SettingsWidget;
 
 class AlbertApp final : public QApplication
 {
+
     Q_OBJECT
+
 public:
+
     AlbertApp(int &argc, char *argv[]);
     ~AlbertApp();
 
@@ -48,11 +52,15 @@ public:
     void hideWidget();
     void clearInput();
     QSettings *settings();
+
     QString term();
     void setTerm(const QString&);
-    void createTrayIcon();
+
+    void enableTrayIcon(bool enable = true);
+    bool trayIconEnabled();
 
 private:
+
     MainWindow               *mainWindow_;
     HotkeyManager            *hotkeyManager_;
     PluginManager            *pluginManager_;
@@ -61,11 +69,13 @@ private:
     QLocalServer             *localServer_;
     QSettings                *settings_;
     QString                  terminal_;
-
-    QSystemTrayIcon *trayIcon_;
+    QSystemTrayIcon          *trayIcon_;
+    QMenu                    *trayIconMenu_;
 
     static const char* CFG_TERM;
     static const char* DEF_TERM;
+    static const char* CFG_SHOWTRAY;
+    static const bool  DEF_SHOWTRAY;
 };
 
 

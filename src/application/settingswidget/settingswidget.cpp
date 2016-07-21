@@ -40,9 +40,10 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyMana
 
 
     /*
-     * HOTKEY
+     * GENERAL
      */
 
+    // HOTKEY
     QSet<int> hks = hotkeyManager->hotkeys();
     if (hks.size() < 1)
         ui.grabKeyButton_hotkey->setText("Press to set hotkey");
@@ -50,6 +51,11 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyMana
         ui.grabKeyButton_hotkey->setText(QKeySequence(*hks.begin()).toString()); // OMG
     connect(ui.grabKeyButton_hotkey, &GrabKeyButton::keyCombinationPressed,
             this, &SettingsWidget::changeHotkey);
+
+    // TRAY
+    ui.checkBox_showTray->setChecked(qApp->trayIconEnabled());
+    connect(ui.checkBox_showTray, &QCheckBox::toggled,
+            qApp, &AlbertApp::enableTrayIcon);
 
 
     /*
