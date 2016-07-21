@@ -166,8 +166,12 @@ QString System::Extension::defaultCommand(SupportedCommands command){
 
     switch (command) {
     case LOCK:
+        if (de == "Unity" || de == "Pantheon" || de == "Gnome")
+            return "gnome-screensaver-command --lock";
+        else if (de == "XFCE")
+            return "xflock4";
         if (de == "X-Cinnamon")
-            return "cinnamon-screensaver-command -l";
+            return "cinnamon-screensaver-command --lock";
         else if (de == "MATE")
             return "mate-screensaver-command --lock";
         else
@@ -181,7 +185,7 @@ QString System::Extension::defaultCommand(SupportedCommands command){
         else if (de == "X-Cinnamon")
             return "cinnamon-session-quit --logout --no-prompt";
         else if (de == "XFCE")
-            return "gnome-session-quit --logout --no-prompt";
+            return "xfce4-session-logout --logout";
         else if (de == "MATE")
             return "mate-session-save --logout";
         else
