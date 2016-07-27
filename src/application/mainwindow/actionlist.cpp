@@ -63,13 +63,8 @@ void ActionList::ActionDelegate::paint(QPainter *painter, const QStyleOptionView
     option.widget->style()->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
 
     // Draw text
-    QRect textRect = option.widget->style()->subElementRect(QStyle::SE_ItemViewItemText, &option, option.widget);
     painter->setFont(option.font);
-
-    // Draw text
-    QString text = QFontMetrics(option.font).elidedText(index.data(Qt::DisplayRole).toString(), option.textElideMode, textRect.width());
-    option.widget->style()->drawItemText(painter, textRect, Qt::AlignCenter, option.palette, option.state & QStyle::State_Enabled, text, QPalette::WindowText);
-    //    painter->drawText(textRect, Qt::AlignTop|Qt::AlignLeft, text);
-
+    QString text = QFontMetrics(option.font).elidedText(index.data(Qt::DisplayRole).toString(), option.textElideMode, option.rect.width());
+    option.widget->style()->drawItemText(painter, option.rect, Qt::AlignCenter|Qt::AlignHCenter, option.palette, option.state & QStyle::State_Enabled, text, QPalette::WindowText);
     painter->restore();
 }
