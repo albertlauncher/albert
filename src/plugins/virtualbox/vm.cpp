@@ -106,6 +106,7 @@ VirtualBox::VMItem *VirtualBox::VM::produceItem() {
     } else if (state_ == "paused") {
         mainAction = VMItem::VM_RESUME;
         actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Resume", [resumeCmd](ExecutionFlags*){ QProcess::startDetached(resumeCmd); }) ));
+        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Save State", [saveCmd](ExecutionFlags*){ QProcess::startDetached(saveCmd); }) ));
         actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Reset", [resetCmd](ExecutionFlags*){ QProcess::startDetached(resetCmd); }) ));
     }
 
