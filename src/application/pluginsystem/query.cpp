@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "query.h"
-#include "query_p.hpp"
+#include "query_p.h"
 
 
 /** ***************************************************************************/
@@ -27,7 +27,7 @@ Query::Query(QueryPrivate *queryPrivate) : impl(queryPrivate) {
 
 /** ***************************************************************************/
 void Query::addMatch(shared_ptr<AbstractItem> item, short score) {
-    impl->addMatch({item, score});
+    impl->addMatch(item, score);
 }
 
 

@@ -18,15 +18,18 @@
 #include <QStandardPaths>
 #include <QMessageBox>
 #include <QCommandLineParser>
+#include <QtConcurrent/QtConcurrent>
+#include <QFutureSynchronizer>
 #include <QDebug>
 #include <QMenu>
 #include <csignal>
 #include "albertapp.h"
 #include "mainwindow.h"
-#include "settingswidget.h"
 #include "hotkeymanager.h"
 #include "extensionmanager.h"
-#include "queryhandler.h"
+#include "settingswidget.h"
+#include "abstractextension.h"
+#include "query_p.h"
 
 const char* AlbertApp::CFG_TERM = "terminal";
 const char* AlbertApp::DEF_TERM = "xterm -e %1";
@@ -69,8 +72,8 @@ AlbertApp::AlbertApp(int &argc, char *argv[])
     : QApplication(argc, argv),
       mainWindow_(nullptr),
       hotkeyManager_(nullptr),
-      queryHandler_(nullptr),
       extensionManager_(nullptr),
+      currentQuery_(nullptr),
       localServer_(nullptr),
       settings_(nullptr),
       trayIcon_(nullptr),
@@ -197,7 +200,6 @@ AlbertApp::AlbertApp(int &argc, char *argv[])
 
     mainWindow_ = new MainWindow;
     hotkeyManager_ = new HotkeyManager;
-    queryHandler_ = new QueryHandler;
     extensionManager_ = new ExtensionManager;
 
     // toggle visibility
@@ -206,27 +208,13 @@ AlbertApp::AlbertApp(int &argc, char *argv[])
     });
 
     QObject::connect(mainWindow_, &MainWindow::widgetShown,
-                     queryHandler_, &QueryHandler::setupSession);
+                     this, &AlbertApp::onWidgetShown);
 
     QObject::connect(mainWindow_, &MainWindow::widgetHidden,
-                     queryHandler_, &QueryHandler::teardownSession);
+                     this, &AlbertApp::onWidgetHidden);
 
-    QObject::connect(mainWindow_, &MainWindow::startQuery,
-                     queryHandler_, &QueryHandler::startQuery);
-
-    QObject::connect(queryHandler_, &QueryHandler::newModel,
-                     mainWindow_, &MainWindow::setModel);
-
-    QObject::connect(extensionManager_, &ExtensionManager::pluginLoaded,
-                     queryHandler_, &QueryHandler::registerExtension);
-
-    QObject::connect(extensionManager_, &ExtensionManager::pluginAboutToBeUnloaded,
-                     queryHandler_, &QueryHandler::unregisterExtension);
-
-    // Propagade the extensions once TODO this is bullshitty design
-    for (const unique_ptr<PluginSpec> &p : extensionManager_->plugins())
-        if (p->isLoaded())
-            queryHandler_->registerExtension(p->instance());
+    QObject::connect(mainWindow_, &MainWindow::inputChanged,
+                     this, &AlbertApp::onInputChanged);
 
     // Enable the tray icon
     QVariant v = qApp->settings()->value(CFG_SHOWTRAY, DEF_SHOWTRAY);
@@ -291,7 +279,6 @@ AlbertApp::~AlbertApp() {
      *  FINALIZE APPLICATION
      */
     // Unload the plugins
-    delete queryHandler_;
     delete extensionManager_;
     delete hotkeyManager_;
     delete mainWindow_;
@@ -424,5 +411,68 @@ void AlbertApp::enableTrayIcon(bool enable) {
 /** ***************************************************************************/
 bool AlbertApp::trayIconEnabled() {
     return trayIcon_ != nullptr;
+}
+
+
+
+/** ***************************************************************************/
+void AlbertApp::onWidgetShown() {
+    // Call all setup routines
+    QFutureSynchronizer<void> synchronizer;
+    for (AbstractExtension *e : extensionManager_->extensions())
+        synchronizer.addFuture(QtConcurrent::run(e, &AbstractExtension::setupSession));
+    synchronizer.waitForFinished();
+}
+
+
+
+/** ***************************************************************************/
+void AlbertApp::onWidgetHidden() {
+    // Call all teardown routines
+    QFutureSynchronizer<void> synchronizer;
+    for (AbstractExtension *e : extensionManager_->extensions())
+        synchronizer.addFuture(QtConcurrent::run(e, &AbstractExtension::teardownSession));
+    synchronizer.waitForFinished();
+
+    // Clear the listview
+    mainWindow_->setModel(nullptr);
+
+    // Delete all the queries of this session
+    for (QueryPrivate* qp : oldQueries_)
+        if ( qp->isRunning() )
+            connect(qp, &QueryPrivate::finished, qp, &QueryPrivate::deleteLater);
+        else
+            delete qp/*->deleteLater()*/;
+    oldQueries_.clear();
+
+    // TODO update the results ranking
+}
+
+
+
+/** ***************************************************************************/
+void AlbertApp::onInputChanged(const QString &searchTerm) {
+
+    if ( currentQuery_ != nullptr ) {
+        // Stop last query
+        disconnect(currentQuery_, &QueryPrivate::resultyReady, mainWindow_, &MainWindow::setModel);
+        currentQuery_->invalidate();
+        // Store old queries an delete on session teardown (listview needs the model)
+        oldQueries_.push_back(currentQuery_);
+    }
+
+    // Do nothing if nothing is loaded
+    if (extensionManager_->extensions().empty())
+        return;
+
+    // Start new query, if not empty
+    QString trimmedTerm = searchTerm.trimmed();
+    if ( trimmedTerm.isEmpty() ) {
+        currentQuery_ = nullptr;
+        mainWindow_->setModel(nullptr);
+    } else {
+        currentQuery_ = new QueryPrivate(trimmedTerm, extensionManager_->extensions());
+        connect(currentQuery_, &QueryPrivate::resultyReady, mainWindow_, &MainWindow::setModel);
+    }
 }
 

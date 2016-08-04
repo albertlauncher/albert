@@ -17,7 +17,7 @@
 #include <QIcon>
 #include "loadermodel.h"
 #include "extensionmanager.h"
-#include "pluginloader.h"
+#include "abstractextensionloader.h"
 
 
 /** ***************************************************************************/
@@ -29,7 +29,7 @@ LoaderModel::LoaderModel(ExtensionManager* pm, QObject *parent)
 
 /** ***************************************************************************/
 int LoaderModel::rowCount(const QModelIndex &) const {
-    return static_cast<int>(extensionManager_->plugins().size());
+    return static_cast<int>(extensionManager_->extensionLoaders().size());
 }
 
 
@@ -39,38 +39,36 @@ QVariant LoaderModel::data(const QModelIndex &index, int role) const {
     if (!index.isValid() || index.row() < 0 || rowCount() <= index.row())
         return QVariant();
 
-    const unique_ptr<PluginSpec> &plugin = extensionManager_->plugins()[index.row()];
+    const unique_ptr<AbstractExtensionLoader> &loader = extensionManager_->extensionLoaders()[index.row()];
 
     switch (role) {
     case Qt::DisplayRole:
-        return plugin->name();
+        return loader->name();
     case Qt::ToolTipRole:
         return QString(
                     "ID: %1\n"
                     "Version: %2\n"
                     "Author: %3\n"
                     "Path: %4\n"
-                    "Platform: %5\n"
-                    "Dependencies: %6"
+                    "Dependencies: %5"
                     ).arg(
-                    plugin->id(),
-                    plugin->version(),
-                    plugin->author(),
-                    plugin->fileName(),
-                    plugin->platform(),
-                    plugin->dependencies()
+                    loader->id(),
+                    loader->version(),
+                    loader->author(),
+                    loader->path(),
+                    loader->dependencies().join(", ")
                     );
     case Qt::DecorationRole:
-        switch (plugin->status()) {
-        case PluginSpec::Status::Loaded:
+        switch (loader->state()) {
+        case AbstractExtensionLoader::State::Loaded:
             return QIcon(":plugin_loaded");
-        case PluginSpec::Status::NotLoaded:
+        case AbstractExtensionLoader::State::NotLoaded:
             return QIcon(":plugin_notloaded");
-        case PluginSpec::Status::Error:
+        case AbstractExtensionLoader::State::Error:
             return QIcon(":plugin_error");
         }
     case Qt::CheckStateRole:
-        return (extensionManager_->pluginIsEnabled(plugin))?Qt::Checked:Qt::Unchecked;
+        return (extensionManager_->extensionIsEnabled(loader))?Qt::Checked:Qt::Unchecked;
     default:
         return QVariant();
     }
@@ -86,9 +84,9 @@ bool LoaderModel::setData(const QModelIndex &index, const QVariant &value, int r
     switch (role) {
     case Qt::CheckStateRole:
         if (value == Qt::Checked)
-            extensionManager_->enablePlugin(extensionManager_->plugins()[index.row()]);
+            extensionManager_->enableExtension(extensionManager_->extensionLoaders()[index.row()]);
         else
-            extensionManager_->disablePlugin(extensionManager_->plugins()[index.row()]);
+            extensionManager_->disableExtension(extensionManager_->extensionLoaders()[index.row()]);
         dataChanged(index, index, {Qt::CheckStateRole});
         return true;
     default:

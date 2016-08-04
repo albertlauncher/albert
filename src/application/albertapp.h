@@ -22,11 +22,12 @@
 #include <QPointer>
 #include <QSystemTrayIcon>
 #include <QMenu>
-
+#include <vector>
+using std::vector;
 class MainWindow;
 class HotkeyManager;
 class ExtensionManager;
-class QueryHandler;
+class QueryPrivate;
 class SettingsWidget;
 
 #if defined(qApp)
@@ -61,10 +62,15 @@ public:
 
 private:
 
+    void onWidgetShown();
+    void onWidgetHidden();
+    void onInputChanged(const QString &searchTerm);
+
     MainWindow               *mainWindow_;
     HotkeyManager            *hotkeyManager_;
-    QueryHandler             *queryHandler_;
     ExtensionManager         *extensionManager_;
+    QueryPrivate             *currentQuery_;
+    vector<QueryPrivate*>    oldQueries_;
 
     QPointer<SettingsWidget> settingsWidget_;
     QLocalServer             *localServer_;

@@ -53,32 +53,34 @@ void ResizingList::setModel(QAbstractItemModel * m) {
     if (model() == m)
         return;
 
+    if (model()!=nullptr) {
+        disconnect(this->model(), &QAbstractItemModel::rowsInserted, this, &ResizingList::updateAppearance);
+        disconnect(this->model(), &QAbstractItemModel::modelReset, this, &ResizingList::updateAppearance);
+    }
+
     QItemSelectionModel *sm = selectionModel();
     QAbstractItemView::setModel(m);
     delete sm;
+    updateAppearance();
 
     // If not empty show and select first, update geom. If not null connect.
-    if ( model() == nullptr)
-        hide();
-    else {
-        connect(this->model(), &QAbstractItemModel::rowsInserted, this, &ResizingList::onRowInserted);
-        if ( model()->rowCount() != 0 ) {
-            show();
-            setCurrentIndex(model()->index(0, 0));
-            updateGeometry();
-        } else
-            hide();
+    if (model()!=nullptr) {
+        connect(this->model(), &QAbstractItemModel::rowsInserted, this, &ResizingList::updateAppearance);
+        connect(this->model(), &QAbstractItemModel::modelReset, this, &ResizingList::updateAppearance);
     }
 }
 
 
 
 /** ***************************************************************************/
-void ResizingList::onRowInserted() {
-    // Show, resize an select first if first row
-    show();
-    updateGeometry();
-    if ( model()->rowCount() == 1 )
-        setCurrentIndex(model()->index(0, 0, rootIndex()));
+void ResizingList::updateAppearance() {
+    if ( model() == nullptr || model()->rowCount() == 0 )
+        hide();
+    else {
+        show();
+        if ( !currentIndex().isValid() )
+            selectionModel()->setCurrentIndex(model()->index(0, 0), QItemSelectionModel::Clear);
+        updateGeometry();
+    }
 }
 

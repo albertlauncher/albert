@@ -146,7 +146,7 @@ MainWindow::MainWindow(QWidget *parent)
      */
 
     // Trigger query, if text changed
-    connect(ui.inputLine, &QLineEdit::textChanged, this, &MainWindow::startQuery);
+    connect(ui.inputLine, &QLineEdit::textChanged, this, &MainWindow::inputChanged);
 
     // Hide the actionview, if text was changed
     connect(ui.inputLine, &QLineEdit::textChanged, this, &MainWindow::hideActions);

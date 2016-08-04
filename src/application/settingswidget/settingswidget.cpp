@@ -28,6 +28,7 @@
 #include "extensionmanager.h"
 #include "loadermodel.h"
 #include "abstractextension.h"
+#include "abstractextensionloader.h"
 #include "albertapp.h"
 
 
@@ -171,13 +172,13 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
     delete i->widget();
     delete i;
 
-    if (extensionManager_->plugins()[current.row()]->isLoaded()){
-        AbstractExtension *e = dynamic_cast<AbstractExtension*>(extensionManager_->plugins()[current.row()]->instance());
-        QWidget *pw = e->widget();
+    if (extensionManager_->extensionLoaders()[current.row()]->state() == AbstractExtensionLoader::State::Loaded){
+        AbstractExtension *extension = extensionManager_->extensionLoaders()[current.row()]->instance();
+        QWidget *pw = extension->widget();
         if ( pw->layout() != nullptr)
             pw->layout()->setMargin(0);
         ui.widget_pluginInfos->layout()->addWidget(pw);// Takes ownership
-        ui.label_pluginTitle->setText(e->name());
+        ui.label_pluginTitle->setText(extension->name());
         ui.label_pluginTitle->show();
     }
     else{

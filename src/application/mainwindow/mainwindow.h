@@ -139,5 +139,5 @@ private:
 signals:
     void widgetShown();
     void widgetHidden();
-    void startQuery(QString qry);
+    void inputChanged(QString qry);
 };

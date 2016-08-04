@@ -23,15 +23,15 @@ set(SRC
     mainwindow/proposallist.cpp
     mainwindow/settingsbutton.cpp
     pluginsystem/abstractextension.h
+    pluginsystem/abstractextensionloader.h
     pluginsystem/abstractitem.h
     pluginsystem/abstractaction.h
+    pluginsystem/nativeextensionloader.cpp
     pluginsystem/standarditem.hpp
     pluginsystem/standardaction.hpp
-    pluginsystem/pluginloader.cpp
-    pluginsystem/queryhandler.cpp
     pluginsystem/extensionmanager.cpp
     pluginsystem/query.cpp
-    pluginsystem/query_p.hpp
+    pluginsystem/query_p.cpp
     settingswidget/grabkeybutton.cpp
     settingswidget/settingswidget.cpp
     settingswidget/loadermodel.cpp

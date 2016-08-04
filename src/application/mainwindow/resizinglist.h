@@ -36,7 +36,7 @@ public:
 
 private:
 
-    void onRowInserted();
+    void updateAppearance();
 
     uint8_t maxItems_;
 

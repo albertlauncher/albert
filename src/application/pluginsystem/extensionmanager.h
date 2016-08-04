@@ -15,38 +15,48 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+#include <QObject>
 #include <QString>
 #include <QStringList>
+#include <set>
 #include <vector>
 #include <memory>
+using std::set;
 using std::vector;
 using std::unique_ptr;
-#include "pluginloader.h"
+
+class AbstractExtension;
+class AbstractExtensionLoader;
 
 
-class ExtensionManager final : public QObject {
+class ExtensionManager final : public QObject
+{
     Q_OBJECT
 
 public:
     ExtensionManager();
     ~ExtensionManager();
 
-    void refreshPluginSpecs();
-    const vector<unique_ptr<PluginSpec>> &plugins();
-    void loadPlugin(const unique_ptr<PluginSpec> &plugin);
-    void unloadPlugin(const unique_ptr<PluginSpec> &plugin);
-    void enablePlugin(const unique_ptr<PluginSpec> &plugin);
-    void disablePlugin(const unique_ptr<PluginSpec> &plugin);
-    bool pluginIsEnabled(const unique_ptr<PluginSpec> &plugin);
+    void rescanExtensions();
+    const vector<unique_ptr<AbstractExtensionLoader>> &extensionLoaders() const;
+    set<AbstractExtension *> extensions() const;
+    void enableExtension(const unique_ptr<AbstractExtensionLoader> &loader);
+    void disableExtension(const unique_ptr<AbstractExtensionLoader> &loader);
+    bool extensionIsEnabled(const unique_ptr<AbstractExtensionLoader> &loader);
 
 private:
 
-    vector<unique_ptr<PluginSpec>> plugins_;
+    void loadExtension(const unique_ptr<AbstractExtensionLoader> &loader);
+    void unloadExtension(const unique_ptr<AbstractExtensionLoader> &loader);
+
+    vector<unique_ptr<AbstractExtensionLoader>> extensionLoaders_;
+    set<AbstractExtension*> extensions_;
     QStringList blacklist_;
+
     static const QString CFG_BLACKLIST;
 
 signals:
-    void pluginsChanged();
-    void pluginLoaded(QObject*);
-    void pluginAboutToBeUnloaded(QObject*); // MUST BLOCK
+
+    void extensionLoadersChanged(const vector<unique_ptr<AbstractExtensionLoader>>*);
+
 };

@@ -15,37 +15,34 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QList>
 #include <QString>
-#include <QStringList>
-#include <QJsonArray>
-#include <QPluginLoader>
+#include "abstractextensionloader.h"
 
+class AbstractExtension;
 
-class PluginSpec final : public QPluginLoader {
-
+class NativeExtensionLoader final : public AbstractExtensionLoader
+{
 public:
-    enum class Status{NotLoaded, Error, Loaded};
 
-    PluginSpec(QString path);
-    PluginSpec(const PluginSpec&) = delete;
-    ~PluginSpec();
+    NativeExtensionLoader(QString path) : path_(path) { }
+    ~NativeExtensionLoader() { }
 
-    QObject *instance();
-    void load();
-    void unload();
-
-    Status  status() const;
-    QString IID() const;
-    QString id() const;
-    QString name() const;
-    QString version() const;
-    QString platform() const;
-    QString group() const;
-    QString author() const;
-    QString description() const;
-    QString dependencies() const;
+    bool load() override;
+    bool unload() override;
+    QString lastError() const override;
+    AbstractExtension *instance() override;
+    QString path() const override;
+    QString type() const override;
+    // Metadata
+    QString id() const override;
+    QString name() const override;
+    QString version() const override;
+    QString author() const override;
+    QStringList dependencies() const override;
 
 private:
-    Status status_;
+
+    QString path_;
+    QString lastError_;
+
 };
