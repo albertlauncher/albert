@@ -18,13 +18,9 @@
 #include <QAbstractTableModel>
 #include <QFileSystemWatcher>
 #include <QPointer>
-
-#include <memory>
 #include <vector>
-using std::shared_ptr;
-using std::vector;
-
 #include "abstractextension.h"
+using std::vector;
 
 namespace Websearch {
 
@@ -62,7 +58,7 @@ public slots:
 
 private:
     QPointer<ConfigWidget> widget_;
-    std::vector<shared_ptr<SearchEngine>> index_;
+    vector<SearchEngine> searchEngines_;
 };
 
 }

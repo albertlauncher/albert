@@ -32,8 +32,8 @@ class SearchEnginesModel : public QAbstractTableModel
 
 public:
 
-    SearchEnginesModel(vector<shared_ptr<SearchEngine>> &index, QObject *parent = Q_NULLPTR)
-        : QAbstractTableModel(parent), index_(index) {}
+    SearchEnginesModel(vector<SearchEngine> &index, QObject *parent = Q_NULLPTR)
+        : QAbstractTableModel(parent), searchEngines_(index) {}
 
     /*
      * Implementation of extension interface
@@ -50,7 +50,7 @@ public:
     bool moveRows(const QModelIndex &sourceRow, int srcRow, int cnt, const QModelIndex & dst, int destinationChild) override;
 
 private:
-    vector<shared_ptr<SearchEngine>> &index_;
+    vector<SearchEngine> &searchEngines_;
 
     enum class Section{Enabled, Name, Trigger, URL, Count};
 

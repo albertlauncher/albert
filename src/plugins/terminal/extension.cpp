@@ -64,9 +64,12 @@ void Terminal::Extension::teardownSession() {
 /** ***************************************************************************/
 void Terminal::Extension::handleQuery(Query query) {
 
+    // Drop the query
+    QString actualQuery = query.searchTerm().mid(1);
+
     // Extract data from input string: [0] program. The rest: args
-    QString potentialProgram = query.searchTerm().section(' ', 0, 0, QString::SectionSkipEmpty);
-    QString argsString = query.searchTerm().section(' ', 1, -1, QString::SectionSkipEmpty);
+    QString potentialProgram = actualQuery.section(' ', 0, 0, QString::SectionSkipEmpty);
+    QString argsString = actualQuery.section(' ', 1, -1, QString::SectionSkipEmpty);
     QStringList args = argsString.split(' ', QString::SkipEmptyParts);
 
     // Search first match

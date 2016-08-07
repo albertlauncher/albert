@@ -44,7 +44,7 @@ public:
     void teardownSession() override;
     void handleQuery(Query query) override;
     bool runExclusive() const override {return true;}
-    QStringList triggers() const override {return {"!"};}
+    QStringList triggers() const override {return {">"};}
 
 private:
 

@@ -27,7 +27,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#808080;&quot;&gt;There is nothing to configure here.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; color:#808080;&quot;&gt;Just run the extension using the trigger '!'.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#808080;&quot;&gt;There is nothing to configure here.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; color:#808080;&quot;&gt;Just run the extension using the trigger '&gt;'.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

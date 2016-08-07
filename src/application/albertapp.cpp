@@ -466,12 +466,11 @@ void AlbertApp::onInputChanged(const QString &searchTerm) {
         return;
 
     // Start new query, if not empty
-    QString trimmedTerm = searchTerm.trimmed();
-    if ( trimmedTerm.isEmpty() ) {
+    if ( searchTerm.trimmed().isEmpty() ) {
         currentQuery_ = nullptr;
         mainWindow_->setModel(nullptr);
     } else {
-        currentQuery_ = new QueryPrivate(trimmedTerm, extensionManager_->extensions());
+        currentQuery_ = new QueryPrivate(searchTerm, extensionManager_->extensions());
         connect(currentQuery_, &QueryPrivate::resultyReady, mainWindow_, &MainWindow::setModel);
     }
 }

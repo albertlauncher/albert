@@ -24,19 +24,19 @@
 
 
 /** ***************************************************************************/
-SharedItem Websearch::SearchEngine::buildWebsearchItem(const QString &searchterm) {
+SharedItem Websearch::SearchEngine::buildWebsearchItem(const QString &searchterm) const {
 
     QString urlString = QString(url_).replace("%s", searchterm);
     QUrl url = QUrl(urlString);
-    QString title = QString("Search '%1' in %2").arg(((searchterm.isEmpty()) ? "..." : searchterm), name_);
+    QString desc = QString("Start %1 search in default browser").arg(name_);
 
     std::shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
-    action->setText(title);
+    action->setText(desc);
     action->setAction([=](ExecutionFlags *){ QDesktopServices::openUrl(url); });
 
     std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(name_);
-    item->setText(title);
-    item->setSubtext(urlString);
+    item->setText(name_);
+    item->setSubtext(desc);
     item->setIcon(iconPath_);
 
     item->setActions({action});
@@ -47,7 +47,7 @@ SharedItem Websearch::SearchEngine::buildWebsearchItem(const QString &searchterm
 
 
 /** ***************************************************************************/
-void Websearch::SearchEngine::serialize(QDataStream &out) {
+void Websearch::SearchEngine::serialize(QDataStream &out) const {
     out << enabled_
         << url_
         << name_

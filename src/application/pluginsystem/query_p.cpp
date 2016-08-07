@@ -93,8 +93,9 @@ QueryPrivate::QueryPrivate(const QString &query, const set<AbstractExtension *> 
                     queryHandlers.push_back(ext);
 
     if (queryHandlers.empty())
-        queryHandlers.insert(queryHandlers.end(), extensions.begin(), extensions.end());
-
+        for ( AbstractExtension *ext : extensions)
+            if ( !ext->runExclusive() )
+                queryHandlers.push_back(ext);
 
     // Start handlers
     for (AbstractExtension *queryHandler : queryHandlers) {

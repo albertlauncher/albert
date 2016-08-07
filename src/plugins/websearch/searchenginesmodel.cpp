@@ -18,13 +18,12 @@
 #include <QStandardPaths>
 #include <QFile>
 #include <QDir>
-
 #include "searchenginesmodel.h"
 #include "searchengine.h"
 
 /** ***************************************************************************/
 int Websearch::SearchEnginesModel::rowCount(const QModelIndex &) const {
-    return static_cast<int>(index_.size());
+    return static_cast<int>(searchEngines_.size());
 }
 
 
@@ -86,30 +85,30 @@ QVariant Websearch::SearchEnginesModel::headerData(int section, Qt::Orientation 
 /** ***************************************************************************/
 QVariant Websearch::SearchEnginesModel::data(const QModelIndex &index, int role) const {
     if (!index.isValid()
-            || index.row() >= static_cast<int>(index_.size())
+            || index.row() >= static_cast<int>(searchEngines_.size())
             || index.column() >= static_cast<int>(static_cast<int>(Section::Count)))
         return QVariant();
 
     switch (role) {
     case Qt::DisplayRole: {
         switch (static_cast<Section>(index.column())) {
-        case Section::Name:  return index_[index.row()]->name();
-        case Section::Trigger:  return index_[index.row()]->trigger();
-        case Section::URL:  return index_[index.row()]->url();
+        case Section::Name:  return searchEngines_[index.row()].name();
+        case Section::Trigger:  return searchEngines_[index.row()].trigger();
+        case Section::URL:  return searchEngines_[index.row()].url();
         default: return QVariant();
         }
     }
     case Qt::EditRole: {
         switch (static_cast<Section>(index.column())) {
-        case Section::Name:  return index_[index.row()]->name();
-        case Section::Trigger:  return index_[index.row()]->trigger();
-        case Section::URL:  return index_[index.row()]->url();
+        case Section::Name:  return searchEngines_[index.row()].name();
+        case Section::Trigger:  return searchEngines_[index.row()].trigger();
+        case Section::URL:  return searchEngines_[index.row()].url();
         default: return QVariant();
         }
     }
     case Qt::DecorationRole: {
         switch (static_cast<Section>(index.column())) {
-        case Section::Name:  return QIcon(index_[index.row()]->iconPath());
+        case Section::Name:  return QIcon(searchEngines_[index.row()].iconPath());
         default: return QVariant();
         }
     }
@@ -121,7 +120,7 @@ QVariant Websearch::SearchEnginesModel::data(const QModelIndex &index, int role)
     }
     case Qt::CheckStateRole: {
         switch (static_cast<Section>(index.column())) {
-        case Section::Enabled:  return (index_[index.row()]->enabled())?Qt::Checked:Qt::Unchecked;
+        case Section::Enabled:  return (searchEngines_[index.row()].enabled())?Qt::Checked:Qt::Unchecked;
         default: return QVariant();
         }
     }
@@ -135,7 +134,7 @@ QVariant Websearch::SearchEnginesModel::data(const QModelIndex &index, int role)
 /** ***************************************************************************/
 bool Websearch::SearchEnginesModel::setData(const QModelIndex &index, const QVariant &value, int role) {
     if (!index.isValid()
-            || index.row() >= static_cast<int>(index_.size())
+            || index.row() >= static_cast<int>(searchEngines_.size())
             || index.column() >= static_cast<int>(static_cast<int>(Section::Count)))
         return false;
 
@@ -148,15 +147,15 @@ bool Websearch::SearchEnginesModel::setData(const QModelIndex &index, const QVar
         case Section::Enabled:
             return false;
         case Section::Name:
-            index_[index.row()]->setName(s);
+            searchEngines_[index.row()].setName(s);
             dataChanged(index, index, QVector<int>({Qt::DisplayRole}));
             return true;
         case Section::Trigger:
-            index_[index.row()]->setTrigger(s);
+            searchEngines_[index.row()].setTrigger(s);
             dataChanged(index, index, QVector<int>({Qt::DisplayRole}));
             return true;
         case Section::URL:
-            index_[index.row()]->setUrl(s);
+            searchEngines_[index.row()].setUrl(s);
             dataChanged(index, index, QVector<int>({Qt::DisplayRole}));
             return true;
         default:
@@ -166,7 +165,7 @@ bool Websearch::SearchEnginesModel::setData(const QModelIndex &index, const QVar
     case Qt::CheckStateRole: {
         switch (static_cast<Section>(index.column())) {
         case Section::Enabled:
-            index_[index.row()]->setEnabled(value.toBool());
+            searchEngines_[index.row()].setEnabled(value.toBool());
             emit fallBackChanged();
             return true;
         default:
@@ -181,13 +180,13 @@ bool Websearch::SearchEnginesModel::setData(const QModelIndex &index, const QVar
         // Build the new path in cache dir
         newFilePath = QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation))
                 .filePath(QString("%1-%2.%3")
-                            .arg(index_[index.row()]->name())
+                            .arg(searchEngines_[index.row()].name())
                             .arg(i++)
                             .arg(fileInfo.suffix()));
         // Copy the file into cache dir
         } while (!QFile::copy(fileInfo.filePath(), newFilePath));
         // Set the copied file as icon
-        index_[index.row()]->setIconPath(newFilePath);
+        searchEngines_[index.row()].setIconPath(newFilePath);
         dataChanged(index, index, QVector<int>({Qt::DecorationRole}));
     }
     default:
@@ -215,18 +214,17 @@ Qt::ItemFlags Websearch::SearchEnginesModel::flags(const QModelIndex &index) con
 
 /** ***************************************************************************/
 bool Websearch::SearchEnginesModel::insertRows(int position, int rows, const QModelIndex &) {
-    if (position<0 || rows<1 || static_cast<int>(index_.size())<position)
+    if (position<0 || rows<1 || static_cast<int>(searchEngines_.size())<position)
         return false;
 
     beginInsertRows(QModelIndex(), position, position + rows - 1);
     for (int row = position; row < position + rows; ++row){
-        index_.insert(index_.begin() + row,
-                      std::make_shared<SearchEngine>(
-                          "<name>",
-                          "<http://url/containing/the/?query=%s>",
-                          "<trigger>",
-                          ":default",
-                          false));
+        searchEngines_.insert(searchEngines_.begin() + row,
+                              SearchEngine("<name>",
+                                           "<http://url/containing/the/?query=%s>",
+                                           "<trigger>",
+                                           ":default",
+                                           false));
     }
     endInsertRows();
     return true;
@@ -236,11 +234,11 @@ bool Websearch::SearchEnginesModel::insertRows(int position, int rows, const QMo
 
 /** ***************************************************************************/
 bool Websearch::SearchEnginesModel::removeRows(int position, int rows, const QModelIndex &) {
-    if (position<0 || rows<1 || static_cast<int>(index_.size())<position+rows)
+    if (position<0 || rows<1 || static_cast<int>(searchEngines_.size())<position+rows)
         return false;
 
     beginRemoveRows(QModelIndex(), position, position + rows-1);
-    index_.erase(index_.begin()+position,index_.begin()+(position+rows));
+    searchEngines_.erase(searchEngines_.begin()+position,searchEngines_.begin()+(position+rows));
     endRemoveRows();
     return true;
 }
@@ -250,17 +248,17 @@ bool Websearch::SearchEnginesModel::removeRows(int position, int rows, const QMo
 /** ***************************************************************************/
 bool Websearch::SearchEnginesModel::moveRows(const QModelIndex &src, int srcRow, int cnt, const QModelIndex &dst, int dstRow) {
     if (srcRow<0 || cnt<1 || dstRow<0
-            || static_cast<int>(index_.size())<srcRow+cnt-1
-            || static_cast<int>(index_.size())<dstRow
+            || static_cast<int>(searchEngines_.size())<srcRow+cnt-1
+            || static_cast<int>(searchEngines_.size())<dstRow
             || ( srcRow<=dstRow && dstRow<srcRow+cnt) ) // If its inside the source do nothing
         return false;
 
-    std::vector<shared_ptr<SearchEngine>> tmp;
+    vector<SearchEngine> tmp;
     beginMoveRows(src, srcRow, srcRow+cnt-1, dst, dstRow);
-    tmp.insert(tmp.end(), make_move_iterator(index_.begin()+srcRow), make_move_iterator(index_.begin() + srcRow+cnt));
-    index_.erase(index_.begin()+srcRow, index_.begin() + srcRow+cnt);
+    tmp.insert(tmp.end(), make_move_iterator(searchEngines_.begin()+srcRow), make_move_iterator(searchEngines_.begin() + srcRow+cnt));
+    searchEngines_.erase(searchEngines_.begin()+srcRow, searchEngines_.begin() + srcRow+cnt);
     const size_t finalDst = dstRow > srcRow ? dstRow - cnt : dstRow;
-    index_.insert(index_.begin()+finalDst , make_move_iterator(tmp.begin()), make_move_iterator(tmp.end()));
+    searchEngines_.insert(searchEngines_.begin()+finalDst , make_move_iterator(tmp.begin()), make_move_iterator(tmp.end()));
     endMoveRows();
     emit fallBackChanged();
     return true;

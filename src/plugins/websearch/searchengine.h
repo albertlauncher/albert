@@ -31,9 +31,9 @@ public:
      * Item specific
      */
 
-    SharedItem buildWebsearchItem(const QString &searchterm);
+    SharedItem buildWebsearchItem(const QString &searchterm) const;
 
-    void serialize(QDataStream &out);
+    void serialize(QDataStream &out) const;
     void deserialize(QDataStream &in);
 
     bool enabled() const {return enabled_;}

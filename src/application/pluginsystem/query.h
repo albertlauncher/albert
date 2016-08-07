@@ -61,12 +61,6 @@ struct Query final
      */
     const QString &searchTerm() const;
 
-
-    /**
-     * @brief Returns the trigger if the query matched a trigger
-     */
-    const QString &trigger() const;
-
 private:
 
     QueryPrivate *impl;

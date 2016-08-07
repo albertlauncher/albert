@@ -43,10 +43,3 @@ bool Query::isValid() {
 const QString &Query::searchTerm() const {
     return impl->searchTerm();
 }
-
-
-
-/** ***************************************************************************/
-const QString &Query::trigger() const {
-    return impl->trigger();
-}

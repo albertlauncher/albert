@@ -34,7 +34,7 @@ typedef shared_ptr<AbstractItem> SharedItem;
 
 
 /** ***************************************************************************/
-class QueryPrivate : public QAbstractListModel
+class QueryPrivate final : public QAbstractListModel
 {
     Q_OBJECT
 
@@ -47,11 +47,9 @@ public:
                     vector<std::pair<SharedItem,short>>::iterator end);
 
     const QString &searchTerm() const { return searchTerm_; }
-    const QString &trigger() const { return trigger_; }
     bool isRunning() { return isRunning_; }
     bool isValid() { return isValid_; }
     void invalidate();
-
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex & index, int role) const override;
@@ -65,12 +63,7 @@ private:
     void sortResults();
     void sortFallbacks();
 
-
-    /** ***********************************************************************/
-
-
     const QString searchTerm_;
-    const QString trigger_;
     bool isValid_;
     bool isRunning_;
     bool showFallbacks_;
