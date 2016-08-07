@@ -147,7 +147,7 @@ void System::Extension::handleQuery(Query query) {
            QString cmd = commands[i];
             std::shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
             action->setText(itemDescriptions[i]);
-            action->setAction([=](ExecutionFlags *, const QString&){
+            action->setAction([=](ExecutionFlags *){
                 QProcess::startDetached(cmd);
             });
 

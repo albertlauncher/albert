@@ -36,11 +36,11 @@ public:
      */
 
     QString id() const override { return path_; }
-    QString text(const QString&) const override { return name_; }
-    QString subtext(const QString&) const override { return altName(); }
+    QString text() const override { return name_; }
+    QString subtext() const override { return altName(); }
     QString iconPath() const override { return iconPath_; }
     vector<QString> indexKeywords() const override;
-    void activate(ExecutionFlags *, const QString&) override;
+    void activate(ExecutionFlags *) override;
     uint16_t usageCount() const override {return usage_;}
     vector<SharedAction> actions() override { return actions_; }
 

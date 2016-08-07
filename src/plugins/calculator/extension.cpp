@@ -138,7 +138,7 @@ void Calculator::Extension::handleQuery(Query query) {
 
     SharedStdAction action = std::make_shared<StandardAction>();
     action->setText(QString("Copy '%1' to clipboard").arg(result));
-    action->setAction([=](ExecutionFlags*, const QString&){
+    action->setAction([=](ExecutionFlags*){
         QApplication::clipboard()->setText(result); });
     actions.push_back(action);
 
@@ -146,14 +146,14 @@ void Calculator::Extension::handleQuery(Query query) {
     QString text = query.searchTerm();
     action = std::make_shared<StandardAction>();
     action->setText(QString("Copy '%1' to clipboard").arg(text));
-    action->setAction([=](ExecutionFlags*, const QString&){
+    action->setAction([=](ExecutionFlags*){
         QApplication::clipboard()->setText(text); });
     actions.push_back(action);
 
     text = QString("%1 = %2").arg(query.searchTerm(), result);
     action = std::make_shared<StandardAction>();
     action->setText(QString("Copy '%1' to clipboard").arg(text));
-    action->setAction([=](ExecutionFlags*, const QString&){
+    action->setAction([=](ExecutionFlags*){
         QApplication::clipboard()->setText(text); });
     actions.push_back(action);
 

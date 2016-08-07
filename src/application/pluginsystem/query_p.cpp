@@ -70,7 +70,7 @@ QueryPrivate::QueryPrivate(const QString &query, const set<AbstractExtension *> 
     // Request the fallbacks multithreaded
     QFutureSynchronizer<vector<SharedItem>> synchronizer;
     for ( AbstractExtension *ext : extensions)
-        synchronizer.addFuture(QtConcurrent::run(ext, &AbstractExtension::fallbacks));
+        synchronizer.addFuture(QtConcurrent::run(ext, &AbstractExtension::fallbacks, searchTerm_));
     synchronizer.waitForFinished();
 
     // Get fallbacks
@@ -252,15 +252,15 @@ QVariant QueryPrivate::data(const QModelIndex &index, int role) const {
         const SharedItem &item = showFallbacks_ ? fallbacks_[index.row()] : matches_[index.row()].first;
         switch (role) {
         case Qt::DisplayRole:
-            return item->text(searchTerm_);
+            return item->text();
         case Qt::ToolTipRole:
-            return item->subtext(searchTerm_);
+            return item->subtext();
         case Qt::DecorationRole:
             return item->iconPath();
         case Qt::UserRole: {
             QStringList actionTexts;
             for (SharedAction &action : item->actions())
-                actionTexts.append(action->text(searchTerm_));
+                actionTexts.append(action->text());
             return actionTexts;
         }
         default:
@@ -285,9 +285,9 @@ bool QueryPrivate::setData(const QModelIndex &index, const QVariant &value, int 
             ExecutionFlags flags;
 
             if (0 <= actionValue && actionValue < static_cast<int>(item->actions().size()))
-                item->actions()[actionValue]->activate(&flags, searchTerm_);
+                item->actions()[actionValue]->activate(&flags);
             else
-                item->activate(&flags, searchTerm_);
+                item->activate(&flags);
 
             if (flags.hideWidget)
                 qApp->hideWidget();

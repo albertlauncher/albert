@@ -20,34 +20,24 @@ class Extension;
 
 namespace Websearch {
 
-class SearchEngine final : public AbstractItem
+class SearchEngine final
 {
 public:
     SearchEngine() : enabled_(false) {}
-    SearchEngine(QString name, QString url, QString trigger, QString iconPath, bool enabled = true);
-
-    /*
-     * Implementation of Item interface
-     */
-
-    QString id() const override { return url_; } // FIXME not an id, is there any at all? Ship of Theseus?
-    QString text(const QString &query) const override;
-    QString subtext(const QString &query) const override;
-    QString iconPath() const override;
-    void activate(ExecutionFlags *, const QString &) override;
+    SearchEngine(QString name, QString url, QString trigger, QString iconPath, bool enabled = true)
+        : enabled_(enabled), name_(name), url_(url), trigger_(trigger), iconPath_(iconPath) { }
 
     /*
      * Item specific
      */
+
+    SharedItem buildWebsearchItem(const QString &searchterm);
 
     void serialize(QDataStream &out);
     void deserialize(QDataStream &in);
 
     bool enabled() const {return enabled_;}
     void setEnabled(bool b) {enabled_ = b;}
-
-//    const QString &query() const {return searchTerm_;}
-//    void setQuery(QString query) {searchTerm_ = query;}
 
     const QString &name() const {return name_;}
     void setName(QString name) {name_ = name;}
@@ -58,6 +48,7 @@ public:
     const QString &url() const {return url_;}
     void setUrl(QString url) {url_ = url;}
 
+    const QString &iconPath() const {return iconPath_;}
     void setIconPath(const QString &iconPath) {iconPath_ = iconPath;}
 
 private:
@@ -65,7 +56,6 @@ private:
     QString name_;
     QString url_;
     QString trigger_;
-//    QString searchTerm_;
     QString iconPath_;
 };
 

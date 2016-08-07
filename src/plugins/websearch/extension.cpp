@@ -99,7 +99,7 @@ QWidget *Websearch::Extension::widget(QWidget *parent) {
 void Websearch::Extension::handleQuery(Query query) {
     for (const shared_ptr<SearchEngine> &se : index_)
         if (query.trigger() == se->trigger())
-            query.addMatch(se);
+            query.addMatch(se->buildWebsearchItem(query.searchTerm()));
 }
 
 
@@ -115,11 +115,11 @@ QStringList Websearch::Extension::triggers() const {
 
 
 /** ***************************************************************************/
-vector<SharedItem> Websearch::Extension::fallbacks() const {
+vector<SharedItem> Websearch::Extension::fallbacks(QString searchterm) const {
     vector<SharedItem> res;
     for (const shared_ptr<SearchEngine> &se : index_)
         if (se->enabled())
-            res.push_back(se);
+            res.push_back(se->buildWebsearchItem(searchterm));
     return res;
 }
 

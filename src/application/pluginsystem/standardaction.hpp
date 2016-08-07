@@ -19,6 +19,7 @@
 #include "abstractitem.h"
 using std::function;
 
+
 /** ****************************************************************************
  * @brief A standard action
  * If you dont need the flexibility subclassing the abstract action provides,
@@ -30,65 +31,21 @@ struct StandardAction final : public AbstractAction
 public:
 
     StandardAction(){}
-    StandardAction(const QString &text, function<void(ExecutionFlags *, const QString &)> f)
+    StandardAction(const QString &text, function<void(ExecutionFlags *)> f)
         : text_(text), action_(f) {}
 
-    QString text(const QString &) const override { return text_; }
+    QString text() const override { return text_; }
     void setText(const QString &text){text_ = text;}
 
-    const function<void(ExecutionFlags *, const QString &)>& action() { return action_; }
-    void setAction(function<void(ExecutionFlags *, const QString &)> action){ action_ = std::move(action);}
+    const function<void(ExecutionFlags *)>& action() { return action_; }
+    void setAction(function<void(ExecutionFlags *)> action){ action_ = std::move(action);}
 
-    void activate(ExecutionFlags *f, const QString &q) override { action_(f,q); }
+    void activate(ExecutionFlags *flags) override { action_(flags); }
 
 private:
 
     QString text_;
-    function<void(ExecutionFlags *, const QString &)> action_;
+    function<void(ExecutionFlags *)> action_;
 
 };
 typedef shared_ptr<StandardAction> SharedStdAction;
-
-/** ****************************************************************************
-* @brief A standard item
-* If you dont need the flexibility subclassing the abstract albert item
-* provides, you can simply use this container, fill it with data and put it into
-* the query.
-*/
-class StandardItem final : public AbstractItem
-{
-public:
-
-    StandardItem(const QString &id) : id_(id) {}
-    StandardItem(const QString &id, const QString &text, const QString &subtext,
-                 const QString &iconPath, vector<SharedAction> actions)
-        : id_(id), text_(text), subtext_(subtext), iconPath_(iconPath), actions_(actions) {}
-
-    QString id() const override { return id_; }
-
-    QString text(const QString &) const override { return text_; }
-    void setText(const QString &text){text_ = text;}
-
-    QString subtext(const QString &) const override { return subtext_; }
-    void setSubtext(const QString &subtext){subtext_ = subtext;}
-
-    QString iconPath() const override { return iconPath_; }
-    void setIcon( const QString &iconPath){iconPath_ = iconPath;}
-
-    vector<SharedAction> actions() { return actions_; }
-    void setActions(vector<SharedAction> actions){ actions_ = std::move(actions);}
-
-    void activate(ExecutionFlags *flags, const QString& term) override {
-        if (!actions_.empty()) actions_[0]->activate(flags, term);
-    }
-
-private:
-
-    QString id_;
-    QString text_;
-    QString subtext_;
-    QString iconPath_;
-    vector<SharedAction> actions_;
-
-};
-typedef shared_ptr<StandardItem> SharedStdItem;

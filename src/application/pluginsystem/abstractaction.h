@@ -45,9 +45,9 @@ public:
     virtual ~AbstractAction() {}
 
     /** A description */
-    virtual QString text(const QString& query) const = 0;
+    virtual QString text() const = 0;
 
     /** Activates the item */
-    virtual void activate(ExecutionFlags *, const QString& query) = 0;
+    virtual void activate(ExecutionFlags *) = 0;
 };
 typedef shared_ptr<AbstractAction> SharedAction;

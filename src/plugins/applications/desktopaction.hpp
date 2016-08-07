@@ -31,10 +31,10 @@ public:
         : app_(app), description_(name), exec_(exec), term_(term){}
 
     /** Returns the actions description */
-    QString text(const QString &) const override { return description_; }
+    QString text() const override { return description_; }
 
     /** Executes the action */
-    void activate(ExecutionFlags *, const QString &) override {
+    void activate(ExecutionFlags *) override {
         QProcess::startDetached((term_)? qApp->term().arg(exec_) : exec_);
         ++app_->usage_;
     }

@@ -32,10 +32,10 @@ public:
     ~Item();
 
     QString id() const override;
-    QString text(const QString&) const override;
-    QString subtext(const QString&) const override;
+    QString text() const override;
+    QString subtext() const override;
     QString iconPath() const override;
-    void activate(ExecutionFlags *, const QString &) override;
+    void activate(ExecutionFlags *) override;
 };
 
 }

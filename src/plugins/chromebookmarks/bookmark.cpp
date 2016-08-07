@@ -25,14 +25,14 @@ using std::vector;
 
 
 /** ***************************************************************************/
-QString ChromeBookmarks::Bookmark::text(const QString&) const {
+QString ChromeBookmarks::Bookmark::text() const {
     return name_;
 }
 
 
 
 /** ***************************************************************************/
-QString ChromeBookmarks::Bookmark::subtext(const QString&) const {
+QString ChromeBookmarks::Bookmark::subtext() const {
     return url_;
 }
 
@@ -46,7 +46,7 @@ QString ChromeBookmarks::Bookmark::iconPath() const {
 
 
 /** ***************************************************************************/
-void ChromeBookmarks::Bookmark::activate(ExecutionFlags *, const QString&) {
+void ChromeBookmarks::Bookmark::activate(ExecutionFlags *) {
     QDesktopServices::openUrl(QUrl(url_));
     ++usage_;
 }

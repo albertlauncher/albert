@@ -48,7 +48,7 @@ public:
     virtual QString iconPath() const = 0;
 
     /** The declarative subtext for the item */
-    virtual QString subtext(const QString& query) const = 0;
+    virtual QString subtext() const = 0;
 
     /** The usage count used for the ranking in the list */
     virtual uint16_t usageCount() const { return 0; }

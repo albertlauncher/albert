@@ -83,8 +83,8 @@ void Terminal::Extension::handleQuery(Query query) {
         item->setIcon(iconPath_);
         item->setActions({
             std::make_shared<StandardAction>(
-                    item->subtext(""),
-                    [program, args](ExecutionFlags *, const QString&){
+                    item->subtext(),
+                    [program, args](ExecutionFlags *){
                         QProcess::startDetached(program, args);
                     }
             )

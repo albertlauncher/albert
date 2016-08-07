@@ -18,40 +18,30 @@
 #include <QUrl>
 #include <QDataStream>
 #include "searchengine.h"
-
-
-/** ***************************************************************************/
-Websearch::SearchEngine::SearchEngine(QString name, QString url, QString trigger, QString iconPath, bool enabled)
-    : enabled_(enabled), name_(name), url_(url), trigger_(trigger), iconPath_(iconPath) {
-
-}
+#include "standardaction.hpp"
+#include "standarditem.hpp"
 
 
 
 /** ***************************************************************************/
-QString Websearch::SearchEngine::text(const QString &query) const {
-    return QString("Search '%1' in %2").arg(((query.isEmpty()) ? "..." : query), name_);
-}
+SharedItem Websearch::SearchEngine::buildWebsearchItem(const QString &searchterm) {
 
+    QString urlString = QString(url_).replace("%s", searchterm);
+    QUrl url = QUrl(urlString);
+    QString title = QString("Search '%1' in %2").arg(((searchterm.isEmpty()) ? "..." : searchterm), name_);
 
+    std::shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
+    action->setText(title);
+    action->setAction([=](ExecutionFlags *){ QDesktopServices::openUrl(url); });
 
-/** ***************************************************************************/
-QString Websearch::SearchEngine::subtext(const QString &query) const {
-    return QString(url_).replace("%s", query);
-}
+    std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(name_);
+    item->setText(title);
+    item->setSubtext(urlString);
+    item->setIcon(iconPath_);
 
+    item->setActions({action});
 
-
-/** ***************************************************************************/
-QString Websearch::SearchEngine::iconPath() const {
-    return iconPath_;
-}
-
-
-
-/** ***************************************************************************/
-void Websearch::SearchEngine::activate(ExecutionFlags *, const QString &query) {
-    QDesktopServices::openUrl(QUrl(QString(url_).replace("%s", query)));
+    return item;
 }
 
 

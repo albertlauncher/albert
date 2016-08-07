@@ -42,7 +42,7 @@ Applications::DesktopEntry::DesktopEntry(const QString &path, short usage)
 
 
 /** ***************************************************************************/
-void Applications::DesktopEntry::activate(ExecutionFlags *, const QString &) {
+void Applications::DesktopEntry::activate(ExecutionFlags *) {
     // QTBUG-51678
 
     // General escape rule has been applied on parse time

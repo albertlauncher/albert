@@ -68,7 +68,7 @@ void VirtualBox::Extension::handleQuery(Query query) {
 
            std::shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
            action->setText(QString("Start '%1'").arg(names_[i]));
-           action->setAction([this, i](ExecutionFlags *, const QString&){
+           action->setAction([this, i](ExecutionFlags *){
                QProcess::startDetached("VBoxManage", {"startvm", uuids_[i]});
            });
 
