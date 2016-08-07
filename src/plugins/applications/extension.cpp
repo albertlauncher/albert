@@ -36,11 +36,6 @@ const bool  Applications::Extension::UPDATE_DELAY = 60000;
 /** ***************************************************************************/
 Applications::Extension::Extension() : AbstractExtension("org.albert.extension.applications") {
 
-    // Add the userspace icons dir which is not covered in the specs
-    QFileInfo userSpaceIconsPath(QDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)).filePath("icons"));
-    if (userSpaceIconsPath.exists() && userSpaceIconsPath.isDir())
-        QIcon::setThemeSearchPaths(QStringList(userSpaceIconsPath.absoluteFilePath()) << QIcon::themeSearchPaths());
-
     // Load settings
     qApp->settings()->beginGroup(id);
     offlineIndex_.setFuzzy(qApp->settings()->value(CFG_FUZZY, DEF_FUZZY).toBool());

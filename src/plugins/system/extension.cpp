@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QProcess>
-#include <QIcon>
 #include <QDebug>
 #include "extension.h"
 #include "configwidget.h"
@@ -69,10 +68,9 @@ namespace {
 System::Extension::Extension() : AbstractExtension("org.albert.extension.system") {
 
     // Load settings
-    QString themeName = QIcon::themeName();
     qApp->settings()->beginGroup(id);
     for (int i = 0; i < NUMCOMMANDS; ++i) {
-        iconPaths.push_back(XdgIconLookup::instance()->themeIconPath(iconNames[i], themeName));
+        iconPaths.push_back(XdgIconLookup::instance()->themeIconPath(iconNames[i]));
         commands.push_back(qApp->settings()->value(configNames[i], defaultCommand(static_cast<SupportedCommands>(i))).toString());
     }
     qApp->settings()->endGroup();

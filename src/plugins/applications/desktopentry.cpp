@@ -16,7 +16,6 @@
 
 #include <QDebug>
 #include <QFile>
-#include <QIcon>
 #include <QTextStream>
 #include <QDataStream>
 #include <QProcess>
@@ -159,12 +158,12 @@ bool Applications::DesktopEntry::parseDesktopEntry() {
 
     // Try to get the icon
     if ((valueIterator = valueMap.find("Icon")) != valueMap.end()){
-        iconPath_ = XdgIconLookup::instance()->themeIconPath(valueIterator->second, QIcon::themeName());
+        iconPath_ = XdgIconLookup::instance()->themeIconPath(valueIterator->second);
     }
 
     // Try to get a default icon if iconUrl_ is still empty
     if (iconPath_.isEmpty()) {
-        iconPath_ = XdgIconLookup::instance()->themeIconPath("exec", QIcon::themeName());
+        iconPath_ = XdgIconLookup::instance()->themeIconPath("exec");
     }
 
     // Use bundled icon if default icon not found
@@ -426,56 +425,3 @@ QStringList Applications::DesktopEntry::execValueEscape(const QString &execValue
 
     return result;
 }
-
-
-
-///** ***************************************************************************/
-//QIcon Applications::Application::getIcon(const QString &iconName) {
-
-//    // http://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
-//    // http://standards.freedesktop.org/desktop-entry-spec/latest/
-
-//    /*
-//     * Icon to display in file manager, menus, etc. If the name is an absolute
-//     * path, the given file will be used. If the name is not an absolute path,
-//     * the algorithm described in the Icon Theme Specification will be used to
-//     * locate the icon. oh funny qt-bug h8 u
-//     */
-
-//    if (iconName.startsWith('/'))
-//        // If it is a full path
-//        return QIcon(iconName);
-//    else if (QIcon::hasThemeIcon(iconName))
-//        // If it is in the theme
-//        return QIcon::fromTheme(iconName);
-//    else {
-//        QIcon result;
-//        // Try hicolor
-//        QString currentTheme = QIcon::themeName(); // missing fallback (qt-bug)
-//        QIcon::setThemeName("hicolor");
-//        if (QIcon::hasThemeIcon(iconName)) {
-//            result = QIcon::fromTheme(iconName);
-//            QIcon::setThemeName(currentTheme);
-//        } else {
-//            QIcon::setThemeName(currentTheme);
-//            // if it is in the pixmaps
-//            QDirIterator it("/usr/share/pixmaps", QDir::Files, QDirIterator::Subdirectories);
-//            bool found = false;
-//            while (it.hasNext()) {
-//                it.next();
-//                QFileInfo fi = it.fileInfo();
-//                if (fi.isFile() && (fi.fileName() == iconName || fi.baseName() == iconName)) {
-//                    result = QIcon(fi.canonicalFilePath());
-//                    found = true;
-//                    break;
-//                }
-//            }
-//            if (!found) {
-//                // If it is still not found use a generic one
-//                qWarning() << "Unknown icon:" << iconName;
-//                result = QIcon::fromTheme("exec");
-//            }
-//        }
-//        return result;
-//    }
-//}

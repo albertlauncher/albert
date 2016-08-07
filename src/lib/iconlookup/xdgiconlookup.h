@@ -17,12 +17,13 @@
 #pragma once
 #include <QStringList>
 #include <QMap>
+#include <QIcon>
 
 class XdgIconLookup
 {
 public:
 
-    QString themeIconPath(QString iconName, QString themeName);
+    QString themeIconPath(QString iconName, QString themeName = QIcon::themeName());
     static XdgIconLookup *instance();
 
 private:

@@ -86,7 +86,6 @@ private:
     static QString escapeString(const QString &unescaped);
     static QString quoteString(const QString &unquoted);
     static QStringList execValueEscape(const QString &value);
-    static QIcon getIcon(const QString &iconStr);
 
     QString path_;
     mutable uint16_t usage_;

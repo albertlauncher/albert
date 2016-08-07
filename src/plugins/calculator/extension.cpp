@@ -44,7 +44,7 @@ Calculator::Extension::Extension() : AbstractExtension("org.albert.extension.cal
                 : loc_.numberOptions() | QLocale::OmitGroupSeparator );
     qApp->settings()->endGroup();
 
-    QString iconPath = XdgIconLookup::instance()->themeIconPath("calc", QIcon::themeName());
+    QString iconPath = XdgIconLookup::instance()->themeIconPath("calc");
     iconPath_ = iconPath.isNull() ? ":calc" : iconPath;
 
     parser_ = new mu::Parser;

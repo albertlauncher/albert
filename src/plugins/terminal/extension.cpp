@@ -17,7 +17,6 @@
 #include <QDebug>
 #include <QDirIterator>
 #include <QProcess>
-#include <QIcon>
 #include <QStringList>
 #include <QFileInfo>
 #include <algorithm>
@@ -33,7 +32,7 @@ Terminal::Extension::Extension() : AbstractExtension("org.albert.extension.termi
 
     dirtyFlag_ = false;
 
-    QString iconPath = XdgIconLookup::instance()->themeIconPath("terminal", QIcon::themeName());
+    QString iconPath = XdgIconLookup::instance()->themeIconPath("terminal");
     iconPath_ = iconPath.isNull() ? ":calc" : iconPath;
 
     connect(&watcher_, &QFileSystemWatcher::directoryChanged, [this](){ dirtyFlag_ = true; });

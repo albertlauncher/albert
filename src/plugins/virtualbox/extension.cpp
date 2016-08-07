@@ -16,7 +16,6 @@
 
 #include <QProcess>
 #include <QRegularExpression>
-#include <QIcon>
 #include "extension.h"
 #include "query.h"
 #include "standarditem.hpp"
@@ -25,7 +24,7 @@
 
 /** ***************************************************************************/
 VirtualBox::Extension::Extension() : AbstractExtension("org.albert.extension.virtualbox") {
-    QString iconPath = XdgIconLookup::instance()->themeIconPath("virtualbox", QIcon::themeName());
+    QString iconPath = XdgIconLookup::instance()->themeIconPath("virtualbox");
     iconPath_ = iconPath.isNull() ? ":vbox" : iconPath;
 }
 

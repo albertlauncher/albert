@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QApplication>
-#include <QIcon>
 #include <QFileInfo>
 #include <QDataStream>
 #include <QMimeDatabase>
@@ -53,10 +52,9 @@ QString Files::File::iconPath() const {
     }
 
     QString iconPath;
-    QString themeName = QIcon::themeName();
-    if ( !(iconPath = XdgIconLookup::instance()->themeIconPath(xdgIconName,themeName)).isNull()  // Lookup iconName
-         || !(iconPath = XdgIconLookup::instance()->themeIconPath(mimetype_.genericIconName(),themeName)).isNull()  // Lookup genericIconName
-         || !(iconPath = XdgIconLookup::instance()->themeIconPath("unknown",themeName)).isNull()) {  // Lookup "unknown"
+    if ( !(iconPath = XdgIconLookup::instance()->themeIconPath(xdgIconName)).isNull()  // Lookup iconName
+         || !(iconPath = XdgIconLookup::instance()->themeIconPath(mimetype_.genericIconName())).isNull()  // Lookup genericIconName
+         || !(iconPath = XdgIconLookup::instance()->themeIconPath("unknown")).isNull()) {  // Lookup "unknown"
         ce = {iconPath, std::chrono::system_clock::now()};
         iconCache_.emplace(xdgIconName, ce);
         return iconPath;
