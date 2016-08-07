@@ -16,6 +16,7 @@
 
 #pragma once
 #include <QString>
+#include <QPluginLoader>
 #include "abstractextensionloader.h"
 
 class AbstractExtension;
@@ -24,7 +25,7 @@ class NativeExtensionLoader final : public AbstractExtensionLoader
 {
 public:
 
-    NativeExtensionLoader(QString path) : path_(path) { }
+    NativeExtensionLoader(QString path) : loader_(path) { }
     ~NativeExtensionLoader() { }
 
     bool load() override;
@@ -42,7 +43,6 @@ public:
 
 private:
 
-    QString path_;
-    QString lastError_;
+    QPluginLoader loader_;
 
 };

@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QJsonArray>
-#include <QPluginLoader>
 #include <QVariant>
 #include "abstractextensionloader.h"
 #include "abstractextension.h"
@@ -25,52 +24,37 @@
 
 /** ***************************************************************************/
 bool NativeExtensionLoader::load(){
-    QPluginLoader loader(path_);
-    if (loader.load()){
-        state_ = State::Loaded;
-        return true;
-    }
-    lastError_ = QString("%1: %2").arg(path_, loader.errorString());
-    state_ = State::Error;
-    return false;
+    state_ = loader_.load() ? State::Loaded : State::Error;
+    return state_==State::Loaded;
 }
 
 
 
 /** ***************************************************************************/
 bool NativeExtensionLoader::unload(){
-    QPluginLoader loader(path_);
-    if (loader.unload()){
-        state_ = State::NotLoaded;
-        return true;
-    }
-    lastError_ = QString("%1: %2").arg(path_, loader.errorString());
-    state_ = State::Error;
-    return false;
+    state_ = loader_.unload() ? State::NotLoaded : State::Error;
+    return state_==State::NotLoaded;
 }
 
 
 
 /** ***************************************************************************/
 QString NativeExtensionLoader::lastError() const {
-    return lastError_;
+    return loader_.errorString();
 }
 
 
 
 /** ***************************************************************************/
 AbstractExtension *NativeExtensionLoader::instance() {
-    if (state_ == State::Loaded)
-        return qobject_cast<AbstractExtension*>(QPluginLoader(path_).instance());
-    else
-        return nullptr;
+    return (state_==State::Loaded) ? qobject_cast<AbstractExtension*>(loader_.instance()) : nullptr;
 }
 
 
 
 /** ***************************************************************************/
 QString NativeExtensionLoader::path() const {
-    return path_;
+    return loader_.fileName();
 }
 
 
@@ -84,28 +68,28 @@ QString NativeExtensionLoader::type() const {
 
 /** ***************************************************************************/
 QString NativeExtensionLoader::id() const {
-    return QPluginLoader(path_).metaData()["MetaData"].toObject()["id"].toString();
+    return loader_.metaData()["MetaData"].toObject()["id"].toString();
 }
 
 
 
 /** ***************************************************************************/
 QString NativeExtensionLoader::name() const {
-    return QPluginLoader(path_).metaData()["MetaData"].toObject()["name"].toString();
+    return loader_.metaData()["MetaData"].toObject()["name"].toString();
 }
 
 
 
 /** ***************************************************************************/
 QString NativeExtensionLoader::version() const {
-    return QPluginLoader(path_).metaData()["MetaData"].toObject()["version"].toString();
+    return loader_.metaData()["MetaData"].toObject()["version"].toString();
 }
 
 
 
 /** ***************************************************************************/
 QString NativeExtensionLoader::author() const {
-    return QPluginLoader(path_).metaData()["MetaData"].toObject()["author"].toString();
+    return loader_.metaData()["MetaData"].toObject()["author"].toString();
 }
 
 
@@ -113,7 +97,7 @@ QString NativeExtensionLoader::author() const {
 /** ***************************************************************************/
 QStringList NativeExtensionLoader::dependencies() const {
     QStringList res;
-    for (QVariant &var : QPluginLoader(path_).metaData()["MetaData"].toObject()["dependencies"].toArray().toVariantList())
+    for (QVariant &var : loader_.metaData()["MetaData"].toObject()["dependencies"].toArray().toVariantList())
         res.push_back(var.toString());
     return res;
 }
