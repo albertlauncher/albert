@@ -44,20 +44,16 @@ QVariant LoaderModel::data(const QModelIndex &index, int role) const {
     switch (role) {
     case Qt::DisplayRole:
         return loader->name();
-    case Qt::ToolTipRole:
-        return QString(
-                    "ID: %1\n"
-                    "Version: %2\n"
-                    "Author: %3\n"
-                    "Path: %4\n"
-                    "Dependencies: %5"
-                    ).arg(
-                    loader->id(),
-                    loader->version(),
-                    loader->author(),
-                    loader->path(),
-                    loader->dependencies().join(", ")
-                    );
+    case Qt::ToolTipRole:{
+        QString toolTip;
+        toolTip = QString("ID: %1\nVersion: %2\nAuthor: %3\n").arg(loader->id(), loader->version(), loader->author());
+        if (!loader->lastError().isEmpty())
+            toolTip.append(QString("Error: %1\n").arg(loader->lastError()));
+        if (!loader->dependencies().empty())
+            toolTip.append(QString("Dependencies: %1\n").arg(loader->dependencies().join(", ")));
+        toolTip.append(QString("Path: %1").arg(loader->path()));
+        return toolTip;
+    }
     case Qt::DecorationRole:
         switch (loader->state()) {
         case AbstractExtensionLoader::State::Loaded:

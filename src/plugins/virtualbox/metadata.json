@@ -5,5 +5,5 @@
     "platform" :        "Linux",
     "group" :           "Extensions",
     "author" :          "Manuel Schneider",
-    "dependencies" :    "virtualbox"
+    "dependencies" :    ["virtualbox"]
 }

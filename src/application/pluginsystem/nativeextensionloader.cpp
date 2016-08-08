@@ -40,7 +40,7 @@ bool NativeExtensionLoader::unload(){
 
 /** ***************************************************************************/
 QString NativeExtensionLoader::lastError() const {
-    return loader_.errorString();
+    return (state_==State::Error) ? loader_.errorString() : QString();
 }
 
 
