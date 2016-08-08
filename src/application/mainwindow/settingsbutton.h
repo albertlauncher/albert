@@ -29,6 +29,11 @@ public:
     SettingsButton(QWidget *parent = 0);
     ~SettingsButton();
 
+protected:
+
+    void hideEvent(QHideEvent * event) override;
+    void showEvent(QShowEvent * event) override;
+
 private:
 
     void paintEvent(QPaintEvent *event) override;

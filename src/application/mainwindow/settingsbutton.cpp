@@ -49,6 +49,22 @@ SettingsButton::~SettingsButton() {
 
 
 /** ***************************************************************************/
+void SettingsButton::hideEvent(QHideEvent *event) {
+    animation_->stop();
+    QPushButton::hideEvent(event);
+}
+
+
+
+/** ***************************************************************************/
+void SettingsButton::showEvent(QShowEvent *event) {
+    animation_->start();
+    QPushButton::showEvent(event);
+}
+
+
+
+/** ***************************************************************************/
 void SettingsButton::paintEvent(QPaintEvent *event) {
     QPushButton::paintEvent(event);
 
