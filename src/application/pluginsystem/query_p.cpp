@@ -258,12 +258,24 @@ QVariant QueryPrivate::data(const QModelIndex &index, int role) const {
             return item->subtext();
         case Qt::DecorationRole:
             return item->iconPath();
-        case Qt::UserRole: {
+
+        case Qt::UserRole: { // Actions
             QStringList actionTexts;
             for (SharedAction &action : item->actions())
                 actionTexts.append(action->text());
             return actionTexts;
         }
+
+        case Qt::UserRole+100: // DefaultAction
+            return item->subtext();
+        case Qt::UserRole+101: // AltAction
+            return "Search using first fallback";
+        case Qt::UserRole+102: // ShiftAction
+            return (0 < static_cast<int>(item->actions().size())) ? item->actions()[0]->text() : item->subtext();
+        case Qt::UserRole+103: // ControlAction
+            return (1 < static_cast<int>(item->actions().size())) ? item->actions()[1]->text() : item->subtext();
+        case Qt::UserRole+104: // MetaAction
+            return (2 < static_cast<int>(item->actions().size())) ? item->actions()[2]->text() : item->subtext();
         default:
             return QVariant();
         }
@@ -279,28 +291,43 @@ bool QueryPrivate::setData(const QModelIndex &index, const QVariant &value, int 
         mutex_.lock();
         const SharedItem &item = showFallbacks_ ? fallbacks_[index.row()] : matches_[index.row()].first;
         mutex_.unlock();
+        ExecutionFlags flags;
         switch (role) {
-        case Qt::UserRole: {
 
+        case Qt::UserRole:{
             int actionValue = value.toInt();
-            ExecutionFlags flags;
-
             if (0 <= actionValue && actionValue < static_cast<int>(item->actions().size()))
                 item->actions()[actionValue]->activate(&flags);
-            else
-                item->activate(&flags);
-
-            if (flags.hideWidget)
-                qApp->hideWidget();
-
-            if (flags.clearInput)
-                qApp->clearInput();
-
-            return true;
+            break;
         }
-        default:
-            return false;
+
+        case Qt::UserRole+100: // DefaultAction
+            item->activate(&flags);
+            break;
+        case Qt::UserRole+101: // AltAction
+            fallbacks_[0]->activate(&flags);
+            break;
+        case Qt::UserRole+102: // ShiftAction
+            if (0 < static_cast<int>(item->actions().size()))
+                item->actions()[0]->activate(&flags);
+            break;
+        case Qt::UserRole+103: // ControlAction
+            if (1 < static_cast<int>(item->actions().size()))
+                item->actions()[1]->activate(&flags);
+            break;
+        case Qt::UserRole+104: // MetaAction
+            if (2 < static_cast<int>(item->actions().size()))
+                item->actions()[2]->activate(&flags);
+            break;
+
         }
+
+        if (flags.hideWidget)
+            qApp->hideWidget();
+
+        if (flags.clearInput)
+            qApp->clearInput();
+
     }
     return false;
 }

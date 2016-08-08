@@ -79,7 +79,7 @@ void ResizingList::updateAppearance() {
     else {
         show();
         if ( !currentIndex().isValid() )
-            selectionModel()->setCurrentIndex(model()->index(0, 0), QItemSelectionModel::Clear);
+            setCurrentIndex(model()->index(0, 0));
         updateGeometry();
     }
 }

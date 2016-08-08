@@ -160,7 +160,23 @@ MainWindow::MainWindow(QWidget *parent)
     // Trigger default action, if item in proposallist was activated
     QObject::connect(ui.proposalList, &ProposalList::activated, [this](const QModelIndex &index){
         history_->add(ui.inputLine->text());
-        ui.proposalList->model()->setData(index, -1, Qt::UserRole);
+        switch (qApp->keyboardModifiers()) {
+        case Qt::AltModifier: // AltAction
+            ui.proposalList->model()->setData(index, -1, Qt::UserRole+101);
+            break;
+        case Qt::ShiftModifier: // ShiftAction
+            ui.proposalList->model()->setData(index, -1, Qt::UserRole+102);
+            break;
+        case Qt::ControlModifier: // ControlAction
+            ui.proposalList->model()->setData(index, -1, Qt::UserRole+103);
+            break;
+        case Qt::MetaModifier: // MetaAction
+            ui.proposalList->model()->setData(index, -1, Qt::UserRole+104);
+            break;
+        default: // DefaultAction
+            ui.proposalList->model()->setData(index, -1, Qt::UserRole+100);
+            break;
+        }
     });
 
     // Trigger alternative action, if item in actionList was activated

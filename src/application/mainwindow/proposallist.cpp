@@ -28,6 +28,7 @@ public:
     void paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const override;
 
     bool drawIcon;
+    int actionRole;
 };
 
 
@@ -69,6 +70,23 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
         case Qt::Key_Shift:
         case Qt::Key_Alt:
         case Qt::Key_Meta:
+            switch (keyEvent->modifiers()) {
+            case Qt::AltModifier: // AltAction
+                delegate_->actionRole = Qt::UserRole+101;
+                break;
+            case Qt::ShiftModifier: // ShiftAction
+                delegate_->actionRole = Qt::UserRole+102;
+                break;
+            case Qt::ControlModifier: // ControlAction
+                delegate_->actionRole = Qt::UserRole+103;
+                break;
+            case Qt::MetaModifier: // MetaAction
+                delegate_->actionRole = Qt::UserRole+104;
+                break;
+            default: // DefaultAction
+                delegate_->actionRole = Qt::UserRole+100;
+                break;
+            }
             update();
             return false;
 
@@ -94,13 +112,29 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
         case Qt::Key_Shift:
         case Qt::Key_Alt:
         case Qt::Key_Meta:
+            switch (keyEvent->modifiers()) {
+            case Qt::AltModifier: // AltAction
+                delegate_->actionRole = Qt::UserRole+101;
+                break;
+            case Qt::ShiftModifier: // ShiftAction
+                delegate_->actionRole = Qt::UserRole+102;
+                break;
+            case Qt::ControlModifier: // ControlAction
+                delegate_->actionRole = Qt::UserRole+103;
+                break;
+            case Qt::MetaModifier: // MetaAction
+                delegate_->actionRole = Qt::UserRole+104;
+                break;
+            default: // DefaultAction
+                delegate_->actionRole = Qt::UserRole+100;
+                break;
+            }
             update();
             return false;
         }
     }
     return false;
 }
-
 
 
 /** ***************************************************************************/
@@ -173,7 +207,7 @@ void ProposalList::ItemDelegate::paint(QPainter *painter, const QStyleOptionView
 
     // Draw tooltip role
     painter->setFont(font2);
-    text = fontMetrics2.elidedText(index.data(Qt::ToolTipRole).toString(), option.textElideMode, subTextRect.width());
+    text = fontMetrics2.elidedText(index.data(option.state.testFlag(QStyle::State_Selected)? actionRole : Qt::ToolTipRole).toString(), option.textElideMode, subTextRect.width());
     painter->drawText(subTextRect   , Qt::AlignBottom|Qt::AlignLeft, text);
 
     painter->restore();
