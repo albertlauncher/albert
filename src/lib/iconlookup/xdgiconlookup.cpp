@@ -22,6 +22,11 @@
 #include <QSettings>
 
 
+namespace  {
+    QStringList icon_extensions = {"png", "svg", "xpm"};
+}
+
+
 /** ***************************************************************************/
 class ThemeFileParser
 {
@@ -97,11 +102,6 @@ public:
 };
 
 /** ***************************************************************************/
-
-XdgIconLookup *XdgIconLookup::instance_;
-QStringList XdgIconLookup::icon_extensions = {"png", "svg", "xpm"};
-
-/** ***************************************************************************/
 XdgIconLookup::XdgIconLookup()
 {
     /* Icons and themes are looked for in a set of directories. By default,
@@ -130,8 +130,9 @@ XdgIconLookup::XdgIconLookup()
 /** ***************************************************************************/
 XdgIconLookup *XdgIconLookup::instance()
 {
+    static XdgIconLookup *instance_ = nullptr;
     if (!instance_)
-        instance_ = new XdgIconLookup();
+         instance_ = new XdgIconLookup();
     return instance_;
 }
 

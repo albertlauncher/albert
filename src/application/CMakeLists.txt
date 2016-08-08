@@ -27,6 +27,8 @@ set(SRC
     pluginsystem/abstractitem.h
     pluginsystem/abstractaction.h
     pluginsystem/nativeextensionloader.cpp
+    pluginsystem/externalextensionloader.cpp
+    pluginsystem/externalextension.cpp
     pluginsystem/standarditem.hpp
     pluginsystem/standardaction.hpp
     pluginsystem/extensionmanager.cpp
@@ -69,7 +71,7 @@ endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 # Define target
 add_executable(${PROJECT_NAME} ${SRC} ${UI} ${QRC})
-target_link_libraries(${PROJECT_NAME} ${LIB})
+target_link_libraries(${PROJECT_NAME} ${LIB} iconlookup)
 
 
 # Do platform specific post target stuff

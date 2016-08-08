@@ -36,8 +36,4 @@ private:
 
     QStringList iconDirs_;
     QMap<QString, QString> iconCache_;
-
-    static QStringList icon_extensions;
-    static XdgIconLookup *instance_;
-
 };

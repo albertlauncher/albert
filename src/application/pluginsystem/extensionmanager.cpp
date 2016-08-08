@@ -22,20 +22,23 @@
 #include <QDebug>
 #include <QDebug>
 #include <memory>
-using std::unique_ptr;
 #include <chrono>
-using std::chrono::system_clock;
 #include "extensionmanager.h"
 #include "nativeextensionloader.h"
+#include "externalextensionloader.h"
 #include "albertapp.h"
 #include "abstractextension.h" // IID
+using std::unique_ptr;
+using std::chrono::system_clock;
 
 
 const QString ExtensionManager::CFG_BLACKLIST = "blacklist";
 
+
 namespace {
-    vector<unique_ptr<AbstractExtensionLoader>> findNativeExtensions() {
-        vector<unique_ptr<AbstractExtensionLoader>> results;
+
+    vector<unique_ptr<NativeExtensionLoader>> findNativeExtensions() {
+        vector<unique_ptr<NativeExtensionLoader>> results;
         QStringList pluginDirs = QStandardPaths::locateAll(
                     QStandardPaths::DataLocation, "plugins",
                     QStandardPaths::LocateDirectory);
@@ -62,6 +65,30 @@ namespace {
         }
         return results;
     }
+
+    vector<unique_ptr<ExternalExtensionLoader>> findExternalExtensions() {
+        vector<unique_ptr<ExternalExtensionLoader>> results;
+
+        QStringList pluginDirs = QStandardPaths::locateAll(
+                    QStandardPaths::DataLocation, "external",
+                    QStandardPaths::LocateDirectory);
+
+        // Iterate over all files in the plugindirs
+        for (const QString &pluginDir : pluginDirs) {
+            QDirIterator dirIterator(pluginDir, QDir::Files|QDir::Executable, QDirIterator::NoIteratorFlags);
+            while (dirIterator.hasNext()) {
+                dirIterator.next();
+                try {
+                    results.emplace_back(new ExternalExtensionLoader(dirIterator.fileInfo().canonicalFilePath()));
+                } catch (QString error) {
+                    qWarning() << error;
+                    continue;
+                }
+            }
+        }
+        return results;
+    }
+
 }
 
 
@@ -89,8 +116,14 @@ void ExtensionManager::rescanExtensions() {
         unloadExtension(extensionLoader);
 
     vector<unique_ptr<AbstractExtensionLoader>> notDistinctLoaders;
-    vector<unique_ptr<AbstractExtensionLoader>> && natives = findNativeExtensions();
+
+    // Load native extensions
+    vector<unique_ptr<NativeExtensionLoader>> && natives = findNativeExtensions();
     std::move(natives.begin(), natives.end(), std::back_inserter(notDistinctLoaders));
+
+    // Load external extensions
+    vector<unique_ptr<ExternalExtensionLoader>> && externals = findExternalExtensions();
+    std::move(externals.begin(), externals.end(), std::back_inserter(notDistinctLoaders));
 
     // Save extensionLoaders, drop duplicates
     for (unique_ptr<AbstractExtensionLoader> & extensionLoader : notDistinctLoaders)
