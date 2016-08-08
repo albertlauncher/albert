@@ -22,6 +22,10 @@
 #include <QFutureSynchronizer>
 #include <QDebug>
 #include <QMenu>
+#include <QSqlDriver>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlError>
 #include <csignal>
 #include "albertapp.h"
 #include "mainwindow.h"
@@ -192,6 +196,44 @@ AlbertApp::AlbertApp(int &argc, char *argv[])
     dir.mkpath(".");
 
 
+    /*
+     * INITIALIZE DATABASE
+     */
+
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    Q_ASSERT(db.driver()->hasFeature(QSqlDriver::Transactions));
+    db.setDatabaseName(QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).filePath("core.db"));
+    if (!db.open())
+        qFatal("Unable to establish a database connection.");
+
+    db.transaction();
+
+    // Creat tables
+    QSqlQuery q;
+    if (!q.exec("CREATE TABLE IF NOT EXISTS usages ( "
+           "  input TEXT NOT NULL, "
+           "  itemId TEXT NOT NULL, "
+           "  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP "
+           ");"))
+            qFatal("Unable to create usages table: %s", qUtf8Printable(q.lastError().text()));
+
+    if (!q.exec("CREATE TABLE IF NOT EXISTS runtimes ( "
+          "  extensionId TEXT NOT NULL, "
+          "  runtime INTEGER NOT NULL, "
+          "  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP "
+          ");"))
+            qFatal("Unable to create runtimes table: %s", qUtf8Printable(q.lastError().text()));
+
+    // Do regular cleanup
+    if (!q.exec("DELETE FROM usages WHERE julianday('now')-julianday(timestamp)>90;"))
+        qWarning("Unable to cleanup usages table.");
+
+    if (!q.exec("DELETE FROM runtimes WHERE julianday('now')-julianday(timestamp)>7;"))
+        qWarning("Unable to cleanup runtimes table.");
+
+    db.commit();
+
+    QueryPrivate::upateUsageScores();
 
     /*
      * INITIALIZE APPLICATION
@@ -445,7 +487,8 @@ void AlbertApp::onWidgetHidden() {
             delete qp/*->deleteLater()*/;
     oldQueries_.clear();
 
-    // TODO update the results ranking
+    QueryPrivate::upateUsageScores();
+
 }
 
 

@@ -91,15 +91,17 @@
 // * QUERY
 //   The request to handle a query. The first argument after the OPCODE is the
 //   query term. Return the results by a JSON array containing JSON objects
-//   represeting the results. A result object has four values: its name
-//   ('name':string), its description ('description':string), its icon
-//   ('icon':string), which depends on the platfrom to be a name or path, and a
-//   JSON array of JSON objects ('actions':array) containing the actions for the
-//   item. An action object contains the actions name ('name':string), the
-//   program to be runned ('command':string) and an array of parameters
-//   ('arguments':array) that should be passed to the program. An example:
+//   represeting the results. A result object has four values: its extension
+//   wide unique id ('id':string), its name ('name':string), its description
+//   ('description':string), its icon ('icon':string), which depends on the
+//   platfrom to be a name or path, and a JSON array of JSON objects
+//   ('actions':array) containing the actions for the item. An action object
+//   contains the actions name ('name':string), the program to be runned
+//   ('command':string) and an array of parameters ('arguments':array) that
+//   should be passed to the program. An example:
 //
 //    [{
+//      "id":"extension.wide.unique.id",
 //      "name":"An Item",
 //      "description":"Nice description.",
 //      "iconpath":"/path/to/icon",

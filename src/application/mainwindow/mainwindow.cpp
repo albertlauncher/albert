@@ -116,8 +116,7 @@ MainWindow::MainWindow(QWidget *parent)
     settingsButton_->addAction(action);
 
     // History
-    history_ = new History(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                           filePath(QString("history.dat")), this);
+    history_ = new History(this);
 
     /*
      * Settings

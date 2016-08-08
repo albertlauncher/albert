@@ -16,7 +16,8 @@
 
 #pragma once
 #include <QObject>
-#include <QFile>
+#include <QSqlQuery>
+#include <QSqlRecord>
 #include <QDebug>
 #include <QStringList>
 #include <QDataStream>
@@ -25,26 +26,8 @@ class History final : public QObject
 {
     Q_OBJECT
 public:
-    explicit History(QString filePath, QObject *parent = 0)
-        : QObject(parent), filePath_(filePath) {
-        QFile historyFile(filePath_);
-        if (historyFile.exists()){
-            if (historyFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
-                QDataStream in(&historyFile);
-                in >> lines_;
-                historyFile.close();
-            } else qWarning() << "Could not open file" << historyFile.fileName();
-        }
+    explicit History(QObject *parent = 0) : QObject(parent) {
         currentLine_ = -1; // This means historymode is not active
-    }
-
-    ~History() {
-        QFile historyFile(filePath_);
-        if (historyFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
-            QDataStream out(&historyFile);
-            out << lines_;
-            historyFile.close();
-        } else qCritical() << "Could not write to " << historyFile.fileName();
     }
 
     Q_INVOKABLE void add(QString str) {
@@ -56,6 +39,10 @@ public:
     }
 
     Q_INVOKABLE QString next() {
+        // Update the history at the beginnig
+        if (currentLine_ == -1)
+            updateHistory();
+
         if (currentLine_+1 < static_cast<int>(lines_.size())
                 && static_cast<int>(lines_.size())!=0 ) {
             ++currentLine_;
@@ -71,12 +58,21 @@ public:
     }
 
 public slots:
+
     void resetIterator() {currentLine_ = -1;}
-    void clearHistory() {lines_.clear();}
 
 private:
+
+    void updateHistory() {
+        lines_.clear();
+        QSqlQuery query;
+        query.exec("SELECT input FROM usages GROUP BY input ORDER BY max(timestamp) DESC");
+        while (query.next())
+            lines_.append(query.value(0).toString());
+    }
+
     QStringList lines_;
     int currentLine_;
-    const QString filePath_;
+
 };
 

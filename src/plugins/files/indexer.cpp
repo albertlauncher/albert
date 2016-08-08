@@ -121,27 +121,6 @@ void Files::Extension::Indexer::run() {
     }
 
 
-    // Sort the new index for linear usage copy [O(n*log(n))]
-    emit statusInfo("Sorting ... ");
-    std::sort(newIndex.begin(), newIndex.end(), [](const shared_ptr<File> &lhs, const shared_ptr<File> &rhs) {
-                  return QString::compare(lhs->path(), rhs->path(), Qt::CaseInsensitive) < 0;
-              });
-
-
-    // Copy the usagecounters  [O(n)]
-    emit statusInfo("Copy usage statistics ... ");
-    size_t i=0, j=0;
-    while (i < extension_->index_.size() && j < newIndex.size()) {
-        if (extension_->index_[i]->path() == newIndex[j]->path()) {
-            newIndex[j]->setUsage(extension_->index_[i]->usage());
-            ++i;++j;
-        } else if (extension_->index_[i]->path() < newIndex[j]->path()) {
-            ++i;
-        } else {// if ((*_fileIndex)[i]->path > (*newIndex)[j]->path) {
-            ++j;
-        }
-    }
-
     /*
      *  ▼ CRITICAL ▼
      */

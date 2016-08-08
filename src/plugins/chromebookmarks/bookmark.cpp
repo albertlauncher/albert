@@ -48,7 +48,6 @@ QString ChromeBookmarks::Bookmark::iconPath() const {
 /** ***************************************************************************/
 void ChromeBookmarks::Bookmark::activate(ExecutionFlags *) {
     QDesktopServices::openUrl(QUrl(url_));
-    ++usage_;
 }
 
 
@@ -67,12 +66,12 @@ vector<QString> ChromeBookmarks::Bookmark::indexKeywords() const {
 
 /** ***************************************************************************/
 void ChromeBookmarks::Bookmark::serialize(QDataStream &out) {
-    out << name_ << url_ << static_cast<quint16>(usage_);
+    out << name_ << url_;
 }
 
 
 
 /** ***************************************************************************/
 void ChromeBookmarks::Bookmark::deserialize(QDataStream &in) {
-    in >> name_ >> url_ >> usage_;
+    in >> name_ >> url_;
 }

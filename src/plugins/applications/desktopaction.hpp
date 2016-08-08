@@ -36,7 +36,6 @@ public:
     /** Executes the action */
     void activate(ExecutionFlags *) override {
         QProcess::startDetached((term_)? qApp->term().arg(exec_) : exec_);
-        ++app_->usage_;
     }
 
     DesktopEntry * const app_;

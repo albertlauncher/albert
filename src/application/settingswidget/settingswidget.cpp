@@ -20,6 +20,7 @@
 #include <QMessageBox>
 #include <QCloseEvent>
 #include <QShortcut>
+#include <QSqlQuery>
 #include <QDesktopWidget>
 #include <QFocusEvent>
 #include "settingswidget.h"
@@ -123,6 +124,11 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyMana
     }
     connect(ui.comboBox_themes, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged,
             this, &SettingsWidget::onThemeChanged);
+
+    // Cache
+    connect(ui.pushButton_clearCache, &QPushButton::clicked, [](){
+        QSqlQuery("DELETE FROM usages;");
+    });
 
 
     /*

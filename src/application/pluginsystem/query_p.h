@@ -20,11 +20,13 @@
 #include <QMutex>
 #include <QString>
 #include <QTimer>
+#include <map>
 #include <set>
 #include <vector>
 #include <utility>
 #include <memory>
 using std::set;
+using std::map;
 using std::vector;
 using std::pair;
 using std::shared_ptr;
@@ -55,6 +57,8 @@ public:
     QVariant data(const QModelIndex & index, int role) const override;
     bool setData(const QModelIndex &index, const QVariant &value, int role) override;
 
+    static void upateUsageScores();
+
 private:
 
     void onUXTimeOut();
@@ -69,6 +73,7 @@ private:
     bool showFallbacks_;
 
     vector<QFutureWatcher<void>*> futureWatchers_;
+    map<AbstractExtension*, long int> runtimes_;
     mutable QMutex mutex_;
     QTimer UXTimeOut_;
 

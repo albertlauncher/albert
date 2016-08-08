@@ -56,8 +56,7 @@ void ChromeBookmarks::Extension::Indexer::run() {
                     std::make_shared<Bookmark>(
                             json["id"].toString(),
                             json["name"].toString(),
-                            json["url"].toString(),
-                            0
+                            json["url"].toString()
                     )
             );
         }
@@ -76,29 +75,6 @@ void ChromeBookmarks::Extension::Indexer::run() {
             rec_bmsearch(i.toObject());
 
     f.close();
-
-
-    // Sort the new index for linear usage copy [O(n*log(n))]
-    emit statusInfo("Sorting ... ");
-    std::sort(newIndex.begin(), newIndex.end(),
-              [&](const shared_ptr<Bookmark> lhs, const shared_ptr<Bookmark> rhs) {
-                  return QString::compare(lhs->url(), rhs->url(), Qt::CaseInsensitive) < 0;
-              });
-
-
-    // Copy the usagecounters  [O(n)]
-    emit statusInfo("Copy usage statistics ... ");
-    size_t i=0, j=0;
-    while (i < extension_->index_.size() && j < newIndex.size()) {
-        if (extension_->index_[i]->url() == newIndex[j]->url()) {
-            newIndex[j]->setUsage(extension_->index_[i]->usage());
-            ++i;++j;
-        } else if (extension_->index_[i]->url() < newIndex[j]->url() ) {
-            ++i;
-        } else {// if ((*_fileIndex)[i]->path > (*newIndex)[j]->path) {
-            ++j;
-        }
-    }
 
     /*
      *  ▼ CRITICAL ▼

@@ -30,13 +30,13 @@ using std::map;
 QStringList Applications::DesktopEntry::supportedGraphicalSudo = {"gksu", "kdesu"};
 
 /** ***************************************************************************/
-Applications::DesktopEntry::DesktopEntry() : usage_(0), term_(false) { }
+Applications::DesktopEntry::DesktopEntry() : term_(false) { }
 
 
 
 /** ***************************************************************************/
-Applications::DesktopEntry::DesktopEntry(const QString &path, short usage)
-    : path_(path), usage_(usage), term_(false) { }
+Applications::DesktopEntry::DesktopEntry(const QString &path)
+    : path_(path), term_(false) { }
 
 
 
@@ -53,7 +53,6 @@ void Applications::DesktopEntry::activate(ExecutionFlags *) {
 
     // Run the application
     QProcess::startDetached(program, arguments);
-    ++usage_;
 }
 
 
@@ -230,7 +229,6 @@ bool Applications::DesktopEntry::parseDesktopEntry() {
 /** ***************************************************************************/
 void Applications::DesktopEntry::serialize(QDataStream &out) {
     out << path_
-        << static_cast<quint16>(usage_)
         << name_
         << altName_ << iconPath_ << exec_ << term_;
     out << static_cast<quint64>(actions_.size());
@@ -244,7 +242,7 @@ void Applications::DesktopEntry::serialize(QDataStream &out) {
 
 /** ***************************************************************************/
 void Applications::DesktopEntry::deserialize(QDataStream &in) {
-    in >> path_ >> usage_ >> name_ >> altName_ >> iconPath_ >> exec_ >> term_;
+    in >> path_ >> name_ >> altName_ >> iconPath_ >> exec_ >> term_;
 
     QString description;
     QString exec;

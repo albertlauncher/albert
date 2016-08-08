@@ -95,7 +95,6 @@ std::vector<QString> Files::File::indexKeywords() const {
 /** ***************************************************************************/
 void Files::File::serialize(QDataStream &out) {
     out << path_
-        << static_cast<quint16>(usage_)
         << mimetype_.name();
 }
 
@@ -105,6 +104,6 @@ void Files::File::serialize(QDataStream &out) {
 void Files::File::deserialize(QDataStream &in) {
     QMimeDatabase db;
     QString mimetype;
-    in >> path_ >> usage_ >> mimetype;
+    in >> path_ >> mimetype;
     mimetype_ = db.mimeTypeForName(mimetype);
 }

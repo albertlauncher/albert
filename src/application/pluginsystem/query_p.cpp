@@ -16,23 +16,30 @@
 
 #include <QVariant>
 #include <QtConcurrent/QtConcurrent>
+#include <QSqlQuery>
+#include <QSqlRecord>
+#include <QSqlError>
+#include <map>
+#include <chrono>
 #include <algorithm>
 #include "abstractextension.h"
 #include "abstractitem.h"
 #include "albertapp.h"
 #include "query_p.h"
+using std::map;
+using std::chrono::system_clock;
 
 namespace {
 
+    static map<QString, double> resultScores;
+
     struct MatchComparator {
-        inline bool operator() (const pair<SharedItem, short>& lhs,
-                                const pair<SharedItem, short>& rhs) {
+        inline bool operator() (const pair<SharedItem, short>& lhs, const pair<SharedItem, short>& rhs) {
             return lhs.first->urgency() > rhs.first->urgency() // Urgency, for e.g. notifications, Warnings
-                    || lhs.first->usageCount() > rhs.first->usageCount() // usage count
+                    || resultScores[lhs.first->id()] > resultScores[rhs.first->id()] // usage count
                     || lhs.second > rhs.second; // percentual match of the query against the item
         }
     };
-
 }
 
 vector<QString> QueryPrivate::fallbackOrder;
@@ -100,7 +107,11 @@ QueryPrivate::QueryPrivate(const QString &query, const set<AbstractExtension *> 
     // Start handlers
     for (AbstractExtension *queryHandler : queryHandlers) {
         QFutureWatcher<void>* fw = new QFutureWatcher<void>(this);
-        connect(fw, &QFutureWatcher<void>::finished, this, &QueryPrivate::onHandlerFinished);
+        system_clock::time_point start = system_clock::now();
+        connect(fw, &QFutureWatcher<void>::finished, [queryHandler, start, this](){
+            runtimes_.emplace(queryHandler, std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now()-start).count());
+            onHandlerFinished();
+        });
         fw->setFuture(QtConcurrent::run(queryHandler, &AbstractExtension::handleQuery, Query(this)));
         futureWatchers_.push_back(fw);
     }
@@ -180,9 +191,43 @@ void QueryPrivate::onHandlerFinished(){
             showFallbacks_ = true;
             endResetModel();
         }
+
+        // Save runtimes
+        if (isValid_){ // Dont count cancelled queries
+            QSqlDatabase db = QSqlDatabase::database();
+            db.transaction();
+             QSqlQuery sqlQuery;
+            for (auto &e : runtimes_) {
+                sqlQuery.prepare("INSERT INTO runtimes (extensionId, runtime) VALUES (:extensionId, :runtime);");
+                sqlQuery.bindValue(":extensionId", e.first->id);
+                sqlQuery.bindValue(":runtime", static_cast<qulonglong>(e.second));
+                if (!sqlQuery.exec())
+                    qWarning() << sqlQuery.lastError();
+            }
+            db.commit();
+        }
+
         isRunning_=false;
         emit finished();
     }
+}
+
+
+
+/** ***************************************************************************/
+void QueryPrivate::upateUsageScores() {
+    resultScores.clear();
+
+    // Update the results ranking
+    QSqlQuery query;
+    query.exec("SELECT t.itemId AS id, SUM(t.score) AS usageScore "
+               "FROM ( "
+               " SELECT itemId, 1/max(julianday('now')-julianday(timestamp),1) AS score from usages "
+               ") t "
+               "GROUP BY t.itemId");
+    while (query.next())
+        resultScores.emplace(query.value(0).toString(),
+                             query.value(1).toDouble());
 }
 
 
@@ -289,7 +334,7 @@ QVariant QueryPrivate::data(const QModelIndex &index, int role) const {
 bool QueryPrivate::setData(const QModelIndex &index, const QVariant &value, int role) {
     if (index.isValid()) {
         mutex_.lock();
-        const SharedItem &item = showFallbacks_ ? fallbacks_[index.row()] : matches_[index.row()].first;
+        SharedItem item = showFallbacks_ ? fallbacks_[index.row()] : matches_[index.row()].first;
         mutex_.unlock();
         ExecutionFlags flags;
         switch (role) {
@@ -305,7 +350,10 @@ bool QueryPrivate::setData(const QModelIndex &index, const QVariant &value, int 
             item->activate(&flags);
             break;
         case Qt::UserRole+101: // AltAction
-            fallbacks_[0]->activate(&flags);
+            if (fallbacks_.size() > 0 ) {
+                item = fallbacks_[0];
+                item->activate(&flags);
+            }
             break;
         case Qt::UserRole+102: // ShiftAction
             if (0 < static_cast<int>(item->actions().size()))
@@ -320,6 +368,16 @@ bool QueryPrivate::setData(const QModelIndex &index, const QVariant &value, int 
                 item->actions()[2]->activate(&flags);
             break;
 
+        }
+
+        // Save usage
+        if (isValid_){ // Dont count cancelled queries
+            QSqlQuery query;
+            query.prepare("INSERT INTO usages (input, itemId) VALUES (:input, :itemId);");
+            query.bindValue(":input", searchTerm_);
+            query.bindValue(":itemId", item->id());
+            if (!query.exec())
+                qWarning() << query.lastError();
         }
 
         if (flags.hideWidget)

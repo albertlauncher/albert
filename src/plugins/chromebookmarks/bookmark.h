@@ -24,9 +24,9 @@ class Bookmark final : public AbstractItem, public IIndexable
 {
 public:
 
-    Bookmark() : usage_(0) {}
-    Bookmark(const QString &id, const QString &name, const QString &url, short usage = 0)
-        : id_(id), name_(name), url_(url), usage_(usage) {}
+    Bookmark() {}
+    Bookmark(const QString &id, const QString &name, const QString &url)
+        : id_(id), name_(name), url_(url) {}
 
     /*
      * Implementation of Item interface
@@ -38,7 +38,6 @@ public:
     QString iconPath() const override;
     vector<QString> indexKeywords() const override;
     void activate(ExecutionFlags *) override;
-    uint16_t usageCount() const override {return usage_;}
 
     /*
      * Item specific members
@@ -56,12 +55,6 @@ public:
     /** Sets the url of the bookmark */
     void setUrl(const QString& url) { url_ = url; }
 
-    /** Return the usage count of the bookmark */
-    uint16_t usage() const { return usage_; }
-
-    /** Sets the usage count of the bookmark */
-    void setUsage(uint16_t usage) { usage_ = usage; }
-
     /** Serialize the desktop entry */
     void serialize(QDataStream &out);
 
@@ -72,6 +65,5 @@ private:
     QString id_;
     QString name_;
     QString url_;
-    mutable uint16_t usage_;
 };
 }

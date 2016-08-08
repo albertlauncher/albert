@@ -29,7 +29,7 @@ class DesktopEntry final : public AbstractItem, public IIndexable
 public:
 
     DesktopEntry();
-    DesktopEntry(const QString &path, short usage = 0);
+    DesktopEntry(const QString &path);
 
     /*
      * Implementation of Item interface
@@ -41,7 +41,6 @@ public:
     QString iconPath() const override { return iconPath_; }
     vector<QString> indexKeywords() const override;
     void activate(ExecutionFlags *) override;
-    uint16_t usageCount() const override {return usage_;}
     vector<SharedAction> actions() override { return actions_; }
 
     /*
@@ -53,12 +52,6 @@ public:
 
     /** Sets the path of the desktop entry */
     void setPath(const QString& path) { path_ = path; }
-
-    /** Return the usage count of the desktop entry */
-    uint16_t usage() const { return usage_; }
-
-    /** Sets the usage count of the desktop entry */
-    void setUsage(uint16_t usage) { usage_ = usage; }
 
     /** Parse the contents of the desktop entry */
     bool parseDesktopEntry();
@@ -88,7 +81,6 @@ private:
     static QStringList execValueEscape(const QString &value);
 
     QString path_;
-    mutable uint16_t usage_;
 
     // Updated by parseDesktopEntry()
     QString name_;

@@ -45,7 +45,6 @@ public:
     QString text() const override { return "Open file in default application"; }
     void activate(ExecutionFlags *) override {
         QDesktopServices::openUrl(QUrl::fromLocalFile(file_->path()));
-        ++file_->usage_;
     }
 };
 
@@ -60,7 +59,6 @@ public:
     QString text() const override { return "Reveal file in default filebrowser"; }
     void activate(ExecutionFlags *) override {
         QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file_->path()).path()));
-        ++file_->usage_;
     }
 };
 
@@ -97,8 +95,6 @@ public:
 
         // Set the mimedata
         cb->setMimeData(newMimeData);
-
-        ++file_->usage_;
     }
 };
 
@@ -113,7 +109,6 @@ public:
     QString text() const override { return "Copy path to clipboard"; }
     void activate(ExecutionFlags *) override {
         QApplication::clipboard()->setText(file_->path());
-        ++file_->usage_;
     }
 };
 

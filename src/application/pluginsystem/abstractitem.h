@@ -50,9 +50,6 @@ public:
     /** The declarative subtext for the item */
     virtual QString subtext() const = 0;
 
-    /** The usage count used for the ranking in the list */
-    virtual uint16_t usageCount() const { return 0; }
-
     /** Urgency level of the item, defautls to "Normal" */
     virtual Urgency urgency() const { return Urgency::Normal; }
 

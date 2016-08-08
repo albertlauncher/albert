@@ -42,21 +42,13 @@ void Applications::Extension::Indexer::run() {
         QDirIterator fIt(path, QStringList("*.desktop"), QDir::Files,
                          QDirIterator::Subdirectories|QDirIterator::FollowSymlinks);
         while (fIt.hasNext()) {
-            QString path = fIt.next();
 
             // Abortion requested
             if (abort_)
                 return;
 
-            // Check if desktop entry exists in current index
-            vector<shared_ptr<DesktopEntry>>::iterator indexIt =
-                    std::find_if(extension_->index_.begin(), extension_->index_.end(),
-                                [&path](const shared_ptr<DesktopEntry>& de){ return de->path() == path; });
-
             // If not make a new desktop entry, else reuse existing
-            shared_ptr<DesktopEntry> application =
-                    std::make_shared<DesktopEntry>(
-                        path, (indexIt == extension_->index_.end() ? 0 : (*indexIt)->usageCount()));
+            shared_ptr<DesktopEntry> application =std::make_shared<DesktopEntry>(fIt.next());
 
             // Update the desktop entry, add to index if succeeded
             if (application->parseDesktopEntry())

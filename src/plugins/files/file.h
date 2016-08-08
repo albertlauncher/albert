@@ -39,9 +39,9 @@ class File final : public AbstractItem, public IIndexable
 
 public:
 
-    File() : usage_(0) {}
-    File(QString path, QMimeType mimetype, short usage = 0)
-        : path_(path), mimetype_(mimetype), usage_(usage){}
+    File() {}
+    File(QString path, QMimeType mimetype)
+        : path_(path), mimetype_(mimetype){}
 
     /*
      * Implementation of Item interface
@@ -53,7 +53,6 @@ public:
     QString iconPath() const override;
     vector<QString> indexKeywords() const override;
     void activate(ExecutionFlags *) override;
-    uint16_t usageCount() const { return usage_; }
     vector<SharedAction> actions() override;
 
     /*
@@ -62,12 +61,6 @@ public:
 
     /** Return the path of the file */
     const QString &path() const { return path_; }
-
-    /** Return the usage count */
-    uint16_t usage() const { return usage_; }
-
-    /** Sets the usage count */
-    void setUsage(uint16_t usage) { usage_ = usage; }
 
     /** Return the mimetype of the file */
     const QMimeType &mimetype() const { return mimetype_; }
@@ -82,7 +75,6 @@ private:
 
     QString path_;
     QMimeType mimetype_;
-    mutable uint16_t usage_;
     struct CacheEntry {
         QString path;
         system_clock::time_point ctime;

@@ -63,15 +63,17 @@ namespace  {
 
             /* Build the item*/
 
+            QString id =  obj["id"].toString();
+            if (!id.isEmpty()){
             // If icon is not a valid path try icon lookup
-            QString iconPath = obj["icon"].toString();
-            iconPath = XdgIconLookup::instance()->themeIconPath(iconPath);
-            result.emplace_back(new StandardItem(
-                                    obj["id"].toString(),
-                                    obj["name"].toString(),
-                                    obj["description"].toString(),
-                                    iconPath,
-                                    actions));
+                QString iconPath = obj["icon"].toString();
+                iconPath = XdgIconLookup::instance()->themeIconPath(iconPath);
+                result.emplace_back(new StandardItem(id,
+                                                     obj["name"].toString(),
+                                                     obj["description"].toString(),
+                                                     iconPath,
+                                                     actions));
+            }
         }
         return result;
     }
