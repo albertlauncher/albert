@@ -82,7 +82,7 @@ void Terminal::Extension::handleQuery(Query query) {
         std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(program);
         item->setText(QString("%1 %2").arg(program, argsString));
         item->setSubtext(QString("Run '%1 %2'").arg(program, argsString));
-        item->setIcon(iconPath_);
+        item->setIconPath(iconPath_);
         item->setActions({
             std::make_shared<StandardAction>(
                     item->subtext(),

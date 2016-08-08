@@ -63,7 +63,7 @@ void VirtualBox::Extension::handleQuery(Query query) {
            std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(uuids_[i]);
            item->setText(names_[i]);
            item->setSubtext(QString("'%1' aka '%2'").arg(names_[i], uuids_[i]));
-           item->setIcon(iconPath_);
+           item->setIconPath(iconPath_);
 
            std::shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
            action->setText(QString("Start '%1'").arg(names_[i]));

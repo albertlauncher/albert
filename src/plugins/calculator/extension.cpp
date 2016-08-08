@@ -131,7 +131,7 @@ void Calculator::Extension::handleQuery(Query query) {
     SharedStdItem calcItem = std::make_shared<StandardItem>("muparser-eval");
     calcItem->setText(result);
     calcItem->setSubtext(QString("Result of '%1'").arg(query.searchTerm()));
-    calcItem->setIcon(iconPath_);
+    calcItem->setIconPath(iconPath_);
 
     // Build actions
     vector<SharedAction> actions;

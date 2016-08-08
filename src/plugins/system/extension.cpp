@@ -140,7 +140,7 @@ void System::Extension::handleQuery(Query query) {
             std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(configNames[i]);
             item->setText(itemTitles[i]);
             item->setSubtext(itemDescriptions[i]);
-            item->setIcon(iconPaths[i]);
+            item->setIconPath(iconPaths[i]);
 
            QString cmd = commands[i];
             std::shared_ptr<StandardAction> action = std::make_shared<StandardAction>();

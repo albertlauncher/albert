@@ -37,7 +37,7 @@ SharedItem Websearch::SearchEngine::buildWebsearchItem(const QString &searchterm
     std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(name_);
     item->setText(name_);
     item->setSubtext(desc);
-    item->setIcon(iconPath_);
+    item->setIconPath(iconPath_);
 
     item->setActions({action});
 

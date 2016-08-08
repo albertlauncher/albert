@@ -44,7 +44,7 @@ public:
     void setSubtext(const QString &subtext){subtext_ = subtext;}
 
     QString iconPath() const override { return iconPath_; }
-    void setIcon( const QString &iconPath){iconPath_ = iconPath;}
+    void setIconPath( const QString &iconPath){iconPath_ = iconPath;}
 
     vector<SharedAction> actions() { return actions_; }
     void setActions(vector<SharedAction> actions){ actions_ = std::move(actions);}
