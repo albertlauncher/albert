@@ -138,7 +138,7 @@ public:
     void setupSession() override;
     void teardownSession() override;
     void handleQuery(Query query) override;
-    vector<SharedItem> fallbacks(QString) const override;
+    vector<SharedItem> fallbacks(QString) override;
 
 private:
 

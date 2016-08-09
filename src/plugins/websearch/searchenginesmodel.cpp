@@ -166,7 +166,6 @@ bool Websearch::SearchEnginesModel::setData(const QModelIndex &index, const QVar
         switch (static_cast<Section>(index.column())) {
         case Section::Enabled:
             searchEngines_[index.row()].setEnabled(value.toBool());
-            emit fallBackChanged();
             return true;
         default:
             return false;
@@ -260,6 +259,5 @@ bool Websearch::SearchEnginesModel::moveRows(const QModelIndex &src, int srcRow,
     const size_t finalDst = dstRow > srcRow ? dstRow - cnt : dstRow;
     searchEngines_.insert(searchEngines_.begin()+finalDst , make_move_iterator(tmp.begin()), make_move_iterator(tmp.end()));
     endMoveRows();
-    emit fallBackChanged();
     return true;
 }

@@ -18,12 +18,10 @@
 #include <QString>
 #include <QObject>
 #include <QWidget>
-
 #include <memory>
-using std::shared_ptr;
-
 #include "query.h"
 #include "abstractitem.h"
+using std::shared_ptr;
 
 
 /** ****************************************************************************
@@ -59,6 +57,20 @@ public:
     virtual QWidget* widget(QWidget *parent = nullptr) {return new QWidget(parent);}
 
     /**
+     * @brief "Run excluscive" indicator
+     * Indicates that this extension query wants to be the single extension to
+     * be run. The extension must provide triggers for this behaviour.
+     */
+    virtual bool runExclusive() const { return false; }
+
+    /**
+     * @brief The triggers that make the extension beeing run
+     * If runExclusice is set and the first word in the query matches one of
+     * this triggers the extension is run exclusively.
+     */
+    virtual QStringList triggers() const {return QStringList();}
+
+    /**
      * @brief Session setup
      * Called when the main window is shown
      * Do short lived preparation stuff in here. E.g. setup connections etc...
@@ -84,31 +96,10 @@ public:
     virtual void handleQuery(Query query) { Q_UNUSED(query) }
 
     /**
-     * @brief "Run excluscive" indicator
-     * Indicates that this extension query wants to be the single extension to
-     * be run. The extension must provide triggers for this behaviour.
-     */
-    virtual bool runExclusive() const { return false; }
-
-    /**
-     * @brief The triggers that make the extension beeing run
-     * If runExclusice is set and the first word in the query matches one of
-     * this triggers the extension is run exclusively.
-     */
-    virtual QStringList triggers() const {return QStringList();}
-
-    /**
      * @brief Fallbacks of this extension
      * This items show up if a query yields no results
      */
-    virtual vector<SharedItem> fallbacks(QString) const {return vector<SharedItem>();}
-
-signals:
-
-    /**
-     * @brief Singals a change in the fallbacks the extension provides
-     */
-    void fallBacksChanged();
+    virtual vector<SharedItem> fallbacks(QString) {return vector<SharedItem>();}
 
 };
 #define ALBERT_EXTENSION_IID "org.albert.extension"

@@ -53,10 +53,6 @@ private:
     vector<SearchEngine> &searchEngines_;
 
     enum class Section{Enabled, Name, Trigger, URL, Count};
-
-signals:
-
-    void fallBackChanged();
 };
 
 }

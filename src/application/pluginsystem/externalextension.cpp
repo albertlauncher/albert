@@ -214,7 +214,7 @@ void ExternalExtension::handleQuery(Query query) {
 
 
 /** ***************************************************************************/
-vector<SharedItem> ExternalExtension::fallbacks(QString query) const {
+vector<SharedItem> ExternalExtension::fallbacks(QString query) {
 
     if (!providesFallbacks_)
         return vector<SharedItem>();

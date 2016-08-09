@@ -46,7 +46,7 @@ public:
     void handleQuery(Query query) override;
     bool runExclusive() const {return true;}
     QStringList triggers() const override;
-    vector<SharedItem> fallbacks(QString) const override;
+    vector<SharedItem> fallbacks(QString) override;
 
     /*
      * Extension specific members

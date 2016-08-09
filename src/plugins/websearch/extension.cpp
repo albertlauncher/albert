@@ -82,10 +82,7 @@ QWidget *Websearch::Extension::widget(QWidget *parent) {
         widget_ = new ConfigWidget(parent);
         SearchEnginesModel *sem = new SearchEnginesModel(searchEngines_, widget_->ui.tableView_searches);
         widget_->ui.tableView_searches->setModel(sem);
-        connect(sem, &SearchEnginesModel::fallBackChanged, [this](){
-            emit fallBacksChanged();
-        });
-        // TODO Fix all *.data if least supported Qt supports its omittance
+        // TODO Fix all data() if least supported Qt supports its omittance
         QObject::connect(widget_.data(), &ConfigWidget::restoreDefaults,
                 this, &Extension::restoreDefaults);
     }
@@ -113,7 +110,7 @@ void Websearch::Extension::handleQuery(Query query) {
 
 
 /** ***************************************************************************/
-vector<SharedItem> Websearch::Extension::fallbacks(QString searchterm) const {
+vector<SharedItem> Websearch::Extension::fallbacks(QString searchterm) {
     vector<SharedItem> res;
     for (const SearchEngine &se : searchEngines_)
         if (se.enabled())

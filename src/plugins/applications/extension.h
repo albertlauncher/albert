@@ -22,12 +22,12 @@
 #include <QMutex>
 #include <QTimer>
 #include <QList>
-#include <memory>
-using std::shared_ptr;
 #include <vector>
-using std::vector;
+#include <memory>
 #include "abstractextension.h"
 #include "offlineindex.h"
+using std::vector;
+using std::shared_ptr;
 
 namespace Applications {
 
