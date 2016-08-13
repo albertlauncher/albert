@@ -95,7 +95,7 @@ void Debug::Extension::handleQuery(Query query) {
         std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(QString::number(i));
         item->setText(QString("Das Item #%1").arg(i));
         item->setSubtext(QString("Toll, das Item #%1").arg(i));
-        item->setIconPath("");
+        item->setIconPath(":debug");
         item->setActions(vector<SharedAction>());
         query.addMatch(item, 0);
     }
