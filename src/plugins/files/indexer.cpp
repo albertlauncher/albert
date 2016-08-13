@@ -95,7 +95,9 @@ void Files::Extension::Indexer::run() {
             // Index all children in the dir
             QDirIterator dirIterator(canonicalPath, filters, QDirIterator::NoIteratorFlags);
             while (dirIterator.hasNext()) {
-                const QString fileName = dirIterator.next();
+                dirIterator.next();
+                const QString & fileName = dirIterator.fileName();
+                const QFileInfo & fileInfo = dirIterator.fileInfo();
 
                 // Skip if this file matches one of the ignore patterns
                 for (const QRegExp& ignore : ignores)
@@ -103,11 +105,11 @@ void Files::Extension::Indexer::run() {
                         goto SKIP_THIS;
 
                 // Skip if this file is a symlink and we shoud skip symlinks
-                if (dirIterator.fileInfo().isSymLink() && !extension_->followSymlinks_)
+                if (fileInfo.isSymLink() && !extension_->followSymlinks_)
                     goto SKIP_THIS;
 
                 // Index this file
-                indexRecursion(dirIterator.fileInfo());
+                indexRecursion(fileInfo);
                 SKIP_THIS:;
             }
         }
