@@ -62,16 +62,3 @@ vector<QString> ChromeBookmarks::Bookmark::indexKeywords() const {
                                     host.left(host.size()-url.topLevelDomain().size())
                                 });
 }
-
-
-/** ***************************************************************************/
-void ChromeBookmarks::Bookmark::serialize(QDataStream &out) {
-    out << name_ << url_;
-}
-
-
-
-/** ***************************************************************************/
-void ChromeBookmarks::Bookmark::deserialize(QDataStream &in) {
-    in >> name_ >> url_;
-}

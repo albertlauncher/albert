@@ -55,12 +55,6 @@ public:
     /** Sets the url of the bookmark */
     void setUrl(const QString& url) { url_ = url; }
 
-    /** Serialize the desktop entry */
-    void serialize(QDataStream &out);
-
-    /** Deserialize the desktop entry */
-    void deserialize(QDataStream &in);
-
 private:
     QString id_;
     QString name_;

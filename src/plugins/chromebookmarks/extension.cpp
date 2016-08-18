@@ -54,28 +54,6 @@ ChromeBookmarks::Extension::Extension() : AbstractExtension("org.albert.extensio
 
     qApp->settings()->endGroup();
 
-    // Deserialize data
-    QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                   filePath(QString("%1.dat").arg(id)));
-    if (dataFile.exists()) {
-        if (dataFile.open(QIODevice::ReadOnly|QIODevice::Text)) {
-            qDebug("[%s] Deserializing from %s", id, dataFile.fileName().toLocal8Bit().data());
-            QDataStream in(&dataFile);
-            quint64 count;
-            for (in >> count ;count != 0; --count){
-                shared_ptr<Bookmark> deshrp = std::make_shared<Bookmark>();
-                deshrp->deserialize(in);
-                index_.push_back(deshrp);
-            }
-            dataFile.close();
-
-            // Build the offline index
-            for (const auto &item : index_)
-                offlineIndex_.add(item);
-        } else
-            qWarning() << "Could not open file: " << dataFile.fileName();
-    }
-
     // Keep in sync with the bookmarkfile
     connect(&watcher_, &QFileSystemWatcher::fileChanged, this, &Extension::updateIndex, Qt::QueuedConnection);
     connect(this, &Extension::pathChanged, this, &Extension::updateIndex, Qt::QueuedConnection);
@@ -102,19 +80,6 @@ ChromeBookmarks::Extension::~Extension() {
         connect(indexer_.data(), &Indexer::destroyed, &loop, &QEventLoop::quit);
         loop.exec();
     }
-
-    // Serialize data
-    QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                   filePath(QString("%1.dat").arg(id)));
-    if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
-        qDebug("[%s] Serializing to %s", id, dataFile.fileName().toLocal8Bit().data());
-        QDataStream out( &dataFile );
-        out << static_cast<quint64>(index_.size());
-        for (const auto &item : index_)
-            item->serialize(out);
-        dataFile.close();
-    } else
-        qCritical() << "Could not write to " << dataFile.fileName();
 }
 
 
