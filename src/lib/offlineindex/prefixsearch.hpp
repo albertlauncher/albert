@@ -22,6 +22,7 @@
 #include <map>
 #include <memory>
 #include "indeximpl.h"
+#include "iindexable.h"
 using std::vector;
 using std::set;
 using std::map;
@@ -50,10 +51,10 @@ public:
 
     /** ***********************************************************************/
     void add(shared_ptr<IIndexable> idxble) override {
-        vector<QString> indexKeywords = idxble->indexKeywords();
-        for (const QString &kw : indexKeywords) {
+        vector<IIndexable::WeightedKeyword> indexKeywords = idxble->indexKeywords();
+        for (const auto &wkw : indexKeywords) {
             // Build an inverted index
-            QStringList words = kw.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
+            QStringList words = wkw.keyword.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
             for (const QString &w : words) {
                 invertedIndex_[w.toLower()].insert(idxble);
             }

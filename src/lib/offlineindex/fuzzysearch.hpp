@@ -55,9 +55,9 @@ public:
     /** ***********************************************************************/
     void add(shared_ptr<IIndexable> idxble) override {
         // Add a mappings to the inverted index which maps on t.
-        std::vector<QString> indexKeywords = idxble->indexKeywords();
-        for (const QString &kw : indexKeywords) {
-            QStringList words = kw.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
+        std::vector<IIndexable::WeightedKeyword> indexKeywords = idxble->indexKeywords();
+        for (const auto &wkw : indexKeywords) {
+            QStringList words = wkw.keyword.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
              for (QString &w : words) {
 
                 // Make this search case insensitive

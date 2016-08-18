@@ -22,6 +22,14 @@
 class IIndexable
 {
 public:
-    virtual ~IIndexable() {}
-    virtual std::vector<QString> indexKeywords() const = 0;
+
+    struct WeightedKeyword {
+        WeightedKeyword(const QString& kw, uint32_t r) : keyword(kw), relevance(r){}
+        QString keyword;
+        uint32_t relevance;
+    };
+
+    virtual ~IIndexable(){}
+    virtual std::vector<WeightedKeyword> indexKeywords() const = 0;
 };
+

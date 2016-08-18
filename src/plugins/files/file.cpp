@@ -86,8 +86,11 @@ vector<SharedAction> Files::File::actions() {
 
 
 /** ***************************************************************************/
-std::vector<QString> Files::File::indexKeywords() const {
-    return std::vector<QString>({ QFileInfo(path_).fileName() });
+vector<IIndexable::WeightedKeyword> Files::File::indexKeywords() const {
+    std::vector<IIndexable::WeightedKeyword> res;
+    res.emplace_back(QFileInfo(path_).fileName(), USHRT_MAX);
+    // TODO ADD PATH
+    return res;
 }
 
 

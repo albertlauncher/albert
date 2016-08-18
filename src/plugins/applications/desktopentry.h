@@ -39,7 +39,7 @@ public:
     QString text() const override { return name_; }
     QString subtext() const override { return altName(); }
     QString iconPath() const override { return iconPath_; }
-    vector<QString> indexKeywords() const override;
+    vector<IIndexable::WeightedKeyword> indexKeywords() const override;
     void activate(ExecutionFlags *) override;
     vector<SharedAction> actions() override { return actions_; }
 

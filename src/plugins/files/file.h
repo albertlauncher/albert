@@ -51,7 +51,7 @@ public:
     QString text() const override;
     QString subtext() const override;
     QString iconPath() const override;
-    vector<QString> indexKeywords() const override;
+    vector<IIndexable::WeightedKeyword> indexKeywords() const override;
     void activate(ExecutionFlags *) override;
     vector<SharedAction> actions() override;
 

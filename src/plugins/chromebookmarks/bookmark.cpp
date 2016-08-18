@@ -53,12 +53,12 @@ void ChromeBookmarks::Bookmark::activate(ExecutionFlags *) {
 
 
 /** ***************************************************************************/
-vector<QString> ChromeBookmarks::Bookmark::indexKeywords() const {
+vector<IIndexable::WeightedKeyword> ChromeBookmarks::Bookmark::indexKeywords() const {
+    std::vector<IIndexable::WeightedKeyword> res;
     // return domain without TLD eg. maps.google for maps.google.de
     QUrl url(url_);
     QString host = url.host();
-    return vector<QString>({
-                                    name_,
-                                    host.left(host.size()-url.topLevelDomain().size())
-                                });
+    res.emplace_back(name_, USHRT_MAX);
+    res.emplace_back(host.left(host.size()-url.topLevelDomain().size()), USHRT_MAX);
+    return res; // moves
 }

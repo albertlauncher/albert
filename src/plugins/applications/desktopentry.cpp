@@ -58,12 +58,12 @@ void Applications::DesktopEntry::activate(ExecutionFlags *) {
 
 
 /** ***************************************************************************/
-std::vector<QString> Applications::DesktopEntry::indexKeywords() const {
-    return std::vector<QString>({
-                                    name_,
-                                    altName_,
-                                    exec_.section(" ",0,0)
-                                });
+std::vector<IIndexable::WeightedKeyword> Applications::DesktopEntry::indexKeywords() const {
+    std::vector<IIndexable::WeightedKeyword> res;
+    res.emplace_back(name_, USHRT_MAX);
+    res.emplace_back(altName_,  USHRT_MAX);
+    res.emplace_back(exec_.section(" ",0,0), USHRT_MAX);
+    return res; // moves
 }
 
 
