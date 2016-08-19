@@ -24,6 +24,7 @@
 #include <algorithm>
 #include "abstractextension.h"
 #include "abstractitem.h"
+#include "abstractaction.h"
 #include "albertapp.h"
 #include "query_p.h"
 using std::map;
@@ -240,7 +241,10 @@ int QueryPrivate::rowCount(const QModelIndex &parent) const {
 /** ***************************************************************************/
 QVariant QueryPrivate::data(const QModelIndex &index, int role) const {
     if (index.isValid()) {
-        const SharedItem &item = showFallbacks_ ? fallbacks_[index.row()] : matches_[index.row()].first;
+        SharedItem item = showFallbacks_
+                ? fallbacks_[static_cast<size_t>(index.row())]
+                : matches_[static_cast<size_t>(index.row())].first;
+
         switch (role) {
         case Qt::DisplayRole:
             return item->text();
@@ -249,23 +253,23 @@ QVariant QueryPrivate::data(const QModelIndex &index, int role) const {
         case Qt::DecorationRole:
             return item->iconPath();
 
-        case Qt::UserRole: { // Actions
+        case Qt::UserRole: { // Actions list
             QStringList actionTexts;
-            for (SharedAction &action : item->actions())
+            for (const SharedAction &action : item->actions())
                 actionTexts.append(action->text());
             return actionTexts;
         }
 
         case Qt::UserRole+100: // DefaultAction
-            return item->subtext();
-        case Qt::UserRole+101: // AltAction
-            return "Search using first fallback";
-        case Qt::UserRole+102: // ShiftAction
             return (0 < static_cast<int>(item->actions().size())) ? item->actions()[0]->text() : item->subtext();
-        case Qt::UserRole+103: // ControlAction
+        case Qt::UserRole+101: // AltAction
+            return "Search '"+searchTerm_+"' using default fallback";
+        case Qt::UserRole+102: // MetaAction
             return (1 < static_cast<int>(item->actions().size())) ? item->actions()[1]->text() : item->subtext();
-        case Qt::UserRole+104: // MetaAction
+        case Qt::UserRole+103: // ControlAction
             return (2 < static_cast<int>(item->actions().size())) ? item->actions()[2]->text() : item->subtext();
+        case Qt::UserRole+104: // ShiftAction
+            return (3 < static_cast<int>(item->actions().size())) ? item->actions()[3]->text() : item->subtext();
         default:
             return QVariant();
         }
@@ -279,38 +283,43 @@ QVariant QueryPrivate::data(const QModelIndex &index, int role) const {
 bool QueryPrivate::setData(const QModelIndex &index, const QVariant &value, int role) {
     if (index.isValid()) {
         mutex_.lock();
-        SharedItem item = showFallbacks_ ? fallbacks_[index.row()] : matches_[index.row()].first;
+        SharedItem item = showFallbacks_
+                ? fallbacks_[static_cast<size_t>(index.row())]
+                : matches_[static_cast<size_t>(index.row())].first;
         mutex_.unlock();
         ExecutionFlags flags;
         switch (role) {
 
+        // Activation by index
         case Qt::UserRole:{
-            int actionValue = value.toInt();
-            if (0 <= actionValue && actionValue < static_cast<int>(item->actions().size()))
+            size_t actionValue = static_cast<size_t>(value.toInt());
+            if (actionValue < item->actions().size())
                 item->actions()[actionValue]->activate(&flags);
             break;
         }
 
+        // Activation by modifier
         case Qt::UserRole+100: // DefaultAction
-            item->activate(&flags);
-            break;
-        case Qt::UserRole+101: // AltAction
-            if (fallbacks_.size() > 0 ) {
-                item = fallbacks_[0];
-                item->activate(&flags);
-            }
-            break;
-        case Qt::UserRole+102: // ShiftAction
-            if (0 < static_cast<int>(item->actions().size()))
+            if (0U < item->actions().size())
                 item->actions()[0]->activate(&flags);
             break;
-        case Qt::UserRole+103: // ControlAction
-            if (1 < static_cast<int>(item->actions().size()))
+        case Qt::UserRole+101: // AltAction
+            if (0U < fallbacks_.size() && 0U < item->actions().size()) {
+                item = fallbacks_[0];
+                item->actions()[0]->activate(&flags);
+            }
+            break;
+        case Qt::UserRole+102: // MetaAction
+            if (1U < item->actions().size())
                 item->actions()[1]->activate(&flags);
             break;
-        case Qt::UserRole+104: // MetaAction
-            if (2 < static_cast<int>(item->actions().size()))
+        case Qt::UserRole+103: // ControlAction
+            if (2U < item->actions().size())
                 item->actions()[2]->activate(&flags);
+            break;
+        case Qt::UserRole+104: // ShiftAction
+            if (3U < item->actions().size())
+                item->actions()[3]->activate(&flags);
             break;
 
         }

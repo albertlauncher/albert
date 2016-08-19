@@ -163,13 +163,13 @@ MainWindow::MainWindow(QWidget *parent)
         case Qt::AltModifier: // AltAction
             ui.proposalList->model()->setData(index, -1, Qt::UserRole+101);
             break;
-        case Qt::ShiftModifier: // ShiftAction
+        case Qt::MetaModifier: // MetaAction
             ui.proposalList->model()->setData(index, -1, Qt::UserRole+102);
             break;
         case Qt::ControlModifier: // ControlAction
             ui.proposalList->model()->setData(index, -1, Qt::UserRole+103);
             break;
-        case Qt::MetaModifier: // MetaAction
+        case Qt::ShiftModifier: // ShiftAction
             ui.proposalList->model()->setData(index, -1, Qt::UserRole+104);
             break;
         default: // DefaultAction
