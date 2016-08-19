@@ -37,7 +37,7 @@ Websearch::Extension::Extension() : AbstractExtension("org.albert.extension.webs
                 );
     if (dataFile.exists()) {
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
-            qDebug("[%s] Deserializing from %s", id, dataFile.fileName().toLocal8Bit().data());
+            qDebug("[%s] Deserializing from %s", id.toUtf8().constData(), dataFile.fileName().toLocal8Bit().data());
             QDataStream in(&dataFile);
             quint64 size;
             in >> size;
@@ -64,7 +64,7 @@ Websearch::Extension::~Extension() {
                 filePath(QString("%1.dat").arg(id))
                 );
     if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
-        qDebug("[%s] Serializing to %s", id, dataFile.fileName().toLocal8Bit().data());
+        qDebug("[%s] Serializing to %s", id.toUtf8().constData(), dataFile.fileName().toLocal8Bit().data());
         QDataStream out( &dataFile );
         out << static_cast<quint64>(searchEngines_.size());
         for (const SearchEngine &se : searchEngines_)

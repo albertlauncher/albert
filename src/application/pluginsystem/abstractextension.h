@@ -27,19 +27,19 @@ using std::shared_ptr;
 /** ****************************************************************************
  * @brief The extension interface
  */
-struct AbstractExtension : public QObject
+class AbstractExtension : public QObject
 {
     Q_OBJECT
 
 public:
 
-    AbstractExtension(const char * id) : id(id) {}
+    AbstractExtension(const QString &id) : id(id) {}
     virtual ~AbstractExtension() {}
 
     /**
      * @brief An application-wide unique identifier
      */
-    const char* id;
+    const QString id;
 
     /**
      * @brief A human readable name of the extension
@@ -72,25 +72,32 @@ public:
 
     /**
      * @brief Session setup
-     * Called when the main window is shown
-     * Do short lived preparation stuff in here. E.g. setup connections etc...
+     * Called when the users started a session, i.e. before the the main window
+     * is shown. Setup session stage has to be finished before the actual query
+     * handling will begin so do not do any long running jobs in here. If you
+     * really have to, do it asynchonous or threaded (only recommended if you
+     * know what you do).
      */
     virtual void setupSession() {}
 
     /**
      * @brief Session teardown
-     * Called when the main window hides/closes
-     * Cleanup short lived stuff, or start async indexing here
+     * Called when the user finshed a session, i.e. after the the main window
+     * has been hidden. Although the app is hidden now this method should not
+     * block since the user may want start another session immediately.
+     * @see setupSession
      */
     virtual void teardownSession() {}
 
     /**
-     * @brief The query handler
+     * @brief Query handling
      * This method is called for every user input. Add the results to the query
-     * passed as parameter. The results are sorted by usage. But after 100 ms
+     * passed as parameter. The results are sorted by usage. After 100 ms
      * they are just appended to not disturb the users interaction. Queries can
      * get invalidated so make sure to regularly check isValid() to cancel
-     * long running operations.
+     * long running operations. This method is called in a thread without event
+     * loop, be aware of the consequences (especially regarding signal/slot
+     * mechanism).
      * @param query Holds the query context
      */
     virtual void handleQuery(Query query) { Q_UNUSED(query) }

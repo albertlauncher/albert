@@ -42,7 +42,7 @@ namespace  {
         for (const QJsonValue & value : array){
             QJsonObject obj = value.toObject();
 
-            QString id =  obj["id"].toString();
+            QString id = obj["id"].toString();
             if (!id.isEmpty()){
 
                 SharedStdItem ssi = std::make_shared<StandardItem>(id);
@@ -175,20 +175,14 @@ QStringList ExternalExtension::triggers() const {
 
 /** ***************************************************************************/
 void ExternalExtension::setupSession() {
-    QProcess extProc;
-    extProc.start(path_, {"SETUPSESSION"});
-    if (!extProc.waitForFinished(1000))
-        return;
+    QProcess::startDetached(path_, {"SETUPSESSION"});
 }
 
 
 
 /** ***************************************************************************/
 void ExternalExtension::teardownSession() {
-    QProcess extProc;
-    extProc.start(path_, {"TEARDOWNSESSION"});
-    if (!extProc.waitForFinished(1000))
-        return;
+    QProcess::startDetached(path_, {"TEARDOWNSESSION"});
 }
 
 

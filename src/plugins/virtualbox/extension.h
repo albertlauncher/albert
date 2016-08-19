@@ -36,7 +36,7 @@ public:
      * Implementation of extension interface
      */
 
-    QString name() const { return "Virtual Box"; }
+    QString name() const override { return "Virtual Box"; }
     void setupSession() override;
     void handleQuery(Query query) override;
 

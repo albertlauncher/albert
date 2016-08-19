@@ -78,7 +78,7 @@ ExternalExtensionLoader::~ExternalExtensionLoader() {
 bool ExternalExtensionLoader::load(){
     if (instance_ == nullptr) {
         try {
-            instance_ = new ExternalExtension(qUtf8Printable(id()), path_);
+            instance_ = new ExternalExtension(QString((id())).toUtf8().constData(), path_);
             state_ = State::Loaded;
         } catch (QString error) {
             state_ = State::Error;

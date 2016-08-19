@@ -73,7 +73,7 @@ Files::Extension::Extension() : AbstractExtension("org.albert.extension.files") 
                    filePath(QString("%1.dat").arg(id)));
     if (dataFile.exists()) {
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
-            qDebug("[%s] Deserializing from %s", id, dataFile.fileName().toLocal8Bit().data());
+            qDebug("[%s] Deserializing from %s", id.toUtf8().constData(), dataFile.fileName().toLocal8Bit().data());
             QDataStream in(&dataFile);
             quint64 count;
             for (in >> count ;count != 0; --count){
@@ -126,7 +126,7 @@ Files::Extension::~Extension() {
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
                    filePath(QString("%1.dat").arg(id)));
     if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
-        qDebug("[%s] Serializing to %s", id, dataFile.fileName().toLocal8Bit().data());
+        qDebug("[%s] Serializing to %s", id.toUtf8().constData(), dataFile.fileName().toLocal8Bit().data());
         QDataStream out( &dataFile );
         out	<< static_cast<quint64>(index_.size());
         for (const auto &item : index_)

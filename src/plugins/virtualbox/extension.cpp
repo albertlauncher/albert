@@ -16,10 +16,10 @@
 
 #include <QProcess>
 #include <QRegularExpression>
+#include <QString>
 #include "extension.h"
 #include "query.h"
-#include "standarditem.hpp"
-#include "standardaction.hpp"
+#include "standardobjects.h"
 #include "xdgiconlookup.h"
 
 /** ***************************************************************************/
@@ -36,7 +36,6 @@ void VirtualBox::Extension::setupSession() {
     uuids_.clear();
     QProcess *process = new QProcess;
     process->setReadChannel(QProcess::StandardOutput);
-    process->start("VBoxManage",  {"list", "vms"});
     connect(process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
         [this, process](int exitCode, QProcess::ExitStatus exitStatus){
         if (exitStatus == QProcess::NormalExit && exitCode == 0){
@@ -50,6 +49,7 @@ void VirtualBox::Extension::setupSession() {
         }
         process->deleteLater();
     });
+    process->start("VBoxManage",  {"list", "vms"});
 }
 
 
@@ -66,7 +66,7 @@ void VirtualBox::Extension::handleQuery(Query query) {
            item->setIconPath(iconPath_);
 
            std::shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
-           action->setText(QString("Start '%1'").arg(names_[i]));
+           action->setText("Start virtual machine");
            action->setAction([this, i](ExecutionFlags *){
                QProcess::startDetached("VBoxManage", {"startvm", uuids_[i]});
            });
@@ -75,5 +75,5 @@ void VirtualBox::Extension::handleQuery(Query query) {
 
            query.addMatch(item);
        }
-    }
+   }
 }

@@ -27,6 +27,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <csignal>
+#include <chrono>
 #include "albertapp.h"
 #include "mainwindow.h"
 #include "hotkeymanager.h"
@@ -193,13 +194,13 @@ AlbertApp::AlbertApp(int &argc, char *argv[])
     QDir dir;
     dir.setPath(configLocation);
     if(!dir.mkpath("."))
-        qFatal("Could not create dir: %s",  qUtf8Printable(configLocation));
-    dir.setPath(dataLocation);
+        qFatal("Could not create dir: %s",  configLocation_.toUtf8().constData());
+    dir.setPath(dataLocation_);
     if (!dir.mkpath("."))
-        qFatal("Could not create dir: %s",  qUtf8Printable(dataLocation));
-    dir.setPath(cacheLocation);
+        qFatal("Could not create dir: %s",  dataLocation_.toUtf8().constData());
+    dir.setPath(cacheLocation_);
     if (!dir.mkpath("."))
-        qFatal("Could not create dir: %s",  qUtf8Printable(cacheLocation));
+        qFatal("Could not create dir: %s",  cacheLocation_.toUtf8().constData());
 
 
     /*
@@ -221,14 +222,14 @@ AlbertApp::AlbertApp(int &argc, char *argv[])
                 "  itemId TEXT NOT NULL, "
                 "  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP "
                 ");"))
-        qFatal("Unable to create table 'usages': %s", qUtf8Printable(q.lastError().text()));
+        qFatal("Unable to create table 'usages': %s", q.lastError().text().toUtf8().constData());
 
     if (!q.exec("CREATE TABLE IF NOT EXISTS runtimes ( "
                 "  extensionId TEXT NOT NULL, "
                 "  runtime INTEGER NOT NULL, "
                 "  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP "
                 ");"))
-        qFatal("Unable to create table 'runtimes': %s", qUtf8Printable(q.lastError().text()));
+        qFatal("Unable to create table 'runtimes': %s", q.lastError().text().toUtf8().constData());
 
     // Do regular cleanup
     if (!q.exec("DELETE FROM usages WHERE julianday('now')-julianday(timestamp)>90;"))
@@ -469,24 +470,32 @@ bool AlbertApp::trayIconEnabled() {
 /** ***************************************************************************/
 void AlbertApp::onWidgetShown() {
     // Call all setup routines
-    QFutureSynchronizer<void> synchronizer;
-    for (AbstractExtension *e : extensionManager_->extensions())
-        synchronizer.addFuture(QtConcurrent::run(e, &AbstractExtension::setupSession));
-    synchronizer.waitForFinished();
+    std::chrono::system_clock::time_point start, end;
+    for (AbstractExtension *e : extensionManager_->extensions()){
+        start = std::chrono::system_clock::now();
+        e->setupSession();
+        end = std::chrono::system_clock::now();
+        if (50 < std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count())
+            qWarning() << e->id << "took over 50 ms to setup!";
+    }
 }
 
 
 
 /** ***************************************************************************/
 void AlbertApp::onWidgetHidden() {
-    // Call all teardown routines
-    QFutureSynchronizer<void> synchronizer;
-    for (AbstractExtension *e : extensionManager_->extensions())
-        synchronizer.addFuture(QtConcurrent::run(e, &AbstractExtension::teardownSession));
-    synchronizer.waitForFinished();
-
     // Clear the listview
     mainWindow_->setModel(nullptr);
+
+    // Call all teardown routines
+    std::chrono::system_clock::time_point start, end;
+    for (AbstractExtension *e : extensionManager_->extensions()){
+        start = std::chrono::system_clock::now();
+        e->teardownSession();
+        end = std::chrono::system_clock::now();
+        if (50 < std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count())
+            qWarning() << e->id << "took over 50 ms to teardown!";
+    }
 
     // Delete all the queries of this session
     for (QueryPrivate* qp : oldQueries_)

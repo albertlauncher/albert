@@ -19,8 +19,6 @@
 #include <QLibrary>
 #include <QPluginLoader>
 #include <QDebug>
-#include <QDebug>
-#include <QDebug>
 #include <memory>
 #include <chrono>
 #include "extensionmanager.h"
@@ -163,10 +161,10 @@ void ExtensionManager::loadExtension(const unique_ptr<AbstractExtensionLoader> &
         system_clock::time_point start = system_clock::now();
         if ( loader->load() ) {
             auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(system_clock::now()-start);
-            qDebug() << qUtf8Printable(QString("Loading %1 done in %2 milliseconds").arg(loader->id()).arg(msecs.count()));
+            qDebug() << QString("Loading %1 done in %2 milliseconds").arg(loader->id()).arg(msecs.count());
             extensions_.insert(loader->instance());
         } else
-            qDebug() << qUtf8Printable(QString("Loading %1 failed. (%2)").arg(loader->id(), loader->lastError()));
+            qDebug() << QString("Loading %1 failed. (%2)").arg(loader->id(), loader->lastError());
     }
 }
 
