@@ -18,7 +18,6 @@
 #include <QInputDialog>
 #include <QStandardPaths>
 #include "configwidget.h"
-#include "desktopentry.h"
 
 /** ***************************************************************************/
 Applications::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {

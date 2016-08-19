@@ -84,7 +84,7 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
                 delegate_->subTextRole = Qt::UserRole+104;
                 break;
             default: // DefaultAction
-                delegate_->subTextRole = Qt::UserRole+100;
+                delegate_->subTextRole = Qt::ToolTipRole;
                 break;
             }
             update();
@@ -126,7 +126,7 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
                 delegate_->subTextRole = Qt::UserRole+104;
                 break;
             default: // DefaultAction
-                delegate_->subTextRole = Qt::UserRole+100;
+                delegate_->subTextRole = Qt::ToolTipRole;
                 break;
             }
             update();

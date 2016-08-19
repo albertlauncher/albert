@@ -15,6 +15,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDebug>
+#include <QUrl>
+#include <QClipboard>
+#include <QDesktopServices>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -23,8 +26,9 @@
 #include <vector>
 #include <memory>
 #include "indexer.h"
-#include "bookmark.h"
 #include "extension.h"
+#include "standardobjects.h"
+#include "albertapp.h"
 using std::shared_ptr;
 using std::vector;
 
@@ -37,11 +41,11 @@ void ChromeBookmarks::Extension::Indexer::run() {
     emit statusInfo("Indexing bookmarks ...");
 
     // Build a new index
-    vector<shared_ptr<Bookmark>> newIndex;
+    vector<SharedStdIdxItem> bookmarks;
 
     // Define a recursive bookmark indexing lambda
     std::function<void(const QJsonObject &json)> rec_bmsearch =
-            [&rec_bmsearch, &newIndex](const QJsonObject &json) {
+            [&rec_bmsearch, &bookmarks](const QJsonObject &json) {
         QJsonValue type = json["type"];
         if (type == QJsonValue::Undefined)
             return;
@@ -51,14 +55,39 @@ void ChromeBookmarks::Extension::Indexer::run() {
                 rec_bmsearch(i.toObject());
         }
         if (type.toString() == "url") {
-            // TODO ADD THE FOLDERS to the indexKeywords
-            newIndex.push_back(
-                    std::make_shared<Bookmark>(
-                            json["id"].toString(),
-                            json["name"].toString(),
-                            json["url"].toString()
-                    )
-            );
+            QString name = json["name"].toString();
+            QString urlstr = json["url"].toString();
+
+            SharedStdIdxItem ssii  = std::make_shared<StandardIndexItem>(json["id"].toString());
+            ssii->setText(name);
+            ssii->setSubtext(urlstr);
+            ssii->setIconPath(":favicon");
+
+            std::vector<IIndexable::WeightedKeyword> weightedKeywords;
+            QUrl url(urlstr);
+            QString host = url.host();
+            weightedKeywords.emplace_back(name, USHRT_MAX);
+            weightedKeywords.emplace_back(host.left(host.size()-url.topLevelDomain().size()), USHRT_MAX/2);
+            ssii->setIndexKeywords(std::move(weightedKeywords));
+
+            std::vector<SharedAction> actions;
+            SharedStdAction action = std::make_shared<StandardAction>();
+            action->setText("Open in default browser");
+            action->setAction([urlstr](ExecutionFlags*){
+                QDesktopServices::openUrl(QUrl(urlstr));
+            });
+            actions.push_back(std::move(action));
+
+            action = std::make_shared<StandardAction>();
+            action->setText("Copy url to clipboard");
+            action->setAction([urlstr](ExecutionFlags*){
+                QApplication::clipboard()->setText(urlstr);
+            });
+            actions.push_back(std::move(action));
+
+            ssii->setActions(std::move(actions));
+
+            bookmarks.push_back(std::move(ssii));
         }
     };
 
@@ -88,7 +117,7 @@ void ChromeBookmarks::Extension::Indexer::run() {
         return;
 
     // Set the new index (use swap to shift destruction out of critical area)
-    std::swap(extension_->index_, newIndex);
+    std::swap(extension_->index_, bookmarks);
 
     // Rebuild the offline index
     extension_->offlineIndex_.clear();

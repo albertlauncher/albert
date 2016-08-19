@@ -14,7 +14,7 @@ set(SRC
     extension.cpp
     configwidget.cpp
     file.cpp
-    fileactions.h
+    fileactions.cpp
     indexer.cpp
 )
 

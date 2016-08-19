@@ -23,10 +23,10 @@
 #include <memory>
 #include "extension.h"
 #include "configwidget.h"
-#include "desktopentry.h"
 #include "indexer.h"
 #include "query.h"
 #include "albertapp.h"
+#include "standardobjects.h"
 
 const char* Applications::Extension::CFG_PATHS    = "paths";
 const char* Applications::Extension::CFG_FUZZY    = "fuzzy";
@@ -46,30 +46,7 @@ Applications::Extension::Extension() : AbstractExtension("org.albert.extension.a
         rootDirs_ = v.toStringList();
     else
         restorePaths();
-
     qApp->settings()->endGroup();
-
-    // Deserialize data
-    QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation))
-                   .filePath(QString("%1.dat").arg(id)));
-    if (dataFile.exists()) {
-        if (dataFile.open(QIODevice::ReadOnly|QIODevice::Text)) {
-            qDebug("[%s] Deserializing from %s", id, dataFile.fileName().toLocal8Bit().data());
-            QDataStream in(&dataFile);
-            quint64 count;
-            for (in >> count ;count != 0; --count){
-                shared_ptr<DesktopEntry> deshrp = std::make_shared<DesktopEntry>();
-                deshrp->deserialize(in);
-                index_.push_back(deshrp);
-            }
-            dataFile.close();
-
-            // Build the offline index
-            for (const auto &item : index_)
-                offlineIndex_.add(item);
-        } else
-            qWarning() << "Could not open file: " << dataFile.fileName();
-    }
 
     // Keep the Applications in sync with the OS
     updateDelayTimer_.setInterval(UPDATE_DELAY);
@@ -111,19 +88,6 @@ Applications::Extension::~Extension() {
         connect(indexer_.data(), &Indexer::destroyed, &loop, &QEventLoop::quit);
         loop.exec();
     }
-
-    // Serialize data
-    QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                   filePath(QString("%1.dat").arg(id)));
-    if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
-        qDebug("[%s] Serializing to %s", id, dataFile.fileName().toLocal8Bit().data());
-        QDataStream out( &dataFile );
-        out << static_cast<quint64>(index_.size());
-        for (const auto &item : index_)
-            item->serialize(out);
-        dataFile.close();
-    } else
-        qCritical() << "Could not write to " << dataFile.fileName();
 }
 
 
@@ -168,7 +132,7 @@ void Applications::Extension::handleQuery(Query query) {
     // Add results to query. This cast is safe since index holds files only
     for (const shared_ptr<IIndexable> &obj : indexables)
         // TODO `Search` has to determine the relevance. Set to 0 for now
-        query.addMatch(std::static_pointer_cast<DesktopEntry>(obj), 0);
+        query.addMatch(std::static_pointer_cast<StandardIndexItem>(obj), 0);
 }
 
 

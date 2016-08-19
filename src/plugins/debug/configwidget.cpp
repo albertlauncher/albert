@@ -14,4 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QSpinBox>
+#include <QGroupBox>
+#include <QLineEdit>
 #include "configwidget.h"
+
+Debug::ConfigWidget::ConfigWidget(Extension * extension, QWidget * parent)
+    : QWidget(parent), extension_(extension)
+{
+    ui.setupUi(this);
+    ui.spinBox_delay->setValue(extension_->delay());
+    connect(ui.spinBox_delay, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+            extension_, &Extension::setDelay);
+
+    ui.spinBox_count->setValue(extension_->count());
+    connect(ui.spinBox_count, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+            extension_, &Extension::setCount);
+
+    ui.groupBox_async->setChecked(extension_->async());
+    connect(ui.groupBox_async, &QGroupBox::toggled,
+            extension_, &Extension::setAsync);
+
+    ui.lineEdit_trigger->setText(extension_->trigger());
+    connect(ui.lineEdit_trigger, &QLineEdit::textChanged,
+            extension_, &Extension::setTrigger);
+}

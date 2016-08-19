@@ -23,9 +23,9 @@
 #include "extension.h"
 #include "xdgiconlookup.h"
 #include "configwidget.h"
-#include "standarditem.hpp"
-#include "standardaction.hpp"
+#include "standardobjects.h"
 #include "query.h"
+#include "albertapp.h"
 
 /** ***************************************************************************/
 Terminal::Extension::Extension() : AbstractExtension("org.albert.extension.terminal") {
@@ -79,18 +79,48 @@ void Terminal::Extension::handleQuery(Query query) {
     QString program;
      while (it != index_.end() && it->startsWith(potentialProgram)){
         program = *it;
-        std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(program);
-        item->setText(QString("%1 %2").arg(program, argsString));
-        item->setSubtext(QString("Run '%1 %2'").arg(program, argsString));
-        item->setIconPath(iconPath_);
-        item->setActions({
-            std::make_shared<StandardAction>(
-                    item->subtext(),
-                    [program, args](ExecutionFlags *){
-                        QProcess::startDetached(program, args);
-                    }
-            )
+        QString commandlineString = QString("%1 %2").arg(program, argsString);
+
+        std::vector<SharedAction> actions;
+        SharedStdAction action = std::make_shared<StandardAction>();
+        action->setText("Execute in background");
+        action->setAction([program, args](ExecutionFlags *){
+            QProcess::startDetached(program, args);
         });
+        actions.push_back(std::move(action));
+
+        QStringList cmddline = qApp->term().split(' ', QString::SkipEmptyParts);
+        cmddline.append(program);
+        cmddline.append(args);
+        action = std::make_shared<StandardAction>();
+        action->setText("Execute in terminal");
+        action->setAction([cmddline](ExecutionFlags *){
+            QStringList args = cmddline;
+            QString program = args.takeFirst();
+            QProcess::startDetached(program, args);
+        });
+        actions.push_back(std::move(action));
+
+        cmddline = qApp->term().split(' ', QString::SkipEmptyParts);
+        cmddline.append("sudo");
+        cmddline.append(program);
+        cmddline.append(args);
+        action = std::make_shared<StandardAction>();
+        action->setText("Execute as root in terminal");
+        action->setAction([cmddline](ExecutionFlags *){
+            QStringList args = cmddline;
+            QString program = args.takeFirst();
+            QProcess::startDetached(program, args);
+        });
+        actions.push_back(std::move(action));
+
+
+        std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(program);
+        item->setText(commandlineString);
+        item->setSubtext(QString("Run '%1'").arg(commandlineString));
+        item->setIconPath(iconPath_);
+        item->setActions(std::move(actions));
+
         query.addMatch(item, 0);
         ++it;
     }

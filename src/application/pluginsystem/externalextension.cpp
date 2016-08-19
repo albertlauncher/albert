@@ -24,8 +24,7 @@
 #include <QJsonArray>
 #include <vector>
 #include "externalextension.h"
-#include "standarditem.hpp"
-#include "standardaction.hpp"
+#include "standardobjects.h"
 #include "xdgiconlookup.h"
 
 using std::vector;
@@ -43,36 +42,33 @@ namespace  {
         for (const QJsonValue & value : array){
             QJsonObject obj = value.toObject();
 
-            /* Build the actions */
-
-            QJsonArray jsonActions = obj["actions"].toArray();
-            vector<SharedAction> actions;
-            for (const QJsonValue & value : jsonActions){
-                QJsonObject obj = value.toObject();
-                action = std::make_shared<StandardAction>(); // Todo make std commadn action
-                action->setText(obj["name"].toString());
-                QString command = obj["command"].toString();
-                QStringList arguments;
-                for (const QJsonValue & value : obj["arguments"].toArray())
-                     arguments.append(value.toString());
-                action->setAction([command, arguments](ExecutionFlags *){
-                    QProcess::startDetached(command, arguments);
-                });
-                actions.push_back(action);
-            }
-
-            /* Build the item*/
-
             QString id =  obj["id"].toString();
             if (!id.isEmpty()){
-            // If icon is not a valid path try icon lookup
-                QString iconPath = obj["icon"].toString();
-                iconPath = XdgIconLookup::instance()->themeIconPath(iconPath);
-                result.emplace_back(new StandardItem(id,
-                                                     obj["name"].toString(),
-                                                     obj["description"].toString(),
-                                                     iconPath,
-                                                     actions));
+
+                SharedStdItem ssi = std::make_shared<StandardItem>(id);
+                ssi->setText(obj["name"].toString());
+                ssi->setSubtext(obj["description"].toString());
+                ssi->setIconPath(XdgIconLookup::instance()->themeIconPath(obj["icon"].toString()));
+
+                // Build the actions
+                QJsonArray jsonActions = obj["actions"].toArray();
+                vector<SharedAction> actions;
+                for (const QJsonValue & value : jsonActions){
+                    QJsonObject obj = value.toObject();
+                    action = std::make_shared<StandardAction>(); // Todo make std commadn action
+                    action->setText(obj["name"].toString());
+                    QString command = obj["command"].toString();
+                    QStringList arguments;
+                    for (const QJsonValue & value : obj["arguments"].toArray())
+                         arguments.append(value.toString());
+                    action->setAction([command, arguments](ExecutionFlags *){
+                        QProcess::startDetached(command, arguments);
+                    });
+                    actions.push_back(action);
+                }
+                ssi->setActions(std::move(actions));
+
+                result.emplace_back(std::move(ssi));
             }
         }
         return result;

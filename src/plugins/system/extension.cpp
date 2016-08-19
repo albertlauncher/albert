@@ -19,8 +19,7 @@
 #include "extension.h"
 #include "configwidget.h"
 #include "query.h"
-#include "standarditem.hpp"
-#include "standardaction.hpp"
+#include "standardobjects.h"
 #include "xdgiconlookup.h"
 #include "albertapp.h"
 

@@ -21,14 +21,15 @@
 #include <QMutex>
 #include <QFileSystemWatcher>
 #include <vector>
-using std::vector;
 #include <memory>
 #include "abstractextension.h"
 #include "offlineindex.h"
+using std::vector;
+using std::shared_ptr;
+class StandardIndexItem;
 
 namespace ChromeBookmarks {
 
-class Bookmark;
 class ConfigWidget;
 
 class Extension final : public AbstractExtension
@@ -67,7 +68,7 @@ public:
 
 private:
     QPointer<ConfigWidget> widget_;
-    vector<shared_ptr<Bookmark>> index_;
+    vector<shared_ptr<StandardIndexItem>> index_;
     OfflineIndex offlineIndex_;
     QMutex indexAccess_;
     QPointer<Indexer> indexer_;

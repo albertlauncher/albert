@@ -13,7 +13,6 @@ set(SRC
     metadata.json
     extension.cpp
     configwidget.cpp
-    bookmark.cpp
     indexer.cpp
 )
 

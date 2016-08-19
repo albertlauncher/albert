@@ -58,9 +58,3 @@ QString Template::Item::iconPath() const {
     return QString();
 }
 
-
-
-/** ***************************************************************************/
-void Template::Item::activate(ExecutionFlags *) {
-    // Do sth cool...
-}

@@ -20,7 +20,7 @@
 #include <thread>
 #include "extension.h"
 #include "configwidget.h"
-#include "standarditem.hpp"
+#include "standardobjects.h"
 #include "query.h"
 #include "albertapp.h"
 
@@ -28,9 +28,9 @@
 Debug::Extension::Extension() : AbstractExtension("org.albert.extension.debug") {
     QSettings *s = qApp->settings();
     s->beginGroup(id);
-    setDelay(s->value("delay", 100).toUInt());
-    setCount(s->value("count", 5).toUInt());
-    setAsync(s->value("async", false).toBool());
+    setDelay(s->value("delay", 50).toInt());
+    setCount(s->value("count", 100).toInt());
+    setAsync(s->value("async", true).toBool());
     setTrigger(s->value("trigger", "dbg").toString());
     s->endGroup();
 }
@@ -39,40 +39,14 @@ Debug::Extension::Extension() : AbstractExtension("org.albert.extension.debug") 
 
 /** ***************************************************************************/
 Debug::Extension::~Extension() {
-    QSettings *s = qApp->settings();
-    s->beginGroup(id);
-    s->setValue("delay", delay());
-    s->setValue("count", count());
-    s->setValue("async", async());
-    s->setValue("trigger", trigger());
-    s->endGroup();
 }
 
 
 
 /** ***************************************************************************/
 QWidget *Debug::Extension::widget(QWidget *parent) {
-    if (widget_.isNull()) {
-        widget_ = new ConfigWidget(parent);
-
-        widget_->ui.spinBox_delay->setValue(delay());
-        connect(widget_->ui.spinBox_delay, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-                this, &Extension::setDelay);
-
-        widget_->ui.spinBox_count->setValue(count());
-        connect(widget_->ui.spinBox_count, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-                this, &Extension::setCount);
-
-        widget_->ui.groupBox_async->setChecked(async());
-        connect(widget_->ui.groupBox_async, &QGroupBox::toggled,
-                this, &Extension::setAsync);
-
-        widget_->ui.lineEdit_trigger->setText(trigger());
-        connect(widget_->ui.lineEdit_trigger, &QLineEdit::textChanged,
-                this, &Extension::setTrigger);
-
-
-    }
+    if (widget_.isNull())
+        widget_ = new ConfigWidget(this, parent);
     return widget_;
 }
 
@@ -84,7 +58,7 @@ void Debug::Extension::handleQuery(Query query) {
         return;
     // Avoid annoying warnings
     Q_UNUSED(query)
-    for (uint i = 0 ; i < count_; ++i){
+    for (int i = 0 ; i < count_; ++i){
 
         if (async_)
             std::this_thread::sleep_for(std::chrono::milliseconds(delay_));
@@ -99,6 +73,38 @@ void Debug::Extension::handleQuery(Query query) {
         item->setActions(vector<SharedAction>());
         query.addMatch(item, 0);
     }
+}
+
+
+
+/** ***************************************************************************/
+void Debug::Extension::setCount(const int &count){
+    qApp->settings()->setValue(QString("%1/%2").arg(id, "count"), count);
+    count_ = count;
+}
+
+
+
+/** ***************************************************************************/
+void Debug::Extension::setAsync(bool async){
+    qApp->settings()->setValue(QString("%1/%2").arg(id, "async"), async);
+    async_ = async;
+}
+
+
+
+/** ***************************************************************************/
+void Debug::Extension::setDelay(const int &delay) {
+    qApp->settings()->setValue(QString("%1/%2").arg(id, "delay"), delay);
+    delay_ = delay;
+}
+
+
+
+/** ***************************************************************************/
+void Debug::Extension::setTrigger(const QString &trigger){
+    qApp->settings()->setValue(QString("%1/%2").arg(id, "trigger"), trigger);
+    trigger_ = trigger;
 }
 
 

@@ -18,8 +18,7 @@
 #include <QUrl>
 #include <QDataStream>
 #include "searchengine.h"
-#include "standardaction.hpp"
-#include "standarditem.hpp"
+#include "standardobjects.h"
 
 
 

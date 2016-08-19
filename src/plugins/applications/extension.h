@@ -28,10 +28,10 @@
 #include "offlineindex.h"
 using std::vector;
 using std::shared_ptr;
+class StandardIndexItem;
 
 namespace Applications {
 
-class DesktopEntry;
 class ConfigWidget;
 
 class Extension final : public AbstractExtension
@@ -70,7 +70,7 @@ public:
 
 private:
     QPointer<ConfigWidget> widget_;
-    vector<shared_ptr<DesktopEntry>> index_;
+    vector<shared_ptr<StandardIndexItem>> index_;
     OfflineIndex offlineIndex_;
     QMutex indexAccess_;
     QPointer<Indexer> indexer_;

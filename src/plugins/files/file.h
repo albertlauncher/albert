@@ -16,26 +16,27 @@
 
 #pragma once
 #include <QMimeType>
-
 #include <map>
 #include <vector>
 #include <chrono>
-using std::map;
-using std::vector;
-using std::chrono::system_clock;
-
+#include <memory>
 #include "iindexable.h"
 #include "abstractitem.h"
-
+using std::map;
+using std::vector;
+using std::shared_ptr;
+using std::chrono::system_clock;
+class ExecutionFlags;
+class AbstractAction;
 
 namespace Files {
 
 class File final : public AbstractItem, public IIndexable
 {
-    class OpenFileAction;
-    class RevealFileAction;
-    class CopyFileAction;
-    class CopyPathAction;
+    struct OpenFileAction;
+    struct RevealFileAction;
+    struct CopyFileAction;
+    struct CopyPathAction;
 
 public:
 
@@ -52,8 +53,7 @@ public:
     QString subtext() const override;
     QString iconPath() const override;
     vector<IIndexable::WeightedKeyword> indexKeywords() const override;
-    void activate(ExecutionFlags *) override;
-    vector<SharedAction> actions() override;
+    vector<shared_ptr<AbstractAction>> actions() override;
 
     /*
      * Item specific members

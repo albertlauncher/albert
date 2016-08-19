@@ -24,8 +24,7 @@ using std::vector;
 #include "abstractaction.h"
 #include "configwidget.h"
 #include "query.h"
-#include "standarditem.hpp"
-#include "standardaction.hpp"
+#include "standardobjects.h"
 #include "xdgiconlookup.h"
 #include "muParser.h"
 #include "albertapp.h"
@@ -157,7 +156,7 @@ void Calculator::Extension::handleQuery(Query query) {
         QApplication::clipboard()->setText(text); });
     actions.push_back(action);
 
-    calcItem->setActions(actions);
+    calcItem->setActions(std::move(actions));
 
     query.addMatch(calcItem, SHRT_MAX);
 }

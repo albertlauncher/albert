@@ -65,18 +65,10 @@ QString Files::File::iconPath() const {
 }
 
 
-
-/** ***************************************************************************/
-void Files::File::activate(ExecutionFlags *flags) {
-//    Qt::KeyboardModifiers mods = QApplication::keyboardModifiers(); // TODO:ActionMap
-    // Standard action for a file
-    OpenFileAction(this).activate(flags);
-}
-
-
 /** ***************************************************************************/
 vector<SharedAction> Files::File::actions() {
     vector<SharedAction> actions;
+    actions.push_back(std::make_shared<OpenFileAction>(this));
     actions.push_back(std::make_shared<RevealFileAction>(this));
     actions.push_back(std::make_shared<CopyFileAction>(this));
     actions.push_back(std::make_shared<CopyPathAction>(this));

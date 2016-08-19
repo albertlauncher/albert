@@ -18,98 +18,60 @@
 #include <QDesktopServices>
 #include <QClipboard>
 #include <QMimeData>
+#include <QApplication>
+#include <QFileInfo>
 #include <QUrl>
 #include "file.h"
+#include "abstractaction.h"
 
 namespace Files {
 
 /** ***************************************************************************/
-class AbstractFileAction : public AbstractAction
+struct AbstractFileAction : public AbstractAction
 {
-public:
-    AbstractFileAction(File *file) : file_(file) {}
-    ~AbstractFileAction() {}
-
-protected:
-    File *file_;
+    AbstractFileAction(File *file);
+    ~AbstractFileAction();
+    File const * const file_;
 };
 
 
 
 /** ***************************************************************************/
-class File::OpenFileAction final : public AbstractFileAction
+struct File::OpenFileAction final : public AbstractFileAction
 {
-public:
-    OpenFileAction(File *file) : AbstractFileAction(file) {}
-
-    QString text() const override { return "Open file in default application"; }
-    void activate(ExecutionFlags *) override {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(file_->path()));
-    }
+    OpenFileAction(File *file);
+    QString text() const override;
+    void activate(ExecutionFlags *) override;
 };
 
 
 
 /** ***************************************************************************/
-class File::RevealFileAction final : public AbstractFileAction
+struct File::RevealFileAction final : public AbstractFileAction
 {
-public:
-    RevealFileAction(File *file) : AbstractFileAction(file) {}
-
-    QString text() const override { return "Reveal file in default filebrowser"; }
-    void activate(ExecutionFlags *) override {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file_->path()).path()));
-    }
+    RevealFileAction(File *file);
+    QString text() const override;
+    void activate(ExecutionFlags *) override;
 };
 
 
 
 /** ***************************************************************************/
-class File::CopyFileAction final : public AbstractFileAction
+struct File::CopyFileAction final : public AbstractFileAction
 {
-public:
-    CopyFileAction(File *file) : AbstractFileAction(file) {}
-
-    QString text() const override { return "Copy file to clipboard"; }
-    void activate(ExecutionFlags *) override {
-        //  Get clipboard
-        QClipboard *cb = QApplication::clipboard();
-
-        // Ownership of the new data is transferred to the clipboard.
-        QMimeData* newMimeData = new QMimeData();
-
-        // Copy old mimedata
-        const QMimeData* oldMimeData = cb->mimeData();
-        for (const QString &f : oldMimeData->formats())
-            newMimeData->setData(f, oldMimeData->data(f));
-
-        // Copy path of file
-        newMimeData->setText(file_->path());
-
-        // Copy file
-        newMimeData->setUrls({QUrl::fromLocalFile(file_->path())});
-
-        // Copy file (f*** you gnome)
-        QByteArray gnomeFormat = QByteArray("copy\n").append(QUrl::fromLocalFile(file_->path()).toEncoded());
-        newMimeData->setData("x-special/gnome-copied-files", gnomeFormat);
-
-        // Set the mimedata
-        cb->setMimeData(newMimeData);
-    }
+    CopyFileAction(File *file);
+    QString text() const override;
+    void activate(ExecutionFlags *) override;
 };
 
 
 
 /** ***************************************************************************/
-class File::CopyPathAction final : public AbstractFileAction
+struct File::CopyPathAction final : public AbstractFileAction
 {
-public:
-    CopyPathAction(File *file) : AbstractFileAction(file) {}
-
-    QString text() const override { return "Copy path to clipboard"; }
-    void activate(ExecutionFlags *) override {
-        QApplication::clipboard()->setText(file_->path());
-    }
+    CopyPathAction(File *file);
+    QString text() const override;
+    void activate(ExecutionFlags *) override;
 };
 
 

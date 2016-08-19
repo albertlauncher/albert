@@ -16,12 +16,9 @@
 
 #pragma once
 #include <QVariant>
-
 #include <vector>
-using std::vector;
-
 #include "abstractitem.h"
-
+using std::vector;
 
 namespace Template {
 
@@ -35,7 +32,6 @@ public:
     QString text() const override;
     QString subtext() const override;
     QString iconPath() const override;
-    void activate(ExecutionFlags *) override;
 };
 
 }

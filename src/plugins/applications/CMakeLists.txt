@@ -13,8 +13,6 @@ set(SRC
     metadata.json
     extension.cpp
     configwidget.cpp
-    desktopentry.cpp
-    desktopaction.hpp
     indexer.cpp
 )
 

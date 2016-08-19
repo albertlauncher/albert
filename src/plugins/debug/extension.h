@@ -40,24 +40,24 @@ public:
     bool runExclusive() const override {return true;}
     QStringList triggers() const override {return {trigger_};}
 
-    uint count() const{return count_;}
-    void setCount(const uint &count){count_ = count;}
+    int count() const{return count_;}
+    void setCount(const int &count);
 
     bool async() const{return async_;}
-    void setAsync(bool async){async_ = async;}
+    void setAsync(bool async);
 
-    uint delay() const {return delay_;}
-    void setDelay(const uint &delay) {delay_ = delay;}
+    int delay() const {return delay_;}
+    void setDelay(const int &delay);
 
     QString trigger() const {return trigger_;}
-    void setTrigger(const QString &trigger){trigger_ = trigger;}
+    void setTrigger(const QString &trigger);
 
 private:
 
     QPointer<ConfigWidget> widget_;
 
-    uint delay_;
-    uint count_;
+    int delay_;
+    int count_;
     bool async_;
     QString trigger_;
 

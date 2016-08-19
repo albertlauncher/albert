@@ -18,7 +18,10 @@
 #include <QString>
 #include <vector>
 
-/** ***************************************************************************/
+/**
+ * @brief The IIndexable class
+ * The interface items need to be indexable by the offline index
+ */
 class IIndexable
 {
 public:

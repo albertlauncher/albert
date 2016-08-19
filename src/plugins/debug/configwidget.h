@@ -17,17 +17,22 @@
 #pragma once
 #include <QWidget>
 #include "ui_configwidget.h"
+#include "extension.h"
 
 namespace Debug
 {
 class ConfigWidget final : public QWidget
 {
     Q_OBJECT
+
 public:
-    explicit ConfigWidget(QWidget *parent = 0){
-        ui.setupUi(this);
-        Q_UNUSED(parent )
-    }
+
+    explicit ConfigWidget(Extension * extension_, QWidget * parent = 0);
+
+private:
+
     Ui::ConfigWidget ui;
+    Extension * extension_;
+
 };
 }

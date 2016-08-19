@@ -25,9 +25,9 @@
 #include "extension.h"
 #include "configwidget.h"
 #include "indexer.h"
-#include "bookmark.h"
 #include "query.h"
 #include "albertapp.h"
+#include "standardobjects.h"
 
 const char* ChromeBookmarks::Extension::CFG_PATH       = "bookmarkfile";
 const char* ChromeBookmarks::Extension::CFG_FUZZY      = "fuzzy";
@@ -121,7 +121,7 @@ void ChromeBookmarks::Extension::handleQuery(Query query) {
     // Add results to query. This cast is safe since index holds files only
     for (const shared_ptr<IIndexable> &obj : indexables)
         // TODO `Search` has to determine the relevance. Set to 0 for now
-        query.addMatch(std::static_pointer_cast<Bookmark>(obj), 0);
+        query.addMatch(std::static_pointer_cast<StandardIndexItem>(obj), 0);
 }
 
 

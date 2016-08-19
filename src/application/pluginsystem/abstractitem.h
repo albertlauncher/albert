@@ -16,19 +16,17 @@
 
 #pragma once
 #include <QString>
-
 #include <vector>
 #include <memory>
 using std::vector;
 using std::shared_ptr;
-
-#include "abstractaction.h"
+class AbstractAction;
 
 /** ****************************************************************************
  * @brief The item interface
  * Subclass this class to make your object displayable in the results list.
  */
-class AbstractItem : public AbstractAction
+class AbstractItem
 {
 public:
 
@@ -47,6 +45,9 @@ public:
     /** The icon for the item */
     virtual QString iconPath() const = 0;
 
+    /** The title for the item */
+    virtual QString text() const = 0;
+
     /** The declarative subtext for the item */
     virtual QString subtext() const = 0;
 
@@ -54,7 +55,7 @@ public:
     virtual Urgency urgency() const { return Urgency::Normal; }
 
     /** The alternative actions of the item*/
-    virtual vector<SharedAction> actions() { return vector<SharedAction>(); }
+    virtual vector<shared_ptr<AbstractAction>> actions() = 0;
 
 };
 typedef shared_ptr<AbstractItem> SharedItem;

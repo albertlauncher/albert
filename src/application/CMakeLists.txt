@@ -10,6 +10,7 @@ include_directories(
     interfaces/
     pluginsystem/
     settingswidget/
+    ../lib/
 )
 
 set(SRC
@@ -30,11 +31,10 @@ set(SRC
     pluginsystem/nativeextensionloader.cpp
     pluginsystem/externalextensionloader.cpp
     pluginsystem/externalextension.cpp
-    pluginsystem/standarditem.hpp
-    pluginsystem/standardaction.hpp
     pluginsystem/extensionmanager.cpp
     pluginsystem/query.cpp
     pluginsystem/query_p.cpp
+    pluginsystem/standardobjects.cpp
     settingswidget/grabkeybutton.cpp
     settingswidget/settingswidget.cpp
     settingswidget/loadermodel.cpp
