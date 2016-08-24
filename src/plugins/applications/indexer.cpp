@@ -369,8 +369,10 @@ void Applications::Extension::Indexer::run() {
             QStringList commandline = shellLexerSplit(exec);
 
             // Expand field codes
-            for (auto & cmd : commandline)
-                cmd = expandedFiledCode(cmd, icon, name, fIt.filePath());
+            for (auto it = commandline.begin(); it != commandline.end();){
+                *it = expandedFiledCode(*it, icon, name, fIt.filePath());
+                (it->isEmpty()) ? it = commandline.erase(it): ++it;
+            }
 
             SharedStdAction sa = std::make_shared<StandardAction>();
             sa->setText("Run");
