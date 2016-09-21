@@ -25,7 +25,7 @@
 /** ***************************************************************************/
 SharedItem Websearch::SearchEngine::buildWebsearchItem(const QString &searchterm) const {
 
-    QString urlString = QString(url_).replace("%s", searchterm);
+    QString urlString = QString(url_).replace("%s", QUrl::toPercentEncoding(searchterm));
     QUrl url = QUrl(urlString);
     QString desc = QString("Start %1 search in default browser").arg(name_);
 

@@ -194,13 +194,13 @@ AlbertApp::AlbertApp(int &argc, char *argv[])
     QDir dir;
     dir.setPath(configLocation);
     if(!dir.mkpath("."))
-        qFatal("Could not create dir: %s",  configLocation_.toUtf8().constData());
-    dir.setPath(dataLocation_);
+        qFatal("Could not create dir: %s",  configLocation.toUtf8().constData());
+    dir.setPath(dataLocation);
     if (!dir.mkpath("."))
-        qFatal("Could not create dir: %s",  dataLocation_.toUtf8().constData());
-    dir.setPath(cacheLocation_);
+        qFatal("Could not create dir: %s",  dataLocation.toUtf8().constData());
+    dir.setPath(cacheLocation);
     if (!dir.mkpath("."))
-        qFatal("Could not create dir: %s",  cacheLocation_.toUtf8().constData());
+        qFatal("Could not create dir: %s",  cacheLocation.toUtf8().constData());
 
 
     /*
