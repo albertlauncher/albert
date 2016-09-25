@@ -36,6 +36,8 @@ const bool  Applications::Extension::UPDATE_DELAY = 60000;
 /** ***************************************************************************/
 Applications::Extension::Extension() : AbstractExtension("org.albert.extension.applications") {
 
+    qunsetenv("DESKTOP_AUTOSTART_ID");
+
     // Load settings
     qApp->settings()->beginGroup(id);
     offlineIndex_.setFuzzy(qApp->settings()->value(CFG_FUZZY, DEF_FUZZY).toBool());
