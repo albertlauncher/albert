@@ -15,142 +15,171 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+#include <QAbstractListModel>
 #include <QDebug>
 #include <QVariant>
+#include <QtConcurrent/QtConcurrent>
+#include <QFuture>
+#include <QFutureWatcher>
 #include <QMutex>
-#include <QTimer>
 #include <QMutexLocker>
-#include <QAbstractListModel>
-#include <utility>
+
 #include <algorithm>
 #include <vector>
 #include <memory>
 using std::shared_ptr;
-using std::unique_ptr;
-#include "abstractobjects.hpp"
-#include "roles.hpp"
+using std::vector;
+
+#include "iextension.h"
+#include "iitem.h"
 #include "albertapp.h"
+
 
 struct Match {
     ItemSPtr item;
     short score;
 };
 
+
+
 /** ***************************************************************************/
-class QueryPrivate final : public QAbstractListModel
+class QueryPrivate : public QAbstractListModel
 {
+
     Q_OBJECT
-    friend class ExtensionManager;
 
 public:
+
+    enum class State { Initial, Running, Finished };
+
+    QueryPrivate(const QString &query, const QString &trigger = QString()) :
+        searchTerm_(query),
+        trigger_(trigger),
+        isValid_(true),
+        state_(State::Initial),
+        mutex_(QMutex::Recursive)
+    { }
+
+
+
     /** ***********************************************************************/
-    QueryPrivate(const QString &term)
-        : searchTerm_(term), dynamicSort_(false) {
-        // Use this when muoltithreadeing
-//        QTimer::singleShot(50, this, &QueryPrivate::makeDynamic);
+    void start() {
+        if (isValid_) {
+            // Start handlers
+            for (IExtension *extension : queryHandlers_) {
+                QFutureWatcher<void>* fw = new QFutureWatcher<void>(this);
+                connect(fw, &QFutureWatcher<void>::finished, this, &QueryPrivate::onHandlerFinished);
+                fw->setFuture(QtConcurrent::run(extension, &IExtension::handleQuery, Query(this)));
+                futureWatchers_.push_back(fw);
+            }
+            state_ = State::Running;
         }
+    }
 
 
 
     /** ***********************************************************************/
-    void addMatch(shared_ptr<AlbertItem> item, short score) {
-        QMutexLocker locker(&mutex_);
-        if (dynamicSort_) {
-            //beginInsertRows(...);
-            throw "Not implemented yet.";
-        } else {
+    void stop() {
+        isValid_ = false;
+        if ( state_ == State::Initial)
+            state_ = State::Finished;
+        else
+            for (QFutureWatcher<void>* futureWatcher : futureWatchers_)
+                futureWatcher->disconnect(this);
+    }
+
+
+
+    /** ***********************************************************************/
+    void addMatch(Match match) {
+        if ( isValid_ ) {
+            mutex_.lock();
+            beginInsertRows(QModelIndex(), matches_.size(), matches_.size());
+            matches_.push_back(match);
+            endInsertRows();
+            mutex_.unlock();
+        }
+    }
+
+
+
+    /** ***********************************************************************/
+    void addMatch(shared_ptr<AlbertItem> item, short score = 0) {
+        if ( isValid_ ) {
+            mutex_.lock();
+            beginInsertRows(QModelIndex(), matches_.size(), matches_.size());
             matches_.push_back({item, score});
-        }
-    }
-
-
-
-//    /** ***********************************************************************/
-//    void removeMatches(IExtension *ext) {
-//        QMutexLocker locker(&mutex_);
-//        if (dynamicSort_) {
-//            //beginremoveRows(...);
-//            throw "Not implemented yet.";
-//        } else {
-//            std::remove_if(matches_.begin(), matches_.end(),
-//                           [&](const Match &m){ return m.item.data()->extension()==ext; });
-//        }
-//    }
-
-
-
-    /** ***********************************************************************/
-    void reset() {
-        QMutexLocker locker(&mutex_);
-        if (dynamicSort_) {
-            beginResetModel();
-            throw "Not implemented yet.";
-            endResetModel();
-        } else {
-            isValid_ = false;
-            matches_.clear();
+            endInsertRows();
+            mutex_.unlock();
         }
     }
 
 
 
     /** ***********************************************************************/
-    void setValid(bool b = true) {
-        isValid_ = b;
+    void addMatches(vector<Match>::iterator begin, vector<Match>::iterator end) {
+        if ( isValid_ ) {
+            mutex_.lock();
+            beginInsertRows(QModelIndex(), matches_.size(), matches_.size() + std::distance(begin, end));
+            std::copy(begin, end, std::back_inserter(matches_));
+            endInsertRows();
+            mutex_.unlock();
+        }
     }
 
 
 
     /** ***********************************************************************/
-    bool isValid() {
-        return isValid_;
+    void addHandler(IExtension *handler) {
+        if ( state_ == State::Initial )
+            queryHandlers_.push_back(handler);
     }
 
 
 
     /** ***********************************************************************/
-    const QString &searchTerm() const {
-        return searchTerm_;
+    vector<IExtension *> handlers() {
+        return queryHandlers_;
     }
+
+
+    void invalidate() { isValid_ = false; }
+    bool isValid() { return isValid_; }
+
+    const QString &searchTerm() const { return searchTerm_; }
+    const QString &trigger() const { return trigger_; }
+    State state() const { return state_; }
 
 
 
     /** ***********************************************************************/
-    void makeDynamic() {
-        QMutexLocker locker(&mutex_);
-        beginResetModel();
-        std::stable_sort(matches_.begin(), matches_.end(),
-                         [](const Match &lhs, const Match &rhs) {
-                            return lhs.score > rhs.score;
-                         });
-        endResetModel();
-        dynamicSort_ = true;
-    }
-
-
-
-
     /** ***********************************************************************/
-    int rowCount(const QModelIndex &) const override {
+    /** ***********************************************************************/
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override {
+        Q_UNUSED(parent)
+        QMutexLocker m(&mutex_);
         return static_cast<int>(matches_.size());
     }
 
 
+
     /** ***********************************************************************/
     QVariant data(const QModelIndex & index, int role) const override {
-         if (index.isValid()) {
+        if (index.isValid()) {
+            mutex_.lock();
             ItemSPtr item = matches_[index.row()].item;
+            mutex_.unlock();
             switch (role) {
-            case Roles::Text:
-                return item->text();
-            case Roles::SubText:
-                return item->subtext();
-            case Roles::IconPath:
+            case Qt::DisplayRole:
+                return item->text(searchTerm_);
+            case Qt::ToolTipRole:
+                return item->subtext(searchTerm_);
+            case Qt::DecorationRole:
                 return item->iconPath();
-            case Roles::Actions: {
+            case Qt::UserRole: {
                 QStringList actionTexts;
                 for (ActionSPtr &action : item->actions())
-                    actionTexts.append(action->text());
+                    actionTexts.append(action->text(searchTerm_));
                 return actionTexts;
             }
             default:
@@ -165,11 +194,26 @@ public:
     /** ***********************************************************************/
     bool setData(const QModelIndex &index, const QVariant &value, int role) override {
         if (index.isValid()) {
+            mutex_.lock();
             ItemSPtr item = matches_[index.row()].item;
+            mutex_.unlock();
             switch (role) {
-            case Roles::Activate: {
+            case Qt::UserRole: {
+
                 int actionValue = value.toInt();
-                executeAction(item, actionValue);
+                Action::ExecutionFlags flags;
+
+                if (0 <= actionValue && actionValue < static_cast<int>(item->actions().size()))
+                    item->actions()[actionValue]->activate(&flags, searchTerm_);
+                else
+                    item->activate(&flags, searchTerm_);
+
+                if (flags.hideWidget)
+                    qApp->hideWidget();
+
+                if (flags.clearInput)
+                    qApp->clearInput();
+
                 return true;
             }
             default:
@@ -182,26 +226,50 @@ public:
 
 
     /** ***********************************************************************/
-    void executeAction(shared_ptr<AlbertItem> item, int actionValue) const {
-        Action::ExecutionFlags flags;
-        if (0 <= actionValue && actionValue < static_cast<int>(item->actions().size()))
-            item->actions()[actionValue]->activate(&flags);
-        else
-            item->activate(&flags);
-
-        if (flags.hideWidget)
-            qApp->hideWidget();
-
-        if (flags.clearInput)
-            qApp->clearInput();
+    void sort() {
+        mutex_.lock();
+        beginResetModel();
+        std::sort(matches_.begin(), matches_.end(), MatchComparator());
+        endResetModel();
+        mutex_.unlock();
     }
 
-private:
-    QString searchTerm_;
-    std::vector<Match> matches_;
+protected:
+
+    /** ***********************************************************************/
+    void onHandlerFinished(){
+        // Emit finished if all are finished
+        bool fin = true;
+        for (QFutureWatcher<void> const  * const futureWatcher : futureWatchers_)
+            fin &= futureWatcher->isFinished();
+        if ( fin ) {
+            state_ = State::Finished;
+            emit finished(this);
+        }
+    }
+
+
+    /** ***********************************************************************/
+    struct MatchComparator {
+        inline bool operator() (const Match& lhs, const Match& rhs) {
+            return lhs.item->urgency() > rhs.item->urgency() // Urgency, for e.g. notifications, Warnings
+                    || lhs.item->usageCount() > rhs.item->usageCount() // usage count
+                    || lhs.score > rhs.score; // percentual match of the query against the item
+        }
+    };
+
+    const QString searchTerm_;
+    const QString trigger_;
     bool isValid_;
-    QMutex mutex_;
-    bool dynamicSort_;
+    State state_;
+    vector<IExtension*> queryHandlers_;
+    vector<QFutureWatcher<void>*> futureWatchers_;
+    vector<Match> matches_;
+    mutable QMutex mutex_;
+
+signals:
+
+    void finished(QueryPrivate *);
 };
 
 

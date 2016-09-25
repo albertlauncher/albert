@@ -16,7 +16,7 @@
 
 #pragma once
 #include <functional>
-#include "abstractobjects.hpp"
+#include "iitem.h"
 using std::function;
 
 /** ***************************************************************************/
@@ -27,10 +27,10 @@ public:
     StandardItem(const QString &text, const QString &subtext, const QString &iconPath, std::function<void()> f)
         : text_(text), subtext_(subtext), iconPath_(iconPath), action_(f) {}
 
-    QString text() const override { return text_; }
+    QString text(const QString &) const override { return text_; }
     void setText(const QString &text){text_ = text;}
 
-    QString subtext() const override { return subtext_; }
+    QString subtext(const QString &) const override { return subtext_; }
     void setSubtext(const QString &subtext){subtext_ = subtext;}
 
     QString iconPath() const override { return iconPath_; }
@@ -38,7 +38,7 @@ public:
 
     function<void()> action() { return action_; }
     void setAction(function<void()> action){ action_ = std::move(action);}
-    void activate(ExecutionFlags *) override { action_();}
+    void activate(ExecutionFlags *, const QString &) override { action_();}
 
 private:
     QString text_;
@@ -51,18 +51,18 @@ private:
 struct StandardAction final : public Action
 {
 public:
-    StandardAction(const QString &text, function<void()> f)
+    StandardAction(const QString &text, function<void(ExecutionFlags *, const QString &)> f)
         : text_(text), action_(f) {}
 
-    QString text() const override { return text_; }
+    QString text(const QString &) const override { return text_; }
     void setText(const QString &text){text_ = text;}
 
-    const function<void()>& action() { return action_; }
-    void setAction(function<void()> action){ action_ = std::move(action);}
+    const function<void(ExecutionFlags *, const QString &)>& action() { return action_; }
+    void setAction(function<void(ExecutionFlags *, const QString &)> action){ action_ = std::move(action);}
 
-    void activate(ExecutionFlags *) override { action_(); }
+    void activate(ExecutionFlags *f, const QString &q) override { action_(f,q); }
 
 private:
     QString text_;
-    function<void()> action_;
+    function<void(ExecutionFlags *, const QString &)> action_;
 };

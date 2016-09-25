@@ -15,6 +15,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDebug>
+#include <QtConcurrent/QtConcurrent>
+#include <QFutureSynchronizer>
 #include "extensionmanager.h"
 #include "query.h"
 #include "query_p.hpp"
@@ -22,8 +24,32 @@
 
 
 /** ***************************************************************************/
+ExtensionManager::ExtensionManager() {
+    currentQuery_ = nullptr;
+    UXTimeOut_.setInterval(100);
+    UXTimeOut_.setSingleShot(true);
+    connect(&UXTimeOut_, &QTimer::timeout, this, &ExtensionManager::onUXTimeOut);
+}
+
+
+
+/** ***************************************************************************/
+ExtensionManager::~ExtensionManager() {
+
+}
+
+
+
+/** ***************************************************************************/
 void ExtensionManager::startQuery(const QString &searchTerm) {
-    // Trim spaces
+
+    // Stop last query
+    if ( currentQuery_ != nullptr ) {
+        disconnect(currentQuery_, &QueryPrivate::finished, this, &ExtensionManager::onQueryFinished);
+        currentQuery_->stop();
+        pastQueries_.insert(currentQuery_);
+    }
+
     QString trimmedTerm = searchTerm.trimmed();
 
     // Ignore empty queries
@@ -33,76 +59,68 @@ void ExtensionManager::startQuery(const QString &searchTerm) {
         return;
     }
 
-//    // Skip if essentially nothing changed
-//    if (currentQuery_ && trimmedTerm==currentQuery_->searchTerm())
-//        return;
+    QString trigger = trimmedTerm.section(' ', 0,0);
 
-    //  ▼ TODO INTRODUCE MULTITHREADING HERE ▼
-    currentQuery_ = std::make_shared<Query>(trimmedTerm);
-
-//    if (!fallbackOnly) {
-
-        // Separate the first section of the searchterm
-        QString potentialTrigger = trimmedTerm.section(' ', 0,0);
-
-        // Check if the trigger matches any exclusive extension and run it
+    if (triggerExtensions_.count(trigger) != 0){
+        // Triggered extesions
+        currentQuery_ = new QueryPrivate(trimmedTerm.section(' ', 1), trigger);
+        for (IExtension *e : triggerExtensions_[trigger])
+            currentQuery_->addHandler(e);
+    } else {
+        // Untriggered extesions
+        currentQuery_ = new QueryPrivate(trimmedTerm);
         for (IExtension *e : extensions_)
-            if (e->runExclusive())
-                for (const QString& trigger : e->triggers())
-                    if (trigger == potentialTrigger){
-                        e->handleQuery(currentQuery_);
-                        emit newModel(currentQuery_->impl);
-                        return;
-                    }
+            if (!e->runExclusive())
+                currentQuery_->addHandler(e);
+    }
 
-        // Iterate over the triggers of trigger-extensions
-        for (IExtension *e : extensions_){
-            if (!e->runExclusive()){
-                if (e->triggers().isEmpty()){  // Non triggered extension
-                    e->handleQuery(currentQuery_);
-                } else {  // Extension that requires a trigger
-                    for (const QString& trigger : e->triggers())
-                        if (trigger == potentialTrigger)
-                            e->handleQuery(currentQuery_);
-                }
-            }
-        }
-
-        // This is a conceptual hack for v0.7, the query should sor itself when the
-        // remove friend query  and query_p
-        std::stable_sort(currentQuery_->impl->matches_.begin(),
-                         currentQuery_->impl->matches_.end(),
-                         [](const Match &lhs, const Match &rhs) {
-                            return lhs.item->urgency() > rhs.item->urgency() // Urgency, for e.g. notifications, Warnings
-                                    || lhs.item->usageCount() > rhs.item->usageCount() // usage count
-                                    || lhs.score > rhs.score; // percentual match of the query against the item
-                         });
-//    }
-
-    // TODO Handle this with proper fallbacks
-    // Fallback query if results are empty
-    if (currentQuery_->impl->matches_.size()==0)
-        for (IExtension *e : extensions_)
-            e->handleFallbackQuery(currentQuery_);
-
-    emit newModel(currentQuery_->impl);
+    // Connect to finished signal and start it
+    connect(currentQuery_, &QueryPrivate::finished, this, &ExtensionManager::onQueryFinished);
+    currentQuery_->start();
+    UXTimeOut_.start();
 }
 
 
 
 /** ***************************************************************************/
 void ExtensionManager::setupSession() {
+
+    // Call all setup routines
+    QFutureSynchronizer<void> synchronizer;
     for (IExtension *e : extensions_)
- 		e->setupSession();
+        synchronizer.addFuture(QtConcurrent::run(e, &IExtension::setupSession));
+    synchronizer.waitForFinished();
+
+    // Build trigger map
+    triggerExtensions_.clear();
+    for (IExtension *e : extensions_)
+        if (e->runExclusive())
+            for (const QString& t : e->triggers())
+                triggerExtensions_[t].insert(e);
 }
 
 
 
 /** ***************************************************************************/
 void ExtensionManager::teardownSession() {
+
+    // Call all teardown routines
+    QFutureSynchronizer<void> synchronizer;
     for (IExtension *e : extensions_)
-        e->teardownSession();
+        synchronizer.addFuture(QtConcurrent::run(e, &IExtension::teardownSession));
+    synchronizer.waitForFinished();
+
+    // Clear the listview
     emit newModel(nullptr);
+
+    // Delete all finished queries
+    for (auto it = pastQueries_.begin(); it != pastQueries_.end(); ) {
+        if ((*it)->state() == QueryPrivate::State::Finished) {
+            (*it)->deleteLater();
+            it = pastQueries_.erase(it);
+        } else
+            ++it;
+    }
 }
 
 
@@ -113,8 +131,11 @@ void ExtensionManager::registerExtension(QObject *o) {
     if (e) {
         if(extensions_.count(e))
             qCritical() << "Extension registered twice!";
-        else
+        else {
             extensions_.insert(e);
+            updateFallbacks();
+            connect(e, &IExtension::fallBacksChanged, this, &ExtensionManager::updateFallbacks);
+        }
     }
 }
 
@@ -126,7 +147,72 @@ void ExtensionManager::unregisterExtension(QObject *o) {
     if (e) {
         if(!extensions_.count(e))
             qCritical() << "Unregistered unregistered extension! (Duplicate unregistration?)";
-        else
+        else {
             extensions_.erase(e);
+            disconnect(e, &IExtension::fallBacksChanged, this, &ExtensionManager::updateFallbacks);
+        }
     }
+}
+
+
+
+/** ***************************************************************************/
+void ExtensionManager::onUXTimeOut() {
+
+    // Avoid the onFinished procedure if the query timed out before
+    disconnect(currentQuery_, &QueryPrivate::finished, this, &ExtensionManager::onQueryFinished);
+
+    // Untriggered queries have to be sorted
+    if ( currentQuery_->trigger().isNull() )
+        currentQuery_->sort();
+
+    emit newModel(currentQuery_);
+}
+
+
+
+/** ***************************************************************************/
+void ExtensionManager::onQueryFinished(QueryPrivate * qp) {
+
+    // Ignore if this is not the current query
+    if ( qp != currentQuery_ )
+        return;
+
+    /*
+     * If the query finished before the UX timeout timed out everything is fine.
+     * If not the results have already been sorted and published. The user sees
+     * a list that must not be rearranged for better user experience.
+     */
+
+    if (UXTimeOut_.isActive()) {
+
+        // Avoid the timeout procedure
+        UXTimeOut_.stop();
+
+        // Untriggered queries have to be sorted
+        if ( currentQuery_->trigger().isNull() )
+            currentQuery_->sort();
+
+        emit newModel(currentQuery_);
+    }
+
+    /*
+     * If the query finished and the results are empty, display fallbacks.
+     * In this case a sort is okay, since there is no selection to disturb.
+     */
+    if (currentQuery_->rowCount() == 0) {
+        for (auto &it : fallbacks_)
+            currentQuery_->addMatch(it);
+//        currentQuery_->sort();
+    }
+}
+
+
+
+/** ***************************************************************************/
+void ExtensionManager::updateFallbacks() {
+    fallbacks_.clear();
+    for (auto &ext : extensions_)
+        for (auto &fb : ext->fallbacks())
+            fallbacks_.push_back(fb);
 }

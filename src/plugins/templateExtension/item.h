@@ -16,20 +16,25 @@
 
 #pragma once
 #include <QVariant>
+
 #include <vector>
 using std::vector;
-#include "abstractobjects.hpp"
+
+#include "iitem.h"
+
 
 namespace Template {
+
 class Item final : public AlbertItem
 {
 public:
     Item();
     ~Item();
 
-    QString text() const override;
-    QString subtext() const override;
+    QString text(const QString&) const override;
+    QString subtext(const QString&) const override;
     QString iconPath() const override;
-    void activate(ExecutionFlags *) override;
+    void activate(ExecutionFlags *, const QString &) override;
 };
+
 }

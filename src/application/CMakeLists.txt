@@ -1,6 +1,7 @@
 find_package(Qt5Widgets 5.2 REQUIRED)
 find_package(Qt5Svg 5.2 REQUIRED)
 find_package(Qt5Network REQUIRED)
+find_package(Qt5Concurrent REQUIRED)
 
 include_directories(
     hotkey/
@@ -24,11 +25,11 @@ set(SRC
     pluginsystem/pluginloader.cpp
     pluginsystem/pluginmanager.cpp
     pluginsystem/extensionmanager.cpp
-    pluginsystem/roles.hpp
     pluginsystem/query.cpp
     pluginsystem/query_p.hpp
     pluginsystem/iextension.h
-    pluginsystem/abstractobjects.hpp
+    pluginsystem/iitem.h
+    pluginsystem/action.h
     pluginsystem/objects.hpp
     settingswidget/grabkeybutton.cpp
     settingswidget/settingswidget.cpp

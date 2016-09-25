@@ -26,14 +26,14 @@
 std::map<QString, Files::File::CacheEntry> Files::File::iconCache_;
 
 /** ***************************************************************************/
-QString Files::File::text() const {
+QString Files::File::text(const QString &) const {
     return QFileInfo(path_).fileName();
 }
 
 
 
 /** ***************************************************************************/
-QString Files::File::subtext() const {
+QString Files::File::subtext(const QString &) const {
     return path_;
 }
 
@@ -69,10 +69,10 @@ QString Files::File::iconPath() const {
 
 
 /** ***************************************************************************/
-void Files::File::activate(ExecutionFlags *flags) {
+void Files::File::activate(ExecutionFlags *flags, const QString &q) {
 //    Qt::KeyboardModifiers mods = QApplication::keyboardModifiers(); // TODO:ActionMap
     // Standard action for a file
-    OpenFileAction(this).activate(flags);
+    OpenFileAction(this).activate(flags, q);
 }
 
 

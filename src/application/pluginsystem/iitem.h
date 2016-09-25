@@ -16,44 +16,17 @@
 
 #pragma once
 #include <QString>
-#include <memory>
+
 #include <vector>
-using std::shared_ptr;
+#include <memory>
 using std::vector;
+using std::shared_ptr;
 
-
-
-/** ****************************************************************************
- * @brief The AbstractItem
- * Displayable base class for all albert items.
- */
-class Action
-{
-public:
-    struct ExecutionFlags {
-        // Mainwidget will be hidden after the action has been exectuted
-        bool hideWidget = true;
-        // Inputline will be cleared after the action has been exectuted
-        bool clearInput = true;
-    };
-
-    virtual ~Action() {}
-
-    /** A description */
-    virtual QString text() const = 0;
-
-    /** Activates the item */
-    virtual void activate(ExecutionFlags *) = 0;
-};
-typedef shared_ptr<Action> ActionSPtr;
-typedef vector<shared_ptr<Action>> ActionSPtrVec;
-
+#include "action.h"
 
 /** ****************************************************************************
- * @brief The A(bstract)A(lbert)Item - A3Item for convenience
- * This the most prominent class here. This is the base class for all you want -
- * let your items be visible in the proposal list. Subclass this item to your
- * liking and add it to the query if you think it matches the query context.
+ * @brief The item interface
+ * Subclass this class to make your object displayable in the results list.
  */
 class AlbertItem : public Action
 {
@@ -73,7 +46,7 @@ public:
     virtual QString iconPath() const = 0;
 
     /** The declarative subtext for the item */
-    virtual QString subtext() const = 0;
+    virtual QString subtext(const QString& query) const = 0;
 
     /** The usage count used for the ranking in the list */
     virtual uint16_t usageCount() const { return 0; }
@@ -83,6 +56,7 @@ public:
 
     /** The alternative actions of the item*/
     virtual ActionSPtrVec actions() { return ActionSPtrVec(); }
+
 };
 typedef shared_ptr<AlbertItem> ItemSPtr;
 typedef vector<shared_ptr<AlbertItem>> ItemSPtrVec;

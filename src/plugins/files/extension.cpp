@@ -194,21 +194,21 @@ QWidget *Files::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void Files::Extension::handleQuery(shared_ptr<Query> query) {
+void Files::Extension::handleQuery(Query query) {
 
     // Skip  short terms since they pollute the output
-    if ( query->searchTerm().size() < 3)
+    if ( query.searchTerm().size() < 3)
         return;
 
     // Search for matches. Lock memory against indexer
     indexAccess_.lock();
-    vector<shared_ptr<IIndexable>> indexables = offlineIndex_.search(query->searchTerm().toLower());
+    vector<shared_ptr<IIndexable>> indexables = offlineIndex_.search(query.searchTerm().toLower());
     indexAccess_.unlock();
 
     // Add results to query. This cast is safe since index holds files only
     for (shared_ptr<IIndexable> obj : indexables)
         // TODO `Search` has to determine the relevance. Set to 0 for now
-        query->addMatch(std::static_pointer_cast<File>(obj), 0);
+        query.addMatch(std::static_pointer_cast<File>(obj), 0);
 }
 
 

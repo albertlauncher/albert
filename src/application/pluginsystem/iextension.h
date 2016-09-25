@@ -15,13 +15,26 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+#include <QString>
+#include <QObject>
 #include <QWidget>
+
 #include <memory>
 using std::shared_ptr;
-class Query;
 
-struct IExtension
+#include "query.h"
+#include "iitem.h"
+
+
+/** ****************************************************************************
+ * @brief The extension interface
+ */
+struct IExtension : public QObject
 {
+    Q_OBJECT
+
+public:
+
     IExtension(const char * id) : id(id) {}
     virtual ~IExtension() {}
 
@@ -60,33 +73,42 @@ struct IExtension
     virtual void teardownSession() {}
 
     /**
-     * @brief Indicates that the extension shall be the only extension to run
-     * Ignored if the extension has no triggers.
-     * @return True, if the extension shall be run exclusive, else false.
+     * @brief The query handler
+     * This method is called for every user input. Add the results to the query
+     * passed as parameter. The results are sorted by usage. But after 100 ms
+     * they are just appended to not disturb the users interaction. Queries can
+     * get invalidated so make sure to regularly check isValid() to cancel
+     * long running operations.
+     * @param query Holds the query context
      */
-    virtual bool runExclusive() const {return false;}
+    virtual void handleQuery(Query query) { Q_UNUSED(query) }
 
     /**
-     * @brief The triggers which let the extension be run.
-     * The extension is not queried unless one of the triggers matches the first
-     * section of the query.
-     * @return Triggers.
+     * @brief "Run excluscive" indicator
+     * Indicates that this extension query wants to be the single extension to
+     * be run. The extension must provide triggers for this behaviour.
+     */
+    virtual bool runExclusive() const { return false; }
+
+    /**
+     * @brief The triggers that make the extension beeing run
+     * If runExclusice is set and the first word in the query matches one of
+     * this triggers the extension is run exclusively.
      */
     virtual QStringList triggers() const {return QStringList();}
 
     /**
-     * @brief Query handling
-     * Called for every user input.
-     * @param query Holds the query context
+     * @brief Fallbacks of this extension
+     * This items show up if a query yields no results
      */
-    virtual void handleQuery(shared_ptr<Query> query) = 0;
+    virtual ItemSPtrVec fallbacks() const {return ItemSPtrVec();}
+
+signals:
 
     /**
-     * @brief Fallback handling
-     * Called if the preceeding query yielded no results.
-     * @param query Holds the query context
+     * @brief Singals a change in the fallbacks the extension provides
      */
-    virtual void handleFallbackQuery(shared_ptr<Query> query) { Q_UNUSED(query)}
+    void fallBacksChanged();
 
 };
 #define ALBERT_EXTENSION_IID "org.albert.extension"

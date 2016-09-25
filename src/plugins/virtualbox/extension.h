@@ -23,7 +23,7 @@ namespace VirtualBox {
 
 class ConfigWidget;
 
-class Extension final : public QObject, public IExtension
+class Extension final : public IExtension
 {
     Q_OBJECT
     Q_INTERFACES(IExtension)
@@ -38,7 +38,7 @@ public:
 
     QString name() const { return "Virtual Box"; }
     void setupSession() override;
-    void handleQuery(shared_ptr<Query> query) override;
+    void handleQuery(Query query) override;
 
 private:
 

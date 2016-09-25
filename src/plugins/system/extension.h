@@ -17,17 +17,19 @@
 #pragma once
 #include <QObject>
 #include <QPointer>
+
 #include <vector>
-#include "iextension.h"
 using std::vector;
 
+#include "iextension.h"
 class StandardItem;
+
 
 namespace System {
 
 class ConfigWidget;
 
-class Extension final : public QObject, public IExtension
+class Extension final : public IExtension
 {
     Q_OBJECT
     Q_INTERFACES(IExtension)
@@ -44,7 +46,7 @@ public:
 
     QString name() const override { return "System"; }
     QWidget *widget(QWidget *parent = nullptr) override;
-    void handleQuery(shared_ptr<Query> query) override;
+    void handleQuery(Query query) override;
 
 private:
     QString defaultCommand(SupportedCommands command);

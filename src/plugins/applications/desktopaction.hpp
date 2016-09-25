@@ -16,7 +16,7 @@
 
 #pragma once
 #include <QProcess>
-#include "abstractobjects.hpp"
+#include "action.h"
 #include "albertapp.h"
 #include "desktopentry.h"
 
@@ -31,10 +31,10 @@ public:
         : app_(app), description_(name), exec_(exec), term_(term){}
 
     /** Returns the actions description */
-    QString text() const override { return description_; }
+    QString text(const QString &) const override { return description_; }
 
     /** Executes the action */
-    void activate(ExecutionFlags *) override {
+    void activate(ExecutionFlags *, const QString &) override {
         QProcess::startDetached((term_)? qApp->term().arg(exec_) : exec_);
         ++app_->usage_;
     }

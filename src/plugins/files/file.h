@@ -16,10 +16,17 @@
 
 #pragma once
 #include <QMimeType>
+
 #include <map>
+#include <vector>
 #include <chrono>
+using std::map;
+using std::vector;
+using std::chrono::system_clock;
+
 #include "iindexable.h"
-#include "abstractobjects.hpp"
+#include "iitem.h"
+
 
 namespace Files {
 
@@ -40,11 +47,11 @@ public:
      * Implementation of AlbertItem interface
      */
 
-    QString text() const override;
-    QString subtext() const override;
+    QString text(const QString &) const override;
+    QString subtext(const QString &) const override;
     QString iconPath() const override;
     vector<QString> indexKeywords() const override;
-    void activate(ExecutionFlags *) override;
+    void activate(ExecutionFlags *, const QString &) override;
     uint16_t usageCount() const { return usage_; }
     ActionSPtrVec actions() override;
 
@@ -77,9 +84,9 @@ private:
     mutable uint16_t usage_;
     struct CacheEntry {
         QString path;
-        std::chrono::system_clock::time_point ctime;
+        system_clock::time_point ctime;
     };
-    static std::map<QString, CacheEntry> iconCache_;
+    static map<QString, CacheEntry> iconCache_;
 };
 
 }

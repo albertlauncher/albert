@@ -32,9 +32,11 @@ public:
 
     QSize minimumSizeHint() const override;
     QSize sizeHint() const override;
-    void reset() override;
+    void setModel(QAbstractItemModel * model) override;
 
 private:
+
+    void onRowInserted();
 
     uint8_t maxItems_;
 

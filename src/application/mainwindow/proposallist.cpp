@@ -17,7 +17,6 @@
 #include <QKeyEvent>
 #include <QPainter>
 #include "proposallist.h"
-#include "roles.hpp"
 
 /** ***************************************************************************/
 class ProposalList::ItemDelegate final : public QStyledItemDelegate
@@ -70,8 +69,7 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
         case Qt::Key_Shift:
         case Qt::Key_Alt:
         case Qt::Key_Meta:
-            if ( currentIndex().isValid() )
-                update(currentIndex());
+            update();
             return false;
 
         // Navigation
@@ -96,8 +94,7 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
         case Qt::Key_Shift:
         case Qt::Key_Alt:
         case Qt::Key_Meta:
-            if ( currentIndex().isValid() )
-                update(currentIndex());
+            update();
             return false;
         }
     }
@@ -145,7 +142,7 @@ void ProposalList::ItemDelegate::paint(QPainter *painter, const QStyleOptionView
                     QPoint((option.rect.height() - option.decorationSize.width())/2 + option.rect.x(),
                            (option.rect.height() - option.decorationSize.height())/2 + option.rect.y()),
                     option.decorationSize);
-        painter->drawPixmap(iconRect, QPixmap(index.data(Roles::IconPath).value<QString>()).scaled(option.decorationSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        painter->drawPixmap(iconRect, QPixmap(index.data(Qt::DecorationRole).value<QString>()).scaled(option.decorationSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
 
     // Calculate text rects
@@ -170,13 +167,13 @@ void ProposalList::ItemDelegate::paint(QPainter *painter, const QStyleOptionView
 
     // Draw display role
     painter->setFont(font1);
-    QString text = fontMetrics1.elidedText(index.data(Roles::Text).toString(), option.textElideMode, textRect.width());
+    QString text = fontMetrics1.elidedText(index.data(Qt::DisplayRole).toString(), option.textElideMode, textRect.width());
     option.widget->style()->drawItemText(painter, textRect, option.displayAlignment, option.palette, option.state & QStyle::State_Enabled, text, QPalette::WindowText);
     //    painter->drawText(textRect, Qt::AlignTop|Qt::AlignLeft, text);
 
     // Draw tooltip role
     painter->setFont(font2);
-    text = fontMetrics2.elidedText(index.data(Roles::SubText).toString(), option.textElideMode, subTextRect.width());
+    text = fontMetrics2.elidedText(index.data(Qt::ToolTipRole).toString(), option.textElideMode, subTextRect.width());
     painter->drawText(subTextRect   , Qt::AlignBottom|Qt::AlignLeft, text);
 
     painter->restore();

@@ -17,18 +17,22 @@
 #include <QUrl>
 #include <QDesktopServices>
 #include <QDataStream>
+
+#include <vector>
+using std::vector;
+
 #include "bookmark.h"
 
 
 /** ***************************************************************************/
-QString ChromeBookmarks::Bookmark::text() const {
+QString ChromeBookmarks::Bookmark::text(const QString&) const {
     return name_;
 }
 
 
 
 /** ***************************************************************************/
-QString ChromeBookmarks::Bookmark::subtext() const {
+QString ChromeBookmarks::Bookmark::subtext(const QString&) const {
     return url_;
 }
 
@@ -42,7 +46,7 @@ QString ChromeBookmarks::Bookmark::iconPath() const {
 
 
 /** ***************************************************************************/
-void ChromeBookmarks::Bookmark::activate(ExecutionFlags *) {
+void ChromeBookmarks::Bookmark::activate(ExecutionFlags *, const QString&) {
     QDesktopServices::openUrl(QUrl(url_));
     ++usage_;
 }
@@ -54,7 +58,7 @@ vector<QString> ChromeBookmarks::Bookmark::indexKeywords() const {
     // return domain without TLD eg. maps.google for maps.google.de
     QUrl url(url_);
     QString host = url.host();
-    return std::vector<QString>({
+    return vector<QString>({
                                     name_,
                                     host.left(host.size()-url.topLevelDomain().size())
                                 });

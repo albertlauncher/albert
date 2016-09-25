@@ -31,7 +31,7 @@ namespace ChromeBookmarks {
 class Bookmark;
 class ConfigWidget;
 
-class Extension final : public QObject, public IExtension
+class Extension final : public IExtension
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
@@ -50,7 +50,7 @@ public:
 
     QString name() const override { return "Chrome bookmarks"; }
     QWidget *widget(QWidget *parent = nullptr) override;
-    void handleQuery(shared_ptr<Query> query) override;
+    void handleQuery(Query query) override;
 
     /*
      * Extension specific members

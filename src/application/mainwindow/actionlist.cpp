@@ -17,7 +17,6 @@
 #include <QKeyEvent>
 #include <QPainter>
 #include "actionlist.h"
-#include "roles.hpp"
 
 /** ***************************************************************************/
 ActionList::ActionList(QWidget *parent) : ResizingList(parent) {
@@ -57,7 +56,7 @@ void ActionList::ActionDelegate::paint(QPainter *painter, const QStyleOptionView
 
     painter->save();
 
-    QStyleOptionViewItemV4 option = options;
+    QStyleOptionViewItem option = options;
     initStyleOption(&option, index);
 
     // Draw selection
@@ -68,7 +67,7 @@ void ActionList::ActionDelegate::paint(QPainter *painter, const QStyleOptionView
     painter->setFont(option.font);
 
     // Draw text
-    QString text = QFontMetrics(option.font).elidedText(index.data(Roles::Text).toString(), option.textElideMode, textRect.width());
+    QString text = QFontMetrics(option.font).elidedText(index.data(Qt::DisplayRole).toString(), option.textElideMode, textRect.width());
     option.widget->style()->drawItemText(painter, textRect, Qt::AlignCenter, option.palette, option.state & QStyle::State_Enabled, text, QPalette::WindowText);
     //    painter->drawText(textRect, Qt::AlignTop|Qt::AlignLeft, text);
 

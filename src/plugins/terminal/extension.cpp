@@ -62,15 +62,14 @@ void Terminal::Extension::teardownSession() {
 
 
 /** ***************************************************************************/
-void Terminal::Extension::handleQuery(shared_ptr<Query> query) {
+void Terminal::Extension::handleQuery(Query query) {
 
-    QStringList arguments  = query->searchTerm().split(' ', QString::SkipEmptyParts);
+    QStringList arguments  = query.searchTerm().split(' ', QString::SkipEmptyParts);
 
-    if (arguments.size() < 2)
+    if (arguments.size() < 1)
         return;
 
     // Extract data from input string: [0] trigger [1] program. The rest: args
-    arguments.takeFirst();
     QString potentialProgram = arguments.takeFirst();
     QString argumentsString = arguments.join(' ');
 
@@ -83,12 +82,12 @@ void Terminal::Extension::handleQuery(shared_ptr<Query> query) {
         program = *it;
         std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>();
         item->setText(QString("%1 %2").arg(program, argumentsString));
-        item->setSubtext(QString("Run '%1'").arg(item->text()));
+        item->setSubtext(QString("Run '%1 %2'").arg(program, argumentsString));
         item->setIcon(iconPath_);
         item->setAction([program, arguments](){
             QProcess::startDetached(program, arguments);
         });
-        query->addMatch(item, 0);
+        query.addMatch(item, 0);
         ++it;
     }
 }

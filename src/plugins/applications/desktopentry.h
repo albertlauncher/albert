@@ -15,8 +15,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+#include <vector>
+using std::vector;
 #include "iindexable.h"
-#include "abstractobjects.hpp"
+#include "iitem.h"
 
 namespace Applications{
 
@@ -34,10 +36,10 @@ public:
      */
 
     QString iconPath() const override { return iconPath_; }
-    QString text() const override{ return name_; }
-    QString subtext() const override { return altName(); }
+    QString text(const QString&) const override{ return name_; }
+    QString subtext(const QString&) const override { return altName(); }
     vector<QString> indexKeywords() const override;
-    void activate(ExecutionFlags *) override;
+    void activate(ExecutionFlags *, const QString&) override;
     uint16_t usageCount() const override {return usage_;}
     ActionSPtrVec actions() override { return actions_; }
 

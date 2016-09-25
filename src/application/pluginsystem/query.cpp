@@ -17,37 +17,17 @@
 #include "query.h"
 #include "query_p.hpp"
 
-/** ***************************************************************************/
-Query::Query(const QString &term) {
-    impl = new QueryPrivate(term);
-}
-
-
 
 /** ***************************************************************************/
-Query::~Query() {
-    delete impl;
+Query::Query(QueryPrivate *queryPrivate) : impl(queryPrivate) {
+
 }
 
 
 
 /** ***************************************************************************/
 void Query::addMatch(shared_ptr<AlbertItem> item, short score) {
-    impl->addMatch(item, score);
-}
-
-
-
-/** ***************************************************************************/
-void Query::reset() {
-    impl->reset();
-}
-
-
-
-/** ***************************************************************************/
-void Query::setValid(bool b) {
-    impl->setValid(b);
+    impl->addMatch({item, score});
 }
 
 
@@ -62,4 +42,11 @@ bool Query::isValid() {
 /** ***************************************************************************/
 const QString &Query::searchTerm() const {
     return impl->searchTerm();
+}
+
+
+
+/** ***************************************************************************/
+const QString &Query::trigger() const {
+    return impl->trigger();
 }

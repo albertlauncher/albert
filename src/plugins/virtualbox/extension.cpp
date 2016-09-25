@@ -55,9 +55,9 @@ void VirtualBox::Extension::setupSession() {
 
 
 /** ***************************************************************************/
-void VirtualBox::Extension::handleQuery(shared_ptr<Query> query) {
+void VirtualBox::Extension::handleQuery(Query query) {
     for (uint i = 0; i < names_.size(); ++i){
-        if (names_[i].startsWith(query->searchTerm(), Qt::CaseInsensitive)) {
+        if (names_[i].startsWith(query.searchTerm(), Qt::CaseInsensitive)) {
             std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>();
             item->setText(names_[i]);
             item->setSubtext(QString("Start '%1'").arg(names_[i]));
@@ -65,7 +65,7 @@ void VirtualBox::Extension::handleQuery(shared_ptr<Query> query) {
             item->setAction([this, i](){
                 QProcess::startDetached("VBoxManage", {"startvm", uuids_[i]});
             });
-            query->addMatch(item);
+            query.addMatch(item);
         }
     }
 }

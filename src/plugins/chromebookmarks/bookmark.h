@@ -16,8 +16,7 @@
 
 #pragma once
 #include "iindexable.h"
-#include "abstractobjects.hpp"
-
+#include "iitem.h"
 
 namespace ChromeBookmarks {
 
@@ -33,11 +32,11 @@ public:
      * Implementation of AlbertItem interface
      */
 
-    QString text() const override;
-    QString subtext() const override;
+    QString text(const QString&) const override;
+    QString subtext(const QString&) const override;
     QString iconPath() const override;
     vector<QString> indexKeywords() const override;
-    void activate(ExecutionFlags *) override;
+    void activate(ExecutionFlags *, const QString&) override;
     uint16_t usageCount() const override {return usage_;}
 
     /*

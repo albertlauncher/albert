@@ -32,14 +32,14 @@ Template::Item::~Item(){
 
 
 /** ***************************************************************************/
-QString Template::Item::text() const {
+QString Template::Item::text(const QString &) const {
     return "Title of item";
 }
 
 
 
 /** ***************************************************************************/
-QString Template::Item::subtext() const {
+QString Template::Item::subtext(const QString &) const {
     return "Info about the item";
 }
 
@@ -54,6 +54,6 @@ QString Template::Item::iconPath() const {
 
 
 /** ***************************************************************************/
-void Template::Item::activate(ExecutionFlags *) {
+void Template::Item::activate(ExecutionFlags *, const QString &) {
     // Do sth cool...
 }

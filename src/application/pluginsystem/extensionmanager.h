@@ -16,19 +16,30 @@
 
 #pragma once
 #include <QObject>
-#include <QAbstractItemModel>
-#include <QString>
-#include <memory>
+#include <QTimer>
+
+#include <map>
 #include <set>
+#include <vector>
+#include <memory>
+using std::map;
+using std::vector;
 using std::set;
+using std::shared_ptr;
+
+class QAbstractItemModel;
+class AlbertItem;
 class IExtension;
-class Query;
+class QueryPrivate;
 
 class ExtensionManager final : public QObject
 {
     Q_OBJECT
 
 public:
+
+    ExtensionManager();
+    ~ExtensionManager();
 
     void startQuery(const QString &searchTerm);
 
@@ -40,8 +51,16 @@ public:
 
 private:
 
+    void onUXTimeOut();
+    void onQueryFinished(QueryPrivate * qp);
+    void updateFallbacks();
+
     set<IExtension*> extensions_;
-    std::shared_ptr<Query> currentQuery_;
+    set<QueryPrivate*> pastQueries_;
+    QueryPrivate* currentQuery_;
+    map<QString, set<IExtension*>> triggerExtensions_;
+    vector<shared_ptr<AlbertItem>> fallbacks_;
+    QTimer UXTimeOut_;
 
 signals:
 

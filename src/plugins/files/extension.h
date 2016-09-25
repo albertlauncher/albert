@@ -20,7 +20,12 @@
 #include <QPointer>
 #include <QTimer>
 #include <QMutex>
+
 #include <vector>
+#include <memory>
+using std::vector;
+using std::shared_ptr;
+
 #include "iextension.h"
 #include "offlineindex.h"
 
@@ -29,7 +34,7 @@ namespace Files {
 class File;
 class ConfigWidget;
 
-class Extension final : public QObject, public IExtension
+class Extension final : public IExtension
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
@@ -48,7 +53,7 @@ public:
 
     QString name() const override { return "Files"; }
     QWidget *widget(QWidget *parent = nullptr) override;
-    void handleQuery(shared_ptr<Query> query) override;
+    void handleQuery(Query query) override;
 
     /*
      * Extension specific members
@@ -89,7 +94,7 @@ public:
 
 private:
     QPointer<ConfigWidget> widget_;
-    std::vector<shared_ptr<File>> index_;
+    vector<shared_ptr<File>> index_;
     OfflineIndex offlineIndex_;
     QMutex indexAccess_;
     QPointer<Indexer> indexer_;

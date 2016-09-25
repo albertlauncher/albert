@@ -14,6 +14,7 @@ set(SRC
     extension.cpp
     configwidget.cpp
     searchengine.cpp
+    searchenginesmodel.cpp
 )
 
 qt5_wrap_ui(UI

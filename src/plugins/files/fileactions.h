@@ -42,8 +42,8 @@ class File::OpenFileAction final : public AbstractFileAction
 public:
     OpenFileAction(File *file) : AbstractFileAction(file) {}
 
-    QString text() const override { return "Open file in default application"; }
-    void activate(ExecutionFlags *) override {
+    QString text(const QString &) const override { return "Open file in default application"; }
+    void activate(ExecutionFlags *, const QString &) override {
         QDesktopServices::openUrl(QUrl::fromLocalFile(file_->path()));
         ++file_->usage_;
     }
@@ -57,8 +57,8 @@ class File::RevealFileAction final : public AbstractFileAction
 public:
     RevealFileAction(File *file) : AbstractFileAction(file) {}
 
-    QString text() const override { return "Reveal file in default filebrowser"; }
-    void activate(ExecutionFlags *) override {
+    QString text(const QString &) const override { return "Reveal file in default filebrowser"; }
+    void activate(ExecutionFlags *, const QString &) override {
         QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file_->path()).path()));
         ++file_->usage_;
     }
@@ -72,8 +72,8 @@ class File::CopyFileAction final : public AbstractFileAction
 public:
     CopyFileAction(File *file) : AbstractFileAction(file) {}
 
-    QString text() const override { return "Copy file to clipboard"; }
-    void activate(ExecutionFlags *) override {
+    QString text(const QString &) const override { return "Copy file to clipboard"; }
+    void activate(ExecutionFlags *, const QString &) override {
         //  Get clipboard
         QClipboard *cb = QApplication::clipboard();
 
@@ -110,8 +110,8 @@ class File::CopyPathAction final : public AbstractFileAction
 public:
     CopyPathAction(File *file) : AbstractFileAction(file) {}
 
-    QString text() const override { return "Copy path to clipboard"; }
-    void activate(ExecutionFlags *) override {
+    QString text(const QString &) const override { return "Copy path to clipboard"; }
+    void activate(ExecutionFlags *, const QString &) override {
         QApplication::clipboard()->setText(file_->path());
         ++file_->usage_;
     }

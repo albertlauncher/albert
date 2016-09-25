@@ -28,7 +28,6 @@
 #include <QVBoxLayout>
 #include "mainwindow.h"
 #include "albertapp.h"
-#include "roles.hpp"
 
 const char*   MainWindow::CFG_WND_POS  = "windowPosition";
 const char*   MainWindow::CFG_CENTERED = "showCentered";
@@ -163,13 +162,13 @@ MainWindow::MainWindow(QWidget *parent)
     // Trigger default action, if item in proposallist was activated
     QObject::connect(ui.proposalList, &ProposalList::activated, [this](const QModelIndex &index){
         history_->add(ui.inputLine->text());
-        ui.proposalList->model()->setData(index, -1, Roles::Activate);
+        ui.proposalList->model()->setData(index, -1, Qt::UserRole);
     });
 
     // Trigger alternative action, if item in actionList was activated
     QObject::connect(ui.actionList, &ActionList::activated, [this](const QModelIndex &index){
         history_->add(ui.inputLine->text());
-        ui.proposalList->model()->setData(ui.proposalList->currentIndex(), index.row(), Roles::Activate);
+        ui.proposalList->model()->setData(ui.proposalList->currentIndex(), index.row(), Qt::UserRole);
     });
 }
 
@@ -216,10 +215,7 @@ void MainWindow::setInput(const QString &input) {
 
 /** ***************************************************************************/
 void MainWindow::setModel(QAbstractItemModel *m) {
-    //TODO Check this
-    QItemSelectionModel *sm = ui.proposalList->selectionModel();
     ui.proposalList->setModel(m);
-    delete sm;
 }
 
 
@@ -402,7 +398,7 @@ void MainWindow::setShowActions(bool showActions) {
         // Get actions
         actionsListModel_->setStringList(ui.proposalList->model()->data(
                                              ui.proposalList->currentIndex(),
-                                             Roles::Actions).toStringList());
+                                             Qt::UserRole).toStringList());
 
         // Skip if actions are empty
         if (actionsListModel_->rowCount() < 1)

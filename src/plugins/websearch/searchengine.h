@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include "abstractobjects.hpp"
+#include "iitem.h"
 class Extension;
 
 namespace Websearch {
@@ -30,10 +30,10 @@ public:
      * Implementation of AlbertItem interface
      */
 
-    QString text() const override;
-    QString subtext() const override;
+    QString text(const QString &query) const override;
+    QString subtext(const QString &query) const override;
     QString iconPath() const override;
-    void activate(ExecutionFlags *) override;
+    void activate(ExecutionFlags *, const QString &) override;
 
     /*
      * Item specific
@@ -45,8 +45,8 @@ public:
     bool enabled() const {return enabled_;}
     void setEnabled(bool b) {enabled_ = b;}
 
-    const QString &query() const {return searchTerm_;}
-    void setQuery(QString query) {searchTerm_ = query;}
+//    const QString &query() const {return searchTerm_;}
+//    void setQuery(QString query) {searchTerm_ = query;}
 
     const QString &name() const {return name_;}
     void setName(QString name) {name_ = name;}
@@ -64,7 +64,7 @@ private:
     QString name_;
     QString url_;
     QString trigger_;
-    QString searchTerm_;
+//    QString searchTerm_;
     QString iconPath_;
 };
 

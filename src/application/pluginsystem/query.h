@@ -17,60 +17,59 @@
 #pragma once
 #include <QString>
 #include <memory>
-using std::shared_ptr;
 #include <vector>
 
 class QueryPrivate;
 class AlbertItem;
 class IExtension;
 
-class Query final
+/**
+ * @brief The Query class
+ * This is a wrapper class for implementation hiding and binary compatibility
+ * purposes, holding the threadsafe private implementation.
+ */
+struct Query final
 {
-public:
-    friend class ExtensionManager;
-
-    Query(const QString &term);
-    ~Query();
-
     /**
-     * @brief Add a top-level/root node to the albert tree
-     * This does not take the ownership of the item. Remember to keep the item
-     * live as long as the session is active.
-     * @param node The amount of error tolerance
+     * @brief Query constructor with dependency injection.
+     * @param The private implementation
      */
-    void addMatch(shared_ptr<AlbertItem> item, short score = 0);
-
-    /**
-     * @brief Reset the query
-     * Note: Not clear what it comprises in the future, but at least clears the
-     * matches
-     */
-    void reset();
+    Query(QueryPrivate* queryPrivate);
 
 
     /**
-     * @brief setValid sets the validity of the query.
-     * Running handler will stop long operations and discard their matches,
-     * if the query is invalid.
-     * @param b
+     * @brief Add matches
+     * Adds a match to the results. Score describes a percentual match of the
+     * query against the item. 0 beeing no match SHRT_MAX beeing a full match.
+     * @param item The item to add
+     * @param score Matchfactor of the query against the item
      */
-    void setValid(bool b = true);
+    void addMatch(std::shared_ptr<AlbertItem> item, short score = 0);
 
 
     /**
      * @brief isValid gets the validity of the query.
-     * Running handler will stop long operations and discard their matsches,
+     * Running handler will stop long operations and discard their matches,
      * if the query is invalid.
      * @return
      */
     bool isValid();
+
 
     /**
      * @brief Returns the search term of this query
      */
     const QString &searchTerm() const;
 
+
+    /**
+     * @brief Returns the trigger if the query matched a trigger
+     */
+    const QString &trigger() const;
+
 private:
+
     QueryPrivate *impl;
+
 };
 

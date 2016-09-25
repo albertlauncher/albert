@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "resizinglist.h"
+#include <QDebug>
 
 /** ***************************************************************************/
 uint8_t ResizingList::maxItems() const {
@@ -48,15 +49,36 @@ QSize ResizingList::minimumSizeHint() const {
 
 
 /** ***************************************************************************/
-void ResizingList::reset() {
-    QListView::reset();
-    // If not empty in any way
-    if ( model()!=nullptr && model()->hasChildren(rootIndex()) ) {
-        show();
-        // Select first item
-        setCurrentIndex(model()->index(0, 0, rootIndex()));
-    }
-    else
+void ResizingList::setModel(QAbstractItemModel * m) {
+    if (model() == m)
+        return;
+
+    QItemSelectionModel *sm = selectionModel();
+    QAbstractItemView::setModel(m);
+    delete sm;
+
+    // If not empty show and select first, update geom. If not null connect.
+    if ( model() == nullptr)
         hide();
-    updateGeometry();
+    else {
+        connect(this->model(), &QAbstractItemModel::rowsInserted, this, &ResizingList::onRowInserted);
+        if ( model()->rowCount() != 0 ) {
+            show();
+            setCurrentIndex(model()->index(0, 0));
+            updateGeometry();
+        } else
+            hide();
+    }
 }
+
+
+
+/** ***************************************************************************/
+void ResizingList::onRowInserted() {
+    // Show, resize an select first if first row
+    show();
+    updateGeometry();
+    if ( model()->rowCount() == 1 )
+        setCurrentIndex(model()->index(0, 0, rootIndex()));
+}
+

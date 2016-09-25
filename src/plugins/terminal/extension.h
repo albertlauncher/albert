@@ -25,7 +25,7 @@ namespace Terminal {
 
 class ConfigWidget;
 
-class Extension final : public QObject, public IExtension
+class Extension final : public IExtension
 {
     Q_OBJECT
     Q_INTERFACES(IExtension)
@@ -42,7 +42,7 @@ public:
     QString name() const override { return "Terminal"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     void teardownSession() override;
-    void handleQuery(shared_ptr<Query> query) override;
+    void handleQuery(Query query) override;
     bool runExclusive() const override {return true;}
     QStringList triggers() const override {return {"!"};}
 

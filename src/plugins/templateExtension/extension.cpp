@@ -17,7 +17,7 @@
 #include <QDebug>
 #include "extension.h"
 #include "configwidget.h"
-#include "item.h"
+#include "iitem.h"
 #include "query.h"
 
 /** ***************************************************************************/
@@ -59,15 +59,8 @@ void Template::Extension::teardownSession() {
 
 
 /** ***************************************************************************/
-void Template::Extension::handleQuery(shared_ptr<Query> query) {
+void Template::Extension::handleQuery(Query query) {
     // Avoid annoying warnings
     Q_UNUSED(query)
 }
 
-
-
-/** ***************************************************************************/
-void Template::Extension::handleFallbackQuery(shared_ptr<Query> query) {
-    // Avoid annoying warnings
-    Q_UNUSED(query)
-}

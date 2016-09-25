@@ -164,16 +164,16 @@ QWidget *Applications::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void Applications::Extension::handleQuery(shared_ptr<Query> query) {
+void Applications::Extension::handleQuery(Query query) {
     // Search for matches. Lock memory against scanworker
     indexAccess_.lock();
-    vector<shared_ptr<IIndexable>> indexables = offlineIndex_.search(query->searchTerm().toLower());
+    vector<shared_ptr<IIndexable>> indexables = offlineIndex_.search(query.searchTerm().toLower());
     indexAccess_.unlock();
 
     // Add results to query. This cast is safe since index holds files only
     for (const shared_ptr<IIndexable> &obj : indexables)
         // TODO `Search` has to determine the relevance. Set to 0 for now
-        query->addMatch(std::static_pointer_cast<DesktopEntry>(obj), 0);
+        query.addMatch(std::static_pointer_cast<DesktopEntry>(obj), 0);
 }
 
 

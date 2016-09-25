@@ -29,15 +29,15 @@ Websearch::SearchEngine::SearchEngine(QString name, QString url, QString trigger
 
 
 /** ***************************************************************************/
-QString Websearch::SearchEngine::text() const {
-    return QString("Search '%1' in %2").arg(((searchTerm_.isEmpty()) ? "..." : searchTerm_), name_);
+QString Websearch::SearchEngine::text(const QString &query) const {
+    return QString("Search '%1' in %2").arg(((query.isEmpty()) ? "..." : query), name_);
 }
 
 
 
 /** ***************************************************************************/
-QString Websearch::SearchEngine::subtext() const {
-    return QString(url_).replace("%s", searchTerm_);
+QString Websearch::SearchEngine::subtext(const QString &query) const {
+    return QString(url_).replace("%s", query);
 }
 
 
@@ -50,8 +50,8 @@ QString Websearch::SearchEngine::iconPath() const {
 
 
 /** ***************************************************************************/
-void Websearch::SearchEngine::activate(ExecutionFlags *) {
-    QDesktopServices::openUrl(QUrl(QString(url_).replace("%s", searchTerm_)));
+void Websearch::SearchEngine::activate(ExecutionFlags *, const QString &query) {
+    QDesktopServices::openUrl(QUrl(QString(url_).replace("%s", query)));
 }
 
 

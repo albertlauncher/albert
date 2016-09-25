@@ -134,12 +134,12 @@ QWidget *System::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void System::Extension::handleQuery(shared_ptr<Query> query) {
+void System::Extension::handleQuery(Query query) {
 
     for (int i = 0; i < NUMCOMMANDS; ++i) {
-        if (configNames[i].startsWith(query->searchTerm().toLower())) {
+        if (configNames[i].startsWith(query.searchTerm().toLower())) {
             QString cmd = commands[i];
-            query->addMatch(std::make_shared<StandardItem>(
+            query.addMatch(std::make_shared<StandardItem>(
                                 itemTitles[i],
                                 itemDescriptions[i],
                                 iconPaths[i],
