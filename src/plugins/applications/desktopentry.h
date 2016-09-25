@@ -18,11 +18,11 @@
 #include <vector>
 using std::vector;
 #include "iindexable.h"
-#include "iitem.h"
+#include "abstractitem.h"
 
 namespace Applications{
 
-class DesktopEntry final : public AlbertItem, public IIndexable
+class DesktopEntry final : public AbstractItem, public IIndexable
 {
     class DesktopAction;
 
@@ -32,7 +32,7 @@ public:
     DesktopEntry(const QString &path, short usage = 0);
 
     /*
-     * Implementation of AlbertItem interface
+     * Implementation of Item interface
      */
 
     QString id() const override { return path_; }

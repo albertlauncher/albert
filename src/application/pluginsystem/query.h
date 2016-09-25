@@ -20,8 +20,8 @@
 #include <vector>
 
 class QueryPrivate;
-class AlbertItem;
-class IExtension;
+class AbstractItem;
+class AbstractExtension;
 
 /**
  * @brief The Query class
@@ -44,7 +44,7 @@ struct Query final
      * @param item The item to add
      * @param score Matchfactor of the query against the item
      */
-    void addMatch(std::shared_ptr<AlbertItem> item, short score = 0);
+    void addMatch(std::shared_ptr<AbstractItem> item, short score = 0);
 
 
     /**

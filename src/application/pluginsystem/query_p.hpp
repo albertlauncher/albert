@@ -30,8 +30,8 @@
 using std::shared_ptr;
 using std::vector;
 
-#include "iextension.h"
-#include "iitem.h"
+#include "abstractextension.h"
+#include "abstractitem.h"
 #include "albertapp.h"
 
 
@@ -66,10 +66,10 @@ public:
     void start() {
         if (isValid_) {
             // Start handlers
-            for (IExtension *extension : queryHandlers_) {
+            for (AbstractExtension *extension : queryHandlers_) {
                 QFutureWatcher<void>* fw = new QFutureWatcher<void>(this);
                 connect(fw, &QFutureWatcher<void>::finished, this, &QueryPrivate::onHandlerFinished);
-                fw->setFuture(QtConcurrent::run(extension, &IExtension::handleQuery, Query(this)));
+                fw->setFuture(QtConcurrent::run(extension, &AbstractExtension::handleQuery, Query(this)));
                 futureWatchers_.push_back(fw);
             }
             state_ = State::Running;
@@ -104,7 +104,7 @@ public:
 
 
     /** ***********************************************************************/
-    void addMatch(shared_ptr<AlbertItem> item, short score = 0) {
+    void addMatch(shared_ptr<AbstractItem> item, short score = 0) {
         if ( isValid_ ) {
             mutex_.lock();
             beginInsertRows(QModelIndex(), matches_.size(), matches_.size());
@@ -130,7 +130,7 @@ public:
 
 
     /** ***********************************************************************/
-    void addHandler(IExtension *handler) {
+    void addHandler(AbstractExtension *handler) {
         if ( state_ == State::Initial )
             queryHandlers_.push_back(handler);
     }
@@ -138,7 +138,7 @@ public:
 
 
     /** ***********************************************************************/
-    vector<IExtension *> handlers() {
+    vector<AbstractExtension *> handlers() {
         return queryHandlers_;
     }
 
@@ -262,7 +262,7 @@ protected:
     const QString trigger_;
     bool isValid_;
     State state_;
-    vector<IExtension*> queryHandlers_;
+    vector<AbstractExtension*> queryHandlers_;
     vector<QFutureWatcher<void>*> futureWatchers_;
     vector<Match> matches_;
     mutable QMutex mutex_;

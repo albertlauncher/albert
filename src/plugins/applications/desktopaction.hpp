@@ -16,13 +16,13 @@
 
 #pragma once
 #include <QProcess>
-#include "action.h"
+#include "abstractaction.h"
 #include "albertapp.h"
 #include "desktopentry.h"
 
 namespace Applications {
 
-class DesktopEntry::DesktopAction final : public Action
+class DesktopEntry::DesktopAction final : public AbstractAction
 {
 public:
 

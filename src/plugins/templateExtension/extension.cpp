@@ -17,11 +17,11 @@
 #include <QDebug>
 #include "extension.h"
 #include "configwidget.h"
-#include "iitem.h"
+#include "abstractitem.h"
 #include "query.h"
 
 /** ***************************************************************************/
-Template::Extension::Extension() : IExtension("org.albert.extension.template") {
+Template::Extension::Extension() : AbstractExtension("org.albert.extension.template") {
     // Do sth.
 }
 

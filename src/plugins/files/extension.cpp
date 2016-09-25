@@ -50,7 +50,7 @@ const char* Files::Extension::IGNOREFILE          = ".albertignore";
 
 
 /** ***************************************************************************/
-Files::Extension::Extension() : IExtension("org.albert.extension.files") {
+Files::Extension::Extension() : AbstractExtension("org.albert.extension.files") {
 
     // Load settings
     qApp->settings()->beginGroup(id);

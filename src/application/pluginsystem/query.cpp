@@ -26,7 +26,7 @@ Query::Query(QueryPrivate *queryPrivate) : impl(queryPrivate) {
 
 
 /** ***************************************************************************/
-void Query::addMatch(shared_ptr<AlbertItem> item, short score) {
+void Query::addMatch(shared_ptr<AbstractItem> item, short score) {
     impl->addMatch({item, score});
 }
 

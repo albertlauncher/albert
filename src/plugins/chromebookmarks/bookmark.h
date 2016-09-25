@@ -16,11 +16,11 @@
 
 #pragma once
 #include "iindexable.h"
-#include "iitem.h"
+#include "abstractitem.h"
 
 namespace ChromeBookmarks {
 
-class Bookmark final : public AlbertItem, public IIndexable
+class Bookmark final : public AbstractItem, public IIndexable
 {
 public:
 
@@ -29,7 +29,7 @@ public:
         : id_(id), name_(name), url_(url), usage_(usage) {}
 
     /*
-     * Implementation of AlbertItem interface
+     * Implementation of Item interface
      */
 
     QString id() const override { return id_; }

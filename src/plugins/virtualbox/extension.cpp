@@ -19,11 +19,12 @@
 #include <QIcon>
 #include "extension.h"
 #include "query.h"
-#include "objects.hpp"
+#include "standarditem.hpp"
+#include "standardaction.hpp"
 #include "xdgiconlookup.h"
 
 /** ***************************************************************************/
-VirtualBox::Extension::Extension() : IExtension("org.albert.extension.virtualbox") {
+VirtualBox::Extension::Extension() : AbstractExtension("org.albert.extension.virtualbox") {
     QString iconPath = XdgIconLookup::instance()->themeIconPath("virtualbox", QIcon::themeName());
     iconPath_ = iconPath.isNull() ? ":vbox" : iconPath;
 }

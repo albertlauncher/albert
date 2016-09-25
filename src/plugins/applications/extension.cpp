@@ -34,7 +34,7 @@ const bool  Applications::Extension::DEF_FUZZY    = false;
 const bool  Applications::Extension::UPDATE_DELAY = 60000;
 
 /** ***************************************************************************/
-Applications::Extension::Extension() : IExtension("org.albert.extension.applications") {
+Applications::Extension::Extension() : AbstractExtension("org.albert.extension.applications") {
 
     // Add the userspace icons dir which is not covered in the specs
     QFileInfo userSpaceIconsPath(QDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)).filePath("icons"));

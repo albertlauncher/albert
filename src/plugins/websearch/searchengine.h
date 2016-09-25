@@ -15,19 +15,19 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include "iitem.h"
+#include "abstractitem.h"
 class Extension;
 
 namespace Websearch {
 
-class SearchEngine final : public AlbertItem
+class SearchEngine final : public AbstractItem
 {
 public:
     SearchEngine() : enabled_(false) {}
     SearchEngine(QString name, QString url, QString trigger, QString iconPath, bool enabled = true);
 
     /*
-     * Implementation of AlbertItem interface
+     * Implementation of Item interface
      */
 
     QString id() const override { return url_; } // FIXME not an id, is there any at all? Ship of Theseus?

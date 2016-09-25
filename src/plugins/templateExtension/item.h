@@ -20,12 +20,12 @@
 #include <vector>
 using std::vector;
 
-#include "iitem.h"
+#include "abstractitem.h"
 
 
 namespace Template {
 
-class Item final : public AlbertItem
+class Item final : public AbstractItem
 {
 public:
     Item();

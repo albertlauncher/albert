@@ -21,7 +21,7 @@
 #include <vector>
 using std::vector;
 
-#include "iextension.h"
+#include "abstractextension.h"
 class StandardItem;
 
 
@@ -29,10 +29,10 @@ namespace System {
 
 class ConfigWidget;
 
-class Extension final : public IExtension
+class Extension final : public AbstractExtension
 {
     Q_OBJECT
-    Q_INTERFACES(IExtension)
+    Q_INTERFACES(AbstractExtension)
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
     enum SupportedCommands { LOCK, LOGOUT, SUSPEND, HIBERNATE, REBOOT, POWEROFF, NUMCOMMANDS };

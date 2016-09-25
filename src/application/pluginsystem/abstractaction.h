@@ -38,11 +38,11 @@ struct ExecutionFlags {
  * @brief The action interface
  * A base class for actions (and items)
  */
-class Action
+class AbstractAction
 {
 public:
 
-    virtual ~Action() {}
+    virtual ~AbstractAction() {}
 
     /** A description */
     virtual QString text(const QString& query) const = 0;
@@ -50,4 +50,4 @@ public:
     /** Activates the item */
     virtual void activate(ExecutionFlags *, const QString& query) = 0;
 };
-typedef shared_ptr<Action> SharedAction;
+typedef shared_ptr<AbstractAction> SharedAction;

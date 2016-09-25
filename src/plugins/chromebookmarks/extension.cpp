@@ -34,7 +34,7 @@ const char* ChromeBookmarks::Extension::CFG_FUZZY      = "fuzzy";
 const bool  ChromeBookmarks::Extension::DEF_FUZZY      = false;
 
 /** ***************************************************************************/
-ChromeBookmarks::Extension::Extension() : IExtension("org.albert.extension.chromebookmarks") {
+ChromeBookmarks::Extension::Extension() : AbstractExtension("org.albert.extension.chromebookmarks") {
 
     // Load settings
     qApp->settings()->beginGroup(id);

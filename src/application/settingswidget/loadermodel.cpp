@@ -15,31 +15,31 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QIcon>
-#include "pluginmodel.h"
-#include "pluginmanager.h"
+#include "loadermodel.h"
+#include "extensionmanager.h"
 #include "pluginloader.h"
 
 
 /** ***************************************************************************/
-PluginModel::PluginModel(PluginManager* pm, QObject *parent)
-    : QAbstractListModel(parent), pluginManager_(pm){
+LoaderModel::LoaderModel(ExtensionManager* pm, QObject *parent)
+    : QAbstractListModel(parent), extensionManager_(pm){
 }
 
 
 
 /** ***************************************************************************/
-int PluginModel::rowCount(const QModelIndex &) const {
-    return static_cast<int>(pluginManager_->plugins().size());
+int LoaderModel::rowCount(const QModelIndex &) const {
+    return static_cast<int>(extensionManager_->plugins().size());
 }
 
 
 
 /** ***************************************************************************/
-QVariant PluginModel::data(const QModelIndex &index, int role) const {
+QVariant LoaderModel::data(const QModelIndex &index, int role) const {
     if (!index.isValid() || index.row() < 0 || rowCount() <= index.row())
         return QVariant();
 
-    const unique_ptr<PluginSpec> &plugin = pluginManager_->plugins()[index.row()];
+    const unique_ptr<PluginSpec> &plugin = extensionManager_->plugins()[index.row()];
 
     switch (role) {
     case Qt::DisplayRole:
@@ -70,7 +70,7 @@ QVariant PluginModel::data(const QModelIndex &index, int role) const {
             return QIcon(":plugin_error");
         }
     case Qt::CheckStateRole:
-        return (pluginManager_->pluginIsEnabled(plugin))?Qt::Checked:Qt::Unchecked;
+        return (extensionManager_->pluginIsEnabled(plugin))?Qt::Checked:Qt::Unchecked;
     default:
         return QVariant();
     }
@@ -79,16 +79,16 @@ QVariant PluginModel::data(const QModelIndex &index, int role) const {
 
 
 /** ***************************************************************************/
-bool PluginModel::setData(const QModelIndex &index, const QVariant &value, int role) {
+bool LoaderModel::setData(const QModelIndex &index, const QVariant &value, int role) {
     if (!index.isValid() || index.row() < 0 || rowCount() <= index.row())
         return false;
 
     switch (role) {
     case Qt::CheckStateRole:
         if (value == Qt::Checked)
-            pluginManager_->enablePlugin(pluginManager_->plugins()[index.row()]);
+            extensionManager_->enablePlugin(extensionManager_->plugins()[index.row()]);
         else
-            pluginManager_->disablePlugin(pluginManager_->plugins()[index.row()]);
+            extensionManager_->disablePlugin(extensionManager_->plugins()[index.row()]);
         dataChanged(index, index, {Qt::CheckStateRole});
         return true;
     default:
@@ -99,7 +99,7 @@ bool PluginModel::setData(const QModelIndex &index, const QVariant &value, int r
 
 
 /** ***************************************************************************/
-Qt::ItemFlags PluginModel::flags(const QModelIndex &) const {
+Qt::ItemFlags LoaderModel::flags(const QModelIndex &) const {
     return Qt::ItemIsSelectable
             |Qt::ItemIsUserCheckable
             |Qt::ItemIsEnabled

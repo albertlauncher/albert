@@ -14,205 +14,130 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QDirIterator>
 #include <QDebug>
-#include <QtConcurrent/QtConcurrent>
-#include <QFutureSynchronizer>
+#include <QStandardPaths>
+#include <QSettings>
+#include <chrono>
 #include "extensionmanager.h"
-#include "query.h"
-#include "query_p.hpp"
-#include "iextension.h"
+#include "albertapp.h"
 
+const QString ExtensionManager::CFG_BLACKLIST = "blacklist";
 
 /** ***************************************************************************/
 ExtensionManager::ExtensionManager() {
-    currentQuery_ = nullptr;
-    UXTimeOut_.setInterval(100);
-    UXTimeOut_.setSingleShot(true);
-    connect(&UXTimeOut_, &QTimer::timeout, this, &ExtensionManager::onUXTimeOut);
+    // Load settings
+    blacklist_ = qApp->settings()->value(CFG_BLACKLIST).toStringList();
+
+    // Iterate over all files in the plugindirs
+    QStringList pluginDirs = QStandardPaths::locateAll(
+                QStandardPaths::DataLocation,
+                "plugins",
+                QStandardPaths::LocateDirectory);
+    for (const QString &pluginDir : pluginDirs) {
+        QDirIterator dirIterator(pluginDir, QDir::Files);
+        while (dirIterator.hasNext()) {
+            dirIterator.next();
+            QString path = dirIterator.fileInfo().canonicalFilePath();
+
+            // Check if this path is a lib
+            if (!QLibrary::isLibrary(path)) {
+                qWarning() << "Non-library in plugins path:" << path;
+                continue;
+            }
+
+            unique_ptr<PluginSpec> plugin(new PluginSpec(path));
+
+            // Avoid loading duplicate
+            if (std::find_if (plugins_.begin(), plugins_.end(),
+                              [&plugin](const unique_ptr<PluginSpec> &p){
+                                  return p->id() == plugin->id();
+                              }) != plugins_.end()){
+                qWarning() << "Extension of same ID already loaded" << plugin->id();
+                continue;
+            }
+
+            // Load if not blacklisted
+            if (!blacklist_.contains(plugin->id()))
+                loadPlugin(plugin);
+
+            // Store the plugin
+            plugins_.push_back(std::move(plugin));
+        }
+    }
 }
 
 
 
 /** ***************************************************************************/
 ExtensionManager::~ExtensionManager() {
-
+    qDebug() << "[ExtensionManager] Unloading plugins.";
+    for (const unique_ptr<PluginSpec> &plugin : plugins_){
+        unloadPlugin(plugin);
+    }
+    qDebug() << "[ExtensionManager] Unloading plugins done.";
 }
 
 
 
 /** ***************************************************************************/
-void ExtensionManager::startQuery(const QString &searchTerm) {
-
-    // Stop last query
-    if ( currentQuery_ != nullptr ) {
-        disconnect(currentQuery_, &QueryPrivate::finished, this, &ExtensionManager::onQueryFinished);
-        currentQuery_->stop();
-        pastQueries_.insert(currentQuery_);
-    }
-
-    QString trimmedTerm = searchTerm.trimmed();
-
-    // Ignore empty queries
-    if (trimmedTerm.isEmpty()){
-        currentQuery_ = nullptr;
-        emit newModel(nullptr);
-        return;
-    }
-
-    QString trigger = trimmedTerm.section(' ', 0,0);
-
-    if (triggerExtensions_.count(trigger) != 0){
-        // Triggered extesions
-        currentQuery_ = new QueryPrivate(trimmedTerm.section(' ', 1), trigger);
-        for (IExtension *e : triggerExtensions_[trigger])
-            currentQuery_->addHandler(e);
-    } else {
-        // Untriggered extesions
-        currentQuery_ = new QueryPrivate(trimmedTerm);
-        for (IExtension *e : extensions_)
-            if (!e->runExclusive())
-                currentQuery_->addHandler(e);
-    }
-
-    // Connect to finished signal and start it
-    connect(currentQuery_, &QueryPrivate::finished, this, &ExtensionManager::onQueryFinished);
-    currentQuery_->start();
-    UXTimeOut_.start();
+const vector<unique_ptr<PluginSpec> > &ExtensionManager::plugins() {
+    return plugins_;
 }
 
 
 
 /** ***************************************************************************/
-void ExtensionManager::setupSession() {
+void ExtensionManager::loadPlugin(const unique_ptr<PluginSpec> &plugin) {
+    if (!plugin->isLoaded()){
 
-    // Call all setup routines
-    QFutureSynchronizer<void> synchronizer;
-    for (IExtension *e : extensions_)
-        synchronizer.addFuture(QtConcurrent::run(e, &IExtension::setupSession));
-    synchronizer.waitForFinished();
+        auto start = std::chrono::system_clock::now();
+        plugin->load();
 
-    // Build trigger map
-    triggerExtensions_.clear();
-    for (IExtension *e : extensions_)
-        if (e->runExclusive())
-            for (const QString& t : e->triggers())
-                triggerExtensions_[t].insert(e);
-}
-
-
-
-/** ***************************************************************************/
-void ExtensionManager::teardownSession() {
-
-    // Call all teardown routines
-    QFutureSynchronizer<void> synchronizer;
-    for (IExtension *e : extensions_)
-        synchronizer.addFuture(QtConcurrent::run(e, &IExtension::teardownSession));
-    synchronizer.waitForFinished();
-
-    // Clear the listview
-    emit newModel(nullptr);
-
-    // Delete all finished queries
-    for (auto it = pastQueries_.begin(); it != pastQueries_.end(); ) {
-        if ((*it)->state() == QueryPrivate::State::Finished) {
-            (*it)->deleteLater();
-            it = pastQueries_.erase(it);
+        // Test for success and propagate this
+        if (plugin->status() == PluginSpec::Status::Loaded) {
+            auto now = std::chrono::system_clock::now();
+            auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(now-start);
+            qDebug("Loading %s done in %d milliseconds", plugin->id().toLocal8Bit().data(), (int)msecs.count());
+            emit pluginLoaded(plugin->instance());
         } else
-            ++it;
+            qDebug("Loading %s failed. (%s)", plugin->id().toLocal8Bit().data(), plugin->errorString().toLocal8Bit().data());
     }
 }
 
 
 
 /** ***************************************************************************/
-void ExtensionManager::registerExtension(QObject *o) {
-    IExtension* e = qobject_cast<IExtension*>(o);
-    if (e) {
-        if(extensions_.count(e))
-            qCritical() << "Extension registered twice!";
-        else {
-            extensions_.insert(e);
-            updateFallbacks();
-            connect(e, &IExtension::fallBacksChanged, this, &ExtensionManager::updateFallbacks);
-        }
+void ExtensionManager::unloadPlugin(const unique_ptr<PluginSpec> &plugin) {
+    if (plugin->isLoaded()){
+        emit pluginAboutToBeUnloaded(plugin->instance());
+        plugin->unload();
     }
 }
 
 
 
 /** ***************************************************************************/
-void ExtensionManager::unregisterExtension(QObject *o) {
-    IExtension* e = qobject_cast<IExtension*>(o);
-    if (e) {
-        if(!extensions_.count(e))
-            qCritical() << "Unregistered unregistered extension! (Duplicate unregistration?)";
-        else {
-            extensions_.erase(e);
-            disconnect(e, &IExtension::fallBacksChanged, this, &ExtensionManager::updateFallbacks);
-        }
-    }
+void ExtensionManager::enablePlugin(const unique_ptr<PluginSpec> &plugin) {
+    blacklist_.removeAll(plugin->id());
+    qApp->settings()->setValue(CFG_BLACKLIST, blacklist_);
+    loadPlugin(plugin);
 }
 
 
 
 /** ***************************************************************************/
-void ExtensionManager::onUXTimeOut() {
-
-    // Avoid the onFinished procedure if the query timed out before
-    disconnect(currentQuery_, &QueryPrivate::finished, this, &ExtensionManager::onQueryFinished);
-
-    // Untriggered queries have to be sorted
-    if ( currentQuery_->trigger().isNull() )
-        currentQuery_->sort();
-
-    emit newModel(currentQuery_);
+void ExtensionManager::disablePlugin(const unique_ptr<PluginSpec> &plugin) {
+    if (!blacklist_.contains(plugin->id())){
+        blacklist_.push_back(plugin->id());
+        qApp->settings()->setValue(CFG_BLACKLIST, blacklist_);
+    }
+    unloadPlugin(plugin);
 }
 
 
 
 /** ***************************************************************************/
-void ExtensionManager::onQueryFinished(QueryPrivate * qp) {
-
-    // Ignore if this is not the current query
-    if ( qp != currentQuery_ )
-        return;
-
-    /*
-     * If the query finished before the UX timeout timed out everything is fine.
-     * If not the results have already been sorted and published. The user sees
-     * a list that must not be rearranged for better user experience.
-     */
-
-    if (UXTimeOut_.isActive()) {
-
-        // Avoid the timeout procedure
-        UXTimeOut_.stop();
-
-        // Untriggered queries have to be sorted
-        if ( currentQuery_->trigger().isNull() )
-            currentQuery_->sort();
-
-        emit newModel(currentQuery_);
-    }
-
-    /*
-     * If the query finished and the results are empty, display fallbacks.
-     * In this case a sort is okay, since there is no selection to disturb.
-     */
-    if (currentQuery_->rowCount() == 0) {
-        for (auto &it : fallbacks_)
-            currentQuery_->addMatch(it);
-//        currentQuery_->sort();
-    }
-}
-
-
-
-/** ***************************************************************************/
-void ExtensionManager::updateFallbacks() {
-    fallbacks_.clear();
-    for (auto &ext : extensions_)
-        for (auto &fb : ext->fallbacks())
-            fallbacks_.push_back(fb);
+bool ExtensionManager::pluginIsEnabled(const unique_ptr<PluginSpec> &plugin) {
+    return !blacklist_.contains(plugin->id());
 }

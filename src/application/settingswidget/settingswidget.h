@@ -19,14 +19,14 @@
 
 class MainWindow;
 class HotkeyManager;
-class PluginManager;
+class ExtensionManager;
 
 class SettingsWidget final : public QWidget
 {
     Q_OBJECT
 
 public:
-    SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyManager, PluginManager *pluginManager, QWidget * parent = 0, Qt::WindowFlags f = 0);
+    SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyManager, ExtensionManager *extensionManager, QWidget * parent = 0, Qt::WindowFlags f = 0);
     ~SettingsWidget();
 
 private:
@@ -39,6 +39,6 @@ private:
 
     MainWindow *mainWindow_;
     HotkeyManager *hotkeyManager_;
-    PluginManager *pluginManager_;
+    ExtensionManager *extensionManager_;
     Ui::SettingsDialog ui;
 };

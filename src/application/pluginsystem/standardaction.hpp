@@ -16,7 +16,7 @@
 
 #pragma once
 #include <functional>
-#include "iitem.h"
+#include "abstractitem.h"
 using std::function;
 
 /** ****************************************************************************
@@ -25,7 +25,7 @@ using std::function;
  * you can simply use this container, fill it with data and put it into the
  * StandardItem.
  */
-struct StandardAction final : public Action
+struct StandardAction final : public AbstractAction
 {
 public:
 
@@ -55,7 +55,7 @@ typedef shared_ptr<StandardAction> SharedStdAction;
 * provides, you can simply use this container, fill it with data and put it into
 * the query.
 */
-class StandardItem final : public AlbertItem
+class StandardItem final : public AbstractItem
 {
 public:
 

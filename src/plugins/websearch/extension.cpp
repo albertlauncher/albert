@@ -29,7 +29,7 @@
 
 
 /** ***************************************************************************/
-Websearch::Extension::Extension() : IExtension("org.albert.extension.websearch")  {
+Websearch::Extension::Extension() : AbstractExtension("org.albert.extension.websearch")  {
 
     // Deserialize data
     QFile dataFile(

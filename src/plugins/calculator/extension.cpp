@@ -21,10 +21,11 @@
 using std::vector;
 
 #include "extension.h"
-#include "action.h"
+#include "abstractaction.h"
 #include "configwidget.h"
 #include "query.h"
-#include "objects.hpp"
+#include "standarditem.hpp"
+#include "standardaction.hpp"
 #include "xdgiconlookup.h"
 #include "muParser.h"
 #include "albertapp.h"
@@ -33,7 +34,7 @@ const QString Calculator::Extension::CFG_SEPS      = "group_separators";
 const bool    Calculator::Extension::CFG_SEPS_DEF  = false;
 
 /** ***************************************************************************/
-Calculator::Extension::Extension() : IExtension("org.albert.extension.calculator") {
+Calculator::Extension::Extension() : AbstractExtension("org.albert.extension.calculator") {
 
     // Load settings
     qApp->settings()->beginGroup(id);

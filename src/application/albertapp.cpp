@@ -25,8 +25,8 @@
 #include "mainwindow.h"
 #include "settingswidget.h"
 #include "hotkeymanager.h"
-#include "pluginmanager.h"
 #include "extensionmanager.h"
+#include "queryhandler.h"
 
 const char* AlbertApp::CFG_TERM = "terminal";
 const char* AlbertApp::DEF_TERM = "xterm -e %1";
@@ -69,7 +69,7 @@ AlbertApp::AlbertApp(int &argc, char *argv[])
     : QApplication(argc, argv),
       mainWindow_(nullptr),
       hotkeyManager_(nullptr),
-      pluginManager_(nullptr),
+      queryHandler_(nullptr),
       extensionManager_(nullptr),
       localServer_(nullptr),
       settings_(nullptr),
@@ -197,8 +197,8 @@ AlbertApp::AlbertApp(int &argc, char *argv[])
 
     mainWindow_ = new MainWindow;
     hotkeyManager_ = new HotkeyManager;
+    queryHandler_ = new QueryHandler;
     extensionManager_ = new ExtensionManager;
-    pluginManager_ = new PluginManager;
 
     // toggle visibility
     QObject::connect(hotkeyManager_, &HotkeyManager::hotKeyPressed,[this](){
@@ -206,27 +206,27 @@ AlbertApp::AlbertApp(int &argc, char *argv[])
     });
 
     QObject::connect(mainWindow_, &MainWindow::widgetShown,
-                     extensionManager_, &ExtensionManager::setupSession);
+                     queryHandler_, &QueryHandler::setupSession);
 
     QObject::connect(mainWindow_, &MainWindow::widgetHidden,
-                     extensionManager_, &ExtensionManager::teardownSession);
+                     queryHandler_, &QueryHandler::teardownSession);
 
     QObject::connect(mainWindow_, &MainWindow::startQuery,
-                     extensionManager_, &ExtensionManager::startQuery);
+                     queryHandler_, &QueryHandler::startQuery);
 
-    QObject::connect(extensionManager_, &ExtensionManager::newModel,
+    QObject::connect(queryHandler_, &QueryHandler::newModel,
                      mainWindow_, &MainWindow::setModel);
 
-    QObject::connect(pluginManager_, &PluginManager::pluginLoaded,
-                     extensionManager_, &ExtensionManager::registerExtension);
+    QObject::connect(extensionManager_, &ExtensionManager::pluginLoaded,
+                     queryHandler_, &QueryHandler::registerExtension);
 
-    QObject::connect(pluginManager_, &PluginManager::pluginAboutToBeUnloaded,
-                     extensionManager_, &ExtensionManager::unregisterExtension);
+    QObject::connect(extensionManager_, &ExtensionManager::pluginAboutToBeUnloaded,
+                     queryHandler_, &QueryHandler::unregisterExtension);
 
     // Propagade the extensions once TODO this is bullshitty design
-    for (const unique_ptr<PluginSpec> &p : pluginManager_->plugins())
+    for (const unique_ptr<PluginSpec> &p : extensionManager_->plugins())
         if (p->isLoaded())
-            extensionManager_->registerExtension(p->instance());
+            queryHandler_->registerExtension(p->instance());
 
     // Enable the tray icon
     QVariant v = qApp->settings()->value(CFG_SHOWTRAY, DEF_SHOWTRAY);
@@ -291,8 +291,8 @@ AlbertApp::~AlbertApp() {
      *  FINALIZE APPLICATION
      */
     // Unload the plugins
+    delete queryHandler_;
     delete extensionManager_;
-    delete pluginManager_;
     delete hotkeyManager_;
     delete mainWindow_;
 
@@ -330,7 +330,7 @@ int AlbertApp::exec() {
 /** ***************************************************************************/
 void AlbertApp::openSettings() {
     if (!settingsWidget_)
-        settingsWidget_ = new SettingsWidget(mainWindow_, hotkeyManager_, pluginManager_);
+        settingsWidget_ = new SettingsWidget(mainWindow_, hotkeyManager_, extensionManager_);
     settingsWidget_->show();
     settingsWidget_->raise();
 }

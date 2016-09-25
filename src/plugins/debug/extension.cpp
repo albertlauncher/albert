@@ -20,12 +20,12 @@
 #include <thread>
 #include "extension.h"
 #include "configwidget.h"
-#include "objects.hpp"
+#include "standarditem.hpp"
 #include "query.h"
 #include "albertapp.h"
 
 /** ***************************************************************************/
-Debug::Extension::Extension() : IExtension("org.albert.extension.debug") {
+Debug::Extension::Extension() : AbstractExtension("org.albert.extension.debug") {
     QSettings *s = qApp->settings();
     s->beginGroup(id);
     setDelay(s->value("delay", 100).toUInt());

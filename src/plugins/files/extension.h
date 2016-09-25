@@ -26,7 +26,7 @@
 using std::vector;
 using std::shared_ptr;
 
-#include "iextension.h"
+#include "abstractextension.h"
 #include "offlineindex.h"
 
 namespace Files {
@@ -34,11 +34,11 @@ namespace Files {
 class File;
 class ConfigWidget;
 
-class Extension final : public IExtension
+class Extension final : public AbstractExtension
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
-    Q_INTERFACES(IExtension)
+    Q_INTERFACES(AbstractExtension)
 
     class Indexer;
 

@@ -22,13 +22,13 @@
 using std::vector;
 using std::shared_ptr;
 
-#include "action.h"
+#include "abstractaction.h"
 
 /** ****************************************************************************
  * @brief The item interface
  * Subclass this class to make your object displayable in the results list.
  */
-class AlbertItem : public Action
+class AbstractItem : public AbstractAction
 {
 public:
 
@@ -39,7 +39,7 @@ public:
      */
     enum class Urgency : unsigned char { Normal, Notification, Alert };
 
-    virtual ~AlbertItem() {}
+    virtual ~AbstractItem() {}
 
     /** An persistant, extensionwide unique identifier, "" if item is dynamic */
     virtual QString id() const = 0;
@@ -60,5 +60,5 @@ public:
     virtual vector<SharedAction> actions() { return vector<SharedAction>(); }
 
 };
-typedef shared_ptr<AlbertItem> SharedItem;
+typedef shared_ptr<AbstractItem> SharedItem;
 

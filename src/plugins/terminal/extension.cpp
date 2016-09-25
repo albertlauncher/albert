@@ -24,11 +24,12 @@
 #include "extension.h"
 #include "xdgiconlookup.h"
 #include "configwidget.h"
-#include "objects.hpp"
+#include "standarditem.hpp"
+#include "standardaction.hpp"
 #include "query.h"
 
 /** ***************************************************************************/
-Terminal::Extension::Extension() : IExtension("org.albert.extension.terminal") {
+Terminal::Extension::Extension() : AbstractExtension("org.albert.extension.terminal") {
 
     dirtyFlag_ = false;
 

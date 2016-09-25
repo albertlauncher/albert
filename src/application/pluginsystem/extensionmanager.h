@@ -15,54 +15,38 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
-#include <QTimer>
-
-#include <map>
-#include <set>
+#include <QString>
+#include <QStringList>
 #include <vector>
 #include <memory>
-using std::map;
 using std::vector;
-using std::set;
-using std::shared_ptr;
+using std::unique_ptr;
+#include "pluginloader.h"
 
-class QAbstractItemModel;
-class AlbertItem;
-class IExtension;
-class QueryPrivate;
 
-class ExtensionManager final : public QObject
-{
+class ExtensionManager final : public QObject {
     Q_OBJECT
 
 public:
-
     ExtensionManager();
     ~ExtensionManager();
 
-    void startQuery(const QString &searchTerm);
-
-    void setupSession();
-    void teardownSession();
-
-    void registerExtension(QObject *);
-    void unregisterExtension(QObject *);
+    void refreshPluginSpecs();
+    const vector<unique_ptr<PluginSpec>> &plugins();
+    void loadPlugin(const unique_ptr<PluginSpec> &plugin);
+    void unloadPlugin(const unique_ptr<PluginSpec> &plugin);
+    void enablePlugin(const unique_ptr<PluginSpec> &plugin);
+    void disablePlugin(const unique_ptr<PluginSpec> &plugin);
+    bool pluginIsEnabled(const unique_ptr<PluginSpec> &plugin);
 
 private:
 
-    void onUXTimeOut();
-    void onQueryFinished(QueryPrivate * qp);
-    void updateFallbacks();
-
-    set<IExtension*> extensions_;
-    set<QueryPrivate*> pastQueries_;
-    QueryPrivate* currentQuery_;
-    map<QString, set<IExtension*>> triggerExtensions_;
-    vector<shared_ptr<AlbertItem>> fallbacks_;
-    QTimer UXTimeOut_;
+    vector<unique_ptr<PluginSpec>> plugins_;
+    QStringList blacklist_;
+    static const QString CFG_BLACKLIST;
 
 signals:
-
-    void newModel(QAbstractItemModel *);
+    void pluginsChanged();
+    void pluginLoaded(QObject*);
+    void pluginAboutToBeUnloaded(QObject*); // MUST BLOCK
 };

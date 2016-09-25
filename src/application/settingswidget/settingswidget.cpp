@@ -25,15 +25,15 @@
 #include "settingswidget.h"
 #include "hotkeymanager.h"
 #include "mainwindow.h"
-#include "pluginmanager.h"
-#include "pluginmodel.h"
-#include "iextension.h"
+#include "extensionmanager.h"
+#include "loadermodel.h"
+#include "abstractextension.h"
 #include "albertapp.h"
 
 
 /** ***************************************************************************/
-SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyManager, PluginManager *pluginManager, QWidget *parent, Qt::WindowFlags f)
-    : QWidget(parent, f), mainWindow_(mainWindow), hotkeyManager_(hotkeyManager), pluginManager_(pluginManager) {
+SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyManager, ExtensionManager *extensionManager, QWidget *parent, Qt::WindowFlags f)
+    : QWidget(parent, f), mainWindow_(mainWindow), hotkeyManager_(hotkeyManager), extensionManager_(extensionManager) {
 
     ui.setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -129,7 +129,7 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyMana
      */
 
     // Show the plugins. This* widget takes ownership of the model
-    ui.listView_plugins->setModel(new PluginModel(pluginManager_, ui.listView_plugins));
+    ui.listView_plugins->setModel(new LoaderModel(extensionManager_, ui.listView_plugins));
 
     // Update infos when item is changed
     connect(ui.listView_plugins->selectionModel(), &QItemSelectionModel::currentChanged,
@@ -171,8 +171,8 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
     delete i->widget();
     delete i;
 
-    if (pluginManager_->plugins()[current.row()]->isLoaded()){
-        IExtension *e = dynamic_cast<IExtension*>(pluginManager_->plugins()[current.row()]->instance());
+    if (extensionManager_->plugins()[current.row()]->isLoaded()){
+        AbstractExtension *e = dynamic_cast<AbstractExtension*>(extensionManager_->plugins()[current.row()]->instance());
         QWidget *pw = e->widget();
         if ( pw->layout() != nullptr)
             pw->layout()->setMargin(0);

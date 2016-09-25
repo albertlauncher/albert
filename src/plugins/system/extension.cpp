@@ -20,7 +20,8 @@
 #include "extension.h"
 #include "configwidget.h"
 #include "query.h"
-#include "objects.hpp"
+#include "standarditem.hpp"
+#include "standardaction.hpp"
 #include "xdgiconlookup.h"
 #include "albertapp.h"
 
@@ -65,7 +66,7 @@ namespace {
 }
 
 /** ***************************************************************************/
-System::Extension::Extension() : IExtension("org.albert.extension.system") {
+System::Extension::Extension() : AbstractExtension("org.albert.extension.system") {
 
     // Load settings
     QString themeName = QIcon::themeName();

@@ -25,8 +25,8 @@
 
 class MainWindow;
 class HotkeyManager;
-class PluginManager;
 class ExtensionManager;
+class QueryHandler;
 class SettingsWidget;
 
 #if defined(qApp)
@@ -63,8 +63,9 @@ private:
 
     MainWindow               *mainWindow_;
     HotkeyManager            *hotkeyManager_;
-    PluginManager            *pluginManager_;
+    QueryHandler             *queryHandler_;
     ExtensionManager         *extensionManager_;
+
     QPointer<SettingsWidget> settingsWidget_;
     QLocalServer             *localServer_;
     QSettings                *settings_;

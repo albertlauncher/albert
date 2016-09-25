@@ -25,12 +25,12 @@ using std::vector;
 using std::chrono::system_clock;
 
 #include "iindexable.h"
-#include "iitem.h"
+#include "abstractitem.h"
 
 
 namespace Files {
 
-class File final : public AlbertItem, public IIndexable
+class File final : public AbstractItem, public IIndexable
 {
     class OpenFileAction;
     class RevealFileAction;
@@ -44,7 +44,7 @@ public:
         : path_(path), mimetype_(mimetype), usage_(usage){}
 
     /*
-     * Implementation of AlbertItem interface
+     * Implementation of Item interface
      */
 
     QString id() const override { return path_; }

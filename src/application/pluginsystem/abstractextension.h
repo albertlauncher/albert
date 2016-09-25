@@ -23,20 +23,20 @@
 using std::shared_ptr;
 
 #include "query.h"
-#include "iitem.h"
+#include "abstractitem.h"
 
 
 /** ****************************************************************************
  * @brief The extension interface
  */
-struct IExtension : public QObject
+struct AbstractExtension : public QObject
 {
     Q_OBJECT
 
 public:
 
-    IExtension(const char * id) : id(id) {}
-    virtual ~IExtension() {}
+    AbstractExtension(const char * id) : id(id) {}
+    virtual ~AbstractExtension() {}
 
     /**
      * @brief An application-wide unique identifier
@@ -112,4 +112,4 @@ signals:
 
 };
 #define ALBERT_EXTENSION_IID "org.albert.extension"
-Q_DECLARE_INTERFACE(IExtension, ALBERT_EXTENSION_IID)
+Q_DECLARE_INTERFACE(AbstractExtension, ALBERT_EXTENSION_IID)

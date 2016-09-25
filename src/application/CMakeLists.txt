@@ -22,18 +22,19 @@ set(SRC
     mainwindow/actionlist.cpp
     mainwindow/proposallist.cpp
     mainwindow/settingsbutton.cpp
+    pluginsystem/abstractextension.h
+    pluginsystem/abstractitem.h
+    pluginsystem/abstractaction.h
+    pluginsystem/standarditem.hpp
+    pluginsystem/standardaction.hpp
     pluginsystem/pluginloader.cpp
-    pluginsystem/pluginmanager.cpp
+    pluginsystem/queryhandler.cpp
     pluginsystem/extensionmanager.cpp
     pluginsystem/query.cpp
     pluginsystem/query_p.hpp
-    pluginsystem/iextension.h
-    pluginsystem/iitem.h
-    pluginsystem/action.h
-    pluginsystem/objects.hpp
     settingswidget/grabkeybutton.cpp
     settingswidget/settingswidget.cpp
-    settingswidget/pluginmodel.cpp
+    settingswidget/loadermodel.cpp
 )
 
 set(LIB

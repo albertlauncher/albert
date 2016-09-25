@@ -24,18 +24,18 @@
 using std::shared_ptr;
 using std::vector;
 
-#include "iextension.h"
+#include "abstractextension.h"
 
 namespace Websearch {
 
 class SearchEngine;
 class ConfigWidget;
 
-class Extension final : public IExtension
+class Extension final : public AbstractExtension
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
-    Q_INTERFACES(IExtension)
+    Q_INTERFACES(AbstractExtension)
 
 public:
     Extension();
