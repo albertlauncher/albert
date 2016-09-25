@@ -393,6 +393,10 @@ void AlbertApp::enableTrayIcon(bool enable) {
         QAction* showAction     = new QAction("Show", trayIconMenu_);
         QAction* settingsAction = new QAction("Settings", trayIconMenu_);
 
+        quitAction->setIcon(style()->standardIcon(QStyle::SP_TitleBarCloseButton));
+        showAction->setIcon(style()->standardIcon(QStyle::SP_TitleBarMaxButton));
+        settingsAction->setIcon(style()->standardIcon(QStyle::SP_FileDialogDetailedView));
+
         connect(showAction,     &QAction::triggered, this, &AlbertApp::showWidget);
         connect(settingsAction, &QAction::triggered, this, &AlbertApp::openSettings);
         connect(quitAction,     &QAction::triggered, this, &QCoreApplication::quit);
