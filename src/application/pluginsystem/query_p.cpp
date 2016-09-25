@@ -29,39 +29,57 @@
 using std::map;
 using std::chrono::system_clock;
 
-namespace {
-
-    static map<QString, double> resultScores;
-
-    struct MatchComparator {
-        inline bool operator() (const pair<SharedItem, short>& lhs, const pair<SharedItem, short>& rhs) {
-            return lhs.first->urgency() > rhs.first->urgency() // Urgency, for e.g. notifications, Warnings
-                    || resultScores[lhs.first->id()] > resultScores[rhs.first->id()] // usage count
-                    || lhs.second > rhs.second; // percentual match of the query against the item
-        }
-    };
-}
-
-vector<QString> QueryPrivate::fallbackOrder;
 
 /** ***************************************************************************/
-QueryPrivate::Initializer::Initializer(){
-    QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-    QString path = QDir(cacheDir).filePath("fallbackOrder.txt");
-    QFile inputFile(path);
-    if (inputFile.open(QIODevice::ReadOnly)) {
-       QTextStream in(&inputFile);
-       while (!in.atEnd()){
-           QString line = in.readLine();
-           if (!line.isEmpty())
-               fallbackOrder.emplace_back(line);
-       }
-       inputFile.close();
-    }
+map<QString, double> MatchOrder::order;
+
+bool MatchOrder::operator()(const pair<SharedItem, short> &lhs, const pair<SharedItem, short> &rhs) {
+
+    // Return true if urgency is higher
+    if (lhs.first->urgency() > rhs.first->urgency())
+        return true;
+
+    // Find the ids in the usage scores
+    const auto &lit = order.find(lhs.first->id());
+    const auto &rit = order.find(rhs.first->id());
+
+    // If left side has no entry it cannot be higher continue with relevance
+    if (lit==order.cend())
+        goto relevance;
+
+    // If left side has an entry bur right side not left side must be higher
+    // given the condition that all values in the usage rankings are >0
+    if (rit==order.cend())
+        return true;
+
+    // Both scores available, return true if lhs is higher
+    if (order[lhs.first->id()] > order[rhs.first->id()]) // usage count
+        return true;
+
+    // Return true if relevance is higher else false
+    relevance:
+    return lhs.second > rhs.second; // percentual match of the query against the item
+}
+
+void MatchOrder::update() {
+    order.clear();
+
+    // Update the results ranking
+    QSqlQuery query;
+    query.exec("SELECT t.itemId AS id, SUM(t.score) AS usageScore "
+               "FROM ( "
+               " SELECT itemId, 1/max(julianday('now')-julianday(timestamp),1) AS score from usages "
+               ") t "
+               "GROUP BY t.itemId");
+    while (query.next())
+        MatchOrder::order.emplace(query.value(0).toString(),
+                                  query.value(1).toDouble());
 }
 
 
-
+/** ***************************************************************************/
+/** ***************************************************************************/
+/** ***************************************************************************/
 /** ***************************************************************************/
 QueryPrivate::QueryPrivate(const QString &query, const set<AbstractExtension *> &extensions)
     : searchTerm_(query),
@@ -71,23 +89,6 @@ QueryPrivate::QueryPrivate(const QString &query, const set<AbstractExtension *> 
       mutex_(QMutex::Recursive) {
 
     Q_ASSERT(!extensions.empty());
-
-    /* Get fallbacks */
-
-    // Request the fallbacks multithreaded
-    QFutureSynchronizer<vector<SharedItem>> synchronizer;
-    for ( AbstractExtension *ext : extensions)
-        synchronizer.addFuture(QtConcurrent::run(ext, &AbstractExtension::fallbacks, searchTerm_));
-    synchronizer.waitForFinished();
-
-    // Get fallbacks
-    for (const QFuture<vector<SharedItem>> &future : synchronizer.futures())
-        for (SharedItem &item : future.result())
-            fallbacks_.push_back(item);
-
-    // Sort fallbacks
-//    sortFallbacks();
-
 
     /* Start multithreaded and asynchronous computation of results */
 
@@ -122,6 +123,19 @@ QueryPrivate::QueryPrivate(const QString &query, const set<AbstractExtension *> 
     UXTimeOut_.setSingleShot(true);
     connect(&UXTimeOut_, &QTimer::timeout, this, &QueryPrivate::onUXTimeOut);
     UXTimeOut_.start();
+
+    /* Get fallbacks */
+
+    // Request the fallbacks multithreaded
+    QFutureSynchronizer<vector<SharedItem>> synchronizer;
+    for ( AbstractExtension *ext : extensions)
+        synchronizer.addFuture(QtConcurrent::run(ext, &AbstractExtension::fallbacks, searchTerm_));
+    synchronizer.waitForFinished();
+
+    // Get fallbacks
+    for (const QFuture<vector<SharedItem>> &future : synchronizer.futures())
+        for (SharedItem &item : future.result())
+            fallbacks_.push_back(item);
 }
 
 
@@ -162,7 +176,9 @@ void QueryPrivate::addMatches(vector<std::pair<SharedItem,short>>::iterator begi
 
 /** ***************************************************************************/
 void QueryPrivate::onUXTimeOut() {
-    sortResults();
+    mutex_.lock();
+    std::sort(matches_.begin(), matches_.end(), MatchOrder());
+    mutex_.unlock();
     emit resultyReady(this);
 }
 
@@ -183,8 +199,7 @@ void QueryPrivate::onHandlerFinished(){
          */
         if (UXTimeOut_.isActive()){
             UXTimeOut_.stop();
-            sortResults();
-            emit resultyReady(this);
+            onUXTimeOut();
         }
         if (matches_.size()==0) {
             beginResetModel();
@@ -196,7 +211,7 @@ void QueryPrivate::onHandlerFinished(){
         if (isValid_){ // Dont count cancelled queries
             QSqlDatabase db = QSqlDatabase::database();
             db.transaction();
-             QSqlQuery sqlQuery;
+            QSqlQuery sqlQuery;
             for (auto &e : runtimes_) {
                 sqlQuery.prepare("INSERT INTO runtimes (extensionId, runtime) VALUES (:extensionId, :runtime);");
                 sqlQuery.bindValue(":extensionId", e.first->id);
@@ -211,76 +226,6 @@ void QueryPrivate::onHandlerFinished(){
         emit finished();
     }
 }
-
-
-
-/** ***************************************************************************/
-void QueryPrivate::upateUsageScores() {
-    resultScores.clear();
-
-    // Update the results ranking
-    QSqlQuery query;
-    query.exec("SELECT t.itemId AS id, SUM(t.score) AS usageScore "
-               "FROM ( "
-               " SELECT itemId, 1/max(julianday('now')-julianday(timestamp),1) AS score from usages "
-               ") t "
-               "GROUP BY t.itemId");
-    while (query.next())
-        resultScores.emplace(query.value(0).toString(),
-                             query.value(1).toDouble());
-}
-
-
-
-/** ***************************************************************************/
-void QueryPrivate::sortFallbacks()
-{
-
-    // Custom sort algorithm, O(n²) but does not matter since size is << 100
-
-    auto swapIt = fallbacks_.begin();
-    decltype(swapIt) findIt;
-    auto orderIt  = fallbackOrder.begin();
-
-    while (true) {
-
-        // Everything sorted, break
-        if (swapIt == fallbacks_.end())
-            goto BREAK_LOOP;
-
-        // Remaining fallbacks have never been arranged. Store the ids an quit
-        if (orderIt == fallbackOrder.end()) {
-            while (swapIt != fallbacks_.end()) {
-                fallbackOrder.push_back((*swapIt)->id());
-                goto BREAK_LOOP;
-            }
-        }
-
-        // Check if
-        findIt = std::find_if(swapIt+1, fallbacks_.end(), [&orderIt](const SharedItem &item){
-            return *orderIt == item->id();
-        });
-
-
-        if (findIt == fallbacks_.end())
-            std::swap(*swapIt++, *findIt);
-        ++orderIt;
-    }
-
-    BREAK_LOOP:;
-}
-
-
-
-/** ***************************************************************************/
-void QueryPrivate::sortResults() {
-    mutex_.lock();
-    beginResetModel();
-    std::sort(matches_.begin(), matches_.end(), MatchComparator());
-    endResetModel();
-    mutex_.unlock();
-}
-
 
 
 /** ***************************************************************************/

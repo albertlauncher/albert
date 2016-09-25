@@ -187,13 +187,19 @@ AlbertApp::AlbertApp(int &argc, char *argv[])
      */
 
     // Make sure data, cache and config dir exists
+    QString configLocation = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/" + applicationName();
+    QString dataLocation = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+    QString cacheLocation = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
     QDir dir;
-    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/" + applicationName());
-    dir.mkpath(".");
-    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
-    dir.mkpath(".");
-    dir.setPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
-    dir.mkpath(".");
+    dir.setPath(configLocation);
+    if(!dir.mkpath("."))
+        qFatal("Could not create dir: %s",  qUtf8Printable(configLocation));
+    dir.setPath(dataLocation);
+    if (!dir.mkpath("."))
+        qFatal("Could not create dir: %s",  qUtf8Printable(dataLocation));
+    dir.setPath(cacheLocation);
+    if (!dir.mkpath("."))
+        qFatal("Could not create dir: %s",  qUtf8Printable(cacheLocation));
 
 
     /*
@@ -211,18 +217,18 @@ AlbertApp::AlbertApp(int &argc, char *argv[])
     // Creat tables
     QSqlQuery q;
     if (!q.exec("CREATE TABLE IF NOT EXISTS usages ( "
-           "  input TEXT NOT NULL, "
-           "  itemId TEXT NOT NULL, "
-           "  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP "
-           ");"))
-            qFatal("Unable to create usages table: %s", qUtf8Printable(q.lastError().text()));
+                "  input TEXT NOT NULL, "
+                "  itemId TEXT NOT NULL, "
+                "  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP "
+                ");"))
+        qFatal("Unable to create table 'usages': %s", qUtf8Printable(q.lastError().text()));
 
     if (!q.exec("CREATE TABLE IF NOT EXISTS runtimes ( "
-          "  extensionId TEXT NOT NULL, "
-          "  runtime INTEGER NOT NULL, "
-          "  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP "
-          ");"))
-            qFatal("Unable to create runtimes table: %s", qUtf8Printable(q.lastError().text()));
+                "  extensionId TEXT NOT NULL, "
+                "  runtime INTEGER NOT NULL, "
+                "  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP "
+                ");"))
+        qFatal("Unable to create table 'runtimes': %s", qUtf8Printable(q.lastError().text()));
 
     // Do regular cleanup
     if (!q.exec("DELETE FROM usages WHERE julianday('now')-julianday(timestamp)>90;"))
@@ -233,7 +239,8 @@ AlbertApp::AlbertApp(int &argc, char *argv[])
 
     db.commit();
 
-    QueryPrivate::upateUsageScores();
+    // Initialize the order
+    MatchOrder::update();
 
     /*
      * INITIALIZE APPLICATION
@@ -321,9 +328,11 @@ AlbertApp::~AlbertApp() {
      *  FINALIZE APPLICATION
      */
     // Unload the plugins
-    delete extensionManager_;
+    if (settingsWidget_)
+        delete settingsWidget_;
     delete hotkeyManager_;
     delete mainWindow_;
+    delete extensionManager_;
 
     // Delete the running indicator file
     QFile::remove(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running");
@@ -487,8 +496,8 @@ void AlbertApp::onWidgetHidden() {
             delete qp/*->deleteLater()*/;
     oldQueries_.clear();
 
-    QueryPrivate::upateUsageScores();
-
+    // Compute new match rankings
+    MatchOrder::update();
 }
 
 

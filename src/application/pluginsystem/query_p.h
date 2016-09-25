@@ -34,8 +34,12 @@ class AbstractExtension;
 class AbstractItem;
 typedef shared_ptr<AbstractItem> SharedItem;
 
+struct MatchOrder {
+    inline bool operator() (const pair<SharedItem, short>& lhs, const pair<SharedItem, short>& rhs);
+    static void update();
+    static map<QString, double> order;
+};
 
-/** ***************************************************************************/
 class QueryPrivate final : public QAbstractListModel
 {
     Q_OBJECT
@@ -54,18 +58,13 @@ public:
     void invalidate();
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex & index, int role) const override;
+    QVariant data(const QModelIndex &index, int role) const override;
     bool setData(const QModelIndex &index, const QVariant &value, int role) override;
-
-    static void upateUsageScores();
 
 private:
 
     void onUXTimeOut();
     void onHandlerFinished();
-
-    void sortResults();
-    void sortFallbacks();
 
     const QString searchTerm_;
     bool isValid_;
@@ -80,14 +79,12 @@ private:
     vector<pair<SharedItem, short>> matches_;
     vector<SharedItem> fallbacks_;
 
-    static vector<QString> fallbackOrder;
-    static struct Initializer { Initializer(); } initializer_;
-
 signals:
 
     void resultyReady(QAbstractItemModel *);
     void started();
     void finished();
+
 };
 
 
