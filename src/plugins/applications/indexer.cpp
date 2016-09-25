@@ -237,7 +237,7 @@ void Applications::Extension::Indexer::run() {
 
     // Get a new index [O(n)]
     vector<SharedStdIdxItem> desktopEntries;
-    const char *xdg_current_desktop = getenv("XDG_CURRENT_DESKTOP");
+    QStringList xdg_current_desktop = QString(getenv("XDG_CURRENT_DESKTOP")).split(':',QString::SkipEmptyParts);
     QLocale loc;
 
 
@@ -296,17 +296,23 @@ void Applications::Extension::Indexer::run() {
                     && entryIterator->second == "true")
                 continue;
 
-            // Skip if the current desktop environment is not specified in "OnlyShowIn"
-            if ((entryIterator = entryMap.find("OnlyShowIn")) != entryMap.end()
-                    && !entryIterator->second.split(';',QString::SkipEmptyParts).contains(xdg_current_desktop))
-                continue;
-
             // Skip if the current desktop environment is specified in "NotShowIn"
-            if ((entryIterator = entryMap.find("NotShowIn")) != entryMap.end()
-                    && entryIterator->second.split(';',QString::SkipEmptyParts).contains(xdg_current_desktop))
-                continue;
+            if ((entryIterator = entryMap.find("NotShowIn")) != entryMap.end())
+                for (const QString &str : entryIterator->second.split(';',QString::SkipEmptyParts))
+                    if (xdg_current_desktop.contains(str))
+                        continue;
 
-
+            // Skip if the current desktop environment is not specified in "OnlyShowIn"
+            if ((entryIterator = entryMap.find("OnlyShowIn")) != entryMap.end()) {
+                bool found = false;
+                for (const QString &str : entryIterator->second.split(';',QString::SkipEmptyParts))
+                    if (xdg_current_desktop.contains(str)){
+                        found = true;
+                        break;
+                    }
+                if (!found)
+                    continue;
+            }
 
             bool term;
             QString name;
