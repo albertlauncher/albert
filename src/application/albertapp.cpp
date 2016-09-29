@@ -334,6 +334,8 @@ AlbertApp::~AlbertApp() {
     delete hotkeyManager_;
     delete mainWindow_;
     delete extensionManager_;
+    delete trayIcon_;
+    delete trayIconMenu_;
 
     // Delete the running indicator file
     QFile::remove(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running");
