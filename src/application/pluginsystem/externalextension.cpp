@@ -93,10 +93,16 @@ ExternalExtension::ExternalExtension(const char *id, QString path)
         throw QString("Reply to 'METADATA' is not a valid JSON object.");
 
     QJsonObject metadata = doc.object();
+    QJsonValue val;
 
-    providesMatches_   = metadata["providesMatches"].toBool(false);
-    providesFallbacks_ = metadata["providesFallbacks"].toBool(false);
-    runTriggeredOnly_  = metadata["runTriggeredOnly"].toBool(false);
+    val = metadata["providesMatches"];
+    providesMatches_ = val.isBool() ? val.toBool() : false;
+
+    val = metadata["providesFallbacks"];
+    providesFallbacks_ = val.isBool() ? val.toBool() : false;
+
+    val = metadata["runTriggeredOnly"];
+    runTriggeredOnly_ = val.isBool() ? val.toBool() : false;
 
     // If RunTriggeredOnly is set check for triggers
     if (runTriggeredOnly_) {

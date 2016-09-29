@@ -322,8 +322,9 @@ bool MainWindow::alwaysOnTop() const {
 /** ***************************************************************************/
 void MainWindow::setAlwaysOnTop(bool alwaysOnTop) {
     qApp->settings()->setValue(CFG_ALWAYS_ON_TOP, alwaysOnTop);
-    alwaysOnTop ? setWindowFlags(windowFlags().setFlag(Qt::WindowStaysOnTopHint))
-                : setWindowFlags(windowFlags().setFlag(Qt::WindowStaysOnTopHint, false));
+    // TODO: QT_MINREL 5.7 setFlag
+    alwaysOnTop ? setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint)
+                : setWindowFlags(windowFlags() & ~Qt::WindowStaysOnTopHint);
 }
 
 

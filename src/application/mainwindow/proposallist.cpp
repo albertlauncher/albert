@@ -165,7 +165,8 @@ void ProposalList::ItemDelegate::paint(QPainter *painter, const QStyleOptionView
 
 
     // Avoid ugly dark blue mouseover background
-    option.state.setFlag(QStyle::State_MouseOver, false);
+    // TODO: QT_MINREL 5.7 setFlag
+    option.state &= ~QStyle::State_MouseOver;
 
     // Draw selection
     option.widget->style()->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);

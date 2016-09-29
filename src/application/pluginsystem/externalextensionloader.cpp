@@ -57,9 +57,17 @@ ExternalExtensionLoader::ExternalExtensionLoader(QString path) :
         throw QString("Extension id is empty.");
 
     // Get opional data
-    name_ = metadata["name"].toString("N/A");
-    version_ = metadata["version"].toString("N/A");
-    author_ = metadata["author"].toString("N/A");
+    QJsonValue val;
+
+    val = metadata["name"];
+    name_ = val.isString() ? val.toString() : "N/A";
+
+    val = metadata["version"];
+    version_ = val.isString() ? val.toString() : "N/A";
+
+    val = metadata["author"];
+    author_ = val.isString() ? val.toString() : "N/A";
+
     for (const QJsonValue & value : metadata["dependencies"].toArray())
          dependencies_.append(value.toString());
 }
