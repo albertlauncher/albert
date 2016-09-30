@@ -29,6 +29,7 @@ class ConfigWidget;
 
 class Extension final : public AbstractExtension
 {
+    Q_OBJECT
     Q_INTERFACES(AbstractExtension)
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
