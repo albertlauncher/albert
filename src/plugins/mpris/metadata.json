@@ -5,5 +5,5 @@
     "platform" :        "Linux",
     "group" :           "Extensions",
     "author" :          "Martin Buergmann",
-    "dependencies" :    "DBus"
+    "dependencies" :    ["dbus-daemon"]
 }

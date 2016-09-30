@@ -17,7 +17,7 @@
 #pragma once
 #include <QObject>
 #include <QPointer>
-#include "iextension.h"
+#include "abstractextension.h"
 #include "player.h"
 #include "command.h"
 #include <QDBusMessage>
@@ -27,10 +27,9 @@ namespace MPRIS {
 
 class ConfigWidget;
 
-class Extension final : public QObject, public IExtension
+class Extension final : public AbstractExtension
 {
-    Q_OBJECT
-    Q_INTERFACES(IExtension)
+    Q_INTERFACES(AbstractExtension)
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
 public:
@@ -43,7 +42,9 @@ public:
 
     QWidget *widget(QWidget *parent = nullptr) override;
     void setupSession() override;
-    void handleQuery(shared_ptr<Query> query) override;
+    void handleQuery(Query query) override;
+    QString name() const override { return name_; }
+
 
     /*
      * Extension specific members
@@ -51,6 +52,7 @@ public:
 
 private:
     //static QRegExp filterRegex;
+    const char* name_ = "MPRIS Control Center";
     static QDBusMessage findPlayerMsg;
     QPointer<ConfigWidget> widget_;
     //QStringList mediaPlayers;

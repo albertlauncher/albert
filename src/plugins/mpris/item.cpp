@@ -23,6 +23,11 @@
 MPRIS::Item::Item(Player &p, QString &subtext, QString &iconPath, QDBusMessage &msg, bool hideAfter)
     : player_(p), subtext_(subtext), iconPath_(iconPath), message_(msg), hideAfter_(hideAfter) {
     text_ = p.getName();
+    action_ = shared_ptr<AbstractAction>(new StandardAction(text_, [this](ExecutionFlags *flags){
+        QDBusConnection::sessionBus().send(message_);
+        flags->hideWidget = hideAfter_;
+        flags->clearInput = hideAfter_;
+    }));
 }
 
 
@@ -56,9 +61,9 @@ QString MPRIS::Item::iconPath() const {
 
 
 /** ***************************************************************************/
-void MPRIS::Item::activate(ExecutionFlags *flags) {
-    QDBusConnection::sessionBus().send(message_);
-    flags->hideWidget = hideAfter_;
-    flags->clearInput = hideAfter_;
+vector<shared_ptr<AbstractAction>> MPRIS::Item::actions() {
+    vector<shared_ptr<AbstractAction>> ret;
+    ret.push_back(action_);
+    return ret;
 }
 

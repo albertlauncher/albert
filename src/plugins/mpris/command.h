@@ -20,7 +20,7 @@
 #include <QVariant>
 #include <functional>
 #include "query.h"
-#include "objects.hpp"
+#include "abstractitem.h"
 #include "player.h"
 using std::function;
 
@@ -74,7 +74,7 @@ public:
      * @brief produceStandardItem   Produces an instance of AlbertItem for this command to invoke on a given Player.
      * @return                      Returns a shared_ptr on this AlbertItem.
      */
-    std::shared_ptr<AlbertItem> produceAlbertItem(Player &);
+    SharedItem produceAlbertItem(Player &);
 
     /**
      * @brief isApplicable  If configured, checks if the given property meets the expected criteria.

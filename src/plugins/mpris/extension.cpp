@@ -18,7 +18,6 @@
 #include "extension.h"
 #include "configwidget.h"
 #include "query.h"
-#include "objects.hpp"
 #include "albertapp.h"
 #include "xdgiconlookup.h"
 #include "command.h"
@@ -27,7 +26,7 @@
 QDBusMessage MPRIS::Extension::findPlayerMsg = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "ListNames");
 
 /** ***************************************************************************/
-MPRIS::Extension::Extension() : IExtension("MPRIS Control Center") {
+MPRIS::Extension::Extension() : AbstractExtension("org.albert.extension.mpris") {
     qDebug("[%s] Initialize extension", name_);
 
     // Local cache field
@@ -170,12 +169,12 @@ void MPRIS::Extension::setupSession() {
 
 
 /** ***************************************************************************/
-void MPRIS::Extension::handleQuery(shared_ptr<Query> query) {
+void MPRIS::Extension::handleQuery(Query query) {
     // Do not proceed if there are no players running. Why would you even?
     if (mediaPlayers.isEmpty())
         return;
 
-    const QString& q = query->searchTerm();
+    const QString& q = query.searchTerm();
 
     // Filter applicable commands
     QStringList cmds;
@@ -198,7 +197,7 @@ void MPRIS::Extension::handleQuery(shared_ptr<Query> query) {
             // See if it's applicable for this player
             if (toExec.isApplicable(*p))
                 // And add a match if so
-                query->addMatch(toExec.produceAlbertItem(*p), percentage);
+                query.addMatch(toExec.produceAlbertItem(*p), percentage);
         }
     }
 }

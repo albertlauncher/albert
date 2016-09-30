@@ -18,21 +18,23 @@
 #include <QVariant>
 #include <vector>
 using std::vector;
-#include "abstractobjects.hpp"
+#include "abstractitem.h"
+#include "standardobjects.h"
 #include "player.h"
 #include <QDBusMessage>
 
 namespace MPRIS {
-class Item final : public AlbertItem
+class Item final : public AbstractItem
 {
 public:
     Item(Player& p, QString& subtext, QString& iconPath, QDBusMessage& msg, bool hideAfter);
     ~Item();
 
+    QString id() const override { return ""; }
     QString text() const override;
     QString subtext() const override;
     QString iconPath() const override;
-    void activate(ExecutionFlags *) override;
+    vector<shared_ptr<AbstractAction>> actions() override;
 
 private:
     Player& player_;
@@ -40,6 +42,7 @@ private:
     QString subtext_;
     QString iconPath_;
     QDBusMessage message_;
+    shared_ptr<AbstractAction> action_;
     bool hideAfter_;
 };
 }
