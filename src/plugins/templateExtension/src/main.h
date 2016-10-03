@@ -42,7 +42,7 @@ public:
      * Implementation of extension interface
      */
 
-    QString name() const override { return "Template"; }
+    QString name() const override { return "PROJECTPRETTYNAME"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     void setupSession() override;
     void teardownSession() override;
