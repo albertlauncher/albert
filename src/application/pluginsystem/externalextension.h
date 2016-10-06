@@ -82,10 +82,10 @@
 // * FINALIZE
 //   A signal sent when the user unloaded the extension.
 //
-// * SESSIONSETUP
+// * SETUPSESSION
 //   A signal sent when the user started a session.
 //
-// * SESSIONTEARDOWN
+// * TEARDOWNSESSION
 //   A signal sent when the user ended a session.
 //
 // * QUERY
