@@ -147,5 +147,8 @@ void VirtualBox::VM::probeState() {
         }
         process->deleteLater();
     });
+    QObject::connect(process, static_cast<void(QProcess::*)(QProcess::ProcessError)>(&QProcess::error), [process](QProcess::ProcessError){
+        process->deleteLater();
+    });
 }
 
