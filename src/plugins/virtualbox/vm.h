@@ -27,6 +27,7 @@ public:
     VM(QString vboxFileName);
     VMItem* produceItem();
     bool startsWith(QString other);
+    const QString &uuid() { return uuid_; }
 
 private:
     QString name_;

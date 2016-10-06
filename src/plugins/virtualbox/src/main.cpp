@@ -51,10 +51,6 @@ QWidget *VirtualBox::Extension::widget(QWidget *parent) {
 
 /** ***************************************************************************/
 void VirtualBox::Extension::setupSession() {
-//    names_.clear();
-//    uuids_.clear();
-    qDeleteAll(vms_);
-    vms_.clear();
 
     QFile vboxConfigFile(QStandardPaths::locate(QStandardPaths::ConfigLocation, "VirtualBox/VirtualBox.xml"));
     if (!vboxConfigFile.exists())
@@ -92,15 +88,39 @@ void VirtualBox::Extension::setupSession() {
         return;
     }
 
-
+    // With this we iterate over the machine entries
     QDomElement machine = machines.firstChildElement();
-    int i = 0;
+
+    // This list holds the deteceted uuids
+    QList<QString> uuids;
+
+    // And we count how many entries we find for information reasons
+    int found = 0;
+
     while (!machine.isNull()) {
-        vms_.append(new VM(machine.attribute("src")));
+        uuids.append(machine.attribute("uuid"));
         machine = machine.nextSiblingElement();
-        i++;
+        found++;
     }
-    qDebug("Found %d VMs", i);
+    qDebug("Found %d VMs", found);
+
+    for (VM *item : vms_) { // Check all VM we already got.
+        if (uuids.contains(item->uuid())) { // Every uuid we alredy have and was found in the config we keep
+            uuids.removeAll(item->uuid());  // and delete it from the list
+        } else {                            // Every uuid we already have but was not found in the config we delete
+            vms_.removeAll(item);
+            delete item;
+        }
+    }
+
+    // Now the QList uuids contains only uuids which do not have a corresponding object in vms_
+    // So we create VM objects for them
+    machine = machines.firstChildElement();
+    while (!machine.isNull()) {
+        if (uuids.contains(machine.attribute("uuid")))
+            vms_.append(new VM(machine.attribute("src")));
+        machine = machine.nextSiblingElement();
+    }
 
     /*
     QProcess *process = new QProcess;
