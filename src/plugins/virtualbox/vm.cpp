@@ -19,16 +19,46 @@
 #include <QObject>
 #include <QProcess>
 #include <QRegularExpression>
+#include <QDomDocument>
+#include <QDomElement>
+#include <QFile>
 #include "standardobjects.h"
 
 
 
 /** ***************************************************************************/
-VirtualBox::VM::VM(QString &listVmsLine) {
+VirtualBox::VM::VM(QString vboxFileName) {
+
+    QFile vboxFile(vboxFileName);
+    if (!vboxFile.open(QFile::ReadOnly)) {
+        qWarning("Could not open VM config file for read operation: %s", vboxFileName.toStdString().c_str());
+        return;
+    }
+
+    QDomDocument machineConfig;
+    QString errMsg;
+    int errLine, errCol;
+    if (!machineConfig.setContent(&vboxFile, &errMsg, &errLine, &errCol)) {
+        qWarning("Could not parse VM config file %s because %s in line %d col %d", vboxFileName.toStdString().c_str(), errMsg.toStdString().c_str(), errLine, errCol);
+        state_ = "";
+        vboxFile.close();
+        return;
+    }
+    vboxFile.close();
+
+    QDomElement root = machineConfig.documentElement();
+    QDomElement machine = root.firstChildElement("Machine");
+    uuid_ = machine.attribute("uuid");
+    name_ = machine.attribute("name");
+    state_ = "poweroff";
+
+
+    /*
     QRegularExpression regex("\"(.*)\" {(.*)}");
     QRegularExpressionMatch match = regex.match(listVmsLine);
     name_ = match.captured(1);
     uuid_ = match.captured(2);
+    */
 
     QProcess *process = new QProcess;
     process->setReadChannel(QProcess::StandardOutput);

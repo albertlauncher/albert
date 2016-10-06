@@ -24,7 +24,7 @@ namespace VirtualBox {
 class VM
 {
 public:
-    VM(QString &listVmsLine);
+    VM(QString vboxFileName);
     VMItem* produceItem();
     bool startsWith(QString other);
 

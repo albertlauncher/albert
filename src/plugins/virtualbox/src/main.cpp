@@ -18,6 +18,10 @@
 #include <QProcess>
 #include <QRegularExpression>
 #include <QString>
+#include <QFile>
+#include <QStandardPaths>
+#include <QDomDocument>
+#include <QDomElement>
 #include "main.h"
 #include "query.h"
 #include "xdgiconlookup.h"
@@ -51,6 +55,54 @@ void VirtualBox::Extension::setupSession() {
 //    uuids_.clear();
     qDeleteAll(vms_);
     vms_.clear();
+
+    QFile vboxConfigFile(QStandardPaths::locate(QStandardPaths::ConfigLocation, "VirtualBox/VirtualBox.xml"));
+    if (!vboxConfigFile.exists())
+        return;
+    if (!vboxConfigFile.open(QFile::ReadOnly)) {
+        qCritical("Could not open VBox config file for read operation!");
+        return;
+    }
+
+    QDomDocument vboxConfig;
+    QString errMsg = "";
+    int errLine = 0, errCol = 0;
+    if (!vboxConfig.setContent(&vboxConfigFile, &errMsg, &errLine, &errCol)) {
+        qWarning("Parsing of VBox config failed because %s in line %d col %d", errMsg.toStdString().c_str(), errLine, errCol);
+        vboxConfigFile.close();
+        return;
+    }
+    vboxConfigFile.close();
+
+    QDomElement root = vboxConfig.documentElement();
+    if (root.isNull()) {
+        qCritical("root element is null");
+        return;
+    }
+
+    QDomElement global = root.firstChildElement("Global");
+    if (global.isNull()) {
+        qCritical("global element is null");
+        return;
+    }
+
+    QDomElement machines = global.firstChildElement("MachineRegistry");  // List of MachineEntry
+    if (machines.isNull()) {
+        qCritical("machine registry element is null");
+        return;
+    }
+
+
+    QDomElement machine = machines.firstChildElement();
+    int i = 0;
+    while (!machine.isNull()) {
+        vms_.append(new VM(machine.attribute("src")));
+        machine = machine.nextSiblingElement();
+        i++;
+    }
+    qDebug("Found %d VMs", i);
+
+    /*
     QProcess *process = new QProcess;
     process->setReadChannel(QProcess::StandardOutput);
     connect(process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
@@ -64,6 +116,7 @@ void VirtualBox::Extension::setupSession() {
         process->deleteLater();
     });
     process->start("VBoxManage",  {"list", "vms"});
+    */
 }
 
 
