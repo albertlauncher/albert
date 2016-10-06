@@ -47,7 +47,7 @@ ExternalExtensionLoader::ExternalExtensionLoader(QString path) :
     // Check for a sane interface ID (IID)
     QString iid = metadata["iid"].toString();
     if (iid != EXTERNAL_EXTENSION_IID)
-        throw QString("Interface id '' does not match ''.").arg(iid, EXTERNAL_EXTENSION_IID);
+        throw QString("Interface id '%1' does not match '%2'.").arg(iid, EXTERNAL_EXTENSION_IID);
 
     // Check for mandatory id
     if (metadata["id"].isUndefined())
