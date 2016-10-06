@@ -104,7 +104,6 @@ void VirtualBox::Extension::rescanVBoxConfig(QString &path) {
 
     qDeleteAll(vms_);
     vms_.clear();
-    vmWatcher_.removePaths(vmWatcher_.files());
 
     while (!machine.isNull()) {
 
