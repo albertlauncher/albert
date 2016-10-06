@@ -52,32 +52,7 @@ VirtualBox::VM::VM(QString vboxFileName) {
     name_ = machine.attribute("name");
     state_ = "poweroff";
 
-
-    /*
-    QRegularExpression regex("\"(.*)\" {(.*)}");
-    QRegularExpressionMatch match = regex.match(listVmsLine);
-    name_ = match.captured(1);
-    uuid_ = match.captured(2);
-    */
-
-    QProcess *process = new QProcess;
-    process->setReadChannel(QProcess::StandardOutput);
-    process->start("VBoxManage",  {"showvminfo", uuid_, "--machinereadable"});
-    QObject::connect(process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
-        [this, process](int exitCode, QProcess::ExitStatus exitStatus){
-        if (exitStatus == QProcess::NormalExit && exitCode == 0){
-            while (process->canReadLine()) {
-               QString line = QString::fromLocal8Bit(process->readLine());
-               if (line.startsWith("VMState=")) {
-                   QRegularExpression regex("VMState=\"(.*)\"");
-                   QRegularExpressionMatch match = regex.match(line);
-                   state_ = match.captured(1).toLower();
-                   break;
-               }
-            }
-        }
-        process->deleteLater();
-    });
+    probeState();
 }
 
 
@@ -148,5 +123,29 @@ VirtualBox::VMItem *VirtualBox::VM::produceItem() {
 /** ***************************************************************************/
 bool VirtualBox::VM::startsWith(QString other) {
     return name_.startsWith(other, Qt::CaseInsensitive);
+}
+
+
+
+/** ***************************************************************************/
+void VirtualBox::VM::probeState() {
+    QProcess *process = new QProcess;
+    process->setReadChannel(QProcess::StandardOutput);
+    process->start("VBoxManage",  {"showvminfo", uuid_, "--machinereadable"});
+    QObject::connect(process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+        [this, process](int exitCode, QProcess::ExitStatus exitStatus){
+        if (exitStatus == QProcess::NormalExit && exitCode == 0){
+            while (process->canReadLine()) {
+               QString line = QString::fromLocal8Bit(process->readLine());
+               if (line.startsWith("VMState=")) {
+                   QRegularExpression regex("VMState=\"(.*)\"");
+                   QRegularExpressionMatch match = regex.match(line);
+                   state_ = match.captured(1).toLower();
+                   break;
+               }
+            }
+        }
+        process->deleteLater();
+    });
 }
 

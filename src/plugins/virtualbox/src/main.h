@@ -19,6 +19,7 @@
 #include <QObject>
 #include <QPointer>
 #include <QList>
+#include <QFileSystemWatcher>
 #include "extension.h"
 #include "queryhandler.h"
 #include "vm.h"
@@ -49,10 +50,12 @@ public:
 
 private:
 
-//    std::vector<QString> names_;
-//    std::vector<QString> uuids_;
     QString iconPath_;
     QList<VM*> vms_;
+    QFileSystemWatcher vboxWatcher_;
+
+protected slots:
+    void rescanVBoxConfig(QString &path);
 
 };
 }

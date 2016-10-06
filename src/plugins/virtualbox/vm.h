@@ -28,6 +28,7 @@ public:
     VMItem* produceItem();
     bool startsWith(QString other);
     const QString &uuid() { return uuid_; }
+    void probeState();
 
 private:
     QString name_;
