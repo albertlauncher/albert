@@ -97,13 +97,16 @@ VirtualBox::VMItem *VirtualBox::VM::produceItem() {
     resumeCmd = resumeCmd.arg(uuid_);
     ActionSPtrVec actions;
     int mainAction = 0;
-    if (state_ == "starting" || state_ == "restoring" || state_ == "saving" || state_ == "stopping")
+    if (state_ == "starting" || state_ == "restoring" || state_ == "saving" || state_ == "stopping") {
         mainAction = VMItem::VM_STATE_CHANGING;
-    else if (state_ == "poweroff" || state_ == "aborted")
+        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Controls are disabled", [](ExecutionFlags* fg){ fg->hideWidget = false; fg->clearInput = false; }) ));
+    } else if (state_ == "poweroff" || state_ == "aborted") {
         mainAction = VMItem::VM_START;
-    else if (state_ == "saved")
+        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Start", [startCmd](ExecutionFlags*){ QProcess::startDetached(startCmd); }) ));
+    } else if (state_ == "saved") {
         mainAction = VMItem::VM_START;
-    else if (state_ == "running") {
+        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Start", [startCmd](ExecutionFlags*){ QProcess::startDetached(startCmd); }) ));
+    } else if (state_ == "running") {
         mainAction = VMItem::VM_PAUSE;
         actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Pause", [pauseCmd](ExecutionFlags*){ QProcess::startDetached(pauseCmd); }) ));
         actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Save State", [saveCmd](ExecutionFlags*){ QProcess::startDetached(saveCmd); }) ));
