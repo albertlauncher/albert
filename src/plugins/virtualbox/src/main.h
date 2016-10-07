@@ -43,8 +43,8 @@ public:
      * Implementation of extension interface
      */
 
-    QString name() const override { return "Virtual Box"; }
     QWidget *widget(QWidget *parent = nullptr) override;
+    QString name() const override { return name_; }
     void setupSession() override;
     void handleQuery(Core::Query * query) override;
 
@@ -53,6 +53,7 @@ private:
     QString iconPath_;
     QList<VM*> vms_;
     QFileSystemWatcher vboxWatcher_;
+    const char* name_ = "Virtual Box";
 
 protected slots:
     void rescanVBoxConfig(QString &path);

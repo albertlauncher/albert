@@ -60,6 +60,8 @@ QWidget *VirtualBox::Extension::widget(QWidget *parent) {
 /** ***************************************************************************/
 void VirtualBox::Extension::rescanVBoxConfig(QString &path) {
 
+    qDebug("[%s] Scanning for VMs", name_);
+
     QFile vboxConfigFile(path);
     if (!vboxConfigFile.exists())
         return;
@@ -112,7 +114,8 @@ void VirtualBox::Extension::rescanVBoxConfig(QString &path) {
         machine = machine.nextSiblingElement();
         found++;
     }
-    qDebug("Found %d VMs", found);
+
+    qDebug("[%s] Found %d VMs", name_, found);
 }
 
 
