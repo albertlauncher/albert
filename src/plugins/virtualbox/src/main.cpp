@@ -45,7 +45,7 @@ VirtualBox::Extension::Extension()
 
     rescanVBoxConfig(vboxConfigPath);
     vboxWatcher_.addPath(vboxConfigPath);
-    connect(&vboxWatcher_, SIGNAL(fileChanged(QString&)), this, SLOT(rescanVBoxConfig(QString&)));
+    connect(&vboxWatcher_, SIGNAL(fileChanged(QString)), this, SLOT(rescanVBoxConfig(QString)));
 }
 
 
@@ -58,7 +58,7 @@ QWidget *VirtualBox::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void VirtualBox::Extension::rescanVBoxConfig(QString &path) {
+void VirtualBox::Extension::rescanVBoxConfig(QString path) {
 
     qDebug("[%s] Scanning for VMs", name_);
 

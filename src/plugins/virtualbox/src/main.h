@@ -56,7 +56,7 @@ private:
     const char* name_ = "Virtual Box";
 
 protected slots:
-    void rescanVBoxConfig(QString &path);
+    void rescanVBoxConfig(QString path);
 
 };
 }
