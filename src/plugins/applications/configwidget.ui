@@ -67,6 +67,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QCheckBox" name="checkBox_indexNameOnly">
+          <property name="text">
+           <string>Index name only</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <spacer name="verticalSpacer_3">
           <property name="orientation">
            <enum>Qt::Vertical</enum>

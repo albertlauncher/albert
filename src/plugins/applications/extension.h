@@ -66,6 +66,9 @@ public:
     bool fuzzy() { return offlineIndex_.fuzzy(); }
     void setFuzzy(bool b = true);
 
+    bool indexNameOnly() { return indexNameOnly_; }
+    void setIndexNameOnly(bool b = true);
+
     void updateIndex();
 
 private:
@@ -77,11 +80,14 @@ private:
     QFileSystemWatcher watcher_;
     QTimer updateDelayTimer_;
     QStringList rootDirs_;
+    bool indexNameOnly_;
 
     /* const */
     static const char* CFG_PATHS;
     static const char* CFG_FUZZY;
     static const bool  DEF_FUZZY;
+    static const char* CFG_INDEX_NAME_ONLY;
+    static const bool  DEF_INDEX_NAME_ONLY;
     static const bool  UPDATE_DELAY;
 
 signals:

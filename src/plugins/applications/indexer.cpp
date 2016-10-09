@@ -518,10 +518,12 @@ void Applications::Extension::Indexer::run() {
             indexKeywords.emplace_back(name, USHRT_MAX);
             if (!genericName.isEmpty())
                 indexKeywords.emplace_back(genericName, USHRT_MAX*0.9);
-            for (auto & kw : keywords)
-                indexKeywords.emplace_back(kw, USHRT_MAX*0.8);
-            if (!comment.isEmpty())
-                indexKeywords.emplace_back(comment, USHRT_MAX*0.5);
+            if (!extension_->indexNameOnly_) {
+                for (auto & kw : keywords)
+                    indexKeywords.emplace_back(kw, USHRT_MAX*0.8);
+                if (!comment.isEmpty())
+                    indexKeywords.emplace_back(comment, USHRT_MAX*0.5);
+            }
             ssii->setIndexKeywords(std::move(indexKeywords));
 
             // Set actions
