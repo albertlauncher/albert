@@ -360,8 +360,6 @@ int AlbertApp::exec() {
             openSettings();
             //QObject::connect(settingsWidget, &QWidget::destroyed, hotkeyManager, &HotkeyManager::enable);
         }
-        else
-            return EXIT_FAILURE;
     }
     return QApplication::exec();
 }
