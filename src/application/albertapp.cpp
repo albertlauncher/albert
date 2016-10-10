@@ -352,7 +352,7 @@ int AlbertApp::exec() {
           && hotkeyManager_->registerHotkey(v.toString()))){
         QMessageBox msgBox(QMessageBox::Critical, "Error",
                            "Hotkey is not set or invalid. Press ok to open "
-                           "the settings or press close to quit albert.",
+                           "the settings or press close to not configure a hotkey.",
                            QMessageBox::Close|QMessageBox::Ok);
         msgBox.exec();
         if ( msgBox.result() == QMessageBox::Ok ) {
