@@ -37,10 +37,10 @@ using std::shared_ptr;
 namespace {
 
 /******************************************************************************/
-QString expandedFiledCode(const QString & unexpanded,
-                          const QString & icon,
-                          const QString & name,
-                          const QString & path) {
+QStringList expandedFieldCodes(const QStringList & unexpandedFields,
+                               const QString & icon,
+                               const QString & name,
+                               const QString & path) {
     /*
      * A number of special field codes have been defined which will be expanded
      * by the file manager or program launcher when encountered in the command
@@ -52,28 +52,39 @@ QString expandedFiledCode(const QString & unexpanded,
      *
      * http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s06.html
      */
-    QString result;
-    QString::const_iterator it = unexpanded.begin();
-    while (it != unexpanded.end()) {
-        if (*it == '%'){
-            ++it;
-            if (it == unexpanded.end())
-                break;
-            else if (*it=='%')
-                result.append('%');
-            else if (*it=='i')
-                result.append((icon.isEmpty()) ? "" : QString("--icon %1").arg(icon));
-            else if (*it=='c')
-                result.append(name);
-            else if (*it=='k')
-                result.append(path);
-            // TODO Unhandled f F u U
+    QStringList expandedFields;
+
+    for (const QString & field : unexpandedFields){
+
+        if (field == "%i" && !icon.isEmpty()) {
+            expandedFields.push_back("--icon");
+            expandedFields.push_back(icon);
         }
-        else
-            result.append(*it);
-        ++it;
+
+        QString tmpstr;
+        QString::const_iterator it = field.begin();
+
+        while (it != field.end()) {
+            if (*it == '%'){
+                ++it;
+                if (it == field.end())
+                    break;
+                else if (*it=='%')
+                    tmpstr.push_back("%");
+                else if (*it=='c')
+                    tmpstr.push_back(name);
+                else if (*it=='k')
+                    tmpstr.push_back(path);
+                // TODO Unhandled f F u U
+            }
+            else
+                tmpstr.push_back(*it);
+            ++it;
+        }
+        if (!tmpstr.isEmpty())
+            expandedFields.push_back(std::move(tmpstr));
     }
-    return result;
+    return expandedFields;
 }
 
 /******************************************************************************/
@@ -371,14 +382,11 @@ void Applications::Extension::Indexer::run() {
 
             vector<SharedAction> actions;
 
-            // Unquote arguments
-            QStringList commandline = shellLexerSplit(exec);
-
-            // Expand field codes
-            for (auto it = commandline.begin(); it != commandline.end();){
-                *it = expandedFiledCode(*it, icon, name, fIt.filePath());
-                (it->isEmpty()) ? it = commandline.erase(it): ++it;
-            }
+            // Unquote arguments and expand field codes
+            QStringList commandline = expandedFieldCodes(shellLexerSplit(exec),
+                                                         icon,
+                                                         name,
+                                                         fIt.filePath());
 
             SharedStdAction sa = std::make_shared<StandardAction>();
             sa->setText("Run");
@@ -459,13 +467,11 @@ void Applications::Extension::Indexer::run() {
                 if ((entryIterator = valueMap.find("Exec")) == valueMap.end())
                     continue;
 
-                // Unquote arguments
-                QStringList commandline = shellLexerSplit(entryIterator->second);
-
-                // Expand field codes
-                for (auto & cmd : commandline)
-                    cmd = expandedFiledCode(cmd, icon, name, fIt.filePath());
-
+                // Unquote arguments and expand field codes
+                QStringList commandline = expandedFieldCodes(shellLexerSplit(entryIterator->second),
+                                                             icon,
+                                                             name,
+                                                             fIt.filePath());
 
                 if (term){
                     sa->setAction([commandline, workingDir](ExecutionFlags *){

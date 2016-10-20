@@ -37,7 +37,7 @@
 #include "query_p.h"
 
 const char* AlbertApp::CFG_TERM = "terminal";
-const char* AlbertApp::DEF_TERM = "xterm -e %1";
+const char* AlbertApp::DEF_TERM = "xterm -e";
 const char* AlbertApp::CFG_SHOWTRAY = "showTray";
 const bool  AlbertApp::DEF_SHOWTRAY = true;
 
@@ -282,13 +282,8 @@ AlbertApp::AlbertApp(int &argc, char *argv[])
     v = qApp->settings()->value(CFG_TERM);
     if (v.isValid() && v.canConvert(QMetaType::QString))
         terminal_ = v.toString();
-    else{
-        terminal_ = getenv("TERM");
-        if (terminal_.isEmpty())
-            terminal_ = DEF_TERM;
-        else
-            terminal_.append(" -e %1");
-    }
+    else
+        terminal_ = DEF_TERM;
 
     // Quit gracefully on unix signals
     for ( int sig : {SIGINT, SIGTERM, SIGHUP} )
