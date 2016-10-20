@@ -34,7 +34,7 @@ public:
 
 /** ***************************************************************************/
 PROJECTNAMESPACE::Extension::Extension()
-    : Core::Extension("org.albert.extension.##ID##"),
+    : Core::Extension("org.albert.extension.PROJECTID"),
       Core::QueryHandler(Core::Extension::id),
       d(new TemplatePrivate) {
 
