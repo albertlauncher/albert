@@ -13,6 +13,7 @@ ID_PATTERN = "^([a-z0-9]+)$"
 NAMESPACE_PATTERN = "^([A-Za-z][A-Za-z0-9]+)$"
 PRETTYNAME_PATTERN = "^([A-Za-z0-9 _\\-]+)$"
 TEMPLATE_EXTENSION_BASE = "templateExtension/"
+CMAKE_PATTERN = "^add_subdirectory\(([^\)]+)\)$"
 
 if len(sys.argv) != 4:
     u = "Usage: create_plugin.py <id [a-z0-9]> <namespace> <Pretty Name>\n"
@@ -22,6 +23,7 @@ if len(sys.argv) != 4:
 id_regex = re.compile(ID_PATTERN)
 namespace_regex = re.compile(NAMESPACE_PATTERN)
 prettyname_regex = re.compile(PRETTYNAME_PATTERN)
+cmake_regex = re.compile(CMAKE_PATTERN)
 
 id_string = sys.argv[1]
 namespace_string = sys.argv[2]
@@ -67,3 +69,35 @@ for localFile in filesToPrepare:
                             re.sub(PRETTYNAME_KEYWORD, prettyname_string, line))))
         tmp.close()
         os.rename(tmpfile, localFile)
+
+print("Leaving directory . . .")
+os.chdir("..")
+print("Updating CMakeLists.txt . . . ")
+existingExtensions = []
+elseLines = []
+lastWasSuccess = True
+with open("CMakeLists.txt", "r") as makelist:
+    for line in makelist:
+        if lastWasSuccess:
+            match = cmake_regex.match(line)
+            if match:
+                existingExtensions.append(match.group(1))
+            else:
+                lastWasSuccess = False
+                elseLines.append(line)
+        else:
+            elseLines.append(line)
+
+existingExtensions.append(id_string)
+existingExtensions.sort()
+
+cmakefile = open("CMakeLists.txt", "w")
+for ext in existingExtensions:
+    cmakefile.write("add_subdirectory(")
+    cmakefile.write(ext)
+    cmakefile.write(")\n")
+
+for line in elseLines:
+    cmakefile.write(line) # The newline is already in the line, because it didn't get stripped
+
+cmakefile.close()
