@@ -1,9 +1,0 @@
-CMakeLists.txt
-configwidget.cpp
-configwidget.h
-configwidget.ui
-extension.cpp
-extension.h
-item.cpp
-item.h
-metadata.json

@@ -3,7 +3,6 @@
 import os
 import re
 import sys
-import urllib
 import string
 from shutil import copyfile
 
@@ -13,13 +12,10 @@ PRETTYNAME_KEYWORD = "PROJECTPRETTYNAME"
 ID_PATTERN = "^([a-z0-9]+)$"
 NAMESPACE_PATTERN = "^([A-Za-z][A-Za-z0-9]+)$"
 PRETTYNAME_PATTERN = "^([A-Za-z0-9 _\\-]+)$"
-#LOC_BASE = "https://raw.githubusercontent.com/ManuelSchneid3r/albert/master/src/plugins/templateExtension/"
-LOC_BASE = "https://raw.githubusercontent.com/idkCpp/albert/create_plugin_py/src/plugins/templateExtension/"
-LOC_INDEX_FILE = "index"
 TEMPLATE_EXTENSION_BASE = "templateExtension/"
 
 if len(sys.argv) != 4:
-    u = "Usage: create_plugin.py <id [a-z0-9]> <namespace> <Pretty Name>"
+    u = "Usage: create_plugin.py <id [a-z0-9]> <namespace> <Pretty Name>\n"
     sys.stderr.write(u)
     sys.exit(1)
 
@@ -32,17 +28,17 @@ namespace_string = sys.argv[2]
 prettyname_string = sys.argv[3]
 
 if not id_regex.match(id_string):
-    e = "ID has to match " + ID_PATTERN
+    e = "ID has to match " + ID_PATTERN + "\n"
     sys.stderr.write(e)
     sys.exit(1)
 
 if not namespace_regex.match(namespace_string):
-    e = "Namespace has to match " + NAMESPACE_PATTERN
+    e = "Namespace has to match " + NAMESPACE_PATTERN + "\n"
     sys.stderr.write(e)
     sys.exit(1)
 
 if not prettyname_regex.match(prettyname_string):
-    e = "Pretty Name has to match " + PRETTYNAME_PATTERN
+    e = "Pretty Name has to match " + PRETTYNAME_PATTERN + "\n"
     sys.stderr.write(e)
     sys.exit(1)
 
@@ -52,31 +48,13 @@ print("Creating directory . . .")
 os.mkdir(id_string)
 os.chdir(id_string)
 
-decision = "INVALID"
-while decision.lower() != "dl" and decision.lower() != "cp":
-    if decision is not "INVALID":
-        print("Give 'dl' or 'cp' as answer!")
-    decision = raw_input("Do you want to download the newest template files or copy existing ones? (dl/cp) ")
-
 filesToPrepare = []
 
-if decision.lower() == "dl":
-    print("Downloading index file . . .")
-    urllib.urlretrieve(LOC_BASE + LOC_INDEX_FILE, LOC_INDEX_FILE)
-
-
-    with open(LOC_INDEX_FILE) as indexFile:
-        for line in indexFile:
-            line = string.replace(line, "\n", "")
-            print("Downloading file " + line)
-            urllib.urlretrieve(LOC_BASE + line, line)
-            filesToPrepare.append(line)
-else:
-    files = os.listdir("../" + TEMPLATE_EXTENSION_BASE)
-    for nextFile in files:
-        print("Copying file " + nextFile)
-        copyfile("../" + TEMPLATE_EXTENSION_BASE + nextFile, nextFile)
-        filesToPrepare.append(nextFile) 
+files = os.listdir("../" + TEMPLATE_EXTENSION_BASE)
+for nextFile in files:
+    print("Copying file " + nextFile)
+    copyfile("../" + TEMPLATE_EXTENSION_BASE + nextFile, nextFile)
+    filesToPrepare.append(nextFile) 
 
 for localFile in filesToPrepare:
     print("Preparing file " + localFile)
