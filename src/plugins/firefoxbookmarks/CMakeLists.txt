@@ -14,7 +14,6 @@ set(SRC
     metadata.json
     extension.cpp
     configwidget.cpp
-    item.cpp
     indexer.cpp
 )
 
