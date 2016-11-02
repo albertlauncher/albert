@@ -25,11 +25,15 @@
 #include <QSettings>
 #include <QThreadPool>
 #include <QFile>
+#include <QComboBox>
+#include <QCheckBox>
 
 #define CFG_GROUP               "firefoxbookmarks"
 
 #define CFG_PROFILE             "profile"
 #define DEF_PROFILE             false
+#define CFG_FUZZY               "fuzzy"
+#define DEF_FUZZY               true
 
 #define MOZ_CFG_PROFILE_PATH    "Path"
 
@@ -51,7 +55,8 @@ FirefoxBookmarks::Extension::Extension() : AbstractExtension("org.albert.extensi
         qWarning("[%s] Did not find mozilla base path, disabling", name_);
         return;      // We havn't found an applicable mozilla-location, probably firefox is not installed
     }
-    profilesIniPath_ = base + "/firefox/profiles.ini";
+    profileBasePath_ = base + "/firefox";
+    profilesIniPath_ = profileBasePath_ + "/profiles.ini";
     QFile profilesINIfile(profilesIniPath_);
 
     if (!profilesINIfile.exists()) {
@@ -81,18 +86,14 @@ FirefoxBookmarks::Extension::Extension() : AbstractExtension("org.albert.extensi
         currentProfile_ = profilepath.toString();
     }
 
+    offlineIndex_.setFuzzy(albertSettings->value(CFG_FUZZY, DEF_FUZZY).toBool());
+
     albertSettings->endGroup();
 
-    QString sqliteName = "%1/firefox/%2/places.sqlite";
-    sqliteName = sqliteName.arg(base).arg(profilepath.toString());
-
-    qDebug() << sqliteName;
 
     base_ = QSqlDatabase::addDatabase("QSQLITE", "sqlite");
-    base_.setDatabaseName(sqliteName);
-    reloadConfig(sqliteName);
+    changeProfile(currentProfile_);
 
-    placesWatcher_.addPath(sqliteName);
     connect(&placesWatcher_, SIGNAL(fileChanged(QString)), this, SLOT(reloadConfig(QString)));
 
     enabled_ = true;
@@ -110,7 +111,14 @@ FirefoxBookmarks::Extension::~Extension() {
 /** ***************************************************************************/
 QWidget *FirefoxBookmarks::Extension::widget(QWidget *parent) {
     if (widget_.isNull()) {
-        widget_ = new ConfigWidget(profiles_, currentProfile_, parent);
+        widget_ = new ConfigWidget(parent);
+        QComboBox *cmb = widget_->ui.comboBox;
+        cmb->addItems(profiles_);
+        cmb->setCurrentIndex(profiles_.indexOf(currentProfile_));
+        connect(cmb, SIGNAL(currentIndexChanged(QString)), this, SLOT(changeProfile(QString)));
+        QCheckBox *ckb = widget_->ui.checkBox;
+        ckb->setChecked(offlineIndex_.fuzzy());
+        connect(ckb, SIGNAL(clicked(bool)), this, SLOT(changeFuzzyness(bool)));
     }
     return widget_;
 }
@@ -170,5 +178,26 @@ void FirefoxBookmarks::Extension::scanProfiles(QString profilesIni) {
         }
     }
 
+}
+
+
+
+/** ***************************************************************************/
+void FirefoxBookmarks::Extension::changeProfile(QString profile) {
+    QString sqliteName = profileBasePath_ + "/%1/places.sqlite";
+    sqliteName = sqliteName.arg(profile);
+
+    base_.setDatabaseName(sqliteName);
+    reloadConfig(sqliteName);
+
+    placesWatcher_.removePaths(placesWatcher_.files());
+    placesWatcher_.addPath(sqliteName);
+}
+
+
+
+/** ***************************************************************************/
+void FirefoxBookmarks::Extension::changeFuzzyness(bool fuzzy) {
+    offlineIndex_.setFuzzy(fuzzy);
 }
 

@@ -23,12 +23,8 @@ class ConfigWidget final : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ConfigWidget(QStringList &profiles, QString &current, QWidget *parent = 0);
+    explicit ConfigWidget(QWidget *parent = 0);
     ~ConfigWidget();
     Ui::ConfigWidget ui;
-
-private:
-    QStringList &profiles_;
-    QString &current_;
 };
 }

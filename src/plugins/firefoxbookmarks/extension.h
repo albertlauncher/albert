@@ -60,6 +60,8 @@ public:
 public slots:
     void reloadConfig(QString);
     void scanProfiles(QString profilesIni);
+    void changeProfile(QString profile);
+    void changeFuzzyness(bool fuzzy);
 
 private:
     // Gerneral stuff
@@ -73,6 +75,7 @@ private:
 
     // profiles stuff
     QFileSystemWatcher profilesWatcher_;
+    QString profileBasePath_;
     QString profilesIniPath_;
     QString currentProfile_;
     QStringList profiles_;
