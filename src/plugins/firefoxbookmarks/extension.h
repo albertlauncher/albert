@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014-2015 Manuel Schneider
+// Copyright (C) 2016 Martin Buergmann
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,7 +17,13 @@
 #pragma once
 #include <QObject>
 #include <QPointer>
+#include <QFileSystemWatcher>
+#include <QSqlDatabase>
+#include <QList>
+#include <QMutex>
 #include "abstractextension.h"
+#include "standardobjects.h"
+#include "offlineindex.h"
 
 namespace FirefoxBookmarks {
 
@@ -29,6 +35,8 @@ class Extension final : public AbstractExtension
     Q_INTERFACES(AbstractExtension)
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
+    class Indexer;
+
 public:
     Extension();
     ~Extension();
@@ -37,7 +45,7 @@ public:
      * Implementation of extension interface
      */
 
-    QString name() const override { return "Firefox Bookmarks"; }
+    QString name() const override { return name_; }
     QWidget *widget(QWidget *parent = nullptr) override;
     void setupSession() override;
     void teardownSession() override;
@@ -46,8 +54,19 @@ public:
     /*
      * Extension specific members
      */
+    const static QVariant nullVariant;
+
+public slots:
+    void reloadConfig(QString);
 
 private:
     QPointer<ConfigWidget> widget_;
+    const char* const name_ = "Firefox Bookmarks";
+    bool enabled_;
+    QFileSystemWatcher placesWatcher_;
+    QSqlDatabase base_;
+    OfflineIndex offlineIndex_;
+    QMutex indexAccess_;
+    vector<shared_ptr<StandardIndexItem>> index_;
 };
 }

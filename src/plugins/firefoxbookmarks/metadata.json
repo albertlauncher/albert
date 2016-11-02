@@ -4,6 +4,6 @@
     "version" :         "1.0",
     "platform" :        "All",
     "group" :           "Extensions",
-    "author" :          "Author missing",
-    "dependencies" :    []
+    "author" :          "Martin Buergmann",
+    "dependencies" :    ["firefox"]
 }
