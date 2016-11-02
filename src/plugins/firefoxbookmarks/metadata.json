@@ -1,0 +1,9 @@
+{
+    "id" :              "org.albert.extension.firefoxbookmarks",
+    "name" :            "Firefox Bookmarks",
+    "version" :         "1.0",
+    "platform" :        "All",
+    "group" :           "Extensions",
+    "author" :          "Author missing",
+    "dependencies" :    []
+}
