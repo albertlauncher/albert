@@ -30,14 +30,15 @@ public:
     Item(Player& p, QString& subtext, QString& iconPath, QDBusMessage& msg, bool hideAfter);
     ~Item();
 
-    QString id() const override { return ""; }
-    QString text() const override;
-    QString subtext() const override;
-    QString iconPath() const override;
+    QString id() const override { return id_; }
+    QString text() const override { return text_; }
+    QString subtext() const override { return subtext_; }
+    QString iconPath() const override { return iconPath_; }
     vector<shared_ptr<AbstractAction>> actions() override;
 
 private:
     Player& player_;
+    QString id_;
     QString text_;
     QString subtext_;
     QString iconPath_;

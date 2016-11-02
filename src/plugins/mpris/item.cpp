@@ -28,6 +28,8 @@ MPRIS::Item::Item(Player &p, QString &subtext, QString &iconPath, QDBusMessage &
         flags->hideWidget = hideAfter_;
         flags->clearInput = hideAfter_;
     }));
+    id_ = "extension.mpris.item:%1.%2";
+    id_ = id_.arg(p.getBusId()).arg(msg.member());
 }
 
 
@@ -35,27 +37,6 @@ MPRIS::Item::Item(Player &p, QString &subtext, QString &iconPath, QDBusMessage &
 /** ***************************************************************************/
 MPRIS::Item::~Item() {
 
-}
-
-
-
-/** ***************************************************************************/
-QString MPRIS::Item::text() const {
-    return text_;
-}
-
-
-
-/** ***************************************************************************/
-QString MPRIS::Item::subtext() const {
-    return subtext_;
-}
-
-
-
-/** ***************************************************************************/
-QString MPRIS::Item::iconPath() const {
-    return iconPath_;
 }
 
 
