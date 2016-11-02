@@ -22,25 +22,18 @@
 MPRIS::Player::Player(QString &busid) : busid_(busid), name_(busid) {
     // Query the name of the media player of which we have the bus id.
     QDBusInterface iface(busid, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2");
+
     QVariant prop = iface.property("Identity");
-    QString name = prop.toString();
-    if (!name.isNull() && !name.isEmpty()) {
-        name_ = name;
+    if (prop.isValid() && !prop.isNull() && prop.canConvert(QVariant::String)) {
+        name_ = prop.toString();
     } else {
-        qWarning("DBus: Name is either empty or null");
+        qWarning("DBus: Name is either invalid, null or not instanceof string");
     }
-}
 
-
-
-/** ***************************************************************************/
-QString& MPRIS::Player::getBusId() {
-    return busid_;
-}
-
-
-
-/** ***************************************************************************/
-QString& MPRIS::Player::getName() {
-    return name_;
+    prop = iface.property("CanRaise");
+    if (prop.isValid() && !prop.isNull() && prop.canConvert(QVariant::Bool)) {
+        canRaise_ = prop.toBool();
+    } else {
+        qWarning("DBus: CanRaise is either invalid, null or not instanceof bool");
+    }
 }

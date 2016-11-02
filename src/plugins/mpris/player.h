@@ -24,11 +24,13 @@ class Player
 {
 public:
     Player(QString& busid);
-    QString& getName();
-    QString& getBusId();
+    QString& getName() { return name_; }
+    QString& getBusId() { return busid_; }
+    bool canRaise() { return canRaise_; }
 
 private:
     QString busid_, name_;
+    bool canRaise_;
 };
 
 } // namespace MPRIS
