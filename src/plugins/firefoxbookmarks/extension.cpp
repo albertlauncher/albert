@@ -51,37 +51,37 @@ FirefoxBookmarks::Extension::Extension() : AbstractExtension("org.albert.extensi
         qWarning("[%s] Did not find mozilla base path, disabling", name_);
         return;      // We havn't found an applicable mozilla-location, probably firefox is not installed
     }
+    profilesIniPath_ = base + "/firefox/profiles.ini";
+    QFile profilesINIfile(profilesIniPath_);
+
+    if (!profilesINIfile.exists()) {
+        qWarning("profiles.ini does not exist! This is weird!");
+    } else {
+        profilesWatcher_.addPath(profilesIniPath_);
+        connect(&profilesWatcher_, SIGNAL(fileChanged(QString)), this, SLOT(scanProfiles(QString)));
+    }
 
     QSettings *albertSettings = qApp->settings();
     albertSettings->beginGroup(CFG_GROUP);
 
-    bool found = false;
-    QVariant profilepath = albertSettings->value(CFG_PROFILE, DEF_PROFILE);
-    if (!profilepath.toBool()) {
-        QString profilesINIpath = base + "/firefox/profiles.ini";
-        QFile profilesINIfile(profilesINIpath);
+    scanProfiles(profilesIniPath_);
 
-        if (!profilesINIfile.exists()) {
-            qWarning("profiles.ini does not exist! This is weird!");
-        }
-
-        QSettings profilesINI(profilesINIpath, QSettings::IniFormat);
-
-        profilesINI.beginGroup("Profile0");
-        profilepath = profilesINI.value(MOZ_CFG_PROFILE_PATH, nullVariant);
-
-        if (!profilepath.isNull()) {
-            found = true; // We did not find a profile... wth?
-            albertSettings->setValue(CFG_PROFILE, profilepath);
-        }
-    } else
-        found = true;
-
-    albertSettings->endGroup();
-    if (!found) {
-        qWarning("Could not determine the firefox profile path!");
+    if (profiles_.length() == 0) {
+        qWarning("No Firefox profiles found! Disabling . . .");
         return;
     }
+
+    // Do we have one selected?
+    QVariant profilepath = albertSettings->value(CFG_PROFILE, false);
+    if (!profilepath.toBool()) {
+        // No, so just use the first you can grab
+        albertSettings->setValue(CFG_PROFILE, profiles_.at(0));
+        currentProfile_ = profiles_.at(0);
+    } else {
+        currentProfile_ = profilepath.toString();
+    }
+
+    albertSettings->endGroup();
 
     QString sqliteName = "%1/firefox/%2/places.sqlite";
     sqliteName = sqliteName.arg(base).arg(profilepath.toString());
@@ -110,7 +110,7 @@ FirefoxBookmarks::Extension::~Extension() {
 /** ***************************************************************************/
 QWidget *FirefoxBookmarks::Extension::widget(QWidget *parent) {
     if (widget_.isNull()) {
-        widget_ = new ConfigWidget(parent);
+        widget_ = new ConfigWidget(profiles_, currentProfile_, parent);
     }
     return widget_;
 }
@@ -152,5 +152,23 @@ void FirefoxBookmarks::Extension::reloadConfig(QString) {
     idxer->setAutoDelete(true);
 
     QThreadPool::globalInstance()->start(idxer);
+}
+
+
+
+/** ***************************************************************************/
+void FirefoxBookmarks::Extension::scanProfiles(QString profilesIni) {
+
+    profiles_.clear();
+
+    QSettings profiles(profilesIni, QSettings::IniFormat);
+    QStringList allkeys = profiles.allKeys();
+
+    for (QString &key : allkeys) {
+        if (key.endsWith("Path")) {
+            profiles_.append(profiles.value(key).toString());
+        }
+    }
+
 }
 

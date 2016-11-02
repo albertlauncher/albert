@@ -20,6 +20,7 @@
 #include <QFileSystemWatcher>
 #include <QSqlDatabase>
 #include <QList>
+#include <QStringList>
 #include <QMutex>
 #include "abstractextension.h"
 #include "standardobjects.h"
@@ -58,13 +59,25 @@ public:
 
 public slots:
     void reloadConfig(QString);
+    void scanProfiles(QString profilesIni);
 
 private:
+    // Gerneral stuff
     QPointer<ConfigWidget> widget_;
     const char* const name_ = "Firefox Bookmarks";
     bool enabled_;
+
+    // places stuff
     QFileSystemWatcher placesWatcher_;
     QSqlDatabase base_;
+
+    // profiles stuff
+    QFileSystemWatcher profilesWatcher_;
+    QString profilesIniPath_;
+    QString currentProfile_;
+    QStringList profiles_;
+
+    // inedx stuff
     OfflineIndex offlineIndex_;
     QMutex indexAccess_;
     vector<shared_ptr<StandardIndexItem>> index_;

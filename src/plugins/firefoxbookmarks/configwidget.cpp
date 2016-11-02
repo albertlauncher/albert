@@ -15,10 +15,15 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "configwidget.h"
+#include <QComboBox>
 
 /** ***************************************************************************/
-FirefoxBookmarks::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
+FirefoxBookmarks::ConfigWidget::ConfigWidget(QStringList &profiles, QString &current, QWidget *parent) : QWidget(parent), profiles_(profiles), current_(current) {
     ui.setupUi(this);
+
+    QComboBox *cmb = ui.comboBox;
+    cmb->addItems(profiles);
+    cmb->setCurrentIndex(profiles.indexOf(current));
 }
 
 
