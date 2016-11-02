@@ -43,7 +43,7 @@ private:
     QString subtext_;
     QString iconPath_;
     QDBusMessage message_;
-    shared_ptr<AbstractAction> action_;
+    vector<shared_ptr<AbstractAction>> actions_;
     bool hideAfter_;
 };
 }

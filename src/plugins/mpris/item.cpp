@@ -23,11 +23,20 @@
 MPRIS::Item::Item(Player &p, QString &subtext, QString &iconPath, QDBusMessage &msg, bool hideAfter)
     : player_(p), subtext_(subtext), iconPath_(iconPath), message_(msg), hideAfter_(hideAfter) {
     text_ = p.getName();
-    action_ = shared_ptr<AbstractAction>(new StandardAction(text_, [this](ExecutionFlags *flags){
+    actions_.push_back(shared_ptr<AbstractAction>(new StandardAction(subtext, [this](ExecutionFlags *flags){
         QDBusConnection::sessionBus().send(message_);
         flags->hideWidget = hideAfter_;
         flags->clearInput = hideAfter_;
-    }));
+    })));
+    if (p.canRaise()) {
+        actions_.push_back(shared_ptr<AbstractAction>(new StandardAction("Raise Window", [&p](ExecutionFlags*){
+            QString busid = p.getBusId();
+            QDBusMessage raise = QDBusMessage::createMethodCall(busid, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2", "Raise");
+            if (!QDBusConnection::sessionBus().send(raise)) {
+                qWarning("Error calling raise method on dbus://%s", busid.toStdString().c_str());
+            }
+        })));
+    }
     id_ = "extension.mpris.item:%1.%2";
     id_ = id_.arg(p.getBusId()).arg(msg.member());
 }
@@ -43,8 +52,6 @@ MPRIS::Item::~Item() {
 
 /** ***************************************************************************/
 vector<shared_ptr<AbstractAction>> MPRIS::Item::actions() {
-    vector<shared_ptr<AbstractAction>> ret;
-    ret.push_back(action_);
-    return ret;
+    return actions_;
 }
 
