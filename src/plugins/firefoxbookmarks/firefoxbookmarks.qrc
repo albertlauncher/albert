@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="favicon">resources/favicon.png</file>
+        <file alias="firefox">resources/firefox.png</file>
+    </qresource>
+</RCC>
