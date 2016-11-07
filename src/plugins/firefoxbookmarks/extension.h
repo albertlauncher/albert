@@ -62,6 +62,7 @@ public slots:
     void scanProfiles(QString profilesIni);
     void changeProfile(QString profile);
     void changeFuzzyness(bool fuzzy);
+    void changeOpenPolicy(bool withFirefox);
 
 private:
     // Gerneral stuff
@@ -69,6 +70,7 @@ private:
     const char* const name_ = "Firefox Bookmarks";
     bool enabled_;
     bool firefoxExeFound_;
+    bool openWithFirefox_;
 
     // places stuff
     QFileSystemWatcher placesWatcher_;

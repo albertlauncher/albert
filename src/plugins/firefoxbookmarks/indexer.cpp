@@ -105,7 +105,7 @@ void FirefoxBookmarks::Extension::Indexer::run() {
 
         std::vector<SharedAction> actions;
         SharedStdAction action = std::make_shared<StandardAction>();
-        bool exeDirect = extension_->firefoxExeFound_;
+        bool exeDirect = extension_->firefoxExeFound_ && extension_->openWithFirefox_;
 
         if (exeDirect)
             action->setText("Open in firefox");  // If we have firefox we open ff-bookmarks in firefox

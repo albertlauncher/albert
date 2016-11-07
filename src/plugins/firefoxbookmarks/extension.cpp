@@ -34,6 +34,8 @@
 #define DEF_PROFILE             false
 #define CFG_FUZZY               "fuzzy"
 #define DEF_FUZZY               true
+#define CFG_WITH_FIREFOX        "openWithFirefox"
+#define DEF_WITH_FIREFOX        true
 
 #define MOZ_CFG_PROFILE_PATH    "Path"
 
@@ -95,6 +97,8 @@ FirefoxBookmarks::Extension::Extension() : AbstractExtension("org.albert.extensi
 
     offlineIndex_.setFuzzy(albertSettings->value(CFG_FUZZY, DEF_FUZZY).toBool());
 
+    openWithFirefox_ = albertSettings->value(CFG_WITH_FIREFOX, DEF_WITH_FIREFOX).toBool();
+
     albertSettings->endGroup();
 
 
@@ -119,13 +123,19 @@ FirefoxBookmarks::Extension::~Extension() {
 QWidget *FirefoxBookmarks::Extension::widget(QWidget *parent) {
     if (widget_.isNull()) {
         widget_ = new ConfigWidget(parent);
+
         QComboBox *cmb = widget_->ui.comboBox;
         cmb->addItems(profiles_);
         cmb->setCurrentIndex(profiles_.indexOf(currentProfile_));
         connect(cmb, SIGNAL(currentIndexChanged(QString)), this, SLOT(changeProfile(QString)));
-        QCheckBox *ckb = widget_->ui.checkBox;
+
+        QCheckBox *ckb = widget_->ui.fuzzy;
         ckb->setChecked(offlineIndex_.fuzzy());
         connect(ckb, SIGNAL(clicked(bool)), this, SLOT(changeFuzzyness(bool)));
+
+        ckb = widget_->ui.openWithFirefox;
+        ckb->setChecked(openWithFirefox_);
+        connect(ckb, SIGNAL(clicked(bool)), this, SLOT(changeOpenPolicy(bool)));
     }
     return widget_;
 }
@@ -208,5 +218,13 @@ void FirefoxBookmarks::Extension::changeProfile(QString profile) {
 /** ***************************************************************************/
 void FirefoxBookmarks::Extension::changeFuzzyness(bool fuzzy) {
     offlineIndex_.setFuzzy(fuzzy);
+}
+
+
+
+/** ***************************************************************************/
+void FirefoxBookmarks::Extension::changeOpenPolicy(bool withFirefox) {
+    openWithFirefox_ = withFirefox;
+    reloadConfig("");
 }
 

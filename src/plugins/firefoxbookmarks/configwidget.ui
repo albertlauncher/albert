@@ -35,9 +35,19 @@
     <widget class="QComboBox" name="comboBox"/>
    </item>
    <item>
-    <widget class="QCheckBox" name="checkBox">
+    <widget class="QCheckBox" name="fuzzy">
      <property name="text">
       <string>Fuzzy Search</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="openWithFirefox">
+     <property name="text">
+      <string>Open with firefox by default</string>
      </property>
      <property name="checked">
       <bool>true</bool>
