@@ -165,7 +165,6 @@ void FirefoxBookmarks::Extension::handleQuery(Query query) {
 
     // Add results to query.
     for (const shared_ptr<IIndexable> &obj : indexables) {
-        qDebug() << std::static_pointer_cast<StandardIndexItem>(obj)->iconPath();
         // TODO `Search` has to determine the relevance. Set to 0 for now
         query.addMatch(std::static_pointer_cast<StandardIndexItem>(obj), 0);
     }
