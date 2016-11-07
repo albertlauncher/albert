@@ -57,6 +57,9 @@ FirefoxBookmarks::Extension::Extension() : AbstractExtension("org.albert.extensi
         return;      // We havn't found an applicable mozilla-location, probably firefox is not installed
     }
 
+    // Check for firefox executable
+    firefoxExeFound_ = !QStandardPaths::findExecutable("firefox").isEmpty();
+
     // Setup some path variables
     profileBasePath_ = base + "/firefox";
     profilesIniPath_ = profileBasePath_ + "/profiles.ini";

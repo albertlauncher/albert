@@ -68,6 +68,7 @@ private:
     QPointer<ConfigWidget> widget_;
     const char* const name_ = "Firefox Bookmarks";
     bool enabled_;
+    bool firefoxExeFound_;
 
     // places stuff
     QFileSystemWatcher placesWatcher_;

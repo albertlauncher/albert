@@ -22,6 +22,7 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QProcess>
 #include <functional>
 #include <vector>
 #include <memory>
@@ -42,7 +43,7 @@ void FirefoxBookmarks::Extension::Indexer::run() {
     }
 
     // Notification
-    qDebug("[%s] Start indexing in background thread.", extension_->name().toStdString().c_str());
+    qDebug("[%s] Start indexing in background thread.", extension_->name_);
     emit statusInfo("Indexing bookmarks ...");
 
     // Build a new index
@@ -97,16 +98,25 @@ void FirefoxBookmarks::Extension::Indexer::run() {
             }
 
         } else {
-            qWarning("[%s:Indexer Thread] Could not prepare statement!", extension_->name().toStdString().c_str());
+            qWarning("[%s:Indexer Thread] Could not prepare statement!", extension_->name_);
         }
 
         ssii->setIndexKeywords(std::move(weightedKeywords));
 
         std::vector<SharedAction> actions;
         SharedStdAction action = std::make_shared<StandardAction>();
-        action->setText("Open in default browser");
-        action->setAction([urlstr](ExecutionFlags*){
-            QDesktopServices::openUrl(QUrl(urlstr));
+        bool exeDirect = extension_->firefoxExeFound_;
+
+        if (exeDirect)
+            action->setText("Open in firefox");  // If we have firefox we open ff-bookmarks in firefox
+        else
+            action->setText("Open in default browser"); // If the exe has another name (like iceweasel) which we didn't check for, lets assume the default browser handles this well
+
+        action->setAction([urlstr, exeDirect](ExecutionFlags*){
+            if (exeDirect)
+                QProcess::startDetached("firefox", QStringList() << urlstr);
+            else
+                QDesktopServices::openUrl(QUrl(urlstr));
         });
         actions.push_back(std::move(action));
 
@@ -149,6 +159,6 @@ void FirefoxBookmarks::Extension::Indexer::run() {
         extension_->offlineIndex_.add(item);
 
     // Notification
-    qDebug("[%s] Indexing done (%d items)", extension_->id.toUtf8().constData(), static_cast<int>(extension_->index_.size()));
+    qDebug("[%s] Indexing done (%d items)", extension_->name_, static_cast<int>(extension_->index_.size()));
     emit statusInfo(QString("Indexed %1 bookmarks").arg(extension_->index_.size()));
 }
