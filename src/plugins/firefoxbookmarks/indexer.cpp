@@ -64,7 +64,7 @@ void FirefoxBookmarks::Extension::Indexer::run() {
         SharedStdIdxItem ssii  = std::make_shared<StandardIndexItem>(id);
         ssii->setText(title);
         ssii->setSubtext(urlstr);
-        ssii->setIconPath(":favicon");
+        ssii->setIconPath(":firefox");
 
         std::vector<IIndexable::WeightedKeyword> weightedKeywords;
         QUrl url(urlstr);

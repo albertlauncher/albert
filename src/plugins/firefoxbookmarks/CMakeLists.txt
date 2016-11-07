@@ -21,6 +21,10 @@ qt5_wrap_ui(UI
     configwidget.ui
 )
 
+qt5_add_resources(QRC
+    ${PROJECT_NAME}.qrc
+)
+
 add_library(${PROJECT_NAME} SHARED ${SRC} ${UI})
 
 target_link_libraries(${PROJECT_NAME} ${Qt5Widgets_LIBRARIES} ${Qt5Sql_LIBRARIES} offlineindex )

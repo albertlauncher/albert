@@ -46,6 +46,7 @@ const QVariant FirefoxBookmarks::Extension::nullVariant = QVariant::fromValue((Q
 FirefoxBookmarks::Extension::Extension() : AbstractExtension("org.albert.extension.firefoxbookmarks") {
     enabled_ = false;
 
+    // Locate mozilla directory
     QString base = QStandardPaths::locate(QStandardPaths::HomeLocation, ".mozilla", QStandardPaths::LocateDirectory);
     if (base.isEmpty()) { // Try a windowsy approach
         base = QStandardPaths::locate(QStandardPaths::DataLocation, "Mozilla", QStandardPaths::LocateDirectory);
@@ -55,6 +56,8 @@ FirefoxBookmarks::Extension::Extension() : AbstractExtension("org.albert.extensi
         qWarning("[%s] Did not find mozilla base path, disabling", name_);
         return;      // We havn't found an applicable mozilla-location, probably firefox is not installed
     }
+
+    // Setup some path variables
     profileBasePath_ = base + "/firefox";
     profilesIniPath_ = profileBasePath_ + "/profiles.ini";
     QFile profilesINIfile(profilesIniPath_);
@@ -69,6 +72,7 @@ FirefoxBookmarks::Extension::Extension() : AbstractExtension("org.albert.extensi
     QSettings *albertSettings = qApp->settings();
     albertSettings->beginGroup(CFG_GROUP);
 
+    // Which profiles do we have?
     scanProfiles(profilesIniPath_);
 
     if (profiles_.length() == 0) {
@@ -76,10 +80,10 @@ FirefoxBookmarks::Extension::Extension() : AbstractExtension("org.albert.extensi
         return;
     }
 
-    // Do we have one selected?
+    // Which profile did we use last time?
     QVariant profilepath = albertSettings->value(CFG_PROFILE, false);
     if (!profilepath.toBool()) {
-        // No, so just use the first you can grab
+        // None, so just use the first you can grab
         albertSettings->setValue(CFG_PROFILE, profiles_.at(0));
         currentProfile_ = profiles_.at(0);
     } else {
@@ -147,9 +151,11 @@ void FirefoxBookmarks::Extension::handleQuery(Query query) {
     indexAccess_.unlock();
 
     // Add results to query.
-    for (const shared_ptr<IIndexable> &obj : indexables)
+    for (const shared_ptr<IIndexable> &obj : indexables) {
+        qDebug() << std::static_pointer_cast<StandardIndexItem>(obj)->iconPath();
         // TODO `Search` has to determine the relevance. Set to 0 for now
         query.addMatch(std::static_pointer_cast<StandardIndexItem>(obj), 0);
+    }
 }
 
 
