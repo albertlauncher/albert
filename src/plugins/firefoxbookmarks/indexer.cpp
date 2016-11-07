@@ -49,7 +49,8 @@ void FirefoxBookmarks::Extension::Indexer::run() {
     vector<SharedStdIdxItem> bookmarks;
 
     QSqlQuery result(base_);
-    if (!result.exec("SELECT b.id,b.title,p.url FROM moz_bookmarks b JOIN moz_places p ON b.fk = p.id")) {
+    // Don't knwo what type=1 does, but it only returns real bookmarks (no folders) and some trash...
+    if (!result.exec("SELECT b.id,b.title,b.parent,p.url FROM moz_bookmarks b JOIN moz_places p ON b.fk = p.id WHERE b.type = 1")) {
         qWarning() << result.lastError().text();
         return;
     }
@@ -58,8 +59,9 @@ void FirefoxBookmarks::Extension::Indexer::run() {
         QString id = result.value("id").toString();
         QString title = result.value("title").toString();
         QString urlstr = result.value("url").toString();
+        QString parent = result.value("parent").toString();
 
-        if (title.isEmpty()) continue;  // This is a folder or something else
+        if (title.isEmpty()) continue;  // This is most likely something else
 
         SharedStdIdxItem ssii  = std::make_shared<StandardIndexItem>(id);
         ssii->setText(title);
@@ -71,6 +73,33 @@ void FirefoxBookmarks::Extension::Indexer::run() {
         QString host = url.host();
         weightedKeywords.emplace_back(title, USHRT_MAX);
         weightedKeywords.emplace_back(host.left(host.size()-url.topLevelDomain().size()), USHRT_MAX/2);
+
+        // Scan the parent folders
+        QSqlQuery preparedQuery(base_);
+        if (preparedQuery.prepare("SELECT id,title,parent,guid FROM moz_bookmarks WHERE id = :parentid")) {
+            QSqlQuery curpar(preparedQuery);
+            curpar.bindValue("parentid", parent);
+            while (curpar.exec()) {
+                if (curpar.first()) {
+                    QString guid = curpar.value("guid").toString();
+                    if (guid == "root________") // This is the root element
+                        break;
+                    title = curpar.value("title").toString();
+                    if (title.isEmpty()) {
+                        curpar.bindValue("parentid", curpar.value("parent"));
+                        continue;
+                    }
+                    weightedKeywords.emplace_back(title, USHRT_MAX/4);
+                } else {
+                    //qWarning("[%s:Indexer Thread] Statement yielded no result! (or broke)", extension_->name().toStdString().c_str());
+                    break;
+                }
+            }
+
+        } else {
+            qWarning("[%s:Indexer Thread] Could not prepare statement!", extension_->name().toStdString().c_str());
+        }
+
         ssii->setIndexKeywords(std::move(weightedKeywords));
 
         std::vector<SharedAction> actions;
