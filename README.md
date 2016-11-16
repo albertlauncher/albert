@@ -1,7 +1,7 @@
 #Albert [![Build Status](https://travis-ci.org/ManuelSchneid3r/albert.svg?branch=master)](https://travis-ci.org/ManuelSchneid3r/albert)
 
 
-[![Telegram news channel](https://img.shields.io/badge/news channel-telergram-0088cc.svg?style=flat)](https://telegram.me/albertlauncher)
+[![Telegram news channel](https://img.shields.io/badge/news channel-telegram-0088cc.svg?style=flat)](https://telegram.me/albertlauncher)
 [![Telegram community chat](https://img.shields.io/badge/chat-telegram-0088cc.svg?style=flat)](https://telegram.me/albert_launcher_community)
 [![Join the chat at https://gitter.im/ManuelSchneid3r/albert](https://badges.gitter.im/ManuelSchneid3r/albert.svg)](https://gitter.im/ManuelSchneid3r/albert?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
