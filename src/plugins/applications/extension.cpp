@@ -28,10 +28,12 @@
 #include "albertapp.h"
 #include "standardobjects.h"
 
-const char* Applications::Extension::CFG_PATHS    = "paths";
-const char* Applications::Extension::CFG_FUZZY    = "fuzzy";
-const bool  Applications::Extension::DEF_FUZZY    = false;
-const bool  Applications::Extension::UPDATE_DELAY = 60000;
+const char* Applications::Extension::CFG_PATHS           = "paths";
+const char* Applications::Extension::CFG_FUZZY           = "fuzzy";
+const bool  Applications::Extension::DEF_FUZZY           = false;
+const char* Applications::Extension::CFG_INDEX_NAME_ONLY = "indexNameOnly";
+const bool  Applications::Extension::DEF_INDEX_NAME_ONLY = false;
+const bool  Applications::Extension::UPDATE_DELAY        = 60000;
 
 /** ***************************************************************************/
 Applications::Extension::Extension() : AbstractExtension("org.albert.extension.applications") {
@@ -41,6 +43,7 @@ Applications::Extension::Extension() : AbstractExtension("org.albert.extension.a
     // Load settings
     qApp->settings()->beginGroup(id);
     offlineIndex_.setFuzzy(qApp->settings()->value(CFG_FUZZY, DEF_FUZZY).toBool());
+    indexNameOnly_ = qApp->settings()->value(CFG_INDEX_NAME_ONLY, DEF_INDEX_NAME_ONLY).toBool();
 
     // Load the paths or set a default
     QVariant v = qApp->settings()->value(CFG_PATHS);
@@ -110,6 +113,10 @@ QWidget *Applications::Extension::widget(QWidget *parent) {
         // Fuzzy
         widget_->ui.checkBox_fuzzy->setChecked(offlineIndex_.fuzzy());
         connect(widget_->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
+
+        // Index name only
+        widget_->ui.checkBox_indexNameOnly->setChecked(indexNameOnly_);
+        connect(widget_->ui.checkBox_indexNameOnly, &QCheckBox::toggled, this, &Extension::setIndexNameOnly);
 
         // Info
         widget_->ui.label_info->setText(QString("%1 Applications indexed.").arg(index_.size()));
@@ -252,4 +259,10 @@ void Applications::Extension::updateIndex() {
 void Applications::Extension::setFuzzy(bool b) {
     qApp->settings()->setValue(QString("%1/%2").arg(id, CFG_FUZZY), b);
     offlineIndex_.setFuzzy(b);
+}
+
+void Applications::Extension::setIndexNameOnly(bool b) {
+    qApp->settings()->setValue(QString("%1/%2").arg(id, CFG_INDEX_NAME_ONLY), b);
+    indexNameOnly_ = b;
+    updateIndex();
 }
