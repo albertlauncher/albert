@@ -22,6 +22,8 @@
 #include <QList>
 #include <QStringList>
 #include <QMutex>
+#include <QTimer>
+#include <QTemporaryFile>
 #include "abstractextension.h"
 #include "standardobjects.h"
 #include "offlineindex.h"
@@ -58,8 +60,11 @@ public:
     const static QVariant nullVariant;
 
 public slots:
-    void reloadConfig(QString);
+    void cooldownFinished();
+    void fileChanged(QString);
     void scanProfiles(QString profilesIni);
+    void scanBookmarksFinished();
+    void reloadConfig();
     void changeProfile(QString profile);
     void changeFuzzyness(bool fuzzy);
     void changeOpenPolicy(bool withFirefox);
@@ -83,9 +88,14 @@ private:
     QString currentProfile_;
     QStringList profiles_;
 
-    // inedx stuff
+    // index stuff
+    QTemporaryFile tmpBase_;
     OfflineIndex offlineIndex_;
     QMutex indexAccess_;
     vector<shared_ptr<StandardIndexItem>> index_;
+    QTimer cooldown_;
+    bool coolingdown_;
+    bool indexing_;
+    bool rescan_;
 };
 }

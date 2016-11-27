@@ -45,7 +45,7 @@ const QVariant FirefoxBookmarks::Extension::nullVariant = QVariant::fromValue((Q
 
 
 /** ***************************************************************************/
-FirefoxBookmarks::Extension::Extension() : AbstractExtension("org.albert.extension.firefoxbookmarks") {
+FirefoxBookmarks::Extension::Extension() : AbstractExtension("org.albert.extension.firefoxbookmarks"), indexing_(false), coolingdown_(false), tmpBase_(nullptr) {
     enabled_ = false;
 
     // Locate mozilla directory
@@ -105,7 +105,11 @@ FirefoxBookmarks::Extension::Extension() : AbstractExtension("org.albert.extensi
     base_ = QSqlDatabase::addDatabase("QSQLITE", "sqlite");
     changeProfile(currentProfile_);
 
-    connect(&placesWatcher_, SIGNAL(fileChanged(QString)), this, SLOT(reloadConfig(QString)));
+    cooldown_.setInterval(60000);
+    cooldown_.setSingleShot(true);
+    connect(&cooldown_, SIGNAL(timeout()), this, SLOT(cooldownFinished()));
+
+    connect(&placesWatcher_, SIGNAL(fileChanged(QString)), this, SLOT(fileChanged(QString)));
 
     enabled_ = true;
 }
@@ -173,11 +177,55 @@ void FirefoxBookmarks::Extension::handleQuery(Query query) {
 
 
 /** ***************************************************************************/
-void FirefoxBookmarks::Extension::reloadConfig(QString) {
+void FirefoxBookmarks::Extension::cooldownFinished() {
+    coolingdown_ = false;
+    if (rescan_)
+        reloadConfig();
+}
+
+
+
+/** ***************************************************************************/
+void FirefoxBookmarks::Extension::fileChanged(QString) {
+    if (indexing_ || coolingdown_)
+        rescan_ = true;
+    else
+        reloadConfig();
+}
+
+
+
+/** ***************************************************************************/
+void FirefoxBookmarks::Extension::reloadConfig() {
+    // Copy here the base to a tmpfile and use it as db
+    // disconnect the watcher for the time it's indexing
+    // delete the tmpfile
+    // start a cooldown timer
+    // reconnect the watcher
+    QTemporaryFile tmpFile;
+    tmpFile.open();
+    tmpFile.setAutoRemove(false);
+
+    QFile dbFile;
+    dbFile.open(QFile::ReadOnly);
+
+    const qint64 chunk_size = 4*1024*1024;// chunksize 4MiB
+    char *buf = new char[chunk_size];
+    qint64 read;
+    while ((read = dbFile.read(buf, chunk_size)) > chunk_size) {
+        tmpFile.write(buf, read);
+    }
+
+    tmpFile.close();
+
+    base_.setDatabaseName(tmpFile.fileName());
     Indexer *idxer = new Indexer(base_, this);
     idxer->setAutoDelete(true);
 
     QThreadPool::globalInstance()->start(idxer);
+    indexing_ = true;
+    coolingdown_ = false;
+    rescan_ = false;
 }
 
 
@@ -201,12 +249,22 @@ void FirefoxBookmarks::Extension::scanProfiles(QString profilesIni) {
 
 
 /** ***************************************************************************/
+void FirefoxBookmarks::Extension::scanBookmarksFinished() {
+    indexing_ = false;
+
+    coolingdown_ = true;
+    cooldown_.start();
+}
+
+
+
+/** ***************************************************************************/
 void FirefoxBookmarks::Extension::changeProfile(QString profile) {
     QString sqliteName = profileBasePath_ + "/%1/places.sqlite";
     sqliteName = sqliteName.arg(profile);
 
     base_.setDatabaseName(sqliteName);
-    reloadConfig(sqliteName);
+    reloadConfig();
 
     placesWatcher_.removePaths(placesWatcher_.files());
     placesWatcher_.addPath(sqliteName);
@@ -224,6 +282,6 @@ void FirefoxBookmarks::Extension::changeFuzzyness(bool fuzzy) {
 /** ***************************************************************************/
 void FirefoxBookmarks::Extension::changeOpenPolicy(bool withFirefox) {
     openWithFirefox_ = withFirefox;
-    reloadConfig("");
+    reloadConfig();
 }
 
