@@ -108,6 +108,10 @@ void Files::Extension::Indexer::run() {
                 if (fileInfo.isSymLink() && !extension_->followSymlinks_)
                     goto SKIP_THIS;
 
+                // Skip if this file is a symlink and we shoud skip symlinks
+                if (dirIterator.fileInfo().isSymLink() && !extension_->followSymlinks_)
+                    goto SKIP_THIS;
+
                 // Index this file
                 indexRecursion(fileInfo);
                 SKIP_THIS:;
