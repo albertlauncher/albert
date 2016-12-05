@@ -17,6 +17,8 @@
 #pragma once
 #include <QWidget>
 #include <QStringListModel>
+#include <QSystemTrayIcon>
+#include <QMenu>
 #include "proposallist.h"
 #include "settingsbutton.h"
 #include "history.hpp"
@@ -71,6 +73,8 @@ public:
 
 protected:
 
+    void createTrayIcon();
+
     void closeEvent(QCloseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void mousePressEvent(QMouseEvent * event) override;
@@ -117,6 +121,14 @@ private:
     Ui::MainWindow ui;
 
     static const char*   CFG_WND_POS;
+
+    QSystemTrayIcon *trayIcon_;
+    QMenu *trayIconMenu_;
+    QAction *settingsAction_;
+    QAction *quitAction_;
+    QAction *showAction_;
+
+
     static const char*   CFG_MAX_PROPOSALS;
     static const uint8_t DEF_MAX_PROPOSALS;
     static const char*   CFG_THEME;
