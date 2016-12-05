@@ -61,7 +61,7 @@ namespace  {
                     QStringList arguments;
                     for (const QJsonValue & value : obj["arguments"].toArray())
                          arguments.append(value.toString());
-                    action->setAction([command, arguments](ExecutionFlags *){
+                    action->setAction([command, arguments](){
                         QProcess::startDetached(command, arguments);
                     });
                     actions.push_back(action);

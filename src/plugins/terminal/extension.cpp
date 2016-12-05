@@ -84,7 +84,7 @@ void Terminal::Extension::handleQuery(Query query) {
         std::vector<SharedAction> actions;
         SharedStdAction action = std::make_shared<StandardAction>();
         action->setText("Execute in background");
-        action->setAction([program, args](ExecutionFlags *){
+        action->setAction([program, args](){
             QProcess::startDetached(program, args);
         });
         actions.push_back(std::move(action));
@@ -94,7 +94,7 @@ void Terminal::Extension::handleQuery(Query query) {
         cmddline.append(args);
         action = std::make_shared<StandardAction>();
         action->setText("Execute in terminal");
-        action->setAction([cmddline](ExecutionFlags *){
+        action->setAction([cmddline](){
             QStringList args = cmddline;
             QString program = args.takeFirst();
             QProcess::startDetached(program, args);
@@ -107,7 +107,7 @@ void Terminal::Extension::handleQuery(Query query) {
         cmddline.append(args);
         action = std::make_shared<StandardAction>();
         action->setText("Execute as root in terminal");
-        action->setAction([cmddline](ExecutionFlags *){
+        action->setAction([cmddline](){
             QStringList args = cmddline;
             QString program = args.takeFirst();
             QProcess::startDetached(program, args);

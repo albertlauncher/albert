@@ -31,7 +31,7 @@ SharedItem Websearch::SearchEngine::buildWebsearchItem(const QString &searchterm
 
     std::shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
     action->setText(desc);
-    action->setAction([=](ExecutionFlags *){ QDesktopServices::openUrl(url); });
+    action->setAction([=](){ QDesktopServices::openUrl(url); });
 
     std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(name_);
     item->setText(name_);

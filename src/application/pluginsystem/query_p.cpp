@@ -287,39 +287,38 @@ bool QueryPrivate::setData(const QModelIndex &index, const QVariant &value, int 
                 ? fallbacks_[static_cast<size_t>(index.row())]
                 : matches_[static_cast<size_t>(index.row())].first;
         mutex_.unlock();
-        ExecutionFlags flags;
         switch (role) {
 
         // Activation by index
         case Qt::UserRole:{
             size_t actionValue = static_cast<size_t>(value.toInt());
             if (actionValue < item->actions().size())
-                item->actions()[actionValue]->activate(&flags);
+                item->actions()[actionValue]->activate();
             break;
         }
 
         // Activation by modifier
         case Qt::UserRole+100: // DefaultAction
             if (0U < item->actions().size())
-                item->actions()[0]->activate(&flags);
+                item->actions()[0]->activate();
             break;
         case Qt::UserRole+101: // AltAction
             if (0U < fallbacks_.size() && 0U < item->actions().size()) {
                 item = fallbacks_[0];
-                item->actions()[0]->activate(&flags);
+                item->actions()[0]->activate();
             }
             break;
         case Qt::UserRole+102: // MetaAction
             if (1U < item->actions().size())
-                item->actions()[1]->activate(&flags);
+                item->actions()[1]->activate();
             break;
         case Qt::UserRole+103: // ControlAction
             if (2U < item->actions().size())
-                item->actions()[2]->activate(&flags);
+                item->actions()[2]->activate();
             break;
         case Qt::UserRole+104: // ShiftAction
             if (3U < item->actions().size())
-                item->actions()[3]->activate(&flags);
+                item->actions()[3]->activate();
             break;
 
         }
@@ -333,13 +332,6 @@ bool QueryPrivate::setData(const QModelIndex &index, const QVariant &value, int 
             if (!query.exec())
                 qWarning() << query.lastError();
         }
-
-        if (flags.hideWidget)
-            qApp->hideWidget();
-
-        if (flags.clearInput)
-            qApp->clearInput();
-
     }
     return false;
 }

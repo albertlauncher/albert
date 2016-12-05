@@ -73,14 +73,14 @@ void ChromeBookmarks::Extension::Indexer::run() {
             std::vector<SharedAction> actions;
             SharedStdAction action = std::make_shared<StandardAction>();
             action->setText("Open in default browser");
-            action->setAction([urlstr](ExecutionFlags*){
+            action->setAction([urlstr](){
                 QDesktopServices::openUrl(QUrl(urlstr));
             });
             actions.push_back(std::move(action));
 
             action = std::make_shared<StandardAction>();
             action->setText("Copy url to clipboard");
-            action->setAction([urlstr](ExecutionFlags*){
+            action->setAction([urlstr](){
                 QApplication::clipboard()->setText(urlstr);
             });
             actions.push_back(std::move(action));

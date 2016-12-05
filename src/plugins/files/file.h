@@ -26,7 +26,6 @@ using std::map;
 using std::vector;
 using std::shared_ptr;
 using std::chrono::system_clock;
-class ExecutionFlags;
 class AbstractAction;
 
 namespace Files {

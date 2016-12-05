@@ -41,7 +41,7 @@ struct File::OpenFileAction final : public AbstractFileAction
 {
     OpenFileAction(File *file);
     QString text() const override;
-    void activate(ExecutionFlags *) override;
+    void activate() override;
 };
 
 
@@ -51,7 +51,7 @@ struct File::RevealFileAction final : public AbstractFileAction
 {
     RevealFileAction(File *file);
     QString text() const override;
-    void activate(ExecutionFlags *) override;
+    void activate() override;
 };
 
 
@@ -61,7 +61,7 @@ struct File::CopyFileAction final : public AbstractFileAction
 {
     CopyFileAction(File *file);
     QString text() const override;
-    void activate(ExecutionFlags *) override;
+    void activate() override;
 };
 
 
@@ -71,7 +71,7 @@ struct File::CopyPathAction final : public AbstractFileAction
 {
     CopyPathAction(File *file);
     QString text() const override;
-    void activate(ExecutionFlags *) override;
+    void activate() override;
 };
 
 

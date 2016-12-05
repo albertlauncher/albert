@@ -21,20 +21,6 @@ using std::shared_ptr;
 
 
 /** ****************************************************************************
- * @brief The AbstractItem
- * Displayable base class for all albert items.
- * Determines the bahaviour of the app after the action has been executed
- */
-struct ExecutionFlags {
-    /** Mainwidget will be hidden */
-    bool hideWidget = true;
-    /** Inputline will be cleared */
-    bool clearInput = true;
-};
-
-
-
-/** ****************************************************************************
  * @brief The action interface
  * A base class for actions (and items)
  */
@@ -48,6 +34,6 @@ public:
     virtual QString text() const = 0;
 
     /** Activates the item */
-    virtual void activate(ExecutionFlags *) = 0;
+    virtual void activate() = 0;
 };
 typedef shared_ptr<AbstractAction> SharedAction;

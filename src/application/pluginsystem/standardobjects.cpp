@@ -20,7 +20,7 @@
 
 StandardAction::StandardAction(){}
 
-StandardAction::StandardAction(const QString &text, function<void (ExecutionFlags *)> f)
+StandardAction::StandardAction(const QString &text, function<void ()> f)
     : text_(text), action_(f) {
 }
 
@@ -32,16 +32,16 @@ void StandardAction::setText(const QString &text){
     text_ = text;
 }
 
-const function<void (ExecutionFlags *)> &StandardAction::action() {
+const function<void ()> &StandardAction::action() {
     return action_;
 }
 
-void StandardAction::setAction(function<void (ExecutionFlags *)> &&action){
+void StandardAction::setAction(function<void ()> &&action){
     action_ = action;
 }
 
-void StandardAction::activate(ExecutionFlags *flags) {
-    action_(flags);
+void StandardAction::activate() {
+    action_();
 }
 
 /******************************************************************************/

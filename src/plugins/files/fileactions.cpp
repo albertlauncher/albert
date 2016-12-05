@@ -36,7 +36,7 @@ QString Files::File::OpenFileAction::text() const {
     return "Open with default application";
 }
 
-void Files::File::OpenFileAction::activate(ExecutionFlags *) {
+void Files::File::OpenFileAction::activate() {
     QDesktopServices::openUrl(QUrl::fromLocalFile(file_->path()));
 }
 
@@ -50,7 +50,7 @@ QString Files::File::RevealFileAction::text() const {
     return "Reveal in default file browser";
 }
 
-void Files::File::RevealFileAction::activate(ExecutionFlags *) {
+void Files::File::RevealFileAction::activate() {
     QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file_->path()).path()));
 }
 
@@ -64,7 +64,7 @@ QString Files::File::CopyFileAction::text() const {
     return "Copy to clipboard";
 }
 
-void Files::File::CopyFileAction::activate(ExecutionFlags *) {
+void Files::File::CopyFileAction::activate() {
     //  Get clipboard
     QClipboard *cb = QApplication::clipboard();
 
@@ -100,6 +100,6 @@ QString Files::File::CopyPathAction::text() const {
     return "Copy path to clipboard";
 }
 
-void Files::File::CopyPathAction::activate(ExecutionFlags *) {
+void Files::File::CopyPathAction::activate() {
     QApplication::clipboard()->setText(file_->path());
 }

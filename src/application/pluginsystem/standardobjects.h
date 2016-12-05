@@ -36,20 +36,20 @@ struct StandardAction final : public AbstractAction
 public:
 
     StandardAction();
-    StandardAction(const QString &text, function<void(ExecutionFlags *)> f);
+    StandardAction(const QString &text, function<void()> f);
 
     QString text() const override;
     void setText(const QString &text);
 
-    const function<void(ExecutionFlags*)> &action();
-    void setAction(function<void(ExecutionFlags*)> &&action);
+    const function<void()> &action();
+    void setAction(function<void()> &&action);
 
-    void activate(ExecutionFlags *flags) override;
+    void activate() override;
 
 private:
 
     QString text_;
-    function<void(ExecutionFlags *)> action_;
+    function<void()> action_;
 
 };
 typedef shared_ptr<StandardAction> SharedStdAction;

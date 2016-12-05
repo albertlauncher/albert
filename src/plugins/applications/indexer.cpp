@@ -391,14 +391,14 @@ void Applications::Extension::Indexer::run() {
             SharedStdAction sa = std::make_shared<StandardAction>();
             sa->setText("Run");
             if (term){
-                sa->setAction([commandline, workingDir](ExecutionFlags *){
+                sa->setAction([commandline, workingDir](){
                     QStringList arguments = shellLexerSplit(qApp->term());
                     arguments.append(commandline);
                     QString command = arguments.takeFirst();
                     QProcess::startDetached(command, arguments, workingDir);
                 });
             } else {
-                sa->setAction([commandline, workingDir](ExecutionFlags *){
+                sa->setAction([commandline, workingDir](){
                     QStringList arguments = commandline;
                     QString command = arguments.takeFirst();
                     QProcess::startDetached(command, arguments, workingDir);
@@ -415,7 +415,7 @@ void Applications::Extension::Indexer::run() {
             if (term){
                 sa = std::make_shared<StandardAction>();
                 sa->setText("Run as root");
-                sa->setAction([commandline, workingDir](ExecutionFlags *){
+                sa->setAction([commandline, workingDir](){
                     QStringList arguments = shellLexerSplit(qApp->term());
                     arguments.append("sudo");
                     arguments.append(commandline);
@@ -437,7 +437,7 @@ void Applications::Extension::Indexer::run() {
 //                    break;
 //                }
 //            }
-//                sa->setAction([commandline, workingDir](ExecutionFlags *){
+//                sa->setAction([commandline, workingDir](){
 //                    QStringList arguments = commandline;
 //                    QString command = arguments.takeFirst();
 //                    QProcess::startDetached(command, arguments, workingDir);
@@ -474,14 +474,14 @@ void Applications::Extension::Indexer::run() {
                                                              fIt.filePath());
 
                 if (term){
-                    sa->setAction([commandline, workingDir](ExecutionFlags *){
+                    sa->setAction([commandline, workingDir](){
                         QStringList arguments = shellLexerSplit(qApp->term());
                         arguments.append(commandline);
                         QString command = arguments.takeFirst();
                         QProcess::startDetached(command, arguments, workingDir);
                     });
                 } else {
-                    sa->setAction([commandline, workingDir](ExecutionFlags *){
+                    sa->setAction([commandline, workingDir](){
                         QStringList arguments = commandline;
                         QString command = arguments.takeFirst();
                         QProcess::startDetached(command, arguments, workingDir);
