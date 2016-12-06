@@ -81,7 +81,7 @@ private:
 
 signals:
 
-    void resultyReady(QAbstractItemModel *);
+    void resultsReady(QAbstractItemModel *);
     void started();
     void finished();
 

@@ -14,18 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QApplication>
+#include <QDebug>
+#include <QDir>
+#include <QFile>
+#include <QMessageBox>
+#include <QSettings>
 #include <QStandardPaths>
 #include <QThreadPool>
-#include <QMessageBox>
-#include <QDebug>
-#include <QFile>
-#include <QDir>
 #include <memory>
 #include "extension.h"
 #include "configwidget.h"
 #include "indexer.h"
 #include "query.h"
-#include "albertapp.h"
 #include "standardobjects.h"
 
 const char* Applications::Extension::CFG_PATHS    = "paths";
@@ -39,16 +40,17 @@ Applications::Extension::Extension() : AbstractExtension("org.albert.extension.a
     qunsetenv("DESKTOP_AUTOSTART_ID");
 
     // Load settings
-    qApp->settings()->beginGroup(id);
-    offlineIndex_.setFuzzy(qApp->settings()->value(CFG_FUZZY, DEF_FUZZY).toBool());
+    QSettings s(qApp->applicationName());
+    s.beginGroup(id);
+    offlineIndex_.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
 
     // Load the paths or set a default
-    QVariant v = qApp->settings()->value(CFG_PATHS);
+    QVariant v = s.value(CFG_PATHS);
     if (v.isValid() && v.canConvert(QMetaType::QStringList))
         rootDirs_ = v.toStringList();
     else
         restorePaths();
-    qApp->settings()->endGroup();
+    s.endGroup();
 
     // Keep the Applications in sync with the OS
     updateDelayTimer_.setInterval(UPDATE_DELAY);
@@ -65,7 +67,7 @@ Applications::Extension::Extension() : AbstractExtension("org.albert.extension.a
 
     // If the root dirs change write it to the settings
     connect(this, &Extension::rootDirsChanged, [this](const QStringList& dirs){
-        qApp->settings()->setValue(QString("%1/%2").arg(id, CFG_PATHS), dirs);
+        QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_PATHS), dirs);
     });
 
     // Trigger initial update
@@ -250,6 +252,6 @@ void Applications::Extension::updateIndex() {
 
 /** ***************************************************************************/
 void Applications::Extension::setFuzzy(bool b) {
-    qApp->settings()->setValue(QString("%1/%2").arg(id, CFG_FUZZY), b);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_FUZZY), b);
     offlineIndex_.setFuzzy(b);
 }

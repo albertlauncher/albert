@@ -16,6 +16,7 @@
 
 #include <QDebug>
 #include <QClipboard>
+#include <QSettings>
 
 #include <vector>
 using std::vector;
@@ -27,7 +28,6 @@ using std::vector;
 #include "standardobjects.h"
 #include "xdgiconlookup.h"
 #include "muParser.h"
-#include "albertapp.h"
 
 const QString Calculator::Extension::CFG_SEPS      = "group_separators";
 const bool    Calculator::Extension::CFG_SEPS_DEF  = false;
@@ -36,12 +36,13 @@ const bool    Calculator::Extension::CFG_SEPS_DEF  = false;
 Calculator::Extension::Extension() : AbstractExtension("org.albert.extension.calculator") {
 
     // Load settings
-    qApp->settings()->beginGroup(id);
+    QSettings s(qApp->applicationName());
+    s.beginGroup(id);
     loc_.setNumberOptions(
-                (qApp->settings()->value(CFG_SEPS, CFG_SEPS_DEF).toBool())
+                (s.value(CFG_SEPS, CFG_SEPS_DEF).toBool())
                 ? loc_.numberOptions() & ~QLocale::OmitGroupSeparator
                 : loc_.numberOptions() | QLocale::OmitGroupSeparator );
-    qApp->settings()->endGroup();
+    s.endGroup();
 
     QString iconPath = XdgIconLookup::instance()->themeIconPath("calc");
     iconPath_ = iconPath.isNull() ? ":calc" : iconPath;
@@ -69,7 +70,7 @@ QWidget *Calculator::Extension::widget(QWidget *parent) {
 
         widget_->ui.checkBox_groupsep->setChecked(!(loc_.numberOptions() & QLocale::OmitGroupSeparator));
         connect(widget_->ui.checkBox_groupsep, &QCheckBox::toggled, [this](bool checked){
-            qApp->settings()->setValue(QString("%1/%2").arg(id, CFG_SEPS), checked);
+            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_SEPS), checked);
             this->loc_.setNumberOptions( (checked) ? this->loc_.numberOptions() & ~QLocale::OmitGroupSeparator
                                                   : this->loc_.numberOptions() | QLocale::OmitGroupSeparator );
         });

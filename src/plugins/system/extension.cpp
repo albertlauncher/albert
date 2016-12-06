@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QProcess>
 #include <QDebug>
-#include "extension.h"
+#include <QProcess>
+#include <QSettings>
 #include "configwidget.h"
+#include "extension.h"
 #include "query.h"
 #include "standardobjects.h"
 #include "xdgiconlookup.h"
-#include "albertapp.h"
 
 
 namespace {
@@ -67,12 +67,13 @@ namespace {
 System::Extension::Extension() : AbstractExtension("org.albert.extension.system") {
 
     // Load settings
-    qApp->settings()->beginGroup(id);
+    QSettings s(qApp->applicationName());
+    s.beginGroup(id);
     for (int i = 0; i < NUMCOMMANDS; ++i) {
         iconPaths.push_back(XdgIconLookup::instance()->themeIconPath(iconNames[i]));
-        commands.push_back(qApp->settings()->value(configNames[i], defaultCommand(static_cast<SupportedCommands>(i))).toString());
+        commands.push_back(s.value(configNames[i], defaultCommand(static_cast<SupportedCommands>(i))).toString());
     }
-    qApp->settings()->endGroup();
+    s.endGroup();
 }
 
 
@@ -85,45 +86,39 @@ QWidget *System::Extension::widget(QWidget *parent) {
         // Initialize the content and connect the signals
 
         widget_->ui.lineEdit_lock->setText(commands[LOCK]);
-        connect(widget_->ui.lineEdit_lock, &QLineEdit::textEdited,
-                [this](const QString &s){
+        connect(widget_->ui.lineEdit_lock, &QLineEdit::textEdited, [this](const QString &s){
             commands[LOCK]= s;
-            qApp->settings()->setValue(QString("%1/%2").arg(id, configNames[LOCK]), s);
+            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, configNames[LOCK]), s);
         });
 
         widget_->ui.lineEdit_logout->setText(commands[LOGOUT]);
-        connect(widget_->ui.lineEdit_logout, &QLineEdit::textEdited,
-                [this](const QString &s){
+        connect(widget_->ui.lineEdit_logout, &QLineEdit::textEdited, [this](const QString &s){
             commands[LOGOUT]= s;
-            qApp->settings()->setValue(QString("%1/%2").arg(id, configNames[LOGOUT]), s);
+            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, configNames[LOGOUT]), s);
         });
 
         widget_->ui.lineEdit_suspend->setText(commands[SUSPEND]);
-        connect(widget_->ui.lineEdit_suspend, &QLineEdit::textEdited,
-                [this](const QString &s){
+        connect(widget_->ui.lineEdit_suspend, &QLineEdit::textEdited, [this](const QString &s){
             commands[SUSPEND]= s;
-            qApp->settings()->setValue(QString("%1/%2").arg(id, configNames[SUSPEND]), s);
+            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, configNames[SUSPEND]), s);
         });
 
         widget_->ui.lineEdit_hibernate->setText(commands[HIBERNATE]);
-        connect(widget_->ui.lineEdit_hibernate, &QLineEdit::textEdited,
-                [this](const QString &s){
+        connect(widget_->ui.lineEdit_hibernate, &QLineEdit::textEdited, [this](const QString &s){
             commands[HIBERNATE]= s;
-            qApp->settings()->setValue(QString("%1/%2").arg(id, configNames[HIBERNATE]), s);
+            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, configNames[HIBERNATE]), s);
         });
 
         widget_->ui.lineEdit_reboot->setText(commands[REBOOT]);
-        connect(widget_->ui.lineEdit_reboot, &QLineEdit::textEdited,
-                [this](const QString &s){
+        connect(widget_->ui.lineEdit_reboot, &QLineEdit::textEdited, [this](const QString &s){
             commands[REBOOT]= s;
-            qApp->settings()->setValue(QString("%1/%2").arg(id, configNames[REBOOT]), s);
+            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, configNames[REBOOT]), s);
         });
 
         widget_->ui.lineEdit_shutdown->setText(commands[POWEROFF]);
-        connect(widget_->ui.lineEdit_shutdown, &QLineEdit::textEdited,
-                [this](const QString &s){
+        connect(widget_->ui.lineEdit_shutdown, &QLineEdit::textEdited, [this](const QString &s){
             commands[POWEROFF]= s;
-            qApp->settings()->setValue(QString("%1/%2").arg(id, configNames[POWEROFF]), s);
+            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, configNames[POWEROFF]), s);
         });
     }
     return widget_;

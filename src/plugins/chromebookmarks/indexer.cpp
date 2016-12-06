@@ -14,21 +14,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QDebug>
-#include <QUrl>
+#include <QApplication>
 #include <QClipboard>
+#include <QDebug>
 #include <QDesktopServices>
-#include <QJsonObject>
+#include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
-#include <QFile>
+#include <QJsonObject>
+#include <QUrl>
 #include <functional>
-#include <vector>
 #include <memory>
-#include "indexer.h"
+#include <vector>
 #include "extension.h"
+#include "indexer.h"
 #include "standardobjects.h"
-#include "albertapp.h"
 using std::shared_ptr;
 using std::vector;
 

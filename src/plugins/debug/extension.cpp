@@ -14,25 +14,25 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QSettings>
+#include <QApplication>
 #include <QDebug>
+#include <QSettings>
 #include <chrono>
 #include <thread>
-#include "extension.h"
 #include "configwidget.h"
-#include "standardobjects.h"
+#include "extension.h"
 #include "query.h"
-#include "albertapp.h"
+#include "standardobjects.h"
 
 /** ***************************************************************************/
 Debug::Extension::Extension() : AbstractExtension("org.albert.extension.debug") {
-    QSettings *s = qApp->settings();
-    s->beginGroup(id);
-    setDelay(s->value("delay", 50).toInt());
-    setCount(s->value("count", 100).toInt());
-    setAsync(s->value("async", true).toBool());
-    setTrigger(s->value("trigger", "dbg").toString());
-    s->endGroup();
+    QSettings s(qApp->applicationName());
+    s.beginGroup(id);
+    setDelay(s.value("delay", 50).toInt());
+    setCount(s.value("count", 100).toInt());
+    setAsync(s.value("async", true).toBool());
+    setTrigger(s.value("trigger", "dbg").toString());
+    s.endGroup();
 }
 
 
@@ -79,7 +79,7 @@ void Debug::Extension::handleQuery(Query query) {
 
 /** ***************************************************************************/
 void Debug::Extension::setCount(const int &count){
-    qApp->settings()->setValue(QString("%1/%2").arg(id, "count"), count);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, "count"), count);
     count_ = count;
 }
 
@@ -87,7 +87,7 @@ void Debug::Extension::setCount(const int &count){
 
 /** ***************************************************************************/
 void Debug::Extension::setAsync(bool async){
-    qApp->settings()->setValue(QString("%1/%2").arg(id, "async"), async);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, "async"), async);
     async_ = async;
 }
 
@@ -95,7 +95,7 @@ void Debug::Extension::setAsync(bool async){
 
 /** ***************************************************************************/
 void Debug::Extension::setDelay(const int &delay) {
-    qApp->settings()->setValue(QString("%1/%2").arg(id, "delay"), delay);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, "delay"), delay);
     delay_ = delay;
 }
 
@@ -103,7 +103,7 @@ void Debug::Extension::setDelay(const int &delay) {
 
 /** ***************************************************************************/
 void Debug::Extension::setTrigger(const QString &trigger){
-    qApp->settings()->setValue(QString("%1/%2").arg(id, "trigger"), trigger);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, "trigger"), trigger);
     trigger_ = trigger;
 }
 

@@ -14,21 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QVariant>
-#include <QtConcurrent/QtConcurrent>
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QSqlError>
-#include <map>
-#include <chrono>
+#include <QtConcurrent/QtConcurrent>
+#include <QVariant>
 #include <algorithm>
+#include <chrono>
+#include <map>
+#include "abstractaction.h"
 #include "abstractextension.h"
 #include "abstractitem.h"
-#include "abstractaction.h"
-#include "albertapp.h"
 #include "query_p.h"
-using std::map;
 using std::chrono::system_clock;
+using std::map;
 
 
 /** ***************************************************************************/
@@ -180,7 +179,7 @@ void QueryPrivate::onUXTimeOut() {
     mutex_.lock();
     std::sort(matches_.begin(), matches_.end(), MatchOrder());
     mutex_.unlock();
-    emit resultyReady(this);
+    emit resultsReady(this);
 }
 
 

@@ -25,7 +25,8 @@
 #include "configwidget.h"
 #include "standardobjects.h"
 #include "query.h"
-#include "albertapp.h"
+
+extern QString terminalCommand;
 
 /** ***************************************************************************/
 Terminal::Extension::Extension() : AbstractExtension("org.albert.extension.terminal") {
@@ -89,7 +90,7 @@ void Terminal::Extension::handleQuery(Query query) {
         });
         actions.push_back(std::move(action));
 
-        QStringList cmddline = qApp->term().split(' ', QString::SkipEmptyParts);
+        QStringList cmddline = terminalCommand.split(' ', QString::SkipEmptyParts);
         cmddline.append(program);
         cmddline.append(args);
         action = std::make_shared<StandardAction>();
@@ -101,7 +102,7 @@ void Terminal::Extension::handleQuery(Query query) {
         });
         actions.push_back(std::move(action));
 
-        cmddline = qApp->term().split(' ', QString::SkipEmptyParts);
+        cmddline = terminalCommand.split(' ', QString::SkipEmptyParts);
         cmddline.append("sudo");
         cmddline.append(program);
         cmddline.append(args);

@@ -15,7 +15,8 @@ include_directories(
 
 set(SRC
     main.cpp
-    albertapp.cpp
+    queryhandler.cpp
+    trayicon.cpp
     hotkey/hotkeymanager.cpp
     hotkey/hotkeymanager_p.h
     mainwindow/mainwindow.cpp

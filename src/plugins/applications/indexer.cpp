@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QApplication>
 #include <QDirIterator>
 #include <QDebug>
 #include <QThread>
@@ -29,10 +30,11 @@
 #include "extension.h"
 #include "standardobjects.h"
 #include "xdgiconlookup.h"
-#include "albertapp.h"
 using std::map;
 using std::vector;
 using std::shared_ptr;
+
+extern QString terminalCommand;
 
 namespace {
 
@@ -392,7 +394,7 @@ void Applications::Extension::Indexer::run() {
             sa->setText("Run");
             if (term){
                 sa->setAction([commandline, workingDir](){
-                    QStringList arguments = shellLexerSplit(qApp->term());
+                    QStringList arguments = shellLexerSplit(terminalCommand);
                     arguments.append(commandline);
                     QString command = arguments.takeFirst();
                     QProcess::startDetached(command, arguments, workingDir);
@@ -416,7 +418,7 @@ void Applications::Extension::Indexer::run() {
                 sa = std::make_shared<StandardAction>();
                 sa->setText("Run as root");
                 sa->setAction([commandline, workingDir](){
-                    QStringList arguments = shellLexerSplit(qApp->term());
+                    QStringList arguments = shellLexerSplit(terminalCommand);
                     arguments.append("sudo");
                     arguments.append(commandline);
                     QString command = arguments.takeFirst();
@@ -475,7 +477,7 @@ void Applications::Extension::Indexer::run() {
 
                 if (term){
                     sa->setAction([commandline, workingDir](){
-                        QStringList arguments = shellLexerSplit(qApp->term());
+                        QStringList arguments = shellLexerSplit(terminalCommand);
                         arguments.append(commandline);
                         QString command = arguments.takeFirst();
                         QProcess::startDetached(command, arguments, workingDir);

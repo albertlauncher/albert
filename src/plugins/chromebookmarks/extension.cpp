@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QStandardPaths>
+#include <QSettings>
 #include <QDirIterator>
 #include <QThreadPool>
 #include <QFileInfo>
@@ -26,7 +27,6 @@
 #include "configwidget.h"
 #include "indexer.h"
 #include "query.h"
-#include "albertapp.h"
 #include "standardobjects.h"
 
 const char* ChromeBookmarks::Extension::CFG_PATH       = "bookmarkfile";
@@ -37,11 +37,12 @@ const bool  ChromeBookmarks::Extension::DEF_FUZZY      = false;
 ChromeBookmarks::Extension::Extension() : AbstractExtension("org.albert.extension.chromebookmarks") {
 
     // Load settings
-    qApp->settings()->beginGroup(id);
-    offlineIndex_.setFuzzy(qApp->settings()->value(CFG_FUZZY, DEF_FUZZY).toBool());
+    QSettings s(qApp->applicationName());
+    s.beginGroup(id);
+    offlineIndex_.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
 
     // Load and set a valid path
-    QVariant v = qApp->settings()->value(CFG_PATH);
+    QVariant v = s.value(CFG_PATH);
     if (v.isValid() && v.canConvert(QMetaType::QString) && QFileInfo(v.toString()).exists())
         setPath(v.toString());
     else
@@ -49,10 +50,10 @@ ChromeBookmarks::Extension::Extension() : AbstractExtension("org.albert.extensio
 
     // If the path changed write it to the settings
     connect(this, &Extension::pathChanged, [this](const QString& path){
-        qApp->settings()->setValue(QString("%1/%2").arg(id, CFG_PATH), path);
+        QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_PATH), path);
     });
 
-    qApp->settings()->endGroup();
+    s.endGroup();
 
     // Keep in sync with the bookmarkfile
     connect(&watcher_, &QFileSystemWatcher::fileChanged, this, &Extension::updateIndex, Qt::QueuedConnection);
@@ -188,7 +189,7 @@ void ChromeBookmarks::Extension::updateIndex() {
 /** ***************************************************************************/
 void ChromeBookmarks::Extension::setFuzzy(bool b) {
     indexAccess_.lock();
-    qApp->settings()->setValue(QString("%1/%2").arg(id, CFG_FUZZY), b);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_FUZZY), b);
     offlineIndex_.setFuzzy(b);
     indexAccess_.unlock();
 }

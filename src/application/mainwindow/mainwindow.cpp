@@ -24,10 +24,10 @@
 #include <QEvent>
 #include <QFile>
 #include <QStandardPaths>
+#include <QSettings>
 #include <QTimer>
 #include <QVBoxLayout>
 #include "mainwindow.h"
-#include "albertapp.h"
 
 const char*   MainWindow::CFG_WND_POS  = "windowPosition";
 const char*   MainWindow::CFG_CENTERED = "showCentered";
@@ -97,7 +97,7 @@ MainWindow::MainWindow(QWidget *parent)
     QAction *action = new QAction("Settings", settingsButton_);
     action->setShortcuts({QKeySequence("Ctrl+,"), QKeySequence("Alt+,")});
     connect(action, &QAction::triggered, this, &MainWindow::hide);
-    connect(action, &QAction::triggered, qApp, &AlbertApp::openSettings);
+    connect(action, &QAction::triggered, this, &MainWindow::settingsWidgetRequested);
     connect(settingsButton_, &QPushButton::clicked, action, &QAction::trigger);
     settingsButton_->addAction(action);
 
@@ -112,7 +112,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     action = new QAction("Quit", settingsButton_);
     action->setShortcut(QKeySequence("Alt+F4"));
-    connect(action, &QAction::triggered, qApp, &AlbertApp::quit);
+    connect(action, &QAction::triggered, qApp, &QApplication::quit);
     settingsButton_->addAction(action);
 
     // History
@@ -122,7 +122,7 @@ MainWindow::MainWindow(QWidget *parent)
      * Settings
      */
 
-    QSettings &s = *qApp->settings();
+    QSettings s(qApp->applicationName());
     setShowCentered(s.value(CFG_CENTERED, DEF_CENTERED).toBool());
     if (!showCentered() && s.contains(CFG_WND_POS) && s.value(CFG_WND_POS).canConvert(QMetaType::QPoint))
         move(s.value(CFG_WND_POS).toPoint());
@@ -176,12 +176,14 @@ MainWindow::MainWindow(QWidget *parent)
             ui.proposalList->model()->setData(index, -1, Qt::UserRole+100);
             break;
         }
+        this->setVisible(false);
     });
 
     // Trigger alternative action, if item in actionList was activated
     QObject::connect(ui.actionList, &ActionList::activated, [this](const QModelIndex &index){
         history_->add(ui.inputLine->text());
         ui.proposalList->model()->setData(ui.proposalList->currentIndex(), index.row(), Qt::UserRole);
+        this->setVisible(false);
     });
 }
 
@@ -220,6 +222,12 @@ void MainWindow::setVisible(bool visible) {
 
 
 /** ***************************************************************************/
+void MainWindow::toggleVisibility() {
+   setVisible(!isVisible());
+}
+
+
+/** ***************************************************************************/
 void MainWindow::setInput(const QString &input) {
     ui.inputLine->setText(input);
 }
@@ -235,7 +243,7 @@ void MainWindow::setModel(QAbstractItemModel *m) {
 
 /** ***************************************************************************/
 void MainWindow::setShowCentered(bool b) {
-    qApp->settings()->setValue(CFG_CENTERED, b);
+    QSettings(qApp->applicationName()).setValue(CFG_CENTERED, b);
     showCentered_ = b;
 }
 
@@ -269,7 +277,7 @@ bool MainWindow::setTheme(const QString &theme) {
         if (fi.baseName() == theme_) {
             QFile f(fi.canonicalFilePath());
             if (f.open(QFile::ReadOnly)) {
-                qApp->settings()->setValue(CFG_THEME, theme_);
+                QSettings(qApp->applicationName()).setValue(CFG_THEME, theme_);
                 setStyleSheet(f.readAll());
                 f.close();
                 success = true;
@@ -291,7 +299,7 @@ bool MainWindow::hideOnFocusLoss() const {
 
 /** ***************************************************************************/
 void MainWindow::setHideOnFocusLoss(bool b) {
-    qApp->settings()->setValue(CFG_HIDE_ON_FOCUS_LOSS, b);
+    QSettings(qApp->applicationName()).setValue(CFG_HIDE_ON_FOCUS_LOSS, b);
     hideOnFocusLoss_ = b;
 }
 
@@ -306,7 +314,7 @@ bool MainWindow::hideOnClose() const {
 
 /** ***************************************************************************/
 void MainWindow::setHideOnClose(bool b) {
-    qApp->settings()->setValue(CFG_HIDE_ON_CLOSE, b);
+    QSettings(qApp->applicationName()).setValue(CFG_HIDE_ON_CLOSE, b);
     hideOnClose_ = b;
 }
 
@@ -321,7 +329,7 @@ bool MainWindow::alwaysOnTop() const {
 
 /** ***************************************************************************/
 void MainWindow::setAlwaysOnTop(bool alwaysOnTop) {
-    qApp->settings()->setValue(CFG_ALWAYS_ON_TOP, alwaysOnTop);
+    QSettings(qApp->applicationName()).setValue(CFG_ALWAYS_ON_TOP, alwaysOnTop);
     // TODO: QT_MINREL 5.7 setFlag
     alwaysOnTop ? setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint)
                 : setWindowFlags(windowFlags() & ~Qt::WindowStaysOnTopHint);
@@ -331,7 +339,7 @@ void MainWindow::setAlwaysOnTop(bool alwaysOnTop) {
 
 /** ***************************************************************************/
 void MainWindow::setMaxProposals(uint8_t maxItems) {
-    qApp->settings()->setValue(CFG_MAX_PROPOSALS, maxItems);
+    QSettings(qApp->applicationName()).setValue(CFG_MAX_PROPOSALS, maxItems);
     ui.proposalList->setMaxItems(maxItems);
 }
 
@@ -346,7 +354,7 @@ bool MainWindow::displayIcons() const {
 
 /** ***************************************************************************/
 void MainWindow::setDisplayIcons(bool value) {
-    qApp->settings()->setValue(CFG_DISPLAY_ICONS, value);
+    QSettings(qApp->applicationName()).setValue(CFG_DISPLAY_ICONS, value);
     ui.proposalList->setDisplayIcons(value);
 }
 
@@ -361,7 +369,7 @@ bool MainWindow::displayScrollbar() const {
 
 /** ***************************************************************************/
 void MainWindow::setDisplayScrollbar(bool value) {
-    qApp->settings()->setValue(CFG_DISPLAY_SCROLLBAR, value);
+    QSettings(qApp->applicationName()).setValue(CFG_DISPLAY_SCROLLBAR, value);
     ui.proposalList->setVerticalScrollBarPolicy(
                 value ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
 }
@@ -377,7 +385,7 @@ bool MainWindow::displayShadow() const {
 
 /** ***************************************************************************/
 void MainWindow::setDisplayShadow(bool value) {
-    qApp->settings()->setValue(CFG_DISPLAY_SHADOW, value);
+    QSettings(qApp->applicationName()).setValue(CFG_DISPLAY_SHADOW, value);
     displayShadow_ = value;
     graphicsEffect()->setEnabled(value);
     value ? setContentsMargins(20,20,20,20) : setContentsMargins(0,0,0,0);
@@ -471,7 +479,7 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
     // Move the wisget with the mouse
     move(event->globalPos() - clickOffset_);
-    qApp->settings()->setValue(CFG_WND_POS, pos());
+    QSettings(qApp->applicationName()).setValue(CFG_WND_POS, pos());
     QWidget::mouseMoveEvent(event);
 }
 

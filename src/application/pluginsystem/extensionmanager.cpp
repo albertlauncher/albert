@@ -14,18 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QStandardPaths>
+#include <QApplication>
+#include <QDebug>
 #include <QDirIterator>
 #include <QLibrary>
 #include <QPluginLoader>
-#include <QDebug>
-#include <memory>
+#include <QSettings>
+#include <QStandardPaths>
 #include <chrono>
+#include <memory>
+#include "abstractextension.h" // IID
+#include "externalextensionloader.h"
 #include "extensionmanager.h"
 #include "nativeextensionloader.h"
-#include "externalextensionloader.h"
-#include "albertapp.h"
-#include "abstractextension.h" // IID
 using std::unique_ptr;
 using std::chrono::system_clock;
 
@@ -93,7 +94,7 @@ namespace {
 /** ***************************************************************************/
 ExtensionManager::ExtensionManager() {
     // Load blacklist
-    blacklist_ = qApp->settings()->value(CFG_BLACKLIST).toStringList();
+    blacklist_ = QSettings(qApp->applicationName()).value(CFG_BLACKLIST).toStringList();
     rescanExtensions();
 }
 
@@ -183,7 +184,7 @@ void ExtensionManager::unloadExtension(const unique_ptr<AbstractExtensionLoader>
 /** ***************************************************************************/
 void ExtensionManager::enableExtension(const unique_ptr<AbstractExtensionLoader> &loader) {
     blacklist_.removeAll(loader->id());
-    qApp->settings()->setValue(CFG_BLACKLIST, blacklist_);
+    QSettings(qApp->applicationName()).setValue(CFG_BLACKLIST, blacklist_);
     loadExtension(loader);
 }
 
@@ -193,7 +194,7 @@ void ExtensionManager::enableExtension(const unique_ptr<AbstractExtensionLoader>
 void ExtensionManager::disableExtension(const unique_ptr<AbstractExtensionLoader> &loader) {
     if (!blacklist_.contains(loader->id())){
         blacklist_.push_back(loader->id());
-        qApp->settings()->setValue(CFG_BLACKLIST, blacklist_);
+        QSettings(qApp->applicationName()).setValue(CFG_BLACKLIST, blacklist_);
     }
     unloadExtension(loader);
 }

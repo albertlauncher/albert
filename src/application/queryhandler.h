@@ -15,37 +15,33 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include "ui_settingswidget.h"
+#include <QObject>
+#include <vector>
+using std::vector;
 class ExtensionManager;
-class HotkeyManager;
-class MainWindow;
-class TrayIcon;
+class QAbstractItemModel;
+class QueryPrivate;
 
-class SettingsWidget final : public QWidget
+class QueryHandler : public QObject
 {
     Q_OBJECT
 
 public:
 
-    SettingsWidget(MainWindow *mainWindow,
-                   HotkeyManager *hotkeyManager,
-                   ExtensionManager *extensionManager,
-                   TrayIcon *trayIcon,
-                   QWidget * parent = 0, Qt::WindowFlags f = 0);
+    explicit QueryHandler(ExtensionManager* em, QObject *parent = 0);
+
+    void setupSession();
+    void teardownSession();
+    void startQuery(const QString &searchTerm);
 
 private:
 
-    void keyPressEvent(QKeyEvent * event) override;
-    void closeEvent(QCloseEvent * event) override;
-    void onThemeChanged(int);
-    void onPluginDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
-    void changeHotkey(int);
-    void updatePluginInformations(const QModelIndex & curr);
-
-    MainWindow *mainWindow_;
-    HotkeyManager *hotkeyManager_;
     ExtensionManager *extensionManager_;
-    TrayIcon *trayIcon_;
-    Ui::SettingsDialog ui;
+    QueryPrivate *currentQuery_;
+    vector<QueryPrivate*> pastQueries_;
 
+signals:
+
+    void resultsReady(QAbstractItemModel*);
 };
+

@@ -14,31 +14,39 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QDir>
-#include <QDebug>
-#include <QStandardPaths>
-#include <QMessageBox>
 #include <QCloseEvent>
+#include <QDebug>
+#include <QDesktopWidget>
+#include <QDir>
+#include <QFocusEvent>
+#include <QMessageBox>
+#include <QSettings>
 #include <QShortcut>
 #include <QSqlQuery>
-#include <QDesktopWidget>
-#include <QFocusEvent>
-#include "settingswidget.h"
-#include "hotkeymanager.h"
-#include "mainwindow.h"
-#include "extensionmanager.h"
-#include "loadermodel.h"
+#include <QStandardPaths>
 #include "abstractextension.h"
 #include "abstractextensionloader.h"
-#include "albertapp.h"
+#include "extensionmanager.h"
+#include "hotkeymanager.h"
+#include "loadermodel.h"
+#include "mainwindow.h"
+#include "settingswidget.h"
+#include "trayicon.h"
 
 
 /** ***************************************************************************/
-SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyManager, ExtensionManager *extensionManager, QWidget *parent, Qt::WindowFlags f)
-    : QWidget(parent, f), mainWindow_(mainWindow), hotkeyManager_(hotkeyManager), extensionManager_(extensionManager) {
+SettingsWidget::SettingsWidget(MainWindow *mainWindow,
+                               HotkeyManager *hotkeyManager,
+                               ExtensionManager *extensionManager,
+                               TrayIcon *systemTrayIcon,
+                               QWidget *parent, Qt::WindowFlags f)
+    : QWidget(parent, f),
+      mainWindow_(mainWindow),
+      hotkeyManager_(hotkeyManager),
+      extensionManager_(extensionManager),
+      trayIcon_(systemTrayIcon) {
 
     ui.setupUi(this);
-    setAttribute(Qt::WA_DeleteOnClose);
 
 
     /*
@@ -55,9 +63,9 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyMana
             this, &SettingsWidget::changeHotkey);
 
     // TRAY
-    ui.checkBox_showTray->setChecked(qApp->trayIconEnabled());
+    ui.checkBox_showTray->setChecked(trayIcon_->isVisible());
     connect(ui.checkBox_showTray, &QCheckBox::toggled,
-            qApp, &AlbertApp::enableTrayIcon);
+            trayIcon_, &TrayIcon::setVisible);
 
 
     /*
@@ -76,7 +84,8 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyMana
 
     // HIDE ON FOCUS OUT
     ui.checkBox_hideOnFocusOut->setChecked(mainWindow_->hideOnFocusLoss());
-    mainWindow_->setHideOnFocusLoss(false); // Disabled while settings are open
+    connect(ui.checkBox_hideOnFocusOut, &QCheckBox::toggled,
+            mainWindow_, &MainWindow::setHideOnFocusLoss);
 
     // HIDE ON CLOSE
     ui.checkBox_hideOnClose->setChecked(mainWindow_->hideOnClose());
@@ -104,9 +113,11 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyMana
             mainWindow_, &MainWindow::setDisplayShadow);
 
     // TERM CMD
-    ui.lineEdit_term->setText(qApp->term());
-    connect(ui.lineEdit_term, &QLineEdit::textEdited,
-            qApp, &AlbertApp::setTerm);
+    extern QString terminalCommand;
+    ui.lineEdit_term->setText(terminalCommand);
+    connect(ui.lineEdit_term, &QLineEdit::textEdited, [](QString str){
+        terminalCommand = str;
+    });
 
     // THEMES
     QFileInfoList themes;
@@ -165,13 +176,6 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow, HotkeyManager *hotkeyMana
 
 
 /** ***************************************************************************/
-SettingsWidget::~SettingsWidget() {
-    mainWindow_->setHideOnFocusLoss(ui.checkBox_hideOnFocusOut->isChecked()); // Disabled while settings are open
-}
-
-
-
-/** ***************************************************************************/
 void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
     // Hidde the placehodler text
     QLayoutItem *i = ui.widget_pluginInfos->layout()->takeAt(1);
@@ -206,7 +210,7 @@ void SettingsWidget::changeHotkey(int newhk) {
     if (hotkeyManager_->registerHotkey(newhk)) {
         QString hkText(QKeySequence((newhk&~Qt::GroupSwitchModifier)).toString());//QTBUG-45568
         ui.grabKeyButton_hotkey->setText(hkText);
-        qApp->settings()->setValue("hotkey", hkText);
+        QSettings(qApp->applicationName()).setValue("hotkey", hkText);
         hotkeyManager_->unregisterHotkey(oldhk);
     } else {
         ui.grabKeyButton_hotkey->setText(QKeySequence(oldhk).toString());
