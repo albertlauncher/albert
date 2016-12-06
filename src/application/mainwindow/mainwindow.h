@@ -19,7 +19,7 @@
 #include <QStringListModel>
 #include "proposallist.h"
 #include "settingsbutton.h"
-#include "history.hpp"
+#include "history.h"
 #include "ui_mainwindow.h"
 class QAbstractItemModel;
 

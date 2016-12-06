@@ -20,7 +20,7 @@ set(SRC
     hotkey/hotkeymanager.cpp
     hotkey/hotkeymanager_p.h
     mainwindow/mainwindow.cpp
-    mainwindow/history.hpp
+    mainwindow/history.cpp
     mainwindow/resizinglist.cpp
     mainwindow/actionlist.cpp
     mainwindow/proposallist.cpp
