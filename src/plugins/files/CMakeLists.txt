@@ -9,27 +9,27 @@ include_directories(
     ../../application/pluginsystem
 )
 
-set(SRC
-    metadata.json
-    extension.cpp
-    configwidget.cpp
-    file.cpp
-    fileactions.cpp
-    indexer.cpp
-)
+FILE(GLOB_RECURSE SRC src/*)
 
 set(LIB
     ${Qt5Widgets_LIBRARIES}
-    offlineindex
+    albertcore
     xdg
 )
 
 qt5_wrap_ui(UI
-    configwidget.ui
+    forms/configwidget.ui
+    forms/mimetypechooser.ui
+    forms/mimetypedialog.ui
 )
 
+# Define the target
 add_library(${PROJECT_NAME} SHARED ${SRC} ${UI})
 
+# Set INCLUDE_DIRS and INTERFACE_INCLUDE_DIRS
+target_include_directories(${PROJECT_NAME} PRIVATE src/ forms/)
+
+# Link target to libraries
 target_link_libraries(${PROJECT_NAME} ${LIB})
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")

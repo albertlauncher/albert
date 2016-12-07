@@ -4,19 +4,11 @@ PROJECT(calculator)
 
 find_package(Qt5Widgets 5.2 REQUIRED)
 
-include_directories(
-    ../../application
-    ../../application/pluginsystem
-)
-
-set(SRC
-    metadata.json
-    extension.cpp
-    configwidget.cpp
-)
+FILE(GLOB_RECURSE SRC src/*)
 
 set(LIB
     ${Qt5Widgets_LIBRARIES}
+    albertcore
     muparser
     xdg
 )
@@ -29,8 +21,13 @@ qt5_wrap_ui(UI
     configwidget.ui
 )
 
+# Define the target
 add_library(${PROJECT_NAME} SHARED ${SRC} ${QRC} ${UI})
 
+# Set INCLUDE_DIRS and INTERFACE_INCLUDE_DIRS
+target_include_directories(${PROJECT_NAME} PRIVATE src/)
+
+# Link target to libraries
 target_link_libraries(${PROJECT_NAME} ${LIB})
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")

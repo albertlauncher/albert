@@ -4,18 +4,11 @@ PROJECT(virtualbox)
 
 find_package(Qt5Widgets 5.2 REQUIRED)
 
-include_directories(
-    ../../application
-    ../../application/pluginsystem
-)
-
-set(SRC
-    metadata.json
-    extension.cpp
-)
+FILE(GLOB_RECURSE SRC src/*)
 
 set(LIB
     ${Qt5Widgets_LIBRARIES}
+    albertcore
     xdg
 )
 
@@ -23,8 +16,13 @@ qt5_add_resources(QRC
     ${PROJECT_NAME}.qrc
 )
 
-add_library(${PROJECT_NAME} SHARED ${SRC} ${QRC} )
+# Define the target
+add_library(${PROJECT_NAME} SHARED ${SRC} ${QRC})
 
+# Set INCLUDE_DIRS and INTERFACE_INCLUDE_DIRS
+target_include_directories(${PROJECT_NAME} PRIVATE src/)
+
+# Link target to libraries
 target_link_libraries(${PROJECT_NAME} ${LIB})
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")

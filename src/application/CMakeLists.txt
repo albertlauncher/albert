@@ -4,82 +4,40 @@ find_package(Qt5Network REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
 find_package(Qt5Sql REQUIRED)
 
-include_directories(
-    hotkey/
-    mainwindow/
-    interfaces/
-    pluginsystem/
-    settingswidget/
-    ../lib/
-)
-
-set(SRC
-    main.cpp
-    queryhandler.cpp
-    trayicon.cpp
-    hotkey/hotkeymanager.cpp
-    hotkey/hotkeymanager_p.h
-    mainwindow/mainwindow.cpp
-    mainwindow/history.cpp
-    mainwindow/resizinglist.cpp
-    mainwindow/actionlist.cpp
-    mainwindow/proposallist.cpp
-    mainwindow/settingsbutton.cpp
-    pluginsystem/abstractextension.h
-    pluginsystem/abstractextensionloader.h
-    pluginsystem/abstractitem.h
-    pluginsystem/abstractaction.h
-    pluginsystem/nativeextensionloader.cpp
-    pluginsystem/externalextensionloader.cpp
-    pluginsystem/externalextension.cpp
-    pluginsystem/extensionmanager.cpp
-    pluginsystem/query.cpp
-    pluginsystem/query_p.cpp
-    pluginsystem/standardobjects.cpp
-    settingswidget/grabkeybutton.cpp
-    settingswidget/settingswidget.cpp
-    settingswidget/loadermodel.cpp
-)
+FILE(GLOB_RECURSE SRC src/*)
 
 set(LIB
     ${Qt5Widgets_LIBRARIES}
     ${Qt5Svg_LIBRARIES}
     ${Qt5Network_LIBRARIES}
     ${Qt5Sql_LIBRARIES}
+    albertcore
+    globalshortcut
     xdg
 )
 
 qt5_wrap_ui(UI
-    mainwindow/mainwindow.ui
-    settingswidget/settingswidget.ui
+    src/mainwindow/mainwindow.ui
+    src/settingswidget/settingswidget.ui
 )
 
 qt5_add_resources(QRC
     resources.qrc
 )
 
-
-# Do platform specific pre target stuff
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    # Make sure x11 module is present
-    find_package(Qt5X11Extras 5.2 REQUIRED)
-    # Platform switches
-    set(SRC ${SRC} hotkey/hotkeymanager_x11.cpp)
-    set(LIB ${LIB} ${Qt5X11Extras_LIBRARIES} X11)
-elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    #TODO INSTALL
-    set(SRCS ${SRCS} src/hotkey/hotkeymanager_win.cpp)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")
-endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-
-
-# Define target
+# Define the target
 add_executable(${PROJECT_NAME} ${SRC} ${UI} ${QRC})
+
+# Link target to libraries
 target_link_libraries(${PROJECT_NAME} ${LIB})
 
+# Set INCLUDE_DIRS and INTERFACE_INCLUDE_DIRS
+target_include_directories(${PROJECT_NAME}
+    PRIVATE
+        src/
+        src/settingswidget/
+        src/mainwindow/
+)
 
-# Do platform specific post target stuff
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    # Define where to install the binary
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
-endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+
