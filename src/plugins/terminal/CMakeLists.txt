@@ -15,6 +15,11 @@ set(SRC
     configwidget.cpp
 )
 
+set(LIB
+    ${Qt5Widgets_LIBRARIES}
+    xdg
+)
+
 qt5_add_resources(QRC
     ${PROJECT_NAME}.qrc
 )
@@ -25,7 +30,7 @@ qt5_wrap_ui(UI
 
 add_library(${PROJECT_NAME} SHARED ${SRC} ${QRC} ${UI})
 
-target_link_libraries(${PROJECT_NAME} ${Qt5Widgets_LIBRARIES} iconlookup)
+target_link_libraries(${PROJECT_NAME} ${LIB})
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION share/albert/plugins)

@@ -46,6 +46,7 @@ set(LIB
     ${Qt5Svg_LIBRARIES}
     ${Qt5Network_LIBRARIES}
     ${Qt5Sql_LIBRARIES}
+    xdg
 )
 
 qt5_wrap_ui(UI
@@ -74,7 +75,7 @@ endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 # Define target
 add_executable(${PROJECT_NAME} ${SRC} ${UI} ${QRC})
-target_link_libraries(${PROJECT_NAME} ${LIB} iconlookup)
+target_link_libraries(${PROJECT_NAME} ${LIB})
 
 
 # Do platform specific post target stuff

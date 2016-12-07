@@ -27,6 +27,12 @@ endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+# Set RPATH to the libraries
+SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/albert")
+
+# Set RPATH not before installing
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+
 # Build project
 add_subdirectory(src/application/)
 add_subdirectory(src/lib/)
