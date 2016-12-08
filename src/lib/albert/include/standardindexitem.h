@@ -15,7 +15,40 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include "standardaction.h"
+#include <vector>
 #include "standarditem.h"
-#include "standardindexitem.h"
+#include "core_globals.h"
+#include "iindexable.h"
+
+/** ****************************************************************************
+* @brief A standard index item
+* If you dont need the flexibility subclassing the abstract classes provided,
+* you can simply use this container, fill it with data.
+*/
+class EXPORT_CORE StandardIndexItem final : public StandardItem, public IIndexable
+{
+public:
+
+    StandardIndexItem(const QString &id);
+
+    virtual vector<IIndexable::WeightedKeyword> indexKeywords() const override;
+    virtual void setIndexKeywords(vector<IIndexable::WeightedKeyword> &&indexKeywords);
+
+private:
+
+    vector<IIndexable::WeightedKeyword> indexKeywords_;
+
+};
+typedef shared_ptr<StandardIndexItem> SharedStdIdxItem;
+
+
+
+
+
+
+
+
+
+
+
 

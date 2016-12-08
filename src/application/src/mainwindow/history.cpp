@@ -14,12 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "history.h"
 #include <QSqlQuery>
 #include <QSqlRecord>
-#include <QDebug>
 #include <QStringList>
-#include <QDataStream>
+#include <QVariant>
+#include "history.h"
 
 
 History::History(QObject *parent) : QObject(parent) {

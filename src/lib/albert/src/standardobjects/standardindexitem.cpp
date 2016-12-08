@@ -14,8 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
-#include "standardaction.h"
-#include "standarditem.h"
 #include "standardindexitem.h"
 
+StandardIndexItem::StandardIndexItem(const QString &id) : StandardItem(id) {
+
+}
+
+vector<IIndexable::WeightedKeyword> StandardIndexItem::indexKeywords() const {
+    return indexKeywords_;
+}
+
+void StandardIndexItem::setIndexKeywords(vector<WeightedKeyword> &&indexKeywords) {
+    indexKeywords_ = indexKeywords;
+}

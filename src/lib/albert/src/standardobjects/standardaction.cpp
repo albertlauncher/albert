@@ -14,8 +14,32 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
 #include "standardaction.h"
-#include "standarditem.h"
-#include "standardindexitem.h"
 
+StandardAction::StandardAction(){
+
+}
+
+StandardAction::StandardAction(const QString &text, function<void ()> f)
+    : text_(text), action_(f) {
+}
+
+QString StandardAction::text() const {
+    return text_;
+}
+
+void StandardAction::setText(const QString &text){
+    text_ = text;
+}
+
+const function<void ()> &StandardAction::action() {
+    return action_;
+}
+
+void StandardAction::setAction(function<void ()> &&action){
+    action_ = action;
+}
+
+void StandardAction::activate() {
+    action_();
+}

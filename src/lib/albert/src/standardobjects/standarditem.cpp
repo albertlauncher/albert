@@ -14,41 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "standardobjects.h"
+#include "standarditem.h"
 
-/******************************************************************************/
-
-StandardAction::StandardAction(){}
-
-StandardAction::StandardAction(const QString &text, function<void ()> f)
-    : text_(text), action_(f) {
-}
-
-QString StandardAction::text() const {
-    return text_;
-}
-
-void StandardAction::setText(const QString &text){
-    text_ = text;
-}
-
-const function<void ()> &StandardAction::action() {
-    return action_;
-}
-
-void StandardAction::setAction(function<void ()> &&action){
-    action_ = action;
-}
-
-void StandardAction::activate() {
-    action_();
-}
-
-/******************************************************************************/
-
-StandardItem::StandardItem(const QString &id) : id_(id) {
-
-}
+StandardItem::StandardItem(const QString &id) : id_(id) { }
 
 QString StandardItem::id() const {
     return id_;
@@ -84,18 +52,4 @@ vector<SharedAction> StandardItem::actions(){
 
 void StandardItem::setActions(vector<SharedAction> &&actions){
     actions_ = actions;
-}
-
-/******************************************************************************/
-
-StandardIndexItem::StandardIndexItem(const QString &id)
-    : StandardItem(id) {
-}
-
-vector<IIndexable::WeightedKeyword> StandardIndexItem::indexKeywords() const {
-    return indexKeywords_;
-}
-
-void StandardIndexItem::setIndexKeywords(vector<WeightedKeyword> &&indexKeywords) {
-    indexKeywords_ = indexKeywords;
 }

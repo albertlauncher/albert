@@ -16,6 +16,7 @@
 
 #pragma once
 #include <QObject>
+#include <QStringList>
 
 class History final : public QObject
 {
