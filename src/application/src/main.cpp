@@ -231,15 +231,23 @@ int main(int argc, char *argv[]) {
         QObject::connect(settingsAction, &QAction::triggered,
                          settingsWidget, &SettingsWidget::show);
 
+        QObject::connect(settingsAction, &QAction::triggered,
+                         settingsWidget, &SettingsWidget::raise);
+
         QObject::connect(quitAction, &QAction::triggered,
                          app, &QApplication::quit);
 
-        QObject::connect(trayIcon, &TrayIcon::activated,
-                         mainWindow, &MainWindow::toggleVisibility);
+        QObject::connect(trayIcon, &TrayIcon::activated, [](QSystemTrayIcon::ActivationReason reason){
+            if( reason == QSystemTrayIcon::ActivationReason::Trigger)
+                mainWindow->toggleVisibility();
+        });
 
 
         QObject::connect(mainWindow, &MainWindow::settingsWidgetRequested,
-                         settingsWidget, &SettingsWidget::show);
+                         std::bind(&SettingsWidget::setVisible, settingsWidget, true));
+
+        QObject::connect(mainWindow, &MainWindow::settingsWidgetRequested,
+                         settingsWidget, &SettingsWidget::raise);
 
         QObject::connect(mainWindow, &MainWindow::widgetShown,
                          queryHandler, &QueryHandler::setupSession);
