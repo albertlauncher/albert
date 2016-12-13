@@ -60,8 +60,17 @@ QString Files::File::iconPath() const {
         return iconPath;
     }
 
-    // Wow nothing found, return empty path
-    return QString();
+    // Nothing found, return a fallback icon
+    if ( xdgIconName == "inode-directory" ) {
+        iconPath = ":directory";
+        ce = {iconPath, std::chrono::system_clock::now()};
+        iconCache_.emplace(xdgIconName, ce);
+    } else {
+        iconPath = ":unknown";
+        ce = {iconPath, std::chrono::system_clock::now()};
+        iconCache_.emplace(xdgIconName, ce);
+    }
+    return iconPath;
 }
 
 

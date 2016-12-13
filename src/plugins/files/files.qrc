@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="directory">resources/inode-directory.svg</file>
+        <file alias="unkown">resources/unknown.svg</file>
+    </qresource>
+</RCC>
