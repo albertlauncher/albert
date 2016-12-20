@@ -16,3 +16,9 @@ before_script:
 script:
     - make
     
+notifications:
+  irc:
+    channels:
+      - "chat.freenode.net#albertlauncher"
+    on_success: never # default: always
+    on_failure: always # default: always
