@@ -26,7 +26,7 @@
 #include "extension.h"
 #include "configwidget.h"
 #include "indexer.h"
-#include "abstractquery.h"
+#include "query.h"
 #include "standardobjects.h"
 
 const char* Applications::Extension::CFG_PATHS    = "paths";
@@ -127,7 +127,7 @@ QWidget *Applications::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void Applications::Extension::handleQuery(AbstractQuery * query) {
+void Applications::Extension::handleQuery(Query * query) {
     // Search for matches. Lock memory against scanworker
     indexAccess_.lock();
     vector<shared_ptr<IIndexable>> indexables = offlineIndex_.search(query->searchTerm().toLower());

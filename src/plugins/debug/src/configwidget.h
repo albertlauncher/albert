@@ -17,7 +17,7 @@
 #pragma once
 #include <QWidget>
 #include "ui_configwidget.h"
-#include "extension.h"
+#include "main.h"
 
 namespace Debug
 {

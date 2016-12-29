@@ -22,7 +22,7 @@
 #include <QFileInfo>
 #include <QUrl>
 #include "file.h"
-#include "abstractaction.h"
+#include "action.h"
 
 namespace Files {
 

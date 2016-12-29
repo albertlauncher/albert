@@ -15,24 +15,32 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
-#include <QLocale>
+#include <QFileSystemWatcher>
 #include <QPointer>
-#include "abstractextension.h"
+#include <QObject>
+#include <QString>
+#include <QMutex>
+#include <QTimer>
+#include <QList>
+#include <vector>
+#include <memory>
+#include "extension.h"
+#include "offlineindex.h"
+using std::vector;
+using std::shared_ptr;
+class StandardIndexItem;
 
-namespace mu{
-    class Parser;
-}
-
-namespace Calculator {
+namespace Applications {
 
 class ConfigWidget;
 
 class Extension final : public AbstractExtension
 {
     Q_OBJECT
-    Q_INTERFACES(AbstractExtension)
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
+    Q_INTERFACES(AbstractExtension)
+
+    class Indexer;
 
 public:
 
@@ -43,22 +51,41 @@ public:
      * Implementation of extension interface
      */
 
-    QString name() const override { return "Calculator"; }
+    QString name() const override { return "Applications"; }
     QWidget *widget(QWidget *parent = nullptr) override;
-    void handleQuery(AbstractQuery * query) override;
+    void handleQuery(Query * query) override;
 
     /*
      * Extension specific members
      */
 
-    /* const */
-    static const QString CFG_SEPS;
-    static const bool    CFG_SEPS_DEF;
+    void addDir(const QString &dirPath);
+    void removeDir(const QString &dirPath);
+    void restorePaths();
+
+    bool fuzzy() { return offlineIndex_.fuzzy(); }
+    void setFuzzy(bool b = true);
+
+    void updateIndex();
 
 private:
     QPointer<ConfigWidget> widget_;
-    mu::Parser *parser_;
-    QLocale loc_;
-    QString iconPath_;
+    vector<shared_ptr<StandardIndexItem>> index_;
+    OfflineIndex offlineIndex_;
+    QMutex indexAccess_;
+    QPointer<Indexer> indexer_;
+    QFileSystemWatcher watcher_;
+    QTimer updateDelayTimer_;
+    QStringList rootDirs_;
+
+    /* const */
+    static const char* CFG_PATHS;
+    static const char* CFG_FUZZY;
+    static const bool  DEF_FUZZY;
+    static const bool  UPDATE_DELAY;
+
+signals:
+    void rootDirsChanged(const QStringList&);
+    void statusInfo(const QString&);
 };
 }

@@ -21,10 +21,10 @@
 #include <vector>
 using std::vector;
 
-#include "extension.h"
-#include "abstractaction.h"
+#include "main.h"
+#include "action.h"
 #include "configwidget.h"
-#include "abstractquery.h"
+#include "query.h"
 #include "standardobjects.h"
 #include "xdgiconlookup.h"
 #include "muParser.h"
@@ -81,7 +81,7 @@ QWidget *Calculator::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void Calculator::Extension::handleQuery(AbstractQuery * query) {
+void Calculator::Extension::handleQuery(Query * query) {
     parser_->SetExpr(query->searchTerm().toLower().toStdString());
     QString result;
     try {

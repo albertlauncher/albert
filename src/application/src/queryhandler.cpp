@@ -21,7 +21,7 @@
 #include <QSqlQuery>
 #include <QtConcurrent/QtConcurrent>
 #include <chrono>
-#include "abstractextension.h"
+#include "extension.h"
 #include "extensionmanager.h"
 #include "query.h"
 #include "queryhandler.h"

@@ -18,8 +18,8 @@
 #include <QProcess>
 #include <QSettings>
 #include "configwidget.h"
-#include "extension.h"
-#include "abstractquery.h"
+#include "main.h"
+#include "query.h"
 #include "standardobjects.h"
 #include "xdgiconlookup.h"
 
@@ -127,7 +127,7 @@ QWidget *System::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void System::Extension::handleQuery(AbstractQuery * query) {
+void System::Extension::handleQuery(Query * query) {
    for (int i = 0; i < NUMCOMMANDS; ++i) {
         if (configNames[i].startsWith(query->searchTerm().toLower())) {
 

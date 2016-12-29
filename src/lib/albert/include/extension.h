@@ -19,10 +19,10 @@
 #include <QObject>
 #include <QWidget>
 #include <memory>
-#include "abstractitem.h"
+#include "item.h"
 #include "core_globals.h"
 using std::shared_ptr;
-class AbstractQuery;
+class Query;
 
 
 /** ****************************************************************************
@@ -101,7 +101,7 @@ public:
      * mechanism).
      * @param query Holds the query context
      */
-    virtual void handleQuery(AbstractQuery *query) { Q_UNUSED(query) }
+    virtual void handleQuery(Query *query) { Q_UNUSED(query) }
 
     /**
      * @brief Fallbacks of this extension

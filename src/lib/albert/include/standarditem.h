@@ -17,8 +17,8 @@
 #pragma once
 #include <QString>
 #include <vector>
-#include "abstractitem.h"
-#include "abstractaction.h"
+#include "item.h"
+#include "action.h"
 #include "core_globals.h"
 using std::vector;
 

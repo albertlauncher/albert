@@ -23,7 +23,7 @@
 #include <QStandardPaths>
 #include <chrono>
 #include <memory>
-#include "abstractextension.h" // IID
+#include "extension.h" // IID
 #include "externalextensionloader.h"
 #include "extensionmanager.h"
 #include "nativeextensionloader.h"

@@ -25,7 +25,8 @@
 #include <vector>
 #include <utility>
 #include <memory>
-#include "abstractquery.h"
+#include "core_globals.h"
+#include "item.h"
 using std::set;
 using std::map;
 using std::vector;
@@ -41,7 +42,7 @@ struct MatchOrder {
     static map<QString, double> order;
 };
 
-class Query final : public QAbstractListModel, public AbstractQuery
+class EXPORT_CORE Query final : public QAbstractListModel 
 {
     Q_OBJECT
 
@@ -49,13 +50,33 @@ public:
 
     Query(const QString &query, const set<AbstractExtension*> &queryHandlers);
 
-    void addMatch(shared_ptr<AbstractItem> item, short score = 0) override;
+    /**
+     * @brief Add matches
+     * Adds a match to the results. Score describes a percentual match of the
+     * query against the item. 0 beeing no match SHRT_MAX beeing a full match.
+     * @param item The item to add
+     * @param score Matchfactor of the query against the item
+     */
+    void addMatch(shared_ptr<AbstractItem> item, short score = 0);
     void addMatches(vector<std::pair<SharedItem,short>>::iterator begin,
                     vector<std::pair<SharedItem,short>>::iterator end);
 
-    const QString &searchTerm() const override { return searchTerm_; }
+
+
+    /**
+     * @brief Returns the search term of this query
+     */
+    const QString &searchTerm() const { return searchTerm_; }
     bool isRunning() { return isRunning_; }
-    bool isValid() const override { return isValid_; }
+
+
+    /**
+     * @brief isValid gets the validity of the query.
+     * Running handler will stop long operations and discard their matches,
+     * if the query is invalid.
+     * @return
+     */
+    bool isValid() const { return isValid_; }
     void invalidate();
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;

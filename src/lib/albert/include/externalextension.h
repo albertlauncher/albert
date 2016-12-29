@@ -123,7 +123,7 @@
 //   handle _every_ query. The result format is the same as for the QUERY.
 
 #pragma once
-#include "abstractextension.h"
+#include "extension.h"
 #include "core_globals.h"
 
 class EXPORT_CORE ExternalExtension final : public AbstractExtension
@@ -138,7 +138,7 @@ public:
     QStringList triggers() const override;
     void setupSession() override;
     void teardownSession() override;
-    void handleQuery(AbstractQuery* query) override;
+    void handleQuery(Query *query) override;
     vector<SharedItem> fallbacks(QString) override;
 
 private:

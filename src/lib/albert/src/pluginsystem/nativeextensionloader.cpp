@@ -16,8 +16,8 @@
 
 #include <QJsonArray>
 #include <QVariant>
-#include "abstractextensionloader.h"
-#include "abstractextension.h"
+#include "extensionloader.h"
+#include "extension.h"
 #include "nativeextensionloader.h"
 
 

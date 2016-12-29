@@ -17,7 +17,7 @@
 #include <QIcon>
 #include "loadermodel.h"
 #include "extensionmanager.h"
-#include "abstractextensionloader.h"
+#include "extensionloader.h"
 
 
 /** ***************************************************************************/

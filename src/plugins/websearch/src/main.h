@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014-2015 Manuel Schneider
+// Copyright (C) 2014-2016 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,36 +15,50 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
+#include <QAbstractTableModel>
+#include <QFileSystemWatcher>
 #include <QPointer>
-#include "abstractextension.h"
+#include <vector>
+#include "extension.h"
+using std::vector;
 
-namespace VirtualBox {
+namespace Websearch {
 
+class SearchEngine;
 class ConfigWidget;
 
 class Extension final : public AbstractExtension
 {
     Q_OBJECT
-    Q_INTERFACES(AbstractExtension)
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
+    Q_INTERFACES(AbstractExtension)
 
 public:
     Extension();
+    ~Extension();
 
     /*
      * Implementation of extension interface
      */
 
-    QString name() const override { return "Virtual Box"; }
-    void setupSession() override;
-    void handleQuery(AbstractQuery * query) override;
+    QString name() const override { return "Websearch"; }
+    QWidget *widget(QWidget *parent = nullptr) override;
+    void handleQuery(Query * query) override;
+    bool runExclusive() const {return true;}
+    QStringList triggers() const override;
+    vector<SharedItem> fallbacks(QString) override;
+
+    /*
+     * Extension specific members
+     */
+
+public slots:
+
+    void restoreDefaults();
 
 private:
-
-    std::vector<QString> names_;
-    std::vector<QString> uuids_;
-    QString iconPath_;
-
+    QPointer<ConfigWidget> widget_;
+    vector<SearchEngine> searchEngines_;
 };
+
 }

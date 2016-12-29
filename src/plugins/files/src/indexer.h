@@ -19,7 +19,7 @@
 #include <QRunnable>
 #include <QMimeDatabase>
 #include <QMutex>
-#include "extension.h"
+#include "main.h"
 
 namespace Files {
 

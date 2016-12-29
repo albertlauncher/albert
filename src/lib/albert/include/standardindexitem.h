@@ -18,7 +18,7 @@
 #include <vector>
 #include "standarditem.h"
 #include "core_globals.h"
-#include "iindexable.h"
+#include "indexable.h"
 
 /** ****************************************************************************
 * @brief A standard index item

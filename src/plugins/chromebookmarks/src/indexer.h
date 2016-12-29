@@ -18,24 +18,28 @@
 #include <QObject>
 #include <QRunnable>
 #include <QMutex>
-#include "extension.h"
+#include "main.h"
 
 namespace ChromeBookmarks {
 
 class Extension::Indexer final : public QObject,  public QRunnable
 {
     Q_OBJECT
+
 public:
+
     Indexer(Extension *ext)
         : extension_(ext), abort_(false) {}
     void run() override;
     void abort(){abort_=true;}
 
 private:
+
     Extension *extension_;
     bool abort_;
 
 signals:
+
     void statusInfo(const QString&);
 };
 }

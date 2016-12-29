@@ -19,11 +19,11 @@
 #include <QDebug>
 #include <QFile>
 #include <QDir>
-#include "extension.h"
+#include "main.h"
 #include "configwidget.h"
 #include "searchengine.h"
 #include "searchenginesmodel.h"
-#include "abstractquery.h"
+#include "query.h"
 
 
 
@@ -101,7 +101,7 @@ QStringList Websearch::Extension::triggers() const {
 
 
 /** ***************************************************************************/
-void Websearch::Extension::handleQuery(AbstractQuery * query) {
+void Websearch::Extension::handleQuery(Query * query) {
     for (const SearchEngine &se : searchEngines_)
         if (query->searchTerm().startsWith(se.trigger()))
             query->addMatch(se.buildWebsearchItem(query->searchTerm().mid(se.trigger().size())));

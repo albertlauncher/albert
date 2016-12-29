@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include "abstractitem.h"
+#include "item.h"
 class Extension;
 
 namespace Websearch {

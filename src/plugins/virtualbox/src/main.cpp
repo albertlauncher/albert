@@ -17,8 +17,8 @@
 #include <QProcess>
 #include <QRegularExpression>
 #include <QString>
-#include "extension.h"
-#include "abstractquery.h"
+#include "main.h"
+#include "query.h"
 #include "standardobjects.h"
 #include "xdgiconlookup.h"
 
@@ -55,7 +55,7 @@ void VirtualBox::Extension::setupSession() {
 
 
 /** ***************************************************************************/
-void VirtualBox::Extension::handleQuery(AbstractQuery * query) {
+void VirtualBox::Extension::handleQuery(Query * query) {
 
    for (uint i = 0; i < names_.size(); ++i){
        if (names_[i].startsWith(query->searchTerm(), Qt::CaseInsensitive)) {

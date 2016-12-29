@@ -26,7 +26,7 @@
 #include "extension.h"
 #include "configwidget.h"
 #include "indexer.h"
-#include "abstractquery.h"
+#include "query.h"
 #include "standardobjects.h"
 
 const char* ChromeBookmarks::Extension::CFG_PATH       = "bookmarkfile";
@@ -113,7 +113,7 @@ QWidget *ChromeBookmarks::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void ChromeBookmarks::Extension::handleQuery(AbstractQuery * query) {
+void ChromeBookmarks::Extension::handleQuery(Query * query) {
     // Search for matches. Lock memory against indexer
     indexAccess_.lock();
     vector<shared_ptr<IIndexable>> indexables = offlineIndex_.search(query->searchTerm().toLower());

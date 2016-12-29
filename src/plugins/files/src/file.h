@@ -20,8 +20,8 @@
 #include <vector>
 #include <chrono>
 #include <memory>
-#include "iindexable.h"
-#include "abstractitem.h"
+#include "indexable.h"
+#include "item.h"
 using std::map;
 using std::vector;
 using std::shared_ptr;

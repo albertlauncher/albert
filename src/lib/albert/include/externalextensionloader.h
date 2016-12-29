@@ -16,7 +16,7 @@
 
 #pragma once
 #include <QString>
-#include "abstractextensionloader.h"
+#include "extensionloader.h"
 #include "core_globals.h"
 
 class AbstractExtension;

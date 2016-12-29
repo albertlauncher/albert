@@ -26,7 +26,7 @@
 using std::vector;
 using std::shared_ptr;
 
-#include "abstractextension.h"
+#include "extension.h"
 #include "offlineindex.h"
 
 namespace Files {
@@ -53,7 +53,7 @@ public:
 
     QString name() const override { return "Files"; }
     QWidget *widget(QWidget *parent = nullptr) override;
-    void handleQuery(AbstractQuery * query) override;
+    void handleQuery(Query * query) override;
 
     /*
      * Extension specific members

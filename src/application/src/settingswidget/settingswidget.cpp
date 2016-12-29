@@ -24,8 +24,8 @@
 #include <QShortcut>
 #include <QSqlQuery>
 #include <QStandardPaths>
-#include "abstractextension.h"
-#include "abstractextensionloader.h"
+#include "extension.h"
+#include "extensionloader.h"
 #include "extensionmanager.h"
 #include "hotkeymanager.h"
 #include "loadermodel.h"

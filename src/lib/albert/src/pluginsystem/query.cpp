@@ -22,9 +22,9 @@
 #include <algorithm>
 #include <chrono>
 #include <map>
-#include "abstractaction.h"
-#include "abstractextension.h"
-#include "abstractitem.h"
+#include "action.h"
+#include "extension.h"
+#include "item.h"
 #include "query.h"
 using std::chrono::system_clock;
 using std::map;

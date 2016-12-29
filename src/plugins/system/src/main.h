@@ -15,50 +15,44 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QAbstractTableModel>
-#include <QFileSystemWatcher>
+#include <QObject>
 #include <QPointer>
+
 #include <vector>
-#include "abstractextension.h"
 using std::vector;
 
-namespace Websearch {
+#include "extension.h"
+class StandardItem;
 
-class SearchEngine;
+
+namespace System {
+
 class ConfigWidget;
 
 class Extension final : public AbstractExtension
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
     Q_INTERFACES(AbstractExtension)
+    Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
+
+    enum SupportedCommands { LOCK, LOGOUT, SUSPEND, HIBERNATE, REBOOT, POWEROFF, NUMCOMMANDS };
 
 public:
     Extension();
-    ~Extension();
 
     /*
      * Implementation of extension interface
      */
 
-    QString name() const override { return "Websearch"; }
+    QString name() const override { return "System"; }
     QWidget *widget(QWidget *parent = nullptr) override;
-    void handleQuery(AbstractQuery * query) override;
-    bool runExclusive() const {return true;}
-    QStringList triggers() const override;
-    vector<SharedItem> fallbacks(QString) override;
-
-    /*
-     * Extension specific members
-     */
-
-public slots:
-
-    void restoreDefaults();
+    void handleQuery(Query * query) override;
 
 private:
-    QPointer<ConfigWidget> widget_;
-    vector<SearchEngine> searchEngines_;
-};
+    QString defaultCommand(SupportedCommands command);
 
+    QPointer<ConfigWidget> widget_;
+    vector<QString> iconPaths;
+    vector<QString> commands;
+};
 }

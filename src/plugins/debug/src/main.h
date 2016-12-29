@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014-2016 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,11 +17,9 @@
 #pragma once
 #include <QObject>
 #include <QPointer>
-#include <QFileSystemWatcher>
-#include <set>
-#include "abstractextension.h"
+#include "extension.h"
 
-namespace Terminal {
+namespace Debug {
 
 class ConfigWidget;
 
@@ -34,27 +32,34 @@ class Extension final : public AbstractExtension
 public:
 
     Extension();
+    ~Extension();
 
-    /*
-     * Implementation of extension interface
-     */
-
-    QString name() const override { return "Terminal"; }
+    QString name() const override { return "Debug"; }
     QWidget *widget(QWidget *parent = nullptr) override;
-    void teardownSession() override;
-    void handleQuery(AbstractQuery * query) override;
+    void handleQuery(Query * query) override;
     bool runExclusive() const override {return true;}
-    QStringList triggers() const override {return {">"};}
+    QStringList triggers() const override {return {trigger_};}
+
+    int count() const{return count_;}
+    void setCount(const int &count);
+
+    bool async() const{return async_;}
+    void setAsync(bool async);
+
+    int delay() const {return delay_;}
+    void setDelay(const int &delay);
+
+    QString trigger() const {return trigger_;}
+    void setTrigger(const QString &trigger);
 
 private:
 
-    void rebuildIndex();
-
     QPointer<ConfigWidget> widget_;
-    QFileSystemWatcher watcher_;
-    std::set<QString> index_;
-    bool dirtyFlag_;
-    QString iconPath_;
+
+    int delay_;
+    int count_;
+    bool async_;
+    QString trigger_;
 
 };
 }

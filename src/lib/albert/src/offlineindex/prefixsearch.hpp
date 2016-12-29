@@ -22,7 +22,7 @@
 #include <map>
 #include <memory>
 #include "indeximpl.h"
-#include "iindexable.h"
+#include "indexable.h"
 using std::vector;
 using std::set;
 using std::map;

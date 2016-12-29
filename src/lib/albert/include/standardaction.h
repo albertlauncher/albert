@@ -17,7 +17,7 @@
 #pragma once
 #include <QString>
 #include <functional>
-#include "abstractaction.h"
+#include "action.h"
 #include "core_globals.h"
 using std::function;
 

@@ -16,16 +16,15 @@
 
 #pragma once
 #include <QObject>
+#include <QLocale>
 #include <QPointer>
+#include "extension.h"
 
-#include <vector>
-using std::vector;
+namespace mu{
+    class Parser;
+}
 
-#include "abstractextension.h"
-class StandardItem;
-
-
-namespace System {
+namespace Calculator {
 
 class ConfigWidget;
 
@@ -35,24 +34,31 @@ class Extension final : public AbstractExtension
     Q_INTERFACES(AbstractExtension)
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
-    enum SupportedCommands { LOCK, LOGOUT, SUSPEND, HIBERNATE, REBOOT, POWEROFF, NUMCOMMANDS };
-
 public:
+
     Extension();
+    ~Extension();
 
     /*
      * Implementation of extension interface
      */
 
-    QString name() const override { return "System"; }
+    QString name() const override { return "Calculator"; }
     QWidget *widget(QWidget *parent = nullptr) override;
-    void handleQuery(AbstractQuery * query) override;
+    void handleQuery(Query * query) override;
+
+    /*
+     * Extension specific members
+     */
+
+    /* const */
+    static const QString CFG_SEPS;
+    static const bool    CFG_SEPS_DEF;
 
 private:
-    QString defaultCommand(SupportedCommands command);
-
     QPointer<ConfigWidget> widget_;
-    vector<QString> iconPaths;
-    vector<QString> commands;
+    mu::Parser *parser_;
+    QLocale loc_;
+    QString iconPath_;
 };
 }

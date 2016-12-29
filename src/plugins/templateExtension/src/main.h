@@ -15,23 +15,39 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QVariant>
-#include <vector>
-#include "abstractitem.h"
-using std::vector;
+#include <QObject>
+#include <QPointer>
+#include "extension.h"
 
 namespace Template {
 
-class Item final : public AbstractItem
+class ConfigWidget;
+
+class Extension final : public AbstractExtension
 {
+    Q_OBJECT
+    Q_INTERFACES(AbstractExtension)
+    Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
+
 public:
-    Item();
-    ~Item();
+    Extension();
+    ~Extension();
 
-    QString id() const override;
-    QString text() const override;
-    QString subtext() const override;
-    QString iconPath() const override;
+    /*
+     * Implementation of extension interface
+     */
+
+    QString name() const override { return "Template"; }
+    QWidget *widget(QWidget *parent = nullptr) override;
+    void setupSession() override;
+    void teardownSession() override;
+    void handleQuery(Query * query) override;
+
+    /*
+     * Extension specific members
+     */
+
+private:
+    QPointer<ConfigWidget> widget_;
 };
-
 }

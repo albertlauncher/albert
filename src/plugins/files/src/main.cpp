@@ -25,7 +25,7 @@
 #include "configwidget.h"
 #include "indexer.h"
 #include "file.h"
-#include "abstractquery.h"
+#include "query.h"
 
 const char* Files::Extension::CFG_PATHS           = "paths";
 const char* Files::Extension::CFG_FUZZY           = "fuzzy";
@@ -195,7 +195,7 @@ QWidget *Files::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void Files::Extension::handleQuery(AbstractQuery * query) {
+void Files::Extension::handleQuery(Query * query) {
 
     // Skip  short terms since they pollute the output
     if ( query->searchTerm().size() < 3)

@@ -1,7 +1,6 @@
 find_package(Qt5Widgets 5.2 REQUIRED)
 find_package(Qt5Svg 5.2 REQUIRED)
 find_package(Qt5Network REQUIRED)
-find_package(Qt5Concurrent REQUIRED)
 find_package(Qt5Sql REQUIRED)
 
 FILE(GLOB_RECURSE SRC src/*)

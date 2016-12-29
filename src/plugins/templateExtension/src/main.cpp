@@ -15,10 +15,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDebug>
-#include "extension.h"
+#include "main.h"
 #include "configwidget.h"
-#include "abstractitem.h"
-#include "abstractquery.h"
+#include "item.h"
+#include "query.h"
 
 /** ***************************************************************************/
 Template::Extension::Extension() : AbstractExtension("org.albert.extension.template") {
@@ -59,7 +59,7 @@ void Template::Extension::teardownSession() {
 
 
 /** ***************************************************************************/
-void Template::Extension::handleQuery(AbstractQuery * query) {
+void Template::Extension::handleQuery(Query * query) {
     // Avoid annoying warnings
     Q_UNUSED(query)
 }

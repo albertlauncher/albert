@@ -20,11 +20,11 @@
 #include <QStringList>
 #include <QFileInfo>
 #include <algorithm>
-#include "extension.h"
+#include "main.h"
 #include "xdgiconlookup.h"
 #include "configwidget.h"
 #include "standardobjects.h"
-#include "abstractquery.h"
+#include "query.h"
 
 extern QString terminalCommand;
 
@@ -63,7 +63,7 @@ void Terminal::Extension::teardownSession() {
 
 
 /** ***************************************************************************/
-void Terminal::Extension::handleQuery(AbstractQuery * query) {
+void Terminal::Extension::handleQuery(Query * query) {
 
     // Drop the query
     QString actualQuery = query->searchTerm().mid(1);

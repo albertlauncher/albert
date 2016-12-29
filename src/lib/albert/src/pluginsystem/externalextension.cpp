@@ -22,7 +22,7 @@
 #include <QProcess>
 #include <QVBoxLayout>
 #include <vector>
-#include "abstractquery.h"
+#include "query.h"
 #include "externalextension.h"
 #include "standardobjects.h"
 #include "xdgiconlookup.h"
@@ -194,7 +194,7 @@ void ExternalExtension::teardownSession() {
 
 
 /** ***************************************************************************/
-void ExternalExtension::handleQuery(AbstractQuery* query) {
+void ExternalExtension::handleQuery(Query* query) {
 
     if (!providesMatches_)
         return;

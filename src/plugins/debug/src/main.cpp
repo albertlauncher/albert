@@ -21,7 +21,7 @@
 #include <thread>
 #include "configwidget.h"
 #include "extension.h"
-#include "abstractquery.h"
+#include "query.h"
 #include "standardobjects.h"
 
 /** ***************************************************************************/
@@ -53,7 +53,7 @@ QWidget *Debug::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void Debug::Extension::handleQuery(AbstractQuery * query) {
+void Debug::Extension::handleQuery(Query * query) {
     if (!query->isValid())
         return;
 
