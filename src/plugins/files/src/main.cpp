@@ -50,7 +50,7 @@ const char* Files::Extension::IGNOREFILE          = ".albertignore";
 
 
 /** ***************************************************************************/
-Files::Extension::Extension() : AbstractExtension("org.albert.extension.files") {
+Files::Extension::Extension() : Core::Extension("org.albert.extension.files") {
 
     // Load settings
     QSettings s(qApp->applicationName());
@@ -195,7 +195,7 @@ QWidget *Files::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void Files::Extension::handleQuery(Query * query) {
+void Files::Extension::handleQuery(Core::Query * query) {
 
     // Skip  short terms since they pollute the output
     if ( query->searchTerm().size() < 3)
@@ -203,11 +203,11 @@ void Files::Extension::handleQuery(Query * query) {
 
     // Search for matches. Lock memory against indexer
     indexAccess_.lock();
-    vector<shared_ptr<IIndexable>> indexables = offlineIndex_.search(query->searchTerm().toLower());
+    vector<shared_ptr<Core::Indexable>> indexables = offlineIndex_.search(query->searchTerm().toLower());
     indexAccess_.unlock();
 
     // Add results to query-> This cast is safe since index holds files only
-    for (shared_ptr<IIndexable> obj : indexables)
+    for (shared_ptr<Core::Indexable> obj : indexables)
         // TODO `Search` has to determine the relevance. Set to 0 for now
         query->addMatch(std::static_pointer_cast<File>(obj), 0);
 }
@@ -374,6 +374,13 @@ void Files::Extension::setFollowSymlinks(bool b)  {
 void Files::Extension::setScanInterval(uint minutes) {
     QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_SCAN_INTERVAL), minutes);
     (minutes == 0) ? indexIntervalTimer_.stop() : indexIntervalTimer_.start(minutes*60000);
+}
+
+
+
+/** ***************************************************************************/
+bool Files::Extension::fuzzy() {
+    return offlineIndex_.fuzzy();
 }
 
 

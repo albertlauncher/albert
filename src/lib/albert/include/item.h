@@ -21,14 +21,18 @@
 #include "core_globals.h"
 using std::vector;
 using std::shared_ptr;
-class AbstractAction;
+
+namespace Core {
+
+class Action;
 
 /** ****************************************************************************
  * @brief The item interface
  * Subclass this class to make your object displayable in the results list.
  */
-class EXPORT_CORE AbstractItem
+class EXPORT_CORE Item
 {
+
 public:
 
     /**
@@ -38,7 +42,7 @@ public:
      */
     enum class Urgency : unsigned char { Normal, Notification, Alert };
 
-    virtual ~AbstractItem() {}
+    virtual ~Item() {}
 
     /** An persistant, extensionwide unique identifier, "" if item is dynamic */
     virtual QString id() const = 0;
@@ -56,8 +60,8 @@ public:
     virtual Urgency urgency() const { return Urgency::Normal; }
 
     /** The alternative actions of the item*/
-    virtual vector<shared_ptr<AbstractAction>> actions() = 0;
+    virtual vector<shared_ptr<Action>> actions() = 0;
 
 };
-typedef shared_ptr<AbstractItem> SharedItem;
 
+}

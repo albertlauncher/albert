@@ -21,7 +21,7 @@
 #include "query.h"
 
 /** ***************************************************************************/
-Template::Extension::Extension() : AbstractExtension("org.albert.extension.template") {
+Template::Extension::Extension() : Core::Extension("org.albert.extension.template") {
     // Do sth.
 }
 
@@ -59,7 +59,7 @@ void Template::Extension::teardownSession() {
 
 
 /** ***************************************************************************/
-void Template::Extension::handleQuery(Query * query) {
+void Template::Extension::handleQuery(Core::Query * query) {
     // Avoid annoying warnings
     Q_UNUSED(query)
 }

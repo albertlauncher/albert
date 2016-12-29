@@ -23,21 +23,21 @@
 
 
 /** ***************************************************************************/
-OfflineIndex::OfflineIndex(bool fuzzy) {
+Core::OfflineIndex::OfflineIndex(bool fuzzy) {
     (fuzzy) ? impl_ = new FuzzySearch() : impl_ = new PrefixSearch();
 }
 
 
 
 /** ***************************************************************************/
-OfflineIndex::~OfflineIndex() {
+Core::OfflineIndex::~OfflineIndex() {
     delete impl_;
 }
 
 
 
 /** ***************************************************************************/
-void OfflineIndex::setFuzzy(bool fuzzy) {
+void Core::OfflineIndex::setFuzzy(bool fuzzy) {
     if (dynamic_cast<FuzzySearch*>(impl_)) {
         if (fuzzy) return;
         FuzzySearch *old = dynamic_cast<FuzzySearch*>(impl_);
@@ -56,14 +56,14 @@ void OfflineIndex::setFuzzy(bool fuzzy) {
 
 
 /** ***************************************************************************/
-bool OfflineIndex::fuzzy() {
+bool Core::OfflineIndex::fuzzy() {
     return dynamic_cast<FuzzySearch*>(impl_) != nullptr;
 }
 
 
 
 /** ***************************************************************************/
-void OfflineIndex::setDelta(double d) {
+void Core::OfflineIndex::setDelta(double d) {
     FuzzySearch* f = dynamic_cast<FuzzySearch*>(impl_);
     if (f)
         f->setDelta(d);
@@ -72,7 +72,7 @@ void OfflineIndex::setDelta(double d) {
 
 
 /** ***************************************************************************/
-double OfflineIndex::delta() {
+double Core::OfflineIndex::delta() {
     FuzzySearch* f = dynamic_cast<FuzzySearch*>(impl_);
     if (f)
         return f->delta();
@@ -82,20 +82,20 @@ double OfflineIndex::delta() {
 
 
 /** ***************************************************************************/
-void OfflineIndex::add(std::shared_ptr<IIndexable> idxble) {
+void Core::OfflineIndex::add(std::shared_ptr<Core::Indexable> idxble) {
     impl_->add(idxble);
 }
 
 
 
 /** ***************************************************************************/
-void OfflineIndex::clear() {
+void Core::OfflineIndex::clear() {
     impl_->clear();
 }
 
 
 
 /** ***************************************************************************/
-std::vector<std::shared_ptr<IIndexable> > OfflineIndex::search(const QString &req) const {
+std::vector<std::shared_ptr<Core::Indexable> > Core::OfflineIndex::search(const QString &req) const {
     return impl_->search(req);
 }

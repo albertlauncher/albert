@@ -16,30 +16,30 @@
 
 #include "standardaction.h"
 
-StandardAction::StandardAction(){
+Core::StandardAction::StandardAction(){
 
 }
 
-StandardAction::StandardAction(const QString &text, function<void ()> f)
+Core::StandardAction::StandardAction(const QString &text, function<void ()> f)
     : text_(text), action_(f) {
 }
 
-QString StandardAction::text() const {
+QString Core::StandardAction::text() const {
     return text_;
 }
 
-void StandardAction::setText(const QString &text){
+void Core::StandardAction::setText(const QString &text){
     text_ = text;
 }
 
-const function<void ()> &StandardAction::action() {
+const function<void ()> &Core::StandardAction::action() {
     return action_;
 }
 
-void StandardAction::setAction(function<void ()> &&action){
+void Core::StandardAction::setAction(function<void ()> &&action){
     action_ = action;
 }
 
-void StandardAction::activate() {
+void Core::StandardAction::activate() {
     action_();
 }

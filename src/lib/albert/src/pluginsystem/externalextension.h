@@ -124,29 +124,32 @@
 
 #pragma once
 #include "extension.h"
+#include "queryhandler.h"
 #include "core_globals.h"
 
-class EXPORT_CORE ExternalExtension final : public AbstractExtension
+namespace Core {
+
+class EXPORT_CORE ExternalExtension final : public Extension, public QueryHandler
 {
+
 public:
+
     ExternalExtension(const char * id, QString path);
     ~ExternalExtension();
 
     QString name() const override;
     QWidget *widget(QWidget *parent = nullptr) override;
-    bool runExclusive() const override;
-    QStringList triggers() const override;
+
+    QString trigger() const override;
     void setupSession() override;
     void teardownSession() override;
     void handleQuery(Query *query) override;
-    vector<SharedItem> fallbacks(QString) override;
 
 private:
 
     QString path_;
-    QStringList triggers_;
-    bool providesMatches_;
-    bool providesFallbacks_;
-    bool runTriggeredOnly_;
+    QString trigger_;
 
 };
+
+}

@@ -16,34 +16,28 @@
 
 #pragma once
 #include <QString>
-#include <QPluginLoader>
-#include "extensionloader.h"
+#include <vector>
+#include <memory>
 #include "core_globals.h"
+using std::shared_ptr;
+using std::vector;
 
-class AbstractExtension;
+namespace Core {
 
-class EXPORT_CORE NativeExtensionLoader final : public AbstractExtensionLoader
+class Item;
+
+class EXPORT_CORE FallbackProvider
 {
 public:
 
-    NativeExtensionLoader(QString path) : loader_(path) { }
-    ~NativeExtensionLoader() { }
+    virtual ~FallbackProvider() {}
 
-    bool load() override;
-    bool unload() override;
-    QString lastError() const override;
-    AbstractExtension *instance() override;
-    QString path() const override;
-    QString type() const override;
-    // Metadata
-    QString id() const override;
-    QString name() const override;
-    QString version() const override;
-    QString author() const override;
-    QStringList dependencies() const override;
-
-private:
-
-    QPluginLoader loader_;
+    /**
+     * @brief Fallbacks
+     * This items show up if a query yields no results
+     */
+    virtual vector<shared_ptr<Item>> fallbacks(const QString &) = 0;
 
 };
+
+}

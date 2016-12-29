@@ -23,13 +23,17 @@
 #include "main.h"
 #include "xdgiconlookup.h"
 #include "configwidget.h"
-#include "standardobjects.h"
 #include "query.h"
+#include "standarditem.h"
+#include "standardaction.h"
+using Core::Action;
+using Core::StandardAction;
+using Core::StandardItem;
 
 extern QString terminalCommand;
 
 /** ***************************************************************************/
-Terminal::Extension::Extension() : AbstractExtension("org.albert.extension.terminal") {
+Terminal::Extension::Extension() : Core::Extension("org.albert.extension.terminal") {
 
     dirtyFlag_ = false;
 
@@ -63,7 +67,7 @@ void Terminal::Extension::teardownSession() {
 
 
 /** ***************************************************************************/
-void Terminal::Extension::handleQuery(Query * query) {
+void Terminal::Extension::handleQuery(Core::Query * query) {
 
     // Drop the query
     QString actualQuery = query->searchTerm().mid(1);
@@ -82,8 +86,8 @@ void Terminal::Extension::handleQuery(Query * query) {
         program = *it;
         QString commandlineString = QString("%1 %2").arg(program, argsString);
 
-        std::vector<SharedAction> actions;
-        SharedStdAction action = std::make_shared<StandardAction>();
+        std::vector<shared_ptr<Action>> actions;
+        shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
         action->setText("Execute in background");
         action->setAction([program, args](){
             QProcess::startDetached(program, args);

@@ -28,7 +28,7 @@
 
 
 /** ***************************************************************************/
-Websearch::Extension::Extension() : AbstractExtension("org.albert.extension.websearch")  {
+Websearch::Extension::Extension() : Core::Extension("org.albert.extension.websearch")  {
 
     // Deserialize data
     QFile dataFile(
@@ -90,28 +90,18 @@ QWidget *Websearch::Extension::widget(QWidget *parent) {
 }
 
 
-
 /** ***************************************************************************/
-QStringList Websearch::Extension::triggers() const {
-    QStringList triggers;
-    for (const auto &searchEngine : searchEngines_)
-        triggers.push_back(searchEngine.trigger());
-    return triggers;
-}
-
-
-/** ***************************************************************************/
-void Websearch::Extension::handleQuery(Query * query) {
+void Websearch::Extension::handleQuery(Core::Query * query) {
     for (const SearchEngine &se : searchEngines_)
         if (query->searchTerm().startsWith(se.trigger()))
-            query->addMatch(se.buildWebsearchItem(query->searchTerm().mid(se.trigger().size())));
+            query->addMatch(se.buildWebsearchItem(query->searchTerm().mid(se.trigger().size())), SHRT_MAX);
 }
 
 
 
 /** ***************************************************************************/
-vector<SharedItem> Websearch::Extension::fallbacks(QString searchterm) {
-    vector<SharedItem> res;
+vector<shared_ptr<Core::Item>> Websearch::Extension::fallbacks(const QString & searchterm) {
+    vector<shared_ptr<Core::Item>> res;
     for (const SearchEngine &se : searchEngines_)
         if (se.enabled())
             res.push_back(se.buildWebsearchItem(searchterm));

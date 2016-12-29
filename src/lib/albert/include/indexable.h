@@ -19,12 +19,15 @@
 #include <vector>
 #include "core_globals.h"
 
+namespace Core {
+
 /**
- * @brief The IIndexable class
+ * @brief The Indexable class
  * The interface items need to be indexable by the offline index
  */
-class EXPORT_CORE IIndexable
+class EXPORT_CORE Indexable
 {
+
 public:
 
     struct WeightedKeyword {
@@ -33,7 +36,11 @@ public:
         uint32_t relevance;
     };
 
-    virtual ~IIndexable(){}
+    virtual ~Indexable() {}
+
     virtual std::vector<WeightedKeyword> indexKeywords() const = 0;
+
 };
+
+}
 

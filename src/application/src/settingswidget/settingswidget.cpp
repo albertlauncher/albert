@@ -32,7 +32,8 @@
 #include "mainwindow.h"
 #include "settingswidget.h"
 #include "trayicon.h"
-
+using Core::Extension;
+using Core::ExtensionLoader;
 
 /** ***************************************************************************/
 SettingsWidget::SettingsWidget(MainWindow *mainWindow,
@@ -182,8 +183,8 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
     delete i->widget();
     delete i;
 
-    if (extensionManager_->extensionLoaders()[current.row()]->state() == AbstractExtensionLoader::State::Loaded){
-        AbstractExtension *extension = extensionManager_->extensionLoaders()[current.row()]->instance();
+    if (extensionManager_->extensionLoaders()[current.row()]->state() == ExtensionLoader::State::Loaded){
+        Extension *extension = extensionManager_->extensionLoaders()[current.row()]->instance();
         QWidget *pw = extension->widget();
         if ( pw->layout() != nullptr)
             pw->layout()->setMargin(0);

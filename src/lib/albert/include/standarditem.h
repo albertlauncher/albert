@@ -17,17 +17,20 @@
 #pragma once
 #include <QString>
 #include <vector>
-#include "item.h"
-#include "action.h"
 #include "core_globals.h"
+#include "item.h"
 using std::vector;
 
-/** ****************************************************************************
+namespace Core {
+
+class Action;
+
+/**
 * @brief A standard item
 * If you dont need the flexibility subclassing the abstract classes provided,
 * you can simply use this container, fill it with data.
 */
-class EXPORT_CORE StandardItem : public AbstractItem
+class EXPORT_CORE StandardItem : public Item
 {
 public:
 
@@ -44,8 +47,8 @@ public:
     QString iconPath() const override final;
     void setIconPath( const QString &iconPath);
 
-    vector<SharedAction> actions() override final;
-    void setActions(vector<SharedAction> &&actions);
+    vector<shared_ptr<Action>> actions() override final;
+    void setActions(vector<shared_ptr<Action>> &&actions);
 
 private:
 
@@ -53,7 +56,8 @@ private:
     QString text_;
     QString subtext_;
     QString iconPath_;
-    vector<SharedAction> actions_;
+    vector<shared_ptr<Action>> actions_;
 
 };
-typedef shared_ptr<StandardItem> SharedStdItem;
+
+}

@@ -15,41 +15,42 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "standarditem.h"
+#include "action.h"
 
-StandardItem::StandardItem(const QString &id) : id_(id) { }
+Core::StandardItem::StandardItem(const QString &id) : id_(id) { }
 
-QString StandardItem::id() const {
+QString Core::StandardItem::id() const {
     return id_;
 }
 
-QString StandardItem::text() const {
+QString Core::StandardItem::text() const {
     return text_;
 }
 
-void StandardItem::setText(const QString &text){
+void Core::StandardItem::setText(const QString &text){
     text_ = text;
 }
 
-QString StandardItem::subtext() const {
+QString Core::StandardItem::subtext() const {
     return subtext_;
 }
 
-void StandardItem::setSubtext(const QString &subtext){
+void Core::StandardItem::setSubtext(const QString &subtext){
     subtext_ = subtext;
 }
 
-QString StandardItem::iconPath() const {
+QString Core::StandardItem::iconPath() const {
     return iconPath_;
 }
 
-void StandardItem::setIconPath(const QString &iconPath){
+void Core::StandardItem::setIconPath(const QString &iconPath){
     iconPath_ = iconPath;
 }
 
-vector<SharedAction> StandardItem::actions(){
+vector<shared_ptr<Core::Action>> Core::StandardItem::actions(){
     return actions_;
 }
 
-void StandardItem::setActions(vector<SharedAction> &&actions){
+void Core::StandardItem::setActions(vector<shared_ptr<Action> > &&actions){
     actions_ = actions;
 }

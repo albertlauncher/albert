@@ -25,20 +25,26 @@
 #include <vector>
 #include <memory>
 #include "extension.h"
+#include "queryhandler.h"
 #include "offlineindex.h"
 using std::vector;
 using std::shared_ptr;
+namespace Core {
 class StandardIndexItem;
+}
+
 
 namespace Applications {
 
 class ConfigWidget;
 
-class Extension final : public AbstractExtension
+class Extension final :
+        public QObject,
+        public Core::Extension,
+        public Core::QueryHandler
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
-    Q_INTERFACES(AbstractExtension)
 
     class Indexer;
 
@@ -53,7 +59,7 @@ public:
 
     QString name() const override { return "Applications"; }
     QWidget *widget(QWidget *parent = nullptr) override;
-    void handleQuery(Query * query) override;
+    void handleQuery(Core::Query * query) override;
 
     /*
      * Extension specific members
@@ -63,15 +69,16 @@ public:
     void removeDir(const QString &dirPath);
     void restorePaths();
 
-    bool fuzzy() { return offlineIndex_.fuzzy(); }
+    bool fuzzy();
     void setFuzzy(bool b = true);
 
     void updateIndex();
 
 private:
+
     QPointer<ConfigWidget> widget_;
-    vector<shared_ptr<StandardIndexItem>> index_;
-    OfflineIndex offlineIndex_;
+    vector<shared_ptr<Core::StandardIndexItem>> index_;
+    Core::OfflineIndex offlineIndex_;
     QMutex indexAccess_;
     QPointer<Indexer> indexer_;
     QFileSystemWatcher watcher_;
@@ -85,6 +92,7 @@ private:
     static const bool  UPDATE_DELAY;
 
 signals:
+
     void rootDirsChanged(const QStringList&);
     void statusInfo(const QString&);
 };

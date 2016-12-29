@@ -29,6 +29,8 @@ using std::map;
 using std::shared_ptr;
 using std::unique_ptr;
 
+namespace Core {
+
 class PrefixSearch : public IndexImpl
 {
 public:
@@ -50,8 +52,8 @@ public:
 
 
     /** ***********************************************************************/
-    void add(shared_ptr<IIndexable> idxble) override {
-        vector<IIndexable::WeightedKeyword> indexKeywords = idxble->indexKeywords();
+    void add(shared_ptr<Indexable> idxble) override {
+        vector<Indexable::WeightedKeyword> indexKeywords = idxble->indexKeywords();
         for (const auto &wkw : indexKeywords) {
             // Build an inverted index
             QStringList words = wkw.keyword.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
@@ -71,7 +73,7 @@ public:
 
 
     /** ***********************************************************************/
-    vector<shared_ptr<IIndexable>> search(const QString &req) const override {
+    vector<shared_ptr<Indexable>> search(const QString &req) const override {
 
 
         // Split the query into words W
@@ -79,9 +81,9 @@ public:
 
         // Skip if there arent any // CONSTRAINT (2): |W| > 0
         if (words.empty())
-            return vector<shared_ptr<IIndexable>>();
+            return vector<shared_ptr<Indexable>>();
 
-        set<shared_ptr<IIndexable>> resultsSet;
+        set<shared_ptr<Indexable>> resultsSet;
         QStringList::iterator wordIterator = words.begin();
 
         // Make lower for case insensitivity
@@ -100,14 +102,14 @@ public:
 
             // Unite the sets that are mapped by words that begin with word
             // w ∈ W. This set is called U_w
-            set<shared_ptr<IIndexable>> wordMappingsUnion;
+            set<shared_ptr<Indexable>> wordMappingsUnion;
             for (InvertedIndex::const_iterator lb = invertedIndex_.lower_bound(word);
                  lb != invertedIndex_.cend() && lb->first.startsWith(word); ++lb)
                 wordMappingsUnion.insert(lb->second.begin(), lb->second.end());
 
 
             // Intersect all sets U_w with the results
-            set<shared_ptr<IIndexable>> intersection;
+            set<shared_ptr<Indexable>> intersection;
             std::set_intersection(resultsSet.begin(), resultsSet.end(),
                                   wordMappingsUnion.begin(), wordMappingsUnion.end(),
                                   std::inserter(intersection, intersection.begin()));
@@ -115,12 +117,12 @@ public:
         }
 
         // Convert to a std::vector
-        vector<shared_ptr<IIndexable>> resultsVector(resultsSet.begin(), resultsSet.end());
+        vector<shared_ptr<Indexable>> resultsVector(resultsSet.begin(), resultsSet.end());
         return resultsVector;
     }
 
 protected:
-    typedef map<QString, set<shared_ptr<IIndexable>>> InvertedIndex;
+    typedef map<QString, set<shared_ptr<Indexable>>> InvertedIndex;
     InvertedIndex invertedIndex_;
 };
 
@@ -202,3 +204,5 @@ protected:
 //		return false;
 //	}
 //};
+
+}

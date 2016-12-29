@@ -18,6 +18,8 @@
 #include "loadermodel.h"
 #include "extensionmanager.h"
 #include "extensionloader.h"
+using Core::ExtensionLoader;
+
 
 
 /** ***************************************************************************/
@@ -39,7 +41,7 @@ QVariant LoaderModel::data(const QModelIndex &index, int role) const {
     if (!index.isValid() || index.row() < 0 || rowCount() <= index.row())
         return QVariant();
 
-    const unique_ptr<AbstractExtensionLoader> &loader = extensionManager_->extensionLoaders()[index.row()];
+    const unique_ptr<ExtensionLoader> &loader = extensionManager_->extensionLoaders()[index.row()];
 
     switch (role) {
     case Qt::DisplayRole:
@@ -56,11 +58,11 @@ QVariant LoaderModel::data(const QModelIndex &index, int role) const {
     }
     case Qt::DecorationRole:
         switch (loader->state()) {
-        case AbstractExtensionLoader::State::Loaded:
+        case ExtensionLoader::State::Loaded:
             return QIcon(":plugin_loaded");
-        case AbstractExtensionLoader::State::NotLoaded:
+        case ExtensionLoader::State::NotLoaded:
             return QIcon(":plugin_notloaded");
-        case AbstractExtensionLoader::State::Error:
+        case ExtensionLoader::State::Error:
             return QIcon(":plugin_error");
         }
     case Qt::CheckStateRole:

@@ -19,9 +19,11 @@
 #include <QStringList>
 #include "core_globals.h"
 
-class AbstractExtension;
+namespace Core {
 
-class EXPORT_CORE AbstractExtensionLoader
+class Extension;
+
+class EXPORT_CORE ExtensionLoader
 {
 public:
 
@@ -31,14 +33,14 @@ public:
         Error
     };
 
-    AbstractExtensionLoader() : state_(State::NotLoaded) {}
-    virtual ~AbstractExtensionLoader() {}
+    ExtensionLoader() : state_(State::NotLoaded) {}
+    virtual ~ExtensionLoader() {}
 
     virtual State state() { return state_; }
     virtual bool load() = 0;
     virtual bool unload() = 0;
     virtual QString lastError() const = 0;
-    virtual AbstractExtension* instance() = 0;
+    virtual Extension* instance() = 0;
     virtual QString path() const = 0;
     virtual QString type() const = 0;
     // Metadata
@@ -53,3 +55,5 @@ protected:
     State state_;
 
 };
+
+}

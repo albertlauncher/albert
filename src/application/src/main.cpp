@@ -32,7 +32,7 @@
 #include "mainwindow.h"
 #include "hotkeymanager.h"
 #include "extensionmanager.h"
-#include "queryhandler.h"
+#include "querymanager.h"
 #include "settingswidget.h"
 #include "trayicon.h"
 
@@ -43,15 +43,15 @@ void dispatchMessage();
 static const char* CFG_TERM = "terminal";
 static const char* DEF_TERM = "xterm -e";
 
-static QApplication     *app;
-static MainWindow       *mainWindow;
-static HotkeyManager    *hotkeyManager;
-static ExtensionManager *extensionManager;
-static QueryHandler     *queryHandler;
-static SettingsWidget   *settingsWidget;
-static TrayIcon         *trayIcon;
-static QMenu            *trayIconMenu;
-static QLocalServer     *localServer;
+static QApplication           *app;
+static Core::ExtensionManager *extensionManager;
+static QueryManager           *queryManager;
+static MainWindow             *mainWindow;
+static HotkeyManager          *hotkeyManager;
+static SettingsWidget         *settingsWidget;
+static TrayIcon               *trayIcon;
+static QMenu                  *trayIconMenu;
+static QLocalServer           *localServer;
 QString terminalCommand;
 
 int main(int argc, char *argv[]) {
@@ -188,8 +188,8 @@ int main(int argc, char *argv[]) {
         QSettings settings(qApp->applicationName());
         mainWindow       = new MainWindow;
         hotkeyManager    = new HotkeyManager;
-        extensionManager = new ExtensionManager;
-        queryHandler     = new QueryHandler(extensionManager);
+        extensionManager = new Core::ExtensionManager;
+        queryManager     = new QueryManager(extensionManager);
         trayIcon         = new TrayIcon;
         settingsWidget   = new SettingsWidget(mainWindow, hotkeyManager, extensionManager, trayIcon);
 
@@ -222,7 +222,7 @@ int main(int argc, char *argv[]) {
         QObject::connect(hotkeyManager, &HotkeyManager::hotKeyPressed,
                          mainWindow, &MainWindow::toggleVisibility);
 
-        QObject::connect(queryHandler, &QueryHandler::resultsReady,
+        QObject::connect(queryManager, &QueryManager::resultsReady,
                          mainWindow, &MainWindow::setModel);
 
         QObject::connect(showAction, &QAction::triggered,
@@ -250,13 +250,13 @@ int main(int argc, char *argv[]) {
                          settingsWidget, &SettingsWidget::raise);
 
         QObject::connect(mainWindow, &MainWindow::widgetShown,
-                         queryHandler, &QueryHandler::setupSession);
+                         queryManager, &QueryManager::setupSession);
 
         QObject::connect(mainWindow, &MainWindow::widgetHidden,
-                         queryHandler, &QueryHandler::teardownSession);
+                         queryManager, &QueryManager::teardownSession);
 
         QObject::connect(mainWindow, &MainWindow::inputChanged,
-                         queryHandler, &QueryHandler::startQuery);
+                         queryManager, &QueryManager::startQuery);
 
 
         /*
@@ -331,7 +331,7 @@ int main(int argc, char *argv[]) {
     delete settingsWidget;
     delete trayIconMenu;
     delete trayIcon;
-    delete queryHandler;
+    delete queryManager;
     delete extensionManager;
     delete hotkeyManager;
     delete mainWindow;

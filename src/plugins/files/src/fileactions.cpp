@@ -18,17 +18,17 @@
 
 /******************************************************************************/
 
-Files::AbstractFileAction::AbstractFileAction(Files::File *file) : file_(file) {
+Files::FileAction::FileAction(Files::File *file) : file_(file) {
 
 }
 
-Files::AbstractFileAction::~AbstractFileAction() {
+Files::FileAction::~FileAction() {
 
 }
 
 /******************************************************************************/
 
-Files::File::OpenFileAction::OpenFileAction(Files::File *file) : AbstractFileAction(file) {
+Files::File::OpenFileAction::OpenFileAction(Files::File *file) : FileAction(file) {
 
 }
 
@@ -42,7 +42,7 @@ void Files::File::OpenFileAction::activate() {
 
 /******************************************************************************/
 
-Files::File::RevealFileAction::RevealFileAction(Files::File *file) : AbstractFileAction(file) {
+Files::File::RevealFileAction::RevealFileAction(Files::File *file) : FileAction(file) {
 
 }
 
@@ -56,7 +56,7 @@ void Files::File::RevealFileAction::activate() {
 
 /******************************************************************************/
 
-Files::File::CopyFileAction::CopyFileAction(Files::File *file) : AbstractFileAction(file) {
+Files::File::CopyFileAction::CopyFileAction(Files::File *file) : FileAction(file) {
 
 }
 
@@ -92,7 +92,7 @@ void Files::File::CopyFileAction::activate() {
 
 /******************************************************************************/
 
-Files::File::CopyPathAction::CopyPathAction(Files::File *file) : AbstractFileAction(file) {
+Files::File::CopyPathAction::CopyPathAction(Files::File *file) : FileAction(file) {
 
 }
 

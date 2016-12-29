@@ -24,42 +24,48 @@
 #include "extension.h"
 #include "extensionmanager.h"
 #include "query.h"
-#include "queryhandler.h"
+#include "querymanager.h"
 
 /** ***************************************************************************/
-QueryHandler::QueryHandler(ExtensionManager* em, QObject *parent)
+QueryManager::QueryManager(ExtensionManager* em, QObject *parent)
     : QObject(parent),
       extensionManager_(em),
       currentQuery_(nullptr) {
     // Initialize the order
-    MatchOrder::update();
+    Core::MatchOrder::update();
 }
 
 /** ***************************************************************************/
-void QueryHandler::setupSession() {
-    // Call all setup routines
-    std::chrono::system_clock::time_point start, end;
-    for (AbstractExtension *e : extensionManager_->extensions()){
-        start = std::chrono::system_clock::now();
-        e->setupSession();
-        end = std::chrono::system_clock::now();
-        if (50 < std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count())
-            qWarning() << e->id << "took over 50 ms to setup!";
-    }
+void QueryManager::setupSession() {
+
+//    // Call all setup routines
+//    for (QueryHandler *handler : pluginManager_->pluginsByType<ISyncQueryHandler>())
+//        handler->setupSession();
+
+
+//    // Call all setup routines
+//    std::chrono::system_clock::time_point start, end;
+//    for (Extension *e : extensionManager_->extensions()){
+//        start = std::chrono::system_clock::now();
+//        e->setupSession();
+//        end = std::chrono::system_clock::now();
+//        if (50 < std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count())
+//            qWarning() << e->id << "took over 50 ms to setup!";
+//    }
 }
 
 /** ***************************************************************************/
-void QueryHandler::teardownSession() {
+void QueryManager::teardownSession() {
 
-    // Call all teardown routines
-    std::chrono::system_clock::time_point start, end;
-    for (AbstractExtension *e : extensionManager_->extensions()){
-        start = std::chrono::system_clock::now();
-        e->teardownSession();
-        end = std::chrono::system_clock::now();
-        if (50 < std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count())
-            qWarning() << e->id << "took over 50 ms to teardown!";
-    }
+//    // Call all teardown routines
+//    std::chrono::system_clock::time_point start, end;
+//    for (Extension *e : extensionManager_->extensions()){
+//        start = std::chrono::system_clock::now();
+//        e->teardownSession();
+//        end = std::chrono::system_clock::now();
+//        if (50 < std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count())
+//            qWarning() << e->id << "took over 50 ms to teardown!";
+//    }
 
     // Delete all the queries of this session
     for (Query* qp : pastQueries_)
@@ -70,15 +76,15 @@ void QueryHandler::teardownSession() {
     pastQueries_.clear();
 
     // Compute new match rankings
-    MatchOrder::update();
+    Core::MatchOrder::update();
 }
 
 /** ***************************************************************************/
-void QueryHandler::startQuery(const QString &searchTerm) {
+void QueryManager::startQuery(const QString &searchTerm) {
 
     if ( currentQuery_ != nullptr ) {
         // Stop last query
-        disconnect(currentQuery_, &Query::resultsReady, this, &QueryHandler::resultsReady);
+        disconnect(currentQuery_, &Query::resultsReady, this, &QueryManager::resultsReady);
         currentQuery_->invalidate();
         // Store old queries an delete on session teardown (listview needs the model)
         pastQueries_.push_back(currentQuery_);
@@ -94,6 +100,6 @@ void QueryHandler::startQuery(const QString &searchTerm) {
         emit resultsReady(nullptr);
     } else {
         currentQuery_ = new Query(searchTerm, extensionManager_->extensions());
-        connect(currentQuery_, &Query::resultsReady, this, &QueryHandler::resultsReady);
+        connect(currentQuery_, &Query::resultsReady, this, &QueryManager::resultsReady);
     }
 }

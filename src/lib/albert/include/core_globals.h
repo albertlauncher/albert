@@ -23,6 +23,3 @@
 #endif
 
 #define ALBERT_EXTENSION_IID "ExtensionInterface_v1.0"
-
-
-

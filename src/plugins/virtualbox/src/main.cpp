@@ -19,13 +19,24 @@
 #include <QString>
 #include "main.h"
 #include "query.h"
-#include "standardobjects.h"
 #include "xdgiconlookup.h"
+#include "standarditem.h"
+#include "standardaction.h"
+using Core::Action;
+using Core::StandardAction;
+using Core::StandardItem;
 
 /** ***************************************************************************/
-VirtualBox::Extension::Extension() : AbstractExtension("org.albert.extension.virtualbox") {
+VirtualBox::Extension::Extension() : Core::Extension("org.albert.extension.virtualbox") {
     QString iconPath = XdgIconLookup::instance()->themeIconPath("virtualbox");
     iconPath_ = iconPath.isNull() ? ":vbox" : iconPath;
+}
+
+
+
+/** ***************************************************************************/
+QWidget *VirtualBox::Extension::widget(QWidget *parent) {
+    return new QWidget(parent);
 }
 
 
@@ -55,7 +66,7 @@ void VirtualBox::Extension::setupSession() {
 
 
 /** ***************************************************************************/
-void VirtualBox::Extension::handleQuery(Query * query) {
+void VirtualBox::Extension::handleQuery(Core::Query * query) {
 
    for (uint i = 0; i < names_.size(); ++i){
        if (names_[i].startsWith(query->searchTerm(), Qt::CaseInsensitive)) {

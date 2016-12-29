@@ -27,17 +27,17 @@
 namespace Files {
 
 /** ***************************************************************************/
-struct AbstractFileAction : public AbstractAction
+struct FileAction : public Core::Action
 {
-    AbstractFileAction(File *file);
-    ~AbstractFileAction();
+    FileAction(File *file);
+    ~FileAction();
     File const * const file_;
 };
 
 
 
 /** ***************************************************************************/
-struct File::OpenFileAction final : public AbstractFileAction
+struct File::OpenFileAction final : public FileAction
 {
     OpenFileAction(File *file);
     QString text() const override;
@@ -47,7 +47,7 @@ struct File::OpenFileAction final : public AbstractFileAction
 
 
 /** ***************************************************************************/
-struct File::RevealFileAction final : public AbstractFileAction
+struct File::RevealFileAction final : public FileAction
 {
     RevealFileAction(File *file);
     QString text() const override;
@@ -57,7 +57,7 @@ struct File::RevealFileAction final : public AbstractFileAction
 
 
 /** ***************************************************************************/
-struct File::CopyFileAction final : public AbstractFileAction
+struct File::CopyFileAction final : public FileAction
 {
     CopyFileAction(File *file);
     QString text() const override;
@@ -67,7 +67,7 @@ struct File::CopyFileAction final : public AbstractFileAction
 
 
 /** ***************************************************************************/
-struct File::CopyPathAction final : public AbstractFileAction
+struct File::CopyPathAction final : public FileAction
 {
     CopyPathAction(File *file);
     QString text() const override;

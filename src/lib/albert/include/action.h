@@ -20,16 +20,17 @@
 #include "core_globals.h"
 using std::shared_ptr;
 
+namespace Core {
 
-/** ****************************************************************************
+/**
  * @brief The action interface
  * A base class for actions (and items)
  */
-class EXPORT_CORE AbstractAction
+class EXPORT_CORE Action
 {
 public:
 
-    virtual ~AbstractAction() {}
+    virtual ~Action() {}
 
     /** A description */
     virtual QString text() const = 0;
@@ -37,4 +38,5 @@ public:
     /** Activates the item */
     virtual void activate() = 0;
 };
-typedef shared_ptr<AbstractAction> SharedAction;
+
+}

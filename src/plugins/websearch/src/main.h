@@ -20,6 +20,8 @@
 #include <QPointer>
 #include <vector>
 #include "extension.h"
+#include "queryhandler.h"
+#include "fallbackprovider.h"
 using std::vector;
 
 namespace Websearch {
@@ -27,11 +29,14 @@ namespace Websearch {
 class SearchEngine;
 class ConfigWidget;
 
-class Extension final : public AbstractExtension
+class Extension final :
+        public QObject,
+        public Core::Extension,
+        public Core::QueryHandler,
+        public Core::FallbackProvider
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
-    Q_INTERFACES(AbstractExtension)
 
 public:
     Extension();
@@ -43,10 +48,9 @@ public:
 
     QString name() const override { return "Websearch"; }
     QWidget *widget(QWidget *parent = nullptr) override;
-    void handleQuery(Query * query) override;
-    bool runExclusive() const {return true;}
-    QStringList triggers() const override;
-    vector<SharedItem> fallbacks(QString) override;
+    void handleQuery(Core::Query * query) override;
+    vector<shared_ptr<Core::Item>> fallbacks(const QString &) override;
+
 
     /*
      * Extension specific members

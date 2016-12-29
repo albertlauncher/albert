@@ -15,33 +15,39 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
-#include <vector>
-using std::vector;
-class ExtensionManager;
-class QAbstractItemModel;
-class Query;
+#include <QString>
+#include <QPluginLoader>
+#include "extensionloader.h"
+#include "core_globals.h"
 
-class QueryHandler : public QObject
+namespace Core {
+
+class Extension;
+
+class EXPORT_CORE NativeExtensionLoader final : public Core::ExtensionLoader
 {
-    Q_OBJECT
-
 public:
 
-    explicit QueryHandler(ExtensionManager* em, QObject *parent = 0);
+    NativeExtensionLoader(QString path) : loader_(path) { }
+    ~NativeExtensionLoader() { }
 
-    void setupSession();
-    void teardownSession();
-    void startQuery(const QString &searchTerm);
+    bool load() override;
+    bool unload() override;
+    QString lastError() const override;
+    Extension *instance() override;
+    QString path() const override;
+    QString type() const override;
+    // Metadata
+    QString id() const override;
+    QString name() const override;
+    QString version() const override;
+    QString author() const override;
+    QStringList dependencies() const override;
 
 private:
 
-    ExtensionManager *extensionManager_;
-    Query *currentQuery_;
-    vector<Query*> pastQueries_;
+    QPluginLoader loader_;
 
-signals:
-
-    void resultsReady(QAbstractItemModel*);
 };
 
+}

@@ -19,8 +19,11 @@
 #include <vector>
 #include <memory>
 #include "core_globals.h"
+
+namespace Core {
+
 class IndexImpl;
-class IIndexable;
+class Indexable;
 
 class EXPORT_CORE OfflineIndex final {
 
@@ -71,7 +74,7 @@ public:
      * @brief Build the search index
      * @param The items to index
      */
-    void add(std::shared_ptr<IIndexable> idxble);
+    void add(std::shared_ptr<Core::Indexable> idxble);
 
     /**
      * @brief Clear the search index
@@ -82,11 +85,13 @@ public:
      * @brief Perform a search on the index
      * @param req The query string
      */
-    std::vector<std::shared_ptr<IIndexable>> search(const QString &req) const;
+    std::vector<std::shared_ptr<Core::Indexable>> search(const QString &req) const;
 
 private:
     IndexImpl *impl_;
 };
+
+}
 
 
 

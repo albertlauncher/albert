@@ -31,7 +31,7 @@ public:
      * Item specific
      */
 
-    SharedItem buildWebsearchItem(const QString &searchterm) const;
+    shared_ptr<Core::Item> buildWebsearchItem(const QString &searchterm) const;
 
     void serialize(QDataStream &out) const;
     void deserialize(QDataStream &in);

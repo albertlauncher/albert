@@ -17,22 +17,21 @@
 #pragma once
 #include <QObject>
 #include <QPointer>
-
 #include <vector>
-using std::vector;
-
 #include "extension.h"
-class StandardItem;
-
+#include "queryhandler.h"
+using std::vector;
 
 namespace System {
 
 class ConfigWidget;
 
-class Extension final : public AbstractExtension
+class Extension final :
+        public QObject,
+        public Core::Extension,
+        public Core::QueryHandler
 {
     Q_OBJECT
-    Q_INTERFACES(AbstractExtension)
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
     enum SupportedCommands { LOCK, LOGOUT, SUSPEND, HIBERNATE, REBOOT, POWEROFF, NUMCOMMANDS };
@@ -46,7 +45,7 @@ public:
 
     QString name() const override { return "System"; }
     QWidget *widget(QWidget *parent = nullptr) override;
-    void handleQuery(Query * query) override;
+    void handleQuery(Core::Query * query) override;
 
 private:
     QString defaultCommand(SupportedCommands command);

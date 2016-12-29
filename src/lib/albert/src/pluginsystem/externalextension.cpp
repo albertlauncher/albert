@@ -24,35 +24,36 @@
 #include <vector>
 #include "query.h"
 #include "externalextension.h"
-#include "standardobjects.h"
+#include "standarditem.h"
+#include "standardaction.h"
 #include "xdgiconlookup.h"
-
 using std::vector;
+using namespace Core;
 
 namespace  {
-    vector<SharedItem> buildItemFromJson(const QByteArray &a){
+    vector<shared_ptr<Item>> buildItemFromJson(const QByteArray &a){
 
-        vector<SharedItem> result;
+        vector<shared_ptr<Item>> result;
         QJsonDocument document = QJsonDocument::fromJson(a);
         QJsonArray array = document.array();
 
         // Iterate over the results
-        SharedStdItem item;
-        SharedStdAction action;
+        shared_ptr<StandardItem> item;
+        shared_ptr<StandardAction> action;
         for (const QJsonValue & value : array){
             QJsonObject obj = value.toObject();
 
             QString id = obj["id"].toString();
             if (!id.isEmpty()){
 
-                SharedStdItem ssi = std::make_shared<StandardItem>(id);
-                ssi->setText(obj["name"].toString());
-                ssi->setSubtext(obj["description"].toString());
-                ssi->setIconPath(XdgIconLookup::instance()->themeIconPath(obj["icon"].toString()));
+                item = std::make_shared<StandardItem>(id);
+                item->setText(obj["name"].toString());
+                item->setSubtext(obj["description"].toString());
+                item->setIconPath(XdgIconLookup::instance()->themeIconPath(obj["icon"].toString()));
 
                 // Build the actions
                 QJsonArray jsonActions = obj["actions"].toArray();
-                vector<SharedAction> actions;
+                vector<shared_ptr<Action>> actions;
                 for (const QJsonValue & value : jsonActions){
                     QJsonObject obj = value.toObject();
                     action = std::make_shared<StandardAction>(); // Todo make std commadn action
@@ -66,9 +67,9 @@ namespace  {
                     });
                     actions.push_back(action);
                 }
-                ssi->setActions(std::move(actions));
+                item->setActions(std::move(actions));
 
-                result.emplace_back(std::move(ssi));
+                result.emplace_back(std::move(item));
             }
         }
         return result;
@@ -78,8 +79,8 @@ namespace  {
 
 
 /** ***************************************************************************/
-ExternalExtension::ExternalExtension(const char *id, QString path)
-    : AbstractExtension(id), path_(path) {
+Core::ExternalExtension::ExternalExtension(const char *id, QString path)
+    : Extension(id), path_(path) {
 
     // Get Metadata
     QProcess extProc;
@@ -93,24 +94,7 @@ ExternalExtension::ExternalExtension(const char *id, QString path)
         throw QString("Reply to 'METADATA' is not a valid JSON object.");
 
     QJsonObject metadata = doc.object();
-    QJsonValue val;
-
-    val = metadata["providesMatches"];
-    providesMatches_ = val.isBool() ? val.toBool() : false;
-
-    val = metadata["providesFallbacks"];
-    providesFallbacks_ = val.isBool() ? val.toBool() : false;
-
-    val = metadata["runTriggeredOnly"];
-    runTriggeredOnly_ = val.isBool() ? val.toBool() : false;
-
-    // If RunTriggeredOnly is set check for triggers
-    if (runTriggeredOnly_) {
-        for (const QJsonValue & value : metadata["triggers"].toArray())
-            triggers_.append(value.toString());
-        if (triggers_.isEmpty())
-            throw QString("No triggers set.");
-    }
+    trigger_ = metadata["trigger"].toString();
 
     // Try running the initialization
     extProc.start(path_, {"INITIALIZE"});
@@ -124,14 +108,14 @@ ExternalExtension::ExternalExtension(const char *id, QString path)
 
 
 /** ***************************************************************************/
-ExternalExtension::~ExternalExtension() {
+Core::ExternalExtension::~ExternalExtension() {
     QProcess::startDetached(path_, {"FINALIZE"});
 }
 
 
 
 /** ***************************************************************************/
-QString ExternalExtension::name() const {
+QString Core::ExternalExtension::name() const {
     QProcess extProc;
     extProc.start(path_, {"NAME"});
     if (!extProc.waitForFinished(5000))
@@ -142,7 +126,7 @@ QString ExternalExtension::name() const {
 
 
 /** ***************************************************************************/
-QWidget *ExternalExtension::widget(QWidget *parent) {
+QWidget *Core::ExternalExtension::widget(QWidget *parent) {
 
     QWidget *w = new QWidget(parent);
     QVBoxLayout *vl = new QVBoxLayout(w);
@@ -166,60 +150,35 @@ QWidget *ExternalExtension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-bool ExternalExtension::runExclusive() const {
-     return runTriggeredOnly_;
+QString Core::ExternalExtension::trigger() const {
+    return trigger_;
 }
 
 
 
 /** ***************************************************************************/
-QStringList ExternalExtension::triggers() const {
-    return triggers_;
-}
-
-
-
-/** ***************************************************************************/
-void ExternalExtension::setupSession() {
+void Core::ExternalExtension::setupSession() {
     QProcess::startDetached(path_, {"SETUPSESSION"});
 }
 
 
 
 /** ***************************************************************************/
-void ExternalExtension::teardownSession() {
+void Core::ExternalExtension::teardownSession() {
     QProcess::startDetached(path_, {"TEARDOWNSESSION"});
 }
 
 
 
 /** ***************************************************************************/
-void ExternalExtension::handleQuery(Query* query) {
-
-    if (!providesMatches_)
-        return;
+void Core::ExternalExtension::handleQuery(Query* query) {
 
     QProcess extProc;
     extProc.start(path_, {"QUERY", query->searchTerm()});
     if (!extProc.waitForFinished(1000))
         return;
-    for (SharedItem &item : buildItemFromJson(extProc.readAllStandardOutput()))
+    for (shared_ptr<Item> &item : buildItemFromJson(extProc.readAllStandardOutput()))
         query->addMatch(item);
-}
-
-
-
-/** ***************************************************************************/
-vector<SharedItem> ExternalExtension::fallbacks(QString query) {
-
-    if (!providesFallbacks_)
-        return vector<SharedItem>();
-
-    QProcess extProc;
-    extProc.start(path_, {"FALLBACKS", query});
-    if (!extProc.waitForFinished(1000))
-        return vector<SharedItem>();
-    return buildItemFromJson(extProc.readAllStandardOutput());
 }
 
 

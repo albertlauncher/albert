@@ -16,14 +16,14 @@
 
 #include "standardindexitem.h"
 
-StandardIndexItem::StandardIndexItem(const QString &id) : StandardItem(id) {
+Core::StandardIndexItem::StandardIndexItem(const QString &id) : StandardItem(id) {
 
 }
 
-vector<IIndexable::WeightedKeyword> StandardIndexItem::indexKeywords() const {
+vector<Core::Indexable::WeightedKeyword> Core::StandardIndexItem::indexKeywords() const {
     return indexKeywords_;
 }
 
-void StandardIndexItem::setIndexKeywords(vector<WeightedKeyword> &&indexKeywords) {
+void Core::StandardIndexItem::setIndexKeywords(vector<WeightedKeyword> &&indexKeywords) {
     indexKeywords_ = indexKeywords;
 }

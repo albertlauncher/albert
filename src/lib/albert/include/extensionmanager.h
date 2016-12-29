@@ -26,9 +26,10 @@ using std::set;
 using std::vector;
 using std::unique_ptr;
 
-class AbstractExtension;
-class AbstractExtensionLoader;
+namespace Core {
 
+class Extension;
+class ExtensionLoader;
 
 class EXPORT_CORE ExtensionManager final : public QObject
 {
@@ -39,25 +40,27 @@ public:
     ~ExtensionManager();
 
     void rescanExtensions();
-    const vector<unique_ptr<AbstractExtensionLoader>> &extensionLoaders() const;
-    set<AbstractExtension *> extensions() const;
-    void enableExtension(const unique_ptr<AbstractExtensionLoader> &loader);
-    void disableExtension(const unique_ptr<AbstractExtensionLoader> &loader);
-    bool extensionIsEnabled(const unique_ptr<AbstractExtensionLoader> &loader);
+    const vector<unique_ptr<ExtensionLoader>> &extensionLoaders() const;
+    set<Extension *> extensions() const;
+    void enableExtension(const unique_ptr<ExtensionLoader> &loader);
+    void disableExtension(const unique_ptr<ExtensionLoader> &loader);
+    bool extensionIsEnabled(const unique_ptr<ExtensionLoader> &loader);
 
 private:
 
-    void loadExtension(const unique_ptr<AbstractExtensionLoader> &loader);
-    void unloadExtension(const unique_ptr<AbstractExtensionLoader> &loader);
+    void loadExtension(const unique_ptr<ExtensionLoader> &loader);
+    void unloadExtension(const unique_ptr<ExtensionLoader> &loader);
 
-    vector<unique_ptr<AbstractExtensionLoader>> extensionLoaders_;
-    set<AbstractExtension*> extensions_;
+    vector<unique_ptr<ExtensionLoader>> extensionLoaders_;
+    set<Extension*> extensions_;
     QStringList blacklist_;
 
     static const QString CFG_BLACKLIST;
 
 signals:
 
-    void extensionLoadersChanged(const vector<unique_ptr<AbstractExtensionLoader>>*);
+    void extensionLoadersChanged(const vector<unique_ptr<ExtensionLoader>>*);
 
 };
+
+}

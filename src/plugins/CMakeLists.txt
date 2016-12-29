@@ -12,3 +12,4 @@ if(${BUILD_DEBUG_EXTENSIONS})
     add_subdirectory(templateExtension)
     add_subdirectory(debug)
 endif(${BUILD_DEBUG_EXTENSIONS})
+

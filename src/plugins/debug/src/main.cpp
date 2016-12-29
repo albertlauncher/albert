@@ -22,10 +22,11 @@
 #include "configwidget.h"
 #include "extension.h"
 #include "query.h"
-#include "standardobjects.h"
+#include "standarditem.h"
+using Core::StandardItem;
 
 /** ***************************************************************************/
-Debug::Extension::Extension() : AbstractExtension("org.albert.extension.debug") {
+Debug::Extension::Extension() :Core::Extension("org.albert.extension.debug") {
     QSettings s(qApp->applicationName());
     s.beginGroup(id);
     setDelay(s.value("delay", 50).toInt());
@@ -53,7 +54,7 @@ QWidget *Debug::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void Debug::Extension::handleQuery(Query * query) {
+void Debug::Extension::handleQuery(Core::Query * query) {
     if (!query->isValid())
         return;
 
@@ -69,7 +70,6 @@ void Debug::Extension::handleQuery(Query * query) {
         item->setText(QString("Das Item #%1").arg(i));
         item->setSubtext(QString("Toll, das Item #%1").arg(i));
         item->setIconPath(":debug");
-        item->setActions(vector<SharedAction>());
         query->addMatch(item, 0);
     }
 }

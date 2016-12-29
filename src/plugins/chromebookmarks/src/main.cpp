@@ -27,14 +27,14 @@
 #include "configwidget.h"
 #include "indexer.h"
 #include "query.h"
-#include "standardobjects.h"
+#include "standardindexitem.h"
 
 const char* ChromeBookmarks::Extension::CFG_PATH       = "bookmarkfile";
 const char* ChromeBookmarks::Extension::CFG_FUZZY      = "fuzzy";
 const bool  ChromeBookmarks::Extension::DEF_FUZZY      = false;
 
 /** ***************************************************************************/
-ChromeBookmarks::Extension::Extension() : AbstractExtension("org.albert.extension.chromebookmarks") {
+ChromeBookmarks::Extension::Extension() : Core::Extension("org.albert.extension.chromebookmarks") {
 
     // Load settings
     QSettings s(qApp->applicationName());
@@ -113,16 +113,16 @@ QWidget *ChromeBookmarks::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void ChromeBookmarks::Extension::handleQuery(Query * query) {
+void ChromeBookmarks::Extension::handleQuery(Core::Query * query) {
     // Search for matches. Lock memory against indexer
     indexAccess_.lock();
-    vector<shared_ptr<IIndexable>> indexables = offlineIndex_.search(query->searchTerm().toLower());
+    vector<shared_ptr<Core::Indexable>> indexables = offlineIndex_.search(query->searchTerm().toLower());
     indexAccess_.unlock();
 
     // Add results to query-> This cast is safe since index holds files only
-    for (const shared_ptr<IIndexable> &obj : indexables)
+    for (const shared_ptr<Core::Indexable> &obj : indexables)
         // TODO `Search` has to determine the relevance. Set to 0 for now
-        query->addMatch(std::static_pointer_cast<StandardIndexItem>(obj), 0);
+        query->addMatch(std::static_pointer_cast<Core::StandardIndexItem>(obj), 0);
 }
 
 
@@ -159,6 +159,13 @@ void ChromeBookmarks::Extension::restorePath() {
             return;
         }
     }
+}
+
+
+
+/** ***************************************************************************/
+bool ChromeBookmarks::Extension::fuzzy() {
+    return offlineIndex_.fuzzy();
 }
 
 

@@ -23,20 +23,25 @@
 #include <vector>
 #include <memory>
 #include "extension.h"
+#include "queryhandler.h"
 #include "offlineindex.h"
 using std::vector;
 using std::shared_ptr;
+namespace Core {
 class StandardIndexItem;
+}
 
 namespace ChromeBookmarks {
 
 class ConfigWidget;
 
-class Extension final : public AbstractExtension
+class Extension final :
+        public QObject,
+        public Core::Extension,
+        public Core::QueryHandler
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
-    Q_INTERFACES(AbstractExtension)
 
     class Indexer;
 
@@ -51,7 +56,7 @@ public:
 
     QString name() const override { return "Chrome bookmarks"; }
     QWidget *widget(QWidget *parent = nullptr) override;
-    void handleQuery(Query * query) override;
+    void handleQuery(Core::Query * query) override;
 
     /*
      * Extension specific members
@@ -61,15 +66,15 @@ public:
     void setPath(const QString &path);
     void restorePath();
 
-    bool fuzzy() { return offlineIndex_.fuzzy(); }
+    bool fuzzy();
     void setFuzzy(bool b = true);
 
     void updateIndex();
 
 private:
     QPointer<ConfigWidget> widget_;
-    vector<shared_ptr<StandardIndexItem>> index_;
-    OfflineIndex offlineIndex_;
+    vector<shared_ptr<Core::StandardIndexItem>> index_;
+    Core::OfflineIndex offlineIndex_;
     QMutex indexAccess_;
     QPointer<Indexer> indexer_;
     QString bookmarksFile_;

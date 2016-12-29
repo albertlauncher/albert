@@ -15,7 +15,38 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include "standardaction.h"
-#include "standarditem.h"
-#include "standardindexitem.h"
+#include <QObject>
+#include <QAbstractItemModel>
+#include <vector>
+using std::vector;
+
+namespace Core {
+class ExtensionManager;
+class Query;
+}
+using Core::ExtensionManager;
+using Core::Query;
+
+class QueryManager : public QObject
+{
+    Q_OBJECT
+
+public:
+
+    explicit QueryManager(ExtensionManager* em, QObject *parent = 0);
+
+    void setupSession();
+    void teardownSession();
+    void startQuery(const QString &searchTerm);
+
+private:
+
+    ExtensionManager *extensionManager_;
+    Query *currentQuery_;
+    vector<Query*> pastQueries_;
+
+signals:
+
+    void resultsReady(QAbstractItemModel*);
+};
 

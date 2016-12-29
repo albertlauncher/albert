@@ -31,10 +31,10 @@ using std::unique_ptr;
 using std::chrono::system_clock;
 
 
-const QString ExtensionManager::CFG_BLACKLIST = "blacklist";
+const QString Core::ExtensionManager::CFG_BLACKLIST = "blacklist";
 
 
-namespace {
+namespace Core {
 
     vector<unique_ptr<NativeExtensionLoader>> findNativeExtensions() {
         vector<unique_ptr<NativeExtensionLoader>> results;
@@ -92,7 +92,7 @@ namespace {
 
 
 /** ***************************************************************************/
-ExtensionManager::ExtensionManager() {
+Core::ExtensionManager::ExtensionManager() {
     // Load blacklist
     blacklist_ = QSettings(qApp->applicationName()).value(CFG_BLACKLIST).toStringList();
     rescanExtensions();
@@ -101,20 +101,20 @@ ExtensionManager::ExtensionManager() {
 
 
 /** ***************************************************************************/
-ExtensionManager::~ExtensionManager() {
-    for (unique_ptr<AbstractExtensionLoader> & extensionLoader : extensionLoaders_)
+Core::ExtensionManager::~ExtensionManager() {
+    for (unique_ptr<ExtensionLoader> & extensionLoader : extensionLoaders_)
         unloadExtension(extensionLoader);
 }
 
 
 
 /** ***************************************************************************/
-void ExtensionManager::rescanExtensions() {
+void Core::ExtensionManager::rescanExtensions() {
     // Unload everything
-    for (unique_ptr<AbstractExtensionLoader> & extensionLoader : extensionLoaders_)
+    for (unique_ptr<ExtensionLoader> & extensionLoader : extensionLoaders_)
         unloadExtension(extensionLoader);
 
-    vector<unique_ptr<AbstractExtensionLoader>> notDistinctLoaders;
+    vector<unique_ptr<ExtensionLoader>> notDistinctLoaders;
 
     // Load native extensions
     vector<unique_ptr<NativeExtensionLoader>> && natives = findNativeExtensions();
@@ -125,9 +125,9 @@ void ExtensionManager::rescanExtensions() {
     std::move(externals.begin(), externals.end(), std::back_inserter(notDistinctLoaders));
 
     // Save extensionLoaders, drop duplicates
-    for (unique_ptr<AbstractExtensionLoader> & extensionLoader : notDistinctLoaders)
+    for (unique_ptr<ExtensionLoader> & extensionLoader : notDistinctLoaders)
         if (std::find_if (extensionLoaders_.begin(), extensionLoaders_.end(),
-                          [&extensionLoader](const unique_ptr<AbstractExtensionLoader> &other){
+                          [&extensionLoader](const unique_ptr<ExtensionLoader> &other){
                               return extensionLoader->id() == other->id();
                           }) != extensionLoaders_.end())
             continue;
@@ -135,7 +135,7 @@ void ExtensionManager::rescanExtensions() {
             extensionLoaders_.push_back(std::move(extensionLoader));
 
     // Load if not blacklisted
-    for (unique_ptr<AbstractExtensionLoader> & extensionLoader : extensionLoaders_)
+    for (unique_ptr<ExtensionLoader> & extensionLoader : extensionLoaders_)
         if (!blacklist_.contains(extensionLoader->id()))
             loadExtension(extensionLoader);
 }
@@ -143,22 +143,22 @@ void ExtensionManager::rescanExtensions() {
 
 
 /** ***************************************************************************/
-const vector<unique_ptr<AbstractExtensionLoader>>& ExtensionManager::extensionLoaders() const {
+const vector<unique_ptr<Core::ExtensionLoader>>& Core::ExtensionManager::extensionLoaders() const {
     return extensionLoaders_;
 }
 
 
 
 /** ***************************************************************************/
-set<AbstractExtension*> ExtensionManager::extensions() const {
+set<Core::Extension*> Core::ExtensionManager::extensions() const {
     return extensions_;
 }
 
 
 
 /** ***************************************************************************/
-void ExtensionManager::loadExtension(const unique_ptr<AbstractExtensionLoader> &loader) {
-    if (loader->state() != AbstractExtensionLoader::State::Loaded){
+void Core::ExtensionManager::loadExtension(const unique_ptr<ExtensionLoader> &loader) {
+    if (loader->state() != ExtensionLoader::State::Loaded){
         system_clock::time_point start = system_clock::now();
         if ( loader->load() ) {
             auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(system_clock::now()-start);
@@ -172,8 +172,8 @@ void ExtensionManager::loadExtension(const unique_ptr<AbstractExtensionLoader> &
 
 
 /** ***************************************************************************/
-void ExtensionManager::unloadExtension(const unique_ptr<AbstractExtensionLoader> &loader) {
-    if (loader->state() == AbstractExtensionLoader::State::Loaded) {
+void Core::ExtensionManager::unloadExtension(const unique_ptr<ExtensionLoader> &loader) {
+    if (loader->state() == ExtensionLoader::State::Loaded) {
         extensions_.erase(loader->instance());
         loader->unload();
     }
@@ -182,7 +182,7 @@ void ExtensionManager::unloadExtension(const unique_ptr<AbstractExtensionLoader>
 
 
 /** ***************************************************************************/
-void ExtensionManager::enableExtension(const unique_ptr<AbstractExtensionLoader> &loader) {
+void Core::ExtensionManager::enableExtension(const unique_ptr<ExtensionLoader> &loader) {
     blacklist_.removeAll(loader->id());
     QSettings(qApp->applicationName()).setValue(CFG_BLACKLIST, blacklist_);
     loadExtension(loader);
@@ -191,7 +191,7 @@ void ExtensionManager::enableExtension(const unique_ptr<AbstractExtensionLoader>
 
 
 /** ***************************************************************************/
-void ExtensionManager::disableExtension(const unique_ptr<AbstractExtensionLoader> &loader) {
+void Core::ExtensionManager::disableExtension(const unique_ptr<ExtensionLoader> &loader) {
     if (!blacklist_.contains(loader->id())){
         blacklist_.push_back(loader->id());
         QSettings(qApp->applicationName()).setValue(CFG_BLACKLIST, blacklist_);
@@ -202,6 +202,6 @@ void ExtensionManager::disableExtension(const unique_ptr<AbstractExtensionLoader
 
 
 /** ***************************************************************************/
-bool ExtensionManager::extensionIsEnabled(const unique_ptr<AbstractExtensionLoader> &loader) {
+bool Core::ExtensionManager::extensionIsEnabled(const unique_ptr<ExtensionLoader> &loader) {
     return !blacklist_.contains(loader->id());
 }

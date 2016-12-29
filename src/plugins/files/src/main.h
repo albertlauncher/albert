@@ -20,25 +20,26 @@
 #include <QPointer>
 #include <QTimer>
 #include <QMutex>
-
 #include <vector>
 #include <memory>
+#include "extension.h"
+#include "queryhandler.h"
+#include "offlineindex.h"
 using std::vector;
 using std::shared_ptr;
-
-#include "extension.h"
-#include "offlineindex.h"
 
 namespace Files {
 
 class File;
 class ConfigWidget;
 
-class Extension final : public AbstractExtension
+class Extension final :
+        public QObject,
+        public Core::Extension,
+        public Core::QueryHandler
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
-    Q_INTERFACES(AbstractExtension)
 
     class Indexer;
 
@@ -53,7 +54,7 @@ public:
 
     QString name() const override { return "Files"; }
     QWidget *widget(QWidget *parent = nullptr) override;
-    void handleQuery(Query * query) override;
+    void handleQuery(Core::Query * query) override;
 
     /*
      * Extension specific members
@@ -89,13 +90,13 @@ public:
     inline unsigned int scanInterval() { return indexIntervalTimer_.interval()/60000; }
     void setScanInterval(uint minutes);
 
-    bool fuzzy() { return offlineIndex_.fuzzy(); }
+    bool fuzzy();
     void setFuzzy(bool b = true);
 
 private:
     QPointer<ConfigWidget> widget_;
     vector<shared_ptr<File>> index_;
-    OfflineIndex offlineIndex_;
+    Core::OfflineIndex offlineIndex_;
     QMutex indexAccess_;
     QPointer<Indexer> indexer_;
     QTimer indexIntervalTimer_;

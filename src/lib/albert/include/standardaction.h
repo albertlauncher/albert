@@ -21,13 +21,15 @@
 #include "core_globals.h"
 using std::function;
 
+namespace Core {
+
 
 /** ****************************************************************************
 * @brief A standard action
 * If you dont need the flexibility subclassing the abstract classes provided,
 * you can simply use this container, fill it with data.
 */
-struct EXPORT_CORE StandardAction final : public AbstractAction
+struct EXPORT_CORE StandardAction final : public Action
 {
 public:
 
@@ -48,4 +50,5 @@ private:
     function<void()> action_;
 
 };
-typedef shared_ptr<StandardAction> SharedStdAction;
+
+}

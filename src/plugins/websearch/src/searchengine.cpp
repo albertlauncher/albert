@@ -18,12 +18,15 @@
 #include <QUrl>
 #include <QDataStream>
 #include "searchengine.h"
-#include "standardobjects.h"
+#include "standarditem.h"
+#include "standardaction.h"
+using Core::StandardAction;
+using Core::StandardItem;
 
 
 
 /** ***************************************************************************/
-SharedItem Websearch::SearchEngine::buildWebsearchItem(const QString &searchterm) const {
+shared_ptr<Core::Item> Websearch::SearchEngine::buildWebsearchItem(const QString &searchterm) const {
 
     QString urlString = QString(url_).replace("%s", QUrl::toPercentEncoding(searchterm));
     QUrl url = QUrl(urlString);

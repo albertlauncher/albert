@@ -14,26 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QDebug>
 #include <QClipboard>
+#include <QDebug>
 #include <QSettings>
-
 #include <vector>
-using std::vector;
-
 #include "main.h"
-#include "action.h"
 #include "configwidget.h"
 #include "query.h"
-#include "standardobjects.h"
+#include "standarditem.h"
+#include "standardaction.h"
 #include "xdgiconlookup.h"
 #include "muParser.h"
+using std::vector;
+using Core::Action;
+using Core::StandardAction;
+using Core::StandardItem;
+
 
 const QString Calculator::Extension::CFG_SEPS      = "group_separators";
 const bool    Calculator::Extension::CFG_SEPS_DEF  = false;
 
 /** ***************************************************************************/
-Calculator::Extension::Extension() : AbstractExtension("org.albert.extension.calculator") {
+Calculator::Extension::Extension() : Core::Extension("org.albert.extension.calculator") {
 
     // Load settings
     QSettings s(qApp->applicationName());
@@ -81,7 +83,7 @@ QWidget *Calculator::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void Calculator::Extension::handleQuery(Query * query) {
+void Calculator::Extension::handleQuery(Core::Query * query) {
     parser_->SetExpr(query->searchTerm().toLower().toStdString());
     QString result;
     try {
@@ -128,15 +130,15 @@ void Calculator::Extension::handleQuery(Query * query) {
 //      ecINTERNAL_ERROR	35	Internal error of any kind.
     }
 
-    SharedStdItem calcItem = std::make_shared<StandardItem>("muparser-eval");
+    shared_ptr<StandardItem> calcItem = std::make_shared<StandardItem>("muparser-eval");
     calcItem->setText(result);
     calcItem->setSubtext(QString("Result of '%1'").arg(query->searchTerm()));
     calcItem->setIconPath(iconPath_);
 
     // Build actions
-    vector<SharedAction> actions;
+    vector<shared_ptr<Action>> actions;
 
-    SharedStdAction action = std::make_shared<StandardAction>();
+    shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
     action->setText(QString("Copy '%1' to clipboard").arg(result));
     action->setAction([=](){
         QApplication::clipboard()->setText(result); });

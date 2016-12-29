@@ -18,15 +18,18 @@
 #include <QObject>
 #include <QPointer>
 #include "extension.h"
+#include "queryhandler.h"
 
 namespace Template {
 
 class ConfigWidget;
 
-class Extension final : public AbstractExtension
+class Extension final :
+        public QObject,
+        public Core::Extension,
+        public Core::QueryHandler
 {
     Q_OBJECT
-    Q_INTERFACES(AbstractExtension)
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
 public:
@@ -41,7 +44,7 @@ public:
     QWidget *widget(QWidget *parent = nullptr) override;
     void setupSession() override;
     void teardownSession() override;
-    void handleQuery(Query * query) override;
+    void handleQuery(Core::Query * query) override;
 
     /*
      * Extension specific members

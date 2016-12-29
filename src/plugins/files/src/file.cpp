@@ -75,8 +75,8 @@ QString Files::File::iconPath() const {
 
 
 /** ***************************************************************************/
-vector<SharedAction> Files::File::actions() {
-    vector<SharedAction> actions;
+vector<shared_ptr<Core::Action>> Files::File::actions() {
+    vector<shared_ptr<Core::Action>> actions;
     actions.push_back(std::make_shared<OpenFileAction>(this));
     actions.push_back(std::make_shared<RevealFileAction>(this));
     actions.push_back(std::make_shared<CopyFileAction>(this));
@@ -87,8 +87,8 @@ vector<SharedAction> Files::File::actions() {
 
 
 /** ***************************************************************************/
-vector<IIndexable::WeightedKeyword> Files::File::indexKeywords() const {
-    std::vector<IIndexable::WeightedKeyword> res;
+vector<Core::Indexable::WeightedKeyword> Files::File::indexKeywords() const {
+    std::vector<Indexable::WeightedKeyword> res;
     res.emplace_back(QFileInfo(path_).fileName(), USHRT_MAX);
     // TODO ADD PATH
     return res;

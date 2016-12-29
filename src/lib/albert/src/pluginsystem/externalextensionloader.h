@@ -19,9 +19,11 @@
 #include "extensionloader.h"
 #include "core_globals.h"
 
-class AbstractExtension;
+namespace Core {
 
-struct EXPORT_CORE ExternalExtensionLoader final : public AbstractExtensionLoader
+class Extension;
+
+class EXPORT_CORE ExternalExtensionLoader final : public ExtensionLoader
 {
 public:
 
@@ -31,7 +33,7 @@ public:
     bool load() override;
     bool unload() override;
     QString lastError() const override;
-    AbstractExtension *instance() override;
+    Extension *instance() override;
     QString path() const override;
     QString type() const override;
     // Metadata
@@ -45,7 +47,7 @@ private:
 
     QString path_;
     QString lastError_;
-    AbstractExtension* instance_;
+    Extension* instance_;
 
     // Metadata
     QString id_; // Mandatory
@@ -55,3 +57,5 @@ private:
     QStringList dependencies_;
 
 };
+
+}

@@ -28,11 +28,16 @@
 #include <algorithm>
 #include "indexer.h"
 #include "extension.h"
-#include "standardobjects.h"
+#include "standardaction.h"
+#include "standardindexitem.h"
 #include "xdgiconlookup.h"
 using std::map;
 using std::vector;
 using std::shared_ptr;
+using Core::Action;
+using Core::StandardAction;
+using Core::Indexable;
+using Core::StandardIndexItem;
 
 extern QString terminalCommand;
 
@@ -249,7 +254,7 @@ void Applications::Extension::Indexer::run() {
     emit statusInfo("Indexing desktop entries ...");
 
     // Get a new index [O(n)]
-    vector<SharedStdIdxItem> desktopEntries;
+    vector<shared_ptr<StandardIndexItem>> desktopEntries;
     QStringList xdg_current_desktop = QString(getenv("XDG_CURRENT_DESKTOP")).split(':',QString::SkipEmptyParts);
     QLocale loc;
 
@@ -382,7 +387,7 @@ void Applications::Extension::Indexer::run() {
              * Default action
              */
 
-            vector<SharedAction> actions;
+            vector<shared_ptr<Action>> actions;
 
             // Unquote arguments and expand field codes
             QStringList commandline = expandedFieldCodes(shellLexerSplit(exec),
@@ -390,7 +395,7 @@ void Applications::Extension::Indexer::run() {
                                                          name,
                                                          fIt.filePath());
 
-            SharedStdAction sa = std::make_shared<StandardAction>();
+            shared_ptr<StandardAction> sa = std::make_shared<StandardAction>();
             sa->setText("Run");
             if (term){
                 sa->setAction([commandline, workingDir](){
@@ -499,7 +504,7 @@ void Applications::Extension::Indexer::run() {
 
             // Finally we got everything, build the item
             QString id = fIt.filePath().remove(QRegularExpression("^.*applications/")).replace("/","-");
-            SharedStdIdxItem ssii = std::make_shared<StandardIndexItem>(id);
+            shared_ptr<StandardIndexItem> ssii = std::make_shared<StandardIndexItem>(id);
 
             // Set Name
             ssii->setText(name);
@@ -522,7 +527,7 @@ void Applications::Extension::Indexer::run() {
             ssii->setIconPath(icon);
 
             // Set keywords
-            vector<IIndexable::WeightedKeyword> indexKeywords;
+            vector<Indexable::WeightedKeyword> indexKeywords;
             indexKeywords.emplace_back(name, USHRT_MAX);
             if (!genericName.isEmpty())
                 indexKeywords.emplace_back(genericName, USHRT_MAX*0.9);

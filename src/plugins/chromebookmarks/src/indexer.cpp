@@ -28,9 +28,15 @@
 #include <vector>
 #include "extension.h"
 #include "indexer.h"
-#include "standardobjects.h"
+#include "standardaction.h"
+#include "standardindexitem.h"
+#include "indexable.h"
 using std::shared_ptr;
 using std::vector;
+using Core::Action;
+using Core::StandardAction;
+using Core::StandardIndexItem;
+using Core::Indexable;
 
 
 /** ***************************************************************************/
@@ -41,7 +47,7 @@ void ChromeBookmarks::Extension::Indexer::run() {
     emit statusInfo("Indexing bookmarks ...");
 
     // Build a new index
-    vector<SharedStdIdxItem> bookmarks;
+    vector<shared_ptr<StandardIndexItem>> bookmarks;
 
     // Define a recursive bookmark indexing lambda
     std::function<void(const QJsonObject &json)> rec_bmsearch =
@@ -58,20 +64,20 @@ void ChromeBookmarks::Extension::Indexer::run() {
             QString name = json["name"].toString();
             QString urlstr = json["url"].toString();
 
-            SharedStdIdxItem ssii  = std::make_shared<StandardIndexItem>(json["id"].toString());
+            shared_ptr<StandardIndexItem> ssii  = std::make_shared<StandardIndexItem>(json["id"].toString());
             ssii->setText(name);
             ssii->setSubtext(urlstr);
             ssii->setIconPath(":favicon");
 
-            std::vector<IIndexable::WeightedKeyword> weightedKeywords;
+            vector<Indexable::WeightedKeyword> weightedKeywords;
             QUrl url(urlstr);
             QString host = url.host();
             weightedKeywords.emplace_back(name, USHRT_MAX);
             weightedKeywords.emplace_back(host.left(host.size()-url.topLevelDomain().size()), USHRT_MAX/2);
             ssii->setIndexKeywords(std::move(weightedKeywords));
 
-            std::vector<SharedAction> actions;
-            SharedStdAction action = std::make_shared<StandardAction>();
+            vector<shared_ptr<Action>> actions;
+            shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
             action->setText("Open in default browser");
             action->setAction([urlstr](){
                 QDesktopServices::openUrl(QUrl(urlstr));

@@ -18,18 +18,24 @@
 #include <QString>
 #include <vector>
 #include <memory>
-class IIndexable;
+using std::vector;
+using std::shared_ptr;
 
+namespace Core {
+
+class Indexable;
 
 class IndexImpl
 {
 public:
-    virtual ~IndexImpl(){}
-    virtual void add(std::shared_ptr<IIndexable> idxble) = 0;
+    virtual ~IndexImpl() {}
+    virtual void add(shared_ptr<Indexable> idxble) = 0;
     virtual void clear() = 0;
-    virtual std::vector<std::shared_ptr<IIndexable>> search(const QString &req) const = 0;
+    virtual vector<shared_ptr<Indexable>> search(const QString &req) const = 0;
 
 protected:
     static constexpr const char* SEPARATOR_REGEX  = "[!?<>\"'=+*.:,;\\\\\\/ _\\-]+";
 
 };
+
+}

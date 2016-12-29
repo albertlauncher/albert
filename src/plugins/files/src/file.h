@@ -26,11 +26,11 @@ using std::map;
 using std::vector;
 using std::shared_ptr;
 using std::chrono::system_clock;
-class AbstractAction;
+class Action;
 
 namespace Files {
 
-class File final : public AbstractItem, public IIndexable
+class File final : public Core::Item, public Core::Indexable
 {
     struct OpenFileAction;
     struct RevealFileAction;
@@ -51,8 +51,8 @@ public:
     QString text() const override;
     QString subtext() const override;
     QString iconPath() const override;
-    vector<IIndexable::WeightedKeyword> indexKeywords() const override;
-    vector<shared_ptr<AbstractAction>> actions() override;
+    vector<Core::Indexable::WeightedKeyword> indexKeywords() const override;
+    vector<shared_ptr<Core::Action>> actions() override;
 
     /*
      * Item specific members

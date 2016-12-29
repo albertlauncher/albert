@@ -16,10 +16,13 @@
 
 #pragma once
 #include "ui_settingswidget.h"
+namespace Core {
 class ExtensionManager;
+}
 class HotkeyManager;
 class MainWindow;
 class TrayIcon;
+using Core::ExtensionManager;
 
 class SettingsWidget final : public QWidget
 {

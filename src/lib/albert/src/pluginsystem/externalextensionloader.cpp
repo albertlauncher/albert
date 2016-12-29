@@ -22,13 +22,14 @@
 #include <QPluginLoader>
 #include <QProcess>
 #include <QVariant>
+#include "extension.h"
 #include "externalextensionloader.h"
 #include "externalextension.h"
 
 #define EXTERNAL_EXTENSION_IID "org.albert.extension.external.v1"
 
 /** ***************************************************************************/
-ExternalExtensionLoader::ExternalExtensionLoader(QString path) :
+Core::ExternalExtensionLoader::ExternalExtensionLoader(QString path) :
     path_(path), instance_(nullptr){
 
     // Get Metadata
@@ -75,7 +76,7 @@ ExternalExtensionLoader::ExternalExtensionLoader(QString path) :
 
 
 /** ***************************************************************************/
-ExternalExtensionLoader::~ExternalExtensionLoader() {
+Core::ExternalExtensionLoader::~ExternalExtensionLoader() {
     if (instance_ != nullptr)
         unload();
 }
@@ -83,7 +84,7 @@ ExternalExtensionLoader::~ExternalExtensionLoader() {
 
 
 /** ***************************************************************************/
-bool ExternalExtensionLoader::load(){
+bool Core::ExternalExtensionLoader::load(){
     if (instance_ == nullptr) {
         try {
             instance_ = new ExternalExtension(QString((id())).toUtf8().constData(), path_);
@@ -101,7 +102,7 @@ bool ExternalExtensionLoader::load(){
 
 
 /** ***************************************************************************/
-bool ExternalExtensionLoader::unload(){
+bool Core::ExternalExtensionLoader::unload(){
     if (instance_ != nullptr) {
         delete instance_;
         instance_ = nullptr;
@@ -113,27 +114,27 @@ bool ExternalExtensionLoader::unload(){
 
 
 /** ***************************************************************************/
-QString ExternalExtensionLoader::lastError() const {
+QString Core::ExternalExtensionLoader::lastError() const {
     return lastError_;
 }
 
 
 
 /** ***************************************************************************/
-AbstractExtension *ExternalExtensionLoader::instance() {
+Core::Extension *Core::ExternalExtensionLoader::instance() {
     return instance_;
 }
 
 
 
 /** ***************************************************************************/
-QString ExternalExtensionLoader::path() const {
+QString Core::ExternalExtensionLoader::path() const {
     return path_;
 }
 
 
 
 /** ***************************************************************************/
-QString ExternalExtensionLoader::type() const {
+QString Core::ExternalExtensionLoader::type() const {
     return "External/Executable";
 }

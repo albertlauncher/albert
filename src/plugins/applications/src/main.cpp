@@ -27,7 +27,7 @@
 #include "configwidget.h"
 #include "indexer.h"
 #include "query.h"
-#include "standardobjects.h"
+#include "standardindexitem.h"
 
 const char* Applications::Extension::CFG_PATHS    = "paths";
 const char* Applications::Extension::CFG_FUZZY    = "fuzzy";
@@ -35,7 +35,7 @@ const bool  Applications::Extension::DEF_FUZZY    = false;
 const bool  Applications::Extension::UPDATE_DELAY = 60000;
 
 /** ***************************************************************************/
-Applications::Extension::Extension() : AbstractExtension("org.albert.extension.applications") {
+Applications::Extension::Extension() : Core::Extension("org.albert.extension.applications") {
 
     qunsetenv("DESKTOP_AUTOSTART_ID");
 
@@ -127,16 +127,16 @@ QWidget *Applications::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void Applications::Extension::handleQuery(Query * query) {
+void Applications::Extension::handleQuery(Core::Query * query) {
     // Search for matches. Lock memory against scanworker
     indexAccess_.lock();
-    vector<shared_ptr<IIndexable>> indexables = offlineIndex_.search(query->searchTerm().toLower());
+    vector<shared_ptr<Core::Indexable>> indexables = offlineIndex_.search(query->searchTerm().toLower());
     indexAccess_.unlock();
 
     // Add results to query-> This cast is safe since index holds files only
-    for (const shared_ptr<IIndexable> &obj : indexables)
+    for (const shared_ptr<Core::Indexable> &obj : indexables)
         // TODO `Search` has to determine the relevance. Set to 0 for now
-        query->addMatch(std::static_pointer_cast<StandardIndexItem>(obj), 0);
+        query->addMatch(std::static_pointer_cast<Core::StandardIndexItem>(obj), 0);
 }
 
 
@@ -223,6 +223,13 @@ void Applications::Extension::restorePaths() {
     for (const QString &path : QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation))
         if (QFileInfo(path).exists())
             addDir(path);
+}
+
+
+
+/** ***************************************************************************/
+bool Applications::Extension::fuzzy() {
+    return offlineIndex_.fuzzy();
 }
 
 

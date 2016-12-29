@@ -20,7 +20,8 @@
 #include "configwidget.h"
 #include "main.h"
 #include "query.h"
-#include "standardobjects.h"
+#include "standarditem.h"
+#include "standardaction.h"
 #include "xdgiconlookup.h"
 
 
@@ -64,7 +65,7 @@ namespace {
 }
 
 /** ***************************************************************************/
-System::Extension::Extension() : AbstractExtension("org.albert.extension.system") {
+System::Extension::Extension() : Core::Extension("org.albert.extension.system") {
 
     // Load settings
     QSettings s(qApp->applicationName());
@@ -127,17 +128,17 @@ QWidget *System::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void System::Extension::handleQuery(Query * query) {
+void System::Extension::handleQuery(Core::Query * query) {
    for (int i = 0; i < NUMCOMMANDS; ++i) {
         if (configNames[i].startsWith(query->searchTerm().toLower())) {
 
-            std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(configNames[i]);
+            std::shared_ptr<Core::StandardItem> item = std::make_shared<Core::StandardItem>(configNames[i]);
             item->setText(itemTitles[i]);
             item->setSubtext(itemDescriptions[i]);
             item->setIconPath(iconPaths[i]);
 
            QString cmd = commands[i];
-            std::shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
+            std::shared_ptr<Core::StandardAction> action = std::make_shared<Core::StandardAction>();
             action->setText(itemDescriptions[i]);
             action->setAction([=](){
                 QProcess::startDetached(cmd);

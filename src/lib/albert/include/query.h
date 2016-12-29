@@ -26,21 +26,31 @@
 #include <utility>
 #include <memory>
 #include "core_globals.h"
-#include "item.h"
 using std::set;
 using std::map;
 using std::vector;
 using std::pair;
 using std::shared_ptr;
-class AbstractExtension;
-class AbstractItem;
-typedef shared_ptr<AbstractItem> SharedItem;
 
-struct MatchOrder {
-    inline bool operator() (const pair<SharedItem, short>& lhs, const pair<SharedItem, short>& rhs);
+namespace Core {
+
+class Extension;
+class Item;
+
+class MatchOrder
+{
+public:
+
     static void update();
+    inline bool operator() (const pair<shared_ptr<Item>, short>& lhs,
+                            const pair<shared_ptr<Item>, short>& rhs);
+
+private:
+
     static map<QString, double> order;
 };
+
+
 
 class EXPORT_CORE Query final : public QAbstractListModel 
 {
@@ -48,7 +58,7 @@ class EXPORT_CORE Query final : public QAbstractListModel
 
 public:
 
-    Query(const QString &query, const set<AbstractExtension*> &queryHandlers);
+    Query(const QString &query, const set<Extension*> &queryHandlers);
 
     /**
      * @brief Add matches
@@ -57,9 +67,9 @@ public:
      * @param item The item to add
      * @param score Matchfactor of the query against the item
      */
-    void addMatch(shared_ptr<AbstractItem> item, short score = 0);
-    void addMatches(vector<std::pair<SharedItem,short>>::iterator begin,
-                    vector<std::pair<SharedItem,short>>::iterator end);
+    void addMatch(shared_ptr<Item> item, short score = 0);
+    void addMatches(vector<std::pair<shared_ptr<Item>,short>>::iterator begin,
+                    vector<std::pair<shared_ptr<Item>,short>>::iterator end);
 
 
 
@@ -94,12 +104,12 @@ private:
     bool showFallbacks_;
 
     vector<QFutureWatcher<void>*> futureWatchers_;
-    map<AbstractExtension*, long int> runtimes_;
+    map<Extension*, long int> runtimes_;
     mutable QMutex mutex_;
     QTimer UXTimeOut_;
 
-    vector<pair<SharedItem, short>> matches_;
-    vector<SharedItem> fallbacks_;
+    vector<pair<shared_ptr<Item>, short>> matches_;
+    vector<shared_ptr<Item>> fallbacks_;
 
 signals:
 
@@ -108,5 +118,7 @@ signals:
     void finished();
 
 };
+
+}
 
 

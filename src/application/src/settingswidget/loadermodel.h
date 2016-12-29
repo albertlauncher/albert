@@ -16,12 +16,15 @@
 
 #pragma once
 #include <QAbstractListModel>
+namespace Core {
 class ExtensionManager;
+}
+using Core::ExtensionManager;
 
 class LoaderModel final : public QAbstractListModel
 {
 public:
-    LoaderModel(ExtensionManager* pm, QObject *parent = nullptr);
+    LoaderModel(Core::ExtensionManager* pm, QObject *parent = nullptr);
     int rowCount(const QModelIndex & parent = QModelIndex()) const override;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole) override;
@@ -29,3 +32,4 @@ public:
 private:
     ExtensionManager *extensionManager_;
 };
+
