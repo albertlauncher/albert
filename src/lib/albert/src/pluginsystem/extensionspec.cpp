@@ -16,14 +16,13 @@
 
 #include <QJsonArray>
 #include <QVariant>
-#include "extensionloader.h"
+#include "extensionspec.h"
 #include "extension.h"
-#include "nativeextensionloader.h"
 
 
 
 /** ***************************************************************************/
-bool Core::NativeExtensionLoader::load(){
+bool Core::ExtensionSpec::load(){
     state_ = loader_.load() ? State::Loaded : State::Error;
     return state_==State::Loaded;
 }
@@ -31,7 +30,7 @@ bool Core::NativeExtensionLoader::load(){
 
 
 /** ***************************************************************************/
-bool Core::NativeExtensionLoader::unload(){
+bool Core::ExtensionSpec::unload(){
     state_ = loader_.unload() ? State::NotLoaded : State::Error;
     return state_==State::NotLoaded;
 }
@@ -39,63 +38,63 @@ bool Core::NativeExtensionLoader::unload(){
 
 
 /** ***************************************************************************/
-QString Core::NativeExtensionLoader::lastError() const {
+QString Core::ExtensionSpec::lastError() const {
     return (state_==State::Error) ? loader_.errorString() : QString();
 }
 
 
 
 /** ***************************************************************************/
-Core::Extension *Core::NativeExtensionLoader::instance() {
+Core::Extension *Core::ExtensionSpec::instance() {
     return (state_==State::Loaded) ? dynamic_cast<Extension*>(loader_.instance()) : nullptr;
 }
 
 
 
 /** ***************************************************************************/
-QString Core::NativeExtensionLoader::path() const {
+QString Core::ExtensionSpec::path() const {
     return loader_.fileName();
 }
 
 
 
 /** ***************************************************************************/
-QString Core::NativeExtensionLoader::type() const {
+QString Core::ExtensionSpec::type() const {
     return "Native/C++";
 }
 
 
 
 /** ***************************************************************************/
-QString Core::NativeExtensionLoader::id() const {
+QString Core::ExtensionSpec::id() const {
     return loader_.metaData()["MetaData"].toObject()["id"].toString();
 }
 
 
 
 /** ***************************************************************************/
-QString Core::NativeExtensionLoader::name() const {
+QString Core::ExtensionSpec::name() const {
     return loader_.metaData()["MetaData"].toObject()["name"].toString();
 }
 
 
 
 /** ***************************************************************************/
-QString Core::NativeExtensionLoader::version() const {
+QString Core::ExtensionSpec::version() const {
     return loader_.metaData()["MetaData"].toObject()["version"].toString();
 }
 
 
 
 /** ***************************************************************************/
-QString Core::NativeExtensionLoader::author() const {
+QString Core::ExtensionSpec::author() const {
     return loader_.metaData()["MetaData"].toObject()["author"].toString();
 }
 
 
 
 /** ***************************************************************************/
-QStringList Core::NativeExtensionLoader::dependencies() const {
+QStringList Core::ExtensionSpec::dependencies() const {
     QStringList res;
     for (QVariant &var : loader_.metaData()["MetaData"].toObject()["dependencies"].toArray().toVariantList())
         res.push_back(var.toString());

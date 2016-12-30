@@ -17,8 +17,8 @@
 #include <QIcon>
 #include "loadermodel.h"
 #include "extensionmanager.h"
-#include "extensionloader.h"
-using Core::ExtensionLoader;
+#include "extensionspec.h"
+using Core::ExtensionSpec;
 
 
 
@@ -31,7 +31,7 @@ LoaderModel::LoaderModel(ExtensionManager* pm, QObject *parent)
 
 /** ***************************************************************************/
 int LoaderModel::rowCount(const QModelIndex &) const {
-    return static_cast<int>(extensionManager_->extensionLoaders().size());
+    return static_cast<int>(extensionManager_->extensionSpecs().size());
 }
 
 
@@ -41,7 +41,7 @@ QVariant LoaderModel::data(const QModelIndex &index, int role) const {
     if (!index.isValid() || index.row() < 0 || rowCount() <= index.row())
         return QVariant();
 
-    const unique_ptr<ExtensionLoader> &loader = extensionManager_->extensionLoaders()[index.row()];
+    const unique_ptr<ExtensionSpec> &loader = extensionManager_->extensionSpecs()[index.row()];
 
     switch (role) {
     case Qt::DisplayRole:
@@ -58,11 +58,11 @@ QVariant LoaderModel::data(const QModelIndex &index, int role) const {
     }
     case Qt::DecorationRole:
         switch (loader->state()) {
-        case ExtensionLoader::State::Loaded:
+        case ExtensionSpec::State::Loaded:
             return QIcon(":plugin_loaded");
-        case ExtensionLoader::State::NotLoaded:
+        case ExtensionSpec::State::NotLoaded:
             return QIcon(":plugin_notloaded");
-        case ExtensionLoader::State::Error:
+        case ExtensionSpec::State::Error:
             return QIcon(":plugin_error");
         }
     case Qt::CheckStateRole:
@@ -82,9 +82,9 @@ bool LoaderModel::setData(const QModelIndex &index, const QVariant &value, int r
     switch (role) {
     case Qt::CheckStateRole:
         if (value == Qt::Checked)
-            extensionManager_->enableExtension(extensionManager_->extensionLoaders()[index.row()]);
+            extensionManager_->enableExtension(extensionManager_->extensionSpecs()[index.row()]);
         else
-            extensionManager_->disableExtension(extensionManager_->extensionLoaders()[index.row()]);
+            extensionManager_->disableExtension(extensionManager_->extensionSpecs()[index.row()]);
         dataChanged(index, index, {Qt::CheckStateRole});
         return true;
     default:

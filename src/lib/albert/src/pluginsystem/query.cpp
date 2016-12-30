@@ -30,6 +30,9 @@ using std::chrono::system_clock;
 using std::map;
 
 
+
+/** ***************************************************************************/
+/** ***************************************************************************/
 /** ***************************************************************************/
 map<QString, double> Core::MatchOrder::order;
 
@@ -81,257 +84,397 @@ void Core::MatchOrder::update() {
 /** ***************************************************************************/
 /** ***************************************************************************/
 /** ***************************************************************************/
-/** ***************************************************************************/
-Core::Query::Query(const QString &query, const set<Extension *> &extensions)
-    : searchTerm_(query),
-      isValid_(true),
-      isRunning_(true),
-      showFallbacks_(false),
-      mutex_(QMutex::Recursive) {
 
-    Q_ASSERT(!extensions.empty());
+class Results {
 
-//    /* Start multithreaded and asynchronous computation of results */
-
-//    // Check if some queries want to be runned by trigger
-//    vector<Extension*> queryHandlers;
-//    for ( Extension *ext : extensions)
-//        if ( ext->runExclusive() )
-//            for ( QString triggerPrefix : ext->triggers() )
-//                if ( searchTerm_.startsWith(triggerPrefix) )
-//                    queryHandlers.push_back(ext);
-
-//    if (queryHandlers.empty())
-//        for ( Extension *ext : extensions)
-//            if ( !ext->runExclusive() )
-//                queryHandlers.push_back(ext);
-
-//    // Start handlers
-//    for (Extension *queryHandler : queryHandlers) {
-//        QFutureWatcher<void>* fw = new QFutureWatcher<void>(this);
-//        system_clock::time_point start = system_clock::now();
-//        connect(fw, &QFutureWatcher<void>::finished, [queryHandler, start, this](){
-//            runtimes_.emplace(queryHandler, std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now()-start).count());
-//            onHandlerFinished();
-//        });
-//        fw->setFuture(QtConcurrent::run(queryHandler, &Extension::handleQuery, this));
-//        futureWatchers_.push_back(fw);
-//    }
-
-//    emit started();
-
-//    UXTimeOut_.setInterval(100);
-//    UXTimeOut_.setSingleShot(true);
-//    connect(&UXTimeOut_, &QTimer::timeout, this, &Core::Query::onUXTimeOut);
-//    UXTimeOut_.start();
-
-//    /* Get fallbacks */
-
-//    // Request the fallbacks multithreaded
-//    QFutureSynchronizer<vector<shared_ptr<Item>>> synchronizer;
-//    for ( Extension *ext : extensions)
-//        synchronizer.addFuture(QtConcurrent::run(ext, &Extension::fallbacks, searchTerm_));
-//    synchronizer.waitForFinished();
-
-//    // Get fallbacks
-//    for (const QFuture<vector<shared_ptr<Item>>> &future : synchronizer.futures())
-//        for (shared_ptr<Item> &item : future.result())
-//            fallbacks_.push_back(item);
-}
-
-
+};
 
 /** ***************************************************************************/
-void Core::Query::invalidate() {
-    isValid_ = false;
-}
-
-
-
 /** ***************************************************************************/
-void Core::Query::addMatch(shared_ptr<Item> item, short score) {
-    if ( isValid_ ) {
-        mutex_.lock();
-        beginInsertRows(QModelIndex(), matches_.size(), matches_.size());
-        matches_.push_back({item, score});
-        endInsertRows();
-        mutex_.unlock();
+/** ***************************************************************************/
+
+
+class Core::Query::QueryPrivate : public QAbstractListModel
+{
+public:
+    QueryPrivate(Query *q) : q(q), isValid(true), state(State::Idle) { }
+
+    Query *q;
+
+    QString searchTerm;
+    bool isValid;
+    Query::State state;
+
+    set<QueryHandler*> syncHandlers;
+    set<QueryHandler*> asyncHandlers;
+    map<Extension*, long int> runtimes;
+
+    vector<shared_ptr<Item>> results;
+    vector<shared_ptr<Item>> fallbacks;
+
+    QTimer fiftyMsTimer;
+    mutable QMutex pendingResultsMutex;
+    vector<pair<shared_ptr<Item>, short>> pendingResults;
+
+    QFutureWatcher<pair<QueryHandler*,long>> futureWatcher;
+
+
+    /** ***************************************************************************/
+    void onSyncHandlersFinsished() {
+        // Lock the pending results
+        QMutexLocker lock(&pendingResultsMutex);
+
+        // Sort the results
+        std::sort(pendingResults.begin(),
+                  pendingResults.end(),
+                  MatchOrder());
+
+        // Preallocate space in "results" to avoid multiple allocations
+        results.reserve(results.size() + pendingResults.size());
+
+        // Move the items of the "pending results" into "results"
+        std::transform(pendingResults.begin(),
+                       pendingResults.end(),
+                       std::back_inserter(results),
+                       [](const pair<shared_ptr<Item>,short>& p){ return std::move(p.first); });
+
+        emit q->resultsReady(this);
+
+        // Define the map function
+        std::function<pair<QueryHandler*,long>(QueryHandler*)> mapFunction = [this](QueryHandler* queryHandler) {
+            system_clock::time_point then = system_clock::now();
+            queryHandler->handleQuery(q);
+            system_clock::time_point now = system_clock::now();
+            return std::make_pair(queryHandler, std::chrono::duration_cast<std::chrono::microseconds>(now-then).count());
+        };
+
+        // Call onAsyncHandlersFinsished when async handlers finished
+        futureWatcher.disconnect();
+        connect(&futureWatcher, &QFutureWatcher<pair<QueryHandler*,long>>::finished,
+                std::bind(&QueryPrivate::onAsyncHandlersFinsished, this));
+
+        // Run the handlers concurrently
+        futureWatcher.setFuture(QtConcurrent::mapped(asyncHandlers.begin(),
+                                                     asyncHandlers.end(),
+                                                     mapFunction));
+
+        connect(&fiftyMsTimer, &QTimer::timeout,
+                this, &QueryPrivate::insertPendingResults);
+
+        fiftyMsTimer.start(50);
+
     }
-}
 
 
-
-/** ***************************************************************************/
-void Core::Query::addMatches(vector<std::pair<shared_ptr<Item>,short>>::iterator begin,
-                              vector<std::pair<shared_ptr<Item>,short>>::iterator end) {
-    if ( isValid_ ) {
-        mutex_.lock();
-        beginInsertRows(QModelIndex(), matches_.size(), matches_.size() + std::distance(begin, end));
-        matches_.insert(matches_.end(), begin, end);
-        endInsertRows();
-        mutex_.unlock();
-    }
-}
-
-
-
-/** ***************************************************************************/
-void Core::Query::onUXTimeOut() {
-    mutex_.lock();
-    std::sort(matches_.begin(), matches_.end(), MatchOrder());
-    mutex_.unlock();
-    emit resultsReady(this);
-}
-
-
-
-/** ***************************************************************************/
-void Core::Query::onHandlerFinished(){
-    // Emit finished if all are finished
-    bool fin = true;
-    for (QFutureWatcher<void> const  * const futureWatcher : futureWatchers_)
-        fin &= futureWatcher->isFinished();
-    if ( fin ) {
+    /** ***************************************************************************/
+    void insertPendingResults() {
         /*
-         * If the query finished before the UX timeout timed out everything is
-         * fine. If not (UXTimeOut timer still active) the results have already
-         * been sorted and published. The user sees a list that must not be
-         * rearranged for better user experience.
+         * Get the results
          */
-        if (UXTimeOut_.isActive()){
-            UXTimeOut_.stop();
-            onUXTimeOut();
-        }
-        if (matches_.size()==0) {
-            beginResetModel();
-            showFallbacks_ = true;
-            endResetModel();
-        }
 
-        // Save runtimes
-        if (isValid_){ // Dont count cancelled queries
-            QSqlDatabase db = QSqlDatabase::database();
-            db.transaction();
-            QSqlQuery sqlQuery;
-            for (auto &e : runtimes_) {
-                sqlQuery.prepare("INSERT INTO runtimes (extensionId, runtime) VALUES (:extensionId, :runtime);");
-                sqlQuery.bindValue(":extensionId", e.first->id);
-                sqlQuery.bindValue(":runtime", static_cast<qulonglong>(e.second));
-                if (!sqlQuery.exec())
-                    qWarning() << sqlQuery.lastError();
-            }
-            db.commit();
-        }
+        if(pendingResults.size()) {
 
-        isRunning_=false;
-        emit finished();
-    }
-}
+            QMutexLocker lock(&pendingResultsMutex);
 
+            beginInsertRows(QModelIndex(), results.size(), results.size() + pendingResults.size() - 1);
 
-/** ***************************************************************************/
-int Core::Query::rowCount(const QModelIndex &parent) const {
-    Q_UNUSED(parent)
-    QMutexLocker m(&mutex_);
-    return static_cast<int>(showFallbacks_ ? fallbacks_.size() : matches_.size());
-}
+            // Preallocate space to avoid multiple allocatoins
+            results.reserve(results.size() + pendingResults.size());
 
+            // Copy the items of the matches into the results
+            std::transform(pendingResults.begin(), pendingResults.end(),
+                           std::back_inserter(results),
+                           [](const pair<shared_ptr<Item>,short>& p){ return std::move(p.first); });
 
+            endInsertRows();
 
-/** ***************************************************************************/
-QVariant Core::Query::data(const QModelIndex &index, int role) const {
-    if (index.isValid()) {
-        shared_ptr<Item> item = showFallbacks_
-                ? fallbacks_[static_cast<size_t>(index.row())]
-                : matches_[static_cast<size_t>(index.row())].first;
+            // Clear the empty matches
+            pendingResults.clear();
 
-        switch (role) {
-        case Qt::DisplayRole:
-            return item->text();
-        case Qt::ToolTipRole:
-            return item->subtext();
-        case Qt::DecorationRole:
-            return item->iconPath();
-
-        case Qt::UserRole: { // Actions list
-            QStringList actionTexts;
-            for (const shared_ptr<Action> & action : item->actions())
-                actionTexts.append(action->text());
-            return actionTexts;
-        }
-
-        case Qt::UserRole+100: // DefaultAction
-            return (0 < static_cast<int>(item->actions().size())) ? item->actions()[0]->text() : item->subtext();
-        case Qt::UserRole+101: // AltAction
-            return "Search '"+searchTerm_+"' using default fallback";
-        case Qt::UserRole+102: // MetaAction
-            return (1 < static_cast<int>(item->actions().size())) ? item->actions()[1]->text() : item->subtext();
-        case Qt::UserRole+103: // ControlAction
-            return (2 < static_cast<int>(item->actions().size())) ? item->actions()[2]->text() : item->subtext();
-        case Qt::UserRole+104: // ShiftAction
-            return (3 < static_cast<int>(item->actions().size())) ? item->actions()[3]->text() : item->subtext();
-        default:
-            return QVariant();
         }
     }
-    return QVariant();
-}
+
+
+    /** ***************************************************************************/
+    void onAsyncHandlersFinsished() {
+
+        // Finally done
+        fiftyMsTimer.stop();
+        fiftyMsTimer.disconnect();
+        insertPendingResults();
+
+        // Get the runtimes
+        for (auto it = futureWatcher.future().begin();
+             it != futureWatcher.future().end(); ++it)
 
 
 
-/** ***************************************************************************/
-bool Core::Query::setData(const QModelIndex &index, const QVariant &value, int role) {
-    if (index.isValid()) {
-        mutex_.lock();
-        shared_ptr<Item> item = showFallbacks_
-                ? fallbacks_[static_cast<size_t>(index.row())]
-                : matches_[static_cast<size_t>(index.row())].first;
-        mutex_.unlock();
-        switch (role) {
 
-        // Activation by index
-        case Qt::UserRole:{
-            size_t actionValue = static_cast<size_t>(value.toInt());
-            if (actionValue < item->actions().size())
-                item->actions()[actionValue]->activate();
-            break;
+        // If results are empty show fallbacks
+        if(results.empty()){
+            beginInsertRows(QModelIndex(), 0, fallbacks.size() - 1);
+            results.insert(results.end(),
+                           fallbacks.begin(),
+                           fallbacks.end());
+            endInsertRows();
         }
 
-        // Activation by modifier
-        case Qt::UserRole+100: // DefaultAction
-            if (0U < item->actions().size())
-                item->actions()[0]->activate();
-            break;
-        case Qt::UserRole+101: // AltAction
-            if (0U < fallbacks_.size() && 0U < item->actions().size()) {
-                item = fallbacks_[0];
-                item->actions()[0]->activate();
+        // Save the runtimes
+        QSqlDatabase db = QSqlDatabase::database();
+        db.transaction();
+        QSqlQuery sqlQuery;
+        for ( auto &queryHandlerRuntimeEntry : runtimes ) {
+            sqlQuery.prepare("INSERT INTO runtimes (extensionId, runtime) VALUES (:extensionId, :runtime);");
+            sqlQuery.bindValue(":extensionId", queryHandlerRuntimeEntry.first->id);
+            sqlQuery.bindValue(":runtime", static_cast<qulonglong>(queryHandlerRuntimeEntry.second));
+            if (!sqlQuery.exec())
+                qWarning() << sqlQuery.lastError();
+        }
+        db.commit();
+
+        state = State::Finished;
+        emit q->finished();
+    }
+
+
+    /** ***************************************************************************/
+    int rowCount(const QModelIndex &) const override {
+        return static_cast<int>(results.size());
+    }
+
+
+
+    /** ***************************************************************************/
+    QVariant data(const QModelIndex &index, int role) const override {
+        if (index.isValid()) {
+            const shared_ptr<Item> &item = results[static_cast<size_t>(index.row())];
+
+            switch (role) {
+            case Qt::DisplayRole:
+                return item->text();
+            case Qt::ToolTipRole:
+                return item->subtext();
+            case Qt::DecorationRole:
+                return item->iconPath();
+
+            case Qt::UserRole: { // Actions list
+                QStringList actionTexts;
+                for (const shared_ptr<Action> &action : item->actions())
+                    actionTexts.append(action->text());
+                return actionTexts;
             }
-            break;
-        case Qt::UserRole+102: // MetaAction
-            if (1U < item->actions().size())
-                item->actions()[1]->activate();
-            break;
-        case Qt::UserRole+103: // ControlAction
-            if (2U < item->actions().size())
-                item->actions()[2]->activate();
-            break;
-        case Qt::UserRole+104: // ShiftAction
-            if (3U < item->actions().size())
-                item->actions()[3]->activate();
-            break;
 
+            case Qt::UserRole+100: // DefaultAction
+                return (0 < static_cast<int>(item->actions().size())) ? item->actions()[0]->text() : item->subtext();
+            case Qt::UserRole+101: // AltAction
+                return "Search '"+searchTerm+"' using default fallback";
+            case Qt::UserRole+102: // MetaAction
+                return (1 < static_cast<int>(item->actions().size())) ? item->actions()[1]->text() : item->subtext();
+            case Qt::UserRole+103: // ControlAction
+                return (2 < static_cast<int>(item->actions().size())) ? item->actions()[2]->text() : item->subtext();
+            case Qt::UserRole+104: // ShiftAction
+                return (3 < static_cast<int>(item->actions().size())) ? item->actions()[3]->text() : item->subtext();
+            default:
+                return QVariant();
+            }
         }
+        return QVariant();
+    }
 
-        // Save usage
-        if (isValid_){ // Dont count cancelled queries
+
+
+    /** ***************************************************************************/
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override {
+        if (index.isValid()) {
+            shared_ptr<Item> &item = results[static_cast<size_t>(index.row())];
+            QString itemId = item->id();
+
+            switch (role) {
+
+            // Activation by index
+            case Qt::UserRole:{
+                size_t actionValue = static_cast<size_t>(value.toInt());
+                if (actionValue < item->actions().size())
+                    item->actions()[actionValue]->activate();
+                break;
+            }
+
+            // Activation by modifier
+            case Qt::UserRole+100: // DefaultAction
+                if (0U < item->actions().size())
+                    item->actions()[0]->activate();
+                break;
+            case Qt::UserRole+101: // AltAction
+                if (0U < fallbacks.size() && 0U < item->actions().size()) {
+                    fallbacks[0]->actions()[0]->activate();
+                    itemId = fallbacks[0]->id();
+                }
+                break;
+            case Qt::UserRole+102: // MetaAction
+                if (1U < item->actions().size())
+                    item->actions()[1]->activate();
+                break;
+            case Qt::UserRole+103: // ControlAction
+                if (2U < item->actions().size())
+                    item->actions()[2]->activate();
+                break;
+            case Qt::UserRole+104: // ShiftAction
+                if (3U < item->actions().size())
+                    item->actions()[3]->activate();
+                break;
+
+            }
+
+            // Save usage
             QSqlQuery query;
             query.prepare("INSERT INTO usages (input, itemId) VALUES (:input, :itemId);");
-            query.bindValue(":input", searchTerm_);
+            query.bindValue(":input", searchTerm);
             query.bindValue(":itemId", item->id());
             if (!query.exec())
                 qWarning() << query.lastError();
         }
+        return false;
     }
-    return false;
+};
+
+
+
+
+
+/** ***************************************************************************/
+/** ***************************************************************************/
+/** ***************************************************************************/
+Core::Query::Query() : d(new QueryPrivate(this)) {}
+
+
+/** ***************************************************************************/
+Core::Query::~Query() { delete d; }
+
+
+/** ***************************************************************************/
+const Core::Query::State &Core::Query::state() const {
+    return d->state;
+}
+
+
+/** ***************************************************************************/
+const QString &Core::Query::searchTerm() const {
+    return d->searchTerm;
+}
+
+
+/** ***************************************************************************/
+bool Core::Query::isValid() const {
+    return d->isValid;
+}
+
+
+/** ***************************************************************************/
+void Core::Query::addMatch(shared_ptr<Item> item, short score) {
+    if ( d->isValid ) {
+        d->pendingResultsMutex.lock();
+        d->pendingResults.push_back({item, score});
+        d->pendingResultsMutex.unlock();
+    }
+}
+
+
+/** ***************************************************************************/
+void Core::Query::addMatches(vector<std::pair<shared_ptr<Item>,short>>::iterator begin,
+                             vector<std::pair<shared_ptr<Item>,short>>::iterator end) {
+    if ( d->isValid ) {
+        d->pendingResultsMutex.lock();
+        d->pendingResults.insert(d->pendingResults.end(),
+                                 make_move_iterator(begin),
+                                 make_move_iterator(end));
+        d->pendingResultsMutex.unlock();
+    }
+}
+
+
+/** ***************************************************************************/
+void Core::Query::addMatches(set<pair<shared_ptr<Item>,short>>::iterator begin,
+                             set<pair<shared_ptr<Item>,short>>::iterator end) {
+    if ( d->isValid ) {
+        d->pendingResultsMutex.lock();
+        d->pendingResults.insert(d->pendingResults.end(),
+                                 make_move_iterator(begin),
+                                 make_move_iterator(end));
+        d->pendingResultsMutex.unlock();
+    }
+}
+
+
+/** ***************************************************************************/
+void Core::Query::addMatches(map<shared_ptr<Item>,short>::iterator begin,
+                             map<shared_ptr<Item>,short>::iterator end) {
+    if ( d->isValid ) {
+        d->pendingResultsMutex.lock();
+        d->pendingResults.insert(d->pendingResults.end(),
+                                 make_move_iterator(begin),
+                                 make_move_iterator(end));
+        d->pendingResultsMutex.unlock();
+    }
+}
+
+
+/** ***************************************************************************/
+void Core::Query::setSearchTerm(const QString &searchTerm) {
+    d->searchTerm = searchTerm;
+}
+
+
+/** ***************************************************************************/
+void Core::Query::invalidate() {
+    d->isValid = false;
+}
+
+/** ***************************************************************************/
+void Core::Query::setQueryHandlers(const set<QueryHandler *> &queryHandlers) {
+
+    if (d->state != State::Idle)
+        return;
+
+    for ( auto handler : queryHandlers )
+        if ( handler->yieldsLiveResults() )
+            d->asyncHandlers.insert(handler);
+        else
+            d->syncHandlers.insert(handler);
+}
+
+
+/** ***************************************************************************/
+void Core::Query::setFallbacks(const vector<shared_ptr<Core::Item> > &fallbacks) {
+
+    if (d->state != State::Idle)
+        return;
+
+     d->fallbacks = fallbacks;
+}
+
+
+/** ***************************************************************************/
+void Core::Query::run() {
+
+    if (d->state != State::Idle)
+        return;
+
+    d->state = State::Running;
+
+    // Define the map function
+    std::function<pair<QueryHandler*,long>(QueryHandler*)> mapFunction = [this](QueryHandler* queryHandler) {
+        system_clock::time_point then = system_clock::now();
+        queryHandler->handleQuery(this);
+        system_clock::time_point now = system_clock::now();
+        return std::make_pair(queryHandler, std::chrono::duration_cast<std::chrono::microseconds>(now-then).count());
+    };
+
+    // Call onMapFinshed when all handlers finished
+    connect(&d->futureWatcher, &QFutureWatcher<pair<QueryHandler*,long>>::finished,
+            std::bind(&QueryPrivate::onSyncHandlersFinsished, d));
+
+    // Run the handlers concurrently
+    d->futureWatcher.setFuture(QtConcurrent::mapped(d->syncHandlers.begin(),
+                                                    d->syncHandlers.end(),
+                                                    mapFunction));
 }

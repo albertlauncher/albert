@@ -21,6 +21,7 @@
 #include <set>
 #include <vector>
 #include <memory>
+#include "extension.h"
 #include "core_globals.h"
 using std::set;
 using std::vector;
@@ -29,37 +30,50 @@ using std::unique_ptr;
 namespace Core {
 
 class Extension;
-class ExtensionLoader;
+class ExtensionSpec;
 
 class EXPORT_CORE ExtensionManager final : public QObject
 {
     Q_OBJECT
 
 public:
+
     ExtensionManager();
     ~ExtensionManager();
 
-    void rescanExtensions();
-    const vector<unique_ptr<ExtensionLoader>> &extensionLoaders() const;
-    set<Extension *> extensions() const;
-    void enableExtension(const unique_ptr<ExtensionLoader> &loader);
-    void disableExtension(const unique_ptr<ExtensionLoader> &loader);
-    bool extensionIsEnabled(const unique_ptr<ExtensionLoader> &loader);
+    void reloadExtensions();
+    const vector<unique_ptr<ExtensionSpec>> & extensionSpecs() const;
+    void enableExtension(const unique_ptr<ExtensionSpec> &);
+    void disableExtension(const unique_ptr<ExtensionSpec> &);
+    bool extensionIsEnabled(const unique_ptr<ExtensionSpec> &);
+
+    void registerExtension(Extension*);
+    void unregisterExtension(Extension*);
+    const set<Extension *> extensions() const;
+    template <typename T>
+    set<T *> extensionsByType() {
+        set<T *> results;
+        for (Extension * extension : extensions()) {
+            T *result = dynamic_cast<T *>(extension);
+            if (result)
+                results.insert(result);
+        }
+        return results;
+    }
 
 private:
 
-    void loadExtension(const unique_ptr<ExtensionLoader> &loader);
-    void unloadExtension(const unique_ptr<ExtensionLoader> &loader);
+    void loadExtension(const unique_ptr<ExtensionSpec> &);
+    void unloadExtension(const unique_ptr<ExtensionSpec> &);
 
-    vector<unique_ptr<ExtensionLoader>> extensionLoaders_;
+    vector<unique_ptr<ExtensionSpec>> extensionSpecs_;
     set<Extension*> extensions_;
     QStringList blacklist_;
 
-    static const QString CFG_BLACKLIST;
-
 signals:
 
-    void extensionLoadersChanged(const vector<unique_ptr<ExtensionLoader>>*);
+    void extensionLoaded(Extension*);
+    void extensionAboutToUnload(Extension*);
 
 };
 

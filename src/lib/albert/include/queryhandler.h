@@ -56,6 +56,8 @@ public:
      */
     virtual void teardownSession() {}
 
+    virtual bool yieldsLiveResults() { return false; }
+
     /**
      * @brief Query handling
      * This method is called for every user input. Add the results to the query

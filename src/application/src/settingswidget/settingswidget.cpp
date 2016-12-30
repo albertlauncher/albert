@@ -25,7 +25,7 @@
 #include <QSqlQuery>
 #include <QStandardPaths>
 #include "extension.h"
-#include "extensionloader.h"
+#include "extensionspec.h"
 #include "extensionmanager.h"
 #include "hotkeymanager.h"
 #include "loadermodel.h"
@@ -33,7 +33,7 @@
 #include "settingswidget.h"
 #include "trayicon.h"
 using Core::Extension;
-using Core::ExtensionLoader;
+using Core::ExtensionSpec;
 
 /** ***************************************************************************/
 SettingsWidget::SettingsWidget(MainWindow *mainWindow,
@@ -183,8 +183,8 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
     delete i->widget();
     delete i;
 
-    if (extensionManager_->extensionLoaders()[current.row()]->state() == ExtensionLoader::State::Loaded){
-        Extension *extension = extensionManager_->extensionLoaders()[current.row()]->instance();
+    if (extensionManager_->extensionSpecs()[current.row()]->state() == ExtensionSpec::State::Loaded){
+        Extension *extension = extensionManager_->extensionSpecs()[current.row()]->instance();
         QWidget *pw = extension->widget();
         if ( pw->layout() != nullptr)
             pw->layout()->setMargin(0);

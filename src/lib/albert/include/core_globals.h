@@ -22,4 +22,4 @@
  #define EXPORT_CORE Q_DECL_IMPORT
 #endif
 
-#define ALBERT_EXTENSION_IID "ExtensionInterface_v1.0"
+#define ALBERT_EXTENSION_IID "ExtensionInterface/v1.0"

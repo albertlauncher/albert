@@ -14,17 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QFutureSynchronizer>
-#include <QSqlDatabase>
-#include <QSqlDriver>
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QtConcurrent/QtConcurrent>
-#include <chrono>
-#include "extension.h"
-#include "extensionmanager.h"
-#include "query.h"
+#include <vector>
 #include "querymanager.h"
+#include "extensionmanager.h"
+#include "queryhandler.h"
+#include "query.h"
+#include "item.h"
+#include "extension.h"
+#include "queryhandler.h"
+#include "fallbackprovider.h"
+using namespace Core;
+using std::vector;
+using std::shared_ptr;
 
 /** ***************************************************************************/
 QueryManager::QueryManager(ExtensionManager* em, QObject *parent)
@@ -35,49 +36,39 @@ QueryManager::QueryManager(ExtensionManager* em, QObject *parent)
     Core::MatchOrder::update();
 }
 
+
+
 /** ***************************************************************************/
 void QueryManager::setupSession() {
-
-//    // Call all setup routines
-//    for (QueryHandler *handler : pluginManager_->pluginsByType<ISyncQueryHandler>())
-//        handler->setupSession();
-
-
-//    // Call all setup routines
-//    std::chrono::system_clock::time_point start, end;
-//    for (Extension *e : extensionManager_->extensions()){
-//        start = std::chrono::system_clock::now();
-//        e->setupSession();
-//        end = std::chrono::system_clock::now();
-//        if (50 < std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count())
-//            qWarning() << e->id << "took over 50 ms to setup!";
-//    }
+    // Call all setup routines
+    for (Core::QueryHandler *handler : extensionManager_->extensionsByType<Core::QueryHandler>())
+        handler->setupSession();
 }
+
+
 
 /** ***************************************************************************/
 void QueryManager::teardownSession() {
 
-//    // Call all teardown routines
-//    std::chrono::system_clock::time_point start, end;
-//    for (Extension *e : extensionManager_->extensions()){
-//        start = std::chrono::system_clock::now();
-//        e->teardownSession();
-//        end = std::chrono::system_clock::now();
-//        if (50 < std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count())
-//            qWarning() << e->id << "took over 50 ms to teardown!";
-//    }
+    // Call all teardown routines
+    for (Core::QueryHandler *handler : extensionManager_->extensionsByType<Core::QueryHandler>())
+        handler->teardownSession();
 
-    // Delete all the queries of this session
-    for (Query* qp : pastQueries_)
-        if ( qp->isRunning() )
-            connect(qp, &Query::finished, qp, &Query::deleteLater);
-        else
-            delete qp/*->deleteLater()*/;
-    pastQueries_.clear();
+    // Delete finished queries
+    vector<Query*>::iterator it = pastQueries_.begin();
+    while ( it != pastQueries_.end()){
+        if ( (*it)->state() != Query::State::Running ) {
+            (*it)->deleteLater();
+            it = pastQueries_.erase(it);
+        } else
+            ++it;
+    }
 
     // Compute new match rankings
     Core::MatchOrder::update();
 }
+
+
 
 /** ***************************************************************************/
 void QueryManager::startQuery(const QString &searchTerm) {
@@ -86,20 +77,48 @@ void QueryManager::startQuery(const QString &searchTerm) {
         // Stop last query
         disconnect(currentQuery_, &Query::resultsReady, this, &QueryManager::resultsReady);
         currentQuery_->invalidate();
-        // Store old queries an delete on session teardown (listview needs the model)
+        // Store for later deletion (listview still has the model)
         pastQueries_.push_back(currentQuery_);
     }
 
     // Do nothing if nothing is loaded
-    if (extensionManager_->extensions().empty())
+    if ( extensionManager_->extensions().empty() )
         return;
 
-    // Start new query, if not empty
+    // Do nothing if query is empty
     if ( searchTerm.trimmed().isEmpty() ) {
         currentQuery_ = nullptr;
         emit resultsReady(nullptr);
-    } else {
-        currentQuery_ = new Query(searchTerm, extensionManager_->extensions());
-        connect(currentQuery_, &Query::resultsReady, this, &QueryManager::resultsReady);
+        return;
     }
+
+    // Get fallbacks
+    vector<shared_ptr<Item>> fallbacks;
+    for ( FallbackProvider *extension : extensionManager_->extensionsByType<FallbackProvider>() ) {
+        vector<shared_ptr<Item>> && tmpFallbacks = extension->fallbacks(searchTerm);
+        fallbacks.insert(fallbacks.end(),
+                         std::make_move_iterator(tmpFallbacks.begin()),
+                         std::make_move_iterator(tmpFallbacks.end()));
+    }
+
+    // Determine query handlers
+    const set<QueryHandler*> allHandlers = extensionManager_->extensionsByType<QueryHandler>();
+    set<QueryHandler*> actualHandlers;
+    for ( QueryHandler *handler : allHandlers )
+        if ( !handler->trigger().isEmpty() && searchTerm.startsWith(handler->trigger()) )
+            actualHandlers.insert(handler);
+
+    if (actualHandlers.empty())
+        for ( QueryHandler *handler : allHandlers )
+            if ( handler->trigger().isEmpty() )
+                actualHandlers.insert(handler);
+
+
+    // Start query
+    currentQuery_ = new Query;
+    connect(currentQuery_, &Query::resultsReady, this, &QueryManager::resultsReady);
+    currentQuery_->setSearchTerm(searchTerm);
+    currentQuery_->setQueryHandlers(actualHandlers);
+    currentQuery_->setFallbacks(fallbacks);
+    currentQuery_->run();
 }

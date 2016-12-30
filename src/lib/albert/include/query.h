@@ -26,17 +26,25 @@
 #include <utility>
 #include <memory>
 #include "core_globals.h"
+#include "queryhandler.h"
 using std::set;
 using std::map;
 using std::vector;
 using std::pair;
 using std::shared_ptr;
 
+class QueryManager;
+
 namespace Core {
 
 class Extension;
 class Item;
 
+
+/**
+ * @brief The MatchOrder class
+ * The implements the order of the results
+ */
 class MatchOrder
 {
 public:
@@ -44,77 +52,67 @@ public:
     static void update();
     inline bool operator() (const pair<shared_ptr<Item>, short>& lhs,
                             const pair<shared_ptr<Item>, short>& rhs);
-
 private:
 
     static map<QString, double> order;
 };
 
 
-
-class EXPORT_CORE Query final : public QAbstractListModel 
+/**
+ * @brief The Query class
+ * Represents the execution of a query
+ */
+class EXPORT_CORE Query : public QObject
 {
     Q_OBJECT
 
+    friend class ::QueryManager;
+    class QueryPrivate;
+
 public:
 
-    Query(const QString &query, const set<Extension*> &queryHandlers);
+    enum class State {
+        Idle = 0,
+        Running,
+        Finished,
+        Canceled
+    };
 
-    /**
-     * @brief Add matches
-     * Adds a match to the results. Score describes a percentual match of the
-     * query against the item. 0 beeing no match SHRT_MAX beeing a full match.
-     * @param item The item to add
-     * @param score Matchfactor of the query against the item
-     */
+    const State &state() const;
+
+    const QString &searchTerm() const;
+
+    bool isValid() const;
+
     void addMatch(shared_ptr<Item> item, short score = 0);
-    void addMatches(vector<std::pair<shared_ptr<Item>,short>>::iterator begin,
-                    vector<std::pair<shared_ptr<Item>,short>>::iterator end);
-
-
-
-    /**
-     * @brief Returns the search term of this query
-     */
-    const QString &searchTerm() const { return searchTerm_; }
-    bool isRunning() { return isRunning_; }
-
-
-    /**
-     * @brief isValid gets the validity of the query.
-     * Running handler will stop long operations and discard their matches,
-     * if the query is invalid.
-     * @return
-     */
-    bool isValid() const { return isValid_; }
-    void invalidate();
-
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex &index, int role) const override;
-    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+    // No template since pimpl makes it pretty difficult
+    void addMatches(map<shared_ptr<Item>,short>::iterator begin,
+                    map<shared_ptr<Item>,short>::iterator end);
+    void addMatches(set<pair<shared_ptr<Item>,short>>::iterator begin,
+                    set<pair<shared_ptr<Item>,short>>::iterator end);
+    void addMatches(vector<pair<shared_ptr<Item>,short>>::iterator begin,
+                    vector<pair<shared_ptr<Item>,short>>::iterator end);
 
 private:
 
-    void onUXTimeOut();
-    void onHandlerFinished();
+    Query();
+    ~Query();
 
-    const QString searchTerm_;
-    bool isValid_;
-    bool isRunning_;
-    bool showFallbacks_;
+    void setSearchTerm(const QString &);
 
-    vector<QFutureWatcher<void>*> futureWatchers_;
-    map<Extension*, long int> runtimes_;
-    mutable QMutex mutex_;
-    QTimer UXTimeOut_;
+    void invalidate();
 
-    vector<pair<shared_ptr<Item>, short>> matches_;
-    vector<shared_ptr<Item>> fallbacks_;
+    void setQueryHandlers(const set<QueryHandler*> &);
+
+    void setFallbacks(const vector<shared_ptr<Item>> &);
+
+    void run();
+
+    QueryPrivate *d;
 
 signals:
 
     void resultsReady(QAbstractItemModel *);
-    void started();
     void finished();
 
 };

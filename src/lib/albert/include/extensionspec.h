@@ -16,38 +16,50 @@
 
 #pragma once
 #include <QString>
+#include <QStringList>
 #include <QPluginLoader>
-#include "extensionloader.h"
 #include "core_globals.h"
 
 namespace Core {
 
 class Extension;
 
-class EXPORT_CORE NativeExtensionLoader final : public Core::ExtensionLoader
+class EXPORT_CORE ExtensionSpec final
 {
 public:
 
-    NativeExtensionLoader(QString path) : loader_(path) { }
-    ~NativeExtensionLoader() { }
+    enum class State {
+        Loaded,
+        NotLoaded,
+        Error
+    };
 
-    bool load() override;
-    bool unload() override;
-    QString lastError() const override;
-    Extension *instance() override;
-    QString path() const override;
-    QString type() const override;
+    ExtensionSpec(QString path) : loader_(path), state_(State::NotLoaded) { }
+    ~ExtensionSpec() { }
+
+    State state() { return state_; }
+    bool load();
+    bool unload();
+    QString lastError() const;
+    Extension *instance();
+    QString path() const;
+    QString type() const;
     // Metadata
-    QString id() const override;
-    QString name() const override;
-    QString version() const override;
-    QString author() const override;
-    QStringList dependencies() const override;
+    QString id() const;
+    QString name() const;
+    QString version() const;
+    QString author() const;
+    QStringList dependencies() const;
 
 private:
 
     QPluginLoader loader_;
+    State state_;
 
 };
 
 }
+
+
+
+

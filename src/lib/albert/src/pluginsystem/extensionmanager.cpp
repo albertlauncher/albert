@@ -23,185 +23,146 @@
 #include <QStandardPaths>
 #include <chrono>
 #include <memory>
-#include "extension.h" // IID
-#include "externalextensionloader.h"
 #include "extensionmanager.h"
-#include "nativeextensionloader.h"
+#include "extensionspec.h"
 using std::unique_ptr;
 using std::chrono::system_clock;
 
-
-const QString Core::ExtensionManager::CFG_BLACKLIST = "blacklist";
-
-
-namespace Core {
-
-    vector<unique_ptr<NativeExtensionLoader>> findNativeExtensions() {
-        vector<unique_ptr<NativeExtensionLoader>> results;
-        QStringList pluginDirs = QStandardPaths::locateAll(
-                    QStandardPaths::DataLocation, "plugins",
-                    QStandardPaths::LocateDirectory);
-        // Iterate over all files in the plugindirs
-        for (const QString &pluginDir : pluginDirs) {
-            QDirIterator dirIterator(pluginDir, QDir::Files);
-            while (dirIterator.hasNext()) {
-                dirIterator.next();
-
-                QString path = dirIterator.fileInfo().canonicalFilePath();
-
-                // Check if this path is a lib
-                if (QLibrary::isLibrary(path)) {
-
-                    // Check for a sane interface ID  (IID)
-                    QString iid = QPluginLoader(path).metaData()["IID"].toString();
-                    if (iid != ALBERT_EXTENSION_IID)
-                        continue;
-
-                    // Put it to the results
-                    results.emplace_back(new NativeExtensionLoader(path));
-                }
-            }
-        }
-        return results;
-    }
-
-    vector<unique_ptr<ExternalExtensionLoader>> findExternalExtensions() {
-        vector<unique_ptr<ExternalExtensionLoader>> results;
-
-        QStringList pluginDirs = QStandardPaths::locateAll(
-                    QStandardPaths::DataLocation, "external",
-                    QStandardPaths::LocateDirectory);
-
-        // Iterate over all files in the plugindirs
-        for (const QString &pluginDir : pluginDirs) {
-            QDirIterator dirIterator(pluginDir, QDir::Files|QDir::Executable, QDirIterator::NoIteratorFlags);
-            while (dirIterator.hasNext()) {
-                dirIterator.next();
-                try {
-                    results.emplace_back(new ExternalExtensionLoader(dirIterator.fileInfo().canonicalFilePath()));
-                } catch (QString error) {
-                    qWarning() << error;
-                    continue;
-                }
-            }
-        }
-        return results;
-    }
-
+namespace {
+const QString CFG_BLACKLIST = "blacklist";
 }
-
 
 /** ***************************************************************************/
 Core::ExtensionManager::ExtensionManager() {
     // Load blacklist
     blacklist_ = QSettings(qApp->applicationName()).value(CFG_BLACKLIST).toStringList();
-    rescanExtensions();
+    reloadExtensions();
 }
 
 
 
 /** ***************************************************************************/
 Core::ExtensionManager::~ExtensionManager() {
-    for (unique_ptr<ExtensionLoader> & extensionLoader : extensionLoaders_)
-        unloadExtension(extensionLoader);
+    for (unique_ptr<ExtensionSpec> & extensionSpec : extensionSpecs_)
+        unloadExtension(extensionSpec);
 }
 
 
 
 /** ***************************************************************************/
-void Core::ExtensionManager::rescanExtensions() {
+void Core::ExtensionManager::reloadExtensions() {
+
     // Unload everything
-    for (unique_ptr<ExtensionLoader> & extensionLoader : extensionLoaders_)
-        unloadExtension(extensionLoader);
+    for (unique_ptr<ExtensionSpec> & extensionSpec : extensionSpecs_)
+        unloadExtension(extensionSpec);
 
-    vector<unique_ptr<ExtensionLoader>> notDistinctLoaders;
+    extensionSpecs_.clear();
 
-    // Load native extensions
-    vector<unique_ptr<NativeExtensionLoader>> && natives = findNativeExtensions();
-    std::move(natives.begin(), natives.end(), std::back_inserter(notDistinctLoaders));
+    // Get plugindirs
+    QStringList pluginDirs = QStandardPaths::locateAll(
+                QStandardPaths::DataLocation, "plugins",
+                QStandardPaths::LocateDirectory);
 
-    // Load external extensions
-    vector<unique_ptr<ExternalExtensionLoader>> && externals = findExternalExtensions();
-    std::move(externals.begin(), externals.end(), std::back_inserter(notDistinctLoaders));
+    // Iterate over all files in the plugindirs
+    for (const QString &pluginDir : pluginDirs) {
+        QDirIterator dirIterator(pluginDir, QDir::Files);
+        while (dirIterator.hasNext()) {
+            dirIterator.next();
 
-    // Save extensionLoaders, drop duplicates
-    for (unique_ptr<ExtensionLoader> & extensionLoader : notDistinctLoaders)
-        if (std::find_if (extensionLoaders_.begin(), extensionLoaders_.end(),
-                          [&extensionLoader](const unique_ptr<ExtensionLoader> &other){
-                              return extensionLoader->id() == other->id();
-                          }) != extensionLoaders_.end())
-            continue;
-        else
-            extensionLoaders_.push_back(std::move(extensionLoader));
+            QString path = dirIterator.fileInfo().canonicalFilePath();
+
+            // Check if this path is a lib
+            if (QLibrary::isLibrary(path)) {
+
+                QPluginLoader loader(path);
+
+                // Check for a sane interface ID  (IID)
+                QString iid = loader.metaData()["IID"].toString();
+                if (iid != ALBERT_EXTENSION_IID)
+                    continue;
+
+                // Check for duplicates
+                QString id = loader.metaData()["MetaData"].toObject()["id"].toString();
+                if (std::find_if (extensionSpecs_.begin(), extensionSpecs_.end(),
+                                  [&id](const unique_ptr<ExtensionSpec> & extensionSpec){
+                                      return id == extensionSpec->id();
+                                  }) != extensionSpecs_.end())
+                    continue;
+
+                // Put it to the results
+                extensionSpecs_.emplace_back(new ExtensionSpec(path));
+            }
+        }
+    }
 
     // Load if not blacklisted
-    for (unique_ptr<ExtensionLoader> & extensionLoader : extensionLoaders_)
-        if (!blacklist_.contains(extensionLoader->id()))
-            loadExtension(extensionLoader);
+    for (unique_ptr<ExtensionSpec> & extensionSpec : extensionSpecs_)
+        if (!blacklist_.contains(extensionSpec->id()))
+            loadExtension(extensionSpec);
 }
 
 
 
 /** ***************************************************************************/
-const vector<unique_ptr<Core::ExtensionLoader>>& Core::ExtensionManager::extensionLoaders() const {
-    return extensionLoaders_;
+const vector<unique_ptr<Core::ExtensionSpec>>& Core::ExtensionManager::extensionSpecs() const {
+    return extensionSpecs_;
 }
 
 
 
 /** ***************************************************************************/
-set<Core::Extension*> Core::ExtensionManager::extensions() const {
+const set<Core::Extension*> Core::ExtensionManager::extensions() const {
     return extensions_;
 }
 
 
 
 /** ***************************************************************************/
-void Core::ExtensionManager::loadExtension(const unique_ptr<ExtensionLoader> &loader) {
-    if (loader->state() != ExtensionLoader::State::Loaded){
+void Core::ExtensionManager::loadExtension(const unique_ptr<ExtensionSpec> &spec) {
+    if (spec->state() != ExtensionSpec::State::Loaded){
         system_clock::time_point start = system_clock::now();
-        if ( loader->load() ) {
+        if ( spec->load() ) {
             auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(system_clock::now()-start);
-            qDebug() << QString("Loading %1 done in %2 milliseconds").arg(loader->id()).arg(msecs.count());
-            extensions_.insert(loader->instance());
+            qDebug() << QString("Loading %1 done in %2 milliseconds").arg(spec->id()).arg(msecs.count());
+            extensions_.insert(spec->instance());
         } else
-            qDebug() << QString("Loading %1 failed. (%2)").arg(loader->id(), loader->lastError());
+            qDebug() << QString("Loading %1 failed. (%2)").arg(spec->id(), spec->lastError());
     }
 }
 
 
 
 /** ***************************************************************************/
-void Core::ExtensionManager::unloadExtension(const unique_ptr<ExtensionLoader> &loader) {
-    if (loader->state() == ExtensionLoader::State::Loaded) {
-        extensions_.erase(loader->instance());
-        loader->unload();
+void Core::ExtensionManager::unloadExtension(const unique_ptr<ExtensionSpec> &spec) {
+    if (spec->state() == ExtensionSpec::State::Loaded) {
+        extensions_.erase(spec->instance());
+        spec->unload();
     }
 }
 
 
 
 /** ***************************************************************************/
-void Core::ExtensionManager::enableExtension(const unique_ptr<ExtensionLoader> &loader) {
-    blacklist_.removeAll(loader->id());
+void Core::ExtensionManager::enableExtension(const unique_ptr<ExtensionSpec> &spec) {
+    blacklist_.removeAll(spec->id());
     QSettings(qApp->applicationName()).setValue(CFG_BLACKLIST, blacklist_);
-    loadExtension(loader);
+    loadExtension(spec);
 }
 
 
 
 /** ***************************************************************************/
-void Core::ExtensionManager::disableExtension(const unique_ptr<ExtensionLoader> &loader) {
-    if (!blacklist_.contains(loader->id())){
-        blacklist_.push_back(loader->id());
+void Core::ExtensionManager::disableExtension(const unique_ptr<ExtensionSpec> &spec) {
+    if (!blacklist_.contains(spec->id())){
+        blacklist_.push_back(spec->id());
         QSettings(qApp->applicationName()).setValue(CFG_BLACKLIST, blacklist_);
     }
-    unloadExtension(loader);
+    unloadExtension(spec);
 }
 
 
 
 /** ***************************************************************************/
-bool Core::ExtensionManager::extensionIsEnabled(const unique_ptr<ExtensionLoader> &loader) {
-    return !blacklist_.contains(loader->id());
+bool Core::ExtensionManager::extensionIsEnabled(const unique_ptr<ExtensionSpec> &spec) {
+    return !blacklist_.contains(spec->id());
 }
