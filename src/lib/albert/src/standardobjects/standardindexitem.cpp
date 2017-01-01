@@ -15,15 +15,17 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "standardindexitem.h"
+using std::vector;
+using namespace Core;
 
-Core::StandardIndexItem::StandardIndexItem(const QString &id) : StandardItem(id) {
+StandardIndexItem::StandardIndexItem(const QString &id) : StandardItem(id) {
 
 }
 
-vector<Core::Indexable::WeightedKeyword> Core::StandardIndexItem::indexKeywords() const {
+std::vector<Indexable::WeightedKeyword> StandardIndexItem::indexKeywords() const {
     return indexKeywords_;
 }
 
-void Core::StandardIndexItem::setIndexKeywords(vector<WeightedKeyword> &&indexKeywords) {
+void StandardIndexItem::setIndexKeywords(vector<WeightedKeyword> &&indexKeywords) {
     indexKeywords_ = indexKeywords;
 }

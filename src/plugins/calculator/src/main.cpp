@@ -61,7 +61,6 @@ Calculator::Extension::Extension()
 
 /** ***************************************************************************/
 Calculator::Extension::~Extension() {
-
     delete parser_;
 }
 

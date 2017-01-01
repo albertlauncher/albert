@@ -22,7 +22,6 @@
 #include "extension.h"
 #include "queryhandler.h"
 #include "fallbackprovider.h"
-using std::vector;
 
 namespace Websearch {
 
@@ -49,7 +48,7 @@ public:
     QString name() const override { return "Websearch"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     void handleQuery(Core::Query * query) override;
-    vector<shared_ptr<Core::Item>> fallbacks(const QString &) override;
+    std::vector<std::shared_ptr<Core::Item>> fallbacks(const QString &) override;
 
 
     /*
@@ -62,7 +61,7 @@ public slots:
 
 private:
     QPointer<ConfigWidget> widget_;
-    vector<SearchEngine> searchEngines_;
+    std::vector<SearchEngine> searchEngines_;
 };
 
 }

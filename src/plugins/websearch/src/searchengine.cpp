@@ -20,8 +20,9 @@
 #include "searchengine.h"
 #include "standarditem.h"
 #include "standardaction.h"
-using Core::StandardAction;
-using Core::StandardItem;
+using std::vector;
+using std::shared_ptr;
+using namespace Core;
 
 
 

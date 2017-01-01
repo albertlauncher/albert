@@ -384,8 +384,8 @@ void Core::Query::addMatch(shared_ptr<Item> item, short score) {
 
 
 /** ***************************************************************************/
-void Core::Query::addMatches(vector<std::pair<shared_ptr<Item>,short>>::iterator begin,
-                             vector<std::pair<shared_ptr<Item>,short>>::iterator end) {
+void Core::Query::addMatches(vector<pair<shared_ptr<Item>,short>>::iterator begin,
+                             vector<pair<shared_ptr<Item>,short>>::iterator end) {
     if ( d->isValid ) {
         d->pendingResultsMutex.lock();
         d->pendingResults.insert(d->pendingResults.end(),

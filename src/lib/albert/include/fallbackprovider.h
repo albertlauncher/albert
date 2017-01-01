@@ -19,8 +19,6 @@
 #include <vector>
 #include <memory>
 #include "core_globals.h"
-using std::shared_ptr;
-using std::vector;
 
 namespace Core {
 
@@ -36,7 +34,7 @@ public:
      * @brief Fallbacks
      * This items show up if a query yields no results
      */
-    virtual vector<shared_ptr<Item>> fallbacks(const QString &) = 0;
+    virtual std::vector<std::shared_ptr<Item>> fallbacks(const QString &) = 0;
 
 };
 

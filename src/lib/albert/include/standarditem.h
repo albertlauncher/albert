@@ -17,9 +17,9 @@
 #pragma once
 #include <QString>
 #include <vector>
+#include <memory>
 #include "core_globals.h"
 #include "item.h"
-using std::vector;
 
 namespace Core {
 
@@ -47,8 +47,8 @@ public:
     QString iconPath() const override final;
     void setIconPath( const QString &iconPath);
 
-    vector<shared_ptr<Action>> actions() override final;
-    void setActions(vector<shared_ptr<Action>> &&actions);
+    std::vector<std::shared_ptr<Action>> actions() override final;
+    void setActions(std::vector<std::shared_ptr<Action>> &&actions);
 
 private:
 
@@ -56,7 +56,7 @@ private:
     QString text_;
     QString subtext_;
     QString iconPath_;
-    vector<shared_ptr<Action>> actions_;
+    std::vector<std::shared_ptr<Action>> actions_;
 
 };
 

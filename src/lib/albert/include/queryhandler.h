@@ -16,8 +16,6 @@
 
 #pragma once
 #include <QString>
-#include <vector>
-#include "item.h"
 #include "core_globals.h"
 
 namespace Core {

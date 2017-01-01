@@ -19,8 +19,6 @@
 #include <vector>
 #include <memory>
 #include "core_globals.h"
-using std::vector;
-using std::shared_ptr;
 
 namespace Core {
 
@@ -60,7 +58,7 @@ public:
     virtual Urgency urgency() const { return Urgency::Normal; }
 
     /** The alternative actions of the item*/
-    virtual vector<shared_ptr<Action>> actions() = 0;
+    virtual std::vector<std::shared_ptr<Action>> actions() = 0;
 
 };
 

@@ -33,12 +33,12 @@ public:
 
     StandardIndexItem(const QString &id);
 
-    virtual vector<Core::Indexable::WeightedKeyword> indexKeywords() const override;
-    virtual void setIndexKeywords(vector<Indexable::WeightedKeyword> &&indexKeywords);
+    virtual std::vector<Core::Indexable::WeightedKeyword> indexKeywords() const override;
+    virtual void setIndexKeywords(std::vector<Indexable::WeightedKeyword> &&indexKeywords);
 
 private:
 
-    vector<Indexable::WeightedKeyword> indexKeywords_;
+    std::vector<Indexable::WeightedKeyword> indexKeywords_;
 
 };
 

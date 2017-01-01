@@ -71,6 +71,8 @@ void Terminal::Extension::teardownSession() {
 /** ***************************************************************************/
 void Terminal::Extension::handleQuery(Core::Query * query) {
 
+    vector<pair<shared_ptr<Core::Item>,short>> results;
+
     // Drop the query
     QString actualQuery = query->searchTerm().mid(1);
 
@@ -121,16 +123,18 @@ void Terminal::Extension::handleQuery(Core::Query * query) {
         });
         actions.push_back(std::move(action));
 
-
         std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(program);
         item->setText(commandlineString);
         item->setSubtext(QString("Run '%1'").arg(commandlineString));
         item->setIconPath(iconPath_);
         item->setActions(std::move(actions));
 
-        query->addMatch(item, 0);
+        results.emplace_back(item, 0);
         ++it;
     }
+
+    // Add results to query
+    query->addMatches(results.begin(), results.end());
 }
 
 

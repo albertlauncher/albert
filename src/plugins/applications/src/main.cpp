@@ -135,10 +135,13 @@ void Applications::Extension::handleQuery(Core::Query * query) {
     vector<shared_ptr<Core::Indexable>> indexables = offlineIndex_.search(query->searchTerm().toLower());
     indexAccess_.unlock();
 
-    // Add results to query-> This cast is safe since index holds files only
+    // Add results to query
+    vector<pair<shared_ptr<Core::Item>,short>> results;
     for (const shared_ptr<Core::Indexable> &obj : indexables)
         // TODO `Search` has to determine the relevance. Set to 0 for now
-        query->addMatch(std::static_pointer_cast<Core::StandardIndexItem>(obj), 0);
+        results.emplace_back(std::static_pointer_cast<Core::StandardIndexItem>(obj), 0);
+
+    query->addMatches(results.begin(), results.end());
 }
 
 

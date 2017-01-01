@@ -16,6 +16,8 @@
 
 #include "standarditem.h"
 #include "action.h"
+using std::vector;
+using std::shared_ptr;
 
 Core::StandardItem::StandardItem(const QString &id) : id_(id) { }
 

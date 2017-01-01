@@ -16,9 +16,7 @@
 
 #pragma once
 #include <QString>
-#include <memory>
 #include "core_globals.h"
-using std::shared_ptr;
 
 namespace Core {
 
