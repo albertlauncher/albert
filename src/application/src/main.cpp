@@ -286,7 +286,7 @@ int main(int argc, char *argv[]) {
         terminalCommand = settings.value(CFG_TERM, DEF_TERM).toString();
 
         // Quit gracefully on unix signals
-        for ( int sig : {SIGINT, SIGTERM, SIGHUP} )
+        for ( int sig : { SIGINT, SIGTERM, SIGHUP, SIGPIPE } )
             signal(sig, shutdownHandler);
 
         // Print e message if the app was not terminated graciously
