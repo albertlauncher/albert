@@ -85,11 +85,6 @@ public:
     bool isValid() const;
 
     void addMatch(shared_ptr<Item> item, short score = 0);
-    // No template since pimpl makes it pretty difficult
-    void addMatches(map<shared_ptr<Item>,short>::iterator begin,
-                    map<shared_ptr<Item>,short>::iterator end);
-    void addMatches(set<pair<shared_ptr<Item>,short>>::iterator begin,
-                    set<pair<shared_ptr<Item>,short>>::iterator end);
     void addMatches(vector<pair<shared_ptr<Item>,short>>::iterator begin,
                     vector<pair<shared_ptr<Item>,short>>::iterator end);
 

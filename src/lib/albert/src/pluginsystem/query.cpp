@@ -446,34 +446,8 @@ void Core::Query::addMatches(vector<pair<shared_ptr<Item>,short>>::iterator begi
     if ( d->isValid ) {
         d->pendingResultsMutex.lock();
         d->pendingResults.insert(d->pendingResults.end(),
-                                 make_move_iterator(begin),
-                                 make_move_iterator(end));
-        d->pendingResultsMutex.unlock();
-    }
-}
-
-
-/** ***************************************************************************/
-void Core::Query::addMatches(set<pair<shared_ptr<Item>,short>>::iterator begin,
-                             set<pair<shared_ptr<Item>,short>>::iterator end) {
-    if ( d->isValid ) {
-        d->pendingResultsMutex.lock();
-        d->pendingResults.insert(d->pendingResults.end(),
-                                 make_move_iterator(begin),
-                                 make_move_iterator(end));
-        d->pendingResultsMutex.unlock();
-    }
-}
-
-
-/** ***************************************************************************/
-void Core::Query::addMatches(map<shared_ptr<Item>,short>::iterator begin,
-                             map<shared_ptr<Item>,short>::iterator end) {
-    if ( d->isValid ) {
-        d->pendingResultsMutex.lock();
-        d->pendingResults.insert(d->pendingResults.end(),
-                                 make_move_iterator(begin),
-                                 make_move_iterator(end));
+                                 std::make_move_iterator(begin),
+                                 std::make_move_iterator(end));
         d->pendingResultsMutex.unlock();
     }
 }

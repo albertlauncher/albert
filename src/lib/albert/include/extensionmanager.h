@@ -31,6 +31,7 @@ namespace Core {
 
 class Extension;
 class ExtensionSpec;
+class ExtensionManagerPrivate;
 
 class EXPORT_CORE ExtensionManager final : public QObject
 {
@@ -66,9 +67,7 @@ private:
     void loadExtension(const unique_ptr<ExtensionSpec> &);
     void unloadExtension(const unique_ptr<ExtensionSpec> &);
 
-    vector<unique_ptr<ExtensionSpec>> extensionSpecs_;
-    set<Extension*> extensions_;
-    QStringList blacklist_;
+    ExtensionManagerPrivate *d;
 
 signals:
 

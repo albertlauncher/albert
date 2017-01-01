@@ -32,31 +32,41 @@ namespace {
 const QString CFG_BLACKLIST = "blacklist";
 }
 
+
 /** ***************************************************************************/
-Core::ExtensionManager::ExtensionManager() {
+class Core::ExtensionManagerPrivate {
+public:
+    vector<unique_ptr<ExtensionSpec>> extensionSpecs_;
+    set<Extension*> extensions_;
+    QStringList blacklist_;
+};
+
+
+/** ***************************************************************************/
+Core::ExtensionManager::ExtensionManager() : d(new ExtensionManagerPrivate) {
     // Load blacklist
-    blacklist_ = QSettings(qApp->applicationName()).value(CFG_BLACKLIST).toStringList();
+    d->blacklist_ = QSettings(qApp->applicationName()).value(CFG_BLACKLIST).toStringList();
     reloadExtensions();
 }
 
 
-
 /** ***************************************************************************/
 Core::ExtensionManager::~ExtensionManager() {
-    for (unique_ptr<ExtensionSpec> & extensionSpec : extensionSpecs_)
+    for (unique_ptr<ExtensionSpec> & extensionSpec : d->extensionSpecs_)
         unloadExtension(extensionSpec);
-}
 
+    delete d;
+}
 
 
 /** ***************************************************************************/
 void Core::ExtensionManager::reloadExtensions() {
 
     // Unload everything
-    for (unique_ptr<ExtensionSpec> & extensionSpec : extensionSpecs_)
+    for (unique_ptr<ExtensionSpec> & extensionSpec : d->extensionSpecs_)
         unloadExtension(extensionSpec);
 
-    extensionSpecs_.clear();
+    d->extensionSpecs_.clear();
 
     // Get plugindirs
     QStringList pluginDirs = QStandardPaths::locateAll(
@@ -83,38 +93,35 @@ void Core::ExtensionManager::reloadExtensions() {
 
                 // Check for duplicates
                 QString id = loader.metaData()["MetaData"].toObject()["id"].toString();
-                if (std::find_if (extensionSpecs_.begin(), extensionSpecs_.end(),
+                if (std::find_if (d->extensionSpecs_.begin(), d->extensionSpecs_.end(),
                                   [&id](const unique_ptr<ExtensionSpec> & extensionSpec){
                                       return id == extensionSpec->id();
-                                  }) != extensionSpecs_.end())
+                                  }) != d->extensionSpecs_.end())
                     continue;
 
                 // Put it to the results
-                extensionSpecs_.emplace_back(new ExtensionSpec(path));
+                d->extensionSpecs_.emplace_back(new ExtensionSpec(path));
             }
         }
     }
 
     // Load if not blacklisted
-    for (unique_ptr<ExtensionSpec> & extensionSpec : extensionSpecs_)
-        if (!blacklist_.contains(extensionSpec->id()))
+    for (unique_ptr<ExtensionSpec> & extensionSpec : d->extensionSpecs_)
+        if (!d->blacklist_.contains(extensionSpec->id()))
             loadExtension(extensionSpec);
 }
 
 
-
 /** ***************************************************************************/
 const vector<unique_ptr<Core::ExtensionSpec>>& Core::ExtensionManager::extensionSpecs() const {
-    return extensionSpecs_;
+    return d->extensionSpecs_;
 }
-
 
 
 /** ***************************************************************************/
 const set<Core::Extension*> Core::ExtensionManager::extensions() const {
-    return extensions_;
+    return d->extensions_;
 }
-
 
 
 /** ***************************************************************************/
@@ -124,45 +131,41 @@ void Core::ExtensionManager::loadExtension(const unique_ptr<ExtensionSpec> &spec
         if ( spec->load() ) {
             auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(system_clock::now()-start);
             qDebug() << QString("Loading %1 done in %2 milliseconds").arg(spec->id()).arg(msecs.count());
-            extensions_.insert(spec->instance());
+            d->extensions_.insert(spec->instance());
         } else
             qDebug() << QString("Loading %1 failed. (%2)").arg(spec->id(), spec->lastError());
     }
 }
 
 
-
 /** ***************************************************************************/
 void Core::ExtensionManager::unloadExtension(const unique_ptr<ExtensionSpec> &spec) {
     if (spec->state() == ExtensionSpec::State::Loaded) {
-        extensions_.erase(spec->instance());
+        d->extensions_.erase(spec->instance());
         spec->unload();
     }
 }
 
 
-
 /** ***************************************************************************/
 void Core::ExtensionManager::enableExtension(const unique_ptr<ExtensionSpec> &spec) {
-    blacklist_.removeAll(spec->id());
-    QSettings(qApp->applicationName()).setValue(CFG_BLACKLIST, blacklist_);
+    d->blacklist_.removeAll(spec->id());
+    QSettings(qApp->applicationName()).setValue(CFG_BLACKLIST, d->blacklist_);
     loadExtension(spec);
 }
 
 
-
 /** ***************************************************************************/
 void Core::ExtensionManager::disableExtension(const unique_ptr<ExtensionSpec> &spec) {
-    if (!blacklist_.contains(spec->id())){
-        blacklist_.push_back(spec->id());
-        QSettings(qApp->applicationName()).setValue(CFG_BLACKLIST, blacklist_);
+    if (!d->blacklist_.contains(spec->id())){
+        d->blacklist_.push_back(spec->id());
+        QSettings(qApp->applicationName()).setValue(CFG_BLACKLIST, d->blacklist_);
     }
     unloadExtension(spec);
 }
 
 
-
 /** ***************************************************************************/
 bool Core::ExtensionManager::extensionIsEnabled(const unique_ptr<ExtensionSpec> &spec) {
-    return !blacklist_.contains(spec->id());
+    return !d->blacklist_.contains(spec->id());
 }
