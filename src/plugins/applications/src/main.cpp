@@ -139,7 +139,7 @@ void Applications::Extension::handleQuery(Core::Query * query) {
     vector<pair<shared_ptr<Core::Item>,short>> results;
     for (const shared_ptr<Core::Indexable> &obj : indexables)
         // TODO `Search` has to determine the relevance. Set to 0 for now
-        results.emplace_back(std::static_pointer_cast<Core::StandardIndexItem>(obj), 0);
+        results.emplace_back(std::static_pointer_cast<Core::StandardIndexItem>(obj), 1);
 
     query->addMatches(results.begin(), results.end());
 }
