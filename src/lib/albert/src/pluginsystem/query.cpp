@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <chrono>
 #include <map>
+#include <functional>
 #include "action.h"
 #include "extension.h"
 #include "item.h"
@@ -119,12 +120,76 @@ public:
     QFutureWatcher<pair<QueryHandler*,long>> futureWatcher;
 
 
+
+
+    /** ***************************************************************************/
+    void run() {
+
+        if ( !syncHandlers.empty() )
+            return runSyncHandlers();
+
+        if ( !asyncHandlers.empty() )
+            return runAsyncHandlers();
+
+        state = State::Finished;
+        emit q->finished();
+    }
+
+
+    /** ***************************************************************************/
+    pair<QueryHandler*,long> mappedFunction (QueryHandler* queryHandler) {
+        system_clock::time_point then = system_clock::now();
+        queryHandler->handleQuery(q);
+        system_clock::time_point now = system_clock::now();
+        return std::make_pair(queryHandler, std::chrono::duration_cast<std::chrono::microseconds>(now-then).count());
+    }
+
+
+    /** ***************************************************************************/
+    void runSyncHandlers() {
+
+        // Call onSyncHandlersFinsished when all handlers finished
+        futureWatcher.disconnect();
+        connect(&futureWatcher, &QFutureWatcher<pair<QueryHandler*,long>>::finished,
+                this, &QueryPrivate::onSyncHandlersFinsished);
+
+        // Run the handlers concurrently and measure the runtimes
+        futureWatcher.setFuture(QtConcurrent::mapped(syncHandlers.begin(),
+                                                     syncHandlers.end(),
+                                                     std::bind(&QueryPrivate::mappedFunction, this, std::placeholders::_1)));
+    }
+
+
+    /** ***************************************************************************/
+    void runAsyncHandlers() {
+
+        // Call onAsyncHandlersFinsished when all handlers finished
+        futureWatcher.disconnect();
+        connect(&futureWatcher, &QFutureWatcher<pair<QueryHandler*,long>>::finished,
+                this, &QueryPrivate::onAsyncHandlersFinsished);
+
+        // Run the handlers concurrently and measure the runtimes
+        futureWatcher.setFuture(QtConcurrent::mapped(asyncHandlers.begin(),
+                                                     asyncHandlers.end(),
+                                                     std::bind(&QueryPrivate::mappedFunction, this, std::placeholders::_1)));
+
+        // Insert pending results every 50 milliseconds
+        connect(&fiftyMsTimer, &QTimer::timeout, this, &QueryPrivate::insertPendingResults);
+        fiftyMsTimer.start(50);
+    }
+
+
+
     /** ***************************************************************************/
     void onSyncHandlersFinsished() {
 
-        // Get the runtimes
+        // Save the runtimes of the current future
         for ( auto it = futureWatcher.future().begin(); it != futureWatcher.future().end(); ++it )
             runtimes.emplace(it->first, it->second);
+
+        /*
+         * Publish the results
+         */
 
         // Lock the pending results
         QMutexLocker lock(&pendingResultsMutex);
@@ -147,37 +212,31 @@ public:
 
         emit q->resultsReady(this);
 
-        // Define the map function
-        std::function<pair<QueryHandler*,long>(QueryHandler*)> mapFunction = [this](QueryHandler* queryHandler) {
-            system_clock::time_point then = system_clock::now();
-            queryHandler->handleQuery(q);
-            system_clock::time_point now = system_clock::now();
-            return std::make_pair(queryHandler, std::chrono::duration_cast<std::chrono::microseconds>(now-then).count());
-        };
+        if ( asyncHandlers.empty() )
+            finishQuery();
+        else
+            runAsyncHandlers();
+    }
 
-        // Call onAsyncHandlersFinsished when async handlers finished
-        futureWatcher.disconnect();
-        connect(&futureWatcher, &QFutureWatcher<pair<QueryHandler*,long>>::finished,
-                std::bind(&QueryPrivate::onAsyncHandlersFinsished, this));
 
-        // Run the handlers concurrently
-        futureWatcher.setFuture(QtConcurrent::mapped(asyncHandlers.begin(),
-                                                     asyncHandlers.end(),
-                                                     mapFunction));
+    /** ***************************************************************************/
+    void onAsyncHandlersFinsished() {
 
-        connect(&fiftyMsTimer, &QTimer::timeout,
-                this, &QueryPrivate::insertPendingResults);
+        // Save the runtimes of the current future
+        for ( auto it = futureWatcher.future().begin(); it != futureWatcher.future().end(); ++it )
+            runtimes.emplace(it->first, it->second);
 
-        fiftyMsTimer.start(50);
+        // Finally done
+        fiftyMsTimer.stop();
+        fiftyMsTimer.disconnect();
+        insertPendingResults();
 
+        finishQuery();
     }
 
 
     /** ***************************************************************************/
     void insertPendingResults() {
-        /*
-         * Get the results
-         */
 
         if(pendingResults.size()) {
 
@@ -197,36 +256,21 @@ public:
 
             // Clear the empty matches
             pendingResults.clear();
-
         }
     }
 
 
     /** ***************************************************************************/
-    void onAsyncHandlersFinsished() {
+    void finishQuery() {
 
-        // Finally done
-        fiftyMsTimer.stop();
-        fiftyMsTimer.disconnect();
-        insertPendingResults();
+        /*
+         * Store the runtimes
+         */
 
-        // If results are empty show fallbacks
-        if(results.empty()){
-            beginInsertRows(QModelIndex(), 0, fallbacks.size() - 1);
-            results.insert(results.end(),
-                           fallbacks.begin(),
-                           fallbacks.end());
-            endInsertRows();
-        }
-
-        // Get the runtimes
-        for ( auto it = futureWatcher.future().begin(); it != futureWatcher.future().end(); ++it )
-            runtimes.emplace(it->first, it->second);
-
-        // Save the runtimes
         QSqlDatabase db = QSqlDatabase::database();
-        db.transaction();
         QSqlQuery sqlQuery;
+
+        db.transaction();
         for ( auto &queryHandlerRuntimeEntry : runtimes ) {
             sqlQuery.prepare("INSERT INTO runtimes (extensionId, runtime) VALUES (:extensionId, :runtime);");
             sqlQuery.bindValue(":extensionId", queryHandlerRuntimeEntry.first->id);
@@ -236,7 +280,20 @@ public:
         }
         db.commit();
 
+        /*
+         * If results are empty show fallbacks
+         */
+
+        if( results.empty() ){
+            beginInsertRows(QModelIndex(), 0, fallbacks.size() - 1);
+            results.insert(results.end(),
+                           fallbacks.begin(),
+                           fallbacks.end());
+            endInsertRows();
+        }
+
         state = State::Finished;
+
         emit q->finished();
     }
 
@@ -465,20 +522,6 @@ void Core::Query::run() {
 
     d->state = State::Running;
 
-    // Define the map function
-    std::function<pair<QueryHandler*,long>(QueryHandler*)> mapFunction = [this](QueryHandler* queryHandler) {
-        system_clock::time_point then = system_clock::now();
-        queryHandler->handleQuery(this);
-        system_clock::time_point now = system_clock::now();
-        return std::make_pair(queryHandler, std::chrono::duration_cast<std::chrono::microseconds>(now-then).count());
-    };
 
-    // Call onMapFinshed when all handlers finished
-    connect(&d->futureWatcher, &QFutureWatcher<pair<QueryHandler*,long>>::finished,
-            std::bind(&QueryPrivate::onSyncHandlersFinsished, d));
-
-    // Run the handlers concurrently
-    d->futureWatcher.setFuture(QtConcurrent::mapped(d->syncHandlers.begin(),
-                                                    d->syncHandlers.end(),
-                                                    mapFunction));
+    d->run();
 }
