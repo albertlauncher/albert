@@ -50,11 +50,13 @@ const char* Files::Extension::IGNOREFILE          = ".albertignore";
 
 
 /** ***************************************************************************/
-Files::Extension::Extension() : Core::Extension("org.albert.extension.files") {
+Files::Extension::Extension()
+    : Core::Extension("org.albert.extension.files"),
+      Core::QueryHandler(Core::Extension::id)  {
 
     // Load settings
     QSettings s(qApp->applicationName());
-    s.beginGroup(id);
+    s.beginGroup(Core::Extension::id);
     indexAudio_ = s.value(CFG_INDEX_AUDIO, DEF_INDEX_AUDIO).toBool();
     indexVideo_ = s.value(CFG_INDEX_VIDEO, DEF_INDEX_VIDEO).toBool();
     indexImage_ = s.value(CFG_INDEX_IMAGE, DEF_INDEX_IMAGE).toBool();
@@ -71,10 +73,10 @@ Files::Extension::Extension() : Core::Extension("org.albert.extension.files") {
 
     // Deserialize data
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                   filePath(QString("%1.dat").arg(id)));
+                   filePath(QString("%1.dat").arg(Core::Extension::id)));
     if (dataFile.exists()) {
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
-            qDebug("[%s] Deserializing from %s", id.toUtf8().constData(), dataFile.fileName().toLocal8Bit().data());
+            qDebug("[%s] Deserializing from %s", Core::Extension::id.toUtf8().constData(), dataFile.fileName().toLocal8Bit().data());
             QDataStream in(&dataFile);
             quint64 count;
             for (in >> count ;count != 0; --count){
@@ -96,7 +98,7 @@ Files::Extension::Extension() : Core::Extension("org.albert.extension.files") {
 
     // If the root dirs change write it to the settings
     connect(this, &Extension::rootDirsChanged, [this](const QStringList& dirs){
-        QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_PATHS), dirs);
+        QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_PATHS), dirs);
     });
 
     // Trigger an initial update
@@ -125,9 +127,9 @@ Files::Extension::~Extension() {
 
     // Serialize data
     QFile dataFile(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                   filePath(QString("%1.dat").arg(id)));
+                   filePath(QString("%1.dat").arg(Core::Extension::id)));
     if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
-        qDebug("[%s] Serializing to %s", id.toUtf8().constData(), dataFile.fileName().toLocal8Bit().data());
+        qDebug("[%s] Serializing to %s", Core::Extension::id.toUtf8().constData(), dataFile.fileName().toLocal8Bit().data());
         QDataStream out( &dataFile );
         out	<< static_cast<quint64>(index_.size());
         for (const auto &item : index_)
@@ -316,7 +318,7 @@ void Files::Extension::updateIndex() {
 
 /** ***************************************************************************/
 void Files::Extension::setIndexAudio(bool b)  {
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_INDEX_AUDIO), b);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_INDEX_AUDIO), b);
     indexAudio_ = b;
 }
 
@@ -324,7 +326,7 @@ void Files::Extension::setIndexAudio(bool b)  {
 
 /** ***************************************************************************/
 void Files::Extension::setIndexVideo(bool b)  {
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_INDEX_VIDEO), b);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_INDEX_VIDEO), b);
     indexVideo_ = b;
 }
 
@@ -332,7 +334,7 @@ void Files::Extension::setIndexVideo(bool b)  {
 
 /** ***************************************************************************/
 void Files::Extension::setIndexImage(bool b)  {
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_INDEX_IMAGE), b);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_INDEX_IMAGE), b);
     indexImage_ = b;
 }
 
@@ -340,7 +342,7 @@ void Files::Extension::setIndexImage(bool b)  {
 
 /** ***************************************************************************/
 void Files::Extension::setIndexDocs(bool b)  {
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_INDEX_DOC), b);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_INDEX_DOC), b);
     indexDocs_ = b;
 }
 
@@ -348,7 +350,7 @@ void Files::Extension::setIndexDocs(bool b)  {
 
 /** ***************************************************************************/
 void Files::Extension::setIndexDirs(bool b)  {
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_INDEX_DIR), b);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_INDEX_DIR), b);
     indexDirs_ = b;
 }
 
@@ -356,7 +358,7 @@ void Files::Extension::setIndexDirs(bool b)  {
 
 /** ***************************************************************************/
 void Files::Extension::setIndexHidden(bool b)  {
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_INDEX_HIDDEN), b);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_INDEX_HIDDEN), b);
     indexHidden_ = b;
 }
 
@@ -364,7 +366,7 @@ void Files::Extension::setIndexHidden(bool b)  {
 
 /** ***************************************************************************/
 void Files::Extension::setFollowSymlinks(bool b)  {
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_FOLLOW_SYMLINKS), b);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_FOLLOW_SYMLINKS), b);
     followSymlinks_ = b;
 }
 
@@ -372,7 +374,7 @@ void Files::Extension::setFollowSymlinks(bool b)  {
 
 /** ***************************************************************************/
 void Files::Extension::setScanInterval(uint minutes) {
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_SCAN_INTERVAL), minutes);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_SCAN_INTERVAL), minutes);
     (minutes == 0) ? indexIntervalTimer_.stop() : indexIntervalTimer_.start(minutes*60000);
 }
 
@@ -388,7 +390,7 @@ bool Files::Extension::fuzzy() {
 /** ***************************************************************************/
 void Files::Extension::setFuzzy(bool b) {
     indexAccess_.lock();
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_FUZZY), b);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_FUZZY), b);
     offlineIndex_.setFuzzy(b);
     indexAccess_.unlock();
 }

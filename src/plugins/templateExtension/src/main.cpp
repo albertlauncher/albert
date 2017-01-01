@@ -21,7 +21,9 @@
 #include "query.h"
 
 /** ***************************************************************************/
-Template::Extension::Extension() : Core::Extension("org.albert.extension.template") {
+Template::Extension::Extension()
+    : Core::Extension("org.albert.extension.template"),
+      Core::QueryHandler(Core::Extension::id) {
     // Do sth.
 }
 

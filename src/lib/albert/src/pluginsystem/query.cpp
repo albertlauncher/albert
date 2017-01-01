@@ -107,7 +107,7 @@ public:
 
     set<QueryHandler*> syncHandlers;
     set<QueryHandler*> asyncHandlers;
-    map<Extension*, long int> runtimes;
+    map<QueryHandler*, long int> runtimes;
 
     vector<shared_ptr<Item>> results;
     vector<shared_ptr<Item>> fallbacks;
@@ -121,6 +121,11 @@ public:
 
     /** ***************************************************************************/
     void onSyncHandlersFinsished() {
+
+        // Get the runtimes
+        for ( auto it = futureWatcher.future().begin(); it != futureWatcher.future().end(); ++it )
+            runtimes.emplace(it->first, it->second);
+
         // Lock the pending results
         QMutexLocker lock(&pendingResultsMutex);
 
@@ -137,6 +142,8 @@ public:
                        pendingResults.end(),
                        std::back_inserter(results),
                        [](const pair<shared_ptr<Item>,short>& p){ return std::move(p.first); });
+
+        pendingResults.clear();
 
         emit q->resultsReady(this);
 
@@ -203,13 +210,6 @@ public:
         fiftyMsTimer.disconnect();
         insertPendingResults();
 
-        // Get the runtimes
-        for (auto it = futureWatcher.future().begin();
-             it != futureWatcher.future().end(); ++it)
-
-
-
-
         // If results are empty show fallbacks
         if(results.empty()){
             beginInsertRows(QModelIndex(), 0, fallbacks.size() - 1);
@@ -218,6 +218,10 @@ public:
                            fallbacks.end());
             endInsertRows();
         }
+
+        // Get the runtimes
+        for ( auto it = futureWatcher.future().begin(); it != futureWatcher.future().end(); ++it )
+            runtimes.emplace(it->first, it->second);
 
         // Save the runtimes
         QSqlDatabase db = QSqlDatabase::database();
@@ -436,7 +440,7 @@ void Core::Query::setQueryHandlers(const set<QueryHandler *> &queryHandlers) {
         return;
 
     for ( auto handler : queryHandlers )
-        if ( handler->yieldsLiveResults() )
+        if ( handler->isLongRunning() )
             d->asyncHandlers.insert(handler);
         else
             d->syncHandlers.insert(handler);

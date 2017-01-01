@@ -28,16 +28,18 @@
 
 
 /** ***************************************************************************/
-Websearch::Extension::Extension() : Core::Extension("org.albert.extension.websearch")  {
+Websearch::Extension::Extension()
+    : Core::Extension("org.albert.extension.websearch"),
+      Core::QueryHandler(Core::Extension::id) {
 
     // Deserialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(id))
+                filePath(QString("%1.dat").arg(Core::Extension::id))
                 );
     if (dataFile.exists()) {
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
-            qDebug("[%s] Deserializing from %s", id.toUtf8().constData(), dataFile.fileName().toLocal8Bit().data());
+            qDebug("[%s] Deserializing from %s", Core::Extension::id.toUtf8().constData(), dataFile.fileName().toLocal8Bit().data());
             QDataStream in(&dataFile);
             quint64 size;
             in >> size;
@@ -61,10 +63,10 @@ Websearch::Extension::~Extension() {
     // Serialize data
     QFile dataFile(
                 QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
-                filePath(QString("%1.dat").arg(id))
+                filePath(QString("%1.dat").arg(Core::Extension::id))
                 );
     if (dataFile.open(QIODevice::ReadWrite| QIODevice::Text)) {
-        qDebug("[%s] Serializing to %s", id.toUtf8().constData(), dataFile.fileName().toLocal8Bit().data());
+        qDebug("[%s] Serializing to %s", Core::Extension::id.toUtf8().constData(), dataFile.fileName().toLocal8Bit().data());
         QDataStream out( &dataFile );
         out << static_cast<quint64>(searchEngines_.size());
         for (const SearchEngine &se : searchEngines_)

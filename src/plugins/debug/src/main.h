@@ -41,6 +41,7 @@ public:
     QWidget *widget(QWidget *parent = nullptr) override;
     void handleQuery(Core::Query * query) override;
     QString trigger() const override {return trigger_;}
+    bool isLongRunning() const override { return true; }
 
     int count() const{return count_;}
     void setCount(const int &count);

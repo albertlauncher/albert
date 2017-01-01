@@ -28,7 +28,10 @@ class EXPORT_CORE QueryHandler
 {
 public:
 
+    QueryHandler(QString id) : id(id) {}
     virtual ~QueryHandler() {}
+
+    const QString id;
 
     /**
      * @brief The trigger that makes the plugin beeing run
@@ -56,7 +59,7 @@ public:
      */
     virtual void teardownSession() {}
 
-    virtual bool yieldsLiveResults() { return false; }
+    virtual bool isLongRunning() const { return false; }
 
     /**
      * @brief Query handling

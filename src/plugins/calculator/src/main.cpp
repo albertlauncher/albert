@@ -35,11 +35,13 @@ const QString Calculator::Extension::CFG_SEPS      = "group_separators";
 const bool    Calculator::Extension::CFG_SEPS_DEF  = false;
 
 /** ***************************************************************************/
-Calculator::Extension::Extension() : Core::Extension("org.albert.extension.calculator") {
+Calculator::Extension::Extension()
+    : Core::Extension("org.albert.extension.calculator"),
+      Core::QueryHandler(Core::Extension::id) {
 
     // Load settings
     QSettings s(qApp->applicationName());
-    s.beginGroup(id);
+    s.beginGroup(Core::Extension::id);
     loc_.setNumberOptions(
                 (s.value(CFG_SEPS, CFG_SEPS_DEF).toBool())
                 ? loc_.numberOptions() & ~QLocale::OmitGroupSeparator
@@ -72,7 +74,7 @@ QWidget *Calculator::Extension::widget(QWidget *parent) {
 
         widget_->ui.checkBox_groupsep->setChecked(!(loc_.numberOptions() & QLocale::OmitGroupSeparator));
         connect(widget_->ui.checkBox_groupsep, &QCheckBox::toggled, [this](bool checked){
-            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_SEPS), checked);
+            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_SEPS), checked);
             this->loc_.setNumberOptions( (checked) ? this->loc_.numberOptions() & ~QLocale::OmitGroupSeparator
                                                   : this->loc_.numberOptions() | QLocale::OmitGroupSeparator );
         });

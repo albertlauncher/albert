@@ -26,9 +26,11 @@
 using Core::StandardItem;
 
 /** ***************************************************************************/
-Debug::Extension::Extension() :Core::Extension("org.albert.extension.debug") {
+Debug::Extension::Extension()
+    : Core::Extension("org.albert.extension.debug"),
+      Core::QueryHandler(Core::Extension::id) {
     QSettings s(qApp->applicationName());
-    s.beginGroup(id);
+    s.beginGroup(Core::QueryHandler::id);
     setDelay(s.value("delay", 50).toInt());
     setCount(s.value("count", 100).toInt());
     setAsync(s.value("async", true).toBool());
@@ -78,7 +80,7 @@ void Debug::Extension::handleQuery(Core::Query * query) {
 
 /** ***************************************************************************/
 void Debug::Extension::setCount(const int &count){
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, "count"), count);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::QueryHandler::id, "count"), count);
     count_ = count;
 }
 
@@ -86,7 +88,7 @@ void Debug::Extension::setCount(const int &count){
 
 /** ***************************************************************************/
 void Debug::Extension::setAsync(bool async){
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, "async"), async);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::QueryHandler::id, "async"), async);
     async_ = async;
 }
 
@@ -94,7 +96,7 @@ void Debug::Extension::setAsync(bool async){
 
 /** ***************************************************************************/
 void Debug::Extension::setDelay(const int &delay) {
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, "delay"), delay);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::QueryHandler::id, "delay"), delay);
     delay_ = delay;
 }
 
@@ -102,7 +104,7 @@ void Debug::Extension::setDelay(const int &delay) {
 
 /** ***************************************************************************/
 void Debug::Extension::setTrigger(const QString &trigger){
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, "trigger"), trigger);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::QueryHandler::id, "trigger"), trigger);
     trigger_ = trigger;
 }
 

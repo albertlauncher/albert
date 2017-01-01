@@ -34,11 +34,13 @@ const char* ChromeBookmarks::Extension::CFG_FUZZY      = "fuzzy";
 const bool  ChromeBookmarks::Extension::DEF_FUZZY      = false;
 
 /** ***************************************************************************/
-ChromeBookmarks::Extension::Extension() : Core::Extension("org.albert.extension.chromebookmarks") {
+ChromeBookmarks::Extension::Extension()
+    : Core::Extension("org.albert.extension.chromebookmarks"),
+      Core::QueryHandler(Core::Extension::id) {
 
     // Load settings
     QSettings s(qApp->applicationName());
-    s.beginGroup(id);
+    s.beginGroup(Core::Extension::id);
     offlineIndex_.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
 
     // Load and set a valid path
@@ -50,7 +52,7 @@ ChromeBookmarks::Extension::Extension() : Core::Extension("org.albert.extension.
 
     // If the path changed write it to the settings
     connect(this, &Extension::pathChanged, [this](const QString& path){
-        QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_PATH), path);
+        QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_PATH), path);
     });
 
     s.endGroup();
@@ -196,7 +198,7 @@ void ChromeBookmarks::Extension::updateIndex() {
 /** ***************************************************************************/
 void ChromeBookmarks::Extension::setFuzzy(bool b) {
     indexAccess_.lock();
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_FUZZY), b);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_FUZZY), b);
     offlineIndex_.setFuzzy(b);
     indexAccess_.unlock();
 }

@@ -33,7 +33,9 @@ using Core::StandardItem;
 extern QString terminalCommand;
 
 /** ***************************************************************************/
-Terminal::Extension::Extension() : Core::Extension("org.albert.extension.terminal") {
+Terminal::Extension::Extension()
+    : Core::Extension("org.albert.extension.terminal"),
+      Core::QueryHandler(Core::Extension::id) {
 
     dirtyFlag_ = false;
 

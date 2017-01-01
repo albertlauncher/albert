@@ -27,7 +27,9 @@ using Core::StandardAction;
 using Core::StandardItem;
 
 /** ***************************************************************************/
-VirtualBox::Extension::Extension() : Core::Extension("org.albert.extension.virtualbox") {
+VirtualBox::Extension::Extension()
+    : Core::Extension("org.albert.extension.virtualbox"),
+      Core::QueryHandler(Core::Extension::id) {
     QString iconPath = XdgIconLookup::instance()->themeIconPath("virtualbox");
     iconPath_ = iconPath.isNull() ? ":vbox" : iconPath;
 }

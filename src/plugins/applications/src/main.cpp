@@ -35,13 +35,15 @@ const bool  Applications::Extension::DEF_FUZZY    = false;
 const bool  Applications::Extension::UPDATE_DELAY = 60000;
 
 /** ***************************************************************************/
-Applications::Extension::Extension() : Core::Extension("org.albert.extension.applications") {
+Applications::Extension::Extension()
+    : Core::Extension("org.albert.extension.applications"),
+      Core::QueryHandler(Core::Extension::id) {
 
     qunsetenv("DESKTOP_AUTOSTART_ID");
 
     // Load settings
     QSettings s(qApp->applicationName());
-    s.beginGroup(id);
+    s.beginGroup(Core::Extension::id);
     offlineIndex_.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
 
     // Load the paths or set a default
@@ -67,7 +69,7 @@ Applications::Extension::Extension() : Core::Extension("org.albert.extension.app
 
     // If the root dirs change write it to the settings
     connect(this, &Extension::rootDirsChanged, [this](const QStringList& dirs){
-        QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_PATHS), dirs);
+        QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_PATHS), dirs);
     });
 
     // Trigger initial update
@@ -259,6 +261,6 @@ void Applications::Extension::updateIndex() {
 
 /** ***************************************************************************/
 void Applications::Extension::setFuzzy(bool b) {
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(id, CFG_FUZZY), b);
+    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_FUZZY), b);
     offlineIndex_.setFuzzy(b);
 }
