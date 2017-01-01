@@ -3,7 +3,7 @@
  <class>MainWindow</class>
  <widget class="QWidget" name="MainWindow">
   <property name="windowIcon">
-   <iconset resource="../resources.qrc">
+   <iconset resource="../../resources.qrc">
     <normaloff>:/app_icon</normaloff>:/app_icon</iconset>
   </property>
   <layout class="QVBoxLayout" name="frameLayout">
@@ -93,7 +93,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../resources.qrc"/>
+  <include location="../../resources.qrc"/>
  </resources>
  <connections/>
 </ui>
