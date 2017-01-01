@@ -141,7 +141,7 @@ XdgIconLookup *XdgIconLookup::instance()
 QString XdgIconLookup::themeIconPath(QString iconName, QString themeName){
 
     // if we have an absolute path, just return it
-    if (iconName[0]=='/')
+    if (iconName[0]=='/' && QFile::exists(iconName))
         return iconName;
 
     // check if it has an extension and strip it
