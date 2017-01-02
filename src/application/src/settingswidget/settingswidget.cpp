@@ -184,7 +184,11 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
     delete i;
 
     if (extensionManager_->extensionSpecs()[current.row()]->state() == ExtensionSpec::State::Loaded){
-        Extension *extension = extensionManager_->extensionSpecs()[current.row()]->instance();
+        Extension *extension = dynamic_cast<Extension*>(extensionManager_->extensionSpecs()[current.row()]->instance());
+        if (!extension){
+            qWarning() << "Cannot cast an object of extension spec to an extension!";
+            return; // Should no happen
+        }
         QWidget *pw = extension->widget();
         if ( pw->layout() != nullptr)
             pw->layout()->setMargin(0);

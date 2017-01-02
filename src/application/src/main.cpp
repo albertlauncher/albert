@@ -44,7 +44,6 @@ static const char* CFG_TERM = "terminal";
 static const char* DEF_TERM = "xterm -e";
 
 static QApplication           *app;
-static Core::ExtensionManager *extensionManager;
 static QueryManager           *queryManager;
 static MainWindow             *mainWindow;
 static HotkeyManager          *hotkeyManager;
@@ -186,12 +185,12 @@ int main(int argc, char *argv[]) {
          */
 
         QSettings settings(qApp->applicationName());
+        ExtensionManager::instance = new Core::ExtensionManager;
         mainWindow       = new MainWindow;
         hotkeyManager    = new HotkeyManager;
-        extensionManager = new Core::ExtensionManager;
-        queryManager     = new QueryManager(extensionManager);
+        queryManager     = new QueryManager(ExtensionManager::instance);
         trayIcon         = new TrayIcon;
-        settingsWidget   = new SettingsWidget(mainWindow, hotkeyManager, extensionManager, trayIcon);
+        settingsWidget   = new SettingsWidget(mainWindow, hotkeyManager, ExtensionManager::instance, trayIcon);
 
 
         /*
@@ -282,6 +281,7 @@ int main(int argc, char *argv[]) {
          *  MISC
          */
 
+
         // Define the (global extern) terminal command
         terminalCommand = settings.value(CFG_TERM, DEF_TERM).toString();
 
@@ -314,6 +314,9 @@ int main(int argc, char *argv[]) {
             file.close();
         }
 
+        // Finally load the extensions
+        Core::ExtensionManager::instance->reloadExtensions();
+
     }
 
 
@@ -332,9 +335,9 @@ int main(int argc, char *argv[]) {
     delete trayIconMenu;
     delete trayIcon;
     delete queryManager;
-    delete extensionManager;
     delete hotkeyManager;
     delete mainWindow;
+    delete ExtensionManager::instance;
 
     // Delete the running indicator file
     QFile::remove(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running");

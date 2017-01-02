@@ -48,19 +48,21 @@ public:
     void disableExtension(const unique_ptr<ExtensionSpec> &);
     bool extensionIsEnabled(const unique_ptr<ExtensionSpec> &);
 
-    void registerExtension(Extension*);
-    void unregisterExtension(Extension*);
-    const set<Extension *> extensions() const;
+    void registerObject(QObject *);
+    void unregisterObject(QObject*);
+    const set<QObject *> objects() const;
     template <typename T>
-    set<T *> extensionsByType() {
+    set<T *> objectsByType() {
         set<T *> results;
-        for (Extension * extension : extensions()) {
-            T *result = dynamic_cast<T *>(extension);
+        for (QObject * object : objects()) {
+            T *result = dynamic_cast<T *>(object);
             if (result)
                 results.insert(result);
         }
         return results;
     }
+
+    static ExtensionManager *instance;
 
 private:
 

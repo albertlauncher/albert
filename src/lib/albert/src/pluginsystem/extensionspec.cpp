@@ -45,8 +45,8 @@ QString Core::ExtensionSpec::lastError() const {
 
 
 /** ***************************************************************************/
-Core::Extension *Core::ExtensionSpec::instance() {
-    return (state_==State::Loaded) ? dynamic_cast<Extension*>(loader_.instance()) : nullptr;
+QObject *Core::ExtensionSpec::instance() {
+    return (state_==State::Loaded) ? loader_.instance() : nullptr;
 }
 
 

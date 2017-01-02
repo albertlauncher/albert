@@ -41,7 +41,7 @@ public:
     bool load();
     bool unload();
     QString lastError() const;
-    Extension *instance();
+    QObject *instance();
     QString path() const;
     QString type() const;
     // Metadata

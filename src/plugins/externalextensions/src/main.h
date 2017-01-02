@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014-2016 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,29 +15,27 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QAbstractTableModel>
-#include <QFileSystemWatcher>
+#include <QObject>
 #include <QPointer>
+#include <QFileSystemWatcher>
 #include <vector>
+#include <memory>
 #include "extension.h"
-#include "queryhandler.h"
-#include "fallbackprovider.h"
+#include "externalextension.h"
 
-namespace Websearch {
+namespace ExternalExtensions {
 
-class SearchEngine;
 class ConfigWidget;
 
 class Extension final :
         public QObject,
-        public Core::Extension,
-        public Core::QueryHandler,
-        public Core::FallbackProvider
+        public Core::Extension
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
 public:
+
     Extension();
     ~Extension();
 
@@ -45,22 +43,22 @@ public:
      * Implementation of extension interface
      */
 
-    QString name() const override { return "Websearch"; }
+    QString name() const override { return "External extensions"; }
     QWidget *widget(QWidget *parent = nullptr) override;
-    void handleQuery(Core::Query * query) override;
-    std::vector<std::shared_ptr<Core::Item>> fallbacks(const QString &) override;
-
 
     /*
      * Extension specific members
      */
 
-    void restoreDefaults();
+    void reloadExtensions();
+    const QStringList &pluginDirs() { return pluginDirs_; }
 
 private:
 
+    QStringList pluginDirs_;
+    std::vector<std::unique_ptr<ExternalExtension>> externalExtensions_;
+    QFileSystemWatcher fileSystemWatcher_;
     QPointer<ConfigWidget> widget_;
-    std::vector<SearchEngine> searchEngines_;
-};
 
+};
 }

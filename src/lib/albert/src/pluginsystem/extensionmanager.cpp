@@ -32,12 +32,13 @@ namespace {
 const QString CFG_BLACKLIST = "blacklist";
 }
 
+Core::ExtensionManager *Core::ExtensionManager::instance = nullptr;
 
 /** ***************************************************************************/
 class Core::ExtensionManagerPrivate {
 public:
     vector<unique_ptr<ExtensionSpec>> extensionSpecs_;
-    set<Extension*> extensions_;
+    set<QObject*> extensions_;
     QStringList blacklist_;
 };
 
@@ -46,7 +47,7 @@ public:
 Core::ExtensionManager::ExtensionManager() : d(new ExtensionManagerPrivate) {
     // Load blacklist
     d->blacklist_ = QSettings(qApp->applicationName()).value(CFG_BLACKLIST).toStringList();
-    reloadExtensions();
+    // DO NOT LOAD EXTENSIONS HERE!
 }
 
 
@@ -119,7 +120,7 @@ const vector<unique_ptr<Core::ExtensionSpec>>& Core::ExtensionManager::extension
 
 
 /** ***************************************************************************/
-const set<Core::Extension*> Core::ExtensionManager::extensions() const {
+const set<QObject*> Core::ExtensionManager::objects() const {
     return d->extensions_;
 }
 
@@ -168,4 +169,16 @@ void Core::ExtensionManager::disableExtension(const unique_ptr<ExtensionSpec> &s
 /** ***************************************************************************/
 bool Core::ExtensionManager::extensionIsEnabled(const unique_ptr<ExtensionSpec> &spec) {
     return !d->blacklist_.contains(spec->id());
+}
+
+
+/** ***************************************************************************/
+void Core::ExtensionManager::registerObject(QObject *object) {
+    d->extensions_.insert(object);
+}
+
+
+/** ***************************************************************************/
+void Core::ExtensionManager::unregisterObject(QObject *object) {
+    d->extensions_.erase(object);
 }

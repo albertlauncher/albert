@@ -41,7 +41,7 @@ QueryManager::QueryManager(ExtensionManager* em, QObject *parent)
 /** ***************************************************************************/
 void QueryManager::setupSession() {
     // Call all setup routines
-    for (Core::QueryHandler *handler : extensionManager_->extensionsByType<Core::QueryHandler>())
+    for (Core::QueryHandler *handler : extensionManager_->objectsByType<Core::QueryHandler>())
         handler->setupSession();
 }
 
@@ -51,7 +51,7 @@ void QueryManager::setupSession() {
 void QueryManager::teardownSession() {
 
     // Call all teardown routines
-    for (Core::QueryHandler *handler : extensionManager_->extensionsByType<Core::QueryHandler>())
+    for (Core::QueryHandler *handler : extensionManager_->objectsByType<Core::QueryHandler>())
         handler->teardownSession();
 
     // Delete finished queries
@@ -82,7 +82,7 @@ void QueryManager::startQuery(const QString &searchTerm) {
     }
 
     // Do nothing if nothing is loaded
-    if ( extensionManager_->extensions().empty() )
+    if ( extensionManager_->objects().empty() )
         return;
 
     // Do nothing if query is empty
@@ -94,7 +94,7 @@ void QueryManager::startQuery(const QString &searchTerm) {
 
     // Get fallbacks
     vector<shared_ptr<Item>> fallbacks;
-    for ( FallbackProvider *extension : extensionManager_->extensionsByType<FallbackProvider>() ) {
+    for ( FallbackProvider *extension : extensionManager_->objectsByType<FallbackProvider>() ) {
         vector<shared_ptr<Item>> && tmpFallbacks = extension->fallbacks(searchTerm);
         fallbacks.insert(fallbacks.end(),
                          std::make_move_iterator(tmpFallbacks.begin()),
@@ -102,7 +102,7 @@ void QueryManager::startQuery(const QString &searchTerm) {
     }
 
     // Determine query handlers
-    const set<QueryHandler*> allHandlers = extensionManager_->extensionsByType<QueryHandler>();
+    const set<QueryHandler*> allHandlers = extensionManager_->objectsByType<QueryHandler>();
     set<QueryHandler*> actualHandlers;
     for ( QueryHandler *handler : allHandlers )
         if ( !handler->trigger().isEmpty() && searchTerm.startsWith(handler->trigger()) )
