@@ -45,7 +45,7 @@ class Item;
  * @brief The MatchOrder class
  * The implements the order of the results
  */
-class MatchOrder
+class EXPORT_CORE MatchOrder
 {
 public:
 

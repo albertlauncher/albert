@@ -20,6 +20,10 @@ set(LIB
     xdg
 )
 
+# Do not export symbols by default
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+
 # Define the target
 add_library(${PROJECT_NAME} SHARED ${SRC} ${UI})
 
@@ -31,3 +35,4 @@ target_include_directories(${PROJECT_NAME}
 
 # Link target to libraries
 target_link_libraries(${PROJECT_NAME} ${LIB})
+

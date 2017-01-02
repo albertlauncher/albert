@@ -1,3 +1,7 @@
+# Do not export symbols by default
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+
 add_subdirectory(applications)
 add_subdirectory(calculator)
 add_subdirectory(chromebookmarks)
