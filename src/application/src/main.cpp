@@ -181,21 +181,10 @@ int main(int argc, char *argv[]) {
 
 
         /*
-         * INITIALIZE APPLICATION COMPONENTS
-         */
-
-        QSettings settings(qApp->applicationName());
-        ExtensionManager::instance = new Core::ExtensionManager;
-        mainWindow       = new MainWindow;
-        hotkeyManager    = new HotkeyManager;
-        queryManager     = new QueryManager(ExtensionManager::instance);
-        trayIcon         = new TrayIcon;
-        settingsWidget   = new SettingsWidget(mainWindow, hotkeyManager, ExtensionManager::instance, trayIcon);
-
-
-        /*
          * Build Tray Icon
          */
+
+        trayIcon         = new TrayIcon;
 
         QAction* showAction     = new QAction("Show", trayIconMenu);
         QAction* settingsAction = new QAction("Settings", trayIconMenu);
@@ -215,53 +204,12 @@ int main(int argc, char *argv[]) {
 
 
         /*
-         * SIGNALING
-         */
-
-        QObject::connect(hotkeyManager, &HotkeyManager::hotKeyPressed,
-                         mainWindow, &MainWindow::toggleVisibility);
-
-        QObject::connect(queryManager, &QueryManager::resultsReady,
-                         mainWindow, &MainWindow::setModel);
-
-        QObject::connect(showAction, &QAction::triggered,
-                         mainWindow, &MainWindow::show);
-
-        QObject::connect(settingsAction, &QAction::triggered,
-                         settingsWidget, &SettingsWidget::show);
-
-        QObject::connect(settingsAction, &QAction::triggered,
-                         settingsWidget, &SettingsWidget::raise);
-
-        QObject::connect(quitAction, &QAction::triggered,
-                         app, &QApplication::quit);
-
-        QObject::connect(trayIcon, &TrayIcon::activated, [](QSystemTrayIcon::ActivationReason reason){
-            if( reason == QSystemTrayIcon::ActivationReason::Trigger)
-                mainWindow->toggleVisibility();
-        });
-
-
-        QObject::connect(mainWindow, &MainWindow::settingsWidgetRequested,
-                         std::bind(&SettingsWidget::setVisible, settingsWidget, true));
-
-        QObject::connect(mainWindow, &MainWindow::settingsWidgetRequested,
-                         settingsWidget, &SettingsWidget::raise);
-
-        QObject::connect(mainWindow, &MainWindow::widgetShown,
-                         queryManager, &QueryManager::setupSession);
-
-        QObject::connect(mainWindow, &MainWindow::widgetHidden,
-                         queryManager, &QueryManager::teardownSession);
-
-        QObject::connect(mainWindow, &MainWindow::inputChanged,
-                         queryManager, &QueryManager::startQuery);
-
-
-        /*
          *  Hotkey
          */
 
+        hotkeyManager    = new HotkeyManager;
+
+        QSettings settings(qApp->applicationName());
         QString hotkey;
         if ( parser.isSet("hotkey") )
             hotkey = parser.value("hotkey");
@@ -314,8 +262,70 @@ int main(int argc, char *argv[]) {
             file.close();
         }
 
-        // Finally load the extensions
+
+        /*
+         * LOAD THE EXTENSIONS
+         */
+
+        ExtensionManager::instance = new Core::ExtensionManager;
+
+        mainWindow       = new MainWindow;
+
+        queryManager     = new QueryManager(ExtensionManager::instance);
+
         Core::ExtensionManager::instance->reloadExtensions();
+
+
+        /*
+         * Construct the settings widget. (Everything has to be instanciated.)
+         */
+
+
+        settingsWidget   = new SettingsWidget(mainWindow, hotkeyManager, ExtensionManager::instance, trayIcon);
+
+
+        /*
+         * SIGNALING
+         */
+
+        QObject::connect(hotkeyManager, &HotkeyManager::hotKeyPressed,
+                         mainWindow, &MainWindow::toggleVisibility);
+
+        QObject::connect(queryManager, &QueryManager::resultsReady,
+                         mainWindow, &MainWindow::setModel);
+
+        QObject::connect(showAction, &QAction::triggered,
+                         mainWindow, &MainWindow::show);
+
+        QObject::connect(settingsAction, &QAction::triggered,
+                         settingsWidget, &SettingsWidget::show);
+
+        QObject::connect(settingsAction, &QAction::triggered,
+                         settingsWidget, &SettingsWidget::raise);
+
+        QObject::connect(quitAction, &QAction::triggered,
+                         app, &QApplication::quit);
+
+        QObject::connect(trayIcon, &TrayIcon::activated, [](QSystemTrayIcon::ActivationReason reason){
+            if( reason == QSystemTrayIcon::ActivationReason::Trigger)
+                mainWindow->toggleVisibility();
+        });
+
+
+        QObject::connect(mainWindow, &MainWindow::settingsWidgetRequested,
+                         std::bind(&SettingsWidget::setVisible, settingsWidget, true));
+
+        QObject::connect(mainWindow, &MainWindow::settingsWidgetRequested,
+                         settingsWidget, &SettingsWidget::raise);
+
+        QObject::connect(mainWindow, &MainWindow::widgetShown,
+                         queryManager, &QueryManager::setupSession);
+
+        QObject::connect(mainWindow, &MainWindow::widgetHidden,
+                         queryManager, &QueryManager::teardownSession);
+
+        QObject::connect(mainWindow, &MainWindow::inputChanged,
+                         queryManager, &QueryManager::startQuery);
 
     }
 
