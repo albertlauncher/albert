@@ -292,7 +292,7 @@ void Files::Extension::restorePaths() {
 
 /** ***************************************************************************/
 void Files::Extension::updateIndex() {
-    qDebug() << "[Files] Index update triggered";
+    qDebug() << QString("[%1] Index update triggered").arg(Core::Extension::id).toLocal8Bit().data();
 
     // If thread is running, stop it and start this functoin after termination
     if (!indexer_.isNull()) {
