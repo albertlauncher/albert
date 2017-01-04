@@ -27,8 +27,6 @@
 #include "externalextensionmodel.h"
 #include "extensionmanager.h"
 
-#define EXTERNAL_EXTENSION_IID "org.albert.extension.external/v1.0"
-
 /** ***************************************************************************/
 ExternalExtensions::Extension::Extension()
     : Core::Extension("org.albert.extension.externalextensions") {
@@ -38,6 +36,9 @@ ExternalExtensions::Extension::Extension()
                 QStandardPaths::LocateDirectory);
 
     fileSystemWatcher_.addPaths(pluginDirs_);
+
+    connect(&fileSystemWatcher_, &QFileSystemWatcher::fileChanged,
+            this, &Extension::reloadExtensions);
 
     connect(&fileSystemWatcher_, &QFileSystemWatcher::directoryChanged,
             this, &Extension::reloadExtensions);
@@ -70,6 +71,10 @@ QWidget *ExternalExtensions::Extension::widget(QWidget *parent) {
 
         connect(widget_->ui.tableView, &QTableView::activated,
                 model, &ExternalExtensionsModel::onActivated);
+
+        // Reset the widget when
+        connect(this, &Extension::extensionsUpdated,
+                widget_->ui.tableView, &QTableView::reset);
     }
     return widget_;
 }
@@ -86,84 +91,36 @@ void ExternalExtensions::Extension::reloadExtensions() {
         it = std::reverse_iterator<decltype(externalExtensions_)::iterator>(externalExtensions_.erase(std::next(it).base()));
     }
 
+    // Remove all watches
+    if ( !fileSystemWatcher_.files().isEmpty() )
+        fileSystemWatcher_.removePaths(fileSystemWatcher_.files());
+
     // Iterate over all files in the plugindirs
     for (const QString &pluginDir : pluginDirs_) {
         QDirIterator dirIterator(pluginDir, QDir::Files|QDir::Executable, QDirIterator::NoIteratorFlags);
         while (dirIterator.hasNext()) {
 
             QString path = dirIterator.next();
+            QString id = dirIterator.fileInfo().fileName();
 
-            // Get Metadata
-            QProcess extProc;
-            extProc.start(path, {"METADATA"});
-            extProc.waitForFinished(-1);
-
-            // Read JSON data
-            QJsonDocument doc = QJsonDocument::fromJson(extProc.readAllStandardOutput());
-            if (doc.isNull() || !doc.isObject()) {
-                qWarning() << QString("Reply to 'METADATA' is not a valid JSON object.").arg(path);
+            // Skip if this id already exists
+            if ( std::find_if(externalExtensions_.begin(),
+                              externalExtensions_.end(),
+                              [&id](const std::unique_ptr<ExternalExtension> & rhs){
+                              return id == rhs->id(); }) != externalExtensions_.end())
                 continue;
-            }
-
-            QJsonObject metadata = doc.object();
-
-            // Check for a sane interface ID (IID)
-            if (metadata["iid"].isUndefined()) {
-                qWarning() << QString("%1: Metadata does not contain an interface id.").arg(path);
-                continue;
-            }
-
-            QString iid = metadata["iid"].toString();
-            if (iid != EXTERNAL_EXTENSION_IID) {
-                qWarning() << QString("%1: Interface id '%2' does not match '%3'.").arg(path, EXTERNAL_EXTENSION_IID);
-                continue;
-            }
-
-            // Check for mandatory id
-            if (metadata["id"].isUndefined()){
-                qWarning() << QString("%1: Metadata does not contain an extension id.").arg(path);
-                continue;
-            }
-
-            QString id = metadata["id"].toString();
-            if (id.isEmpty()){
-                qWarning() << QString("%1: Extension id is empty.").arg(path);
-                continue;
-            }
-
-            // Get opional data
-            QJsonValue val;
-
-            val = metadata["trigger"];
-            QString trigger = val.isString() ? val.toString() : QString();
-
-            val = metadata["name"];
-            QString name = val.isString() ? val.toString() : id;
-
-            val = metadata["version"];
-            QString version = val.isString() ? val.toString() : "N/A";
-
-            val = metadata["author"];
-            QString author = val.isString() ? val.toString() : "N/A";
-
-            QStringList dependencies;
-            for (const QJsonValue & value : metadata["dependencies"].toArray())
-                 dependencies.append(value.toString());
 
             try {
-                externalExtensions_.emplace_back(new ExternalExtension(path,
-                                                                       id,
-                                                                       name,
-                                                                       author,
-                                                                       version,
-                                                                       trigger,
-                                                                       dependencies));
+                externalExtensions_.emplace_back(new ExternalExtension(path, id));
+                fileSystemWatcher_.addPath(path);
             } catch ( QString s ) {
-                qDebug() << path << "Failed to initialize external extension: " << s;
+                qCritical("Failed to initialize external extension: %s", s.toLocal8Bit().data());
             }
         }
     }
 
     for ( std::unique_ptr<ExternalExtension> &obj : externalExtensions_ )
         Core::ExtensionManager::instance->registerObject(obj.get());
+
+    emit extensionsUpdated();
 }

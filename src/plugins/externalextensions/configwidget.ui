@@ -35,6 +35,9 @@
      <property name="selectionBehavior">
       <enum>QAbstractItemView::SelectRows</enum>
      </property>
+     <property name="textElideMode">
+      <enum>Qt::ElideLeft</enum>
+     </property>
      <property name="showGrid">
       <bool>false</bool>
      </property>
