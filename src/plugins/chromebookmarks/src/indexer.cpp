@@ -146,8 +146,8 @@ void ChromeBookmarks::Extension::Indexer::run() {
      * Chromium seems to mv the file (inode change), removing is not necessary.
      */
     if(!extension_->watcher_.addPath(extension_->bookmarksFile_)) // No clue why this should happen
-        qCritical() << extension_->bookmarksFile_
-                    <<  "could not be watched. Changes in this path will not be noticed.";
+        qWarning() << extension_->bookmarksFile_
+                   <<  "could not be watched. Changes in this path will not be noticed.";
 
     // Notification
     qDebug("[%s] Indexing done (%d items)", extension_->Core::Extension::id.toUtf8().constData(), static_cast<int>(extension_->index_.size()));

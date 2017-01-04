@@ -240,7 +240,7 @@ int main(int argc, char *argv[]) {
         // Print e message if the app was not terminated graciously
         QString filePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running";
         if (QFile::exists(filePath)){
-            qCritical() << "Application has not been terminated graciously.";
+            qWarning() << "Application has not been terminated graciously.";
             if (settings.value("warnAboutNonGraciousQuit") != false){
                 QMessageBox msgBox(QMessageBox::Critical, "Error",
                                    "Albert has not been quit graciously! This "
@@ -258,14 +258,9 @@ int main(int argc, char *argv[]) {
             // Create the running indicator file
             QFile file(filePath);
             if (!file.open(QIODevice::WriteOnly))
-                qCritical() << "Could not create file:" << filePath;
+                qWarning() << "Could not create file:" << filePath;
             file.close();
         }
-
-
-        /*
-         * LOAD THE EXTENSIONS
-         */
 
         ExtensionManager::instance = new Core::ExtensionManager;
 
@@ -274,12 +269,6 @@ int main(int argc, char *argv[]) {
         queryManager     = new QueryManager(ExtensionManager::instance);
 
         Core::ExtensionManager::instance->reloadExtensions();
-
-
-        /*
-         * Construct the settings widget. (Everything has to be instanciated.)
-         */
-
 
         settingsWidget   = new SettingsWidget(mainWindow, hotkeyManager, ExtensionManager::instance, trayIcon);
 

@@ -114,7 +114,7 @@ void ExternalExtensions::Extension::reloadExtensions() {
                 externalExtensions_.emplace_back(new ExternalExtension(path, id));
                 fileSystemWatcher_.addPath(path);
             } catch ( QString s ) {
-                qCritical("Failed to initialize external extension: %s", s.toLocal8Bit().data());
+                qWarning("Failed to initialize external extension: %s", s.toLocal8Bit().data());
             }
         }
     }
