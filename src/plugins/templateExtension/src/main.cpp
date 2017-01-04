@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDebug>
+#include <stdexcept>
 #include "main.h"
 #include "configwidget.h"
 #include "item.h"
@@ -24,7 +25,14 @@
 Template::Extension::Extension()
     : Core::Extension("org.albert.extension.template"),
       Core::QueryHandler(Core::Extension::id) {
-    // Do sth.
+
+    // You can throw in the constructor if something fatal happened
+    throw std::runtime_error( "Description of error." );
+    throw std::string( "Description of error." );
+    throw QString( "Description of error." );
+    throw "Description of error.";
+    throw; // Whatever prints "unknown error"
+
 }
 
 

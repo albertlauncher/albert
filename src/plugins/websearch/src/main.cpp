@@ -73,7 +73,7 @@ Websearch::Extension::~Extension() {
             se.serialize(out);
         dataFile.close();
     } else
-        qCritical() << "Could not write to " << dataFile.fileName();
+        qWarning() << "Could not write to " << dataFile.fileName();
 }
 
 

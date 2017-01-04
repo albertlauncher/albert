@@ -43,7 +43,6 @@ public:
     QString lastError() const;
     QObject *instance();
     QString path() const;
-    QString type() const;
     // Metadata
     QString id() const;
     QString name() const;
@@ -55,6 +54,7 @@ private:
 
     QPluginLoader loader_;
     State state_;
+    QString lastError_;
 
 };
 

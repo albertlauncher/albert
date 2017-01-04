@@ -141,7 +141,7 @@ void Core::ExtensionManager::loadExtension(const unique_ptr<ExtensionSpec> &spec
 
 /** ***************************************************************************/
 void Core::ExtensionManager::unloadExtension(const unique_ptr<ExtensionSpec> &spec) {
-    if (spec->state() == ExtensionSpec::State::Loaded) {
+    if (spec->state() != ExtensionSpec::State::NotLoaded) {
         d->extensions_.erase(spec->instance());
         spec->unload();
     }
