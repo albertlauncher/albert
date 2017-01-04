@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>720</width>
-    <height>573</height>
+    <width>920</width>
+    <height>533</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -40,6 +40,9 @@
    </property>
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabs">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
        <string>General</string>
@@ -55,6 +58,12 @@
            <layout class="QFormLayout" name="formLayout_4">
             <item row="0" column="1">
              <widget class="GrabKeyButton" name="grabKeyButton_hotkey">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="minimumSize">
                <size>
                 <width>120</width>
@@ -237,6 +246,23 @@ pixels and you can use it to drag the window.</string>
           </widget>
          </item>
          <item>
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
           <widget class="QGroupBox" name="groupBox_3">
            <property name="title">
             <string>Behaviour</string>
@@ -372,6 +398,12 @@ that use a textual user interface.</string>
             </item>
             <item row="6" column="1">
              <widget class="QPushButton" name="pushButton_clearCache">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="text">
                <string>Clear history/usage</string>
               </property>
@@ -381,7 +413,7 @@ that use a textual user interface.</string>
           </widget>
          </item>
          <item>
-          <spacer name="verticalSpacer_2">
+          <spacer name="verticalSpacer">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
            </property>
@@ -392,125 +424,6 @@ that use a textual user interface.</string>
             </size>
            </property>
           </spacer>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
-         <item>
-          <widget class="QScrollArea" name="scrollArea">
-           <property name="styleSheet">
-            <string notr="true">background-color:transparent;</string>
-           </property>
-           <property name="frameShape">
-            <enum>QFrame::NoFrame</enum>
-           </property>
-           <property name="horizontalScrollBarPolicy">
-            <enum>Qt::ScrollBarAlwaysOff</enum>
-           </property>
-           <widget class="QWidget" name="scrollAreaWidgetContents">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>344</width>
-              <height>429</height>
-             </rect>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_8">
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="news_label">
-               <property name="text">
-                <string>&lt;html&gt;
-&lt;head/&gt;
-&lt;body&gt;
-&lt;h1&gt;Welcome to Albert&lt;/h1&gt;
-
-&lt;h3&gt;New in v0.8.11&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;Action modifiers&lt;/li&gt;
-&lt;li&gt;System tray icon&lt;/li&gt;
-&lt;li&gt;Multithreaded queries&lt;/li&gt;
-&lt;li&gt;Bugfixes&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3&gt;New in v0.8.10&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;VirtualBox extension&lt;/li&gt;
-&lt;li&gt;Basic command line interface&lt;/li&gt;
-&lt;li&gt;Bugfixes&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3&gt;New in v0.8.9&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;Add &quot;display shadow&quot; option&lt;/li&gt;
-&lt;li&gt;Add &quot;hide on close&quot; option&lt;/li&gt;
-&lt;li&gt;Normal termination on Ctrl+C&lt;/li&gt;
-&lt;li&gt;Bugfixes&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3&gt;New in v0.8.8&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;Allow only one instance&lt;/li&gt;
-&lt;li&gt;Numix theme&lt;/li&gt;
-&lt;li&gt;Bugfixes&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3&gt;New in v0.8.7&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;Terminal extension&lt;/li&gt;
-&lt;li&gt;Bugfixes&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3&gt;New in v0.8.6&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;Disable &quot;hide on focus&quot; while settings are open&lt;/li&gt;
-&lt;li&gt;Polish settings widget&lt;/li&gt;
-&lt;li&gt;Bugfixes&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3&gt;New in v0.8.5&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;Show alternative actions in seperate widget&lt;/li&gt;
-&lt;li&gt;Context menu for settings button&lt;/li&gt;
-&lt;li&gt;'Always on top' option&lt;/li&gt;
-&lt;li&gt;'Hide on focus loss' option&lt;/li&gt;
-&lt;li&gt;'Display icons' option&lt;/li&gt;
-&lt;li&gt;'Display scrollbar' option&lt;/li&gt;
-&lt;li&gt;Custom icon lookup&lt;/li&gt;
-&lt;li&gt;New standard themes&lt;/li&gt;
-&lt;li&gt;Window is now drag movable&lt;/li&gt;
-&lt;li&gt;Dozens of bug fixes and improvements&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The organisation name of the app is now 'albert' (was 'manuelschneid3r'). I.e. the settings location will change to ~/.config/albert/albert.conf.&lt;/p&gt;
-
-&lt;body&gt;
-&lt;/html&gt;
-</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-               </property>
-               <property name="wordWrap">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </widget>
          </item>
         </layout>
        </item>
@@ -620,7 +533,7 @@ that use a textual user interface.</string>
        <item>
         <widget class="QLabel" name="about_icon">
          <property name="pixmap">
-          <pixmap resource="../resources.qrc">:/app_icon</pixmap>
+          <pixmap resource="../../resources.qrc">:/app_icon</pixmap>
          </property>
          <property name="scaledContents">
           <bool>false</bool>
@@ -680,7 +593,7 @@ p, li { white-space: pre-wrap; }
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../resources.qrc"/>
+  <include location="../../resources.qrc"/>
  </resources>
  <connections/>
 </ui>
