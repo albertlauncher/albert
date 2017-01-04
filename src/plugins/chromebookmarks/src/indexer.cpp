@@ -31,6 +31,7 @@
 #include "standardaction.h"
 #include "standardindexitem.h"
 #include "indexable.h"
+#include "xdgiconlookup.h"
 using std::shared_ptr;
 using std::vector;
 using Core::Action;
@@ -67,7 +68,14 @@ void ChromeBookmarks::Extension::Indexer::run() {
             shared_ptr<StandardIndexItem> ssii  = std::make_shared<StandardIndexItem>(json["id"].toString());
             ssii->setText(name);
             ssii->setSubtext(urlstr);
-            ssii->setIconPath(":favicon");
+            QString icon = XdgIconLookup::instance()->themeIconPath("www");
+            if (icon.isEmpty())
+                icon = XdgIconLookup::instance()->themeIconPath("web-browser");
+            if (icon.isEmpty())
+                icon = XdgIconLookup::instance()->themeIconPath("emblem-web");
+            if (icon.isEmpty())
+                icon = ":favicon";
+            ssii->setIconPath(icon);
 
             vector<Indexable::WeightedKeyword> weightedKeywords;
             QUrl url(urlstr);
