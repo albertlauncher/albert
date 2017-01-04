@@ -40,7 +40,8 @@
  *
  * To save state between the executions the extension can return a json object
  * called "variables". The properties of the object "variables" will be set as
- * environment variables in the next execution.
+ * environment variables in the next execution. Note that this properties have
+ * to be strings otherwise they will not be set in the environment.
  *
  * The applications ensures that the extension is not executed multiple times
  * concurrently.
