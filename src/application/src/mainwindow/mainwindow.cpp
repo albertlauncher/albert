@@ -477,9 +477,8 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
 
 /** ***************************************************************************/
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
-    // Move the wisget with the mouse
+    // Move the widget with the mouse
     move(event->globalPos() - clickOffset_);
-    QSettings(qApp->applicationName()).setValue(CFG_WND_POS, pos());
     QWidget::mouseMoveEvent(event);
 }
 
@@ -489,6 +488,15 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
 void MainWindow::mousePressEvent(QMouseEvent *event) {
     // Save the offset on press for movement calculations
     clickOffset_ = event->pos();
+    QWidget::mousePressEvent(event);
+}
+
+
+
+/** ***************************************************************************/
+void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
+    // Save the window position ()
+    QSettings(qApp->applicationName()).setValue(CFG_WND_POS, pos());
     QWidget::mousePressEvent(event);
 }
 
