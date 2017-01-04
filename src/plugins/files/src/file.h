@@ -74,11 +74,7 @@ private:
 
     QString path_;
     QMimeType mimetype_;
-    struct CacheEntry {
-        QString path;
-        system_clock::time_point ctime;
-    };
-    static map<QString, CacheEntry> iconCache_;
+    static map<QString, QString> iconCache_;
 };
 
 }
