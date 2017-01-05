@@ -41,7 +41,7 @@ VirtualBox::Extension::Extension()
 
     QString vboxConfigPath = QStandardPaths::locate(QStandardPaths::ConfigLocation, "VirtualBox/VirtualBox.xml");
     if (vboxConfigPath.isEmpty())
-        return;
+        throw "VirtualBox was not detected!";
 
     rescanVBoxConfig(vboxConfigPath);
     vboxWatcher_.addPath(vboxConfigPath);
