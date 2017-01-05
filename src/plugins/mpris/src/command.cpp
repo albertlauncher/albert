@@ -22,15 +22,7 @@
 #include "item.h"
 
 /** ***************************************************************************/
-MPRIS::Command::Command(QString &label, QString &title, QString &method, QString &iconpath)
-    : label_(label), title_(title), method_(method), iconpath_(iconpath), closeOnEnter_(false) {
-//    fireCallback([](){});
-}
-
-
-
-/** ***************************************************************************/
-MPRIS::Command::Command(const char *label, const char *title, const char *method, QString iconpath)
+MPRIS::Command::Command(const QString &label, const QString &title, const QString &method, QString iconpath)
     : label_(label), title_(title), method_(method), iconpath_(iconpath), closeOnEnter_(false) {
 //    fireCallback([](){});
 }
@@ -45,27 +37,13 @@ QString& MPRIS::Command::getIconPath() {
 
 
 /** ***************************************************************************/
-MPRIS::Command &MPRIS::Command::applicableWhen(const char* path, const char *property, QVariant expectedValue, bool positivity) {
+MPRIS::Command &MPRIS::Command::applicableWhen(const char* path, const char *property, const QVariant expectedValue, bool positivity) {
     path_ = path;
     property_ = property;
     expectedValue_ = expectedValue;
     positivity_ = positivity;
     applicableCheck_ = true;
     return *this;
-}
-
-
-
-/** ***************************************************************************/
-MPRIS::Command &MPRIS::Command::applicableWhen(const char* path, const char *property, const char* expectedValue, bool positivity) {
-    return applicableWhen(path, property, QVariant(expectedValue), positivity);
-}
-
-
-
-/** ***************************************************************************/
-MPRIS::Command &MPRIS::Command::applicableWhen(const char* path, const char *property, bool expectedValue, bool positivity) {
-    return applicableWhen(path, property, QVariant(expectedValue), positivity);
 }
 
 
@@ -94,7 +72,7 @@ bool MPRIS::Command::closesWhenHit() {
 
 
 /** ***************************************************************************/
-SharedItem MPRIS::Command::produceAlbertItem(Player &player) {
+SharedItem MPRIS::Command::produceAlbertItem(Player &player) const {
     QDBusMessage msg = QDBusMessage::createMethodCall(player.getBusId(), "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", method_);
     //std::shared_ptr<StandardItem> ptr = std::make_shared<MPRIS::Item>(player, title_, iconpath_, msg, closeOnEnter_);
     SharedItem ptr(new MPRIS::Item(player, title_, iconpath_, msg, closeOnEnter_));
@@ -119,7 +97,7 @@ SharedItem MPRIS::Command::produceAlbertItem(Player &player) {
 
 
 /** ***************************************************************************/
-bool MPRIS::Command::isApplicable(Player &p) {
+bool MPRIS::Command::isApplicable(Player &p) const {
     // Check the applicable-option if given
     if (!applicableCheck_)
         return true;

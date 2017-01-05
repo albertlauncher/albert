@@ -36,8 +36,7 @@ public:
      * @param method    The DBus method to invoke when this command is performed.
      * @param iconpath  The path to the icon which the StandardItem will get.
      */
-    Command(QString& label, QString& title, QString& method, QString& iconpath);
-    Command(const char* label, const char* title, const char* method, QString iconpath);
+    Command(const QString& label, const QString& title, const QString& method, QString iconpath);
 
     QString& getLabel();
     QString& getTitle();
@@ -52,9 +51,7 @@ public:
      * @param positivity        The result of the equality-check (queriedValue == expectedValue). Here you can negate the result.
      * @return                  Returns itself, but now configured for applicability-check
      */
-    Command& applicableWhen(const char *path, const char* property, QVariant expectedValue, bool positivity);
-    Command& applicableWhen(const char *path, const char* property, const char* expectedValue, bool positivity);
-    Command& applicableWhen(const char *path, const char* property, bool expectedValue, bool positivity);
+    Command& applicableWhen(const char *path, const char* property, const QVariant expectedValue, bool positivity);
 
     /**
      * @brief closeWhenHit  Configure this command to close the albert widget when activated.
@@ -74,13 +71,13 @@ public:
      * @brief produceStandardItem   Produces an instance of AlbertItem for this command to invoke on a given Player.
      * @return                      Returns a shared_ptr on this AlbertItem.
      */
-    SharedItem produceAlbertItem(Player &);
+    SharedItem produceAlbertItem(Player &) const;
 
     /**
      * @brief isApplicable  If configured, checks if the given property meets the expected criteria.
      * @return              True if not configured or match, false if the property is different than expected.
      */
-    bool isApplicable(Player&);
+    bool isApplicable(Player&) const;
 
 private:
     QString label_, title_, method_, iconpath_;

@@ -21,7 +21,7 @@ using Core::StandardAction;
 
 
 /** ***************************************************************************/
-MPRIS::Item::Item(Player &p, QString &subtext, QString &iconPath, QDBusMessage &msg, bool hideAfter)
+MPRIS::Item::Item(Player &p, const QString &subtext, const QString &iconPath, const QDBusMessage &msg, bool hideAfter)
     : player_(p), subtext_(subtext), iconPath_(iconPath), message_(msg), hideAfter_(hideAfter) {
     text_ = p.getName();
     actions_.push_back(shared_ptr<Action>(new StandardAction(subtext, [this](){
