@@ -185,8 +185,8 @@ void VirtualBox::Extension::handleQuery(Core::Query * query) {
     }
     */
     for (VM* vm : vms_) {
-        if (vm->startsWith(query.searchTerm()))
-            query.addMatch(std::shared_ptr<AbstractItem>(vm->produceItem()));
+        if (vm->startsWith(query->searchTerm()))
+            query->addMatch(std::shared_ptr<Item>(vm->produceItem()));
     }
 //>>>>>>> Improved VirtualBox extension:src/plugins/virtualbox/extension.cpp
 }

@@ -16,13 +16,17 @@
 
 #pragma once
 
-#include "abstractitem.h"
+#include "item.h"
+using std::vector;
+using std::shared_ptr;
+using Core::Action;
+using Core::Item;
 
 namespace VirtualBox {
 
-typedef vector<shared_ptr<AbstractAction>> ActionSPtrVec;
+typedef vector<shared_ptr<Action>> ActionSPtrVec;
 
-class VMItem : public AbstractItem
+class VMItem : public Item
 {
 public:
     VMItem(QString &name, QString &uuid, int &mainAction, ActionSPtrVec actions, QString &state);

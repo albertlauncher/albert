@@ -22,8 +22,8 @@
 #include <QDomDocument>
 #include <QDomElement>
 #include <QFile>
-#include "standardobjects.h"
-
+#include "standardaction.h"
+using Core::StandardAction;
 
 
 /** ***************************************************************************/
@@ -99,23 +99,23 @@ VirtualBox::VMItem *VirtualBox::VM::produceItem() {
     int mainAction = 0;
     if (state_ == "starting" || state_ == "restoring" || state_ == "saving" || state_ == "stopping") {
         mainAction = VMItem::VM_STATE_CHANGING;
-        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Controls are disabled", [](ExecutionFlags* fg){ fg->hideWidget = false; fg->clearInput = false; }) ));
+        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Controls are disabled", [](){}) ));
     } else if (state_ == "poweroff" || state_ == "aborted") {
         mainAction = VMItem::VM_START;
-        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Start", [startCmd](ExecutionFlags*){ QProcess::startDetached(startCmd); }) ));
+        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Start", [startCmd](){ QProcess::startDetached(startCmd); }) ));
     } else if (state_ == "saved") {
         mainAction = VMItem::VM_START;
-        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Start", [startCmd](ExecutionFlags*){ QProcess::startDetached(startCmd); }) ));
+        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Start", [startCmd](){ QProcess::startDetached(startCmd); }) ));
     } else if (state_ == "running") {
         mainAction = VMItem::VM_PAUSE;
-        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Pause", [pauseCmd](ExecutionFlags*){ QProcess::startDetached(pauseCmd); }) ));
-        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Save State", [saveCmd](ExecutionFlags*){ QProcess::startDetached(saveCmd); }) ));
-        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Stop", [stopCmd](ExecutionFlags*){ QProcess::startDetached(stopCmd); }) ));
+        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Pause", [pauseCmd](){ QProcess::startDetached(pauseCmd); }) ));
+        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Save State", [saveCmd](){ QProcess::startDetached(saveCmd); }) ));
+        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Stop", [stopCmd](){ QProcess::startDetached(stopCmd); }) ));
     } else if (state_ == "paused") {
         mainAction = VMItem::VM_RESUME;
-        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Resume", [resumeCmd](ExecutionFlags*){ QProcess::startDetached(resumeCmd); }) ));
-        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Save State", [saveCmd](ExecutionFlags*){ QProcess::startDetached(saveCmd); }) ));
-        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Reset", [resetCmd](ExecutionFlags*){ QProcess::startDetached(resetCmd); }) ));
+        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Resume", [resumeCmd](){ QProcess::startDetached(resumeCmd); }) ));
+        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Save State", [saveCmd](){ QProcess::startDetached(saveCmd); }) ));
+        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Reset", [resetCmd](){ QProcess::startDetached(resetCmd); }) ));
     }
 
     return new VMItem(name_, uuid_, mainAction, actions, state_);
