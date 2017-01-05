@@ -29,7 +29,7 @@ typedef vector<shared_ptr<Action>> ActionSPtrVec;
 class VMItem : public Item
 {
 public:
-    VMItem(QString &name, QString &uuid, int &mainAction, ActionSPtrVec actions, QString &state);
+    VMItem(const QString &name, const QString &uuid, int &mainAction, const ActionSPtrVec actions, const QString &state);
 
 
     /*

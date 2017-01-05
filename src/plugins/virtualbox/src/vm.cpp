@@ -27,7 +27,7 @@ using Core::StandardAction;
 
 
 /** ***************************************************************************/
-VirtualBox::VM::VM(QString vboxFileName) {
+VirtualBox::VM::VM(const QString vboxFileName) {
 
     QFile vboxFile(vboxFileName);
     if (!vboxFile.open(QFile::ReadOnly)) {
@@ -79,7 +79,7 @@ VirtualBox::VM::VM(QString vboxFileName) {
 
  */
 /** ***************************************************************************/
-VirtualBox::VMItem *VirtualBox::VM::produceItem() {
+VirtualBox::VMItem *VirtualBox::VM::produceItem() const {
     if (state_.isEmpty())
         return nullptr; // This should not be empty... We just ignore this VM
 
@@ -124,14 +124,14 @@ VirtualBox::VMItem *VirtualBox::VM::produceItem() {
 
 
 /** ***************************************************************************/
-bool VirtualBox::VM::startsWith(QString other) {
+bool VirtualBox::VM::startsWith(QString other) const {
     return name_.startsWith(other, Qt::CaseInsensitive);
 }
 
 
 
 /** ***************************************************************************/
-void VirtualBox::VM::probeState() {
+void VirtualBox::VM::probeState() const {
     QProcess *process = new QProcess;
     process->setReadChannel(QProcess::StandardOutput);
     process->start("VBoxManage",  {"showvminfo", uuid_, "--machinereadable"});

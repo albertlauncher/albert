@@ -25,7 +25,7 @@ const int VirtualBox::VMItem::VM_PAUSE = 2;
 const int VirtualBox::VMItem::VM_RESUME = 3;
 const int VirtualBox::VMItem::VM_STATE_CHANGING = -1;
 
-VirtualBox::VMItem::VMItem(QString &name, QString &uuid, int &mainAction, ActionSPtrVec actions, QString &state) : name_(name), uuid_(uuid), actions_(actions), mainAction_(mainAction) {
+VirtualBox::VMItem::VMItem(const QString &name, const QString &uuid, int &mainAction, const ActionSPtrVec actions, const QString &state) : name_(name), uuid_(uuid), actions_(actions), mainAction_(mainAction) {
     idstring_ = QString("extension.virtualbox.item:%1.%2").arg(uuid).arg(state);
 }
 

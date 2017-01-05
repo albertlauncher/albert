@@ -24,16 +24,16 @@ namespace VirtualBox {
 class VM
 {
 public:
-    VM(QString vboxFileName);
-    VMItem* produceItem();
-    bool startsWith(QString other);
-    const QString &uuid() { return uuid_; }
-    void probeState();
+    VM(const QString vboxFileName);
+    VMItem* produceItem() const;
+    bool startsWith(QString other) const;
+    const QString &uuid() const { return uuid_; }
+    void probeState() const;
 
 private:
     QString name_;
     QString uuid_;
-    QString state_;
+    mutable QString state_;
 };
 
 } // namespace VirtualBox
