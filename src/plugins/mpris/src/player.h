@@ -24,8 +24,8 @@ class Player
 {
 public:
     Player(QString& busid);
-    QString& getName() const { return name_; }
-    QString& getBusId() const { return busid_; }
+    const QString& getName() const { return name_; }
+    const QString& getBusId() const { return busid_; }
     bool canRaise() const { return canRaise_; }
 
 private:
