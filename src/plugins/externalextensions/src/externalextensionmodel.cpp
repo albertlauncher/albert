@@ -88,17 +88,17 @@ QVariant ExternalExtensions::ExternalExtensionsModel::data(const QModelIndex &in
     switch (role) {
     case Qt::DisplayRole: {
         switch (static_cast<Section>(index.column())) {
-        case Section::Name:  return externalExtensions_[index.row()]->name;
+        case Section::Name:  return externalExtensions_[index.row()]->name();
         case Section::Trigger:  return externalExtensions_[index.row()]->trigger();
-        case Section::Path:  return externalExtensions_[index.row()]->path;
+        case Section::Path:  return externalExtensions_[index.row()]->path();
         default: return QVariant();
         }
     }
     case Qt::EditRole: {
         switch (static_cast<Section>(index.column())) {
-        case Section::Name:  return externalExtensions_[index.row()]->name;
+        case Section::Name:  return externalExtensions_[index.row()]->name();
         case Section::Trigger:  return externalExtensions_[index.row()]->trigger();
-        case Section::Path:  return externalExtensions_[index.row()]->path;
+        case Section::Path:  return externalExtensions_[index.row()]->path();
         default: return QVariant();
         }
     }
@@ -123,5 +123,5 @@ Qt::ItemFlags ExternalExtensions::ExternalExtensionsModel::flags(const QModelInd
 
 /** ***************************************************************************/
 void ExternalExtensions::ExternalExtensionsModel::onActivated(const QModelIndex &index) {
-    QDesktopServices::openUrl(QUrl(externalExtensions_[index.row()]->path));
+    QDesktopServices::openUrl(QUrl(externalExtensions_[index.row()]->path()));
 }

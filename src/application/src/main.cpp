@@ -181,21 +181,10 @@ int main(int argc, char *argv[]) {
 
 
         /*
-         * INITIALIZE APPLICATION COMPONENTS
-         */
-
-        QSettings settings(qApp->applicationName());
-        ExtensionManager::instance = new Core::ExtensionManager;
-        mainWindow       = new MainWindow;
-        hotkeyManager    = new HotkeyManager;
-        queryManager     = new QueryManager(ExtensionManager::instance);
-        trayIcon         = new TrayIcon;
-        settingsWidget   = new SettingsWidget(mainWindow, hotkeyManager, ExtensionManager::instance, trayIcon);
-
-
-        /*
          * Build Tray Icon
          */
+
+        trayIcon         = new TrayIcon;
 
         QAction* showAction     = new QAction("Show", trayIconMenu);
         QAction* settingsAction = new QAction("Settings", trayIconMenu);
@@ -212,6 +201,76 @@ int main(int argc, char *argv[]) {
         trayIconMenu->addAction(quitAction);
 
         trayIcon->setContextMenu(trayIconMenu);
+
+
+        /*
+         *  Hotkey
+         */
+
+        hotkeyManager    = new HotkeyManager;
+
+        QSettings settings(qApp->applicationName());
+        QString hotkey;
+        if ( parser.isSet("hotkey") )
+            hotkey = parser.value("hotkey");
+        else if (settings.contains("hotkey"))
+            hotkey = settings.value("hotkey", QString()).toString();
+        if (!hotkey.isNull() && !hotkeyManager->registerHotkey(hotkey)) {
+            QMessageBox msgBox(QMessageBox::Critical, "Error",
+                               "Hotkey is not set or invalid. Do you want to open the settings?",
+                               QMessageBox::No|QMessageBox::Yes);
+            msgBox.exec();
+            if ( msgBox.result() == QMessageBox::Yes )
+                settingsWidget->show();
+        }
+
+
+        /*
+         *  MISC
+         */
+
+
+        // Define the (global extern) terminal command
+        terminalCommand = settings.value(CFG_TERM, DEF_TERM).toString();
+
+        // Quit gracefully on unix signals
+        for ( int sig : { SIGINT, SIGTERM, SIGHUP, SIGPIPE } )
+            signal(sig, shutdownHandler);
+
+        // Print e message if the app was not terminated graciously
+        QString filePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running";
+        if (QFile::exists(filePath)){
+            qWarning() << "Application has not been terminated graciously.";
+            if (settings.value("warnAboutNonGraciousQuit") != false){
+                QMessageBox msgBox(QMessageBox::Critical, "Error",
+                                   "Albert has not been quit graciously! This "
+                                   "means your settings and data have not been "
+                                   "saved. If you did not kill albert yourself, "
+                                   "albert most likely crashed. Please report this "
+                                   "on github. Do you want to ignore this warnings "
+                                   "in future?",
+                                   QMessageBox::Yes|QMessageBox::No);
+                msgBox.exec();
+                if ( msgBox.result() == QMessageBox::Yes )
+                    settings.setValue("warnAboutNonGraciousQuit", false);
+            }
+        } else {
+            // Create the running indicator file
+            QFile file(filePath);
+            if (!file.open(QIODevice::WriteOnly))
+                qWarning() << "Could not create file:" << filePath;
+            file.close();
+        }
+
+        ExtensionManager::instance = new Core::ExtensionManager;
+
+        mainWindow       = new MainWindow;
+
+        queryManager     = new QueryManager(ExtensionManager::instance);
+
+        Core::ExtensionManager::instance->reloadExtensions();
+
+        settingsWidget   = new SettingsWidget(mainWindow, hotkeyManager, ExtensionManager::instance, trayIcon);
 
 
         /*
@@ -256,66 +315,6 @@ int main(int argc, char *argv[]) {
 
         QObject::connect(mainWindow, &MainWindow::inputChanged,
                          queryManager, &QueryManager::startQuery);
-
-
-        /*
-         *  Hotkey
-         */
-
-        QString hotkey;
-        if ( parser.isSet("hotkey") )
-            hotkey = parser.value("hotkey");
-        else if (settings.contains("hotkey"))
-            hotkey = settings.value("hotkey", QString()).toString();
-        if (!hotkey.isNull() && !hotkeyManager->registerHotkey(hotkey)) {
-            QMessageBox msgBox(QMessageBox::Critical, "Error",
-                               "Hotkey is not set or invalid. Do you want to open the settings?",
-                               QMessageBox::No|QMessageBox::Yes);
-            msgBox.exec();
-            if ( msgBox.result() == QMessageBox::Yes )
-                settingsWidget->show();
-        }
-
-
-        /*
-         *  MISC
-         */
-
-
-        // Define the (global extern) terminal command
-        terminalCommand = settings.value(CFG_TERM, DEF_TERM).toString();
-
-        // Quit gracefully on unix signals
-        for ( int sig : { SIGINT, SIGTERM, SIGHUP, SIGPIPE } )
-            signal(sig, shutdownHandler);
-
-        // Print e message if the app was not terminated graciously
-        QString filePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running";
-        if (QFile::exists(filePath)){
-            qCritical() << "Application has not been terminated graciously.";
-            if (settings.value("warnAboutNonGraciousQuit") != false){
-                QMessageBox msgBox(QMessageBox::Critical, "Error",
-                                   "Albert has not been quit graciously! This "
-                                   "means your settings and data have not been "
-                                   "saved. If you did not kill albert yourself, "
-                                   "albert most likely crashed. Please report this "
-                                   "on github. Do you want to ignore this warnings "
-                                   "in future?",
-                                   QMessageBox::Yes|QMessageBox::No);
-                msgBox.exec();
-                if ( msgBox.result() == QMessageBox::Yes )
-                    settings.setValue("warnAboutNonGraciousQuit", false);
-            }
-        } else {
-            // Create the running indicator file
-            QFile file(filePath);
-            if (!file.open(QIODevice::WriteOnly))
-                qCritical() << "Could not create file:" << filePath;
-            file.close();
-        }
-
-        // Finally load the extensions
-        Core::ExtensionManager::instance->reloadExtensions();
 
     }
 

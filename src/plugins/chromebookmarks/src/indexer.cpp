@@ -31,6 +31,7 @@
 #include "standardaction.h"
 #include "standardindexitem.h"
 #include "indexable.h"
+#include "xdgiconlookup.h"
 using std::shared_ptr;
 using std::vector;
 using Core::Action;
@@ -67,7 +68,14 @@ void ChromeBookmarks::Extension::Indexer::run() {
             shared_ptr<StandardIndexItem> ssii  = std::make_shared<StandardIndexItem>(json["id"].toString());
             ssii->setText(name);
             ssii->setSubtext(urlstr);
-            ssii->setIconPath(":favicon");
+            QString icon = XdgIconLookup::instance()->themeIconPath("www");
+            if (icon.isEmpty())
+                icon = XdgIconLookup::instance()->themeIconPath("web-browser");
+            if (icon.isEmpty())
+                icon = XdgIconLookup::instance()->themeIconPath("emblem-web");
+            if (icon.isEmpty())
+                icon = ":favicon";
+            ssii->setIconPath(icon);
 
             vector<Indexable::WeightedKeyword> weightedKeywords;
             QUrl url(urlstr);
@@ -138,8 +146,8 @@ void ChromeBookmarks::Extension::Indexer::run() {
      * Chromium seems to mv the file (inode change), removing is not necessary.
      */
     if(!extension_->watcher_.addPath(extension_->bookmarksFile_)) // No clue why this should happen
-        qCritical() << extension_->bookmarksFile_
-                    <<  "could not be watched. Changes in this path will not be noticed.";
+        qWarning() << extension_->bookmarksFile_
+                   <<  "could not be watched. Changes in this path will not be noticed.";
 
     // Notification
     qDebug("[%s] Indexing done (%d items)", extension_->Core::Extension::id.toUtf8().constData(), static_cast<int>(extension_->index_.size()));

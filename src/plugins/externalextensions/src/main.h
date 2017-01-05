@@ -60,5 +60,9 @@ private:
     QFileSystemWatcher fileSystemWatcher_;
     QPointer<ConfigWidget> widget_;
 
+signals:
+
+    void extensionsUpdated();
+
 };
 }

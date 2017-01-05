@@ -21,6 +21,7 @@
 #include <QLabel>
 #include <QProcess>
 #include <QVBoxLayout>
+#include <QFileInfo>
 #include <vector>
 #include "query.h"
 #include "externalextension.h"
@@ -30,112 +31,348 @@
 using std::vector;
 using namespace Core;
 
+#define EXTERNAL_EXTENSION_IID "org.albert.extension.external/v2.0"
+
+namespace {
+
+bool runProcess (QString path,
+                 std::map<QString, QString> *variables,
+                 QByteArray *out,
+                 QString *errorString) {
+
+    // Run the process
+    QProcess process;
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    for ( auto & entry : *variables )
+        env.insert(entry.first, entry.second);
+    process.setProcessEnvironment(env);
+    process.setProgram(path);
+    process.start();
+    process.waitForFinished(-1);
+
+    if ( process.exitStatus() != QProcess::NormalExit ) {
+        *errorString = QString("Process crashed.");
+        return false;
+    }
+
+    if ( process.exitCode() != 0 ) {
+            *errorString = QString("Exit code is %1").arg(process.exitCode());
+        return false;
+    }
+
+    *out = process.readAllStandardOutput();
+
+    return true;
+}
+
+
+bool parseJsonObject (const QByteArray &json,
+                      QJsonObject *object,
+                      QString *errorString) {
+
+    // Parse stdout
+    QJsonParseError error;
+    QJsonDocument document = QJsonDocument::fromJson(json, &error);
+    if ( document.isNull() ) {
+        *errorString = QString("Invalid JSON at %1: %2").arg(error.offset).arg(error.errorString());
+        return false;
+    }
+
+    *object = document.object();
+    if ( object->isEmpty() ) {
+        *errorString = QString("Expected json object, but received an array.");
+        return false;
+    }
+
+    return true;
+}
+
+
+bool saveVariables (QJsonObject *object,
+                    std::map<QString, QString> *variables,
+                    QString *errorString) {
+
+    variables->clear();
+
+    if ( !object->contains("variables") )
+        return true;
+
+    if ( !object->operator[]("variables").isObject() ) {
+        *errorString = "'variables' is not a JSON object";
+        return false;
+    }
+
+    *object = object->operator[]("variables").toObject();
+    for (auto it = object->begin(); it != object->end(); ++it)
+        if ( it.value().isString() )
+            variables->emplace(it.key(), it.value().toString());
+
+    return true;
+}
+
+}
 
 /** ***************************************************************************/
-ExternalExtensions::ExternalExtension::ExternalExtension(const QString &path,
-                                     const QString &id,
-                                     const QString &name,
-                                     const QString &author,
-                                     const QString &version,
-                                     const QString &trigg,
-                                     const QStringList &dependencies)
-    : QueryHandler(id),
-      path(path),
-      name(name),
-      author(author),
-      version(version),
-      dependencies(dependencies),
-      trigger_(trigg) {
+ExternalExtensions::ExternalExtension::ExternalExtension(const QString &path, const QString &id)
+    : QueryHandler(id), path_(path) {
 
-    QProcess extProc;
-    extProc.start(path, {"INITIALIZE"});
-    extProc.waitForFinished(-1);
+    // Never run the extension concurrent
+    QMutexLocker lock (&processMutex_);
 
-    QString reply = extProc.readAllStandardOutput();
-    if (!reply.isEmpty())
-        throw QString("Initialization failed: %1").arg(reply);
 
+    /*
+     * Get the metadata
+     */
+
+    // Run the process
+    variables_["ALBERT_OP"] = "METADATA";
+    QString errorString;
+    QByteArray out;
+    if ( !runProcess(path_, &variables_, &out, &errorString) )
+        throw QString("Getting metadata failed: %1 (%2)").arg(errorString, path_);
+
+    // Parse stdout
+    QJsonObject object;
+    if ( !parseJsonObject(out, &object,  &errorString) )
+        throw QString("Getting metadata failed: %1 (%2)").arg(errorString, path_);
+
+    // Check for a sane interface ID (IID)
+    if (object["iid"].isUndefined())
+        throw QString("Getting metadata failed: Does not contain an interface id. (%1)").arg(path_);
+
+    QString iid = object["iid"].toString();
+    if (iid != EXTERNAL_EXTENSION_IID)
+        throw QString("Getting metadata failed: Interface id '%1' does not match '%2'. (%3)").arg(iid, EXTERNAL_EXTENSION_IID, path_);
+
+    // Get opional data
+    QJsonValue val;
+
+    val = object["trigger"];
+    trigger_ = val.isString() ? val.toString() : QString();
+
+    val = object["name"];
+    name_ = val.isString() ? val.toString() : id;
+
+    val = object["version"];
+    version_ = val.isString() ? val.toString() : "N/A";
+
+    val = object["author"];
+    author_ = val.isString() ? val.toString() : "N/A";
+
+    QStringList dependencies;
+    for (const QJsonValue & value : object["dependencies"].toArray())
+         dependencies.append(value.toString());
+
+
+    /*
+     * Initialize the extension
+     */
+
+    // Run the process
+    variables_["ALBERT_OP"] = "INITIALIZE";
+    if ( !runProcess(path, &variables_, &out,  &errorString) )
+        throw QString("Initialization failed: %1 (%2)").arg(errorString, path_);
+
+    if ( out.isEmpty() )
+        return;
+
+    // Parse stdout
+    if ( !parseJsonObject(out, &object,  &errorString) )
+        throw QString("Initialization failed: %1 (%2)").arg(errorString, path_);
+
+    // Finally save the variables, if any
+    if ( !saveVariables(&object, &variables_, &errorString) )
+        qWarning() << QString("Initialization: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
 }
 
 
 /** ***************************************************************************/
 ExternalExtensions::ExternalExtension::~ExternalExtension() {
-    QProcess extProc;
-    extProc.start(path, {"FINALIZE"});
-    extProc.waitForFinished(-1);
+
+    // Never run the extension concurrent
+    QMutexLocker lock (&processMutex_);
+    QString errorString;
+    QJsonObject object;
+    QByteArray out;
+
+    // Run the process
+    variables_["ALBERT_OP"] = "FINALIZE";
+    if ( !runProcess(path_, &variables_, &out, &errorString) ) {
+        qWarning() << QString("Finalization failed: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        return;
+    }
+
+    if ( out.isEmpty() )
+        return;
+
+    // Parse stdout
+    if ( !parseJsonObject(out, &object,  &errorString) ) {
+        qWarning() << QString("Finalization failed: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        return;
+    }
+
+    // Save the variables, if any
+    if ( !saveVariables(&object, &variables_, &errorString) ){
+        qWarning() << QString("Finalization: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        return;
+    }
 }
 
 
 /** ***************************************************************************/
 void ExternalExtensions::ExternalExtension::setupSession() {
-    QProcess extProc;
-    extProc.start(path, {"SETUPSESSION"});
-    extProc.waitForFinished(-1);
+
+    // Never run the extension concurrent
+    QMutexLocker lock (&processMutex_);
+    QString errorString;
+    QJsonObject object;
+    QByteArray out;
+
+    // Run the process
+    variables_["ALBERT_OP"] = "SETUPSESSION";
+    if ( !runProcess(path_, &variables_, &out, &errorString) ) {
+        qWarning() << QString("Session setup failed: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        return;
+    }
+
+    if ( out.isEmpty() )
+        return;
+
+    // Parse stdout
+    if ( !parseJsonObject(out, &object,  &errorString) ) {
+        qWarning() << QString("Session setup failed: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        return;
+    }
+
+    // Save the variables, if any
+    if ( !saveVariables(&object, &variables_, &errorString) ){
+        qWarning() << QString("Session setup: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        return;
+    }
 }
 
 
 /** ***************************************************************************/
 void ExternalExtensions::ExternalExtension::teardownSession() {
-    QProcess extProc;
-    extProc.start(path, {"TEARDOWNSESSION"});
-    extProc.waitForFinished(-1);
+
+    // Never run the extension concurrent
+    QMutexLocker lock (&processMutex_);
+    QString errorString;
+    QJsonObject object;
+    QByteArray out;
+
+    // Run the process
+    variables_["ALBERT_OP"] = "TEARDOWNSESSION";
+    if ( !runProcess(path_, &variables_, &out, &errorString) ) {
+        qWarning() << QString("Session teardown failed: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        return;
+    }
+
+    if ( out.isEmpty() )
+        return;
+
+    // Parse stdout
+    if ( !parseJsonObject(out, &object,  &errorString) ) {
+        qWarning() << QString("Session teardown failed: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        return;
+    }
+
+    // Save the variables, if any
+    if ( !saveVariables(&object, &variables_, &errorString) ){
+        qWarning() << QString("Session teardown: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        return;
+    }
 }
 
 
 /** ***************************************************************************/
 void ExternalExtensions::ExternalExtension::handleQuery(Query* query) {
 
-    QProcess extProc;
-    extProc.start(path, {"QUERY", query->searchTerm()});
-    extProc.waitForFinished(-1);
+    // Never run the extension concurrent
+    QMutexLocker lock (&processMutex_);
+    QString errorString;
+    QJsonObject object;
+    QByteArray out;
 
-    vector<pair<shared_ptr<Core::Item>,short>> results;
-    QJsonDocument document = QJsonDocument::fromJson(extProc.readAllStandardOutput());
-    QJsonArray array = document.array();
+    // Run the process
+    variables_["ALBERT_OP"] = "QUERY";
+    variables_["ALBERT_QUERY"] = query->searchTerm();
+    if ( !runProcess(path_, &variables_, &out, &errorString) ) {
+        qWarning() << QString("Handle query failed: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        return;
+    }
+
+    // Parse stdout
+    if ( !parseJsonObject(out, &object,  &errorString) ) {
+        qWarning() << QString("Handle query failed: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        return;
+    }
+
+    if ( out.isEmpty() )
+        return;
+
+    // Save the variables, if any
+    if ( !saveVariables(&object, &variables_, &errorString) ){
+        qWarning() << QString("Handle query: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        return;
+    }
+
+    // Check existance of items
+    if ( !object.contains("items") ) {
+        qWarning() << QString("Handle query failed: Result contains no items (%1)").arg(path_).toLocal8Bit().data();
+        return;
+    }
+
+    // Check type of items
+    if ( !object["items"].isArray() ) {
+        qWarning() << QString("Handle query failed: 'items' is not an array (%1)").arg(path_).toLocal8Bit().data();
+        return;
+    }
 
     // Iterate over the results
-    shared_ptr<StandardItem> item;
-    shared_ptr<StandardAction> action;
-    for (const QJsonValue & value : array){
-        QJsonObject obj = value.toObject();
+    shared_ptr<StandardItem> standardItem;
+    shared_ptr<StandardAction> standardAction;
+    vector<shared_ptr<Action>> standardActionVector;
+    vector<pair<shared_ptr<Core::Item>,short>> results;
 
-        QString id = obj["id"].toString();
-        if (!id.isEmpty()){
+    for (const QJsonValue & itemValue : object["items"].toArray() ){
 
-            item = std::make_shared<StandardItem>(id);
-            item->setText(obj["name"].toString());
-            item->setSubtext(obj["description"].toString());
-            QString path;
-            if ( !(path = XdgIconLookup::instance()->themeIconPath(obj["icon"].toString())).isNull() )
-                item->setIconPath(path);
-            else if ( !(path = XdgIconLookup::instance()->themeIconPath("unknown")).isNull() )
-                item->setIconPath(path);
-            else
-                item->setIconPath(":unknown");
-
-            // Build the actions
-            QJsonArray jsonActions = obj["actions"].toArray();
-            vector<shared_ptr<Action>> actions;
-            for (const QJsonValue & value : jsonActions){
-                QJsonObject obj = value.toObject();
-                action = std::make_shared<StandardAction>(); // Todo make std commadn action
-                action->setText(obj["name"].toString());
-                QString command = obj["command"].toString();
-                QStringList arguments;
-                for (const QJsonValue & value : obj["arguments"].toArray())
-                     arguments.append(value.toString());
-                action->setAction([command, arguments](){
-                    QProcess::startDetached(command, arguments);
-                });
-                actions.push_back(action);
-            }
-            item->setActions(std::move(actions));
-
-            results.emplace_back(std::move(item), 0);
+        if ( !itemValue.isObject() ) {
+            qWarning("Item is not a json object. (%s)", path_.toLocal8Bit().data());
+            continue;
         }
+        object = itemValue.toObject();
+
+        // Build the item from the json object
+        standardItem = std::make_shared<StandardItem>(object["id"].toString());
+        standardItem->setText(object["name"].toString());
+        standardItem->setSubtext(object["description"].toString());
+        QString iconPath;
+        if ( !(iconPath = XdgIconLookup::instance()->themeIconPath(object["icon"].toString())).isNull() )
+            standardItem->setIconPath(iconPath);
+        else if ( !(iconPath = XdgIconLookup::instance()->themeIconPath("unknown")).isNull() )
+            standardItem->setIconPath(iconPath);
+        else
+            standardItem->setIconPath(":unknown");
+
+
+        // Build the actions
+        for (const QJsonValue & value : object["actions"].toArray()){
+            object = value.toObject();
+            standardAction = std::make_shared<StandardAction>();
+            standardAction->setText(object["name"].toString());
+            QString command = object["command"].toString();
+            QStringList arguments;
+            for (const QJsonValue & value : object["arguments"].toArray())
+                 arguments.append(value.toString());
+            standardAction->setAction(std::bind(static_cast<bool(*)(const QString&,const QStringList&)>(&QProcess::startDetached), command, arguments));
+            standardActionVector.push_back(standardAction);
+        }
+        standardItem->setActions(std::move(standardActionVector));
+
+        results.emplace_back(std::move(standardItem), 0);
     }
 
     query->addMatches(results.begin(), results.end());
 }
-
 

@@ -22,7 +22,7 @@
 #include "fileactions.h"
 #include "xdgiconlookup.h"
 
-std::map<QString, Files::File::CacheEntry> Files::File::iconCache_;
+std::map<QString,QString> Files::File::iconCache_;
 
 /** ***************************************************************************/
 QString Files::File::text() const {
@@ -42,33 +42,26 @@ QString Files::File::subtext() const {
 QString Files::File::iconPath() const {
 
     const QString xdgIconName = mimetype_.iconName();
-    CacheEntry ce;
 
-    // First check if icon, not older than 15 minutes, exists
-    if (iconCache_.count(xdgIconName)){
-       ce = iconCache_[xdgIconName];
-       if ((std::chrono::system_clock::now() - std::chrono::minutes(15)) < ce.ctime)
-           return ce.path;
-    }
+    // First check if icon exists
+    if (iconCache_.count(xdgIconName))
+        return iconCache_[xdgIconName];
 
     QString iconPath;
     if ( !(iconPath = XdgIconLookup::instance()->themeIconPath(xdgIconName)).isNull()  // Lookup iconName
          || !(iconPath = XdgIconLookup::instance()->themeIconPath(mimetype_.genericIconName())).isNull()  // Lookup genericIconName
          || !(iconPath = XdgIconLookup::instance()->themeIconPath("unknown")).isNull()) {  // Lookup "unknown"
-        ce = {iconPath, std::chrono::system_clock::now()};
-        iconCache_.emplace(xdgIconName, ce);
+        iconCache_.emplace(xdgIconName, iconPath);
         return iconPath;
     }
 
     // Nothing found, return a fallback icon
     if ( xdgIconName == "inode-directory" ) {
         iconPath = ":directory";
-        ce = {iconPath, std::chrono::system_clock::now()};
-        iconCache_.emplace(xdgIconName, ce);
+        iconCache_.emplace(xdgIconName, iconPath);
     } else {
         iconPath = ":unknown";
-        ce = {iconPath, std::chrono::system_clock::now()};
-        iconCache_.emplace(xdgIconName, ce);
+        iconCache_.emplace(xdgIconName, iconPath);
     }
     return iconPath;
 }

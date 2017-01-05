@@ -128,6 +128,8 @@ public:
         if ( !syncHandlers.empty() )
             return runSyncHandlers();
 
+        emit q->resultsReady(this);
+
         if ( !asyncHandlers.empty() )
             return runAsyncHandlers();
 

@@ -131,17 +131,17 @@ void Core::ExtensionManager::loadExtension(const unique_ptr<ExtensionSpec> &spec
         system_clock::time_point start = system_clock::now();
         if ( spec->load() ) {
             auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(system_clock::now()-start);
-            qDebug() << QString("Loading %1 done in %2 milliseconds").arg(spec->id()).arg(msecs.count());
+            qDebug() << QString("Loading %1 done in %2 milliseconds").arg(spec->id()).arg(msecs.count()).toLocal8Bit().data();
             d->extensions_.insert(spec->instance());
         } else
-            qDebug() << QString("Loading %1 failed. (%2)").arg(spec->id(), spec->lastError());
+            qDebug() << QString("Loading %1 failed. (%2)").arg(spec->id(), spec->lastError()).toLocal8Bit().data();
     }
 }
 
 
 /** ***************************************************************************/
 void Core::ExtensionManager::unloadExtension(const unique_ptr<ExtensionSpec> &spec) {
-    if (spec->state() == ExtensionSpec::State::Loaded) {
+    if (spec->state() != ExtensionSpec::State::NotLoaded) {
         d->extensions_.erase(spec->instance());
         spec->unload();
     }
