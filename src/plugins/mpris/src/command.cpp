@@ -19,7 +19,6 @@
 #include <QtDBus/QDBusMessage>
 #include <QtDBus/QDBusInterface>
 #include <QDebug>
-#include "albertapp.h"
 #include "item.h"
 
 /** ***************************************************************************/

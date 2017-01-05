@@ -18,13 +18,14 @@
 #include <QVariant>
 #include <vector>
 using std::vector;
-#include "abstractitem.h"
-#include "standardobjects.h"
+#include "standarditem.h"
 #include "player.h"
 #include <QDBusMessage>
+using std::shared_ptr;
+using Core::Action;
 
 namespace MPRIS {
-class Item final : public AbstractItem
+class Item final : public Core::Item
 {
 public:
     Item(Player& p, QString& subtext, QString& iconPath, QDBusMessage& msg, bool hideAfter);
@@ -34,7 +35,7 @@ public:
     QString text() const override { return text_; }
     QString subtext() const override { return subtext_; }
     QString iconPath() const override { return iconPath_; }
-    vector<shared_ptr<AbstractAction>> actions() override;
+    vector<shared_ptr<Action>> actions() override;
 
 private:
     Player& player_;
@@ -43,7 +44,7 @@ private:
     QString subtext_;
     QString iconPath_;
     QDBusMessage message_;
-    vector<shared_ptr<AbstractAction>> actions_;
+    vector<shared_ptr<Action>> actions_;
     bool hideAfter_;
 };
 }

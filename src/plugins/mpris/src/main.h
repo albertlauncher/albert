@@ -17,20 +17,25 @@
 #pragma once
 #include <QObject>
 #include <QPointer>
-#include "abstractextension.h"
 #include "player.h"
 #include "command.h"
-#include <QDBusMessage>
+#include "extension.h"
+#include "queryhandler.h"
 #include <QDBusConnection>
+using Core::Query;
+
+class QDBusMessage;
 
 namespace MPRIS {
 
 class ConfigWidget;
 
-class Extension final : public AbstractExtension
+class Extension final :
+        public QObject,
+        public Core::Extension,
+        public Core::QueryHandler
 {
     Q_OBJECT
-    Q_INTERFACES(AbstractExtension)
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
 public:
@@ -43,7 +48,7 @@ public:
 
     QWidget *widget(QWidget *parent = nullptr) override;
     void setupSession() override;
-    void handleQuery(Query query) override;
+    void handleQuery(Query *query) override;
     QString name() const override { return name_; }
 
 

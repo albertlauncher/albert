@@ -15,10 +15,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDebug>
-#include "extension.h"
+#include <QDBusMessage>
+#include "main.h"
 #include "configwidget.h"
 #include "query.h"
-#include "albertapp.h"
 #include "xdgiconlookup.h"
 #include "command.h"
 
@@ -26,7 +26,9 @@
 QDBusMessage MPRIS::Extension::findPlayerMsg = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "ListNames");
 
 /** ***************************************************************************/
-MPRIS::Extension::Extension() : AbstractExtension("org.albert.extension.mpris") {
+MPRIS::Extension::Extension()
+    : Core::Extension("org.albert.extension.mpris"),
+      Core::QueryHandler(Core::Extension::id) {
     qDebug("[%s] Initialize extension", name_);
 
     // Local cache field
@@ -169,12 +171,12 @@ void MPRIS::Extension::setupSession() {
 
 
 /** ***************************************************************************/
-void MPRIS::Extension::handleQuery(Query query) {
+void MPRIS::Extension::handleQuery(Query *query) {
     // Do not proceed if there are no players running. Why would you even?
     if (mediaPlayers.isEmpty())
         return;
 
-    const QString& q = query.searchTerm();
+    const QString& q = query->searchTerm();
 
     // Filter applicable commands
     QStringList cmds;
@@ -197,7 +199,7 @@ void MPRIS::Extension::handleQuery(Query query) {
             // See if it's applicable for this player
             if (toExec.isApplicable(*p))
                 // And add a match if so
-                query.addMatch(toExec.produceAlbertItem(*p), percentage);
+                query->addMatch(toExec.produceAlbertItem(*p), percentage);
         }
     }
 }

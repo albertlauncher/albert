@@ -15,21 +15,22 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "item.h"
+#include "standardaction.h"
+using Core::StandardAction;
 #include <QDBusConnection>
-#include "albertapp.h"
 
 
 /** ***************************************************************************/
 MPRIS::Item::Item(Player &p, QString &subtext, QString &iconPath, QDBusMessage &msg, bool hideAfter)
     : player_(p), subtext_(subtext), iconPath_(iconPath), message_(msg), hideAfter_(hideAfter) {
     text_ = p.getName();
-    actions_.push_back(shared_ptr<AbstractAction>(new StandardAction(subtext, [this](ExecutionFlags *flags){
+    actions_.push_back(shared_ptr<Action>(new StandardAction(subtext, [this](){
         QDBusConnection::sessionBus().send(message_);
-        flags->hideWidget = hideAfter_;
-        flags->clearInput = hideAfter_;
+//        flags->hideWidget = hideAfter_;
+//        flags->clearInput = hideAfter_;
     })));
     if (p.canRaise()) {
-        actions_.push_back(shared_ptr<AbstractAction>(new StandardAction("Raise Window", [&p](ExecutionFlags*){
+        actions_.push_back(shared_ptr<Action>(new StandardAction("Raise Window", [&p](){
             QString busid = p.getBusId();
             QDBusMessage raise = QDBusMessage::createMethodCall(busid, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2", "Raise");
             if (!QDBusConnection::sessionBus().send(raise)) {
@@ -51,7 +52,7 @@ MPRIS::Item::~Item() {
 
 
 /** ***************************************************************************/
-vector<shared_ptr<AbstractAction>> MPRIS::Item::actions() {
+vector<shared_ptr<Action>> MPRIS::Item::actions() {
     return actions_;
 }
 
