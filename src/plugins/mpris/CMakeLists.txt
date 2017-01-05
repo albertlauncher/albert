@@ -7,26 +7,25 @@ find_package(Qt5DBus 5.2 REQUIRED)
 
 include_directories(
     ../../application
-    ../../shared
     ../../application/pluginsystem
 )
 
-set(SRC
-    metadata.json
-    extension.cpp
-    configwidget.cpp
-    item.cpp
-    player.cpp
-    command.cpp
+FILE(GLOB_RECURSE SRC src/*)
+
+set(LIB
+    ${Qt5Widgets_LIBRARIES}
+    ${Qt5DBus_LIBRARIES}
+    albertcore
+    xdg
 )
 
 qt5_wrap_ui(UI
-    configwidget.ui
+    forms/configwidget.ui
 )
 
 add_library(${PROJECT_NAME} SHARED ${SRC} ${UI})
 
-target_link_libraries(${PROJECT_NAME} ${Qt5Widgets_LIBRARIES} ${Qt5DBus_LIBRARIES} iconlookup)
+target_link_libraries(${PROJECT_NAME} ${LIB})
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION share/albert/plugins)
