@@ -16,12 +16,12 @@
 
 #pragma once
 #include <QObject>
-#include <QPointer>
 #include "extension.h"
 #include "queryhandler.h"
 
 namespace Template {
 
+class TemplatePrivate;
 class ConfigWidget;
 
 class Extension final :
@@ -33,6 +33,7 @@ class Extension final :
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
 public:
+
     Extension();
     ~Extension();
 
@@ -51,6 +52,8 @@ public:
      */
 
 private:
-    QPointer<ConfigWidget> widget_;
+
+    TemplatePrivate *d;
+
 };
 }
