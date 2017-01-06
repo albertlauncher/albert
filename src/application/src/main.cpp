@@ -146,8 +146,12 @@ int main(int argc, char *argv[]) {
          */
 
         QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+        if ( !db.isValid() )
+            qFatal("No sqlite abvailable");
+
         if (!db.driver()->hasFeature(QSqlDriver::Transactions))
-            qFatal("No sqlite driver available.");
+            qFatal("QSqlDriver::Transactions not available.");
+
         db.setDatabaseName(QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).filePath("core.db"));
         if (!db.open())
             qFatal("Unable to establish a database connection.");

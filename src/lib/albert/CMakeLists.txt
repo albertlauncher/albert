@@ -5,7 +5,6 @@ project(albertcore)
 add_definitions(-DCORE) #export branch
 
 # Get Qt libraries
-#find_package(Qt5Core 5.2 REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
 find_package(Qt5Sql REQUIRED)
