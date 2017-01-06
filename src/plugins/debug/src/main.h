@@ -16,12 +16,12 @@
 
 #pragma once
 #include <QObject>
-#include <QPointer>
 #include "extension.h"
 #include "queryhandler.h"
 
 namespace Debug {
 
+class DebugPrivate;
 class ConfigWidget;
 
 class Extension final :
@@ -37,31 +37,34 @@ public:
     Extension();
     ~Extension();
 
+    /*
+     * Implementation of extension interface
+     */
+
     QString name() const override { return "Debug"; }
     QWidget *widget(QWidget *parent = nullptr) override;
+    QString trigger() const override;
     void handleQuery(Core::Query * query) override;
-    QString trigger() const override {return trigger_;}
     bool isLongRunning() const override { return true; }
 
-    int count() const{return count_;}
+    /*
+     * Extension specific members
+     */
+
+    int count() const;
     void setCount(const int &count);
 
-    bool async() const{return async_;}
+    bool async() const;
     void setAsync(bool async);
 
-    int delay() const {return delay_;}
+    int delay() const;
     void setDelay(const int &delay);
 
     void setTrigger(const QString &trigger);
 
 private:
 
-    QPointer<ConfigWidget> widget_;
-
-    int delay_;
-    int count_;
-    bool async_;
-    QString trigger_;
+    DebugPrivate *d;
 
 };
 }
