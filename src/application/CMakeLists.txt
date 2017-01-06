@@ -3,7 +3,7 @@ find_package(Qt5Svg 5.2 REQUIRED)
 find_package(Qt5Network REQUIRED)
 find_package(Qt5Sql REQUIRED)
 
-FILE(GLOB_RECURSE SRC src/*)
+FILE(GLOB_RECURSE SRC src/* metadata.json)
 
 set(LIB
     ${Qt5Widgets_LIBRARIES}
