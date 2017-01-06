@@ -16,14 +16,13 @@
 
 #pragma once
 #include <QObject>
-#include <QPointer>
-#include <vector>
 #include "extension.h"
 #include "queryhandler.h"
 using std::vector;
 
 namespace System {
 
+class SystemPrivate;
 class ConfigWidget;
 
 class Extension final :
@@ -34,13 +33,13 @@ class Extension final :
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
-    enum SupportedCommands { LOCK, LOGOUT, SUSPEND, HIBERNATE, REBOOT, POWEROFF, NUMCOMMANDS };
-
 public:
+
     Extension();
+    ~Extension();
 
     /*
-     * Implementation of extension interface
+     * Implementation of interfaces
      */
 
     QString name() const override { return "System"; }
@@ -48,10 +47,8 @@ public:
     void handleQuery(Core::Query * query) override;
 
 private:
-    QString defaultCommand(SupportedCommands command);
 
-    QPointer<ConfigWidget> widget_;
-    vector<QString> iconPaths;
-    vector<QString> commands;
+    SystemPrivate *d;
+
 };
 }

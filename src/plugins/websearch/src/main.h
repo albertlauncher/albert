@@ -16,8 +16,6 @@
 
 #pragma once
 #include <QAbstractTableModel>
-#include <QFileSystemWatcher>
-#include <QPointer>
 #include <vector>
 #include "extension.h"
 #include "queryhandler.h"
@@ -64,13 +62,6 @@ public:
     bool insertRows (int position, int rows, const QModelIndex & parent = QModelIndex()) override;
     bool removeRows (int position, int rows, const QModelIndex & parent = QModelIndex()) override;
     bool moveRows(const QModelIndex &sourceRow, int srcRow, int cnt, const QModelIndex & dst, int destinationChild) override;
-
-    enum class Section{ Enabled, Name, Trigger, URL, Count };
-
-    /*
-     * Extension specific members
-     */
-
 
 private:
 

@@ -23,6 +23,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QPointer>
 #include <QStandardPaths>
 #include <QUrl>
 #include <map>
@@ -36,6 +37,8 @@ using namespace Core;
 
 
 namespace {
+
+enum class Section{ Enabled, Name, Trigger, URL, Count };
 
 std::map<QString,QIcon> iconCache;
 

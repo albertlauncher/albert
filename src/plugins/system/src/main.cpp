@@ -15,148 +15,59 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDebug>
+#include <QPointer>
 #include <QProcess>
 #include <QSettings>
+#include <vector>
 #include "configwidget.h"
 #include "main.h"
-#include "query.h"
-#include "standarditem.h"
 #include "standardaction.h"
+#include "standarditem.h"
+#include "query.h"
 #include "xdgiconlookup.h"
 
 
 namespace {
 
-    vector<QString> configNames = {
-        "lock",
-        "logout",
-        "suspend",
-        "hibernate",
-        "reboot",
-        "shutdown"
-    };
+vector<QString> configNames = {
+    "lock",
+    "logout",
+    "suspend",
+    "hibernate",
+    "reboot",
+    "shutdown"
+};
 
-    vector<QString> itemTitles = {
-        "Lock",
-        "Logout",
-        "Suspend",
-        "Hibernate",
-        "Reboot",
-        "Shutdown"
-    };
+vector<QString> itemTitles = {
+    "Lock",
+    "Logout",
+    "Suspend",
+    "Hibernate",
+    "Reboot",
+    "Shutdown"
+};
 
-    vector<QString> itemDescriptions = {
-        "Lock the session.",
-        "Quit the session.",
-        "Suspend the machine.",
-        "Hibernate the machine.",
-        "Reboot the machine.",
-        "Shutdown the machine.",
-    };
+vector<QString> itemDescriptions = {
+    "Lock the session.",
+    "Quit the session.",
+    "Suspend the machine.",
+    "Hibernate the machine.",
+    "Reboot the machine.",
+    "Shutdown the machine.",
+};
 
-    vector<QString> iconNames = {
-        "system-lock-screen",
-        "system-log-out",
-        "system-suspend",
-        "system-suspend-hibernate",
-        "system-reboot",
-        "system-shutdown"
-    };
-}
+vector<QString> iconNames = {
+    "system-lock-screen",
+    "system-log-out",
+    "system-suspend",
+    "system-suspend-hibernate",
+    "system-reboot",
+    "system-shutdown"
+};
 
-/** ***************************************************************************/
-System::Extension::Extension()
-    : Core::Extension("org.albert.extension.system"),
-      Core::QueryHandler(Core::Extension::id) {
+enum SupportedCommands { LOCK, LOGOUT, SUSPEND, HIBERNATE, REBOOT, POWEROFF, NUMCOMMANDS };
 
-    // Load settings
-    QSettings s(qApp->applicationName());
-    s.beginGroup(Core::Extension::id);
-    for (int i = 0; i < NUMCOMMANDS; ++i) {
-        iconPaths.push_back(XdgIconLookup::instance()->themeIconPath(iconNames[i]));
-        commands.push_back(s.value(configNames[i], defaultCommand(static_cast<SupportedCommands>(i))).toString());
-    }
-    s.endGroup();
-}
-
-
-
-/** ***************************************************************************/
-QWidget *System::Extension::widget(QWidget *parent) {
-    if (widget_.isNull()) {
-        widget_ = new ConfigWidget(parent);
-
-        // Initialize the content and connect the signals
-
-        widget_->ui.lineEdit_lock->setText(commands[LOCK]);
-        connect(widget_->ui.lineEdit_lock, &QLineEdit::textEdited, [this](const QString &s){
-            commands[LOCK]= s;
-            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, configNames[LOCK]), s);
-        });
-
-        widget_->ui.lineEdit_logout->setText(commands[LOGOUT]);
-        connect(widget_->ui.lineEdit_logout, &QLineEdit::textEdited, [this](const QString &s){
-            commands[LOGOUT]= s;
-            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, configNames[LOGOUT]), s);
-        });
-
-        widget_->ui.lineEdit_suspend->setText(commands[SUSPEND]);
-        connect(widget_->ui.lineEdit_suspend, &QLineEdit::textEdited, [this](const QString &s){
-            commands[SUSPEND]= s;
-            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, configNames[SUSPEND]), s);
-        });
-
-        widget_->ui.lineEdit_hibernate->setText(commands[HIBERNATE]);
-        connect(widget_->ui.lineEdit_hibernate, &QLineEdit::textEdited, [this](const QString &s){
-            commands[HIBERNATE]= s;
-            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, configNames[HIBERNATE]), s);
-        });
-
-        widget_->ui.lineEdit_reboot->setText(commands[REBOOT]);
-        connect(widget_->ui.lineEdit_reboot, &QLineEdit::textEdited, [this](const QString &s){
-            commands[REBOOT]= s;
-            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, configNames[REBOOT]), s);
-        });
-
-        widget_->ui.lineEdit_shutdown->setText(commands[POWEROFF]);
-        connect(widget_->ui.lineEdit_shutdown, &QLineEdit::textEdited, [this](const QString &s){
-            commands[POWEROFF]= s;
-            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, configNames[POWEROFF]), s);
-        });
-    }
-    return widget_;
-}
-
-
-
-/** ***************************************************************************/
-void System::Extension::handleQuery(Core::Query * query) {
-   for (int i = 0; i < NUMCOMMANDS; ++i) {
-        if (configNames[i].startsWith(query->searchTerm().toLower())) {
-
-            std::shared_ptr<Core::StandardItem> item = std::make_shared<Core::StandardItem>(configNames[i]);
-            item->setText(itemTitles[i]);
-            item->setSubtext(itemDescriptions[i]);
-            item->setIconPath(iconPaths[i]);
-
-            QString cmd = commands[i];
-            std::shared_ptr<Core::StandardAction> action = std::make_shared<Core::StandardAction>();
-            action->setText(itemDescriptions[i]);
-            action->setAction([=](){
-                QProcess::startDetached(cmd);
-            });
-
-            item->setActions({action});
-
-            query->addMatch(item);
-       }
-   }
-}
-
-
-
-/** ***************************************************************************/
-QString System::Extension::defaultCommand(SupportedCommands command){
+QString defaultCommand(SupportedCommands command){
 
     QString de = getenv("XDG_CURRENT_DESKTOP");
 
@@ -239,3 +150,115 @@ QString System::Extension::defaultCommand(SupportedCommands command){
     // NEVER REACHED;
     return "";
 }
+
+}
+
+
+
+class System::SystemPrivate
+{
+public:
+    QPointer<ConfigWidget> widget;
+    vector<QString> iconPaths;
+    vector<QString> commands;
+};
+
+
+
+/** ***************************************************************************/
+System::Extension::Extension()
+    : Core::Extension("org.albert.extension.system"),
+      Core::QueryHandler(Core::Extension::id),
+      d(new SystemPrivate) {
+
+    // Load settings
+    QSettings s(qApp->applicationName());
+    s.beginGroup(Core::Extension::id);
+    for (int i = 0; i < NUMCOMMANDS; ++i) {
+        d->iconPaths.push_back(XdgIconLookup::instance()->themeIconPath(iconNames[i]));
+        d->commands.push_back(s.value(configNames[i], defaultCommand(static_cast<SupportedCommands>(i))).toString());
+    }
+    s.endGroup();
+}
+
+
+
+/** ***************************************************************************/
+System::Extension::~Extension(){
+    delete d;
+}
+
+
+
+/** ***************************************************************************/
+QWidget *System::Extension::widget(QWidget *parent) {
+    if (d->widget.isNull()) {
+        d->widget = new ConfigWidget(parent);
+
+        // Initialize the content and connect the signals
+
+        d->widget->ui.lineEdit_lock->setText(d->commands[LOCK]);
+        connect(d->widget->ui.lineEdit_lock, &QLineEdit::textEdited, [this](const QString &s){
+            d->commands[LOCK]= s;
+            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, configNames[LOCK]), s);
+        });
+
+        d->widget->ui.lineEdit_logout->setText(d->commands[LOGOUT]);
+        connect(d->widget->ui.lineEdit_logout, &QLineEdit::textEdited, [this](const QString &s){
+            d->commands[LOGOUT]= s;
+            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, configNames[LOGOUT]), s);
+        });
+
+        d->widget->ui.lineEdit_suspend->setText(d->commands[SUSPEND]);
+        connect(d->widget->ui.lineEdit_suspend, &QLineEdit::textEdited, [this](const QString &s){
+            d->commands[SUSPEND]= s;
+            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, configNames[SUSPEND]), s);
+        });
+
+        d->widget->ui.lineEdit_hibernate->setText(d->commands[HIBERNATE]);
+        connect(d->widget->ui.lineEdit_hibernate, &QLineEdit::textEdited, [this](const QString &s){
+            d->commands[HIBERNATE]= s;
+            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, configNames[HIBERNATE]), s);
+        });
+
+        d->widget->ui.lineEdit_reboot->setText(d->commands[REBOOT]);
+        connect(d->widget->ui.lineEdit_reboot, &QLineEdit::textEdited, [this](const QString &s){
+            d->commands[REBOOT]= s;
+            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, configNames[REBOOT]), s);
+        });
+
+        d->widget->ui.lineEdit_shutdown->setText(d->commands[POWEROFF]);
+        connect(d->widget->ui.lineEdit_shutdown, &QLineEdit::textEdited, [this](const QString &s){
+            d->commands[POWEROFF]= s;
+            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, configNames[POWEROFF]), s);
+        });
+    }
+    return d->widget;
+}
+
+
+
+/** ***************************************************************************/
+void System::Extension::handleQuery(Core::Query * query) {
+   for (int i = 0; i < NUMCOMMANDS; ++i) {
+        if (configNames[i].startsWith(query->searchTerm().toLower())) {
+
+            std::shared_ptr<Core::StandardItem> item = std::make_shared<Core::StandardItem>(configNames[i]);
+            item->setText(itemTitles[i]);
+            item->setSubtext(itemDescriptions[i]);
+            item->setIconPath(d->iconPaths[i]);
+
+            QString cmd = d->commands[i];
+            std::shared_ptr<Core::StandardAction> action = std::make_shared<Core::StandardAction>();
+            action->setText(itemDescriptions[i]);
+            action->setAction([=](){
+                QProcess::startDetached(cmd);
+            });
+
+            item->setActions({action});
+
+            query->addMatch(item);
+       }
+   }
+}
+
