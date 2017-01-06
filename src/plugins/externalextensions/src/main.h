@@ -16,15 +16,12 @@
 
 #pragma once
 #include <QObject>
-#include <QPointer>
-#include <QFileSystemWatcher>
-#include <vector>
-#include <memory>
 #include "extension.h"
 #include "externalextension.h"
 
 namespace ExternalExtensions {
 
+class ExternalExtensionsPrivate;
 class ConfigWidget;
 
 class Extension final :
@@ -51,14 +48,10 @@ public:
      */
 
     void reloadExtensions();
-    const QStringList &pluginDirs() { return pluginDirs_; }
 
 private:
 
-    QStringList pluginDirs_;
-    std::vector<std::unique_ptr<ExternalExtension>> externalExtensions_;
-    QFileSystemWatcher fileSystemWatcher_;
-    QPointer<ConfigWidget> widget_;
+    ExternalExtensionsPrivate *d;
 
 signals:
 

@@ -16,31 +16,50 @@
 
 #include <QDebug>
 #include <QDirIterator>
+#include <QFileSystemWatcher>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QPointer>
 #include <QProcess>
 #include <QStandardPaths>
-#include "main.h"
+#include <vector>
+#include <memory>
 #include "configwidget.h"
 #include "externalextension.h"
 #include "externalextensionmodel.h"
 #include "extensionmanager.h"
+#include "main.h"
+
+
+
+class ExternalExtensions::ExternalExtensionsPrivate
+{
+public:
+    QStringList pluginDirs;
+    std::vector<std::unique_ptr<ExternalExtension>> externalExtensions;
+    QFileSystemWatcher fileSystemWatcher;
+    QPointer<ConfigWidget> widget;
+};
+
+
+
 
 /** ***************************************************************************/
 ExternalExtensions::Extension::Extension()
-    : Core::Extension("org.albert.extension.externalextensions") {
+    : Core::Extension("org.albert.extension.externalextensions"),
+    d(new ExternalExtensionsPrivate) {
 
-    pluginDirs_ = QStandardPaths::locateAll(
+    d->pluginDirs = QStandardPaths::locateAll(
                 QStandardPaths::DataLocation, "external",
                 QStandardPaths::LocateDirectory);
 
-    fileSystemWatcher_.addPaths(pluginDirs_);
+    d->fileSystemWatcher.addPaths(d->pluginDirs);
 
-    connect(&fileSystemWatcher_, &QFileSystemWatcher::fileChanged,
+    connect(&d->fileSystemWatcher, &QFileSystemWatcher::fileChanged,
             this, &Extension::reloadExtensions);
 
-    connect(&fileSystemWatcher_, &QFileSystemWatcher::directoryChanged,
+    connect(&d->fileSystemWatcher, &QFileSystemWatcher::directoryChanged,
             this, &Extension::reloadExtensions);
 
     reloadExtensions();
@@ -52,31 +71,33 @@ ExternalExtensions::Extension::Extension()
 ExternalExtensions::Extension::~Extension() {
 
     // Unregister and delete all extensions
-    auto it = externalExtensions_.rbegin();
-    while (it != externalExtensions_.rend()) {
+    auto it = d->externalExtensions.rbegin();
+    while (it != d->externalExtensions.rend()) {
         Core::ExtensionManager::instance->unregisterObject(it->get());
-        it = std::reverse_iterator<decltype(externalExtensions_)::iterator>(externalExtensions_.erase(std::next(it).base()));
+        it = std::reverse_iterator<decltype(d->externalExtensions)::iterator>(d->externalExtensions.erase(std::next(it).base()));
     }
+
+    delete d;
 }
 
 
 
 /** ***************************************************************************/
 QWidget *ExternalExtensions::Extension::widget(QWidget *parent) {
-    if (widget_.isNull()){
-        widget_ = new ConfigWidget(parent);
+    if (d->widget.isNull()){
+        d->widget = new ConfigWidget(parent);
 
-        ExternalExtensionsModel *model = new ExternalExtensionsModel(externalExtensions_, widget_->ui.tableView);
-        widget_->ui.tableView->setModel(model);
+        ExternalExtensionsModel *model = new ExternalExtensionsModel(d->externalExtensions, d->widget->ui.tableView);
+        d->widget->ui.tableView->setModel(model);
 
-        connect(widget_->ui.tableView, &QTableView::activated,
+        connect(d->widget->ui.tableView, &QTableView::activated,
                 model, &ExternalExtensionsModel::onActivated);
 
         // Reset the widget when
         connect(this, &Extension::extensionsUpdated,
-                widget_->ui.tableView, &QTableView::reset);
+                d->widget->ui.tableView, &QTableView::reset);
     }
-    return widget_;
+    return d->widget;
 }
 
 
@@ -85,18 +106,18 @@ QWidget *ExternalExtensions::Extension::widget(QWidget *parent) {
 void ExternalExtensions::Extension::reloadExtensions() {
 
     // Unregister and delete all extensions
-    auto it = externalExtensions_.rbegin();
-    while (it != externalExtensions_.rend()) {
+    auto it = d->externalExtensions.rbegin();
+    while (it != d->externalExtensions.rend()) {
         Core::ExtensionManager::instance->unregisterObject(it->get());
-        it = std::reverse_iterator<decltype(externalExtensions_)::iterator>(externalExtensions_.erase(std::next(it).base()));
+        it = std::reverse_iterator<decltype(d->externalExtensions)::iterator>(d->externalExtensions.erase(std::next(it).base()));
     }
 
     // Remove all watches
-    if ( !fileSystemWatcher_.files().isEmpty() )
-        fileSystemWatcher_.removePaths(fileSystemWatcher_.files());
+    if ( !d->fileSystemWatcher.files().isEmpty() )
+        d->fileSystemWatcher.removePaths(d->fileSystemWatcher.files());
 
     // Iterate over all files in the plugindirs
-    for (const QString &pluginDir : pluginDirs_) {
+    for (const QString &pluginDir : d->pluginDirs) {
         QDirIterator dirIterator(pluginDir, QDir::Files|QDir::Executable, QDirIterator::NoIteratorFlags);
         while (dirIterator.hasNext()) {
 
@@ -104,22 +125,22 @@ void ExternalExtensions::Extension::reloadExtensions() {
             QString id = dirIterator.fileInfo().fileName();
 
             // Skip if this id already exists
-            if ( std::find_if(externalExtensions_.begin(),
-                              externalExtensions_.end(),
+            if ( std::find_if(d->externalExtensions.begin(),
+                              d->externalExtensions.end(),
                               [&id](const std::unique_ptr<ExternalExtension> & rhs){
-                              return id == rhs->id(); }) != externalExtensions_.end())
+                              return id == rhs->id(); }) != d->externalExtensions.end())
                 continue;
 
             try {
-                externalExtensions_.emplace_back(new ExternalExtension(path, id));
-                fileSystemWatcher_.addPath(path);
+                d->externalExtensions.emplace_back(new ExternalExtension(path, id));
+                d->fileSystemWatcher.addPath(path);
             } catch ( QString s ) {
                 qWarning("Failed to initialize external extension: %s", s.toLocal8Bit().data());
             }
         }
     }
 
-    for ( std::unique_ptr<ExternalExtension> &obj : externalExtensions_ )
+    for ( std::unique_ptr<ExternalExtension> &obj : d->externalExtensions )
         Core::ExtensionManager::instance->registerObject(obj.get());
 
     emit extensionsUpdated();
