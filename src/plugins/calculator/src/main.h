@@ -16,17 +16,12 @@
 
 #pragma once
 #include <QObject>
-#include <QLocale>
-#include <QPointer>
 #include "extension.h"
 #include "queryhandler.h"
 
-namespace mu{
-    class Parser;
-}
-
 namespace Calculator {
 
+class CalculatorPrivate;
 class ConfigWidget;
 
 class Extension final :
@@ -50,18 +45,9 @@ public:
     QWidget *widget(QWidget *parent = nullptr) override;
     void handleQuery(Core::Query * query) override;
 
-    /*
-     * Extension specific members
-     */
-
-    /* const */
-    static const QString CFG_SEPS;
-    static const bool    CFG_SEPS_DEF;
-
 private:
-    QPointer<ConfigWidget> widget_;
-    mu::Parser *parser_;
-    QLocale loc_;
-    QString iconPath_;
+
+    CalculatorPrivate *d;
+
 };
 }
