@@ -297,7 +297,7 @@ void Files::Extension::addIgnoreDir(const QString &regex) {
     ignores_.append(regex);
 
     QSettings s(qApp->applicationName());
-    s.beginGroup(id);
+    s.beginGroup(Core::Extension::id);
     s.setValue(CFG_IGNORES, ignores_);
     s.endGroup();
 
@@ -311,7 +311,7 @@ void Files::Extension::removeIgnoreDir(const QString &regex) {
     ignores_.removeAll(regex);
 
     QSettings s(qApp->applicationName());
-    s.beginGroup(id);
+    s.beginGroup(Core::Extension::id);
     s.setValue(CFG_IGNORES, ignores_);
     s.endGroup();
 
