@@ -106,6 +106,11 @@ void Core::ExtensionManager::reloadExtensions() {
         }
     }
 
+    // Sort alphabetically
+    std::sort(d->extensionSpecs_.begin(),
+              d->extensionSpecs_.end(),
+              [](const unique_ptr<ExtensionSpec>& lhs, const unique_ptr<ExtensionSpec>& rhs){ return lhs->name() < rhs->name(); });
+
     // Load if not blacklisted
     for (unique_ptr<ExtensionSpec> & extensionSpec : d->extensionSpecs_)
         if (!d->blacklist_.contains(extensionSpec->id()))
