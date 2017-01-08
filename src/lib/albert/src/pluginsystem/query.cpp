@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QDebug>
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QSqlError>
@@ -39,31 +40,23 @@ map<QString, double> Core::MatchOrder::order;
 
 bool Core::MatchOrder::operator()(const pair<shared_ptr<Item>, short> &lhs,
                                   const pair<shared_ptr<Item>, short> &rhs) {
+    // Compare urgency
+    if (lhs.first->urgency() != rhs.first->urgency())
+        return lhs.first->urgency() > rhs.first->urgency();
 
-    // Return true if urgency is higher
-    if (lhs.first->urgency() > rhs.first->urgency())
-        return true;
-
-    // Find the ids in the usage scores
+    // Compare usage scores
     const auto &lit = order.find(lhs.first->id());
     const auto &rit = order.find(rhs.first->id());
-
-    // If left side has no entry it cannot be higher continue with relevance
-    if (lit==order.cend())
-        goto relevance;
-
-    // If left side has an entry bur right side not left side must be higher
-    // given the condition that all values in the usage rankings are >0
-    if (rit==order.cend())
-        return true;
-
-    // Both scores available, return true if lhs is higher
-    if (order[lhs.first->id()] > order[rhs.first->id()]) // usage count
-        return true;
-
-    // Return true if relevance is higher else false
-    relevance:
-    return lhs.second > rhs.second; // percentual match of the query against the item
+    if (lit==order.cend()) // |- lhs zero
+        if (rit==order.cend()) // |- rhs zero
+            return lhs.second > rhs.second; // Compare match score
+        else // |- rhs > 0
+            return false; // lhs==0 && rhs>0 implies lhs<rhs implies !(lhs>rhs)
+    else
+        if (rit==order.cend())
+            return true; // lhs>0 && rhs=0 implies lhs>rhs
+        else
+            return *lit > *rit; // Both usage scores available, return lhs>rhs
 }
 
 void Core::MatchOrder::update() {
