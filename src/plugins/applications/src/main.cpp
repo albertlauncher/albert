@@ -258,7 +258,6 @@ QStringList shellLexerSplit(const QString &input) {
     return result;
 }
 
-}
 
 
 /** ***************************************************************************/
@@ -553,6 +552,8 @@ vector<shared_ptr<StandardIndexItem>> indexApplications(const QStringList & root
     return desktopEntries;
 }
 
+}
+
 
 
 /** ***************************************************************************/
@@ -579,6 +580,8 @@ public:
     void startIndexing();
 };
 
+
+
 /** ***************************************************************************/
 void Applications::ApplicationsPrivate::startIndexing() {
 
@@ -599,6 +602,7 @@ void Applications::ApplicationsPrivate::startIndexing() {
     emit q->statusInfo("Indexing desktop entries ...");
 
 }
+
 
 
 /** ***************************************************************************/
