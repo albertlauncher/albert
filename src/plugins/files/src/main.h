@@ -16,21 +16,12 @@
 
 #pragma once
 #include <QObject>
-#include <QString>
-#include <QPointer>
-#include <QTimer>
-#include <QMutex>
-#include <vector>
-#include <memory>
 #include "extension.h"
 #include "queryhandler.h"
-#include "offlineindex.h"
-using std::vector;
-using std::shared_ptr;
 
 namespace Files {
 
-class File;
+class FilesPrivate;
 class ConfigWidget;
 
 class Extension final :
@@ -40,8 +31,6 @@ class Extension final :
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
-
-    class Indexer;
 
 public:
 
@@ -63,81 +52,45 @@ public:
     void addDir(const QString &dirPath);
     void removeDir(const QString &dirPath);
     void restorePaths();
-    void updateIndex();
 
     // Properties
-    inline bool indexAudio() { return indexAudio_; }
-    inline void setIndexAudio(bool b = true);
+    bool indexAudio();
+    void setIndexAudio(bool b = true);
 
-    inline bool indexVideo() { return indexVideo_; }
-    inline void setIndexVideo(bool b = true);
+    bool indexVideo();
+    void setIndexVideo(bool b = true);
 
-    inline bool indexImage() { return indexImage_; }
-    inline void setIndexImage(bool b = true);
+    bool indexImage();
+    void setIndexImage(bool b = true);
 
-    inline bool indexDocs() { return indexDocs_; }
-    inline void setIndexDocs(bool b = true);
+    bool indexDocs();
+    void setIndexDocs(bool b = true);
 
-    inline bool indexDirs() { return indexDirs_; }
-    inline void setIndexDirs(bool b = true);
+    bool indexDirs();
+    void setIndexDirs(bool b = true);
 
-    inline bool indexHidden() { return indexHidden_; }
-    inline void setIndexHidden(bool b = true);
+    bool indexHidden();
+    void setIndexHidden(bool b = true);
 
-    inline bool followSymlinks() { return followSymlinks_; }
-    inline void setFollowSymlinks(bool b = true);
+    bool followSymlinks();
+    void setFollowSymlinks(bool b = true);
 
-    inline unsigned int scanInterval() { return indexIntervalTimer_.interval()/60000; }
+    uint scanInterval();
     void setScanInterval(uint minutes);
 
     bool fuzzy();
     void setFuzzy(bool b = true);
 
+    void updateIndex();
+
 private:
-    QPointer<ConfigWidget> widget_;
-    vector<shared_ptr<File>> index_;
-    Core::OfflineIndex offlineIndex_;
-    QMutex indexAccess_;
-    QPointer<Indexer> indexer_;
-    QTimer indexIntervalTimer_;
 
-    // Index Properties
-    QStringList rootDirs_;
-    bool indexAudio_;
-    bool indexVideo_;
-    bool indexImage_;
-    bool indexDocs_;
-    bool indexDirs_;
-    bool indexHidden_;
-    bool followSymlinks_;
-
-    /* const */
-    static const char* CFG_PATHS;
-    static const char* CFG_FUZZY;
-    static const bool  DEF_FUZZY;
-    static const char* CFG_INDEX_AUDIO;
-    static const bool  DEF_INDEX_AUDIO;
-    static const char* CFG_INDEX_VIDEO;
-    static const bool  DEF_INDEX_VIDEO;
-    static const char* CFG_INDEX_IMAGE;
-    static const bool  DEF_INDEX_IMAGE;
-    static const char* CFG_INDEX_DOC;
-    static const bool  DEF_INDEX_DOC;
-    static const char* CFG_INDEX_DIR;
-    static const bool  DEF_INDEX_DIR;
-    static const char* CFG_INDEX_HIDDEN;
-    static const bool  DEF_INDEX_HIDDEN;
-    static const char* CFG_FOLLOW_SYMLINKS;
-    static const bool  DEF_FOLLOW_SYMLINKS;
-    static const char* CFG_SCAN_INTERVAL;
-    static const uint  DEF_SCAN_INTERVAL;
-    static const char* IGNOREFILE;
+    FilesPrivate *d;
 
 signals:
+
     void rootDirsChanged(const QStringList&);
     void statusInfo(const QString&);
 
-private slots:
-    void onMinuteTick();
 };
 }
