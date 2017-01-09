@@ -28,6 +28,7 @@
 #include "query.h"
 
 const char* Files::Extension::CFG_PATHS           = "paths";
+const char* Files::Extension::CFG_IGNORES         = "ignores";
 const char* Files::Extension::CFG_FUZZY           = "fuzzy";
 const bool  Files::Extension::DEF_FUZZY           = false;
 const char* Files::Extension::CFG_INDEX_AUDIO     = "index_audio";
@@ -69,6 +70,11 @@ Files::Extension::Extension()
     rootDirs_ = s.value(CFG_PATHS).toStringList();
     if (rootDirs_.isEmpty())
         restorePaths();
+
+    QVariant v = s.value(CFG_IGNORES);
+    if (v.isValid() && v.canConvert(QMetaType::QStringList))
+        ignores_ = v.toStringList();
+
     s.endGroup();
 
     // Deserialize data
@@ -148,10 +154,15 @@ QWidget *Files::Extension::widget(QWidget *parent) {
 
         // Paths
         widget_->ui.listWidget_paths->addItems(rootDirs_);
+        widget_->ui.listWidget_ignores->addItems(ignores_);
         connect(this, &Extension::rootDirsChanged, widget_->ui.listWidget_paths, &QListWidget::clear);
         connect(this, &Extension::rootDirsChanged, widget_->ui.listWidget_paths, &QListWidget::addItems);
+        connect(this, &Extension::ignoreDirsChanged, widget_->ui.listWidget_ignores, &QListWidget::clear);
+        connect(this, &Extension::ignoreDirsChanged, widget_->ui.listWidget_ignores, &QListWidget::addItems);
         connect(widget_.data(), &ConfigWidget::requestAddPath, this, &Extension::addDir);
         connect(widget_.data(), &ConfigWidget::requestRemovePath, this, &Extension::removeDir);
+        connect(widget_.data(), &ConfigWidget::requestAddIgnorePath, this, &Extension::addIgnoreDir);
+        connect(widget_.data(), &ConfigWidget::requestRemoveIgnorePath, this, &Extension::removeIgnoreDir);
         connect(widget_->ui.pushButton_restore, &QPushButton::clicked, this, &Extension::restorePaths);
         connect(widget_->ui.pushButton_update, &QPushButton::clicked, this, &Extension::updateIndex, Qt::QueuedConnection);
 
@@ -277,6 +288,34 @@ void Files::Extension::removeDir(const QString &dirPath) {
 
     // Update the widget, if it is visible atm
     emit rootDirsChanged(rootDirs_);
+}
+
+
+
+/** ***************************************************************************/
+void Files::Extension::addIgnoreDir(const QString &regex) {
+    ignores_.append(regex);
+
+    QSettings s(qApp->applicationName());
+    s.beginGroup(Core::Extension::id);
+    s.setValue(CFG_IGNORES, ignores_);
+    s.endGroup();
+
+    emit ignoreDirsChanged(ignores_);
+}
+
+
+
+/** ***************************************************************************/
+void Files::Extension::removeIgnoreDir(const QString &regex) {
+    ignores_.removeAll(regex);
+
+    QSettings s(qApp->applicationName());
+    s.beginGroup(Core::Extension::id);
+    s.setValue(CFG_IGNORES, ignores_);
+    s.endGroup();
+
+    emit ignoreDirsChanged(ignores_);
 }
 
 

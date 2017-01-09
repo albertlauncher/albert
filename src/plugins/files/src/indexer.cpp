@@ -83,6 +83,12 @@ void Files::Extension::Indexer::run() {
             std::vector<QRegExp> ignores;
             ignores.push_back(QRegExp(extension_->IGNOREFILE, Qt::CaseSensitive, QRegExp::Wildcard));
 
+            // And those which are set in the config widget
+            QStringList& ignoreList = extension_->getIgnoreRegexes();
+            for (QString& str : ignoreList) {
+                ignores.push_back(QRegExp(str, Qt::CaseSensitive, QRegExp::Wildcard));
+            }
+
             // Read the ignore file, see http://doc.qt.io/qt-5/qregexp.html#wildcard-matching
             QFile file(QDir(canonicalPath).filePath(extension_->IGNOREFILE));
             if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {

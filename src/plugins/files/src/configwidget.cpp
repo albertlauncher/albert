@@ -17,7 +17,7 @@
 #include "configwidget.h"
 #include <QFileDialog>
 #include <QStandardPaths>
-#include <QStandardPaths>
+#include <QInputDialog>
 #include "mimetypechooser.h"
 
 /** ***************************************************************************/
@@ -26,6 +26,10 @@ Files::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
     connect(ui.pushButton_add, &QPushButton::clicked, this, &ConfigWidget::onButton_PathAdd);
     connect(ui.pushButton_remove, &QPushButton::clicked, this, &ConfigWidget::onButton_PathRemove);
     connect(ui.pushButton_advanced, &QPushButton::clicked, this, &ConfigWidget::onButton_Advanced);
+
+    connect(ui.pushButton_addIgnore, &QPushButton::clicked, this, &ConfigWidget::onButton_PathAddIgnore);
+    connect(ui.pushButton_removeIgnore, &QPushButton::clicked, this, &ConfigWidget::onButton_PathRemoveIgnore);
+
     // TODO: Implement mime filter
     ui.pushButton_advanced->hide();
 }
@@ -74,4 +78,25 @@ void Files::ConfigWidget::onButton_PathRemove() {
 void Files::ConfigWidget::onButton_Advanced() {
     MimeTypeChooser *c = new MimeTypeChooser;
     c->show();
+}
+
+
+
+/** ***************************************************************************/
+void Files::ConfigWidget::onButton_PathAddIgnore() {
+    QString path = QInputDialog::getText(this, "Add ignore-path", "Enter wildcard-path to ignore:");
+
+    if(path.isEmpty())
+        return;
+
+    emit requestAddIgnorePath(path);
+}
+
+
+
+/** ***************************************************************************/
+void Files::ConfigWidget::onButton_PathRemoveIgnore() {
+    if (ui.listWidget_ignores->currentItem() == nullptr)
+        return;
+    emit requestRemoveIgnorePath(ui.listWidget_ignores->currentItem()->text());
 }
