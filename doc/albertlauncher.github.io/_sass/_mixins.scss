@@ -1,0 +1,62 @@
+@mixin box-shadow($shadow...) {
+  -webkit-box-shadow: $shadow;
+     -moz-box-shadow: $shadow;
+          box-shadow: $shadow;
+}
+
+@mixin border-radius($radius...) {
+  -webkit-border-radius: $radius;
+     -moz-border-radius: $radius;
+          border-radius: $radius;
+}
+
+@mixin border-top-left-radius($radius...) {
+  -webkit-border-top-left-radius: $radius;
+     -moz-border-radius-topleft:  $radius;
+          border-top-left-radius: $radius;
+}
+
+@mixin border-top-right-radius($radius...) {
+  -webkit-border-top-right-radius: $radius;
+     -moz-border-radius-topright:  $radius;
+          border-top-right-radius: $radius;
+}
+
+@mixin transition($transition...) {
+    -moz-transition:    $transition;
+    -o-transition:      $transition;
+    -webkit-transition: $transition;
+    transition:         $transition;
+}
+@mixin transition-property($property...) {
+    -moz-transition-property:    $property;
+    -o-transition-property:      $property;
+    -webkit-transition-property: $property;
+    transition-property:         $property;
+}
+@mixin transition-duration($duration...) {
+    -moz-transition-duration:    $duration;
+    -o-transition-duration:      $duration;
+    -webkit-transition-duration: $duration;
+    transition-duration:         $duration;
+}
+@mixin transition-timing-function($timing...) {
+    -moz-transition-timing-function:    $timing;
+    -o-transition-timing-function:      $timing;
+    -webkit-transition-timing-function: $timing;
+    transition-timing-function:         $timing;
+}
+@mixin transition-delay($delay...) {
+    -moz-transition-delay:    $delay;
+    -o-transition-delay:      $delay;
+    -webkit-transition-delay: $delay;
+    transition-delay:         $delay;
+}
+
+@mixin user-select($select...) {
+  -webkit-user-select: $select;    /* Chrome all / Safari all */
+     -moz-user-select: $select;    /* Firefox all */
+      -ms-user-select: $select;    /* IE 10+ */
+       -o-user-select: $select;
+          user-select: $select;
+}

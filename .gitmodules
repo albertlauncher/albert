@@ -1,0 +1,3 @@
+[submodule "doc/albertlauncher.github.io/_site"]
+	path = doc/albertlauncher.github.io/_site
+	url = git://github.com/albertlauncher/albertlauncher.github.io

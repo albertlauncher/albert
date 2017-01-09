@@ -1,0 +1,30 @@
+<ul>
+    <li class="{% if page.overview %}current{% endif %}">
+        <a href="/">Home</a>
+    </li>
+    <li class=dropdown "{% if page.url contains '/docs/' %}current{% endif %}">
+        <a href="/docs/home/">Docs</a>
+        <div>
+            <ul>
+                <li><a target="blank" href="/docs/home/"            >Overview</a></li>
+                <li><a target="blank" href="/docs/installing/"      >Installing</a></li>
+                <li><a target="blank" href="/docs/using/"           >Using</a></li>
+                <li><a target="blank" href="/docs/extending/"       >Extending</a></li>
+                <li><a target="blank" href="/docs/theming/" >Theming</a></li>
+                <li><a target="blank" href="/docs/troubleshooting/" >Troubleshooting</a></li>
+                <li><a target="blank" href="/docs/contributing"     >Contriubting</a></li>
+                <li><a target="blank" href="/docs/changelog"        >Changes</a></li>
+                <li><a target="blank" href="/docs/contact"          >Contact</a></li>
+            </ul>
+        </div>
+    </li>
+    <li class="{% if page.author %}current{% endif %}">
+        <a href="/news/">News</a>
+    </li>
+    <li class="{% if page.url contains '/help/' %}current{% endif %}">
+        <a href="/help/">Help</a>
+    </li>
+    <li>
+        <a href="{{ site.repository }}"><span class="hide-on-mobiles">View on </span>GitHub</a>
+    </li>
+</ul>

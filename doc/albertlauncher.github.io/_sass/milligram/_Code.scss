@@ -1,0 +1,26 @@
+
+// Code
+// ––––––––––––––––––––––––––––––––––––––––––––––––––
+
+code {
+	background: $color-tertiary;
+	border-radius: .4rem;
+	font-size: 86%;
+	margin: 0 .2rem;
+	padding: .2rem .5rem;
+	white-space: nowrap;
+}
+
+pre {
+	background: $color-tertiary;
+	border-left: .3rem solid $color-primary;
+	font-family: 'Menlo', 'Consolas', 'Bitstream Vera Sans Mono', 'DejaVu Sans Mono', 'Monaco', monospace;
+
+	& > code {
+		background: transparent;
+		border-radius: 0;
+		display: block;
+		padding: 1rem 1.5rem;
+		white-space: pre;
+	}
+}

@@ -1,0 +1,79 @@
+// Popover
+// ––––––––––––––––––––––––––––––––––––––––––––––––––
+
+.dropdown
+  position: relative
+  display: inline-block
+
+  &:hover
+    & > div
+      display: block
+
+  & > div
+    display: none
+    list-style: none
+    background: $color-initial
+    border: 0.1rem solid $color-quaternary
+    border-radius: 0.5rem
+    filter: drop-shadow(0rem 0.5rem 0.5rem rgba(0, 0, 0, 0.3))
+    position: absolute
+    left: 50%
+    top: 90%
+    transform: translateX(-50%)
+
+    &:after,
+    &:before
+      border: solid transparent
+      border-color: transparent
+      border-width: 1rem
+      content: " "
+      height: 0
+      left: 50%
+      pointer-events: none
+      position: absolute
+      right: 1.7rem
+      top: 0
+      width: 0
+
+    &:after
+      border-bottom-color: $color-initial
+      transform: translate(-50%, -100%)
+
+    &:before
+      border-bottom-color: $color-quaternary
+      transform: translate(-50%, -102%)
+
+    & > ul
+      list-style: none
+      padding: 0
+      margin: 0
+
+      & > li
+        margin: 0
+
+        &:hover > a
+          background: $color-primary
+          border-bottom-color: $color-primary
+          color: $color-initial
+
+        & > a
+          display: block
+          border-bottom: 0.1rem solid $color-quaternary
+          color: $color-secondary
+          font-size: 1.2rem
+          padding: 0.8rem 2.5rem
+          position: relative
+          text-align: center
+          text-decoration: none
+          white-space: nowrap
+          @include transition-property(border-bottom-color, background-color, color)
+          @include transition-timing-function(cubic-bezier(.66,0,.33,1))
+          @include transition-duration(.33s)
+
+
+        &:first-child > a
+          border-radius: 0.5rem 0.5rem 0 0
+
+        &:last-child > a
+          border-bottom-width: 0
+          border-radius: 0 0 0.5rem 0.5rem
