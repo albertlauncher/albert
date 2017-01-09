@@ -1,15 +1,15 @@
-find_package(Qt5Widgets 5.2 REQUIRED)
+find_package(Qt5Network 5.2 REQUIRED)
+find_package(Qt5Sql 5.2 REQUIRED)
 find_package(Qt5Svg 5.2 REQUIRED)
-find_package(Qt5Network REQUIRED)
-find_package(Qt5Sql REQUIRED)
+find_package(Qt5Widgets 5.2 REQUIRED)
 
 FILE(GLOB_RECURSE SRC src/* metadata.json)
 
 set(LIB
-    ${Qt5Widgets_LIBRARIES}
-    ${Qt5Svg_LIBRARIES}
     ${Qt5Network_LIBRARIES}
     ${Qt5Sql_LIBRARIES}
+    ${Qt5Svg_LIBRARIES}
+    ${Qt5Widgets_LIBRARIES}
     albertcore
     globalshortcut
     xdg

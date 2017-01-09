@@ -2,16 +2,16 @@ cmake_minimum_required(VERSION 2.8.11)
 
 PROJECT(firefoxbookmarks)
 
-find_package(Qt5Widgets 5.2 REQUIRED)
-find_package(Qt5Concurrent REQUIRED)
+find_package(Qt5Concurrent 5.2 REQUIRED)
 find_package(Qt5Sql 5.2 REQUIRED)
+find_package(Qt5Widgets 5.2 REQUIRED)
 
 FILE(GLOB_RECURSE SRC src/* metadata.json)
 
 set(LIB
-    ${Qt5Widgets_LIBRARIES}
     ${Qt5Concurrent_LIBRARIES}
     ${Qt5Sql_LIBRARIES}
+    ${Qt5Widgets_LIBRARIES}
     albertcore
 )
 

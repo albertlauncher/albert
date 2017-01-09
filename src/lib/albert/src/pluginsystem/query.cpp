@@ -18,7 +18,7 @@
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QSqlError>
-#include <QtConcurrent/QtConcurrent>
+#include <QtConcurrent>
 #include <QVariant>
 #include <algorithm>
 #include <chrono>

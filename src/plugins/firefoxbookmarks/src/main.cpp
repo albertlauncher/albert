@@ -18,7 +18,7 @@
 #include <QApplication>
 #include <QCheckBox>
 #include <QClipboard>
-#include <QtConcurrent/QtConcurrent>
+#include <QtConcurrent>
 #include <QComboBox>
 #include <QDebug>
 #include <QDesktopServices>
@@ -196,19 +196,19 @@ QWidget *FirefoxBookmarks::Extension::widget(QWidget *parent) {
         connect(cmb, static_cast<void(QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged),
                 this, &Extension::setProfile);
 
+        // Fuzzy
         QCheckBox *ckb = d->widget->ui.fuzzy;
         ckb->setChecked(d->offlineIndex.fuzzy());
-        connect(ckb, &QCheckBox::clicked,
-                this, &Extension::changeFuzzyness);
+        connect(ckb, &QCheckBox::clicked, this, &Extension::changeFuzzyness);
 
+        // Which app to use
         ckb = d->widget->ui.openWithFirefox;
         ckb->setChecked(d->openWithFirefox);
-        connect(ckb, &QCheckBox::clicked,
-                this, &Extension::changeOpenPolicy);
+        connect(ckb, &QCheckBox::clicked, this, &Extension::changeOpenPolicy);
 
+        // Info
         d->widget->ui.label_statusbar->setText(QString("%1 bookmarks indexed.").arg(d->index.size()));
-        connect(this, &Extension::statusInfo,
-                d->widget->ui.label_statusbar, &QLabel::setText);
+        connect(this, &Extension::statusInfo, d->widget->ui.label_statusbar, &QLabel::setText);
 
     }
     return d->widget;
