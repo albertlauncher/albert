@@ -54,9 +54,9 @@ using namespace Core;
 namespace {
 const QString CFG_PROFILE = "profile";
 const QString CFG_FUZZY   = "fuzzy";
-const bool    DEF_FUZZY   = true;
+const bool    DEF_FUZZY   = false;
 const QString CFG_USE_FIREFOX   = "openWithFirefox";
-const bool    DEF_USE_FIREFOX   = true;
+const bool    DEF_USE_FIREFOX   = false;
 }
 
 
@@ -92,7 +92,7 @@ FirefoxBookmarks::Extension::Extension()
         throw QString("[%s] Firefox executable not found.").arg(Core::Extension::id);
 
     // Find firefox executable
-    d->firefoxExecutable = QStandardPaths::findExecutable("firefox").isEmpty();
+    d->firefoxExecutable = QStandardPaths::findExecutable("firefox");
     if (d->firefoxExecutable.isEmpty())
         throw QString("[%s] Firefox executable not found.").arg(Core::Extension::id);
 
@@ -328,6 +328,7 @@ void FirefoxBookmarks::Extension::changeFuzzyness(bool fuzzy) {
 void FirefoxBookmarks::Extension::changeOpenPolicy(bool useFirefox) {
     d->openWithFirefox = useFirefox;
     QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_USE_FIREFOX), useFirefox);
+    startIndexing();
 }
 
 
@@ -347,86 +348,68 @@ FirefoxBookmarks::Extension::indexFirefoxBookmarks() const {
     vector<shared_ptr<StandardIndexItem>> bookmarks;
 
     QSqlQuery result(database);
-    // Don't knwo what type=1 does, but it only returns real bookmarks (no folders) and some trash...
-    if (!result.exec("SELECT b.id,b.title,b.parent,p.url FROM moz_bookmarks b JOIN moz_places p ON b.fk = p.id WHERE b.type = 1")) {
+
+    if ( !result.exec("SELECT b1.guid, p.title, p.url, b2.title " // id, title, url, parent
+                      "FROM moz_bookmarks AS b1 "
+                      "JOIN moz_bookmarks AS b2 ON b1.parent = b2.id " // attach parent names
+                      "JOIN moz_places AS p  ON b1.fk = p.id " // attach title string and url
+                      "WHERE b1.type = 1 AND p.title IS NOT NULL") ) { // filter bookmarks with nonempty title string
         qWarning() << qPrintable(QString("[%1] Querying bookmarks failed: %2").arg(Core::Extension::id, result.lastError().text()));
         return vector<shared_ptr<Core::StandardIndexItem>>();
     }
 
     while (result.next()) {
-        QString id = result.value("id").toString();
-        QString title = result.value("title").toString();
-        QString urlstr = result.value("url").toString();
-        QString parent = result.value("parent").toString();
 
-        if (title.isEmpty()) continue;  // This is most likely something else
+        // Url will be used more often
+        QString urlstr = result.value(2).toString();
 
-        shared_ptr<StandardIndexItem> ssii  = std::make_shared<StandardIndexItem>(id);
-        ssii->setText(title);
+        // Create item
+        shared_ptr<StandardIndexItem> ssii  = std::make_shared<StandardIndexItem>(result.value(0).toString());
+        ssii->setText(result.value(1).toString());
         ssii->setSubtext(urlstr);
         ssii->setIconPath(":firefox");
 
+        // Add severeal secondary index keywords
         vector<Indexable::WeightedKeyword> weightedKeywords;
         QUrl url(urlstr);
         QString host = url.host();
-        weightedKeywords.emplace_back(title, USHRT_MAX);
+        weightedKeywords.emplace_back(ssii->text(), USHRT_MAX);
         weightedKeywords.emplace_back(host.left(host.size()-url.topLevelDomain().size()), USHRT_MAX/2);
-
-        // Scan the parent folders
-        QSqlQuery preparedQuery(database);
-        if (preparedQuery.prepare("SELECT id,title,parent,guid FROM moz_bookmarks WHERE id = :parentid")) {
-            QSqlQuery curpar(preparedQuery);
-            curpar.bindValue("parentid", parent);
-            while (curpar.exec()) {
-                if (curpar.first()) {
-                    QString guid = curpar.value("guid").toString();
-                    if (guid == "root________") // This is the root element
-                        break;
-                    title = curpar.value("title").toString();
-                    if (title.isEmpty()) {
-                        curpar.bindValue("parentid", curpar.value("parent"));
-                        continue;
-                    }
-                    weightedKeywords.emplace_back(title, USHRT_MAX/4);
-                } else {
-                    //qWarning("[%s:Indexer Thread] Statement yielded no result! (or broke)", extension_->name().toStdString().c_str());
-                    break;
-                }
-            }
-
-        } else
-            qWarning() << qPrintable(QString("[%1] Could not prepare statement!").arg(Core::Extension::id));
-
+        weightedKeywords.emplace_back(result.value(2).toString(), USHRT_MAX/4); // parent dirname
         ssii->setIndexKeywords(std::move(weightedKeywords));
 
+        // Add actions
         vector<shared_ptr<Action>> actions;
+
+        shared_ptr<StandardAction> actionDefault = std::make_shared<StandardAction>();
+        actionDefault->setText("Open in default browser");
+        actionDefault->setAction([urlstr](){
+            QDesktopServices::openUrl(QUrl(urlstr));
+        });
+
+        shared_ptr<StandardAction> actionFirefox = std::make_shared<StandardAction>();
+        actionFirefox->setText("Open in firefox");
+        actionFirefox->setAction([urlstr, this](){
+            QProcess::startDetached(d->firefoxExecutable, {urlstr});
+        });
+
         shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
-        bool exeDirect = d->openWithFirefox;
-
-        if (exeDirect)
-            action->setText("Open in firefox");  // If we have firefox we open ff-bookmarks in firefox
-        else
-            action->setText("Open in default browser"); // If the exe has another name (like iceweasel) which we didn't check for, lets assume the default browser handles this well
-
-        action->setAction([urlstr, exeDirect](){
-            if (exeDirect)
-                QProcess::startDetached("firefox", {urlstr});
-            else
-                QDesktopServices::openUrl(QUrl(urlstr));
-        });
-        actions.push_back(std::move(action));
-
-        action = std::make_shared<StandardAction>();
         action->setText("Copy url to clipboard");
-        action->setAction([urlstr](){
-            QApplication::clipboard()->setText(urlstr);
-        });
+        action->setAction([urlstr](){ QApplication::clipboard()->setText(urlstr); });
+
+        // Set the order of the actions
+        if ( d->openWithFirefox )  {
+            actions.push_back(std::move(actionFirefox));
+            actions.push_back(std::move(actionDefault));
+        } else {
+            actions.push_back(std::move(actionDefault));
+            actions.push_back(std::move(actionFirefox));
+        }
         actions.push_back(std::move(action));
 
         ssii->setActions(std::move(actions));
 
         bookmarks.push_back(std::move(ssii));
-
     }
 
     return bookmarks;

@@ -4,6 +4,7 @@
     "version" :         "1.0",
     "platform" :        "All",
     "group" :           "Extensions",
-    "author" :          "Martin Buergmann",
-    "dependencies" :    ["firefox"]
+    "author" :          "Martin Buergmann, Manuel Schneider",
+    "dependencies" :    ["firefox"],
+    "enabledbydefault": true
 }
