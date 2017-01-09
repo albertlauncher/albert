@@ -31,6 +31,12 @@
       </property>
       <item>
        <widget class="QListWidget" name="listWidget_paths">
+        <property name="alternatingRowColors">
+         <bool>true</bool>
+        </property>
+        <property name="uniformItemSizes">
+         <bool>true</bool>
+        </property>
         <property name="sortingEnabled">
          <bool>true</bool>
         </property>
