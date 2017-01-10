@@ -22,7 +22,7 @@
 
 namespace PROJECTNAMESPACE {
 
-class TemplatePrivate;
+class PROJECTNAMESPACEPrivate;
 class ConfigWidget;
 
 class Extension final :
@@ -54,7 +54,7 @@ public:
 
 private:
 
-    std::unique_ptr<TemplatePrivate> d;
+    std::unique_ptr<PROJECTNAMESPACEPrivate> d;
 
 };
 }

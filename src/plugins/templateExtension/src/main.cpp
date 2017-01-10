@@ -36,7 +36,7 @@ public:
 PROJECTNAMESPACE::Extension::Extension()
     : Core::Extension("org.albert.extension.PROJECTID"),
       Core::QueryHandler(Core::Extension::id),
-      d(new TemplatePrivate) {
+      d(new PROJECTNAMESPACEPrivate) {
 
     // You can throw in the constructor if something fatal happened
     throw std::runtime_error( "Description of error." );
