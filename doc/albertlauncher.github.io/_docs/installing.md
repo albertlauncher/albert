@@ -4,23 +4,22 @@ title: Installing Albert
 permalink: /docs/installing/
 ---
 
-There are two ways to get albert: Using a package manager or building albert from the sources. Using a package manager is highly recommended, since it is less error prone and the necessary dependencies are pulled automatically.
+There are two ways to get Albert: Using a package manager or building Albert from the sources. Using a package manager is highly recommended, since it is less error prone and the necessary dependencies are pulled automatically.
 
 ## Using package managers
-Currently albert is not in any of the major repositories. At least some user repositories contain it. Hopefully there will be more in future:
+Currently Albert is not in any of the major official repositories. At least some user repositories contain it. Hopefully there will be more in future:
 
-#### Archlinux - AUR (Official)
+###### Archlinux - AUR (Official)
 ```bash
 yaourt albert
 ```
-
-#### Fedora - COPR ([rabin-io](https://github.com/rabin-io))
+###### Fedora - COPR ([rabin-io](https://github.com/rabin-io))
 ```bash
 dnf copr enable rabiny/albert
 dnf install albert
 ```
 
-#### Ubuntu - PPA ([Andrew](https://github.com/hotice)/[webupd8](http://www.webupd8.org/))
+###### Ubuntu - PPA ([Andrew](https://github.com/hotice)/[webupd8](http://www.webupd8.org/))
 ```bash
 sudo add-apt-repository ppa:nilarimogard/webupd8
 sudo apt-get update
@@ -29,7 +28,7 @@ sudo apt-get install albert
 
 ## Building from sources
 
-Building from sources is the least convenient, but most flexible way. The build process is trivial, but you have to manage the dependencies on your own. Before you can start building albert you need some libraries.
+Building from sources is the least convenient, but most flexible way. The build process is trivial, but you have to manage the dependencies on your own. Before you can start building Albert you need some libraries.
 
 ### Prerequisites
 
@@ -48,12 +47,12 @@ Another concern is the difference between compile time and runtime dependencies.
 
 Here are some hints for the package names on some operating systems:
 
-**Arch Linux**    
+###### Arch Linux
 ```bash
 sudo pacman -S gcc cmake qt5-base qt5-x11extras qt5-svg muparser
 ```
 
-**Ubuntu 14.04 and newer**    
+###### Ubuntu 14.04 and newer
 ```bash
 sudo apt-get install g++ cmake qtbase5-dev libmuparser-dev \
   libqt5x11extras5-dev libqt5svg5-dev libqt5sql5-sqlite

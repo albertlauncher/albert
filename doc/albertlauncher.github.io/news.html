@@ -1,0 +1,18 @@
+---
+layout: page
+title: News
+permalink: /news/
+---
+
+{% for post in site.posts limit:4 %}
+  {% include news_item.html %}
+{% endfor %}
+
+<h2>All posts:</h2>
+<ul>
+  {% for post in site.posts %}
+    <li><span>{{ post.date | date_to_string }}</span> <a href="{{ post.url }}">{{ post.title }}</a></li>
+  {% endfor %}
+</ul>
+
+Be up to date with the <a href=/feed.xml>RSS feed</a>

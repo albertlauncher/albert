@@ -4,16 +4,16 @@
     - installing
     - using
     - extending
-    - theming
+#   - theming
     - faq
 
-- title: Dev guide
-  docs:
-    - extending/native
-    - extending/external
-    - extending/python
-    - extending/javascript
-    - extending/lua
+#- title: Dev guide
+#  docs:
+#    - extending/native
+#    - extending/external
+#    - extending/python
+#    - extending/javascript
+#    - extending/lua
 
 - title: Meta
   docs:

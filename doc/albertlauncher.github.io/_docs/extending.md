@@ -11,7 +11,7 @@ Albert is written in C++ using the Qt framework. Since C++ knowledge is not that
 
 The native and primary way is to use C++/Qt to write a QPlugin. This gives you the performance of C++, the full set of interfaces to implement, access to several utility classes and direct access to the application and Qt framework including the event loop, which allows asynchronous operations. Read more in the article about [native plugins](/docs/extending/native/).
 
-A simple and extremely flexible way to extend albert is to use executables. This makes writing plugins less complicated and accessible to a broader community, since *any* language that can be used to build executable files can be used. However this approach is expensive in resource consumption and has several restrictions. Read more in the article about [external plugins](/docs/extending/external/).
+A simple and extremely flexible way to extend Albert is to use executables. This makes writing plugins less complicated and accessible to a broader community, since *any* language that can be used to build executable files can be used. However this approach is expensive in resource consumption and has several restrictions. Read more in the article about [external plugins](/docs/extending/external/).
 
 
 

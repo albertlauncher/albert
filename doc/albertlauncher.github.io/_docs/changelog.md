@@ -3,8 +3,15 @@ layout: docs
 title: Changelog
 permalink: /docs/changelog/
 ---
+This is the feature centric changelog. For a complete changelog refer to the git log.
 
-##### v0.8.11 (2016-09-29)
+v0.9.0 (2017-01-??)
+
+- New extension system architecture
+- External extensions extension
+- Firefox extension
+
+v0.8.11 (2016-09-29)
 
 - Plugin abstraction architecture
 - New plugin support: Native C++ QPlugins
