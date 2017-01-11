@@ -241,6 +241,14 @@ int main(int argc, char *argv[]) {
         for ( int sig : { SIGINT, SIGTERM, SIGHUP, SIGPIPE } )
             signal(sig, shutdownHandler);
 
+        // Create a file which indicates first run and version
+        QFile file(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/firtstrun");
+        if (!file.open(QIODevice::WriteOnly|QIODevice::Text)) {
+            qWarning() << qPrintable(QString("Could not write to file %2: %3").arg(file.fileName(), file.errorString()));
+        }
+        QTextStream out(&file);
+        out << app->applicationVersion();
+
         // Print e message if the app was not terminated graciously
         QString filePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running";
         if (QFile::exists(filePath)){
