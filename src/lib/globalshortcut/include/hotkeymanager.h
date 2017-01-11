@@ -17,6 +17,7 @@
 #pragma once
 #include <QObject>
 #include <QSet>
+#include <memory>
 
 class HotkeyManager final : public QObject
 {
@@ -44,7 +45,8 @@ private:
 
     bool enabled_;
     QSet<int> hotkeys_;
-    HotkeyManagerPrivate* impl_;
+
+    std::unique_ptr<HotkeyManagerPrivate> d;
 
 signals:
 	void hotKeyPressed();

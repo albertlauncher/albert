@@ -16,6 +16,7 @@
 
 #pragma once
 #include <QObject>
+#include <memory>
 #include "extension.h"
 #include "externalextension.h"
 
@@ -51,7 +52,7 @@ public:
 
 private:
 
-    ExternalExtensionsPrivate *d;
+    std::unique_ptr<ExternalExtensionsPrivate> d;
 
 signals:
 

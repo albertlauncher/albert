@@ -76,8 +76,6 @@ ExternalExtensions::Extension::~Extension() {
         Core::ExtensionManager::instance->unregisterObject(it->get());
         it = std::reverse_iterator<decltype(d->externalExtensions)::iterator>(d->externalExtensions.erase(std::next(it).base()));
     }
-
-    delete d;
 }
 
 

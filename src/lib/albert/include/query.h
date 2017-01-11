@@ -103,7 +103,7 @@ private:
 
     void run();
 
-    QueryPrivate *d;
+    std::unique_ptr<QueryPrivate> d;
 
 signals:
 

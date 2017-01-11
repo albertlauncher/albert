@@ -72,7 +72,7 @@ Terminal::Extension::Extension()
 
 /** ***************************************************************************/
 Terminal::Extension::~Extension() {
-    delete d;
+
 }
 
 

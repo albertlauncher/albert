@@ -58,7 +58,7 @@ Debug::Extension::Extension()
 
 /** ***************************************************************************/
 Debug::Extension::~Extension() {
-    delete d;
+
 }
 
 

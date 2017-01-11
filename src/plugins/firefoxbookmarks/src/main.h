@@ -60,7 +60,7 @@ public:
 
 private:
 
-    FirefoxBookmarksPrivate *d;
+    std::unique_ptr<FirefoxBookmarksPrivate> d;
 
     void startIndexing();
     void finishIndexing();

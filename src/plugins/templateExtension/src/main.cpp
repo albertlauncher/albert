@@ -51,7 +51,7 @@ Template::Extension::Extension()
 
 /** ***************************************************************************/
 Template::Extension::~Extension() {
-    delete d;
+
 }
 
 

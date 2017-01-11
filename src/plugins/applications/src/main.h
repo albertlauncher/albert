@@ -17,6 +17,7 @@
 #pragma once
 #include <QObject>
 #include <QString>
+#include <memory>
 #include "extension.h"
 #include "queryhandler.h"
 
@@ -62,7 +63,7 @@ public:
 
 private:
 
-    ApplicationsPrivate *d;
+    std::unique_ptr<ApplicationsPrivate> d;
 
 signals:
 

@@ -21,15 +21,14 @@
 
 /** ***************************************************************************/
 HotkeyManager::HotkeyManager(QObject *parent) :
-    QObject(parent) {
-    impl_ = new HotkeyManagerPrivate;
-    connect(impl_, &HotkeyManagerPrivate::hotKeyPressed, this, &HotkeyManager::onHotkeyPressed);
+    QObject(parent), d(new HotkeyManagerPrivate) {
+    connect(d.get(), &HotkeyManagerPrivate::hotKeyPressed, this, &HotkeyManager::onHotkeyPressed);
     enabled_ = true;
 }
 
 /** ***************************************************************************/
 HotkeyManager::~HotkeyManager() {
-    delete impl_;
+
 }
 
 /** ***************************************************************************/
@@ -48,7 +47,7 @@ bool HotkeyManager::registerHotkey(const QKeySequence &hk) {
 bool HotkeyManager::registerHotkey(const int hk) {
     if (hotkeys_.contains(hk))
         return true;
-    if (impl_->registerNativeHotkey(hk)) {
+    if (d->registerNativeHotkey(hk)) {
         hotkeys_.insert(hk);
 		return true;
 	}
@@ -72,7 +71,7 @@ bool HotkeyManager::unregisterHotkey(const QKeySequence &hk) {
 void HotkeyManager::unregisterHotkey(const int hk) {
     if (!hotkeys_.contains(hk))
         return;
-    impl_->unregisterNativeHotkey(hk);
+    d->unregisterNativeHotkey(hk);
     hotkeys_.remove(hk);
 }
 

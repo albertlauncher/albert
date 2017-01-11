@@ -16,6 +16,7 @@
 
 #pragma once
 #include <QObject>
+#include <memory>
 #include "extension.h"
 #include "queryhandler.h"
 
@@ -49,7 +50,7 @@ public:
 
 private:
 
-    TerminalPrivate *d;
+    std::unique_ptr<TerminalPrivate> d;
 
 };
 }

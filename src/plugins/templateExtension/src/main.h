@@ -16,6 +16,7 @@
 
 #pragma once
 #include <QObject>
+#include <memory>
 #include "extension.h"
 #include "queryhandler.h"
 
@@ -53,7 +54,7 @@ public:
 
 private:
 
-    TemplatePrivate *d;
+    std::unique_ptr<TemplatePrivate> d;
 
 };
 }

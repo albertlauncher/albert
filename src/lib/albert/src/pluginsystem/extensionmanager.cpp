@@ -55,8 +55,6 @@ Core::ExtensionManager::ExtensionManager() : d(new ExtensionManagerPrivate) {
 Core::ExtensionManager::~ExtensionManager() {
     for (unique_ptr<ExtensionSpec> & extensionSpec : d->extensionSpecs_)
         unloadExtension(extensionSpec);
-
-    delete d;
 }
 
 

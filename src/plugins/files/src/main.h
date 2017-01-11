@@ -16,6 +16,7 @@
 
 #pragma once
 #include <QObject>
+#include <memory>
 #include "extension.h"
 #include "queryhandler.h"
 
@@ -85,7 +86,7 @@ public:
 
 private:
 
-    FilesPrivate *d;
+    std::unique_ptr<FilesPrivate> d;
 
 signals:
 

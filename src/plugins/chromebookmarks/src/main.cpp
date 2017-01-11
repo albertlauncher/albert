@@ -260,7 +260,7 @@ ChromeBookmarks::Extension::Extension()
 
 /** ***************************************************************************/
 ChromeBookmarks::Extension::~Extension() {
-    delete d;
+
 }
 
 

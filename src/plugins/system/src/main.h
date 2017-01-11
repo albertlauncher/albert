@@ -16,6 +16,7 @@
 
 #pragma once
 #include <QObject>
+#include <memory>
 #include "extension.h"
 #include "queryhandler.h"
 using std::vector;
@@ -48,7 +49,7 @@ public:
 
 private:
 
-    SystemPrivate *d;
+    std::unique_ptr<SystemPrivate> d;
 
 };
 }

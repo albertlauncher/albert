@@ -43,7 +43,7 @@ class Calculator::CalculatorPrivate
 {
 public:
     QPointer<ConfigWidget> widget;
-    mu::Parser *parser;
+    std::unique_ptr<mu::Parser> parser;
     QLocale loc;
     QString iconPath;
 };
@@ -68,7 +68,7 @@ Calculator::Extension::Extension()
     QString iconPath = XdgIconLookup::instance()->themeIconPath("calc");
     d->iconPath = iconPath.isNull() ? ":calc" : iconPath;
 
-    d->parser = new mu::Parser;
+    d->parser.reset(new mu::Parser);
 
     d->parser->SetDecSep(d->loc.decimalPoint().toLatin1());
     d->parser->SetThousandsSep(d->loc.groupSeparator().toLatin1());
@@ -78,8 +78,7 @@ Calculator::Extension::Extension()
 
 /** ***************************************************************************/
 Calculator::Extension::~Extension() {
-    delete d->parser;
-    delete d;
+
 }
 
 

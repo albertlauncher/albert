@@ -184,8 +184,8 @@ System::Extension::Extension()
 
 
 /** ***************************************************************************/
-System::Extension::~Extension(){
-    delete d;
+System::Extension::~Extension() {
+
 }
 
 

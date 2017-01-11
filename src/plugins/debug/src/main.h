@@ -16,6 +16,7 @@
 
 #pragma once
 #include <QObject>
+#include <memory>
 #include "extension.h"
 #include "queryhandler.h"
 
@@ -64,7 +65,7 @@ public:
 
 private:
 
-    DebugPrivate *d;
+    std::unique_ptr<DebugPrivate> d;
 
 };
 }

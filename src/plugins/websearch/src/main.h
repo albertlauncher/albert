@@ -16,7 +16,7 @@
 
 #pragma once
 #include <QAbstractTableModel>
-#include <vector>
+#include <memory>
 #include "extension.h"
 #include "queryhandler.h"
 #include "fallbackprovider.h"
@@ -65,7 +65,7 @@ public:
 
 private:
 
-    WebsearchPrivate *d;
+    std::unique_ptr<WebsearchPrivate> d;
 
 };
 

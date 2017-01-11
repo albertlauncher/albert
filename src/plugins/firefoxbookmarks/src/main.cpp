@@ -159,7 +159,7 @@ FirefoxBookmarks::Extension::Extension()
 
 /** ***************************************************************************/
 FirefoxBookmarks::Extension::~Extension() {
-    delete d;
+
 }
 
 

@@ -683,7 +683,7 @@ Applications::Extension::Extension()
 
 /** ***************************************************************************/
 Applications::Extension::~Extension() {
-    delete d;
+
 }
 
 

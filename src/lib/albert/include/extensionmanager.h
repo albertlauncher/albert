@@ -69,7 +69,7 @@ private:
     void loadExtension(const unique_ptr<ExtensionSpec> &);
     void unloadExtension(const unique_ptr<ExtensionSpec> &);
 
-    ExtensionManagerPrivate *d;
+    unique_ptr<ExtensionManagerPrivate> d;
 
 signals:
 

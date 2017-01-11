@@ -16,6 +16,7 @@
 
 #pragma once
 #include <QObject>
+#include <memory>
 #include "extension.h"
 #include "queryhandler.h"
 
@@ -61,7 +62,7 @@ public:
 
 private:
 
-    ChromeBookmarksPrivate *d;
+    std::unique_ptr<ChromeBookmarksPrivate> d;
 
 signals:
 

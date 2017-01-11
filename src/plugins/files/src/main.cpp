@@ -335,7 +335,6 @@ Files::Extension::~Extension() {
     d->abort = true;
     d->rerun = false;
     d->futureWatcher.waitForFinished();
-    delete d;
 }
 
 
