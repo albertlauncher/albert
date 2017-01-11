@@ -206,8 +206,10 @@ QWidget *FirefoxBookmarks::Extension::widget(QWidget *parent) {
         ckb->setChecked(d->openWithFirefox);
         connect(ckb, &QCheckBox::clicked, this, &Extension::changeOpenPolicy);
 
-        // Info
-        d->widget->ui.label_statusbar->setText(QString("%1 bookmarks indexed.").arg(d->index.size()));
+        // Status bar
+        ( d->futureWatcher.isRunning() )
+            ? d->widget->ui.label_statusbar->setText("Indexing bookmarks ...")
+            : d->widget->ui.label_statusbar->setText(QString("%1 bookmarks indexed.").arg(d->index.size()));
         connect(this, &Extension::statusInfo, d->widget->ui.label_statusbar, &QLabel::setText);
 
     }

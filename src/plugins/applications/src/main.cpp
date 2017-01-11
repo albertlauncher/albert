@@ -599,7 +599,7 @@ void Applications::ApplicationsPrivate::startIndexing() {
 
     // Notification
     qDebug() << qPrintable(QString("[%1] Start indexing in background thread.").arg(q->Core::Extension::id).toUtf8().constData());
-    emit q->statusInfo("Indexing desktop entries ...");
+    emit q->statusInfo("Indexing applications ...");
 
 }
 
@@ -628,7 +628,7 @@ void Applications::ApplicationsPrivate::finishIndexing() {
 
     // Notification
     qDebug() << qPrintable(QString("[%1] Indexing done (%2 items).").arg(q->Core::Extension::id).arg(index.size()));
-    emit q->statusInfo(QString("%1 desktop entries indexed.").arg(index.size()));
+    emit q->statusInfo(QString("%1 applications indexed.").arg(index.size()));
 }
 
 
@@ -705,9 +705,11 @@ QWidget *Applications::Extension::widget(QWidget *parent) {
         d->widget->ui.checkBox_fuzzy->setChecked(d->offlineIndex.fuzzy());
         connect(d->widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
 
-        // Info
-        d->widget->ui.label_info->setText(QString("%1 Applications indexed.").arg(d->index.size()));
-        connect(this, &Extension::statusInfo, d->widget->ui.label_info, &QLabel::setText);
+        // Status bar
+        ( d->futureWatcher.isRunning() )
+            ? d->widget->ui.label_statusbar->setText("Indexing applications ...")
+            : d->widget->ui.label_statusbar->setText(QString("%1 applications indexed.").arg(d->index.size()));
+        connect(this, &Extension::statusInfo, d->widget->ui.label_statusbar, &QLabel::setText);
     }
     return d->widget;
 }

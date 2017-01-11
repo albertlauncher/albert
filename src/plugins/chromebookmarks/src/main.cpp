@@ -279,9 +279,11 @@ QWidget *ChromeBookmarks::Extension::widget(QWidget *parent) {
         d->widget->ui.checkBox_fuzzy->setChecked(fuzzy());
         connect(d->widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
 
-        // Info
-        d->widget->ui.label_info->setText(QString("%1 bookmarks indexed.").arg(d->index.size()));
-        connect(this, &Extension::statusInfo, d->widget->ui.label_info, &QLabel::setText);
+        // Status bar
+        ( d->futureWatcher.isRunning() )
+            ? d->widget->ui.label_statusbar->setText("Indexing bookmarks ...")
+            : d->widget->ui.label_statusbar->setText(QString("%1 bookmarks indexed.").arg(d->index.size()));
+        connect(this, &Extension::statusInfo, d->widget->ui.label_statusbar, &QLabel::setText);
     }
     return d->widget;
 }

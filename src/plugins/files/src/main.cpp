@@ -382,9 +382,11 @@ QWidget *Files::Extension::widget(QWidget *parent) {
         d->widget->ui.spinBox_interval->setValue(scanInterval());
         connect(d->widget->ui.spinBox_interval, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Extension::setScanInterval);
 
-        // Info
-        d->widget->ui.label_info->setText(QString("%1 files indexed.").arg(d->index.size()));
-        connect(this, &Extension::statusInfo, d->widget->ui.label_info, &QLabel::setText);
+        // Status bar
+        ( d->futureWatcher.isRunning() )
+            ? d->widget->ui.label_statusbar->setText("Indexing files ...")
+            : d->widget->ui.label_statusbar->setText(QString("%1 files indexed.").arg(d->index.size()));
+        connect(this, &Extension::statusInfo, d->widget->ui.label_statusbar, &QLabel::setText);
 
     }
     return d->widget;
