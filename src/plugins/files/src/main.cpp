@@ -73,7 +73,7 @@ const char* IGNOREFILE          = ".albertignore";
 class Files::FilesPrivate
 {
 public:
-    FilesPrivate(Extension *q) : q(q), abortAndRerun(false) {}
+    FilesPrivate(Extension *q) : q(q), abort(false), rerun(false) {}
 
     Extension *q;
 
@@ -84,7 +84,8 @@ public:
     Core::OfflineIndex offlineIndex;
     QFutureWatcher<vector<shared_ptr<File>>> futureWatcher;
     QTimer indexIntervalTimer;
-    bool abortAndRerun;
+    bool abort;
+    bool rerun;
 
     // Index Properties
     bool indexAudio;
@@ -108,7 +109,8 @@ void Files::FilesPrivate::startIndexing() {
     // Abort and rerun
     if ( futureWatcher.future().isRunning() ) {
         emit q->statusInfo("Waiting for indexer to shut down ...");
-        abortAndRerun = true;
+        abort = true;
+        rerun = true;
         return;
     }
 
@@ -134,10 +136,14 @@ void Files::FilesPrivate::startIndexing() {
 /** ***************************************************************************/
 void Files::FilesPrivate::finishIndexing() {
 
-    if ( abortAndRerun ) {
-        emit q->statusInfo("Waitiafadfadfadsfdown ...");
-        abortAndRerun = false;
+    if ( rerun ) {
+        rerun = false;
         startIndexing();
+    }
+
+    // In case of abortion the returned data is invalid, quit
+    if ( abort ) {
+        abort = false;
         return;
     }
 
@@ -152,9 +158,6 @@ void Files::FilesPrivate::finishIndexing() {
     // Notification
     qDebug() << qPrintable(QString("[%1] Indexing done (%2 items).").arg(q->Core::Extension::id).arg(index.size()));
     emit q->statusInfo(QString("%1 files indexed.").arg(index.size()));
-
-    if ( abortAndRerun )
-        startIndexing();
 }
 
 
@@ -176,7 +179,7 @@ vector<shared_ptr<Files::File>> Files::FilesPrivate::indexFiles() const {
     std::function<void(const QFileInfo&)> indexRecursion =
             [this, &mimeDatabase, &newIndex, &indexedDirs, &filters, &indexRecursion](const QFileInfo& fileInfo){
 
-        if (abortAndRerun) return;
+        if (abort) return;
 
         const QString canonicalPath = fileInfo.canonicalFilePath();
 
@@ -248,7 +251,7 @@ vector<shared_ptr<Files::File>> Files::FilesPrivate::indexFiles() const {
     // Start the indexing
     for (const QString &rootDir : rootDirs) {
         indexRecursion(QFileInfo(rootDir));
-        if (abortAndRerun) return vector<shared_ptr<Files::File>>();
+        if (abort) return vector<shared_ptr<Files::File>>();
     }
 
     // Serialize data
@@ -327,6 +330,11 @@ Files::Extension::Extension()
 
 /** ***************************************************************************/
 Files::Extension::~Extension() {
+
+    // The indexer thread has sideeffects wait for termination
+    d->abort = true;
+    d->rerun = false;
+    d->futureWatcher.waitForFinished();
     delete d;
 }
 
