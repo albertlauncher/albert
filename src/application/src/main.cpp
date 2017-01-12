@@ -40,8 +40,10 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 void shutdownHandler(int);
 void dispatchMessage();
 
-static const char* CFG_TERM = "terminal";
-static const char* DEF_TERM = "xterm -e";
+namespace {
+const char* CFG_TERM = "terminal";
+const char* DEF_TERM = "xterm -e";
+}
 
 static QApplication           *app;
 static QueryManager           *queryManager;
@@ -53,9 +55,11 @@ static QMenu                  *trayIconMenu;
 static QLocalServer           *localServer;
 QString terminalCommand;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char **argv) {
 
     {
+        bool showSettingsWhenInitialized = false;
+
         /*
          *  INITIALIZE APPLICATION
          */
@@ -84,7 +88,7 @@ int main(int argc, char *argv[]) {
 
 
         /*
-         *  SINGLE INSTANCE / IPC
+         *  START IPC CLIENT
          */
 
         const QStringList args = parser.positionalArguments();
@@ -107,12 +111,6 @@ int main(int argc, char *argv[]) {
             qDebug("There is no other instance of albert running.");
             ::exit(EXIT_FAILURE);
         }
-
-        // Start server so second instances will close
-        QLocalServer::removeServer(app->applicationName());
-        localServer = new QLocalServer;
-        localServer->listen(app->applicationName());
-        QObject::connect(localServer, &QLocalServer::newConnection, dispatchMessage);
 
 
         /*
@@ -142,12 +140,46 @@ int main(int argc, char *argv[]) {
 
 
         /*
+         * DETECT FIRST RUN AND VERSION CHANGE
+         */
+
+        QString lastUsedVersion;
+        QFile firstRunFile(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/firstrun");
+        if ( firstRunFile.exists() ) {
+
+            //Try to open the first run file and read the version
+            if ( !firstRunFile.open(QIODevice::ReadWrite|QIODevice::Text) )
+                qCritical() << qPrintable(QString("Could not open file %1: %2").arg(firstRunFile.fileName(), firstRunFile.errorString()));
+            QTextStream(&firstRunFile) >> lastUsedVersion;
+
+        } else { // This is the first run
+
+            // Try to create a "firstRun"-file
+            if ( !firstRunFile.open(QIODevice::WriteOnly|QIODevice::Text) )
+                qCritical() << qPrintable(QString("Could not open file %1: %2").arg(firstRunFile.fileName(), firstRunFile.errorString()));
+
+            // Give the user a possibility to set a hotkey on first run
+            if ( QMessageBox(QMessageBox::Information, "First run",
+                             "Seems like this is the first time you run Albert. "
+                             "Most probably you want to set a hotkey to show "
+                             "Albert. Do you want to open the settings dialog?",
+                             QMessageBox::No|QMessageBox::Yes).exec() == QMessageBox::Yes )
+                showSettingsWhenInitialized = true;
+        }
+
+        // Write the current version into the file
+        QTextStream out(&firstRunFile);
+        out << app->applicationVersion();
+        firstRunFile.close();
+
+
+        /*
          * INITIALIZE DATABASE
          */
 
         QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
         if ( !db.isValid() )
-            qFatal("No sqlite abvailable");
+            qFatal("No sqlite available");
 
         if (!db.driver()->hasFeature(QSqlDriver::Transactions))
             qFatal("QSqlDriver::Transactions not available.");
@@ -158,7 +190,7 @@ int main(int argc, char *argv[]) {
 
         db.transaction();
 
-        // Creat tables
+        // Create tables
         QSqlQuery q;
         if (!q.exec("CREATE TABLE IF NOT EXISTS usages ( "
                     "  input TEXT NOT NULL, "
@@ -185,10 +217,31 @@ int main(int argc, char *argv[]) {
 
 
         /*
-         * Build Tray Icon
+         *  INITIALIZE APPLICATION COMPONENTS
          */
 
+        ExtensionManager::instance = new Core::ExtensionManager;
         trayIcon         = new TrayIcon;
+        trayIconMenu     = new QMenu;
+        hotkeyManager    = new HotkeyManager;
+        mainWindow       = new MainWindow;
+        queryManager     = new QueryManager(ExtensionManager::instance);
+        localServer      = new QLocalServer;
+
+
+        /*
+         *  START IPC SERVER
+         */
+
+        // Start server so second instances will close
+         QLocalServer::removeServer(app->applicationName());
+        localServer->listen(app->applicationName());
+        QObject::connect(localServer, &QLocalServer::newConnection, dispatchMessage);
+
+
+        /*
+         * Build Tray Icon
+         */
 
         QAction* showAction     = new QAction("Show", trayIconMenu);
         QAction* settingsAction = new QAction("Settings", trayIconMenu);
@@ -198,7 +251,6 @@ int main(int argc, char *argv[]) {
         settingsAction->setIcon(app->style()->standardIcon(QStyle::SP_FileDialogDetailedView));
         quitAction->setIcon(app->style()->standardIcon(QStyle::SP_TitleBarCloseButton));
 
-        trayIconMenu = new QMenu;
         trayIconMenu->addAction(showAction);
         trayIconMenu->addAction(settingsAction);
         trayIconMenu->addSeparator();
@@ -211,28 +263,30 @@ int main(int argc, char *argv[]) {
          *  Hotkey
          */
 
-        hotkeyManager    = new HotkeyManager;
-
         QSettings settings(qApp->applicationName());
         QString hotkey;
-        if ( parser.isSet("hotkey") )
+
+        // Check for a command line override
+        if ( parser.isSet("hotkey") ) {
             hotkey = parser.value("hotkey");
-        else if (settings.contains("hotkey"))
-            hotkey = settings.value("hotkey", QString()).toString();
-        if (!hotkey.isNull() && !hotkeyManager->registerHotkey(hotkey)) {
-            QMessageBox msgBox(QMessageBox::Critical, "Error",
-                               "Hotkey is not set or invalid. Do you want to open the settings?",
-                               QMessageBox::No|QMessageBox::Yes);
-            msgBox.exec();
-            if ( msgBox.result() == QMessageBox::Yes )
-                settingsWidget->show();
+            if ( !hotkeyManager->registerHotkey(hotkey) )
+                qFatal("Failed to set hotkey to %s.", hotkey.toLocal8Bit().constData());
+
+        // Check if the settings contains a hotkey entry
+        } else if ( settings.contains("hotkey") ) {
+            hotkey = settings.value("hotkey").toString();
+            if ( !hotkeyManager->registerHotkey(hotkey) ){
+                if ( QMessageBox(QMessageBox::Critical, "Error",
+                                 QString("Failed to set hotkey: '%1'. Do you want to open the settings?").arg(hotkey),
+                                 QMessageBox::No|QMessageBox::Yes).exec() == QMessageBox::Yes )
+                    showSettingsWhenInitialized = true;
+            }
         }
 
 
         /*
          *  MISC
          */
-
 
         // Define the (global extern) terminal command
         terminalCommand = settings.value(CFG_TERM, DEF_TERM).toString();
@@ -241,31 +295,10 @@ int main(int argc, char *argv[]) {
         for ( int sig : { SIGINT, SIGTERM, SIGHUP, SIGPIPE } )
             signal(sig, shutdownHandler);
 
-        // Create a file which indicates first run and version
-        QFile file(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/firtstrun");
-        if (!file.open(QIODevice::WriteOnly|QIODevice::Text)) {
-            qWarning() << qPrintable(QString("Could not write to file %2: %3").arg(file.fileName(), file.errorString()));
-        }
-        QTextStream out(&file);
-        out << app->applicationVersion();
-
-        // Print e message if the app was not terminated graciously
+        // Print a message if the app was not terminated graciously
         QString filePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running";
         if (QFile::exists(filePath)){
             qWarning() << "Application has not been terminated graciously.";
-            if (settings.value("warnAboutNonGraciousQuit") != false){
-                QMessageBox msgBox(QMessageBox::Critical, "Error",
-                                   "Albert has not been quit graciously! This "
-                                   "means your settings and data have not been "
-                                   "saved. If you did not kill albert yourself, "
-                                   "albert most likely crashed. Please report this "
-                                   "on github. Do you want to ignore this warnings "
-                                   "in future?",
-                                   QMessageBox::Yes|QMessageBox::No);
-                msgBox.exec();
-                if ( msgBox.result() == QMessageBox::Yes )
-                    settings.setValue("warnAboutNonGraciousQuit", false);
-            }
         } else {
             // Create the running indicator file
             QFile file(filePath);
@@ -274,15 +307,15 @@ int main(int argc, char *argv[]) {
             file.close();
         }
 
-        ExtensionManager::instance = new Core::ExtensionManager;
-
-        mainWindow       = new MainWindow;
-
-        queryManager     = new QueryManager(ExtensionManager::instance);
-
+        // Load extensions
         Core::ExtensionManager::instance->reloadExtensions();
 
+        // Application is initialized create the settings widget
         settingsWidget   = new SettingsWidget(mainWindow, hotkeyManager, ExtensionManager::instance, trayIcon);
+
+        // If somebody requested the settings dialog open it
+        if ( showSettingsWhenInitialized )
+            settingsWidget->show();
 
 
         /*
