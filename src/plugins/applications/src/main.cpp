@@ -261,22 +261,41 @@ QStringList shellLexerSplit(const QString &input) {
 
 
 /** ***************************************************************************/
-vector<shared_ptr<StandardIndexItem>> indexApplications(const QStringList & rootDirs) {
+vector<shared_ptr<StandardIndexItem>> indexApplications(const QStringList &rootDirs) {
 
     // Get a new index [O(n)]
     vector<shared_ptr<StandardIndexItem>> desktopEntries;
     QStringList xdg_current_desktop = QString(getenv("XDG_CURRENT_DESKTOP")).split(':',QString::SkipEmptyParts);
     QLocale loc;
-
+    QStringList standarsAppDirs = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
 
     // Iterate over all desktop files
     for ( const QString &dir : rootDirs ) {
         QDirIterator fIt(dir, QStringList("*.desktop"), QDir::Files,
                          QDirIterator::Subdirectories|QDirIterator::FollowSymlinks);
         while (fIt.hasNext()) {
+            fIt.next();
 
             map<QString,map<QString,QString>> sectionMap;
             map<QString,map<QString,QString>>::iterator sectionIterator;
+
+            // Build the id
+
+            QString id;
+
+            // If file is in standard path use standard method else filename to build id
+            if ( std::any_of(standarsAppDirs.begin(), standarsAppDirs.end(),
+                             [&fIt](const QString &dir){ return fIt.filePath().startsWith(dir); }) )
+                id = fIt.filePath().remove(QRegularExpression("^.*applications/")).replace("/","-");
+            else
+                id = fIt.fileName();
+
+            // Skip duplicate ids
+            if ( std::find_if(desktopEntries.begin(), desktopEntries.end(),
+                              [&id](const shared_ptr<StandardIndexItem> & desktopEntry){
+                                  return id == desktopEntry->id();
+                              }) != desktopEntries.end())
+                continue;
 
             /*
              * Get the data from the desktop file
@@ -284,7 +303,7 @@ vector<shared_ptr<StandardIndexItem>> indexApplications(const QStringList & root
 
             // Read the file into a map
             {
-            QFile file(fIt.next());
+            QFile file(fIt.filePath());
             if (!file.open(QIODevice::ReadOnly| QIODevice::Text)) continue;
             QTextStream stream(&file);
             QString currentGroup;
@@ -510,7 +529,6 @@ vector<shared_ptr<StandardIndexItem>> indexApplications(const QStringList & root
              */
 
             // Finally we got everything, build the item
-            QString id = fIt.filePath().remove(QRegularExpression("^.*applications/")).replace("/","-");
             shared_ptr<StandardIndexItem> ssii = std::make_shared<StandardIndexItem>(id);
 
             // Set Name
