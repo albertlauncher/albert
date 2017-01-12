@@ -146,8 +146,12 @@ int main(int argc, char *argv[]) {
          */
 
         QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+        if ( !db.isValid() )
+            qFatal("No sqlite abvailable");
+
         if (!db.driver()->hasFeature(QSqlDriver::Transactions))
-            qFatal("No sqlite driver available.");
+            qFatal("QSqlDriver::Transactions not available.");
+
         db.setDatabaseName(QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).filePath("core.db"));
         if (!db.open())
             qFatal("Unable to establish a database connection.");
@@ -236,6 +240,14 @@ int main(int argc, char *argv[]) {
         // Quit gracefully on unix signals
         for ( int sig : { SIGINT, SIGTERM, SIGHUP, SIGPIPE } )
             signal(sig, shutdownHandler);
+
+        // Create a file which indicates first run and version
+        QFile file(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/firtstrun");
+        if (!file.open(QIODevice::WriteOnly|QIODevice::Text)) {
+            qWarning() << qPrintable(QString("Could not write to file %2: %3").arg(file.fileName(), file.errorString()));
+        }
+        QTextStream out(&file);
+        out << app->applicationVersion();
 
         // Print e message if the app was not terminated graciously
         QString filePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running";

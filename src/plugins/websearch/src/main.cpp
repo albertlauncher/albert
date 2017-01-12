@@ -23,9 +23,11 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QPointer>
 #include <QStandardPaths>
 #include <QUrl>
 #include <map>
+#include <vector>
 #include "main.h"
 #include "configwidget.h"
 #include "item.h"
@@ -36,6 +38,8 @@ using namespace Core;
 
 
 namespace {
+
+enum class Section{ Enabled, Name, Trigger, URL, Count };
 
 std::map<QString,QIcon> iconCache;
 
@@ -201,9 +205,9 @@ Websearch::Extension::Extension()
         } else
             qWarning() << "Could not open file: " << dataFile.fileName();
 
-        // Whatever delete it
+        // Whatever remove it
         if ( !dataFile.remove() )
-            qWarning() << "Could not delete file: " << dataFile.fileName();
+            qWarning() << "Could not remove file: " << dataFile.fileName();
 
         // Hmm what to do?
 
@@ -218,7 +222,7 @@ Websearch::Extension::Extension()
 
 /** ***************************************************************************/
 Websearch::Extension::~Extension() {
-    delete d;
+
 }
 
 
@@ -230,7 +234,7 @@ QWidget *Websearch::Extension::widget(QWidget *parent) {
         d->widget->ui.tableView_searches->setModel(this);
         // TODO Fix all data() if least supported Qt supports its omittance
         connect(d->widget.data(), &ConfigWidget::restoreDefaults,
-                std::bind(&WebsearchPrivate::restoreDefaults, d));
+                std::bind(&WebsearchPrivate::restoreDefaults, std::ref(d)));
     }
     return d->widget;
 }

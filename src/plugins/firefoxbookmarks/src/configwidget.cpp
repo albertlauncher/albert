@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014-2016 Manuel Schneider
+// Copyright (C) 2016 Martin Buergmann
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,33 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
-#include <QObject>
-#include <QRunnable>
-#include <QMutex>
-#include "main.h"
+#include "configwidget.h"
 
-namespace Applications {
+/** ***************************************************************************/
+FirefoxBookmarks::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
+    ui.setupUi(this);
+}
 
-class Extension::Indexer final : public QObject,  public QRunnable
-{
-    Q_OBJECT
 
-public:
 
-    Indexer(Extension *ext) : extension_(ext), abort_(false) {}
-
-    void run() override;
-    void abort(){abort_=true;}
-
-private:
-
-    Extension *extension_;    
-    bool abort_;
-
-signals:
-
-    void statusInfo(const QString&);
-};
+/** ***************************************************************************/
+FirefoxBookmarks::ConfigWidget::~ConfigWidget() {
 
 }

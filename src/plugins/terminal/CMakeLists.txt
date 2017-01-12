@@ -4,7 +4,7 @@ PROJECT(terminal)
 
 find_package(Qt5Widgets 5.2 REQUIRED)
 
-FILE(GLOB_RECURSE SRC src/*)
+FILE(GLOB_RECURSE SRC src/* metadata.json)
 
 set(LIB
     ${Qt5Widgets_LIBRARIES}

@@ -31,6 +31,12 @@
       </property>
       <item>
        <widget class="QListWidget" name="listWidget_paths">
+        <property name="alternatingRowColors">
+         <bool>true</bool>
+        </property>
+        <property name="uniformItemSizes">
+         <bool>true</bool>
+        </property>
         <property name="sortingEnabled">
          <bool>true</bool>
         </property>
@@ -94,7 +100,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QLabel" name="label_info">
+      <widget class="QLabel" name="label_statusbar">
        <property name="text">
         <string/>
        </property>

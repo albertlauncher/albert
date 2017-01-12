@@ -16,19 +16,35 @@
 
 #include <QApplication>
 #include <QDebug>
+#include <QPointer>
 #include <QSettings>
 #include <chrono>
 #include <thread>
 #include "configwidget.h"
-#include "extension.h"
+#include "main.h"
 #include "query.h"
 #include "standarditem.h"
 using Core::StandardItem;
 
+
+class Debug::DebugPrivate
+{
+public:
+    QPointer<ConfigWidget> widget;
+    int delay;
+    int count;
+    bool async;
+    QString trigger;
+};
+
+
+
+
 /** ***************************************************************************/
 Debug::Extension::Extension()
     : Core::Extension("org.albert.extension.debug"),
-      Core::QueryHandler(Core::Extension::id) {
+      Core::QueryHandler(Core::Extension::id),
+      d(new DebugPrivate) {
     QSettings s(qApp->applicationName());
     s.beginGroup(Core::QueryHandler::id);
     setDelay(s.value("delay", 50).toInt());
@@ -42,15 +58,23 @@ Debug::Extension::Extension()
 
 /** ***************************************************************************/
 Debug::Extension::~Extension() {
+
 }
 
 
 
 /** ***************************************************************************/
 QWidget *Debug::Extension::widget(QWidget *parent) {
-    if (widget_.isNull())
-        widget_ = new ConfigWidget(this, parent);
-    return widget_;
+    if (d->widget.isNull())
+        d->widget = new ConfigWidget(this, parent);
+    return d->widget;
+}
+
+
+
+/** ***************************************************************************/
+QString Debug::Extension::trigger() const {
+    return d->trigger;
 }
 
 
@@ -60,10 +84,10 @@ void Debug::Extension::handleQuery(Core::Query * query) {
     if (!query->isValid())
         return;
 
-    for (int i = 0 ; i < count_; ++i){
+    for (int i = 0 ; i < d->count; ++i){
 
-        if (async_)
-            std::this_thread::sleep_for(std::chrono::milliseconds(delay_));
+        if (d->async)
+            std::this_thread::sleep_for(std::chrono::milliseconds(d->delay));
 
         if (!query->isValid())
             return;
@@ -79,9 +103,23 @@ void Debug::Extension::handleQuery(Core::Query * query) {
 
 
 /** ***************************************************************************/
+int Debug::Extension::count() const{
+    return d->count;
+}
+
+
+
+/** ***************************************************************************/
 void Debug::Extension::setCount(const int &count){
     QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::QueryHandler::id, "count"), count);
-    count_ = count;
+    d->count = count;
+}
+
+
+
+/** ***************************************************************************/
+bool Debug::Extension::async() const{
+    return d->async;
 }
 
 
@@ -89,7 +127,14 @@ void Debug::Extension::setCount(const int &count){
 /** ***************************************************************************/
 void Debug::Extension::setAsync(bool async){
     QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::QueryHandler::id, "async"), async);
-    async_ = async;
+    d->async = async;
+}
+
+
+
+/** ***************************************************************************/
+int Debug::Extension::delay() const {
+    return d->delay;
 }
 
 
@@ -97,7 +142,7 @@ void Debug::Extension::setAsync(bool async){
 /** ***************************************************************************/
 void Debug::Extension::setDelay(const int &delay) {
     QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::QueryHandler::id, "delay"), delay);
-    delay_ = delay;
+    d->delay = delay;
 }
 
 
@@ -105,7 +150,7 @@ void Debug::Extension::setDelay(const int &delay) {
 /** ***************************************************************************/
 void Debug::Extension::setTrigger(const QString &trigger){
     QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::QueryHandler::id, "trigger"), trigger);
-    trigger_ = trigger;
+    d->trigger = trigger;
 }
 
 

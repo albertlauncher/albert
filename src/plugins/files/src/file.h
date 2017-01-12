@@ -18,15 +18,9 @@
 #include <QMimeType>
 #include <map>
 #include <vector>
-#include <chrono>
 #include <memory>
 #include "indexable.h"
 #include "item.h"
-using std::map;
-using std::vector;
-using std::shared_ptr;
-using std::chrono::system_clock;
-class Action;
 
 namespace Files {
 
@@ -51,8 +45,8 @@ public:
     QString text() const override;
     QString subtext() const override;
     QString iconPath() const override;
-    vector<Core::Indexable::WeightedKeyword> indexKeywords() const override;
-    vector<shared_ptr<Core::Action>> actions() override;
+    std::vector<Core::Indexable::WeightedKeyword> indexKeywords() const override;
+    std::vector<std::shared_ptr<Core::Action>> actions() override;
 
     /*
      * Item specific members
@@ -64,17 +58,11 @@ public:
     /** Return the mimetype of the file */
     const QMimeType &mimetype() const { return mimetype_; }
 
-    /** Serialize the desktop entry */
-    void serialize(QDataStream &out);
-
-    /** Deserialize the desktop entry */
-    void deserialize(QDataStream &in);
-
 private:
 
     QString path_;
     QMimeType mimetype_;
-    static map<QString, QString> iconCache_;
+    static std::map<QString, QString> iconCache_;
 };
 
 }

@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014-2015 Manuel Schneider
+// Copyright (C) 2016 Martin Buergmann
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,13 +16,17 @@
 
 #pragma once
 #include <QObject>
-#include <memory>
 #include "extension.h"
 #include "queryhandler.h"
+#include <memory>
+#include <vector>
+namespace Core {
+class StandardIndexItem;
+}
 
-namespace Template {
+namespace FirefoxBookmarks {
 
-class TemplatePrivate;
+class FirefoxBookmarksPrivate;
 class ConfigWidget;
 
 class Extension final :
@@ -39,22 +43,31 @@ public:
     ~Extension();
 
     /*
-     * Implementation of extension interface
+     * Implementation of interfaces
      */
 
-    QString name() const override { return "Template"; }
+    QString name() const override { return "Firefox bookmarks"; }
     QWidget *widget(QWidget *parent = nullptr) override;
-    void setupSession() override;
-    void teardownSession() override;
     void handleQuery(Core::Query * query) override;
 
     /*
      * Extension specific members
      */
 
+    void setProfile(const QString &profile);
+    void changeFuzzyness(bool fuzzy);
+    void changeOpenPolicy(bool withFirefox);
+
 private:
 
-    std::unique_ptr<TemplatePrivate> d;
+    std::unique_ptr<FirefoxBookmarksPrivate> d;
 
+    void startIndexing();
+    void finishIndexing();
+    std::vector<std::shared_ptr<Core::StandardIndexItem>> indexFirefoxBookmarks() const;
+
+signals:
+
+    void statusInfo(const QString&);
 };
 }

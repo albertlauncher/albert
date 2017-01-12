@@ -16,23 +16,14 @@
 
 #pragma once
 #include <QObject>
-#include <QTimer>
-#include <QPointer>
-#include <QMutex>
-#include <QFileSystemWatcher>
-#include <vector>
 #include <memory>
 #include "extension.h"
 #include "queryhandler.h"
-#include "offlineindex.h"
-using std::vector;
-using std::shared_ptr;
-namespace Core {
-class StandardIndexItem;
-}
+
 
 namespace ChromeBookmarks {
 
+class ChromeBookmarksPrivate;
 class ConfigWidget;
 
 class Extension final :
@@ -42,8 +33,6 @@ class Extension final :
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
-
-    class Indexer;
 
 public:
 
@@ -72,21 +61,13 @@ public:
     void updateIndex();
 
 private:
-    QPointer<ConfigWidget> widget_;
-    vector<shared_ptr<Core::StandardIndexItem>> index_;
-    Core::OfflineIndex offlineIndex_;
-    QMutex indexAccess_;
-    QPointer<Indexer> indexer_;
-    QString bookmarksFile_;
-    QFileSystemWatcher watcher_;
 
-    /* const */
-    static const char* CFG_PATH;
-    static const char* CFG_FUZZY;
-    static const bool  DEF_FUZZY;
+    std::unique_ptr<ChromeBookmarksPrivate> d;
 
 signals:
+
     void pathChanged(const QString&);
     void statusInfo(const QString&);
+
 };
 }

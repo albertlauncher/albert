@@ -1,29 +1,30 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-PROJECT(applications)
+PROJECT(firefoxbookmarks)
 
 find_package(Qt5Concurrent 5.2 REQUIRED)
+find_package(Qt5Sql 5.2 REQUIRED)
 find_package(Qt5Widgets 5.2 REQUIRED)
 
 FILE(GLOB_RECURSE SRC src/* metadata.json)
 
 set(LIB
     ${Qt5Concurrent_LIBRARIES}
+    ${Qt5Sql_LIBRARIES}
     ${Qt5Widgets_LIBRARIES}
     albertcore
-    xdg
-)
-
-qt5_add_resources(QRC
-    ${PROJECT_NAME}.qrc
 )
 
 qt5_wrap_ui(UI
     configwidget.ui
 )
 
+qt5_add_resources(QRC
+    ${PROJECT_NAME}.qrc
+)
+
 # Define the target
-add_library(${PROJECT_NAME} SHARED ${SRC} ${QRC} ${UI})
+add_library(${PROJECT_NAME} SHARED ${SRC} ${UI} ${QRC})
 
 # Set INCLUDE_DIRS and INTERFACE_INCLUDE_DIRS
 target_include_directories(${PROJECT_NAME} PRIVATE src/)

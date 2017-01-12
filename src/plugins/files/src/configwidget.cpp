@@ -41,7 +41,7 @@ Files::ConfigWidget::~ConfigWidget() {
 
 /** ***************************************************************************/
 void Files::ConfigWidget::setInfo(const QString &info) {
-    ui.label_info->setText(ui.label_info->fontMetrics().elidedText(info, Qt::ElideMiddle, ui.label_info->width()));
+    ui.label_statusbar->setText(ui.label_statusbar->fontMetrics().elidedText(info, Qt::ElideMiddle, ui.label_statusbar->width()));
 }
 
 

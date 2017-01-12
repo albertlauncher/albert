@@ -16,14 +16,13 @@
 
 #pragma once
 #include <QObject>
-#include <QPointer>
-#include <QFileSystemWatcher>
-#include <set>
+#include <memory>
 #include "extension.h"
 #include "queryhandler.h"
 
 namespace Terminal {
 
+class TerminalPrivate;
 class ConfigWidget;
 
 class Extension final :
@@ -37,6 +36,7 @@ class Extension final :
 public:
 
     Extension();
+    ~Extension();
 
     /*
      * Implementation of extension interface
@@ -44,19 +44,13 @@ public:
 
     QString name() const override { return "Terminal"; }
     QWidget *widget(QWidget *parent = nullptr) override;
+    QString trigger() const override {return ">";}
     void teardownSession() override;
     void handleQuery(Core::Query * query) override;
-    QString trigger() const override {return ">";}
 
 private:
 
-    void rebuildIndex();
-
-    QPointer<ConfigWidget> widget_;
-    QFileSystemWatcher watcher_;
-    std::set<QString> index_;
-    bool dirtyFlag_;
-    QString iconPath_;
+    std::unique_ptr<TerminalPrivate> d;
 
 };
 }

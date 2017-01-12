@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.11)
 
 PROJECT(files)
 
+find_package(Qt5Concurrent 5.2 REQUIRED)
 find_package(Qt5Widgets 5.2 REQUIRED)
 
 include_directories(
@@ -9,9 +10,10 @@ include_directories(
     ../../application/pluginsystem
 )
 
-FILE(GLOB_RECURSE SRC src/*)
+FILE(GLOB_RECURSE SRC src/* metadata.json)
 
 set(LIB
+    ${Qt5Concurrent_LIBRARIES}
     ${Qt5Widgets_LIBRARIES}
     albertcore
     xdg

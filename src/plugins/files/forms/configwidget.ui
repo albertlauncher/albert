@@ -303,7 +303,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QLabel" name="label_info">
+    <widget class="QLabel" name="label_statusbar">
      <property name="text">
       <string/>
      </property>

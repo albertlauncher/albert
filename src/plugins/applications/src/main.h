@@ -15,27 +15,16 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QFileSystemWatcher>
-#include <QPointer>
 #include <QObject>
 #include <QString>
-#include <QMutex>
-#include <QTimer>
-#include <QList>
-#include <vector>
 #include <memory>
 #include "extension.h"
 #include "queryhandler.h"
-#include "offlineindex.h"
-using std::vector;
-using std::shared_ptr;
-namespace Core {
-class StandardIndexItem;
-}
 
 
 namespace Applications {
 
+class ApplicationsPrivate;
 class ConfigWidget;
 
 class Extension final :
@@ -46,15 +35,13 @@ class Extension final :
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
-    class Indexer;
-
 public:
 
     Extension();
     ~Extension();
 
     /*
-     * Implementation of extension interface
+     * Implementation of interfaces
      */
 
     QString name() const override { return "Applications"; }
@@ -76,20 +63,7 @@ public:
 
 private:
 
-    QPointer<ConfigWidget> widget_;
-    vector<shared_ptr<Core::StandardIndexItem>> index_;
-    Core::OfflineIndex offlineIndex_;
-    QMutex indexAccess_;
-    QPointer<Indexer> indexer_;
-    QFileSystemWatcher watcher_;
-    QTimer updateDelayTimer_;
-    QStringList rootDirs_;
-
-    /* const */
-    static const char* CFG_PATHS;
-    static const char* CFG_FUZZY;
-    static const bool  DEF_FUZZY;
-    static const bool  UPDATE_DELAY;
+    std::unique_ptr<ApplicationsPrivate> d;
 
 signals:
 

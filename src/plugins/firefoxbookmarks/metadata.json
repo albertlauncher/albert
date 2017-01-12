@@ -1,0 +1,10 @@
+{
+    "id" :              "org.albert.extension.firefoxbookmarks",
+    "name" :            "Firefox Bookmarks",
+    "version" :         "1.0",
+    "platform" :        "All",
+    "group" :           "Extensions",
+    "author" :          "Martin Buergmann, Manuel Schneider",
+    "dependencies" :    ["firefox"],
+    "enabledbydefault": true
+}

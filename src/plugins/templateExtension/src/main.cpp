@@ -15,16 +15,28 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDebug>
+#include <QPointer>
 #include <stdexcept>
-#include "main.h"
 #include "configwidget.h"
 #include "item.h"
+#include "main.h"
 #include "query.h"
+
+
+
+class Template::TemplatePrivate
+{
+public:
+    QPointer<ConfigWidget> widget;
+};
+
+
 
 /** ***************************************************************************/
 Template::Extension::Extension()
     : Core::Extension("org.albert.extension.template"),
-      Core::QueryHandler(Core::Extension::id) {
+      Core::QueryHandler(Core::Extension::id),
+      d(new TemplatePrivate) {
 
     // You can throw in the constructor if something fatal happened
     throw std::runtime_error( "Description of error." );
@@ -39,17 +51,17 @@ Template::Extension::Extension()
 
 /** ***************************************************************************/
 Template::Extension::~Extension() {
-    // Do sth.
+
 }
 
 
 
 /** ***************************************************************************/
 QWidget *Template::Extension::widget(QWidget *parent) {
-    if (widget_.isNull()) {
-        widget_ = new ConfigWidget(parent);
+    if (d->widget.isNull()) {
+        d->widget = new ConfigWidget(parent);
     }
-    return widget_;
+    return d->widget;
 }
 
 

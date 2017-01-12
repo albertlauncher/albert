@@ -16,79 +16,96 @@
 
 #include <QClipboard>
 #include <QDebug>
+#include <QLocale>
+#include <QPointer>
 #include <QSettings>
 #include <vector>
-#include "main.h"
 #include "configwidget.h"
+#include "main.h"
+#include "muParser.h"
 #include "query.h"
 #include "standarditem.h"
 #include "standardaction.h"
 #include "xdgiconlookup.h"
-#include "muParser.h"
 using std::vector;
-using Core::Action;
-using Core::StandardAction;
-using Core::StandardItem;
+using namespace Core;
 
 
-const QString Calculator::Extension::CFG_SEPS      = "group_separators";
-const bool    Calculator::Extension::CFG_SEPS_DEF  = false;
+
+namespace {
+const QString CFG_SEPS      = "group_separators";
+const bool    CFG_SEPS_DEF  = false;
+}
+
+
+
+class Calculator::CalculatorPrivate
+{
+public:
+    QPointer<ConfigWidget> widget;
+    std::unique_ptr<mu::Parser> parser;
+    QLocale loc;
+    QString iconPath;
+};
+
+
 
 /** ***************************************************************************/
 Calculator::Extension::Extension()
     : Core::Extension("org.albert.extension.calculator"),
-      Core::QueryHandler(Core::Extension::id) {
+      Core::QueryHandler(Core::Extension::id),
+      d(new CalculatorPrivate){
 
     // Load settings
     QSettings s(qApp->applicationName());
     s.beginGroup(Core::Extension::id);
-    loc_.setNumberOptions(
+    d->loc.setNumberOptions(
                 (s.value(CFG_SEPS, CFG_SEPS_DEF).toBool())
-                ? loc_.numberOptions() & ~QLocale::OmitGroupSeparator
-                : loc_.numberOptions() | QLocale::OmitGroupSeparator );
+                ? d->loc.numberOptions() & ~QLocale::OmitGroupSeparator
+                : d->loc.numberOptions() | QLocale::OmitGroupSeparator );
     s.endGroup();
 
     QString iconPath = XdgIconLookup::instance()->themeIconPath("calc");
-    iconPath_ = iconPath.isNull() ? ":calc" : iconPath;
+    d->iconPath = iconPath.isNull() ? ":calc" : iconPath;
 
-    parser_ = new mu::Parser;
+    d->parser.reset(new mu::Parser);
 
-    parser_->SetDecSep(loc_.decimalPoint().toLatin1());
-    parser_->SetThousandsSep(loc_.groupSeparator().toLatin1());
+    d->parser->SetDecSep(d->loc.decimalPoint().toLatin1());
+    d->parser->SetThousandsSep(d->loc.groupSeparator().toLatin1());
 }
 
 
 
 /** ***************************************************************************/
 Calculator::Extension::~Extension() {
-    delete parser_;
+
 }
 
 
 
 /** ***************************************************************************/
 QWidget *Calculator::Extension::widget(QWidget *parent) {
-    if (widget_.isNull()){
-        widget_ = new ConfigWidget(parent);
+    if (d->widget.isNull()){
+        d->widget = new ConfigWidget(parent);
 
-        widget_->ui.checkBox_groupsep->setChecked(!(loc_.numberOptions() & QLocale::OmitGroupSeparator));
-        connect(widget_->ui.checkBox_groupsep, &QCheckBox::toggled, [this](bool checked){
+        d->widget->ui.checkBox_groupsep->setChecked(!(d->loc.numberOptions() & QLocale::OmitGroupSeparator));
+        connect(d->widget->ui.checkBox_groupsep, &QCheckBox::toggled, [this](bool checked){
             QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_SEPS), checked);
-            this->loc_.setNumberOptions( (checked) ? this->loc_.numberOptions() & ~QLocale::OmitGroupSeparator
-                                                  : this->loc_.numberOptions() | QLocale::OmitGroupSeparator );
+            this->d->loc.setNumberOptions( (checked) ? this->d->loc.numberOptions() & ~QLocale::OmitGroupSeparator
+                                                  : this->d->loc.numberOptions() | QLocale::OmitGroupSeparator );
         });
     }
-    return widget_;
+    return d->widget;
 }
 
 
 
 /** ***************************************************************************/
 void Calculator::Extension::handleQuery(Core::Query * query) {
-    parser_->SetExpr(query->searchTerm().toLower().toStdString());
+    d->parser->SetExpr(query->searchTerm().toLower().toStdString());
     QString result;
     try {
-        result = loc_.toString(parser_->Eval(), 'G', 16);
+        result = d->loc.toString(d->parser->Eval(), 'G', 16);
     }
     catch (mu::Parser::exception_type &e) {
       return;
@@ -134,7 +151,7 @@ void Calculator::Extension::handleQuery(Core::Query * query) {
     shared_ptr<StandardItem> calcItem = std::make_shared<StandardItem>("muparser-eval");
     calcItem->setText(result);
     calcItem->setSubtext(QString("Result of '%1'").arg(query->searchTerm()));
-    calcItem->setIconPath(iconPath_);
+    calcItem->setIconPath(d->iconPath);
 
     // Build actions
     vector<shared_ptr<Action>> actions;

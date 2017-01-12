@@ -15,11 +15,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDebug>
+#include <QFileInfo>
+#include <QFileSystemWatcher>
 #include <QDirIterator>
+#include <QPointer>
 #include <QProcess>
 #include <QStringList>
-#include <QFileInfo>
 #include <algorithm>
+#include <set>
 #include "main.h"
 #include "xdgiconlookup.h"
 #include "configwidget.h"
@@ -32,19 +35,43 @@ using Core::StandardItem;
 
 extern QString terminalCommand;
 
+
+
+class Terminal::TerminalPrivate
+{
+public:
+    QPointer<ConfigWidget> widget;
+    QFileSystemWatcher watcher;
+    std::set<QString> index;
+    bool dirtyFlag;
+    QString iconPath;
+
+    void rebuildIndex();
+};
+
+
+
 /** ***************************************************************************/
 Terminal::Extension::Extension()
     : Core::Extension("org.albert.extension.terminal"),
-      Core::QueryHandler(Core::Extension::id) {
+      Core::QueryHandler(Core::Extension::id),
+      d(new TerminalPrivate) {
 
-    dirtyFlag_ = false;
+    d->dirtyFlag = false;
 
     QString iconPath = XdgIconLookup::instance()->themeIconPath("terminal");
-    iconPath_ = iconPath.isNull() ? ":calc" : iconPath;
+    d->iconPath = iconPath.isNull() ? ":calc" : iconPath;
 
-    connect(&watcher_, &QFileSystemWatcher::directoryChanged, [this](){ dirtyFlag_ = true; });
+    connect(&d->watcher, &QFileSystemWatcher::directoryChanged, [this](){ d->dirtyFlag = true; });
 
-    rebuildIndex();
+    d->rebuildIndex();
+
+}
+
+
+
+/** ***************************************************************************/
+Terminal::Extension::~Extension() {
 
 }
 
@@ -52,18 +79,18 @@ Terminal::Extension::Extension()
 
 /** ***************************************************************************/
 QWidget *Terminal::Extension::widget(QWidget *parent) {
-    if (widget_.isNull())
-        widget_ = new ConfigWidget(parent);
-    return widget_;
+    if (d->widget.isNull())
+        d->widget = new ConfigWidget(parent);
+    return d->widget;
 }
 
 
 
 /** ***************************************************************************/
 void Terminal::Extension::teardownSession() {
-    if ( dirtyFlag_ )
+    if ( d->dirtyFlag )
         // Build rebuild the chache
-        rebuildIndex();
+        d->rebuildIndex();
 }
 
 
@@ -82,11 +109,11 @@ void Terminal::Extension::handleQuery(Core::Query * query) {
     QStringList args = argsString.split(' ', QString::SkipEmptyParts);
 
     // Search first match
-    std::set<QString>::iterator it = std::lower_bound(index_.begin(), index_.end(), potentialProgram);
+    std::set<QString>::iterator it = std::lower_bound(d->index.begin(), d->index.end(), potentialProgram);
 
     // Iterate over matches
     QString program;
-     while (it != index_.end() && it->startsWith(potentialProgram)){
+     while (it != d->index.end() && it->startsWith(potentialProgram)){
         program = *it;
         QString commandlineString = QString("%1 %2").arg(program, argsString);
 
@@ -126,7 +153,7 @@ void Terminal::Extension::handleQuery(Core::Query * query) {
         std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(program);
         item->setText(commandlineString);
         item->setSubtext(QString("Run '%1'").arg(commandlineString));
-        item->setIconPath(iconPath_);
+        item->setIconPath(d->iconPath);
         item->setActions(std::move(actions));
 
         results.emplace_back(item, 0);
@@ -140,15 +167,15 @@ void Terminal::Extension::handleQuery(Core::Query * query) {
 
 
 /** ***************************************************************************/
-void Terminal::Extension::rebuildIndex() {
-    index_.clear();
+void Terminal::TerminalPrivate::rebuildIndex() {
+    index.clear();
     QStringList paths = QString(::getenv("PATH")).split(':', QString::SkipEmptyParts);
     for (const QString &path : paths) {
         QDirIterator dirIt(path);
         while (dirIt.hasNext()) {
             QFileInfo file(dirIt.next());
             if ( file.isExecutable() )
-                index_.insert(file.fileName());
+                index.insert(file.fileName());
         }
     }
 }

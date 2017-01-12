@@ -21,6 +21,8 @@
 #include "file.h"
 #include "fileactions.h"
 #include "xdgiconlookup.h"
+using std::vector;
+using std::shared_ptr;
 
 std::map<QString,QString> Files::File::iconCache_;
 
@@ -85,22 +87,4 @@ vector<Core::Indexable::WeightedKeyword> Files::File::indexKeywords() const {
     res.emplace_back(QFileInfo(path_).fileName(), USHRT_MAX);
     // TODO ADD PATH
     return res;
-}
-
-
-
-/** ***************************************************************************/
-void Files::File::serialize(QDataStream &out) {
-    out << path_
-        << mimetype_.name();
-}
-
-
-
-/** ***************************************************************************/
-void Files::File::deserialize(QDataStream &in) {
-    QMimeDatabase db;
-    QString mimetype;
-    in >> path_ >> mimetype;
-    mimetype_ = db.mimeTypeForName(mimetype);
 }
