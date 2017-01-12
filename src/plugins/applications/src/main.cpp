@@ -471,10 +471,11 @@ vector<shared_ptr<StandardIndexItem>> indexApplications(const QStringList & root
                     continue;
                 map<QString,QString> &valueMap = sectionIterator->second;
 
-                // Get action name
-                if ((entryIterator = valueMap.find("Name")) == valueMap.end())
+                // Try to get the localized action name
+                QString actionName = xdgStringEscape(getLocalizedKey("Name", valueMap, loc));
+                if (actionName.isNull())
                     continue;
-                sa->setText(entryIterator->second);
+                sa->setText(actionName);
 
                 // Get action command
                 if ((entryIterator = valueMap.find("Exec")) == valueMap.end())
@@ -766,7 +767,7 @@ void Applications::Extension::addDir(const QString & dirPath) {
             return;
         }
 
-    // Check if this dir is a superdir of an existing dir, in case delete subdir
+    // Check if this dir is a superdir of an existing dir, in case remove subdir
     for (QStringList::iterator it = d->rootDirs.begin(); it != d->rootDirs.end();)
         if (it->startsWith(absPath + '/')) {
             QMessageBox(QMessageBox::Warning, "Warning",
