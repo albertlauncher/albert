@@ -21,8 +21,6 @@
 #include <QDebug>
 #include <QFile>
 #include <QFileSystemWatcher>
-#include <QList>
-#include <QMessageBox>
 #include <QPointer>
 #include <QProcess>
 #include <QRegularExpression>
@@ -53,10 +51,9 @@ extern QString terminalCommand;
 
 namespace {
 
-const char* CFG_PATHS    = "paths";
 const char* CFG_FUZZY    = "fuzzy";
 const bool  DEF_FUZZY    = false;
-const bool  UPDATE_DELAY = 60000;
+const uint  UPDATE_DELAY = 60000;
 
 /******************************************************************************/
 QStringList expandedFieldCodes(const QStringList & unexpandedFields,
@@ -261,16 +258,16 @@ QStringList shellLexerSplit(const QString &input) {
 
 
 /** ***************************************************************************/
-vector<shared_ptr<StandardIndexItem>> indexApplications(const QStringList &rootDirs) {
+vector<shared_ptr<StandardIndexItem>> indexApplications() {
 
     // Get a new index [O(n)]
     vector<shared_ptr<StandardIndexItem>> desktopEntries;
     QStringList xdg_current_desktop = QString(getenv("XDG_CURRENT_DESKTOP")).split(':',QString::SkipEmptyParts);
     QLocale loc;
-    QStringList standarsAppDirs = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
+    QStringList xdgAppDirs = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
 
     // Iterate over all desktop files
-    for ( const QString &dir : rootDirs ) {
+    for ( const QString &dir : xdgAppDirs ) {
         QDirIterator fIt(dir, QStringList("*.desktop"), QDir::Files,
                          QDirIterator::Subdirectories|QDirIterator::FollowSymlinks);
         while (fIt.hasNext()) {
@@ -284,7 +281,7 @@ vector<shared_ptr<StandardIndexItem>> indexApplications(const QStringList &rootD
             QString id;
 
             // If file is in standard path use standard method else filename to build id
-            if ( std::any_of(standarsAppDirs.begin(), standarsAppDirs.end(),
+            if ( std::any_of(xdgAppDirs.begin(), xdgAppDirs.end(),
                              [&fIt](const QString &dir){ return fIt.filePath().startsWith(dir); }) )
                 id = fIt.filePath().remove(QRegularExpression("^.*applications/")).replace("/","-");
             else
@@ -588,15 +585,14 @@ public:
 
     QPointer<ConfigWidget> widget;
     QFileSystemWatcher watcher;
-    QStringList rootDirs;
 
     vector<shared_ptr<Core::StandardIndexItem>> index;
     OfflineIndex offlineIndex;
-    QFutureWatcher<vector<shared_ptr<Core::StandardIndexItem>>> futureWatcher;
-    QTimer updateDelayTimer;
 
+    QTimer updateDelayTimer;
     void finishIndexing();
     void startIndexing();
+    QFutureWatcher<vector<shared_ptr<Core::StandardIndexItem>>> futureWatcher;
 };
 
 
@@ -614,7 +610,7 @@ void Applications::ApplicationsPrivate::startIndexing() {
                      std::bind(&ApplicationsPrivate::finishIndexing, this));
 
     // Run the indexer thread
-    futureWatcher.setFuture(QtConcurrent::run(indexApplications, rootDirs));
+    futureWatcher.setFuture(QtConcurrent::run(indexApplications));
 
     // Notification
     qDebug() << qPrintable(QString("[%1] Start indexing in background thread.").arg(q->Core::Extension::id).toUtf8().constData());
@@ -638,7 +634,8 @@ void Applications::ApplicationsPrivate::finishIndexing() {
     // Finally update the watches (maybe folders changed)
     if (!watcher.directories().isEmpty())
         watcher.removePaths(watcher.directories());
-    for (const QString &path : rootDirs) {
+    QStringList xdgAppDirs = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
+    for (const QString &path : xdgAppDirs) {
         watcher.addPath(path);
         QDirIterator dit(path, QDir::Dirs|QDir::NoDotAndDotDot);
         while (dit.hasNext())
@@ -668,31 +665,17 @@ Applications::Extension::Extension()
     s.beginGroup(Core::Extension::id);
     d->offlineIndex.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
 
-    // Load the paths or set a default
-    QVariant v = s.value(CFG_PATHS);
-    if (v.isValid() && v.canConvert(QMetaType::QStringList))
-        d->rootDirs = v.toStringList();
-    else
-        restorePaths();
-    s.endGroup();
-
-    // Keep the Applications in sync with the OS
+    // Delay the indexing to avoid excessice resource consumption
     d->updateDelayTimer.setInterval(UPDATE_DELAY);
     d->updateDelayTimer.setSingleShot(true);
 
     // If the filesystem changed, trigger the update delay
-    connect(&d->watcher, &QFileSystemWatcher::directoryChanged, &d->updateDelayTimer, static_cast<void(QTimer::*)()>(&QTimer::start));
-
-    // If the root dirs changed, trigger the update delay
-    connect(this, &Extension::rootDirsChanged, &d->updateDelayTimer, static_cast<void(QTimer::*)()>(&QTimer::start));
+    connect(&d->watcher, &QFileSystemWatcher::directoryChanged,
+            &d->updateDelayTimer, static_cast<void(QTimer::*)()>(&QTimer::start));
 
     // If the update delay passed, update the index
-    connect(&d->updateDelayTimer, &QTimer::timeout, this, &Extension::updateIndex, Qt::QueuedConnection);
-
-    // If the root dirs change write it to the settings
-    connect(this, &Extension::rootDirsChanged, [this](const QStringList& dirs){
-        QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_PATHS), dirs);
-    });
+    connect(&d->updateDelayTimer, &QTimer::timeout,
+            std::bind(&ApplicationsPrivate::startIndexing, d.get()));
 
     // Trigger initial update
     updateIndex();
@@ -711,14 +694,6 @@ Applications::Extension::~Extension() {
 QWidget *Applications::Extension::widget(QWidget *parent) {
     if (d->widget.isNull()) {
         d->widget = new ConfigWidget(parent);
-
-        // Paths
-        d->widget->ui.listWidget_paths->addItems(d->rootDirs);
-        connect(this, &Extension::rootDirsChanged, d->widget->ui.listWidget_paths, &QListWidget::clear);
-        connect(this, &Extension::rootDirsChanged, d->widget->ui.listWidget_paths, &QListWidget::addItems);
-        connect(d->widget.data(), &ConfigWidget::requestAddPath, this, &Extension::addDir);
-        connect(d->widget.data(), &ConfigWidget::requestRemovePath, this, &Extension::removeDir);
-        connect(d->widget->ui.pushButton_restorePaths, &QPushButton::clicked, this, &Extension::restorePaths);
 
         // Fuzzy
         d->widget->ui.checkBox_fuzzy->setChecked(d->offlineIndex.fuzzy());
@@ -748,89 +723,6 @@ void Applications::Extension::handleQuery(Core::Query * query) {
         results.emplace_back(std::static_pointer_cast<Core::StandardIndexItem>(item), 1);
 
     query->addMatches(results.begin(), results.end());
-}
-
-
-
-/** ***************************************************************************/
-void Applications::Extension::addDir(const QString & dirPath) {
-
-    QFileInfo fileInfo(dirPath);
-
-    // Get an absolute file path
-    QString absPath = fileInfo.absoluteFilePath();
-
-    // Check existance
-    if (!fileInfo.exists()) {
-        QMessageBox(QMessageBox::Critical, "Error", absPath + " does not exist.").exec();
-        return;
-    }
-
-    // Check type
-    if(!fileInfo.isDir()) {
-        QMessageBox(QMessageBox::Critical, "Error", absPath + " is not a directory.").exec();
-        return;
-    }
-
-    // Check if there is an identical existing path
-    if (d->rootDirs.contains(absPath)) {
-        QMessageBox(QMessageBox::Critical, "Error", absPath + " has already been indexed.").exec();
-        return;
-    }
-
-    // Check if this dir is a subdir of an existing dir
-    for (const QString &p: d->rootDirs)
-        if (absPath.startsWith(p + '/')) {
-            QMessageBox(QMessageBox::Critical, "Error", absPath + " is subdirectory of " + p).exec();
-            return;
-        }
-
-    // Check if this dir is a superdir of an existing dir, in case remove subdir
-    for (QStringList::iterator it = d->rootDirs.begin(); it != d->rootDirs.end();)
-        if (it->startsWith(absPath + '/')) {
-            QMessageBox(QMessageBox::Warning, "Warning",
-                        (*it) + " is subdirectory of " + absPath + ". " + (*it) + " will be removed.").exec();
-            it = d->rootDirs.erase(it);
-        } else ++it;
-
-    // Add the path to root dirs
-    d->rootDirs << absPath;
-
-    // Inform observers
-    emit rootDirsChanged(d->rootDirs);
-}
-
-
-
-/** ***************************************************************************/
-void Applications::Extension::removeDir(const QString &dirPath) {
-
-    // Get an absolute file path
-    QString absPath = QFileInfo(dirPath).absoluteFilePath();
-
-    // Check existance
-    if (!d->rootDirs.contains(absPath))
-        return;
-
-    // Remove the path
-    d->rootDirs.removeAll(absPath);
-
-    // Update the widget, if it is visible atm
-    emit rootDirsChanged(d->rootDirs);
-}
-
-
-
-/** ***************************************************************************/
-void Applications::Extension::restorePaths() {
-
-    // Add standard paths
-    d->rootDirs.clear();
-
-    //  Add standard paths
-    for (const QString &path : QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation))
-        if (QFileInfo(path).exists())
-            addDir(path);
 }
 
 

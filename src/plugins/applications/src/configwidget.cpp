@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QFileDialog>
-#include <QInputDialog>
 #include <QStandardPaths>
 #include "configwidget.h"
 
@@ -23,33 +21,7 @@
 Applications::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
     ui.setupUi(this);
 
-    connect(ui.pushButton_addPath, &QPushButton::clicked,
-            this, &ConfigWidget::onButton_PathAdd);
-
-    connect(ui.pushButton_removePath, &QPushButton::clicked,
-            this, &ConfigWidget::onButton_PathRemove);
-}
-
-
-
-/** ***************************************************************************/
-void Applications::ConfigWidget::onButton_PathAdd() {
-    QString path = QFileDialog::getExistingDirectory(
-                this,
-                tr("Choose path"),
-                QStandardPaths::writableLocation(QStandardPaths::HomeLocation));
-
-    if(path.isEmpty())
-        return;
-
-    emit requestAddPath(path);
-}
-
-
-
-/** ***************************************************************************/
-void Applications::ConfigWidget::onButton_PathRemove() {
-    if (ui.listWidget_paths->currentItem() == nullptr)
-        return;
-    emit requestRemovePath(ui.listWidget_paths->currentItem()->text());
+    // Show the app dirs in the label
+    QStringList standardPaths = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
+    ui.label->setText(ui.label->text().replace("__XDG_DATA_DIRS__", standardPaths.join(", ")));
 }
