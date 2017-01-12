@@ -47,6 +47,7 @@
 #include "standardaction.h"
 #include "standardindexitem.h"
 #include "query.h"
+#include "xdgiconlookup.h"
 using std::shared_ptr;
 using std::vector;
 using namespace Core;
@@ -57,13 +58,22 @@ const QString CFG_FUZZY   = "fuzzy";
 const bool    DEF_FUZZY   = false;
 const QString CFG_USE_FIREFOX   = "openWithFirefox";
 const bool    DEF_USE_FIREFOX   = false;
+const uint    UPDATE_DELAY = 60000;
 }
 
 
 
+/** ***************************************************************************/
+/** ***************************************************************************/
+/** ***************************************************************************/
+/** ***************************************************************************/
 class FirefoxBookmarks::FirefoxBookmarksPrivate
 {
 public:
+    FirefoxBookmarksPrivate(Extension *q) : q(q) {}
+
+    Extension *q;
+
     bool openWithFirefox;
     QPointer<ConfigWidget> widget;
     QString firefoxExecutable;
@@ -71,18 +81,157 @@ public:
     QString currentProfileId;
     QFileSystemWatcher databaseWatcher;
 
-    QFutureWatcher<vector<shared_ptr<Core::StandardIndexItem>>> futureWatcher;
     vector<shared_ptr<Core::StandardIndexItem>> index;
     Core::OfflineIndex offlineIndex;
+
+    QTimer updateDelayTimer;
+    void startIndexing();
+    void finishIndexing();
+    QFutureWatcher<vector<shared_ptr<Core::StandardIndexItem>>> futureWatcher;
+    std::vector<std::shared_ptr<Core::StandardIndexItem>> indexFirefoxBookmarks() const;
 };
+
+
+/** ***************************************************************************/
+void FirefoxBookmarks::FirefoxBookmarksPrivate::startIndexing() {
+
+    // Never run concurrent
+    if ( futureWatcher.future().isRunning() )
+        return;
+
+    // Run finishIndexing when the indexing thread finished
+    futureWatcher.disconnect();
+    QObject::connect(&futureWatcher, &QFutureWatcher<vector<shared_ptr<Core::StandardIndexItem>>>::finished,
+                     std::bind(&FirefoxBookmarksPrivate::finishIndexing, this));
+
+    // Run the indexer thread
+    futureWatcher.setFuture(QtConcurrent::run(this, &FirefoxBookmarksPrivate::indexFirefoxBookmarks));
+
+    // Notification
+    qDebug() << qPrintable(QString("[%1] Start indexing in background thread.").arg(q->Core::Extension::id));
+    emit q->statusInfo("Indexing bookmarks ...");
+}
+
+
+/** ***************************************************************************/
+void FirefoxBookmarks::FirefoxBookmarksPrivate::finishIndexing() {
+
+    // Get the thread results
+    index = futureWatcher.future().result();
+
+    // Rebuild the offline index
+    offlineIndex.clear();
+    for (const auto &item : index)
+        offlineIndex.add(item);
+
+    // Notification
+    qDebug() <<  qPrintable(QString("[%1] Indexing done (%2 items).").arg(q->Core::Extension::id).arg(index.size()));
+    emit q->statusInfo(QString("%1 bookmarks indexed.").arg(index.size()));
+}
 
 
 
 /** ***************************************************************************/
+vector<shared_ptr<Core::StandardIndexItem>>
+FirefoxBookmarks::FirefoxBookmarksPrivate::indexFirefoxBookmarks() const {
+
+    QSqlDatabase database = QSqlDatabase::database(q->Core::Extension::id);
+
+    if (!database.open()) {
+        qWarning() << qPrintable(QString("[%1] Could not open database: %2").arg(q->Core::Extension::id, database.databaseName()));
+        return vector<shared_ptr<Core::StandardIndexItem>>();
+    }
+
+    // Build a new index
+    vector<shared_ptr<StandardIndexItem>> bookmarks;
+
+    QSqlQuery result(database);
+
+    if ( !result.exec("SELECT b1.guid, p.title, p.url, b2.title " // id, title, url, parent
+                      "FROM moz_bookmarks AS b1 "
+                      "JOIN moz_bookmarks AS b2 ON b1.parent = b2.id " // attach parent names
+                      "JOIN moz_places AS p  ON b1.fk = p.id " // attach title string and url
+                      "WHERE b1.type = 1 AND p.title IS NOT NULL") ) { // filter bookmarks with nonempty title string
+        qWarning() << qPrintable(QString("[%1] Querying bookmarks failed: %2").arg(q->Core::Extension::id, result.lastError().text()));
+        return vector<shared_ptr<Core::StandardIndexItem>>();
+    }
+
+    // Find an appropriate icon
+    QString icon = XdgIconLookup::instance()->themeIconPath("www");
+    if (icon.isEmpty())
+        icon = XdgIconLookup::instance()->themeIconPath("web-browser");
+    if (icon.isEmpty())
+        icon = XdgIconLookup::instance()->themeIconPath("emblem-web");
+    if (icon.isEmpty())
+        icon = ":favicon"; // Fallback
+
+    while (result.next()) {
+
+        // Url will be used more often
+        QString urlstr = result.value(2).toString();
+
+        // Create item
+        shared_ptr<StandardIndexItem> ssii  = std::make_shared<StandardIndexItem>(result.value(0).toString());
+        ssii->setText(result.value(1).toString());
+        ssii->setSubtext(urlstr);
+        ssii->setIconPath(icon);
+
+        // Add severeal secondary index keywords
+        vector<Indexable::WeightedKeyword> weightedKeywords;
+        QUrl url(urlstr);
+        QString host = url.host();
+        weightedKeywords.emplace_back(ssii->text(), USHRT_MAX);
+        weightedKeywords.emplace_back(host.left(host.size()-url.topLevelDomain().size()), USHRT_MAX/2);
+        weightedKeywords.emplace_back(result.value(2).toString(), USHRT_MAX/4); // parent dirname
+        ssii->setIndexKeywords(std::move(weightedKeywords));
+
+        // Add actions
+        vector<shared_ptr<Action>> actions;
+
+        shared_ptr<StandardAction> actionDefault = std::make_shared<StandardAction>();
+        actionDefault->setText("Open in default browser");
+        actionDefault->setAction([urlstr](){
+            QDesktopServices::openUrl(QUrl(urlstr));
+        });
+
+        shared_ptr<StandardAction> actionFirefox = std::make_shared<StandardAction>();
+        actionFirefox->setText("Open in firefox");
+        actionFirefox->setAction([urlstr, this](){
+            QProcess::startDetached(firefoxExecutable, {urlstr});
+        });
+
+        shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
+        action->setText("Copy url to clipboard");
+        action->setAction([urlstr](){ QApplication::clipboard()->setText(urlstr); });
+
+        // Set the order of the actions
+        if ( openWithFirefox )  {
+            actions.push_back(std::move(actionFirefox));
+            actions.push_back(std::move(actionDefault));
+        } else {
+            actions.push_back(std::move(actionDefault));
+            actions.push_back(std::move(actionFirefox));
+        }
+        actions.push_back(std::move(action));
+
+        ssii->setActions(std::move(actions));
+
+        bookmarks.push_back(std::move(ssii));
+    }
+
+    return bookmarks;
+}
+
+
+
+/** ***************************************************************************/
+/** ***************************************************************************/
+/** ***************************************************************************/
+/** ***************************************************************************/
 FirefoxBookmarks::Extension::Extension()
     : Core::Extension("org.albert.extension.firefoxbookmarks"),
       Core::QueryHandler(Core::Extension::id),
-      d(new FirefoxBookmarksPrivate){
+      d(new FirefoxBookmarksPrivate(this)){
 
     // Add a sqlite database connection for this extension, check requirements
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", Core::Extension::id);
@@ -150,9 +299,17 @@ FirefoxBookmarks::Extension::Extension()
     // Set the profile
     setProfile(d->currentProfileId);
 
-    // Monitor changes to the database
+    // Delay the indexing to avoid excessice resource consumption
+    d->updateDelayTimer.setInterval(UPDATE_DELAY);
+    d->updateDelayTimer.setSingleShot(true);
+
+    // If the database changed, trigger the update delay
     connect(&d->databaseWatcher, &QFileSystemWatcher::fileChanged,
-            this, &Extension::startIndexing);
+            &d->updateDelayTimer, static_cast<void(QTimer::*)()>(&QTimer::start));
+
+    // If the update delay passed, update the index
+    connect(&d->updateDelayTimer, &QTimer::timeout,
+            std::bind(&FirefoxBookmarksPrivate::startIndexing, d.get()));
 }
 
 
@@ -233,44 +390,6 @@ void FirefoxBookmarks::Extension::handleQuery(Core::Query *query) {
 }
 
 
-/** ***************************************************************************/
-void FirefoxBookmarks::Extension::startIndexing() {
-
-    // Never run concurrent
-    if ( d->futureWatcher.future().isRunning() )
-        return;
-
-    // Run finishIndexing when the indexing thread finished
-    d->futureWatcher.disconnect();
-    connect(&d->futureWatcher, &QFutureWatcher<vector<shared_ptr<Core::StandardIndexItem>>>::finished,
-            this, &Extension::finishIndexing);
-
-    // Run the indexer thread
-    d->futureWatcher.setFuture(QtConcurrent::run(this, &Extension::indexFirefoxBookmarks));
-
-    // Notification
-    qDebug() << qPrintable(QString("[%1] Start indexing in background thread.").arg(Core::Extension::id));
-    emit statusInfo("Indexing bookmarks ...");
-}
-
-
-/** ***************************************************************************/
-void FirefoxBookmarks::Extension::finishIndexing() {
-
-    // Get the thread results
-    d->index = d->futureWatcher.future().result();
-
-    // Rebuild the offline index
-    d->offlineIndex.clear();
-    for (const auto &item : d->index)
-        d->offlineIndex.add(item);
-
-    // Notification
-    qDebug() <<  qPrintable(QString("[%1] Indexing done (%2 items).").arg(Core::Extension::id).arg(d->index.size()));
-    emit statusInfo(QString("%1 bookmarks indexed.").arg(d->index.size()));
-}
-
-
 
 /** ***************************************************************************/
 void FirefoxBookmarks::Extension::setProfile(const QString& profile) {
@@ -311,7 +430,7 @@ void FirefoxBookmarks::Extension::setProfile(const QString& profile) {
         d->databaseWatcher.removePaths(d->databaseWatcher.files());
     d->databaseWatcher.addPath(dbPath);
 
-    startIndexing();
+    d->startIndexing();
 
     QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_PROFILE), d->currentProfileId);
 }
@@ -330,89 +449,5 @@ void FirefoxBookmarks::Extension::changeFuzzyness(bool fuzzy) {
 void FirefoxBookmarks::Extension::changeOpenPolicy(bool useFirefox) {
     d->openWithFirefox = useFirefox;
     QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_USE_FIREFOX), useFirefox);
-    startIndexing();
-}
-
-
-
-/** ***************************************************************************/
-vector<shared_ptr<Core::StandardIndexItem>>
-FirefoxBookmarks::Extension::indexFirefoxBookmarks() const {
-
-    QSqlDatabase database = QSqlDatabase::database(Core::Extension::id);
-
-    if (!database.open()) {
-        qWarning() << qPrintable(QString("[%1] Could not open database: %2").arg(Core::Extension::id, database.databaseName()));
-        return vector<shared_ptr<Core::StandardIndexItem>>();
-    }
-
-    // Build a new index
-    vector<shared_ptr<StandardIndexItem>> bookmarks;
-
-    QSqlQuery result(database);
-
-    if ( !result.exec("SELECT b1.guid, p.title, p.url, b2.title " // id, title, url, parent
-                      "FROM moz_bookmarks AS b1 "
-                      "JOIN moz_bookmarks AS b2 ON b1.parent = b2.id " // attach parent names
-                      "JOIN moz_places AS p  ON b1.fk = p.id " // attach title string and url
-                      "WHERE b1.type = 1 AND p.title IS NOT NULL") ) { // filter bookmarks with nonempty title string
-        qWarning() << qPrintable(QString("[%1] Querying bookmarks failed: %2").arg(Core::Extension::id, result.lastError().text()));
-        return vector<shared_ptr<Core::StandardIndexItem>>();
-    }
-
-    while (result.next()) {
-
-        // Url will be used more often
-        QString urlstr = result.value(2).toString();
-
-        // Create item
-        shared_ptr<StandardIndexItem> ssii  = std::make_shared<StandardIndexItem>(result.value(0).toString());
-        ssii->setText(result.value(1).toString());
-        ssii->setSubtext(urlstr);
-        ssii->setIconPath(":firefox");
-
-        // Add severeal secondary index keywords
-        vector<Indexable::WeightedKeyword> weightedKeywords;
-        QUrl url(urlstr);
-        QString host = url.host();
-        weightedKeywords.emplace_back(ssii->text(), USHRT_MAX);
-        weightedKeywords.emplace_back(host.left(host.size()-url.topLevelDomain().size()), USHRT_MAX/2);
-        weightedKeywords.emplace_back(result.value(2).toString(), USHRT_MAX/4); // parent dirname
-        ssii->setIndexKeywords(std::move(weightedKeywords));
-
-        // Add actions
-        vector<shared_ptr<Action>> actions;
-
-        shared_ptr<StandardAction> actionDefault = std::make_shared<StandardAction>();
-        actionDefault->setText("Open in default browser");
-        actionDefault->setAction([urlstr](){
-            QDesktopServices::openUrl(QUrl(urlstr));
-        });
-
-        shared_ptr<StandardAction> actionFirefox = std::make_shared<StandardAction>();
-        actionFirefox->setText("Open in firefox");
-        actionFirefox->setAction([urlstr, this](){
-            QProcess::startDetached(d->firefoxExecutable, {urlstr});
-        });
-
-        shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
-        action->setText("Copy url to clipboard");
-        action->setAction([urlstr](){ QApplication::clipboard()->setText(urlstr); });
-
-        // Set the order of the actions
-        if ( d->openWithFirefox )  {
-            actions.push_back(std::move(actionFirefox));
-            actions.push_back(std::move(actionDefault));
-        } else {
-            actions.push_back(std::move(actionDefault));
-            actions.push_back(std::move(actionFirefox));
-        }
-        actions.push_back(std::move(action));
-
-        ssii->setActions(std::move(actions));
-
-        bookmarks.push_back(std::move(ssii));
-    }
-
-    return bookmarks;
+    d->startIndexing();
 }
