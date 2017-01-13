@@ -1,0 +1,66 @@
+
+// Form
+// ––––––––––––––––––––––––––––––––––––––––––––––––––
+
+input[type='email'],
+input[type='number'],
+input[type='password'],
+input[type='search'],
+input[type='tel'],
+input[type='text'],
+input[type='url'],
+textarea,
+select {
+	appearance: none; // Removes awkward default styles on some inputs for iOS
+	background-color: transparent;
+	border: .1rem solid $color-quaternary;
+	border-radius: .4rem;
+	box-shadow: none;
+	height: 3.8rem;
+	padding: .6rem 1.0rem; // The .6rem vertically centers text on FF, ignored by Webkit
+	width: 100%;
+
+	&:focus {
+		border: .1rem solid $color-primary;
+		outline: 0;
+	}
+}
+
+select {
+	background: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMTQiIHZpZXdCb3g9IjAgMCAyOSAxNCIgd2lkdGg9IjI5Ij48cGF0aCBmaWxsPSIjZDFkMWQxIiBkPSJNOS40IDMuNmw1IDcgNS4yLTciLz48L3N2Zz4=) center right no-repeat;
+	padding: .6rem 3rem .6rem 1rem;
+
+	&:focus {
+		background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMTQiIHZpZXdCb3g9IjAgMCAyOSAxNCIgd2lkdGg9IjI5Ij48cGF0aCBmaWxsPSIjOWI0ZGNmIiBkPSJNMTkuNiAzLjZIOS40bDUgNyIvPjwvc3ZnPg==);
+	}
+}
+
+textarea {
+	min-height: 6.5rem;
+	padding-bottom: .6rem;
+	padding-top: .6rem;
+}
+
+label,
+legend {
+	display: block;
+	font-size: 1.6rem;
+	font-weight: 700;
+	margin-bottom: .5rem;
+}
+
+fieldset {
+	border-width: 0;
+	padding: 0;
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+	display: inline;
+}
+
+.label-inline {
+	display: inline-block;
+	font-weight: normal;
+	margin-left: .5rem;
+}

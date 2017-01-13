@@ -1,0 +1,6 @@
+<aside>
+  {% for section in site.data.docs %}
+    <h5>{{ section.title }}</h5>
+    {% include docs_ul.html items=section.docs %}
+  {% endfor %}
+</aside>

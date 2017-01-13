@@ -210,6 +210,7 @@ int main(int argc, char *argv[]) {
         /*
          *  Hotkey
          */
+        bool openSettingsWidget = false;
 
         hotkeyManager    = new HotkeyManager;
 
@@ -223,9 +224,26 @@ int main(int argc, char *argv[]) {
             QMessageBox msgBox(QMessageBox::Critical, "Error",
                                "Hotkey is not set or invalid. Do you want to open the settings?",
                                QMessageBox::No|QMessageBox::Yes);
+
             msgBox.exec();
             if ( msgBox.result() == QMessageBox::Yes )
-                settingsWidget->show();
+                openSettingsWidget = true;
+        } else if (hotkey.isNull() && !settings.value("ignoreInvalidHotkey", false).toBool()) {
+            QMessageBox msgBox(QMessageBox::Question, "Hotkey not set",
+                               "The Hotkey is not set or invalid. How do you want to proceed? Press open to open the settings menu.",
+                               QMessageBox::Ignore|QMessageBox::Open|QMessageBox::Abort);
+
+            msgBox.exec();
+            switch (msgBox.result()) {
+            case QMessageBox::Open:
+                openSettingsWidget = true;
+                break;
+            case QMessageBox::Ignore:
+                settings.setValue("ignoreInvalidHotkey", true);
+                break;
+            case QMessageBox::Abort:
+                return EXIT_SUCCESS;
+            }
         }
 
 
@@ -283,6 +301,9 @@ int main(int argc, char *argv[]) {
         Core::ExtensionManager::instance->reloadExtensions();
 
         settingsWidget   = new SettingsWidget(mainWindow, hotkeyManager, ExtensionManager::instance, trayIcon);
+
+        if (openSettingsWidget)
+                settingsWidget->show();
 
 
         /*

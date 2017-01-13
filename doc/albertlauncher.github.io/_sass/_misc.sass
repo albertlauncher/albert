@@ -1,0 +1,29 @@
+
+// Allerlei
+// ––––––––––––––––––––––––––––––––––––––––––––––––––
+
+body
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15)
+  overflow-y: scroll
+
+  a
+    @include transition(color 0.5s cubic-bezier(.66,0,.33,1))
+
+p
+  text-align:  justify
+  hyphens:  auto
+
+kbd
+  @include border-radius(3px)
+  @include box-shadow(0 2px 0px #ccc,0 2px 4px rgba($color-primary, 0.5) )
+  border: 1px solid #ccc
+  display: inline-block
+  font-size: 11px
+  line-height: 1.4
+  margin: 0 .1em
+  padding: .1em .6em
+  color: #333
+  background-color: $color-tertiary
+  text-shadow: 0 1px 0 #fff
+  white-space: nowrap
+  font: 11px Consolas, "Liberation Mono", Menlo, Courier, monospace

@@ -1,0 +1,64 @@
+
+// Navigation
+// ––––––––––––––––––––––––––––––––––––––––––––––––––
+
+.site-header
+  background: $color-tertiary
+  border-bottom: .1rem solid $color-quaternary
+  display: block
+  height: 5.2rem
+  left: 0
+  max-width: 100%
+  position: fixed
+  right: 0
+  top: 0
+  width: 100%
+  z-index: 99
+  padding: 0
+
+  // Re-overiding the width 100% declaration to match size of% based container
+  .container
+    padding-bottom: 0
+    padding-top: 0
+
+  .icon
+    height: 3.8rem
+    vertical-align: middle
+    position: relative
+
+  .title
+    color: $color-secondary
+    display: inline
+    vertical-align: middle
+    font-family: 'Gotham Rounded A', 'Gotham Rounded B', 'Helvetica Neue', Arial, sans-serif
+    font-size: 2.8rem
+    height: 5.2rem
+    padding: 0
+    position: relative
+    text-decoration: none
+
+.navigation
+
+  & > ul
+    list-style: none
+    margin-bottom: 0
+    //margin-right: 5.0rem
+
+    & > li
+      float: left
+      margin-bottom: 0
+      margin-left: 2.5rem
+      position: relative
+
+  & > ul > li > a
+    line-height: 5.2rem
+
+    @media (min-width: 80.0rem)
+      margin-right: 0
+
+aside
+  ul
+    padding-left: 0rem
+  li
+    margin-bottom: 0rem
+    list-style: none

@@ -1,0 +1,33 @@
+
+// Share
+// ––––––––––––––––––––––––––––––––––––––––––––––––––
+
+.share,
+.share-list,
+.share-list a
+	position: relative
+	text-decoration: none
+
+.share-item
+	display: inline-block
+	margin: 1.0rem .1rem
+
+.share-dialog
+	background-color: $color-primary
+	border-radius: .4rem
+	color: $color-initial
+	display: block
+	height: 2.2rem
+	text-align: center
+	width: 5.0rem
+
+	&:hover
+		background-color: $color-secondary
+
+	.share-icon
+		fill: $color-initial
+		height: 1.5rem
+
+@media (min-width: 40.0rem)
+	.only-mobile
+		display: none
