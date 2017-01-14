@@ -38,5 +38,9 @@ target_include_directories(${PROJECT_NAME}
         src/mainwindow/
 )
 
+# Set the RPATH so that libraries get found
+set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/albert")
+
+# Install target
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 

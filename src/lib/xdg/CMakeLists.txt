@@ -26,4 +26,5 @@ target_include_directories(${PROJECT_NAME}
 # Link target to libraries
 target_link_libraries(${PROJECT_NAME} ${Qt5Core_LIBRARIES} ${Qt5Gui_LIBRARIES})
 
-install (TARGETS xdg LIBRARY DESTINATION lib/albert)
+# Install target
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/albert)

@@ -34,3 +34,6 @@ target_include_directories(${PROJECT_NAME}
 
 # Link target to libraries
 target_link_libraries(${PROJECT_NAME} ${LIB})
+
+# Install target
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/albert)

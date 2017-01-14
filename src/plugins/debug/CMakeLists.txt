@@ -2,14 +2,9 @@ cmake_minimum_required(VERSION 2.8.11)
 
 PROJECT(debug)
 
-find_package(Qt5Widgets 5.2 REQUIRED)
-
-include_directories(
-    ../../application
-    ../../application/pluginsystem
-)
-
 FILE(GLOB_RECURSE SRC src/* metadata.json)
+
+find_package(Qt5Widgets 5.2 REQUIRED)
 
 set(LIB
     ${Qt5Widgets_LIBRARIES}
@@ -31,9 +26,5 @@ target_include_directories(${PROJECT_NAME} PRIVATE src/)
 # Link target to libraries
 target_link_libraries(${PROJECT_NAME} ${LIB})
 
-if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-        install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION share/albert/plugins)
-    endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-endif(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-
+# Install target
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/albert/plugins)
