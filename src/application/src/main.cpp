@@ -83,6 +83,7 @@ int main(int argc, char **argv) {
         parser.addHelpOption();
         parser.addVersionOption();
         parser.addOption(QCommandLineOption({"k", "hotkey"}, "Overwrite the hotkey to use.", "hotkey"));
+        parser.addOption(QCommandLineOption({"p", "plugin-dirs"}, "Set the plugin dirs to use. Comma separated.", "directory"));
         parser.addPositionalArgument("command", "Command to send to a running instance, if any. (show, hide, toggle)", "[command]");
         parser.process(*app);
 
@@ -306,6 +307,10 @@ int main(int argc, char **argv) {
                 qWarning() << "Could not create file:" << filePath;
             file.close();
         }
+
+        // Check for a plugin override
+        if ( parser.isSet("plugin-dirs") )
+            Core::ExtensionManager::instance->setPluginDirs(parser.value("plugin-dirs").split(','));
 
         // Load extensions
         Core::ExtensionManager::instance->reloadExtensions();

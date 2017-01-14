@@ -42,7 +42,8 @@ public:
     ExtensionManager();
     ~ExtensionManager();
 
-    void reloadExtensions();
+    void setPluginDirs(const QStringList&);
+    void reloadExtensions(); // TODO: TASK: Rename all to plugins
     const vector<unique_ptr<ExtensionSpec>> & extensionSpecs() const;
     void enableExtension(const unique_ptr<ExtensionSpec> &);
     void disableExtension(const unique_ptr<ExtensionSpec> &);
