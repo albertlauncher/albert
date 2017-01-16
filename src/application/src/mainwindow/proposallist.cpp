@@ -16,6 +16,7 @@
 
 #include <QKeyEvent>
 #include <QPainter>
+#include <QPixmapCache>
 #include "proposallist.h"
 
 /** ***************************************************************************/
@@ -177,7 +178,14 @@ void ProposalList::ItemDelegate::paint(QPainter *painter, const QStyleOptionView
                     QPoint((option.rect.height() - option.decorationSize.width())/2 + option.rect.x(),
                            (option.rect.height() - option.decorationSize.height())/2 + option.rect.y()),
                     option.decorationSize);
-        painter->drawPixmap(iconRect, QPixmap(index.data(Qt::DecorationRole).value<QString>()).scaled(option.decorationSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        QPixmap pixmap;
+        QString iconPath = index.data(Qt::DecorationRole).value<QString>();
+        QString cacheKey = QString("%1%2%3").arg(option.decorationSize.width(), option.decorationSize.height()).arg(iconPath);
+        if ( !QPixmapCache::find(cacheKey, &pixmap) ) {
+            pixmap = QPixmap(iconPath).scaled(option.decorationSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            QPixmapCache::insert(cacheKey, pixmap);
+        }
+        painter->drawPixmap(iconRect, pixmap);
     }
 
     // Calculate text rects
