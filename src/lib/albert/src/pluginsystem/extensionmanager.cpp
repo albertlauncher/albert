@@ -55,9 +55,12 @@ Core::ExtensionManager::ExtensionManager() : d(new ExtensionManagerPrivate) {
     // Get plugindirs
 #if defined __linux__
 
-    for ( const QString& dir : {"/usr/lib/", "/usr/local/lib/", "~/.local/lib/"} )
-        if ( QFileInfo(QDir(dir).filePath("albert/plugins")).isDir() )
-            d->pluginDirs << dir;
+    QStringList dirs =  {"/usr/lib/", "/usr/local/lib/", QDir::home().filePath(".local/lib/")};
+    for ( const QString& dir : dirs ) {
+        QFileInfo fileInfo = QFileInfo(QDir(dir).filePath("albert/plugins"));
+        if ( fileInfo.isDir() )
+            d->pluginDirs << fileInfo.absoluteFilePath();
+    }
 
 #elif defined __APPLE__
     throw "TODO";
