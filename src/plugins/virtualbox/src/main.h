@@ -17,15 +17,13 @@
 
 #pragma once
 #include <QObject>
-#include <QPointer>
-#include <QList>
-#include <QFileSystemWatcher>
+#include <memory>
 #include "extension.h"
 #include "queryhandler.h"
-#include "vm.h"
 
 namespace VirtualBox {
 
+class VirtualBoxPrivate;
 class ConfigWidget;
 
 class Extension final :
@@ -37,26 +35,22 @@ class Extension final :
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
 public:
+
     Extension();
+    ~Extension();
 
     /*
      * Implementation of extension interface
      */
 
+    QString name() const override { return tr("Virtual Box"); }
     QWidget *widget(QWidget *parent = nullptr) override;
-    QString name() const override { return name_; }
     void setupSession() override;
-    void handleQuery(Core::Query * query) override;
+    void handleQuery(Core::Query *) override;
 
 private:
 
-    QString iconPath_;
-    QList<VM*> vms_;
-    QFileSystemWatcher vboxWatcher_;
-    const char* name_ = "Virtual Box";
-
-protected slots:
-    void rescanVBoxConfig(QString path);
+    std::unique_ptr<VirtualBoxPrivate> d;
 
 };
 }

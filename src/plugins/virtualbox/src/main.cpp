@@ -15,14 +15,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QProcess>
-#include <QRegularExpression>
-#include <QString>
-#include <QFile>
-#include <QStandardPaths>
 #include <QDomDocument>
 #include <QDomElement>
+#include <QFile>
+#include <QFileSystemWatcher>
+#include <QPointer>
+#include <QProcess>
+#include <QRegularExpression>
+#include <QStandardPaths>
+#include <QString>
 #include "main.h"
+#include "vm.h"
 #include "query.h"
 #include "xdgiconlookup.h"
 #include "standarditem.h"
@@ -31,34 +34,23 @@ using Core::Action;
 using Core::StandardAction;
 using Core::StandardItem;
 
-/** ***************************************************************************/
-VirtualBox::Extension::Extension()
-    : Core::Extension("org.albert.extension.virtualbox"),
-      Core::QueryHandler(Core::Extension::id) {
-    QString iconPath = XdgIconLookup::instance()->themeIconPath("virtualbox");
-    iconPath_ = iconPath.isNull() ? ":vbox" : iconPath;
-    VMItem::iconPath_ = iconPath_;
 
-    QString vboxConfigPath = QStandardPaths::locate(QStandardPaths::ConfigLocation, "VirtualBox/VirtualBox.xml");
-    if (vboxConfigPath.isEmpty())
-        throw "VirtualBox was not detected!";
 
-    rescanVBoxConfig(vboxConfigPath);
-    vboxWatcher_.addPath(vboxConfigPath);
-    connect(&vboxWatcher_, SIGNAL(fileChanged(QString)), this, SLOT(rescanVBoxConfig(QString)));
-}
+class VirtualBox::VirtualBoxPrivate
+{
+public:
+    QPointer<ConfigWidget> widget;
+    QList<VM*> vms;
+    QFileSystemWatcher vboxWatcher;
+    const char* name_ = "Virtual Box";
+
+    void rescanVBoxConfig(QString path);
+};
 
 
 
 /** ***************************************************************************/
-QWidget *VirtualBox::Extension::widget(QWidget *parent) {
-    return new QWidget(parent);
-}
-
-
-
-/** ***************************************************************************/
-void VirtualBox::Extension::rescanVBoxConfig(QString path) {
+void VirtualBox::VirtualBoxPrivate::rescanVBoxConfig(QString path) {
 
     qDebug("[%s] Scanning for VMs", name_);
 
@@ -104,12 +96,12 @@ void VirtualBox::Extension::rescanVBoxConfig(QString path) {
     // And we count how many entries we find for information reasons
     int found = 0;
 
-    qDeleteAll(vms_);
-    vms_.clear();
+    qDeleteAll(vms);
+    vms.clear();
 
     while (!machine.isNull()) {
 
-        vms_.append(new VM(machine.attribute("src")));
+        vms.append(new VM(machine.attribute("src")));
 
         machine = machine.nextSiblingElement();
         found++;
@@ -121,8 +113,46 @@ void VirtualBox::Extension::rescanVBoxConfig(QString path) {
 
 
 /** ***************************************************************************/
+/** ***************************************************************************/
+/** ***************************************************************************/
+/** ***************************************************************************/
+VirtualBox::Extension::Extension()
+    : Core::Extension("org.albert.extension.virtualbox"),
+      Core::QueryHandler(Core::Extension::id),
+      d(new VirtualBoxPrivate) {
+
+    VMItem::iconPath_ = XdgIconLookup::instance()->themeIconPath("virtualbox");
+    if ( VMItem::iconPath_.isNull() )
+        VMItem::iconPath_ = ":vbox";
+
+    QString vboxConfigPath = QStandardPaths::locate(QStandardPaths::ConfigLocation, "VirtualBox/VirtualBox.xml");
+    if (vboxConfigPath.isEmpty())
+        throw "VirtualBox was not detected!";
+
+    d->rescanVBoxConfig(vboxConfigPath);
+    d->vboxWatcher.addPath(vboxConfigPath);
+    connect(&d->vboxWatcher, SIGNAL(fileChanged(QString)), this, SLOT(rescanVBoxConfig(QString)));
+}
+
+
+
+/** ***************************************************************************/
+VirtualBox::Extension::~Extension() {
+
+}
+
+
+
+/** ***************************************************************************/
+QWidget *VirtualBox::Extension::widget(QWidget *parent) {
+    return new QWidget(parent);
+}
+
+
+
+/** ***************************************************************************/
 void VirtualBox::Extension::setupSession() {
-    for (VM *vm : vms_)
+    for (VM *vm : d->vms)
         vm->probeState();
 }
 
@@ -130,63 +160,8 @@ void VirtualBox::Extension::setupSession() {
 
 /** ***************************************************************************/
 void VirtualBox::Extension::handleQuery(Core::Query * query) {
-
-/* Rebase-Conflict Artifact 
-<<<<<<< HEAD:src/plugins/virtualbox/src/main.cpp
-   for (uint i = 0; i < names_.size(); ++i){
-       if (names_[i].startsWith(query->searchTerm(), Qt::CaseInsensitive)) {
-=======
-    //*
-    for (uint i = 0; i < names_.size(); ++i){
-        if (names_[i].startsWith(query.searchTerm(), Qt::CaseInsensitive)) {
->>>>>>> Improved VirtualBox extension:src/plugins/virtualbox/extension.cpp
-
-            std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(uuids_[i]);
-            item->setText(names_[i]);
-            item->setSubtext(QString("'%1' aka '%2'").arg(names_[i], uuids_[i]));
-            item->setIconPath(iconPath_);
-
-<<<<<<< HEAD:src/plugins/virtualbox/src/main.cpp
-           std::shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
-           action->setText("Start virtual machine");
-           action->setAction([this, i](){
-               QProcess::startDetached("VBoxManage", {"startvm", uuids_[i]});
-           });
-=======
-            std::shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
-            action->setText("Start virtual machine");
-            action->setAction([this, i](ExecutionFlags *){
-                QProcess::startDetached("VBoxManage", {"startvm", uuids_[i]});
-            });
->>>>>>> Improved VirtualBox extension:src/plugins/virtualbox/extension.cpp
-
-            item->setActions({action});
-
-<<<<<<< HEAD:src/plugins/virtualbox/src/main.cpp
-           query->addMatch(item);
-       }
-   }
-=======
-            query.addMatch(item);
-        }
-    } * /
-    //*
-    for (uint i = 0; i < names_.size(); ++i){
-        if (names_[i].startsWith(query->searchTerm(), Qt::CaseInsensitive)) {
-            std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>();
-            item->setText(names_[i]);
-            item->setSubtext(QString("Start '%1'").arg(names_[i]));
-            item->setIcon(iconPath_);
-            item->setAction([this, i](){
-                QProcess::startDetached("VBoxManage", {"startvm", uuids_[i]});
-            });
-            query->addMatch(item);
-        }
-    }
-    */
-    for (VM* vm : vms_) {
+    for (VM* vm : d->vms) {
         if (vm->startsWith(query->searchTerm()))
             query->addMatch(std::shared_ptr<Item>(vm->produceItem()));
     }
-//>>>>>>> Improved VirtualBox extension:src/plugins/virtualbox/extension.cpp
 }
