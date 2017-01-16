@@ -131,7 +131,8 @@ VirtualBox::Extension::Extension()
 
     d->rescanVBoxConfig(vboxConfigPath);
     d->vboxWatcher.addPath(vboxConfigPath);
-    connect(&d->vboxWatcher, SIGNAL(fileChanged(QString)), this, SLOT(rescanVBoxConfig(QString)));
+    connect(&d->vboxWatcher, &QFileSystemWatcher::fileChanged,
+            std::bind(&VirtualBoxPrivate::rescanVBoxConfig, d.get(), std::placeholders::_1));
 }
 
 
