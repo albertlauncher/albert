@@ -418,7 +418,7 @@ vector<shared_ptr<StandardIndexItem>> indexApplications() {
                                                          fIt.filePath());
 
             shared_ptr<StandardAction> sa = std::make_shared<StandardAction>();
-            sa->setText("Run");
+            sa->setText(QString("Run %1").arg(name));
             if (term){
                 sa->setAction([commandline, workingDir](){
                     QStringList arguments = shellLexerSplit(terminalCommand);
@@ -443,11 +443,10 @@ vector<shared_ptr<StandardIndexItem>> indexApplications() {
 
             if (term){
                 sa = std::make_shared<StandardAction>();
-                sa->setText("Run as root");
+                sa->setText(QString("Run %1 as root").arg(name));
                 sa->setAction([commandline, workingDir](){
                     QStringList arguments = shellLexerSplit(terminalCommand);
-                    arguments.append("sudo");
-                    arguments.append(commandline);
+                    arguments.append(QString("sudo %1").arg(commandline.join(' ')));
                     QString command = arguments.takeFirst();
                     QProcess::startDetached(command, arguments, workingDir);
                 });
