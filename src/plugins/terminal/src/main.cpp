@@ -63,7 +63,7 @@ Terminal::Extension::Extension()
     d->dirtyFlag = false;
 
     QString iconPath = XdgIconLookup::iconPath("terminal");
-    d->iconPath = iconPath.isNull() ? ":calc" : iconPath;
+    d->iconPath = iconPath.isNull() ? ":terminal" : iconPath;
 
     connect(&d->watcher, &QFileSystemWatcher::directoryChanged, [this](){ d->dirtyFlag = true; });
 
