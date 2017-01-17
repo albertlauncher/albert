@@ -185,11 +185,9 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow,
 /** ***************************************************************************/
 void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
     // Hidde the placehodler text
-    QLayoutItem *item = ui.widget_pluginInfos->layout()->takeAt(1);
-    if ( item )
-        delete item;
-    else
-        qWarning() << "Pluginfo contained no item!";
+    QLayoutItem *i = ui.widget_pluginInfos->layout()->takeAt(1);
+    delete i->widget();
+    delete i;
 
     if (extensionManager_->extensionSpecs()[current.row()]->state() == ExtensionSpec::State::Loaded){
         Extension *extension = dynamic_cast<Extension*>(extensionManager_->extensionSpecs()[current.row()]->instance());
@@ -200,7 +198,7 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
         QWidget *pw = extension->widget();
         if ( pw->layout() != nullptr)
             pw->layout()->setMargin(0);
-        ui.widget_pluginInfos->layout()->addWidget(pw);
+        ui.widget_pluginInfos->layout()->addWidget(pw);// Takes ownership
         ui.label_pluginTitle->setText(extension->name());
         ui.label_pluginTitle->show();
     }
