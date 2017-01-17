@@ -15,15 +15,16 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <vector>
-#include "querymanager.h"
-#include "extensionmanager.h"
-#include "queryhandler.h"
-#include "query.h"
-#include "item.h"
 #include "extension.h"
-#include "queryhandler.h"
+#include "extensionmanager.h"
 #include "fallbackprovider.h"
+#include "item.h"
+#include "matchcompare.h"
+#include "query.h"
+#include "queryhandler.h"
+#include "querymanager.h"
 using namespace Core;
+using std::set;
 using std::vector;
 using std::shared_ptr;
 
@@ -32,8 +33,9 @@ QueryManager::QueryManager(ExtensionManager* em, QObject *parent)
     : QObject(parent),
       extensionManager_(em),
       currentQuery_(nullptr) {
+
     // Initialize the order
-    Core::MatchOrder::update();
+    Core::MatchCompare::update();
 }
 
 
@@ -65,7 +67,7 @@ void QueryManager::teardownSession() {
     }
 
     // Compute new match rankings
-    Core::MatchOrder::update();
+    Core::MatchCompare::update();
 }
 
 

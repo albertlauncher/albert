@@ -28,6 +28,7 @@
 #include "standardaction.h"
 #include "xdgiconlookup.h"
 using std::vector;
+using std::shared_ptr;
 using namespace Core;
 
 

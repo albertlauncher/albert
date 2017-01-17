@@ -16,38 +16,28 @@
 
 #pragma once
 #include <QString>
-#include <functional>
-#include "action.h"
+#include <map>
+#include <memory>
 #include "core_globals.h"
+#include "item.h"
 
 namespace Core {
 
-
-/** ****************************************************************************
-* @brief A standard action
-* If you dont need the flexibility subclassing the abstract classes provided,
-* you can simply use this container, fill it with data.
-*/
-struct EXPORT_CORE StandardAction final : public Action
+/**
+ * @brief The MatchOrder class
+ * The implements the order of the results
+ */
+class EXPORT_CORE MatchCompare
 {
 public:
 
-    StandardAction();
-    StandardAction(const QString &text, std::function<void()> f);
-
-    QString text() const override;
-    void setText(const QString &text);
-
-    const std::function<void()> &action();
-    void setAction(std::function<void()> &&action);
-
-    void activate() override;
+    static void update();
+    bool operator()(const std::pair<std::shared_ptr<Item>, short>& lhs,
+                    const std::pair<std::shared_ptr<Item>, short>& rhs);
 
 private:
 
-    QString text_;
-    std::function<void()> action_;
-
+    static std::map<QString, double> order;
 };
 
 }

@@ -23,9 +23,6 @@
 #include <memory>
 #include "extension.h"
 #include "core_globals.h"
-using std::set;
-using std::vector;
-using std::unique_ptr;
 
 namespace Core {
 
@@ -44,17 +41,17 @@ public:
 
     void setPluginDirs(const QStringList&);
     void reloadExtensions(); // TODO: TASK: Rename all to plugins
-    const vector<unique_ptr<ExtensionSpec>> & extensionSpecs() const;
-    void enableExtension(const unique_ptr<ExtensionSpec> &);
-    void disableExtension(const unique_ptr<ExtensionSpec> &);
-    bool extensionIsEnabled(const unique_ptr<ExtensionSpec> &);
+    const std::vector<std::unique_ptr<ExtensionSpec>> & extensionSpecs() const;
+    void enableExtension(const std::unique_ptr<ExtensionSpec> &);
+    void disableExtension(const std::unique_ptr<ExtensionSpec> &);
+    bool extensionIsEnabled(const std::unique_ptr<ExtensionSpec> &);
 
     void registerObject(QObject *);
     void unregisterObject(QObject*);
-    const set<QObject *> objects() const;
+    const std::set<QObject *> objects() const;
     template <typename T>
-    set<T *> objectsByType() {
-        set<T *> results;
+    std::set<T *> objectsByType() {
+        std::set<T *> results;
         for (QObject * object : objects()) {
             T *result = dynamic_cast<T *>(object);
             if (result)
@@ -67,10 +64,10 @@ public:
 
 private:
 
-    void loadExtension(const unique_ptr<ExtensionSpec> &);
-    void unloadExtension(const unique_ptr<ExtensionSpec> &);
+    void loadExtension(const std::unique_ptr<ExtensionSpec> &);
+    void unloadExtension(const std::unique_ptr<ExtensionSpec> &);
 
-    unique_ptr<ExtensionManagerPrivate> d;
+    std::unique_ptr<ExtensionManagerPrivate> d;
 
 signals:
 

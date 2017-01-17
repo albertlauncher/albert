@@ -18,7 +18,8 @@
 #include "loadermodel.h"
 #include "extensionmanager.h"
 #include "extensionspec.h"
-using Core::ExtensionSpec;
+using std::unique_ptr;
+using namespace Core;
 
 
 

@@ -18,14 +18,11 @@
 #include <QObject>
 #include <QAbstractItemModel>
 #include <vector>
-using std::vector;
 
 namespace Core {
 class ExtensionManager;
 class Query;
 }
-using Core::ExtensionManager;
-using Core::Query;
 
 class QueryManager : public QObject
 {
@@ -33,7 +30,7 @@ class QueryManager : public QObject
 
 public:
 
-    explicit QueryManager(ExtensionManager* em, QObject *parent = 0);
+    explicit QueryManager(Core::ExtensionManager* em, QObject *parent = 0);
 
     void setupSession();
     void teardownSession();
@@ -41,9 +38,9 @@ public:
 
 private:
 
-    ExtensionManager *extensionManager_;
-    Query *currentQuery_;
-    vector<Query*> pastQueries_;
+    Core::ExtensionManager *extensionManager_;
+    Core::Query *currentQuery_;
+    std::vector<Core::Query*> pastQueries_;
 
 signals:
 

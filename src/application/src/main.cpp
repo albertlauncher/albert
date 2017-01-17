@@ -35,6 +35,7 @@
 #include "querymanager.h"
 #include "settingswidget.h"
 #include "trayicon.h"
+using Core::ExtensionManager;
 
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message);
 void shutdownHandler(int);

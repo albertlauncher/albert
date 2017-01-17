@@ -49,6 +49,7 @@
 #include "xdgiconlookup.h"
 using std::shared_ptr;
 using std::vector;
+using std::pair;
 using namespace Core;
 
 namespace {

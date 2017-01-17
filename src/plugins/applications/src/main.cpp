@@ -42,6 +42,7 @@
 #include "standardindexitem.h"
 #include "xdgiconlookup.h"
 using std::map;
+using std::pair;
 using std::vector;
 using std::shared_ptr;
 using namespace Core;

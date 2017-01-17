@@ -16,22 +16,13 @@
 
 #pragma once
 #include <QAbstractListModel>
-#include <QFutureWatcher>
-#include <QMutex>
-#include <QString>
-#include <QTimer>
-#include <map>
 #include <set>
+#include <map>
 #include <vector>
 #include <utility>
 #include <memory>
 #include "core_globals.h"
 #include "queryhandler.h"
-using std::set;
-using std::map;
-using std::vector;
-using std::pair;
-using std::shared_ptr;
 
 class QueryManager;
 
@@ -39,24 +30,6 @@ namespace Core {
 
 class Extension;
 class Item;
-
-
-/**
- * @brief The MatchOrder class
- * The implements the order of the results
- */
-class EXPORT_CORE MatchOrder
-{
-public:
-
-    static void update();
-    inline bool operator() (const pair<shared_ptr<Item>, short>& lhs,
-                            const pair<shared_ptr<Item>, short>& rhs);
-private:
-
-    static map<QString, double> order;
-};
-
 
 /**
  * @brief The Query class
@@ -84,9 +57,9 @@ public:
 
     bool isValid() const;
 
-    void addMatch(shared_ptr<Item> item, short score = 0);
-    void addMatches(vector<pair<shared_ptr<Item>,short>>::iterator begin,
-                    vector<pair<shared_ptr<Item>,short>>::iterator end);
+    void addMatch(std::shared_ptr<Item> item, short score = 0);
+    void addMatches(std::vector<std::pair<std::shared_ptr<Item>,short>>::iterator begin,
+                    std::vector<std::pair<std::shared_ptr<Item>,short>>::iterator end);
 
 private:
 
@@ -97,9 +70,9 @@ private:
 
     void invalidate();
 
-    void setQueryHandlers(const set<QueryHandler*> &);
+    void setQueryHandlers(const std::set<QueryHandler*> &);
 
-    void setFallbacks(const vector<shared_ptr<Item>> &);
+    void setFallbacks(const std::vector<std::shared_ptr<Item>> &);
 
     void run();
 

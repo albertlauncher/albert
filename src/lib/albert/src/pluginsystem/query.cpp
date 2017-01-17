@@ -15,10 +15,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDebug>
+#include <QFutureWatcher>
+#include <QMutex>
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QSqlError>
+#include <QString>
 #include <QtConcurrent>
+#include <QTimer>
 #include <QVariant>
 #include <algorithm>
 #include <chrono>
@@ -27,67 +31,13 @@
 #include "action.h"
 #include "extension.h"
 #include "item.h"
+#include "matchcompare.h"
 #include "query.h"
 using std::chrono::system_clock;
-using std::map;
-
-
-
-/** ***************************************************************************/
-/** ***************************************************************************/
-/** ***************************************************************************/
-map<QString, double> Core::MatchOrder::order;
-
-bool Core::MatchOrder::operator()(const pair<shared_ptr<Item>, short> &lhs,
-                                  const pair<shared_ptr<Item>, short> &rhs) {
-    // Compare urgency
-    if (lhs.first->urgency() != rhs.first->urgency())
-        return lhs.first->urgency() > rhs.first->urgency();
-
-    // Compare usage scores
-    const auto &lit = order.find(lhs.first->id());
-    const auto &rit = order.find(rhs.first->id());
-    if (lit==order.cend()) // |- lhs zero
-        if (rit==order.cend()) // |- rhs zero
-            return lhs.second > rhs.second; // Compare match score
-        else // |- rhs > 0
-            return false; // lhs==0 && rhs>0 implies lhs<rhs implies !(lhs>rhs)
-    else
-        if (rit==order.cend())
-            return true; // lhs>0 && rhs=0 implies lhs>rhs
-        else
-            return *lit > *rit; // Both usage scores available, return lhs>rhs
-}
-
-void Core::MatchOrder::update() {
-    order.clear();
-
-    // Update the results ranking
-    QSqlQuery query;
-    query.exec("SELECT t.itemId AS id, SUM(t.score) AS usageScore "
-               "FROM ( "
-               " SELECT itemId, 1/max(julianday('now')-julianday(timestamp),1) AS score from usages "
-               ") t "
-               "GROUP BY t.itemId");
-    while (query.next())
-        MatchOrder::order.emplace(query.value(0).toString(),
-                                  query.value(1).toDouble());
-}
+using namespace std;
 
 
 /** ***************************************************************************/
-/** ***************************************************************************/
-/** ***************************************************************************/
-
-class Results {
-
-};
-
-/** ***************************************************************************/
-/** ***************************************************************************/
-/** ***************************************************************************/
-
-
 class Core::Query::QueryPrivate : public QAbstractListModel
 {
 public:
@@ -192,7 +142,7 @@ public:
         // Sort the results
         std::sort(pendingResults.begin(),
                   pendingResults.end(),
-                  MatchOrder());
+                  MatchCompare());
 
         // Preallocate space in "results" to avoid multiple allocations
         results.reserve(results.size() + pendingResults.size());

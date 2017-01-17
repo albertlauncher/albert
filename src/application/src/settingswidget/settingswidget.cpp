@@ -34,6 +34,7 @@
 #include "trayicon.h"
 using Core::Extension;
 using Core::ExtensionSpec;
+using Core::ExtensionManager;
 
 /** ***************************************************************************/
 SettingsWidget::SettingsWidget(MainWindow *mainWindow,

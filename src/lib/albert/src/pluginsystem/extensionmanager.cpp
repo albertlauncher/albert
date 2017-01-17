@@ -27,7 +27,9 @@
 #include <memory>
 #include "extensionmanager.h"
 #include "extensionspec.h"
+using std::set;
 using std::unique_ptr;
+using std::vector;
 using std::chrono::system_clock;
 
 namespace {

@@ -22,7 +22,6 @@ class ExtensionManager;
 class HotkeyManager;
 class MainWindow;
 class TrayIcon;
-using Core::ExtensionManager;
 
 class SettingsWidget final : public QWidget
 {
@@ -32,7 +31,7 @@ public:
 
     SettingsWidget(MainWindow *mainWindow,
                    HotkeyManager *hotkeyManager,
-                   ExtensionManager *extensionManager,
+                   Core::ExtensionManager *extensionManager,
                    TrayIcon *trayIcon,
                    QWidget * parent = 0, Qt::WindowFlags f = 0);
 
@@ -47,7 +46,7 @@ private:
 
     MainWindow *mainWindow_;
     HotkeyManager *hotkeyManager_;
-    ExtensionManager *extensionManager_;
+    Core::ExtensionManager *extensionManager_;
     TrayIcon *trayIcon_;
     Ui::SettingsDialog ui;
 

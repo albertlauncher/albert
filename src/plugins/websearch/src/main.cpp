@@ -34,6 +34,8 @@
 #include "standarditem.h"
 #include "standardaction.h"
 #include "query.h"
+using std::shared_ptr;
+using std::vector;
 using namespace Core;
 
 

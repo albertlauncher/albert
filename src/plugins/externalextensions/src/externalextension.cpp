@@ -15,19 +15,22 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QByteArray>
+#include <QFileInfo>
+#include <QDebug>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
 #include <QLabel>
 #include <QProcess>
 #include <QVBoxLayout>
-#include <QFileInfo>
 #include <vector>
-#include "query.h"
 #include "externalextension.h"
-#include "standarditem.h"
 #include "standardaction.h"
+#include "standarditem.h"
+#include "query.h"
 #include "xdgiconlookup.h"
+using std::pair;
+using std::shared_ptr;
 using std::vector;
 using namespace Core;
 

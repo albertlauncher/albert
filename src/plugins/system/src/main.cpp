@@ -25,6 +25,7 @@
 #include "standarditem.h"
 #include "query.h"
 #include "xdgiconlookup.h"
+using std::vector;
 
 
 namespace {

@@ -29,6 +29,9 @@
 #include "query.h"
 #include "standarditem.h"
 #include "standardaction.h"
+using std::pair;
+using std::shared_ptr;
+using std::vector;
 using Core::Action;
 using Core::StandardAction;
 using Core::StandardItem;

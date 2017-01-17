@@ -34,8 +34,9 @@
 #include "offlineindex.h"
 #include "query.h"
 #include "queryhandler.h"
-using std::vector;
+using std::pair;
 using std::shared_ptr;
+using std::vector;
 using namespace Core;
 
 

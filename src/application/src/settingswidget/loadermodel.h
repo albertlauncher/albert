@@ -19,7 +19,6 @@
 namespace Core {
 class ExtensionManager;
 }
-using Core::ExtensionManager;
 
 class LoaderModel final : public QAbstractListModel
 {
@@ -30,6 +29,6 @@ public:
     bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole) override;
     Qt::ItemFlags flags(const QModelIndex & index) const override;
 private:
-    ExtensionManager *extensionManager_;
+    Core::ExtensionManager *extensionManager_;
 };
 

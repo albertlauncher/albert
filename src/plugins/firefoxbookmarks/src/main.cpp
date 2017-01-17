@@ -48,6 +48,7 @@
 #include "standardindexitem.h"
 #include "query.h"
 #include "xdgiconlookup.h"
+using std::pair;
 using std::shared_ptr;
 using std::vector;
 using namespace Core;
