@@ -14,6 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QDebug>
+#include <QSqlQuery>
+#include <QSqlRecord>
+#include <QSqlError>
 #include <vector>
 #include "extension.h"
 #include "extensionmanager.h"
@@ -56,15 +60,34 @@ void QueryManager::teardownSession() {
     for (Core::QueryHandler *handler : extensionManager_->objectsByType<Core::QueryHandler>())
         handler->teardownSession();
 
-    // Delete finished queries
+    // Open database to store the runtimes
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery sqlQuery;
+    db.transaction();
+
+    // Delete finished queries and prepare sql transaction containing runtimes
     vector<Query*>::iterator it = pastQueries_.begin();
     while ( it != pastQueries_.end()){
         if ( (*it)->state() != Query::State::Running ) {
+
+            // Store the runtimes
+            for ( auto &queryHandlerRuntimeEntry : (*it)->runtimes() ) {
+                sqlQuery.prepare("INSERT INTO runtimes (extensionId, runtime) VALUES (:extensionId, :runtime);");
+                sqlQuery.bindValue(":extensionId", queryHandlerRuntimeEntry.first->id);
+                sqlQuery.bindValue(":runtime", static_cast<qulonglong>(queryHandlerRuntimeEntry.second));
+                if (!sqlQuery.exec())
+                    qWarning() << sqlQuery.lastError();
+            }
+
+            // Delete the query
             (*it)->deleteLater();
             it = pastQueries_.erase(it);
         } else
             ++it;
     }
+
+    // Finally send the sql transaction
+    db.commit();
 
     // Compute new match rankings
     Core::MatchCompare::update();

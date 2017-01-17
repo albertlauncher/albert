@@ -209,23 +209,6 @@ public:
     void finishQuery() {
 
         /*
-         * Store the runtimes
-         */
-
-        QSqlDatabase db = QSqlDatabase::database();
-        QSqlQuery sqlQuery;
-
-        db.transaction();
-        for ( auto &queryHandlerRuntimeEntry : runtimes ) {
-            sqlQuery.prepare("INSERT INTO runtimes (extensionId, runtime) VALUES (:extensionId, :runtime);");
-            sqlQuery.bindValue(":extensionId", queryHandlerRuntimeEntry.first->id);
-            sqlQuery.bindValue(":runtime", static_cast<qulonglong>(queryHandlerRuntimeEntry.second));
-            if (!sqlQuery.exec())
-                qWarning() << sqlQuery.lastError();
-        }
-        db.commit();
-
-        /*
          * If results are empty show fallbacks
          */
 
@@ -399,6 +382,12 @@ void Core::Query::addMatches(vector<pair<shared_ptr<Item>,short>>::iterator begi
                                  std::make_move_iterator(end));
         d->pendingResultsMutex.unlock();
     }
+}
+
+
+/** ***************************************************************************/
+map<Core::QueryHandler *, long> Core::Query::runtimes() {
+    return d->runtimes;
 }
 
 

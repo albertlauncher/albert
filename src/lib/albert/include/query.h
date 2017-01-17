@@ -61,6 +61,8 @@ public:
     void addMatches(std::vector<std::pair<std::shared_ptr<Item>,short>>::iterator begin,
                     std::vector<std::pair<std::shared_ptr<Item>,short>>::iterator end);
 
+    std::map<QueryHandler *, long> runtimes();
+
 private:
 
     Query();
