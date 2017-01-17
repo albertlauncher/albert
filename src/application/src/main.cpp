@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
         app = new QApplication(argc, argv);
         app->setApplicationName("albert");
         app->setApplicationDisplayName("Albert");
-        app->setApplicationVersion("v0.8.11");
+        app->setApplicationVersion("v0.9.0");
         app->setWindowIcon(QIcon(":app_icon"));
         app->setQuitOnLastWindowClosed(false);
 
