@@ -1,0 +1,10 @@
+{
+    "id" :              "org.albert.extension.ssh",
+    "name" :            "Secure Shell",
+    "version" :         "1.0",
+    "platform" :        "All",
+    "group" :           "Extensions",
+    "author" :          "Manuel Schneider",
+    "dependencies" :    [],
+    "enabledbydefault": true
+}
