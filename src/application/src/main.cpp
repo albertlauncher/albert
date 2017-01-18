@@ -41,10 +41,6 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 void shutdownHandler(int);
 void dispatchMessage();
 
-namespace {
-const char* CFG_TERM = "terminal";
-const char* DEF_TERM = "xterm -e";
-}
 
 static QApplication           *app;
 static QueryManager           *queryManager;
@@ -54,7 +50,6 @@ static SettingsWidget         *settingsWidget;
 static TrayIcon               *trayIcon;
 static QMenu                  *trayIconMenu;
 static QLocalServer           *localServer;
-QString terminalCommand;
 
 int main(int argc, char **argv) {
 
@@ -289,9 +284,6 @@ int main(int argc, char **argv) {
         /*
          *  MISC
          */
-
-        // Define the (global extern) terminal command
-        terminalCommand = settings.value(CFG_TERM, DEF_TERM).toString();
 
         // Quit gracefully on unix signals
         for ( int sig : { SIGINT, SIGTERM, SIGHUP, SIGPIPE } )

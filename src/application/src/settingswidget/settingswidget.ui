@@ -277,7 +277,7 @@ pixels and you can use it to drag the window.</string>
             <property name="labelAlignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
-            <item row="1" column="0">
+            <item row="0" column="0">
              <widget class="QLabel" name="label_onTop">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -290,7 +290,7 @@ pixels and you can use it to drag the window.</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
+            <item row="0" column="1">
              <widget class="QCheckBox" name="checkBox_onTop">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -304,7 +304,7 @@ stay on top of all top level windows.</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
+            <item row="1" column="0">
              <widget class="QLabel" name="label_center">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -317,7 +317,7 @@ stay on top of all top level windows.</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="1">
+            <item row="1" column="1">
              <widget class="QCheckBox" name="checkBox_center">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -332,7 +332,7 @@ screen where the pointer resides.</string>
               </property>
              </widget>
             </item>
-            <item row="3" column="0">
+            <item row="2" column="0">
              <widget class="QLabel" name="label_hideOnFocusOut">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -345,7 +345,7 @@ screen where the pointer resides.</string>
               </property>
              </widget>
             </item>
-            <item row="3" column="1">
+            <item row="2" column="1">
              <widget class="QCheckBox" name="checkBox_hideOnFocusOut">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -362,7 +362,7 @@ widget is open.</string>
               </property>
              </widget>
             </item>
-            <item row="4" column="0">
+            <item row="3" column="0">
              <widget class="QLabel" name="label_hideOnClose">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -375,7 +375,7 @@ widget is open.</string>
               </property>
              </widget>
             </item>
-            <item row="4" column="1">
+            <item row="3" column="1">
              <widget class="QCheckBox" name="checkBox_hideOnClose">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -389,17 +389,34 @@ gets hidden instead of the application getting quit.</string>
               </property>
              </widget>
             </item>
-            <item row="5" column="0">
+            <item row="4" column="0">
              <widget class="QLabel" name="label_clearOnHide">
               <property name="text">
                <string>Clear on hide:</string>
               </property>
              </widget>
             </item>
-            <item row="6" column="0">
+            <item row="4" column="1">
+             <widget class="QCheckBox" name="checkBox_clearOnHide">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
              <widget class="QLabel" name="label_term">
               <property name="text">
                <string>Terminal command:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QComboBox" name="comboBox_term">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
               </property>
              </widget>
             </item>
@@ -422,13 +439,6 @@ that use a textual user interface.</string>
               </property>
               <property name="text">
                <string>Clear history/usage</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="1">
-             <widget class="QCheckBox" name="checkBox_clearOnHide">
-              <property name="text">
-               <string/>
               </property>
              </widget>
             </item>
