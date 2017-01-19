@@ -4,8 +4,10 @@ project(xdg)
 add_definitions(-DXDG) #export branch
 
 # Get Qt libraries
-find_package(Qt5Core 5.2 REQUIRED)
-find_package(Qt5Gui 5.2 REQUIRED)
+find_package(Qt5 5.2.0 REQUIRED COMPONENTS
+    Core
+    Gui
+)
 
 # List files in the source directory
 FILE(GLOB SRC src/* include/*)
@@ -24,7 +26,11 @@ target_include_directories(${PROJECT_NAME}
 )
 
 # Link target to libraries
-target_link_libraries(${PROJECT_NAME} ${Qt5Core_LIBRARIES} ${Qt5Gui_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+        ${Qt5Core_LIBRARIES}
+        ${Qt5Gui_LIBRARIES}
+)
 
 # Install target
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/albert)

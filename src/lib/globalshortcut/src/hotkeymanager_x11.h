@@ -15,27 +15,45 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include "hotkeymanager.h"
-#include <QObject>
-#include <QSet>
+#include <QDebug>
+#include <set>
 #include <QAbstractNativeEventFilter>
 
-class HotkeyManager::HotkeyManagerPrivate final : public QObject, public QAbstractNativeEventFilter
+struct _XDisplay;
+typedef _XDisplay Display;
+
+class HotkeyManagerPrivate final : public QObject, public QAbstractNativeEventFilter
 {
     Q_OBJECT
 
 public:
-	HotkeyManagerPrivate(QObject* parent = 0);
+
+    HotkeyManagerPrivate(QObject* parent = 0);
     ~HotkeyManagerPrivate();
 
     bool registerNativeHotkey(quint32 hk);
     void unregisterNativeHotkey(quint32 hk);
 
 private:
+
     bool nativeEventFilter(const QByteArray&, void*, long*) override;
-    static QSet<quint32> nativeKeycodes(quint32 QtKey);
-    static quint32 nativeModifiers(quint32 QtKbdMods);
+    std::set<uint> nativeKeycodes(uint QtKey);
+    uint nativeModifiers(uint QtKbdMods);
+
+    std::set<std::pair<uint,uint>> grabbedKeys;
+    std::set<uint> offendingMasks;
+
+    struct Masks {
+        unsigned int alt;
+        unsigned int meta;
+        unsigned int numlock;
+        unsigned int super;
+        unsigned int hyper;
+        unsigned int iso_level3_shift;
+    } masks;
 
 signals:
-	 void hotKeyPressed();
+
+     void hotKeyPressed();
 };
+
