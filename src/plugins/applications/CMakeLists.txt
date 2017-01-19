@@ -4,14 +4,9 @@ PROJECT(applications)
 
 FILE(GLOB_RECURSE SRC src/* metadata.json)
 
-find_package(Qt5Concurrent 5.2 REQUIRED)
-find_package(Qt5Widgets 5.2 REQUIRED)
-
-set(LIB
-    ${Qt5Concurrent_LIBRARIES}
-    ${Qt5Widgets_LIBRARIES}
-    albertcore
-    xdg
+find_package(Qt5 5.2.0 REQUIRED COMPONENTS
+    Concurrent
+    Widgets
 )
 
 qt5_add_resources(QRC
@@ -29,7 +24,12 @@ add_library(${PROJECT_NAME} SHARED ${SRC} ${QRC} ${UI})
 target_include_directories(${PROJECT_NAME} PRIVATE src/)
 
 # Link target to libraries
-target_link_libraries(${PROJECT_NAME} ${LIB})
+target_link_libraries(${PROJECT_NAME}
+    ${Qt5Concurrent_LIBRARIES}
+    ${Qt5Widgets_LIBRARIES}
+    albertcore
+    xdg
+)
 
 # Install target
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/albert/plugins)
