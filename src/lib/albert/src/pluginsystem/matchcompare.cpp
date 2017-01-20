@@ -26,7 +26,6 @@ using namespace std;
 /** ***************************************************************************/
 map<QString, double> Core::MatchCompare::order;
 
-
 /** ***************************************************************************/
 bool Core::MatchCompare::operator()(const pair<shared_ptr<Item>, short> &lhs,
                                   const pair<shared_ptr<Item>, short> &rhs) {
@@ -35,8 +34,8 @@ bool Core::MatchCompare::operator()(const pair<shared_ptr<Item>, short> &lhs,
         return lhs.first->urgency() > rhs.first->urgency();
 
     // Compare usage scores
-    const auto &lit = order.find(lhs.first->id());
-    const auto &rit = order.find(rhs.first->id());
+    const map<QString,double>::iterator &lit = order.find(lhs.first->id());
+    const map<QString,double>::iterator &rit = order.find(rhs.first->id());
     if (lit==order.cend()) // |- lhs zero
         if (rit==order.cend()) // |- rhs zero
             return lhs.second > rhs.second; // Compare match score
@@ -46,7 +45,7 @@ bool Core::MatchCompare::operator()(const pair<shared_ptr<Item>, short> &lhs,
         if (rit==order.cend())
             return true; // lhs>0 && rhs=0 implies lhs>rhs
         else
-            return *lit > *rit; // Both usage scores available, return lhs>rhs
+            return lit->second > rit->second; // Both usage scores available, return lhs>rhs
 }
 
 

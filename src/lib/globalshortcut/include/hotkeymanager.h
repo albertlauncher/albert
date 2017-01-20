@@ -19,10 +19,11 @@
 #include <QSet>
 #include <memory>
 
+class HotkeyManagerPrivate;
+
 class HotkeyManager final : public QObject
 {
     Q_OBJECT
-    class HotkeyManagerPrivate;
 
 public:
     HotkeyManager(QObject *parent = 0);

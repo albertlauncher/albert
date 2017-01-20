@@ -51,7 +51,7 @@ public:
 
     set<QueryHandler*> syncHandlers;
     set<QueryHandler*> asyncHandlers;
-    map<QueryHandler*, long int> runtimes;
+    map<QString,uint> runtimes;
 
     vector<shared_ptr<Item>> results;
     vector<shared_ptr<Item>> fallbacks;
@@ -60,7 +60,7 @@ public:
     mutable QMutex pendingResultsMutex;
     vector<pair<shared_ptr<Item>, short>> pendingResults;
 
-    QFutureWatcher<pair<QueryHandler*,long>> futureWatcher;
+    QFutureWatcher<pair<QueryHandler*,uint>> futureWatcher;
 
 
 
@@ -82,7 +82,7 @@ public:
 
 
     /** ***************************************************************************/
-    pair<QueryHandler*,long> mappedFunction (QueryHandler* queryHandler) {
+    pair<QueryHandler*,uint> mappedFunction (QueryHandler* queryHandler) {
         system_clock::time_point then = system_clock::now();
         queryHandler->handleQuery(q);
         system_clock::time_point now = system_clock::now();
@@ -95,7 +95,7 @@ public:
 
         // Call onSyncHandlersFinsished when all handlers finished
         futureWatcher.disconnect();
-        connect(&futureWatcher, &QFutureWatcher<pair<QueryHandler*,long>>::finished,
+        connect(&futureWatcher, &QFutureWatcher<pair<QueryHandler*,uint>>::finished,
                 this, &QueryPrivate::onSyncHandlersFinsished);
 
         // Run the handlers concurrently and measure the runtimes
@@ -110,7 +110,7 @@ public:
 
         // Call onAsyncHandlersFinsished when all handlers finished
         futureWatcher.disconnect();
-        connect(&futureWatcher, &QFutureWatcher<pair<QueryHandler*,long>>::finished,
+        connect(&futureWatcher, &QFutureWatcher<pair<QueryHandler*,uint>>::finished,
                 this, &QueryPrivate::onAsyncHandlersFinsished);
 
         // Run the handlers concurrently and measure the runtimes
@@ -130,7 +130,7 @@ public:
 
         // Save the runtimes of the current future
         for ( auto it = futureWatcher.future().begin(); it != futureWatcher.future().end(); ++it )
-            runtimes.emplace(it->first, it->second);
+            runtimes.emplace(it->first->id, it->second);
 
         /*
          * Publish the results
@@ -169,7 +169,7 @@ public:
 
         // Save the runtimes of the current future
         for ( auto it = futureWatcher.future().begin(); it != futureWatcher.future().end(); ++it )
-            runtimes.emplace(it->first, it->second);
+            runtimes.emplace(it->first->id, it->second);
 
         // Finally done
         fiftyMsTimer.stop();
@@ -386,7 +386,7 @@ void Core::Query::addMatches(vector<pair<shared_ptr<Item>,short>>::iterator begi
 
 
 /** ***************************************************************************/
-map<Core::QueryHandler *, long> Core::Query::runtimes() {
+std::map<QString,uint> Core::Query::runtimes() {
     return d->runtimes;
 }
 

@@ -4,14 +4,7 @@ PROJECT(calculator)
 
 FILE(GLOB_RECURSE SRC src/* metadata.json)
 
-find_package(Qt5Widgets 5.2 REQUIRED)
-
-set(LIB
-    ${Qt5Widgets_LIBRARIES}
-    albertcore
-    muparser
-    xdg
-)
+find_package(Qt5 5.2.0 REQUIRED COMPONENTS Widgets)
 
 qt5_add_resources(QRC
     ${PROJECT_NAME}.qrc
@@ -28,7 +21,12 @@ add_library(${PROJECT_NAME} SHARED ${SRC} ${QRC} ${UI})
 target_include_directories(${PROJECT_NAME} PRIVATE src/)
 
 # Link target to libraries
-target_link_libraries(${PROJECT_NAME} ${LIB})
+target_link_libraries(${PROJECT_NAME}
+    ${Qt5Widgets_LIBRARIES}
+    albertcore
+    muparser
+    xdg
+)
 
 # Install target
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/albert/plugins)

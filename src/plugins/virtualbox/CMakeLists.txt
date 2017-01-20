@@ -7,13 +7,8 @@ find_package(Qt5Xml 5.2 REQUIRED)
 
 FILE(GLOB_RECURSE SRC src/* metadata.json)
 
-find_package(Qt5Widgets 5.2 REQUIRED)
-
-set(LIB
-    ${Qt5Widgets_LIBRARIES}
-    ${Qt5Xml_LIBRARIES}
-    albertcore
-    xdg
+find_package(Qt5 5.2.0 REQUIRED COMPONENTS
+    Widgets
 )
 
 qt5_add_resources(QRC
@@ -27,7 +22,12 @@ add_library(${PROJECT_NAME} SHARED ${SRC} ${QRC})
 target_include_directories(${PROJECT_NAME} PRIVATE src/)
 
 # Link target to libraries
-target_link_libraries(${PROJECT_NAME} ${LIB})
+target_link_libraries(${PROJECT_NAME}
+    ${Qt5Widgets_LIBRARIES}
+    ${Qt5Xml_LIBRARIES}
+    albertcore
+    xdg
+)
 
 # Install target
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/albert/plugins)
