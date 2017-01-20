@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QDebug>
 #include <QDomDocument>
 #include <QDomElement>
 #include <QFile>
@@ -39,12 +40,15 @@ using Core::StandardItem;
 class VirtualBox::VirtualBoxPrivate
 {
 public:
+    VirtualBoxPrivate(Extension *q) : q(q) { }
+    Extension *q;
+
     QPointer<ConfigWidget> widget;
     QList<VM*> vms;
     QFileSystemWatcher vboxWatcher;
-    const char* name_ = "Virtual Box";
 
     void rescanVBoxConfig(QString path);
+
 };
 
 
@@ -52,7 +56,7 @@ public:
 /** ***************************************************************************/
 void VirtualBox::VirtualBoxPrivate::rescanVBoxConfig(QString path) {
 
-    qDebug("[%s] Scanning for VMs", name_);
+    qDebug() << qPrintable(QString("[%1] Scanning for VMs").arg(q->Core::Extension::id));
 
     QFile vboxConfigFile(path);
     if (!vboxConfigFile.exists())
@@ -107,7 +111,7 @@ void VirtualBox::VirtualBoxPrivate::rescanVBoxConfig(QString path) {
         found++;
     }
 
-    qDebug("[%s] Found %d VMs", name_, found);
+    qDebug() << qPrintable(QString("[%1] Found %2 VMs").arg(q->Core::Extension::id, found));
 }
 
 
@@ -119,7 +123,7 @@ void VirtualBox::VirtualBoxPrivate::rescanVBoxConfig(QString path) {
 VirtualBox::Extension::Extension()
     : Core::Extension("org.albert.extension.virtualbox"),
       Core::QueryHandler(Core::Extension::id),
-      d(new VirtualBoxPrivate) {
+      d(new VirtualBoxPrivate(this)) {
 
     VMItem::iconPath_ = XdgIconLookup::instance()->themeIconPath("virtualbox");
     if ( VMItem::iconPath_.isNull() )
