@@ -71,10 +71,10 @@ void QueryManager::teardownSession() {
         if ( (*it)->state() != Query::State::Running ) {
 
             // Store the runtimes
-            for ( auto &queryHandlerRuntimeEntry : (*it)->runtimes() ) {
+            for ( const std::pair<QString,uint> &handlerRuntime : (*it)->runtimes() ) {
                 sqlQuery.prepare("INSERT INTO runtimes (extensionId, runtime) VALUES (:extensionId, :runtime);");
-                sqlQuery.bindValue(":extensionId", queryHandlerRuntimeEntry.first->id);
-                sqlQuery.bindValue(":runtime", static_cast<qulonglong>(queryHandlerRuntimeEntry.second));
+                sqlQuery.bindValue(":extensionId", handlerRuntime.first);
+                sqlQuery.bindValue(":runtime", handlerRuntime.second);
                 if (!sqlQuery.exec())
                     qWarning() << sqlQuery.lastError();
             }
