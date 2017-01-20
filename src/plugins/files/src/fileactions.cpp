@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QProcess>
 #include "fileactions.h"
 
 /******************************************************************************/
@@ -28,43 +29,43 @@ Files::FileAction::~FileAction() {
 
 /******************************************************************************/
 
-Files::File::OpenFileAction::OpenFileAction(Files::File *file) : FileAction(file) {
+Files::OpenFileAction::OpenFileAction(Files::File *file) : FileAction(file) {
 
 }
 
-QString Files::File::OpenFileAction::text() const {
+QString Files::OpenFileAction::text() const {
     return "Open with default application";
 }
 
-void Files::File::OpenFileAction::activate() {
+void Files::OpenFileAction::activate() {
     QDesktopServices::openUrl(QUrl::fromLocalFile(file_->path()));
 }
 
 /******************************************************************************/
 
-Files::File::RevealFileAction::RevealFileAction(Files::File *file) : FileAction(file) {
+Files::RevealFileAction::RevealFileAction(Files::File *file) : FileAction(file) {
 
 }
 
-QString Files::File::RevealFileAction::text() const {
-    return "Reveal in default file browser";
+QString Files::RevealFileAction::text() const {
+    return "Reveal in file browser";
 }
 
-void Files::File::RevealFileAction::activate() {
+void Files::RevealFileAction::activate() {
     QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file_->path()).path()));
 }
 
 /******************************************************************************/
 
-Files::File::CopyFileAction::CopyFileAction(Files::File *file) : FileAction(file) {
+Files::CopyFileAction::CopyFileAction(Files::File *file) : FileAction(file) {
 
 }
 
-QString Files::File::CopyFileAction::text() const {
+QString Files::CopyFileAction::text() const {
     return "Copy to clipboard";
 }
 
-void Files::File::CopyFileAction::activate() {
+void Files::CopyFileAction::activate() {
     //  Get clipboard
     QClipboard *cb = QApplication::clipboard();
 
@@ -92,14 +93,38 @@ void Files::File::CopyFileAction::activate() {
 
 /******************************************************************************/
 
-Files::File::CopyPathAction::CopyPathAction(Files::File *file) : FileAction(file) {
-
+Files::CopyPathAction::CopyPathAction(Files::File *file)
+    : FileAction(file) {
 }
 
-QString Files::File::CopyPathAction::text() const {
+QString Files::CopyPathAction::text() const {
     return "Copy path to clipboard";
 }
 
-void Files::File::CopyPathAction::activate() {
+void Files::CopyPathAction::activate() {
     QApplication::clipboard()->setText(file_->path());
+}
+
+/******************************************************************************/
+
+extern QString terminalCommand;
+
+Files::TerminalFileAction::TerminalFileAction(Files::File *file)
+    : FileAction(file)  {
+}
+
+QString Files::TerminalFileAction::text() const {
+    return "Open terminal at this path";
+
+}
+
+void Files::TerminalFileAction::activate() {
+    QFileInfo fileInfo(file_->path());
+    QStringList commandLine = terminalCommand.trimmed().split(' ');
+    if ( commandLine.size() == 0 )
+        return;
+    if ( fileInfo.isDir() )
+        QProcess::startDetached(commandLine[0], {}, fileInfo.filePath());
+    else
+        QProcess::startDetached(commandLine[0], {}, fileInfo.path());
 }

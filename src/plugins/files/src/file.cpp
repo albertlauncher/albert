@@ -74,6 +74,7 @@ vector<shared_ptr<Core::Action>> Files::File::actions() {
     vector<shared_ptr<Core::Action>> actions;
     actions.push_back(std::make_shared<OpenFileAction>(this));
     actions.push_back(std::make_shared<RevealFileAction>(this));
+    actions.push_back(std::make_shared<TerminalFileAction>(this));
     actions.push_back(std::make_shared<CopyFileAction>(this));
     actions.push_back(std::make_shared<CopyPathAction>(this));
     return actions;

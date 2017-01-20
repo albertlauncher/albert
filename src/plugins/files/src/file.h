@@ -26,11 +26,6 @@ namespace Files {
 
 class File final : public Core::Item, public Core::Indexable
 {
-    struct OpenFileAction;
-    struct RevealFileAction;
-    struct CopyFileAction;
-    struct CopyPathAction;
-
 public:
 
     File() {}

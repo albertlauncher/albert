@@ -37,7 +37,7 @@ struct FileAction : public Core::Action
 
 
 /** ***************************************************************************/
-struct File::OpenFileAction final : public FileAction
+struct OpenFileAction final : public FileAction
 {
     OpenFileAction(File *file);
     QString text() const override;
@@ -47,7 +47,7 @@ struct File::OpenFileAction final : public FileAction
 
 
 /** ***************************************************************************/
-struct File::RevealFileAction final : public FileAction
+struct RevealFileAction final : public FileAction
 {
     RevealFileAction(File *file);
     QString text() const override;
@@ -57,7 +57,17 @@ struct File::RevealFileAction final : public FileAction
 
 
 /** ***************************************************************************/
-struct File::CopyFileAction final : public FileAction
+struct TerminalFileAction final : public FileAction
+{
+    TerminalFileAction(File *file);
+    QString text() const override;
+    void activate() override;
+};
+
+
+
+/** ***************************************************************************/
+struct CopyFileAction final : public FileAction
 {
     CopyFileAction(File *file);
     QString text() const override;
@@ -67,7 +77,7 @@ struct File::CopyFileAction final : public FileAction
 
 
 /** ***************************************************************************/
-struct File::CopyPathAction final : public FileAction
+struct CopyPathAction final : public FileAction
 {
     CopyPathAction(File *file);
     QString text() const override;
