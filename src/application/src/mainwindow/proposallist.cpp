@@ -85,7 +85,7 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
                 delegate_->subTextRole = Qt::UserRole+104;
                 break;
             default: // DefaultAction
-                delegate_->subTextRole = Qt::UserRole+100;
+                delegate_->subTextRole = Qt::ToolTipRole;
                 break;
             }
             update();
@@ -127,7 +127,7 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
                 delegate_->subTextRole = Qt::UserRole+104;
                 break;
             default: // DefaultAction
-                delegate_->subTextRole = Qt::UserRole+100;
+                delegate_->subTextRole = Qt::ToolTipRole;
                 break;
             }
             update();
@@ -216,8 +216,8 @@ void ProposalList::ItemDelegate::paint(QPainter *painter, const QStyleOptionView
 
     // Draw tooltip role
     painter->setFont(font2);
-    text = fontMetrics2.elidedText(index.data(option.state.testFlag(QStyle::State_Selected) ? subTextRole : Qt::ToolTipRole).toString(), option.textElideMode, subTextRect.width());
-    painter->drawText(subTextRect, Qt::AlignBottom|Qt::AlignLeft, text);
+    text = fontMetrics2.elidedText(index.data(option.state.testFlag(QStyle::State_Selected)? subTextRole : Qt::ToolTipRole).toString(), option.textElideMode, subTextRect.width());
+    painter->drawText(subTextRect   , Qt::AlignBottom|Qt::AlignLeft, text);
 
     painter->restore();
 }
