@@ -19,7 +19,6 @@
 #include <memory>
 #include "extension.h"
 #include "queryhandler.h"
-using std::vector;
 
 namespace System {
 

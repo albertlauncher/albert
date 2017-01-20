@@ -16,11 +16,9 @@
 
 #pragma once
 #include <QObject>
-#include <QString>
 #include <memory>
 #include "extension.h"
 #include "queryhandler.h"
-
 
 namespace Applications {
 
@@ -52,10 +50,6 @@ public:
      * Extension specific members
      */
 
-    void addDir(const QString &dirPath);
-    void removeDir(const QString &dirPath);
-    void restorePaths();
-
     bool fuzzy();
     void setFuzzy(bool b = true);
 
@@ -67,7 +61,7 @@ private:
 
 signals:
 
-    void rootDirsChanged(const QStringList&);
     void statusInfo(const QString&);
+
 };
 }

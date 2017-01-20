@@ -29,25 +29,31 @@
 #include <QVBoxLayout>
 #include "mainwindow.h"
 
-const char*   MainWindow::CFG_WND_POS  = "windowPosition";
-const char*   MainWindow::CFG_CENTERED = "showCentered";
-const bool    MainWindow::DEF_CENTERED = true;
-const char*   MainWindow::CFG_THEME = "theme";
-const char*   MainWindow::DEF_THEME = "Bright";
-const char*   MainWindow::CFG_HIDE_ON_FOCUS_LOSS = "hideOnFocusLoss";
-const bool    MainWindow::DEF_HIDE_ON_FOCUS_LOSS = true;
-const char*   MainWindow::CFG_HIDE_ON_CLOSE = "hideOnClose";
-const bool    MainWindow::DEF_HIDE_ON_CLOSE = false;
-const char*   MainWindow::CFG_ALWAYS_ON_TOP = "alwaysOnTop";
-const bool    MainWindow::DEF_ALWAYS_ON_TOP = true;
-const char*   MainWindow::CFG_MAX_PROPOSALS = "itemCount";
-const uint8_t MainWindow::DEF_MAX_PROPOSALS = 5;
-const char*   MainWindow::CFG_DISPLAY_SCROLLBAR = "displayScrollbar";
-const bool    MainWindow::DEF_DISPLAY_SCROLLBAR = false;
-const char*   MainWindow::CFG_DISPLAY_ICONS = "displayIcons";
-const bool    MainWindow::DEF_DISPLAY_ICONS = true;
-const char*   MainWindow::CFG_DISPLAY_SHADOW = "displayShadow";
-const bool    MainWindow::DEF_DISPLAY_SHADOW = true;
+namespace  {
+
+const char*   CFG_WND_POS  = "windowPosition";
+const char*   CFG_CENTERED = "showCentered";
+const bool    DEF_CENTERED = true;
+const char*   CFG_THEME = "theme";
+const char*   DEF_THEME = "Bright";
+const char*   CFG_HIDE_ON_FOCUS_LOSS = "hideOnFocusLoss";
+const bool    DEF_HIDE_ON_FOCUS_LOSS = true;
+const char*   CFG_HIDE_ON_CLOSE = "hideOnClose";
+const bool    DEF_HIDE_ON_CLOSE = false;
+const char*   CFG_CLEAR_ON_HIDE = "clearOnHide";
+const bool    DEF_CLEAR_ON_HIDE = false;
+const char*   CFG_ALWAYS_ON_TOP = "alwaysOnTop";
+const bool    DEF_ALWAYS_ON_TOP = true;
+const char*   CFG_MAX_PROPOSALS = "itemCount";
+const uint8_t DEF_MAX_PROPOSALS = 5;
+const char*   CFG_DISPLAY_SCROLLBAR = "displayScrollbar";
+const bool    DEF_DISPLAY_SCROLLBAR = false;
+const char*   CFG_DISPLAY_ICONS = "displayIcons";
+const bool    DEF_DISPLAY_ICONS = true;
+const char*   CFG_DISPLAY_SHADOW = "displayShadow";
+const bool    DEF_DISPLAY_SHADOW = true;
+
+}
 
 
 /** ***************************************************************************/
@@ -128,6 +134,7 @@ MainWindow::MainWindow(QWidget *parent)
         move(s.value(CFG_WND_POS).toPoint());
     setHideOnFocusLoss(s.value(CFG_HIDE_ON_FOCUS_LOSS, DEF_HIDE_ON_FOCUS_LOSS).toBool());
     setHideOnClose(s.value(CFG_HIDE_ON_CLOSE, DEF_HIDE_ON_CLOSE).toBool());
+    setClearOnHide(s.value(CFG_CLEAR_ON_HIDE, DEF_CLEAR_ON_HIDE).toBool());
     setAlwaysOnTop(s.value(CFG_ALWAYS_ON_TOP, DEF_ALWAYS_ON_TOP).toBool());
     setMaxProposals(s.value(CFG_MAX_PROPOSALS, DEF_MAX_PROPOSALS).toInt());
     setDisplayScrollbar(s.value(CFG_DISPLAY_SCROLLBAR, DEF_DISPLAY_SCROLLBAR).toBool());
@@ -158,7 +165,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Trigger default action, if item in proposallist was activated
     QObject::connect(ui.proposalList, &ProposalList::activated, [this](const QModelIndex &index){
-        history_->add(ui.inputLine->text());
+
         switch (qApp->queryKeyboardModifiers()) {
         case Qt::AltModifier: // AltAction
             ui.proposalList->model()->setData(index, -1, Qt::UserRole+101);
@@ -176,7 +183,11 @@ MainWindow::MainWindow(QWidget *parent)
             ui.proposalList->model()->setData(index, -1, Qt::UserRole+100);
             break;
         }
+
+        // Do not move this up! (Invalidates index)
+        history_->add(ui.inputLine->text());
         this->setVisible(false);
+        ui.inputLine->clear();
     });
 
     // Trigger alternative action, if item in actionList was activated
@@ -213,9 +224,8 @@ void MainWindow::setVisible(bool visible) {
         emit widgetShown();
     } else {
         setShowActions(false);
-        ui.inputLine->clear();
         history_->resetIterator();
-        setModel(nullptr);
+        ( clearOnHide_ ) ? ui.inputLine->clear() : ui.inputLine->selectAll();
         emit widgetHidden();
     }
 }
@@ -316,6 +326,21 @@ bool MainWindow::hideOnClose() const {
 void MainWindow::setHideOnClose(bool b) {
     QSettings(qApp->applicationName()).setValue(CFG_HIDE_ON_CLOSE, b);
     hideOnClose_ = b;
+}
+
+
+
+/** ***************************************************************************/
+bool MainWindow::clearOnHide() const {
+    return clearOnHide_;
+}
+
+
+
+/** ***************************************************************************/
+void MainWindow::setClearOnHide(bool b) {
+    QSettings(qApp->applicationName()).setValue(CFG_CLEAR_ON_HIDE, b);
+    clearOnHide_ = b;
 }
 
 

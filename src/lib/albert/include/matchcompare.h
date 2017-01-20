@@ -15,27 +15,29 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include "hotkeymanager.h"
-#include <QObject>
-#include <QSet>
-#include <QAbstractNativeEventFilter>
+#include <QString>
+#include <map>
+#include <memory>
+#include "core_globals.h"
+#include "item.h"
 
-class HotkeyManager::HotkeyManagerPrivate final : public QObject, public QAbstractNativeEventFilter
+namespace Core {
+
+/**
+ * @brief The MatchOrder class
+ * The implements the order of the results
+ */
+class EXPORT_CORE MatchCompare
 {
-    Q_OBJECT
-
 public:
-	HotkeyManagerPrivate(QObject* parent = 0);
-    ~HotkeyManagerPrivate();
 
-    bool registerNativeHotkey(quint32 hk);
-    void unregisterNativeHotkey(quint32 hk);
+    static void update();
+    bool operator()(const std::pair<std::shared_ptr<Item>, short>& lhs,
+                    const std::pair<std::shared_ptr<Item>, short>& rhs);
 
 private:
-    bool nativeEventFilter(const QByteArray&, void*, long*) override;
-    static QSet<quint32> nativeKeycodes(quint32 QtKey);
-    static quint32 nativeModifiers(quint32 QtKbdMods);
 
-signals:
-	 void hotKeyPressed();
+    static std::map<QString, double> order;
 };
+
+}

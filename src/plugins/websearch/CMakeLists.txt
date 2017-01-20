@@ -2,14 +2,10 @@ cmake_minimum_required(VERSION 2.8.11)
 
 PROJECT(websearch)
 
-find_package(Qt5Widgets 5.2 REQUIRED)
-
 FILE(GLOB_RECURSE SRC src/* metadata.json)
 
-set(LIB
-    ${Qt5Widgets_LIBRARIES}
-    albertcore
-    xdg
+find_package(Qt5 5.2.0 REQUIRED COMPONENTS
+    Widgets
 )
 
 qt5_wrap_ui(UI
@@ -27,8 +23,11 @@ add_library(${PROJECT_NAME} SHARED ${SRC} ${UI} ${QRC})
 target_include_directories(${PROJECT_NAME} PRIVATE src/)
 
 # Link target to libraries
-target_link_libraries(${PROJECT_NAME} ${LIB})
+target_link_libraries(${PROJECT_NAME}
+    ${Qt5Widgets_LIBRARIES}
+    albertcore
+    xdg
+)
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION share/albert/plugins)
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+# Install target
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/albert/plugins)

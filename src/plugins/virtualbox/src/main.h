@@ -1,5 +1,6 @@
 // albert - a simple application launcher for linux
 // Copyright (C) 2014-2015 Manuel Schneider
+// Contributed to by 2016 Martin Buergmann
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,12 +17,13 @@
 
 #pragma once
 #include <QObject>
-#include <QPointer>
+#include <memory>
 #include "extension.h"
 #include "queryhandler.h"
 
 namespace VirtualBox {
 
+class VirtualBoxPrivate;
 class ConfigWidget;
 
 class Extension final :
@@ -33,22 +35,22 @@ class Extension final :
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
 public:
+
     Extension();
+    ~Extension();
 
     /*
      * Implementation of extension interface
      */
 
-    QString name() const override { return "Virtual Box"; }
+    QString name() const override { return tr("Virtual Box"); }
     QWidget *widget(QWidget *parent = nullptr) override;
     void setupSession() override;
-    void handleQuery(Core::Query * query) override;
+    void handleQuery(Core::Query *) override;
 
 private:
 
-    std::vector<QString> names_;
-    std::vector<QString> uuids_;
-    QString iconPath_;
+    std::unique_ptr<VirtualBoxPrivate> d;
 
 };
 }

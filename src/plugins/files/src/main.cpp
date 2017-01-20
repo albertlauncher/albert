@@ -34,8 +34,9 @@
 #include "offlineindex.h"
 #include "query.h"
 #include "queryhandler.h"
-using std::vector;
+using std::pair;
 using std::shared_ptr;
+using std::vector;
 using namespace Core;
 
 
@@ -233,17 +234,16 @@ vector<shared_ptr<Files::File>> Files::FilesPrivate::indexFiles() const {
                 const QFileInfo & fileInfo = dirIterator.fileInfo();
 
                 // Skip if this file matches one of the ignore patterns
-                for (const QRegExp& ignore : ignores)
-                    if(ignore.exactMatch(fileName))
-                        goto SKIP_THIS;
+                if ( std::any_of(ignores.begin(), ignores.end(),
+                                 [&fileName](const QRegExp& ignore){ return ignore.exactMatch(fileName); } ) )
+                    continue;
 
                 // Skip if this file is a symlink and we shoud skip symlinks
                 if (fileInfo.isSymLink() && !followSymlinks)
-                    goto SKIP_THIS;
+                    continue;
 
                 // Index this file
                 indexRecursion(fileInfo);
-                SKIP_THIS:;
             }
         }
     };

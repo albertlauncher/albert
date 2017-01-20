@@ -24,6 +24,8 @@
 #include <QShortcut>
 #include <QSqlQuery>
 #include <QStandardPaths>
+#include <vector>
+#include <utility>
 #include "extension.h"
 #include "extensionspec.h"
 #include "extensionmanager.h"
@@ -34,6 +36,15 @@
 #include "trayicon.h"
 using Core::Extension;
 using Core::ExtensionSpec;
+using Core::ExtensionManager;
+
+namespace {
+const char* CFG_TERM = "terminal";
+const char* DEF_TERM = "xterm -e";
+}
+
+QString terminalCommand;
+
 
 /** ***************************************************************************/
 SettingsWidget::SettingsWidget(MainWindow *mainWindow,
@@ -93,6 +104,11 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow,
     connect(ui.checkBox_hideOnClose, &QCheckBox::toggled,
             mainWindow_, &MainWindow::setHideOnClose);
 
+    // CLEAR ON HIDE
+    ui.checkBox_clearOnHide->setChecked(mainWindow_->clearOnHide());
+    connect(ui.checkBox_clearOnHide, &QCheckBox::toggled,
+            mainWindow_, &MainWindow::setClearOnHide);
+
     // MAX PROPOSALS
     ui.spinBox_proposals->setValue(mainWindow_->maxProposals());
     connect(ui.spinBox_proposals, (void (QSpinBox::*)(int))&QSpinBox::valueChanged,
@@ -113,11 +129,51 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow,
     connect(ui.checkBox_shadow, &QCheckBox::toggled,
             mainWindow_, &MainWindow::setDisplayShadow);
 
-    // TERM CMD
-    extern QString terminalCommand;
+    // TERM CMD (TOOOOOOOOOOODOOOOOOOOOO CENTRALIZE THIS)
+    // Define the (global extern) terminal command
+    terminalCommand = QSettings(qApp->applicationName()).value(CFG_TERM, DEF_TERM).toString();
+
+    // Available terms
+    std::vector<std::pair<QString, QString>> terms {
+        {"XTerm", "xterm -e"},
+        {"UXTerm", "uxterm -e"},
+        {"urxvt", "urxvt -e"},
+        {"Terminator", "terminator -e"},
+        {"LXTerminal", "lxterminal -e"},
+        {"Konsole", "konsole -e"},
+        {"Gnome Terminal", "gnome-terminal -x"},
+        {"XFCE-Terminal", "xfce4-terminal -x"},
+        {"Cool Retro Term", "cool-retro-term -e"},
+        {"RoxTerm", "roxterm -x"},
+        {"Mate-Termial", "mate-terminal -x"}
+    };
+
+    // Fill checkbox
+    ui.comboBox_term->addItem(tr("Custom"));
+    for ( ulong i = 0; i < terms.size(); ++i ) {
+        if ( !QStandardPaths::findExecutable(terms[i].second.split(' ').first()).isEmpty() ){
+            ui.comboBox_term->addItem(terms[i].first, terms[i].second);
+            if ( terms[i].second == terminalCommand )
+                ui.comboBox_term->setCurrentIndex(static_cast<int>(ui.comboBox_term->count()-1));
+        }
+    }
     ui.lineEdit_term->setText(terminalCommand);
+    ui.lineEdit_term->setVisible(ui.comboBox_term->currentIndex() == 0);
+
+    connect(ui.comboBox_term, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            [this](int index){
+        if ( index == 0 )
+            ui.lineEdit_term->setText(terminalCommand);
+        else {
+            terminalCommand = ui.comboBox_term->currentData(Qt::UserRole).toString();
+            QSettings(qApp->applicationName()).setValue(CFG_TERM, terminalCommand);
+        }
+        ui.lineEdit_term->setVisible(index == 0);
+    });
+
     connect(ui.lineEdit_term, &QLineEdit::textEdited, [](QString str){
         terminalCommand = str;
+        QSettings(qApp->applicationName()).setValue(CFG_TERM, terminalCommand);
     });
 
     // THEMES

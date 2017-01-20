@@ -15,7 +15,15 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "hotkeymanager.h"
-#include "hotkeymanager_p.h"
+#if defined __linux__
+#include "hotkeymanager_x11.h"
+#elif defined __APPLE__
+#elif defined _WIN32
+#include "hotkeymanager_win.h"
+#endif
+
+
+
 
 #include <QKeySequence>
 

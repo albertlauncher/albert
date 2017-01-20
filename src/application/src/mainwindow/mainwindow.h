@@ -48,6 +48,9 @@ public:
     bool hideOnClose() const;
     void setHideOnClose(bool b = true);
 
+    bool clearOnHide() const;
+    void setClearOnHide(bool b = true);
+
     bool alwaysOnTop() const;
     void setAlwaysOnTop(bool alwaysOnTop);
 
@@ -103,6 +106,9 @@ private:
     /** Indcates that a shadow should be drawn */
     bool displayShadow_;
 
+    /** Indcates that the inputline should be cleared on hide */
+    bool clearOnHide_;
+
     /** The model of the action list view */
     QStringListModel *actionsListModel_;
 
@@ -117,26 +123,6 @@ private:
 
     /** The form of the main app */
     Ui::MainWindow ui;
-
-    static const char*   CFG_WND_POS;
-    static const char*   CFG_MAX_PROPOSALS;
-    static const uint8_t DEF_MAX_PROPOSALS;
-    static const char*   CFG_THEME;
-    static const char*   DEF_THEME;
-    static const char*   CFG_CENTERED;
-    static const bool    DEF_CENTERED;
-    static const char*   CFG_ALWAYS_ON_TOP;
-    static const bool    DEF_ALWAYS_ON_TOP;
-    static const char*   CFG_HIDE_ON_FOCUS_LOSS;
-    static const bool    DEF_HIDE_ON_FOCUS_LOSS;
-    static const char*   CFG_HIDE_ON_CLOSE;
-    static const bool    DEF_HIDE_ON_CLOSE;
-    static const char*   CFG_DISPLAY_SCROLLBAR;
-    static const bool    DEF_DISPLAY_SCROLLBAR;
-    static const char*   CFG_DISPLAY_ICONS;
-    static const bool    DEF_DISPLAY_ICONS;
-    static const char*   CFG_DISPLAY_SHADOW;
-    static const bool    DEF_DISPLAY_SHADOW;
 
 signals:
     void widgetShown();

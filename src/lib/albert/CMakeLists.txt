@@ -5,19 +5,14 @@ project(albertcore)
 add_definitions(-DCORE) #export branch
 
 # Get Qt libraries
-find_package(Qt5Concurrent 5.2 REQUIRED)
-find_package(Qt5Sql 5.2 REQUIRED)
-find_package(Qt5Widgets 5.2 REQUIRED)
+find_package(Qt5 5.2.0 REQUIRED COMPONENTS
+    Concurrent
+    Sql
+    Widgets
+)
 
 # List files in the source directory
 FILE(GLOB_RECURSE SRC include/* src/*)
-
-set(LIB
-    ${Qt5Concurrent_LIBRARIES}
-    ${Qt5Sql_LIBRARIES}
-    ${Qt5Widgets_LIBRARIES}
-    xdg
-)
 
 # Do not export symbols by default
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
@@ -33,4 +28,13 @@ target_include_directories(${PROJECT_NAME}
 )
 
 # Link target to libraries
-target_link_libraries(${PROJECT_NAME} ${LIB})
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+        ${Qt5Concurrent_LIBRARIES}
+        ${Qt5Sql_LIBRARIES}
+        ${Qt5Widgets_LIBRARIES}
+        xdg
+)
+
+# Install target
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/albert)

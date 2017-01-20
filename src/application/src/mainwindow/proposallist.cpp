@@ -16,6 +16,7 @@
 
 #include <QKeyEvent>
 #include <QPainter>
+#include <QPixmapCache>
 #include "proposallist.h"
 
 /** ***************************************************************************/
@@ -84,7 +85,7 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
                 delegate_->subTextRole = Qt::UserRole+104;
                 break;
             default: // DefaultAction
-                delegate_->subTextRole = Qt::ToolTipRole;
+                delegate_->subTextRole = Qt::UserRole+100;
                 break;
             }
             update();
@@ -126,7 +127,7 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
                 delegate_->subTextRole = Qt::UserRole+104;
                 break;
             default: // DefaultAction
-                delegate_->subTextRole = Qt::ToolTipRole;
+                delegate_->subTextRole = Qt::UserRole+100;
                 break;
             }
             update();
@@ -177,7 +178,14 @@ void ProposalList::ItemDelegate::paint(QPainter *painter, const QStyleOptionView
                     QPoint((option.rect.height() - option.decorationSize.width())/2 + option.rect.x(),
                            (option.rect.height() - option.decorationSize.height())/2 + option.rect.y()),
                     option.decorationSize);
-        painter->drawPixmap(iconRect, QPixmap(index.data(Qt::DecorationRole).value<QString>()).scaled(option.decorationSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        QPixmap pixmap;
+        QString iconPath = index.data(Qt::DecorationRole).value<QString>();
+        QString cacheKey = QString("%1%2%3").arg(option.decorationSize.width(), option.decorationSize.height()).arg(iconPath);
+        if ( !QPixmapCache::find(cacheKey, &pixmap) ) {
+            pixmap = QPixmap(iconPath).scaled(option.decorationSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            QPixmapCache::insert(cacheKey, pixmap);
+        }
+        painter->drawPixmap(iconRect, pixmap);
     }
 
     // Calculate text rects
@@ -208,8 +216,8 @@ void ProposalList::ItemDelegate::paint(QPainter *painter, const QStyleOptionView
 
     // Draw tooltip role
     painter->setFont(font2);
-    text = fontMetrics2.elidedText(index.data(option.state.testFlag(QStyle::State_Selected)? subTextRole : Qt::ToolTipRole).toString(), option.textElideMode, subTextRect.width());
-    painter->drawText(subTextRect   , Qt::AlignBottom|Qt::AlignLeft, text);
+    text = fontMetrics2.elidedText(index.data(option.state.testFlag(QStyle::State_Selected) ? subTextRole : Qt::ToolTipRole).toString(), option.textElideMode, subTextRect.width());
+    painter->drawText(subTextRect, Qt::AlignBottom|Qt::AlignLeft, text);
 
     painter->restore();
 }

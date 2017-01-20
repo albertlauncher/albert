@@ -26,14 +26,5 @@ class ConfigWidget final : public QWidget
 public:
     explicit ConfigWidget(QWidget *parent = 0);
     Ui::ConfigWidget ui;
-
-private:
-    void onButton_PathAdd();
-    void onButton_PathRemove();
-    void onButton_RestorePaths();
-
-signals:
-    void requestAddPath(const QString&);
-    void requestRemovePath(const QString&);
 };
 }

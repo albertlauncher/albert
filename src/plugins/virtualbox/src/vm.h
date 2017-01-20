@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014-2016 Manuel Schneider
+// Copyright (C) 2016 Martin Buergmann
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,14 +14,27 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QStandardPaths>
-#include "configwidget.h"
+#pragma once
 
-/** ***************************************************************************/
-Applications::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
-    ui.setupUi(this);
+#include <QString>
+#include "vmitem.h"
 
-    // Show the app dirs in the label
-    QStringList standardPaths = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
-    ui.label->setText(ui.label->text().replace("__XDG_DATA_DIRS__", standardPaths.join(", ")));
-}
+namespace VirtualBox {
+
+class VM
+{
+public:
+    VM(const QString vboxFileName);
+    VMItem* produceItem() const;
+    bool startsWith(QString other) const;
+    const QString &uuid() const { return uuid_; }
+    void probeState() const;
+
+private:
+    QString name_;
+    QString uuid_;
+    mutable QString state_;
+};
+
+} // namespace VirtualBox
+

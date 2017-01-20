@@ -1,9 +1,9 @@
-#Albert [![Build Status](https://travis-ci.org/ManuelSchneid3r/albert.svg?branch=master)](https://travis-ci.org/ManuelSchneid3r/albert)
+#Albert [![Build Status](https://api.travis-ci.org/albertlauncher/albert.svg?branch=dev)](https://travis-ci.org/albertlauncher/albert)
 
 
-[![Telegram news channel](https://img.shields.io/badge/news channel-telergram-0088cc.svg?style=flat)](https://telegram.me/albertlauncher)
+[![Telegram news channel](https://img.shields.io/badge/news channel-telegram-0088cc.svg?style=flat)](https://telegram.me/albertlauncher)
 [![Telegram community chat](https://img.shields.io/badge/chat-telegram-0088cc.svg?style=flat)](https://telegram.me/albert_launcher_community)
-[![Join the chat at https://gitter.im/ManuelSchneid3r/albert](https://badges.gitter.im/ManuelSchneid3r/albert.svg)](https://gitter.im/ManuelSchneid3r/albert?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![IRC](https://img.shields.io/badge/chat-on%20freenode-brightgreen.svg)](http://webchat.freenode.net/?channels=%23albertlauncher)
 
 Access everything with virtually zero effort. Run applications, open files or their paths, open bookmarks in your browser, search the web, calculate things and a lot more. See [wiki](https://github.com/ManuelSchneid3r/albert/wiki) for more information.
 

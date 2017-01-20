@@ -16,38 +16,38 @@
 
 #pragma once
 #include <QString>
-#include <functional>
-#include "action.h"
-#include "core_globals.h"
+#include <map>
+#include <memory>
+#include <vector>
+#include "prefixsearch.h"
 
 namespace Core {
 
-
-/** ****************************************************************************
-* @brief A standard action
-* If you dont need the flexibility subclassing the abstract classes provided,
-* you can simply use this container, fill it with data.
-*/
-struct EXPORT_CORE StandardAction final : public Action
+class FuzzySearch final : public PrefixSearch
 {
 public:
 
-    StandardAction();
-    StandardAction(const QString &text, std::function<void()> f);
+    explicit FuzzySearch(unsigned int q = 3, double d = 2);
+    explicit FuzzySearch(const PrefixSearch& rhs, unsigned int q = 3, double d = 2);
+    ~FuzzySearch();
 
-    QString text() const override;
-    void setText(const QString &text);
-
-    const std::function<void()> &action();
-    void setAction(std::function<void()> &&action);
-
-    void activate() override;
+    void add(std::shared_ptr<Indexable> idxble) override;
+    void clear() override;
+    std::vector<std::shared_ptr<Indexable>> search(const QString &req) const override;
+    inline double delta() const {return delta_;}
+    inline void setDelta(double d){delta_=d;}
 
 private:
 
-    QString text_;
-    std::function<void()> action_;
+    // Map of qGrams, containing their word references and #occurences
+    typedef std::map<QString, std::map<QString, unsigned int>> QGramIndex;
+    QGramIndex qGramIndex_;
 
+    // Size of the slices
+    unsigned int q_;
+
+    // Maximum error
+    double delta_;
 };
 
 }

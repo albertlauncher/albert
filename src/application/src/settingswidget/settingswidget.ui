@@ -56,6 +56,9 @@
             <string>General</string>
            </property>
            <layout class="QFormLayout" name="formLayout_4">
+            <property name="labelAlignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
             <item row="0" column="1">
              <widget class="GrabKeyButton" name="grabKeyButton_hotkey">
               <property name="sizePolicy">
@@ -108,6 +111,9 @@
             <string>Appearance</string>
            </property>
            <layout class="QFormLayout" name="formLayout_2">
+            <property name="labelAlignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
             <item row="0" column="0">
              <widget class="QLabel" name="label_proposals">
               <property name="sizePolicy">
@@ -268,7 +274,10 @@ pixels and you can use it to drag the window.</string>
             <string>Behaviour</string>
            </property>
            <layout class="QFormLayout" name="formLayout_3">
-            <item row="1" column="0">
+            <property name="labelAlignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+            <item row="0" column="0">
              <widget class="QLabel" name="label_onTop">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -281,7 +290,7 @@ pixels and you can use it to drag the window.</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
+            <item row="0" column="1">
              <widget class="QCheckBox" name="checkBox_onTop">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -295,7 +304,7 @@ stay on top of all top level windows.</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
+            <item row="1" column="0">
              <widget class="QLabel" name="label_center">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -308,7 +317,7 @@ stay on top of all top level windows.</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="1">
+            <item row="1" column="1">
              <widget class="QCheckBox" name="checkBox_center">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -323,7 +332,7 @@ screen where the pointer resides.</string>
               </property>
              </widget>
             </item>
-            <item row="3" column="0">
+            <item row="2" column="0">
              <widget class="QLabel" name="label_hideOnFocusOut">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -336,7 +345,7 @@ screen where the pointer resides.</string>
               </property>
              </widget>
             </item>
-            <item row="3" column="1">
+            <item row="2" column="1">
              <widget class="QCheckBox" name="checkBox_hideOnFocusOut">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -353,7 +362,7 @@ widget is open.</string>
               </property>
              </widget>
             </item>
-            <item row="4" column="0">
+            <item row="3" column="0">
              <widget class="QLabel" name="label_hideOnClose">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -366,7 +375,7 @@ widget is open.</string>
               </property>
              </widget>
             </item>
-            <item row="4" column="1">
+            <item row="3" column="1">
              <widget class="QCheckBox" name="checkBox_hideOnClose">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -380,6 +389,20 @@ gets hidden instead of the application getting quit.</string>
               </property>
              </widget>
             </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="label_clearOnHide">
+              <property name="text">
+               <string>Clear on hide:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QCheckBox" name="checkBox_clearOnHide">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
             <item row="5" column="0">
              <widget class="QLabel" name="label_term">
               <property name="text">
@@ -388,6 +411,16 @@ gets hidden instead of the application getting quit.</string>
              </widget>
             </item>
             <item row="5" column="1">
+             <widget class="QComboBox" name="comboBox_term">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="1">
              <widget class="QLineEdit" name="lineEdit_term">
               <property name="toolTip">
                <string>This is the command that is used to start
@@ -396,7 +429,7 @@ that use a textual user interface.</string>
               </property>
              </widget>
             </item>
-            <item row="6" column="1">
+            <item row="7" column="1">
              <widget class="QPushButton" name="pushButton_clearCache">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -547,11 +580,17 @@ that use a textual user interface.</string>
         <widget class="QLabel" name="about_text">
          <property name="text">
           <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;
+&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Droid Sans'; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot;font-size:12pt; font-weight:600;&quot;&gt;Albert omni launcher ___versionstring___&lt;/p&gt;
-&lt;p&gt;If you encounter bugs or think you have suggestions for improvement, tell me at the &lt;/span&gt;&lt;a href=&quot;https://github.com/ManuelSchneid3r/albert/issues&quot;&gt;github issue tracker.&lt;/a&gt;&lt;br&gt; If you really like this software please consider a donation via &lt;a href=&quot;https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=W74BQPKPGNSNC&quot;&gt;PayPal&lt;/a&gt; or &lt;a href=&quot;https://flattr.com/submit/auto?user_id=manuelschneid3r&amp;url=https%3A%2F%2Fgithub.com%2FManuelSchneid3r%2Falbert&quot;&gt;Flattr&lt;/a&gt;. &lt;/p&gt;
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;h2&gt;Albert launcher ___versionstring___&lt;/h2&gt;
+&lt;p&gt;If you encounter bugs or think you have suggestions for improvement, tell me at the &lt;a href=&quot;https://github.com/ManuelSchneid3r/albert/issues&quot;&gt;Github issue tracker.&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;If you really like this software please consider a donation via &lt;a href=&quot;https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;amp;hosted_button_id=W74BQPKPGNSNC&quot;&gt;PayPal&lt;/a&gt; or &lt;a href=&quot;https://flattr.com/submit/auto?user_id=manuelschneid3r&amp;amp;url=https%3A%2F%2Fgithub.com%2FManuelSchneid3r%2Falbert&quot;&gt;Flattr&lt;/a&gt; or become a &lt;a href=&quot;https://www.patreon.com/albertlauncher&quot;&gt;patron&lt;/a&gt;.&lt;/p&gt;
 &lt;/body&gt;
 &lt;/html&gt;</string>
          </property>

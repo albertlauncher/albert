@@ -16,7 +16,9 @@
 
 #include <QApplication>
 #include <QDebug>
+#include <QDir>
 #include <QDirIterator>
+#include <QFile>
 #include <QLibrary>
 #include <QPluginLoader>
 #include <QSettings>
@@ -25,7 +27,9 @@
 #include <memory>
 #include "extensionmanager.h"
 #include "extensionspec.h"
+using std::set;
 using std::unique_ptr;
+using std::vector;
 using std::chrono::system_clock;
 
 namespace {
@@ -37,9 +41,10 @@ Core::ExtensionManager *Core::ExtensionManager::instance = nullptr;
 /** ***************************************************************************/
 class Core::ExtensionManagerPrivate {
 public:
-    vector<unique_ptr<ExtensionSpec>> extensionSpecs_;
+    vector<unique_ptr<ExtensionSpec>> extensionSpecs_; // TASK: Rename _
     set<QObject*> extensions_;
     QStringList blacklist_;
+    QStringList pluginDirs;
 };
 
 
@@ -48,6 +53,28 @@ Core::ExtensionManager::ExtensionManager() : d(new ExtensionManagerPrivate) {
     // Load blacklist
     d->blacklist_ = QSettings(qApp->applicationName()).value(CFG_BLACKLIST).toStringList();
     // DO NOT LOAD EXTENSIONS HERE!
+
+    // Get plugindirs
+#if defined __linux__
+
+    QStringList dirs = {
+        "/usr/lib/", "/usr/local/lib/", "/usr/lib64/", "/usr/local/lib64/",
+        QDir::home().filePath(".local/lib/"),
+        QDir::home().filePath(".local/lib64/")
+    };
+
+    for ( const QString& dir : dirs ) {
+        QFileInfo fileInfo = QFileInfo(QDir(dir).filePath("albert/plugins"));
+        if ( fileInfo.isDir() )
+            d->pluginDirs << fileInfo.absoluteFilePath();
+    }
+
+#elif defined __APPLE__
+    throw "TODO";
+#elif defined _WIN32
+    throw "TODO";
+#endif
+
 }
 
 
@@ -55,6 +82,12 @@ Core::ExtensionManager::ExtensionManager() : d(new ExtensionManagerPrivate) {
 Core::ExtensionManager::~ExtensionManager() {
     for (unique_ptr<ExtensionSpec> & extensionSpec : d->extensionSpecs_)
         unloadExtension(extensionSpec);
+}
+
+
+/** ***************************************************************************/
+void Core::ExtensionManager::setPluginDirs(const QStringList &dirs) {
+    d->pluginDirs = dirs;
 }
 
 
@@ -67,13 +100,8 @@ void Core::ExtensionManager::reloadExtensions() {
 
     d->extensionSpecs_.clear();
 
-    // Get plugindirs
-    QStringList pluginDirs = QStandardPaths::locateAll(
-                QStandardPaths::DataLocation, "plugins",
-                QStandardPaths::LocateDirectory);
-
     // Iterate over all files in the plugindirs
-    for (const QString &pluginDir : pluginDirs) {
+    for (const QString &pluginDir : d->pluginDirs) {
         QDirIterator dirIterator(pluginDir, QDir::Files);
         while (dirIterator.hasNext()) {
             dirIterator.next();

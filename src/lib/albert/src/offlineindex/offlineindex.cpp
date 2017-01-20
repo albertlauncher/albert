@@ -18,8 +18,8 @@
 #include "offlineindex.h"
 #include "indeximpl.h"
 #include "indexable.h"
-#include "prefixsearch.hpp"
-#include "fuzzysearch.hpp"
+#include "prefixsearch.h"
+#include "fuzzysearch.h"
 
 
 /** ***************************************************************************/

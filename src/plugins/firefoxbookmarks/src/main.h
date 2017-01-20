@@ -62,10 +62,6 @@ private:
 
     std::unique_ptr<FirefoxBookmarksPrivate> d;
 
-    void startIndexing();
-    void finishIndexing();
-    std::vector<std::shared_ptr<Core::StandardIndexItem>> indexFirefoxBookmarks() const;
-
 signals:
 
     void statusInfo(const QString&);
