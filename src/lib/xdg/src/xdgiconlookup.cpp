@@ -14,12 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "xdgiconlookup.h"
-#include <QString>
-#include <QStandardPaths>
 #include <QDir>
 #include <QFileInfo>
+#include <QStandardPaths>
 #include <QSettings>
+#include <QString>
+#include "themefileparser.h"
+#include "xdgiconlookup.h"
 
 
 namespace  {
@@ -28,88 +29,20 @@ namespace  {
 
 
 /** ***************************************************************************/
-class ThemeFileParser
-{
-public:
-    QSettings iniFile_;
-    QString path_;
-
-    ThemeFileParser(const QString &iniFile)
-        : iniFile_(iniFile, QSettings::IniFormat), path_(QFileInfo(iniFile).path()){
-    }
-
-    QString path() {return path_;}
-
-    QString name() {return iniFile_.value("Icon Theme/Name").toString();}
-
-    QString comment() {return iniFile_.value("Icon Theme/Comment").toString();}
-
-    QStringList inherits() {return iniFile_.value("Icon Theme/Inherits").toStringList();}
-
-    QStringList directories() {return iniFile_.value("Icon Theme/Directories").toStringList();}
-
-    bool hidden() {return iniFile_.value("Icon Theme/Hidden").toBool();}
-
-    int size(const QString& directory){
-        iniFile_.beginGroup(directory);
-        int result = iniFile_.value("Size").toInt();
-        iniFile_.endGroup();
-        return result;
-    }
-
-    QString context(const QString& directory){
-        iniFile_.beginGroup(directory);
-        QString result = iniFile_.value("Context").toString();
-        iniFile_.endGroup();
-        return result;
-    }
-
-    QString type(const QString& directory) {
-        iniFile_.beginGroup(directory);
-        QString result = iniFile_.contains("Type")
-                ? iniFile_.value("Type").toString()
-                : "Threshold";
-        iniFile_.endGroup();
-        return result;
-    }
-
-    int maxSize(const QString& directory){
-        iniFile_.beginGroup(directory);
-        int result = iniFile_.contains("MaxSize")
-                ? iniFile_.value("MaxSize").toInt()
-                : size(directory);
-        iniFile_.endGroup();
-        return result;
-    }
-
-    int minSize(const QString& directory){
-        iniFile_.beginGroup(directory);
-        int result = iniFile_.contains("MinSize")
-                ? iniFile_.value("MinSize").toInt()
-                : size(directory);
-        iniFile_.endGroup();
-        return result;
-    }
-
-    int threshold(const QString& directory){
-        iniFile_.beginGroup(directory);
-        int result = iniFile_.contains("Threshold")
-                ? iniFile_.value("Threshold").toInt()
-                : 2;
-        iniFile_.endGroup();
-        return result;
-    }
-};
+QString XdgIconLookup::iconPath(QString iconName, QString themeName){
+    return instance()->themeIconPath(iconName, themeName);
+}
 
 /** ***************************************************************************/
 XdgIconLookup::XdgIconLookup()
 {
-    /* Icons and themes are looked for in a set of directories. By default,
-    apps should look in $HOME/.icons (for backwards compatibility), in
-    $XDG_DATA_DIRS/icons and in /usr/share/pixmaps (in that order). */
-    QString path;
+    /*
+     * Icons and themes are looked for in a set of directories. By default,
+     * apps should look in $HOME/.icons (for backwards compatibility), in
+     * $XDG_DATA_DIRS/icons and in /usr/share/pixmaps (in that order).
+     */
 
-    path = "~/.icons";
+    QString path = QDir::home().filePath(".icons");
     if (QFile::exists(path))
         iconDirs_.append(path);
 
@@ -141,8 +74,12 @@ XdgIconLookup *XdgIconLookup::instance()
 QString XdgIconLookup::themeIconPath(QString iconName, QString themeName){
 
     // if we have an absolute path, just return it
-    if (iconName[0]=='/' && QFile::exists(iconName))
-        return iconName;
+    if ( iconName[0]=='/' ){
+        if ( QFile::exists(iconName) )
+            return iconName;
+        else
+            return QString();
+    }
 
     // check if it has an extension and strip it
     for (const QString &ext : icon_extensions)

@@ -541,9 +541,9 @@ vector<shared_ptr<StandardIndexItem>> indexApplications() {
                 ssii->setSubtext(comment);
 
             // Set icon
-            icon = XdgIconLookup::instance()->themeIconPath(icon);
+            icon = XdgIconLookup::iconPath(icon);
             if (icon.isEmpty())
-                icon = XdgIconLookup::instance()->themeIconPath("exec");
+                icon = XdgIconLookup::iconPath("exec");
             if (icon.isEmpty())
                 icon = ":application-x-executable";
             ssii->setIconPath(icon);

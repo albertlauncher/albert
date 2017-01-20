@@ -66,7 +66,7 @@ Calculator::Extension::Extension()
                 : d->loc.numberOptions() | QLocale::OmitGroupSeparator );
     s.endGroup();
 
-    QString iconPath = XdgIconLookup::instance()->themeIconPath("calc");
+    QString iconPath = XdgIconLookup::iconPath("calc");
     d->iconPath = iconPath.isNull() ? ":calc" : iconPath;
 
     d->parser.reset(new mu::Parser);

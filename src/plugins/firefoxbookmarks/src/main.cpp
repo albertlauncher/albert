@@ -158,11 +158,11 @@ FirefoxBookmarks::FirefoxBookmarksPrivate::indexFirefoxBookmarks() const {
     }
 
     // Find an appropriate icon
-    QString icon = XdgIconLookup::instance()->themeIconPath("www");
+    QString icon = XdgIconLookup::iconPath("www");
     if (icon.isEmpty())
-        icon = XdgIconLookup::instance()->themeIconPath("web-browser");
+        icon = XdgIconLookup::iconPath("web-browser");
     if (icon.isEmpty())
-        icon = XdgIconLookup::instance()->themeIconPath("emblem-web");
+        icon = XdgIconLookup::iconPath("emblem-web");
     if (icon.isEmpty())
         icon = ":favicon"; // Fallback
 

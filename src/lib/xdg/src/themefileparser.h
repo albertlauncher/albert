@@ -16,26 +16,29 @@
 
 #pragma once
 #include <QStringList>
-#include <QMap>
-#include <QIcon>
-#include "export_xdg.h"
+#include <QSettings>
 
-class EXPORT_XDG XdgIconLookup
+class ThemeFileParser
 {
 public:
 
-    static QString iconPath(QString iconName, QString themeName = QIcon::themeName());
+    ThemeFileParser(const QString &iniFile);
+
+    QString path();
+    QString name();
+    QString comment();
+    QStringList inherits();
+    QStringList directories();
+    bool hidden();
+    int size(const QString& directory);
+    QString context(const QString& directory);
+    QString type(const QString& directory);
+    int maxSize(const QString& directory);
+    int minSize(const QString& directory);
+    int threshold(const QString& directory);
 
 private:
 
-    XdgIconLookup();
-    static XdgIconLookup *instance();
+    QSettings iniFile_;
 
-    QString themeIconPath(QString iconName, QString themeName = QIcon::themeName());
-    QString doRecursiveIconLookup(const QString &iconName, const QString &theme, QStringList *checked);
-    QString doIconLookup(const QString &iconName, const QString &themeFile);
-    QString lookupThemeFile(const QString &themeName);
-
-    QStringList iconDirs_;
-    QMap<QString, QString> iconCache_;
 };

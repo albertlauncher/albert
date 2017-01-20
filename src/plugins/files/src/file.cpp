@@ -50,9 +50,9 @@ QString Files::File::iconPath() const {
         return iconCache_[xdgIconName];
 
     QString iconPath;
-    if ( !(iconPath = XdgIconLookup::instance()->themeIconPath(xdgIconName)).isNull()  // Lookup iconName
-         || !(iconPath = XdgIconLookup::instance()->themeIconPath(mimetype_.genericIconName())).isNull()  // Lookup genericIconName
-         || !(iconPath = XdgIconLookup::instance()->themeIconPath("unknown")).isNull()) {  // Lookup "unknown"
+    if ( !(iconPath = XdgIconLookup::iconPath(xdgIconName)).isNull()  // Lookup iconName
+         || !(iconPath = XdgIconLookup::iconPath(mimetype_.genericIconName())).isNull()  // Lookup genericIconName
+         || !(iconPath = XdgIconLookup::iconPath("unknown")).isNull()) {  // Lookup "unknown"
         iconCache_.emplace(xdgIconName, iconPath);
         return iconPath;
     }

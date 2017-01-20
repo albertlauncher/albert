@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
         app->setApplicationDisplayName("Albert");
         app->setApplicationVersion("v0.9.0");
         app->setQuitOnLastWindowClosed(false);
-        QString icon = XdgIconLookup::instance()->themeIconPath("albert");
+        QString icon = XdgIconLookup::iconPath("albert");
         if ( icon.isEmpty() ) icon = ":app_icon";
         app->setWindowIcon(QIcon(icon));
 

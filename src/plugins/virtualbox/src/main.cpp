@@ -125,7 +125,7 @@ VirtualBox::Extension::Extension()
       Core::QueryHandler(Core::Extension::id),
       d(new VirtualBoxPrivate(this)) {
 
-    VMItem::iconPath_ = XdgIconLookup::instance()->themeIconPath("virtualbox");
+    VMItem::iconPath_ = XdgIconLookup::iconPath("virtualbox");
     if ( VMItem::iconPath_.isNull() )
         VMItem::iconPath_ = ":vbox";
 
