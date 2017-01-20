@@ -409,19 +409,18 @@ uint HotkeyManagerPrivate::nativeModifiers(uint qtMods) {
 
 
 /** ***************************************************************************/
-bool HotkeyManagerPrivate::nativeEventFilter(const QByteArray &eventType, void *message, long *result) {
-    Q_UNUSED(result);
-    if (eventType == "xcb_generic_event_t") {
+bool HotkeyManagerPrivate::nativeEventFilter(const QByteArray &eventType, void *message, long *) {
+    if ( eventType == "xcb_generic_event_t" ) {
         xcb_generic_event_t* ev = static_cast<xcb_generic_event_t *>(message);
-        if ((ev->response_type & 127) == XCB_KEY_PRESS) {
-            xcb_key_press_event_t *k = (xcb_key_press_event_t *)ev;
+        if ( (ev->response_type & 127) == XCB_KEY_PRESS ) {
+            xcb_key_press_event_t *k = reinterpret_cast<xcb_key_press_event_t*>(ev);
             // Check if the key is one of the registered
-            for (const std::pair<uint,uint> &p: grabbedKeys)
+            for ( const std::pair<uint,uint> &p: grabbedKeys ) {
                 if (k->detail == p.second && k->state == p.first) {
                     emit hotKeyPressed();
                     return true;
                 }
-            qWarning() << "received a key which was not registered";
+            }
         }
     }
     return false;
