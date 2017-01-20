@@ -35,6 +35,7 @@
 #include "querymanager.h"
 #include "settingswidget.h"
 #include "trayicon.h"
+#include "xdgiconlookup.h"
 using Core::ExtensionManager;
 
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message);
@@ -66,8 +67,11 @@ int main(int argc, char **argv) {
         app->setApplicationName("albert");
         app->setApplicationDisplayName("Albert");
         app->setApplicationVersion("v0.9.0");
-        app->setWindowIcon(QIcon(":app_icon"));
         app->setQuitOnLastWindowClosed(false);
+        QString icon = XdgIconLookup::instance()->themeIconPath("albert");
+        if ( icon.isEmpty() ) icon = ":app_icon";
+        app->setWindowIcon(QIcon(icon));
+
 
 
         /*

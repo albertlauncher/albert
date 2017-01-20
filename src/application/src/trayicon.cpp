@@ -25,7 +25,7 @@ namespace {
 
 /** ***************************************************************************/
 TrayIcon::TrayIcon() {
-    setIcon(QIcon(":app_icon"));
+    setIcon(qApp->windowIcon());
     if (QSettings(qApp->applicationName()).value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool())
         setVisible(true);
 }
