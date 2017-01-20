@@ -43,7 +43,7 @@ public:
      * Implementation of extension interface
      */
 
-    QString name() const override { return tr("Virtual Box"); }
+    QString name() const override { return tr("VirtualBox"); }
     QWidget *widget(QWidget *parent = nullptr) override;
     void setupSession() override;
     void handleQuery(Core::Query *) override;

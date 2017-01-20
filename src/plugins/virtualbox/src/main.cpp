@@ -42,7 +42,7 @@ public:
     QPointer<ConfigWidget> widget;
     QList<VM*> vms;
     QFileSystemWatcher vboxWatcher;
-    const char* name_ = "Virtual Box";
+    const char* name_ = "VirtualBox";
 
     void rescanVBoxConfig(QString path);
 };
