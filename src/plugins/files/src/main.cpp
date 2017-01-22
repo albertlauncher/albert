@@ -34,6 +34,8 @@
 #include "offlineindex.h"
 #include "query.h"
 #include "queryhandler.h"
+#include "standarditem.h"
+#include "standardaction.h"
 using std::pair;
 using std::shared_ptr;
 using std::vector;
@@ -399,6 +401,21 @@ void Files::Extension::handleQuery(Core::Query * query) {
     // Skip  short terms since they pollute the output
     if ( query->searchTerm().size() < 3)
         return;
+
+    if ( QString("albert scan files").startsWith(query->searchTerm()) ) {
+        shared_ptr<StandardItem> standardItem = std::make_shared<StandardItem>("org.albert.extension.files.action.index");
+        standardItem->setText("albert scan files");
+        standardItem->setSubtext("Update the file index");
+        standardItem->setIconPath(":app_icon");
+
+        shared_ptr<StandardAction> standardAction = std::make_shared<StandardAction>();
+        standardAction->setText("Update the file index");
+        standardAction->setAction([this](){ this->updateIndex(); });
+
+        standardItem->setActions({standardAction});
+
+        query->addMatch(standardItem);
+    }
 
     // Search for matches
     const vector<shared_ptr<Core::Indexable>> &indexables = d->offlineIndex.search(query->searchTerm().toLower());
