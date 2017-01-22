@@ -24,7 +24,7 @@ class ProposalList::ItemDelegate final : public QStyledItemDelegate
 {
 public:
     ItemDelegate(QObject *parent = nullptr)
-        : QStyledItemDelegate(parent), drawIcon(true) {}
+        : QStyledItemDelegate(parent), drawIcon(true), subTextRole(Qt::ToolTipRole) {}
 
     void paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const override;
 
