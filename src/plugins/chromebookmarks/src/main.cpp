@@ -100,14 +100,14 @@ vector<shared_ptr<StandardIndexItem>> indexChromeBookmarks(const QString &bookma
 
             vector<shared_ptr<Action>> actions;
             shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
-            action->setText("Open in default browser");
+            action->setText("Open URL in your browser");
             action->setAction([urlstr](){
                 QDesktopServices::openUrl(QUrl(urlstr));
             });
             actions.push_back(std::move(action));
 
             action = std::make_shared<StandardAction>();
-            action->setText("Copy url to clipboard");
+            action->setText("Copy URL to clipboard");
             action->setAction([urlstr](){
                 QApplication::clipboard()->setText(urlstr);
             });

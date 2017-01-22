@@ -57,7 +57,7 @@ shared_ptr<Core::Item> buildWebsearchItem(const SearchEngine &se, const QString 
 
     QString urlString = QString(se.url).replace("%s", QUrl::toPercentEncoding(searchterm));
     QUrl url = QUrl(urlString);
-    QString desc = QString("Start %1 search in default browser").arg(se.name);
+    QString desc = QString("Start %1 search in your browser").arg(se.name);
 
     std::shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
     action->setText(desc);

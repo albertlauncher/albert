@@ -190,13 +190,13 @@ FirefoxBookmarks::FirefoxBookmarksPrivate::indexFirefoxBookmarks() const {
         vector<shared_ptr<Action>> actions;
 
         shared_ptr<StandardAction> actionDefault = std::make_shared<StandardAction>();
-        actionDefault->setText("Open in default browser");
+        actionDefault->setText("Open URL in your default browser");
         actionDefault->setAction([urlstr](){
             QDesktopServices::openUrl(QUrl(urlstr));
         });
 
         shared_ptr<StandardAction> actionFirefox = std::make_shared<StandardAction>();
-        actionFirefox->setText("Open in firefox");
+        actionFirefox->setText("Open URL in firefox");
         actionFirefox->setAction([urlstr, this](){
             QProcess::startDetached(firefoxExecutable, {urlstr});
         });
