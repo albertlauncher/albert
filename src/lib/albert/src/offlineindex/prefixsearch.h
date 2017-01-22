@@ -39,8 +39,9 @@ public:
 
 protected:
 
-    typedef std::map<QString, std::set<std::shared_ptr<Indexable>>> InvertedIndex;
+    typedef std::map<QString, std::set<uint>> InvertedIndex;
     InvertedIndex invertedIndex_;
+    std::vector<std::shared_ptr<Indexable>> index_;
 };
 
 

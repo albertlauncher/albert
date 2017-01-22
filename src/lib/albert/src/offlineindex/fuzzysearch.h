@@ -27,8 +27,8 @@ class FuzzySearch final : public PrefixSearch
 {
 public:
 
-    explicit FuzzySearch(unsigned int q = 3, double d = 2);
-    explicit FuzzySearch(const PrefixSearch& rhs, unsigned int q = 3, double d = 2);
+    explicit FuzzySearch(uint q = 3, double d = 1.0/3);
+    explicit FuzzySearch(const PrefixSearch& rhs, uint q = 3, double d = 1.0/3);
     ~FuzzySearch();
 
     void add(std::shared_ptr<Indexable> idxble) override;
@@ -40,11 +40,11 @@ public:
 private:
 
     // Map of qGrams, containing their word references and #occurences
-    typedef std::map<QString, std::map<QString, unsigned int>> QGramIndex;
+    typedef std::map<QString,std::map<QString,uint>> QGramIndex;
     QGramIndex qGramIndex_;
 
     // Size of the slices
-    unsigned int q_;
+    uint q_;
 
     // Maximum error
     double delta_;

@@ -46,13 +46,18 @@ Core::PrefixSearch::~PrefixSearch(){}
 
 
 /** ***************************************************************************/
-void Core::PrefixSearch::add(shared_ptr<Core::Indexable> idxble) {
-    vector<Indexable::WeightedKeyword> indexKeywords = idxble->indexKeywords();
+void Core::PrefixSearch::add(shared_ptr<Core::Indexable> indexable) {
+
+    // Add indexable to the index
+    index_.push_back(indexable);
+    uint id = static_cast<uint>(index_.size()-1);
+
+    vector<Indexable::WeightedKeyword> indexKeywords = indexable->indexKeywords();
     for (const auto &wkw : indexKeywords) {
         // Build an inverted index
         QStringList words = wkw.keyword.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
         for (const QString &w : words) {
-            invertedIndex_[w.toLower()].insert(idxble);
+            invertedIndex_[w.toLower()].insert(id);
         }
     }
 }
@@ -77,13 +82,13 @@ vector<shared_ptr<Core::Indexable> > Core::PrefixSearch::search(const QString &r
     if (words.empty())
         return vector<shared_ptr<Indexable>>();
 
-    set<shared_ptr<Indexable>> resultsSet;
+    set<uint> resultsSet;
     QStringList::iterator wordIterator = words.begin();
 
     // Make lower for case insensitivity
     QString word = wordIterator++->toLower();
 
-    // Get a word mapping once before goint to handle intersections
+    // Get a word mapping once before going to handle intersections
     for (InvertedIndex::const_iterator lb = invertedIndex_.lower_bound(word);
          lb != invertedIndex_.cend() && lb->first.startsWith(word); ++lb)
         resultsSet.insert(lb->second.begin(), lb->second.end());
@@ -96,14 +101,14 @@ vector<shared_ptr<Core::Indexable> > Core::PrefixSearch::search(const QString &r
 
         // Unite the sets that are mapped by words that begin with word
         // w ∈ W. This set is called U_w
-        set<shared_ptr<Indexable>> wordMappingsUnion;
+        set<uint> wordMappingsUnion;
         for (InvertedIndex::const_iterator lb = invertedIndex_.lower_bound(word);
              lb != invertedIndex_.cend() && lb->first.startsWith(word); ++lb)
             wordMappingsUnion.insert(lb->second.begin(), lb->second.end());
 
 
         // Intersect all sets U_w with the results
-        set<shared_ptr<Indexable>> intersection;
+        set<uint> intersection;
         std::set_intersection(resultsSet.begin(), resultsSet.end(),
                               wordMappingsUnion.begin(), wordMappingsUnion.end(),
                               std::inserter(intersection, intersection.begin()));
@@ -111,6 +116,11 @@ vector<shared_ptr<Core::Indexable> > Core::PrefixSearch::search(const QString &r
     }
 
     // Convert to a std::vector
-    vector<shared_ptr<Indexable>> resultsVector(resultsSet.begin(), resultsSet.end());
+
+
+
+    vector<shared_ptr<Indexable>> resultsVector;
+    for (uint id : resultsSet)
+        resultsVector.emplace_back(index_.at(id));
     return resultsVector;
 }

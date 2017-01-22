@@ -20,37 +20,36 @@
 #include "prefixsearch.h"
 using std::map;
 using std::set;
+using std::pair;
 using std::shared_ptr;
 using std::vector;
 
 namespace {
 
-bool checkPrefixEditDistance(const QString &prefix, const QString &str, unsigned int delta) {
-    bool result = false;
-    unsigned int n = prefix.size() + 1;
-    unsigned int m = std::min(prefix.size() + delta + 1, static_cast<unsigned int>(str.size()) + 1);
-    //      unsigned int matrix[n][m];
-    // This MAY throw an error
-    unsigned int* matrix = new unsigned int[n*m];
+bool checkPrefixEditDistance(const QString &prefix, const QString &str, uint delta) {
+    uint n = prefix.size() + 1;
+    uint m = std::min(prefix.size() + delta + 1, static_cast<uint>(str.size()) + 1);
+
+    uint* matrix = new uint[n*m];
 
     // Initialize left and top row.
-    //      for (unsigned int i = 0; i < n; ++i) { matrix[i][0] = i; }
-    //      for (unsigned int i = 0; i < m; ++i) { matrix[0][i] = i; }
-    for (unsigned int i = 0; i < n; ++i) { matrix[i*m+0] = i; }
-    for (unsigned int i = 0; i < m; ++i) { matrix[0*m+i] = i; }
+    for (uint i = 0; i < n; ++i) { matrix[i*m+0] = i; }
+    for (uint i = 0; i < m; ++i) { matrix[0*m+i] = i; }
 
     // Now fill the whole matrix.
-    for (unsigned int i = 1; i < n; ++i) {
-        for (unsigned int j = 1; j < m; ++j) {
-            unsigned int dia = matrix[(i-1)*m+j-1] + (prefix[i-1] == str[j-1] ? 0 : 1);
+    for (uint i = 1; i < n; ++i) {
+        for (uint j = 1; j < m; ++j) {
+            uint dia = matrix[(i-1)*m+j-1] + (prefix[i-1] == str[j-1] ? 0 : 1);
             matrix[i*m+j] = std::min(std::min(
                                          dia,
                                          matrix[i*m+j-1] + 1),
                     matrix[(i-1)*m+j] + 1);
         }
     }
+
     // Check the last row if there is an entry <= delta.
-    for (unsigned int j = 0; j < m; ++j) {
+    bool result = false;
+    for (uint j = 0; j < m; ++j) {
         if (matrix[(n-1)*m+j] <= delta) {
             result = true;
             break;
@@ -65,18 +64,18 @@ bool checkPrefixEditDistance(const QString &prefix, const QString &str, unsigned
 
 
 /** ***************************************************************************/
-Core::FuzzySearch::FuzzySearch(unsigned int q, double d) : q_(q), delta_(d) {
+Core::FuzzySearch::FuzzySearch(uint q, double d) : q_(q), delta_(d) {
 
 }
 
 
 
 /** ***************************************************************************/
-Core::FuzzySearch::FuzzySearch(const Core::PrefixSearch &rhs, unsigned int q, double d) : PrefixSearch(rhs), q_(q), delta_(d) {
+Core::FuzzySearch::FuzzySearch(const Core::PrefixSearch &rhs, uint q, double d) : PrefixSearch(rhs), q_(q), delta_(d) {
     // Iterate over the inverted index and build the qGramindex
     for (typename PrefixSearch::InvertedIndex::const_iterator it = this->invertedIndex_.cbegin(); it != this->invertedIndex_.cend(); ++it) {
         QString spaced = QString(q_-1,' ').append(it->first);
-        for (unsigned int i = 0 ; i < static_cast<unsigned int>(it->first.size()); ++i)
+        for (uint i = 0 ; i < static_cast<uint>(it->first.size()); ++i)
             ++qGramIndex_[spaced.mid(i,q_)][it->first];
     }
 }
@@ -91,9 +90,14 @@ Core::FuzzySearch::~FuzzySearch() {
 
 
 /** ***************************************************************************/
-void Core::FuzzySearch::add(shared_ptr<Core::Indexable> idxble) {
+void Core::FuzzySearch::add(shared_ptr<Core::Indexable> indexable) {
+
+    // Add indexable to the index
+    index_.push_back(indexable);
+    uint id = static_cast<uint>(index_.size()-1);
+
     // Add a mappings to the inverted index which maps on t.
-    std::vector<Indexable::WeightedKeyword> indexKeywords = idxble->indexKeywords();
+    vector<Indexable::WeightedKeyword> indexKeywords = indexable->indexKeywords();
     for (const auto &wkw : indexKeywords) {
         QStringList words = wkw.keyword.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
         for (QString &w : words) {
@@ -102,11 +106,11 @@ void Core::FuzzySearch::add(shared_ptr<Core::Indexable> idxble) {
             w=w.toLower();
 
             // Add word to inverted index (map word to item)
-            this->invertedIndex_[w].insert(idxble);
+            this->invertedIndex_[w].insert(id);
 
             // Build a qGram index (map substring to word)
             QString spaced = QString(q_-1,' ').append(w);
-            for (unsigned int i = 0 ; i < static_cast<unsigned int>(w.size()); ++i)
+            for (uint i = 0 ; i < static_cast<uint>(w.size()); ++i)
                 ++qGramIndex_[spaced.mid(i,q_)][w]; //FIXME Currently occurences are not uses
         }
     }
@@ -127,7 +131,7 @@ vector<shared_ptr<Core::Indexable> > Core::FuzzySearch::search(const QString &re
     vector<QString> words;
     for (QString &word : req.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts))
         words.push_back(word.toLower());
-    vector<map<shared_ptr<Indexable>, unsigned int>> resultsPerWord;
+    vector<map<uint,uint>> resultsPerWord; // id, count
 
     // Quit if there are no words in query
     if (words.empty())
@@ -135,75 +139,79 @@ vector<shared_ptr<Core::Indexable> > Core::FuzzySearch::search(const QString &re
 
     // Split the query into words
     for (QString &word : words) {
-        unsigned int delta = static_cast<unsigned int>((delta_ < 1)? word.size()/delta_ : delta_);
+
+        uint delta = static_cast<uint>((delta_ < 1)? word.size()*delta_ : delta_);
 
         // Generate the qGrams of this word
-        map<QString, unsigned int> qGrams;
+        map<QString,uint> qGrams;
         QString spaced(q_-1,' ');
         spaced.append(word.toLower());
-        for (unsigned int i = 0 ; i < static_cast<unsigned int>(word.size()); ++i)
+        for ( uint i = 0; i < static_cast<uint>(word.size()); ++i )
             ++qGrams[spaced.mid(i,q_)];
 
-        // Get the words referenced by each qGram an increment their
-        // reference counter
-        // Iterate over the set of qgrams in the word
-        map<QString, unsigned int> wordMatches;
-        for (map<QString, unsigned int>::const_iterator it = qGrams.cbegin(); it != qGrams.end(); ++it) {
+        // Get the words referenced by each qGram and count the references
+        map<QString,uint> wordMatches;
+        for ( const pair<QString,uint> &qGram : qGrams) {
 
-            // Check for existance (std::map::at throws)
-            if (qGramIndex_.count(it->first) == 0)
+            // Find the qGram in the index, skip if nothing found
+            decltype(qGramIndex_)::const_iterator qGramIndexIt = qGramIndex_.find(qGram.first);
+            if ( qGramIndexIt == qGramIndex_.end() )
                 continue;
 
             // Iterate over the set of words referenced by this qGram
-            for (map<QString, unsigned int>::const_iterator wit = qGramIndex_.at(it->first).cbegin();
-                 wit != qGramIndex_.at(it->first).cend(); ++wit) {
+            for (const pair<QString,uint> &indexEntry : qGramIndexIt->second) {
                 // CRUCIAL: The match can contain only the commom amount of qGrams
-                wordMatches[wit->first] += (it->second < wit->second) ? it->second : wit->second;
+                wordMatches[indexEntry.first] += std::min(qGram.second, indexEntry.second);
             }
         }
-
-        // Allocate a new set
-        resultsPerWord.push_back(map<shared_ptr<Indexable>, unsigned int>());
-        map<shared_ptr<Indexable>, unsigned int>& resultsRef = resultsPerWord.back();
 
         // Unite the items referenced by the words accumulating their #matches
-        for (map<QString, unsigned int>::const_iterator wm = wordMatches.begin(); wm != wordMatches.end(); ++wm) {
-            //			// Do some kind of (cheap) preselection by mathematical bound
-            //			if (wm.value() < qGrams.size()-delta*_q)
-            //				continue;
+        map<uint,uint> results; // id, count
+        for (const pair<QString,uint> &wordMatch : wordMatches) {
+
+            /*
+             * Do some kind of (cheap) preselection by mathematical bound
+             * If the matched word has less than |word|-δ*q matching qGrams
+             * it cannot be a match.
+             * This is because a single error can reduce the common qGram by
+             * maximum q. δ errors can therefore reduce the common qGrams by
+             * maximum δ*q. If the common qGrams are less than |word|-δ*q this
+             * implies that there are more errors than δ.
+             */
+            if (wordMatch.second < (word.size()-delta*q_) )
+                continue;
 
             // Now check the (expensive) prefix edit distance
-            if (!checkPrefixEditDistance(word, wm->first, delta))
+            if (!checkPrefixEditDistance(word, wordMatch.first, delta))
                 continue;
 
-            // Check for existance (std::map::at throws)
-            if (invertedIndex_.count(wm->first) == 0)
-                continue;
-
-            for(const shared_ptr<Indexable> &item : invertedIndex_.at(wm->first)) {
-                resultsRef[item] += wm->second;
+            // Checks should not be neccessary since this builds on the index
+            for(uint id : invertedIndex_.at(wordMatch.first)) {
+                results[id] += wordMatch.second;
             }
         }
+
+        resultsPerWord.push_back(std::move(results));
     }
 
     // Intersect the set of items references by the (referenced) words
     // This assusmes that there is at least one word (the query would not have
     // been started elsewise)
-    vector<std::pair<shared_ptr<Indexable>, unsigned int>> finalResult;
+    vector<pair<uint,uint>> finalResult;
     if (resultsPerWord.size() > 1) {
         // Get the smallest list for intersection (performance)
-        unsigned int smallest=0;
-        for (unsigned int i = 1; i < static_cast<unsigned int>(resultsPerWord.size()); ++i)
+        uint smallest=0;
+        for (uint i = 1; i < static_cast<uint>(resultsPerWord.size()); ++i)
             if (resultsPerWord[i].size() < resultsPerWord[smallest].size())
                 smallest = i;
 
         bool allResultsContainEntry;
-        for (map<shared_ptr<Indexable>, unsigned int>::const_iterator r = resultsPerWord[smallest].begin();
+        for (map<uint,uint>::const_iterator r = resultsPerWord[smallest].begin();
              r != resultsPerWord[smallest].cend(); ++r) {
             // Check if all results contain this entry
             allResultsContainEntry=true;
-            unsigned int accMatches = resultsPerWord[smallest][r->first];
-            for (unsigned int i = 0; i < static_cast<unsigned int>(resultsPerWord.size()); ++i) {
+            uint accMatches = resultsPerWord[smallest][r->first];
+            for (uint i = 0; i < static_cast<uint>(resultsPerWord.size()); ++i) {
                 // Ignore itself
                 if (i==smallest)
                     continue;
@@ -227,18 +235,17 @@ vector<shared_ptr<Core::Indexable> > Core::FuzzySearch::search(const QString &re
             finalResult.push_back(std::make_pair(r->first, accMatches));
         }
     } else {// Else do it without intersction
-        for (map<shared_ptr<Indexable>, unsigned int>::const_iterator r = resultsPerWord[0].begin();
-             r != resultsPerWord[0].cend(); ++r)
-            finalResult.push_back(std::make_pair(r->first, r->second));
+        for ( const pair<uint,uint> &result : resultsPerWord[0] )
+            finalResult.push_back(std::make_pair(result.first, result.second));
     }
 
     // Sort em by relevance // TODO INTRODUCE RELEVANCE TO ITEMS
     //        std::sort(finalResult.begin(), finalResult.end(),
-    //                  [](QPair<T, unsigned int> x, QPair<T, unsigned int> y)
+    //                  [](QPair<T, uint> x, QPair<T, uint> y)
     //                    {return x.second > y.second;});
     vector<shared_ptr<Indexable>> result;
-    for (const std::pair<shared_ptr<Indexable>, unsigned int> &pair : finalResult) {
-        result.push_back(pair.first);
+    for (const pair<uint,uint> &pair : finalResult) {
+        result.push_back(index_.at(pair.first));
     }
     return result;
 }
