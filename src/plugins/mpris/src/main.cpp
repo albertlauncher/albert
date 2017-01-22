@@ -22,6 +22,8 @@
 #include "xdgiconlookup.h"
 #include "command.h"
 
+#define themeOr(name, fallbk)   iconlookup->themeIconPath(name, iconThemeName).isEmpty() ? fallbk : iconlookup->themeIconPath(name, iconThemeName)
+
 //QRegExp MPRIS::Extension::filterRegex("org\\.mpris\\.MediaPlayer2\\.(.*)");
 QDBusMessage MPRIS::Extension::findPlayerMsg = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "ListNames");
 
@@ -34,54 +36,64 @@ MPRIS::Extension::Extension()
     // Local cache field
     QString iconThemeName = QIcon::themeName();
     XdgIconLookup* iconlookup = XdgIconLookup::instance();
+    QString icon;
 
     // Setup the DBus commands
+    icon = themeOr("media-playback-start", ":play"); //iconlookup->themeIconPath("media-playback-start", iconThemeName);
     Command* nextToAdd = new Command(
                 "play", // Label
                 "Start playing", // Title
                 "Play", // DBus Method
-                iconlookup->themeIconPath("media-playback-start", iconThemeName)
+                icon
                 );
     nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.PlaybackStatus", "Playing", false);
     nextToAdd->closesWhenHit();
     commands.append("play");
     commandObjects.insert("play", *nextToAdd);
 
+    icon = themeOr("media-playback-pause", ":pause"); //iconlookup->themeIconPath("media-playback-pause", iconThemeName)
     nextToAdd = new Command(
                 "pause",
                 "Pause",
                 "Pause",
-                iconlookup->themeIconPath("media-playback-pause", iconThemeName));
+                icon
+                );
     nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.PlaybackStatus", "Playing", true);
     nextToAdd->closeWhenHit();
     commands.append("pause");
     commandObjects.insert("pause", *nextToAdd);
 
+    icon = themeOr("media-playback-stop", ":stop"); //                 iconlookup->themeIconPath("media-playback-stop", iconThemeName));
     nextToAdd = new Command(
                 "stop",
                 "Stop playing",
                 "Stop",
-                iconlookup->themeIconPath("media-playback-stop", iconThemeName));
+                icon
+                );
     nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.PlaybackStatus", "Playing", true);
     nextToAdd->closeWhenHit();
     commands.append("stop");
     commandObjects.insert("stop", *nextToAdd);
 
+    icon = themeOr("media-skip-forward", ":next"); // iconlookup->themeIconPath("media-skip-forward", iconThemeName)
     nextToAdd = new Command(
                 "next",
                 "Next track",
                 "Next",
-                iconlookup->themeIconPath("media-skip-forward", iconThemeName));
+                icon
+                );
     nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.CanGoNext", true, true);
     //.fireCallback([](){qDebug("NEXT");})
     commands.append("next");
     commandObjects.insert("next", *nextToAdd);
 
+    icon = themeOr("media-skip-backward", ":prev"); // iconlookup->themeIconPath("media-skip-backward", iconThemeName)
     nextToAdd = new Command(
                 "previous",
                 "Previous track",
                 "Previous",
-                iconlookup->themeIconPath("media-skip-backward", iconThemeName));
+                icon
+                );
     nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.CanGoPrevious", true, true);
     commands.append("previous");
     commandObjects.insert("previous", *nextToAdd);

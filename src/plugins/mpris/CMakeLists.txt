@@ -10,7 +10,7 @@ include_directories(
     ../../application/pluginsystem
 )
 
-FILE(GLOB_RECURSE SRC src/*)
+FILE(GLOB_RECURSE SRC src/* mpris.qrc metadata.json)
 
 set(LIB
     ${Qt5Widgets_LIBRARIES}
