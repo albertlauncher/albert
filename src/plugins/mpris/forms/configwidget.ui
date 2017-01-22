@@ -27,7 +27,10 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; color:#808080;&quot;&gt;There is nothing to configure here. Yet!&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; color:#808080;&quot;&gt;How to use MPRIS Control Center:&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; color:#808080;&quot;&gt;If you have MPRIS-capable media players running (like Rhythmbox, VLC, ...) just type any of &amp;quot;play&amp;quot;, &amp;quot;pause&amp;quot;, &amp;quot;stop&amp;quot;, &amp;quot;next&amp;quot;, &amp;quot;previous&amp;quot; and you can send these commands directly to your player from albert.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
