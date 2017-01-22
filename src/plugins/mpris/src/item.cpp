@@ -21,9 +21,10 @@ using Core::StandardAction;
 
 
 /** ***************************************************************************/
-MPRIS::Item::Item(Player &p, const QString &subtext, const QString &iconPath, const QDBusMessage &msg, bool hideAfter)
-    : player_(p), subtext_(subtext), iconPath_(iconPath), message_(msg), hideAfter_(hideAfter) {
-    text_ = p.getName();
+MPRIS::Item::Item(Player &p, const QString &title, const QString &subtext, const QString &iconPath, const QDBusMessage &msg, bool hideAfter)
+    : player_(p), iconPath_(iconPath), message_(msg), hideAfter_(hideAfter) {
+    text_ = title.arg(p.getName());
+    subtext_ = subtext.arg(p.getName());
     actions_.push_back(shared_ptr<Action>(new StandardAction(subtext, [this](){
         QDBusConnection::sessionBus().send(message_);
 //        flags->hideWidget = hideAfter_;

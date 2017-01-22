@@ -22,8 +22,8 @@
 #include "item.h"
 
 /** ***************************************************************************/
-MPRIS::Command::Command(const QString &label, const QString &title, const QString &method, QString iconpath)
-    : label_(label), title_(title), method_(method), iconpath_(iconpath), closeOnEnter_(false) {
+MPRIS::Command::Command(const QString &label, const QString &title, const QString &subtext, const QString &method, QString iconpath)
+    : label_(label), title_(title), subtext_(subtext), method_(method), iconpath_(iconpath), closeOnEnter_(false) {
 //    fireCallback([](){});
 }
 
@@ -75,7 +75,7 @@ bool MPRIS::Command::closesWhenHit() {
 SharedItem MPRIS::Command::produceAlbertItem(Player &player) const {
     QDBusMessage msg = QDBusMessage::createMethodCall(player.getBusId(), "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", method_);
     //std::shared_ptr<StandardItem> ptr = std::make_shared<MPRIS::Item>(player, title_, iconpath_, msg, closeOnEnter_);
-    SharedItem ptr(new MPRIS::Item(player, title_, iconpath_, msg, closeOnEnter_));
+    SharedItem ptr(new MPRIS::Item(player, title_, subtext_, iconpath_, msg, closeOnEnter_));
     return ptr;
 
 /*

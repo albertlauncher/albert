@@ -43,6 +43,7 @@ MPRIS::Extension::Extension()
     Command* nextToAdd = new Command(
                 "play", // Label
                 "Start playing", // Title
+                "Start playing on %1", // Subtext
                 "Play", // DBus Method
                 icon
                 );
@@ -55,6 +56,7 @@ MPRIS::Extension::Extension()
     nextToAdd = new Command(
                 "pause",
                 "Pause",
+                "Pause %1",
                 "Pause",
                 icon
                 );
@@ -67,6 +69,7 @@ MPRIS::Extension::Extension()
     nextToAdd = new Command(
                 "stop",
                 "Stop playing",
+                "Stop %1",
                 "Stop",
                 icon
                 );
@@ -79,6 +82,7 @@ MPRIS::Extension::Extension()
     nextToAdd = new Command(
                 "next",
                 "Next track",
+                "Play next track on %1",
                 "Next",
                 icon
                 );
@@ -91,6 +95,7 @@ MPRIS::Extension::Extension()
     nextToAdd = new Command(
                 "previous",
                 "Previous track",
+                "Play previous track on %1",
                 "Previous",
                 icon
                 );

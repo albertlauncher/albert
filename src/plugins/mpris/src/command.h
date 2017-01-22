@@ -32,11 +32,12 @@ public:
     /**
      * @brief Command   Constructs a DBus command to launch from albert with the given parameters.
      * @param label     An internal variable to query at a later point. Not needed for the DBus query.
-     * @param title     The subtext of the StandardItem which will be created.
+     * @param title     The title of the StandardItem which will be created.
+     * @param subtext   The subtext of the StandardItem which will be created.
      * @param method    The DBus method to invoke when this command is performed.
      * @param iconpath  The path to the icon which the StandardItem will get.
      */
-    Command(const QString& label, const QString& title, const QString& method, QString iconpath);
+    Command(const QString& label, const QString& title, const QString& subtext, const QString& method, QString iconpath);
 
     QString& getLabel();
     QString& getTitle();
@@ -80,7 +81,7 @@ public:
     bool isApplicable(Player&) const;
 
 private:
-    QString label_, title_, method_, iconpath_;
+    QString label_, title_, subtext_, method_, iconpath_;
     bool applicableCheck_;
     QString path_;
     QString property_;
