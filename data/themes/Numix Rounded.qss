@@ -8,19 +8,20 @@
  */
 
 * {
-  border: none;
-  /*font-family:"DejaVu Sans";*/
-  font: 36px "Source Sans Pro Bold";
+  color : #ccc;
+  background-color: #2d2d2d;
+/*  border: none;
+  font: 18px "Source Sans Pro Bold";
   font-weight: 200;
   color : #ffffff;
-  background-color: #2d2d2d;
+  background-color: #2d2d2d;*/
 }
 
 #frame {
   padding: 12px;
   border-radius: 5px;
   background-color: #2d2d2d;
-  border: 1px solid #20808080;
+  /*border: 1px solid #555;*/
 
   /* Workaround for Qt to get fixed size button*/
   min-width:640px;
@@ -28,13 +29,17 @@
 }
 
 #inputLine {
+  padding: 2px;
   font-size: 36px;
-  selection-color: #f4000000;
-  selection-background-color: #ffffff;
-  background-color: transparent;
+  selection-color: #fdf6e3;
+  selection-background-color: #586e75;
+  border: none;
+  background-color: #2d2d2d;
 }
 
 #settingsButton {
+  border: none;
+  border-radius: 7px;
   color: #484848;
   background-color: transparent;
   padding: 8px;
@@ -46,19 +51,25 @@
   max-height:14px;
 }
 
+#settingsButton:hover {
+  background-color: #2d2d2d;
+}
+
+
 /********** ListViews ************/
 
 QListView::item:selected {
-  background: #262626;
+  border: none;
+  background: qlineargradient(x1:0, x2:1, stop:0.0 #3a3a3a, stop:0.5 #3a3a3a, stop:1.0 #3a3a3a );
 }
 
 QListView QScrollBar:vertical  {
-  width: 2px;
+  width: 5px;
   background: transparent;
 }
 
 QListView QScrollBar::handle:vertical  {
-  background: #484848;
+  background: #AAAAAA;
   min-height: 24px;
 }
 
@@ -79,15 +90,26 @@ QListView#actionList {
 
 QListView#actionList::item{
   height:28px;
+  margin:50px;
 }
 
 /********** proposalList **********/
 
 QListView#proposalList {
-  icon-size: 40px;
-  font-size: 22px;
+  icon-size: 36px;
+  font-size: 26px;
+  font: 20px "Source Sans Pro Bold";
+  background-color: transparent;
+  border: none;
 }
 
 QListView#proposalList::item{
   height:48px;
+  padding: 4px;
+  border-bottom: 1px dotted #555;
+}
+
+QListView#proposalList::item:selected{
+  border: none;
+  background: #3a3a3a;
 }
