@@ -360,6 +360,7 @@ void ExternalExtensions::ExternalExtension::handleQuery(Query* query) {
 
 
         // Build the actions
+        standardActionVector.clear();
         for (const QJsonValue & value : object["actions"].toArray()){
             object = value.toObject();
             standardAction = std::make_shared<StandardAction>();
