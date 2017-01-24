@@ -2,14 +2,6 @@
 <ui version="4.0">
  <class>SettingsDialog</class>
  <widget class="QWidget" name="SettingsDialog">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>920</width>
-    <height>533</height>
-   </rect>
-  </property>
   <property name="minimumSize">
    <size>
     <width>720</width>
@@ -590,7 +582,7 @@ p, li { white-space: pre-wrap; }
 &lt;body&gt;
 &lt;h2&gt;Albert launcher ___versionstring___&lt;/h2&gt;
 &lt;p&gt;If you encounter bugs or think you have suggestions for improvement, tell me at the &lt;a href=&quot;https://github.com/ManuelSchneid3r/albert/issues&quot;&gt;Github issue tracker.&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;If you really like this software please consider a donation via &lt;a href=&quot;https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;amp;hosted_button_id=W74BQPKPGNSNC&quot;&gt;PayPal&lt;/a&gt; or &lt;a href=&quot;https://flattr.com/submit/auto?user_id=manuelschneid3r&amp;amp;url=https%3A%2F%2Fgithub.com%2FManuelSchneid3r%2Falbert&quot;&gt;Flattr&lt;/a&gt; or become a &lt;a href=&quot;https://www.patreon.com/albertlauncher&quot;&gt;patron&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;If you really like this software please consider a donation via &lt;a href=&quot;https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;amp;hosted_button_id=W74BQPKPGNSNC&quot;&gt;PayPal&lt;/a&gt; or become a &lt;a href=&quot;https://www.patreon.com/albertlauncher&quot;&gt;patron&lt;/a&gt;.&lt;/p&gt;
 &lt;/body&gt;
 &lt;/html&gt;</string>
          </property>
