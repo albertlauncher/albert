@@ -253,7 +253,8 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
         ui.label_pluginTitle->show();
     }
     else{
-        QLabel *lbl = new QLabel("Plugin not loaded.");
+        QString msg("Plugin not loaded.\n%1");
+        QLabel *lbl = new QLabel(msg.arg(extensionManager_->extensionSpecs()[current.row()]->lastError()));
         lbl->setEnabled(false);
         lbl->setAlignment(Qt::AlignCenter);
         ui.widget_pluginInfos->layout()->addWidget(lbl);
