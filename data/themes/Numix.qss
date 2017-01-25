@@ -88,7 +88,6 @@ QListView#actionList {
 
 QListView#actionList::item{
   height:28px;
-  margin:50px;
 }
 
 /********** proposalList **********/
