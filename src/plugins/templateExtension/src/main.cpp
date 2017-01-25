@@ -24,7 +24,7 @@
 
 
 
-class PROJECTNAMESPACE::PROJECTNAMESPACEPrivate
+class ProjectNamespace::ProjectNamespacePrivate
 {
 public:
     QPointer<ConfigWidget> widget;
@@ -33,10 +33,10 @@ public:
 
 
 /** ***************************************************************************/
-PROJECTNAMESPACE::Extension::Extension()
-    : Core::Extension("org.albert.extension.PROJECTID"),
+ProjectNamespace::Extension::Extension()
+    : Core::Extension("org.albert.extension.projectid"),
       Core::QueryHandler(Core::Extension::id),
-      d(new PROJECTNAMESPACEPrivate) {
+      d(new ProjectNamespacePrivate) {
 
     // You can throw in the constructor if something fatal happened
     throw std::runtime_error( "Description of error." );
@@ -49,14 +49,14 @@ PROJECTNAMESPACE::Extension::Extension()
 
 
 /** ***************************************************************************/
-PROJECTNAMESPACE::Extension::~Extension() {
+ProjectNamespace::Extension::~Extension() {
     delete d;
 }
 
 
 
 /** ***************************************************************************/
-QWidget *PROJECTNAMESPACE::Extension::widget(QWidget *parent) {
+QWidget *ProjectNamespace::Extension::widget(QWidget *parent) {
     if (d->widget.isNull()) {
         d->widget = new ConfigWidget(parent);
     }
@@ -66,21 +66,21 @@ QWidget *PROJECTNAMESPACE::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void PROJECTNAMESPACE::Extension::setupSession() {
+void ProjectNamespace::Extension::setupSession() {
 
 }
 
 
 
 /** ***************************************************************************/
-void PROJECTNAMESPACE::Extension::teardownSession() {
+void ProjectNamespace::Extension::teardownSession() {
 
 }
 
 
 
 /** ***************************************************************************/
-void PROJECTNAMESPACE::Extension::handleQuery(Core::Query * query) {
+void ProjectNamespace::Extension::handleQuery(Core::Query * query) {
     // Avoid annoying warnings
     Q_UNUSED(query)
 }

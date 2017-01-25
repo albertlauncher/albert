@@ -20,9 +20,9 @@
 #include "extension.h"
 #include "queryhandler.h"
 
-namespace PROJECTNAMESPACE {
+namespace ProjectNamespace {
 
-class PROJECTNAMESPACEPrivate;
+class ProjectNamespacePrivate;
 class ConfigWidget;
 
 class Extension final :
@@ -42,7 +42,7 @@ public:
      * Implementation of extension interface
      */
 
-    QString name() const override { return "PROJECTPRETTYNAME"; }
+    QString name() const override { return "Template"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     void setupSession() override;
     void teardownSession() override;
@@ -54,7 +54,7 @@ public:
 
 private:
 
-    std::unique_ptr<PROJECTNAMESPACEPrivate> d;
+    std::unique_ptr<ProjectNamespacePrivate> d;
 
 };
 }

@@ -1,6 +1,6 @@
 {
-    "id" :              "org.albert.extension.PROJECTID",
-    "name" :            "PROJECTPRETTYNAME",
+    "id" :              "org.albert.extension.projectid",
+    "name" :            "Template",
     "version" :         "1.0",
     "platform" :        "All",
     "group" :           "Extensions",

@@ -6,9 +6,9 @@ import sys
 import string
 from shutil import copyfile
 
-ID_KEYWORD = "PROJECTID"
-NAMESPACE_KEYWORD = "PROJECTNAMESPACE"
-PRETTYNAME_KEYWORD = "PROJECTPRETTYNAME"
+ID_KEYWORD = "projectid"
+NAMESPACE_KEYWORD = "ProjectNamespace"
+PRETTYNAME_KEYWORD = "Template"
 ID_PATTERN = "^([a-z0-9]+)$"
 NAMESPACE_PATTERN = "^([A-Za-z][A-Za-z0-9]+)$"
 PRETTYNAME_PATTERN = "^([A-Za-z0-9 _\\-]+)$"
