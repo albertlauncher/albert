@@ -16,7 +16,7 @@
   padding: 5px;
   background-color: #2d2d2d;
   border: 1px solid #555;
-  
+
   /* Workaround for Qt to get fixed size button*/
 	min-width:640px;
 	max-width:640px;
