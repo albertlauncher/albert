@@ -50,13 +50,31 @@ print("Creating directory . . .")
 os.mkdir(id_string)
 os.chdir(id_string)
 
+baseDir = os.path.join("..", TEMPLATE_EXTENSION_BASE)
 filesToPrepare = []
 
-files = os.listdir("../" + TEMPLATE_EXTENSION_BASE)
-for nextFile in files:
-    print("Copying file " + nextFile)
-    copyfile("../" + TEMPLATE_EXTENSION_BASE + nextFile, nextFile)
-    filesToPrepare.append(nextFile) 
+def scanDir(toscan):
+    global filesToPrepare
+    global baseDir
+    if toscan:
+        template = os.path.join(baseDir, toscan)
+    else:
+        template = baseDir
+    ext = toscan
+    files = os.listdir(template)
+    for nextFile in files:
+        path = os.path.join(template, nextFile)
+        pathNew = os.path.join(ext, nextFile)
+        if os.path.isdir(path):
+            print("Creating directory " + pathNew)
+            os.mkdir(pathNew)
+            scanDir(os.path.join(toscan, nextFile))
+        else:
+            print("Copying file " + pathNew)
+            copyfile(path, pathNew)
+            filesToPrepare.append(pathNew)
+
+scanDir("")
 
 for localFile in filesToPrepare:
     print("Preparing file " + localFile)
@@ -74,30 +92,37 @@ print("Leaving directory . . .")
 os.chdir("..")
 print("Updating CMakeLists.txt . . . ")
 existingExtensions = []
-elseLines = []
-lastWasSuccess = True
+preLines = []
+postLines = []
+preSubdir = True
+postSubdir = False
 with open("CMakeLists.txt", "r") as makelist:
     for line in makelist:
-        if lastWasSuccess:
-            match = cmake_regex.match(line)
-            if match:
-                existingExtensions.append(match.group(1))
-            else:
-                lastWasSuccess = False
-                elseLines.append(line)
+        match = cmake_regex.match(line)
+        if match:
+            preSubdir = False
+            existingExtensions.append(match.group(1))
         else:
-            elseLines.append(line)
+            postSubdir = not preSubdir
+        
+        if preSubdir:
+            preLines.append(line)
+        elif postSubdir:
+            postLines.append(line)
 
 existingExtensions.append(id_string)
 existingExtensions.sort()
 
 cmakefile = open("CMakeLists.txt", "w")
+for line in preLines:
+    cmakefile.write(line) # The newline is already in the line, because it didn't get stripped
+
 for ext in existingExtensions:
     cmakefile.write("add_subdirectory(")
     cmakefile.write(ext)
     cmakefile.write(")\n")
 
-for line in elseLines:
+for line in postLines:
     cmakefile.write(line) # The newline is already in the line, because it didn't get stripped
 
 cmakefile.close()
