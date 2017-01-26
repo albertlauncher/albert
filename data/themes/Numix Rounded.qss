@@ -1,11 +1,11 @@
 /*
- * author: <https://github.com/tepf>
+ * author: Leandro Heck <https://github.com/leoheck>
+ * based on Manuel Schneider's themes Numix and Yosemite Dark
  *
  * Check http://doc.qt.io/qt-5/stylesheet-syntax.html especially the subtopics:
  * The Style Sheet Syntax (http://doc.qt.io/qt-5/stylesheet-syntax.html)
  * Qt Style Sheets Reference (http://doc.qt.io/qt-5/stylesheet-reference.html)
  */
-
 
 * {
   color : #ccc;
@@ -14,20 +14,21 @@
 
 #frame {
   width:640px;
-  padding: 5px;
+  padding: 12px;
+  border-radius: 5px;
   background-color: #2d2d2d;
   /*border: 1px solid #555;*/
 
   /* Workaround for Qt to get fixed size button*/
-	min-width:640px;
-	max-width:640px;
+  min-width:640px;
+  max-width:640px;
 }
 
 #inputLine {
-	padding: 2px;
+  padding: 2px;
   font: 36px "Source Sans Pro Bold";
-	selection-color: #fdf6e3;
-	selection-background-color: #586e75;
+  selection-color: #fdf6e3;
+  selection-background-color: #586e75;
   border: none;
   background-color: #2d2d2d;
 }
@@ -55,7 +56,8 @@
 }
 
 
-/********** ListViews **********/
+/********** ListViews ************/
+
 QListView::item:selected {
   border: none;
   background: qlineargradient(x1:0, x2:1, stop:0.0 #3a3a3a, stop:0.5 #3a3a3a, stop:1.0 #3a3a3a );
@@ -79,7 +81,6 @@ QListView QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
   height: 0px;
   background: transparent;
 }
-
 
 /********** actionList **********/
 
