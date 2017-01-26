@@ -6,6 +6,7 @@
  * Qt Style Sheets Reference (http://doc.qt.io/qt-5/stylesheet-reference.html)
  */
 
+
 * {
   color : #ccc;
   background-color: #2d2d2d;
@@ -15,7 +16,7 @@
   width:640px;
   padding: 5px;
   background-color: #2d2d2d;
-  border: 1px solid #555;
+  /*border: 1px solid #555;*/
 
   /* Workaround for Qt to get fixed size button*/
 	min-width:640px;
