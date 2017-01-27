@@ -8,14 +8,14 @@
 
 * {
     border: none;
-    color : #%foreground_color%;
-    background-color: #%background_color%;
+    color : #808080;
+    background-color: #030303;
 }
 
 #frame {
     padding: 6px 0px;
     border-radius: 8px;
-    background-color: #%background_color%;
+    background-color: #030303;
     min-width:640px;
     max-width:640px;
 }
@@ -23,14 +23,14 @@
 #inputLine {
     padding: 0px 8px;
     font-size: 36px;
-    selection-color: #%background_color%;
-    selection-background-color: #%foreground_color%;
+    selection-color: #030303;
+    selection-background-color: #808080;
     background-color: transparent;
 }
 
 #settingsButton {
     margin: 6px 6px 0px 0px;
-    color: #%button_color%;
+    color: #202020;
     background-color: transparent;
     padding: 2px;
     min-width:14px;
@@ -46,7 +46,7 @@ QListView {
 }
 
 QListView::item:selected {
-    background: #%selection_background_color%;
+    background: #202020;
 }
 
 QListView QScrollBar:vertical  {
@@ -55,7 +55,7 @@ QListView QScrollBar:vertical  {
 }
 
 QListView QScrollBar::handle:vertical  {
-    background: #%scroll_color%;
+    background: #404040;
     border-radius: 1px;
     min-height: 24px;
 }
