@@ -67,6 +67,7 @@ void Core::PrefixSearch::add(shared_ptr<Core::Indexable> indexable) {
 /** ***************************************************************************/
 void Core::PrefixSearch::clear() {
     invertedIndex_.clear();
+    index_.clear();
 }
 
 
@@ -89,7 +90,7 @@ vector<shared_ptr<Core::Indexable> > Core::PrefixSearch::search(const QString &r
     QString word = wordIterator++->toLower();
 
     // Get a word mapping once before going to handle intersections
-    for (InvertedIndex::const_iterator lb = invertedIndex_.lower_bound(word);
+    for (std::map<QString,std::set<uint>>::const_iterator lb = invertedIndex_.lower_bound(word);
          lb != invertedIndex_.cend() && lb->first.startsWith(word); ++lb)
         resultsSet.insert(lb->second.begin(), lb->second.end());
 
@@ -102,7 +103,7 @@ vector<shared_ptr<Core::Indexable> > Core::PrefixSearch::search(const QString &r
         // Unite the sets that are mapped by words that begin with word
         // w ∈ W. This set is called U_w
         set<uint> wordMappingsUnion;
-        for (InvertedIndex::const_iterator lb = invertedIndex_.lower_bound(word);
+        for (std::map<QString,std::set<uint>>::const_iterator lb = invertedIndex_.lower_bound(word);
              lb != invertedIndex_.cend() && lb->first.startsWith(word); ++lb)
             wordMappingsUnion.insert(lb->second.begin(), lb->second.end());
 

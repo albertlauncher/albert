@@ -73,10 +73,10 @@ Core::FuzzySearch::FuzzySearch(uint q, double d) : q_(q), delta_(d) {
 /** ***************************************************************************/
 Core::FuzzySearch::FuzzySearch(const Core::PrefixSearch &rhs, uint q, double d) : PrefixSearch(rhs), q_(q), delta_(d) {
     // Iterate over the inverted index and build the qGramindex
-    for (typename PrefixSearch::InvertedIndex::const_iterator it = this->invertedIndex_.cbegin(); it != this->invertedIndex_.cend(); ++it) {
-        QString spaced = QString(q_-1,' ').append(it->first);
-        for (uint i = 0 ; i < static_cast<uint>(it->first.size()); ++i)
-            ++qGramIndex_[spaced.mid(i,q_)][it->first];
+    for ( const std::pair<QString,std::set<uint>> &invertedIndexEntry : invertedIndex_ ) {
+        QString spaced = QString(q_-1,' ').append(invertedIndexEntry.first);
+        for (uint i = 0 ; i < static_cast<uint>(invertedIndexEntry.first.size()); ++i)
+            ++qGramIndex_[spaced.mid(i,q_)][invertedIndexEntry.first];
     }
 }
 
@@ -120,8 +120,9 @@ void Core::FuzzySearch::add(shared_ptr<Core::Indexable> indexable) {
 
 /** ***************************************************************************/
 void Core::FuzzySearch::clear() {
-    this->invertedIndex_.clear();
     qGramIndex_.clear();
+    invertedIndex_.clear();
+    index_.clear();
 }
 
 
