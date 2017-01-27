@@ -19,6 +19,7 @@
 #include <QApplication>
 #include <QCloseEvent>
 #include <QCursor>
+#include <QDebug>
 #include <QDesktopWidget>
 #include <QDir>
 #include <QEvent>
@@ -563,6 +564,20 @@ bool MainWindow::eventFilter(QObject *, QEvent *event) {
         }
         }
     }
+
+    if (event->type() == QEvent::Wheel) {
+        QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(event);
+        if ( wheelEvent->angleDelta().y() > 0 ) {
+            QString next = history_->next();
+            if (!next.isEmpty())
+                ui.inputLine->setText(next);
+        } else {
+            QString prev = history_->prev();
+            if (!prev.isEmpty())
+                ui.inputLine->setText(prev);
+        }
+    }
+
     return false;
 }
 
