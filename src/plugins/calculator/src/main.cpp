@@ -45,7 +45,7 @@ class Calculator::CalculatorPrivate
 public:
     QPointer<ConfigWidget> widget;
     std::unique_ptr<mu::Parser> parser;
-    QLocale loc;
+    QLocale locale;
     QString iconPath;
 };
 
@@ -57,22 +57,24 @@ Calculator::Extension::Extension()
       Core::QueryHandler(Core::Extension::id),
       d(new CalculatorPrivate){
 
+    // FIXME Qt6 Workaround for https://bugreports.qt.io/browse/QTBUG-58504
+    d->locale = QLocale(QLocale::system().name());
+
     // Load settings
     QSettings s(qApp->applicationName());
     s.beginGroup(Core::Extension::id);
-    d->loc.setNumberOptions(
+    d->locale.setNumberOptions(
                 (s.value(CFG_SEPS, CFG_SEPS_DEF).toBool())
-                ? d->loc.numberOptions() & ~QLocale::OmitGroupSeparator
-                : d->loc.numberOptions() | QLocale::OmitGroupSeparator );
+                ? d->locale.numberOptions() & ~QLocale::OmitGroupSeparator
+                : d->locale.numberOptions() | QLocale::OmitGroupSeparator );
     s.endGroup();
 
     QString iconPath = XdgIconLookup::iconPath("calc");
     d->iconPath = iconPath.isNull() ? ":calc" : iconPath;
 
     d->parser.reset(new mu::Parser);
-
-    d->parser->SetDecSep(d->loc.decimalPoint().toLatin1());
-    d->parser->SetThousandsSep(d->loc.groupSeparator().toLatin1());
+    d->parser->SetDecSep(d->locale.decimalPoint().toLatin1());
+    d->parser->SetThousandsSep(d->locale.groupSeparator().toLatin1());
 }
 
 
@@ -89,11 +91,11 @@ QWidget *Calculator::Extension::widget(QWidget *parent) {
     if (d->widget.isNull()){
         d->widget = new ConfigWidget(parent);
 
-        d->widget->ui.checkBox_groupsep->setChecked(!(d->loc.numberOptions() & QLocale::OmitGroupSeparator));
+        d->widget->ui.checkBox_groupsep->setChecked(!(d->locale.numberOptions() & QLocale::OmitGroupSeparator));
         connect(d->widget->ui.checkBox_groupsep, &QCheckBox::toggled, [this](bool checked){
             QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_SEPS), checked);
-            this->d->loc.setNumberOptions( (checked) ? this->d->loc.numberOptions() & ~QLocale::OmitGroupSeparator
-                                                  : this->d->loc.numberOptions() | QLocale::OmitGroupSeparator );
+            d->locale.setNumberOptions( (checked) ? d->locale.numberOptions() & ~QLocale::OmitGroupSeparator
+                                                  : d->locale.numberOptions() | QLocale::OmitGroupSeparator );
         });
     }
     return d->widget;
@@ -106,7 +108,7 @@ void Calculator::Extension::handleQuery(Core::Query * query) {
     d->parser->SetExpr(query->searchTerm().toLower().toStdString());
     QString result;
     try {
-        result = d->loc.toString(d->parser->Eval(), 'G', 16);
+        result = d->locale.toString(d->parser->Eval(), 'G', 16);
     }
     catch (mu::Parser::exception_type &e) {
       return;
