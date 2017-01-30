@@ -39,14 +39,25 @@ bool Core::ExtensionSpec::load(){
 
 /** ***************************************************************************/
 bool Core::ExtensionSpec::unload(){
-    if ( loader_.unload() ) {
-        state_ = State::NotLoaded;
-    } else {
-        state_ = State::Error;
-        lastError_ = loader_.errorString();
-        qWarning() << "Failed to unload extension:" << lastError_.toLocal8Bit().data();
-    }
-    return state_==State::NotLoaded;
+//    if ( loader_.unload() ) {
+//        state_ = State::NotLoaded;
+//    } else {
+//        state_ = State::Error;
+//        lastError_ = loader_.errorString();
+//        qWarning() << "Failed to unload extension:" << lastError_.toLocal8Bit().data();
+//    }
+//    return state_==State::NotLoaded;
+
+    /*
+     * Never really unload a plugin, since otherwise all objects instanciated by
+     * this extension (items, widgets, etc) and spread all over the app would
+     * have to be deleted. This is a lot of work an nobody cares about that
+     * little amount of extra KBs in RAM until next restart.
+     */
+    instance()->deleteLater();
+    state_ = State::NotLoaded;
+    return true;
+
 }
 
 
