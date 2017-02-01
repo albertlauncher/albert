@@ -54,7 +54,7 @@ bool Core::ExtensionSpec::unload(){
      * have to be deleted. This is a lot of work an nobody cares about that
      * little amount of extra KBs in RAM until next restart.
      */
-    instance()->deleteLater();
+    delete instance();
     state_ = State::NotLoaded;
     return true;
 
