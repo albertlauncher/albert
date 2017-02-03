@@ -139,28 +139,27 @@ void Files::FilesPrivate::startIndexing() {
 /** ***************************************************************************/
 void Files::FilesPrivate::finishIndexing() {
 
+    // In case of abortion the returned data is invalid
+    if ( !abort ) {
+        // Get the thread results
+        index = futureWatcher.future().result();
+
+        // Rebuild the offline index
+        offlineIndex.clear();
+        for (const auto &item : index)
+            offlineIndex.add(item);
+
+        // Notification
+        qDebug() << qPrintable(QString("[%1] Indexing done (%2 items).").arg(q->Core::Extension::id).arg(index.size()));
+        emit q->statusInfo(QString("%1 files indexed.").arg(index.size()));
+    }
+
+    abort = false;
+
     if ( rerun ) {
         rerun = false;
         startIndexing();
     }
-
-    // In case of abortion the returned data is invalid, quit
-    if ( abort ) {
-        abort = false;
-        return;
-    }
-
-    // Get the thread results
-    index = futureWatcher.future().result();
-
-    // Rebuild the offline index
-    offlineIndex.clear();
-    for (const auto &item : index)
-        offlineIndex.add(item);
-
-    // Notification
-    qDebug() << qPrintable(QString("[%1] Indexing done (%2 items).").arg(q->Core::Extension::id).arg(index.size()));
-    emit q->statusInfo(QString("%1 files indexed.").arg(index.size()));
 }
 
 
