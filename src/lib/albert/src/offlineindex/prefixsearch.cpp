@@ -35,6 +35,7 @@ Core::PrefixSearch::PrefixSearch(){
 
 /** ***************************************************************************/
 Core::PrefixSearch::PrefixSearch(const Core::PrefixSearch &rhs) {
+    index_ = rhs.index_;
     invertedIndex_ = rhs.invertedIndex_;
 }
 
