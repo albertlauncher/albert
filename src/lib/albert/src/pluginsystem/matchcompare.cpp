@@ -57,7 +57,9 @@ void Core::MatchCompare::update() {
     QSqlQuery query;
     query.exec("SELECT t.itemId AS id, SUM(t.score) AS usageScore "
                "FROM ( "
-               " SELECT itemId, 1/max(julianday('now')-julianday(timestamp),1) AS score from usages "
+               " SELECT itemId, 1/max(julianday('now')-julianday(timestamp),1) AS score "
+               " FROM usages "
+               " WHERE itemId<>'' "
                ") t "
                "GROUP BY t.itemId");
     while (query.next())
