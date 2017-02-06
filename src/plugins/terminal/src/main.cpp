@@ -20,6 +20,8 @@
 #include <QDirIterator>
 #include <QPointer>
 #include <QProcess>
+#include <QProcessEnvironment>
+#include <QRegularExpression>
 #include <QStringList>
 #include <algorithm>
 #include <set>
@@ -46,10 +48,8 @@ public:
     QPointer<ConfigWidget> widget;
     QFileSystemWatcher watcher;
     std::set<QString> index;
-    bool dirtyFlag;
     QString iconPath;
-
-    void rebuildIndex();
+    bool dirtyFlag;
 };
 
 
@@ -67,7 +67,7 @@ Terminal::Extension::Extension()
 
     connect(&d->watcher, &QFileSystemWatcher::directoryChanged, [this](){ d->dirtyFlag = true; });
 
-    d->rebuildIndex();
+    rebuildIndex();
 
 }
 
@@ -93,7 +93,7 @@ QWidget *Terminal::Extension::widget(QWidget *parent) {
 void Terminal::Extension::teardownSession() {
     if ( d->dirtyFlag )
         // Build rebuild the chache
-        d->rebuildIndex();
+        rebuildIndex();
 }
 
 
@@ -105,6 +105,7 @@ void Terminal::Extension::handleQuery(Core::Query * query) {
 
     // Drop the query
     QString actualQuery = query->searchTerm().mid(1);
+    QString shell = QProcessEnvironment::systemEnvironment().value("SHELL");
 
     // Extract data from input string: [0] program. The rest: args
     QString potentialProgram = actualQuery.section(' ', 0, 0, QString::SectionSkipEmpty);
@@ -122,34 +123,27 @@ void Terminal::Extension::handleQuery(Core::Query * query) {
 
         std::vector<shared_ptr<Action>> actions;
         shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
-        action->setText("Execute in background");
-        action->setAction([program, args](){
-            QProcess::startDetached(program, args);
+        action->setText("Execute in the shell");
+        action->setAction([shell, commandlineString](){
+            QProcess::startDetached(QString("%1 -ic \"%2\"").arg(shell, commandlineString));
         });
         actions.push_back(std::move(action));
 
-        QStringList cmddline = terminalCommand.split(' ', QString::SkipEmptyParts);
-        cmddline.append(program);
-        cmddline.append(args);
         action = std::make_shared<StandardAction>();
-        action->setText("Execute in terminal");
-        action->setAction([cmddline](){
-            QStringList args = cmddline;
-            QString program = args.takeFirst();
-            QProcess::startDetached(program, args);
+        action->setText("Execute in the terminal");
+        action->setAction([shell, commandlineString](){
+            QStringList cmdLineFields = terminalCommand.split(' ', QString::SkipEmptyParts);
+            cmdLineFields.append(QString("%1 -ic '%2; exec %1'").arg(shell, commandlineString));
+            QProcess::startDetached(cmdLineFields.takeFirst(), cmdLineFields);
         });
         actions.push_back(std::move(action));
 
-        cmddline = terminalCommand.split(' ', QString::SkipEmptyParts);
-        cmddline.append("sudo");
-        cmddline.append(program);
-        cmddline.append(args);
         action = std::make_shared<StandardAction>();
         action->setText("Execute as root in terminal");
-        action->setAction([cmddline](){
-            QStringList args = cmddline;
-            QString program = args.takeFirst();
-            QProcess::startDetached(program, args);
+        action->setAction([shell, commandlineString](){
+            QStringList cmdLineFields = terminalCommand.split(' ', QString::SkipEmptyParts);
+            cmdLineFields.append(QString("%1 -ic 'sudo %2; exec %1'").arg(shell, commandlineString));
+            QProcess::startDetached(cmdLineFields.takeFirst(), cmdLineFields);
         });
         actions.push_back(std::move(action));
 
@@ -170,8 +164,11 @@ void Terminal::Extension::handleQuery(Core::Query * query) {
 
 
 /** ***************************************************************************/
-void Terminal::TerminalPrivate::rebuildIndex() {
-    index.clear();
+void Terminal::Extension::rebuildIndex() {
+
+    std::set<QString> index;
+
+    // Index the executables in the path
     QStringList paths = QString(::getenv("PATH")).split(':', QString::SkipEmptyParts);
     for (const QString &path : paths) {
         QDirIterator dirIt(path);
@@ -181,4 +178,20 @@ void Terminal::TerminalPrivate::rebuildIndex() {
                 index.insert(file.fileName());
         }
     }
+
+    // If env contains the shell index the aliases
+    QProcess process;
+    process.start(QString("%1 -ic \"alias\"").arg(QProcessEnvironment::systemEnvironment().value("SHELL")));
+    if ( !process.waitForFinished(100) )
+        return;
+    QTextStream standardout(process.readAllStandardOutput());
+    QRegularExpression regex("(?<=alias )\\w*");
+    while (!standardout.atEnd()){
+        QString line = standardout.readLine();
+        QRegularExpressionMatch match = regex.match(line);
+        if (match.hasMatch())
+            index.insert(match.captured(0));
+    }
+
+    d->index = std::move(index);
 }
