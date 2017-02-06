@@ -6,5 +6,5 @@
     "group" :           "Extensions",
     "author" :          "Martin Buergmann, Manuel Schneider",
     "dependencies" :    ["firefox"],
-    "enabledbydefault": true
+    "enabledbydefault": false
 }

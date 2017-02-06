@@ -14,9 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QDebug>
 #include <QJsonArray>
 #include <QVariant>
-#include <QDebug>
+#include <QSettings>
 #include <stdexcept>
 #include "extensionspec.h"
 #include "extension.h"
@@ -24,13 +25,38 @@
 
 
 /** ***************************************************************************/
+Core::ExtensionSpec::ExtensionSpec(const QString &path)
+    : loader_(path), state_(State::NotLoaded) {
+
+    id_                 = loader_.metaData()["MetaData"].toObject()["id"].toString();
+    enabledByDefault_   = loader_.metaData()["MetaData"].toObject()["enabledbydefault"].toBool();
+    name_               = loader_.metaData()["MetaData"].toObject()["name"].toString();
+    version_            = loader_.metaData()["MetaData"].toObject()["version"].toString();
+    author_             = loader_.metaData()["MetaData"].toObject()["author"].toString();
+    for (QVariant &var : loader_.metaData()["MetaData"].toObject()["dependencies"].toArray().toVariantList())
+        dependencies_.push_back(var.toString());
+}
+
+
+
+/** ***************************************************************************/
+Core::ExtensionSpec::~ExtensionSpec() {
+
+}
+
+
+
+/** ***************************************************************************/
 bool Core::ExtensionSpec::load(){
+
+    if ( state_ == State::Loaded )
+        return true;
+
     if ( loader_.load() ) {
         state_ = State::Loaded;
     } else {
         state_ = State::Error;
         lastError_ = loader_.errorString();
-        qWarning() << "Failed to load extension:" << lastError_.toLocal8Bit().data();
     }
     return state_==State::Loaded;
 }
@@ -54,6 +80,9 @@ bool Core::ExtensionSpec::unload(){
      * have to be deleted. This is a lot of work an nobody cares about that
      * little amount of extra KBs in RAM until next restart.
      */
+    if ( state_ == State::NotLoaded )
+        return true;
+
     delete instance();
     state_ = State::NotLoaded;
     return true;
@@ -109,36 +138,38 @@ QString Core::ExtensionSpec::path() const {
 
 /** ***************************************************************************/
 QString Core::ExtensionSpec::id() const {
-    return loader_.metaData()["MetaData"].toObject()["id"].toString();
+    return id_;
 }
 
 
 
 /** ***************************************************************************/
 QString Core::ExtensionSpec::name() const {
-    return loader_.metaData()["MetaData"].toObject()["name"].toString();
+    return name_;
 }
 
 
 
 /** ***************************************************************************/
 QString Core::ExtensionSpec::version() const {
-    return loader_.metaData()["MetaData"].toObject()["version"].toString();
+    return version_;
 }
 
 
 
 /** ***************************************************************************/
 QString Core::ExtensionSpec::author() const {
-    return loader_.metaData()["MetaData"].toObject()["author"].toString();
+    return author_;
 }
 
 
 
 /** ***************************************************************************/
 QStringList Core::ExtensionSpec::dependencies() const {
-    QStringList res;
-    for (QVariant &var : loader_.metaData()["MetaData"].toObject()["dependencies"].toArray().toVariantList())
-        res.push_back(var.toString());
-    return res;
+    return dependencies_;
+}
+
+/** ***************************************************************************/
+bool Core::ExtensionSpec::enabledByDefault() const {
+    return enabledByDefault_;
 }

@@ -40,7 +40,7 @@ public:
     ~ExtensionManager();
 
     void setPluginDirs(const QStringList&);
-    void reloadExtensions(); // TODO: TASK: Rename all to plugins
+    void reloadExtensions();
     const std::vector<std::unique_ptr<ExtensionSpec>> & extensionSpecs() const;
     void enableExtension(const std::unique_ptr<ExtensionSpec> &);
     void disableExtension(const std::unique_ptr<ExtensionSpec> &);

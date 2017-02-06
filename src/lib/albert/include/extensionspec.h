@@ -34,8 +34,8 @@ public:
         Error
     };
 
-    ExtensionSpec(QString path) : loader_(path), state_(State::NotLoaded) { }
-    ~ExtensionSpec() { }
+    ExtensionSpec(const QString &path);
+    ~ExtensionSpec();
 
     State state() { return state_; }
     bool load();
@@ -43,18 +43,28 @@ public:
     QString lastError() const;
     QObject *instance();
     QString path() const;
+
     // Metadata
     QString id() const;
     QString name() const;
     QString version() const;
     QString author() const;
     QStringList dependencies() const;
+    bool enabledByDefault() const;
 
 private:
 
     QPluginLoader loader_;
     State state_;
     QString lastError_;
+
+    // Metadata
+    QString id_;
+    QString name_;
+    QString version_;
+    QString author_;
+    QStringList dependencies_;
+    bool enabledByDefault_;
 
 };
 

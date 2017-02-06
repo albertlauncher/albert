@@ -32,10 +32,6 @@ using std::unique_ptr;
 using std::vector;
 using std::chrono::system_clock;
 
-namespace {
-const QString CFG_BLACKLIST = "blacklist";
-}
-
 Core::ExtensionManager *Core::ExtensionManager::instance = nullptr;
 
 /** ***************************************************************************/
@@ -43,15 +39,12 @@ class Core::ExtensionManagerPrivate {
 public:
     vector<unique_ptr<ExtensionSpec>> extensionSpecs_; // TASK: Rename _
     set<QObject*> extensions_;
-    QStringList blacklist_;
     QStringList pluginDirs;
 };
 
 
 /** ***************************************************************************/
 Core::ExtensionManager::ExtensionManager() : d(new ExtensionManagerPrivate) {
-    // Load blacklist
-    d->blacklist_ = QSettings(qApp->applicationName()).value(CFG_BLACKLIST).toStringList();
     // DO NOT LOAD EXTENSIONS HERE!
 
     // Get plugindirs
@@ -70,9 +63,9 @@ Core::ExtensionManager::ExtensionManager() : d(new ExtensionManagerPrivate) {
     }
 
 #elif defined __APPLE__
-    throw "TODO";
+    throw "Not implemented";
 #elif defined _WIN32
-    throw "TODO";
+    throw "Not implemented";
 #endif
 
 }
@@ -137,10 +130,14 @@ void Core::ExtensionManager::reloadExtensions() {
               d->extensionSpecs_.end(),
               [](const unique_ptr<ExtensionSpec>& lhs, const unique_ptr<ExtensionSpec>& rhs){ return lhs->name() < rhs->name(); });
 
-    // Load if not blacklisted
-    for (unique_ptr<ExtensionSpec> & extensionSpec : d->extensionSpecs_)
-        if (!d->blacklist_.contains(extensionSpec->id()))
+    // Load if enabled
+    QSettings settings(qApp->applicationName());
+    for (unique_ptr<ExtensionSpec> & extensionSpec : d->extensionSpecs_){
+        QString configName = QString("%1/enabled").arg(extensionSpec->id());
+        if ( (settings.contains(configName) && settings.value(configName).toBool())
+             || extensionSpec->enabledByDefault() )
             loadExtension(extensionSpec);
+    }
 }
 
 
@@ -180,26 +177,25 @@ void Core::ExtensionManager::unloadExtension(const unique_ptr<ExtensionSpec> &sp
 
 
 /** ***************************************************************************/
-void Core::ExtensionManager::enableExtension(const unique_ptr<ExtensionSpec> &spec) {
-    d->blacklist_.removeAll(spec->id());
-    QSettings(qApp->applicationName()).setValue(CFG_BLACKLIST, d->blacklist_);
-    loadExtension(spec);
+void Core::ExtensionManager::enableExtension(const unique_ptr<ExtensionSpec> &extensionSpec) {
+    QSettings(qApp->applicationName()).setValue(QString("%1/enabled").arg(extensionSpec->id()), true);
+    loadExtension(extensionSpec);
 }
 
 
 /** ***************************************************************************/
-void Core::ExtensionManager::disableExtension(const unique_ptr<ExtensionSpec> &spec) {
-    if (!d->blacklist_.contains(spec->id())){
-        d->blacklist_.push_back(spec->id());
-        QSettings(qApp->applicationName()).setValue(CFG_BLACKLIST, d->blacklist_);
-    }
-    unloadExtension(spec);
+void Core::ExtensionManager::disableExtension(const unique_ptr<ExtensionSpec> &extensionSpec) {
+    QSettings(qApp->applicationName()).setValue(QString("%1/enabled").arg(extensionSpec->id()), false);
+    unloadExtension(extensionSpec);
 }
 
 
 /** ***************************************************************************/
-bool Core::ExtensionManager::extensionIsEnabled(const unique_ptr<ExtensionSpec> &spec) {
-    return !d->blacklist_.contains(spec->id());
+bool Core::ExtensionManager::extensionIsEnabled(const unique_ptr<ExtensionSpec> &extensionSpec) {
+    QSettings settings(qApp->applicationName());
+    QString configName = QString("%1/enabled").arg(extensionSpec->id());
+    return (settings.contains(configName) && settings.value(configName).toBool())
+            || extensionSpec->enabledByDefault();
 }
 
 
