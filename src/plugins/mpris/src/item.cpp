@@ -23,9 +23,15 @@ using Core::StandardAction;
 /** ***************************************************************************/
 MPRIS::Item::Item(Player &p, const QString &title, const QString &subtext, const QString &iconPath, const QDBusMessage &msg, bool hideAfter)
     : player_(p), iconPath_(iconPath), message_(msg), hideAfter_(hideAfter) {
-    text_ = title.arg(p.getName());
-    subtext_ = subtext.arg(p.getName());
-    actions_.push_back(shared_ptr<Action>(new StandardAction(subtext, [this](){
+    if (title.contains("%1"))
+        text_ = title.arg(p.getName());
+    else
+        text_ = title;
+    if (subtext.contains("%1"))
+        subtext_ = subtext.arg(p.getName());
+    else
+        subtext_ = subtext;
+    actions_.push_back(shared_ptr<Action>(new StandardAction(subtext_, [this](){
         QDBusConnection::sessionBus().send(message_);
 //        flags->hideWidget = hideAfter_;
 //        flags->clearInput = hideAfter_;
