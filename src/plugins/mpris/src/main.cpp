@@ -25,32 +25,34 @@
 #define themeOr(name, fallbk)   XdgIconLookup::iconPath(name).isEmpty() ? fallbk : XdgIconLookup::iconPath(name)
 
 
+
+/** ***************************************************************************/
 class MPRIS::MPRISPrivate {
 public:
     ~MPRISPrivate() {
-
         // If there are still media player objects, delete them
         qDeleteAll(mediaPlayers);
-
         // Don't need to destruct the command objects.
         // This is done by the destructor of QMap
     }
 
-    //static QRegExp filterRegex;
+
     const char* name = "MPRIS Control Center";
     static QDBusMessage findPlayerMsg;
     QPointer<MPRIS::ConfigWidget> widget;
-    //QStringList mediaPlayers;
     QList<MPRIS::Player*> mediaPlayers;
     QStringList commands;
     QMap<QString, MPRIS::Command> commandObjects;
 };
 
-QString MPRIS::Extension::name() const { return d->name; }
 
-//QRegExp MPRIS::Extension::filterRegex("org\\.mpris\\.MediaPlayer2\\.(.*)");
+
 QDBusMessage MPRIS::MPRISPrivate::findPlayerMsg = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "ListNames");
 
+
+
+/** ***************************************************************************/
+/** ***************************************************************************/
 /** ***************************************************************************/
 MPRIS::Extension::Extension()
     : Core::Extension("org.albert.extension.mpris"),
@@ -233,4 +235,11 @@ void MPRIS::Extension::handleQuery(Query *query) {
                 query->addMatch(toExec.produceAlbertItem(*p), percentage);
         }
     }
+}
+
+
+
+/** ***************************************************************************/
+QString MPRIS::Extension::name() const {
+    return d->name;
 }
