@@ -22,20 +22,42 @@
 #include "xdgiconlookup.h"
 #include "command.h"
 
-#define themeOr(name, fallbk)   iconlookup->themeIconPath(name, iconThemeName).isEmpty() ? fallbk : iconlookup->themeIconPath(name, iconThemeName)
+#define themeOr(name, fallbk)   XdgIconLookup::iconPath(name).isEmpty() ? fallbk : XdgIconLookup::iconPath(name)
+
+
+class MPRIS::MPRISPrivate {
+public:
+    ~MPRISPrivate() {
+
+        // If there are still media player objects, delete them
+        qDeleteAll(mediaPlayers);
+
+        // Don't need to destruct the command objects.
+        // This is done by the destructor of QMap
+    }
+
+    //static QRegExp filterRegex;
+    const char* name = "MPRIS Control Center";
+    static QDBusMessage findPlayerMsg;
+    QPointer<MPRIS::ConfigWidget> widget;
+    //QStringList mediaPlayers;
+    QList<MPRIS::Player*> mediaPlayers;
+    QStringList commands;
+    QMap<QString, MPRIS::Command> commandObjects;
+};
+
+QString MPRIS::Extension::name() const { return d->name; }
 
 //QRegExp MPRIS::Extension::filterRegex("org\\.mpris\\.MediaPlayer2\\.(.*)");
-QDBusMessage MPRIS::Extension::findPlayerMsg = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "ListNames");
+QDBusMessage MPRIS::MPRISPrivate::findPlayerMsg = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "ListNames");
 
 /** ***************************************************************************/
 MPRIS::Extension::Extension()
     : Core::Extension("org.albert.extension.mpris"),
-      Core::QueryHandler(Core::Extension::id) {
-    qDebug("[%s] Initialize extension", name_);
+      Core::QueryHandler(Core::Extension::id),
+      d(new MPRIS::MPRISPrivate) {
+    qDebug("[%s] Initialize extension", d->name);
 
-    // Local cache field
-    QString iconThemeName = QIcon::themeName();
-    XdgIconLookup* iconlookup = XdgIconLookup::instance();
     QString icon;
 
     // Setup the DBus commands
@@ -49,8 +71,8 @@ MPRIS::Extension::Extension()
                 );
     nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.PlaybackStatus", "Playing", false);
     nextToAdd->closesWhenHit();
-    commands.append("play");
-    commandObjects.insert("play", *nextToAdd);
+    d->commands.append("play");
+    d->commandObjects.insert("play", *nextToAdd);
 
     icon = themeOr("media-playback-pause", ":pause"); //iconlookup->themeIconPath("media-playback-pause", iconThemeName)
     nextToAdd = new Command(
@@ -62,8 +84,8 @@ MPRIS::Extension::Extension()
                 );
     nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.PlaybackStatus", "Playing", true);
     nextToAdd->closeWhenHit();
-    commands.append("pause");
-    commandObjects.insert("pause", *nextToAdd);
+    d->commands.append("pause");
+    d->commandObjects.insert("pause", *nextToAdd);
 
     icon = themeOr("media-playback-stop", ":stop"); //                 iconlookup->themeIconPath("media-playback-stop", iconThemeName));
     nextToAdd = new Command(
@@ -75,8 +97,8 @@ MPRIS::Extension::Extension()
                 );
     nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.PlaybackStatus", "Playing", true);
     nextToAdd->closeWhenHit();
-    commands.append("stop");
-    commandObjects.insert("stop", *nextToAdd);
+    d->commands.append("stop");
+    d->commandObjects.insert("stop", *nextToAdd);
 
     icon = themeOr("media-skip-forward", ":next"); // iconlookup->themeIconPath("media-skip-forward", iconThemeName)
     nextToAdd = new Command(
@@ -88,8 +110,8 @@ MPRIS::Extension::Extension()
                 );
     nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.CanGoNext", true, true);
     //.fireCallback([](){qDebug("NEXT");})
-    commands.append("next");
-    commandObjects.insert("next", *nextToAdd);
+    d->commands.append("next");
+    d->commandObjects.insert("next", *nextToAdd);
 
     icon = themeOr("media-skip-backward", ":prev"); // iconlookup->themeIconPath("media-skip-backward", iconThemeName)
     nextToAdd = new Command(
@@ -100,35 +122,27 @@ MPRIS::Extension::Extension()
                 icon
                 );
     nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.CanGoPrevious", true, true);
-    commands.append("previous");
-    commandObjects.insert("previous", *nextToAdd);
+    d->commands.append("previous");
+    d->commandObjects.insert("previous", *nextToAdd);
 
-    qDebug("[%s] Extension initialized", name_);
+    qDebug("[%s] Extension initialized", d->name);
 }
 
 
 
 /** ***************************************************************************/
 MPRIS::Extension::~Extension() {
-    qDebug("[%s] Finalize extension", name_);
 
-    // If there are still media player objects, delete them
-    qDeleteAll(mediaPlayers);
-
-    // Don't need to destruct the command objects.
-    // This is done by the destructor of QMap
-
-    qDebug("[%s] Extension finalized", name_);
 }
 
 
 
 /** ***************************************************************************/
 QWidget *MPRIS::Extension::widget(QWidget *parent) {
-    if (widget_.isNull()) {
-        widget_ = new ConfigWidget(parent);
+    if (d->widget.isNull()) {
+        d->widget = new ConfigWidget(parent);
     }
-    return widget_;
+    return d->widget;
 }
 
 
@@ -137,15 +151,15 @@ QWidget *MPRIS::Extension::widget(QWidget *parent) {
 void MPRIS::Extension::setupSession() {
 
     // Clean the memory
-    qDeleteAll(mediaPlayers);
-    mediaPlayers.clear();
+    qDeleteAll(d->mediaPlayers);
+    d->mediaPlayers.clear();
 
     // If there is no session bus, abort
     if (!QDBusConnection::sessionBus().isConnected())
         return;
 
     // Querying the DBus to list all available services
-    QDBusMessage response = QDBusConnection::sessionBus().call(findPlayerMsg);
+    QDBusMessage response = QDBusConnection::sessionBus().call(MPRISPrivate::findPlayerMsg);
 
     // Do some error checking
     if (response.type() == QDBusMessage::ReplyMessage) {
@@ -167,21 +181,21 @@ void MPRIS::Extension::setupSession() {
 
                     for (QString& busid : busids) {
                         // And add their player object to the list
-                        mediaPlayers.append(new Player(busid));
+                        d->mediaPlayers.append(new Player(busid));
                     }
 
 
                 } else {
-                    qCritical("[%s] DBus error: Argument is either not type of QStringList or is empty!", name_);
+                    qCritical("[%s] DBus error: Argument is either not type of QStringList or is empty!", d->name);
                 }
             } else {
-                qCritical("[%s] DBus error: Reply argument not valid or null!", name_);
+                qCritical("[%s] DBus error: Reply argument not valid or null!", d->name);
             }
         } else {
-            qCritical("[%s] DBus error: Expected 1 argument for DBus reply. Got %d", name_, args.length());
+            qCritical("[%s] DBus error: Expected 1 argument for DBus reply. Got %d", d->name, args.length());
         }
     } else {
-        qCritical("[%s] DBus error: %s", name_, response.errorMessage().toStdString().c_str());
+        qCritical("[%s] DBus error: %s", d->name, response.errorMessage().toStdString().c_str());
     }
 }
 
@@ -190,14 +204,14 @@ void MPRIS::Extension::setupSession() {
 /** ***************************************************************************/
 void MPRIS::Extension::handleQuery(Query *query) {
     // Do not proceed if there are no players running. Why would you even?
-    if (mediaPlayers.isEmpty())
+    if (d->mediaPlayers.isEmpty())
         return;
 
     const QString& q = query->searchTerm();
 
     // Filter applicable commands
     QStringList cmds;
-    for (QString& cmd : commands) {
+    for (QString& cmd : d->commands) {
         if (cmd.startsWith(q))
             cmds.append(cmd);
     }
@@ -210,9 +224,9 @@ void MPRIS::Extension::handleQuery(Query *query) {
         percentage = (float)q.length() / (float)cmd.length() *100;
 
         // Get the command
-        Command& toExec = commandObjects.find(cmd).value();
+        Command& toExec = d->commandObjects.find(cmd).value();
         // For every player:
-        for (Player* p: mediaPlayers) {
+        for (Player* p: d->mediaPlayers) {
             // See if it's applicable for this player
             if (toExec.isApplicable(*p))
                 // And add a match if so

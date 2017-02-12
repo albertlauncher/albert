@@ -28,6 +28,7 @@ class QDBusMessage;
 
 namespace MPRIS {
 
+class MPRISPrivate;
 class ConfigWidget;
 
 class Extension final :
@@ -49,7 +50,7 @@ public:
     QWidget *widget(QWidget *parent = nullptr) override;
     void setupSession() override;
     void handleQuery(Query *query) override;
-    QString name() const override { return name_; }
+    QString name() const override;
 
 
     /*
@@ -57,13 +58,8 @@ public:
      */
 
 private:
-    //static QRegExp filterRegex;
-    const char* name_ = "MPRIS Control Center";
-    static QDBusMessage findPlayerMsg;
-    QPointer<ConfigWidget> widget_;
-    //QStringList mediaPlayers;
-    QList<Player*> mediaPlayers;
-    QStringList commands;
-    QMap<QString, Command> commandObjects;
+
+    std::unique_ptr<MPRISPrivate> d;
+
 };
 }
