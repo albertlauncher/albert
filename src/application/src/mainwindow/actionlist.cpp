@@ -65,6 +65,6 @@ void ActionList::ActionDelegate::paint(QPainter *painter, const QStyleOptionView
     // Draw text
     painter->setFont(option.font);
     QString text = QFontMetrics(option.font).elidedText(index.data(Qt::DisplayRole).toString(), option.textElideMode, option.rect.width());
-    option.widget->style()->drawItemText(painter, option.rect, Qt::AlignCenter|Qt::AlignHCenter, option.palette, option.state & QStyle::State_Enabled, text, QPalette::WindowText);
+    option.widget->style()->drawItemText(painter, option.rect, Qt::AlignCenter|Qt::AlignHCenter, option.palette, option.state & QStyle::State_Enabled, text, (option.state & QStyle::State_Selected) ? QPalette::Highlight : QPalette::WindowText);
     painter->restore();
 }
