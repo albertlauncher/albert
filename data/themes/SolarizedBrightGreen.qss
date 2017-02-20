@@ -7,9 +7,12 @@
  */
 
 * {
-  border: none;
+	border: none;
 	color : #586e75;
 	background-color: #fdf6e3;
+	selection-background-color: #586e75;
+  	selection-color: #586e75;
+  	alternate-background-color: #586e75;
 }
 
 #frame {
@@ -18,7 +21,7 @@
 	background-color: #fdf6e3;
 	border: 6px solid #859900;
 
-  /* Workaround for Qt to get fixed size button*/
+	/* Workaround for Qt to get fixed size button*/
 	min-width:640px;
 	max-width:640px;
 }
@@ -35,14 +38,14 @@
 #settingsButton {
 	color : #859900;
 	background-color: #fdf6e3;
-  padding: 4px;
+	padding: 4px;
 
-  /* Respect the frame border */
-  margin: 6px 6px 0px 0px;
-  border-top-right-radius: 6px;
-  border-bottom-left-radius: 10px;
+	/* Respect the frame border */
+	margin: 6px 6px 0px 0px;
+	border-top-right-radius: 6px;
+	border-bottom-left-radius: 10px;
 
-  /* Workaround for Qt to get fixed size button*/
+	/* Workaround for Qt to get fixed size button*/
 	min-width:13px;
 	min-height:13px;
 	max-width:13px;
