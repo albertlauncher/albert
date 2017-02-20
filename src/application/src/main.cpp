@@ -144,20 +144,22 @@ int main(int argc, char **argv) {
          * DETECT FIRST RUN AND VERSION CHANGE
          */
 
+        // If there is a file in .cache, move it
+        if ( QFile::exists(QString("%1/firstrun").arg(cacheLocation)) )
+            QFile::rename(QString("%1/firstrun").arg(cacheLocation),
+                          QString("%1/firstrun").arg(dataLocation));
+
         QString lastUsedVersion;
-        QFile firstRunFile(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/firstrun");
+        QFile firstRunFile(QString("%1/firstrun").arg(dataLocation));
         if ( firstRunFile.exists() ) {
 
             //Try to open the first run file and read the version
-            if ( !firstRunFile.open(QIODevice::ReadWrite|QIODevice::Text) )
+            if ( !firstRunFile.open(QIODevice::ReadOnly|QIODevice::Text) )
                 qCritical() << qPrintable(QString("Could not open file %1: %2").arg(firstRunFile.fileName(), firstRunFile.errorString()));
             QTextStream(&firstRunFile) >> lastUsedVersion;
+            firstRunFile.close();
 
         } else { // This is the first run
-
-            // Try to create a "firstRun"-file
-            if ( !firstRunFile.open(QIODevice::WriteOnly|QIODevice::Text) )
-                qCritical() << qPrintable(QString("Could not open file %1: %2").arg(firstRunFile.fileName(), firstRunFile.errorString()));
 
             // Give the user a possibility to set a hotkey on first run
             if ( QMessageBox(QMessageBox::Information, "First run",
@@ -166,12 +168,16 @@ int main(int argc, char **argv) {
                              "Albert. Do you want to open the settings dialog?",
                              QMessageBox::No|QMessageBox::Yes).exec() == QMessageBox::Yes )
                 showSettingsWhenInitialized = true;
+
         }
 
         // Write the current version into the file
-        QTextStream out(&firstRunFile);
-        out << app->applicationVersion();
-        firstRunFile.close();
+        if ( firstRunFile.open(QIODevice::WriteOnly|QIODevice::Text) ) {
+            QTextStream out(&firstRunFile);
+            out << app->applicationVersion();
+            firstRunFile.close();
+        } else
+            qCritical() << qPrintable(QString("Could not open file %1: %2").arg(firstRunFile.fileName(), firstRunFile.errorString()));
 
 
         /*
