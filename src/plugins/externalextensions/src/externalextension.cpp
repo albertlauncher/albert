@@ -59,7 +59,18 @@ bool runProcess (QString path,
     }
 
     if ( process.exitCode() != 0 ) {
-            *errorString = QString("Exit code is %1").arg(process.exitCode());
+
+        *errorString = QString("Exit code is %1.").arg(process.exitCode());
+
+        QByteArray cout = process.readAllStandardOutput();
+        QByteArray cerr = process.readAllStandardError();
+
+        if (!cout.isEmpty())
+            errorString->append(QString("\n%1").arg(QString(cout)));
+
+        if (!cerr.isEmpty())
+            errorString->append(QString("\n%1").arg(QString(cerr)));
+
         return false;
     }
 
