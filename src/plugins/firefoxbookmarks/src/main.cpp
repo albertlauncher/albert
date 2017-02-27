@@ -148,11 +148,10 @@ FirefoxBookmarks::FirefoxBookmarksPrivate::indexFirefoxBookmarks() const {
 
     QSqlQuery result(database);
 
-    if ( !result.exec("SELECT b1.guid, p.title, p.url, b2.title " // id, title, url, parent
-                      "FROM moz_bookmarks AS b1 "
-                      "JOIN moz_bookmarks AS b2 ON b1.parent = b2.id " // attach parent names
-                      "JOIN moz_places AS p  ON b1.fk = p.id " // attach title string and url
-                      "WHERE b1.type = 1 AND p.title IS NOT NULL") ) { // filter bookmarks with nonempty title string
+    if ( !result.exec("SELECT b.guid, b.title, p.url "
+                      "FROM moz_bookmarks b "
+                      "JOIN moz_places p ON b.fk = p.id " // attach place (which has the url)
+                      "WHERE p.url NOT LIKE 'place%'") ) {  // Those with place:... will not work with xdg-open
         qWarning() << qPrintable(QString("[%1] Querying bookmarks failed: %2").arg(q->Core::Extension::id, result.lastError().text()));
         return vector<shared_ptr<Core::StandardIndexItem>>();
     }
