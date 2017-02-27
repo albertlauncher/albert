@@ -272,7 +272,7 @@ FirefoxBookmarks::Extension::Extension()
         QStringList ids = profilesIni.childGroups();
         if ( ids.isEmpty() )
             qWarning() << qPrintable(QString("[%1] No Firefox profiles found.").arg(Core::Extension::id));
-        else { attach parent names
+        else {
 
             // Use the last used profile
             if ( d->currentProfileId.isNull() ) {
