@@ -116,8 +116,8 @@ bool saveVariables (QJsonObject *object,
         return false;
     }
 
-    *object = object->operator[]("variables").toObject();
-    for (auto it = object->begin(); it != object->end(); ++it)
+    QJsonObject vars = object->operator[]("variables").toObject();
+    for (auto it = vars.begin(); it != vars.end(); ++it)
         if ( it.value().isString() )
             variables->emplace(it.key(), it.value().toString());
 
