@@ -111,7 +111,7 @@ void VirtualBox::VirtualBoxPrivate::rescanVBoxConfig(QString path) {
         found++;
     }
 
-    qDebug() << qPrintable(QString("[%1] Found %2 VMs").arg(q->Core::Extension::id, found));
+    qDebug() << qPrintable(QString("[%1] Found %2 VMs").arg(q->Core::Extension::id).arg(found));
 }
 
 
