@@ -48,9 +48,18 @@ std::map<QString,QIcon> iconCache;
 struct SearchEngine {
     bool    enabled;
     QString name;
-    QString url;
     QString trigger;
     QString iconPath;
+    QString url;
+};
+
+std::vector<SearchEngine> defaultSearchEngines = {
+    {true, "Google",        "gg ",  ":google",  "https://www.google.com/search?q=%s"},
+    {true, "Youtube",       "yt ",  ":youtube", "https://www.youtube.com/results?search_query=%s"},
+    {true, "Amazon",        "ama ", ":amazon",  "http://www.amazon.com/s/?field-keywords=%s"},
+    {true, "Ebay",          "eb ", ":ebay",    "http://www.ebay.com/sch/i.html?_nkw=%s"},
+    {true, "GitHub",        "gh ", ":github",  "https://github.com/search?utf8=✓&q=%s"},
+    {true, "Wolfram Alpha", "=",   ":wolfram", "https://www.wolframalpha.com/input/?i=%s"}
 };
 
 shared_ptr<Core::Item> buildWebsearchItem(const SearchEngine &se, const QString &searchterm) {
@@ -110,13 +119,15 @@ bool Websearch::WebsearchPrivate::deserialize() {
 
     QJsonArray array = QJsonDocument::fromJson(file.readAll()).array();
 
+    SearchEngine searchEngine;
     for ( const QJsonValue& value : array) {
         QJsonObject object = value.toObject();
-        searchEngines.emplace_back(SearchEngine{object["enabled"].toBool(),
-                                                object["name"].toString(),
-                                                object["url"].toString(),
-                                                object["trigger"].toString(),
-                                                object["iconPath"].toString()});
+        searchEngine.enabled  = object["enabled"].toBool();
+        searchEngine.name     = object["name"].toString();
+        searchEngine.trigger  = object["trigger"].toString();
+        searchEngine.iconPath = object["iconPath"].toString();
+        searchEngine.url      = object["url"].toString();
+        searchEngines.push_back(searchEngine);
     }
 
     return true;
@@ -157,15 +168,7 @@ bool Websearch::WebsearchPrivate::serialize() {
 /** ***************************************************************************/
 void Websearch::WebsearchPrivate::restoreDefaults() {
     /* Init std searches */
-    searchEngines.clear();
-
-    searchEngines.emplace_back(SearchEngine{true, "Google", "https://www.google.com/search?q=%s", "gg ", ":google"});
-    searchEngines.emplace_back(SearchEngine{true, "Youtube", "https://www.youtube.com/results?search_query=%s", "yt ", ":youtube"});
-    searchEngines.emplace_back(SearchEngine{true, "Amazon", "http://www.amazon.com/s/?field-keywords=%s", "ama ", ":amazon"});
-    searchEngines.emplace_back(SearchEngine{true, "Ebay", "http://www.ebay.com/sch/i.html?_nkw=%s", "eb ", ":ebay"});
-    searchEngines.emplace_back(SearchEngine{true, "GitHub", "https://github.com/search?utf8=✓&q=%s", "gh ", ":github"});
-    searchEngines.emplace_back(SearchEngine{true, "Wolfram Alpha", "https://www.wolframalpha.com/input/?i=%s", "=", ":wolfram"});
-
+    searchEngines = defaultSearchEngines;
     serialize();
 
     if (!widget.isNull())
@@ -197,11 +200,9 @@ Websearch::Extension::Extension()
             quint64 size;
             in >> size;
             SearchEngine se;
-            bool enabled;
-            QString name, trigger, url, iconPath;
             for (quint64 i = 0; i < size; ++i) {
-                in >> enabled >> url >> name >> trigger >> iconPath;
-                d->searchEngines.emplace_back(SearchEngine{enabled, name, url, trigger, iconPath});
+                in >> se.enabled >> se.url >> se.name >> se.trigger >> se.iconPath;
+                d->searchEngines.push_back(se);
             }
             dataFile.close();
         } else
