@@ -56,13 +56,13 @@ public:
 /** ***************************************************************************/
 void VirtualBox::VirtualBoxPrivate::rescanVBoxConfig(QString path) {
 
-    qDebug() << qPrintable(QString("[%1] Scanning for VMs").arg(q->Core::Extension::id));
+    qDebug() << "Start indexing VirtualBox images.";
 
     QFile vboxConfigFile(path);
     if (!vboxConfigFile.exists())
         return;
     if (!vboxConfigFile.open(QFile::ReadOnly)) {
-        qCritical("Could not open VBox config file for read operation!");
+        qCritical() << "Could not open VirtualBox config file for read operation!";
         return;
     }
 
@@ -70,7 +70,7 @@ void VirtualBox::VirtualBoxPrivate::rescanVBoxConfig(QString path) {
     QString errMsg = "";
     int errLine = 0, errCol = 0;
     if (!vboxConfig.setContent(&vboxConfigFile, &errMsg, &errLine, &errCol)) {
-        qWarning("Parsing of VBox config failed because %s in line %d col %d", errMsg.toStdString().c_str(), errLine, errCol);
+        qWarning() << qPrintable(QString("Parsing VBox config failed because %s in line %d col %d").arg(errMsg).arg(errLine, errCol));
         vboxConfigFile.close();
         return;
     }
@@ -78,19 +78,19 @@ void VirtualBox::VirtualBoxPrivate::rescanVBoxConfig(QString path) {
 
     QDomElement root = vboxConfig.documentElement();
     if (root.isNull()) {
-        qCritical("root element is null");
+        qCritical() << "In VBox config file: Root element is null.";
         return;
     }
 
     QDomElement global = root.firstChildElement("Global");
     if (global.isNull()) {
-        qCritical("global element is null");
+        qCritical() << "In VBox config file: Global element is null.";
         return;
     }
 
     QDomElement machines = global.firstChildElement("MachineRegistry");  // List of MachineEntry
     if (machines.isNull()) {
-        qCritical("machine registry element is null");
+        qCritical() << "In VBox config file: Machine registry element is null.";
         return;
     }
 
@@ -111,7 +111,7 @@ void VirtualBox::VirtualBoxPrivate::rescanVBoxConfig(QString path) {
         found++;
     }
 
-    qDebug() << qPrintable(QString("[%1] Found %2 VMs").arg(q->Core::Extension::id).arg(found));
+    qDebug() << qPrintable(QString("Indexed %2 VirtualBox images.").arg(found));
 }
 
 

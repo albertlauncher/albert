@@ -121,7 +121,7 @@ vector<shared_ptr<StandardIndexItem>> indexChromeBookmarks(const QString &bookma
 
     QFile f(bookmarksPath);
     if (!f.open(QIODevice::ReadOnly)) {
-        qWarning() << qPrintable(QString("Could not open %1").arg(bookmarksPath));
+        qWarning() << qPrintable(QString("Could not open Chrome bookmarks file '%1'.").arg(bookmarksPath));
         return vector<shared_ptr<StandardIndexItem>>();
     }
 
@@ -181,7 +181,7 @@ void ChromeBookmarks::ChromeBookmarksPrivate::startIndexing() {
     futureWatcher.setFuture(QtConcurrent::run(indexChromeBookmarks, bookmarksFile));
 
     // Notification
-    qDebug() << qPrintable(QString("[%1] Start indexing in background thread.").arg(q->Core::Extension::id));
+    qDebug() << "Start indexing Chrome bookmarks.";
     emit q->statusInfo("Indexing bookmarks ...");
 
 }
@@ -208,10 +208,10 @@ void ChromeBookmarks::ChromeBookmarksPrivate::finishIndexing() {
      */
     if ( fileSystemWatcher.files().empty() )
         if( !fileSystemWatcher.addPath(bookmarksFile))
-            qWarning() << qPrintable(QString("%1 could not be watched. Changes in this path will not be noticed.").arg(bookmarksFile));
+            qWarning() << qPrintable(QString("%1 can not be watched. Changes in this path will not be noticed.").arg(bookmarksFile));
 
     // Notification
-    qDebug() << qPrintable(QString("[%1] Indexing done (%2 items).").arg(q->Core::Extension::id).arg(index.size()));
+    qDebug() << qPrintable(QString("Indexed %1 Chrome bookmarks.").arg(index.size()));
     emit q->statusInfo(QString("%1 bookmarks indexed.").arg(index.size()));
 }
 

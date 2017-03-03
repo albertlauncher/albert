@@ -196,7 +196,7 @@ ExternalExtensions::ExternalExtension::ExternalExtension(const QString &path, co
 
     // Finally save the variables, if any
     if ( !saveVariables(&object, &variables_, &errorString) )
-        qWarning() << QString("Initialization: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        qWarning() << qPrintable(QString("Initialization: %1 (%2)").arg(errorString, path_));
 }
 
 
@@ -212,7 +212,7 @@ ExternalExtensions::ExternalExtension::~ExternalExtension() {
     // Run the process
     variables_["ALBERT_OP"] = "FINALIZE";
     if ( !runProcess(path_, &variables_, &out, &errorString) ) {
-        qWarning() << QString("Finalization failed: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        qWarning() << qPrintable(QString("Finalization failed: %1 (%2)").arg(errorString, path_));
         return;
     }
 
@@ -221,13 +221,13 @@ ExternalExtensions::ExternalExtension::~ExternalExtension() {
 
     // Parse stdout
     if ( !parseJsonObject(out, &object,  &errorString) ) {
-        qWarning() << QString("Finalization failed: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        qWarning() << qPrintable(QString("Finalization failed: %1 (%2)").arg(errorString, path_));
         return;
     }
 
     // Save the variables, if any
     if ( !saveVariables(&object, &variables_, &errorString) ){
-        qWarning() << QString("Finalization: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        qWarning() << qPrintable(QString("Finalization: %1 (%2)").arg(errorString, path_));
         return;
     }
 }
@@ -245,7 +245,7 @@ void ExternalExtensions::ExternalExtension::setupSession() {
     // Run the process
     variables_["ALBERT_OP"] = "SETUPSESSION";
     if ( !runProcess(path_, &variables_, &out, &errorString) ) {
-        qWarning() << QString("Session setup failed: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        qWarning() << qPrintable(QString("Session setup failed: %1 (%2)").arg(errorString, path_));
         return;
     }
 
@@ -254,13 +254,13 @@ void ExternalExtensions::ExternalExtension::setupSession() {
 
     // Parse stdout
     if ( !parseJsonObject(out, &object,  &errorString) ) {
-        qWarning() << QString("Session setup failed: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        qWarning() << qPrintable(QString("Session setup failed: %1 (%2)").arg(errorString, path_));
         return;
     }
 
     // Save the variables, if any
     if ( !saveVariables(&object, &variables_, &errorString) ){
-        qWarning() << QString("Session setup: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        qWarning() << qPrintable(QString("Session setup: %1 (%2)").arg(errorString, path_));
         return;
     }
 }
@@ -278,7 +278,7 @@ void ExternalExtensions::ExternalExtension::teardownSession() {
     // Run the process
     variables_["ALBERT_OP"] = "TEARDOWNSESSION";
     if ( !runProcess(path_, &variables_, &out, &errorString) ) {
-        qWarning() << QString("Session teardown failed: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        qWarning() << qPrintable(QString("Session teardown failed: %1 (%2)").arg(errorString, path_));
         return;
     }
 
@@ -287,13 +287,13 @@ void ExternalExtensions::ExternalExtension::teardownSession() {
 
     // Parse stdout
     if ( !parseJsonObject(out, &object,  &errorString) ) {
-        qWarning() << QString("Session teardown failed: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        qWarning() << qPrintable(QString("Session teardown failed: %1 (%2)").arg(errorString, path_));
         return;
     }
 
     // Save the variables, if any
     if ( !saveVariables(&object, &variables_, &errorString) ){
-        qWarning() << QString("Session teardown: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        qWarning() << qPrintable(QString("Session teardown: %1 (%2)").arg(errorString, path_));
         return;
     }
 }
@@ -312,13 +312,13 @@ void ExternalExtensions::ExternalExtension::handleQuery(Query* query) {
     variables_["ALBERT_OP"] = "QUERY";
     variables_["ALBERT_QUERY"] = query->searchTerm();
     if ( !runProcess(path_, &variables_, &out, &errorString) ) {
-        qWarning() << QString("Handle query failed: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        qWarning() << qPrintable(QString("Handle query failed: %1 (%2)").arg(errorString, path_));
         return;
     }
 
     // Parse stdout
     if ( !parseJsonObject(out, &object,  &errorString) ) {
-        qWarning() << QString("Handle query failed: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        qWarning() << qPrintable(QString("Handle query failed: %1 (%2)").arg(errorString, path_));
         return;
     }
 
@@ -327,19 +327,19 @@ void ExternalExtensions::ExternalExtension::handleQuery(Query* query) {
 
     // Save the variables, if any
     if ( !saveVariables(&object, &variables_, &errorString) ){
-        qWarning() << QString("Handle query: %1 (%2)").arg(errorString, path_).toLocal8Bit().data();
+        qWarning() << qPrintable(QString("Handle query: %1 (%2)").arg(errorString, path_));
         return;
     }
 
     // Check existance of items
     if ( !object.contains("items") ) {
-        qWarning() << QString("Handle query failed: Result contains no items (%1)").arg(path_).toLocal8Bit().data();
+        qWarning() << qPrintable(QString("Handle query failed: Result contains no items (%1)").arg(path_));
         return;
     }
 
     // Check type of items
     if ( !object["items"].isArray() ) {
-        qWarning() << QString("Handle query failed: 'items' is not an array (%1)").arg(path_).toLocal8Bit().data();
+        qWarning() << qPrintable(QString("Handle query failed: 'items' is not an array (%1)").arg(path_));
         return;
     }
 
@@ -352,7 +352,7 @@ void ExternalExtensions::ExternalExtension::handleQuery(Query* query) {
     for (const QJsonValue & itemValue : object["items"].toArray() ){
 
         if ( !itemValue.isObject() ) {
-            qWarning("Item is not a json object. (%s)", path_.toLocal8Bit().data());
+            qWarning() << qPrintable(QString("Item is not a json object. (%1)").arg(path_));
             continue;
         }
         object = itemValue.toObject();

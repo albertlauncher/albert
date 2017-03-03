@@ -156,10 +156,11 @@ const set<QObject*> Core::ExtensionManager::objects() const {
 /** ***************************************************************************/
 void Core::ExtensionManager::loadExtension(const unique_ptr<ExtensionSpec> &spec) {
     if (spec->state() != ExtensionSpec::State::Loaded){
-        system_clock::time_point start = system_clock::now();
+//        system_clock::time_point start = system_clock::now();
         if ( spec->load() ) {
-            auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(system_clock::now()-start);
-            qDebug() << QString("Loading %1 done in %2 milliseconds").arg(spec->id()).arg(msecs.count()).toLocal8Bit().data();
+//            TODO wrtie to database
+//            auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(system_clock::now()-start);
+//            qDebug() << QString("Loading %1 done in %2 milliseconds").arg(spec->id()).arg(msecs.count()).toLocal8Bit().data();
             d->extensions_.insert(spec->instance());
         } else
             qDebug() << QString("Loading %1 failed. (%2)").arg(spec->id(), spec->lastError()).toLocal8Bit().data();

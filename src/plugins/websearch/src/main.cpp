@@ -104,7 +104,7 @@ bool Websearch::WebsearchPrivate::deserialize() {
                .filePath(QString("%1.json").arg(q->Core::Extension::id)));
 
     if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << QString("[%1] Could not open file: %2").arg(q->Core::Extension::id,file.fileName()).toLocal8Bit().data();
+        qWarning() << qPrintable(QString("Could not open file: '%1'.").arg(file.fileName()));
         return false;
     }
 
@@ -131,7 +131,7 @@ bool Websearch::WebsearchPrivate::serialize() {
                .filePath(QString("%1.json").arg(q->Core::Extension::id)));
 
     if (!file.open(QIODevice::WriteOnly)) {
-        qWarning() << QString("[%1] Could not open file: %2").arg(q->Core::Extension::id,file.fileName()).toLocal8Bit().data();
+        qWarning() << qPrintable(QString("Could not open file: '%1'.").arg(file.fileName()));
         return false;
     }
 
@@ -192,7 +192,7 @@ Websearch::Extension::Extension()
 
         // Deserialize binary data
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
-            qDebug("[%s] Porting from binary file: %s", Core::Extension::id.toUtf8().constData(), dataFile.fileName().toLocal8Bit().data());
+            qDebug() << "Porting websearches from old format";
             QDataStream in(&dataFile);
             quint64 size;
             in >> size;
@@ -205,11 +205,11 @@ Websearch::Extension::Extension()
             }
             dataFile.close();
         } else
-            qWarning() << "Could not open file: " << dataFile.fileName();
+            qWarning() << qPrintable(QString("Could not open file '%1'").arg(dataFile.fileName()));
 
         // Whatever remove it
         if ( !dataFile.remove() )
-            qWarning() << "Could not remove file: " << dataFile.fileName();
+            qWarning() << qPrintable(QString("Could not remove file '%1'").arg(dataFile.fileName()));
 
         // Hmm what to do?
 

@@ -130,7 +130,7 @@ void Files::FilesPrivate::startIndexing() {
     futureWatcher.setFuture(QtConcurrent::run(this, &FilesPrivate::indexFiles));
 
     // Notification
-    qDebug() << qPrintable(QString("[%1] Start indexing in background thread.").arg(q->Core::Extension::id).toUtf8().constData());
+    qDebug() << "Start indexing files.";
     emit q->statusInfo("Indexing files ...");
 }
 
@@ -150,7 +150,7 @@ void Files::FilesPrivate::finishIndexing() {
             offlineIndex.add(item);
 
         // Notification
-        qDebug() << qPrintable(QString("[%1] Indexing done (%2 items).").arg(q->Core::Extension::id).arg(index.size()));
+        qDebug() << qPrintable(QString("Indexed %1 files.").arg(index.size()));
         emit q->statusInfo(QString("%1 files indexed.").arg(index.size()));
     }
 
@@ -259,12 +259,12 @@ vector<shared_ptr<Files::File>> Files::FilesPrivate::indexFiles() const {
     QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
                    filePath(QString("%1.txt").arg(q->Core::Extension::id)));
     if (file.open(QIODevice::WriteOnly|QIODevice::Text)) {
-        qDebug() << qPrintable(QString("[%1] Serializing to %2").arg(q->Core::Extension::id, file.fileName()));
+        qDebug() << qPrintable(QString("Serializing files to '%1'").arg(file.fileName()));
         QTextStream out(&file);
         for (const shared_ptr<File> &item : newIndex)
             out << item->path() << endl << item->mimetype().name() << endl;
     } else
-        qWarning() << qPrintable(QString("[%1] Could not write file %2: %3").arg(q->Core::Extension::id, file.fileName(), file.errorString()));
+        qWarning() << qPrintable(QString("Could not write to file '%1': %2").arg(file.fileName(), file.errorString()));
 
     return newIndex;
 }
@@ -301,7 +301,7 @@ Files::Extension::Extension()
                    filePath(QString("%1.txt").arg(Core::Extension::id)));
     if (file.exists()) {
         if (file.open(QIODevice::ReadOnly| QIODevice::Text)) {
-            qDebug() << qPrintable(QString("[%1] Deserializing from %2").arg(Core::Extension::id, file.fileName()));
+            qDebug() << qPrintable(QString("Deserializing files from '%1'.").arg(file.fileName()));
             QTextStream in(&file);
             QMimeDatabase mimedatabase;
             while (!in.atEnd())
@@ -312,7 +312,7 @@ Files::Extension::Extension()
             for (const auto &item : d->index)
                 d->offlineIndex.add(item);
         } else
-            qWarning() << qPrintable(QString("[%1] Could not read from %2: %3").arg(Core::Extension::id, file.fileName(), file.errorString()));
+            qWarning() << qPrintable(QString("Could not read from file '%1': %2").arg(file.fileName(), file.errorString()));
     }
 
     // Index timer
