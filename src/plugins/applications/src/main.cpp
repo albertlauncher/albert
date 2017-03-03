@@ -54,7 +54,6 @@ namespace {
 
 const char* CFG_FUZZY    = "fuzzy";
 const bool  DEF_FUZZY    = false;
-const uint  UPDATE_DELAY = 60000;
 
 /******************************************************************************/
 QStringList expandedFieldCodes(const QStringList & unexpandedFields,
@@ -589,10 +588,11 @@ public:
     vector<shared_ptr<Core::StandardIndexItem>> index;
     OfflineIndex offlineIndex;
 
-    QTimer updateDelayTimer;
+    QFutureWatcher<vector<shared_ptr<Core::StandardIndexItem>>> futureWatcher;
+    bool rerun = false;
+
     void finishIndexing();
     void startIndexing();
-    QFutureWatcher<vector<shared_ptr<Core::StandardIndexItem>>> futureWatcher;
 };
 
 
@@ -601,8 +601,10 @@ public:
 void Applications::ApplicationsPrivate::startIndexing() {
 
     // Never run concurrent
-    if ( futureWatcher.future().isRunning() )
+    if ( futureWatcher.future().isRunning() ) {
+        rerun = true;
         return;
+    }
 
     // Run finishIndexing when the indexing thread finished
     futureWatcher.disconnect();
@@ -645,6 +647,11 @@ void Applications::ApplicationsPrivate::finishIndexing() {
     // Notification
     qDebug() << qPrintable(QString("[%1] Indexing done (%2 items).").arg(q->Core::Extension::id).arg(index.size()));
     emit q->statusInfo(QString("%1 applications indexed.").arg(index.size()));
+
+    if ( rerun ) {
+        startIndexing();
+        rerun = false;
+    }
 }
 
 
@@ -665,16 +672,8 @@ Applications::Extension::Extension()
     s.beginGroup(Core::Extension::id);
     d->offlineIndex.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
 
-    // Delay the indexing to avoid excessice resource consumption
-    d->updateDelayTimer.setInterval(UPDATE_DELAY);
-    d->updateDelayTimer.setSingleShot(true);
-
-    // If the filesystem changed, trigger the update delay
+    // If the filesystem changed, trigger the scan
     connect(&d->watcher, &QFileSystemWatcher::directoryChanged,
-            &d->updateDelayTimer, static_cast<void(QTimer::*)()>(&QTimer::start));
-
-    // If the update delay passed, update the index
-    connect(&d->updateDelayTimer, &QTimer::timeout,
             std::bind(&ApplicationsPrivate::startIndexing, d.get()));
 
     // Trigger initial update
