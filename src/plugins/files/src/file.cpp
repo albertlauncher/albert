@@ -17,6 +17,7 @@
 #include <QApplication>
 #include <QFileInfo>
 #include <QDataStream>
+#include <QDir>
 #include <QMimeDatabase>
 #include "file.h"
 #include "fileactions.h"
@@ -42,7 +43,12 @@ QString Files::File::subtext() const {
 
 /** ***************************************************************************/
 QString Files::File::completionString() const {
-    return ( QFileInfo(path_).isDir() ) ? QString("%1/").arg(path_) : path_;
+    QString result = ( QFileInfo(path_).isDir() ) ? QString("%1/").arg(path_) : path_;
+#ifdef __linux__
+    if ( result.startsWith(QDir::homePath()) )
+        result.replace(QDir::homePath(), "~");
+#endif
+    return result;
 }
 
 
