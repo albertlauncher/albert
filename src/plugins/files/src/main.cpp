@@ -397,6 +397,31 @@ QWidget *Files::Extension::widget(QWidget *parent) {
 /** ***************************************************************************/
 void Files::Extension::handleQuery(Core::Query * query) {
 
+
+    if ( query->searchTerm().startsWith('/') || query->searchTerm().startsWith("~/") ) {
+
+        QFileInfo fileInfo(query->searchTerm());
+
+        // Substitute tilde
+        if ( query->searchTerm()[0] == '~' )
+            fileInfo.setFile(QDir::homePath()+query->searchTerm().right(query->searchTerm().size()-1));
+
+        // Get all matching files
+        QFileInfo pathInfo(fileInfo.path());
+        if ( pathInfo.exists() && pathInfo.isDir() ) {
+            QMimeDatabase mimeDatabase;
+            QDirIterator dirIterator(pathInfo.filePath(), QDir::AllEntries|QDir::Hidden|QDir::NoDotAndDotDot);
+            while (dirIterator.hasNext()) {
+                dirIterator.next();
+                if ( dirIterator.fileName().startsWith(fileInfo.fileName()) ) {
+                    QMimeType mimetype = mimeDatabase.mimeTypeForFile(dirIterator.filePath());
+                    query->addMatch(std::make_shared<File>(dirIterator.filePath(), mimetype),
+                                    static_cast<short>(SHRT_MAX * static_cast<float>(fileInfo.fileName().size()) / dirIterator.fileName().size()));
+                }
+            }
+        }
+    }
+
     // Skip  short terms since they pollute the output
     if ( query->searchTerm().size() < 3)
         return;
