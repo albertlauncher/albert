@@ -72,17 +72,8 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
         case Qt::Key_Alt:
         case Qt::Key_Meta:
             switch (keyEvent->modifiers()) {
-            case Qt::AltModifier: // AltAction
+            case Qt::MetaModifier: // Default fallback action (Meta)
                 delegate_->subTextRole = Qt::UserRole+101;
-                break;
-            case Qt::MetaModifier: // MetaAction
-                delegate_->subTextRole = Qt::UserRole+102;
-                break;
-            case Qt::ControlModifier: // ControlAction
-                delegate_->subTextRole = Qt::UserRole+103;
-                break;
-            case Qt::ShiftModifier: // ShiftAction
-                delegate_->subTextRole = Qt::UserRole+104;
                 break;
             default: // DefaultAction
                 delegate_->subTextRole = Qt::ToolTipRole;
@@ -114,17 +105,8 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
         case Qt::Key_Alt:
         case Qt::Key_Meta:
             switch (keyEvent->modifiers()) {
-            case Qt::AltModifier: // AltAction
+            case Qt::MetaModifier: // Default fallback action (Meta)
                 delegate_->subTextRole = Qt::UserRole+101;
-                break;
-            case Qt::MetaModifier: // MetaAction
-                delegate_->subTextRole = Qt::UserRole+102;
-                break;
-            case Qt::ControlModifier: // ControlAction
-                delegate_->subTextRole = Qt::UserRole+103;
-                break;
-            case Qt::ShiftModifier: // ShiftAction
-                delegate_->subTextRole = Qt::UserRole+104;
                 break;
             default: // DefaultAction
                 delegate_->subTextRole = Qt::ToolTipRole;

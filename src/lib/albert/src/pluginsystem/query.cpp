@@ -252,6 +252,8 @@ public:
                     actionTexts.append(action->text());
                 return actionTexts;
             }
+            case Qt::UserRole+1: // Completion string
+                return item->completionString();
 
             case Qt::UserRole+100: // DefaultAction
                 return (0 < static_cast<int>(item->actions().size())) ? item->actions()[0]->text() : item->subtext();
@@ -293,25 +295,12 @@ public:
                 if (0U < item->actions().size())
                     item->actions()[0]->activate();
                 break;
-            case Qt::UserRole+101: // AltAction
+            case Qt::UserRole+101: // Default fallback action (Meta)
                 if (0U < fallbacks.size() && 0U < item->actions().size()) {
                     fallbacks[0]->actions()[0]->activate();
                     itemId = fallbacks[0]->id();
                 }
                 break;
-            case Qt::UserRole+102: // MetaAction
-                if (1U < item->actions().size())
-                    item->actions()[1]->activate();
-                break;
-            case Qt::UserRole+103: // ControlAction
-                if (2U < item->actions().size())
-                    item->actions()[2]->activate();
-                break;
-            case Qt::UserRole+104: // ShiftAction
-                if (3U < item->actions().size())
-                    item->actions()[3]->activate();
-                break;
-
             }
 
             // Save usage

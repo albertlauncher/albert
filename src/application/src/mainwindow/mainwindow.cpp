@@ -168,17 +168,8 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(ui.proposalList, &ProposalList::activated, [this](const QModelIndex &index){
 
         switch (qApp->queryKeyboardModifiers()) {
-        case Qt::AltModifier: // AltAction
+        case Qt::MetaModifier: // Default fallback action (Meta)
             ui.proposalList->model()->setData(index, -1, Qt::UserRole+101);
-            break;
-        case Qt::MetaModifier: // MetaAction
-            ui.proposalList->model()->setData(index, -1, Qt::UserRole+102);
-            break;
-        case Qt::ControlModifier: // ControlAction
-            ui.proposalList->model()->setData(index, -1, Qt::UserRole+103);
-            break;
-        case Qt::ShiftModifier: // ShiftAction
-            ui.proposalList->model()->setData(index, -1, Qt::UserRole+104);
             break;
         default: // DefaultAction
             ui.proposalList->model()->setData(index, -1, Qt::UserRole+100);
@@ -531,13 +522,23 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
 /** ***************************************************************************/
 bool MainWindow::eventFilter(QObject *, QEvent *event) {
 
-    if (event->type() == QEvent::KeyPress) {
+    if ( event->type() == QEvent::KeyPress ) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
         switch (keyEvent->key()) {
 
         // Toggle actionsview
         case Qt::Key_Tab:
-            setShowActions(!actionsAreShown());
+            // see query.cpp for userroles
+            if ( ui.proposalList->currentIndex().isValid() )
+                ui.inputLine->setText(
+                            ui.proposalList->model()->data(
+                                ui.proposalList->currentIndex(), Qt::UserRole+1
+                                ).toString()
+                            );
+            return true;
+
+        case Qt::Key_Alt:
+            setShowActions(true);
             return true;
 
         case Qt::Key_Up:{
@@ -562,6 +563,15 @@ bool MainWindow::eventFilter(QObject *, QEvent *event) {
                 return true;
             }
         }
+        }
+    }
+
+    if ( event->type() == QEvent::KeyRelease ) {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+        switch (keyEvent->key()) {
+        case Qt::Key_Alt:
+            setShowActions(false);
+            return true;
         }
     }
 
