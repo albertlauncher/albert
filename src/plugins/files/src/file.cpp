@@ -41,6 +41,13 @@ QString Files::File::subtext() const {
 
 
 /** ***************************************************************************/
+QString Files::File::completionString() const {
+    return ( QFileInfo(path_).isDir() ) ? QString("%1/").arg(path_) : path_;
+}
+
+
+
+/** ***************************************************************************/
 QString Files::File::iconPath() const {
 
     const QString xdgIconName = mimetype_.iconName();
