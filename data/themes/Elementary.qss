@@ -32,6 +32,7 @@
 	selection-background-color: #FFFFFF;
 	background-color: #FFFFFF;
 	padding-left:10px;
+	margin-right:20px;
 	color:black;
 }
 
@@ -41,7 +42,7 @@
   	padding: 4px;
 
   /* Respect the frame border */
-  margin: 6px 6px 0px 0px;
+  margin: 12px 6px 0px 0px;
   border-top-right-radius: 6px;
   border-bottom-left-radius: 10px;
 
