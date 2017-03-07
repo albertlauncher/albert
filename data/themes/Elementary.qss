@@ -100,9 +100,13 @@ QListView#actionList::item{
 /********** proposalList **********/
 
 QListView#proposalList {
-	icon-size: 45px;
-	font-size: 15px;
-	color: black;
+	icon-size: 35px;
+	font-size: 13px;
+	color: #331;
+	fill: #333;
+	font-family: "Open Sans";
+	src: url("//fonts.googleapis.com/css?family=Open+Sans");
+	font-weight: 400;
 }
 
 QListView#proposalList::item{
