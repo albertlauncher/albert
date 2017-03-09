@@ -187,6 +187,7 @@ MainWindow::MainWindow(QWidget *parent)
         history_->add(ui.inputLine->text());
         ui.proposalList->model()->setData(ui.proposalList->currentIndex(), index.row(), Qt::UserRole);
         this->setVisible(false);
+        ui.inputLine->clear();
     });
 }
 
