@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="play">resources/1485099680_playback-play.svg</file>
+        <file alias="next">resources/1485099683_playback-fast-forward.svg</file>
+        <file alias="prev">resources/1485099687_playback-rewind.svg</file>
+        <file alias="pause">resources/1485099690_playback-pause.svg</file>
+        <file alias="stop">resources/1485100510_primitive-square.svg</file>
+    </qresource>
+</RCC>
