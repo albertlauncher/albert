@@ -50,7 +50,7 @@ ProjectNamespace::Extension::Extension()
 
 /** ***************************************************************************/
 ProjectNamespace::Extension::~Extension() {
-    delete d;
+
 }
 
 

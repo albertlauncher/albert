@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
         app = new QApplication(argc, argv);
         app->setApplicationName("albert");
         app->setApplicationDisplayName("Albert");
-        app->setApplicationVersion("v0.9.5");
+        app->setApplicationVersion("v0.10.0");
         app->setQuitOnLastWindowClosed(false);
         QString icon = XdgIconLookup::iconPath("albert");
         if ( icon.isEmpty() ) icon = ":app_icon";
@@ -267,13 +267,27 @@ int main(int argc, char **argv) {
 
 
         /*
-         *  Hotkey
+         *  Alfred demarcation
          */
 
         QSettings settings(qApp->applicationName());
-        QString hotkey;
+        bool alfred_note_shown = settings.value("alfred_note_shown", false).toBool();
+        if ( !alfred_note_shown ) {
+            QMessageBox(QMessageBox::Information, "Note",
+                        "This is free and open source software. We are "
+                        "not affiliated with Alfred or Running with "
+                        "Crayons Ltd. Please to not bother them with "
+                        "support querstions. They cannot help you.").exec();
+            settings.setValue("alfred_note_shown", true);
+        }
+
+
+        /*
+         *  Hotkey
+         */
 
         // Check for a command line override
+        QString hotkey;
         if ( parser.isSet("hotkey") ) {
             hotkey = parser.value("hotkey");
             if ( !hotkeyManager->registerHotkey(hotkey) )
