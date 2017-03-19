@@ -22,7 +22,7 @@
 &lt;/head&gt;
 &lt;body&gt;
 &lt;p&gt;Applications are looked up in the &amp;quot;&lt;span style=&quot; font-style:italic;&quot;&gt;applications/&amp;quot;&lt;/span&gt; directories in the $XDG_DATA_HOME and $XDG_DATA_DIRS, which are set in the environment variables. Your current environment configuration results in the following applications directories: &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;__XDG_DATA_DIRS__&lt;/span&gt;. &lt;/p&gt;
-&lt;p&gt;Every application is represented by a desktop file which has an ID. The desktop file ID is built using the path of the desktop file relative to the applications directory and turning '/' into '-'. If multiple files have the same desktop file ID, the first one in the precedence order given above is used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p&gt;Every application is represented by a desktop file which has an ID. The desktop file ID is built using the path of the desktop file relative to the applications directory and turning '/' into '-'. If multiple files have the same desktop file ID, the first one in the precedence order given above is used. For mor details check the &lt;a href=&quot;https://specifications.freedesktop.org/desktop-entry-spec/latest/&quot;&gt;desktop entry sprecificion&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
@@ -34,16 +34,33 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
-      <widget class="QCheckBox" name="checkBox_fuzzy">
-       <property name="text">
-        <string>Fuzzy</string>
-       </property>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QCheckBox" name="checkBox_ignoreShowInKeys">
+         <property name="text">
+          <string>Ignore OnlyShowIn/NotShowIn keys</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_fuzzy">
+         <property name="text">
+          <string>Fuzzy</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
        </property>
       </spacer>
      </item>
@@ -53,6 +70,12 @@
     <spacer name="verticalSpacer_3">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
      </property>
     </spacer>
    </item>
