@@ -5,6 +5,6 @@
     "platform" :        "All",
     "group" :           "Extensions",
     "author" :          "Author missing",
-    "dependencies" :    []
+    "dependencies" :    [],
     "enabledbydefault": false
 }
