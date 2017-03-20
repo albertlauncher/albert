@@ -177,6 +177,7 @@ void Ssh::Extension::handleQuery(Core::Query * query) {
     std::shared_ptr<StandardItem> item  = std::make_shared<StandardItem>("");
     item->setText(queryTerms[1]);
     item->setSubtext(QString("Connect to '%1' using ssh").arg(queryTerms[1]));
+    item->setCompletionString(QString("ssh %1").arg(queryTerms[1]));
     item->setIconPath(d->icon);
 
     shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
@@ -219,6 +220,7 @@ void Ssh::Extension::rescan() {
         std::shared_ptr<StandardItem> si  = std::make_shared<StandardItem>(host);
         si->setText(host);
         si->setSubtext(QString("Connect to '%1' using ssh").arg(host));
+        si->setCompletionString(QString("ssh %1").arg(host));
         si->setIconPath(d->icon);
 
         shared_ptr<StandardAction> sa = std::make_shared<StandardAction>();
