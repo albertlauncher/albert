@@ -209,7 +209,7 @@ void MPRIS::Extension::handleQuery(Query *query) {
     if (d->mediaPlayers.isEmpty())
         return;
 
-    const QString& q = query->searchTerm();
+    const QString& q = query->searchTerm().toLower();
 
     // Filter applicable commands
     QStringList cmds;
