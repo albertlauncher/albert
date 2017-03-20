@@ -276,8 +276,8 @@ int main(int argc, char **argv) {
             QMessageBox(QMessageBox::Information, "Note",
                         "This is free and open source software. We are "
                         "not affiliated with Alfred or Running with "
-                        "Crayons Ltd. Please to not bother them with "
-                        "support querstions. They cannot help you.").exec();
+                        "Crayons Ltd. Please do not bother them with "
+                        "support questions. They cannot help you.").exec();
             settings.setValue("alfred_note_shown", true);
         }
 
