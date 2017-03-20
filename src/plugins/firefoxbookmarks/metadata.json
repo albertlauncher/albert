@@ -1,6 +1,6 @@
 {
     "id" :              "org.albert.extension.firefoxbookmarks",
-    "name" :            "Firefox Bookmarks",
+    "name" :            "Firefox bookmarks",
     "version" :         "1.0",
     "platform" :        "All",
     "group" :           "Extensions",

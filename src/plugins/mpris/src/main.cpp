@@ -37,7 +37,7 @@ public:
     }
 
 
-    const char* name = "MPRIS Control Center";
+    const char* name = "MPRIS Control";
     static QDBusMessage findPlayerMsg;
     QPointer<MPRIS::ConfigWidget> widget;
     QList<MPRIS::Player*> mediaPlayers;

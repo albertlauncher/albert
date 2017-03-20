@@ -1,6 +1,6 @@
 {
     "id" :              "org.albert.extension.mpris",
-    "name" :            "MPRIS Control Center",
+    "name" :            "MPRIS Control",
     "version" :         "1.0",
     "platform" :        "Linux",
     "group" :           "Extensions",
