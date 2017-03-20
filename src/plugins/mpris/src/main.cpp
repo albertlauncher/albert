@@ -63,7 +63,7 @@ MPRIS::Extension::Extension()
     QString icon;
 
     // Setup the DBus commands
-    icon = themeOr("media-playback-start", ":play"); //iconlookup->themeIconPath("media-playback-start", iconThemeName);
+    icon = themeOr("media-playback-start", ":play");
     Command* nextToAdd = new Command(
                 "play", // Label
                 "Start playing", // Title
@@ -72,11 +72,10 @@ MPRIS::Extension::Extension()
                 icon
                 );
     nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.PlaybackStatus", "Playing", false);
-    nextToAdd->closesWhenHit();
     d->commands.append("play");
     d->commandObjects.insert("play", *nextToAdd);
 
-    icon = themeOr("media-playback-pause", ":pause"); //iconlookup->themeIconPath("media-playback-pause", iconThemeName)
+    icon = themeOr("media-playback-pause", ":pause");
     nextToAdd = new Command(
                 "pause",
                 "Pause",
@@ -85,11 +84,10 @@ MPRIS::Extension::Extension()
                 icon
                 );
     nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.PlaybackStatus", "Playing", true);
-    nextToAdd->closeWhenHit();
     d->commands.append("pause");
     d->commandObjects.insert("pause", *nextToAdd);
 
-    icon = themeOr("media-playback-stop", ":stop"); //                 iconlookup->themeIconPath("media-playback-stop", iconThemeName));
+    icon = themeOr("media-playback-stop", ":stop");
     nextToAdd = new Command(
                 "stop",
                 "Stop playing",
@@ -98,11 +96,10 @@ MPRIS::Extension::Extension()
                 icon
                 );
     nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.PlaybackStatus", "Playing", true);
-    nextToAdd->closeWhenHit();
     d->commands.append("stop");
     d->commandObjects.insert("stop", *nextToAdd);
 
-    icon = themeOr("media-skip-forward", ":next"); // iconlookup->themeIconPath("media-skip-forward", iconThemeName)
+    icon = themeOr("media-skip-forward", ":next");
     nextToAdd = new Command(
                 "next",
                 "Next track",
@@ -115,7 +112,7 @@ MPRIS::Extension::Extension()
     d->commands.append("next");
     d->commandObjects.insert("next", *nextToAdd);
 
-    icon = themeOr("media-skip-backward", ":prev"); // iconlookup->themeIconPath("media-skip-backward", iconThemeName)
+    icon = themeOr("media-skip-backward", ":prev");
     nextToAdd = new Command(
                 "previous",
                 "Previous track",

@@ -28,7 +28,7 @@ namespace MPRIS {
 class Item final : public Core::Item
 {
 public:
-    Item(Player& p, const QString& title, const QString& subtext, const QString& iconPath, const QDBusMessage& msg, bool hideAfter);
+    Item(Player &p, const QString& title, const QString& subtext, const QString& iconPath, const QDBusMessage& msg);
     ~Item();
 
     QString id() const override { return id_; }
@@ -38,13 +38,11 @@ public:
     vector<shared_ptr<Action>> actions() override;
 
 private:
-    Player& player_;
     QString id_;
     QString text_;
     QString subtext_;
     QString iconPath_;
     QDBusMessage message_;
     vector<shared_ptr<Action>> actions_;
-    bool hideAfter_;
 };
 }

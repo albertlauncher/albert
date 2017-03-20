@@ -21,8 +21,8 @@ using Core::StandardAction;
 
 
 /** ***************************************************************************/
-MPRIS::Item::Item(Player &p, const QString &title, const QString &subtext, const QString &iconPath, const QDBusMessage &msg, bool hideAfter)
-    : player_(p), iconPath_(iconPath), message_(msg), hideAfter_(hideAfter) {
+MPRIS::Item::Item(Player &p, const QString &title, const QString &subtext, const QString &iconPath, const QDBusMessage &msg)
+    : iconPath_(iconPath), message_(msg) {
     if (title.contains("%1"))
         text_ = title.arg(p.getName());
     else

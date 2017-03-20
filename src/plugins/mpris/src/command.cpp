@@ -23,8 +23,7 @@
 
 /** ***************************************************************************/
 MPRIS::Command::Command(const QString &label, const QString &title, const QString &subtext, const QString &method, QString iconpath)
-    : label_(label), title_(title), subtext_(subtext), method_(method), iconpath_(iconpath), closeOnEnter_(false) {
-//    fireCallback([](){});
+    : label_(label), title_(title), subtext_(subtext), method_(method), iconpath_(iconpath) {
 }
 
 
@@ -49,49 +48,10 @@ MPRIS::Command &MPRIS::Command::applicableWhen(const char* path, const char *pro
 
 
 /** ***************************************************************************/
-MPRIS::Command &MPRIS::Command::closeWhenHit() {
-    closeOnEnter_ = true;
-    return *this;
-}
-
-
-
-/** ***************************************************************************/
-/*Command &MPRIS::Command::fireCallback(function<void ()> clbk) {
-    fireCallback_ = std::move(clbk);
-    return *this;
-}*/
-
-
-
-/** ***************************************************************************/
-bool MPRIS::Command::closesWhenHit() {
-    return closeOnEnter_;
-}
-
-
-
-/** ***************************************************************************/
 SharedItem MPRIS::Command::produceAlbertItem(Player &player) const {
     QDBusMessage msg = QDBusMessage::createMethodCall(player.getBusId(), "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", method_);
-    //std::shared_ptr<StandardItem> ptr = std::make_shared<MPRIS::Item>(player, title_, iconpath_, msg, closeOnEnter_);
-    SharedItem ptr(new MPRIS::Item(player, title_, subtext_, iconpath_, msg, closeOnEnter_));
+    SharedItem ptr(new MPRIS::Item(player, title_, subtext_, iconpath_, msg));
     return ptr;
-
-/*
-    // Create a StandardItem instance for this command on the given player
-    std::shared_ptr<StandardItem> ptr = std::make_shared<StandardItem>();
-    ptr->setIcon(iconpath_);
-    ptr->setSubtext(player.getName());
-    ptr->setText(title_);
-    QDBusMessage msg = QDBusMessage::createMethodCall(player.getBusId(), "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", method_);
-    ptr->setAction([msg, this](){
-        QDBusConnection::sessionBus().send(msg);
-        if (closeOnEnter_)
-            qApp->hideWidget();
-        //fireCallback_();
-    });
-    return ptr;*/
 }
 
 

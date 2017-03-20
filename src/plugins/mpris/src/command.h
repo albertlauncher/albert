@@ -55,20 +55,6 @@ public:
     Command& applicableWhen(const char *path, const char* property, const QVariant expectedValue, bool positivity);
 
     /**
-     * @brief closeWhenHit  Configure this command to close the albert widget when activated.
-     * @return              Returns itseft, but now configured to close albert.
-     */
-    Command& closeWhenHit();
-
-    //Command& fireCallback(function<void()>);
-
-    /**
-     * @brief closesWhenHit Queries if the application should hide if the item was activated.
-     * @return              True if so, false otherwise.
-     */
-    bool closesWhenHit();
-
-    /**
      * @brief produceStandardItem   Produces an instance of AlbertItem for this command to invoke on a given Player.
      * @return                      Returns a shared_ptr on this AlbertItem.
      */
@@ -87,8 +73,6 @@ private:
     QString property_;
     QVariant expectedValue_;
     bool positivity_;
-    bool closeOnEnter_;
-    //function<void()> fireCallback_;
 };
 
 } // namespace MPRIS
