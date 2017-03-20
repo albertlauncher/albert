@@ -59,8 +59,9 @@ QString Files::File::iconPath() const {
     const QString xdgIconName = mimetype_.iconName();
 
     // First check if icon exists
-    if (iconCache_.count(xdgIconName))
-        return iconCache_[xdgIconName];
+    auto search = iconCache_.find(xdgIconName);
+    if(search != iconCache_.end())
+        return search->second;
 
     QString iconPath;
     if ( !(iconPath = XdgIconLookup::iconPath(xdgIconName)).isNull()  // Lookup iconName
