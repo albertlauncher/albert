@@ -150,6 +150,7 @@ void Terminal::Extension::handleQuery(Core::Query * query) {
         std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>(program);
         item->setText(commandlineString);
         item->setSubtext(QString("Run '%1'").arg(commandlineString));
+        item->setCompletionString(QString(">%1").arg(commandlineString));
         item->setIconPath(d->iconPath);
         item->setActions(std::move(actions));
 

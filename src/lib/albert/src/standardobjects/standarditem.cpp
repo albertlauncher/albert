@@ -41,6 +41,14 @@ void Core::StandardItem::setSubtext(const QString &subtext){
     subtext_ = subtext;
 }
 
+QString Core::StandardItem::completionString() const {
+    return (completion_.isNull()) ? text_ : completion_;
+}
+
+void Core::StandardItem::setCompletionString(const QString &completion) {
+    completion_ = completion;
+}
+
 QString Core::StandardItem::iconPath() const {
     return iconPath_;
 }
