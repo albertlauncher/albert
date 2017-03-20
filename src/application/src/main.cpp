@@ -240,9 +240,14 @@ int main(int argc, char **argv) {
          *  START IPC SERVER
          */
 
-        // Start server so second instances will close
-         QLocalServer::removeServer(app->applicationName());
-        localServer->listen(app->applicationName());
+        // Remove pipes potentially leftover after crash
+        QLocalServer::removeServer(app->applicationName());
+
+        // Create server and handle messages
+        if ( !localServer->listen(app->applicationName()) )
+            qWarning() << "Local server could not be created. IPC will not work! Reason:" << localServer->errorString();
+
+        // Handle incomin messages
         QObject::connect(localServer, &QLocalServer::newConnection, dispatchMessage);
 
 
@@ -404,6 +409,8 @@ int main(int argc, char **argv) {
     delete hotkeyManager;
     delete mainWindow;
     delete ExtensionManager::instance;
+
+    localServer->close();
 
     // Delete the running indicator file
     QFile::remove(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running");
