@@ -72,6 +72,7 @@ int main(int argc, char **argv) {
         if ( icon.isEmpty() ) icon = ":app_icon";
         app->setWindowIcon(QIcon(icon));
 
+        QString socketPath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/socket";
 
 
         /*
@@ -94,7 +95,7 @@ int main(int argc, char **argv) {
 
         const QStringList args = parser.positionalArguments();
         QLocalSocket socket;
-        socket.connectToServer(app->applicationName());
+        socket.connectToServer(socketPath);
         if ( socket.waitForConnected(500) ) {
             // If there is a command send it
             if ( args.count() == 1 ){
@@ -241,10 +242,10 @@ int main(int argc, char **argv) {
          */
 
         // Remove pipes potentially leftover after crash
-        QLocalServer::removeServer(app->applicationName());
+        QLocalServer::removeServer(socketPath);
 
         // Create server and handle messages
-        if ( !localServer->listen(app->applicationName()) )
+        if ( !localServer->listen(socketPath) )
             qWarning() << "Local server could not be created. IPC will not work! Reason:" << localServer->errorString();
 
         // Handle incomin messages
