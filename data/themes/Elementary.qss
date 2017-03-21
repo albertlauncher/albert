@@ -55,13 +55,14 @@
 
 /********** ListViews **********/
 QListView {
-	margin-top:5px;
 	background-color: #F5F5F5;
 }
+
 QListView::item {
 	background-color: #F5F5F5;
 	padding:6px;
 }
+
 QListView::item:selected {
 	border-radius: 4px;
 	background-color: #D8D8D8;
