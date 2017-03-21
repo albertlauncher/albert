@@ -54,13 +54,13 @@ struct SearchEngine {
 };
 
 std::vector<SearchEngine> defaultSearchEngines = {
-    {true, "Google",        "gg ",  ":google",  "https://www.google.com/search?q=%s"},
-    {true, "Youtube",       "yt ",  ":youtube", "https://www.youtube.com/results?search_query=%s"},
-    {true, "Amazon",        "ama ", ":amazon",  "http://www.amazon.com/s/?field-keywords=%s"},
-    {true, "Ebay",          "eb ", ":ebay",    "http://www.ebay.com/sch/i.html?_nkw=%s"},
-    {true, "GitHub",        "gh ", ":github",  "https://github.com/search?utf8=✓&q=%s"},
+    {true, "Google",        "gg ",  ":google",    "https://www.google.com/search?q=%s"},
+    {true, "Youtube",       "yt ",  ":youtube",   "https://www.youtube.com/results?search_query=%s"},
+    {true, "Amazon",        "ama ", ":amazon",    "http://www.amazon.com/s/?field-keywords=%s"},
+    {true, "Ebay",          "eb ",  ":ebay",      "http://www.ebay.com/sch/i.html?_nkw=%s"},
+    {true, "GitHub",        "gh ",  ":github",    "https://github.com/search?utf8=✓&q=%s"},
     {true, "Wikipedia",     "wp ",  ":wikipedia", "https://wikipedia.org/w/index.php?search=%s"},
-    {true, "Wolfram Alpha", "=",   ":wolfram", "https://www.wolframalpha.com/input/?i=%s"}
+    {true, "Wolfram Alpha", "=",    ":wolfram",   "https://www.wolframalpha.com/input/?i=%s"}
 };
 
 shared_ptr<Core::Item> buildWebsearchItem(const SearchEngine &se, const QString &searchterm) {
