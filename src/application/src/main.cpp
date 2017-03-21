@@ -28,7 +28,6 @@
 #include <QStandardPaths>
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QLocalSocket>
-#include <random>
 #include <csignal>
 #include "mainwindow.h"
 #include "hotkeymanager.h"
@@ -241,15 +240,11 @@ int main(int argc, char **argv) {
          *  START IPC SERVER
          */
 
-        // Get a unique name for the server
-        QString uid;
-        std::string charset = "abcdefghijklmnaoqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-        std::mt19937_64 gen {std::random_device()()};
-        std::uniform_int_distribution<size_t> dist {0, charset.length()-1};
-        std::generate_n(std::back_inserter(uid), 6, [&] { return charset[dist(gen)]; });
+        // Remove pipes potentially leftover after crash
+        QLocalServer::removeServer(app->applicationName());
 
         // Create server and handle messages
-        if ( !localServer->listen(QString("%1.%2").arg(app->applicationName()).arg(uid)) )
+        if ( !localServer->listen(app->applicationName()) )
             qWarning() << "Local server could not be created. IPC will not work! Reason:" << localServer->errorString();
 
         // Handle incomin messages
