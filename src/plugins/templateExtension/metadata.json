@@ -1,10 +1,10 @@
 {
-    "id" :              "org.albert.extension.template",
+    "id" :              "org.albert.extension.projectid",
     "name" :            "Template",
     "version" :         "1.0",
     "platform" :        "All",
     "group" :           "Extensions",
-    "author" :          "Manuel Schneider",
+    "author" :          "Author missing",
     "dependencies" :    [],
-    "enabledbydefault":    false
+    "enabledbydefault": false
 }

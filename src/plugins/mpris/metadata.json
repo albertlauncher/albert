@@ -1,0 +1,9 @@
+{
+    "id" :              "org.albert.extension.mpris",
+    "name" :            "MPRIS Control",
+    "version" :         "1.0",
+    "platform" :        "Linux",
+    "group" :           "Extensions",
+    "author" :          "Martin Buergmann",
+    "dependencies" :    ["dbus-daemon"]
+}

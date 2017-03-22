@@ -24,7 +24,7 @@
 
 
 
-class Template::TemplatePrivate
+class ProjectNamespace::ProjectNamespacePrivate
 {
 public:
     QPointer<ConfigWidget> widget;
@@ -33,10 +33,10 @@ public:
 
 
 /** ***************************************************************************/
-Template::Extension::Extension()
-    : Core::Extension("org.albert.extension.template"),
+ProjectNamespace::Extension::Extension()
+    : Core::Extension("org.albert.extension.projectid"),
       Core::QueryHandler(Core::Extension::id),
-      d(new TemplatePrivate) {
+      d(new ProjectNamespacePrivate) {
 
     // You can throw in the constructor if something fatal happened
     throw std::runtime_error( "Description of error." );
@@ -44,20 +44,19 @@ Template::Extension::Extension()
     throw QString( "Description of error." );
     throw "Description of error.";
     throw; // Whatever prints "unknown error"
+}
+
+
+
+/** ***************************************************************************/
+ProjectNamespace::Extension::~Extension() {
 
 }
 
 
 
 /** ***************************************************************************/
-Template::Extension::~Extension() {
-
-}
-
-
-
-/** ***************************************************************************/
-QWidget *Template::Extension::widget(QWidget *parent) {
+QWidget *ProjectNamespace::Extension::widget(QWidget *parent) {
     if (d->widget.isNull()) {
         d->widget = new ConfigWidget(parent);
     }
@@ -67,21 +66,21 @@ QWidget *Template::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void Template::Extension::setupSession() {
+void ProjectNamespace::Extension::setupSession() {
 
 }
 
 
 
 /** ***************************************************************************/
-void Template::Extension::teardownSession() {
+void ProjectNamespace::Extension::teardownSession() {
 
 }
 
 
 
 /** ***************************************************************************/
-void Template::Extension::handleQuery(Core::Query * query) {
+void ProjectNamespace::Extension::handleQuery(Core::Query * query) {
     // Avoid annoying warnings
     Q_UNUSED(query)
 }

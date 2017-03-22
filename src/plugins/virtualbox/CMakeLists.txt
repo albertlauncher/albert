@@ -2,13 +2,11 @@ cmake_minimum_required(VERSION 2.8.12)
 
 PROJECT(virtualbox)
 
-find_package(Qt5Widgets 5.2 REQUIRED)
-find_package(Qt5Xml 5.2 REQUIRED)
-
 FILE(GLOB_RECURSE SRC src/* metadata.json)
 
 find_package(Qt5 5.2.0 REQUIRED COMPONENTS
     Widgets
+    Xml
 )
 
 qt5_add_resources(QRC

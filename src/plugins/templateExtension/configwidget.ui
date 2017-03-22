@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Template::ConfigWidget</class>
- <widget class="QWidget" name="Template::ConfigWidget">
+ <class>ProjectNamespace::ConfigWidget</class>
+ <widget class="QWidget" name="ProjectNamespace::ConfigWidget">
   <property name="geometry">
    <rect>
     <x>0</x>

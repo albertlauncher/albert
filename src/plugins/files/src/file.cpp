@@ -17,6 +17,7 @@
 #include <QApplication>
 #include <QFileInfo>
 #include <QDataStream>
+#include <QDir>
 #include <QMimeDatabase>
 #include "file.h"
 #include "fileactions.h"
@@ -41,13 +42,26 @@ QString Files::File::subtext() const {
 
 
 /** ***************************************************************************/
+QString Files::File::completionString() const {
+    QString result = ( QFileInfo(path_).isDir() ) ? QString("%1/").arg(path_) : path_;
+#ifdef __linux__
+    if ( result.startsWith(QDir::homePath()) )
+        result.replace(QDir::homePath(), "~");
+#endif
+    return result;
+}
+
+
+
+/** ***************************************************************************/
 QString Files::File::iconPath() const {
 
     const QString xdgIconName = mimetype_.iconName();
 
     // First check if icon exists
-    if (iconCache_.count(xdgIconName))
-        return iconCache_[xdgIconName];
+    auto search = iconCache_.find(xdgIconName);
+    if(search != iconCache_.end())
+        return search->second;
 
     QString iconPath;
     if ( !(iconPath = XdgIconLookup::iconPath(xdgIconName)).isNull()  // Lookup iconName

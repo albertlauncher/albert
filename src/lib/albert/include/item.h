@@ -54,6 +54,9 @@ public:
     /** The declarative subtext for the item */
     virtual QString subtext() const = 0;
 
+    /** The string to use for completion */
+    virtual QString completionString() const { return text(); }
+
     /** Urgency level of the item, defautls to "Normal" */
     virtual Urgency urgency() const { return Urgency::Normal; }
 

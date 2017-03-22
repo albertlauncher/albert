@@ -39,6 +39,7 @@ public:
     QString id() const override { return path_; }
     QString text() const override;
     QString subtext() const override;
+    QString completionString() const override;
     QString iconPath() const override;
     std::vector<Core::Indexable::WeightedKeyword> indexKeywords() const override;
     std::vector<std::shared_ptr<Core::Action>> actions() override;

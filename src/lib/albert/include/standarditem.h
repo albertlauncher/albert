@@ -38,23 +38,27 @@ public:
 
     QString id() const override final;
 
-    QString text() const override final;
+    QString text() const override;
     void setText(const QString &text);
 
-    QString subtext() const override final;
+    QString subtext() const override;
     void setSubtext(const QString &subtext);
 
-    QString iconPath() const override final;
+    QString completionString() const override;
+    void setCompletionString(const QString &completion);
+
+    QString iconPath() const override;
     void setIconPath( const QString &iconPath);
 
-    std::vector<std::shared_ptr<Action>> actions() override final;
+    std::vector<std::shared_ptr<Action>> actions() override;
     void setActions(std::vector<std::shared_ptr<Action>> &&actions);
 
-private:
+protected:
 
     QString id_;
     QString text_;
     QString subtext_;
+    QString completion_;
     QString iconPath_;
     std::vector<std::shared_ptr<Action>> actions_;
 

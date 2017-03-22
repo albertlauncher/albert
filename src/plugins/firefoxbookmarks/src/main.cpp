@@ -109,7 +109,7 @@ void FirefoxBookmarks::FirefoxBookmarksPrivate::startIndexing() {
     futureWatcher.setFuture(QtConcurrent::run(this, &FirefoxBookmarksPrivate::indexFirefoxBookmarks));
 
     // Notification
-    qDebug() << qPrintable(QString("[%1] Start indexing in background thread.").arg(q->Core::Extension::id));
+    qDebug() << "Start indexing Firefox bookmarks.";
     emit q->statusInfo("Indexing bookmarks ...");
 }
 
@@ -126,7 +126,7 @@ void FirefoxBookmarks::FirefoxBookmarksPrivate::finishIndexing() {
         offlineIndex.add(item);
 
     // Notification
-    qDebug() <<  qPrintable(QString("[%1] Indexing done (%2 items).").arg(q->Core::Extension::id).arg(index.size()));
+    qDebug() <<  qPrintable(QString("Indexed %1 Firefox bookmarks.").arg(index.size()));
     emit q->statusInfo(QString("%1 bookmarks indexed.").arg(index.size()));
 }
 
@@ -139,7 +139,7 @@ FirefoxBookmarks::FirefoxBookmarksPrivate::indexFirefoxBookmarks() const {
     QSqlDatabase database = QSqlDatabase::database(q->Core::Extension::id);
 
     if (!database.open()) {
-        qWarning() << qPrintable(QString("[%1] Could not open database: %2").arg(q->Core::Extension::id, database.databaseName()));
+        qWarning() << qPrintable(QString("Could not open Firefox database: %1").arg(database.databaseName()));
         return vector<shared_ptr<Core::StandardIndexItem>>();
     }
 
@@ -148,12 +148,11 @@ FirefoxBookmarks::FirefoxBookmarksPrivate::indexFirefoxBookmarks() const {
 
     QSqlQuery result(database);
 
-    if ( !result.exec("SELECT b1.guid, p.title, p.url, b2.title " // id, title, url, parent
-                      "FROM moz_bookmarks AS b1 "
-                      "JOIN moz_bookmarks AS b2 ON b1.parent = b2.id " // attach parent names
-                      "JOIN moz_places AS p  ON b1.fk = p.id " // attach title string and url
-                      "WHERE b1.type = 1 AND p.title IS NOT NULL") ) { // filter bookmarks with nonempty title string
-        qWarning() << qPrintable(QString("[%1] Querying bookmarks failed: %2").arg(q->Core::Extension::id, result.lastError().text()));
+    if ( !result.exec("SELECT b.guid, b.title, p.url "
+                      "FROM moz_bookmarks b "
+                      "JOIN moz_places p ON b.fk = p.id " // attach place (which has the url)
+                      "WHERE p.url NOT LIKE 'place%'") ) {  // Those with place:... will not work with xdg-open
+        qWarning() << qPrintable(QString("Querying Firefox bookmarks failed: %1").arg(result.lastError().text()));
         return vector<shared_ptr<Core::StandardIndexItem>>();
     }
 
@@ -196,7 +195,7 @@ FirefoxBookmarks::FirefoxBookmarksPrivate::indexFirefoxBookmarks() const {
         });
 
         shared_ptr<StandardAction> actionFirefox = std::make_shared<StandardAction>();
-        actionFirefox->setText("Open URL in firefox");
+        actionFirefox->setText("Open URL in Firefox");
         actionFirefox->setAction([urlstr, this](){
             QProcess::startDetached(firefoxExecutable, {urlstr});
         });
@@ -237,14 +236,14 @@ FirefoxBookmarks::Extension::Extension()
     // Add a sqlite database connection for this extension, check requirements
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", Core::Extension::id);
     if ( !db.isValid() )
-        throw QString("[%s] Firefox executable not found.").arg(Core::Extension::id);
+        throw "Firefox executable not found.";
     if (!db.driver()->hasFeature(QSqlDriver::Transactions))
-        throw QString("[%s] Firefox executable not found.").arg(Core::Extension::id);
+        throw "Firefox executable not found.";
 
     // Find firefox executable
     d->firefoxExecutable = QStandardPaths::findExecutable("firefox");
     if (d->firefoxExecutable.isEmpty())
-        throw QString("[%s] Firefox executable not found.").arg(Core::Extension::id);
+        throw "Firefox executable not found.";
 
     // Locate profiles ini
     d->profilesIniPath = QStandardPaths::locate(QStandardPaths::HomeLocation,
@@ -255,7 +254,7 @@ FirefoxBookmarks::Extension::Extension()
                                                      "Mozilla/firefox/profiles.ini",
                                                      QStandardPaths::LocateFile);
     if (d->profilesIniPath.isEmpty())
-        throw QString("[%1] Could not locate profiles.ini.").arg(Core::Extension::id);
+        throw "Could not locate profiles.ini.";
 
     // Load the settings
     QSettings s(qApp->applicationName());
@@ -272,7 +271,7 @@ FirefoxBookmarks::Extension::Extension()
 
         QStringList ids = profilesIni.childGroups();
         if ( ids.isEmpty() )
-            qWarning() << qPrintable(QString("[%1] No Firefox profiles found.").arg(Core::Extension::id));
+            qWarning() << "No Firefox profiles found.";
         else {
 
             // Use the last used profile
@@ -341,7 +340,7 @@ QWidget *FirefoxBookmarks::Extension::widget(QWidget *parent) {
                 cmb->addItem( QString("%1 (%2)").arg(profilesIni.value("Name").toString(), profileId), profileId);
             else {
                 cmb->addItem(profileId, profileId);
-                qWarning() << qPrintable(QString("[%1] Profile '%2' does not contain a name.").arg(Core::Extension::id, profileId));
+                qWarning() << qPrintable(QString("Firefox profile '%1' does not contain a name.").arg(profileId));
             }
 
             // If the profileId match set the current item of the checkbox
@@ -401,7 +400,7 @@ void FirefoxBookmarks::Extension::setProfile(const QString& profile) {
 
     // Check if profile id is in profiles file
     if ( !profilesIni.childGroups().contains(d->currentProfileId) ){
-        qWarning() << qPrintable(QString("[%1] Profile '%2' not found.").arg(Core::Extension::id, d->currentProfileId));
+        qWarning() << qPrintable(QString("Firefox user profile '%2' not found.").arg(d->currentProfileId));
         return;
     }
 
@@ -410,7 +409,7 @@ void FirefoxBookmarks::Extension::setProfile(const QString& profile) {
 
     // Check if the profile contains a path key
     if ( !profilesIni.contains("Path") ){
-        qWarning() << qPrintable(QString("[%1] Profile '%2' does not contain a path.").arg(Core::Extension::id, d->currentProfileId));
+        qWarning() << qPrintable(QString("Firefox profile '%2' does not contain a path.").arg(d->currentProfileId));
         return;
     }
 

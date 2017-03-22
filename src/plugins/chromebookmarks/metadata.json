@@ -1,6 +1,6 @@
 {
     "id" :              "org.albert.extension.chromebookmarks",
-    "name" :            "ChromeBookmarks",
+    "name" :            "Chrome bookmarks",
     "version" :         "1.0",
     "platform" :        "Linux",
     "group" :           "Extensions",

@@ -66,12 +66,13 @@ int main(int argc, char **argv) {
         app = new QApplication(argc, argv);
         app->setApplicationName("albert");
         app->setApplicationDisplayName("Albert");
-        app->setApplicationVersion("v0.9.3");
+        app->setApplicationVersion("v0.10.1");
         app->setQuitOnLastWindowClosed(false);
         QString icon = XdgIconLookup::iconPath("albert");
         if ( icon.isEmpty() ) icon = ":app_icon";
         app->setWindowIcon(QIcon(icon));
 
+        QString socketPath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/socket";
 
 
         /*
@@ -94,7 +95,7 @@ int main(int argc, char **argv) {
 
         const QStringList args = parser.positionalArguments();
         QLocalSocket socket;
-        socket.connectToServer(app->applicationName());
+        socket.connectToServer(socketPath);
         if ( socket.waitForConnected(500) ) {
             // If there is a command send it
             if ( args.count() == 1 ){
@@ -240,9 +241,14 @@ int main(int argc, char **argv) {
          *  START IPC SERVER
          */
 
-        // Start server so second instances will close
-         QLocalServer::removeServer(app->applicationName());
-        localServer->listen(app->applicationName());
+        // Remove pipes potentially leftover after crash
+        QLocalServer::removeServer(socketPath);
+
+        // Create server and handle messages
+        if ( !localServer->listen(socketPath) )
+            qWarning() << "Local server could not be created. IPC will not work! Reason:" << localServer->errorString();
+
+        // Handle incomin messages
         QObject::connect(localServer, &QLocalServer::newConnection, dispatchMessage);
 
 
@@ -267,13 +273,27 @@ int main(int argc, char **argv) {
 
 
         /*
-         *  Hotkey
+         *  Alfred demarcation
          */
 
         QSettings settings(qApp->applicationName());
-        QString hotkey;
+        bool alfred_note_shown = settings.value("alfred_note_shown", false).toBool();
+        if ( !alfred_note_shown ) {
+            QMessageBox(QMessageBox::Information, "Note",
+                        "This is free and open source software. We are "
+                        "not affiliated with Alfred or Running with "
+                        "Crayons Ltd. Please do not bother them with "
+                        "support questions. They cannot help you.").exec();
+            settings.setValue("alfred_note_shown", true);
+        }
+
+
+        /*
+         *  Hotkey
+         */
 
         // Check for a command line override
+        QString hotkey;
         if ( parser.isSet("hotkey") ) {
             hotkey = parser.value("hotkey");
             if ( !hotkeyManager->registerHotkey(hotkey) )
@@ -390,6 +410,8 @@ int main(int argc, char **argv) {
     delete hotkeyManager;
     delete mainWindow;
     delete ExtensionManager::instance;
+
+    localServer->close();
 
     // Delete the running indicator file
     QFile::remove(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running");

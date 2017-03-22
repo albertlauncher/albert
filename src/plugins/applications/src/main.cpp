@@ -52,9 +52,10 @@ extern QString terminalCommand;
 
 namespace {
 
-const char* CFG_FUZZY    = "fuzzy";
-const bool  DEF_FUZZY    = false;
-const uint  UPDATE_DELAY = 60000;
+const char* CFG_FUZZY            = "fuzzy";
+const bool  DEF_FUZZY            = false;
+const char* CFG_IGNORESHOWINKEYS = "ignore_show_in_keys";
+const bool  DEF_IGNORESHOWINKEYS = false;
 
 /******************************************************************************/
 QStringList expandedFieldCodes(const QStringList & unexpandedFields,
@@ -259,7 +260,7 @@ QStringList shellLexerSplit(const QString &input) {
 
 
 /** ***************************************************************************/
-vector<shared_ptr<StandardIndexItem>> indexApplications() {
+vector<shared_ptr<StandardIndexItem>> indexApplications(bool ignoreShowInKeys) {
 
     // Get a new index [O(n)]
     vector<shared_ptr<StandardIndexItem>> desktopEntries;
@@ -337,22 +338,24 @@ vector<shared_ptr<StandardIndexItem>> indexApplications() {
                     && entryIterator->second == "true")
                 continue;
 
-            // Skip if the current desktop environment is specified in "NotShowIn"
-            if ((entryIterator = entryMap.find("NotShowIn")) != entryMap.end())
-                for (const QString &str : entryIterator->second.split(';',QString::SkipEmptyParts))
-                    if (xdg_current_desktop.contains(str))
-                        continue;
+            if (!ignoreShowInKeys) {
+                // Skip if the current desktop environment is specified in "NotShowIn"
+                if ((entryIterator = entryMap.find("NotShowIn")) != entryMap.end())
+                    for (const QString &str : entryIterator->second.split(';',QString::SkipEmptyParts))
+                        if (xdg_current_desktop.contains(str))
+                            continue;
 
-            // Skip if the current desktop environment is not specified in "OnlyShowIn"
-            if ((entryIterator = entryMap.find("OnlyShowIn")) != entryMap.end()) {
-                bool found = false;
-                for (const QString &str : entryIterator->second.split(';',QString::SkipEmptyParts))
-                    if (xdg_current_desktop.contains(str)){
-                        found = true;
-                        break;
-                    }
-                if (!found)
-                    continue;
+                // Skip if the current desktop environment is not specified in "OnlyShowIn"
+                if ((entryIterator = entryMap.find("OnlyShowIn")) != entryMap.end()) {
+                    bool found = false;
+                    for (const QString &str : entryIterator->second.split(';',QString::SkipEmptyParts))
+                        if (xdg_current_desktop.contains(str)){
+                            found = true;
+                            break;
+                        }
+                    if (!found)
+                        continue;
+                }
             }
 
             bool term;
@@ -589,10 +592,12 @@ public:
     vector<shared_ptr<Core::StandardIndexItem>> index;
     OfflineIndex offlineIndex;
 
-    QTimer updateDelayTimer;
+    QFutureWatcher<vector<shared_ptr<Core::StandardIndexItem>>> futureWatcher;
+    bool rerun = false;
+    bool ignoreShowInKeys;
+
     void finishIndexing();
     void startIndexing();
-    QFutureWatcher<vector<shared_ptr<Core::StandardIndexItem>>> futureWatcher;
 };
 
 
@@ -601,8 +606,10 @@ public:
 void Applications::ApplicationsPrivate::startIndexing() {
 
     // Never run concurrent
-    if ( futureWatcher.future().isRunning() )
+    if ( futureWatcher.future().isRunning() ) {
+        rerun = true;
         return;
+    }
 
     // Run finishIndexing when the indexing thread finished
     futureWatcher.disconnect();
@@ -610,12 +617,11 @@ void Applications::ApplicationsPrivate::startIndexing() {
                      std::bind(&ApplicationsPrivate::finishIndexing, this));
 
     // Run the indexer thread
-    futureWatcher.setFuture(QtConcurrent::run(indexApplications));
+    futureWatcher.setFuture(QtConcurrent::run(indexApplications, ignoreShowInKeys));
 
     // Notification
-    qDebug() << qPrintable(QString("[%1] Start indexing in background thread.").arg(q->Core::Extension::id).toUtf8().constData());
+    qDebug() << "Start indexing applications.";
     emit q->statusInfo("Indexing applications ...");
-
 }
 
 
@@ -643,8 +649,13 @@ void Applications::ApplicationsPrivate::finishIndexing() {
     }
 
     // Notification
-    qDebug() << qPrintable(QString("[%1] Indexing done (%2 items).").arg(q->Core::Extension::id).arg(index.size()));
+    qDebug() << qPrintable(QString("Indexed %1 applications.").arg(index.size()));
     emit q->statusInfo(QString("%1 applications indexed.").arg(index.size()));
+
+    if ( rerun ) {
+        startIndexing();
+        rerun = false;
+    }
 }
 
 
@@ -664,17 +675,10 @@ Applications::Extension::Extension()
     QSettings s(qApp->applicationName());
     s.beginGroup(Core::Extension::id);
     d->offlineIndex.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
+    d->ignoreShowInKeys = s.value(CFG_IGNORESHOWINKEYS, DEF_IGNORESHOWINKEYS).toBool();
 
-    // Delay the indexing to avoid excessice resource consumption
-    d->updateDelayTimer.setInterval(UPDATE_DELAY);
-    d->updateDelayTimer.setSingleShot(true);
-
-    // If the filesystem changed, trigger the update delay
+    // If the filesystem changed, trigger the scan
     connect(&d->watcher, &QFileSystemWatcher::directoryChanged,
-            &d->updateDelayTimer, static_cast<void(QTimer::*)()>(&QTimer::start));
-
-    // If the update delay passed, update the index
-    connect(&d->updateDelayTimer, &QTimer::timeout,
             std::bind(&ApplicationsPrivate::startIndexing, d.get()));
 
     // Trigger initial update
@@ -697,7 +701,17 @@ QWidget *Applications::Extension::widget(QWidget *parent) {
 
         // Fuzzy
         d->widget->ui.checkBox_fuzzy->setChecked(d->offlineIndex.fuzzy());
-        connect(d->widget->ui.checkBox_fuzzy, &QCheckBox::toggled, this, &Extension::setFuzzy);
+        connect(d->widget->ui.checkBox_fuzzy, &QCheckBox::toggled,
+                 this, &Extension::setFuzzy);
+
+        // Ignore onlyshowin notshowin keys
+        d->widget->ui.checkBox_ignoreShowInKeys->setChecked(d->ignoreShowInKeys);
+        connect(d->widget->ui.checkBox_ignoreShowInKeys, &QCheckBox::toggled,
+                this, [this](bool checked){
+            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_IGNORESHOWINKEYS), checked);
+            d->ignoreShowInKeys = checked ;
+            d->startIndexing();
+        });
 
         // Status bar
         ( d->futureWatcher.isRunning() )

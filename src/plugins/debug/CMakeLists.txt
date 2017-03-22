@@ -4,7 +4,9 @@ PROJECT(debug)
 
 FILE(GLOB_RECURSE SRC src/* metadata.json)
 
-find_package(Qt5Widgets 5.2 REQUIRED)
+find_package(Qt5 5.2.0 REQUIRED COMPONENTS
+    Widgets
+)
 
 set(LIB
     ${Qt5Widgets_LIBRARIES}

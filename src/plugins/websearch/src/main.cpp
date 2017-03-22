@@ -48,9 +48,19 @@ std::map<QString,QIcon> iconCache;
 struct SearchEngine {
     bool    enabled;
     QString name;
-    QString url;
     QString trigger;
     QString iconPath;
+    QString url;
+};
+
+std::vector<SearchEngine> defaultSearchEngines = {
+    {true, "Google",        "gg ",  ":google",  "https://www.google.com/search?q=%s"},
+    {true, "Youtube",       "yt ",  ":youtube", "https://www.youtube.com/results?search_query=%s"},
+    {true, "Amazon",        "ama ", ":amazon",  "http://www.amazon.com/s/?field-keywords=%s"},
+    {true, "Ebay",          "eb ", ":ebay",    "http://www.ebay.com/sch/i.html?_nkw=%s"},
+    {true, "GitHub",        "gh ", ":github",  "https://github.com/search?utf8=✓&q=%s"},
+    {true, "Wolfram Alpha", "=",   ":wolfram", "https://www.wolframalpha.com/input/?i=%s"},
+    {true, "Php", "php",   ":php", "http://www.php.net/manual-lookup.php?pattern=%s"},
 };
 
 shared_ptr<Core::Item> buildWebsearchItem(const SearchEngine &se, const QString &searchterm) {
@@ -104,19 +114,21 @@ bool Websearch::WebsearchPrivate::deserialize() {
                .filePath(QString("%1.json").arg(q->Core::Extension::id)));
 
     if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << QString("[%1] Could not open file: %2").arg(q->Core::Extension::id,file.fileName()).toLocal8Bit().data();
+        qWarning() << qPrintable(QString("Could not open file: '%1'.").arg(file.fileName()));
         return false;
     }
 
     QJsonArray array = QJsonDocument::fromJson(file.readAll()).array();
 
+    SearchEngine searchEngine;
     for ( const QJsonValue& value : array) {
         QJsonObject object = value.toObject();
-        searchEngines.emplace_back(SearchEngine{object["enabled"].toBool(),
-                                                object["name"].toString(),
-                                                object["url"].toString(),
-                                                object["trigger"].toString(),
-                                                object["iconPath"].toString()});
+        searchEngine.enabled  = object["enabled"].toBool();
+        searchEngine.name     = object["name"].toString();
+        searchEngine.trigger  = object["trigger"].toString();
+        searchEngine.iconPath = object["iconPath"].toString();
+        searchEngine.url      = object["url"].toString();
+        searchEngines.push_back(searchEngine);
     }
 
     return true;
@@ -131,7 +143,7 @@ bool Websearch::WebsearchPrivate::serialize() {
                .filePath(QString("%1.json").arg(q->Core::Extension::id)));
 
     if (!file.open(QIODevice::WriteOnly)) {
-        qWarning() << QString("[%1] Could not open file: %2").arg(q->Core::Extension::id,file.fileName()).toLocal8Bit().data();
+        qWarning() << qPrintable(QString("Could not open file: '%1'.").arg(file.fileName()));
         return false;
     }
 
@@ -157,16 +169,7 @@ bool Websearch::WebsearchPrivate::serialize() {
 /** ***************************************************************************/
 void Websearch::WebsearchPrivate::restoreDefaults() {
     /* Init std searches */
-    searchEngines.clear();
-
-    searchEngines.emplace_back(SearchEngine{true, "Google", "https://www.google.com/search?q=%s", "gg ", ":google"});
-    searchEngines.emplace_back(SearchEngine{true, "Youtube", "https://www.youtube.com/results?search_query=%s", "yt ", ":youtube"});
-    searchEngines.emplace_back(SearchEngine{true, "Amazon", "http://www.amazon.com/s/?field-keywords=%s", "ama ", ":amazon"});
-    searchEngines.emplace_back(SearchEngine{true, "Ebay", "http://www.ebay.com/sch/i.html?_nkw=%s", "eb ", ":ebay"});
-    searchEngines.emplace_back(SearchEngine{true, "GitHub", "https://github.com/search?utf8=✓&q=%s", "gh ", ":github"});
-    searchEngines.emplace_back(SearchEngine{true, "Wolfram Alpha", "https://www.wolframalpha.com/input/?i=%s", "=", ":wolfram"});
-    searchEngines.emplace_back(SearchEngine{true, "Php", "http://www.php.net/manual-lookup.php?pattern=%s", "php", ":php"});
-
+    searchEngines = defaultSearchEngines;
     serialize();
 
     if (!widget.isNull())
@@ -193,24 +196,22 @@ Websearch::Extension::Extension()
 
         // Deserialize binary data
         if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
-            qDebug("[%s] Porting from binary file: %s", Core::Extension::id.toUtf8().constData(), dataFile.fileName().toLocal8Bit().data());
+            qDebug() << "Porting websearches from old format";
             QDataStream in(&dataFile);
             quint64 size;
             in >> size;
             SearchEngine se;
-            bool enabled;
-            QString name, trigger, url, iconPath;
             for (quint64 i = 0; i < size; ++i) {
-                in >> enabled >> url >> name >> trigger >> iconPath;
-                d->searchEngines.emplace_back(SearchEngine{enabled, name, url, trigger, iconPath});
+                in >> se.enabled >> se.url >> se.name >> se.trigger >> se.iconPath;
+                d->searchEngines.push_back(se);
             }
             dataFile.close();
         } else
-            qWarning() << "Could not open file: " << dataFile.fileName();
+            qWarning() << qPrintable(QString("Could not open file '%1'").arg(dataFile.fileName()));
 
         // Whatever remove it
         if ( !dataFile.remove() )
-            qWarning() << "Could not remove file: " << dataFile.fileName();
+            qWarning() << qPrintable(QString("Could not remove file '%1'").arg(dataFile.fileName()));
 
         // Hmm what to do?
 
