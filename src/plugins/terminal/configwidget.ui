@@ -2,14 +2,6 @@
 <ui version="4.0">
  <class>Terminal::ConfigWidget</class>
  <widget class="QWidget" name="Terminal::ConfigWidget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>261</width>
-    <height>140</height>
-   </rect>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
     <spacer name="verticalSpacer_2">
@@ -46,6 +38,9 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_statusbar"/>
    </item>
   </layout>
  </widget>

@@ -689,7 +689,7 @@ Applications::Extension::Extension()
 
 /** ***************************************************************************/
 Applications::Extension::~Extension() {
-
+    d->futureWatcher.waitForFinished();
 }
 
 

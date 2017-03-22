@@ -22,7 +22,7 @@
 
 namespace Terminal {
 
-class TerminalPrivate;
+class Internal;
 class ConfigWidget;
 
 class Extension final :
@@ -45,14 +45,19 @@ public:
     QString name() const override { return "Terminal"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     QString trigger() const override {return ">";}
-    void teardownSession() override;
     void handleQuery(Core::Query * query) override;
+
+    void startIndexing();
 
 private:
 
-    void rebuildIndex();
+    void finishIndexing();
 
-    std::unique_ptr<TerminalPrivate> d;
+    std::unique_ptr<Internal> d;
+
+signals:
+
+    void statusInfo(const QString&);
 
 };
 }

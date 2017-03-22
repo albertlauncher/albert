@@ -17,12 +17,14 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
+#include <QFutureWatcher>
 #include <QDirIterator>
 #include <QPointer>
 #include <QProcess>
 #include <QProcessEnvironment>
 #include <QRegularExpression>
 #include <QStringList>
+#include <QtConcurrent>
 #include <algorithm>
 #include <set>
 #include "main.h"
@@ -40,17 +42,99 @@ using Core::StandardItem;
 
 extern QString terminalCommand;
 
+namespace  {
 
+std::set<QString> scanCommands() {
 
-class Terminal::TerminalPrivate
+    std::set<QString> index;
+
+    // Index the executables in the path
+    QStringList paths = QString(::getenv("PATH")).split(':', QString::SkipEmptyParts);
+    for (const QString &path : paths) {
+        QDirIterator dirIt(path);
+        while (dirIt.hasNext()) {
+            QFileInfo file(dirIt.next());
+            if ( file.isExecutable() )
+                index.insert(file.fileName());
+        }
+    }
+
+    // If env contains the shell index the aliases, aliases are sourced in interactive mode only
+    QProcess process;
+    process.start(QString("%1 -ic \"alias\"").arg(QProcessEnvironment::systemEnvironment().value("SHELL")));
+    if ( !process.waitForFinished(2000) )
+        return std::set<QString>();
+    QTextStream standardout(process.readAllStandardOutput());
+
+    QRegularExpression regex("(?:alias\\s)?(.+?)=");
+    while (!standardout.atEnd()){
+        QString line = standardout.readLine();
+        QRegularExpressionMatch match = regex.match(line);
+        if (match.hasMatch())
+            index.insert(match.captured(1));
+    }
+
+    return index;
+}
+
+}
+
+/** ***************************************************************************/
+/** ***************************************************************************/
+/** ***************************************************************************/
+/** ***************************************************************************/
+class Terminal::Internal
 {
 public:
+    QFutureWatcher<std::set<QString>> futureWatcher;
     QPointer<ConfigWidget> widget;
-    QFileSystemWatcher watcher;
+    QFileSystemWatcher fileSystemWatcher;
     std::set<QString> index;
     QString iconPath;
     bool dirtyFlag;
+
 };
+
+
+
+/** ***************************************************************************/
+void Terminal::Extension::startIndexing() {
+
+    // Never run concurrent
+    if ( d->futureWatcher.future().isRunning() )
+        return;
+
+    // Run finishIndexing when the indexing thread finished
+    d->futureWatcher.disconnect();
+    connect(&d->futureWatcher, &QFutureWatcher<std::set<QString>>::finished,
+            this, &Extension::finishIndexing);
+
+    // Run the indexer thread
+    d->futureWatcher.setFuture(QtConcurrent::run(scanCommands));
+
+    // Notification
+    qDebug() << "Start indexing programs and aliases.";
+    emit statusInfo("Indexing programs and aliases ...");
+}
+
+
+
+/** ***************************************************************************/
+void Terminal::Extension::finishIndexing() {
+
+    // Get the thread results
+    d->index = d->futureWatcher.future().result();
+
+    // Update filesystem watchers paths
+    QStringList paths = QString(::getenv("PATH")).split(':', QString::SkipEmptyParts);
+    if ( !d->fileSystemWatcher.directories().isEmpty() )
+        d->fileSystemWatcher.removePaths(d->fileSystemWatcher.directories());
+    d->fileSystemWatcher.addPaths(paths);
+
+    // Notification
+    qDebug() << qPrintable(QString("Indexed %1 programs and aliases.").arg(d->index.size()));
+    emit statusInfo(QString("%1 programs and aliases indexed.").arg(d->index.size()));
+}
 
 
 
@@ -58,16 +142,17 @@ public:
 Terminal::Extension::Extension()
     : Core::Extension("org.albert.extension.terminal"),
       Core::QueryHandler(Core::Extension::id),
-      d(new TerminalPrivate) {
+      d(new Internal) {
 
     d->dirtyFlag = false;
 
     QString iconPath = XdgIconLookup::iconPath("terminal");
     d->iconPath = iconPath.isNull() ? ":terminal" : iconPath;
 
-    connect(&d->watcher, &QFileSystemWatcher::directoryChanged, [this](){ d->dirtyFlag = true; });
+    connect(&d->fileSystemWatcher, &QFileSystemWatcher::directoryChanged,
+            this, &Extension::startIndexing);
 
-    rebuildIndex();
+    startIndexing();
 
 }
 
@@ -75,25 +160,25 @@ Terminal::Extension::Extension()
 
 /** ***************************************************************************/
 Terminal::Extension::~Extension() {
-
+    d->futureWatcher.waitForFinished();
 }
 
 
 
 /** ***************************************************************************/
 QWidget *Terminal::Extension::widget(QWidget *parent) {
-    if (d->widget.isNull())
+    if (d->widget.isNull()) {
+
         d->widget = new ConfigWidget(parent);
+
+        // Status bar
+        ( d->futureWatcher.isRunning() )
+            ? d->widget->ui.label_statusbar->setText("Indexing programs and aliases ...")
+            : d->widget->ui.label_statusbar->setText(QString("%1 programs and aliases indexed.").arg(d->index.size()));
+        connect(this, &Extension::statusInfo, d->widget->ui.label_statusbar, &QLabel::setText);
+    }
+
     return d->widget;
-}
-
-
-
-/** ***************************************************************************/
-void Terminal::Extension::teardownSession() {
-    if ( d->dirtyFlag )
-        // Build rebuild the chache
-        rebuildIndex();
 }
 
 
@@ -117,7 +202,7 @@ void Terminal::Extension::handleQuery(Core::Query * query) {
 
     // Iterate over matches
     QString program;
-     while (it != d->index.end() && it->startsWith(potentialProgram)){
+    while (it != d->index.end() && it->startsWith(potentialProgram)){
         program = *it;
         QString commandlineString = QString("%1 %2").arg(program, argsString);
 
@@ -162,37 +247,3 @@ void Terminal::Extension::handleQuery(Core::Query * query) {
     query->addMatches(results.begin(), results.end());
 }
 
-
-
-/** ***************************************************************************/
-void Terminal::Extension::rebuildIndex() {
-
-    std::set<QString> index;
-
-    // Index the executables in the path
-    QStringList paths = QString(::getenv("PATH")).split(':', QString::SkipEmptyParts);
-    for (const QString &path : paths) {
-        QDirIterator dirIt(path);
-        while (dirIt.hasNext()) {
-            QFileInfo file(dirIt.next());
-            if ( file.isExecutable() )
-                index.insert(file.fileName());
-        }
-    }
-
-    // If env contains the shell index the aliases
-    QProcess process;
-    process.start(QString("%1 -ic \"alias\"").arg(QProcessEnvironment::systemEnvironment().value("SHELL")));
-    if ( !process.waitForFinished(100) )
-        return;
-    QTextStream standardout(process.readAllStandardOutput());
-    QRegularExpression regex("(?<=alias )\\w*");
-    while (!standardout.atEnd()){
-        QString line = standardout.readLine();
-        QRegularExpressionMatch match = regex.match(line);
-        if (match.hasMatch())
-            index.insert(match.captured(0));
-    }
-
-    d->index = std::move(index);
-}

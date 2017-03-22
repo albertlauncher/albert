@@ -5,6 +5,7 @@ PROJECT(terminal)
 FILE(GLOB_RECURSE SRC src/* metadata.json)
 
 find_package(Qt5 5.2.0 REQUIRED COMPONENTS
+    Concurrent
     Widgets
 )
 
@@ -25,6 +26,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE src/)
 # Link target to libraries
 target_link_libraries(${PROJECT_NAME}
     ${Qt5Widgets_LIBRARIES}
+    ${Qt5Concurrent_LIBRARIES}
     albertcore
     xdg
 )
