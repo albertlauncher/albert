@@ -165,6 +165,7 @@ void Websearch::WebsearchPrivate::restoreDefaults() {
     searchEngines.emplace_back(SearchEngine{true, "Ebay", "http://www.ebay.com/sch/i.html?_nkw=%s", "eb ", ":ebay"});
     searchEngines.emplace_back(SearchEngine{true, "GitHub", "https://github.com/search?utf8=✓&q=%s", "gh ", ":github"});
     searchEngines.emplace_back(SearchEngine{true, "Wolfram Alpha", "https://www.wolframalpha.com/input/?i=%s", "=", ":wolfram"});
+    searchEngines.emplace_back(SearchEngine{true, "Php", "http://www.php.net/manual-lookup.php?pattern=%s", "php", ":php"});
 
     serialize();
 
