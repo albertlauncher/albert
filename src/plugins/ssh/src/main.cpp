@@ -132,7 +132,7 @@ Ssh::Extension::~Extension() {
 
 /** ***************************************************************************/
 QString Ssh::Extension::trigger() const {
-    return "ssh";
+    return "ssh ";
 }
 
 
