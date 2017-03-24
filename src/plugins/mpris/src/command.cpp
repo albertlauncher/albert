@@ -83,8 +83,17 @@ bool MPRIS::Command::isApplicable(Player &p) const {
     QDBusMessage reply = QDBusConnection::sessionBus().call(mesg);
 
     // Check if the result is as expected
-    QVariant result = reply.arguments().at(0).value<QDBusVariant>().variant();
-    return (result == expectedValue_) == positivity_;
+    if ( reply.type() != QDBusMessage::ReplyMessage ){
+        qWarning() << "Error while querying the property 'PlaybackStatus'";
+        return true;
+    }
+
+    if ( reply.arguments().empty() ) {
+        qWarning() << "Reply query 'PlaybackStatus' is empty";
+        return true;
+    }
+
+    return (reply.arguments().at(0).value<QDBusVariant>().variant() == expectedValue_) == positivity_;
 }
 
 
