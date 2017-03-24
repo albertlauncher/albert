@@ -62,10 +62,12 @@ std::set<QString> scanCommands() {
     // If env contains the shell index the aliases, aliases are sourced in interactive mode only
     QProcess process;
     process.start(QString("%1 -ic \"alias\"").arg(QProcessEnvironment::systemEnvironment().value("SHELL")));
-    if ( !process.waitForFinished(2000) )
-        return std::set<QString>();
-    QTextStream standardout(process.readAllStandardOutput());
+    if ( !process.waitForFinished(2000) ||
+         process.exitStatus() != QProcess::NormalExit ||
+         process.exitCode() != 0 )
+        return index;
 
+    QTextStream standardout(process.readAllStandardOutput());
     QRegularExpression regex("(?:alias\\s)?(.+?)=");
     while (!standardout.atEnd()){
         QString line = standardout.readLine();
