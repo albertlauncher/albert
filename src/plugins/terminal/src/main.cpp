@@ -21,12 +21,13 @@
 #include <QDirIterator>
 #include <QPointer>
 #include <QProcess>
-#include <QProcessEnvironment>
 #include <QRegularExpression>
 #include <QStringList>
 #include <QtConcurrent>
 #include <algorithm>
 #include <set>
+#include <pwd.h>
+#include <unistd.h>
 #include "main.h"
 #include "xdgiconlookup.h"
 #include "configwidget.h"
@@ -59,9 +60,14 @@ std::set<QString> scanCommands() {
         }
     }
 
+    // passwd must not be freed
+    passwd *pwd = getpwuid(geteuid());
+    if (pwd == NULL)
+        return index;
+
     // If env contains the shell index the aliases, aliases are sourced in interactive mode only
     QProcess process;
-    process.start(QString("%1 -ic \"alias\"").arg(QProcessEnvironment::systemEnvironment().value("SHELL")));
+    process.start(QString("%1 -ic \"alias\"").arg(pwd->pw_shell));
     if ( !process.waitForFinished(2000) ||
          process.exitStatus() != QProcess::NormalExit ||
          process.exitCode() != 0 )
