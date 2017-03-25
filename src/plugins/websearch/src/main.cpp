@@ -481,9 +481,9 @@ bool Websearch::Extension::insertRows(int position, int rows, const QModelIndex 
         d->searchEngines.insert(d->searchEngines.begin() + row,
                               SearchEngine({false,
                                             "<name>",
-                                            "<http://url/containing/the/?query=%s>",
                                             "<trigger>",
-                                            ":default"}));
+                                            ":default",
+                                            "<http://url/containing/the/?query=%s>"}));
     }
     endInsertRows();
 
