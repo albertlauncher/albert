@@ -3,4 +3,5 @@ build*
 LicenseTemplate
 packaging
 design
+.albertignore
 
