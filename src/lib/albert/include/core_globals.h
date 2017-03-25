@@ -16,10 +16,23 @@
 
 #pragma once
 
-#ifdef CORE
- #define EXPORT_CORE Q_DECL_EXPORT
+#if defined(_MSC_VER)
+    #define EXPORT __declspec(dllexport)
+    #define IMPORT __declspec(dllimport)
+#elif defined(__GNUC__)
+    #define EXPORT __attribute__((visibility("default")))
+    #define IMPORT
 #else
- #define EXPORT_CORE Q_DECL_IMPORT
+    #define EXPORT
+    #define IMPORT
+    #pragma warning Unknown dynamic link import/export semantics.
+#endif
+
+#ifdef CORE
+ #define EXPORT_CORE EXPORT
+#else
+ #define EXPORT_CORE IMPORT
 #endif
 
 #define ALBERT_EXTENSION_IID "ExtensionInterface/v1.0"
+

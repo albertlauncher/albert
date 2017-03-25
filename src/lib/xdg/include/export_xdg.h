@@ -15,8 +15,21 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#if defined XDG
- #define EXPORT_XDG Q_DECL_EXPORT
+
+#if defined(_MSC_VER)
+    #define EXPORT __declspec(dllexport)
+    #define IMPORT __declspec(dllimport)
+#elif defined(__GNUC__)
+    #define EXPORT __attribute__((visibility("default")))
+    #define IMPORT
 #else
- #define EXPORT_XDG Q_DECL_IMPORT
+    #define EXPORT
+    #define IMPORT
+    #pragma warning Unknown dynamic link import/export semantics.
+#endif
+
+#ifdef XDG
+ #define EXPORT_XDG EXPORT
+#else
+ #define EXPORT_XDG IMPORT
 #endif
