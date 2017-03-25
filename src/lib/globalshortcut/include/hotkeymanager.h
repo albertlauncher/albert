@@ -18,10 +18,11 @@
 #include <QObject>
 #include <QSet>
 #include <memory>
+#include "export_globalshortcut.h"
 
 class HotkeyManagerPrivate;
 
-class HotkeyManager final : public QObject
+class EXPORT_GLOBALSHORTCUT HotkeyManager final : public QObject
 {
     Q_OBJECT
 

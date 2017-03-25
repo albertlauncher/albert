@@ -1,11 +1,14 @@
 cmake_minimum_required(VERSION 2.8.12)
 
 project(globalshortcut)
+add_definitions(-DGLOBALSHORTCUT) #export branch
 
 # Get Qt libraries
 find_package(Qt5 5.2.0 REQUIRED COMPONENTS Gui)
 
+# List files in the source directory
 set(SRC
+    include/export_globalshortcut.h
     include/hotkeymanager.h
     src/hotkeymanager.cpp
 )
