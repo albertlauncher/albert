@@ -18,13 +18,12 @@
 #include <QString>
 #include <QStringList>
 #include <QPluginLoader>
-#include "core_globals.h"
 
 namespace Core {
 
 class Extension;
 
-class EXPORT_CORE ExtensionSpec final
+class ExtensionSpec final
 {
 public:
 

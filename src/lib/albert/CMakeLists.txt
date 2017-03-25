@@ -7,32 +7,48 @@ add_definitions(-DCORE) #export branch
 # Get Qt libraries
 find_package(Qt5 5.2.0 REQUIRED COMPONENTS
     Concurrent
+    Network
     Sql
+    Svg
     Widgets
 )
 
 # List files in the source directory
 FILE(GLOB_RECURSE SRC include/* src/*)
 
-# Do not export symbols by default
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+qt5_wrap_ui(UI
+    src/albert/mainwindow/mainwindow.ui
+    src/albert/settingswidget/settingswidget.ui
+)
+
+qt5_add_resources(QRC
+    resources.qrc
+)
 
 # Define the target
-add_library(${PROJECT_NAME} SHARED ${SRC} ${UI})
+add_library(${PROJECT_NAME} SHARED ${SRC} ${UI} ${QRC})
 
 # Set INCLUDE_DIRS and INTERFACE_INCLUDE_DIRS
 target_include_directories(${PROJECT_NAME}
-    PUBLIC include/
-    PRIVATE src/
+    PUBLIC
+        include/
+    PRIVATE
+        src/
+        src/albert/
+        src/albert/settingswidget/
+        src/albert/mainwindow/
 )
 
 # Link target to libraries
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         ${Qt5Concurrent_LIBRARIES}
+        ${Qt5Network_LIBRARIES}
         ${Qt5Sql_LIBRARIES}
+        ${Qt5Svg_LIBRARIES}
         ${Qt5Widgets_LIBRARIES}
+        albertcore
+        globalshortcut
         xdg
 )
 

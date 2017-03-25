@@ -26,6 +26,7 @@
 #include <QStandardPaths>
 #include <vector>
 #include <utility>
+#include "core_globals.h"
 #include "extension.h"
 #include "extensionspec.h"
 #include "extensionmanager.h"
@@ -43,7 +44,7 @@ const char* CFG_TERM = "terminal";
 const char* DEF_TERM = "xterm -e";
 }
 
-QString terminalCommand;
+EXPORT_CORE QString terminalCommand;
 
 
 /** ***************************************************************************/

@@ -29,18 +29,19 @@
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QLocalSocket>
 #include <csignal>
-#include "mainwindow.h"
-#include "hotkeymanager.h"
+#include "albert.h"
 #include "extensionmanager.h"
+#include "hotkeymanager.h"
+#include "mainwindow.h"
 #include "querymanager.h"
 #include "settingswidget.h"
 #include "trayicon.h"
 #include "xdgiconlookup.h"
 using Core::ExtensionManager;
 
-void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message);
-void shutdownHandler(int);
-void dispatchMessage();
+static void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message);
+static void shutdownHandler(int);
+static void dispatchMessage();
 
 
 static QApplication           *app;
@@ -52,7 +53,8 @@ static TrayIcon               *trayIcon;
 static QMenu                  *trayIconMenu;
 static QLocalServer           *localServer;
 
-int main(int argc, char **argv) {
+
+int Albert::run(int argc, char **argv) {
 
     {
         bool showSettingsWhenInitialized = false;
@@ -475,3 +477,4 @@ void dispatchMessage() {
     socket->close();
     socket->deleteLater();
 }
+

@@ -14,30 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
-#include <QString>
-#include <map>
-#include <memory>
-#include "core_globals.h"
-#include "item.h"
+#include "albert.h"
 
-namespace Core {
-
-/**
- * @brief The MatchOrder class
- * The implements the order of the results
- */
-class EXPORT_CORE MatchCompare
-{
-public:
-
-    static void update();
-    bool operator()(const std::pair<std::shared_ptr<Item>, short>& lhs,
-                    const std::pair<std::shared_ptr<Item>, short>& rhs);
-
-private:
-
-    static std::map<QString, double> order;
-};
-
+int main(int argc, char **argv) {
+    return Albert::run(argc, argv);
 }
