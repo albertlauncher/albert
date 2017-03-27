@@ -208,7 +208,7 @@ void MainWindow::setVisible(bool visible) {
         // flicker this may be okay.
         if (showCentered_){
             QDesktopWidget *dw = QApplication::desktop();
-            this->move(dw->availableGeometry(dw->screenNumber(QCursor::pos())).center()
+            this->move(dw->screenGeometry(dw->screenNumber(QCursor::pos())).center()
                        -QPoint(rect().right()/2,192 ));
         }
         this->raise();
