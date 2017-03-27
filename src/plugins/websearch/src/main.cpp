@@ -59,7 +59,8 @@ std::vector<SearchEngine> defaultSearchEngines = {
     {true, "Amazon",        "ama ", ":amazon",  "http://www.amazon.com/s/?field-keywords=%s"},
     {true, "Ebay",          "eb ", ":ebay",    "http://www.ebay.com/sch/i.html?_nkw=%s"},
     {true, "GitHub",        "gh ", ":github",  "https://github.com/search?utf8=✓&q=%s"},
-    {true, "Wolfram Alpha", "=",   ":wolfram", "https://www.wolframalpha.com/input/?i=%s"}
+    {true, "Wolfram Alpha", "=",   ":wolfram", "https://www.wolframalpha.com/input/?i=%s"},
+    {true, "Php", "php",   ":php", "http://www.php.net/manual-lookup.php?pattern=%s"}
 };
 
 shared_ptr<Core::Item> buildWebsearchItem(const SearchEngine &se, const QString &searchterm) {
