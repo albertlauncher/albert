@@ -47,7 +47,6 @@ target_link_libraries(${PROJECT_NAME}
         ${Qt5Sql_LIBRARIES}
         ${Qt5Svg_LIBRARIES}
         ${Qt5Widgets_LIBRARIES}
-        albertcore
         globalshortcut
         xdg
 )
