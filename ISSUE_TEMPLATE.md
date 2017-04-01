@@ -1,35 +1,18 @@
-<!--
-
-Note that this is not a support forum. Issues that are
-not related to the code will be closed uncommented.
-Use the chats before to find out if this is an issue.
-https://albertlauncher.github.io/help/
-
-Please ensure the following before you submit an issue:
-
-  * You are using the latest version of Albert
-  * You have read the wiki and especially checked the FAQ
-  * The issue is related to the software development
-  * You use and fill out the template below _completely_
-
+<!-- 
+People are too lazy to read, so in a nutshell:
+* Check for existing issues.
+* Read the FAQ.
+* Dont ask for support here (there are chats for that).
+* Upate to the latest version. 
+* If not possible check if the issue has been fixed already.
+* IN ANY CASE: Provide the information below !
 -->
 
-##### Environent
-
-- Operating system:
-<!-- e.g. Ubuntu 15.10, Archlinux, Fedora 23 -->
-- Desktop environment:
-<!-- (if any, else window manager) -->
-- Qt version:
-<!-- e.g. 5.3.1 -->
-- Source/Version:
-<!-- e.g. AUR, ppa:name, "compiled from source" and 0.9.3 -->
-
-##### Steps to reproduce
-<!-- How did you discover this issue? -->
-
-##### Expected behaviour
-<!-- What did you expect to happen? -->
-
-##### Actual behaviour
-<!-- What happened instead? -->
+- Operating system
+- Desktop environment
+- Qt version
+- Albert version
+- How you installed Albert (e.g. ppa:name, aur or from source)
+- Steps to reproduce
+- Expected behaviour
+- Actual behaviour
