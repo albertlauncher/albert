@@ -47,17 +47,9 @@ public:
     QString trigger() const override {return ">";}
     void handleQuery(Core::Query * query) override;
 
-    void startIndexing();
-
 private:
 
-    void finishIndexing();
-
     std::unique_ptr<Internal> d;
-
-signals:
-
-    void statusInfo(const QString&);
 
 };
 }
