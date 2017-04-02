@@ -34,7 +34,7 @@ class EXPORT_CORE StandardItem : public Item
 {
 public:
 
-    StandardItem(const QString &id);
+    StandardItem(const QString &id = QString());
 
     QString id() const override final;
 

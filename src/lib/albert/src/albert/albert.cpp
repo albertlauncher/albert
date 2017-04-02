@@ -204,7 +204,7 @@ int Albert::run(int argc, char **argv) {
         QSqlQuery q;
         if (!q.exec("CREATE TABLE IF NOT EXISTS usages ( "
                     "  input TEXT NOT NULL, "
-                    "  itemId TEXT NOT NULL, "
+                    "  itemId TEXT, "
                     "  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP "
                     ");"))
             qFatal("Unable to create table 'usages': %s", q.lastError().text().toUtf8().constData());
