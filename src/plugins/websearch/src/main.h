@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QAbstractTableModel>
 #include <memory>
 #include "extension.h"
 #include "queryhandler.h"
@@ -23,11 +22,11 @@
 
 namespace Websearch {
 
-class WebsearchPrivate;
+struct Internal;
 class ConfigWidget;
 
 class Extension final :
-        public QAbstractTableModel, // QObject
+        public QObject,
         public Core::Extension,
         public Core::QueryHandler,
         public Core::FallbackProvider
@@ -40,32 +39,18 @@ public:
     Extension();
     ~Extension();
 
-    /*
-     * Implementation of extension interface
-     */
-
     QString name() const override { return "Websearch"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     void handleQuery(Core::Query * query) override;
     std::vector<std::shared_ptr<Core::Item>> fallbacks(const QString &) override;
 
-    /*
-     * Implementation of extension interface
-     */
-
-    int rowCount(const QModelIndex & parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex & parent = QModelIndex()) const override;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
-    bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole) override;
-    Qt::ItemFlags flags(const QModelIndex & index) const override;
-    bool insertRows (int position, int rows, const QModelIndex & parent = QModelIndex()) override;
-    bool removeRows (int position, int rows, const QModelIndex & parent = QModelIndex()) override;
-    bool moveRows(const QModelIndex &sourceRow, int srcRow, int cnt, const QModelIndex & dst, int destinationChild) override;
-
 private:
 
-    std::unique_ptr<WebsearchPrivate> d;
+    bool deserialize();
+    bool serialize();
+    void restoreDefaults();
+
+    std::unique_ptr<Internal> d;
 
 };
 
