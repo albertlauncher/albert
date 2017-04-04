@@ -34,6 +34,7 @@ public:
 private:
 
     bool eventFilter(QObject*, QEvent *event) override;
+    void showEvent(QShowEvent *event) override;
 
     ItemDelegate *delegate_;
 };

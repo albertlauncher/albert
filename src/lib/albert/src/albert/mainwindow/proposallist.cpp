@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QApplication>
 #include <QKeyEvent>
 #include <QPainter>
 #include <QPixmapCache>
@@ -118,6 +119,18 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
     }
     return false;
 }
+
+
+
+/** ***************************************************************************/
+void ProposalList::showEvent(QShowEvent *event) {
+    QWidget::showEvent(event);
+    if (qApp->keyboardModifiers() == Qt::MetaModifier)
+        delegate_->subTextRole = Qt::UserRole+101;
+    else
+        delegate_->subTextRole = Qt::ToolTipRole;
+}
+
 
 
 /** ***************************************************************************/
