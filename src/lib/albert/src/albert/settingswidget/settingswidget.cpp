@@ -267,10 +267,12 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
 
 /** ***************************************************************************/
 void SettingsWidget::changeHotkey(int newhk) {
+
     int oldhk = *hotkeyManager_->hotkeys().begin(); //TODO Make cool sharesdpointer design
 
     // Try to set the hotkey
     if (hotkeyManager_->registerHotkey(newhk)) {
+
         QString hkText(QKeySequence((newhk&~Qt::GroupSwitchModifier)).toString());//QTBUG-45568
         ui.grabKeyButton_hotkey->setText(hkText);
         QSettings(qApp->applicationName()).setValue("hotkey", hkText);

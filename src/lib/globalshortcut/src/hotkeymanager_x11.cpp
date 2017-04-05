@@ -54,7 +54,7 @@ namespace {
         { Qt::Key_PageDown,     { XK_Next }},
         { Qt::Key_Shift,        { XK_Shift_L, XK_Shift_R, XK_Shift_Lock  }},// modifiers
         { Qt::Key_Control,      { XK_Control_L, XK_Control_R }},
-        { Qt::Key_Meta,         { XK_Meta_L, XK_Meta_R }},
+        { Qt::Key_Meta,         { XK_Super_L, XK_Super_R }}, // XK_Meta_L Maps to alt, not super(win) key
         { Qt::Key_Alt,          { XK_Alt_L, XK_Alt_R }},
         { Qt::Key_CapsLock,     { XK_Caps_Lock }},
         { Qt::Key_NumLock,      { XK_Num_Lock }},

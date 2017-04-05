@@ -77,6 +77,7 @@ void GrabKeyButton::keyPressEvent(QKeyEvent *event) {
             releaseAll(); // Can not be before since window closes on esc
             return;
         }
+
         releaseAll();
 
         setText(QKeySequence((mods&~Qt::GroupSwitchModifier)|key).toString()); //QTBUG-45568
@@ -87,15 +88,18 @@ void GrabKeyButton::keyPressEvent(QKeyEvent *event) {
 }
 
 
-
 /** ***************************************************************************/
 void GrabKeyButton::keyReleaseEvent(QKeyEvent *event) {
     if ( waitingForHotkey_ ) {
         // Modifier released -> update the label
         int key = event->key();
-        if(key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta) {
+        if(key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt) {
             setText(QKeySequence((event->modifiers()&~Qt::GroupSwitchModifier)|Qt::Key_Question).toString());//QTBUG-45568
             event->accept();
+            return;
+        } else if ( key == Qt::Key_Meta ) {
+            releaseAll();
+            emit keyCombinationPressed(key);
             return;
         }
         return;

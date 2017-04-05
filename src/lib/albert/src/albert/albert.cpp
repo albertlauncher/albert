@@ -341,7 +341,7 @@ int Albert::run(int argc, char **argv) {
         Core::ExtensionManager::instance->reloadExtensions();
 
         // Application is initialized create the settings widget
-        settingsWidget   = new SettingsWidget(mainWindow, hotkeyManager, ExtensionManager::instance, trayIcon);
+        settingsWidget = new SettingsWidget(mainWindow, hotkeyManager, ExtensionManager::instance, trayIcon);
 
         // If somebody requested the settings dialog open it
         if ( showSettingsWhenInitialized )
