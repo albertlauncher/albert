@@ -136,21 +136,20 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow,
 
     // Available terms
     std::vector<std::pair<QString, QString>> terms {
-        {"XTerm", "xterm -e"},
-        {"UXTerm", "uxterm -e"},
-        {"urxvt", "urxvt -e"},
-        {"Terminator", "terminator -x"},
-        {"LXTerminal", "lxterminal -e"},
-        {"Konsole", "konsole -e"},
-        {"Gnome Terminal", "gnome-terminal -x"},
-        {"XFCE-Terminal", "xfce4-terminal -x"},
         {"Cool Retro Term", "cool-retro-term -e"},
+        {"Gnome Terminal", "gnome-terminal -x"},
+        {"Konsole", "konsole -e"},
+        {"LXTerminal", "lxterminal -e"},
+        {"Mate-Termial", "mate-terminal -x"},
         {"RoxTerm", "roxterm -x"},
-        {"Mate-Termial", "mate-terminal -x"}
+        {"Terminator", "terminator -x"},
+        {"urxvt", "urxvt -e"},
+        {"UXTerm", "uxterm -e"},
+        {"XFCE-Terminal", "xfce4-terminal -x"},
+        {"XTerm", "xterm -e"}
     };
 
     // Fill checkbox
-    ui.comboBox_term->addItem(tr("Custom"));
     for ( ulong i = 0; i < terms.size(); ++i ) {
         if ( !QStandardPaths::findExecutable(terms[i].second.split(' ').first()).isEmpty() ){
             ui.comboBox_term->addItem(terms[i].first, terms[i].second);
@@ -158,18 +157,21 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow,
                 ui.comboBox_term->setCurrentIndex(static_cast<int>(ui.comboBox_term->count()-1));
         }
     }
+    ui.comboBox_term->insertSeparator(ui.comboBox_term->count());
+    ui.comboBox_term->addItem(tr("Custom"));
+
     ui.lineEdit_term->setText(terminalCommand);
     ui.lineEdit_term->setVisible(ui.comboBox_term->currentIndex() == 0);
 
     connect(ui.comboBox_term, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             [this](int index){
-        if ( index == 0 )
+        if ( index == ui.comboBox_term->count()-1)
             ui.lineEdit_term->setText(terminalCommand);
         else {
             terminalCommand = ui.comboBox_term->currentData(Qt::UserRole).toString();
             QSettings(qApp->applicationName()).setValue(CFG_TERM, terminalCommand);
         }
-        ui.lineEdit_term->setVisible(index == 0);
+        ui.lineEdit_term->setVisible(index == ui.comboBox_term->count()-1);
     });
 
     connect(ui.lineEdit_term, &QLineEdit::textEdited, [](QString str){
