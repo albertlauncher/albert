@@ -29,6 +29,7 @@
 #include "standarditem.h"
 #include "main.h"
 #include "query.h"
+#include "shlex.h"
 #include "xdgiconlookup.h"
 using std::shared_ptr;
 using std::vector;
@@ -183,7 +184,11 @@ void Ssh::Extension::handleQuery(Core::Query * query) {
     shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
     action->setText(QString("Connect to '%1' using ssh").arg(queryTerms[1]));
     action->setAction([queryTerms](){
-        QProcess::startDetached(QString("%1 \"ssh %2\"").arg(terminalCommand, queryTerms[1]));
+        QStringList tokens;
+        tokens << Util::ShellLexer::split(terminalCommand)
+               << "ssh"
+               << Util::ShellLexer::split(queryTerms[1]);
+        QProcess::startDetached(tokens.takeFirst(), tokens);
     });
     item->setActions({action});
 
@@ -226,7 +231,11 @@ void Ssh::Extension::rescan() {
         shared_ptr<StandardAction> sa = std::make_shared<StandardAction>();
         sa->setText(QString("Connect to '%1' using ssh").arg(host));
         sa->setAction([host](){
-            QProcess::startDetached(QString("%1 \"ssh %2\"").arg(terminalCommand, host));
+            QStringList tokens;
+            tokens << Util::ShellLexer::split(terminalCommand)
+                   << "ssh"
+                   << Util::ShellLexer::split(host);
+            QProcess::startDetached(tokens.takeFirst(), tokens);
         });
         si->setActions({sa});
 
