@@ -361,6 +361,7 @@ void ExternalExtensions::ExternalExtension::handleQuery(Query* query) {
         standardItem = std::make_shared<StandardItem>(object["id"].toString());
         standardItem->setText(object["name"].toString());
         standardItem->setSubtext(object["description"].toString());
+        standardItem->setCompletionString(object["completion"].toString());
         QString iconPath;
         if ( !(iconPath = XdgIconLookup::iconPath(object["icon"].toString())).isNull() )
             standardItem->setIconPath(iconPath);
