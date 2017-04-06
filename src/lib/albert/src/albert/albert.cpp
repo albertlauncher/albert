@@ -152,35 +152,51 @@ int Albert::run(int argc, char **argv) {
             QFile::rename(QString("%1/firstrun").arg(cacheLocation),
                           QString("%1/firstrun").arg(dataLocation));
 
-        QString lastUsedVersion;
-        QFile firstRunFile(QString("%1/firstrun").arg(dataLocation));
-        if ( firstRunFile.exists() ) {
+        // If there is a firstRun file, rename it to lastVersion (since v0.11)
+        if ( QFile::exists(QString("%1/firstrun").arg(dataLocation)) )
+            QFile::rename(QString("%1/firstrun").arg(dataLocation),
+                          QString("%1/last_used_version").arg(dataLocation));
 
-            //Try to open the first run file and read the version
-            if ( !firstRunFile.open(QIODevice::ReadOnly|QIODevice::Text) )
-                qCritical() << qPrintable(QString("Could not open file %1: %2").arg(firstRunFile.fileName(), firstRunFile.errorString()));
-            QTextStream(&firstRunFile) >> lastUsedVersion;
-            firstRunFile.close();
+        QFile file(QString("%1/last_used_version").arg(dataLocation));
+        if ( file.exists() ) {
+            // Read last used version
+            if ( file.open(QIODevice::ReadOnly|QIODevice::Text) ) {
+                QString lastUsedVersion;
+                QTextStream(&file) >> lastUsedVersion;
+                file.close();
 
-        } else { // This is the first run
-
-            // Give the user a possibility to set a hotkey on first run
+                // Show newsbox in case of major version change
+                if ( app->applicationVersion().section('.', 1, 1) != lastUsedVersion.section('.', 1, 1) ){
+                    // Do whatever is neccessary on first run
+                    QMessageBox(QMessageBox::Information, "First run",
+                                QString("You are now using Albert %1. Albert is still in the alpha "
+                                        "stage. This means things may change unexpectedly. Check "
+                                        "the <a href=\"https://albertlauncher.github.io/news/\">"
+                                        "news</a> to see what changed.")
+                                .arg(app->applicationVersion())
+                                ).exec();
+                }
+            }
+            else
+                qCritical() << qPrintable(QString("Could not open file %1: %2,. Config migration may fail.")
+                                          .arg(file.fileName(), file.errorString()));
+        } else {
+            // Do whatever is neccessary on first run
             if ( QMessageBox(QMessageBox::Information, "First run",
                              "Seems like this is the first time you run Albert. "
                              "Most probably you want to set a hotkey to show "
                              "Albert. Do you want to open the settings dialog?",
                              QMessageBox::No|QMessageBox::Yes).exec() == QMessageBox::Yes )
                 showSettingsWhenInitialized = true;
-
         }
 
         // Write the current version into the file
-        if ( firstRunFile.open(QIODevice::WriteOnly|QIODevice::Text) ) {
-            QTextStream out(&firstRunFile);
+        if ( file.open(QIODevice::WriteOnly|QIODevice::Text) ) {
+            QTextStream out(&file);
             out << app->applicationVersion();
-            firstRunFile.close();
+            file.close();
         } else
-            qCritical() << qPrintable(QString("Could not open file %1: %2").arg(firstRunFile.fileName(), firstRunFile.errorString()));
+            qCritical() << qPrintable(QString("Could not open file %1: %2").arg(file.fileName(), file.errorString()));
 
 
         /*
