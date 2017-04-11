@@ -51,37 +51,24 @@ public:
      * Extension specific members
      */
 
-    void addDir(const QString &dirPath);
-    void removeDir(const QString &dirPath);
+    const QStringList &paths() const;
+    void setPaths(const QStringList &);
     void restorePaths();
 
-    // Properties
-    bool indexAudio();
-    void setIndexAudio(bool b = true);
-
-    bool indexVideo();
-    void setIndexVideo(bool b = true);
-
-    bool indexImage();
-    void setIndexImage(bool b = true);
-
-    bool indexDocs();
-    void setIndexDocs(bool b = true);
-
-    bool indexDirs();
-    void setIndexDirs(bool b = true);
-
-    bool indexHidden();
+    bool indexHidden() const;
     void setIndexHidden(bool b = true);
 
-    bool followSymlinks();
+    bool followSymlinks() const;
     void setFollowSymlinks(bool b = true);
 
-    uint scanInterval();
+    uint scanInterval() const;
     void setScanInterval(uint minutes);
 
-    bool fuzzy();
+    bool fuzzy() const;
     void setFuzzy(bool b = true);
+
+    const QStringList &filters() const;
+    void setFilters(const QStringList &);
 
     void updateIndex();
 

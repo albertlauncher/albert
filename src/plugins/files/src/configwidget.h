@@ -21,27 +21,28 @@
 #include "ui_configwidget.h"
 
 namespace Files {
+
+class Extension;
+
 class ConfigWidget final : public QWidget
 {
     Q_OBJECT
+
 public:
-    explicit ConfigWidget(QWidget *parent = 0);
+
+    explicit ConfigWidget(Extension *ext, QWidget *parent = 0);
     ~ConfigWidget();
 
-    void setInfo(const QString &);
+private:
 
+    Extension *extension;
     Ui::ConfigWidget ui;
 
-private:
-    void onButton_PathAdd();
-    void onButton_PathRemove();
-    void onButton_RestorePaths();
-    void onButton_Advanced();
-
-
 signals:
+
     void requestAddPath(const QString&);
     void requestRemovePath(const QString&);
 
 };
+
 }

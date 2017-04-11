@@ -15,7 +15,6 @@ qt5_add_resources(QRC
 
 qt5_wrap_ui(UI
     forms/configwidget.ui
-    forms/mimetypechooser.ui
     forms/mimetypedialog.ui
 )
 
