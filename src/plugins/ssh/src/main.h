@@ -43,8 +43,8 @@ public:
      */
 
     QString name() const override { return "SecureShell"; }
-    QString trigger() const override;
     QWidget *widget(QWidget *parent = nullptr) override;
+    QStringList triggers() const override { return {"ssh "}; }
     void handleQuery(Core::Query * query) override;
 
     /*

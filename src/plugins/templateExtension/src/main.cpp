@@ -81,7 +81,11 @@ void ProjectNamespace::Extension::teardownSession() {
 
 /** ***************************************************************************/
 void ProjectNamespace::Extension::handleQuery(Core::Query * query) {
-    // Avoid annoying warnings
-    Q_UNUSED(query)
+
+    if ( query->isTriggered() ) {
+
+    } else {
+
+    }
 }
 

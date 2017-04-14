@@ -57,6 +57,9 @@ public:
 
     bool isValid() const;
 
+    bool isTriggered() const;
+    const QString &trigger() const;
+
     void addMatch(std::shared_ptr<Item> item, short score = 0);
     void addMatches(std::vector<std::pair<std::shared_ptr<Item>,short>>::iterator begin,
                     std::vector<std::pair<std::shared_ptr<Item>,short>>::iterator end);
@@ -71,6 +74,8 @@ private:
     void setSearchTerm(const QString &);
 
     void invalidate();
+
+    void setTrigger(const QString &trigger);
 
     void setQueryHandlers(const std::set<QueryHandler*> &);
 

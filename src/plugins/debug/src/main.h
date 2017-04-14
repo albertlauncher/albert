@@ -44,7 +44,7 @@ public:
 
     QString name() const override { return "Debug"; }
     QWidget *widget(QWidget *parent = nullptr) override;
-    QString trigger() const override;
+    QStringList triggers() const override;
     void handleQuery(Core::Query * query) override;
     bool isLongRunning() const override { return true; }
 
@@ -61,6 +61,7 @@ public:
     int delay() const;
     void setDelay(const int &delay);
 
+    const QString& trigger() const;
     void setTrigger(const QString &trigger);
 
 private:

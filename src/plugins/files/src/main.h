@@ -43,6 +43,7 @@ public:
      */
 
     QString name() const override { return "Files"; }
+    QStringList triggers() const override { return {"/", "~"}; }
     QWidget *widget(QWidget *parent = nullptr) override;
     void handleQuery(Core::Query * query) override;
 

@@ -34,5 +34,5 @@
  #define EXPORT_CORE IMPORT
 #endif
 
-#define ALBERT_EXTENSION_IID "ExtensionInterface/v1.0"
+#define ALBERT_EXTENSION_IID "ExtensionInterface/v1.0-alpha"
 

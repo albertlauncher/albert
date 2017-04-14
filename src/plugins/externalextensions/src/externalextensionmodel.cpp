@@ -89,7 +89,7 @@ QVariant ExternalExtensions::ExternalExtensionsModel::data(const QModelIndex &in
     case Qt::DisplayRole: {
         switch (static_cast<Section>(index.column())) {
         case Section::Name:  return externalExtensions_[index.row()]->name();
-        case Section::Trigger:  return externalExtensions_[index.row()]->trigger();
+        case Section::Trigger:  return externalExtensions_[index.row()]->triggers()[0] ;
         case Section::Path:  return externalExtensions_[index.row()]->path();
         default: return QVariant();
         }
@@ -97,7 +97,7 @@ QVariant ExternalExtensions::ExternalExtensionsModel::data(const QModelIndex &in
     case Qt::EditRole: {
         switch (static_cast<Section>(index.column())) {
         case Section::Name:  return externalExtensions_[index.row()]->name();
-        case Section::Trigger:  return externalExtensions_[index.row()]->trigger();
+        case Section::Trigger:  return externalExtensions_[index.row()]->triggers()[0];
         case Section::Path:  return externalExtensions_[index.row()]->path();
         default: return QVariant();
         }

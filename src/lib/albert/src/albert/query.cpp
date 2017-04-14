@@ -46,6 +46,7 @@ public:
     Query *q;
 
     QString searchTerm;
+    QString trigger;
     bool isValid;
     Query::State state;
 
@@ -352,6 +353,24 @@ bool Core::Query::isValid() const {
 
 
 /** ***************************************************************************/
+bool Core::Query::isTriggered() const {
+    return !d->trigger.isEmpty();
+}
+
+
+/** ***************************************************************************/
+const QString &Core::Query::trigger() const {
+    return d->trigger;
+}
+
+
+/** ***************************************************************************/
+void Core::Query::setTrigger(const QString &trigger) {
+    d->trigger = trigger;
+}
+
+
+/** ***************************************************************************/
 void Core::Query::addMatch(shared_ptr<Item> item, short score) {
     if ( d->isValid ) {
         d->pendingResultsMutex.lock();
@@ -390,6 +409,7 @@ void Core::Query::setSearchTerm(const QString &searchTerm) {
 void Core::Query::invalidate() {
     d->isValid = false;
 }
+
 
 /** ***************************************************************************/
 void Core::Query::setQueryHandlers(const set<QueryHandler *> &queryHandlers) {

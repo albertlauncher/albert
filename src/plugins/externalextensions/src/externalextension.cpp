@@ -302,6 +302,10 @@ void ExternalExtensions::ExternalExtension::teardownSession() {
 /** ***************************************************************************/
 void ExternalExtensions::ExternalExtension::handleQuery(Query* query) {
 
+    // External extension must run only when triggered, since they are to ressource heavy
+    if ( !query->isTriggered() )
+        return;
+
     // Never run the extension concurrent
     QMutexLocker lock (&processMutex_);
     QString errorString;

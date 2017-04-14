@@ -73,7 +73,14 @@ QWidget *Debug::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-QString Debug::Extension::trigger() const {
+QStringList Debug::Extension::triggers() const {
+    return {d->trigger};
+}
+
+
+
+/** ***************************************************************************/
+const QString& Debug::Extension::trigger() const {
     return d->trigger;
 }
 
@@ -81,7 +88,9 @@ QString Debug::Extension::trigger() const {
 
 /** ***************************************************************************/
 void Debug::Extension::handleQuery(Core::Query * query) {
-    if (!query->isValid())
+
+    // This extension must run only triggered
+    if ( !query->isTriggered() )
         return;
 
     for (int i = 0 ; i < d->count; ++i){

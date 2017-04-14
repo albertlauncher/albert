@@ -398,7 +398,7 @@ QWidget *Files::Extension::widget(QWidget *parent) {
 void Files::Extension::handleQuery(Core::Query * query) {
 
 
-    if ( query->searchTerm().startsWith('/') || query->searchTerm().startsWith("~/") ) {
+    if ( query->searchTerm().startsWith('/') || query->searchTerm().startsWith("~") ) {
 
         QFileInfo fileInfo(query->searchTerm());
 
@@ -421,36 +421,38 @@ void Files::Extension::handleQuery(Core::Query * query) {
             }
         }
     }
+    else
+    {
+        // Skip  short terms since they pollute the output
+        if ( query->searchTerm().size() < 3)
+            return;
 
-    // Skip  short terms since they pollute the output
-    if ( query->searchTerm().size() < 3)
-        return;
+        if ( QString("albert scan files").startsWith(query->searchTerm()) ) {
+            shared_ptr<StandardItem> standardItem = std::make_shared<StandardItem>("org.albert.extension.files.action.index");
+            standardItem->setText("albert scan files");
+            standardItem->setSubtext("Update the file index");
+            standardItem->setIconPath(":app_icon");
 
-    if ( QString("albert scan files").startsWith(query->searchTerm()) ) {
-        shared_ptr<StandardItem> standardItem = std::make_shared<StandardItem>("org.albert.extension.files.action.index");
-        standardItem->setText("albert scan files");
-        standardItem->setSubtext("Update the file index");
-        standardItem->setIconPath(":app_icon");
+            shared_ptr<StandardAction> standardAction = std::make_shared<StandardAction>();
+            standardAction->setText("Update the file index");
+            standardAction->setAction([this](){ this->updateIndex(); });
 
-        shared_ptr<StandardAction> standardAction = std::make_shared<StandardAction>();
-        standardAction->setText("Update the file index");
-        standardAction->setAction([this](){ this->updateIndex(); });
+            standardItem->setActions({standardAction});
 
-        standardItem->setActions({standardAction});
+            query->addMatch(standardItem);
+        }
 
-        query->addMatch(standardItem);
+        // Search for matches
+        const vector<shared_ptr<Core::Indexable>> &indexables = d->offlineIndex.search(query->searchTerm().toLower());
+
+        // Add results to query
+        vector<pair<shared_ptr<Core::Item>,short>> results;
+        for (const shared_ptr<Core::Indexable> &item : indexables)
+            // TODO `Search` has to determine the relevance. Set to 0 for now
+            results.emplace_back(std::static_pointer_cast<File>(item), -1);
+
+        query->addMatches(results.begin(), results.end());
     }
-
-    // Search for matches
-    const vector<shared_ptr<Core::Indexable>> &indexables = d->offlineIndex.search(query->searchTerm().toLower());
-
-    // Add results to query
-    vector<pair<shared_ptr<Core::Item>,short>> results;
-    for (const shared_ptr<Core::Indexable> &item : indexables)
-        // TODO `Search` has to determine the relevance. Set to 0 for now
-        results.emplace_back(std::static_pointer_cast<File>(item), -1);
-
-    query->addMatches(results.begin(), results.end());
 }
 
 

@@ -35,7 +35,7 @@ public:
      * Implementation of extension interface
      */
 
-    QString trigger() const override { return trigger_; }
+    QStringList triggers() const override { return {trigger_}; }
     void setupSession() override;
     void teardownSession() override;
     void handleQuery(Core::Query *query) override;

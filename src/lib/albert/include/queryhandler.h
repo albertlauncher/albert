@@ -32,11 +32,9 @@ public:
     const QString id;
 
     /**
-     * @brief The trigger that makes the plugin beeing run
-     * If runExclusice is set and the first word in the query matches one of
-     * this triggers the plugin is run exclusively.
+     * @brief The triggers that makes the plugin beeing run exclusice
      */
-    virtual QString trigger() const { return QString(); }
+    virtual QStringList triggers() const { return QStringList(); }
 
     /**
      * @brief Session setup

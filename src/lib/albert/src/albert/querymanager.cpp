@@ -117,6 +117,30 @@ void QueryManager::startQuery(const QString &searchTerm) {
         return;
     }
 
+    // Start query
+    currentQuery_ = new Query;
+    currentQuery_->setSearchTerm(searchTerm);
+    connect(currentQuery_, &Query::resultsReady, this, &QueryManager::resultsReady);
+
+    // Run with a single handler if the trigger matches
+    const set<QueryHandler*> availableHandlers = extensionManager_->objectsByType<QueryHandler>();
+    for ( QueryHandler *handler : availableHandlers ) {
+        for ( const QString& trigger : handler->triggers() ) {
+            if ( !trigger.isEmpty() && searchTerm.startsWith(trigger) ) {
+                currentQuery_->setTrigger(trigger);
+                currentQuery_->setQueryHandlers({handler});
+                currentQuery_->run();
+                return;
+            }
+        }
+    }
+
+    // Else run all handlers
+    set<QueryHandler*> handlers;
+    for ( QueryHandler *handler : availableHandlers )
+        handlers.insert(handler);
+    currentQuery_->setQueryHandlers(handlers);
+
     // Get fallbacks
     vector<shared_ptr<Item>> fallbacks;
     for ( FallbackProvider *extension : extensionManager_->objectsByType<FallbackProvider>() ) {
@@ -126,24 +150,6 @@ void QueryManager::startQuery(const QString &searchTerm) {
                          std::make_move_iterator(tmpFallbacks.end()));
     }
 
-    // Determine query handlers
-    const set<QueryHandler*> allHandlers = extensionManager_->objectsByType<QueryHandler>();
-    set<QueryHandler*> actualHandlers;
-    for ( QueryHandler *handler : allHandlers )
-        if ( !handler->trigger().isEmpty() && searchTerm.startsWith(handler->trigger()) )
-            actualHandlers.insert(handler);
-
-    if (actualHandlers.empty())
-        for ( QueryHandler *handler : allHandlers )
-            if ( handler->trigger().isEmpty() )
-                actualHandlers.insert(handler);
-
-
-    // Start query
-    currentQuery_ = new Query;
-    connect(currentQuery_, &Query::resultsReady, this, &QueryManager::resultsReady);
-    currentQuery_->setSearchTerm(searchTerm);
-    currentQuery_->setQueryHandlers(actualHandlers);
     currentQuery_->setFallbacks(fallbacks);
     currentQuery_->run();
 }

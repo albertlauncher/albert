@@ -131,12 +131,6 @@ Ssh::Extension::~Extension() {
 }
 
 
-/** ***************************************************************************/
-QString Ssh::Extension::trigger() const {
-    return "ssh ";
-}
-
-
 
 /** ***************************************************************************/
 QWidget *Ssh::Extension::widget(QWidget *parent) {
@@ -159,6 +153,11 @@ QWidget *Ssh::Extension::widget(QWidget *parent) {
 
 /** ***************************************************************************/
 void Ssh::Extension::handleQuery(Core::Query * query) {
+
+    // This extension must run only triggered
+    if ( !query->isTriggered() )
+        return;
+
     QStringList queryTerms = query->searchTerm().split(' ',QString::SkipEmptyParts);
 
     // Add all hosts if there are no arguments

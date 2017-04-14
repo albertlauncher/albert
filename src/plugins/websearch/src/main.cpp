@@ -375,6 +375,16 @@ QWidget *Websearch::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
+QStringList Websearch::Extension::triggers() const {
+      QStringList triggers;
+      for ( const SearchEngine& se : d->searchEngines )
+          triggers.push_back(se.trigger);
+      return triggers;
+}
+
+
+
+/** ***************************************************************************/
 void Websearch::Extension::handleQuery(Core::Query * query) {
 
     if ( query->isTriggered() ) {
@@ -415,10 +425,6 @@ void Websearch::Extension::handleQuery(Core::Query * query) {
             query->addMatch(item, SHRT_MAX);
         }
     }
-
-    for (const SearchEngine &se : d->searchEngines)
-        if (query->searchTerm().startsWith(se.trigger))
-            query->addMatch(buildWebsearchItem(se, query->searchTerm().mid(se.trigger.size())), SHRT_MAX);
 }
 
 

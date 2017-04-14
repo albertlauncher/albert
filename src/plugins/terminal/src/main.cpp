@@ -78,6 +78,10 @@ QWidget *Terminal::Extension::widget(QWidget *parent) {
 /** ***************************************************************************/
 void Terminal::Extension::handleQuery(Core::Query * query) {
 
+    // This extension must run only triggered
+    if ( !query->isTriggered() )
+        return;
+
     // passwd must not be freed
     passwd *pwd = getpwuid(geteuid());
     if (pwd == NULL){
