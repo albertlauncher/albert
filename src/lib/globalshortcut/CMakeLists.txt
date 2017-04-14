@@ -44,5 +44,8 @@ target_include_directories(${PROJECT_NAME}
 # Link target to libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LIB})
 
+# Set the RPATH so that libraries get found
+set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/albert")
+
 # Install target
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/albert)
