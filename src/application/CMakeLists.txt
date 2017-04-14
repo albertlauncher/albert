@@ -8,7 +8,7 @@ add_executable(${PROJECT_NAME} main.cpp)
 # Link target to libraries
 target_link_libraries(${PROJECT_NAME} albertcore)
 
-# Set the RPATH so that libraries get found
+# Set the RPATH for the library lookup
 set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/albert")
 
 # Install target

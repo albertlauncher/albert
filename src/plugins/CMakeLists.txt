@@ -2,6 +2,9 @@
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
+# Set the RPATH for the library lookup
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/albert")
+
 add_subdirectory(applications)
 add_subdirectory(calculator)
 add_subdirectory(chromebookmarks)

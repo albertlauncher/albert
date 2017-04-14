@@ -51,5 +51,8 @@ target_link_libraries(${PROJECT_NAME}
         xdg
 )
 
+# Set the RPATH for the library lookup
+set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/albert")
+
 # Install target
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/albert)
