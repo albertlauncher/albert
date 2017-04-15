@@ -187,9 +187,11 @@ Files::ConfigWidget::ConfigWidget(Extension *_extension, QWidget *_parent)
     // The advanced button action
     connect(ui.pushButton_advanced, &QPushButton::clicked, [=](){
 
-        MimeTypeDialog dialog(extension->filters());
+        MimeTypeDialog dialog(extension->filters(), this);
+        dialog.setWindowModality(Qt::WindowModal);
         if ( dialog.exec() ) {
 
+            // If the dialog has been accepted, update extension and checkboxes
             extension->setFilters(dialog.filters());
 
             // Set the shortcuts
