@@ -205,14 +205,28 @@ void ProposalList::ItemDelegate::paint(QPainter *painter, const QStyleOptionView
 
     // Draw display role
     painter->setFont(font1);
-    QString text = fontMetrics1.elidedText(index.data(Qt::DisplayRole).toString(), option.textElideMode, textRect.width());
-    option.widget->style()->drawItemText(painter, textRect, option.displayAlignment, option.palette, option.state & QStyle::State_Enabled, text, QPalette::WindowText);
-    //    painter->drawText(textRect, Qt::AlignTop|Qt::AlignLeft, text);
+    QString text = fontMetrics1.elidedText(index.data(Qt::DisplayRole).toString(),
+                                           option.textElideMode,
+                                           textRect.width());
+    option.widget->style()->drawItemText(painter,
+                                         textRect,
+                                         option.displayAlignment,
+                                         option.palette,
+                                         option.state & QStyle::State_Enabled,
+                                         text,
+                                         (option.state & QStyle::State_Selected) ? QPalette::HighlightedText : QPalette::WindowText);
 
     // Draw tooltip role
     painter->setFont(font2);
-    text = fontMetrics2.elidedText(index.data(option.state.testFlag(QStyle::State_Selected)? subTextRole : Qt::ToolTipRole).toString(), option.textElideMode, subTextRect.width());
-    painter->drawText(subTextRect   , Qt::AlignBottom|Qt::AlignLeft, text);
-
+    text = fontMetrics2.elidedText(index.data(option.state.testFlag(QStyle::State_Selected)? subTextRole : Qt::ToolTipRole).toString(),
+                                   option.textElideMode,
+                                   subTextRect.width());
+    option.widget->style()->drawItemText(painter,
+                                         subTextRect,
+                                         Qt::AlignBottom|Qt::AlignLeft,
+                                         option.palette,
+                                         option.state & QStyle::State_Enabled,
+                                         text,
+                                         (option.state & QStyle::State_Selected) ? QPalette::HighlightedText : QPalette::WindowText);
     painter->restore();
 }
