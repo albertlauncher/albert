@@ -76,6 +76,10 @@ int Albert::run(int argc, char **argv) {
 
         QString socketPath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/socket";
 
+        // Set link color applicationwide to cyan
+        QPalette palette(qApp->palette());
+        palette.setColor(QPalette::Link, QColor("#00CCCC"));
+        qApp->setPalette(palette);
 
         /*
          *  PARSE COMMANDLINE
