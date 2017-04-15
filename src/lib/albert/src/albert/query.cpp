@@ -141,9 +141,9 @@ public:
         QMutexLocker lock(&pendingResultsMutex);
 
         // Sort the results
-        std::sort(pendingResults.begin(),
-                  pendingResults.end(),
-                  MatchCompare());
+        std::stable_sort(pendingResults.begin(),
+                         pendingResults.end(),
+                         MatchCompare());
 
         // Preallocate space in "results" to avoid multiple allocations
         results.reserve(results.size() + pendingResults.size());
