@@ -17,6 +17,7 @@
 #include <QDebug>
 #include <QKeyEvent>
 #include <QMimeDatabase>
+#include <QStandardItemModel>
 #include <QStringListModel>
 #include <QSortFilterProxyModel>
 #include "mimetypedialog.h"
@@ -28,38 +29,43 @@ Files::MimeTypeDialog::MimeTypeDialog(const QStringList &filters, QWidget *paren
     QDialog(parent), ui(new Ui::MimeTypeDialog) {
     ui->setupUi(this);
 
-    // Initialize
+    // Populate a standard itemmodel with mime types
+    QStandardItemModel *standardItemModel = new QStandardItemModel(this);
+    for (QMimeType mimeType : QMimeDatabase().allMimeTypes()) {
+         QStandardItem *item = new QStandardItem;
+        item->setText(mimeType.name());
+        item->setToolTip(mimeType.filterString());
+        standardItemModel->appendRow(item);
+    }
+    standardItemModel->sort(0);
 
-    QStringList mimetypes;
-    for (QMimeType m : QMimeDatabase().allMimeTypes())
-        mimetypes.push_back(m.name());
-    mimetypes.sort();
-
+    // Add a proxy model for mimtype filtering
     QSortFilterProxyModel *mimeFilterModel = new QSortFilterProxyModel(this);
+    mimeFilterModel->setSourceModel(standardItemModel);
     ui->listView_mimeTypes->setModel(mimeFilterModel);
 
-    QStringListModel *mimeModel = new QStringListModel(mimetypes, this);
-    mimeFilterModel->setSourceModel(mimeModel);
-
+    // Add a stinglist model to the filter model
     filtersModel = new QStringListModel(filters, this);
     ui->listView_filters->setModel(filtersModel);
 
-    // Behaviour
-
+    // Set the filter for the proxymodel if the users typed something
     connect(ui->lineEdit, &QLineEdit::textChanged,
             mimeFilterModel, &QSortFilterProxyModel::setFilterFixedString);
 
+    // On mimetype list activation add the mimetype to the filter list
     connect(ui->listView_mimeTypes, &QListView::activated, [this](const QModelIndex &index){
         filtersModel->insertRow(filtersModel->rowCount());
         filtersModel->setData(filtersModel->index(filtersModel->rowCount()-1,0), index.data());
     });
 
+    // On ">" button click add the mimetype to the filter list
     connect(ui->toolButton_copyMimetype, &QToolButton::clicked, [this](){
         QModelIndex index = ui->listView_mimeTypes->currentIndex();
         filtersModel->insertRow(filtersModel->rowCount());
         filtersModel->setData(filtersModel->index(filtersModel->rowCount()-1,0), index.data());
     });
 
+    // Add a new line on "+"
     connect(ui->toolButton_add, &QToolButton::clicked, [this](){
         int row = filtersModel->rowCount();
         filtersModel->insertRow(row);
@@ -67,17 +73,15 @@ Files::MimeTypeDialog::MimeTypeDialog(const QStringList &filters, QWidget *paren
         ui->listView_filters->edit(filtersModel->index(row, 0));
     });
 
+    // Remove the selected line on "-"
     connect(ui->toolButton_remove, &QToolButton::clicked, [this](){
         QModelIndex index = ui->listView_filters->currentIndex();
         if ( index.isValid() )
             filtersModel->removeRow(index.row());
     });
 
+    // Let the listview intercept the input of the filter line edit (for navigation and activation)
     ui->lineEdit->installEventFilter(this);
-
-
-//    connect(filtersModel, &QStringListModel::dataChanged,
-//            [=](){ filters = filtersModel->stringList(); });
 }
 
 
