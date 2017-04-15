@@ -335,23 +335,23 @@ void Files::Extension::handleQuery(Core::Query * query) {
 
     if ( query->searchTerm().startsWith('/') || query->searchTerm().startsWith("~") ) {
 
-        QFileInfo fileInfo(query->searchTerm());
+        QFileInfo queryFileInfo(query->searchTerm());
 
         // Substitute tilde
         if ( query->searchTerm()[0] == '~' )
-            fileInfo.setFile(QDir::homePath()+query->searchTerm().right(query->searchTerm().size()-1));
+            queryFileInfo.setFile(QDir::homePath()+query->searchTerm().right(query->searchTerm().size()-1));
 
         // Get all matching files
-        QFileInfo pathInfo(fileInfo.path());
+        QFileInfo pathInfo(queryFileInfo.path());
         if ( pathInfo.exists() && pathInfo.isDir() ) {
             QMimeDatabase mimeDatabase;
-            QDirIterator dirIterator(pathInfo.filePath(), QDir::AllEntries|QDir::Hidden|QDir::NoDotAndDotDot);
-            while (dirIterator.hasNext()) {
-                dirIterator.next();
-                if ( dirIterator.fileName().startsWith(fileInfo.fileName()) ) {
-                    QMimeType mimetype = mimeDatabase.mimeTypeForFile(dirIterator.filePath());
-                    query->addMatch(std::make_shared<File>(dirIterator.filePath(), mimetype),
-                                    static_cast<short>(SHRT_MAX * static_cast<float>(fileInfo.fileName().size()) / dirIterator.fileName().size()));
+            QDir dir(pathInfo.filePath());
+            for (const QFileInfo& fileinfo : dir.entryInfoList(QDir::AllEntries|QDir::Hidden|QDir::NoDotAndDotDot,
+                                                               QDir::DirsFirst|QDir::Name|QDir::IgnoreCase) ) {
+                if ( fileinfo.fileName().startsWith(queryFileInfo.fileName()) ) {
+                    QMimeType mimetype = mimeDatabase.mimeTypeForFile(fileinfo.filePath());
+                    query->addMatch(std::make_shared<File>(fileinfo.filePath(), mimetype),
+                                    static_cast<short>(SHRT_MAX * static_cast<float>(queryFileInfo.fileName().size()) / fileinfo.fileName().size()));
                 }
             }
         }
