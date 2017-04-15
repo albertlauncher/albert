@@ -51,6 +51,10 @@
 
 /********** ListViews **********/
 
+QListView {
+	selection-color: #AFB8C5;
+}
+
 QListView::item:selected {
 	background: #404552;
 	border: 1px solid #2B2E39;

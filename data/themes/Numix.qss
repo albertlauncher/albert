@@ -56,6 +56,11 @@
 
 
 /********** ListViews **********/
+
+QListView {
+    selection-color: #ccc;
+}
+
 QListView::item:selected {
   border: none;
   background: qlineargradient(x1:0, x2:1, stop:0.0 #3a3a3a, stop:0.5 #3a3a3a, stop:1.0 #3a3a3a );

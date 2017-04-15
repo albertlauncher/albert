@@ -51,8 +51,13 @@
 
 /********** ListViews **********/
 
+QListView {
+    background: transparent;
+    selection-color: #93a1a1;
+}
+
 QListView::item:selected {
-	background: qlineargradient(x1:0, x2:1, stop:0.0 #402aa198, stop:0.5 #202aa198, stop:1.0 #402aa198 );
+	background: qlineargradient(x1:0, x2:1, stop:0.0 #202aa198, stop:0.5 #102aa198, stop:1.0 #202aa198 );
 }
 
 QListView QScrollBar:vertical  {

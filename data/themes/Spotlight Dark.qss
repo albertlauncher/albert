@@ -43,6 +43,7 @@
 
 QListView {
     background: transparent;
+    selection-color: #a0a0a0;
 }
 
 QListView::item:selected {
