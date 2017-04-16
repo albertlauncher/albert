@@ -10,7 +10,7 @@ before_install:
     - sudo apt-get update -qq
     
 install: 
-    - sudo apt-get -y install qt58base qt58Svg libmuparser-dev
+    - sudo apt-get -y install qt58base qt58Svg qt58x11extras libmuparser-dev
     - source /opt/qt*/bin/qt*-env.sh
 
 before_script:
