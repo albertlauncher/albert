@@ -61,8 +61,8 @@ public:
     mutable QMutex pendingResultsMutex;
     vector<pair<shared_ptr<Item>, short>> pendingResults;
 
+    QFuture<pair<QueryHandler*,uint>> future;
     QFutureWatcher<pair<QueryHandler*,uint>> futureWatcher;
-
 
 
 
@@ -95,14 +95,14 @@ public:
     void runSyncHandlers() {
 
         // Call onSyncHandlersFinsished when all handlers finished
-        futureWatcher.disconnect();
         connect(&futureWatcher, &QFutureWatcher<pair<QueryHandler*,uint>>::finished,
                 this, &QueryPrivate::onSyncHandlersFinsished);
 
         // Run the handlers concurrently and measure the runtimes
-        futureWatcher.setFuture(QtConcurrent::mapped(syncHandlers.begin(),
-                                                     syncHandlers.end(),
-                                                     std::bind(&QueryPrivate::mappedFunction, this, std::placeholders::_1)));
+        future = QtConcurrent::mapped(syncHandlers.begin(),
+                                      syncHandlers.end(),
+                                      std::bind(&QueryPrivate::mappedFunction, this, std::placeholders::_1));
+        futureWatcher.setFuture(future);
     }
 
 
@@ -110,14 +110,17 @@ public:
     void runAsyncHandlers() {
 
         // Call onAsyncHandlersFinsished when all handlers finished
-        futureWatcher.disconnect();
+        disconnect(&futureWatcher, &QFutureWatcher<pair<QueryHandler*,uint>>::finished,
+                   this, &QueryPrivate::onSyncHandlersFinsished);
+
         connect(&futureWatcher, &QFutureWatcher<pair<QueryHandler*,uint>>::finished,
                 this, &QueryPrivate::onAsyncHandlersFinsished);
 
         // Run the handlers concurrently and measure the runtimes
-        futureWatcher.setFuture(QtConcurrent::mapped(asyncHandlers.begin(),
-                                                     asyncHandlers.end(),
-                                                     std::bind(&QueryPrivate::mappedFunction, this, std::placeholders::_1)));
+        future = QtConcurrent::mapped(asyncHandlers.begin(),
+                                      asyncHandlers.end(),
+                                      std::bind(&QueryPrivate::mappedFunction, this, std::placeholders::_1));
+        futureWatcher.setFuture(future);
 
         // Insert pending results every 50 milliseconds
         connect(&fiftyMsTimer, &QTimer::timeout, this, &QueryPrivate::insertPendingResults);
@@ -130,7 +133,7 @@ public:
     void onSyncHandlersFinsished() {
 
         // Save the runtimes of the current future
-        for ( auto it = futureWatcher.future().begin(); it != futureWatcher.future().end(); ++it )
+        for ( auto it = future.begin(); it != future.end(); ++it )
             runtimes.emplace(it->first->id, it->second);
 
         /*
@@ -169,7 +172,7 @@ public:
     void onAsyncHandlersFinsished() {
 
         // Save the runtimes of the current future
-        for ( auto it = futureWatcher.future().begin(); it != futureWatcher.future().end(); ++it )
+        for ( auto it = future.begin(); it != future.end(); ++it )
             runtimes.emplace(it->first->id, it->second);
 
         // Finally done
