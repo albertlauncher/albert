@@ -11,13 +11,20 @@ before_install:
 before_script:
   - mkdir build
   - cd build
-  - cmake ..  -DCMAKE_BUILD_TYPE=Release 
+  - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
   
 script:
-    - make
-    # Test installation process
-    - make DESTDIR=/tmp/albertbuild install
-    
+  - make
+  # Test installation process
+  - make DESTDIR=appdir install ; find appdir/
+  - wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" 
+  - chmod a+x linuxdeployqt*.AppImage
+  - unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
+  - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -bundle-non-qt-libs
+  - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage
+  - find ./appdir -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
+  - curl --upload-file ./Albert*.AppImage https://transfer.sh/Albert-git.$(git rev-parse --short HEAD)-x86_64.AppImage
+
 notifications:
   irc:
     channels:
