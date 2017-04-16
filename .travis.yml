@@ -28,6 +28,7 @@ script:
   - find appdir/usr/lib/albert/ -name '*.so*' -exec mv {} ./appdir/usr/lib \;
   - rm -rf appdir/usr/lib/albert
   - sudo cp ./appdir/usr/lib/* /usr/lib/
+  - export LD_LIBRARY_PATH=/opt/qt58/lib/
   - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -bundle-non-qt-libs
   - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage
   - find ./appdir -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
