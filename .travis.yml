@@ -12,6 +12,11 @@ before_install:
 install: 
     - sudo apt-get -y install qt58base qt58Svg libmuparser-dev
     - source /opt/qt*/bin/qt*-env.sh
+
+before_script:
+  - mkdir build
+  - cd build
+  - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
   
 script:
   - make
