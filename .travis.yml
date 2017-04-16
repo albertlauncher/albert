@@ -30,6 +30,7 @@ script:
   - sudo cp ./appdir/usr/lib/* /usr/lib/
   - export LD_LIBRARY_PATH=/opt/qt58/lib/
   - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -bundle-non-qt-libs
+  - mv appdir/usr/share/albert/themes appdir/usr/plugins/styles
   - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage
   - find ./appdir -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
   - curl --upload-file ./Albert*.AppImage https://transfer.sh/Albert-git.$(git rev-parse --short HEAD)-x86_64.AppImage
