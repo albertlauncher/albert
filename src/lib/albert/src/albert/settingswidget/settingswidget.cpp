@@ -161,17 +161,15 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow,
     ui.comboBox_term->addItem(tr("Custom"));
 
     ui.lineEdit_term->setText(terminalCommand);
-    ui.lineEdit_term->setVisible(ui.comboBox_term->currentIndex() == 0);
-
+    ui.lineEdit_term->setEnabled(ui.comboBox_term->currentIndex() == ui.comboBox_term->count()-1);
     connect(ui.comboBox_term, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             [this](int index){
-        if ( index == ui.comboBox_term->count()-1)
-            ui.lineEdit_term->setText(terminalCommand);
-        else {
+        if ( index != ui.comboBox_term->count()-1) {
             terminalCommand = ui.comboBox_term->currentData(Qt::UserRole).toString();
             QSettings(qApp->applicationName()).setValue(CFG_TERM, terminalCommand);
         }
-        ui.lineEdit_term->setVisible(index == ui.comboBox_term->count()-1);
+        ui.lineEdit_term->setEnabled(index == ui.comboBox_term->count()-1);
+        ui.lineEdit_term->setText(terminalCommand);
     });
 
     connect(ui.lineEdit_term, &QLineEdit::textEdited, [](QString str){

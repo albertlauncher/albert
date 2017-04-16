@@ -566,7 +566,7 @@ that use a textual user interface.</string>
        <item>
         <widget class="QLabel" name="about_icon">
          <property name="pixmap">
-          <pixmap resource="../../resources.qrc">:/app_icon</pixmap>
+          <pixmap resource="../../../resources.qrc">:/app_icon</pixmap>
          </property>
          <property name="scaledContents">
           <bool>false</bool>
@@ -633,7 +633,7 @@ p, li { white-space: pre-wrap; }
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../resources.qrc"/>
+  <include location="../../../resources.qrc"/>
  </resources>
  <connections/>
 </ui>
