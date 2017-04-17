@@ -66,7 +66,7 @@ MPRIS::Extension::Extension()
     icon = themeOr("media-playback-start", ":play");
     Command* nextToAdd = new Command(
                 "play", // Label
-                "Start playing", // Title
+                "Play", // Title
                 "Start playing on %1", // Subtext
                 "Play", // DBus Method
                 icon
@@ -90,7 +90,7 @@ MPRIS::Extension::Extension()
     icon = themeOr("media-playback-stop", ":stop");
     nextToAdd = new Command(
                 "stop",
-                "Stop playing",
+                "Stop",
                 "Stop %1",
                 "Stop",
                 icon
@@ -101,7 +101,7 @@ MPRIS::Extension::Extension()
 
     icon = themeOr("media-skip-forward", ":next");
     nextToAdd = new Command(
-                "next",
+                "next track",
                 "Next track",
                 "Play next track on %1",
                 "Next",
@@ -109,20 +109,20 @@ MPRIS::Extension::Extension()
                 );
     nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.CanGoNext", true, true);
     //.fireCallback([](){qDebug("NEXT");})
-    d->commands.append("next");
-    d->commandObjects.insert("next", *nextToAdd);
+    d->commands.append("next track");
+    d->commandObjects.insert("next track", *nextToAdd);
 
     icon = themeOr("media-skip-backward", ":prev");
     nextToAdd = new Command(
-                "previous",
+                "previous track",
                 "Previous track",
                 "Play previous track on %1",
                 "Previous",
                 icon
                 );
     nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.CanGoPrevious", true, true);
-    d->commands.append("previous");
-    d->commandObjects.insert("previous", *nextToAdd);
+    d->commands.append("previous track");
+    d->commandObjects.insert("previous track", *nextToAdd);
 
     qDebug("[%s] Extension initialized", d->name);
 }
