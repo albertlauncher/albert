@@ -102,26 +102,36 @@ void Core::ExtensionManager::reloadExtensions() {
             QString path = dirIterator.fileInfo().canonicalFilePath();
 
             // Check if this path is a lib
-            if (QLibrary::isLibrary(path)) {
-
-                QPluginLoader loader(path);
-
-                // Check for a sane interface ID  (IID)
-                QString iid = loader.metaData()["IID"].toString();
-                if (iid != ALBERT_EXTENSION_IID)
-                    continue;
-
-                // Check for duplicates
-                QString id = loader.metaData()["MetaData"].toObject()["id"].toString();
-                if (std::find_if (d->extensionSpecs_.begin(), d->extensionSpecs_.end(),
-                                  [&id](const unique_ptr<ExtensionSpec> & extensionSpec){
-                                      return id == extensionSpec->id();
-                                  }) != d->extensionSpecs_.end())
-                    continue;
-
-                // Put it to the results
-                d->extensionSpecs_.emplace_back(new ExtensionSpec(path));
+            if ( !QLibrary::isLibrary(path) ) {
+                qWarning() << "File is not a library:" << path;
+                continue;
             }
+
+            QPluginLoader loader(path);
+
+            if ( loader.metaData().empty() ) {
+                qWarning() << qPrintable(QString("Metadata empty. Is this a QPlugin? (%1)").arg(path));
+                continue;
+            }
+
+            // Check for a sane interface ID  (IID)
+            QString iid = loader.metaData()["IID"].toString();
+            if (iid != ALBERT_EXTENSION_IID) {
+                qWarning() << qPrintable(QString("Extension IDs do not match. App:'%1'. Ext: '%2' (%3)")
+                              .arg(ALBERT_EXTENSION_IID, iid, path));
+                continue;
+            }
+
+            // Check for duplicates
+            QString id = loader.metaData()["MetaData"].toObject()["id"].toString();
+            if (std::any_of(d->extensionSpecs_.begin(), d->extensionSpecs_.end(),
+                            [&id](const unique_ptr<ExtensionSpec> & spec){ return id == spec->id(); })) {
+                qWarning() << qPrintable(QString("Extension IDs already exists. Skipping. (%1)").arg(path));
+                continue;
+            }
+
+            // Put it to the results
+            d->extensionSpecs_.emplace_back(new ExtensionSpec(path));
         }
     }
 
