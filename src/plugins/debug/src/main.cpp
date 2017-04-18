@@ -47,10 +47,10 @@ Debug::Extension::Extension()
       d(new DebugPrivate) {
     QSettings s(qApp->applicationName());
     s.beginGroup(Core::QueryHandler::id);
-    setDelay(s.value("delay", 50).toInt());
-    setCount(s.value("count", 100).toInt());
-    setAsync(s.value("async", true).toBool());
-    setTrigger(s.value("trigger", "dbg").toString());
+    d->delay = s.value("delay", 50).toInt();
+    d->count = s.value("count", 100).toInt();
+    d->async = s.value("async", true).toBool();
+    d->trigger = s.value("trigger", "dbg").toString();
     s.endGroup();
 }
 
@@ -107,6 +107,13 @@ void Debug::Extension::handleQuery(Core::Query * query) {
         item->setIconPath(":debug");
         query->addMatch(item, 0);
     }
+}
+
+
+
+/** ***************************************************************************/
+bool Debug::Extension::isLongRunning() const {
+    return d->async;
 }
 
 
