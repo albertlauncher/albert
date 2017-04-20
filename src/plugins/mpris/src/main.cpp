@@ -21,33 +21,29 @@
 #include "query.h"
 #include "xdgiconlookup.h"
 #include "command.h"
+#include "private.h"
 
 #define themeOr(name, fallbk)   XdgIconLookup::iconPath(name).isEmpty() ? fallbk : XdgIconLookup::iconPath(name)
 
 
+QDBusMessage MPRIS::MPRISPrivate::findPlayerMsg = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "ListNames");
+
+
 
 /** ***************************************************************************/
-class MPRIS::MPRISPrivate {
-public:
-    ~MPRISPrivate() {
-        // If there are still media player objects, delete them
-        qDeleteAll(mediaPlayers);
-        // Don't need to destruct the command objects.
-        // This is done by the destructor of QMap
-    }
-
-
-    const char* name = "MPRIS Control";
-    static QDBusMessage findPlayerMsg;
-    QPointer<MPRIS::ConfigWidget> widget;
-    QList<MPRIS::Player*> mediaPlayers;
-    QStringList commands;
-    QMap<QString, MPRIS::Command> commandObjects;
-};
+MPRIS::MPRISPrivate::~MPRISPrivate() {
+    // If there are still media player objects, delete them
+    qDeleteAll(mediaPlayers);
+    // Don't need to destruct the command objects.
+    // This is done by the destructor of QMap
+}
 
 
 
-QDBusMessage MPRIS::MPRISPrivate::findPlayerMsg = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "ListNames");
+/** ***************************************************************************/
+QDBusMessage MPRIS::MPRISPrivate::call(QDBusMessage &toDispatch) {
+    return QDBusConnection::sessionBus().call(toDispatch, QDBus::Block, DBUS_TIMEOUT);
+}
 
 
 
@@ -158,7 +154,7 @@ void MPRIS::Extension::setupSession() {
         return;
 
     // Querying the DBus to list all available services
-    QDBusMessage response = QDBusConnection::sessionBus().call(MPRISPrivate::findPlayerMsg);
+    QDBusMessage response = d->call(MPRISPrivate::findPlayerMsg);
 
     // Do some error checking
     if (response.type() == QDBusMessage::ReplyMessage) {

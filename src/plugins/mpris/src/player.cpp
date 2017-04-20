@@ -17,11 +17,13 @@
 #include "player.h"
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusInterface>
+#include "private.h"
 
 /** ***************************************************************************/
 MPRIS::Player::Player(QString &busid) : busid_(busid), name_(busid) {
     // Query the name of the media player of which we have the bus id.
     QDBusInterface iface(busid, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2");
+    iface.setTimeout(MPRIS::MPRISPrivate::DBUS_TIMEOUT);
 
     QVariant prop = iface.property("Identity");
     if (prop.isValid() && !prop.isNull() && prop.canConvert(QVariant::String)) {
@@ -34,6 +36,7 @@ MPRIS::Player::Player(QString &busid) : busid_(busid), name_(busid) {
     if (prop.isValid() && !prop.isNull() && prop.canConvert(QVariant::Bool)) {
         canRaise_ = prop.toBool();
     } else {
+        canRaise_ = false;
         qWarning("DBus: CanRaise is either invalid, null or not instanceof bool");
     }
 }
