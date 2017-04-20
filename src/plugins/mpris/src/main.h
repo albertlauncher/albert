@@ -29,7 +29,6 @@ class QDBusMessage;
 namespace MPRIS {
 
 class MPRISPrivate;
-class ConfigWidget;
 
 class Extension final :
         public QObject,
