@@ -200,6 +200,12 @@ FirefoxBookmarks::FirefoxBookmarksPrivate::indexFirefoxBookmarks() const {
             QProcess::startDetached(firefoxExecutable, {urlstr});
         });
 
+        shared_ptr<StandardAction> actionNewFirefox = std::make_shared<StandardAction>();
+        actionNewFirefox->setText("Open URL in new Firefox window");
+        actionNewFirefox->setAction([urlstr, this](){
+            QProcess::startDetached(firefoxExecutable, {"--new-window", urlstr});
+        });
+
         shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
         action->setText("Copy url to clipboard");
         action->setAction([urlstr](){ QApplication::clipboard()->setText(urlstr); });
@@ -207,10 +213,12 @@ FirefoxBookmarks::FirefoxBookmarksPrivate::indexFirefoxBookmarks() const {
         // Set the order of the actions
         if ( openWithFirefox )  {
             actions.push_back(std::move(actionFirefox));
+            actions.push_back(std::move(actionNewFirefox));
             actions.push_back(std::move(actionDefault));
         } else {
             actions.push_back(std::move(actionDefault));
             actions.push_back(std::move(actionFirefox));
+            actions.push_back(std::move(actionNewFirefox));
         }
         actions.push_back(std::move(action));
 
