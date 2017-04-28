@@ -128,13 +128,10 @@ int Albert::run(int argc, char **argv) {
         // Make sure data, cache and config dir exists
         QString dataLocation = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
         QString cacheLocation = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-        QDir dir;
-        dir.setPath(dataLocation);
-        if (!dir.mkpath("."))
-            qFatal("Could not create dir: %s",  dataLocation.toUtf8().constData());
-        dir.setPath(cacheLocation);
-        if (!dir.mkpath("."))
-            qFatal("Could not create dir: %s",  cacheLocation.toUtf8().constData());
+        QString configLocation = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+        for ( const QString &location : {dataLocation, cacheLocation, configLocation} )
+            if (!QDir(location).mkpath("."))
+                qFatal("Could not create dir: %s",  qPrintable(location));
 
         // Move old config for user convenience TODO drop somewhen
         QFileInfo oldcfg(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/albert/albert.conf");

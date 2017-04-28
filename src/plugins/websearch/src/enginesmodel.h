@@ -19,13 +19,7 @@
 
 namespace Websearch {
 
-struct SearchEngine {
-    bool    enabled;
-    QString name;
-    QString trigger;
-    QString iconPath;
-    QString url;
-};
+struct SearchEngine;
 
 class EnginesModel final : public QAbstractTableModel
 {

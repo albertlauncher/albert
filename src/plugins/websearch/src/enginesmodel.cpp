@@ -15,11 +15,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "enginesmodel.h"
 #include <QDir>
 #include <QFileInfo>
 #include <QIcon>
 #include <QStandardPaths>
+#include "enginesmodel.h"
+#include "searchengine.h"
 
 namespace {
 

@@ -19,6 +19,7 @@
 #include "extension.h"
 #include "queryhandler.h"
 #include "fallbackprovider.h"
+#include "searchengine.h"
 
 namespace Websearch {
 
@@ -45,13 +46,16 @@ public:
     void handleQuery(Core::Query * query) override;
     std::vector<std::shared_ptr<Core::Item>> fallbacks(const QString &) override;
 
+    const std::vector<SearchEngine>& engines() const;
+    void setEngines(const std::vector<SearchEngine> &engines);
+
 private:
 
-    bool deserialize();
-    bool serialize();
-    void restoreDefaults();
-
     std::unique_ptr<Internal> d;
+
+signals:
+
+    void enginesChanged(const std::vector<SearchEngine> &engines);
 
 };
 
