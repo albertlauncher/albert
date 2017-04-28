@@ -240,7 +240,7 @@ Files::FilesPrivate::indexFiles(const IndexSettings &indexSettings) const {
     }
 
     // Serialize data
-    QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
+    QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).
                    filePath(QString("%1.txt").arg(q->Core::Extension::id)));
     if (file.open(QIODevice::WriteOnly|QIODevice::Text)) {
         qDebug() << qPrintable(QString("Serializing files to '%1'").arg(file.fileName()));
@@ -277,7 +277,7 @@ Files::Extension::Extension()
     s.endGroup();
 
     // Deserialize data
-    QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).
+    QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).
                    filePath(QString("%1.txt").arg(Core::Extension::id)));
     if (file.exists()) {
         if (file.open(QIODevice::ReadOnly| QIODevice::Text)) {
