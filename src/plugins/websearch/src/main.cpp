@@ -270,6 +270,7 @@ shared_ptr<Core::Item> buildWebsearchItem(const Websearch::SearchEngine &se, con
     item->setText(se.name);
     item->setSubtext(desc);
     item->setIconPath(se.iconPath);
+    item->setCompletionString(QString("%1%2").arg(se.trigger, searchterm));
 
     item->setActions({action});
 
