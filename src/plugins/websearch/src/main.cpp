@@ -385,10 +385,12 @@ void Websearch::Extension::handleQuery(Core::Query * query) {
         QUrl url = QUrl::fromUserInput(query->searchTerm());
 
         // Check syntax and TLD validity
-        if ( url.isValid() && // Check syntax
+        if ( url.isValid() && ( // Check syntax
+             query->searchTerm().trimmed().startsWith("http://") ||
+             query->searchTerm().trimmed().startsWith("https://") ||
              QRegularExpression(R"R(\S+\.\S+$)R").match(url.host()).hasMatch() &&  // Check if not an emty tld
              std::binary_search(validTlds.begin(), validTlds.end(), // Check tld validiy
-                                url.topLevelDomain().mid(1).toUpper().toLocal8Bit().constData()) ) {
+                                url.topLevelDomain().mid(1).toUpper().toLocal8Bit().constData()) )) {
 
             shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
             action->setText("Open URL");
