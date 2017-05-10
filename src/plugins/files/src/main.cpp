@@ -358,10 +358,6 @@ void Files::Extension::handleQuery(Core::Query * query) {
     }
     else
     {
-        // Skip  short terms since they pollute the output
-        if ( query->searchTerm().size() < 3)
-            return;
-
         if ( QString("albert scan files").startsWith(query->searchTerm()) ) {
             shared_ptr<StandardItem> standardItem = std::make_shared<StandardItem>("org.albert.extension.files.action.index");
             standardItem->setText("albert scan files");
