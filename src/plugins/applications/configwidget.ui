@@ -22,7 +22,7 @@
 &lt;/head&gt;
 &lt;body&gt;
 &lt;p&gt;Applications are looked up in the &amp;quot;&lt;span style=&quot; font-style:italic;&quot;&gt;applications/&amp;quot;&lt;/span&gt; directories in the $XDG_DATA_HOME and $XDG_DATA_DIRS, which are set in the environment variables. Your current environment configuration results in the following applications directories: &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;__XDG_DATA_DIRS__&lt;/span&gt;. &lt;/p&gt;
-&lt;p&gt;Every application is represented by a desktop file which has an ID. The desktop file ID is built using the path of the desktop file relative to the applications directory and turning '/' into '-'. If multiple files have the same desktop file ID, the first one in the precedence order given above is used. For mor details check the &lt;a href=&quot;https://specifications.freedesktop.org/desktop-entry-spec/latest/&quot;&gt;desktop entry sprecificion&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p&gt;Every application is represented by a desktop file which has an ID. The desktop file ID is built using the path of the desktop file relative to the applications directory and turning '/' into '-'. If multiple files have the same desktop file ID, the first one in the precedence order given above is used. For more details check the &lt;a href=&quot;https://specifications.freedesktop.org/desktop-entry-spec/latest/&quot;&gt;desktop entry specification&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
