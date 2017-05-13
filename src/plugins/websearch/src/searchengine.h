@@ -20,7 +20,6 @@
 namespace Websearch {
 
 struct SearchEngine {
-    bool    enabled;
     QString name;
     QString trigger;
     QString iconPath;

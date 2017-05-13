@@ -247,13 +247,13 @@ std::array<std::string, 1530> validTlds = { {"AAA", "AARP", "ABARTH", "ABB",
 };
 
 std::vector<Websearch::SearchEngine> defaultSearchEngines = {
-    {true, "Google",        "gg ",  ":google",    "https://www.google.com/search?q=%s"},
-    {true, "Youtube",       "yt ",  ":youtube",   "https://www.youtube.com/results?search_query=%s"},
-    {true, "Amazon",        "ama ", ":amazon",    "http://www.amazon.com/s/?field-keywords=%s"},
-    {true, "Ebay",          "eb ",  ":ebay",      "http://www.ebay.com/sch/i.html?_nkw=%s"},
-    {true, "GitHub",        "gh ",  ":github",    "https://github.com/search?utf8=✓&q=%s"},
-    {true, "Wikipedia",     "wp ",  ":wikipedia", "https://wikipedia.org/w/index.php?search=%s"},
-    {true, "Wolfram Alpha", "=",    ":wolfram",   "https://www.wolframalpha.com/input/?i=%s"}
+    {"Google",        "gg ",  ":google",    "https://www.google.com/search?q=%s"},
+    {"Youtube",       "yt ",  ":youtube",   "https://www.youtube.com/results?search_query=%s"},
+    {"Amazon",        "ama ", ":amazon",    "http://www.amazon.com/s/?field-keywords=%s"},
+    {"Ebay",          "eb ",  ":ebay",      "http://www.ebay.com/sch/i.html?_nkw=%s"},
+    {"GitHub",        "gh ",  ":github",    "https://github.com/search?utf8=✓&q=%s"},
+    {"Wikipedia",     "wp ",  ":wikipedia", "https://wikipedia.org/w/index.php?search=%s"},
+    {"Wolfram Alpha", "=",    ":wolfram",   "https://www.wolframalpha.com/input/?i=%s"}
 };
 
 shared_ptr<Core::Item> buildWebsearchItem(const Websearch::SearchEngine &se, const QString &searchterm) {
@@ -319,7 +319,6 @@ Websearch::Extension::Extension()
         SearchEngine searchEngine;
         for ( const QJsonValue& value : array) {
             QJsonObject object = value.toObject();
-            searchEngine.enabled  = object["enabled"].toBool();
             searchEngine.name     = object["name"].toString();
             searchEngine.trigger  = object["trigger"].toString();
             searchEngine.iconPath = object["iconPath"].toString();
@@ -343,20 +342,8 @@ Websearch::Extension::~Extension() {
 
 /** ***************************************************************************/
 QWidget *Websearch::Extension::widget(QWidget *parent) {
-    if (d->widget.isNull()){
-
-        d->widget = new ConfigWidget(parent);
-        EnginesModel *enginesModel = new EnginesModel(d->searchEngines,
-                                                     d->widget->ui.tableView_searches);
-        d->widget->ui.tableView_searches->setModel(enginesModel);
-
-        connect(this, &Extension::enginesChanged,
-                d->widget->ui.tableView_searches, &QTableView::reset);
-
-        // TODO Fix all data() if least supported Qt supports its omittance
-        connect(d->widget.data(), &ConfigWidget::restoreDefaults,
-                [this](){ setEngines(defaultSearchEngines); });
-    }
+    if (d->widget.isNull())
+        d->widget = new ConfigWidget(this, parent);
     return d->widget;
 }
 
@@ -388,9 +375,9 @@ void Websearch::Extension::handleQuery(Core::Query * query) {
         if ( url.isValid() && ( // Check syntax
              query->searchTerm().trimmed().startsWith("http://") ||
              query->searchTerm().trimmed().startsWith("https://") ||
-             QRegularExpression(R"R(\S+\.\S+$)R").match(url.host()).hasMatch() &&  // Check if not an emty tld
-             std::binary_search(validTlds.begin(), validTlds.end(), // Check tld validiy
-                                url.topLevelDomain().mid(1).toUpper().toLocal8Bit().constData()) )) {
+             (QRegularExpression(R"R(\S+\.\S+$)R").match(url.host()).hasMatch() &&  // Check if not an emty tld
+              std::binary_search(validTlds.begin(), validTlds.end(), // Check tld validiy
+                                 url.topLevelDomain().mid(1).toUpper().toLocal8Bit().constData()) ))) {
 
             shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
             action->setText("Open URL");
@@ -423,8 +410,7 @@ void Websearch::Extension::handleQuery(Core::Query * query) {
 vector<shared_ptr<Core::Item>> Websearch::Extension::fallbacks(const QString & searchterm) {
     vector<shared_ptr<Core::Item>> res;
     for (const SearchEngine &se : d->searchEngines)
-        if (se.enabled)
-            res.push_back(buildWebsearchItem(se, searchterm));
+        res.push_back(buildWebsearchItem(se, searchterm));
     return res;
 }
 
@@ -454,10 +440,16 @@ void Websearch::Extension::setEngines(const std::vector<Websearch::SearchEngine>
             object["url"]      = searchEngine.url;
             object["trigger"]  = searchEngine.trigger;
             object["iconPath"] = searchEngine.iconPath;
-            object["enabled"]  = searchEngine.enabled;
             array.append(object);
         }
         file.write(QJsonDocument(array).toJson());
     } else
         qCritical() << qPrintable(QString("Could not write to file: '%1'.").arg(file.fileName()));
+}
+
+
+
+/** ***************************************************************************/
+void Websearch::Extension::restoreDefaultEngines() {
+    setEngines(defaultSearchEngines);
 }

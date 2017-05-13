@@ -14,14 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "configwidget.h"
 #include <QFileDialog>
-#include <QStandardPaths>
 #include <QMessageBox>
+#include <QStandardPaths>
+#include "configwidget.h"
+#include "enginesmodel.h"
+#include "main.h"
 
 /** ***************************************************************************/
-Websearch::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
+Websearch::ConfigWidget::ConfigWidget(Extension *extension, QWidget *parent)
+    : QWidget(parent), extension_(extension) {
+
     ui.setupUi(this);
+
+    enginesModel_ = new EnginesModel(extension, ui.tableView_searches);
+    ui.tableView_searches->setModel(enginesModel_);
+
     ui.tableView_searches->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui.tableView_searches->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
@@ -49,17 +57,20 @@ Websearch::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
 
 /** ***************************************************************************/
 Websearch::ConfigWidget::~ConfigWidget() {
-
 }
 
 
 
 /** ***************************************************************************/
 void Websearch::ConfigWidget::onButton_new() {
-    if (ui.tableView_searches->currentIndex().isValid())
-        ui.tableView_searches->model()->insertRow(ui.tableView_searches->currentIndex().row());
-    else
-        ui.tableView_searches->model()->insertRow(ui.tableView_searches->model()->rowCount());
+    int row = (ui.tableView_searches->currentIndex().isValid())
+            ? ui.tableView_searches->currentIndex().row()
+            : ui.tableView_searches->model()->rowCount();
+    ui.tableView_searches->model()->insertRow(row);
+
+    QModelIndex index = ui.tableView_searches->model()->index(row, 0, QModelIndex());
+    ui.tableView_searches->setCurrentIndex(index);
+    ui.tableView_searches->edit(index);
 }
 
 
@@ -85,10 +96,9 @@ void Websearch::ConfigWidget::onButton_remove() {
 /** ***************************************************************************/
 void Websearch::ConfigWidget::onButton_moveUp() {
     ui.tableView_searches->model()->moveRows(
-                QModelIndex(), ui.tableView_searches->currentIndex().row(), 1,
-                QModelIndex(), ui.tableView_searches->currentIndex().row()-1);
-    //          v before this (-1)
-    //|..|..|..|..|XX|..|..|
+                QModelIndex(), ui.tableView_searches->currentIndex().row(),
+                1,
+                QModelIndex(), ui.tableView_searches->currentIndex().row() - 1);
 }
 
 
@@ -96,10 +106,9 @@ void Websearch::ConfigWidget::onButton_moveUp() {
 /** ***************************************************************************/
 void Websearch::ConfigWidget::onButton_moveDown() {
     ui.tableView_searches->model()->moveRows(
-                QModelIndex(), ui.tableView_searches->currentIndex().row(), 1,
-                QModelIndex(), ui.tableView_searches->currentIndex().row()+2);
-    //             v before this (+2)
-    //|..|..|XX|..|..|..|..|
+                QModelIndex(), ui.tableView_searches->currentIndex().row(),
+                1,
+                QModelIndex(), ui.tableView_searches->currentIndex().row() + 2);
 }
 
 
@@ -132,5 +141,5 @@ void Websearch::ConfigWidget::onButton_restoreDefaults() {
                                   QMessageBox::Yes|QMessageBox::No);
     // Remove if sure
     if (reply == QMessageBox::Yes)
-        emit restoreDefaults();
+        enginesModel_->restoreDefaults();
 }

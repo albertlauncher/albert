@@ -20,15 +20,21 @@
 
 namespace Websearch {
 
+class Extension;
+class EnginesModel;
+
 class ConfigWidget final : public QWidget
 {
     Q_OBJECT
+
 public:
-    explicit ConfigWidget(QWidget *parent = 0);
+
+    explicit ConfigWidget(Extension *extension, QWidget *parent = 0);
     ~ConfigWidget();
     Ui::ConfigWidget ui;
 
 private:
+
     void onButton_new();
     void onButton_remove();
     void onButton_moveUp();
@@ -36,9 +42,8 @@ private:
     void onButton_setIcon();
     void onButton_restoreDefaults();
 
-signals:
-
-    void restoreDefaults();
+    Extension *extension_;
+    EnginesModel *enginesModel_;
 };
 
 }

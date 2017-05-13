@@ -49,6 +49,8 @@ public:
     const std::vector<SearchEngine>& engines() const;
     void setEngines(const std::vector<SearchEngine> &engines);
 
+    void restoreDefaultEngines();
+
 private:
 
     std::unique_ptr<Internal> d;

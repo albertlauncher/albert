@@ -19,7 +19,7 @@
 
 namespace Websearch {
 
-struct SearchEngine;
+class Extension;
 
 class EnginesModel final : public QAbstractTableModel
 {
@@ -27,7 +27,7 @@ class EnginesModel final : public QAbstractTableModel
 
 public:
 
-    EnginesModel(std::vector<SearchEngine>&, QObject *parent = Q_NULLPTR);
+    EnginesModel(Extension *extension, QObject *parent = Q_NULLPTR);
 
     int rowCount(const QModelIndex & parent = QModelIndex()) const override;
     int columnCount(const QModelIndex & parent = QModelIndex()) const override;
@@ -39,9 +39,11 @@ public:
     bool removeRows (int position, int rows, const QModelIndex & parent = QModelIndex()) override;
     bool moveRows(const QModelIndex &sourceRow, int srcRow, int cnt, const QModelIndex & dst, int destinationChild) override;
 
+    void restoreDefaults();
+
 private:
 
-    std::vector<SearchEngine> &searchEngines_;
+    Extension *extension_;
 
 };
 
