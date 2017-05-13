@@ -26,8 +26,8 @@
 #include <QVariant>
 #include <algorithm>
 #include <chrono>
-#include <map>
 #include <functional>
+#include <map>
 #include "action.h"
 #include "extension.h"
 #include "item.h"

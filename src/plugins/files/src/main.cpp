@@ -28,6 +28,7 @@
 #include <QThreadPool>
 #include <QTimer>
 #include <memory>
+#include <functional>
 #include <vector>
 #include "configwidget.h"
 #include "file.h"

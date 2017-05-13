@@ -29,6 +29,7 @@
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QLocalSocket>
 #include <csignal>
+#include <functional>
 #include "albert.h"
 #include "extensionmanager.h"
 #include "hotkeymanager.h"
