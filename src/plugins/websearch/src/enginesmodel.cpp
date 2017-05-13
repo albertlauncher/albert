@@ -147,7 +147,7 @@ bool Websearch::EnginesModel::setData(const QModelIndex &index, const QVariant &
         return false;
 
     switch (role) {
-    case Qt::EditRole: {
+    case Qt::DisplayRole: {
         if ( !value.canConvert(QMetaType::QString) )
             return false;
         QString s = value.toString();
@@ -213,7 +213,7 @@ bool Websearch::EnginesModel::setData(const QModelIndex &index, const QVariant &
 /** ***************************************************************************/
 Qt::ItemFlags Websearch::EnginesModel::flags(const QModelIndex &index) const {
     if (index.isValid())
-        return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable;
+        return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
     else
         return Qt::NoItemFlags;
 }

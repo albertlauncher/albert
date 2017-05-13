@@ -15,16 +15,26 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QString>
+#include <QDialog>
+#include "ui_searchengineeditor.h"
+#include "searchengine.h"
 
 namespace Websearch {
 
-class SearchEngine {
+class SearchEngineEditor : public QDialog
+{
+    Q_OBJECT
+
 public:
-    QString name;
-    QString trigger;
-    QString iconPath;
-    QString url;
+
+    explicit SearchEngineEditor(const SearchEngine &searchEngine, QWidget *parent = 0);
+    const SearchEngine &searchEngine() { return searchEngine_; }
+
+private:
+
+    SearchEngine searchEngine_;
+    Ui::SearchEngineEditor ui;
+
 };
 
 }

@@ -2,14 +2,6 @@
 <ui version="4.0">
  <class>Websearch::ConfigWidget</class>
  <widget class="QWidget" name="Websearch::ConfigWidget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>293</width>
-    <height>161</height>
-   </rect>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTableView" name="tableView_searches">
@@ -49,50 +41,8 @@
     </widget>
    </item>
    <item>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="1">
-      <widget class="QPushButton" name="pushButton_new">
-       <property name="text">
-        <string>New</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="4">
-      <widget class="QPushButton" name="pushButton_setIcon">
-       <property name="text">
-        <string>Set icon</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <widget class="QPushButton" name="pushButton_moveUp">
-       <property name="text">
-        <string>Move up</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QPushButton" name="pushButton_remove">
-       <property name="text">
-        <string>Remove</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="4">
-      <widget class="QPushButton" name="pushButton_restoreDefaults">
-       <property name="text">
-        <string>Restore</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="2">
-      <widget class="QPushButton" name="pushButton_moveDown">
-       <property name="text">
-        <string>Move down</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -104,6 +54,41 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_new">
+       <property name="icon">
+        <iconset theme="add"/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_remove">
+       <property name="icon">
+        <iconset theme="remove"/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_moveUp">
+       <property name="icon">
+        <iconset theme="up"/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_moveDown">
+       <property name="icon">
+        <iconset theme="down"/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_restoreDefaults">
+       <property name="text">
+        <string>Restore</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

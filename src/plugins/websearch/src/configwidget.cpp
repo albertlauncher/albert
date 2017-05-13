@@ -19,6 +19,7 @@
 #include <QStandardPaths>
 #include "configwidget.h"
 #include "enginesmodel.h"
+#include "searchengineeditor.h"
 #include "main.h"
 
 /** ***************************************************************************/
@@ -40,9 +41,6 @@ Websearch::ConfigWidget::ConfigWidget(Extension *extension, QWidget *parent)
     connect(ui.pushButton_remove, &QPushButton::clicked,
             this, &ConfigWidget::onButton_remove);
 
-    connect(ui.pushButton_setIcon, &QPushButton::clicked,
-            this, &ConfigWidget::onButton_setIcon);
-
     connect(ui.pushButton_moveUp, &QPushButton::clicked,
             this, &ConfigWidget::onButton_moveUp);
 
@@ -51,6 +49,9 @@ Websearch::ConfigWidget::ConfigWidget(Extension *extension, QWidget *parent)
 
     connect(ui.pushButton_restoreDefaults, &QPushButton::clicked,
             this, &ConfigWidget::onButton_restoreDefaults);
+
+    connect(ui.tableView_searches, &QTableView::activated,
+            this, &ConfigWidget::onActivated);
 }
 
 
@@ -62,15 +63,45 @@ Websearch::ConfigWidget::~ConfigWidget() {
 
 
 /** ***************************************************************************/
-void Websearch::ConfigWidget::onButton_new() {
-    int row = (ui.tableView_searches->currentIndex().isValid())
-            ? ui.tableView_searches->currentIndex().row()
-            : ui.tableView_searches->model()->rowCount();
-    ui.tableView_searches->model()->insertRow(row);
+void Websearch::ConfigWidget::onActivated(QModelIndex index) {
+    SearchEngineEditor searchEngineEditor(extension_->engines()[static_cast<ulong>(index.row())], this);
+    if (searchEngineEditor.exec()){
+        std::vector<SearchEngine> newEngines = extension_->engines();
+        newEngines[static_cast<ulong>(index.row())] = searchEngineEditor.searchEngine();
+        extension_->setEngines(newEngines);
+    }
+    ui.tableView_searches->reset();
+}
 
-    QModelIndex index = ui.tableView_searches->model()->index(row, 0, QModelIndex());
-    ui.tableView_searches->setCurrentIndex(index);
-    ui.tableView_searches->edit(index);
+
+
+/** ***************************************************************************/
+void Websearch::ConfigWidget::onButton_new() {
+
+    // Open search engine editor
+    SearchEngine searchEngine;
+    searchEngine.iconPath = ":default";
+    SearchEngineEditor searchEngineEditor(searchEngine, this);
+
+    if (searchEngineEditor.exec()){
+
+        // Insert new row in model
+        int row = (ui.tableView_searches->currentIndex().isValid())
+                ? ui.tableView_searches->currentIndex().row()
+                : ui.tableView_searches->model()->rowCount();
+        enginesModel_->insertRow(row);
+
+        // Set the new engine
+        searchEngine = searchEngineEditor.searchEngine();
+        enginesModel_->setData(enginesModel_->index(row, 0), searchEngine.name, Qt::DisplayRole);
+        enginesModel_->setData(enginesModel_->index(row, 0), searchEngine.iconPath, Qt::DecorationRole);
+        enginesModel_->setData(enginesModel_->index(row, 1), searchEngine.trigger, Qt::DisplayRole);
+        enginesModel_->setData(enginesModel_->index(row, 2), searchEngine.url, Qt::DisplayRole);
+
+        // Set current
+        QModelIndex index = ui.tableView_searches->model()->index(row, 0, QModelIndex());
+        ui.tableView_searches->setCurrentIndex(index);
+    }
 }
 
 
@@ -109,26 +140,6 @@ void Websearch::ConfigWidget::onButton_moveDown() {
                 QModelIndex(), ui.tableView_searches->currentIndex().row(),
                 1,
                 QModelIndex(), ui.tableView_searches->currentIndex().row() + 2);
-}
-
-
-
-/** ***************************************************************************/
-void Websearch::ConfigWidget::onButton_setIcon() {
-    int row = ui.tableView_searches->currentIndex().row();
-    if (row < 0 || ui.tableView_searches->model()->rowCount() <= row)
-        return;
-
-    QString fileName =
-            QFileDialog::getOpenFileName(
-                this,
-                tr("Choose icon"),
-                QStandardPaths::writableLocation(QStandardPaths::HomeLocation),
-                tr("Images (*.png *.svg)"));
-    if(fileName.isEmpty())
-        return;
-
-    ui.tableView_searches->model()->setData(ui.tableView_searches->currentIndex(), fileName, Qt::DecorationRole);
 }
 
 
