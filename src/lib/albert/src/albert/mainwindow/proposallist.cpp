@@ -87,9 +87,11 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
         // Expose the navigation hidden by the lineedit with the control modifier
         case Qt::Key_Home:
         case Qt::Key_End:
-            if ( keyEvent->modifiers() == Qt::ControlModifier )
+            if ( keyEvent->modifiers() == Qt::ControlModifier ) {
                 keyPressEvent(keyEvent);
-            return true;
+                return true;
+            }
+            return false;
 
         // Navigation
         case Qt::Key_Up:
