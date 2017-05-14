@@ -38,6 +38,8 @@ public:
     bool insertRows (int position, int rows, const QModelIndex & parent = QModelIndex()) override;
     bool removeRows (int position, int rows, const QModelIndex & parent = QModelIndex()) override;
     bool moveRows(const QModelIndex &sourceRow, int srcRow, int cnt, const QModelIndex & dst, int destinationChild) override;
+    Qt::DropActions supportedDropActions() const override;
+    bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
 
     void restoreDefaults();
 

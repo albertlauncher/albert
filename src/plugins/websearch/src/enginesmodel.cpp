@@ -19,6 +19,7 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QIcon>
+#include <QMimeData>
 #include <QStandardPaths>
 #include "enginesmodel.h"
 #include "main.h"
@@ -177,6 +178,10 @@ bool Websearch::EnginesModel::setData(const QModelIndex &index, const QVariant &
     }
     case Qt::DecorationRole: {
         QFileInfo fileInfo(value.toString());
+
+        if ( !fileInfo.exists() )
+            return false;
+
         QString newFilePath;
         uint i = 0;
 
@@ -213,9 +218,9 @@ bool Websearch::EnginesModel::setData(const QModelIndex &index, const QVariant &
 /** ***************************************************************************/
 Qt::ItemFlags Websearch::EnginesModel::flags(const QModelIndex &index) const {
     if (index.isValid())
-        return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+        return QAbstractTableModel::flags(index) | Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled;
     else
-        return Qt::NoItemFlags;
+        return QAbstractTableModel::flags(index) | Qt::ItemIsDropEnabled;
 }
 
 
@@ -257,7 +262,8 @@ bool Websearch::EnginesModel::removeRows(int position, int rows, const QModelInd
 
 
 /** ***************************************************************************/
-bool Websearch::EnginesModel::moveRows(const QModelIndex &src, int srcRow, int cnt, const QModelIndex &dst, int dstRow) {
+bool Websearch::EnginesModel::moveRows(const QModelIndex &srcParent, int srcRow, int cnt,
+                                       const QModelIndex &dstParent, int dstRow) {
     if ( srcRow < 0 || cnt < 1 || dstRow < 0 ||
          static_cast<int>(extension_->engines().size()) < srcRow + cnt - 1 ||
          static_cast<int>(extension_->engines().size()) < dstRow ||
@@ -265,7 +271,7 @@ bool Websearch::EnginesModel::moveRows(const QModelIndex &src, int srcRow, int c
         return false;
 
     std::vector<SearchEngine> newEngines = extension_->engines();
-    beginMoveRows(src, srcRow, srcRow + cnt - 1, dst, dstRow);
+    beginMoveRows(srcParent, srcRow, srcRow + cnt - 1, dstParent, dstRow);
     newEngines.insert(newEngines.begin() + dstRow,
                       extension_->engines().begin() + srcRow,
                       extension_->engines().begin() + srcRow + cnt);
@@ -289,3 +295,22 @@ void Websearch::EnginesModel::restoreDefaults() {
     endResetModel();
 }
 
+
+
+/** ***************************************************************************/
+Qt::DropActions Websearch::EnginesModel::supportedDropActions() const {
+    return Qt::MoveAction;
+}
+
+
+
+/** ***************************************************************************/
+bool Websearch::EnginesModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int dstRow, int column, const QModelIndex &parent) {
+    QByteArray encoded = data->data("application/x-qabstractitemmodeldatalist");
+    QDataStream stream(&encoded, QIODevice::ReadOnly);
+    int srcRow = 0;
+    if (!stream.atEnd())
+        stream >> srcRow;
+    moveRows(QModelIndex(), srcRow, 1, QModelIndex(), dstRow);
+    return false;
+}

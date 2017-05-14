@@ -38,8 +38,6 @@ private:
     void onActivated(QModelIndex index);
     void onButton_new();
     void onButton_remove();
-    void onButton_moveUp();
-    void onButton_moveDown();
     void onButton_restoreDefaults();
 
     Extension *extension_;

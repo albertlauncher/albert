@@ -41,12 +41,6 @@ Websearch::ConfigWidget::ConfigWidget(Extension *extension, QWidget *parent)
     connect(ui.pushButton_remove, &QPushButton::clicked,
             this, &ConfigWidget::onButton_remove);
 
-    connect(ui.pushButton_moveUp, &QPushButton::clicked,
-            this, &ConfigWidget::onButton_moveUp);
-
-    connect(ui.pushButton_moveDown, &QPushButton::clicked,
-            this, &ConfigWidget::onButton_moveDown);
-
     connect(ui.pushButton_restoreDefaults, &QPushButton::clicked,
             this, &ConfigWidget::onButton_restoreDefaults);
 
@@ -120,26 +114,6 @@ void Websearch::ConfigWidget::onButton_remove() {
     // Remove if sure
     if (reply == QMessageBox::Yes)
         ui.tableView_searches->model()->removeRow(ui.tableView_searches->currentIndex().row());
-}
-
-
-
-/** ***************************************************************************/
-void Websearch::ConfigWidget::onButton_moveUp() {
-    ui.tableView_searches->model()->moveRows(
-                QModelIndex(), ui.tableView_searches->currentIndex().row(),
-                1,
-                QModelIndex(), ui.tableView_searches->currentIndex().row() - 1);
-}
-
-
-
-/** ***************************************************************************/
-void Websearch::ConfigWidget::onButton_moveDown() {
-    ui.tableView_searches->model()->moveRows(
-                QModelIndex(), ui.tableView_searches->currentIndex().row(),
-                1,
-                QModelIndex(), ui.tableView_searches->currentIndex().row() + 2);
 }
 
 
