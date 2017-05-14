@@ -122,7 +122,7 @@ QVariant Websearch::EnginesModel::data(const QModelIndex &index, int role) const
             std::map<QString,QIcon>::iterator it = iconCache.find(iconPath);
             if ( it != iconCache.end() )
                 return it->second;
-            return iconCache.emplace(iconPath, iconPath).second;
+            return iconCache.insert(std::make_pair(iconPath, QIcon(iconPath))).second;
         }
         case Section::URL:
         case Section::Trigger:
