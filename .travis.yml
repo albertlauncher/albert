@@ -5,22 +5,20 @@ compiler:
   - clang
   - gcc
 
-before_install:
-    - sudo apt-get install -qq cmake qtbase5-dev libqt5x11extras5-dev libqt5svg5-dev libmuparser-dev
- 
-before_script:
-  - mkdir build
-  - cd build
-  - cmake ..  -DCMAKE_BUILD_TYPE=Release 
-  
+install:
+  - sudo add-apt-repository ppa:beineri/opt-qt551-trusty -y  # Qt-5.5
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq cmake qt55base qt55x11extras qt55svg libmuparser-dev
+
 script:
-    - make
-    # Test installation process
-    - make DESTDIR=/tmp/albertbuild install
-    
+  - source /opt/qt55/bin/qt55-env.sh
+  - cmake . -DCMAKE_BUILD_TYPE=Debug
+  - make
+  - sudo make install
+
 notifications:
   irc:
     channels:
       - "chat.freenode.net#albertlauncher"
-    on_success: never # default: always
+    on_success: always # default: always
     on_failure: always # default: always
