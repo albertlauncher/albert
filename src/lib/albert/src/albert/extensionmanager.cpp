@@ -39,7 +39,7 @@ class Core::ExtensionManagerPrivate {
 public:
     vector<unique_ptr<ExtensionSpec>> extensionSpecs_; // TASK: Rename _
     set<QObject*> extensions_;
-    QStringList pluginDirs;
+    set<QString> pluginDirs;
 };
 
 
@@ -59,7 +59,7 @@ Core::ExtensionManager::ExtensionManager() : d(new ExtensionManagerPrivate) {
     for ( const QString& dir : dirs ) {
         QFileInfo fileInfo = QFileInfo(QDir(dir).filePath("albert/plugins"));
         if ( fileInfo.isDir() )
-            d->pluginDirs << fileInfo.absoluteFilePath();
+            d->pluginDirs.insert(fileInfo.canonicalFilePath());
     }
 
 #elif defined __APPLE__
@@ -80,7 +80,7 @@ Core::ExtensionManager::~ExtensionManager() {
 
 /** ***************************************************************************/
 void Core::ExtensionManager::setPluginDirs(const QStringList &dirs) {
-    d->pluginDirs = dirs;
+    d->pluginDirs.insert(dirs.begin(), dirs.end());
 }
 
 
