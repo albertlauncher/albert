@@ -170,11 +170,11 @@ int Albert::run(int argc, char **argv) {
                 // Show newsbox in case of major version change
                 if ( app->applicationVersion().section('.', 1, 1) != lastUsedVersion.section('.', 1, 1) ){
                     // Do whatever is neccessary on first run
-                    QMessageBox(QMessageBox::Information, "First run",
+                    QMessageBox(QMessageBox::Information, "Major version changed",
                                 QString("You are now using Albert %1. Albert is still in the alpha "
                                         "stage. This means things may change unexpectedly. Check "
                                         "the <a href=\"https://albertlauncher.github.io/news/\">"
-                                        "news</a> to see what changed.")
+                                        "news</a> to read about the things that changed.")
                                 .arg(app->applicationVersion())
                                 ).exec();
                 }
