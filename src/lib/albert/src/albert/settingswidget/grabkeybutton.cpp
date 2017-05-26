@@ -71,7 +71,7 @@ void GrabKeyButton::keyPressEvent(QKeyEvent *event) {
             return;
         }
 
-        if(key == Qt::Key_Escape) {
+        if(key == Qt::Key_Escape && mods == Qt::NoModifier) {
             event->accept();
             setText(oldText_);
             releaseAll(); // Can not be before since window closes on esc
