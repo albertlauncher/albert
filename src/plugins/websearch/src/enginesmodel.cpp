@@ -305,7 +305,11 @@ Qt::DropActions Websearch::EnginesModel::supportedDropActions() const {
 
 
 /** ***************************************************************************/
-bool Websearch::EnginesModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int dstRow, int column, const QModelIndex &parent) {
+bool Websearch::EnginesModel::dropMimeData(const QMimeData *data,
+                                           Qt::DropAction /*action*/,
+                                           int dstRow,
+                                           int /*column*/,
+                                           const QModelIndex &/*parent*/) {
     QByteArray encoded = data->data("application/x-qabstractitemmodeldatalist");
     QDataStream stream(&encoded, QIODevice::ReadOnly);
     int srcRow = 0;
