@@ -58,11 +58,16 @@ Websearch::ConfigWidget::~ConfigWidget() {
 
 /** ***************************************************************************/
 void Websearch::ConfigWidget::onActivated(QModelIndex index) {
-    SearchEngineEditor searchEngineEditor(extension_->engines()[static_cast<ulong>(index.row())], this);
+    int row = index.row();
+    SearchEngineEditor searchEngineEditor(extension_->engines()[static_cast<ulong>(row)], this);
+
     if (searchEngineEditor.exec()){
-        std::vector<SearchEngine> newEngines = extension_->engines();
-        newEngines[static_cast<ulong>(index.row())] = searchEngineEditor.searchEngine();
-        extension_->setEngines(newEngines);
+        // Set the new engine
+        const SearchEngine & searchEngine = searchEngineEditor.searchEngine();
+        enginesModel_->setData(enginesModel_->index(row, 0), searchEngine.name, Qt::DisplayRole);
+        enginesModel_->setData(enginesModel_->index(row, 0), searchEngine.iconPath, Qt::DecorationRole);
+        enginesModel_->setData(enginesModel_->index(row, 1), searchEngine.trigger, Qt::DisplayRole);
+        enginesModel_->setData(enginesModel_->index(row, 2), searchEngine.url, Qt::DisplayRole);
     }
     ui.tableView_searches->reset();
 }
