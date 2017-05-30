@@ -19,6 +19,7 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QIcon>
+#include <QUuid>
 #include <QMimeData>
 #include <QStandardPaths>
 #include "enginesmodel.h"
@@ -182,23 +183,34 @@ bool Websearch::EnginesModel::setData(const QModelIndex &index, const QVariant &
         if ( !fileInfo.exists() )
             return false;
 
-        QString newFilePath;
-        uint i = 0;
-
         // Remove icon from cache
         iconCache.erase(extension_->engines()[static_cast<ulong>(index.row())].iconPath);
 
-        // Build the new generic path and copy the file into cache dir
-        do {
-            newFilePath = QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation))
-                            .filePath(QString("%1-%2.%3")
-                                        .arg(extension_->engines()[static_cast<ulong>(index.row())].name)
-                                        .arg(i++)
-                                        .arg(fileInfo.suffix()));
-        } while (!QFile::copy(fileInfo.filePath(), newFilePath));
+        // Create extension dir if necessary
+        QDir dataDir = QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+        if ( !dataDir.exists(extension_->Core::Extension::id) ) {
+            if ( !dataDir.mkdir(extension_->Core::Extension::id) ) {
+                qWarning() << "Could not create extension data dir.";
+                return false;
+            }
+        }
 
-        // Set the copied file as icon
+        dataDir.cd(extension_->Core::Extension::id);
+
+        // Build the new random path
+        QString newFilePath = dataDir.filePath(QString("%1.%2")
+                                               .arg(QUuid::createUuid().toString())
+                                               .arg(fileInfo.suffix()));
+
+        // Copy the file into data dir
+        if ( !QFile::copy(fileInfo.filePath(), newFilePath) ) {
+            qWarning() << "Could not copy icon to cache.";
+            return false;
+        }
+
+        // Remove old icon and set the copied file as icon
         std::vector<SearchEngine> newEngines = extension_->engines();
+        QFile::remove(newEngines[static_cast<ulong>(index.row())].iconPath);
         newEngines[static_cast<ulong>(index.row())].iconPath = newFilePath;
         extension_->setEngines(newEngines);
 
