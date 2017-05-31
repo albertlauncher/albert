@@ -44,6 +44,9 @@
      </item>
      <item>
       <widget class="QToolButton" name="toolButton_icon">
+       <property name="toolTip">
+        <string>Click to set an icon for the search engine.</string>
+       </property>
        <property name="iconSize">
         <size>
          <width>96</width>
@@ -91,6 +94,9 @@
      </item>
      <item row="0" column="1">
       <widget class="QLineEdit" name="lineEdit_name">
+       <property name="toolTip">
+        <string>Name of the search engine.</string>
+       </property>
        <property name="placeholderText">
         <string>Name of the search engine</string>
        </property>
@@ -105,6 +111,9 @@
      </item>
      <item row="1" column="1">
       <widget class="QLineEdit" name="lineEdit_trigger">
+       <property name="toolTip">
+        <string>The query prefix that triggers this engine. Note that it may make sense to append a space to the trigger prefix.</string>
+       </property>
        <property name="placeholderText">
         <string>The query prefix that triggers this engine</string>
        </property>
@@ -119,6 +128,9 @@
      </item>
      <item row="2" column="1">
       <widget class="QLineEdit" name="lineEdit_url">
+       <property name="toolTip">
+        <string>The URL containing a %s that will be replaced by the query.</string>
+       </property>
        <property name="placeholderText">
         <string>The URL containing a %s that will be replaced by the query</string>
        </property>
@@ -153,8 +165,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>266</x>
-     <y>350</y>
+     <x>275</x>
+     <y>310</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -169,8 +181,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>334</x>
-     <y>350</y>
+     <x>343</x>
+     <y>310</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>
