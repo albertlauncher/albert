@@ -249,6 +249,9 @@ HotkeyManagerPrivate::HotkeyManagerPrivate(QObject *parent)
                 masks.meta = masks.hyper;
             }
         }
+
+        // Register to receive KeyPress events that otherwise be swallowed
+        XSelectInput(QX11Info::display(), QX11Info::appRootWindow(), KeyPressMask);
     }
     else {
         // assume defaults
