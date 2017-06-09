@@ -69,7 +69,7 @@ int Albert::run(int argc, char **argv) {
         app = new QApplication(argc, argv);
         app->setApplicationName("albert");
         app->setApplicationDisplayName("Albert");
-        app->setApplicationVersion("v0.11.2");
+        app->setApplicationVersion("v0.12.0");
         app->setQuitOnLastWindowClosed(false);
         QString icon = XdgIconLookup::iconPath("albert");
         if ( icon.isEmpty() ) icon = ":app_icon";
@@ -300,10 +300,8 @@ int Albert::run(int argc, char **argv) {
         bool alfred_note_shown = settings.value("alfred_note_shown", false).toBool();
         if ( !alfred_note_shown ) {
             QMessageBox(QMessageBox::Information, "Note",
-                        "This is free and open source software. We are "
-                        "not affiliated with Alfred or Running with "
-                        "Crayons Ltd. Please do not bother them with "
-                        "support questions. They cannot help you.").exec();
+                        "This is standalone free and open source software. This project is not "
+                        "related or affiliated to any other projects or corporations.").exec();
             settings.setValue("alfred_note_shown", true);
         }
 
