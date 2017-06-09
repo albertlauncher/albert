@@ -46,7 +46,7 @@ public:
     QWidget *widget(QWidget *parent = nullptr) override;
     QStringList triggers() const override;
     void handleQuery(Core::Query * query) override;
-    bool isLongRunning() const override { return true; }
+    bool isLongRunning() const override;
 
     /*
      * Extension specific members

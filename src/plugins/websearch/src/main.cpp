@@ -247,13 +247,13 @@ std::array<std::string, 1530> validTlds = { {"AAA", "AARP", "ABARTH", "ABB",
 };
 
 std::vector<Websearch::SearchEngine> defaultSearchEngines = {
-    {true, "Google",        "gg ",  ":google",    "https://www.google.com/search?q=%s"},
-    {true, "Youtube",       "yt ",  ":youtube",   "https://www.youtube.com/results?search_query=%s"},
-    {true, "Amazon",        "ama ", ":amazon",    "http://www.amazon.com/s/?field-keywords=%s"},
-    {true, "Ebay",          "eb ",  ":ebay",      "http://www.ebay.com/sch/i.html?_nkw=%s"},
-    {true, "GitHub",        "gh ",  ":github",    "https://github.com/search?utf8=✓&q=%s"},
-    {true, "Wikipedia",     "wp ",  ":wikipedia", "https://wikipedia.org/w/index.php?search=%s"},
-    {true, "Wolfram Alpha", "=",    ":wolfram",   "https://www.wolframalpha.com/input/?i=%s"}
+    {"Google",        "gg ",  ":google",    "https://www.google.com/search?q=%s"},
+    {"Youtube",       "yt ",  ":youtube",   "https://www.youtube.com/results?search_query=%s"},
+    {"Amazon",        "ama ", ":amazon",    "http://www.amazon.com/s/?field-keywords=%s"},
+    {"Ebay",          "eb ",  ":ebay",      "http://www.ebay.com/sch/i.html?_nkw=%s"},
+    {"GitHub",        "gh ",  ":github",    "https://github.com/search?utf8=✓&q=%s"},
+    {"Wikipedia",     "wiki ",":wikipedia", "https://en.wikipedia.org/w/index.php?search=%s"},
+    {"Wolfram Alpha", "=",    ":wolfram",   "https://www.wolframalpha.com/input/?i=%s"}
 };
 
 shared_ptr<Core::Item> buildWebsearchItem(const Websearch::SearchEngine &se, const QString &searchterm) {
@@ -270,6 +270,7 @@ shared_ptr<Core::Item> buildWebsearchItem(const Websearch::SearchEngine &se, con
     item->setText(se.name);
     item->setSubtext(desc);
     item->setIconPath(se.iconPath);
+    item->setCompletionString(QString("%1%2").arg(se.trigger, searchterm));
 
     item->setActions({action});
 
@@ -302,39 +303,32 @@ Websearch::Extension::Extension()
 
     std::sort(validTlds.begin(), validTlds.end());
 
-    QString writableLocation =  QStandardPaths::writableLocation(QStandardPaths::DataLocation);
-    QFile dataFile(QDir(writableLocation).filePath(QString("%1.dat").arg(Core::Extension::id)));
-    QFile jsonFile(QDir(writableLocation).filePath(QString("%1.json").arg(Core::Extension::id)));
+    // Move config file from old location to new. (data -> config) TODO: REMOVE in 1.0
+    QString dataLocFilePath = QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation))
+            .filePath(QString("%1.json").arg(Core::Extension::id));
+    QString confLocFilePath = QDir(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation))
+            .filePath(QString("%1.json").arg(Core::Extension::id));
 
-    // If there is an old file
-    if (dataFile.exists()) {
+    if ( QFile::exists(dataLocFilePath) )
+        QFile::rename(dataLocFilePath, confLocFilePath);
 
-        // Deserialize binary data
-        if (dataFile.open(QIODevice::ReadOnly| QIODevice::Text)) {
-            qDebug() << "Porting websearches from old format";
-            QDataStream in(&dataFile);
-            quint64 size;
-            in >> size;
-            SearchEngine se;
-            for (quint64 i = 0; i < size; ++i) {
-                in >> se.enabled >> se.url >> se.name >> se.trigger >> se.iconPath;
-                d->searchEngines.push_back(se);
-            }
-            dataFile.close();
-        } else
-            qWarning() << qPrintable(QString("Could not open file '%1'").arg(dataFile.fileName()));
-
-        // Whatever remove it
-        if ( !dataFile.remove() )
-            qWarning() << qPrintable(QString("Could not remove file '%1'").arg(dataFile.fileName()));
-
-        // Hmm what to do?
-
-        // Serialize in json format
-        serialize();
-
-    } else if (!deserialize())
-        restoreDefaults();
+    // Deserialize engines
+    QFile file(confLocFilePath);
+    if (file.open(QIODevice::ReadOnly)) {
+        QJsonArray array = QJsonDocument::fromJson(file.readAll()).array();
+        SearchEngine searchEngine;
+        for ( const QJsonValue& value : array) {
+            QJsonObject object = value.toObject();
+            searchEngine.name     = object["name"].toString();
+            searchEngine.trigger  = object["trigger"].toString();
+            searchEngine.iconPath = object["iconPath"].toString();
+            searchEngine.url      = object["url"].toString();
+            d->searchEngines.push_back(searchEngine);
+        }
+    } else {
+        qWarning() << qPrintable(QString("Could not load from file: '%1'.").arg(confLocFilePath));
+        setEngines(defaultSearchEngines);
+    }
 }
 
 
@@ -348,27 +342,8 @@ Websearch::Extension::~Extension() {
 
 /** ***************************************************************************/
 QWidget *Websearch::Extension::widget(QWidget *parent) {
-    if (d->widget.isNull()){
-
-        d->widget = new ConfigWidget(parent);
-        EnginesModel *enginesModel = new EnginesModel(d->searchEngines,
-                                                     d->widget->ui.tableView_searches);
-        d->widget->ui.tableView_searches->setModel(enginesModel);
-
-        // Serialize engines if anything changed
-        connect(enginesModel, &EnginesModel::dataChanged,
-                this, &Extension::serialize);
-        connect(enginesModel, &EnginesModel::rowsInserted,
-                this, &Extension::serialize);
-        connect(enginesModel, &EnginesModel::rowsRemoved,
-                this, &Extension::serialize);
-        connect(enginesModel, &EnginesModel::rowsMoved,
-                this, &Extension::serialize);
-
-        // TODO Fix all data() if least supported Qt supports its omittance
-        connect(d->widget.data(), &ConfigWidget::restoreDefaults,
-                this, &Extension::restoreDefaults);
-    }
+    if (d->widget.isNull())
+        d->widget = new ConfigWidget(this, parent);
     return d->widget;
 }
 
@@ -397,10 +372,12 @@ void Websearch::Extension::handleQuery(Core::Query * query) {
         QUrl url = QUrl::fromUserInput(query->searchTerm());
 
         // Check syntax and TLD validity
-        if ( url.isValid() && // Check syntax
-             QRegularExpression(R"R(\S+\.\S+$)R").match(url.host()).hasMatch() &&  // Check if not an emty tld
-             std::binary_search(validTlds.begin(), validTlds.end(), // Check tld validiy
-                                url.topLevelDomain().mid(1).toUpper().toLocal8Bit().constData()) ) {
+        if ( url.isValid() && ( // Check syntax
+             query->searchTerm().trimmed().startsWith("http://") ||
+             query->searchTerm().trimmed().startsWith("https://") ||
+             (QRegularExpression(R"R(\S+\.\S+$)R").match(url.host()).hasMatch() &&  // Check if not an emty tld
+              std::binary_search(validTlds.begin(), validTlds.end(), // Check tld validiy
+                                 url.topLevelDomain().mid(1).toUpper().toLocal8Bit().constData()) ))) {
 
             shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
             action->setText("Open URL");
@@ -433,78 +410,46 @@ void Websearch::Extension::handleQuery(Core::Query * query) {
 vector<shared_ptr<Core::Item>> Websearch::Extension::fallbacks(const QString & searchterm) {
     vector<shared_ptr<Core::Item>> res;
     for (const SearchEngine &se : d->searchEngines)
-        if (se.enabled)
-            res.push_back(buildWebsearchItem(se, searchterm));
+        res.push_back(buildWebsearchItem(se, searchterm));
     return res;
 }
 
 
 
 /** ***************************************************************************/
-bool Websearch::Extension::deserialize() {
-
-    QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation))
-               .filePath(QString("%1.json").arg(Core::Extension::id)));
-
-    if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << qPrintable(QString("Could not open file: '%1'.").arg(file.fileName()));
-        return false;
-    }
-
-    QJsonArray array = QJsonDocument::fromJson(file.readAll()).array();
-
-    SearchEngine searchEngine;
-    for ( const QJsonValue& value : array) {
-        QJsonObject object = value.toObject();
-        searchEngine.enabled  = object["enabled"].toBool();
-        searchEngine.name     = object["name"].toString();
-        searchEngine.trigger  = object["trigger"].toString();
-        searchEngine.iconPath = object["iconPath"].toString();
-        searchEngine.url      = object["url"].toString();
-        d->searchEngines.push_back(searchEngine);
-    }
-
-    return true;
+const std::vector<Websearch::SearchEngine> &Websearch::Extension::engines() const {
+    return d->searchEngines;
 }
 
 
 
 /** ***************************************************************************/
-bool Websearch::Extension::serialize() {
+void Websearch::Extension::setEngines(const std::vector<Websearch::SearchEngine> &engines) {
+    d->searchEngines = engines;
+    emit enginesChanged(d->searchEngines);
 
-    QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation))
+    // Serialize the engines
+    QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation))
                .filePath(QString("%1.json").arg(Core::Extension::id)));
 
-    if (!file.open(QIODevice::WriteOnly)) {
-        qWarning() << qPrintable(QString("Could not open file: '%1'.").arg(file.fileName()));
-        return false;
-    }
-
-    QJsonArray array;
-
-    for ( const SearchEngine& searchEngine : d->searchEngines ) {
-        QJsonObject object;
-        object["name"]     = searchEngine.name;
-        object["url"]      = searchEngine.url;
-        object["trigger"]  = searchEngine.trigger;
-        object["iconPath"] = searchEngine.iconPath;
-        object["enabled"]  = searchEngine.enabled;
-        array.append(object);
-    }
-
-    file.write(QJsonDocument(array).toJson());
-
-    return true;
+    if (file.open(QIODevice::WriteOnly)) {
+        QJsonArray array;
+        for ( const SearchEngine& searchEngine : d->searchEngines ) {
+            QJsonObject object;
+            object["name"]     = searchEngine.name;
+            object["url"]      = searchEngine.url;
+            object["trigger"]  = searchEngine.trigger;
+            object["iconPath"] = searchEngine.iconPath;
+            array.append(object);
+        }
+        file.write(QJsonDocument(array).toJson());
+    } else
+        qCritical() << qPrintable(QString("Could not write to file: '%1'.").arg(file.fileName()));
 }
 
 
 
 /** ***************************************************************************/
-void Websearch::Extension::restoreDefaults() {
-    /* Init std searches */
-    d->searchEngines = defaultSearchEngines;
-    serialize();
-
-    if (!d->widget.isNull())
-        d->widget->ui.tableView_searches->reset();
+void Websearch::Extension::restoreDefaultEngines() {
+    setEngines(defaultSearchEngines);
 }

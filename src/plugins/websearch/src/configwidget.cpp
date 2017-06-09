@@ -14,14 +14,23 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "configwidget.h"
 #include <QFileDialog>
-#include <QStandardPaths>
 #include <QMessageBox>
+#include <QStandardPaths>
+#include "configwidget.h"
+#include "enginesmodel.h"
+#include "searchengineeditor.h"
+#include "main.h"
 
 /** ***************************************************************************/
-Websearch::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
+Websearch::ConfigWidget::ConfigWidget(Extension *extension, QWidget *parent)
+    : QWidget(parent), extension_(extension) {
+
     ui.setupUi(this);
+
+    enginesModel_ = new EnginesModel(extension, ui.tableView_searches);
+    ui.tableView_searches->setModel(enginesModel_);
+
     ui.tableView_searches->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui.tableView_searches->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
@@ -32,34 +41,66 @@ Websearch::ConfigWidget::ConfigWidget(QWidget *parent) : QWidget(parent) {
     connect(ui.pushButton_remove, &QPushButton::clicked,
             this, &ConfigWidget::onButton_remove);
 
-    connect(ui.pushButton_setIcon, &QPushButton::clicked,
-            this, &ConfigWidget::onButton_setIcon);
-
-    connect(ui.pushButton_moveUp, &QPushButton::clicked,
-            this, &ConfigWidget::onButton_moveUp);
-
-    connect(ui.pushButton_moveDown, &QPushButton::clicked,
-            this, &ConfigWidget::onButton_moveDown);
-
     connect(ui.pushButton_restoreDefaults, &QPushButton::clicked,
             this, &ConfigWidget::onButton_restoreDefaults);
+
+    connect(ui.tableView_searches, &QTableView::activated,
+            this, &ConfigWidget::onActivated);
 }
 
 
 
 /** ***************************************************************************/
 Websearch::ConfigWidget::~ConfigWidget() {
+}
 
+
+
+/** ***************************************************************************/
+void Websearch::ConfigWidget::onActivated(QModelIndex index) {
+    int row = index.row();
+    SearchEngineEditor searchEngineEditor(extension_->engines()[static_cast<ulong>(row)], this);
+
+    if (searchEngineEditor.exec()){
+        // Set the new engine
+        const SearchEngine & searchEngine = searchEngineEditor.searchEngine();
+        enginesModel_->setData(enginesModel_->index(row, 0), searchEngine.name, Qt::DisplayRole);
+        enginesModel_->setData(enginesModel_->index(row, 0), searchEngine.iconPath, Qt::DecorationRole);
+        enginesModel_->setData(enginesModel_->index(row, 1), searchEngine.trigger, Qt::DisplayRole);
+        enginesModel_->setData(enginesModel_->index(row, 2), searchEngine.url, Qt::DisplayRole);
+    }
+    ui.tableView_searches->reset();
 }
 
 
 
 /** ***************************************************************************/
 void Websearch::ConfigWidget::onButton_new() {
-    if (ui.tableView_searches->currentIndex().isValid())
-        ui.tableView_searches->model()->insertRow(ui.tableView_searches->currentIndex().row());
-    else
-        ui.tableView_searches->model()->insertRow(ui.tableView_searches->model()->rowCount());
+
+    // Open search engine editor
+    SearchEngine searchEngine;
+    searchEngine.iconPath = ":default";
+    SearchEngineEditor searchEngineEditor(searchEngine, this);
+
+    if (searchEngineEditor.exec()){
+
+        // Insert new row in model
+        int row = (ui.tableView_searches->currentIndex().isValid())
+                ? ui.tableView_searches->currentIndex().row()
+                : ui.tableView_searches->model()->rowCount();
+        enginesModel_->insertRow(row);
+
+        // Set the new engine
+        searchEngine = searchEngineEditor.searchEngine();
+        enginesModel_->setData(enginesModel_->index(row, 0), searchEngine.name, Qt::DisplayRole);
+        enginesModel_->setData(enginesModel_->index(row, 0), searchEngine.iconPath, Qt::DecorationRole);
+        enginesModel_->setData(enginesModel_->index(row, 1), searchEngine.trigger, Qt::DisplayRole);
+        enginesModel_->setData(enginesModel_->index(row, 2), searchEngine.url, Qt::DisplayRole);
+
+        // Set current
+        QModelIndex index = ui.tableView_searches->model()->index(row, 0, QModelIndex());
+        ui.tableView_searches->setCurrentIndex(index);
+    }
 }
 
 
@@ -83,48 +124,6 @@ void Websearch::ConfigWidget::onButton_remove() {
 
 
 /** ***************************************************************************/
-void Websearch::ConfigWidget::onButton_moveUp() {
-    ui.tableView_searches->model()->moveRows(
-                QModelIndex(), ui.tableView_searches->currentIndex().row(), 1,
-                QModelIndex(), ui.tableView_searches->currentIndex().row()-1);
-    //          v before this (-1)
-    //|..|..|..|..|XX|..|..|
-}
-
-
-
-/** ***************************************************************************/
-void Websearch::ConfigWidget::onButton_moveDown() {
-    ui.tableView_searches->model()->moveRows(
-                QModelIndex(), ui.tableView_searches->currentIndex().row(), 1,
-                QModelIndex(), ui.tableView_searches->currentIndex().row()+2);
-    //             v before this (+2)
-    //|..|..|XX|..|..|..|..|
-}
-
-
-
-/** ***************************************************************************/
-void Websearch::ConfigWidget::onButton_setIcon() {
-    int row = ui.tableView_searches->currentIndex().row();
-    if (row < 0 || ui.tableView_searches->model()->rowCount() <= row)
-        return;
-
-    QString fileName =
-            QFileDialog::getOpenFileName(
-                this,
-                tr("Choose icon"),
-                QStandardPaths::writableLocation(QStandardPaths::HomeLocation),
-                tr("Images (*.png *.svg)"));
-    if(fileName.isEmpty())
-        return;
-
-    ui.tableView_searches->model()->setData(ui.tableView_searches->currentIndex(), fileName, Qt::DecorationRole);
-}
-
-
-
-/** ***************************************************************************/
 void Websearch::ConfigWidget::onButton_restoreDefaults() {
     QMessageBox::StandardButton reply =
             QMessageBox::question(this, "Sure?",
@@ -132,5 +131,5 @@ void Websearch::ConfigWidget::onButton_restoreDefaults() {
                                   QMessageBox::Yes|QMessageBox::No);
     // Remove if sure
     if (reply == QMessageBox::Yes)
-        emit restoreDefaults();
+        enginesModel_->restoreDefaults();
 }

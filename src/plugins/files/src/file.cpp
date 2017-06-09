@@ -87,6 +87,9 @@ QString Files::File::iconPath() const {
 vector<shared_ptr<Core::Action>> Files::File::actions() {
     vector<shared_ptr<Core::Action>> actions;
     actions.push_back(std::make_shared<OpenFileAction>(this));
+    QFileInfo fileInfo(path_);
+    if ( fileInfo.isFile() && fileInfo.isExecutable() )
+        actions.push_back(std::make_shared<ExecuteFileAction>(this));
     actions.push_back(std::make_shared<RevealFileAction>(this));
     actions.push_back(std::make_shared<TerminalFileAction>(this));
     actions.push_back(std::make_shared<CopyFileAction>(this));

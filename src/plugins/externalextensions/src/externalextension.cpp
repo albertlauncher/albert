@@ -23,6 +23,7 @@
 #include <QLabel>
 #include <QProcess>
 #include <QVBoxLayout>
+#include <functional>
 #include <vector>
 #include "externalextension.h"
 #include "standardaction.h"

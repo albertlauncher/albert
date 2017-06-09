@@ -56,7 +56,7 @@
 /********** ListViews **********/
 
 QListView {
-    selection-color: #ccc;
+    	selection-color: #331;
 	background-color: #F5F5F5;
 }
 

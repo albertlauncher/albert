@@ -100,18 +100,18 @@ void Terminal::Extension::handleQuery(Core::Query * query) {
     item->setSubtext(QString("Run '%1' in terminal").arg(commandline));
     item->setCompletionString(query->searchTerm());
     item->setIconPath(d->iconPath);
+
     std::vector<shared_ptr<Action>> actions;
-    actions.push_back(std::make_shared<StandardAction>(
-                          "Execute in the terminal", [=](){
+    actions.push_back(std::make_shared<StandardAction>("Execute in the shell",
+                                                       [shell, commandline](){
+        QProcess::startDetached(shell, {"-c", commandline});
+    }));
+     actions.push_back(std::make_shared<StandardAction>("Execute in the terminal", [=](){
         QStringList tokens = Util::ShellLexer::split(terminalCommand);
         tokens << shell << "-ic" << QString("%1; exec %2").arg(commandline, shell);
         QProcess::startDetached(tokens.takeFirst(), tokens);
     }));
-    actions.push_back(std::make_shared<StandardAction>(
-                          "Execute in the shell without terminal",
-                          [shell, commandline](){
-        QProcess::startDetached(shell, {"-c", commandline});
-    }));
+
     item->setActions(std::move(actions));
 
     // Add results to query

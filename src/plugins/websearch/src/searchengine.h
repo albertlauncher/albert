@@ -15,33 +15,16 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QWidget>
-#include "ui_configwidget.h"
+#include <QString>
 
 namespace Websearch {
 
-class Extension;
-class EnginesModel;
-
-class ConfigWidget final : public QWidget
-{
-    Q_OBJECT
-
+class SearchEngine {
 public:
-
-    explicit ConfigWidget(Extension *extension, QWidget *parent = 0);
-    ~ConfigWidget();
-    Ui::ConfigWidget ui;
-
-private:
-
-    void onActivated(QModelIndex index);
-    void onButton_new();
-    void onButton_remove();
-    void onButton_restoreDefaults();
-
-    Extension *extension_;
-    EnginesModel *enginesModel_;
+    QString name;
+    QString trigger;
+    QString iconPath;
+    QString url;
 };
 
 }

@@ -67,6 +67,16 @@ struct TerminalFileAction final : public FileAction
 
 
 /** ***************************************************************************/
+struct ExecuteFileAction final : public FileAction
+{
+    ExecuteFileAction(File *file);
+    QString text() const override;
+    void activate() override;
+};
+
+
+
+/** ***************************************************************************/
 struct CopyFileAction final : public FileAction
 {
     CopyFileAction(File *file);

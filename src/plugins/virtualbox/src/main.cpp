@@ -25,6 +25,7 @@
 #include <QRegularExpression>
 #include <QStandardPaths>
 #include <QString>
+#include <functional>
 #include "main.h"
 #include "vm.h"
 #include "query.h"

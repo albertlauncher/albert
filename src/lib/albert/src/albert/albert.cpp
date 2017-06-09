@@ -29,6 +29,7 @@
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QLocalSocket>
 #include <csignal>
+#include <functional>
 #include "albert.h"
 #include "extensionmanager.h"
 #include "hotkeymanager.h"
@@ -68,7 +69,7 @@ int Albert::run(int argc, char **argv) {
         app = new QApplication(argc, argv);
         app->setApplicationName("albert");
         app->setApplicationDisplayName("Albert");
-        app->setApplicationVersion("v0.11.1");
+        app->setApplicationVersion("v0.12.0");
         app->setQuitOnLastWindowClosed(false);
         QString icon = XdgIconLookup::iconPath("albert");
         if ( icon.isEmpty() ) icon = ":app_icon";
@@ -128,13 +129,10 @@ int Albert::run(int argc, char **argv) {
         // Make sure data, cache and config dir exists
         QString dataLocation = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
         QString cacheLocation = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-        QDir dir;
-        dir.setPath(dataLocation);
-        if (!dir.mkpath("."))
-            qFatal("Could not create dir: %s",  dataLocation.toUtf8().constData());
-        dir.setPath(cacheLocation);
-        if (!dir.mkpath("."))
-            qFatal("Could not create dir: %s",  cacheLocation.toUtf8().constData());
+        QString configLocation = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+        for ( const QString &location : {dataLocation, cacheLocation, configLocation} )
+            if (!QDir(location).mkpath("."))
+                qFatal("Could not create dir: %s",  qPrintable(location));
 
         // Move old config for user convenience TODO drop somewhen
         QFileInfo oldcfg(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/albert/albert.conf");
@@ -172,11 +170,11 @@ int Albert::run(int argc, char **argv) {
                 // Show newsbox in case of major version change
                 if ( app->applicationVersion().section('.', 1, 1) != lastUsedVersion.section('.', 1, 1) ){
                     // Do whatever is neccessary on first run
-                    QMessageBox(QMessageBox::Information, "First run",
+                    QMessageBox(QMessageBox::Information, "Major version changed",
                                 QString("You are now using Albert %1. Albert is still in the alpha "
                                         "stage. This means things may change unexpectedly. Check "
                                         "the <a href=\"https://albertlauncher.github.io/news/\">"
-                                        "news</a> to see what changed.")
+                                        "news</a> to read about the things that changed.")
                                 .arg(app->applicationVersion())
                                 ).exec();
                 }
@@ -302,10 +300,8 @@ int Albert::run(int argc, char **argv) {
         bool alfred_note_shown = settings.value("alfred_note_shown", false).toBool();
         if ( !alfred_note_shown ) {
             QMessageBox(QMessageBox::Information, "Note",
-                        "This is free and open source software. We are "
-                        "not affiliated with Alfred or Running with "
-                        "Crayons Ltd. Please do not bother them with "
-                        "support questions. They cannot help you.").exec();
+                        "This is standalone free and open source software. This project is not "
+                        "related or affiliated to any other projects or corporations.").exec();
             settings.setValue("alfred_note_shown", true);
         }
 

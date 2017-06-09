@@ -21,33 +21,29 @@
 #include "query.h"
 #include "xdgiconlookup.h"
 #include "command.h"
+#include "private.h"
 
 #define themeOr(name, fallbk)   XdgIconLookup::iconPath(name).isEmpty() ? fallbk : XdgIconLookup::iconPath(name)
 
 
+QDBusMessage MPRIS::MPRISPrivate::findPlayerMsg = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "ListNames");
+
+
 
 /** ***************************************************************************/
-class MPRIS::MPRISPrivate {
-public:
-    ~MPRISPrivate() {
-        // If there are still media player objects, delete them
-        qDeleteAll(mediaPlayers);
-        // Don't need to destruct the command objects.
-        // This is done by the destructor of QMap
-    }
-
-
-    const char* name = "MPRIS Control";
-    static QDBusMessage findPlayerMsg;
-    QPointer<MPRIS::ConfigWidget> widget;
-    QList<MPRIS::Player*> mediaPlayers;
-    QStringList commands;
-    QMap<QString, MPRIS::Command> commandObjects;
-};
+MPRIS::MPRISPrivate::~MPRISPrivate() {
+    // If there are still media player objects, delete them
+    qDeleteAll(mediaPlayers);
+    // Don't need to destruct the command objects.
+    // This is done by the destructor of QMap
+}
 
 
 
-QDBusMessage MPRIS::MPRISPrivate::findPlayerMsg = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "ListNames");
+/** ***************************************************************************/
+QDBusMessage MPRIS::MPRISPrivate::call(QDBusMessage &toDispatch) {
+    return QDBusConnection::sessionBus().call(toDispatch, QDBus::Block, DBUS_TIMEOUT);
+}
 
 
 
@@ -66,7 +62,7 @@ MPRIS::Extension::Extension()
     icon = themeOr("media-playback-start", ":play");
     Command* nextToAdd = new Command(
                 "play", // Label
-                "Start playing", // Title
+                "Play", // Title
                 "Start playing on %1", // Subtext
                 "Play", // DBus Method
                 icon
@@ -90,7 +86,7 @@ MPRIS::Extension::Extension()
     icon = themeOr("media-playback-stop", ":stop");
     nextToAdd = new Command(
                 "stop",
-                "Stop playing",
+                "Stop",
                 "Stop %1",
                 "Stop",
                 icon
@@ -101,7 +97,7 @@ MPRIS::Extension::Extension()
 
     icon = themeOr("media-skip-forward", ":next");
     nextToAdd = new Command(
-                "next",
+                "next track",
                 "Next track",
                 "Play next track on %1",
                 "Next",
@@ -109,20 +105,20 @@ MPRIS::Extension::Extension()
                 );
     nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.CanGoNext", true, true);
     //.fireCallback([](){qDebug("NEXT");})
-    d->commands.append("next");
-    d->commandObjects.insert("next", *nextToAdd);
+    d->commands.append("next track");
+    d->commandObjects.insert("next track", *nextToAdd);
 
     icon = themeOr("media-skip-backward", ":prev");
     nextToAdd = new Command(
-                "previous",
+                "previous track",
                 "Previous track",
                 "Play previous track on %1",
                 "Previous",
                 icon
                 );
     nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.CanGoPrevious", true, true);
-    d->commands.append("previous");
-    d->commandObjects.insert("previous", *nextToAdd);
+    d->commands.append("previous track");
+    d->commandObjects.insert("previous track", *nextToAdd);
 
     qDebug("[%s] Extension initialized", d->name);
 }
@@ -158,7 +154,7 @@ void MPRIS::Extension::setupSession() {
         return;
 
     // Querying the DBus to list all available services
-    QDBusMessage response = QDBusConnection::sessionBus().call(MPRISPrivate::findPlayerMsg);
+    QDBusMessage response = d->call(MPRISPrivate::findPlayerMsg);
 
     // Do some error checking
     if (response.type() == QDBusMessage::ReplyMessage) {
