@@ -114,6 +114,11 @@ namespace {
         return 0;
     }
 
+    static int XSelectInputErrorHandler(Display *, XErrorEvent *e) {
+        qWarning() << "XSelectInputError: "<< e->type;
+        return 0;
+    }
+
 
 //    /** ***********************************************************************/
 //    class XLibManager
@@ -250,8 +255,14 @@ HotkeyManagerPrivate::HotkeyManagerPrivate(QObject *parent)
             }
         }
 
+        // Set own errorhandler to guard agains BadWindow errors
+        XErrorHandler savedErrorHandler = XSetErrorHandler(XSelectInputErrorHandler);
+
         // Register to receive KeyPress events that otherwise be swallowed
         XSelectInput(QX11Info::display(), QX11Info::appRootWindow(), KeyPressMask);
+
+        // Reset errorhandler
+        XSetErrorHandler(savedErrorHandler);
     }
     else {
         // assume defaults
