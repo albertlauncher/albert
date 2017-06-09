@@ -57,6 +57,44 @@ void Files::RevealFileAction::activate() {
 
 /******************************************************************************/
 
+extern QString terminalCommand;
+
+Files::TerminalFileAction::TerminalFileAction(Files::File *file)
+    : FileAction(file)  {
+}
+
+QString Files::TerminalFileAction::text() const {
+    return "Open terminal at this path";
+
+}
+
+void Files::TerminalFileAction::activate() {
+    QFileInfo fileInfo(file_->path());
+    QStringList commandLine = terminalCommand.trimmed().split(' ');
+    if ( commandLine.size() == 0 )
+        return;
+    if ( fileInfo.isDir() )
+        QProcess::startDetached(commandLine[0], {}, fileInfo.filePath());
+    else
+        QProcess::startDetached(commandLine[0], {}, fileInfo.path());
+}
+
+/******************************************************************************/
+
+Files::ExecuteFileAction::ExecuteFileAction(Files::File *file) : FileAction(file) {
+
+}
+
+QString Files::ExecuteFileAction::text() const {
+    return "Execute file";
+}
+
+void Files::ExecuteFileAction::activate() {
+    QProcess::startDetached(file_->path());
+}
+
+/******************************************************************************/
+
 Files::CopyFileAction::CopyFileAction(Files::File *file) : FileAction(file) {
 
 }
@@ -103,28 +141,4 @@ QString Files::CopyPathAction::text() const {
 
 void Files::CopyPathAction::activate() {
     QApplication::clipboard()->setText(file_->path());
-}
-
-/******************************************************************************/
-
-extern QString terminalCommand;
-
-Files::TerminalFileAction::TerminalFileAction(Files::File *file)
-    : FileAction(file)  {
-}
-
-QString Files::TerminalFileAction::text() const {
-    return "Open terminal at this path";
-
-}
-
-void Files::TerminalFileAction::activate() {
-    QFileInfo fileInfo(file_->path());
-    QStringList commandLine = terminalCommand.trimmed().split(' ');
-    if ( commandLine.size() == 0 )
-        return;
-    if ( fileInfo.isDir() )
-        QProcess::startDetached(commandLine[0], {}, fileInfo.filePath());
-    else
-        QProcess::startDetached(commandLine[0], {}, fileInfo.path());
 }
