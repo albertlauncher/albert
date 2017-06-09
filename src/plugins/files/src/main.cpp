@@ -21,7 +21,7 @@
 #include <QMessageBox>
 #include <QObject>
 #include <QPointer>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QtConcurrent>
@@ -30,6 +30,7 @@
 #include <memory>
 #include <functional>
 #include <vector>
+#include <set>
 #include "configwidget.h"
 #include "file.h"
 #include "main.h"
@@ -44,7 +45,7 @@ using std::vector;
 using namespace Core;
 
 
-namespace  {
+namespace {
 
 const char* CFG_PATHS           = "paths";
 const char* CFG_FILTERS         = "filters";
@@ -64,6 +65,17 @@ struct IndexSettings {
     QStringList filters;
     bool indexHidden;
     bool followSymlinks;
+};
+
+enum class PatternType {
+    Include,
+    Exclude
+};
+
+struct IgnoreEntry {
+    IgnoreEntry(QRegularExpression regex, PatternType type) : regex(regex), type(type) {}
+    QRegularExpression regex;
+    PatternType type;
 };
 
 }
@@ -120,10 +132,10 @@ void Files::FilesPrivate::startIndexing() {
         indexIntervalTimer.start();
 
     // Run the indexer thread
+    qDebug() << "Start indexing files.";
     futureWatcher.setFuture(QtConcurrent::run(this, &FilesPrivate::indexFiles, indexSettings));
 
     // Notification
-    qDebug() << "Start indexing files.";
     emit q->statusInfo("Indexing files ...");
 }
 
@@ -175,7 +187,8 @@ Files::FilesPrivate::indexFiles(const IndexSettings &indexSettings) const {
         filters |= QDir::Hidden;
 
     // Anonymous function that implemnents the index recursion
-    std::function<void(const QFileInfo&)> indexRecursion = [&](const QFileInfo& fileInfo){
+    std::function<void(const QFileInfo&, vector<IgnoreEntry>)> indexRecursion =
+            [&](const QFileInfo& fileInfo, const vector<IgnoreEntry> &ignoreEntries){
 
         if (abort) return;
 
@@ -199,51 +212,82 @@ Files::FilesPrivate::indexFiles(const IndexSettings &indexSettings) const {
             // Remember that this dir has been indexed to avoid loops
             indexedDirs.insert(canonicalPath);
 
-            // Ignore ignorefile by default
-            std::vector<QRegExp> ignores;
-            ignores.push_back(QRegExp(IGNOREFILE, Qt::CaseSensitive, QRegExp::Wildcard));
-
             // Read the ignore file, see http://doc.qt.io/qt-5/qregexp.html#wildcard-matching
+            vector<IgnoreEntry> localIgnoreEntries = ignoreEntries;
             QFile file(QDir(canonicalPath).filePath(IGNOREFILE));
-            if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            if ( file.open(QIODevice::ReadOnly | QIODevice::Text) ) {
                 QTextStream in(&file);
-                while (!in.atEnd())
-                    ignores.push_back(QRegExp(in.readLine().trimmed(), Qt::CaseSensitive, QRegExp::Wildcard));
+                while ( !in.atEnd() ) {
+                    QString pattern = QDir::cleanPath(in.readLine());
+
+                    if ( pattern.isEmpty() || pattern.startsWith("#") )
+                        continue;
+
+                    // Replace ** and * by their regex analogons
+                    pattern.replace(QRegularExpression("(?<!\\*)\\*(?!\\*)"), "[^\\/]*");
+                    pattern.replace(QRegularExpression("\\*{2,}"), ".*");
+
+                    // Determine pattern type
+                    PatternType patternType = PatternType::Exclude;
+                    if ( pattern.startsWith('!') ) {
+                        patternType = PatternType::Include;
+                        pattern = pattern.mid(1, -1);
+                    }
+
+                    // Respect files beginning with excalmation mark
+                    if ( pattern.startsWith("\\!") )
+                        pattern = pattern.mid(1, -1);
+
+                    if ( pattern.startsWith("/") ) {
+                        pattern = QString("^%1$").arg(QDir(fileInfo.filePath()).filePath(pattern.mid(1, -1)));
+                        localIgnoreEntries.emplace_back(QRegularExpression(pattern), patternType);
+                    } else {
+                        pattern = QString("%1$").arg(pattern);
+                        localIgnoreEntries.emplace_back(QRegularExpression(pattern), patternType);
+                    }
+                }
                 file.close();
             }
 
             // Index all children in the dir
             QDirIterator dirIterator(canonicalPath, filters, QDirIterator::NoIteratorFlags);
-            while (dirIterator.hasNext()) {
+            while ( dirIterator.hasNext() ) {
                 dirIterator.next();
-                const QString & fileName = dirIterator.fileName();
                 const QFileInfo & fileInfo = dirIterator.fileInfo();
 
-                // Skip if this file matches one of the ignore patterns
-                if ( std::any_of(ignores.begin(), ignores.end(),
-                                 [&fileName](const QRegExp& ignore){ return ignore.exactMatch(fileName); } ) )
+                // Skip if this file depending on ignore patterns
+                PatternType patternType = PatternType::Include;
+                for ( const IgnoreEntry &ignoreEntry : localIgnoreEntries )
+                    if ( ignoreEntry.regex.match(fileInfo.filePath()).hasMatch() )
+                        patternType = ignoreEntry.type;
+                if ( patternType == PatternType::Exclude )
                     continue;
 
-                // Skip if this file is a symlink and we shoud skip symlinks
-                if (fileInfo.isSymLink() && !indexSettings.followSymlinks)
+                // Skip if this file is a symlink and we should skip symlinks
+                if ( fileInfo.isSymLink() && !indexSettings.followSymlinks )
                     continue;
 
                 // Index this file
-                indexRecursion(fileInfo);
+                indexRecursion(fileInfo, localIgnoreEntries);
             }
         }
     };
 
     // Start the indexing
-    for (const QString &rootDir : indexSettings.rootDirs) {
-        indexRecursion(QFileInfo(rootDir));
-        if (abort) return vector<shared_ptr<Files::File>>();
+    for ( const QString &rootDir : indexSettings.rootDirs ) {
+        // Index rootdir, ignore ignorefile by default
+        vector<IgnoreEntry> ignores = {IgnoreEntry(
+                                       QRegularExpression(QString("%1$").arg(IGNOREFILE)),
+                                       PatternType::Exclude)};
+        indexRecursion(QFileInfo(rootDir), ignores);
+        if ( abort )
+            return vector<shared_ptr<Files::File>>();
     }
 
     // Serialize data
     QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).
                    filePath(QString("%1.txt").arg(q->Core::Extension::id)));
-    if (file.open(QIODevice::WriteOnly|QIODevice::Text)) {
+    if ( file.open(QIODevice::WriteOnly|QIODevice::Text) ) {
         qDebug() << qPrintable(QString("Serializing files to '%1'").arg(file.fileName()));
         QTextStream out(&file);
         for (const shared_ptr<File> &item : newIndex)
