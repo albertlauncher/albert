@@ -367,14 +367,8 @@ void ExternalExtensions::ExternalExtension::handleQuery(Query* query) {
         standardItem->setText(object["name"].toString());
         standardItem->setSubtext(object["description"].toString());
         standardItem->setCompletionString(object["completion"].toString());
-        QString iconPath;
-        if ( !(iconPath = XDG::IconLookup::iconPath(object["icon"].toString())).isNull() )
-            standardItem->setIconPath(iconPath);
-        else if ( !(iconPath = XDG::IconLookup::iconPath("unknown")).isNull() )
-            standardItem->setIconPath(iconPath);
-        else
-            standardItem->setIconPath(":unknown");
-
+        QString icon = XDG::IconLookup::iconPath({object["icon"].toString(), "unknown"});
+        standardItem->setIconPath(icon.isEmpty() ? ":unknown" : icon);
 
         // Build the actions
         standardActionVector.clear();

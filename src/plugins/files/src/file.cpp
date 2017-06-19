@@ -63,23 +63,21 @@ QString Files::File::iconPath() const {
     if(search != iconCache_.end())
         return search->second;
 
-    QString iconPath;
-    if ( !(iconPath = XDG::IconLookup::iconPath(xdgIconName)).isNull()  // Lookup iconName
-         || !(iconPath = XDG::IconLookup::iconPath(mimetype_.genericIconName())).isNull()  // Lookup genericIconName
-         || !(iconPath = XDG::IconLookup::iconPath("unknown")).isNull()) {  // Lookup "unknown"
-        iconCache_.emplace(xdgIconName, iconPath);
-        return iconPath;
+    QString icon = XDG::IconLookup::iconPath({xdgIconName, mimetype_.genericIconName(), "unknown"});
+    if ( !icon.isEmpty() ) {
+        iconCache_.emplace(xdgIconName, icon);
+        return icon;
     }
 
     // Nothing found, return a fallback icon
     if ( xdgIconName == "inode-directory" ) {
-        iconPath = ":directory";
-        iconCache_.emplace(xdgIconName, iconPath);
+        icon = ":directory";
+        iconCache_.emplace(xdgIconName, icon);
     } else {
-        iconPath = ":unknown";
-        iconCache_.emplace(xdgIconName, iconPath);
+        icon = ":unknown";
+        iconCache_.emplace(xdgIconName, icon);
     }
-    return iconPath;
+    return icon;
 }
 
 

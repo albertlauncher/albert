@@ -114,9 +114,7 @@ Ssh::Extension::Extension()
         throw QString("[%s] ssh not found.").arg(Core::Extension::id);
 
     // Find an appropriate icon
-    d->icon = XDG::IconLookup::iconPath("ssh");
-    if (d->icon.isEmpty())
-        d->icon = XDG::IconLookup::iconPath("terminal");
+    d->icon = XDG::IconLookup::iconPath({"ssh", "terminal"});
     if (d->icon.isEmpty())
         d->icon = ":ssh"; // Fallback
 

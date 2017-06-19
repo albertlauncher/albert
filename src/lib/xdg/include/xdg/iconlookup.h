@@ -26,7 +26,21 @@ class EXPORT_XDG IconLookup
 {
 public:
 
+    /**
+     * @brief iconPath Does XDG icon lookup for the given icon name
+     * @param iconName The icon name to lookup
+     * @param themeName The theme to use
+     * @return If an icon was found the path to the icon, else an empty string
+     */
     static QString iconPath(QString iconName, QString themeName = QIcon::themeName());
+
+    /**
+     * @brief iconPath Does XDG icon lookup for the given icon names, stops on success
+     * @param iconNames A list of icon names to lookup
+     * @param themeName The theme to use
+     * @return If one of the icons was found the path to the icon, else an empty string
+     */
+    static QString iconPath(std::initializer_list<QString> iconNames, QString themeName = QIcon::themeName());
 
 private:
 

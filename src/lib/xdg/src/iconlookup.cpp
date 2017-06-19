@@ -16,6 +16,7 @@
 
 #include <QDir>
 #include <QFileInfo>
+#include <QIcon>
 #include <QStandardPaths>
 #include <QSettings>
 #include <QString>
@@ -32,6 +33,20 @@ namespace  {
 QString XDG::IconLookup::iconPath(QString iconName, QString themeName){
     return instance()->themeIconPath(iconName, themeName);
 }
+
+
+
+/** ***************************************************************************/
+QString XDG::IconLookup::iconPath(std::initializer_list<QString> iconNames, QString themeName) {
+    for ( const QString &iconName : iconNames ) {
+        QString result = instance()->themeIconPath(iconName, themeName);
+        if ( !result.isEmpty() )
+            return result;
+    }
+    return QString();
+}
+
+
 
 /** ***************************************************************************/
 XDG::IconLookup::IconLookup()
@@ -59,7 +74,6 @@ XDG::IconLookup::IconLookup()
 
 
 
-
 /** ***************************************************************************/
 XDG::IconLookup *XDG::IconLookup::instance()
 {
@@ -68,6 +82,7 @@ XDG::IconLookup *XDG::IconLookup::instance()
          instance_ = new IconLookup();
     return instance_;
 }
+
 
 
 /** ***************************************************************************/

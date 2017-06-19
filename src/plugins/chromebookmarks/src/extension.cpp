@@ -81,14 +81,8 @@ vector<shared_ptr<StandardIndexItem>> indexChromeBookmarks(const QString &bookma
             shared_ptr<StandardIndexItem> ssii  = std::make_shared<StandardIndexItem>(json["id"].toString());
             ssii->setText(name);
             ssii->setSubtext(urlstr);
-            QString icon = XDG::IconLookup::iconPath("www");
-            if (icon.isEmpty())
-                icon = XDG::IconLookup::iconPath("web-browser");
-            if (icon.isEmpty())
-                icon = XDG::IconLookup::iconPath("emblem-web");
-            if (icon.isEmpty())
-                icon = ":favicon";
-            ssii->setIconPath(icon);
+            QString icon = XDG::IconLookup::iconPath({"www", "web-browser", "emblem-web"});
+            ssii->setIconPath((icon.isEmpty()) ? ":favicon" : icon);
 
             vector<Indexable::WeightedKeyword> weightedKeywords;
             QUrl url(urlstr);

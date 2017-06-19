@@ -390,14 +390,8 @@ void Websearch::Extension::handleQuery(Core::Query * query) {
             item->setText(QString("Open url in browser"));
             item->setSubtext(QString("Visit %1").arg(url.authority()));
             item->setCompletionString(query->searchTerm());
-            QString icon = XDG::IconLookup::iconPath("www");
-            if (icon.isEmpty())
-                icon = XDG::IconLookup::iconPath("web-browser");
-            if (icon.isEmpty())
-                icon = XDG::IconLookup::iconPath("emblem-web");
-            if (icon.isEmpty())
-                icon = ":favicon";
-            item->setIconPath(icon);
+            QString icon = XDG::IconLookup::iconPath({"www", "web-browser", "emblem-web"});
+            item->setIconPath(icon.isEmpty() ? ":favicon" : icon);
             item->setActions({action});
 
             query->addMatch(item, SHRT_MAX);

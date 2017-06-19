@@ -157,13 +157,8 @@ FirefoxBookmarks::Private::indexFirefoxBookmarks() const {
     }
 
     // Find an appropriate icon
-    QString icon = XDG::IconLookup::iconPath("www");
-    if (icon.isEmpty())
-        icon = XDG::IconLookup::iconPath("web-browser");
-    if (icon.isEmpty())
-        icon = XDG::IconLookup::iconPath("emblem-web");
-    if (icon.isEmpty())
-        icon = ":favicon"; // Fallback
+    QString icon = XDG::IconLookup::iconPath({"www", "web-browser", "emblem-web"});
+    icon = icon.isEmpty() ? ":favicon" : icon;
 
     while (result.next()) {
 

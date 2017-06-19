@@ -442,12 +442,8 @@ vector<shared_ptr<StandardIndexItem>> indexApplications(bool ignoreShowInKeys) {
                 ssii->setSubtext(comment);
 
             // Set icon
-            icon = XDG::IconLookup::iconPath(icon);
-            if (icon.isEmpty())
-                icon = XDG::IconLookup::iconPath("exec");
-            if (icon.isEmpty())
-                icon = ":application-x-executable";
-            ssii->setIconPath(icon);
+            icon = XDG::IconLookup::iconPath({icon, "exec"});
+            ssii->setIconPath(icon.isEmpty() ? ":application-x-executable" : icon);
 
             // Set keywords
             vector<Indexable::WeightedKeyword> indexKeywords;
