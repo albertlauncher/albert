@@ -182,7 +182,7 @@ System::Extension::Extension()
     QSettings s(qApp->applicationName());
     s.beginGroup(Core::Extension::id);
     for (size_t i = 0; i < NUMCOMMANDS; ++i) {
-        d->iconPaths.push_back(XdgIconLookup::iconPath(iconNames[i]));
+        d->iconPaths.push_back(XDG::IconLookup::iconPath(iconNames[i]));
         d->commands.push_back(s.value(configNames[i], defaultCommand(static_cast<SupportedCommands>(i))).toString());
     }
     s.endGroup();

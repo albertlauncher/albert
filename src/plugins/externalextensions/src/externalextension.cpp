@@ -368,9 +368,9 @@ void ExternalExtensions::ExternalExtension::handleQuery(Query* query) {
         standardItem->setSubtext(object["description"].toString());
         standardItem->setCompletionString(object["completion"].toString());
         QString iconPath;
-        if ( !(iconPath = XdgIconLookup::iconPath(object["icon"].toString())).isNull() )
+        if ( !(iconPath = XDG::IconLookup::iconPath(object["icon"].toString())).isNull() )
             standardItem->setIconPath(iconPath);
-        else if ( !(iconPath = XdgIconLookup::iconPath("unknown")).isNull() )
+        else if ( !(iconPath = XDG::IconLookup::iconPath("unknown")).isNull() )
             standardItem->setIconPath(iconPath);
         else
             standardItem->setIconPath(":unknown");

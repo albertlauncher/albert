@@ -64,9 +64,9 @@ QString Files::File::iconPath() const {
         return search->second;
 
     QString iconPath;
-    if ( !(iconPath = XdgIconLookup::iconPath(xdgIconName)).isNull()  // Lookup iconName
-         || !(iconPath = XdgIconLookup::iconPath(mimetype_.genericIconName())).isNull()  // Lookup genericIconName
-         || !(iconPath = XdgIconLookup::iconPath("unknown")).isNull()) {  // Lookup "unknown"
+    if ( !(iconPath = XDG::IconLookup::iconPath(xdgIconName)).isNull()  // Lookup iconName
+         || !(iconPath = XDG::IconLookup::iconPath(mimetype_.genericIconName())).isNull()  // Lookup genericIconName
+         || !(iconPath = XDG::IconLookup::iconPath("unknown")).isNull()) {  // Lookup "unknown"
         iconCache_.emplace(xdgIconName, iconPath);
         return iconPath;
     }

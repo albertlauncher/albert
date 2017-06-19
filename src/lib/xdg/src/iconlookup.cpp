@@ -20,7 +20,7 @@
 #include <QSettings>
 #include <QString>
 #include "themefileparser.h"
-#include "xdg/iconlookup.h"
+#include "iconlookup.h"
 
 
 namespace  {
@@ -29,12 +29,12 @@ namespace  {
 
 
 /** ***************************************************************************/
-QString XdgIconLookup::iconPath(QString iconName, QString themeName){
+QString XDG::IconLookup::iconPath(QString iconName, QString themeName){
     return instance()->themeIconPath(iconName, themeName);
 }
 
 /** ***************************************************************************/
-XdgIconLookup::XdgIconLookup()
+XDG::IconLookup::IconLookup()
 {
     /*
      * Icons and themes are looked for in a set of directories. By default,
@@ -61,17 +61,17 @@ XdgIconLookup::XdgIconLookup()
 
 
 /** ***************************************************************************/
-XdgIconLookup *XdgIconLookup::instance()
+XDG::IconLookup *XDG::IconLookup::instance()
 {
-    static XdgIconLookup *instance_ = nullptr;
+    static IconLookup *instance_ = nullptr;
     if (!instance_)
-         instance_ = new XdgIconLookup();
+         instance_ = new IconLookup();
     return instance_;
 }
 
 
 /** ***************************************************************************/
-QString XdgIconLookup::themeIconPath(QString iconName, QString themeName){
+QString XDG::IconLookup::themeIconPath(QString iconName, QString themeName){
 
     // if we have an absolute path, just return it
     if ( iconName[0]=='/' ){
@@ -122,7 +122,7 @@ QString XdgIconLookup::themeIconPath(QString iconName, QString themeName){
 
 
 /** ***************************************************************************/
-QString XdgIconLookup::doRecursiveIconLookup(const QString &iconName, const QString &themeName, QStringList *checked){
+QString XDG::IconLookup::doRecursiveIconLookup(const QString &iconName, const QString &themeName, QStringList *checked){
 
     // Exlude multiple scans
     if (checked->contains(themeName))
@@ -153,7 +153,7 @@ QString XdgIconLookup::doRecursiveIconLookup(const QString &iconName, const QStr
 
 
 /** ***************************************************************************/
-QString XdgIconLookup::doIconLookup(const QString &iconName, const QString &themeFile) {
+QString XDG::IconLookup::doIconLookup(const QString &iconName, const QString &themeFile) {
 
     ThemeFileParser themeFileParser(themeFile);
     QDir themeDir = QFileInfo(themeFile).dir();
@@ -189,7 +189,7 @@ QString XdgIconLookup::doIconLookup(const QString &iconName, const QString &them
 
 
 /** ***************************************************************************/
-QString XdgIconLookup::lookupThemeFile(const QString &themeName)
+QString XDG::IconLookup::lookupThemeFile(const QString &themeName)
 {
     // Lookup themefile
     for (const QString &iconDir : iconDirs_){

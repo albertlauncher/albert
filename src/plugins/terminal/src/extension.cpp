@@ -53,7 +53,7 @@ Terminal::Extension::Extension()
       Core::QueryHandler(Core::Extension::id),
       d(new Internal) {
 
-    QString iconPath = XdgIconLookup::iconPath("terminal");
+    QString iconPath = XDG::IconLookup::iconPath("terminal");
     d->iconPath = iconPath.isNull() ? ":terminal" : iconPath;
 }
 

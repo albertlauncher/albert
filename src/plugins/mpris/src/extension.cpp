@@ -23,7 +23,7 @@
 #include "command.h"
 #include "private.h"
 
-#define themeOr(name, fallbk)   XdgIconLookup::iconPath(name).isEmpty() ? fallbk : XdgIconLookup::iconPath(name)
+#define themeOr(name, fallbk)   XDG::IconLookup::iconPath(name).isEmpty() ? fallbk : XDG::IconLookup::iconPath(name)
 
 
 QDBusMessage MPRIS::MPRISPrivate::findPlayerMsg = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "ListNames");

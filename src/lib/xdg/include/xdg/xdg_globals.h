@@ -28,7 +28,7 @@
     #pragma warning Unknown dynamic link import/export semantics.
 #endif
 
-#ifdef XDG
+#ifdef XDG_DEF
  #define EXPORT_XDG EXPORT
 #else
  #define EXPORT_XDG IMPORT

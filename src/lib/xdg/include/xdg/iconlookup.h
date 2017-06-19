@@ -20,7 +20,9 @@
 #include <QIcon>
 #include "xdg_globals.h"
 
-class EXPORT_XDG XdgIconLookup
+namespace XDG {
+
+class EXPORT_XDG IconLookup
 {
 public:
 
@@ -28,8 +30,8 @@ public:
 
 private:
 
-    XdgIconLookup();
-    static XdgIconLookup *instance();
+    IconLookup();
+    static IconLookup *instance();
 
     QString themeIconPath(QString iconName, QString themeName = QIcon::themeName());
     QString doRecursiveIconLookup(const QString &iconName, const QString &theme, QStringList *checked);
@@ -39,3 +41,5 @@ private:
     QStringList iconDirs_;
     QMap<QString, QString> iconCache_;
 };
+
+}

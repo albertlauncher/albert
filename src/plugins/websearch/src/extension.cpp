@@ -389,11 +389,11 @@ void Websearch::Extension::handleQuery(Core::Query * query) {
             item->setText(QString("Open url in browser"));
             item->setSubtext(QString("Visit %1").arg(url.authority()));
             item->setCompletionString(query->searchTerm());
-            QString icon = XdgIconLookup::iconPath("www");
+            QString icon = XDG::IconLookup::iconPath("www");
             if (icon.isEmpty())
-                icon = XdgIconLookup::iconPath("web-browser");
+                icon = XDG::IconLookup::iconPath("web-browser");
             if (icon.isEmpty())
-                icon = XdgIconLookup::iconPath("emblem-web");
+                icon = XDG::IconLookup::iconPath("emblem-web");
             if (icon.isEmpty())
                 icon = ":favicon";
             item->setIconPath(icon);
