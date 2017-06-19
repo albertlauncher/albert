@@ -49,7 +49,7 @@ MPRIS::Command &MPRIS::Command::applicableWhen(const char* path, const char *pro
 
 /** ***************************************************************************/
 SharedItem MPRIS::Command::produceAlbertItem(Player &player) const {
-    QDBusMessage msg = QDBusMessage::createMethodCall(player.getBusId(), "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", method_);
+    QDBusMessage msg = QDBusMessage::createMethodCall(player.busId(), "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", method_);
     SharedItem ptr(new MPRIS::Item(player, title_, subtext_, iconpath_, msg));
     return ptr;
 }
@@ -69,7 +69,7 @@ bool MPRIS::Command::isApplicable(Player &p) const {
 
     // Compose Get-Property-Message
     QDBusMessage mesg = QDBusMessage::createMethodCall(
-                p.getBusId(), //"org.mpris.MediaPlayer2.rhythmbox",
+                p.busId(), //"org.mpris.MediaPlayer2.rhythmbox",
                 path_, //"/org/mpris/MediaPlayer2",
                 "org.freedesktop.DBus.Properties",
                 "Get");

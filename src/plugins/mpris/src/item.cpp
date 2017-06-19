@@ -24,11 +24,11 @@ using Core::StandardAction;
 MPRIS::Item::Item(Player &p, const QString &title, const QString &subtext, const QString &iconPath, const QDBusMessage &msg)
     : iconPath_(iconPath), message_(msg) {
     if (title.contains("%1"))
-        text_ = title.arg(p.getName());
+        text_ = title.arg(p.name());
     else
         text_ = title;
     if (subtext.contains("%1"))
-        subtext_ = subtext.arg(p.getName());
+        subtext_ = subtext.arg(p.name());
     else
         subtext_ = subtext;
     actions_.push_back(shared_ptr<Action>(new StandardAction(subtext_, [this](){
@@ -38,7 +38,7 @@ MPRIS::Item::Item(Player &p, const QString &title, const QString &subtext, const
     })));
     if (p.canRaise()) {
         actions_.push_back(shared_ptr<Action>(new StandardAction("Raise Window", [&p](){
-            QString busid = p.getBusId();
+            QString busid = p.busId();
             QDBusMessage raise = QDBusMessage::createMethodCall(busid, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2", "Raise");
             if (!QDBusConnection::sessionBus().send(raise)) {
                 qWarning("Error calling raise method on dbus://%s", busid.toStdString().c_str());
@@ -46,7 +46,7 @@ MPRIS::Item::Item(Player &p, const QString &title, const QString &subtext, const
         })));
     }
     id_ = "extension.mpris.item:%1.%2";
-    id_ = id_.arg(p.getBusId()).arg(msg.member());
+    id_ = id_.arg(p.busId()).arg(msg.member());
 }
 
 

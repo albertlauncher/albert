@@ -23,15 +23,18 @@ namespace MPRIS {
 class Player
 {
 public:
-    Player(QString& busid);
-    const QString& getName() const { return name_; }
-    const QString& getBusId() const { return busid_; }
+    Player(const QString& name, const QString& busid, bool canRaise)
+        : busId_(busid), name_(name), canRaise_(canRaise) {}
+
+    const QString& name() const { return name_; }
+    const QString& busId() const { return busId_; }
     bool canRaise() const { return canRaise_; }
 
 private:
-    QString busid_, name_;
+
+    QString busId_;
+    QString name_;
     bool canRaise_;
 };
 
 } // namespace MPRIS
-

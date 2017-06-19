@@ -41,10 +41,7 @@ using Core::StandardItem;
 class VirtualBox::Private
 {
 public:
-    Private(Extension *q) : q(q) { }
-    Extension *q;
 
-    QPointer<ConfigWidget> widget;
     QList<VM*> vms;
     QFileSystemWatcher vboxWatcher;
 
@@ -124,7 +121,7 @@ void VirtualBox::Private::rescanVBoxConfig(QString path) {
 VirtualBox::Extension::Extension()
     : Core::Extension("org.albert.extension.virtualbox"),
       Core::QueryHandler(Core::Extension::id),
-      d(new Private(this)) {
+      d(new Private) {
 
     VMItem::iconPath_ = XDG::IconLookup::iconPath("virtualbox");
     if ( VMItem::iconPath_.isNull() )

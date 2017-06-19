@@ -16,19 +16,13 @@
 
 #pragma once
 #include <QObject>
-#include <QPointer>
-#include "player.h"
-#include "command.h"
+#include <memory>
 #include "core/extension.h"
 #include "core/queryhandler.h"
-#include <QDBusConnection>
-using Core::Query;
-
-class QDBusMessage;
 
 namespace MPRIS {
 
-class MPRISPrivate;
+class Private;
 
 class Extension final :
         public QObject,
@@ -42,23 +36,14 @@ public:
     Extension();
     ~Extension();
 
-    /*
-     * Implementation of extension interface
-     */
-
+    QString name() const override;
     QWidget *widget(QWidget *parent = nullptr) override;
     void setupSession() override;
-    void handleQuery(Query *query) override;
-    QString name() const override;
-
-
-    /*
-     * Extension specific members
-     */
+    void handleQuery(Core::Query *query) override;
 
 private:
 
-    std::unique_ptr<MPRISPrivate> d;
+    std::unique_ptr<Private> d;
 
 };
 }

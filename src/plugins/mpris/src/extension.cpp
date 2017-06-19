@@ -14,24 +14,50 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QDebug>
-#include <QDBusMessage>
 #include "extension.h"
-#include "configwidget.h"
+#include <QDBusConnection>
+#include <QDBusInterface>
+#include <QDBusMessage>
+#include <QDebug>
+#include <QMap>
+#include <QPointer>
+#include <QStringList>
 #include "core/query.h"
 #include "xdg/iconlookup.h"
 #include "command.h"
-#include "private.h"
+#include "configwidget.h"
+#include "player.h"
 
 #define themeOr(name, fallbk)   XDG::IconLookup::iconPath(name).isEmpty() ? fallbk : XDG::IconLookup::iconPath(name)
 
+namespace  {
+static const int DBUS_TIMEOUT = 25 /* ms */;
+}
 
-QDBusMessage MPRIS::MPRISPrivate::findPlayerMsg = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "ListNames");
+class MPRIS::Private
+{
+public:
+    ~Private();
+
+    const char* name = "MPRIS Control";
+    static QDBusMessage findPlayerMsg;
+    QPointer<MPRIS::ConfigWidget> widget;
+    QList<MPRIS::Player *> mediaPlayers;
+    QStringList commands;
+    QMap<QString, MPRIS::Command> commandObjects;
+
+
+    QDBusMessage call(QDBusMessage &toDispatch);
+
+};
+
+
+QDBusMessage MPRIS::Private::findPlayerMsg = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "ListNames");
 
 
 
 /** ***************************************************************************/
-MPRIS::MPRISPrivate::~MPRISPrivate() {
+MPRIS::Private::~Private() {
     // If there are still media player objects, delete them
     qDeleteAll(mediaPlayers);
     // Don't need to destruct the command objects.
@@ -41,7 +67,7 @@ MPRIS::MPRISPrivate::~MPRISPrivate() {
 
 
 /** ***************************************************************************/
-QDBusMessage MPRIS::MPRISPrivate::call(QDBusMessage &toDispatch) {
+QDBusMessage MPRIS::Private::call(QDBusMessage &toDispatch) {
     return QDBusConnection::sessionBus().call(toDispatch, QDBus::Block, DBUS_TIMEOUT);
 }
 
@@ -53,7 +79,7 @@ QDBusMessage MPRIS::MPRISPrivate::call(QDBusMessage &toDispatch) {
 MPRIS::Extension::Extension()
     : Core::Extension("org.albert.extension.mpris"),
       Core::QueryHandler(Core::Extension::id),
-      d(new MPRIS::MPRISPrivate) {
+      d(new Private) {
     qDebug("[%s] Initialize extension", d->name);
 
     QString icon;
@@ -154,7 +180,7 @@ void MPRIS::Extension::setupSession() {
         return;
 
     // Querying the DBus to list all available services
-    QDBusMessage response = d->call(MPRISPrivate::findPlayerMsg);
+    QDBusMessage response = d->call(Private::findPlayerMsg);
 
     // Do some error checking
     if (response.type() == QDBusMessage::ReplyMessage) {
@@ -174,9 +200,31 @@ void MPRIS::Extension::setupSession() {
                             busids.append(id);
                     }
 
-                    for (QString& busid : busids) {
+                    for (QString& busId : busids) {
+
+                        // Query the name of the media player of which we have the bus id.
+                        QDBusInterface iface(busId, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2");
+                        iface.setTimeout(DBUS_TIMEOUT);
+
+                        QString name = busId;
+                        QVariant prop = iface.property("Identity");
+                        if (prop.isValid() && !prop.isNull() && prop.canConvert(QVariant::String)) {
+                            name = prop.toString();
+                        } else {
+                            qWarning("DBus: Name is either invalid, null or not instanceof string");
+                        }
+
+                        bool canRaise = false;
+                        prop = iface.property("CanRaise");
+                        if (prop.isValid() && !prop.isNull() && prop.canConvert(QVariant::Bool)) {
+                            canRaise = prop.toBool();
+                        } else {
+                            qWarning("DBus: CanRaise is either invalid, null or not instanceof bool");
+                        }
+
                         // And add their player object to the list
-                        d->mediaPlayers.append(new Player(busid));
+                        d->mediaPlayers.push_back(new Player{busId, name, canRaise});
+
                     }
 
 
@@ -197,7 +245,7 @@ void MPRIS::Extension::setupSession() {
 
 
 /** ***************************************************************************/
-void MPRIS::Extension::handleQuery(Query *query) {
+void MPRIS::Extension::handleQuery(Core::Query *query) {
     // Do not proceed if there are no players running. Why would you even?
     if (d->mediaPlayers.isEmpty())
         return;
@@ -221,7 +269,7 @@ void MPRIS::Extension::handleQuery(Query *query) {
         // Get the command
         Command& toExec = d->commandObjects.find(cmd).value();
         // For every player:
-        for (Player* p: d->mediaPlayers) {
+        for (Player *p : d->mediaPlayers) {
             // See if it's applicable for this player
             if (toExec.isApplicable(*p))
                 // And add a match if so
