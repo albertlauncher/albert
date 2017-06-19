@@ -19,7 +19,7 @@
 #include <QString>
 #include <QVariant>
 #include <functional>
-#include "query.h"
+#include "core/query.h"
 #include "player.h"
 using std::function;
 typedef std::shared_ptr<Core::Item> SharedItem;

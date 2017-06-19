@@ -14,8 +14,42 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "core/main.h"
+#pragma once
+#include <QObject>
+#include <memory>
+#include "core/extension.h"
+#include "core/queryhandler.h"
 
-int main(int argc, char **argv) {
-    return Core::main(argc, argv);
+namespace Terminal {
+
+class Internal;
+class ConfigWidget;
+
+class Extension final :
+        public QObject,
+        public Core::Extension,
+        public Core::QueryHandler
+{
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
+
+public:
+
+    Extension();
+    ~Extension();
+
+    /*
+     * Implementation of extension interface
+     */
+
+    QString name() const override { return "Terminal"; }
+    QWidget *widget(QWidget *parent = nullptr) override;
+    QStringList triggers() const override { return {">"}; }
+    void handleQuery(Core::Query * query) override;
+
+private:
+
+    std::unique_ptr<Internal> d;
+
+};
 }

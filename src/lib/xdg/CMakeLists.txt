@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 
 project(xdg)
+
 add_definitions(-DXDG) #export branch
 
 # Get Qt libraries
@@ -21,8 +22,11 @@ add_library(${PROJECT_NAME} SHARED ${SRC})
 
 # Set INCLUDE_DIRS and INTERFACE_INCLUDE_DIRS
 target_include_directories(${PROJECT_NAME}
-    PUBLIC include/
-    PRIVATE src/
+    PUBLIC
+        include/
+    PRIVATE
+        include/xdg/
+        src/
 )
 
 # Link target to libraries

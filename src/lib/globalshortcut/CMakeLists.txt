@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 
 project(globalshortcut)
+
 add_definitions(-DGLOBALSHORTCUT) #export branch
 
 # Get Qt libraries
@@ -8,8 +9,8 @@ find_package(Qt5 5.2.0 REQUIRED COMPONENTS Gui)
 
 # List files in the source directory
 set(SRC
-    include/export_globalshortcut.h
-    include/hotkeymanager.h
+    include/globalshortcut/globalshortcut_globals.h
+    include/globalshortcut/hotkeymanager.h
     src/hotkeymanager.cpp
 )
 
@@ -37,8 +38,11 @@ add_library(${PROJECT_NAME} SHARED ${SRC})
 
 # Set INCLUDE_DIRS and INTERFACE_INCLUDE_DIRS
 target_include_directories(${PROJECT_NAME}
-    PUBLIC include
-    PRIVATE src
+    PUBLIC
+        include/
+    PRIVATE
+        include/globalshortcut/
+        src/
 )
 
 # Link target to libraries

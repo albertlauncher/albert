@@ -14,8 +14,41 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "core/main.h"
+#pragma once
+#include <QObject>
+#include <memory>
+#include "core/extension.h"
+#include "core/queryhandler.h"
 
-int main(int argc, char **argv) {
-    return Core::main(argc, argv);
+namespace System {
+
+class SystemPrivate;
+class ConfigWidget;
+
+class Extension final :
+        public QObject,
+        public Core::Extension,
+        public Core::QueryHandler
+{
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
+
+public:
+
+    Extension();
+    ~Extension();
+
+    /*
+     * Implementation of interfaces
+     */
+
+    QString name() const override { return "System"; }
+    QWidget *widget(QWidget *parent = nullptr) override;
+    void handleQuery(Core::Query * query) override;
+
+private:
+
+    std::unique_ptr<SystemPrivate> d;
+
+};
 }

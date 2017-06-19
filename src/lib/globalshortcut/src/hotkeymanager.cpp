@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "hotkeymanager.h"
+#include "globalshortcut/hotkeymanager.h"
 #if defined __linux__
 #include "hotkeymanager_x11.h"
 #elif defined __APPLE__

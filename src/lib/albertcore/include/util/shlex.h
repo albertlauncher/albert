@@ -14,8 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "core/main.h"
+#pragma once
+#include <QString>
+#include <QStringList>
+#include "core_globals.h"
 
-int main(int argc, char **argv) {
-    return Core::main(argc, argv);
+namespace Core {
+
+class EXPORT_CORE ShellLexer
+{
+public:
+    static QString quote(QString input);
+    static QStringList split(const QString &input);
+
+};
+
 }
+

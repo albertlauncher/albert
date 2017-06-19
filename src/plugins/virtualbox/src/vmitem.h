@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "item.h"
+#include "core/item.h"
 using std::vector;
 using std::shared_ptr;
 using Core::Action;

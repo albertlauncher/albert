@@ -14,8 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "core/main.h"
+#pragma once
+#include <QStringList>
+#include <QMap>
+#include <QIcon>
+#include "xdg_globals.h"
 
-int main(int argc, char **argv) {
-    return Core::main(argc, argv);
-}
+class EXPORT_XDG XdgIconLookup
+{
+public:
+
+    static QString iconPath(QString iconName, QString themeName = QIcon::themeName());
+
+private:
+
+    XdgIconLookup();
+    static XdgIconLookup *instance();
+
+    QString themeIconPath(QString iconName, QString themeName = QIcon::themeName());
+    QString doRecursiveIconLookup(const QString &iconName, const QString &theme, QStringList *checked);
+    QString doIconLookup(const QString &iconName, const QString &themeFile);
+    QString lookupThemeFile(const QString &themeName);
+
+    QStringList iconDirs_;
+    QMap<QString, QString> iconCache_;
+};

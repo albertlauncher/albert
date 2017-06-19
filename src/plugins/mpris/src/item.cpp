@@ -15,9 +15,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "item.h"
-#include "standardaction.h"
-using Core::StandardAction;
 #include <QDBusConnection>
+#include "core/standardaction.h"
+using Core::StandardAction;
 
 
 /** ***************************************************************************/

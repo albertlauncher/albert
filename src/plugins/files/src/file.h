@@ -17,10 +17,10 @@
 #pragma once
 #include <QMimeType>
 #include <map>
-#include <vector>
 #include <memory>
-#include "indexable.h"
-#include "item.h"
+#include <vector>
+#include "core/indexable.h"
+#include "core/item.h"
 
 namespace Files {
 

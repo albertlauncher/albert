@@ -20,7 +20,7 @@
 #include <QSettings>
 #include <QString>
 #include "themefileparser.h"
-#include "xdgiconlookup.h"
+#include "xdg/iconlookup.h"
 
 
 namespace  {

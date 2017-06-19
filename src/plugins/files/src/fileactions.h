@@ -15,14 +15,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QDesktopServices>
-#include <QClipboard>
-#include <QMimeData>
 #include <QApplication>
+#include <QClipboard>
+#include <QDesktopServices>
 #include <QFileInfo>
+#include <QMimeData>
 #include <QUrl>
+#include "core/action.h"
 #include "file.h"
-#include "action.h"
 
 namespace Files {
 

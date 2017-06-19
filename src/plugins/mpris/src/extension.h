@@ -15,39 +15,50 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QDBusMessage>
-#include <QVariant>
-#include <vector>
-#include "core/standarditem.h"
+#include <QObject>
+#include <QPointer>
 #include "player.h"
-using std::vector;
-using std::shared_ptr;
-using Core::Action;
+#include "command.h"
+#include "core/extension.h"
+#include "core/queryhandler.h"
+#include <QDBusConnection>
+using Core::Query;
+
+class QDBusMessage;
 
 namespace MPRIS {
 
-class Item final : public Core::Item
+class MPRISPrivate;
+
+class Extension final :
+        public QObject,
+        public Core::Extension,
+        public Core::QueryHandler
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
+
 public:
+    Extension();
+    ~Extension();
 
-    Item(Player &p, const QString& title, const QString& subtext, const QString& iconPath, const QDBusMessage& msg);
-    ~Item();
+    /*
+     * Implementation of extension interface
+     */
 
-    QString id() const override { return id_; }
-    QString text() const override { return text_; }
-    QString subtext() const override { return subtext_; }
-    QString iconPath() const override { return iconPath_; }
-    vector<shared_ptr<Action>> actions() override;
+    QWidget *widget(QWidget *parent = nullptr) override;
+    void setupSession() override;
+    void handleQuery(Query *query) override;
+    QString name() const override;
+
+
+    /*
+     * Extension specific members
+     */
 
 private:
 
-    QString id_;
-    QString text_;
-    QString subtext_;
-    QString iconPath_;
-    QDBusMessage message_;
-    vector<shared_ptr<Action>> actions_;
+    std::unique_ptr<MPRISPrivate> d;
 
 };
-
 }

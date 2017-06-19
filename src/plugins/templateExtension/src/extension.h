@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014-2017 Manuel Schneider
+// Copyright (C) 2014-2015 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,55 +16,45 @@
 
 #pragma once
 #include <QObject>
-#include <QProcess>
-#include <QMutex>
-#include <map>
+#include <memory>
+#include "core/extension.h"
 #include "core/queryhandler.h"
 
-namespace ExternalExtensions {
+namespace ProjectNamespace {
 
-class ExternalExtension final : public QObject, public Core::QueryHandler
+class ProjectNamespacePrivate;
+class ConfigWidget;
+
+class Extension final :
+        public QObject,
+        public Core::Extension,
+        public Core::QueryHandler
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
 public:
 
-    ExternalExtension(const QString &path, const QString &id);
-    ~ExternalExtension();
+    Extension();
+    ~Extension();
 
     /*
      * Implementation of extension interface
      */
 
-    QStringList triggers() const override { return {trigger_}; }
+    QString name() const override { return "Template"; }
+    QWidget *widget(QWidget *parent = nullptr) override;
     void setupSession() override;
     void teardownSession() override;
-    void handleQuery(Core::Query *query) override;
+    void handleQuery(Core::Query * query) override;
 
     /*
      * Extension specific members
      */
 
-
-    const QString &path() { return path_; }
-    const QString &id() { return id_; }
-    const QString &name() { return name_; }
-    const QString &author() { return author_; }
-    const QString &version() { return version_; }
-    const QStringList &dependencies() { return dependencies_; }
-
 private:
 
-    QString runOperation(const QString &);
+    std::unique_ptr<ProjectNamespacePrivate> d;
 
-    QString path_;
-    QString id_;
-    QString name_;
-    QString author_;
-    QString version_;
-    QStringList dependencies_;
-    QString trigger_;
-    std::map<QString, QString> variables_;
-    QMutex processMutex_;
 };
-
 }

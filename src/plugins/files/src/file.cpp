@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include "file.h"
 #include <QApplication>
-#include <QFileInfo>
 #include <QDataStream>
 #include <QDir>
+#include <QFileInfo>
 #include <QMimeDatabase>
-#include "file.h"
+#include "xdg/iconlookup.h"
 #include "fileactions.h"
-#include "xdgiconlookup.h"
 using std::vector;
 using std::shared_ptr;
 

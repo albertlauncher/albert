@@ -19,8 +19,8 @@
 #include <QStandardPaths>
 #include "configwidget.h"
 #include "enginesmodel.h"
+#include "extension.h"
 #include "searchengineeditor.h"
-#include "main.h"
 
 /** ***************************************************************************/
 Websearch::ConfigWidget::ConfigWidget(Extension *extension, QWidget *parent)

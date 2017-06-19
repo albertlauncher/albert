@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include "externalextension.h"
 #include <QByteArray>
 #include <QFileInfo>
 #include <QDebug>
@@ -25,11 +26,10 @@
 #include <QVBoxLayout>
 #include <functional>
 #include <vector>
-#include "externalextension.h"
-#include "standardaction.h"
-#include "standarditem.h"
-#include "query.h"
-#include "xdgiconlookup.h"
+#include "core/standardaction.h"
+#include "core/standarditem.h"
+#include "core/query.h"
+#include "xdg/iconlookup.h"
 using std::pair;
 using std::shared_ptr;
 using std::vector;

@@ -19,11 +19,11 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QIcon>
-#include <QUuid>
 #include <QMimeData>
 #include <QStandardPaths>
+#include <QUuid>
 #include "enginesmodel.h"
-#include "main.h"
+#include "extension.h"
 #include "searchengine.h"
 
 namespace {

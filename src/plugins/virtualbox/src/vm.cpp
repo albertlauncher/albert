@@ -16,13 +16,13 @@
 
 #include "vm.h"
 
-#include <QObject>
-#include <QProcess>
-#include <QRegularExpression>
 #include <QDomDocument>
 #include <QDomElement>
 #include <QFile>
-#include "standardaction.h"
+#include <QObject>
+#include <QProcess>
+#include <QRegularExpression>
+#include "core/standardaction.h"
 using Core::StandardAction;
 
 

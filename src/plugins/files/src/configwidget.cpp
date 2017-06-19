@@ -18,7 +18,7 @@
 #include <QStandardPaths>
 #include <QStringListModel>
 #include "configwidget.h"
-#include "main.h"
+#include "extension.h"
 #include "mimetypedialog.h"
 
 /** ***************************************************************************/
