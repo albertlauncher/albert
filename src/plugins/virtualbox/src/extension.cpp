@@ -38,10 +38,10 @@ using Core::StandardItem;
 
 
 
-class VirtualBox::VirtualBoxPrivate
+class VirtualBox::Private
 {
 public:
-    VirtualBoxPrivate(Extension *q) : q(q) { }
+    Private(Extension *q) : q(q) { }
     Extension *q;
 
     QPointer<ConfigWidget> widget;
@@ -55,7 +55,7 @@ public:
 
 
 /** ***************************************************************************/
-void VirtualBox::VirtualBoxPrivate::rescanVBoxConfig(QString path) {
+void VirtualBox::Private::rescanVBoxConfig(QString path) {
 
     qDebug() << "Start indexing VirtualBox images.";
 
@@ -124,7 +124,7 @@ void VirtualBox::VirtualBoxPrivate::rescanVBoxConfig(QString path) {
 VirtualBox::Extension::Extension()
     : Core::Extension("org.albert.extension.virtualbox"),
       Core::QueryHandler(Core::Extension::id),
-      d(new VirtualBoxPrivate(this)) {
+      d(new Private(this)) {
 
     VMItem::iconPath_ = XDG::IconLookup::iconPath("virtualbox");
     if ( VMItem::iconPath_.isNull() )
@@ -137,7 +137,7 @@ VirtualBox::Extension::Extension()
     d->rescanVBoxConfig(vboxConfigPath);
     d->vboxWatcher.addPath(vboxConfigPath);
     connect(&d->vboxWatcher, &QFileSystemWatcher::fileChanged,
-            std::bind(&VirtualBoxPrivate::rescanVBoxConfig, d.get(), std::placeholders::_1));
+            std::bind(&Private::rescanVBoxConfig, d.get(), std::placeholders::_1));
 }
 
 

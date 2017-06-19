@@ -85,10 +85,10 @@ struct IgnoreEntry {
 /** ***************************************************************************/
 /** ***************************************************************************/
 /** ***************************************************************************/
-class Files::FilesPrivate
+class Files::Private
 {
 public:
-    FilesPrivate(Extension *q) : q(q), abort(false), rerun(false) {}
+    Private(Extension *q) : q(q), abort(false), rerun(false) {}
 
     Extension *q;
 
@@ -111,7 +111,7 @@ public:
 
 
 /** ***************************************************************************/
-void Files::FilesPrivate::startIndexing() {
+void Files::Private::startIndexing() {
 
     // Abort and rerun
     if ( futureWatcher.future().isRunning() ) {
@@ -124,7 +124,7 @@ void Files::FilesPrivate::startIndexing() {
     // Run finishIndexing when the indexing thread finished
     futureWatcher.disconnect();
     QObject::connect(&futureWatcher, &QFutureWatcher<vector<shared_ptr<File>>>::finished,
-                     std::bind(&FilesPrivate::finishIndexing, this));
+                     std::bind(&Private::finishIndexing, this));
 
     // Restart the timer (Index update may have been started manually)
     if (indexIntervalTimer.interval() != 0)
@@ -132,7 +132,7 @@ void Files::FilesPrivate::startIndexing() {
 
     // Run the indexer thread
     qDebug() << "Start indexing files.";
-    futureWatcher.setFuture(QtConcurrent::run(this, &FilesPrivate::indexFiles, indexSettings));
+    futureWatcher.setFuture(QtConcurrent::run(this, &Private::indexFiles, indexSettings));
 
     // Notification
     emit q->statusInfo("Indexing files ...");
@@ -141,7 +141,7 @@ void Files::FilesPrivate::startIndexing() {
 
 
 /** ***************************************************************************/
-void Files::FilesPrivate::finishIndexing() {
+void Files::Private::finishIndexing() {
 
     // In case of abortion the returned data is invalid
     if ( !abort ) {
@@ -170,7 +170,7 @@ void Files::FilesPrivate::finishIndexing() {
 
 /** ***************************************************************************/
 vector<shared_ptr<Files::File>>
-Files::FilesPrivate::indexFiles(const IndexSettings &indexSettings) const {
+Files::Private::indexFiles(const IndexSettings &indexSettings) const {
 
     // Get a new index
     std::vector<shared_ptr<File>> newIndex;
@@ -305,7 +305,7 @@ Files::FilesPrivate::indexFiles(const IndexSettings &indexSettings) const {
 Files::Extension::Extension()
     : Core::Extension("org.albert.extension.files"),
       Core::QueryHandler(Core::Extension::id),
-      d(new FilesPrivate(this)) {
+      d(new Private(this)) {
 
     // Load settings
     QSettings s(qApp->applicationName());

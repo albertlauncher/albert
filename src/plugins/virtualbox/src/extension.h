@@ -23,8 +23,7 @@
 
 namespace VirtualBox {
 
-class VirtualBoxPrivate;
-class ConfigWidget;
+class Private;
 
 class Extension final :
         public QObject,
@@ -39,10 +38,6 @@ public:
     Extension();
     ~Extension();
 
-    /*
-     * Implementation of extension interface
-     */
-
     QString name() const override { return tr("VirtualBox"); }
     QWidget *widget(QWidget *parent = nullptr) override;
     void setupSession() override;
@@ -50,7 +45,7 @@ public:
 
 private:
 
-    std::unique_ptr<VirtualBoxPrivate> d;
+    std::unique_ptr<Private> d;
 
 };
 }

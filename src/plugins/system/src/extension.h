@@ -22,8 +22,7 @@
 
 namespace System {
 
-class SystemPrivate;
-class ConfigWidget;
+class Private;
 
 class Extension final :
         public QObject,
@@ -38,17 +37,13 @@ public:
     Extension();
     ~Extension();
 
-    /*
-     * Implementation of interfaces
-     */
-
     QString name() const override { return "System"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     void handleQuery(Core::Query * query) override;
 
 private:
 
-    std::unique_ptr<SystemPrivate> d;
+    std::unique_ptr<Private> d;
 
 };
 }

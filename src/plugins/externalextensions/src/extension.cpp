@@ -33,7 +33,7 @@
 
 
 
-class ExternalExtensions::ExternalExtensionsPrivate
+class ExternalExtensions::Private
 {
 public:
     QStringList pluginDirs;
@@ -48,7 +48,7 @@ public:
 /** ***************************************************************************/
 ExternalExtensions::Extension::Extension()
     : Core::Extension("org.albert.extension.externalextensions"),
-    d(new ExternalExtensionsPrivate) {
+    d(new Private) {
 
     d->pluginDirs = QStandardPaths::locateAll(
                 QStandardPaths::DataLocation, "external",

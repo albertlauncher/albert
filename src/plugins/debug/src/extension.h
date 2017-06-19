@@ -22,8 +22,7 @@
 
 namespace Debug {
 
-class DebugPrivate;
-class ConfigWidget;
+class Private;
 
 class Extension final :
         public QObject,
@@ -38,19 +37,11 @@ public:
     Extension();
     ~Extension();
 
-    /*
-     * Implementation of extension interface
-     */
-
     QString name() const override { return "Debug"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     QStringList triggers() const override;
     void handleQuery(Core::Query * query) override;
     bool isLongRunning() const override;
-
-    /*
-     * Extension specific members
-     */
 
     int count() const;
     void setCount(const int &count);
@@ -66,7 +57,7 @@ public:
 
 private:
 
-    std::unique_ptr<DebugPrivate> d;
+    std::unique_ptr<Private> d;
 
 };
 }

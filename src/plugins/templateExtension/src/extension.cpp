@@ -24,7 +24,7 @@
 
 
 
-class ProjectNamespace::ProjectNamespacePrivate
+class ProjectNamespace::Private
 {
 public:
     QPointer<ConfigWidget> widget;
@@ -36,7 +36,7 @@ public:
 ProjectNamespace::Extension::Extension()
     : Core::Extension("org.albert.extension.projectid"),
       Core::QueryHandler(Core::Extension::id),
-      d(new ProjectNamespacePrivate) {
+      d(new Private) {
 
     // You can throw in the constructor if something fatal happened
     throw std::runtime_error( "Description of error." );

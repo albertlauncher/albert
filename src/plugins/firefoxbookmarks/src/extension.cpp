@@ -68,10 +68,10 @@ const uint    UPDATE_DELAY = 60000;
 /** ***************************************************************************/
 /** ***************************************************************************/
 /** ***************************************************************************/
-class FirefoxBookmarks::FirefoxBookmarksPrivate
+class FirefoxBookmarks::Private
 {
 public:
-    FirefoxBookmarksPrivate(Extension *q) : q(q) {}
+    Private(Extension *q) : q(q) {}
 
     Extension *q;
 
@@ -94,7 +94,7 @@ public:
 
 
 /** ***************************************************************************/
-void FirefoxBookmarks::FirefoxBookmarksPrivate::startIndexing() {
+void FirefoxBookmarks::Private::startIndexing() {
 
     // Never run concurrent
     if ( futureWatcher.future().isRunning() )
@@ -103,10 +103,10 @@ void FirefoxBookmarks::FirefoxBookmarksPrivate::startIndexing() {
     // Run finishIndexing when the indexing thread finished
     futureWatcher.disconnect();
     QObject::connect(&futureWatcher, &QFutureWatcher<vector<shared_ptr<Core::StandardIndexItem>>>::finished,
-                     std::bind(&FirefoxBookmarksPrivate::finishIndexing, this));
+                     std::bind(&Private::finishIndexing, this));
 
     // Run the indexer thread
-    futureWatcher.setFuture(QtConcurrent::run(this, &FirefoxBookmarksPrivate::indexFirefoxBookmarks));
+    futureWatcher.setFuture(QtConcurrent::run(this, &Private::indexFirefoxBookmarks));
 
     // Notification
     qDebug() << "Start indexing Firefox bookmarks.";
@@ -115,7 +115,7 @@ void FirefoxBookmarks::FirefoxBookmarksPrivate::startIndexing() {
 
 
 /** ***************************************************************************/
-void FirefoxBookmarks::FirefoxBookmarksPrivate::finishIndexing() {
+void FirefoxBookmarks::Private::finishIndexing() {
 
     // Get the thread results
     index = futureWatcher.future().result();
@@ -134,7 +134,7 @@ void FirefoxBookmarks::FirefoxBookmarksPrivate::finishIndexing() {
 
 /** ***************************************************************************/
 vector<shared_ptr<Core::StandardIndexItem>>
-FirefoxBookmarks::FirefoxBookmarksPrivate::indexFirefoxBookmarks() const {
+FirefoxBookmarks::Private::indexFirefoxBookmarks() const {
 
     QSqlDatabase database = QSqlDatabase::database(q->Core::Extension::id);
 
@@ -231,7 +231,7 @@ FirefoxBookmarks::FirefoxBookmarksPrivate::indexFirefoxBookmarks() const {
 FirefoxBookmarks::Extension::Extension()
     : Core::Extension("org.albert.extension.firefoxbookmarks"),
       Core::QueryHandler(Core::Extension::id),
-      d(new FirefoxBookmarksPrivate(this)){
+      d(new Private(this)){
 
     // Add a sqlite database connection for this extension, check requirements
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", Core::Extension::id);
@@ -309,7 +309,7 @@ FirefoxBookmarks::Extension::Extension()
 
     // If the update delay passed, update the index
     connect(&d->updateDelayTimer, &QTimer::timeout,
-            std::bind(&FirefoxBookmarksPrivate::startIndexing, d.get()));
+            std::bind(&Private::startIndexing, d.get()));
 }
 
 

@@ -23,8 +23,7 @@
 
 namespace Websearch {
 
-struct Internal;
-class ConfigWidget;
+class Private;
 
 class Extension final :
         public QObject,
@@ -53,7 +52,7 @@ public:
 
 private:
 
-    std::unique_ptr<Internal> d;
+    std::unique_ptr<Private> d;
 
 signals:
 

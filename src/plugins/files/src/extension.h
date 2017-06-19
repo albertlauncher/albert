@@ -22,8 +22,7 @@
 
 namespace Files {
 
-class FilesPrivate;
-class ConfigWidget;
+class Private;
 
 class Extension final :
         public QObject,
@@ -38,18 +37,10 @@ public:
     Extension();
     ~Extension();
 
-    /*
-     * Implementation of extension interface
-     */
-
     QString name() const override { return "Files"; }
     QStringList triggers() const override { return {"/", "~"}; }
     QWidget *widget(QWidget *parent = nullptr) override;
     void handleQuery(Core::Query * query) override;
-
-    /*
-     * Extension specific members
-     */
 
     const QStringList &paths() const;
     void setPaths(const QStringList &);
@@ -74,7 +65,7 @@ public:
 
 private:
 
-    std::unique_ptr<FilesPrivate> d;
+    std::unique_ptr<Private> d;
 
 signals:
 

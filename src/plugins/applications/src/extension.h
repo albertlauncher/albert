@@ -22,8 +22,7 @@
 
 namespace Applications {
 
-class ApplicationsPrivate;
-class ConfigWidget;
+class Private;
 
 class Extension final :
         public QObject,
@@ -38,17 +37,9 @@ public:
     Extension();
     ~Extension();
 
-    /*
-     * Implementation of interfaces
-     */
-
     QString name() const override { return "Applications"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     void handleQuery(Core::Query * query) override;
-
-    /*
-     * Extension specific members
-     */
 
     bool fuzzy();
     void setFuzzy(bool b = true);
@@ -57,7 +48,7 @@ public:
 
 private:
 
-    std::unique_ptr<ApplicationsPrivate> d;
+    std::unique_ptr<Private> d;
 
 signals:
 

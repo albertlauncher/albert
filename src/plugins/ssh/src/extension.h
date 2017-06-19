@@ -22,8 +22,7 @@
 
 namespace Ssh {
 
-class SshPrivate;
-class ConfigWidget;
+class Private;
 
 class Extension final :
         public QObject,
@@ -38,18 +37,10 @@ public:
     Extension();
     ~Extension();
 
-    /*
-     * Implementation of extension interface
-     */
-
     QString name() const override { return "SecureShell"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     QStringList triggers() const override { return {"ssh "}; }
     void handleQuery(Core::Query * query) override;
-
-    /*
-     * Extension specific members
-     */
 
     void rescan();
 
@@ -58,7 +49,7 @@ public:
 
 private:
 
-    std::unique_ptr<SshPrivate> d;
+    std::unique_ptr<Private> d;
 
 };
 }

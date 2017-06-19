@@ -27,7 +27,7 @@
 using Core::StandardItem;
 
 
-class Debug::DebugPrivate
+class Debug::Private
 {
 public:
     QPointer<ConfigWidget> widget;
@@ -44,7 +44,7 @@ public:
 Debug::Extension::Extension()
     : Core::Extension("org.albert.extension.debug"),
       Core::QueryHandler(Core::Extension::id),
-      d(new DebugPrivate) {
+      d(new Private) {
     QSettings s(qApp->applicationName());
     s.beginGroup(Core::QueryHandler::id);
     d->delay = s.value("delay", 50).toInt();

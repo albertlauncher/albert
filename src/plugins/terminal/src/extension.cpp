@@ -38,7 +38,7 @@ extern QString terminalCommand;
 /** ***************************************************************************/
 /** ***************************************************************************/
 /** ***************************************************************************/
-class Terminal::Internal
+class Terminal::Private
 {
 public:
     QPointer<ConfigWidget> widget;
@@ -51,7 +51,7 @@ public:
 Terminal::Extension::Extension()
     : Core::Extension("org.albert.extension.terminal"),
       Core::QueryHandler(Core::Extension::id),
-      d(new Internal) {
+      d(new Private) {
 
     QString iconPath = XDG::IconLookup::iconPath("terminal");
     d->iconPath = iconPath.isNull() ? ":terminal" : iconPath;

@@ -143,10 +143,10 @@ vector<shared_ptr<StandardIndexItem>> indexChromeBookmarks(const QString &bookma
 /** ***************************************************************************/
 /** ***************************************************************************/
 /** ***************************************************************************/
-class ChromeBookmarks::ChromeBookmarksPrivate
+class ChromeBookmarks::Private
 {
 public:
-    ChromeBookmarksPrivate(Extension *q) : q(q) {}
+    Private(Extension *q) : q(q) {}
 
     Extension *q;
 
@@ -165,7 +165,7 @@ public:
 
 
 /** ***************************************************************************/
-void ChromeBookmarks::ChromeBookmarksPrivate::startIndexing() {
+void ChromeBookmarks::Private::startIndexing() {
 
     // Never run concurrent
     if ( futureWatcher.future().isRunning() )
@@ -174,7 +174,7 @@ void ChromeBookmarks::ChromeBookmarksPrivate::startIndexing() {
     // Run finishIndexing when the indexing thread finished
     futureWatcher.disconnect();
     QObject::connect(&futureWatcher, &QFutureWatcher<vector<shared_ptr<Core::StandardIndexItem>>>::finished,
-                     std::bind(&ChromeBookmarksPrivate::finishIndexing, this));
+                     std::bind(&Private::finishIndexing, this));
 
     // Run the indexer thread
     futureWatcher.setFuture(QtConcurrent::run(indexChromeBookmarks, bookmarksFile));
@@ -188,7 +188,7 @@ void ChromeBookmarks::ChromeBookmarksPrivate::startIndexing() {
 
 
 /** ***************************************************************************/
-void ChromeBookmarks::ChromeBookmarksPrivate::finishIndexing() {
+void ChromeBookmarks::Private::finishIndexing() {
 
     // Get the thread results
     index = futureWatcher.future().result();
@@ -223,7 +223,7 @@ void ChromeBookmarks::ChromeBookmarksPrivate::finishIndexing() {
 ChromeBookmarks::Extension::Extension()
     : Core::Extension("org.albert.extension.chromebookmarks"),
       Core::QueryHandler(Core::Extension::id),
-      d(new ChromeBookmarksPrivate(this)) {
+      d(new Private(this)) {
 
     // Load settings
     QSettings s(qApp->applicationName());

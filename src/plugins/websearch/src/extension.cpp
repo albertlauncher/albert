@@ -284,8 +284,9 @@ shared_ptr<Core::Item> buildWebsearchItem(const Websearch::SearchEngine &se, con
 /** ***************************************************************************/
 /** ***************************************************************************/
 /** ***************************************************************************/
-struct Websearch::Internal
+class Websearch::Private
 {
+public:
     QPointer<ConfigWidget> widget;
     std::vector<SearchEngine> searchEngines;
 };
@@ -299,7 +300,7 @@ struct Websearch::Internal
 Websearch::Extension::Extension()
     : Core::Extension("org.albert.extension.websearch"),
       Core::QueryHandler(Core::Extension::id),
-      d(new Internal) {
+      d(new Private) {
 
     std::sort(validTlds.begin(), validTlds.end());
 

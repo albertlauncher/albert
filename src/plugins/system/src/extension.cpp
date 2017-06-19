@@ -162,7 +162,7 @@ QString defaultCommand(SupportedCommands command){
 
 
 
-class System::SystemPrivate
+class System::Private
 {
 public:
     QPointer<ConfigWidget> widget;
@@ -176,7 +176,7 @@ public:
 System::Extension::Extension()
     : Core::Extension("org.albert.extension.system"),
       Core::QueryHandler(Core::Extension::id),
-      d(new SystemPrivate) {
+      d(new Private) {
 
     // Load settings
     QSettings s(qApp->applicationName());

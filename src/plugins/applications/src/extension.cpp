@@ -477,10 +477,10 @@ vector<shared_ptr<StandardIndexItem>> indexApplications(bool ignoreShowInKeys) {
 /** ***************************************************************************/
 /** ***************************************************************************/
 /** ***************************************************************************/
-class Applications::ApplicationsPrivate
+class Applications::Private
 {
 public:
-    ApplicationsPrivate(Extension *q) : q(q) {}
+    Private(Extension *q) : q(q) {}
 
     Extension *q;
 
@@ -501,7 +501,7 @@ public:
 
 
 /** ***************************************************************************/
-void Applications::ApplicationsPrivate::startIndexing() {
+void Applications::Private::startIndexing() {
 
     // Never run concurrent
     if ( futureWatcher.future().isRunning() ) {
@@ -512,7 +512,7 @@ void Applications::ApplicationsPrivate::startIndexing() {
     // Run finishIndexing when the indexing thread finished
     futureWatcher.disconnect();
     QObject::connect(&futureWatcher, &QFutureWatcher<vector<shared_ptr<Core::StandardIndexItem>>>::finished,
-                     std::bind(&ApplicationsPrivate::finishIndexing, this));
+                     std::bind(&Private::finishIndexing, this));
 
     // Run the indexer thread
     futureWatcher.setFuture(QtConcurrent::run(indexApplications, ignoreShowInKeys));
@@ -525,7 +525,7 @@ void Applications::ApplicationsPrivate::startIndexing() {
 
 
 /** ***************************************************************************/
-void Applications::ApplicationsPrivate::finishIndexing() {
+void Applications::Private::finishIndexing() {
 
     // Get the thread results
     index = futureWatcher.future().result();
@@ -565,7 +565,7 @@ void Applications::ApplicationsPrivate::finishIndexing() {
 Applications::Extension::Extension()
     : Core::Extension("org.albert.extension.applications"),
       Core::QueryHandler(Core::Extension::id),
-      d(new ApplicationsPrivate(this)) {
+      d(new Private(this)) {
 
     qunsetenv("DESKTOP_AUTOSTART_ID");
 
@@ -577,7 +577,7 @@ Applications::Extension::Extension()
 
     // If the filesystem changed, trigger the scan
     connect(&d->watcher, &QFileSystemWatcher::directoryChanged,
-            std::bind(&ApplicationsPrivate::startIndexing, d.get()));
+            std::bind(&Private::startIndexing, d.get()));
 
     // Trigger initial update
     updateIndex();

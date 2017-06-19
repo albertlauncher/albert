@@ -19,15 +19,10 @@
 #include "core/extension.h"
 #include "core/queryhandler.h"
 #include <memory>
-#include <vector>
-namespace Core {
-class StandardIndexItem;
-}
 
 namespace FirefoxBookmarks {
 
-class FirefoxBookmarksPrivate;
-class ConfigWidget;
+class Private;
 
 class Extension final :
         public QObject,
@@ -42,17 +37,9 @@ public:
     Extension();
     ~Extension();
 
-    /*
-     * Implementation of interfaces
-     */
-
     QString name() const override { return "Firefox bookmarks"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     void handleQuery(Core::Query * query) override;
-
-    /*
-     * Extension specific members
-     */
 
     void setProfile(const QString &profile);
     void changeFuzzyness(bool fuzzy);
@@ -60,7 +47,7 @@ public:
 
 private:
 
-    std::unique_ptr<FirefoxBookmarksPrivate> d;
+    std::unique_ptr<Private> d;
 
 signals:
 

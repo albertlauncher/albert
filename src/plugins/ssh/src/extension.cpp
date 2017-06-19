@@ -83,7 +83,7 @@ std::set<QString> getSshHostsFromKnownHosts(const QString& path) {
 
 
 
-class Ssh::SshPrivate
+class Ssh::Private
 {
 public:
     QString icon;
@@ -101,7 +101,7 @@ public:
 Ssh::Extension::Extension()
     : Core::Extension("org.albert.extension.ssh"),
       Core::QueryHandler(Core::Extension::id),
-      d(new SshPrivate) {
+      d(new Private) {
 
     // Load settings
     QSettings s(qApp->applicationName());

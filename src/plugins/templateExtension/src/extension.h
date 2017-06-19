@@ -22,8 +22,7 @@
 
 namespace ProjectNamespace {
 
-class ProjectNamespacePrivate;
-class ConfigWidget;
+class Private;
 
 class Extension final :
         public QObject,
@@ -38,23 +37,15 @@ public:
     Extension();
     ~Extension();
 
-    /*
-     * Implementation of extension interface
-     */
-
     QString name() const override { return "Template"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     void setupSession() override;
     void teardownSession() override;
     void handleQuery(Core::Query * query) override;
 
-    /*
-     * Extension specific members
-     */
-
 private:
 
-    std::unique_ptr<ProjectNamespacePrivate> d;
+    std::unique_ptr<Private> d;
 
 };
 }

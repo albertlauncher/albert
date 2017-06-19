@@ -20,11 +20,9 @@
 #include "core/extension.h"
 #include "core/queryhandler.h"
 
-
 namespace ChromeBookmarks {
 
-class ChromeBookmarksPrivate;
-class ConfigWidget;
+class Private;
 
 class Extension final :
         public QObject,
@@ -39,17 +37,9 @@ public:
     Extension();
     ~Extension();
 
-    /*
-     * Implementation of extension interface
-     */
-
     QString name() const override { return "Chrome bookmarks"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     void handleQuery(Core::Query * query) override;
-
-    /*
-     * Extension specific members
-     */
 
     const QString &path();
     void setPath(const QString &path);
@@ -62,7 +52,7 @@ public:
 
 private:
 
-    std::unique_ptr<ChromeBookmarksPrivate> d;
+    std::unique_ptr<Private> d;
 
 signals:
 

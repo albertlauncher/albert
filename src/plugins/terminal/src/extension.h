@@ -22,8 +22,7 @@
 
 namespace Terminal {
 
-class Internal;
-class ConfigWidget;
+class Private;
 
 class Extension final :
         public QObject,
@@ -38,10 +37,6 @@ public:
     Extension();
     ~Extension();
 
-    /*
-     * Implementation of extension interface
-     */
-
     QString name() const override { return "Terminal"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     QStringList triggers() const override { return {">"}; }
@@ -49,7 +44,7 @@ public:
 
 private:
 
-    std::unique_ptr<Internal> d;
+    std::unique_ptr<Private> d;
 
 };
 }

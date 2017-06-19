@@ -16,6 +16,7 @@
 
 #pragma once
 #include <QString>
+#include <QStringList>
 #include "core_globals.h"
 
 namespace Core {

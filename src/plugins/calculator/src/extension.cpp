@@ -40,7 +40,7 @@ const bool    CFG_SEPS_DEF  = false;
 
 
 
-class Calculator::CalculatorPrivate
+class Calculator::Private
 {
 public:
     QPointer<ConfigWidget> widget;
@@ -55,7 +55,7 @@ public:
 Calculator::Extension::Extension()
     : Core::Extension("org.albert.extension.calculator"),
       Core::QueryHandler(Core::Extension::id),
-      d(new CalculatorPrivate){
+      d(new Private){
 
     // FIXME Qt6 Workaround for https://bugreports.qt.io/browse/QTBUG-58504
     d->locale = QLocale(QLocale::system().name());

@@ -22,8 +22,7 @@
 
 namespace Calculator {
 
-class CalculatorPrivate;
-class ConfigWidget;
+class Private;
 
 class Extension final :
         public QObject,
@@ -38,17 +37,13 @@ public:
     Extension();
     ~Extension();
 
-    /*
-     * Implementation of extension interface
-     */
-
     QString name() const override { return "Calculator"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     void handleQuery(Core::Query * query) override;
 
 private:
 
-    std::unique_ptr<CalculatorPrivate> d;
+    std::unique_ptr<Private> d;
 
 };
 }

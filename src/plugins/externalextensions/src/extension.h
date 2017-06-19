@@ -22,8 +22,7 @@
 
 namespace ExternalExtensions {
 
-class ExternalExtensionsPrivate;
-class ConfigWidget;
+class Private;
 
 class Extension final :
         public QObject,
@@ -37,22 +36,14 @@ public:
     Extension();
     ~Extension();
 
-    /*
-     * Implementation of extension interface
-     */
-
     QString name() const override { return "External extensions"; }
     QWidget *widget(QWidget *parent = nullptr) override;
-
-    /*
-     * Extension specific members
-     */
 
     void reloadExtensions();
 
 private:
 
-    std::unique_ptr<ExternalExtensionsPrivate> d;
+    std::unique_ptr<Private> d;
 
 signals:
 
