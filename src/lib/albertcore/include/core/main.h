@@ -18,7 +18,15 @@
 #include "core_globals.h"
 
 namespace Core {
-    int EXPORT_CORE main(int argc, char **argv);
+
+class AlbertApp
+{
+public:
+
+    static int EXPORT_CORE run(int argc, char **argv);
+
+};
+
 }
 
 

@@ -55,7 +55,7 @@ static QMenu                  *trayIconMenu;
 static QLocalServer           *localServer;
 
 
-int Core::main(int argc, char **argv) {
+int Core::AlbertApp::run(int argc, char **argv) {
 
     {
         bool showSettingsWhenInitialized = false;
@@ -75,7 +75,6 @@ int Core::main(int argc, char **argv) {
         if ( icon.isEmpty() ) icon = ":app_icon";
         app->setWindowIcon(QIcon(icon));
 
-        QString socketPath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/socket";
 
         // Set link color applicationwide to cyan
         QPalette palette(qApp->palette());
@@ -97,9 +96,10 @@ int Core::main(int argc, char **argv) {
 
 
         /*
-         *  START IPC CLIENT
+         *  IPC/SINGLETON MECHANISM
          */
 
+        QString socketPath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/socket";
         const QStringList args = parser.positionalArguments();
         QLocalSocket socket;
         socket.connectToServer(socketPath);
@@ -120,6 +120,18 @@ int Core::main(int argc, char **argv) {
             qDebug("There is no other instance of albert running.");
             ::exit(EXIT_FAILURE);
         }
+
+        // Remove pipes potentially leftover after crash
+        QLocalServer::removeServer(socketPath);
+
+        // Create server and handle messages
+        localServer = new QLocalServer;
+        if ( !localServer->listen(socketPath) )
+            qWarning() << "Local server could not be created. IPC will not work! Reason:"
+                       << localServer->errorString();
+
+        // Handle incoming messages
+        QObject::connect(localServer, &QLocalServer::newConnection, dispatchMessage);
 
 
         /*
@@ -254,22 +266,6 @@ int Core::main(int argc, char **argv) {
         hotkeyManager    = new HotkeyManager;
         mainWindow       = new MainWindow;
         queryManager     = new QueryManager(ExtensionManager::instance);
-        localServer      = new QLocalServer;
-
-
-        /*
-         *  START IPC SERVER
-         */
-
-        // Remove pipes potentially leftover after crash
-        QLocalServer::removeServer(socketPath);
-
-        // Create server and handle messages
-        if ( !localServer->listen(socketPath) )
-            qWarning() << "Local server could not be created. IPC will not work! Reason:" << localServer->errorString();
-
-        // Handle incomin messages
-        QObject::connect(localServer, &QLocalServer::newConnection, dispatchMessage);
 
 
         /*

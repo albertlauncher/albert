@@ -17,5 +17,5 @@
 #include "core/main.h"
 
 int main(int argc, char **argv) {
-    return Core::main(argc, argv);
+    Core::AlbertApp::run(argc, argv);
 }
