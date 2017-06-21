@@ -76,12 +76,18 @@ QString defaultCommand(SupportedCommands command){
     case LOCK:
         if (de == "Unity" || de == "Pantheon" || de == "Gnome")
             return "gnome-screensaver-command --lock";
+        else if (de == "kde-plasma" || de == "KDE")
+            // "qdbus org.freedesktop.ScreenSaver /org/freedesktop/ScreenSaver Lock" also works
+	    return "dbus-send --dest=org.freedesktop.ScreenSaver --type=method_call /ScreenSaver org.freedesktop.ScreenSaver.Lock";
         else if (de == "XFCE")
             return "xflock4";
-        if (de == "X-Cinnamon")
+        if (de == "X-Cinnamon" || de == "Cinnamon")
             return "cinnamon-screensaver-command --lock";
         else if (de == "MATE")
             return "mate-screensaver-command --lock";
+	// xdg-screensaver claims to support (in addition to the above): ENLIGHTENMENT,LXDE,LXQt,X-Generic
+	else if (de == "ENLIGHTENMENT" || de == "LXDE" || de == "LXQt" || de == "X-Generic")
+	    return "xdg-screensaver lock";
         else
             return "notify-send \"Error.\" \"Lock command is not set.\" --icon=system-lock-screen";
 
