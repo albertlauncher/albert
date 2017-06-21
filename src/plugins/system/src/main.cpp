@@ -88,7 +88,7 @@ QString defaultCommand(SupportedCommands command){
     case LOGOUT:
         if (de == "Unity" || de == "Pantheon" || de == "Gnome")
             return "gnome-session-quit --logout";
-        else if (de == "kde-plasma")
+        else if (de == "kde-plasma" || de == "KDE")
             return "qdbus org.kde.ksmserver /KSMServer logout 0 0 0";
         else if (de == "X-Cinnamon")
             return "cinnamon-session-quit --logout";
@@ -118,7 +118,7 @@ QString defaultCommand(SupportedCommands command){
     case REBOOT:
         if (de == "Unity" || de == "Pantheon" || de == "Gnome")
             return "gnome-session-quit --reboot";
-        else if (de == "kde-plasma")
+        else if (de == "kde-plasma" || de == "KDE")
             return "qdbus org.kde.ksmserver /KSMServer logout 0 1 0";
         else if (de == "X-Cinnamon")
             return "cinnamon-session-quit --reboot";
@@ -132,7 +132,7 @@ QString defaultCommand(SupportedCommands command){
     case POWEROFF:
         if (de == "Unity" || de == "Pantheon" || de == "Gnome")
             return "gnome-session-quit --power-off";
-        else if (de == "kde-plasma")
+        else if (de == "kde-plasma" || de == "KDE")
             return "qdbus org.kde.ksmserver /KSMServer logout 0 2 0";
         else if (de == "X-Cinnamon")
             return "cinnamon-session-quit --power-off";
