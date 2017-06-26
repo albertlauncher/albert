@@ -70,8 +70,15 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow,
     QSet<int> hks = hotkeyManager->hotkeys();
     if (hks.size() < 1)
         ui.grabKeyButton_hotkey->setText("Press to set hotkey");
-    else
-        ui.grabKeyButton_hotkey->setText(QKeySequence(*hks.begin()).toString()); // OMG
+    else {
+        /**
+         * hacks, hacks everywhere.
+         */
+        if ( hks.toList()[0] == Qt::Key_Meta )
+            ui.grabKeyButton_hotkey->setText("Meta");
+        else
+            ui.grabKeyButton_hotkey->setText(QKeySequence(*hks.begin()).toString()); // OMG
+    }
     connect(ui.grabKeyButton_hotkey, &GrabKeyButton::keyCombinationPressed,
             this, &SettingsWidget::changeHotkey);
 
@@ -267,11 +274,18 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
 
 /** ***************************************************************************/
 void SettingsWidget::changeHotkey(int newhk) {
+
     int oldhk = *hotkeyManager_->hotkeys().begin(); //TODO Make cool sharesdpointer design
 
     // Try to set the hotkey
     if (hotkeyManager_->registerHotkey(newhk)) {
-        QString hkText(QKeySequence((newhk&~Qt::GroupSwitchModifier)).toString());//QTBUG-45568
+
+        QString hkText;
+        if ( newhk == Qt::Key_Meta )
+            hkText = QString("Meta");
+        else
+            hkText = QString(QKeySequence((newhk&~Qt::GroupSwitchModifier)).toString());//QTBUG-45568
+
         ui.grabKeyButton_hotkey->setText(hkText);
         QSettings(qApp->applicationName()).setValue("hotkey", hkText);
         hotkeyManager_->unregisterHotkey(oldhk);

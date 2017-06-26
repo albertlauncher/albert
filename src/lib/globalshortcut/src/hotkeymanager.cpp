@@ -41,6 +41,17 @@ HotkeyManager::~HotkeyManager() {
 
 /** ***************************************************************************/
 bool HotkeyManager::registerHotkey(const QString &hk) {
+    /**
+     * QKeySequence doesn't play nicely with a lone "Meta".
+     *
+     * for some reason, it only work in combination with another
+     * key.
+     * 
+     * so here's a little magic to work around it.
+     */
+    if ( hk == "Meta" )
+        return registerHotkey(QKeySequence(Qt::Key_Meta));
+
 	return registerHotkey(QKeySequence(hk));
 }
 
