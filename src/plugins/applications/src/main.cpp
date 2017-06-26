@@ -452,6 +452,7 @@ vector<shared_ptr<StandardIndexItem>> indexApplications(bool ignoreShowInKeys) {
             // Set keywords
             vector<Indexable::WeightedKeyword> indexKeywords;
             indexKeywords.emplace_back(name, USHRT_MAX);
+            indexKeywords.emplace_back(exec, USHRT_MAX);
             if (!genericName.isEmpty())
                 indexKeywords.emplace_back(genericName, USHRT_MAX*0.9);
             for (auto & kw : keywords)
