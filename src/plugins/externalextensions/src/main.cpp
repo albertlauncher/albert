@@ -39,6 +39,7 @@ public:
     QStringList pluginDirs;
     std::vector<std::unique_ptr<ExternalExtension>> externalExtensions;
     QFileSystemWatcher fileSystemWatcher;
+    QString errorString;
     QPointer<ConfigWidget> widget;
 };
 
@@ -87,6 +88,7 @@ QWidget *ExternalExtensions::Extension::widget(QWidget *parent) {
 
         ExternalExtensionsModel *model = new ExternalExtensionsModel(d->externalExtensions, d->widget->ui.tableView);
         d->widget->ui.tableView->setModel(model);
+        d->widget->ui.errorLabel->setText(d->errorString);
 
         connect(d->widget->ui.tableView, &QTableView::activated,
                 model, &ExternalExtensionsModel::onActivated);
@@ -114,6 +116,9 @@ void ExternalExtensions::Extension::reloadExtensions() {
     if ( !d->fileSystemWatcher.files().isEmpty() )
         d->fileSystemWatcher.removePaths(d->fileSystemWatcher.files());
 
+    // Clear error label
+    d->errorString = "";
+
     // Iterate over all files in the plugindirs
     for (const QString &pluginDir : d->pluginDirs) {
         QDirIterator dirIterator(pluginDir, QDir::Files|QDir::Executable, QDirIterator::NoIteratorFlags);
@@ -134,6 +139,7 @@ void ExternalExtensions::Extension::reloadExtensions() {
                 d->fileSystemWatcher.addPath(path);
             } catch ( QString s ) {
                 qWarning("Failed to initialize external extension: %s", s.toLocal8Bit().data());
+                d->errorString += "Failed to initialize " + id + ": " + s + "\n";
             }
         }
     }
