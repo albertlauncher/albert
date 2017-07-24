@@ -1,5 +1,6 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014-2015 Manuel Schneider
+// Copyright (C) 2014-2017 Manuel Schneider
+//               2016-2017 Martin Buergmann
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,6 +24,8 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QString>
+#include <QCommandLineParser>
+#include <QCommandLineOption>
 #include <stdexcept>
 #include "configwidget.h"
 #include "standardaction.h"
@@ -31,6 +34,7 @@
 #include "query.h"
 #include "shlex.h"
 #include "xdgiconlookup.h"
+#include "sshitem.h"
 using std::shared_ptr;
 using std::vector;
 using namespace Core;
@@ -89,7 +93,7 @@ public:
     QString icon;
     QPointer<ConfigWidget> widget;
     QFileSystemWatcher fileSystemWatcher;
-    vector<shared_ptr<Core::StandardItem>> hosts;
+    vector<shared_ptr<Item>> hosts;
     bool useKnownHosts;
 };
 
@@ -161,32 +165,74 @@ void Ssh::Extension::handleQuery(Core::Query * query) {
     QStringList queryTerms = query->searchTerm().split(' ',QString::SkipEmptyParts);
 
     // Add all hosts if there are no arguments
-    if ( queryTerms.size() == 1)
-        for ( shared_ptr<Core::StandardItem>& host : d->hosts )
+    if ( queryTerms.size() == 1) {
+        for ( shared_ptr<Item>& host : d->hosts )
             query->addMatch(host, 1);
-
-    if ( queryTerms.size() != 2)
         return;
+    }
+
+    QString otherUser = "@";
+    QString hostName = queryTerms[1];
+
+    if ( queryTerms.size() != 2) {
+        qDebug() << queryTerms;
+        QCommandLineParser clp;
+        clp.setOptionsAfterPositionalArgumentsMode(QCommandLineParser::ParseAsOptions);
+        clp.setSingleDashWordOptionMode(QCommandLineParser::ParseAsCompactedShortOptions);
+        QCommandLineOption userOption({"u", "user"}, "Sets a different user", "user");
+        if (!clp.addOption(userOption))
+            qWarning("Option failure!");
+        clp.addPositionalArgument("host", "The host to connect to");
+        clp.parse(queryTerms);
+
+        if (!clp.isSet(userOption)) {
+            qDebug() << "user option not set!";
+            return;
+        }
+
+        otherUser = clp.value(userOption);
+        QStringList posArg = clp.positionalArguments();
+        qDebug() << posArg;
+        if (posArg.size() > 0)
+            hostName = posArg[0];
+    }
+
+    QString connector;
+    if (otherUser == "@")
+        connector = hostName;
+    else
+        connector = otherUser + "@" + hostName;
 
     // Add all hosts that the query is a prefix of
-    for ( shared_ptr<Core::StandardItem>& host : d->hosts )
-        if ( host->text().startsWith(queryTerms[1]) )
-            query->addMatch(host, SHRT_MAX * static_cast<float>(query->searchTerm().size())/host->text().size());
+    for ( shared_ptr<Item>& host : d->hosts )
+        if ( host->text().startsWith(hostName) ) {
+            if (otherUser != "@")  {
+                shared_ptr<Item> tmp = std::make_shared<Item>(*host);
+                tmp->setConnector(connector);
+                tmp->setText(connector);
+                tmp->setCompletionString(QString("ssh %1 -u %2").arg(hostName).arg(otherUser));
+                query->addMatch(tmp, SHRT_MAX * static_cast<float>(query->searchTerm().size())/host->text().size());
+            } else
+                query->addMatch(host, SHRT_MAX * static_cast<float>(query->searchTerm().size())/host->text().size());
+        }
 
     // Add the quick connect item
     std::shared_ptr<StandardItem> item  = std::make_shared<StandardItem>("");
-    item->setText(queryTerms[1]);
-    item->setSubtext(QString("Connect to '%1' using ssh").arg(queryTerms[1]));
-    item->setCompletionString(QString("ssh %1").arg(queryTerms[1]));
+    item->setText(connector);
+    item->setSubtext(QString("Connect to '%1' using ssh").arg(connector));
+    if (otherUser == "@")
+        item->setCompletionString(QString("ssh %1").arg(hostName));
+    else
+        item->setCompletionString(QString("ssh %1 -u %2").arg(hostName).arg(otherUser));
     item->setIconPath(d->icon);
 
     shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
-    action->setText(QString("Connect to '%1' using ssh").arg(queryTerms[1]));
-    action->setAction([queryTerms](){
+    action->setText(QString("Connect to '%1' using ssh").arg(hostName));
+    action->setAction([connector](){
         QStringList tokens;
         tokens << Util::ShellLexer::split(terminalCommand)
                << "ssh"
-               << Util::ShellLexer::split(queryTerms[1]);
+               << Util::ShellLexer::split(connector);
         QProcess::startDetached(tokens.takeFirst(), tokens);
     });
     item->setActions({action});
@@ -200,7 +246,7 @@ void Ssh::Extension::handleQuery(Core::Query * query) {
 void Ssh::Extension::rescan() {
 
     // Build a new index
-    vector<shared_ptr<StandardItem>> sshHosts;
+    vector<shared_ptr<Item>> sshHosts;
 
     // Get the hosts in config
     std::set<QString> hosts;
@@ -221,22 +267,12 @@ void Ssh::Extension::rescan() {
     for ( const QString& host : hosts ){
 
         // Create item
-        std::shared_ptr<StandardItem> si  = std::make_shared<StandardItem>(host);
+        std::shared_ptr<Item> si  = std::make_shared<Item>(host);
         si->setText(host);
         si->setSubtext(QString("Connect to '%1' using ssh").arg(host));
         si->setCompletionString(QString("ssh %1").arg(host));
         si->setIconPath(d->icon);
-
-        shared_ptr<StandardAction> sa = std::make_shared<StandardAction>();
-        sa->setText(QString("Connect to '%1' using ssh").arg(host));
-        sa->setAction([host](){
-            QStringList tokens;
-            tokens << Util::ShellLexer::split(terminalCommand)
-                   << "ssh"
-                   << Util::ShellLexer::split(host);
-            QProcess::startDetached(tokens.takeFirst(), tokens);
-        });
-        si->setActions({sa});
+        si->setConnector(host);
 
         sshHosts.push_back(std::move(si));
     }
