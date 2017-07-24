@@ -61,7 +61,7 @@
      <item>
       <widget class="QPushButton" name="pushButton_new">
        <property name="icon">
-        <iconset theme="add">
+        <iconset theme="list-add">
          <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
@@ -69,7 +69,7 @@
      <item>
       <widget class="QPushButton" name="pushButton_remove">
        <property name="icon">
-        <iconset theme="remove">
+        <iconset theme="list-remove">
          <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
