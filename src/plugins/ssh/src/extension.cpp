@@ -24,6 +24,8 @@
 #include <QStandardPaths>
 #include <QString>
 #include <stdexcept>
+#include <unistd.h>
+#include <pwd.h>
 #include "configwidget.h"
 #include "core/standardaction.h"
 #include "core/standarditem.h"
@@ -90,6 +92,7 @@ public:
     QPointer<ConfigWidget> widget;
     QFileSystemWatcher fileSystemWatcher;
     vector<shared_ptr<Core::StandardItem>> hosts;
+    QString shell;
     bool useKnownHosts;
 };
 
@@ -102,6 +105,12 @@ Ssh::Extension::Extension()
     : Core::Extension("org.albert.extension.ssh"),
       Core::QueryHandler(Core::Extension::id),
       d(new Private) {
+
+    // passwd must not be freed
+    passwd *pwd = getpwuid(geteuid());
+    if (pwd == NULL)
+        throw "Could not retrieve user shell";
+    d->shell = pwd->pw_shell;
 
     // Load settings
     QSettings s(qApp->applicationName());
@@ -174,17 +183,18 @@ void Ssh::Extension::handleQuery(Core::Query * query) {
     // Add the quick connect item
     std::shared_ptr<StandardItem> item  = std::make_shared<StandardItem>("");
     item->setText(queryTerms[1]);
-    item->setSubtext(QString("Connect to '%1' using ssh").arg(queryTerms[1]));
+    item->setSubtext(QString("Quick connect to '%1' using ssh").arg(queryTerms[1]));
     item->setCompletionString(QString("ssh %1").arg(queryTerms[1]));
     item->setIconPath(d->icon);
 
     shared_ptr<StandardAction> action = std::make_shared<StandardAction>();
     action->setText(QString("Connect to '%1' using ssh").arg(queryTerms[1]));
-    action->setAction([queryTerms](){
+    action->setAction([queryTerms, this](){
         QStringList tokens;
         tokens << Core::ShellLexer::split(terminalCommand)
-               << "ssh"
-               << Core::ShellLexer::split(queryTerms[1]);
+               << d->shell << "-c"
+               << QString(" ssh %1 || read -rsp $'\nPress enter to close the terminal.\n'")
+                  .arg(queryTerms[1]);
         QProcess::startDetached(tokens.takeFirst(), tokens);
     });
     item->setActions({action});
@@ -227,11 +237,11 @@ void Ssh::Extension::rescan() {
 
         shared_ptr<StandardAction> sa = std::make_shared<StandardAction>();
         sa->setText(QString("Connect to '%1' using ssh").arg(host));
-        sa->setAction([host](){
+        sa->setAction([host, this](){
             QStringList tokens;
             tokens << Core::ShellLexer::split(terminalCommand)
-                   << "ssh"
-                   << Core::ShellLexer::split(host);
+                   << d->shell << "-c"
+                   << QString(" ssh %1 || read -rsp $'\nPress enter to close the terminal.\n'").arg(host);
             QProcess::startDetached(tokens.takeFirst(), tokens);
         });
         si->setActions({sa});

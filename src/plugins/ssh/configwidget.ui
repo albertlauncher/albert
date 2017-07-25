@@ -2,24 +2,11 @@
 <ui version="4.0">
  <class>Ssh::ConfigWidget</class>
  <widget class="QWidget" name="Ssh::ConfigWidget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>480</width>
-    <height>320</height>
-   </rect>
-  </property>
   <layout class="QVBoxLayout">
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>&lt;html&gt;
-&lt;head/&gt;
-&lt;body&gt;
-&lt;p&gt;This extension scans your /etc/ssh/config and ~/.ssh/config&lt;br&gt;and makes your ssh hosts accessible by Albert.&lt;/p&gt;
-&lt;/body&gt;
-&lt;/html&gt;</string>
+      <string>This extension scans your /etc/ssh/config and ~/.ssh/config and makes your ssh hosts accessible by Albert. This is a pure convenience extension. If you want to use ssh to the full extend consider using it directly via the Terminal extension.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
