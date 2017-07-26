@@ -97,14 +97,14 @@ void Terminal::Extension::handleQuery(Core::Query * query) {
     // Build Item
     std::shared_ptr<StandardItem> item = std::make_shared<StandardItem>();
     item->setText(commandline);
-    item->setSubtext(QString("Run '%1' in terminal").arg(commandline));
+    item->setSubtext(QString("Run '%1' in your shell").arg(commandline));
     item->setCompletionString(query->searchTerm());
     item->setIconPath(d->iconPath);
 
     std::vector<shared_ptr<Action>> actions;
     actions.push_back(std::make_shared<StandardAction>("Execute in the shell",
                                                        [shell, commandline](){
-        QProcess::startDetached(shell, {"-c", commandline});
+        QProcess::startDetached(shell, {"-ic", commandline});
     }));
      actions.push_back(std::make_shared<StandardAction>("Execute in the terminal", [=](){
         QStringList tokens = Core::ShellLexer::split(terminalCommand);
