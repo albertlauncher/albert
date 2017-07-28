@@ -8,5 +8,7 @@
         <file alias="github">resources/octocat.svg</file>
         <file alias="wikipedia">resources/wikipedia.svg</file>
         <file alias="wolfram">resources/wolfram.png</file>
+        <file alias="duckduckgo">resources/duckduckgo.svg</file>
+        <file alias="torrentz">resources/torrentz.png</file>
     </qresource>
 </RCC>
