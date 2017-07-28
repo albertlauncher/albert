@@ -31,7 +31,7 @@
 #include "core/standarditem.h"
 #include "extension.h"
 #include "core/query.h"
-#include "util/shlex.h"
+#include "util/shutil.h"
 #include "xdg/iconlookup.h"
 using std::shared_ptr;
 using std::vector;
@@ -191,7 +191,7 @@ void Ssh::Extension::handleQuery(Core::Query * query) {
     action->setText(QString("Connect to '%1' using ssh").arg(queryTerms[1]));
     action->setAction([queryTerms, this](){
         QStringList tokens;
-        tokens << Core::ShellLexer::split(terminalCommand)
+        tokens << Core::ShUtil::split(terminalCommand)
                << d->shell << "-c"
                << QString(" ssh %1 || read -rsp $'\nPress enter to close the terminal.\n'")
                   .arg(queryTerms[1]);
@@ -239,7 +239,7 @@ void Ssh::Extension::rescan() {
         sa->setText(QString("Connect to '%1' using ssh").arg(host));
         sa->setAction([host, this](){
             QStringList tokens;
-            tokens << Core::ShellLexer::split(terminalCommand)
+            tokens << Core::ShUtil::split(terminalCommand)
                    << d->shell << "-c"
                    << QString(" ssh %1 || read -rsp $'\nPress enter to close the terminal.\n'").arg(host);
             QProcess::startDetached(tokens.takeFirst(), tokens);

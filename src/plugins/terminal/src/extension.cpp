@@ -26,7 +26,7 @@
 #include "core/query.h"
 #include "core/standarditem.h"
 #include "core/standardaction.h"
-#include "util/shlex.h"
+#include "util/shutil.h"
 using std::shared_ptr;
 using Core::Action;
 using Core::StandardAction;
@@ -107,7 +107,7 @@ void Terminal::Extension::handleQuery(Core::Query * query) {
         QProcess::startDetached(shell, {"-ic", commandline});
     }));
      actions.push_back(std::make_shared<StandardAction>("Execute in the terminal", [=](){
-        QStringList tokens = Core::ShellLexer::split(terminalCommand);
+        QStringList tokens = Core::ShUtil::split(terminalCommand);
         tokens << shell << "-ic" << QString("%1; exec %2").arg(commandline, shell);
         QProcess::startDetached(tokens.takeFirst(), tokens);
     }));

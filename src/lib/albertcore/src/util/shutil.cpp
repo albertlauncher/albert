@@ -14,18 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "shlex.h"
+#include "shutil.h"
 #include <QDebug>
 
 
 /******************************************************************************/
-QString Core::ShellLexer::quote(QString input) {
+QString Core::ShUtil::quote(QString input) {
     return QString("'%1'").arg(input.replace(R"(')", R"('"'"')"));
 }
 
 
 /******************************************************************************/
-QStringList Core::ShellLexer::split(const QString &input) {
+QStringList Core::ShUtil::split(const QString &input) {
 
     QString part;
     QStringList result;

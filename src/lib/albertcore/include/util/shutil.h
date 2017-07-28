@@ -21,13 +21,12 @@
 
 namespace Core {
 
-class EXPORT_CORE ShellLexer
-{
-public:
-    static QString quote(QString input);
-    static QStringList split(const QString &input);
+namespace ShUtil {
 
-};
+EXPORT_CORE QString quote(QString input);
+EXPORT_CORE QStringList split(const QString &input);
+
+}
 
 }
 

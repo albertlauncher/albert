@@ -41,7 +41,7 @@
 #include "core/queryhandler.h"
 #include "core/standardaction.h"
 #include "core/standardindexitem.h"
-#include "util/shlex.h"
+#include "util/shutil.h"
 #include "xdg/iconlookup.h"
 using std::map;
 using std::pair;
@@ -314,7 +314,7 @@ vector<shared_ptr<StandardIndexItem>> indexApplications(bool ignoreShowInKeys) {
             vector<shared_ptr<Action>> actions;
 
             // Unquote arguments and expand field codes
-            QStringList commandline = expandedFieldCodes(Core::ShellLexer::split(exec),
+            QStringList commandline = expandedFieldCodes(Core::ShUtil::split(exec),
                                                          icon,
                                                          name,
                                                          fIt.filePath());
@@ -323,7 +323,7 @@ vector<shared_ptr<StandardIndexItem>> indexApplications(bool ignoreShowInKeys) {
             sa->setText(QString("Run %1").arg(name));
             if (term){
                 sa->setAction([commandline, workingDir](){
-                    QStringList arguments = Core::ShellLexer::split(terminalCommand);
+                    QStringList arguments = Core::ShUtil::split(terminalCommand);
                     arguments.append(commandline);
                     QString command = arguments.takeFirst();
                     QProcess::startDetached(command, arguments, workingDir);
@@ -347,7 +347,7 @@ vector<shared_ptr<StandardIndexItem>> indexApplications(bool ignoreShowInKeys) {
                 sa = std::make_shared<StandardAction>();
                 sa->setText(QString("Run %1 as root").arg(name));
                 sa->setAction([commandline, workingDir](){
-                    QStringList arguments = Core::ShellLexer::split(terminalCommand);
+                    QStringList arguments = Core::ShUtil::split(terminalCommand);
                     arguments.append(QString("sudo %1").arg(commandline.join(' ')));
                     QString command = arguments.takeFirst();
                     QProcess::startDetached(command, arguments, workingDir);
@@ -399,14 +399,14 @@ vector<shared_ptr<StandardIndexItem>> indexApplications(bool ignoreShowInKeys) {
                     continue;
 
                 // Unquote arguments and expand field codes
-                QStringList commandline = expandedFieldCodes(Core::ShellLexer::split(entryIterator->second),
+                QStringList commandline = expandedFieldCodes(Core::ShUtil::split(entryIterator->second),
                                                              icon,
                                                              name,
                                                              fIt.filePath());
 
                 if (term){
                     sa->setAction([commandline, workingDir](){
-                        QStringList arguments = Core::ShellLexer::split(terminalCommand);
+                        QStringList arguments = Core::ShUtil::split(terminalCommand);
                         arguments.append(commandline);
                         QString command = arguments.takeFirst();
                         QProcess::startDetached(command, arguments, workingDir);
