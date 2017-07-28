@@ -174,7 +174,7 @@ void ChromeBookmarks::Private::startIndexing() {
     futureWatcher.setFuture(QtConcurrent::run(indexChromeBookmarks, bookmarksFile));
 
     // Notification
-    qDebug() << "Start indexing Chrome bookmarks.";
+    qInfo() << "Start indexing Chrome bookmarks.";
     emit q->statusInfo("Indexing bookmarks ...");
 
 }
@@ -204,7 +204,7 @@ void ChromeBookmarks::Private::finishIndexing() {
             qWarning() << qPrintable(QString("%1 can not be watched. Changes in this path will not be noticed.").arg(bookmarksFile));
 
     // Notification
-    qDebug() << qPrintable(QString("Indexed %1 Chrome bookmarks.").arg(index.size()));
+    qInfo() << qPrintable(QString("Indexed %1 Chrome bookmarks.").arg(index.size()));
     emit q->statusInfo(QString("%1 bookmarks indexed.").arg(index.size()));
 }
 

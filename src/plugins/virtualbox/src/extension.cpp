@@ -54,7 +54,7 @@ public:
 /** ***************************************************************************/
 void VirtualBox::Private::rescanVBoxConfig(QString path) {
 
-    qDebug() << "Start indexing VirtualBox images.";
+    qInfo() << "Start indexing VirtualBox images.";
 
     QFile vboxConfigFile(path);
     if (!vboxConfigFile.exists())
@@ -109,7 +109,7 @@ void VirtualBox::Private::rescanVBoxConfig(QString path) {
         found++;
     }
 
-    qDebug() << qPrintable(QString("Indexed %2 VirtualBox images.").arg(found));
+    qInfo() << qPrintable(QString("Indexed %2 VirtualBox images.").arg(found));
 }
 
 

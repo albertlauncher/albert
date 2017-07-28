@@ -27,6 +27,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QStandardPaths>
+#include <QTime>
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QLocalSocket>
 #include <csignal>
@@ -110,14 +111,14 @@ int Core::AlbertApp::run(int argc, char **argv) {
                 socket.flush();
                 socket.waitForReadyRead(500);
                 if (socket.bytesAvailable())
-                    qDebug() << socket.readAll();
+                    qInfo() << socket.readAll();
             }
             else
-                qDebug("There is another instance of albert running.");
+                qInfo("There is another instance of albert running.");
             socket.close();
             ::exit(EXIT_SUCCESS);
         } else if ( args.count() == 1 ) {
-            qDebug("There is no other instance of albert running.");
+            qInfo("There is no other instance of albert running.");
             ::exit(EXIT_FAILURE);
         }
 
@@ -436,24 +437,36 @@ int Core::AlbertApp::run(int argc, char **argv) {
 
 /** ***************************************************************************/
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message) {
-    QString suffix;
-    if (context.function)
-        suffix = QString("  --  [%1]").arg(context.function);
     switch (type) {
-#if QT_VERSION >= 0x050500
-    case QtInfoMsg:
-#endif
     case QtDebugMsg:
-        fprintf(stderr, "%s\n", message.toLocal8Bit().constData());
+       fprintf(stdout, "[%s] \x1b[3m[DEBG] %s\x1b[0m\n",
+               QTime::currentTime().toString().toLocal8Bit().constData(),
+               message.toLocal8Bit().constData());
+       fflush(stdout);
+       break;
+    case QtInfoMsg:
+        fprintf(stdout, "[%s] [INFO] %s\n",
+                QTime::currentTime().toString().toLocal8Bit().constData(),
+                message.toLocal8Bit().constData());
+        fflush(stdout);
         break;
     case QtWarningMsg:
-        fprintf(stderr, "\x1b[33;1mWarning:\x1b[0;1m %s%s\x1b[0m\n", message.toLocal8Bit().constData(), suffix.toLocal8Bit().constData());
+        fprintf(stderr, "[%s] \x1b[33;1m[WARN]\x1b[0;1m %s  --  [%s]\x1b[0m\n",
+                QTime::currentTime().toString().toLocal8Bit().constData(),
+                message.toLocal8Bit().constData(),
+                context.function);
         break;
     case QtCriticalMsg:
-        fprintf(stderr, "\x1b[31;1mCritical:\x1b[0;1m %s%s\x1b[0m\n", message.toLocal8Bit().constData(), suffix.toLocal8Bit().constData());
+        fprintf(stderr, "[%s] \x1b[31;1m[CRIT]\x1b[0;1m %s  --  [%s]\x1b[0m\n",
+                QTime::currentTime().toString().toLocal8Bit().constData(),
+                message.toLocal8Bit().constData(),
+                context.function);
         break;
     case QtFatalMsg:
-        fprintf(stderr, "\x1b[41;30;4mFATAL:\x1b[0;1m %s%s\x1b[0m\n", message.toLocal8Bit().constData(), suffix.toLocal8Bit().constData());
+        fprintf(stderr, "[%s] \x1b[41;30;4m[FATAL]\x1b[0;1m %s  --  [%s]\x1b[0m\n",
+                QTime::currentTime().toString().toLocal8Bit().constData(),
+                message.toLocal8Bit().constData(),
+                context.function);
         exit(1);
     }
 }

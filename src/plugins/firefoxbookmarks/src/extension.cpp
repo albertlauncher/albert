@@ -109,7 +109,7 @@ void FirefoxBookmarks::Private::startIndexing() {
     futureWatcher.setFuture(QtConcurrent::run(this, &Private::indexFirefoxBookmarks));
 
     // Notification
-    qDebug() << "Start indexing Firefox bookmarks.";
+    qInfo() << "Start indexing Firefox bookmarks.";
     emit q->statusInfo("Indexing bookmarks ...");
 }
 
@@ -126,7 +126,7 @@ void FirefoxBookmarks::Private::finishIndexing() {
         offlineIndex.add(item);
 
     // Notification
-    qDebug() <<  qPrintable(QString("Indexed %1 Firefox bookmarks.").arg(index.size()));
+    qInfo() <<  qPrintable(QString("Indexed %1 Firefox bookmarks.").arg(index.size()));
     emit q->statusInfo(QString("%1 bookmarks indexed.").arg(index.size()));
 }
 

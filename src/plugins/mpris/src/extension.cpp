@@ -80,7 +80,7 @@ MPRIS::Extension::Extension()
     : Core::Extension("org.albert.extension.mpris"),
       Core::QueryHandler(Core::Extension::id),
       d(new Private) {
-    qDebug("[%s] Initialize extension", d->name);
+    qInfo("[%s] Initialize extension", d->name);
 
     QString icon;
 
@@ -130,7 +130,7 @@ MPRIS::Extension::Extension()
                 icon
                 );
     nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.CanGoNext", true, true);
-    //.fireCallback([](){qDebug("NEXT");})
+    //.fireCallback([](){qInfo("NEXT");})
     d->commands.append("next track");
     d->commandObjects.insert("next track", *nextToAdd);
 
@@ -146,7 +146,7 @@ MPRIS::Extension::Extension()
     d->commands.append("previous track");
     d->commandObjects.insert("previous track", *nextToAdd);
 
-    qDebug("[%s] Extension initialized", d->name);
+    qInfo("[%s] Extension initialized", d->name);
 }
 
 

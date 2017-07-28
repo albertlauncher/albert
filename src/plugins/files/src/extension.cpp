@@ -131,7 +131,7 @@ void Files::Private::startIndexing() {
         indexIntervalTimer.start();
 
     // Run the indexer thread
-    qDebug() << "Start indexing files.";
+    qInfo() << "Start indexing files.";
     futureWatcher.setFuture(QtConcurrent::run(this, &Private::indexFiles, indexSettings));
 
     // Notification
@@ -154,7 +154,7 @@ void Files::Private::finishIndexing() {
             offlineIndex.add(item);
 
         // Notification
-        qDebug() << qPrintable(QString("Indexed %1 files.").arg(index.size()));
+        qInfo() << qPrintable(QString("Indexed %1 files.").arg(index.size()));
         emit q->statusInfo(QString("%1 files indexed.").arg(index.size()));
     }
 
@@ -287,7 +287,7 @@ Files::Private::indexFiles(const IndexSettings &indexSettings) const {
     QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).
                    filePath(QString("%1.txt").arg(q->Core::Extension::id)));
     if ( file.open(QIODevice::WriteOnly|QIODevice::Text) ) {
-        qDebug() << qPrintable(QString("Serializing files to '%1'").arg(file.fileName()));
+        qInfo() << qPrintable(QString("Serializing files to '%1'").arg(file.fileName()));
         QTextStream out(&file);
         for (const shared_ptr<File> &item : newIndex)
             out << item->path() << endl << item->mimetype().name() << endl;
@@ -325,7 +325,7 @@ Files::Extension::Extension()
                    filePath(QString("%1.txt").arg(Core::Extension::id)));
     if (file.exists()) {
         if (file.open(QIODevice::ReadOnly| QIODevice::Text)) {
-            qDebug() << qPrintable(QString("Deserializing files from '%1'.").arg(file.fileName()));
+            qInfo() << qPrintable(QString("Deserializing files from '%1'.").arg(file.fileName()));
             QTextStream in(&file);
             QMimeDatabase mimedatabase;
             while (!in.atEnd())

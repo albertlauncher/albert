@@ -110,7 +110,7 @@ void Core::ExtensionManager::reloadExtensions() {
             QPluginLoader loader(path);
 
             if ( loader.metaData().empty() ) {
-                qWarning() << qPrintable(QString("Metadata empty. Is this a QPlugin? (%1)").arg(path));
+                qDebug() << qPrintable(QString("Metadata empty. Is this a QPlugin? (%1)").arg(path));
                 continue;
             }
 
@@ -170,10 +170,10 @@ void Core::ExtensionManager::loadExtension(const unique_ptr<ExtensionSpec> &spec
         if ( spec->load() ) {
 //            TODO wrtie to database
 //            auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(system_clock::now()-start);
-//            qDebug() << QString("Loading %1 done in %2 milliseconds").arg(spec->id()).arg(msecs.count()).toLocal8Bit().data();
+//            qInfo() << QString("Loading %1 done in %2 milliseconds").arg(spec->id()).arg(msecs.count()).toLocal8Bit().data();
             d->extensions_.insert(spec->instance());
         } else
-            qDebug() << QString("Loading %1 failed. (%2)").arg(spec->id(), spec->lastError()).toLocal8Bit().data();
+            qInfo() << QString("Loading %1 failed. (%2)").arg(spec->id(), spec->lastError()).toLocal8Bit().data();
     }
 }
 

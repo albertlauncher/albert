@@ -514,7 +514,7 @@ void Applications::Private::startIndexing() {
     futureWatcher.setFuture(QtConcurrent::run(indexApplications, ignoreShowInKeys));
 
     // Notification
-    qDebug() << "Start indexing applications.";
+    qInfo() << "Start indexing applications.";
     emit q->statusInfo("Indexing applications ...");
 }
 
@@ -543,7 +543,7 @@ void Applications::Private::finishIndexing() {
     }
 
     // Notification
-    qDebug() << qPrintable(QString("Indexed %1 applications.").arg(index.size()));
+    qInfo() << qPrintable(QString("Indexed %1 applications.").arg(index.size()));
     emit q->statusInfo(QString("%1 applications indexed.").arg(index.size()));
 
     if ( rerun ) {
