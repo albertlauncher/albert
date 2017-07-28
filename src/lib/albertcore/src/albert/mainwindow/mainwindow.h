@@ -82,6 +82,7 @@ protected:
     void resizeEvent(QResizeEvent* event) override;
     bool event(QEvent *event) override;
     bool eventFilter(QObject*, QEvent *event) override;
+    void regrabFocus();
 
 private:
 
