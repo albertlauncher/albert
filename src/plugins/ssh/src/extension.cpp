@@ -26,11 +26,11 @@
 #include <stdexcept>
 #include <unistd.h>
 #include <pwd.h>
-#include "configwidget.h"
-#include "core/standardaction.h"
-#include "core/standarditem.h"
 #include "extension.h"
+#include "configwidget.h"
 #include "core/query.h"
+#include "util/standardaction.h"
+#include "util/standarditem.h"
 #include "util/shutil.h"
 #include "xdg/iconlookup.h"
 using std::shared_ptr;

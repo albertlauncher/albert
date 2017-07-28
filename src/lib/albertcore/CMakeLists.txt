@@ -17,8 +17,8 @@ find_package(Qt5 5.2.0 REQUIRED COMPONENTS
 FILE(GLOB_RECURSE SRC include/* src/*)
 
 qt5_wrap_ui(UI
-    src/albert/mainwindow/mainwindow.ui
-    src/albert/settingswidget/settingswidget.ui
+    src/core/mainwindow/mainwindow.ui
+    src/core/settingswidget/settingswidget.ui
 )
 
 qt5_add_resources(QRC
@@ -36,9 +36,9 @@ target_include_directories(${PROJECT_NAME}
         include/core
         include/util
         src/
-        src/albert/
-        src/albert/settingswidget/
-        src/albert/mainwindow/
+        src/core/
+        src/core/settingswidget/
+        src/core/mainwindow/
 )
 
 # Link target to libraries

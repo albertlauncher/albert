@@ -15,52 +15,29 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QString>
 #include <vector>
-#include <memory>
-#include "core_globals.h"
-#include "item.h"
+#include "standarditem.h"
+#include "core/indexable.h"
 
 namespace Core {
 
-class Action;
-
-/**
-* @brief A standard item
+/** ****************************************************************************
+* @brief A standard index item
 * If you dont need the flexibility subclassing the abstract classes provided,
 * you can simply use this container, fill it with data.
 */
-class EXPORT_CORE StandardItem : public Item
+class EXPORT_CORE StandardIndexItem final : public StandardItem, public Indexable
 {
 public:
 
-    StandardItem(const QString &id = QString());
+    StandardIndexItem(const QString &id);
 
-    QString id() const override final;
+    virtual std::vector<Core::Indexable::WeightedKeyword> indexKeywords() const override;
+    virtual void setIndexKeywords(std::vector<Indexable::WeightedKeyword> &&indexKeywords);
 
-    QString text() const override;
-    void setText(const QString &text);
+private:
 
-    QString subtext() const override;
-    void setSubtext(const QString &subtext);
-
-    QString completionString() const override;
-    void setCompletionString(const QString &completion);
-
-    QString iconPath() const override;
-    void setIconPath( const QString &iconPath);
-
-    std::vector<std::shared_ptr<Action>> actions() override;
-    void setActions(std::vector<std::shared_ptr<Action>> &&actions);
-
-protected:
-
-    QString id_;
-    QString text_;
-    QString subtext_;
-    QString completion_;
-    QString iconPath_;
-    std::vector<std::shared_ptr<Action>> actions_;
+    std::vector<Indexable::WeightedKeyword> indexKeywords_;
 
 };
 

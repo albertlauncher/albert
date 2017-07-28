@@ -22,7 +22,7 @@
 #include <QObject>
 #include <QProcess>
 #include <QRegularExpression>
-#include "core/standardaction.h"
+#include "util/standardaction.h"
 using Core::StandardAction;
 
 

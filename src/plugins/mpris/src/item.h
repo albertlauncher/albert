@@ -18,7 +18,7 @@
 #include <QDBusMessage>
 #include <QVariant>
 #include <vector>
-#include "core/standarditem.h"
+#include "util/standarditem.h"
 #include "player.h"
 using std::vector;
 using std::shared_ptr;

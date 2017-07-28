@@ -42,9 +42,9 @@
 #include "extension.h"
 #include "core/indexable.h"
 #include "core/query.h"
-#include "core/standardaction.h"
-#include "core/standardindexitem.h"
-#include "core/offlineindex.h"
+#include "util/standardaction.h"
+#include "util/standardindexitem.h"
+#include "util/offlineindex.h"
 #include "xdg/iconlookup.h"
 using std::shared_ptr;
 using std::vector;

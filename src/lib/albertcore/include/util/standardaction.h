@@ -15,30 +15,38 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <vector>
-#include "standarditem.h"
+#include <QString>
+#include <functional>
+#include "core/action.h"
 #include "core_globals.h"
-#include "indexable.h"
 
 namespace Core {
 
+
 /** ****************************************************************************
-* @brief A standard index item
+* @brief A standard action
 * If you dont need the flexibility subclassing the abstract classes provided,
 * you can simply use this container, fill it with data.
 */
-class EXPORT_CORE StandardIndexItem final : public StandardItem, public Indexable
+struct EXPORT_CORE StandardAction final : public Action
 {
 public:
 
-    StandardIndexItem(const QString &id);
+    StandardAction();
+    StandardAction(const QString &text, std::function<void()> f);
 
-    virtual std::vector<Core::Indexable::WeightedKeyword> indexKeywords() const override;
-    virtual void setIndexKeywords(std::vector<Indexable::WeightedKeyword> &&indexKeywords);
+    QString text() const override;
+    void setText(const QString &text);
+
+    const std::function<void()> &action();
+    void setAction(std::function<void()> &&action);
+
+    void activate() override;
 
 private:
 
-    std::vector<Indexable::WeightedKeyword> indexKeywords_;
+    QString text_;
+    std::function<void()> action_;
 
 };
 

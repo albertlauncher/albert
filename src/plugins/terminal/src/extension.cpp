@@ -21,12 +21,12 @@
 #include <pwd.h>
 #include <unistd.h>
 #include "extension.h"
-#include "xdg/iconlookup.h"
 #include "configwidget.h"
 #include "core/query.h"
-#include "core/standarditem.h"
-#include "core/standardaction.h"
 #include "util/shutil.h"
+#include "util/standarditem.h"
+#include "util/standardaction.h"
+#include "xdg/iconlookup.h"
 using std::shared_ptr;
 using Core::Action;
 using Core::StandardAction;

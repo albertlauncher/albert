@@ -16,37 +16,50 @@
 
 #pragma once
 #include <QString>
-#include <functional>
-#include "action.h"
-#include "core_globals.h"
+#include <vector>
+#include <memory>
+#include "core/item.h"
 
 namespace Core {
 
+class Action;
 
-/** ****************************************************************************
-* @brief A standard action
+/**
+* @brief A standard item
 * If you dont need the flexibility subclassing the abstract classes provided,
 * you can simply use this container, fill it with data.
 */
-struct EXPORT_CORE StandardAction final : public Action
+class EXPORT_CORE StandardItem : public Item
 {
 public:
 
-    StandardAction();
-    StandardAction(const QString &text, std::function<void()> f);
+    StandardItem(const QString &id = QString());
+
+    QString id() const override final;
 
     QString text() const override;
     void setText(const QString &text);
 
-    const std::function<void()> &action();
-    void setAction(std::function<void()> &&action);
+    QString subtext() const override;
+    void setSubtext(const QString &subtext);
 
-    void activate() override;
+    QString completionString() const override;
+    void setCompletionString(const QString &completion);
 
-private:
+    QString iconPath() const override;
+    void setIconPath( const QString &iconPath);
 
+    std::vector<std::shared_ptr<Action>> actions() override;
+    void setActions(std::vector<std::shared_ptr<Action>> &&actions);
+
+protected:
+
+    QString id_;
     QString text_;
-    std::function<void()> action_;
+    QString subtext_;
+    QString completion_;
+    QString iconPath_;
+    std::vector<std::shared_ptr<Action>> actions_;
 
 };
 

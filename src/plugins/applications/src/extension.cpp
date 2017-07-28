@@ -36,11 +36,11 @@
 #include <vector>
 #include "configwidget.h"
 #include "extension.h"
-#include "core/offlineindex.h"
 #include "core/query.h"
 #include "core/queryhandler.h"
-#include "core/standardaction.h"
-#include "core/standardindexitem.h"
+#include "util/offlineindex.h"
+#include "util/standardaction.h"
+#include "util/standardindexitem.h"
 #include "util/shutil.h"
 #include "xdg/iconlookup.h"
 using std::map;

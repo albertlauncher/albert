@@ -26,9 +26,9 @@
 #include <QVBoxLayout>
 #include <functional>
 #include <vector>
-#include "core/standardaction.h"
-#include "core/standarditem.h"
 #include "core/query.h"
+#include "util/standardaction.h"
+#include "util/standarditem.h"
 #include "xdg/iconlookup.h"
 using std::pair;
 using std::shared_ptr;

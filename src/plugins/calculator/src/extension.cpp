@@ -24,8 +24,8 @@
 #include "extension.h"
 #include "muParser.h"
 #include "core/query.h"
-#include "core/standarditem.h"
-#include "core/standardaction.h"
+#include "util/standarditem.h"
+#include "util/standardaction.h"
 #include "xdg/iconlookup.h"
 using std::vector;
 using std::shared_ptr;

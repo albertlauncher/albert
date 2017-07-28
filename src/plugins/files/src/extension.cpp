@@ -34,10 +34,10 @@
 #include "configwidget.h"
 #include "file.h"
 #include "extension.h"
-#include "core/offlineindex.h"
 #include "core/query.h"
-#include "core/standarditem.h"
-#include "core/standardaction.h"
+#include "util/offlineindex.h"
+#include "util/standarditem.h"
+#include "util/standardaction.h"
 using std::pair;
 using std::shared_ptr;
 using std::vector;

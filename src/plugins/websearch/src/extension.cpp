@@ -31,11 +31,10 @@
 #include <string>
 #include "configwidget.h"
 #include "enginesmodel.h"
-#include "core/item.h"
 #include "extension.h"
-#include "core/standardaction.h"
-#include "core/standarditem.h"
 #include "core/query.h"
+#include "util/standardaction.h"
+#include "util/standarditem.h"
 #include "xdg/iconlookup.h"
 using std::shared_ptr;
 using std::vector;

@@ -23,7 +23,7 @@
 #include "configwidget.h"
 #include "extension.h"
 #include "core/query.h"
-#include "core/standarditem.h"
+#include "util/standarditem.h"
 using Core::StandardItem;
 
 

@@ -16,7 +16,7 @@
 
 #include "item.h"
 #include <QDBusConnection>
-#include "core/standardaction.h"
+#include "util/standardaction.h"
 using Core::StandardAction;
 
 

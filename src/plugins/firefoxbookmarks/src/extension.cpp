@@ -43,10 +43,10 @@
 #include "configwidget.h"
 #include "core/extension.h"
 #include "core/item.h"
-#include "core/offlineindex.h"
-#include "core/standardaction.h"
-#include "core/standardindexitem.h"
 #include "core/query.h"
+#include "util/offlineindex.h"
+#include "util/standardaction.h"
+#include "util/standardindexitem.h"
 #include "xdg/iconlookup.h"
 using std::pair;
 using std::shared_ptr;
