@@ -80,8 +80,6 @@ MPRIS::Extension::Extension()
     : Core::Extension("org.albert.extension.mpris"),
       Core::QueryHandler(Core::Extension::id),
       d(new Private) {
-    qInfo("[%s] Initialize extension", d->name);
-
     QString icon;
 
     // Setup the DBus commands
@@ -145,8 +143,6 @@ MPRIS::Extension::Extension()
     nextToAdd->applicableWhen("/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.CanGoPrevious", true, true);
     d->commands.append("previous track");
     d->commandObjects.insert("previous track", *nextToAdd);
-
-    qInfo("[%s] Extension initialized", d->name);
 }
 
 

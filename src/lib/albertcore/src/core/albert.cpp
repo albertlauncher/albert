@@ -67,6 +67,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
 
         qInstallMessageHandler(myMessageOutput);
 
+        qDebug() << "Initializing application";
         app = new QApplication(argc, argv);
         app->setApplicationName("albert");
         app->setApplicationDisplayName("Albert");
@@ -86,6 +87,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
          *  PARSE COMMANDLINE
          */
 
+        qDebug() << "Parsing commandline";
         QCommandLineParser parser;
         parser.setApplicationDescription("Albert is still in alpha. These options may change in future versions.");
         parser.addHelpOption();
@@ -100,6 +102,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
          *  IPC/SINGLETON MECHANISM
          */
 
+        qDebug() << "Checking for other instances";
         QString socketPath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/socket";
         const QStringList args = parser.positionalArguments();
         QLocalSocket socket;
@@ -126,6 +129,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
         QLocalServer::removeServer(socketPath);
 
         // Create server and handle messages
+        qDebug() << "Creating IPC server";
         localServer = new QLocalServer;
         if ( !localServer->listen(socketPath) )
             qWarning() << "Local server could not be created. IPC will not work! Reason:"
@@ -140,6 +144,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
          */
 
         // Make sure data, cache and config dir exists
+        qDebug() << "Initializing mandatory paths";
         QString dataLocation = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
         QString cacheLocation = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
         QString configLocation = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
@@ -163,15 +168,19 @@ int Core::AlbertApp::run(int argc, char **argv) {
          */
 
         // If there is a file in .cache, move it
-        if ( QFile::exists(QString("%1/firstrun").arg(cacheLocation)) )
+        if ( QFile::exists(QString("%1/firstrun").arg(cacheLocation)) ){
+            qDebug() << "Moving 'firstrun' to new path";
             QFile::rename(QString("%1/firstrun").arg(cacheLocation),
                           QString("%1/firstrun").arg(dataLocation));
+        }
 
         // If there is a firstRun file, rename it to lastVersion (since v0.11)
         if ( QFile::exists(QString("%1/firstrun").arg(dataLocation)) )
+            qDebug() << "Renaming 'firstrun' to 'last_used_version'";
             QFile::rename(QString("%1/firstrun").arg(dataLocation),
                           QString("%1/last_used_version").arg(dataLocation));
 
+        qDebug() << "Checking last used version";
         QFile file(QString("%1/last_used_version").arg(dataLocation));
         if ( file.exists() ) {
             // Read last used version
@@ -218,6 +227,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
          * INITIALIZE DATABASE
          */
 
+        qDebug() << "Initializing database";
         QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
         if ( !db.isValid() )
             qFatal("No sqlite available");
@@ -261,6 +271,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
          *  INITIALIZE APPLICATION COMPONENTS
          */
 
+        qDebug() << "Initializing core components";
         ExtensionManager::instance = new Core::ExtensionManager;
         trayIcon         = new TrayIcon;
         trayIconMenu     = new QMenu;
@@ -273,6 +284,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
          * Build Tray Icon
          */
 
+        qDebug() << "Initializing tray icon";
         QAction* showAction     = new QAction("Show", trayIconMenu);
         QAction* settingsAction = new QAction("Settings", trayIconMenu);
         QAction* quitAction     = new QAction("Quit", trayIconMenu);
@@ -307,6 +319,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
          *  Hotkey
          */
 
+        qDebug() << "Setting up hotkey";
         // Check for a command line override
         QString hotkey;
         if ( parser.isSet("hotkey") ) {
@@ -331,10 +344,12 @@ int Core::AlbertApp::run(int argc, char **argv) {
          */
 
         // Quit gracefully on unix signals
+        qDebug() << "Setup signal handlers";
         for ( int sig : { SIGINT, SIGTERM, SIGHUP, SIGPIPE } )
             signal(sig, shutdownHandler);
 
         // Print a message if the app was not terminated graciously
+        qDebug() << "Creating running indicator file";
         QString filePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running";
         if (QFile::exists(filePath)){
             qWarning() << "Application has not been terminated graciously.";
@@ -351,10 +366,12 @@ int Core::AlbertApp::run(int argc, char **argv) {
             Core::ExtensionManager::instance->setPluginDirs(parser.value("plugin-dirs").split(','));
 
         // Load extensions
+        qDebug() << "Loading extensions";
         Core::ExtensionManager::instance->reloadExtensions();
 
         // Application is initialized create the settings widget
-        settingsWidget   = new SettingsWidget(mainWindow, hotkeyManager, ExtensionManager::instance, trayIcon);
+        qDebug() << "Creating settings widget";
+        settingsWidget = new SettingsWidget(mainWindow, hotkeyManager, ExtensionManager::instance, trayIcon);
 
         // If somebody requested the settings dialog open it
         if ( showSettingsWhenInitialized )
@@ -365,6 +382,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
          * SIGNALING
          */
 
+        qDebug() << "Setting up signals";
         QObject::connect(hotkeyManager, &HotkeyManager::hotKeyPressed,
                          mainWindow, &MainWindow::toggleVisibility);
 
@@ -411,6 +429,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
      * ENTER EVENTLOOP
      */
 
+    qDebug() << "Entering eventloop";
     int retval = app->exec();
 
 
@@ -418,6 +437,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
      *  FINALIZE APPLICATION
      */
 
+    qDebug() << "Cleaning up core components";
     delete settingsWidget;
     delete trayIconMenu;
     delete trayIcon;
@@ -426,11 +446,14 @@ int Core::AlbertApp::run(int argc, char **argv) {
     delete mainWindow;
     delete ExtensionManager::instance;
 
+    qDebug() << "Shutting down IPC server";
     localServer->close();
 
     // Delete the running indicator file
+    qDebug() << "Deleting running indicator file";
     QFile::remove(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running");
 
+    qDebug() << "Quit";
     return retval;
 }
 
