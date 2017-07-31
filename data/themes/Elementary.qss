@@ -100,9 +100,9 @@ QListView#actionList::item{
 	height:28px;
 }
 
-/********** proposalList **********/
+/********** resultsList **********/
 
-QListView#proposalList {
+QListView#resultsList {
 	icon-size: 35px;
 	font-size: 13px;
 	color: #331;
@@ -112,6 +112,6 @@ QListView#proposalList {
 	font-weight: 400;
 }
 
-QListView#proposalList::item{
+QListView#resultsList::item{
 	height:48px;
 }

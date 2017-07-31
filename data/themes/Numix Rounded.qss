@@ -96,9 +96,9 @@ QListView#actionList::item{
   height:28px;
 }
 
-/********** proposalList **********/
+/********** resultsList **********/
 
-QListView#proposalList {
+QListView#resultsList {
   icon-size: 36px;
   font-size: 26px;
   font: 20px "Source Sans Pro Bold";
@@ -106,13 +106,13 @@ QListView#proposalList {
   border: none;
 }
 
-QListView#proposalList::item{
+QListView#resultsList::item{
   height:48px;
   padding: 4px;
   border-bottom: 1px dotted #555;
 }
 
-QListView#proposalList::item:selected{
+QListView#resultsList::item:selected{
   border: none;
   background: #3a3a3a;
 }

@@ -86,13 +86,13 @@ QListView#actionList::item{
 	height:28px;
 }
 
-/********** proposalList **********/
+/********** resultsList **********/
 
-QListView#proposalList {
+QListView#resultsList {
 	icon-size: 44px;
 	font-size: 26px;
 }
 
-QListView#proposalList::item{
+QListView#resultsList::item{
 	height:48px;
 }

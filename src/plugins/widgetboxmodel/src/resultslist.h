@@ -19,14 +19,14 @@
 #include "resizinglist.h"
 #include <QStyledItemDelegate>
 
-class ProposalList final : public ResizingList
+class ResultsList final : public ResizingList
 {
     Q_OBJECT
     class ItemDelegate;
 
 public:
 
-    ProposalList(QWidget *parent = 0);
+    ResultsList(QWidget *parent = 0);
 
     bool displayIcons() const;
     void setDisplayIcons(bool value);

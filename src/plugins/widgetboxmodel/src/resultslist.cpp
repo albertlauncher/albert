@@ -18,10 +18,10 @@
 #include <QKeyEvent>
 #include <QPainter>
 #include <QPixmapCache>
-#include "proposallist.h"
+#include "resultslist.h"
 
 /** ***************************************************************************/
-class ProposalList::ItemDelegate final : public QStyledItemDelegate
+class ResultsList::ItemDelegate final : public QStyledItemDelegate
 {
 public:
     ItemDelegate(QObject *parent = nullptr)
@@ -36,24 +36,24 @@ public:
 
 
 /** ***************************************************************************/
-ProposalList::ProposalList(QWidget *parent) : ResizingList(parent) {
+ResultsList::ResultsList(QWidget *parent) : ResizingList(parent) {
     setItemDelegate(delegate_ = new ItemDelegate(this));
 
     // Single click activation (segfaults without queued connection)
-    connect(this, &ProposalList::clicked, this, &ProposalList::activated, Qt::QueuedConnection);
+    connect(this, &ResultsList::clicked, this, &ResultsList::activated, Qt::QueuedConnection);
 }
 
 
 
 /** ***************************************************************************/
-bool ProposalList::displayIcons() const {
+bool ResultsList::displayIcons() const {
     return delegate_->drawIcon;
 }
 
 
 
 /** ***************************************************************************/
-void ProposalList::setDisplayIcons(bool value) {
+void ResultsList::setDisplayIcons(bool value) {
     delegate_->drawIcon = value;
     update();
 }
@@ -61,7 +61,7 @@ void ProposalList::setDisplayIcons(bool value) {
 
 
 /** ***************************************************************************/
-bool ProposalList::eventFilter(QObject*, QEvent *event) {
+bool ResultsList::eventFilter(QObject*, QEvent *event) {
 
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
@@ -133,7 +133,7 @@ bool ProposalList::eventFilter(QObject*, QEvent *event) {
 
 
 /** ***************************************************************************/
-void ProposalList::showEvent(QShowEvent *event) {
+void ResultsList::showEvent(QShowEvent *event) {
     QWidget::showEvent(event);
     if (qApp->keyboardModifiers() == Qt::MetaModifier)
         delegate_->subTextRole = Qt::UserRole+101;
@@ -144,7 +144,7 @@ void ProposalList::showEvent(QShowEvent *event) {
 
 
 /** ***************************************************************************/
-void ProposalList::ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const {
+void ResultsList::ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const {
 
     painter->save();
 

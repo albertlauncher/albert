@@ -32,7 +32,7 @@
 #include "core/history.h"
 #include "configwidget.h"
 #include "frontend.h"
-#include "proposallist.h"
+#include "resultslist.h"
 #include "settingsbutton.h"
 #include "ui_frontend.h"
 
@@ -51,8 +51,8 @@ const char*   CFG_CLEAR_ON_HIDE = "clearOnHide";
 const bool    DEF_CLEAR_ON_HIDE = false;
 const char*   CFG_ALWAYS_ON_TOP = "alwaysOnTop";
 const bool    DEF_ALWAYS_ON_TOP = true;
-const char*   CFG_MAX_PROPOSALS = "itemCount";
-const uint8_t DEF_MAX_PROPOSALS = 5;
+const char*   CFG_MAX_RESULTS = "itemCount";
+const uint8_t DEF_MAX_RESULTS = 5;
 const char*   CFG_DISPLAY_SCROLLBAR = "displayScrollbar";
 const bool    DEF_DISPLAY_SCROLLBAR = false;
 const char*   CFG_DISPLAY_ICONS = "displayIcons";
@@ -141,10 +141,10 @@ WidgetBoxModel::Frontend::Frontend(QWidget *parent)
 
      // Disable tabbing completely
     d->ui.actionList->setFocusPolicy(Qt::NoFocus);
-    d->ui.proposalList->setFocusPolicy(Qt::NoFocus);
+    d->ui.resultsList->setFocusPolicy(Qt::NoFocus);
 
-    // Set initial event filter pipeline: window -> proposallist -> lineedit
-    d->ui.inputLine->installEventFilter(d->ui.proposalList);
+    // Set initial event filter pipeline: window -> resultslist -> lineedit
+    d->ui.inputLine->installEventFilter(d->ui.resultsList);
     d->ui.inputLine->installEventFilter(this);
 
     // Set stringlistmodel for actions view
@@ -153,7 +153,7 @@ WidgetBoxModel::Frontend::Frontend(QWidget *parent)
 
     // Hide lists
     d->ui.actionList->hide();
-    d->ui.proposalList->hide();
+    d->ui.resultsList->hide();
 
     // Settings button
     d->settingsButton_ = new SettingsButton(this);
@@ -198,7 +198,7 @@ WidgetBoxModel::Frontend::Frontend(QWidget *parent)
     setHideOnClose(s.value(CFG_HIDE_ON_CLOSE, DEF_HIDE_ON_CLOSE).toBool());
     setClearOnHide(s.value(CFG_CLEAR_ON_HIDE, DEF_CLEAR_ON_HIDE).toBool());
     setAlwaysOnTop(s.value(CFG_ALWAYS_ON_TOP, DEF_ALWAYS_ON_TOP).toBool());
-    setMaxProposals(s.value(CFG_MAX_PROPOSALS, DEF_MAX_PROPOSALS).toInt());
+    setMaxResults(static_cast<u_int8_t>(s.value(CFG_MAX_RESULTS, DEF_MAX_RESULTS).toInt()));
     setDisplayScrollbar(s.value(CFG_DISPLAY_SCROLLBAR, DEF_DISPLAY_SCROLLBAR).toBool());
     setDisplayIcons(s.value(CFG_DISPLAY_ICONS, DEF_DISPLAY_ICONS).toBool());
     setDisplayShadow(s.value(CFG_DISPLAY_SHADOW, DEF_DISPLAY_SHADOW).toBool());
@@ -223,17 +223,17 @@ WidgetBoxModel::Frontend::Frontend(QWidget *parent)
     connect(d->ui.inputLine, &QLineEdit::textEdited, d->history_, &History::resetIterator);
 
     // Hide the actionview, if another item gets clicked
-    connect(d->ui.proposalList, &ProposalList::pressed, this, &Frontend::hideActions);
+    connect(d->ui.resultsList, &ResultsList::pressed, this, &Frontend::hideActions);
 
-    // Trigger default action, if item in proposallist was activated
-    QObject::connect(d->ui.proposalList, &ProposalList::activated, [this](const QModelIndex &index){
+    // Trigger default action, if item in resultslist was activated
+    QObject::connect(d->ui.resultsList, &ResultsList::activated, [this](const QModelIndex &index){
 
         switch (qApp->queryKeyboardModifiers()) {
         case Qt::MetaModifier: // Default fallback action (Meta)
-            d->ui.proposalList->model()->setData(index, -1, Qt::UserRole+101);
+            d->ui.resultsList->model()->setData(index, -1, Qt::UserRole+101);
             break;
         default: // DefaultAction
-            d->ui.proposalList->model()->setData(index, -1, Qt::UserRole+100);
+            d->ui.resultsList->model()->setData(index, -1, Qt::UserRole+100);
             break;
         }
 
@@ -246,7 +246,7 @@ WidgetBoxModel::Frontend::Frontend(QWidget *parent)
     // Trigger alternative action, if item in actionList was activated
     QObject::connect(d->ui.actionList, &ActionList::activated, [this](const QModelIndex &index){
         d->history_->add(d->ui.inputLine->text());
-        d->ui.proposalList->model()->setData(d->ui.proposalList->currentIndex(), index.row(), Qt::UserRole);
+        d->ui.resultsList->model()->setData(d->ui.resultsList->currentIndex(), index.row(), Qt::UserRole);
         this->setVisible(false);
         d->ui.inputLine->clear();
     });
@@ -301,7 +301,7 @@ void WidgetBoxModel::Frontend::setInput(const QString &input) {
 
 /** ***************************************************************************/
 void WidgetBoxModel::Frontend::setModel(QAbstractItemModel *m) {
-    d->ui.proposalList->setModel(m);
+    d->ui.resultsList->setModel(m);
 }
 
 
@@ -418,16 +418,16 @@ void WidgetBoxModel::Frontend::setAlwaysOnTop(bool alwaysOnTop) {
 
 
 /** ***************************************************************************/
-void WidgetBoxModel::Frontend::setMaxProposals(uint8_t maxItems) {
-    QSettings(qApp->applicationName()).setValue(CFG_MAX_PROPOSALS, maxItems);
-    d->ui.proposalList->setMaxItems(maxItems);
+void WidgetBoxModel::Frontend::setMaxResults(uint8_t maxItems) {
+    QSettings(qApp->applicationName()).setValue(CFG_MAX_RESULTS, maxItems);
+    d->ui.resultsList->setMaxItems(maxItems);
 }
 
 
 
 /** ***************************************************************************/
 bool WidgetBoxModel::Frontend::displayIcons() const {
-    return d->ui.proposalList->displayIcons();
+    return d->ui.resultsList->displayIcons();
 }
 
 
@@ -435,14 +435,14 @@ bool WidgetBoxModel::Frontend::displayIcons() const {
 /** ***************************************************************************/
 void WidgetBoxModel::Frontend::setDisplayIcons(bool value) {
     QSettings(qApp->applicationName()).setValue(CFG_DISPLAY_ICONS, value);
-    d->ui.proposalList->setDisplayIcons(value);
+    d->ui.resultsList->setDisplayIcons(value);
 }
 
 
 
 /** ***************************************************************************/
 bool WidgetBoxModel::Frontend::displayScrollbar() const {
-    return d->ui.proposalList->verticalScrollBarPolicy() != Qt::ScrollBarAlwaysOff;
+    return d->ui.resultsList->verticalScrollBarPolicy() != Qt::ScrollBarAlwaysOff;
 }
 
 
@@ -450,7 +450,7 @@ bool WidgetBoxModel::Frontend::displayScrollbar() const {
 /** ***************************************************************************/
 void WidgetBoxModel::Frontend::setDisplayScrollbar(bool value) {
     QSettings(qApp->applicationName()).setValue(CFG_DISPLAY_SCROLLBAR, value);
-    d->ui.proposalList->setVerticalScrollBarPolicy(
+    d->ui.resultsList->setVerticalScrollBarPolicy(
                 value ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
 }
 
@@ -474,8 +474,8 @@ void WidgetBoxModel::Frontend::setDisplayShadow(bool value) {
 
 
 /** ***************************************************************************/
-uint8_t WidgetBoxModel::Frontend::maxProposals() const {
-    return d->ui.proposalList->maxItems();
+uint8_t WidgetBoxModel::Frontend::maxResults() const {
+    return d->ui.resultsList->maxItems();
 }
 
 
@@ -494,13 +494,13 @@ void WidgetBoxModel::Frontend::setShowActions(bool showActions) {
     if ( showActions && !d->actionsShown_ ) {
 
         // Skip if nothing selected
-        if ( !d->ui.proposalList->currentIndex().isValid())
+        if ( !d->ui.resultsList->currentIndex().isValid())
             return;
 
         // Get actions
-        d->actionsListModel_->setStringList(d->ui.proposalList->model()->data(
-                                             d->ui.proposalList->currentIndex(),
-                                             Qt::UserRole).toStringList());
+        d->actionsListModel_->setStringList(d->ui.resultsList->model()->data(
+                                                d->ui.resultsList->currentIndex(),
+                                                Qt::UserRole).toStringList());
 
         // Skip if actions are empty
         if (d->actionsListModel_->rowCount() < 1)
@@ -511,7 +511,7 @@ void WidgetBoxModel::Frontend::setShowActions(bool showActions) {
 
         // Change event filter pipeline: window -> _action_list -> lineedit
         d->ui.inputLine->removeEventFilter(this);
-        d->ui.inputLine->removeEventFilter(d->ui.proposalList);
+        d->ui.inputLine->removeEventFilter(d->ui.resultsList);
         d->ui.inputLine->installEventFilter(d->ui.actionList);
         d->ui.inputLine->installEventFilter(this);
 
@@ -524,10 +524,10 @@ void WidgetBoxModel::Frontend::setShowActions(bool showActions) {
 
         d->ui.actionList->hide();
 
-        // Change event filter pipeline: window -> _proposal_list -> lineedit
+        // Change event filter pipeline: window -> resultslist -> lineedit
         d->ui.inputLine->removeEventFilter(this);
         d->ui.inputLine->removeEventFilter(d->ui.actionList);
-        d->ui.inputLine->installEventFilter(d->ui.proposalList);
+        d->ui.inputLine->installEventFilter(d->ui.resultsList);
         d->ui.inputLine->installEventFilter(this);
 
         // Finally set the state
@@ -599,10 +599,10 @@ bool WidgetBoxModel::Frontend::eventFilter(QObject *, QEvent *event) {
         // Toggle actionsview
         case Qt::Key_Tab:
             // see query.cpp for userroles
-            if ( d->ui.proposalList->currentIndex().isValid() )
+            if ( d->ui.resultsList->currentIndex().isValid() )
                 d->ui.inputLine->setText(
-                            d->ui.proposalList->model()->data(
-                                d->ui.proposalList->currentIndex(), Qt::UserRole+1
+                            d->ui.resultsList->model()->data(
+                                d->ui.resultsList->currentIndex(), Qt::UserRole+1
                                 ).toString()
                             );
             return true;
@@ -613,10 +613,10 @@ bool WidgetBoxModel::Frontend::eventFilter(QObject *, QEvent *event) {
 
         case Qt::Key_Up:{
             // Move up in the history
-            if ( !d->ui.proposalList->currentIndex().isValid() // Empty list
+            if ( !d->ui.resultsList->currentIndex().isValid() // Empty list
                  || keyEvent->modifiers() == d->historyMoveMod_ // MoveMod (Ctrl) hold
                  || ( !actionsAreShown() // Not in actions state...
-                      && d->ui.proposalList->currentIndex().row()==0 && !keyEvent->isAutoRepeat() ) ){ // ... and first row (non repeat)
+                      && d->ui.resultsList->currentIndex().row()==0 && !keyEvent->isAutoRepeat() ) ){ // ... and first row (non repeat)
                 QString next = d->history_->next();
                 if (!next.isEmpty())
                     d->ui.inputLine->setText(next);

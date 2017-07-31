@@ -70,14 +70,14 @@ QListView QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
     background: transparent;
 }
 
-/********** proposalList **********/
+/********** resultsList **********/
 
-QListView#proposalList {
+QListView#resultsList {
     icon-size: 40px;
     font-size: 24px;
 }
 
-QListView#proposalList::item{
+QListView#resultsList::item{
     padding: 8px 0px 0px 0px;
 }
 

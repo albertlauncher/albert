@@ -58,8 +58,8 @@ public:
     bool alwaysOnTop() const;
     void setAlwaysOnTop(bool alwaysOnTop);
 
-    uint8_t maxProposals() const;
-    void setMaxProposals(uint8_t max);
+    uint8_t maxResults() const;
+    void setMaxResults(uint8_t max);
 
     bool displayIcons() const;
     void setDisplayIcons(bool value);

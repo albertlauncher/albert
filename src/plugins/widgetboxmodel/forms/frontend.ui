@@ -37,7 +37,7 @@
        <widget class="QLineEdit" name="inputLine"/>
       </item>
       <item>
-       <widget class="ProposalList" name="proposalList">
+       <widget class="ResultsList" name="resultsList">
         <property name="frameShape">
          <enum>QFrame::NoFrame</enum>
         </property>
@@ -78,9 +78,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>ProposalList</class>
+   <class>ResultsList</class>
    <extends>QListView</extends>
-   <header>proposallist.h</header>
+   <header>resultslist.h</header>
   </customwidget>
   <customwidget>
    <class>ActionList</class>

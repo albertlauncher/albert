@@ -66,10 +66,10 @@ WidgetBoxModel::ConfigWidget::ConfigWidget(WidgetBoxModel::Frontend *frontend, Q
     connect(d->ui.checkBox_clearOnHide, &QCheckBox::toggled,
             d->frontend, &Frontend::setClearOnHide);
 
-    // MAX PROPOSALS
-    d->ui.spinBox_proposals->setValue(d->frontend->maxProposals());
-    connect(d->ui.spinBox_proposals, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-            d->frontend, &Frontend::setMaxProposals);
+    // MAX RESULTS
+    d->ui.spinBox_results->setValue(d->frontend->maxResults());
+    connect(d->ui.spinBox_results, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+            d->frontend, &Frontend::setMaxResults);
 
     // DISPLAY SCROLLBAR
     d->ui.checkBox_scrollbar->setChecked(d->frontend->displayScrollbar());

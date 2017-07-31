@@ -54,7 +54,7 @@
          </widget>
         </item>
         <item row="1" column="0">
-         <widget class="QLabel" name="label_proposals">
+         <widget class="QLabel" name="label_results">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
             <horstretch>0</horstretch>
@@ -62,12 +62,12 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Amount of proposals:</string>
+           <string>Amount of results:</string>
           </property>
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QSpinBox" name="spinBox_proposals">
+         <widget class="QSpinBox" name="spinBox_results">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
