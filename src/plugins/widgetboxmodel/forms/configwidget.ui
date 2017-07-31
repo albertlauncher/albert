@@ -291,6 +291,9 @@ widget is open.</string>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="toolTip">
+           <string>Clear the input line when the window is hidden.</string>
+          </property>
           <property name="text">
            <string/>
           </property>
