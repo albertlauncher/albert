@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QWidget" name="MainWindow">
-  <property name="windowIcon">
-   <iconset resource="../../../resources.qrc">
-    <normaloff>:/app_icon</normaloff>:/app_icon</iconset>
-  </property>
+ <class>WidgetBoxModel::MainWindow</class>
+ <widget class="QWidget" name="WidgetBoxModel::MainWindow">
   <layout class="QVBoxLayout" name="frameLayout">
    <property name="sizeConstraint">
     <enum>QLayout::SetFixedSize</enum>
@@ -92,8 +88,5 @@
    <header location="global">actionlist.h</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../../../resources.qrc"/>
- </resources>
  <connections/>
 </ui>

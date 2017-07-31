@@ -18,6 +18,7 @@
 #include "ui_settingswidget.h"
 namespace Core {
 class ExtensionManager;
+class FrontendManager;
 }
 class HotkeyManager;
 class MainWindow;
@@ -29,9 +30,9 @@ class SettingsWidget final : public QWidget
 
 public:
 
-    SettingsWidget(MainWindow *mainWindow,
+    SettingsWidget(Core::ExtensionManager *extensionManager,
+                   Core::FrontendManager *frontendManager,
                    HotkeyManager *hotkeyManager,
-                   Core::ExtensionManager *extensionManager,
                    TrayIcon *trayIcon,
                    QWidget * parent = 0, Qt::WindowFlags f = 0);
 
@@ -39,14 +40,13 @@ private:
 
     void keyPressEvent(QKeyEvent * event) override;
     void closeEvent(QCloseEvent * event) override;
-    void onThemeChanged(int);
     void onPluginDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
     void changeHotkey(int);
     void updatePluginInformations(const QModelIndex & curr);
 
-    MainWindow *mainWindow_;
-    HotkeyManager *hotkeyManager_;
     Core::ExtensionManager *extensionManager_;
+    Core::FrontendManager *frontendManager_;
+    HotkeyManager *hotkeyManager_;
     TrayIcon *trayIcon_;
     Ui::SettingsDialog ui;
 

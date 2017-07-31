@@ -15,25 +15,38 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+#include <QString>
+#include <QWidget>
+#include <QAbstractItemModel>
+#include "core_globals.h"
 
-#if defined(_MSC_VER)
-    #define EXPORT __declspec(dllexport)
-    #define IMPORT __declspec(dllimport)
-#elif defined(__GNUC__)
-    #define EXPORT __attribute__((visibility("default")))
-    #define IMPORT
-#else
-    #define EXPORT
-    #define IMPORT
-    #pragma warning Unknown dynamic link import/export semantics.
-#endif
+namespace Core {
 
-#ifdef CORE
- #define EXPORT_CORE EXPORT
-#else
- #define EXPORT_CORE IMPORT
-#endif
+class EXPORT_CORE Frontend : public QWidget
+{
+    Q_OBJECT
 
-#define ALBERT_EXTENSION_IID "ExtensionInterface/v1.0-alpha"
-#define ALBERT_FRONTEND_IID "FrontendInterface/v1.0-alpha"
+public:
 
+    Frontend(QString id, QWidget* parent = nullptr)
+        : QWidget(parent), id(id) {}
+    virtual ~Frontend() {}
+
+    const QString id;
+
+    virtual void setInput(const QString&) = 0;
+    virtual void setModel(QAbstractItemModel *) = 0;
+    virtual QWidget *widget(QWidget *parent) = 0;
+
+    void toggleVisibility() { setVisible(!isVisible()); }
+
+signals:
+
+    void widgetShown();
+    void widgetHidden();
+    void inputChanged(QString qry);
+    void settingsWidgetRequested();
+
+};
+
+}

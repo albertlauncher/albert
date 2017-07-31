@@ -16,59 +16,28 @@
 
 #pragma once
 #include <QString>
-#include <QStringList>
-#include <QPluginLoader>
+#include <vector>
+#include <memory>
 
 namespace Core {
 
-class Extension;
+class PluginSpec;
 
-class ExtensionSpec final
+class PluginLoader
 {
 public:
 
-    enum class State {
-        Loaded,
-        NotLoaded,
-        Error
-    };
+    PluginLoader();
 
-    ExtensionSpec(const QString &path);
-    ~ExtensionSpec();
+    const std::vector<QString> &pluginDirs() const;
+    void setPluginDirs(const std::vector<QString>&);
 
-    State state() { return state_; }
-    bool load();
-    bool unload();
-    QString lastError() const;
-    QObject *instance();
-    QString path() const;
-
-    // Metadata
-    QString id() const;
-    QString name() const;
-    QString version() const;
-    QString author() const;
-    QStringList dependencies() const;
-    bool enabledByDefault() const;
+    std::vector<std::unique_ptr<PluginSpec>> pluginSpecsByIID(const QString &iid);
 
 private:
 
-    QPluginLoader loader_;
-    State state_;
-    QString lastError_;
-
-    // Metadata
-    QString id_;
-    QString name_;
-    QString version_;
-    QString author_;
-    QStringList dependencies_;
-    bool enabledByDefault_;
+    std::vector<QString> pluginDirs_;
 
 };
 
 }
-
-
-
-

@@ -27,7 +27,7 @@
 namespace Core {
 
 class Extension;
-class ExtensionSpec;
+class PluginSpec;
 class ExtensionManagerPrivate;
 
 class EXPORT_CORE ExtensionManager final : public QObject
@@ -36,15 +36,16 @@ class EXPORT_CORE ExtensionManager final : public QObject
 
 public:
 
-    ExtensionManager();
+    ExtensionManager(std::vector<std::unique_ptr<PluginSpec>> && pluginSpecs, QObject *parent = 0);
     ~ExtensionManager();
 
-    void setPluginDirs(const QStringList&);
+    const std::vector<std::unique_ptr<PluginSpec>> & extensionSpecs() const;
+
     void reloadExtensions();
-    const std::vector<std::unique_ptr<ExtensionSpec>> & extensionSpecs() const;
-    void enableExtension(const std::unique_ptr<ExtensionSpec> &);
-    void disableExtension(const std::unique_ptr<ExtensionSpec> &);
-    bool extensionIsEnabled(const std::unique_ptr<ExtensionSpec> &);
+
+    void enableExtension(const std::unique_ptr<PluginSpec> &);
+    void disableExtension(const std::unique_ptr<PluginSpec> &);
+    bool extensionIsEnabled(const std::unique_ptr<PluginSpec> &);
 
     void registerObject(QObject *);
     void unregisterObject(QObject*);
@@ -64,8 +65,8 @@ public:
 
 private:
 
-    void loadExtension(const std::unique_ptr<ExtensionSpec> &);
-    void unloadExtension(const std::unique_ptr<ExtensionSpec> &);
+    void loadExtension(const std::unique_ptr<PluginSpec> &);
+    void unloadExtension(const std::unique_ptr<PluginSpec> &);
 
     std::unique_ptr<ExtensionManagerPrivate> d;
 

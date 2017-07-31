@@ -17,24 +17,28 @@
 #pragma once
 #include <QWidget>
 #include <QStringListModel>
-#include "proposallist.h"
-#include "settingsbutton.h"
-#include "history.h"
-#include "ui_mainwindow.h"
-class QAbstractItemModel;
+#include <memory>
+#include "core_globals.h"
+#include "core/frontend.h"
 
-class MainWindow final : public QWidget
+namespace WidgetBoxModel {
+
+class Private;
+
+class Frontend final : public Core::Frontend
 {
 	Q_OBJECT
+    Q_PLUGIN_METADATA(IID ALBERT_FRONTEND_IID FILE "metadata.json")
 
 public:
 
-    MainWindow(QWidget *parent = 0);
+    Frontend(QWidget *parent = 0);
+    ~Frontend();
 
     void setVisible(bool visible) override;
-    void toggleVisibility();
-
-    void setInput(const QString&);
+    void setInput(const QString&) override;
+    void setModel(QAbstractItemModel *) override;
+    QWidget* widget(QWidget *parent = nullptr) override;
 
     bool showCentered() const;
     void setShowCentered(bool b = true);
@@ -66,12 +70,12 @@ public:
     bool displayShadow() const;
     void setDisplayShadow(bool value);
 
-    void setModel(QAbstractItemModel *);
-
     bool actionsAreShown() const;
     void setShowActions(bool showActions);
+
     void showActions() { setShowActions(true); }
     void hideActions() { setShowActions(false); }
+
 
 protected:
 
@@ -85,48 +89,7 @@ protected:
 
 private:
 
-    /** The name of the current theme */
-    QString theme_;
-
-    /** Indicates that the app should be shown centered */
-    bool showCentered_;
-
-    /** Indicates that the app should be hidden on focus loss */
-    bool hideOnFocusLoss_;
-
-    /** Indicates that the app should be hidden on close event */
-    bool hideOnClose_;
-
-    /** The offset from cursor to topleft. Used when the window is dagged */
-    QPoint clickOffset_;
-
-    /** Indcates the state that the app is in */
-    bool actionsShown_;
-
-    /** Indcates that a shadow should be drawn */
-    bool displayShadow_;
-
-    /** Indcates that the inputline should be cleared on hide */
-    bool clearOnHide_;
-
-    /** The model of the action list view */
-    QStringListModel *actionsListModel_;
-
-    /** The button to open the settings dialog */
-    SettingsButton *settingsButton_;
-
-    /** The input history */
-    History *history_;
-
-    /** The modifier used to navigate directly in the history */
-    Qt::KeyboardModifier historyMoveMod_;
-
-    /** The form of the main app */
-    Ui::MainWindow ui;
-
-signals:
-    void widgetShown();
-    void widgetHidden();
-    void inputChanged(QString qry);
-    void settingsWidgetRequested();
+    std::unique_ptr<Private> d;
 };
+
+}

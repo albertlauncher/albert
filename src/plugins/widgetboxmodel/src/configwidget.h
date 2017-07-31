@@ -15,25 +15,27 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+#include <QWidget>
+#include <memory>
 
-#if defined(_MSC_VER)
-    #define EXPORT __declspec(dllexport)
-    #define IMPORT __declspec(dllimport)
-#elif defined(__GNUC__)
-    #define EXPORT __attribute__((visibility("default")))
-    #define IMPORT
-#else
-    #define EXPORT
-    #define IMPORT
-    #pragma warning Unknown dynamic link import/export semantics.
-#endif
+namespace WidgetBoxModel {
 
-#ifdef CORE
- #define EXPORT_CORE EXPORT
-#else
- #define EXPORT_CORE IMPORT
-#endif
+class Frontend;
+class Private;
 
-#define ALBERT_EXTENSION_IID "ExtensionInterface/v1.0-alpha"
-#define ALBERT_FRONTEND_IID "FrontendInterface/v1.0-alpha"
+class ConfigWidget final : public QWidget
+{
+    Q_OBJECT
 
+public:
+
+    ConfigWidget(Frontend *frontend, QWidget *parent);
+    ~ConfigWidget();
+
+private:
+
+    std::unique_ptr<Private> d;
+
+};
+
+}

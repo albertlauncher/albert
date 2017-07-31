@@ -17,7 +17,7 @@
 #include <QIcon>
 #include "loadermodel.h"
 #include "extensionmanager.h"
-#include "extensionspec.h"
+#include "pluginspec.h"
 using std::unique_ptr;
 using namespace Core;
 
@@ -42,7 +42,7 @@ QVariant LoaderModel::data(const QModelIndex &index, int role) const {
     if (!index.isValid() || index.row() < 0 || rowCount() <= index.row())
         return QVariant();
 
-    const unique_ptr<ExtensionSpec> &loader = extensionManager_->extensionSpecs()[index.row()];
+    const unique_ptr<PluginSpec> &loader = extensionManager_->extensionSpecs()[index.row()];
 
     switch (role) {
     case Qt::DisplayRole:
@@ -59,11 +59,11 @@ QVariant LoaderModel::data(const QModelIndex &index, int role) const {
     }
     case Qt::DecorationRole:
         switch (loader->state()) {
-        case ExtensionSpec::State::Loaded:
+        case PluginSpec::State::Loaded:
             return QIcon(":plugin_loaded");
-        case ExtensionSpec::State::NotLoaded:
+        case PluginSpec::State::NotLoaded:
             return QIcon(":plugin_notloaded");
-        case ExtensionSpec::State::Error:
+        case PluginSpec::State::Error:
             return QIcon(":plugin_error");
         }
     case Qt::CheckStateRole:

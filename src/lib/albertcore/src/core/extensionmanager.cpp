@@ -23,137 +23,67 @@
 #include <QPluginLoader>
 #include <QSettings>
 #include <QStandardPaths>
-#include <chrono>
-#include <memory>
 #include "extensionmanager.h"
-#include "extensionspec.h"
+#include "pluginspec.h"
 using std::set;
 using std::unique_ptr;
 using std::vector;
-using std::chrono::system_clock;
 
 Core::ExtensionManager *Core::ExtensionManager::instance = nullptr;
 
 /** ***************************************************************************/
 class Core::ExtensionManagerPrivate {
 public:
-    vector<unique_ptr<ExtensionSpec>> extensionSpecs_; // TASK: Rename _
+    vector<unique_ptr<PluginSpec>> pluginSpecs_;
     set<QObject*> extensions_;
-    set<QString> pluginDirs;
 };
 
 
 /** ***************************************************************************/
-Core::ExtensionManager::ExtensionManager() : d(new ExtensionManagerPrivate) {
-    // DO NOT LOAD EXTENSIONS HERE!
+Core::ExtensionManager::ExtensionManager(std::vector<std::unique_ptr<PluginSpec>> && pluginSpecs,
+                                         QObject *parent)
+    : QObject(parent), d(new ExtensionManagerPrivate) {
 
-    // Get plugindirs
-#if defined __linux__
+    d->pluginSpecs_ = std::move(pluginSpecs);
 
-    QStringList dirs = {
-        "/usr/lib/", "/usr/local/lib/", "/usr/lib64/", "/usr/local/lib64/",
-        QDir::home().filePath(".local/lib/"),
-        QDir::home().filePath(".local/lib64/")
-    };
-
-    for ( const QString& dir : dirs ) {
-        QFileInfo fileInfo = QFileInfo(QDir(dir).filePath("albert/plugins"));
-        if ( fileInfo.isDir() )
-            d->pluginDirs.insert(fileInfo.canonicalFilePath());
-    }
-
-#elif defined __APPLE__
-    throw "Not implemented";
-#elif defined _WIN32
-    throw "Not implemented";
-#endif
-
+    // Sort alphabetically
+    std::sort(d->pluginSpecs_.begin(),
+              d->pluginSpecs_.end(),
+              [](const unique_ptr<PluginSpec>& lhs, const unique_ptr<PluginSpec>& rhs){
+        return lhs->name() < rhs->name();
+    });
 }
 
 
 /** ***************************************************************************/
 Core::ExtensionManager::~ExtensionManager() {
-    for (unique_ptr<ExtensionSpec> & extensionSpec : d->extensionSpecs_)
-        unloadExtension(extensionSpec);
+    for (unique_ptr<PluginSpec> & pluginSpec : d->pluginSpecs_)
+        unloadExtension(pluginSpec);
 }
 
 
 /** ***************************************************************************/
-void Core::ExtensionManager::setPluginDirs(const QStringList &dirs) {
-    d->pluginDirs.insert(dirs.begin(), dirs.end());
+const vector<unique_ptr<Core::PluginSpec>>& Core::ExtensionManager::extensionSpecs() const {
+    return d->pluginSpecs_;
 }
 
 
 /** ***************************************************************************/
 void Core::ExtensionManager::reloadExtensions() {
 
-    // Unload everything
-    for (unique_ptr<ExtensionSpec> & extensionSpec : d->extensionSpecs_)
-        unloadExtension(extensionSpec);
-
-    d->extensionSpecs_.clear();
-
-    // Iterate over all files in the plugindirs
-    for (const QString &pluginDir : d->pluginDirs) {
-        QDirIterator dirIterator(pluginDir, QDir::Files);
-        while (dirIterator.hasNext()) {
-            dirIterator.next();
-
-            QString path = dirIterator.fileInfo().canonicalFilePath();
-
-            // Check if this path is a lib
-            if ( !QLibrary::isLibrary(path) ) {
-                qWarning() << "File is not a library:" << path;
-                continue;
-            }
-
-            QPluginLoader loader(path);
-
-            if ( loader.metaData().empty() ) {
-                qDebug() << qPrintable(QString("Metadata empty. Is this a QPlugin? (%1)").arg(path));
-                continue;
-            }
-
-            // Check for a sane interface ID  (IID)
-            QString iid = loader.metaData()["IID"].toString();
-            if (iid != ALBERT_EXTENSION_IID) {
-                qWarning() << qPrintable(QString("Extension IDs do not match. App:'%1'. Ext: '%2' (%3)")
-                              .arg(ALBERT_EXTENSION_IID, iid, path));
-                continue;
-            }
-
-            // Check for duplicates
-            QString id = loader.metaData()["MetaData"].toObject()["id"].toString();
-            if (std::any_of(d->extensionSpecs_.begin(), d->extensionSpecs_.end(),
-                            [&id](const unique_ptr<ExtensionSpec> & spec){ return id == spec->id(); })) {
-                qWarning() << qPrintable(QString("Extension IDs already exists. Skipping. (%1)").arg(path));
-                continue;
-            }
-
-            // Put it to the results
-            d->extensionSpecs_.emplace_back(new ExtensionSpec(path));
-        }
-    }
-
-    // Sort alphabetically
-    std::sort(d->extensionSpecs_.begin(),
-              d->extensionSpecs_.end(),
-              [](const unique_ptr<ExtensionSpec>& lhs, const unique_ptr<ExtensionSpec>& rhs){ return lhs->name() < rhs->name(); });
+    // Unload all extensions
+    for (unique_ptr<PluginSpec> & pluginSpec : d->pluginSpecs_)
+        unloadExtension(pluginSpec);
 
     // Load if enabled
     QSettings settings(qApp->applicationName());
-    for (unique_ptr<ExtensionSpec> & extensionSpec : d->extensionSpecs_){
-        QString configName = QString("%1/enabled").arg(extensionSpec->id());
+    for (unique_ptr<PluginSpec> & pluginSpec : d->pluginSpecs_) {
+        QString configName = QString("%1/enabled").arg(pluginSpec->id());
         if ( (settings.contains(configName) && settings.value(configName).toBool())
-             || (!settings.contains(configName) && extensionSpec->enabledByDefault()) )
-            loadExtension(extensionSpec);
+             || (!settings.contains(configName) && pluginSpec->enabledByDefault()) )
+            loadExtension(pluginSpec);
     }
-}
 
-
-/** ***************************************************************************/
-const vector<unique_ptr<Core::ExtensionSpec>>& Core::ExtensionManager::extensionSpecs() const {
-    return d->extensionSpecs_;
 }
 
 
@@ -164,14 +94,13 @@ const set<QObject*> Core::ExtensionManager::objects() const {
 
 
 /** ***************************************************************************/
-void Core::ExtensionManager::loadExtension(const unique_ptr<ExtensionSpec> &spec) {
-    if (spec->state() != ExtensionSpec::State::Loaded){
-        system_clock::time_point start = system_clock::now();
+void Core::ExtensionManager::loadExtension(const unique_ptr<PluginSpec> &spec) {
+    if ( spec->state() != PluginSpec::State::Loaded ){
         if ( spec->load() ) {
-//            TODO wrtie to database
-            auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(system_clock::now()-start);
-            qDebug() << QString("Loading %1 done in %2 milliseconds").arg(spec->id()).arg(msecs.count()).toLocal8Bit().data();
+            std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
+            auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()-start);
             d->extensions_.insert(spec->instance());
+            qDebug() << qPrintable(QString("%1 loaded in %2 milliseconds").arg(spec->id()).arg(msecs.count()));
         } else
             qInfo() << QString("Loading %1 failed. (%2)").arg(spec->id(), spec->lastError()).toLocal8Bit().data();
     }
@@ -179,8 +108,8 @@ void Core::ExtensionManager::loadExtension(const unique_ptr<ExtensionSpec> &spec
 
 
 /** ***************************************************************************/
-void Core::ExtensionManager::unloadExtension(const unique_ptr<ExtensionSpec> &spec) {
-    if (spec->state() != ExtensionSpec::State::NotLoaded) {
+void Core::ExtensionManager::unloadExtension(const unique_ptr<PluginSpec> &spec) {
+    if (spec->state() != PluginSpec::State::NotLoaded) {
         d->extensions_.erase(spec->instance());
         spec->unload();
     }
@@ -188,25 +117,25 @@ void Core::ExtensionManager::unloadExtension(const unique_ptr<ExtensionSpec> &sp
 
 
 /** ***************************************************************************/
-void Core::ExtensionManager::enableExtension(const unique_ptr<ExtensionSpec> &extensionSpec) {
-    QSettings(qApp->applicationName()).setValue(QString("%1/enabled").arg(extensionSpec->id()), true);
-    loadExtension(extensionSpec);
+void Core::ExtensionManager::enableExtension(const unique_ptr<PluginSpec> &pluginSpec) {
+    QSettings(qApp->applicationName()).setValue(QString("%1/enabled").arg(pluginSpec->id()), true);
+    loadExtension(pluginSpec);
 }
 
 
 /** ***************************************************************************/
-void Core::ExtensionManager::disableExtension(const unique_ptr<ExtensionSpec> &extensionSpec) {
-    QSettings(qApp->applicationName()).setValue(QString("%1/enabled").arg(extensionSpec->id()), false);
-    unloadExtension(extensionSpec);
+void Core::ExtensionManager::disableExtension(const unique_ptr<PluginSpec> &pluginSpec) {
+    QSettings(qApp->applicationName()).setValue(QString("%1/enabled").arg(pluginSpec->id()), false);
+    unloadExtension(pluginSpec);
 }
 
 
 /** ***************************************************************************/
-bool Core::ExtensionManager::extensionIsEnabled(const unique_ptr<ExtensionSpec> &extensionSpec) {
+bool Core::ExtensionManager::extensionIsEnabled(const unique_ptr<PluginSpec> &pluginSpec) {
     QSettings settings(qApp->applicationName());
-    QString configName = QString("%1/enabled").arg(extensionSpec->id());
+    QString configName = QString("%1/enabled").arg(pluginSpec->id());
     return ( (settings.contains(configName) && settings.value(configName).toBool())
-             || (!settings.contains(configName) && extensionSpec->enabledByDefault()) );
+             || (!settings.contains(configName) && pluginSpec->metadata("enableByDefault").toBool()) );
 }
 
 

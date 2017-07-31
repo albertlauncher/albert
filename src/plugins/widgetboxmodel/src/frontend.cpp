@@ -16,6 +16,7 @@
 
 #include <QAbstractItemModel>
 #include <QGraphicsDropShadowEffect>
+#include <QAction>
 #include <QApplication>
 #include <QCloseEvent>
 #include <QCursor>
@@ -28,7 +29,12 @@
 #include <QSettings>
 #include <QTimer>
 #include <QVBoxLayout>
-#include "mainwindow.h"
+#include "core/history.h"
+#include "configwidget.h"
+#include "frontend.h"
+#include "proposallist.h"
+#include "settingsbutton.h"
+#include "ui_frontend.h"
 
 namespace  {
 
@@ -56,15 +62,70 @@ const bool    DEF_DISPLAY_SHADOW = true;
 
 }
 
+/** ***************************************************************************/
+/** ***************************************************************************/
+/** ***************************************************************************/
+/** ***************************************************************************/
+
+class WidgetBoxModel::Private
+{
+public:
+
+    /** The name of the current theme */
+    QString theme_;
+
+    /** The offset from cursor to topleft. Used when the window is dagged */
+    QPoint clickOffset_;
+
+    /** The model of the action list view */
+    QStringListModel *actionsListModel_;
+
+    /** The button to open the settings dialog */
+    SettingsButton *settingsButton_;
+
+    /** The input history */
+    History *history_;
+
+    /** The modifier used to navigate directly in the history */
+    Qt::KeyboardModifier historyMoveMod_;
+
+    /** The form of the main app */
+    Ui::MainWindow ui;
+
+    /** Indicates that the app should be shown centered */
+    bool showCentered_;
+
+    /** Indicates that the app should be hidden on focus loss */
+    bool hideOnFocusLoss_;
+
+    /** Indicates that the app should be hidden on close event */
+    bool hideOnClose_;
+
+    /** Indcates the state that the app is in */
+    bool actionsShown_;
+
+    /** Indcates that a shadow should be drawn */
+    bool displayShadow_;
+
+    /** Indcates that the inputline should be cleared on hide */
+    bool clearOnHide_;
+
+};
 
 /** ***************************************************************************/
-MainWindow::MainWindow(QWidget *parent)
-    : QWidget(parent),
-      actionsShown_(false),
-      historyMoveMod_(Qt::ControlModifier) {
+/** ***************************************************************************/
+/** ***************************************************************************/
+/** ***************************************************************************/
+WidgetBoxModel::Frontend::Frontend(QWidget *parent)
+    : Core::Frontend("org.albert.frontend.boxmodel.widget", parent),
+      d(new Private) {
+
+    d->actionsShown_ = false;
+    d->historyMoveMod_ = Qt::ControlModifier;
 
 	// INITIALIZE UI
-    ui.setupUi(this);
+    d->ui.setupUi(this);
+//    setWindowIcon(qApp->windowIcon());
     setWindowTitle(qAppName());
     setWindowFlags(Qt::Tool
                    | Qt::WindowCloseButtonHint // No close event w/o this
@@ -79,51 +140,51 @@ MainWindow::MainWindow(QWidget *parent)
     setGraphicsEffect(effect);
 
      // Disable tabbing completely
-    ui.actionList->setFocusPolicy(Qt::NoFocus);
-    ui.proposalList->setFocusPolicy(Qt::NoFocus);
+    d->ui.actionList->setFocusPolicy(Qt::NoFocus);
+    d->ui.proposalList->setFocusPolicy(Qt::NoFocus);
 
     // Set initial event filter pipeline: window -> proposallist -> lineedit
-    ui.inputLine->installEventFilter(ui.proposalList);
-    ui.inputLine->installEventFilter(this);
+    d->ui.inputLine->installEventFilter(d->ui.proposalList);
+    d->ui.inputLine->installEventFilter(this);
 
     // Set stringlistmodel for actions view
-    actionsListModel_ = new QStringListModel(this);
-    ui.actionList->setModel(actionsListModel_);
+    d->actionsListModel_ = new QStringListModel(this);
+    d->ui.actionList->setModel(d->actionsListModel_);
 
     // Hide lists
-    ui.actionList->hide();
-    ui.proposalList->hide();
+    d->ui.actionList->hide();
+    d->ui.proposalList->hide();
 
     // Settings button
-    settingsButton_ = new SettingsButton(this);
-    settingsButton_->setObjectName("settingsButton");
-    settingsButton_->setFocusPolicy(Qt::NoFocus);
-    settingsButton_->setContextMenuPolicy(Qt::ActionsContextMenu);
+    d->settingsButton_ = new SettingsButton(this);
+    d->settingsButton_->setObjectName("settingsButton");
+    d->settingsButton_->setFocusPolicy(Qt::NoFocus);
+    d->settingsButton_->setContextMenuPolicy(Qt::ActionsContextMenu);
 
     // Context menu of settingsbutton
-    QAction *action = new QAction("Settings", settingsButton_);
+    QAction *action = new QAction("Settings", d->settingsButton_);
     action->setShortcuts({QKeySequence("Ctrl+,"), QKeySequence("Alt+,")});
-    connect(action, &QAction::triggered, this, &MainWindow::hide);
-    connect(action, &QAction::triggered, this, &MainWindow::settingsWidgetRequested);
-    connect(settingsButton_, &QPushButton::clicked, action, &QAction::trigger);
-    settingsButton_->addAction(action);
+    connect(action, &QAction::triggered, this, &Frontend::hide);
+    connect(action, &QAction::triggered, this, &Frontend::settingsWidgetRequested);
+    connect(d->settingsButton_, &QPushButton::clicked, action, &QAction::trigger);
+    d->settingsButton_->addAction(action);
 
-    action = new QAction("Hide", settingsButton_);
+    action = new QAction("Hide", d->settingsButton_);
     action->setShortcut(QKeySequence("Esc"));
-    connect(action, &QAction::triggered, this, &MainWindow::hide);
-    settingsButton_->addAction(action);
+    connect(action, &QAction::triggered, this, &Frontend::hide);
+    d->settingsButton_->addAction(action);
 
-    action = new QAction("Separator", settingsButton_);
+    action = new QAction("Separator", d->settingsButton_);
     action->setSeparator(true);
-    settingsButton_->addAction(action);
+    d->settingsButton_->addAction(action);
 
-    action = new QAction("Quit", settingsButton_);
+    action = new QAction("Quit", d->settingsButton_);
     action->setShortcut(QKeySequence("Alt+F4"));
     connect(action, &QAction::triggered, qApp, &QApplication::quit);
-    settingsButton_->addAction(action);
+    d->settingsButton_->addAction(action);
 
     // History
-    history_ = new History(this);
+    d->history_ = new History(this);
 
     /*
      * Settings
@@ -141,9 +202,9 @@ MainWindow::MainWindow(QWidget *parent)
     setDisplayScrollbar(s.value(CFG_DISPLAY_SCROLLBAR, DEF_DISPLAY_SCROLLBAR).toBool());
     setDisplayIcons(s.value(CFG_DISPLAY_ICONS, DEF_DISPLAY_ICONS).toBool());
     setDisplayShadow(s.value(CFG_DISPLAY_SHADOW, DEF_DISPLAY_SHADOW).toBool());
-    theme_ = s.value(CFG_THEME, DEF_THEME).toString();
-    if (!setTheme(theme_)) {
-        qFatal("FATAL: Stylefile not found: %s", theme_.toStdString().c_str());
+    d->theme_ = s.value(CFG_THEME, DEF_THEME).toString();
+    if (!setTheme(d->theme_)) {
+        qFatal("FATAL: Stylefile not found: %s", d->theme_.toStdString().c_str());
         qApp->quit();
     }
 
@@ -153,48 +214,55 @@ MainWindow::MainWindow(QWidget *parent)
      */
 
     // Trigger query, if text changed
-    connect(ui.inputLine, &QLineEdit::textChanged, this, &MainWindow::inputChanged);
+    connect(d->ui.inputLine, &QLineEdit::textChanged, this, &Frontend::inputChanged);
 
     // Hide the actionview, if text was changed
-    connect(ui.inputLine, &QLineEdit::textChanged, this, &MainWindow::hideActions);
+    connect(d->ui.inputLine, &QLineEdit::textChanged, this, &Frontend::hideActions);
 
     // Reset history, if text was manually changed
-    connect(ui.inputLine, &QLineEdit::textEdited, history_, &History::resetIterator);
+    connect(d->ui.inputLine, &QLineEdit::textEdited, d->history_, &History::resetIterator);
 
     // Hide the actionview, if another item gets clicked
-    connect(ui.proposalList, &ProposalList::pressed, this, &MainWindow::hideActions);
+    connect(d->ui.proposalList, &ProposalList::pressed, this, &Frontend::hideActions);
 
     // Trigger default action, if item in proposallist was activated
-    QObject::connect(ui.proposalList, &ProposalList::activated, [this](const QModelIndex &index){
+    QObject::connect(d->ui.proposalList, &ProposalList::activated, [this](const QModelIndex &index){
 
         switch (qApp->queryKeyboardModifiers()) {
         case Qt::MetaModifier: // Default fallback action (Meta)
-            ui.proposalList->model()->setData(index, -1, Qt::UserRole+101);
+            d->ui.proposalList->model()->setData(index, -1, Qt::UserRole+101);
             break;
         default: // DefaultAction
-            ui.proposalList->model()->setData(index, -1, Qt::UserRole+100);
+            d->ui.proposalList->model()->setData(index, -1, Qt::UserRole+100);
             break;
         }
 
         // Do not move this up! (Invalidates index)
-        history_->add(ui.inputLine->text());
+        d->history_->add(d->ui.inputLine->text());
         this->setVisible(false);
-        ui.inputLine->clear();
+        d->ui.inputLine->clear();
     });
 
     // Trigger alternative action, if item in actionList was activated
-    QObject::connect(ui.actionList, &ActionList::activated, [this](const QModelIndex &index){
-        history_->add(ui.inputLine->text());
-        ui.proposalList->model()->setData(ui.proposalList->currentIndex(), index.row(), Qt::UserRole);
+    QObject::connect(d->ui.actionList, &ActionList::activated, [this](const QModelIndex &index){
+        d->history_->add(d->ui.inputLine->text());
+        d->ui.proposalList->model()->setData(d->ui.proposalList->currentIndex(), index.row(), Qt::UserRole);
         this->setVisible(false);
-        ui.inputLine->clear();
+        d->ui.inputLine->clear();
     });
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::setVisible(bool visible) {
+WidgetBoxModel::Frontend::~Frontend() {
+    // Needed since default dtor of unique ptr in the header has to know the type
+}
+
+
+
+/** ***************************************************************************/
+void WidgetBoxModel::Frontend::setVisible(bool visible) {
 
     // Skip if nothing to do
     if ( (isVisible() && visible) || !(isVisible() || visible) )
@@ -206,69 +274,63 @@ void MainWindow::setVisible(bool visible) {
         // Move widget after showing it since QWidget::move works only on widgets
         // that have been shown once. Well as long as this does not introduce ugly
         // flicker this may be okay.
-        if (showCentered_){
+        if (d->showCentered_){
             QDesktopWidget *dw = QApplication::desktop();
             this->move(dw->screenGeometry(dw->screenNumber(QCursor::pos())).center()
                        -QPoint(rect().right()/2,192 ));
         }
         this->raise();
         this->activateWindow();
-        ui.inputLine->setFocus();
+        d->ui.inputLine->setFocus();
         emit widgetShown();
     } else {
         setShowActions(false);
-        history_->resetIterator();
-        ( clearOnHide_ ) ? ui.inputLine->clear() : ui.inputLine->selectAll();
+        d->history_->resetIterator();
+        ( d->clearOnHide_ ) ? d->ui.inputLine->clear() : d->ui.inputLine->selectAll();
         emit widgetHidden();
     }
 }
 
 
 /** ***************************************************************************/
-void MainWindow::toggleVisibility() {
-   setVisible(!isVisible());
-}
-
-
-/** ***************************************************************************/
-void MainWindow::setInput(const QString &input) {
-    ui.inputLine->setText(input);
+void WidgetBoxModel::Frontend::setInput(const QString &input) {
+    d->ui.inputLine->setText(input);
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::setModel(QAbstractItemModel *m) {
-    ui.proposalList->setModel(m);
+void WidgetBoxModel::Frontend::setModel(QAbstractItemModel *m) {
+    d->ui.proposalList->setModel(m);
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::setShowCentered(bool b) {
+void WidgetBoxModel::Frontend::setShowCentered(bool b) {
     QSettings(qApp->applicationName()).setValue(CFG_CENTERED, b);
-    showCentered_ = b;
+    d->showCentered_ = b;
 }
 
 
 
 /** ***************************************************************************/
-bool MainWindow::showCentered() const {
-    return showCentered_;
+bool WidgetBoxModel::Frontend::showCentered() const {
+    return d->showCentered_;
 }
 
 
 
 /** ***************************************************************************/
-const QString &MainWindow::theme() const {
-    return theme_;
+const QString &WidgetBoxModel::Frontend::theme() const {
+    return d->theme_;
 }
 
 
 
 /** ***************************************************************************/
-bool MainWindow::setTheme(const QString &theme) {
-    theme_ = theme;
+bool WidgetBoxModel::Frontend::setTheme(const QString &theme) {
+    d->theme_ = theme;
     QFileInfoList themes;
     QStringList themeDirs = QStandardPaths::locateAll(
         QStandardPaths::DataLocation, "themes", QStandardPaths::LocateDirectory);
@@ -277,10 +339,10 @@ bool MainWindow::setTheme(const QString &theme) {
     // Find and apply the theme
     bool success = false;
     for (const QFileInfo &fi : themes) {
-        if (fi.baseName() == theme_) {
+        if (fi.baseName() == d->theme_) {
             QFile f(fi.canonicalFilePath());
             if (f.open(QFile::ReadOnly)) {
-                QSettings(qApp->applicationName()).setValue(CFG_THEME, theme_);
+                QSettings(qApp->applicationName()).setValue(CFG_THEME, d->theme_);
                 setStyleSheet(f.readAll());
                 f.close();
                 success = true;
@@ -294,59 +356,59 @@ bool MainWindow::setTheme(const QString &theme) {
 
 
 /** ***************************************************************************/
-bool MainWindow::hideOnFocusLoss() const {
-    return hideOnFocusLoss_;
+bool WidgetBoxModel::Frontend::hideOnFocusLoss() const {
+    return d->hideOnFocusLoss_;
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::setHideOnFocusLoss(bool b) {
+void WidgetBoxModel::Frontend::setHideOnFocusLoss(bool b) {
     QSettings(qApp->applicationName()).setValue(CFG_HIDE_ON_FOCUS_LOSS, b);
-    hideOnFocusLoss_ = b;
+    d->hideOnFocusLoss_ = b;
 }
 
 
 
 /** ***************************************************************************/
-bool MainWindow::hideOnClose() const {
-    return hideOnClose_;
+bool WidgetBoxModel::Frontend::hideOnClose() const {
+    return d->hideOnClose_;
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::setHideOnClose(bool b) {
+void WidgetBoxModel::Frontend::setHideOnClose(bool b) {
     QSettings(qApp->applicationName()).setValue(CFG_HIDE_ON_CLOSE, b);
-    hideOnClose_ = b;
+    d->hideOnClose_ = b;
 }
 
 
 
 /** ***************************************************************************/
-bool MainWindow::clearOnHide() const {
-    return clearOnHide_;
+bool WidgetBoxModel::Frontend::clearOnHide() const {
+    return d->clearOnHide_;
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::setClearOnHide(bool b) {
+void WidgetBoxModel::Frontend::setClearOnHide(bool b) {
     QSettings(qApp->applicationName()).setValue(CFG_CLEAR_ON_HIDE, b);
-    clearOnHide_ = b;
+    d->clearOnHide_ = b;
 }
 
 
 
 /** ***************************************************************************/
-bool MainWindow::alwaysOnTop() const {
+bool WidgetBoxModel::Frontend::alwaysOnTop() const {
     return windowFlags().testFlag(Qt::WindowStaysOnTopHint);
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::setAlwaysOnTop(bool alwaysOnTop) {
+void WidgetBoxModel::Frontend::setAlwaysOnTop(bool alwaysOnTop) {
     QSettings(qApp->applicationName()).setValue(CFG_ALWAYS_ON_TOP, alwaysOnTop);
     // TODO: QT_MINREL 5.7 setFlag
     alwaysOnTop ? setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint)
@@ -356,55 +418,55 @@ void MainWindow::setAlwaysOnTop(bool alwaysOnTop) {
 
 
 /** ***************************************************************************/
-void MainWindow::setMaxProposals(uint8_t maxItems) {
+void WidgetBoxModel::Frontend::setMaxProposals(uint8_t maxItems) {
     QSettings(qApp->applicationName()).setValue(CFG_MAX_PROPOSALS, maxItems);
-    ui.proposalList->setMaxItems(maxItems);
+    d->ui.proposalList->setMaxItems(maxItems);
 }
 
 
 
 /** ***************************************************************************/
-bool MainWindow::displayIcons() const {
-    return ui.proposalList->displayIcons();
+bool WidgetBoxModel::Frontend::displayIcons() const {
+    return d->ui.proposalList->displayIcons();
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::setDisplayIcons(bool value) {
+void WidgetBoxModel::Frontend::setDisplayIcons(bool value) {
     QSettings(qApp->applicationName()).setValue(CFG_DISPLAY_ICONS, value);
-    ui.proposalList->setDisplayIcons(value);
+    d->ui.proposalList->setDisplayIcons(value);
 }
 
 
 
 /** ***************************************************************************/
-bool MainWindow::displayScrollbar() const {
-    return ui.proposalList->verticalScrollBarPolicy() != Qt::ScrollBarAlwaysOff;
+bool WidgetBoxModel::Frontend::displayScrollbar() const {
+    return d->ui.proposalList->verticalScrollBarPolicy() != Qt::ScrollBarAlwaysOff;
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::setDisplayScrollbar(bool value) {
+void WidgetBoxModel::Frontend::setDisplayScrollbar(bool value) {
     QSettings(qApp->applicationName()).setValue(CFG_DISPLAY_SCROLLBAR, value);
-    ui.proposalList->setVerticalScrollBarPolicy(
+    d->ui.proposalList->setVerticalScrollBarPolicy(
                 value ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
 }
 
 
 
 /** ***************************************************************************/
-bool MainWindow::displayShadow() const {
-    return displayShadow_;
+bool WidgetBoxModel::Frontend::displayShadow() const {
+    return d->displayShadow_;
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::setDisplayShadow(bool value) {
+void WidgetBoxModel::Frontend::setDisplayShadow(bool value) {
     QSettings(qApp->applicationName()).setValue(CFG_DISPLAY_SHADOW, value);
-    displayShadow_ = value;
+    d->displayShadow_ = value;
     graphicsEffect()->setEnabled(value);
     value ? setContentsMargins(20,20,20,20) : setContentsMargins(0,0,0,0);
 }
@@ -412,107 +474,114 @@ void MainWindow::setDisplayShadow(bool value) {
 
 
 /** ***************************************************************************/
-uint8_t MainWindow::maxProposals() const {
-    return ui.proposalList->maxItems();
+uint8_t WidgetBoxModel::Frontend::maxProposals() const {
+    return d->ui.proposalList->maxItems();
 }
 
 
 
 /** ***************************************************************************/
-bool MainWindow::actionsAreShown() const {
-    return actionsShown_;
+bool WidgetBoxModel::Frontend::actionsAreShown() const {
+    return d->actionsShown_;
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::setShowActions(bool showActions) {
+void WidgetBoxModel::Frontend::setShowActions(bool showActions) {
 
     // Show actions
-    if ( showActions && !actionsShown_ ) {
+    if ( showActions && !d->actionsShown_ ) {
 
         // Skip if nothing selected
-        if ( !ui.proposalList->currentIndex().isValid())
+        if ( !d->ui.proposalList->currentIndex().isValid())
             return;
 
         // Get actions
-        actionsListModel_->setStringList(ui.proposalList->model()->data(
-                                             ui.proposalList->currentIndex(),
+        d->actionsListModel_->setStringList(d->ui.proposalList->model()->data(
+                                             d->ui.proposalList->currentIndex(),
                                              Qt::UserRole).toStringList());
 
         // Skip if actions are empty
-        if (actionsListModel_->rowCount() < 1)
+        if (d->actionsListModel_->rowCount() < 1)
             return;
 
-        ui.actionList->setCurrentIndex(actionsListModel_->index(0, 0, ui.actionList->rootIndex()));
-        ui.actionList->show();
+        d->ui.actionList->setCurrentIndex(d->actionsListModel_->index(0, 0, d->ui.actionList->rootIndex()));
+        d->ui.actionList->show();
 
         // Change event filter pipeline: window -> _action_list -> lineedit
-        ui.inputLine->removeEventFilter(this);
-        ui.inputLine->removeEventFilter(ui.proposalList);
-        ui.inputLine->installEventFilter(ui.actionList);
-        ui.inputLine->installEventFilter(this);
+        d->ui.inputLine->removeEventFilter(this);
+        d->ui.inputLine->removeEventFilter(d->ui.proposalList);
+        d->ui.inputLine->installEventFilter(d->ui.actionList);
+        d->ui.inputLine->installEventFilter(this);
 
         // Finally set the state
-        actionsShown_ = true;
+        d->actionsShown_ = true;
     }
 
     // Hide actions
-    if ( !showActions && actionsShown_ ) {
+    if ( !showActions && d->actionsShown_ ) {
 
-        ui.actionList->hide();
+        d->ui.actionList->hide();
 
         // Change event filter pipeline: window -> _proposal_list -> lineedit
-        ui.inputLine->removeEventFilter(this);
-        ui.inputLine->removeEventFilter(ui.actionList);
-        ui.inputLine->installEventFilter(ui.proposalList);
-        ui.inputLine->installEventFilter(this);
+        d->ui.inputLine->removeEventFilter(this);
+        d->ui.inputLine->removeEventFilter(d->ui.actionList);
+        d->ui.inputLine->installEventFilter(d->ui.proposalList);
+        d->ui.inputLine->installEventFilter(this);
 
         // Finally set the state
-        actionsShown_ = false;
+        d->actionsShown_ = false;
     }
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::closeEvent(QCloseEvent *event) {
+QWidget *WidgetBoxModel::Frontend::widget(QWidget *parent) {
+    return new ConfigWidget(this, parent);
+}
+
+
+
+/** ***************************************************************************/
+void WidgetBoxModel::Frontend::closeEvent(QCloseEvent *event) {
     event->accept();
-    if (!hideOnClose_)
+    if (!d->hideOnClose_)
         qApp->quit();
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::resizeEvent(QResizeEvent *event) {
+void WidgetBoxModel::Frontend::resizeEvent(QResizeEvent *event) {
     // Let settingsbutton be in top right corner of frame
-    settingsButton_->move(ui.frame->geometry().topRight() - QPoint(settingsButton_->width()-1,0));
+    d->settingsButton_->move(d->ui.frame->geometry().topRight() - QPoint(d->settingsButton_->width()-1,0));
     QWidget::resizeEvent(event);
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::mouseMoveEvent(QMouseEvent *event) {
+void WidgetBoxModel::Frontend::mouseMoveEvent(QMouseEvent *event) {
     // Move the widget with the mouse
-    move(event->globalPos() - clickOffset_);
+    move(event->globalPos() - d->clickOffset_);
     QWidget::mouseMoveEvent(event);
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::mousePressEvent(QMouseEvent *event) {
+void WidgetBoxModel::Frontend::mousePressEvent(QMouseEvent *event) {
     // Save the offset on press for movement calculations
-    clickOffset_ = event->pos();
+    d->clickOffset_ = event->pos();
     QWidget::mousePressEvent(event);
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
+void WidgetBoxModel::Frontend::mouseReleaseEvent(QMouseEvent *event) {
     // Save the window position ()
     QSettings(qApp->applicationName()).setValue(CFG_WND_POS, pos());
     QWidget::mousePressEvent(event);
@@ -521,7 +590,7 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
 
 
 /** ***************************************************************************/
-bool MainWindow::eventFilter(QObject *, QEvent *event) {
+bool WidgetBoxModel::Frontend::eventFilter(QObject *, QEvent *event) {
 
     if ( event->type() == QEvent::KeyPress ) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
@@ -530,10 +599,10 @@ bool MainWindow::eventFilter(QObject *, QEvent *event) {
         // Toggle actionsview
         case Qt::Key_Tab:
             // see query.cpp for userroles
-            if ( ui.proposalList->currentIndex().isValid() )
-                ui.inputLine->setText(
-                            ui.proposalList->model()->data(
-                                ui.proposalList->currentIndex(), Qt::UserRole+1
+            if ( d->ui.proposalList->currentIndex().isValid() )
+                d->ui.inputLine->setText(
+                            d->ui.proposalList->model()->data(
+                                d->ui.proposalList->currentIndex(), Qt::UserRole+1
                                 ).toString()
                             );
             return true;
@@ -544,13 +613,13 @@ bool MainWindow::eventFilter(QObject *, QEvent *event) {
 
         case Qt::Key_Up:{
             // Move up in the history
-            if ( !ui.proposalList->currentIndex().isValid() // Empty list
-                 || keyEvent->modifiers() == historyMoveMod_ // MoveMod (Ctrl) hold
+            if ( !d->ui.proposalList->currentIndex().isValid() // Empty list
+                 || keyEvent->modifiers() == d->historyMoveMod_ // MoveMod (Ctrl) hold
                  || ( !actionsAreShown() // Not in actions state...
-                      && ui.proposalList->currentIndex().row()==0 && !keyEvent->isAutoRepeat() ) ){ // ... and first row (non repeat)
-                QString next = history_->next();
+                      && d->ui.proposalList->currentIndex().row()==0 && !keyEvent->isAutoRepeat() ) ){ // ... and first row (non repeat)
+                QString next = d->history_->next();
                 if (!next.isEmpty())
-                    ui.inputLine->setText(next);
+                    d->ui.inputLine->setText(next);
                 return true;
             }
         }
@@ -558,9 +627,9 @@ bool MainWindow::eventFilter(QObject *, QEvent *event) {
         // Move down in the history
         case Qt::Key_Down:{
             if ( !actionsAreShown() && keyEvent->modifiers() == Qt::ControlModifier ) {
-                QString prev = history_->prev();
+                QString prev = d->history_->prev();
                 if (!prev.isEmpty())
-                    ui.inputLine->setText(prev);
+                    d->ui.inputLine->setText(prev);
                 return true;
             }
         }
@@ -579,13 +648,13 @@ bool MainWindow::eventFilter(QObject *, QEvent *event) {
     if (event->type() == QEvent::Wheel) {
         QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(event);
         if ( wheelEvent->angleDelta().y() > 0 ) {
-            QString next = history_->next();
+            QString next = d->history_->next();
             if (!next.isEmpty())
-                ui.inputLine->setText(next);
+                d->ui.inputLine->setText(next);
         } else {
-            QString prev = history_->prev();
+            QString prev = d->history_->prev();
             if (!prev.isEmpty())
-                ui.inputLine->setText(prev);
+                d->ui.inputLine->setText(prev);
         }
     }
 
@@ -595,7 +664,7 @@ bool MainWindow::eventFilter(QObject *, QEvent *event) {
 
 
 /** ***************************************************************************/
-bool MainWindow::event(QEvent *event) {
+bool WidgetBoxModel::Frontend::event(QEvent *event) {
     if (event->type() == QEvent::WindowDeactivate) {
         /* This is a horribly hackish but working solution.
 
@@ -621,9 +690,9 @@ bool MainWindow::event(QEvent *event) {
          The current, much simpler but less elegant solution is to delay the
          hiding a few milliseconds, so that the hotkey event will always be
          handled first. */
-        if (hideOnFocusLoss_){
+        if (d->hideOnFocusLoss_){
             // Note fix if least LTS goes beyond Qt5.4
-            // QTimer::singleShot(50, this, &MainWindow::hide);
+            // QTimer::singleShot(50, this, &WidgetBoxModel::Frontend::hide);
             QTimer::singleShot(50, this, SLOT(hide()));
         }
     }

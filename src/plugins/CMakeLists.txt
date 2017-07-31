@@ -17,6 +17,7 @@ add_subdirectory(system)
 add_subdirectory(terminal)
 add_subdirectory(virtualbox)
 add_subdirectory(websearch)
+add_subdirectory(widgetboxmodel)
 
 # Non-release plugins
 if(${BUILD_DEBUG_EXTENSIONS})

@@ -33,27 +33,30 @@
 #include <csignal>
 #include <functional>
 #include "extensionmanager.h"
+#include "frontend.h"
 #include "globalshortcut/hotkeymanager.h"
-#include "mainwindow.h"
+#include "frontendmanager.h"
+#include "pluginloader.h"
+#include "pluginspec.h"
 #include "querymanager.h"
 #include "settingswidget.h"
 #include "trayicon.h"
 #include "xdg/iconlookup.h"
 using Core::ExtensionManager;
+using Core::PluginLoader;
 
 static void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message);
 static void shutdownHandler(int);
 static void dispatchMessage();
 
-
-static QApplication           *app;
-static QueryManager           *queryManager;
-static MainWindow             *mainWindow;
-static HotkeyManager          *hotkeyManager;
-static SettingsWidget         *settingsWidget;
-static TrayIcon               *trayIcon;
-static QMenu                  *trayIconMenu;
-static QLocalServer           *localServer;
+// Core components
+static QApplication    *app;
+static QueryManager    *queryManager;
+static HotkeyManager   *hotkeyManager;
+static SettingsWidget  *settingsWidget;
+static TrayIcon        *trayIcon;
+static QMenu           *trayIconMenu;
+static QLocalServer    *localServer;
 
 
 int Core::AlbertApp::run(int argc, char **argv) {
@@ -272,12 +275,20 @@ int Core::AlbertApp::run(int argc, char **argv) {
          */
 
         qDebug() << "Initializing core components";
-        ExtensionManager::instance = new Core::ExtensionManager;
-        trayIcon         = new TrayIcon;
-        trayIconMenu     = new QMenu;
-        hotkeyManager    = new HotkeyManager;
-        mainWindow       = new MainWindow;
-        queryManager     = new QueryManager(ExtensionManager::instance);
+
+        Core::PluginLoader pluginLoader;
+
+        // Check for a plugin override
+        if ( parser.isSet("plugin-dirs") )
+            pluginLoader.setPluginDirs(parser.value("plugin-dirs").split(',').toVector().toStdVector());
+
+        ExtensionManager::instance = new ExtensionManager(pluginLoader.pluginSpecsByIID(ALBERT_EXTENSION_IID));
+        ExtensionManager::instance->reloadExtensions();
+
+        FrontendManager::instance = new FrontendManager(pluginLoader.pluginSpecsByIID(ALBERT_FRONTEND_IID));
+
+        hotkeyManager = new HotkeyManager;
+        queryManager  = new QueryManager(ExtensionManager::instance);
 
 
         /*
@@ -285,6 +296,8 @@ int Core::AlbertApp::run(int argc, char **argv) {
          */
 
         qDebug() << "Initializing tray icon";
+        trayIcon      = new TrayIcon;
+        trayIconMenu  = new QMenu;
         QAction* showAction     = new QAction("Show", trayIconMenu);
         QAction* settingsAction = new QAction("Settings", trayIconMenu);
         QAction* quitAction     = new QAction("Quit", trayIconMenu);
@@ -361,17 +374,12 @@ int Core::AlbertApp::run(int argc, char **argv) {
             file.close();
         }
 
-        // Check for a plugin override
-        if ( parser.isSet("plugin-dirs") )
-            Core::ExtensionManager::instance->setPluginDirs(parser.value("plugin-dirs").split(','));
-
-        // Load extensions
-        qDebug() << "Loading extensions";
-        Core::ExtensionManager::instance->reloadExtensions();
-
         // Application is initialized create the settings widget
         qDebug() << "Creating settings widget";
-        settingsWidget = new SettingsWidget(mainWindow, hotkeyManager, ExtensionManager::instance, trayIcon);
+        settingsWidget = new SettingsWidget(ExtensionManager::instance,
+                                            FrontendManager::instance,
+                                            hotkeyManager,
+                                            trayIcon);
 
         // If somebody requested the settings dialog open it
         if ( showSettingsWhenInitialized )
@@ -384,13 +392,13 @@ int Core::AlbertApp::run(int argc, char **argv) {
 
         qDebug() << "Setting up signals";
         QObject::connect(hotkeyManager, &HotkeyManager::hotKeyPressed,
-                         mainWindow, &MainWindow::toggleVisibility);
+                         FrontendManager::instance->currentFrontend(), &Frontend::toggleVisibility);
 
         QObject::connect(queryManager, &QueryManager::resultsReady,
-                         mainWindow, &MainWindow::setModel);
+                         FrontendManager::instance->currentFrontend(), &Frontend::setModel);
 
         QObject::connect(showAction, &QAction::triggered,
-                         mainWindow, &MainWindow::show);
+                         FrontendManager::instance->currentFrontend(), &Frontend::show);
 
         QObject::connect(settingsAction, &QAction::triggered,
                          settingsWidget, &SettingsWidget::show);
@@ -403,24 +411,26 @@ int Core::AlbertApp::run(int argc, char **argv) {
 
         QObject::connect(trayIcon, &TrayIcon::activated, [](QSystemTrayIcon::ActivationReason reason){
             if( reason == QSystemTrayIcon::ActivationReason::Trigger)
-                mainWindow->toggleVisibility();
+                FrontendManager::instance->currentFrontend()->toggleVisibility();
         });
 
 
-        QObject::connect(mainWindow, &MainWindow::settingsWidgetRequested,
+        QObject::connect(FrontendManager::instance->currentFrontend(),
+                         &Frontend::settingsWidgetRequested,
                          std::bind(&SettingsWidget::setVisible, settingsWidget, true));
 
-        QObject::connect(mainWindow, &MainWindow::settingsWidgetRequested,
+        QObject::connect(FrontendManager::instance->currentFrontend(),
+                         &Frontend::settingsWidgetRequested,
                          settingsWidget, &SettingsWidget::raise);
 
-        QObject::connect(mainWindow, &MainWindow::widgetShown,
-                         queryManager, &QueryManager::setupSession);
+        QObject::connect(FrontendManager::instance->currentFrontend(),
+                         &Frontend::widgetShown, queryManager, &QueryManager::setupSession);
 
-        QObject::connect(mainWindow, &MainWindow::widgetHidden,
-                         queryManager, &QueryManager::teardownSession);
+        QObject::connect(FrontendManager::instance->currentFrontend(),
+                         &Frontend::widgetHidden, queryManager, &QueryManager::teardownSession);
 
-        QObject::connect(mainWindow, &MainWindow::inputChanged,
-                         queryManager, &QueryManager::startQuery);
+        QObject::connect(FrontendManager::instance->currentFrontend(),
+                         &Frontend::inputChanged, queryManager, &QueryManager::startQuery);
 
     }
 
@@ -443,8 +453,8 @@ int Core::AlbertApp::run(int argc, char **argv) {
     delete trayIcon;
     delete queryManager;
     delete hotkeyManager;
-    delete mainWindow;
     delete ExtensionManager::instance;
+    delete FrontendManager::instance;
 
     qDebug() << "Shutting down IPC server";
     localServer->close();
@@ -510,13 +520,13 @@ void dispatchMessage() {
     if (socket->bytesAvailable()) {
         QString msg = QString::fromLocal8Bit(socket->readAll());
         if ( msg == "show") {
-            mainWindow->setVisible(true);
+            Core::FrontendManager::instance->currentFrontend()->setVisible(true);
             socket->write("Application set visible.");
         } else if ( msg == "hide") {
-            mainWindow->setVisible(false);
+            Core::FrontendManager::instance->currentFrontend()->setVisible(false);
             socket->write("Application set invisible.");
         } else if ( msg == "toggle") {
-            mainWindow->toggleVisibility();
+            Core::FrontendManager::instance->currentFrontend()->toggleVisibility();
             socket->write("Visibility toggled.");
         } else
             socket->write("Command not supported.");

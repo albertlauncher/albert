@@ -14,10 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QApplication>
 #include <QCloseEvent>
+#include <QCheckBox>
+#include <QComboBox>
 #include <QDebug>
 #include <QDesktopWidget>
-#include <QDir>
 #include <QFocusEvent>
 #include <QMessageBox>
 #include <QSettings>
@@ -28,16 +30,18 @@
 #include <utility>
 #include "core_globals.h"
 #include "extension.h"
-#include "extensionspec.h"
 #include "extensionmanager.h"
+#include "frontend.h"
+#include "frontendmanager.h"
 #include "globalshortcut/hotkeymanager.h"
 #include "loadermodel.h"
-#include "mainwindow.h"
+#include "pluginspec.h"
 #include "settingswidget.h"
 #include "trayicon.h"
 using Core::Extension;
-using Core::ExtensionSpec;
+using Core::PluginSpec;
 using Core::ExtensionManager;
+using Core::FrontendManager;
 
 namespace {
 const char* CFG_TERM = "terminal";
@@ -48,15 +52,15 @@ EXPORT_CORE QString terminalCommand;
 
 
 /** ***************************************************************************/
-SettingsWidget::SettingsWidget(MainWindow *mainWindow,
+SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
+                               FrontendManager *frontendManager,
                                HotkeyManager *hotkeyManager,
-                               ExtensionManager *extensionManager,
                                TrayIcon *systemTrayIcon,
                                QWidget *parent, Qt::WindowFlags f)
     : QWidget(parent, f),
-      mainWindow_(mainWindow),
-      hotkeyManager_(hotkeyManager),
       extensionManager_(extensionManager),
+      frontendManager_(frontendManager),
+      hotkeyManager_(hotkeyManager),
       trayIcon_(systemTrayIcon) {
 
     ui.setupUi(this);
@@ -80,55 +84,18 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow,
     connect(ui.checkBox_showTray, &QCheckBox::toggled,
             trayIcon_, &TrayIcon::setVisible);
 
+    // FRONTEND
+    for ( const std::unique_ptr<PluginSpec> &pluginSpec : frontendManager_->frontendSpecs() )
+        ui.comboBox_frontend->addItem(pluginSpec->name(), pluginSpec->id());
 
-    /*
-     * MAINWINDOW
-     */
+    ui.tabGeneral->layout()->addWidget(frontendManager_->currentFrontend()->widget(ui.tabGeneral));
 
-    // ALWAYS CENTER
-    ui.checkBox_center->setChecked(mainWindow_->showCentered());
-    connect(ui.checkBox_center, &QCheckBox::toggled,
-            mainWindow_, &MainWindow::setShowCentered);
+    connect(ui.comboBox_frontend, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            [this](int i){
+        QString id = ui.comboBox_frontend->itemData(i, Qt::UserRole).toString();
+        frontendManager_->setCurrentFrontend(id);
+    });
 
-    // ALWAYS ON TOP
-    ui.checkBox_onTop->setChecked(mainWindow_->alwaysOnTop());
-    connect(ui.checkBox_onTop, &QCheckBox::toggled,
-            mainWindow_, &MainWindow::setAlwaysOnTop);
-
-    // HIDE ON FOCUS OUT
-    ui.checkBox_hideOnFocusOut->setChecked(mainWindow_->hideOnFocusLoss());
-    connect(ui.checkBox_hideOnFocusOut, &QCheckBox::toggled,
-            mainWindow_, &MainWindow::setHideOnFocusLoss);
-
-    // HIDE ON CLOSE
-    ui.checkBox_hideOnClose->setChecked(mainWindow_->hideOnClose());
-    connect(ui.checkBox_hideOnClose, &QCheckBox::toggled,
-            mainWindow_, &MainWindow::setHideOnClose);
-
-    // CLEAR ON HIDE
-    ui.checkBox_clearOnHide->setChecked(mainWindow_->clearOnHide());
-    connect(ui.checkBox_clearOnHide, &QCheckBox::toggled,
-            mainWindow_, &MainWindow::setClearOnHide);
-
-    // MAX PROPOSALS
-    ui.spinBox_proposals->setValue(mainWindow_->maxProposals());
-    connect(ui.spinBox_proposals, (void (QSpinBox::*)(int))&QSpinBox::valueChanged,
-            mainWindow_, &MainWindow::setMaxProposals);
-
-    // DISPLAY SCROLLBAR
-    ui.checkBox_scrollbar->setChecked(mainWindow_->displayScrollbar());
-    connect(ui.checkBox_scrollbar, &QCheckBox::toggled,
-            mainWindow_, &MainWindow::setDisplayScrollbar);
-
-    // DISPLAY ICONS
-    ui.checkBox_icons->setChecked(mainWindow_->displayIcons());
-    connect(ui.checkBox_icons, &QCheckBox::toggled,
-            mainWindow_, &MainWindow::setDisplayIcons);
-
-    // DISPLAY SHADOW
-    ui.checkBox_shadow->setChecked(mainWindow_->displayShadow());
-    connect(ui.checkBox_shadow, &QCheckBox::toggled,
-            mainWindow_, &MainWindow::setDisplayShadow);
 
     // TERM CMD (TOOOOOOOOOOODOOOOOOOOOO CENTRALIZE THIS)
     // Define the (global extern) terminal command
@@ -177,25 +144,8 @@ SettingsWidget::SettingsWidget(MainWindow *mainWindow,
         QSettings(qApp->applicationName()).setValue(CFG_TERM, terminalCommand);
     });
 
-    // THEMES
-    QFileInfoList themes;
-    int i = 0 ;
-    QStringList themeDirs =
-            QStandardPaths::locateAll(QStandardPaths::DataLocation, "themes",
-                                      QStandardPaths::LocateDirectory);
-    for (const QDir &d : themeDirs)
-        themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
-    for (const QFileInfo &fi : themes) {
-        ui.comboBox_themes->addItem(fi.baseName(), fi.canonicalFilePath());
-        if ( fi.baseName() == mainWindow_->theme())
-            ui.comboBox_themes->setCurrentIndex(i);
-        ++i;
-    }
-    connect(ui.comboBox_themes, (void (QComboBox::*)(int))&QComboBox::currentIndexChanged,
-            this, &SettingsWidget::onThemeChanged);
-
     // Cache
-    connect(ui.pushButton_clearCache, &QPushButton::clicked, [](){
+    connect(ui.pushButton_clearHistory, &QPushButton::clicked, [](){
         QSqlQuery("DELETE FROM usages;");
     });
 
@@ -240,8 +190,10 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
     delete i->widget();
     delete i;
 
-    if (extensionManager_->extensionSpecs()[current.row()]->state() == ExtensionSpec::State::Loaded){
-        Extension *extension = dynamic_cast<Extension*>(extensionManager_->extensionSpecs()[current.row()]->instance());
+    if ( extensionManager_->extensionSpecs()[static_cast<size_t>(current.row())]->state()
+         == PluginSpec::State::Loaded ){
+        Extension *extension = dynamic_cast<Extension*>(
+                    extensionManager_->extensionSpecs()[static_cast<size_t>(current.row())]->instance());
         if (!extension){
             qWarning() << "Cannot cast an object of extension spec to an extension!";
             return; // Should no happen
@@ -255,7 +207,7 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
     }
     else{
         QString msg("Plugin not loaded.\n%1");
-        QLabel *lbl = new QLabel(msg.arg(extensionManager_->extensionSpecs()[current.row()]->lastError()));
+        QLabel *lbl = new QLabel(msg.arg(extensionManager_->extensionSpecs()[static_cast<size_t>(current.row())]->lastError()));
         lbl->setEnabled(false);
         lbl->setAlignment(Qt::AlignCenter);
         ui.widget_pluginInfos->layout()->addWidget(lbl);
@@ -281,23 +233,6 @@ void SettingsWidget::changeHotkey(int newhk) {
                     QKeySequence(newhk).toString() + " could not be registered.",
                     QMessageBox::NoButton,
                     this).exec();
-    }
-}
-
-
-
-/** ***************************************************************************/
-void SettingsWidget::onThemeChanged(int i) {
-    // Apply and save the theme
-    QString currentTheme = mainWindow_->theme();
-    if (!mainWindow_->setTheme(ui.comboBox_themes->itemText(i))) {
-        QMessageBox(QMessageBox::Critical, "Error",
-                    "Could not apply theme.",
-                    QMessageBox::NoButton,
-                    this).exec();
-        if (!mainWindow_->setTheme(currentTheme)) {
-           qFatal("Rolling back theme failed.");
-        }
     }
 }
 

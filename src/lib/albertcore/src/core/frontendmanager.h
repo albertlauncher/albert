@@ -15,25 +15,41 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+#include <QObject>
+#include <memory>
 
-#if defined(_MSC_VER)
-    #define EXPORT __declspec(dllexport)
-    #define IMPORT __declspec(dllimport)
-#elif defined(__GNUC__)
-    #define EXPORT __attribute__((visibility("default")))
-    #define IMPORT
-#else
-    #define EXPORT
-    #define IMPORT
-    #pragma warning Unknown dynamic link import/export semantics.
-#endif
+namespace Core {
 
-#ifdef CORE
- #define EXPORT_CORE EXPORT
-#else
- #define EXPORT_CORE IMPORT
-#endif
+class Frontend;
+class PluginSpec;
+class FrontendManagerPrivate;
 
-#define ALBERT_EXTENSION_IID "ExtensionInterface/v1.0-alpha"
-#define ALBERT_FRONTEND_IID "FrontendInterface/v1.0-alpha"
+class FrontendManager : public QObject
+{
+    Q_OBJECT
+
+public:
+
+    FrontendManager(std::vector<std::unique_ptr<PluginSpec>> && pluginSpecs, QObject *parent = 0);
+    ~FrontendManager();
+
+    const std::vector<std::unique_ptr<PluginSpec> > &frontendSpecs() const;
+
+    Frontend *currentFrontend();
+    bool setCurrentFrontend(QString id);
+
+    static FrontendManager *instance;
+
+private:
+
+    std::unique_ptr<FrontendManagerPrivate> d;
+
+signals:
+
+    void frontendLoaded(Frontend*);
+    void frontendAboutToUnload(Frontend*);
+
+};
+
+}
 

@@ -17,8 +17,9 @@
 #pragma once
 #include <QObject>
 #include <QStringList>
+#include "core_globals.h"
 
-class History final : public QObject
+class EXPORT_CORE History final : public QObject
 {
     Q_OBJECT
 
