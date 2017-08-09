@@ -227,6 +227,12 @@ void MainWindow::setVisible(bool visible) {
 /** ***************************************************************************/
 void MainWindow::toggleVisibility() {
    setVisible(!isVisible());
+   // albert might fail to grab keyboard focus if you press keyboard immediately right after HOTKEY was triggered.
+   QTimer::singleShot(1, this, &MainWindow::regrabFocus);
+}
+
+void MainWindow::regrabFocus() {
+   ui.inputLine->grabKeyboard();
 }
 
 
