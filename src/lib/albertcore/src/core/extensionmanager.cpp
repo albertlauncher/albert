@@ -78,9 +78,7 @@ void Core::ExtensionManager::reloadExtensions() {
     // Load if enabled
     QSettings settings(qApp->applicationName());
     for (unique_ptr<PluginSpec> & pluginSpec : d->pluginSpecs_) {
-        QString configName = QString("%1/enabled").arg(pluginSpec->id());
-        if ( (settings.contains(configName) && settings.value(configName).toBool())
-             || (!settings.contains(configName) && pluginSpec->enabledByDefault()) )
+        if ( settings.value(QString("%1/enabled").arg(pluginSpec->id()), false).toBool() )
             loadExtension(pluginSpec);
     }
 
@@ -133,9 +131,7 @@ void Core::ExtensionManager::disableExtension(const unique_ptr<PluginSpec> &plug
 /** ***************************************************************************/
 bool Core::ExtensionManager::extensionIsEnabled(const unique_ptr<PluginSpec> &pluginSpec) {
     QSettings settings(qApp->applicationName());
-    QString configName = QString("%1/enabled").arg(pluginSpec->id());
-    return ( (settings.contains(configName) && settings.value(configName).toBool())
-             || (!settings.contains(configName) && pluginSpec->metadata("enableByDefault").toBool()) );
+    return settings.value(QString("%1/enabled").arg(pluginSpec->id())).toBool();
 }
 
 

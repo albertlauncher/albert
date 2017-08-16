@@ -183,8 +183,3 @@ QStringList Core::PluginSpec::dependencies() const {
     return dependencies_;
 }
 
-/** ***************************************************************************/
-bool Core::PluginSpec::enabledByDefault() const {
-    return loader_.metaData()["MetaData"].toObject()["version"].toBool();
-}
-

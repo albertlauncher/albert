@@ -39,16 +39,15 @@ public:
     QObject *instance();
     State state() { return state_; }
     QString lastError() const;
-    QString iid() const;
-    QJsonValue metadata(const QString & key) const;
 
     // Mandatory metadata
+    QString iid() const;
     QString id() const;
     QString name() const;
     QString version() const;
     QString author() const;
     QStringList dependencies() const;
-    bool enabledByDefault() const;
+    QJsonValue metadata(const QString & key) const;
 
 private:
 
