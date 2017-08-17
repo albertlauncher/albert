@@ -44,7 +44,6 @@
 using namespace Core;
 
 static void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message);
-static void shutdownHandler(int);
 static void dispatchMessage();
 
 // Core components
@@ -377,8 +376,11 @@ int Core::AlbertApp::run(int argc, char **argv) {
 
         // Quit gracefully on unix signals
         qDebug() << "Setup signal handlers";
-        for ( int sig : { SIGINT, SIGTERM, SIGHUP, SIGPIPE } )
-            signal(sig, shutdownHandler);
+        for ( int sig : { SIGINT, SIGTERM, SIGHUP, SIGPIPE } ) {
+            signal(sig, [](int){
+                QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
+            });
+        }
 
         // Print a message if the app was not terminated graciously
         qDebug() << "Creating running indicator file";
@@ -522,14 +524,6 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
         exit(1);
     }
 }
-
-
-
-/** ***************************************************************************/
-void shutdownHandler(int) {
-    QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
-}
-
 
 
 /** ***************************************************************************/
