@@ -276,16 +276,38 @@ int Core::AlbertApp::run(int argc, char **argv) {
 
         qDebug() << "Initializing core components";
 
-        Core::PluginLoader pluginLoader;
 
-        // Check for a plugin override
+        // Define plugindirs
+        QStringList pluginDirs;
         if ( parser.isSet("plugin-dirs") )
-            pluginLoader.setPluginDirs(parser.value("plugin-dirs").split(',').toVector().toStdVector());
+            pluginDirs = parser.value("plugin-dirs").split(',');
+        else {
+#if defined __linux__
+            QStringList dirs = {
+                "/usr/lib/", "/usr/local/lib/", "/usr/lib64/", "/usr/local/lib64/",
+                QDir::home().filePath(".local/lib/"),
+                QDir::home().filePath(".local/lib64/")
+            };
 
+            for ( const QString& dir : dirs ) {
+                QFileInfo fileInfo = QFileInfo(QDir(dir).filePath("albert/plugins"));
+                if ( fileInfo.isDir() )
+                    pluginDirs.push_back(fileInfo.canonicalFilePath());
+            }
+#elif defined __APPLE__
+        throw "Not implemented";
+#elif defined _WIN32
+        throw "Not implemented";
+#endif
+        }
+
+        FrontendManager::instance = new FrontendManager(pluginDirs);
+
+        Core::PluginLoader pluginLoader;
+        pluginLoader.setPluginDirs(pluginDirs.toVector().toStdVector());
         ExtensionManager::instance = new ExtensionManager(pluginLoader.pluginSpecsByIID(ALBERT_EXTENSION_IID));
         ExtensionManager::instance->reloadExtensions();
 
-        FrontendManager::instance = new FrontendManager(pluginLoader.pluginSpecsByIID(ALBERT_FRONTEND_IID));
 
         hotkeyManager = new HotkeyManager;
         queryManager  = new QueryManager(ExtensionManager::instance);

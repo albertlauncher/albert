@@ -37,25 +37,6 @@ using std::chrono::system_clock;
 /** ***************************************************************************/
 Core::PluginLoader::PluginLoader() {
 
-    // Define plugindirs
-#if defined __linux__
-    QStringList dirs = {
-        "/usr/lib/", "/usr/local/lib/", "/usr/lib64/", "/usr/local/lib64/",
-        QDir::home().filePath(".local/lib/"),
-        QDir::home().filePath(".local/lib64/")
-    };
-
-    for ( const QString& dir : dirs ) {
-        QFileInfo fileInfo = QFileInfo(QDir(dir).filePath("albert/plugins"));
-        if ( fileInfo.isDir() )
-            pluginDirs_.push_back(fileInfo.canonicalFilePath());
-    }
-
-#elif defined __APPLE__
-    throw "Not implemented";
-#elif defined _WIN32
-    throw "Not implemented";
-#endif
 
 }
 

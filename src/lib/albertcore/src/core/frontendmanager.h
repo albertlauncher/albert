@@ -30,7 +30,7 @@ class FrontendManager : public QObject
 
 public:
 
-    FrontendManager(std::vector<std::unique_ptr<PluginSpec>> && pluginSpecs, QObject *parent = 0);
+    FrontendManager(QStringList pluginroots);
     ~FrontendManager();
 
     const std::vector<std::unique_ptr<PluginSpec> > &frontendSpecs() const;

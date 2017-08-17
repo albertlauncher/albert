@@ -17,7 +17,9 @@
 #include <QApplication>
 #include <QDebug>
 #include <QSettings>
+#include <QDirIterator>
 #include <vector>
+#include <memory>
 #include "frontendmanager.h"
 #include "frontend.h"
 #include "pluginspec.h"
@@ -34,31 +36,39 @@ Core::FrontendManager *Core::FrontendManager::instance = nullptr;
 /** ***************************************************************************/
 class Core::FrontendManagerPrivate {
 public:
-    vector<unique_ptr<PluginSpec>> pluginSpecs;
+    vector<unique_ptr<PluginSpec>> frontendPlugins;
     Frontend *currentFrontend;
 };
 
 
 /** ***************************************************************************/
-Core::FrontendManager::FrontendManager(std::vector<std::unique_ptr<Core::PluginSpec>> &&pluginSpecs,
-                                       QObject *parent)
-    : QObject(parent), d(new FrontendManagerPrivate) {
-    d->pluginSpecs = std::move(pluginSpecs);
+Core::FrontendManager::FrontendManager(QStringList pluginroots)
+    : d(new FrontendManagerPrivate) {
 
-    if ( d->pluginSpecs.empty() )
+    // Find plugins
+    for ( const QString &pluginDir : pluginroots ) {
+       QDirIterator dirIterator(pluginDir, QDir::Files);
+       while (dirIterator.hasNext()) {
+           std::unique_ptr<PluginSpec> plugin(new PluginSpec(dirIterator.next()));
+           if ( plugin->iid() == ALBERT_FRONTEND_IID )
+               d->frontendPlugins.push_back(std::move(plugin));
+       }
+    }
+
+    if ( d->frontendPlugins.empty() )
         qFatal("No frontends available");
 
     // Find the configured frontend, fallback to default if not configured
     QSettings s(qApp->applicationName());
     QString id = s.value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString();
     vector<unique_ptr<PluginSpec>>::iterator it =
-            std::find_if(d->pluginSpecs.begin(), d->pluginSpecs.end(),
-                         [&](std::unique_ptr<Core::PluginSpec> &spec){
-            return spec->id() == id;
+            std::find_if(d->frontendPlugins.begin(), d->frontendPlugins.end(),
+                         [&](std::unique_ptr<PluginSpec> &plugin){
+            return plugin->id() == id;
     });
 
-    if ( it == d->pluginSpecs.end() ) {
-        it = d->pluginSpecs.begin();
+    if ( it == d->frontendPlugins.end() ) {
+        it = d->frontendPlugins.begin();
         qWarning("Frontend '%s' could not be found. Using %s instead.",
                  qPrintable(id), qPrintable((*it)->id()));
     }
@@ -78,7 +88,7 @@ Core::FrontendManager::~FrontendManager() {
 
 /** ***************************************************************************/
 const std::vector<std::unique_ptr<Core::PluginSpec> > &Core::FrontendManager::frontendSpecs() const {
-    return d->pluginSpecs;
+    return d->frontendPlugins;
 }
 
 
@@ -97,12 +107,12 @@ bool Core::FrontendManager::setCurrentFrontend(QString id) {
     s.setValue(CFG_FRONTEND_ID, id);
 
     vector<unique_ptr<PluginSpec>>::iterator it =
-            std::find_if(d->pluginSpecs.begin(), d->pluginSpecs.end(),
+            std::find_if(d->frontendPlugins.begin(), d->frontendPlugins.end(),
                          [&](std::unique_ptr<Core::PluginSpec> &spec){
             return spec->id() == id;
     });
 
-    if ( it == d->pluginSpecs.end() ) {
+    if ( it == d->frontendPlugins.end() ) {
         qWarning("Frontend '%s' could not be found.", qPrintable(id));
         return false;
     }
