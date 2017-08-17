@@ -130,7 +130,7 @@ WidgetBoxModel::FrontendWidget::FrontendWidget() : d(new Private) {
                    | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
 
-    QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect();
+    QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect(this);
     effect->setBlurRadius(20);
     effect->setColor(QColor(0, 0, 0 , 192 ))  ;
     effect->setXOffset(0.0);
