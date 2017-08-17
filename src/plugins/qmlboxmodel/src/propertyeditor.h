@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2014-2017 Manuel Schneider
+// Copyright (C) 2014-2016 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,38 +15,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
-#include <memory>
+#include <QDialog>
 
-namespace Core {
+class MainWindow;
 
-class Frontend;
-class PluginSpec;
-class FrontendManagerPrivate;
-
-class FrontendManager : public QObject
+class PropertyEditor : public QDialog
 {
     Q_OBJECT
 
 public:
-
-    FrontendManager(QStringList pluginroots);
-    ~FrontendManager();
-
-    const std::vector<std::unique_ptr<PluginSpec> > &frontendSpecs() const;
-
-    Frontend *currentFrontend();
-    bool setCurrentFrontend(QString id);
-
-private:
-
-    std::unique_ptr<FrontendManagerPrivate> d;
-
-signals:
-
-    void frontendChanged(Frontend*);
-
+    explicit PropertyEditor(MainWindow *mainWindow, QWidget *parent = 0);
 };
-
-}
-

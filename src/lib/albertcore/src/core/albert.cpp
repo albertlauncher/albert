@@ -412,15 +412,8 @@ int Core::AlbertApp::run(int argc, char **argv) {
          */
 
         qDebug() << "Setting up signals";
-        QObject::connect(hotkeyManager, &HotkeyManager::hotKeyPressed,
-                         frontendManager->currentFrontend(), &Frontend::toggleVisibility);
 
-        QObject::connect(queryManager, &QueryManager::resultsReady,
-                         frontendManager->currentFrontend(), &Frontend::setModel);
-
-        QObject::connect(showAction, &QAction::triggered,
-                         frontendManager->currentFrontend(), &Frontend::setVisible);
-
+        // Connect tray menu (except for frontend stuff…)
         QObject::connect(settingsAction, &QAction::triggered,
                          settingsWidget, &SettingsWidget::show);
 
@@ -430,29 +423,47 @@ int Core::AlbertApp::run(int argc, char **argv) {
         QObject::connect(quitAction, &QAction::triggered,
                          app, &QApplication::quit);
 
-        QObject::connect(trayIcon, &TrayIcon::activated, [](QSystemTrayIcon::ActivationReason reason){
-            if( reason == QSystemTrayIcon::ActivationReason::Trigger)
-                frontendManager->currentFrontend()->toggleVisibility();
+
+        // Define a lambda that connects a new frontend
+        auto connectFrontend = [&](Frontend *f){
+
+            QObject::connect(hotkeyManager, &HotkeyManager::hotKeyPressed,
+                             f, &Frontend::toggleVisibility);
+
+            QObject::connect(queryManager, &QueryManager::resultsReady,
+                             f, &Frontend::setModel);
+
+            QObject::connect(showAction, &QAction::triggered,
+                             f, &Frontend::setVisible);
+
+            QObject::connect(trayIcon, &TrayIcon::activated, [&](QSystemTrayIcon::ActivationReason reason){
+                if( reason == QSystemTrayIcon::ActivationReason::Trigger)
+                    f->toggleVisibility();
+            });
+
+            QObject::connect(f, &Frontend::settingsWidgetRequested,
+                             std::bind(&SettingsWidget::setVisible, settingsWidget, true));
+
+            QObject::connect(f, &Frontend::settingsWidgetRequested,
+                             settingsWidget, &SettingsWidget::raise);
+
+            QObject::connect(f, &Frontend::widgetShown,
+                             queryManager, &QueryManager::setupSession);
+
+            QObject::connect(f, &Frontend::widgetHidden,
+                             queryManager, &QueryManager::teardownSession);
+
+            QObject::connect(f, &Frontend::inputChanged,
+                             queryManager, &QueryManager::startQuery);
+        };
+
+        // Connect the current frontend
+        connectFrontend(frontendManager->currentFrontend());
+
+        // Connect new frontends
+        QObject::connect(frontendManager, &FrontendManager::frontendChanged, [&](Frontend *f) {
+            connectFrontend(f);
         });
-
-
-        QObject::connect(frontendManager->currentFrontend(),
-                         &Frontend::settingsWidgetRequested,
-                         std::bind(&SettingsWidget::setVisible, settingsWidget, true));
-
-        QObject::connect(frontendManager->currentFrontend(),
-                         &Frontend::settingsWidgetRequested,
-                         settingsWidget, &SettingsWidget::raise);
-
-        QObject::connect(frontendManager->currentFrontend(),
-                         &Frontend::widgetShown, queryManager, &QueryManager::setupSession);
-
-        QObject::connect(frontendManager->currentFrontend(),
-                         &Frontend::widgetHidden, queryManager, &QueryManager::teardownSession);
-
-        QObject::connect(frontendManager->currentFrontend(),
-                         &Frontend::inputChanged, queryManager, &QueryManager::startQuery);
-
     }
 
 

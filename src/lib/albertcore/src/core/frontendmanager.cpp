@@ -37,7 +37,7 @@ const char* DEF_FRONTEND_ID = "org.albert.frontend.boxmodel.widget";
 class Core::FrontendManagerPrivate {
 public:
     vector<unique_ptr<PluginSpec>> frontendPlugins;
-    Frontend *currentFrontend;
+    unique_ptr<Frontend> currentFrontend;
 };
 
 
@@ -80,10 +80,11 @@ Core::FrontendManager::FrontendManager(QStringList pluginDirs)
         it = d->frontendPlugins.begin();
         qWarning("Frontend '%s' could not be found. Using %s instead.",
                  qPrintable(id), qPrintable((*it)->id()));
+        s.setValue(CFG_FRONTEND_ID, (*it)->id());
     }
 
     (*it)->load();
-    d->currentFrontend = dynamic_cast<Frontend*>((*it)->instance());
+    d->currentFrontend.reset(dynamic_cast<Frontend*>((*it)->instance()));
     if (!d->currentFrontend)
         qFatal("Could not cast plugin instance to frontend");
 }
@@ -105,7 +106,7 @@ const std::vector<std::unique_ptr<Core::PluginSpec> > &Core::FrontendManager::fr
 
 /** ***************************************************************************/
 Core::Frontend *Core::FrontendManager::currentFrontend() {
-    return d->currentFrontend;
+    return d->currentFrontend.get();
 }
 
 
@@ -116,20 +117,35 @@ bool Core::FrontendManager::setCurrentFrontend(QString id) {
     QSettings s(qApp->applicationName());
     s.setValue(CFG_FRONTEND_ID, id);
 
+    // Find plugin
     vector<unique_ptr<PluginSpec>>::iterator it =
             std::find_if(d->frontendPlugins.begin(), d->frontendPlugins.end(),
                          [&](std::unique_ptr<Core::PluginSpec> &spec){
             return spec->id() == id;
     });
-
     if ( it == d->frontendPlugins.end() ) {
         qWarning("Frontend '%s' could not be found.", qPrintable(id));
         return false;
     }
+    std::unique_ptr<Core::PluginSpec> &newFrontendSpec = *it;
 
-    (*it)->load();
-    d->currentFrontend = dynamic_cast<Frontend*>((*it)->instance());
-    if (!d->currentFrontend)
+    it = std::find_if(d->frontendPlugins.begin(), d->frontendPlugins.end(),
+                      [&](std::unique_ptr<Core::PluginSpec> &spec){
+            return spec->id() == d->currentFrontend->id();
+    });
+    std::unique_ptr<Core::PluginSpec> &oldFrontendSpec = *it;
+
+    newFrontendSpec->load();
+
+    Frontend *newFrontend = dynamic_cast<Frontend*>(newFrontendSpec->instance());
+    if (!newFrontend)
         qFatal("Could not cast plugin instance to frontend");
+
+    d->currentFrontend.reset(newFrontend);
+
+    oldFrontendSpec->unload();
+
+    emit frontendChanged(d->currentFrontend.get());
+
     return true;
 }

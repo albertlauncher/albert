@@ -7,6 +7,7 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/albert")
 
 # Frontends
 add_subdirectory(widgetboxmodel)
+add_subdirectory(qmlboxmodel)
 
 # Extensions
 add_subdirectory(applications)

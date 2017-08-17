@@ -15,38 +15,38 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
+#include <QAbstractItemModel>
 #include <memory>
+#include "core_globals.h"
+#include "core/frontend.h"
 
-namespace Core {
+namespace QmlBoxModel {
 
-class Frontend;
-class PluginSpec;
-class FrontendManagerPrivate;
+class FrontendPluginPrivate;
 
-class FrontendManager : public QObject
+class FrontendPlugin final : public Core::Frontend
 {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID ALBERT_FRONTEND_IID FILE "metadata.json")
 
 public:
 
-    FrontendManager(QStringList pluginroots);
-    ~FrontendManager();
+    FrontendPlugin();
+    ~FrontendPlugin();
 
-    const std::vector<std::unique_ptr<PluginSpec> > &frontendSpecs() const;
+    bool isVisible() override;
+    void setVisible(bool visible) override;
 
-    Frontend *currentFrontend();
-    bool setCurrentFrontend(QString id);
+    QString input() override;
+    void setInput(const QString&) override;
+
+    void setModel(QAbstractItemModel *) override;
+
+    QWidget* widget(QWidget *parent = nullptr) override;
 
 private:
 
-    std::unique_ptr<FrontendManagerPrivate> d;
-
-signals:
-
-    void frontendChanged(Frontend*);
-
+    std::unique_ptr<FrontendPluginPrivate> d;
 };
 
 }
-

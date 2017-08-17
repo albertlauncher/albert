@@ -112,6 +112,16 @@ SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
             [this](int i){
         QString id = ui.comboBox_frontend->itemData(i, Qt::UserRole).toString();
         frontendManager_->setCurrentFrontend(id);
+
+        QLayoutItem* item;
+        for ( int i = ui.tabGeneral->layout()->count() - 1; i > 0; --i ) {
+            item = ui.tabGeneral->layout()->takeAt(i);
+            delete item->widget();
+            delete item;
+        }
+
+        ui.tabGeneral->layout()->addWidget(frontendManager_->currentFrontend()->widget(ui.tabGeneral));
+
     });
 
 

@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/gear.svg</file>
+        <file>resources/HistoryTextInput.qml</file>
+        <file>resources/MainComponent.qml</file>
+    </qresource>
+</RCC>
