@@ -67,6 +67,8 @@ public:
      * long running operations. This method is called in a thread without event
      * loop, be aware of the consequences (especially regarding signal/slot
      * mechanism).
+     * Note that this method may run simultaneously in separate threads make
+     * sure that everything you touch is threadsafe.
      * @param query Holds the query context
      */
     virtual void handleQuery(Query *query) = 0;
