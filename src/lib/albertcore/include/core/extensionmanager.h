@@ -36,7 +36,7 @@ class EXPORT_CORE ExtensionManager final : public QObject
 
 public:
 
-    ExtensionManager(std::vector<std::unique_ptr<PluginSpec>> && pluginSpecs, QObject *parent = 0);
+    ExtensionManager(QStringList pluginroots);
     ~ExtensionManager();
 
     const std::vector<std::unique_ptr<PluginSpec>> & extensionSpecs() const;

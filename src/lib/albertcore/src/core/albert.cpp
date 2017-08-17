@@ -36,14 +36,12 @@
 #include "frontend.h"
 #include "globalshortcut/hotkeymanager.h"
 #include "frontendmanager.h"
-#include "pluginloader.h"
 #include "pluginspec.h"
 #include "querymanager.h"
 #include "settingswidget.h"
 #include "trayicon.h"
 #include "xdg/iconlookup.h"
 using Core::ExtensionManager;
-using Core::PluginLoader;
 
 static void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message);
 static void shutdownHandler(int);
@@ -302,12 +300,9 @@ int Core::AlbertApp::run(int argc, char **argv) {
         }
 
         FrontendManager::instance = new FrontendManager(pluginDirs);
+        ExtensionManager::instance = new ExtensionManager(pluginDirs);
 
-        Core::PluginLoader pluginLoader;
-        pluginLoader.setPluginDirs(pluginDirs.toVector().toStdVector());
-        ExtensionManager::instance = new ExtensionManager(pluginLoader.pluginSpecsByIID(ALBERT_EXTENSION_IID));
         ExtensionManager::instance->reloadExtensions();
-
 
         hotkeyManager = new HotkeyManager;
         queryManager  = new QueryManager(ExtensionManager::instance);

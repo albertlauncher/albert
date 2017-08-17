@@ -19,6 +19,8 @@
 #include <QWidget>
 #include "core_globals.h"
 
+#define ALBERT_EXTENSION_IID "ExtensionInterface/v1.0-alpha"
+
 namespace Core {
 
 /**

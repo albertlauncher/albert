@@ -42,16 +42,25 @@ public:
 
 
 /** ***************************************************************************/
-Core::FrontendManager::FrontendManager(QStringList pluginroots)
+Core::FrontendManager::FrontendManager(QStringList pluginDirs)
     : d(new FrontendManagerPrivate) {
 
     // Find plugins
-    for ( const QString &pluginDir : pluginroots ) {
+    for ( const QString &pluginDir : pluginDirs ) {
        QDirIterator dirIterator(pluginDir, QDir::Files);
        while (dirIterator.hasNext()) {
            std::unique_ptr<PluginSpec> plugin(new PluginSpec(dirIterator.next()));
-           if ( plugin->iid() == ALBERT_FRONTEND_IID )
-               d->frontendPlugins.push_back(std::move(plugin));
+
+           if ( plugin->iid() != ALBERT_FRONTEND_IID )
+               continue;
+
+           if (std::any_of(d->frontendPlugins.begin(), d->frontendPlugins.end(),
+                           [&](const unique_ptr<PluginSpec> &spec){ return plugin->id() == spec->id(); })) {
+               qWarning() << qPrintable(QString("Frontend IDs already exists. Skipping. (%1)").arg(plugin->path()));
+               continue;
+           }
+
+           d->frontendPlugins.push_back(std::move(plugin));
        }
     }
 

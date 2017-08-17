@@ -34,21 +34,37 @@ Core::ExtensionManager *Core::ExtensionManager::instance = nullptr;
 /** ***************************************************************************/
 class Core::ExtensionManagerPrivate {
 public:
-    vector<unique_ptr<PluginSpec>> pluginSpecs_;
+    vector<unique_ptr<PluginSpec>> extensionSpecs_;
     set<QObject*> extensions_;
 };
 
 
 /** ***************************************************************************/
-Core::ExtensionManager::ExtensionManager(std::vector<std::unique_ptr<PluginSpec>> && pluginSpecs,
-                                         QObject *parent)
-    : QObject(parent), d(new ExtensionManagerPrivate) {
+Core::ExtensionManager::ExtensionManager(QStringList pluginDirs)
+    : d(new ExtensionManagerPrivate) {
 
-    d->pluginSpecs_ = std::move(pluginSpecs);
+    // Find plugins
+    for ( const QString &pluginDir : pluginDirs ) {
+       QDirIterator dirIterator(pluginDir, QDir::Files);
+       while (dirIterator.hasNext()) {
+           std::unique_ptr<PluginSpec> plugin(new PluginSpec(dirIterator.next()));
+
+           if ( plugin->iid() != ALBERT_EXTENSION_IID )
+               continue;
+
+           if (std::any_of(d->extensionSpecs_.begin(), d->extensionSpecs_.end(),
+                           [&](const unique_ptr<PluginSpec> &spec){ return plugin->id() == spec->id(); })) {
+               qWarning() << qPrintable(QString("Frontend IDs already exists. Skipping. (%1)").arg(plugin->path()));
+               continue;
+           }
+
+           d->extensionSpecs_.push_back(std::move(plugin));
+       }
+    }
 
     // Sort alphabetically
-    std::sort(d->pluginSpecs_.begin(),
-              d->pluginSpecs_.end(),
+    std::sort(d->extensionSpecs_.begin(),
+              d->extensionSpecs_.end(),
               [](const unique_ptr<PluginSpec>& lhs, const unique_ptr<PluginSpec>& rhs){
         return lhs->name() < rhs->name();
     });
@@ -57,14 +73,14 @@ Core::ExtensionManager::ExtensionManager(std::vector<std::unique_ptr<PluginSpec>
 
 /** ***************************************************************************/
 Core::ExtensionManager::~ExtensionManager() {
-    for (unique_ptr<PluginSpec> & pluginSpec : d->pluginSpecs_)
+    for (unique_ptr<PluginSpec> & pluginSpec : d->extensionSpecs_)
         unloadExtension(pluginSpec);
 }
 
 
 /** ***************************************************************************/
 const vector<unique_ptr<Core::PluginSpec>>& Core::ExtensionManager::extensionSpecs() const {
-    return d->pluginSpecs_;
+    return d->extensionSpecs_;
 }
 
 
@@ -72,12 +88,12 @@ const vector<unique_ptr<Core::PluginSpec>>& Core::ExtensionManager::extensionSpe
 void Core::ExtensionManager::reloadExtensions() {
 
     // Unload all extensions
-    for (unique_ptr<PluginSpec> & pluginSpec : d->pluginSpecs_)
+    for (unique_ptr<PluginSpec> & pluginSpec : d->extensionSpecs_)
         unloadExtension(pluginSpec);
 
     // Load if enabled
     QSettings settings(qApp->applicationName());
-    for (unique_ptr<PluginSpec> & pluginSpec : d->pluginSpecs_) {
+    for (unique_ptr<PluginSpec> & pluginSpec : d->extensionSpecs_) {
         if ( settings.value(QString("%1/enabled").arg(pluginSpec->id()), false).toBool() )
             loadExtension(pluginSpec);
     }
