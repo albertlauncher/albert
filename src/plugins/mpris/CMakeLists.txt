@@ -13,8 +13,12 @@ qt5_wrap_ui(UI
     forms/configwidget.ui
 )
 
+qt5_add_resources(QRC
+    ${PROJECT_NAME}.qrc
+)
+
 # Define the target
-add_library(${PROJECT_NAME} SHARED ${SRC} ${UI})
+add_library(${PROJECT_NAME} SHARED ${SRC} ${QRC} ${UI})
 
 # Set INCLUDE_DIRS and INTERFACE_INCLUDE_DIRS
 target_include_directories(${PROJECT_NAME} PRIVATE src/)
