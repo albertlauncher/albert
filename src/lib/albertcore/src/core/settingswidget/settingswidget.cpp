@@ -27,6 +27,7 @@
 #include <QSqlQuery>
 #include <QStandardPaths>
 #include <vector>
+#include <memory>
 #include <utility>
 #include "core_globals.h"
 #include "extension.h"
@@ -42,6 +43,7 @@ using Core::Extension;
 using Core::PluginSpec;
 using Core::ExtensionManager;
 using Core::FrontendManager;
+using std::unique_ptr;
 
 namespace {
 const char* CFG_TERM = "terminal";
@@ -85,10 +87,13 @@ SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
             trayIcon_, &TrayIcon::setVisible);
 
     // FRONTEND
-    for ( size_t i = 0 ; i < frontendManager_->frontendSpecs().size(); ++i){
-        const std::unique_ptr<Core::PluginSpec> & plugin = frontendManager_->frontendSpecs()[i];
+    for ( const unique_ptr<PluginSpec> &plugin : frontendManager_->frontendSpecs() ){
+
+        // Add item (text and id)
         ui.comboBox_frontend->addItem(plugin->name(), plugin->id());
-        ui.comboBox_frontend->setItemData(static_cast<int>(i),
+
+        // Add tooltip
+        ui.comboBox_frontend->setItemData(ui.comboBox_frontend->count()-1,
                                           QString("%1\nID: %2\nVersion: %3\nAuthor: %4\nDependencies: %5")
                                           .arg(plugin->name(),
                                                plugin->id(),
@@ -96,6 +101,9 @@ SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
                                                plugin->author(),
                                                plugin->dependencies().join(", ")),
                                           Qt::ToolTipRole);
+        // Set to current if ids match
+        if ( plugin->id() == frontendManager_->currentFrontend()->id() )
+            ui.comboBox_frontend->setCurrentIndex(ui.comboBox_frontend->count()-1);
     }
 
     ui.tabGeneral->layout()->addWidget(frontendManager_->currentFrontend()->widget(ui.tabGeneral));
