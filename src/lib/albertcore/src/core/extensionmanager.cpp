@@ -29,7 +29,6 @@ using std::set;
 using std::unique_ptr;
 using std::vector;
 
-Core::ExtensionManager *Core::ExtensionManager::instance = nullptr;
 
 /** ***************************************************************************/
 class Core::ExtensionManagerPrivate {

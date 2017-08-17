@@ -61,8 +61,6 @@ public:
         return results;
     }
 
-    static ExtensionManager *instance;
-
 private:
 
     void loadExtension(const std::unique_ptr<PluginSpec> &);

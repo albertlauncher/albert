@@ -38,8 +38,6 @@ public:
     Frontend *currentFrontend();
     bool setCurrentFrontend(QString id);
 
-    static FrontendManager *instance;
-
 private:
 
     std::unique_ptr<FrontendManagerPrivate> d;

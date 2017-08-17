@@ -26,12 +26,12 @@
 using std::unique_ptr;
 using std::vector;
 
+
 namespace {
 const char* CFG_FRONTEND_ID = "frontendId";
 const char* DEF_FRONTEND_ID = "org.albert.frontend.boxmodel.widget";
 }
 
-Core::FrontendManager *Core::FrontendManager::instance = nullptr;
 
 /** ***************************************************************************/
 class Core::FrontendManagerPrivate {

@@ -41,20 +41,22 @@
 #include "settingswidget.h"
 #include "trayicon.h"
 #include "xdg/iconlookup.h"
-using Core::ExtensionManager;
+using namespace Core;
 
 static void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message);
 static void shutdownHandler(int);
 static void dispatchMessage();
 
 // Core components
-static QApplication    *app;
-static QueryManager    *queryManager;
-static HotkeyManager   *hotkeyManager;
-static SettingsWidget  *settingsWidget;
-static TrayIcon        *trayIcon;
-static QMenu           *trayIconMenu;
-static QLocalServer    *localServer;
+static QApplication     *app;
+static ExtensionManager *extensionManager;
+static FrontendManager  *frontendManager;
+static QueryManager     *queryManager;
+static HotkeyManager    *hotkeyManager;
+static SettingsWidget   *settingsWidget;
+static TrayIcon         *trayIcon;
+static QMenu            *trayIconMenu;
+static QLocalServer     *localServer;
 
 
 int Core::AlbertApp::run(int argc, char **argv) {
@@ -299,13 +301,13 @@ int Core::AlbertApp::run(int argc, char **argv) {
 #endif
         }
 
-        FrontendManager::instance = new FrontendManager(pluginDirs);
-        ExtensionManager::instance = new ExtensionManager(pluginDirs);
+        frontendManager = new FrontendManager(pluginDirs);
+        extensionManager = new ExtensionManager(pluginDirs);
 
-        ExtensionManager::instance->reloadExtensions();
+        extensionManager->reloadExtensions();
 
         hotkeyManager = new HotkeyManager;
-        queryManager  = new QueryManager(ExtensionManager::instance);
+        queryManager  = new QueryManager(extensionManager);
 
 
         /*
@@ -393,8 +395,8 @@ int Core::AlbertApp::run(int argc, char **argv) {
 
         // Application is initialized create the settings widget
         qDebug() << "Creating settings widget";
-        settingsWidget = new SettingsWidget(ExtensionManager::instance,
-                                            FrontendManager::instance,
+        settingsWidget = new SettingsWidget(extensionManager,
+                                            frontendManager,
                                             hotkeyManager,
                                             trayIcon);
 
@@ -409,13 +411,13 @@ int Core::AlbertApp::run(int argc, char **argv) {
 
         qDebug() << "Setting up signals";
         QObject::connect(hotkeyManager, &HotkeyManager::hotKeyPressed,
-                         FrontendManager::instance->currentFrontend(), &Frontend::toggleVisibility);
+                         frontendManager->currentFrontend(), &Frontend::toggleVisibility);
 
         QObject::connect(queryManager, &QueryManager::resultsReady,
-                         FrontendManager::instance->currentFrontend(), &Frontend::setModel);
+                         frontendManager->currentFrontend(), &Frontend::setModel);
 
         QObject::connect(showAction, &QAction::triggered,
-                         FrontendManager::instance->currentFrontend(), &Frontend::show);
+                         frontendManager->currentFrontend(), &Frontend::show);
 
         QObject::connect(settingsAction, &QAction::triggered,
                          settingsWidget, &SettingsWidget::show);
@@ -428,25 +430,25 @@ int Core::AlbertApp::run(int argc, char **argv) {
 
         QObject::connect(trayIcon, &TrayIcon::activated, [](QSystemTrayIcon::ActivationReason reason){
             if( reason == QSystemTrayIcon::ActivationReason::Trigger)
-                FrontendManager::instance->currentFrontend()->toggleVisibility();
+                frontendManager->currentFrontend()->toggleVisibility();
         });
 
 
-        QObject::connect(FrontendManager::instance->currentFrontend(),
+        QObject::connect(frontendManager->currentFrontend(),
                          &Frontend::settingsWidgetRequested,
                          std::bind(&SettingsWidget::setVisible, settingsWidget, true));
 
-        QObject::connect(FrontendManager::instance->currentFrontend(),
+        QObject::connect(frontendManager->currentFrontend(),
                          &Frontend::settingsWidgetRequested,
                          settingsWidget, &SettingsWidget::raise);
 
-        QObject::connect(FrontendManager::instance->currentFrontend(),
+        QObject::connect(frontendManager->currentFrontend(),
                          &Frontend::widgetShown, queryManager, &QueryManager::setupSession);
 
-        QObject::connect(FrontendManager::instance->currentFrontend(),
+        QObject::connect(frontendManager->currentFrontend(),
                          &Frontend::widgetHidden, queryManager, &QueryManager::teardownSession);
 
-        QObject::connect(FrontendManager::instance->currentFrontend(),
+        QObject::connect(frontendManager->currentFrontend(),
                          &Frontend::inputChanged, queryManager, &QueryManager::startQuery);
 
     }
@@ -470,8 +472,8 @@ int Core::AlbertApp::run(int argc, char **argv) {
     delete trayIcon;
     delete queryManager;
     delete hotkeyManager;
-    delete ExtensionManager::instance;
-    delete FrontendManager::instance;
+    delete extensionManager;
+    delete frontendManager;
 
     qDebug() << "Shutting down IPC server";
     localServer->close();
@@ -537,13 +539,13 @@ void dispatchMessage() {
     if (socket->bytesAvailable()) {
         QString msg = QString::fromLocal8Bit(socket->readAll());
         if ( msg == "show") {
-            Core::FrontendManager::instance->currentFrontend()->setVisible(true);
+            frontendManager->currentFrontend()->setVisible(true);
             socket->write("Application set visible.");
         } else if ( msg == "hide") {
-            Core::FrontendManager::instance->currentFrontend()->setVisible(false);
+            frontendManager->currentFrontend()->setVisible(false);
             socket->write("Application set invisible.");
         } else if ( msg == "toggle") {
-            Core::FrontendManager::instance->currentFrontend()->toggleVisibility();
+            frontendManager->currentFrontend()->toggleVisibility();
             socket->write("Visibility toggled.");
         } else
             socket->write("Command not supported.");
