@@ -85,8 +85,18 @@ SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
             trayIcon_, &TrayIcon::setVisible);
 
     // FRONTEND
-    for ( const std::unique_ptr<PluginSpec> &pluginSpec : frontendManager_->frontendSpecs() )
-        ui.comboBox_frontend->addItem(pluginSpec->name(), pluginSpec->id());
+    for ( size_t i = 0 ; i < frontendManager_->frontendSpecs().size(); ++i){
+        const std::unique_ptr<Core::PluginSpec> & plugin = frontendManager_->frontendSpecs()[i];
+        ui.comboBox_frontend->addItem(plugin->name(), plugin->id());
+        ui.comboBox_frontend->setItemData(static_cast<int>(i),
+                                          QString("%1\nID: %2\nVersion: %3\nAuthor: %4\nDependencies: %5")
+                                          .arg(plugin->name(),
+                                               plugin->id(),
+                                               plugin->version(),
+                                               plugin->author(),
+                                               plugin->dependencies().join(", ")),
+                                          Qt::ToolTipRole);
+    }
 
     ui.tabGeneral->layout()->addWidget(frontendManager_->currentFrontend()->widget(ui.tabGeneral));
 
