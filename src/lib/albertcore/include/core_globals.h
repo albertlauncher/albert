@@ -35,5 +35,4 @@
 #endif
 
 #define ALBERT_EXTENSION_IID "ExtensionInterface/v1.0-alpha"
-#define ALBERT_FRONTEND_IID "FrontendInterface/v1.0-alpha"
 

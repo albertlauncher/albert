@@ -32,12 +32,17 @@ class Frontend final : public Core::Frontend
 
 public:
 
-    Frontend(QWidget *parent = 0);
+    Frontend();
     ~Frontend();
 
+    bool isVisible() override;
     void setVisible(bool visible) override;
+
+    QString input() override;
     void setInput(const QString&) override;
+
     void setModel(QAbstractItemModel *) override;
+
     QWidget* widget(QWidget *parent = nullptr) override;
 
     bool showCentered() const;

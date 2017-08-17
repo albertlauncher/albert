@@ -116,9 +116,7 @@ public:
 /** ***************************************************************************/
 /** ***************************************************************************/
 /** ***************************************************************************/
-WidgetBoxModel::Frontend::Frontend(QWidget *parent)
-    : Core::Frontend("org.albert.frontend.boxmodel.widget", parent),
-      d(new Private) {
+WidgetBoxModel::Frontend::Frontend() : d(new Private) {
 
     d->actionsShown_ = false;
     d->historyMoveMod_ = Qt::ControlModifier;
@@ -253,12 +251,16 @@ WidgetBoxModel::Frontend::Frontend(QWidget *parent)
 }
 
 
-
 /** ***************************************************************************/
 WidgetBoxModel::Frontend::~Frontend() {
     // Needed since default dtor of unique ptr in the header has to know the type
 }
 
+
+/** ***************************************************************************/
+bool WidgetBoxModel::Frontend::isVisible() {
+    return QWidget::isVisible();
+}
 
 
 /** ***************************************************************************/
@@ -289,6 +291,12 @@ void WidgetBoxModel::Frontend::setVisible(bool visible) {
         ( d->clearOnHide_ ) ? d->ui.inputLine->clear() : d->ui.inputLine->selectAll();
         emit widgetHidden();
     }
+}
+
+
+/** ***************************************************************************/
+QString WidgetBoxModel::Frontend::input() {
+    return d->ui.inputLine->text();
 }
 
 

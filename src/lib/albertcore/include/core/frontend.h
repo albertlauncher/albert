@@ -20,6 +20,8 @@
 #include <QAbstractItemModel>
 #include "core_globals.h"
 
+#define ALBERT_FRONTEND_IID "FrontendInterface/v1.0-alpha"
+
 namespace Core {
 
 class EXPORT_CORE Frontend : public QWidget
@@ -28,14 +30,14 @@ class EXPORT_CORE Frontend : public QWidget
 
 public:
 
-    Frontend(QString id, QWidget* parent = nullptr)
-        : QWidget(parent), id(id) {}
-    virtual ~Frontend() {}
+    virtual bool isVisible() = 0;
+    virtual void setVisible(bool visible) = 0;
 
-    const QString id;
-
+    virtual QString input() = 0;
     virtual void setInput(const QString&) = 0;
+
     virtual void setModel(QAbstractItemModel *) = 0;
+
     virtual QWidget *widget(QWidget *parent) = 0;
 
     void toggleVisibility() { setVisible(!isVisible()); }
