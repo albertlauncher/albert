@@ -23,27 +23,26 @@
 
 namespace WidgetBoxModel {
 
-class Private;
-
-class Frontend final : public Core::Frontend
+class FrontendWidget final : public QWidget
 {
 	Q_OBJECT
-    Q_PLUGIN_METADATA(IID ALBERT_FRONTEND_IID FILE "metadata.json")
+
+    class Private;
 
 public:
 
-    Frontend();
-    ~Frontend();
+    FrontendWidget();
+    ~FrontendWidget();
 
-    bool isVisible() override;
+    bool isVisible();
     void setVisible(bool visible) override;
 
-    QString input() override;
-    void setInput(const QString&) override;
+    QString input();
+    void setInput(const QString&);
 
-    void setModel(QAbstractItemModel *) override;
+    void setModel(QAbstractItemModel *);
 
-    QWidget* widget(QWidget *parent = nullptr) override;
+    QWidget* widget(QWidget *parent = nullptr);
 
     bool showCentered() const;
     void setShowCentered(bool b = true);
@@ -95,6 +94,13 @@ protected:
 private:
 
     std::unique_ptr<Private> d;
+
+signals:
+
+    void widgetShown();
+    void widgetHidden();
+    void inputChanged(QString qry);
+    void settingsWidgetRequested();
 };
 
 }

@@ -20,16 +20,17 @@
 
 namespace WidgetBoxModel {
 
-class Frontend;
-class Private;
+class FrontendWidget;
 
 class ConfigWidget final : public QWidget
 {
     Q_OBJECT
 
+    class Private;
+
 public:
 
-    ConfigWidget(Frontend *frontend, QWidget *parent);
+    ConfigWidget(FrontendWidget *frontend, QWidget *parent);
     ~ConfigWidget();
 
 private:

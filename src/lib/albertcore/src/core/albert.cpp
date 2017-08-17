@@ -419,7 +419,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
                          frontendManager->currentFrontend(), &Frontend::setModel);
 
         QObject::connect(showAction, &QAction::triggered,
-                         frontendManager->currentFrontend(), &Frontend::show);
+                         frontendManager->currentFrontend(), &Frontend::setVisible);
 
         QObject::connect(settingsAction, &QAction::triggered,
                          settingsWidget, &SettingsWidget::show);

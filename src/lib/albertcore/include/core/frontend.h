@@ -18,20 +18,21 @@
 #include <QString>
 #include <QWidget>
 #include <QAbstractItemModel>
+#include "plugin.h"
 #include "core_globals.h"
 
 #define ALBERT_FRONTEND_IID "FrontendInterface/v1.0-alpha"
 
 namespace Core {
 
-class EXPORT_CORE Frontend : public QWidget
+class EXPORT_CORE Frontend : public Plugin
 {
     Q_OBJECT
 
 public:
 
     virtual bool isVisible() = 0;
-    virtual void setVisible(bool visible) = 0;
+    virtual void setVisible(bool visible = true) = 0;
 
     virtual QString input() = 0;
     virtual void setInput(const QString&) = 0;

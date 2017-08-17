@@ -23,24 +23,19 @@
 
 namespace Core {
 
-class PluginSpec final : public QObject
+class PluginSpec
 {
-    Q_OBJECT
-
 public:
 
-    enum class State { Loaded, NotLoaded, Error };
+    enum class State : char {
+        Loaded,
+        NotLoaded,
+        Error
+    };
 
     PluginSpec(const QString &path);
 
     QString path() const;
-    bool load();
-    bool unload();
-    QObject *instance();
-    State state() { return state_; }
-    QString lastError() const;
-
-    // Mandatory metadata
     QString iid() const;
     QString id() const;
     QString name() const;
@@ -49,16 +44,24 @@ public:
     QStringList dependencies() const;
     QJsonValue metadata(const QString & key) const;
 
+    bool load();
+    void unload();
+    State state() const;
+    QString lastError() const;
+
+    QObject *instance();
+
 private:
 
     QPluginLoader loader_;
-    State state_;
+    QString iid_;
+    QString id_;
+    QString name_;
+    QString version_;
+    QString author_;
+    QStringList dependencies_;
     QString lastError_;
-
-signals:
-
-    void pluginLoaded(PluginSpec*);
-    void pluginAboutToUnload(PluginSpec*);
+    State state_;
 
 };
 

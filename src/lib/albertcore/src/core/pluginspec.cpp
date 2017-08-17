@@ -20,125 +20,20 @@
 #include <QSettings>
 #include <stdexcept>
 #include "pluginspec.h"
+#include "plugin.h"
 
 
 
 /** ***************************************************************************/
-Core::PluginSpec::PluginSpec(const QString &path)
-    : loader_(path) {
-
-    state_ = loader_.isLoaded() ? State::Loaded : State::NotLoaded;
+Core::PluginSpec::PluginSpec(const QString &path) : loader_(path) {
+    iid_          = loader_.metaData()["IID"].toString();
+    id_           = metadata("id").toString();
+    name_         = metadata("name").toString("N/A");
+    version_      = metadata("version").toString("N/A");
+    author_       = metadata("author").toString("N/A");
+    dependencies_ = metadata("dependencies").toVariant().toStringList();
+    state_        = State::NotLoaded;
 }
-
-
-
-/** ***************************************************************************/
-bool Core::PluginSpec::load() {
-
-    if ( state_ == State::Loaded )
-        return true;
-
-    qDebug() << "Loading plugin" << path();
-
-    if ( loader_.load() ) {
-        state_ = State::Loaded;
-        emit pluginLoaded(this);
-    } else {
-        state_ = State::Error;
-        lastError_ = loader_.errorString();
-        qWarning() << qPrintable(QString("%1 failed loading. %2").arg(id()).arg(loader_.errorString()));
-    }
-    return state_ == State::Loaded;
-}
-
-
-
-/** ***************************************************************************/
-bool Core::PluginSpec::unload(){
-
-    /*
-     * Never really unload a plugin, since otherwise all objects instanciated by
-     * this extension (items, widgets, etc) and spread all over the app would
-     * have to be deleted. This is a lot of work and nobody cares about that
-     * little amount of extra KBs in RAM until next restart.
-     */
-
-//    if ( loader_.unload() ) {
-//        state_ = State::NotLoaded;
-//    } else {
-//        state_ = State::Error;
-//        lastError_ = loader_.errorString();
-//        qWarning() << "Failed to unload extension:" << lastError_.toLocal8Bit().data();
-//    }
-//    return state_==State::NotLoaded;
-
-    if ( state_ == State::NotLoaded )
-        return true;
-
-    emit pluginAboutToUnload(this);
-    delete instance();
-    state_ = State::NotLoaded;
-    return true;
-}
-
-
-
-/** ***************************************************************************/
-QString Core::PluginSpec::lastError() const {
-    return state_ == State::Error ? loader_.errorString() : QString();
-}
-
-
-
-/** ***************************************************************************/
-QString Core::PluginSpec::iid() const {
-    return loader_.metaData()["IID"].toString();
-}
-
-
-
-/** ***************************************************************************/
-QJsonValue Core::PluginSpec::metadata(const QString &key) const {
-    return loader_.metaData()["MetaData"].toObject()[key];
-}
-
-
-
-/** ***************************************************************************/
-QObject *Core::PluginSpec::instance() {
-
-    if ( state_ != State::Loaded )
-        if ( !load() )
-            return nullptr;
-
-    auto errorHandler = [this]() {
-        state_ = State::Error;
-        qWarning() << loader_.fileName()
-                   << "Failed to instanciate root component:"
-                   << lastError_.toLocal8Bit().data();
-    };
-
-    try {
-        return loader_.instance();
-//    } catch (const std::exception& ex) {
-//        lastError_ = ex.what();
-//        errorHandler();
-//    } catch (const std::string& s) {
-//        lastError_ = QString::fromStdString(s);
-//        errorHandler();
-//    } catch (const QString& s) {
-//        lastError_ = s;
-//        errorHandler();
-//    } catch (const char *s) {
-//        lastError_ = s;
-//        errorHandler();
-    } catch (...) {
-        lastError_ = "Unkown exception in plugin constructor.";
-        errorHandler();
-    }
-    return nullptr;
-}
-
 
 
 /** ***************************************************************************/
@@ -147,39 +42,115 @@ QString Core::PluginSpec::path() const {
 }
 
 
+/** ***************************************************************************/
+QString Core::PluginSpec::iid() const {
+    return iid_;
+}
+
 
 /** ***************************************************************************/
 QString Core::PluginSpec::id() const {
-    return loader_.metaData()["MetaData"].toObject()["id"].toString();
+    return id_;
 }
 
 
 /** ***************************************************************************/
 QString Core::PluginSpec::name() const {
-    return loader_.metaData()["MetaData"].toObject()["name"].toString();
+    return name_;
 }
-
 
 
 /** ***************************************************************************/
 QString Core::PluginSpec::version() const {
-    return loader_.metaData()["MetaData"].toObject()["version"].toString();
+    return version_;
 }
-
 
 
 /** ***************************************************************************/
 QString Core::PluginSpec::author() const {
-    return loader_.metaData()["MetaData"].toObject()["author"].toString();
+    return author_;
 }
-
 
 
 /** ***************************************************************************/
 QStringList Core::PluginSpec::dependencies() const {
-    QStringList dependencies_;
-    for (QVariant &var : loader_.metaData()["MetaData"].toObject()["dependencies"].toArray().toVariantList())
-        dependencies_.push_back(var.toString());
     return dependencies_;
+}
+
+
+/** ***************************************************************************/
+QJsonValue Core::PluginSpec::metadata(const QString &key) const {
+    return loader_.metaData()["MetaData"].toObject()[key];
+}
+
+
+/** ***************************************************************************/
+bool Core::PluginSpec::load() {
+
+    Plugin *plugin = nullptr;
+    if ( state_ != State::Loaded ) {
+        try {
+            if ( !loader_.instance() )
+                lastError_ = loader_.errorString();
+            else if ( ! (plugin = dynamic_cast<Plugin*>(loader_.instance())) )
+                lastError_ = "Plugin instance is not of type Plugin";
+            else {
+                state_ = State::Loaded;
+                plugin->id_ = this->id_;
+            }
+        } catch (const std::exception& ex) {
+            lastError_ = ex.what();
+        } catch (const std::string& s) {
+            lastError_ = QString::fromStdString(s);
+        } catch (const QString& s) {
+            lastError_ = s;
+        } catch (const char *s) {
+            lastError_ = s;
+        } catch (...) {
+            lastError_ = "Unkown exception in plugin constructor.";
+        }
+
+        if (!plugin) {
+           qWarning() << qPrintable(QString("Failed loading plugin: %1 [%2]").arg(path()).arg(loader_.errorString()));
+           state_ = State::Error;
+        }
+    }
+
+    return state_ == State::Loaded;
+}
+
+
+/** ***************************************************************************/
+void Core::PluginSpec::unload(){
+
+    /*
+     * Never really unload a plugin, since otherwise all objects instanciated by
+     * this extension (items, widgets, etc) and spread all over the app would
+     * have to be deleted. This is a lot of work and nobody cares about that
+     * little amount of extra KBs in RAM until next restart.
+     */
+
+    if ( state_ != State::NotLoaded ) {
+        loader_.instance()->deleteLater();
+        state_ = State::NotLoaded;
+    }
+}
+
+
+/** ***************************************************************************/
+Core::PluginSpec::State Core::PluginSpec::state() const {
+    return state_;
+}
+
+
+/** ***************************************************************************/
+QString Core::PluginSpec::lastError() const {
+    return state_ == State::Error ? lastError_ : QString();
+}
+
+
+/** ***************************************************************************/
+QObject *Core::PluginSpec::instance() {
+    return loader_.instance();
 }
 

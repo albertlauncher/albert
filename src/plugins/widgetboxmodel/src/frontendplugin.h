@@ -15,34 +15,38 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QObject>
+#include <QAbstractItemModel>
 #include <memory>
-#include "core/extension.h"
-#include "core/queryhandler.h"
+#include "core_globals.h"
+#include "core/frontend.h"
 
-namespace System {
+namespace WidgetBoxModel {
 
-class Private;
+class FrontendWidget;
 
-class Extension final :
-        public Core::Extension,
-        public Core::QueryHandler
+class FrontendPlugin final : public Core::Frontend
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
+    Q_PLUGIN_METADATA(IID ALBERT_FRONTEND_IID FILE "metadata.json")
 
 public:
 
-    Extension();
-    ~Extension();
+    FrontendPlugin();
+    ~FrontendPlugin();
 
-    QString name() const override { return "System"; }
-    QWidget *widget(QWidget *parent = nullptr) override;
-    void handleQuery(Core::Query * query) override;
+    bool isVisible() override;
+    void setVisible(bool visible) override;
+
+    QString input() override;
+    void setInput(const QString&) override;
+
+    void setModel(QAbstractItemModel *) override;
+
+    QWidget* widget(QWidget *parent = nullptr) override;
 
 private:
 
-    std::unique_ptr<Private> d;
-
+    std::unique_ptr<FrontendWidget> frontendWidget_;
 };
+
 }

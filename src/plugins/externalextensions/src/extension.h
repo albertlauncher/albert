@@ -25,7 +25,6 @@ namespace ExternalExtensions {
 class Private;
 
 class Extension final :
-        public QObject,
         public Core::Extension
 {
     Q_OBJECT

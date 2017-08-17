@@ -26,7 +26,6 @@ namespace Websearch {
 class Private;
 
 class Extension final :
-        public QObject,
         public Core::Extension,
         public Core::QueryHandler,
         public Core::FallbackProvider

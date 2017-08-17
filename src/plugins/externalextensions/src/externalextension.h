@@ -23,7 +23,9 @@
 
 namespace ExternalExtensions {
 
-class ExternalExtension final : public QObject, public Core::QueryHandler
+class ExternalExtension final :
+        public QObject,
+        public Core::QueryHandler
 {
 
 public:

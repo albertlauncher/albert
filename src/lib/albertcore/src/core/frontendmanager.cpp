@@ -82,6 +82,7 @@ Core::FrontendManager::FrontendManager(QStringList pluginDirs)
                  qPrintable(id), qPrintable((*it)->id()));
     }
 
+    (*it)->load();
     d->currentFrontend = dynamic_cast<Frontend*>((*it)->instance());
     if (!d->currentFrontend)
         qFatal("Could not cast plugin instance to frontend");
@@ -126,6 +127,7 @@ bool Core::FrontendManager::setCurrentFrontend(QString id) {
         return false;
     }
 
+    (*it)->load();
     d->currentFrontend = dynamic_cast<Frontend*>((*it)->instance());
     if (!d->currentFrontend)
         qFatal("Could not cast plugin instance to frontend");

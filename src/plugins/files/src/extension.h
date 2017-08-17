@@ -25,7 +25,6 @@ namespace Files {
 class Private;
 
 class Extension final :
-        public QObject,
         public Core::Extension,
         public Core::QueryHandler
 {

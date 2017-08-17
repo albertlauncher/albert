@@ -17,6 +17,7 @@
 #pragma once
 #include <QString>
 #include <QWidget>
+#include "plugin.h"
 #include "core_globals.h"
 
 #define ALBERT_EXTENSION_IID "ExtensionInterface/v1.0-alpha"
@@ -26,7 +27,7 @@ namespace Core {
 /**
  * @brief The extension interface
  */
-class EXPORT_CORE Extension
+class EXPORT_CORE Extension : public Plugin
 {
 public:
 

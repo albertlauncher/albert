@@ -16,33 +16,24 @@
 
 #pragma once
 #include <QObject>
-#include <memory>
-#include "core/extension.h"
-#include "core/queryhandler.h"
+#include "core_globals.h"
 
-namespace System {
+namespace Core {
 
-class Private;
-
-class Extension final :
-        public Core::Extension,
-        public Core::QueryHandler
+class EXPORT_CORE Plugin : public QObject
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
 public:
 
-    Extension();
-    ~Extension();
-
-    QString name() const override { return "System"; }
-    QWidget *widget(QWidget *parent = nullptr) override;
-    void handleQuery(Core::Query * query) override;
+    QString id() const { return id_; }
 
 private:
 
-    std::unique_ptr<Private> d;
+    QString id_;
+
+    friend class PluginSpec;
 
 };
+
 }
