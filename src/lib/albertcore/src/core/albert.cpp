@@ -436,7 +436,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
             QObject::connect(showAction, &QAction::triggered,
                              f, &Frontend::setVisible);
 
-            QObject::connect(trayIcon, &TrayIcon::activated, [&](QSystemTrayIcon::ActivationReason reason){
+            QObject::connect(trayIcon, &TrayIcon::activated, [=](QSystemTrayIcon::ActivationReason reason){
                 if( reason == QSystemTrayIcon::ActivationReason::Trigger)
                     f->toggleVisibility();
             });
