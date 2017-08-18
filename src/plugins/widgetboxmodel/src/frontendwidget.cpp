@@ -30,6 +30,7 @@
 #include <QTimer>
 #include <QVBoxLayout>
 #include "core/history.h"
+#include "core/itemroles.h"
 #include "configwidget.h"
 #include "frontendwidget.h"
 #include "resultslist.h"
@@ -228,10 +229,10 @@ WidgetBoxModel::FrontendWidget::FrontendWidget() : d(new Private) {
 
         switch (qApp->queryKeyboardModifiers()) {
         case Qt::MetaModifier: // Default fallback action (Meta)
-            d->ui.resultsList->model()->setData(index, -1, Qt::UserRole+101);
+            d->ui.resultsList->model()->setData(index, -1, ItemRoles::FallbackRole);
             break;
         default: // DefaultAction
-            d->ui.resultsList->model()->setData(index, -1, Qt::UserRole+100);
+            d->ui.resultsList->model()->setData(index, -1, ItemRoles::ActionRole);
             break;
         }
 
@@ -244,7 +245,7 @@ WidgetBoxModel::FrontendWidget::FrontendWidget() : d(new Private) {
     // Trigger alternative action, if item in actionList was activated
     QObject::connect(d->ui.actionList, &ActionList::activated, [this](const QModelIndex &index){
         d->history_->add(d->ui.inputLine->text());
-        d->ui.resultsList->model()->setData(d->ui.resultsList->currentIndex(), index.row(), Qt::UserRole);
+        d->ui.resultsList->model()->setData(d->ui.resultsList->currentIndex(), index.row(), ItemRoles::AltActionRole);
         this->setVisible(false);
         d->ui.inputLine->clear();
     });
@@ -509,7 +510,7 @@ void WidgetBoxModel::FrontendWidget::setShowActions(bool showActions) {
         // Get actions
         d->actionsListModel_->setStringList(d->ui.resultsList->model()->data(
                                                 d->ui.resultsList->currentIndex(),
-                                                Qt::UserRole).toStringList());
+                                                ItemRoles::AltActionRole).toStringList());
 
         // Skip if actions are empty
         if (d->actionsListModel_->rowCount() < 1)
@@ -605,13 +606,12 @@ bool WidgetBoxModel::FrontendWidget::eventFilter(QObject *, QEvent *event) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
         switch (keyEvent->key()) {
 
-        // Toggle actionsview
+        // Toggle insert completion string
         case Qt::Key_Tab:
-            // see query.cpp for userroles
             if ( d->ui.resultsList->currentIndex().isValid() )
                 d->ui.inputLine->setText(
                             d->ui.resultsList->model()->data(
-                                d->ui.resultsList->currentIndex(), Qt::UserRole+1
+                                d->ui.resultsList->currentIndex(), ItemRoles::CompletionRole
                                 ).toString()
                             );
             return true;

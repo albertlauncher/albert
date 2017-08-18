@@ -33,6 +33,7 @@
 #include "item.h"
 #include "matchcompare.h"
 #include "query.h"
+#include "itemroles.h"
 using std::chrono::system_clock;
 using namespace std;
 
@@ -238,39 +239,44 @@ public:
 
 
     /** ***************************************************************************/
+    QHash<int, QByteArray> roleNames() const override {
+        QHash<int, QByteArray> roles;
+        roles[static_cast<int>(ItemRoles::TextRole)]       = "itemTextRole";
+        roles[static_cast<int>(ItemRoles::ToolTipRole)]    = "itemTooltipRole";
+        roles[static_cast<int>(ItemRoles::DecorationRole)] = "itemDecorationRole";
+        roles[static_cast<int>(ItemRoles::CompletionRole)] = "itemCompletionStringRole";
+        roles[static_cast<int>(ItemRoles::ActionRole)]     = "itemActionRole"; // used to activate items as well
+        roles[static_cast<int>(ItemRoles::AltActionRole)]  = "itemAltActionsRole";  // used to activate items as well
+        roles[static_cast<int>(ItemRoles::FallbackRole)]   = "itemFallbackRole"; // used to activate items as well
+        return roles;
+    }
+
+    /** ***************************************************************************/
     QVariant data(const QModelIndex &index, int role) const override {
         if (index.isValid()) {
             const shared_ptr<Item> &item = results[static_cast<size_t>(index.row())];
 
-            switch (role) {
-            case Qt::DisplayRole:
+            switch ( role ) {
+            case ItemRoles::TextRole:
                 return item->text();
-            case Qt::ToolTipRole:
+            case ItemRoles::ToolTipRole:
                 return item->subtext();
-            case Qt::DecorationRole:
+            case ItemRoles::DecorationRole:
                 return item->iconPath();
-
-            case Qt::UserRole: { // Actions list
+            case ItemRoles::CompletionRole:
+                return item->completionString();
+            case ItemRoles::ActionRole:
+                return (0 < static_cast<int>(item->actions().size()))
+                        ? item->actions()[0]->text()
+                        : item->subtext();
+            case ItemRoles::AltActionRole: { // Actions list
                 QStringList actionTexts;
                 for (const shared_ptr<Action> &action : item->actions())
                     actionTexts.append(action->text());
                 return actionTexts;
             }
-            case Qt::UserRole+1: // Completion string
-                return item->completionString();
-
-            case Qt::UserRole+100: // DefaultAction
-                return (0 < static_cast<int>(item->actions().size())) ? item->actions()[0]->text() : item->subtext();
-            case Qt::UserRole+101: // AltAction
+            case ItemRoles::FallbackRole:
                 return "Search '"+searchTerm+"' using default fallback";
-            case Qt::UserRole+102: // MetaAction
-                return (1 < static_cast<int>(item->actions().size())) ? item->actions()[1]->text() : item->subtext();
-            case Qt::UserRole+103: // ControlAction
-                return (2 < static_cast<int>(item->actions().size())) ? item->actions()[2]->text() : item->subtext();
-            case Qt::UserRole+104: // ShiftAction
-                return (3 < static_cast<int>(item->actions().size())) ? item->actions()[3]->text() : item->subtext();
-            default:
-                return QVariant();
             }
         }
         return QVariant();
@@ -280,40 +286,46 @@ public:
 
     /** ***************************************************************************/
     bool setData(const QModelIndex &index, const QVariant &value, int role) override {
+
         if (index.isValid()) {
             shared_ptr<Item> &item = results[static_cast<size_t>(index.row())];
-            QString itemId = item->id();
+            QString activateditemId;
 
-            switch (role) {
-
-            // Activation by index
-            case Qt::UserRole:{
-                size_t actionValue = static_cast<size_t>(value.toInt());
-                if (actionValue < item->actions().size())
-                    item->actions()[actionValue]->activate();
-                break;
-            }
-
-            // Activation by modifier
-            case Qt::UserRole+100: // DefaultAction
-                if (0U < item->actions().size())
+            switch ( role ) {
+            case ItemRoles::ActionRole:{
+                if (0U < item->actions().size()){
                     item->actions()[0]->activate();
-                break;
-            case Qt::UserRole+101: // Default fallback action (Meta)
-                if (0U < fallbacks.size() && 0U < item->actions().size()) {
-                    fallbacks[0]->actions()[0]->activate();
-                    itemId = fallbacks[0]->id();
+                    activateditemId = item->id();
                 }
                 break;
             }
+            case ItemRoles::AltActionRole:{
+                size_t actionValue = static_cast<size_t>(value.toInt());
+                if (actionValue < item->actions().size()) {
+                    item->actions()[actionValue]->activate();
+                    activateditemId = item->id();
+                }
+                break;
+            }
+            case ItemRoles::FallbackRole:{
+                if (0U < fallbacks.size() && 0U < item->actions().size()) {
+                    fallbacks[0]->actions()[0]->activate();
+                    activateditemId = fallbacks[0]->id();
+                }
+                break;
+            }
+            }
 
-            // Save usage
-            QSqlQuery query;
-            query.prepare("INSERT INTO usages (input, itemId) VALUES (:input, :itemId);");
-            query.bindValue(":input", searchTerm);
-            query.bindValue(":itemId", item->id());
-            if (!query.exec())
-                qWarning() << query.lastError();
+            if ( !activateditemId.isNull() ) {
+                // Save usage
+                QSqlQuery query;
+                query.prepare("INSERT INTO usages (input, itemId) VALUES (:input, :itemId);");
+                query.bindValue(":input", searchTerm);
+                query.bindValue(":itemId", item->id());
+                if (!query.exec())
+                    qWarning() << query.lastError();
+                return true;
+            }
         }
         return false;
     }
