@@ -26,6 +26,7 @@
 #include <QStandardPaths>
 #include <QTimer>
 #include <QQmlContext>
+#include <QQmlEngine>
 #include <QQuickItem>
 #include "mainwindow.h"
 
@@ -51,16 +52,27 @@ MainWindow::MainWindow(QWindow *parent) : QQuickView(parent) {
              | Qt::WindowCloseButtonHint // No close event w/o this
              );
 
-    // Get style dirs
-    QStringList styleDirPaths = QStandardPaths::locateAll(
-                QStandardPaths::AppDataLocation,
-                "org.albert.frontend.boxmodel.qml",
-                QStandardPaths::LocateDirectory);
+
+    // Set qml environment
+    rootContext()->setContextProperty("mainWindow", this);
+    rootContext()->setContextProperty("history", &history_);
+    rootContext()->setContextProperty("resultsModel", &model_);
+
+    QStringList pluginDataPaths = QStandardPaths::locateAll(QStandardPaths::AppDataLocation,
+                                                            "org.albert.frontend.boxmodel.qml",
+                                                            QStandardPaths::LocateDirectory);
+
+    // Add the shared modules to the lookup path
+    for (const QString &pluginDataPath : pluginDataPaths){
+        QDir pluginDataDir = QDir(pluginDataPath);
+        if ( pluginDataDir.exists("shared") )
+            engine()->addImportPath(pluginDataDir.filePath("shared"));
+    }
 
     // Get style files
     QFileInfoList styles;
-    for (const QString &styleDirPath : styleDirPaths) {
-        QDirIterator it(styleDirPath, QDir::Dirs|QDir::NoDotAndDotDot);
+    for (const QString &pluginDataPath : pluginDataPaths) {
+        QDirIterator it(pluginDataPath, QDir::Dirs|QDir::NoDotAndDotDot);
         while ( it.hasNext() ) {
             QDir root = QDir(it.next());
             if ( root.exists(STYLE_MAIN_NAME) ){
@@ -90,11 +102,6 @@ MainWindow::MainWindow(QWindow *parent) : QQuickView(parent) {
         throw "No styles found.";
 
 
-    // Set qml environment
-    rootContext()->setContextProperty("history", &history_);
-    rootContext()->setContextProperty("resultsModel", &model_);
-
-
     auto storeWinPos = [this](){
         QSettings s(qApp->applicationName());
         s.beginGroup(PLUGIN_ID);
@@ -103,7 +110,6 @@ MainWindow::MainWindow(QWindow *parent) : QQuickView(parent) {
     connect(this, &MainWindow::xChanged, storeWinPos);
     connect(this, &MainWindow::yChanged, storeWinPos);
 
-
     // Load settings
     QSettings s(qApp->applicationName());
     s.beginGroup(PLUGIN_ID);
@@ -111,7 +117,6 @@ MainWindow::MainWindow(QWindow *parent) : QQuickView(parent) {
     setShowCentered(s.value(CFG_CENTERED, DEF_CENTERED).toBool());
     setHideOnFocusLoss(s.value(CFG_HIDEONFOCUSLOSS, DEF_HIDEONFOCUSLOSS).toBool());
     setAlwaysOnTop(s.value(CFG_ALWAYS_ON_TOP, DEF_ALWAYS_ON_TOP).toBool());
-
     if ( s.contains(CFG_STYLEPATH) && QFile::exists(s.value(CFG_STYLEPATH).toString()) )
         setSource(s.value(CFG_STYLEPATH).toString());
     else {
@@ -131,7 +136,6 @@ MainWindow::~MainWindow() {
 
 /** ***************************************************************************/
 void MainWindow::setVisible(bool visible) {
-    qDebug() << source();
     if ( visible ) {
         if ( showCentered_ ){
             QDesktopWidget *dw = QApplication::desktop();
@@ -182,6 +186,9 @@ void MainWindow::setSource(const QUrl &url) {
 
     connect(object, SIGNAL(settingsWidgetRequested()),
             this, SIGNAL(settingsWidgetRequested()));
+
+    connect(object, SIGNAL(settingsWidgetRequested()),
+            this, SLOT(hide()));
 
 
     // Load the theme properties
