@@ -17,8 +17,11 @@
 #include <QApplication>
 #include <QCursor>
 #include <QDebug>
+#include <QDirIterator>
 #include <QDesktopWidget>
 #include <QDir>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QTimer>
@@ -26,15 +29,18 @@
 #include <QQuickItem>
 #include "mainwindow.h"
 
-const QString MainWindow::CFG_CENTERED        = "showCentered";
-const bool    MainWindow::DEF_CENTERED        = true;
-const QString MainWindow::CFG_HIDEONFOCUSLOSS = "hideOnFocusLoss";
-const bool    MainWindow::DEF_HIDEONFOCUSLOSS = true;
-const QString MainWindow::CFG_ALWAYS_ON_TOP   = "alwaysOnTop";
-const bool    MainWindow::DEF_ALWAYS_ON_TOP   = true;
-const QString MainWindow::CFG_STYLEPATH       = "stylePath";
-const QUrl    MainWindow::DEF_STYLEPATH       = QUrl("qrc:/resources/MainComponent.qml");
-const QString MainWindow::CFG_WND_POS         = "windowPosition";
+namespace {
+const QString CFG_CENTERED        = "showCentered";
+const bool    DEF_CENTERED        = true;
+const QString CFG_HIDEONFOCUSLOSS = "hideOnFocusLoss";
+const bool    DEF_HIDEONFOCUSLOSS = true;
+const QString CFG_ALWAYS_ON_TOP   = "alwaysOnTop";
+const bool    DEF_ALWAYS_ON_TOP   = true;
+const QString CFG_STYLEPATH       = "stylePath";
+const QString CFG_WND_POS         = "windowPosition";
+const QString PLUGIN_ID           = "org.albert.frontend.boxmodel.qml";
+const QString STYLE_MAIN_NAME     = "MainComponent.qml";
+}
 
 /** ***************************************************************************/
 MainWindow::MainWindow(QWindow *parent) : QQuickView(parent) {
@@ -45,30 +51,79 @@ MainWindow::MainWindow(QWindow *parent) : QQuickView(parent) {
              | Qt::WindowCloseButtonHint // No close event w/o this
              );
 
+    // Get style dirs
+    QStringList styleDirPaths = QStandardPaths::locateAll(
+                QStandardPaths::AppDataLocation,
+                "org.albert.frontend.boxmodel.qml",
+                QStandardPaths::LocateDirectory);
+
+    // Get style files
+    QFileInfoList styles;
+    for (const QString &styleDirPath : styleDirPaths) {
+        QDirIterator it(styleDirPath, QDir::Dirs|QDir::NoDotAndDotDot);
+        while ( it.hasNext() ) {
+            QDir root = QDir(it.next());
+            if ( root.exists(STYLE_MAIN_NAME) ){
+                QmlStyleSpec style;
+                style.mainComponent = root.filePath(STYLE_MAIN_NAME);
+                style.name          = root.dirName();
+                style.author        = "N/A";
+                style.version       = "N/A";
+                if ( root.exists("metadata.json") ) {
+                    QFile file(root.filePath("metadata.json"));
+                    if (file.open(QIODevice::ReadOnly)) {
+                        QJsonObject metadata = QJsonDocument::fromJson(file.readAll()).object();
+                        if (metadata.contains("name"))
+                            style.name = metadata["name"].toString();
+                        if (metadata.contains("author"))
+                            style.author = metadata["author"].toString();
+                        if (metadata.contains("version"))
+                            style.version = metadata["version"].toString();
+                    }
+                }
+                styles_.push_back(style);
+            }
+        }
+    }
+
+    if (styles_.empty())
+        throw "No styles found.";
+
+
     // Set qml environment
     rootContext()->setContextProperty("history", &history_);
     rootContext()->setContextProperty("resultsModel", &model_);
 
+
+    auto storeWinPos = [this](){
+        QSettings s(qApp->applicationName());
+        s.beginGroup(PLUGIN_ID);
+        s.setValue(CFG_WND_POS, position());
+    };
+    connect(this, &MainWindow::xChanged, storeWinPos);
+    connect(this, &MainWindow::yChanged, storeWinPos);
+
+
     // Load settings
-    QSettings s;
+    QSettings s(qApp->applicationName());
+    s.beginGroup(PLUGIN_ID);
     setPosition(s.value(CFG_WND_POS).toPoint());
     setShowCentered(s.value(CFG_CENTERED, DEF_CENTERED).toBool());
     setHideOnFocusLoss(s.value(CFG_HIDEONFOCUSLOSS, DEF_HIDEONFOCUSLOSS).toBool());
     setAlwaysOnTop(s.value(CFG_ALWAYS_ON_TOP, DEF_ALWAYS_ON_TOP).toBool());
-    setSource(s.value(CFG_STYLEPATH, DEF_STYLEPATH).toUrl());
+
+    if ( s.contains(CFG_STYLEPATH) && QFile::exists(s.value(CFG_STYLEPATH).toString()) )
+        setSource(s.value(CFG_STYLEPATH).toString());
+    else {
+        setSource(styles_[0].mainComponent);
+        s.setValue(CFG_STYLEPATH, styles_[0].mainComponent);
+    }
 }
 
 
 /** ***************************************************************************/
 MainWindow::~MainWindow() {
     // Save settings
-    QSettings s;
-    s.setValue(CFG_CENTERED, showCentered_);
-    s.setValue(CFG_HIDEONFOCUSLOSS, hideOnFocusLoss_);
-    s.setValue(CFG_ALWAYS_ON_TOP, alwaysOnTop());
-    s.setValue(CFG_STYLEPATH, source());
-    s.setValue(CFG_WND_POS, position());
-    setSource(QUrl()); // Saves the themeconfig
 
     qDebug() << "QML Box Model mainwindow destructor called";
 }
@@ -76,6 +131,7 @@ MainWindow::~MainWindow() {
 
 /** ***************************************************************************/
 void MainWindow::setVisible(bool visible) {
+    qDebug() << source();
     if ( visible ) {
         if ( showCentered_ ){
             QDesktopWidget *dw = QApplication::desktop();
@@ -112,46 +168,42 @@ void MainWindow::setInput(const QString &input) {
 /** ***************************************************************************/
 void MainWindow::setSource(const QUrl &url) {
 
-    // Prepare the theme property files
-    QString p = QDir(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation))
-            .filePath("styles.conf");
-    QSettings themeProperties(p, QSettings::IniFormat);
+    if ( url.isEmpty() )
+        return;
 
-    // If source is not empty save all propeties
-    if (!source().isEmpty()) {
-        themeProperties.beginGroup(source().toEncoded());
-        for (QString &prop : availableProperties()) {
-            QVariant value = property(prop.toLatin1().data());
-            if (value.isValid())
-                themeProperties.setValue(prop, value);
-        }
-        themeProperties.endGroup();
+    // Apply the source
+    QQuickView::setSource(url);
+
+    // Connect the sigals
+    QObject *object = rootObject();
+
+    connect(object, SIGNAL(inputChanged(QString)),
+            this, SIGNAL(inputChanged(QString)));
+
+    connect(object, SIGNAL(settingsWidgetRequested()),
+            this, SIGNAL(settingsWidgetRequested()));
+
+
+    // Load the theme properties
+    QSettings s(qApp->applicationName());
+    s.beginGroup(PLUGIN_ID);
+
+    s.setValue(CFG_STYLEPATH, source().toString());
+
+    QString themeId = QFileInfo(source().toString()).dir().dirName();
+    s.beginGroup(themeId);
+    for (QString &prop : availableProperties()) {
+        if (s.contains(prop))
+            setProperty(prop.toLatin1().data(), s.value(prop));
     }
-
-    if (!url.isEmpty()) {
-
-        // Apply the source
-        QQuickView::setSource(url);
-
-        // Connect the sigals
-        QObject *object = rootObject();
-        connect(object, SIGNAL(inputChanged(QString)),
-                this, SIGNAL(inputChanged(QString)));
-        connect(object, SIGNAL(settingsWidgetRequested()),
-                this, SIGNAL(settingsWidgetRequested()));
-        connect(this, &MainWindow::settingsWidgetRequested,
-                [](){ qDebug() << "HOden";});
-
-        // Load the theme properties
-        themeProperties.beginGroup(source().toEncoded());
-        for (QString &prop : availableProperties()) {
-            if (themeProperties.contains(prop))
-                setProperty(prop.toLatin1().data(), themeProperties.value(prop));
-        }
-        themeProperties.endGroup();
-    }
+    s.endGroup();
 }
 
+
+/** ***************************************************************************/
+const std::vector<QmlStyleSpec> &MainWindow::availableStyles() const {
+    return styles_;
+}
 
 
 /** ***************************************************************************/
@@ -163,16 +215,18 @@ QStringList MainWindow::availableProperties() {
 }
 
 
-
 /** ***************************************************************************/
 QVariant MainWindow::property(const char *name) const {
     return rootObject()->property(name);
 }
 
 
-
 /** ***************************************************************************/
 void MainWindow::setProperty(const char *attribute, const QVariant &value) {
+    QString themeId = QFileInfo(source().toString()).dir().dirName();
+    QSettings s(qApp->applicationName());
+    s.beginGroup(QString("%1/%2").arg(PLUGIN_ID, themeId));
+    s.setValue(attribute, value);
     rootObject()->setProperty(attribute, value);
     rootObject()->update();
 }
@@ -193,6 +247,14 @@ QStringList MainWindow::availablePresets() {
 void MainWindow::setPreset(const QString &name){
     QMetaObject::invokeMethod(rootObject(), "setPreset",
                               Q_ARG(QVariant, QVariant::fromValue(name)));
+
+    // Save the theme properties
+    QString themeId = QFileInfo(source().toString()).dir().dirName();
+    QSettings s(qApp->applicationName());
+    s.beginGroup(QString("%1/%2").arg(PLUGIN_ID, themeId));
+    for (QString &prop : availableProperties())
+        s.setValue(prop, property(prop.toLatin1().data()));
+    s.endGroup();
 }
 
 
@@ -268,6 +330,11 @@ bool MainWindow::alwaysOnTop() const {
 
 /** ***************************************************************************/
 void MainWindow::setAlwaysOnTop(bool alwaysOnTop) {
+
+    QSettings s(qApp->applicationName());
+    s.beginGroup(PLUGIN_ID);
+    s.setValue(CFG_ALWAYS_ON_TOP, alwaysOnTop);
+
     alwaysOnTop
             ? setFlags(flags() | Qt::WindowStaysOnTopHint)
             : setFlags(flags() & ~Qt::WindowStaysOnTopHint);
@@ -286,6 +353,9 @@ bool MainWindow::hideOnFocusLoss() const {
 
 /** ***************************************************************************/
 void MainWindow::setHideOnFocusLoss(bool hideOnFocusLoss) {
+    QSettings s(qApp->applicationName());
+    s.beginGroup(PLUGIN_ID);
+    s.setValue(CFG_HIDEONFOCUSLOSS, hideOnFocusLoss);
     hideOnFocusLoss_ = hideOnFocusLoss;
 }
 
@@ -300,5 +370,8 @@ bool MainWindow::showCentered() const {
 
 /** ***************************************************************************/
 void MainWindow::setShowCentered(bool showCentered) {
+    QSettings s(qApp->applicationName());
+    s.beginGroup(PLUGIN_ID);
+    s.setValue(CFG_CENTERED, showCentered);
     showCentered_ = showCentered;
 }

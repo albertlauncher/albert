@@ -20,6 +20,13 @@
 #include <QIdentityProxyModel>
 #include "core/history.h"
 
+struct QmlStyleSpec {
+    QString name;
+    QString version;
+    QString author;
+    QString mainComponent;
+};
+
 class MainWindow final : public QQuickView
 {
     Q_OBJECT
@@ -30,19 +37,20 @@ public:
     ~MainWindow();
 
     void setVisible(bool visible = true);
-
     QString input();
     void setInput(const QString&);
-
     void setModel(QAbstractItemModel* model);
-    void setSource(const QUrl & url);
 
+    const std::vector<QmlStyleSpec> &availableStyles() const;
     QStringList availableProperties();
+
     QVariant property(const char *name) const;
     void setProperty(const char *attribute, const QVariant &value);
 
     QStringList availablePresets();
     void setPreset(const QString& name);
+
+    void setSource(const QUrl & url);
 
     bool showCentered() const;
     void setShowCentered(bool showCentered);
@@ -53,16 +61,6 @@ public:
     bool alwaysOnTop() const;
     void setAlwaysOnTop(bool alwaysOnTop);
 
-    static const QString CFG_CENTERED;
-    static const bool    DEF_CENTERED;
-    static const QString CFG_HIDEONFOCUSLOSS;
-    static const bool    DEF_HIDEONFOCUSLOSS;
-    static const QString CFG_ALWAYS_ON_TOP;
-    static const bool    DEF_ALWAYS_ON_TOP;
-    static const QString CFG_STYLEPATH;
-    static const QUrl    DEF_STYLEPATH;
-    static const QString CFG_WND_POS;
-
 protected:
 
     bool event(QEvent *event) override;
@@ -71,6 +69,7 @@ protected:
     bool hideOnFocusLoss_;
     History history_;
     QIdentityProxyModel model_;
+    std::vector<QmlStyleSpec> styles_;
 
 signals:
 

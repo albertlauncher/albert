@@ -44,34 +44,23 @@ ConfigWidget::ConfigWidget(MainWindow *mainWindow, QWidget *parent, Qt::WindowFl
     ui.checkBox_center->setChecked(mainWindow_->showCentered());
     connect(ui.checkBox_center, &QCheckBox::toggled, mainWindow_, &MainWindow::setShowCentered);
 
+
     /*
      *  STYLES
      */
 
-    // Get style dirs
-    QStringList styleDirPaths = QStandardPaths::locateAll(
-                QStandardPaths::AppDataLocation,
-                "org.albert.frontend.boxmodel.qml", QStandardPaths::LocateDirectory);
-
-    // Get style files
-    QFileInfoList styles;
-    for (const QString &styleDirPath : styleDirPaths) {
-        QDirIterator it(styleDirPath, QDir::Dirs|QDir::NoDotAndDotDot);
-        while ( it.hasNext() ) {
-            QFileInfo styleFile(QDir(it.next()).filePath("MainComponent.qml"));
-            if ( styleFile.exists() )
-                styles << styleFile;
-        }
-    }
-
     // Fill the combobox
-    int i = 0 ;
-    ui.comboBox_style->addItem("Standard", QUrl(mainWindow_->DEF_STYLEPATH));
-    for ( QFileInfo &style : styles ) {
-        ui.comboBox_style->addItem(style.dir().dirName(), QUrl(style.canonicalFilePath()));
-        if ( QUrl(style.canonicalFilePath()) == mainWindow_->source() )
-            ui.comboBox_style->setCurrentIndex(i);
-        ++i;
+    for ( const QmlStyleSpec &style : mainWindow_->availableStyles() ) {
+        ui.comboBox_style->addItem(style.name, style.mainComponent);
+
+        // Add tooltip
+        ui.comboBox_style->setItemData(ui.comboBox_style->count()-1,
+                                       QString("%1\nVersion: %2\nAuthor: %3")
+                                       .arg(style.name, style.version, style.author),
+                                       Qt::ToolTipRole);
+
+        if ( style.mainComponent == mainWindow_->source().toString() )
+            ui.comboBox_style->setCurrentIndex(ui.comboBox_style->count()-1);
     }
     connect(ui.comboBox_style, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, &ConfigWidget::onThemeChanged);
@@ -101,8 +90,7 @@ ConfigWidget::ConfigWidget(MainWindow *mainWindow, QWidget *parent, Qt::WindowFl
 /** ***************************************************************************/
 void ConfigWidget::onThemeChanged(int i) {
     // Apply the theme
-    QUrl url = ui.comboBox_style->itemData(i).toUrl();
-    mainWindow_->setSource(url);
+    mainWindow_->setSource(mainWindow_->availableStyles()[i].mainComponent);
 
     // Fill presets
     ui.comboBox_presets->clear();
