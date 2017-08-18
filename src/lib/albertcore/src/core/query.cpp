@@ -242,7 +242,7 @@ public:
     QHash<int, QByteArray> roleNames() const override {
         QHash<int, QByteArray> roles;
         roles[static_cast<int>(ItemRoles::TextRole)]       = "itemTextRole";
-        roles[static_cast<int>(ItemRoles::ToolTipRole)]    = "itemTooltipRole";
+        roles[static_cast<int>(ItemRoles::ToolTipRole)]    = "itemToolTipRole";
         roles[static_cast<int>(ItemRoles::DecorationRole)] = "itemDecorationRole";
         roles[static_cast<int>(ItemRoles::CompletionRole)] = "itemCompletionStringRole";
         roles[static_cast<int>(ItemRoles::ActionRole)]     = "itemActionRole"; // used to activate items as well
