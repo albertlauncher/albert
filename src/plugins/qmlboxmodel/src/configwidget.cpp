@@ -73,7 +73,7 @@ ConfigWidget::ConfigWidget(MainWindow *mainWindow, QWidget *parent, Qt::WindowFl
 
     // PRESETS
     ui.comboBox_presets->clear();
-    ui.comboBox_presets->addItem("Load preset...");
+    ui.comboBox_presets->addItem("Choose preset...");
     ui.comboBox_presets->addItems(mainWindow_->availablePresets());
     connect(ui.comboBox_presets, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
             this, &ConfigWidget::onPresetChanged);
@@ -90,21 +90,18 @@ ConfigWidget::ConfigWidget(MainWindow *mainWindow, QWidget *parent, Qt::WindowFl
 /** ***************************************************************************/
 void ConfigWidget::onThemeChanged(int i) {
     // Apply the theme
-    mainWindow_->setSource(mainWindow_->availableStyles()[i].mainComponent);
+    mainWindow_->setSource(mainWindow_->availableStyles()[static_cast<size_t>(i)].mainComponent);
 
     // Fill presets
+    ui.comboBox_presets->blockSignals(true);
     ui.comboBox_presets->clear();
-    ui.comboBox_presets->addItem("Load preset...");
+    ui.comboBox_presets->addItem("Choose preset...");
     ui.comboBox_presets->addItems(mainWindow_->availablePresets());
+    ui.comboBox_presets->blockSignals(false);
 }
 
 
 /** ***************************************************************************/
 void ConfigWidget::onPresetChanged(const QString &text) {
-    // Remove the placeholder
-    if (text != "Load preset..." && ui.comboBox_presets->itemText(0) == "Load preset...")
-        ui.comboBox_presets->removeItem(0);
-
-    // Apply the preset
     mainWindow_->setPreset(text);
 }
