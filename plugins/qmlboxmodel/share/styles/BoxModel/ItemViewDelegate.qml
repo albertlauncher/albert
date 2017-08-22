@@ -21,7 +21,6 @@ Item {
         asynchronous: true
         source: {
             var path = itemDecorationRole
-            console.log(path)
             return ( path[0] === ":" ) ? "qrc"+path : path
         }
         width: icon_size

@@ -8,7 +8,6 @@ FocusScope {
     property color border_color
     property color background_color
     property color foreground_color
-    property color inputline_color
     property color highlight_color
     property int settingsbutton_size
     property int input_fontsize
@@ -267,7 +266,6 @@ FocusScope {
         window_width = preset.window_width
         background_color = preset.background_color
         foreground_color = preset.foreground_color
-        inputline_color = preset.inputline_color
         highlight_color = preset.highlight_color
         border_color = preset.border_color
     }
