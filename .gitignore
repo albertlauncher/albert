@@ -4,4 +4,6 @@ LicenseTemplate
 packaging
 design
 .albertignore
+*.qmlc
+*.jsc
 
