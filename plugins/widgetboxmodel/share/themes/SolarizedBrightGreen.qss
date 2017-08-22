@@ -1,0 +1,101 @@
+/*
+ * author: Manuel Schneider <https://github.com/ManuelSchneid3r>
+ *
+ * Check http://doc.qt.io/qt-5/stylesheet-syntax.html especially the subtopics:
+ * The Style Sheet Syntax (http://doc.qt.io/qt-5/stylesheet-syntax.html)
+ * Qt Style Sheets Reference (http://doc.qt.io/qt-5/stylesheet-reference.html)
+ */
+
+* {
+  border: none;
+	color : #586e75;
+	background-color: #fdf6e3;
+}
+
+#frame {
+	padding: 6px;
+	border-radius: 12px;
+	background-color: #fdf6e3;
+	border: 6px solid #859900;
+
+  /* Workaround for Qt to get fixed size button*/
+	min-width:640px;
+	max-width:640px;
+}
+
+#inputLine {
+	padding: 2px;
+	border-radius: 2px;
+	font-size: 36px;
+	selection-color: #fdf6e3;
+	selection-background-color: #586e75;
+	background-color: #eee8d5;
+}
+
+#settingsButton {
+	color : #859900;
+	background-color: #fdf6e3;
+  padding: 4px;
+
+  /* Respect the frame border */
+  margin: 6px 6px 0px 0px;
+  border-top-right-radius: 6px;
+  border-bottom-left-radius: 10px;
+
+  /* Workaround for Qt to get fixed size button*/
+	min-width:13px;
+	min-height:13px;
+	max-width:13px;
+	max-height:13px;
+}
+
+/********** ListViews **********/
+
+QListView {
+    background: transparent;
+    selection-color: #586e75;
+}
+
+QListView::item:selected {
+	background: qlineargradient(x1:0, x2:1, stop:0.0 #20859900, stop:0.5 #10859900, stop:1.0 #20859900 );
+}
+
+QListView QScrollBar:vertical  {
+	width: 5px;
+	background: transparent;
+}
+
+QListView QScrollBar::handle:vertical  {
+	background: #859900;
+	min-height: 24px;
+}
+
+QListView QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
+QListView QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical,
+QListView QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+	border: 0px;
+	width: 0px;
+	height: 0px;
+	background: transparent;
+}
+
+/********** actionList **********/
+
+QListView#actionList {
+	font-size: 20px;
+}
+
+QListView#actionList::item{
+	height:28px;
+}
+
+/********** resultsList **********/
+
+QListView#resultsList {
+	icon-size: 44px;
+	font-size: 26px;
+}
+
+QListView#resultsList::item{
+	height:48px;
+}

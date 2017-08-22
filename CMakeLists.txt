@@ -10,7 +10,7 @@ set(CMAKE_AUTOMOC ON)
 
 # Set additional compiler flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -pedantic") #-Wconversion -Wunused
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -DQT_QML_DEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -DQT_NO_DEBUG_OUTPUT ")
 
 # Color make output
@@ -30,7 +30,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # Build project
 add_subdirectory(src/application/)
 add_subdirectory(src/lib/)
-add_subdirectory(src/plugins/)
+add_subdirectory(plugins/)
 
 # Do platform specific post target stuff
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -41,7 +41,5 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     # Install icon
     install(FILES src/lib/albertcore/resources/icons/albert.svg DESTINATION share/icons/hicolor/scalable/apps)
 
-    # Define where to install the themes
-    install(DIRECTORY data/themes DESTINATION share/albert COMPONENT config)
 
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
