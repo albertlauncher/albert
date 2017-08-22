@@ -41,6 +41,8 @@ const QString CFG_STYLEPATH       = "stylePath";
 const QString CFG_WND_POS         = "windowPosition";
 const QString PLUGIN_ID           = "org.albert.frontend.boxmodel.qml";
 const QString STYLE_MAIN_NAME     = "MainComponent.qml";
+const char*   CFG_HIDE_ON_CLOSE   = "hideOnClose";
+const bool    DEF_HIDE_ON_CLOSE   = false;
 }
 
 /** ***************************************************************************/
@@ -119,6 +121,7 @@ MainWindow::MainWindow(QWindow *parent) : QQuickView(parent) {
     setShowCentered(s.value(CFG_CENTERED, DEF_CENTERED).toBool());
     setHideOnFocusLoss(s.value(CFG_HIDEONFOCUSLOSS, DEF_HIDEONFOCUSLOSS).toBool());
     setAlwaysOnTop(s.value(CFG_ALWAYS_ON_TOP, DEF_ALWAYS_ON_TOP).toBool());
+    setHideOnClose(s.value(CFG_HIDE_ON_CLOSE, DEF_HIDE_ON_CLOSE).toBool());
     if ( s.contains(CFG_STYLEPATH) && QFile::exists(s.value(CFG_STYLEPATH).toString()) )
         setSource(s.value(CFG_STYLEPATH).toString());
     else {
@@ -287,7 +290,7 @@ bool MainWindow::event(QEvent *event) {
     {
     // Quit on Alt+F4
     case QEvent::Close:
-            qApp->quit();
+        ( hideOnClose_ ) ? setVisible(false) : qApp->quit();
         return true;
 
     // Hide window on escape key
@@ -389,4 +392,21 @@ void MainWindow::setShowCentered(bool showCentered) {
     s.beginGroup(PLUGIN_ID);
     s.setValue(CFG_CENTERED, showCentered);
     showCentered_ = showCentered;
+}
+
+
+
+/** ***************************************************************************/
+bool MainWindow::MainWindow::hideOnClose() const {
+    return hideOnClose_;
+}
+
+
+
+/** ***************************************************************************/
+void MainWindow::setHideOnClose(bool b) {
+    QSettings s(qApp->applicationName());
+    s.beginGroup(PLUGIN_ID);
+    s.setValue(CFG_HIDE_ON_CLOSE, hideOnClose_);
+    hideOnClose_ = b;
 }

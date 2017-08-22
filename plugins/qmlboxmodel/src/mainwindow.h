@@ -61,12 +61,16 @@ public:
     bool alwaysOnTop() const;
     void setAlwaysOnTop(bool alwaysOnTop);
 
+    bool hideOnClose() const;
+    void setHideOnClose(bool b = true);
+
 protected:
 
     bool event(QEvent *event) override;
 
     bool showCentered_;
     bool hideOnFocusLoss_;
+    bool hideOnClose_;
     History history_;
     QIdentityProxyModel model_;
     std::vector<QmlStyleSpec> styles_;

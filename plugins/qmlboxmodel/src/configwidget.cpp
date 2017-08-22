@@ -34,15 +34,23 @@ ConfigWidget::ConfigWidget(MainWindow *mainWindow, QWidget *parent, Qt::WindowFl
 
     // ALWAYS ON TOP
     ui.checkBox_onTop->setChecked(mainWindow_->alwaysOnTop());
-    connect(ui.checkBox_onTop, &QCheckBox::toggled, mainWindow_, &MainWindow::setAlwaysOnTop);
+    connect(ui.checkBox_onTop, &QCheckBox::toggled, mainWindow_,
+            &MainWindow::setAlwaysOnTop);
 
     // HIDE ON FOCUS OUT
     ui.checkBox_hideOnFocusOut->setChecked(mainWindow_->hideOnFocusLoss());
-    connect(ui.checkBox_hideOnFocusOut, &QCheckBox::toggled, mainWindow_, &MainWindow::setHideOnFocusLoss);
+    connect(ui.checkBox_hideOnFocusOut, &QCheckBox::toggled,
+            mainWindow_, &MainWindow::setHideOnFocusLoss);
 
     // ALWAYS CENTER
     ui.checkBox_center->setChecked(mainWindow_->showCentered());
-    connect(ui.checkBox_center, &QCheckBox::toggled, mainWindow_, &MainWindow::setShowCentered);
+    connect(ui.checkBox_center, &QCheckBox::toggled,
+            mainWindow_, &MainWindow::setShowCentered);
+
+    // HIDE ON CLOSE
+    ui.checkBox_hideOnClose->setChecked(mainWindow_->hideOnClose());
+    connect(ui.checkBox_hideOnClose, &QCheckBox::toggled,
+            mainWindow_, &MainWindow::setHideOnClose);
 
 
     /*
