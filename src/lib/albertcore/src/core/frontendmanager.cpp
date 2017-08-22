@@ -83,7 +83,9 @@ Core::FrontendManager::FrontendManager(QStringList pluginDirs)
         s.setValue(CFG_FRONTEND_ID, (*it)->id());
     }
 
-    (*it)->load();
+    if ( !(*it)->load() )
+        qFatal("Failed loading frontend");
+
     d->currentFrontend.reset(dynamic_cast<Frontend*>((*it)->instance()));
     if (!d->currentFrontend)
         qFatal("Could not cast plugin instance to frontend");

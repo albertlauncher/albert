@@ -111,7 +111,7 @@ bool Core::PluginSpec::load() {
         }
 
         if (!plugin) {
-           qWarning() << qPrintable(QString("Failed loading plugin: %1 [%2]").arg(path()).arg(loader_.errorString()));
+           qWarning() << qPrintable(QString("Failed loading plugin: %1 [%2]").arg(path()).arg(lastError_));
            state_ = State::Error;
         }
     }
@@ -151,6 +151,6 @@ QString Core::PluginSpec::lastError() const {
 
 /** ***************************************************************************/
 QObject *Core::PluginSpec::instance() {
-    return loader_.instance();
+    return (state_ == State::Loaded) ? loader_.instance() : nullptr;
 }
 
