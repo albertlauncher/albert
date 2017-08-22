@@ -87,19 +87,21 @@ WidgetBoxModel::ConfigWidget::ConfigWidget(FrontendWidget *frontend, QWidget *pa
             d->frontend, &FrontendWidget::setDisplayShadow);
 
     // THEMES
+    QStringList pluginDataPaths = QStandardPaths::locateAll(QStandardPaths::AppDataLocation,
+                                                            "org.albert.frontend.boxmodel.widgets",
+                                                            QStandardPaths::LocateDirectory);
+
     QFileInfoList themes;
-    int i = 0 ;
-    QStringList themeDirs =
-            QStandardPaths::locateAll(QStandardPaths::DataLocation, "themes",
-                                      QStandardPaths::LocateDirectory);
-    for (const QDir &d : themeDirs)
-        themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
+    for (const QString &pluginDataPath : pluginDataPaths)
+        themes << QDir(QString("%1/themes").arg(pluginDataPath))
+                  .entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
+
     for (const QFileInfo &fi : themes) {
         d->ui.comboBox_themes->addItem(fi.baseName(), fi.canonicalFilePath());
         if ( fi.baseName() == d->frontend->theme())
-            d->ui.comboBox_themes->setCurrentIndex(i);
-        ++i;
+            d->ui.comboBox_themes->setCurrentIndex(d->ui.comboBox_themes->count()-1);
     }
+
     connect(d->ui.comboBox_themes, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             [this](int i){
         // Apply and save the theme
