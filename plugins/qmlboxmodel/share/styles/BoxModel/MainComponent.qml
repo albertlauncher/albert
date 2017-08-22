@@ -4,7 +4,7 @@ import QtGraphicalEffects 1.0
 import "presets.js" as Presets
 
 FocusScope {
-    // ▼▲ Setfle properties of this style ▲▼
+    // ▼ Setfle properties of this style ▼
     property color border_color
     property color background_color
     property color foreground_color
@@ -17,13 +17,13 @@ FocusScope {
     property int max_items
     property int space
     property int window_width
-    // ▲▼ Settable properties of this style ▼▲
+    // ▲ Settable properties of this style ▲
     property int currentModifiers
-
-//    FontLoader {
-//        id: roboto;
-//        source: "fonts/Roboto-Thin.ttf"
-//    }
+    property string font_name: fontLoader.name
+    FontLoader {
+        id: fontLoader
+        source: "fonts/Roboto-Thin.ttf"
+    }
 
     id: root
     width: frame.width
@@ -57,17 +57,15 @@ FocusScope {
                 color: foreground_color
                 focus: true
                 font.pixelSize: input_fontsize
-                font.family: roboto.name
+                font.family: font_name
                 selectByMouse: true
                 selectedTextColor: background_color
                 selectionColor: highlight_color
                 Keys.forwardTo: [root, resultsList]
                 cursorDelegate : Item {
                     id: cursor
-                    Rectangle {
-                        y: 2;
-                        width: 1
-                        height: parent.height-4
+                    Rectangle { width: 1
+                        height: parent.height
                         color: foreground_color
                     }
                     SequentialAnimation on opacity {
@@ -98,6 +96,7 @@ FocusScope {
                     horizontalAlignment: Text.AlignHCenter
                     width: parent.width
                     text: name
+                    font.family: font_name
                     elide: Text.ElideRight
                     font.pixelSize: (item_description_fontsize+item_title_fontsize)/2
                     color: ListView.isCurrentItem ? highlight_color : foreground_color

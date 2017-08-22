@@ -9,6 +9,11 @@ Item {
     height: Math.max(listItemIcon.height, listItemTextArea.height)
 
 
+    FontLoader {
+        id: font
+        source: "fonts/Roboto-Thin.ttf"
+    }
+
     MouseArea {
         anchors.fill: parent
         onClicked: resultsList.currentIndex = index
@@ -69,6 +74,7 @@ Item {
             id: textId
             width: parent.width
             text: itemTextRole
+            font.family: font_name
             elide: Text.ElideRight
             color: listItem.ListView.isCurrentItem ? highlight_color : foreground_color
             font.pixelSize: item_title_fontsize
@@ -78,6 +84,7 @@ Item {
             id: subTextId
             width: parent.width
             text: itemToolTipRole
+            font.family: font_name
             elide: Text.ElideRight
             color: listItem.ListView.isCurrentItem ? highlight_color : foreground_color
             font.pixelSize: item_description_fontsize

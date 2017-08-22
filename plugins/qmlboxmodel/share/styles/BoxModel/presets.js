@@ -9,6 +9,7 @@ var settableProperties = [
     "item_description_fontsize",
     "icon_size",
     "max_items",
+    "font_name",
     "space",
     "settingsbutton_size",
     "window_width"
