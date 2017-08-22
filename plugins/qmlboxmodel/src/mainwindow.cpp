@@ -74,7 +74,7 @@ MainWindow::MainWindow(QWindow *parent) : QQuickView(parent) {
     // Get style files
     QFileInfoList styles;
     for (const QString &pluginDataPath : pluginDataPaths) {
-        QDirIterator it(pluginDataPath, QDir::Dirs|QDir::NoDotAndDotDot);
+        QDirIterator it(QString("%1/styles").arg(pluginDataPath), QDir::Dirs|QDir::NoDotAndDotDot);
         while ( it.hasNext() ) {
             QDir root = QDir(it.next());
             if ( root.exists(STYLE_MAIN_NAME) ){

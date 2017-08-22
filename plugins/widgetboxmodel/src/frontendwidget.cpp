@@ -202,10 +202,8 @@ WidgetBoxModel::FrontendWidget::FrontendWidget() : d(new Private) {
     setDisplayIcons(s.value(CFG_DISPLAY_ICONS, DEF_DISPLAY_ICONS).toBool());
     setDisplayShadow(s.value(CFG_DISPLAY_SHADOW, DEF_DISPLAY_SHADOW).toBool());
     d->theme_ = s.value(CFG_THEME, DEF_THEME).toString();
-    if (!setTheme(d->theme_)) {
+    if (!setTheme(d->theme_))
         qFatal("FATAL: Stylefile not found: %s", d->theme_.toStdString().c_str());
-        qApp->quit();
-    }
 
 
     /*
@@ -342,10 +340,16 @@ const QString &WidgetBoxModel::FrontendWidget::theme() const {
 bool WidgetBoxModel::FrontendWidget::setTheme(const QString &theme) {
     d->theme_ = theme;
     QFileInfoList themes;
-    QStringList themeDirs = QStandardPaths::locateAll(
-        QStandardPaths::DataLocation, "themes", QStandardPaths::LocateDirectory);
-    for (const QDir &d : themeDirs)
-        themes << d.entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
+
+
+    QStringList pluginDataPaths = QStandardPaths::locateAll(QStandardPaths::AppDataLocation,
+                                                            "org.albert.frontend.boxmodel.widgets",
+                                                            QStandardPaths::LocateDirectory);
+
+    for (const QString &pluginDataPath : pluginDataPaths)
+        themes << QDir(QString("%1/themes").arg(pluginDataPath))
+                  .entryInfoList(QStringList("*.qss"), QDir::Files | QDir::NoSymLinks);
+
     // Find and apply the theme
     bool success = false;
     for (const QFileInfo &fi : themes) {
