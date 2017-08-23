@@ -8,7 +8,7 @@ compiler:
 install:
   - sudo add-apt-repository ppa:beineri/opt-qt551-trusty -y  # Qt-5.5
   - sudo apt-get update -qq
-  - sudo apt-get install -qq cmake qt55base qt55x11extras qt55svg libmuparser-dev
+  - sudo apt-get install -qq cmake qt55base qt55x11extras qt55svg qt55quickcontrols libmuparser-dev
 
 script:
   - source /opt/qt55/bin/qt55-env.sh
