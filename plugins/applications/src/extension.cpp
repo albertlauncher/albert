@@ -154,11 +154,97 @@ QString getLocalizedKey(const QString &key, const map<QString,QString> &entries,
     return QString();
 }
 
+}
 
 
 
 /** ***************************************************************************/
-vector<shared_ptr<StandardIndexItem>> indexApplications(bool ignoreShowInKeys) {
+/** ***************************************************************************/
+/** ***************************************************************************/
+/** ***************************************************************************/
+class Applications::Private
+{
+public:
+    Private(Extension *q) : q(q) {}
+
+    Extension *q;
+
+    QPointer<ConfigWidget> widget;
+    QFileSystemWatcher watcher;
+    QString graphicalSudoPath;
+
+    vector<shared_ptr<Core::StandardIndexItem>> index;
+    OfflineIndex offlineIndex;
+
+    QFutureWatcher<vector<shared_ptr<Core::StandardIndexItem>>> futureWatcher;
+    bool rerun = false;
+    bool ignoreShowInKeys;
+
+    void finishIndexing();
+    void startIndexing();
+    vector<shared_ptr<Core::StandardIndexItem>> indexApplications() const;
+};
+
+
+
+/** ***************************************************************************/
+void Applications::Private::startIndexing() {
+
+    // Never run concurrent
+    if ( futureWatcher.future().isRunning() ) {
+        rerun = true;
+        return;
+    }
+
+    // Run finishIndexing when the indexing thread finished
+    futureWatcher.disconnect();
+    QObject::connect(&futureWatcher, &QFutureWatcher<vector<shared_ptr<Core::StandardIndexItem>>>::finished,
+                     std::bind(&Private::finishIndexing, this));
+
+    // Run the indexer thread
+    futureWatcher.setFuture(QtConcurrent::run(this, &Private::indexApplications));
+
+    // Notification
+    qInfo() << "Start indexing applications.";
+    emit q->statusInfo("Indexing applications ...");
+}
+
+
+
+/** ***************************************************************************/
+void Applications::Private::finishIndexing() {
+
+    // Get the thread results
+    index = futureWatcher.future().result();
+
+    // Rebuild the offline index
+    offlineIndex.clear();
+    for (const auto &item : index)
+        offlineIndex.add(item);
+
+    // Finally update the watches (maybe folders changed)
+    if (!watcher.directories().isEmpty())
+        watcher.removePaths(watcher.directories());
+    QStringList xdgAppDirs = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
+    for (const QString &path : xdgAppDirs) {
+        watcher.addPath(path);
+        QDirIterator dit(path, QDir::Dirs|QDir::NoDotAndDotDot);
+        while (dit.hasNext())
+            watcher.addPath(dit.next());
+    }
+
+    // Notification
+    qInfo() << qPrintable(QString("Indexed %1 applications.").arg(index.size()));
+    emit q->statusInfo(QString("%1 applications indexed.").arg(index.size()));
+
+    if ( rerun ) {
+        startIndexing();
+        rerun = false;
+    }
+}
+
+/** ***************************************************************************/
+vector<shared_ptr<StandardIndexItem>> Applications::Private::indexApplications() const {
 
     // Get a new index [O(n)]
     vector<shared_ptr<StandardIndexItem>> desktopEntries;
@@ -320,7 +406,7 @@ vector<shared_ptr<StandardIndexItem>> indexApplications(bool ignoreShowInKeys) {
                                                          fIt.filePath());
 
             shared_ptr<StandardAction> sa = std::make_shared<StandardAction>();
-            sa->setText(QString("Run %1").arg(name));
+            sa->setText(QString("Run '%1'").arg(name));
             if (term){
                 sa->setAction([commandline, workingDir](){
                     QStringList arguments = Core::ShUtil::split(terminalCommand);
@@ -345,7 +431,7 @@ vector<shared_ptr<StandardIndexItem>> indexApplications(bool ignoreShowInKeys) {
 
             if (term){
                 sa = std::make_shared<StandardAction>();
-                sa->setText(QString("Run %1 as root").arg(name));
+                sa->setText(QString("Run '%1' as root").arg(name));
                 sa->setAction([commandline, workingDir](){
                     QStringList arguments = Core::ShUtil::split(terminalCommand);
                     arguments.append(QString("sudo %1").arg(commandline.join(' ')));
@@ -354,25 +440,14 @@ vector<shared_ptr<StandardIndexItem>> indexApplications(bool ignoreShowInKeys) {
                 });
                 actions.push_back(sa);
             }
-//            else {
-//             Root action. (FistComeFirstsServed. TODO: more sophisticated solution)
-//            for (const QString &s : supportedGraphicalSudo){
-//                QProcess p;
-//                p.start("which", {s});
-//                p.waitForFinished(-1);
-//                if (p.exitCode() == 0){
-//                    actions_.push_back(std::make_shared<DesktopAction>(
-//                                           this, QString("Run %1 as root").arg(name_),
-//                                           QString("%1 \"%2\"").arg(s, exec_)));
-//                    break;
-//                }
-//            }
-//                sa->setAction([commandline, workingDir](){
-//                    QStringList arguments = commandline;
-//                    QString command = arguments.takeFirst();
-//                    QProcess::startDetached(command, arguments, workingDir);
-//                });
-//            }
+            else if ( !graphicalSudoPath.isNull() ) {
+                sa = std::make_shared<StandardAction>();
+                sa->setText(QString("Run '%1' as root").arg(name));
+                sa->setAction([=](){
+                    QProcess::startDetached(graphicalSudoPath, commandline, workingDir);
+                });
+                actions.push_back(sa);
+            }
 
 
             /*
@@ -465,94 +540,6 @@ vector<shared_ptr<StandardIndexItem>> indexApplications(bool ignoreShowInKeys) {
     return desktopEntries;
 }
 
-}
-
-
-
-/** ***************************************************************************/
-/** ***************************************************************************/
-/** ***************************************************************************/
-/** ***************************************************************************/
-class Applications::Private
-{
-public:
-    Private(Extension *q) : q(q) {}
-
-    Extension *q;
-
-    QPointer<ConfigWidget> widget;
-    QFileSystemWatcher watcher;
-
-    vector<shared_ptr<Core::StandardIndexItem>> index;
-    OfflineIndex offlineIndex;
-
-    QFutureWatcher<vector<shared_ptr<Core::StandardIndexItem>>> futureWatcher;
-    bool rerun = false;
-    bool ignoreShowInKeys;
-
-    void finishIndexing();
-    void startIndexing();
-};
-
-
-
-/** ***************************************************************************/
-void Applications::Private::startIndexing() {
-
-    // Never run concurrent
-    if ( futureWatcher.future().isRunning() ) {
-        rerun = true;
-        return;
-    }
-
-    // Run finishIndexing when the indexing thread finished
-    futureWatcher.disconnect();
-    QObject::connect(&futureWatcher, &QFutureWatcher<vector<shared_ptr<Core::StandardIndexItem>>>::finished,
-                     std::bind(&Private::finishIndexing, this));
-
-    // Run the indexer thread
-    futureWatcher.setFuture(QtConcurrent::run(indexApplications, ignoreShowInKeys));
-
-    // Notification
-    qInfo() << "Start indexing applications.";
-    emit q->statusInfo("Indexing applications ...");
-}
-
-
-
-/** ***************************************************************************/
-void Applications::Private::finishIndexing() {
-
-    // Get the thread results
-    index = futureWatcher.future().result();
-
-    // Rebuild the offline index
-    offlineIndex.clear();
-    for (const auto &item : index)
-        offlineIndex.add(item);
-
-    // Finally update the watches (maybe folders changed)
-    if (!watcher.directories().isEmpty())
-        watcher.removePaths(watcher.directories());
-    QStringList xdgAppDirs = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
-    for (const QString &path : xdgAppDirs) {
-        watcher.addPath(path);
-        QDirIterator dit(path, QDir::Dirs|QDir::NoDotAndDotDot);
-        while (dit.hasNext())
-            watcher.addPath(dit.next());
-    }
-
-    // Notification
-    qInfo() << qPrintable(QString("Indexed %1 applications.").arg(index.size()));
-    emit q->statusInfo(QString("%1 applications indexed.").arg(index.size()));
-
-    if ( rerun ) {
-        startIndexing();
-        rerun = false;
-    }
-}
-
-
 
 /** ***************************************************************************/
 /** ***************************************************************************/
@@ -564,6 +551,8 @@ Applications::Extension::Extension()
       d(new Private(this)) {
 
     qunsetenv("DESKTOP_AUTOSTART_ID");
+
+    d->graphicalSudoPath = QStandardPaths::findExecutable("gksudo");
 
     // Load settings
     QSettings s(qApp->applicationName());
