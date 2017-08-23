@@ -23,6 +23,7 @@
 #include <QPluginLoader>
 #include <QSettings>
 #include <QStandardPaths>
+#include <chrono>
 #include "extensionmanager.h"
 #include "pluginspec.h"
 using std::set;
