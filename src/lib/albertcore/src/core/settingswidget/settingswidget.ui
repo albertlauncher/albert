@@ -296,6 +296,7 @@ that use a textual user interface.</string>
 &lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;
 &lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
+a { color: &quot;#00CCCC&quot;; }
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
@@ -344,6 +345,7 @@ p, li { white-space: pre-wrap; }
   </customwidget>
  </customwidgets>
  <resources>
+  <include location="../../../resources.qrc"/>
   <include location="../../../resources.qrc"/>
  </resources>
  <connections/>

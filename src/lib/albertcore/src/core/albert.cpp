@@ -80,11 +80,6 @@ int Core::AlbertApp::run(int argc, char **argv) {
         app->setWindowIcon(QIcon(icon));
 
 
-        // Set link color applicationwide to cyan
-        QPalette palette(qApp->palette());
-        palette.setColor(QPalette::Link, QColor("#00CCCC"));
-        qApp->setPalette(palette);
-
         /*
          *  PARSE COMMANDLINE
          */
