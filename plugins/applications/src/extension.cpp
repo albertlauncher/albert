@@ -523,12 +523,23 @@ vector<shared_ptr<StandardIndexItem>> Applications::Private::indexApplications()
             // Set keywords
             vector<Indexable::WeightedKeyword> indexKeywords;
             indexKeywords.emplace_back(name, USHRT_MAX);
+
+            if ( !exec.startsWith("java ")
+                 && !exec.startsWith("ruby ")
+                 && !exec.startsWith("python ")
+                 && !exec.startsWith("perl ")
+                 && !exec.startsWith("bash ")
+                 && !exec.startsWith("sh ")
+                 && !exec.startsWith("dbus-send ")
+                 && !exec.startsWith("/") )
+                indexKeywords.emplace_back(exec, USHRT_MAX);
+
             if (!genericName.isEmpty())
                 indexKeywords.emplace_back(genericName, USHRT_MAX*0.9);
+
             for (auto & kw : keywords)
                 indexKeywords.emplace_back(kw, USHRT_MAX*0.8);
-//            if (!comment.isEmpty())
-//                indexKeywords.emplace_back(comment, USHRT_MAX*0.5);
+
             ssii->setIndexKeywords(std::move(indexKeywords));
 
             // Set actions
