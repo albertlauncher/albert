@@ -621,6 +621,9 @@ QWidget *Applications::Extension::widget(QWidget *parent) {
 /** ***************************************************************************/
 void Applications::Extension::handleQuery(Core::Query * query) {
 
+    if ( query->searchTerm().isEmpty() )
+        return;
+
     // Search for matches
     const vector<shared_ptr<Core::IndexableItem>> &indexables = d->offlineIndex.search(query->searchTerm().toLower());
 

@@ -105,6 +105,10 @@ QWidget *Calculator::Extension::widget(QWidget *parent) {
 
 /** ***************************************************************************/
 void Calculator::Extension::handleQuery(Core::Query * query) {
+
+    if ( query->searchTerm().isEmpty() )
+        return;
+
     d->parser->SetExpr(query->searchTerm().toLower().toStdString());
     QString result;
     try {
