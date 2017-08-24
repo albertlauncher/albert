@@ -68,7 +68,7 @@ Core::QueryExecution::QueryExecution(const std::set<QueryHandler*> & queryHandle
         system_clock::time_point start = system_clock::now();
         vector<shared_ptr<Item>> && tmpFallbacks = fallbackProvider->fallbacks(searchTerm);
         long duration = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now()-start).count();
-        qDebug() << qPrintable(QString("TIME: %1 ms [%2] FALLBACK").arg(duration, 6).arg("fallback providers have no id yet"));
+        qDebug() << qPrintable(QString("TIME: %1 µs FALLBACK [%2]").arg(duration, 6).arg("fallback providers have no id yet"));
         fallbacks_.insert(fallbacks_.end(),
                           std::make_move_iterator(tmpFallbacks.begin()),
                           std::make_move_iterator(tmpFallbacks.end()));
@@ -245,7 +245,7 @@ void Core::QueryExecution::runBatchHandlers() {
         system_clock::time_point start = system_clock::now();
         queryHandler->handleQuery(&query_);
         long duration = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now()-start).count();
-        qDebug() << qPrintable(QString("TIME: %1 ms [%2] MATCHES").arg(duration, 6).arg(queryHandler->id));
+        qDebug() << qPrintable(QString("TIME: %1 µs MATCHES [%2]").arg(duration, 6).arg(queryHandler->id));
         return std::make_pair(queryHandler, static_cast<int>(duration));
     };
     future_ = QtConcurrent::mapped(batchHandlers_.begin(), batchHandlers_.end(), func);
@@ -299,7 +299,7 @@ void Core::QueryExecution::runRealitimeHandlers() {
         system_clock::time_point start = system_clock::now();
         queryHandler->handleQuery(&query_);
         long duration = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now()-start).count();
-        qDebug() << qPrintable(QString("TIME: %1 ms [%2] MATCHES REALTIME").arg(duration, 6).arg(queryHandler->id));
+        qDebug() << qPrintable(QString("TIME: %1 µs MATCHES REALTIME [%2]").arg(duration, 6).arg(queryHandler->id));
         return std::make_pair(queryHandler, static_cast<int>(duration));
     };
     future_ = QtConcurrent::mapped(realtimeHandlers_.begin(), realtimeHandlers_.end(), func);
