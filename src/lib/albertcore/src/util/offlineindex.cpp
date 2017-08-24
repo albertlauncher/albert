@@ -82,7 +82,7 @@ double Core::OfflineIndex::delta() {
 
 
 /** ***************************************************************************/
-void Core::OfflineIndex::add(std::shared_ptr<Core::Indexable> idxble) {
+void Core::OfflineIndex::add(std::shared_ptr<Core::IndexableItem> idxble) {
     impl_->add(idxble);
 }
 
@@ -96,6 +96,6 @@ void Core::OfflineIndex::clear() {
 
 
 /** ***************************************************************************/
-std::vector<std::shared_ptr<Core::Indexable> > Core::OfflineIndex::search(const QString &req) const {
+std::vector<std::shared_ptr<Core::IndexableItem> > Core::OfflineIndex::search(const QString &req) const {
     return impl_->search(req);
 }

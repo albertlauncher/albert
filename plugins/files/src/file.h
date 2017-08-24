@@ -24,7 +24,7 @@
 
 namespace Files {
 
-class File final : public Core::Item, public Core::Indexable
+class File final : public Core::IndexableItem
 {
 public:
 
@@ -41,7 +41,7 @@ public:
     QString subtext() const override;
     QString completionString() const override;
     QString iconPath() const override;
-    std::vector<Core::Indexable::WeightedKeyword> indexKeywords() const override;
+    std::vector<Core::IndexableItem::WeightedKeyword> indexKeywords() const override;
     std::vector<std::shared_ptr<Core::Action>> actions() override;
 
     /*

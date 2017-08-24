@@ -98,9 +98,9 @@ vector<shared_ptr<Core::Action>> Files::File::actions() {
 
 
 /** ***************************************************************************/
-vector<Core::Indexable::WeightedKeyword> Files::File::indexKeywords() const {
-    std::vector<Indexable::WeightedKeyword> res;
-    res.emplace_back(QFileInfo(path_).fileName(), USHRT_MAX);
+vector<Core::IndexableItem::WeightedKeyword> Files::File::indexKeywords() const {
+    std::vector<IndexableItem::WeightedKeyword> res;
+    res.emplace_back(QFileInfo(path_).fileName(), UINT_MAX);
     // TODO ADD PATH
     return res;
 }

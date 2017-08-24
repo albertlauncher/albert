@@ -24,6 +24,7 @@
 #include <QStandardPaths>
 #include <QString>
 #include <stdexcept>
+#include <set>
 #include <unistd.h>
 #include <pwd.h>
 #include "extension.h"
@@ -161,8 +162,11 @@ QWidget *Ssh::Extension::widget(QWidget *parent) {
 /** ***************************************************************************/
 void Ssh::Extension::handleQuery(Core::Query * query) {
 
+    if ( query->searchTerm().isEmpty() )
+        return;
+
     // This extension must run only triggered
-    if ( !query->isTriggered() )
+    if ( query->trigger().isNull() )
         return;
 
     QStringList queryTerms = query->searchTerm().split(' ',QString::SkipEmptyParts);
@@ -170,7 +174,7 @@ void Ssh::Extension::handleQuery(Core::Query * query) {
     // Add all hosts if there are no arguments
     if ( queryTerms.size() == 1)
         for ( shared_ptr<Core::StandardItem>& host : d->hosts )
-            query->addMatch(host, 1);
+            query->addMatch(host, 1);  // Explicitly: No move
 
     if ( queryTerms.size() != 2)
         return;
@@ -178,7 +182,8 @@ void Ssh::Extension::handleQuery(Core::Query * query) {
     // Add all hosts that the query is a prefix of
     for ( shared_ptr<Core::StandardItem>& host : d->hosts )
         if ( host->text().startsWith(queryTerms[1]) )
-            query->addMatch(host, SHRT_MAX * static_cast<float>(query->searchTerm().size())/host->text().size());
+            query->addMatch(host, // Explicitly: No move
+                            static_cast<uint>(UINT_MAX * static_cast<float>(query->searchTerm().size()/host->text().size())));
 
     // Add the quick connect item
     std::shared_ptr<StandardItem> item  = std::make_shared<StandardItem>("");
@@ -199,7 +204,7 @@ void Ssh::Extension::handleQuery(Core::Query * query) {
     });
     item->setActions({action});
 
-    query->addMatch(item, 0);
+    query->addMatch(std::move(item));
 }
 
 

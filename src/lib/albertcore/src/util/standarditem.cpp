@@ -62,5 +62,5 @@ vector<shared_ptr<Core::Action>> Core::StandardItem::actions(){
 }
 
 void Core::StandardItem::setActions(vector<shared_ptr<Action> > &&actions){
-    actions_ = actions;
+    actions_ = std::move(actions);
 }

@@ -27,8 +27,8 @@ using namespace std;
 map<QString, double> Core::MatchCompare::order;
 
 /** ***************************************************************************/
-bool Core::MatchCompare::operator()(const pair<shared_ptr<Item>, short> &lhs,
-                                  const pair<shared_ptr<Item>, short> &rhs) {
+bool Core::MatchCompare::operator()(const pair<shared_ptr<Item>, uint> &lhs,
+                                  const pair<shared_ptr<Item>, uint> &rhs) {
     // Compare urgency
     if (lhs.first->urgency() != rhs.first->urgency())
         return lhs.first->urgency() > rhs.first->urgency();

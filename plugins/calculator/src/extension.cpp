@@ -182,5 +182,5 @@ void Calculator::Extension::handleQuery(Core::Query * query) {
 
     calcItem->setActions(std::move(actions));
 
-    query->addMatch(calcItem, SHRT_MAX);
+    query->addMatch(std::move(calcItem), UINT_MAX);
 }

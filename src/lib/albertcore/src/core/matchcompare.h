@@ -31,8 +31,8 @@ class MatchCompare
 public:
 
     static void update();
-    bool operator()(const std::pair<std::shared_ptr<Item>, short>& lhs,
-                    const std::pair<std::shared_ptr<Item>, short>& rhs);
+    bool operator()(const std::pair<std::shared_ptr<Item>, uint>& lhs,
+                    const std::pair<std::shared_ptr<Item>, uint>& rhs);
 
 private:
 

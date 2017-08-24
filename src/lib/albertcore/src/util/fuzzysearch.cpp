@@ -91,14 +91,14 @@ Core::FuzzySearch::~FuzzySearch() {
 
 
 /** ***************************************************************************/
-void Core::FuzzySearch::add(shared_ptr<Core::Indexable> indexable) {
+void Core::FuzzySearch::add(shared_ptr<Core::IndexableItem> indexable) {
 
     // Add indexable to the index
     index_.push_back(indexable);
     uint id = static_cast<uint>(index_.size()-1);
 
     // Add a mappings to the inverted index which maps on t.
-    vector<Indexable::WeightedKeyword> indexKeywords = indexable->indexKeywords();
+    vector<IndexableItem::WeightedKeyword> indexKeywords = indexable->indexKeywords();
     for (const auto &wkw : indexKeywords) {
         QStringList words = wkw.keyword.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
         for (QString &w : words) {
@@ -129,7 +129,7 @@ void Core::FuzzySearch::clear() {
 
 
 /** ***************************************************************************/
-vector<shared_ptr<Core::Indexable> > Core::FuzzySearch::search(const QString &req) const {
+vector<shared_ptr<Core::IndexableItem> > Core::FuzzySearch::search(const QString &req) const {
     vector<QString> words;
     for (QString &word : req.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts))
         words.push_back(word.toLower());
@@ -137,7 +137,7 @@ vector<shared_ptr<Core::Indexable> > Core::FuzzySearch::search(const QString &re
 
     // Quit if there are no words in query
     if (words.empty())
-        return vector<shared_ptr<Indexable>>();
+        return vector<shared_ptr<IndexableItem>>();
 
     // Split the query into words
     for (QString &word : words) {
@@ -245,7 +245,7 @@ vector<shared_ptr<Core::Indexable> > Core::FuzzySearch::search(const QString &re
     //        std::sort(finalResult.begin(), finalResult.end(),
     //                  [](QPair<T, uint> x, QPair<T, uint> y)
     //                    {return x.second > y.second;});
-    vector<shared_ptr<Indexable>> result;
+    vector<shared_ptr<IndexableItem>> result;
     for (const pair<uint,uint> &pair : finalResult) {
         result.push_back(index_.at(pair.first));
     }

@@ -23,7 +23,7 @@
 
 namespace Core {
 
-class Indexable;
+class IndexableItem;
 
 class PrefixSearch : public IndexImpl
 {
@@ -33,13 +33,13 @@ public:
     PrefixSearch(const PrefixSearch &rhs);
     virtual ~PrefixSearch();
 
-    void add(std::shared_ptr<Indexable> idxble) override;
+    void add(std::shared_ptr<IndexableItem> idxble) override;
     void clear() override;
-    std::vector<std::shared_ptr<Indexable>> search(const QString &req) const override;
+    std::vector<std::shared_ptr<IndexableItem>> search(const QString &req) const override;
 
 protected:
 
-    std::vector<std::shared_ptr<Indexable>> index_;
+    std::vector<std::shared_ptr<IndexableItem>> index_;
     std::map<QString,std::set<uint>> invertedIndex_;
 };
 

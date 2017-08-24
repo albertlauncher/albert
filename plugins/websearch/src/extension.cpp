@@ -363,10 +363,14 @@ QStringList Websearch::Extension::triggers() const {
 /** ***************************************************************************/
 void Websearch::Extension::handleQuery(Core::Query * query) {
 
-    if ( query->isTriggered() ) {
+    if ( query->searchTerm().isEmpty() )
+        return;
+
+    if ( !query->trigger().isNull() ) {
         for (const SearchEngine &se : d->searchEngines)
             if (query->searchTerm().startsWith(se.trigger))
-                query->addMatch(buildWebsearchItem(se, query->searchTerm().mid(se.trigger.size())), SHRT_MAX);
+                // Implicit move
+                query->addMatch(buildWebsearchItem(se, query->searchTerm().mid(se.trigger.size())), UINT_MAX);
     }
     else
     {
@@ -394,7 +398,7 @@ void Websearch::Extension::handleQuery(Core::Query * query) {
             item->setIconPath(icon.isEmpty() ? ":favicon" : icon);
             item->setActions({action});
 
-            query->addMatch(item, SHRT_MAX);
+            query->addMatch(std::move(item), UINT_MAX);
         }
     }
 }

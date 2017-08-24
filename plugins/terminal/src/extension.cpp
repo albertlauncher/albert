@@ -78,8 +78,11 @@ QWidget *Terminal::Extension::widget(QWidget *parent) {
 /** ***************************************************************************/
 void Terminal::Extension::handleQuery(Core::Query * query) {
 
+    if ( query->searchTerm().isEmpty() )
+        return;
+
     // This extension must run only triggered
-    if ( !query->isTriggered() )
+    if ( query->trigger().isNull() )
         return;
 
     // passwd must not be freed
@@ -115,6 +118,6 @@ void Terminal::Extension::handleQuery(Core::Query * query) {
     item->setActions(std::move(actions));
 
     // Add results to query
-    query->addMatch(item, 0);
+    query->addMatch(std::move(item), 0);
 }
 

@@ -20,9 +20,9 @@
 #include <vector>
 
 namespace Core {
+
 class ExtensionManager;
-class Query;
-}
+class QueryExecution;
 
 class QueryManager : public QObject
 {
@@ -30,7 +30,7 @@ class QueryManager : public QObject
 
 public:
 
-    explicit QueryManager(Core::ExtensionManager* em, QObject *parent = 0);
+    explicit QueryManager(ExtensionManager* em, QObject *parent = 0);
 
     void setupSession();
     void teardownSession();
@@ -38,12 +38,13 @@ public:
 
 private:
 
-    Core::ExtensionManager *extensionManager_;
-    Core::Query *currentQuery_;
-    std::vector<Core::Query*> pastQueries_;
+    ExtensionManager *extensionManager_;
+    QueryExecution *currentQuery_;
+    std::vector<QueryExecution*> pastQueries_;
 
 signals:
 
     void resultsReady(QAbstractItemModel*);
 };
 
+}

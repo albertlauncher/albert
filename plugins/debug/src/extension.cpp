@@ -90,7 +90,7 @@ const QString& Debug::Extension::trigger() const {
 void Debug::Extension::handleQuery(Core::Query * query) {
 
     // This extension must run only triggered
-    if ( !query->isTriggered() )
+    if ( query->trigger().isNull() )
         return;
 
     for (int i = 0 ; i < d->count; ++i){
@@ -105,15 +105,15 @@ void Debug::Extension::handleQuery(Core::Query * query) {
         item->setText(QString("Das Item #%1").arg(i));
         item->setSubtext(QString("Toll, das Item #%1").arg(i));
         item->setIconPath(":debug");
-        query->addMatch(item, 0);
+        query->addMatch(std::move(item), 0);
     }
 }
 
 
 
 /** ***************************************************************************/
-bool Debug::Extension::isLongRunning() const {
-    return d->async;
+Core::QueryHandler::ExecutionType Debug::Extension::executionType() const {
+    return ExecutionType::Realtime;
 }
 
 

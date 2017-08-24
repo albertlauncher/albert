@@ -172,12 +172,12 @@ FirefoxBookmarks::Private::indexFirefoxBookmarks() const {
         ssii->setIconPath(icon);
 
         // Add severeal secondary index keywords
-        vector<Indexable::WeightedKeyword> weightedKeywords;
+        vector<IndexableItem::WeightedKeyword> weightedKeywords;
         QUrl url(urlstr);
         QString host = url.host();
-        weightedKeywords.emplace_back(ssii->text(), USHRT_MAX);
-        weightedKeywords.emplace_back(host.left(host.size()-url.topLevelDomain().size()), USHRT_MAX/2);
-        weightedKeywords.emplace_back(result.value(2).toString(), USHRT_MAX/4); // parent dirname
+        weightedKeywords.emplace_back(ssii->text(), UINT_MAX);
+        weightedKeywords.emplace_back(host.left(host.size()-url.topLevelDomain().size()), UINT_MAX/2);
+        weightedKeywords.emplace_back(result.value(2).toString(), UINT_MAX/4); // parent dirname
         ssii->setIndexKeywords(std::move(weightedKeywords));
 
         // Add actions
@@ -373,15 +373,19 @@ QWidget *FirefoxBookmarks::Extension::widget(QWidget *parent) {
 /** ***************************************************************************/
 void FirefoxBookmarks::Extension::handleQuery(Core::Query *query) {
 
+    if ( query->searchTerm().isEmpty() )
+        return;
+
     // Search for matches
-    const vector<shared_ptr<Core::Indexable>> &indexables = d->offlineIndex.search(query->searchTerm().toLower());
+    const vector<shared_ptr<Core::IndexableItem>> &indexables = d->offlineIndex.search(query->searchTerm().toLower());
 
     // Add results to query.
-    vector<pair<shared_ptr<Core::Item>,short>> results;
-    for (const shared_ptr<Core::Indexable> &item : indexables)
+    vector<pair<shared_ptr<Core::Item>,uint>> results;
+    for (const shared_ptr<Core::IndexableItem> &item : indexables)
         results.emplace_back(std::static_pointer_cast<Core::StandardIndexItem>(item), 0);
 
-    query->addMatches(results.begin(), results.end());
+    query->addMatches(std::make_move_iterator(results.begin()),
+                      std::make_move_iterator(results.end()));
 }
 
 

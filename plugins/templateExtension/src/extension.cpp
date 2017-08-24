@@ -82,10 +82,45 @@ void ProjectNamespace::Extension::teardownSession() {
 /** ***************************************************************************/
 void ProjectNamespace::Extension::handleQuery(Core::Query * query) {
 
-    if ( query->isTriggered() ) {
+    // Queries can be empty
+    if ( query->searchTerm().isEmpty() )
+        return;
 
-    } else {
+    // If you registered a trigger and it matches trigger will contain it
+    if ( !query->trigger().isNull() ) {
 
+        /*
+         * Use
+         *
+         *   query->addMatch(my_item)
+         *
+         * to add matches. If you created a throw away item MOVE it instead of
+         * copying e.g.:
+         *
+         *   query->addMatch(std::move(my_tmp_item))
+         *
+         * The relevance factor is optional. (Defaults to 0) its a usigned integer depicting the
+         * relevance of the item 0 mean not relevant UINT_MAX is totally relevant (exact match).
+         * E.g. it the query is "it" and your items name is "item"
+         *
+         *   my_item.name().startswith(query->searchterm)
+         *
+         * is a naive match criterion and
+         *
+         *   UINT_MAX / ( query.searchterm().size() / my_item.name().size() )
+         *
+         * a naive match factor.
+         *
+         * If you have a lot of items use the iterator versions addMatches, e.g. like that
+         *
+         *   query->addMatches(my_items.begin(), my_items.end());
+         *
+         * If the items in the container are temporary object move them to avoid uneccesary
+         * reference counting:
+         *
+         *   query->addMatches(std::make_move_iterator(my_tmp_items.begin()),
+         *                     std::make_move_iterator(my_tmp_items.end()));
+         */
     }
 }
 

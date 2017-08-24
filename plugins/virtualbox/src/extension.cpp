@@ -163,8 +163,12 @@ void VirtualBox::Extension::setupSession() {
 
 /** ***************************************************************************/
 void VirtualBox::Extension::handleQuery(Core::Query * query) {
+
+    if ( query->searchTerm().isEmpty() )
+        return;
+
     for (VM* vm : d->vms) {
         if (vm->startsWith(query->searchTerm()))
-            query->addMatch(std::shared_ptr<Item>(vm->produceItem()));
+            query->addMatch(std::shared_ptr<Item>(vm->produceItem())); // Implicit move
     }
 }

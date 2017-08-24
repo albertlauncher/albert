@@ -47,13 +47,13 @@ Core::PrefixSearch::~PrefixSearch(){}
 
 
 /** ***************************************************************************/
-void Core::PrefixSearch::add(shared_ptr<Core::Indexable> indexable) {
+void Core::PrefixSearch::add(shared_ptr<Core::IndexableItem> indexable) {
 
     // Add indexable to the index
     index_.push_back(indexable);
     uint id = static_cast<uint>(index_.size()-1);
 
-    vector<Indexable::WeightedKeyword> indexKeywords = indexable->indexKeywords();
+    vector<IndexableItem::WeightedKeyword> indexKeywords = indexable->indexKeywords();
     for (const auto &wkw : indexKeywords) {
         // Build an inverted index
         QStringList words = wkw.keyword.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
@@ -74,7 +74,7 @@ void Core::PrefixSearch::clear() {
 
 
 /** ***************************************************************************/
-vector<shared_ptr<Core::Indexable> > Core::PrefixSearch::search(const QString &req) const {
+vector<shared_ptr<Core::IndexableItem> > Core::PrefixSearch::search(const QString &req) const {
 
 
     // Split the query into words W
@@ -82,7 +82,7 @@ vector<shared_ptr<Core::Indexable> > Core::PrefixSearch::search(const QString &r
 
     // Skip if there arent any // CONSTRAINT (2): |W| > 0
     if (words.empty())
-        return vector<shared_ptr<Indexable>>();
+        return vector<shared_ptr<IndexableItem>>();
 
     set<uint> resultsSet;
     QStringList::iterator wordIterator = words.begin();
@@ -121,7 +121,7 @@ vector<shared_ptr<Core::Indexable> > Core::PrefixSearch::search(const QString &r
 
 
 
-    vector<shared_ptr<Indexable>> resultsVector;
+    vector<shared_ptr<IndexableItem>> resultsVector;
     for (uint id : resultsSet)
         resultsVector.emplace_back(index_.at(id));
     return resultsVector;

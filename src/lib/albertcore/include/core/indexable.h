@@ -17,6 +17,7 @@
 #pragma once
 #include <QString>
 #include <vector>
+#include "item.h"
 #include "core_globals.h"
 
 namespace Core {
@@ -25,7 +26,7 @@ namespace Core {
  * @brief The Indexable class
  * The interface items need to be indexable by the offline index
  */
-class EXPORT_CORE Indexable
+class EXPORT_CORE IndexableItem : public Item
 {
 
 public:
@@ -35,8 +36,6 @@ public:
         QString keyword;
         uint32_t relevance;
     };
-
-    virtual ~Indexable() {}
 
     virtual std::vector<WeightedKeyword> indexKeywords() const = 0;
 

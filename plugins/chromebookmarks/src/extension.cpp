@@ -84,11 +84,11 @@ vector<shared_ptr<StandardIndexItem>> indexChromeBookmarks(const QString &bookma
             QString icon = XDG::IconLookup::iconPath({"www", "web-browser", "emblem-web"});
             ssii->setIconPath((icon.isEmpty()) ? ":favicon" : icon);
 
-            vector<Indexable::WeightedKeyword> weightedKeywords;
+            vector<IndexableItem::WeightedKeyword> weightedKeywords;
             QUrl url(urlstr);
             QString host = url.host();
-            weightedKeywords.emplace_back(name, USHRT_MAX);
-            weightedKeywords.emplace_back(host.left(host.size()-url.topLevelDomain().size()), USHRT_MAX/2);
+            weightedKeywords.emplace_back(name, UINT_MAX);
+            weightedKeywords.emplace_back(host.left(host.size()-url.topLevelDomain().size()), UINT_MAX/2);
             ssii->setIndexKeywords(std::move(weightedKeywords));
 
             vector<shared_ptr<Action>> actions;
@@ -287,15 +287,19 @@ QWidget *ChromeBookmarks::Extension::widget(QWidget *parent) {
 /** ***************************************************************************/
 void ChromeBookmarks::Extension::handleQuery(Core::Query * query) {
 
+    if ( query->searchTerm().isEmpty() )
+        return;
+
     // Search for matches
-    const vector<shared_ptr<Core::Indexable>> &indexables = d->offlineIndex.search(query->searchTerm().toLower());
+    const vector<shared_ptr<Core::IndexableItem>> &indexables = d->offlineIndex.search(query->searchTerm().toLower());
 
     // Add results to query
-    vector<pair<shared_ptr<Core::Item>,short>> results;
-    for (const shared_ptr<Core::Indexable> &item : indexables)
+    vector<pair<shared_ptr<Core::Item>,uint>> results;
+    for (const shared_ptr<Core::IndexableItem> &item : indexables)
         results.emplace_back(std::static_pointer_cast<Core::StandardIndexItem>(item), 0);
 
-    query->addMatches(results.begin(), results.end());
+    query->addMatches(std::make_move_iterator(results.begin()),
+                      std::make_move_iterator(results.end()));
 }
 
 

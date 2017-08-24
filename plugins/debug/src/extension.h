@@ -40,7 +40,7 @@ public:
     QWidget *widget(QWidget *parent = nullptr) override;
     QStringList triggers() const override;
     void handleQuery(Core::Query * query) override;
-    bool isLongRunning() const override;
+    ExecutionType executionType() const override;
 
     int count() const;
     void setCount(const int &count);

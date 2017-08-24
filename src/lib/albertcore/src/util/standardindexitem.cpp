@@ -15,14 +15,58 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "standardindexitem.h"
+#include "action.h"
 using std::vector;
+using std::shared_ptr;
 using namespace Core;
 
-StandardIndexItem::StandardIndexItem(const QString &id) : StandardItem(id) {
+Core::StandardIndexItem::StandardIndexItem(const QString &id) : id_(id) { }
 
+QString Core::StandardIndexItem::id() const {
+    return id_;
 }
 
-std::vector<Indexable::WeightedKeyword> StandardIndexItem::indexKeywords() const {
+QString Core::StandardIndexItem::text() const {
+    return text_;
+}
+
+void Core::StandardIndexItem::setText(const QString &text){
+    text_ = text;
+}
+
+QString Core::StandardIndexItem::subtext() const {
+    return subtext_;
+}
+
+void Core::StandardIndexItem::setSubtext(const QString &subtext){
+    subtext_ = subtext;
+}
+
+QString Core::StandardIndexItem::completionString() const {
+    return (completion_.isNull()) ? text_ : completion_;
+}
+
+void Core::StandardIndexItem::setCompletionString(const QString &completion) {
+    completion_ = completion;
+}
+
+QString Core::StandardIndexItem::iconPath() const {
+    return iconPath_;
+}
+
+void Core::StandardIndexItem::setIconPath(const QString &iconPath){
+    iconPath_ = iconPath;
+}
+
+vector<shared_ptr<Core::Action>> Core::StandardIndexItem::actions(){
+    return actions_;
+}
+
+void Core::StandardIndexItem::setActions(vector<shared_ptr<Action> > &&actions){
+    actions_ = actions;
+}
+
+std::vector<IndexableItem::WeightedKeyword> StandardIndexItem::indexKeywords() const {
     return indexKeywords_;
 }
 

@@ -21,19 +21,19 @@
 #include <vector>
 #include "extension.h"
 #include "extensionmanager.h"
-#include "fallbackprovider.h"
 #include "item.h"
 #include "matchcompare.h"
-#include "query.h"
-#include "queryhandler.h"
+#include "queryexecution.h"
 #include "querymanager.h"
+#include "queryhandler.h"
+#include "fallbackprovider.h"
 using namespace Core;
 using std::set;
 using std::vector;
 using std::shared_ptr;
 
 /** ***************************************************************************/
-QueryManager::QueryManager(ExtensionManager* em, QObject *parent)
+Core::QueryManager::QueryManager(ExtensionManager* em, QObject *parent)
     : QObject(parent),
       extensionManager_(em),
       currentQuery_(nullptr) {
@@ -45,7 +45,7 @@ QueryManager::QueryManager(ExtensionManager* em, QObject *parent)
 
 
 /** ***************************************************************************/
-void QueryManager::setupSession() {
+void Core::QueryManager::setupSession() {
     // Call all setup routines
     for (Core::QueryHandler *handler : extensionManager_->objectsByType<Core::QueryHandler>())
         handler->setupSession();
@@ -54,7 +54,7 @@ void QueryManager::setupSession() {
 
 
 /** ***************************************************************************/
-void QueryManager::teardownSession() {
+void Core::QueryManager::teardownSession() {
 
     // Call all teardown routines
     for (Core::QueryHandler *handler : extensionManager_->objectsByType<Core::QueryHandler>())
@@ -66,9 +66,9 @@ void QueryManager::teardownSession() {
     db.transaction();
 
     // Delete finished queries and prepare sql transaction containing runtimes
-    vector<Query*>::iterator it = pastQueries_.begin();
+    vector<QueryExecution*>::iterator it = pastQueries_.begin();
     while ( it != pastQueries_.end()){
-        if ( (*it)->state() != Query::State::Running ) {
+        if ( (*it)->state() != QueryExecution::State::Running ) {
 
             // Store the runtimes
             for ( const std::pair<QString,uint> &handlerRuntime : (*it)->runtimes() ) {
@@ -96,12 +96,13 @@ void QueryManager::teardownSession() {
 
 
 /** ***************************************************************************/
-void QueryManager::startQuery(const QString &searchTerm) {
+void Core::QueryManager::startQuery(const QString &searchTerm) {
 
     if ( currentQuery_ != nullptr ) {
         // Stop last query
-        disconnect(currentQuery_, &Query::resultsReady, this, &QueryManager::resultsReady);
-        currentQuery_->invalidate();
+        disconnect(currentQuery_, &QueryExecution::resultsReady,
+                   this, &QueryManager::resultsReady);
+        currentQuery_->cancel();
         // Store for later deletion (listview still has the model)
         pastQueries_.push_back(currentQuery_);
     }
@@ -110,46 +111,17 @@ void QueryManager::startQuery(const QString &searchTerm) {
     if ( extensionManager_->objects().empty() )
         return;
 
-    // Do nothing if query is empty
-    if ( searchTerm.trimmed().isEmpty() ) {
-        currentQuery_ = nullptr;
-        emit resultsReady(nullptr);
-        return;
-    }
+//    // Do nothing if query is empty
+//    if ( searchTerm.trimmed().isEmpty() ) {
+//        currentQuery_ = nullptr;
+//        emit resultsReady(nullptr);
+//        return;
+//    }
 
     // Start query
-    currentQuery_ = new Query;
-    currentQuery_->setSearchTerm(searchTerm);
-    connect(currentQuery_, &Query::resultsReady, this, &QueryManager::resultsReady);
-
-    // Run with a single handler if the trigger matches
-    const set<QueryHandler*> availableHandlers = extensionManager_->objectsByType<QueryHandler>();
-    for ( QueryHandler *handler : availableHandlers ) {
-        for ( const QString& trigger : handler->triggers() ) {
-            if ( !trigger.isEmpty() && searchTerm.startsWith(trigger) ) {
-                currentQuery_->setTrigger(trigger);
-                currentQuery_->setQueryHandlers({handler});
-                currentQuery_->run();
-                return;
-            }
-        }
-    }
-
-    // Else run all handlers
-    set<QueryHandler*> handlers;
-    for ( QueryHandler *handler : availableHandlers )
-        handlers.insert(handler);
-    currentQuery_->setQueryHandlers(handlers);
-
-    // Get fallbacks
-    vector<shared_ptr<Item>> fallbacks;
-    for ( FallbackProvider *extension : extensionManager_->objectsByType<FallbackProvider>() ) {
-        vector<shared_ptr<Item>> && tmpFallbacks = extension->fallbacks(searchTerm);
-        fallbacks.insert(fallbacks.end(),
-                         std::make_move_iterator(tmpFallbacks.begin()),
-                         std::make_move_iterator(tmpFallbacks.end()));
-    }
-
-    currentQuery_->setFallbacks(fallbacks);
+    currentQuery_ = new QueryExecution(extensionManager_->objectsByType<QueryHandler>(),
+                                       extensionManager_->objectsByType<FallbackProvider>(),
+                                       searchTerm);
+    connect(currentQuery_, &QueryExecution::resultsReady, this, &QueryManager::resultsReady);
     currentQuery_->run();
 }

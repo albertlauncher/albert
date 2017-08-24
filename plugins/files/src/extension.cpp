@@ -376,6 +376,8 @@ QWidget *Files::Extension::widget(QWidget *parent) {
 /** ***************************************************************************/
 void Files::Extension::handleQuery(Core::Query * query) {
 
+    if ( query->searchTerm().isEmpty() )
+        return;
 
     if ( query->searchTerm().startsWith('/') || query->searchTerm().startsWith("~") ) {
 
@@ -395,7 +397,7 @@ void Files::Extension::handleQuery(Core::Query * query) {
                 if ( fileinfo.fileName().startsWith(queryFileInfo.fileName()) ) {
                     QMimeType mimetype = mimeDatabase.mimeTypeForFile(fileinfo.filePath());
                     query->addMatch(std::make_shared<File>(fileinfo.filePath(), mimetype),
-                                    static_cast<short>(SHRT_MAX * static_cast<float>(queryFileInfo.fileName().size()) / fileinfo.fileName().size()));
+                                    static_cast<uint>(UINT_MAX * static_cast<float>(queryFileInfo.fileName().size()) / fileinfo.fileName().size()));
                 }
             }
         }
@@ -414,19 +416,20 @@ void Files::Extension::handleQuery(Core::Query * query) {
 
             standardItem->setActions({standardAction});
 
-            query->addMatch(standardItem);
+            query->addMatch(std::move(standardItem));
         }
 
         // Search for matches
-        const vector<shared_ptr<Core::Indexable>> &indexables = d->offlineIndex.search(query->searchTerm().toLower());
+        const vector<shared_ptr<Core::IndexableItem>> &indexables = d->offlineIndex.search(query->searchTerm().toLower());
 
         // Add results to query
-        vector<pair<shared_ptr<Core::Item>,short>> results;
-        for (const shared_ptr<Core::Indexable> &item : indexables)
+        vector<pair<shared_ptr<Core::Item>,uint>> results;
+        for (const shared_ptr<Core::IndexableItem> &item : indexables)
             // TODO `Search` has to determine the relevance. Set to 0 for now
             results.emplace_back(std::static_pointer_cast<File>(item), -1);
 
-        query->addMatches(results.begin(), results.end());
+        query->addMatches(std::make_move_iterator(results.begin()),
+                          std::make_move_iterator(results.end()));
     }
 }
 

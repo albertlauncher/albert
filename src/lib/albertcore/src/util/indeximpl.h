@@ -21,15 +21,15 @@
 
 namespace Core {
 
-class Indexable;
+class IndexableItem;
 
 class IndexImpl
 {
 public:
     virtual ~IndexImpl() {}
-    virtual void add(std::shared_ptr<Indexable> idxble) = 0;
+    virtual void add(std::shared_ptr<IndexableItem> idxble) = 0;
     virtual void clear() = 0;
-    virtual std::vector<std::shared_ptr<Indexable>> search(const QString &req) const = 0;
+    virtual std::vector<std::shared_ptr<IndexableItem>> search(const QString &req) const = 0;
 
 protected:
     static constexpr const char* SEPARATOR_REGEX  = "[!?<>\"'=+*.:,;\\\\\\/ _\\-]+";

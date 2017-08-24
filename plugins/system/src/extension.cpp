@@ -247,7 +247,11 @@ QWidget *System::Extension::widget(QWidget *parent) {
 
 /** ***************************************************************************/
 void System::Extension::handleQuery(Core::Query * query) {
-   for (int i = 0; i < NUMCOMMANDS; ++i) {
+
+   if ( query->searchTerm().isEmpty())
+       return;
+
+   for (size_t i = 0; i < NUMCOMMANDS; ++i) {
         if (configNames[i].startsWith(query->searchTerm().toLower())) {
 
             std::shared_ptr<Core::StandardItem> item = std::make_shared<Core::StandardItem>(configNames[i]);
@@ -264,7 +268,7 @@ void System::Extension::handleQuery(Core::Query * query) {
 
             item->setActions({action});
 
-            query->addMatch(item);
+            query->addMatch(std::move(item));
        }
    }
 }

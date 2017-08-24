@@ -521,8 +521,8 @@ vector<shared_ptr<StandardIndexItem>> Applications::Private::indexApplications()
             ssii->setIconPath(icon.isEmpty() ? ":application-x-executable" : icon);
 
             // Set keywords
-            vector<Indexable::WeightedKeyword> indexKeywords;
-            indexKeywords.emplace_back(name, USHRT_MAX);
+            vector<IndexableItem::WeightedKeyword> indexKeywords;
+            indexKeywords.emplace_back(name, UINT_MAX);
 
             if ( !exec.startsWith("java ")
                  && !exec.startsWith("ruby ")
@@ -532,13 +532,13 @@ vector<shared_ptr<StandardIndexItem>> Applications::Private::indexApplications()
                  && !exec.startsWith("sh ")
                  && !exec.startsWith("dbus-send ")
                  && !exec.startsWith("/") )
-                indexKeywords.emplace_back(exec, USHRT_MAX);
+                indexKeywords.emplace_back(exec, UINT_MAX);
 
             if (!genericName.isEmpty())
-                indexKeywords.emplace_back(genericName, USHRT_MAX*0.9);
+                indexKeywords.emplace_back(genericName, UINT_MAX*0.9);
 
             for (auto & kw : keywords)
-                indexKeywords.emplace_back(kw, USHRT_MAX*0.8);
+                indexKeywords.emplace_back(kw, UINT_MAX*0.8);
 
             ssii->setIndexKeywords(std::move(indexKeywords));
 
@@ -622,15 +622,16 @@ QWidget *Applications::Extension::widget(QWidget *parent) {
 void Applications::Extension::handleQuery(Core::Query * query) {
 
     // Search for matches
-    const vector<shared_ptr<Core::Indexable>> &indexables = d->offlineIndex.search(query->searchTerm().toLower());
+    const vector<shared_ptr<Core::IndexableItem>> &indexables = d->offlineIndex.search(query->searchTerm().toLower());
 
     // Add results to query
-    vector<pair<shared_ptr<Core::Item>,short>> results;
-    for (const shared_ptr<Core::Indexable> &item : indexables)
+    vector<pair<shared_ptr<Core::Item>,uint>> results;
+    for (const shared_ptr<Core::IndexableItem> &item : indexables)
         // TODO `Search` has to determine the relevance. Set to 0 for now
         results.emplace_back(std::static_pointer_cast<Core::StandardIndexItem>(item), 1);
 
-    query->addMatches(results.begin(), results.end());
+        query->addMatches(std::make_move_iterator(results.begin()),
+                          std::make_move_iterator(results.end()));
 }
 
 

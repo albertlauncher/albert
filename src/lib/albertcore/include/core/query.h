@@ -15,80 +15,95 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QAbstractListModel>
-#include <set>
-#include <map>
-#include <vector>
-#include <utility>
+#include <QMutex>
+#include <QString>
 #include <memory>
+#include <utility>
+#include <vector>
 #include "core_globals.h"
-#include "queryhandler.h"
 
-class QueryManager;
 
 namespace Core {
 
-class Extension;
+class QueryPrivate;
 class Item;
 
 /**
  * @brief The Query class
- * Represents the execution of a query
+ * Represents a query to be handled by the query handlers
  */
-class EXPORT_CORE Query : public QObject
+class EXPORT_CORE Query final
 {
-    Q_OBJECT
-
-    friend class ::QueryManager;
-    class QueryPrivate;
-
 public:
 
-    enum class State {
-        Idle = 0,
-        Running,
-        Finished,
-        Canceled
-    };
-
-    const State &state() const;
-
+    /**
+     * @brief The string the user entered in the input box
+     * @return The string the user entered in the input box
+     */
     const QString &searchTerm() const;
 
-    bool isValid() const;
-
-    bool isTriggered() const;
+    /**
+     * @brief The trigger that triggered this execution
+     * If set this query is triggered. If you are able to read it then your extension made a claim
+     * on it. The purpose of this fiels is to make triggerhandling more convenient.
+     * @return The trigger that triggered this execution
+     */
     const QString &trigger() const;
 
-    void addMatch(std::shared_ptr<Item> item, short score = 0);
-    void addMatches(std::vector<std::pair<std::shared_ptr<Item>,short>>::iterator begin,
-                    std::vector<std::pair<std::shared_ptr<Item>,short>>::iterator end);
+    /**
+     * @brief The validity of the query
+     * If the core cancelled the query for some reason the query gets invalid. Stop handling the
+     * query if it is not valid anymore to save resources for other queries.
+     * @return True if valid, else false.
+     */
+    bool isValid() const;
 
-    std::map<QString,uint> runtimes();
+    /**
+     * @brief addMatch
+     * Use the addMatches if you have a lot of items to add.
+     * @param item The to add to the results
+     * @param score The relevance factor (UINT_MAX -> 1)
+     * @see addMatches
+     */
+    void addMatch(std::shared_ptr<Item> &item, uint score = 0);
+
+    /**
+     * @brief addMatch equivalent with move semantics
+     * Use the addMatches with move iterators if you have a lot of items to add.
+     * @param item The to add to the results
+     * @param score The relevance factor (UINT_MAX -> 1)
+     * @see addMatches
+     */
+    void addMatch(std::shared_ptr<Item> &&item, uint score = 0);
+
+    /**
+     * @brief addMatches
+     * Cumulative addMatch function avoiding excessive mutex locking the results
+     * @param begin
+     * @param end
+     */
+    template<typename Iterator>
+    void addMatches(Iterator begin, Iterator end) {
+        if ( isValid() ) {
+            mutex_.lock();
+            results_.insert(results_.end(), begin, end);
+            mutex_.unlock();
+        }
+    }
+
 
 private:
 
-    Query();
-    ~Query();
+    Query() = default;
+    ~Query() = default;
 
-    void setSearchTerm(const QString &);
+    std::vector<std::pair<std::shared_ptr<Item>, uint>> results_;
+    QMutex mutex_;
+    QString searchTerm_;
+    QString trigger_;
+    bool isValid_ = true;
 
-    void invalidate();
-
-    void setTrigger(const QString &trigger);
-
-    void setQueryHandlers(const std::set<QueryHandler*> &);
-
-    void setFallbacks(const std::vector<std::shared_ptr<Item>> &);
-
-    void run();
-
-    std::unique_ptr<QueryPrivate> d;
-
-signals:
-
-    void resultsReady(QAbstractItemModel *);
-    void finished();
+    friend class QueryExecution;
 
 };
 

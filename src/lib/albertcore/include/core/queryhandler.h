@@ -56,7 +56,23 @@ public:
      */
     virtual void teardownSession() {}
 
-    virtual bool isLongRunning() const { return false; }
+    /**
+     * @brief The ExecutionType enum
+     * The execution type of a queryhandler determines the way the handler is run. Batch handlers
+     * are runned first. Query results are not displayed until all batch handlers finished. When all
+     * batch handlers finished the results are sorted and displayed. Realtime handlers are started
+     * afterwards. The results of the realtime handlers are not sorted anymore and displayed
+     * instantly (well they are buffered for 50 ms). Note that the results are simply appended
+     * once they are displayed, therefore it may be wise for realtime handlers to have triggers.
+     */
+    enum class ExecutionType { Batch, Realtime };
+
+    /**
+     * @brief executionType
+     * @return The execution type of the queryhandler
+     * @see ExecutionType
+     */
+    virtual ExecutionType executionType() const { return ExecutionType::Batch; }
 
     /**
      * @brief Query handling

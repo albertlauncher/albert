@@ -242,6 +242,10 @@ void MPRIS::Extension::setupSession() {
 
 /** ***************************************************************************/
 void MPRIS::Extension::handleQuery(Core::Query *query) {
+
+    if ( query->searchTerm().isEmpty() )
+        return;
+
     // Do not proceed if there are no players running. Why would you even?
     if (d->mediaPlayers.isEmpty())
         return;
@@ -257,10 +261,10 @@ void MPRIS::Extension::handleQuery(Core::Query *query) {
 
 
     // For every option create entries for every player
-    short percentage = 0;
+    uint percentage = 0;
     for (QString& cmd: cmds) {
         // Calculate how many percent of the query match the command
-        percentage = (float)q.length() / (float)cmd.length() *100;
+        percentage = static_cast<uint>(q.length()/100.0*cmd.length());
 
         // Get the command
         Command& toExec = d->commandObjects.find(cmd).value();
