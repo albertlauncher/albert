@@ -112,6 +112,7 @@ bool Core::PluginSpec::load() {
 
         if (!plugin) {
            qWarning() << qPrintable(QString("Failed loading plugin: %1 [%2]").arg(path()).arg(lastError_));
+           loader_.unload();
            state_ = State::Error;
         }
     }
@@ -130,10 +131,10 @@ void Core::PluginSpec::unload(){
      * little amount of extra KBs in RAM until next restart.
      */
 
-    if ( state_ != State::NotLoaded ) {
+    if ( state_ == State::Loaded ) {
         loader_.instance()->deleteLater();
-        state_ = State::NotLoaded;
     }
+    state_ = State::NotLoaded;
 }
 
 
