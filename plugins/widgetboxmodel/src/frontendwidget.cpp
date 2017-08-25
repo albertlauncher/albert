@@ -36,6 +36,13 @@
 #include "resultslist.h"
 #include "settingsbutton.h"
 #include "ui_frontend.h"
+#ifdef __unix__
+#include <X11/extensions/shape.h>
+#undef KeyPress
+#undef KeyRelease
+#include <QtX11Extras/QX11Info>
+#endif
+
 
 namespace  {
 
@@ -569,8 +576,27 @@ void WidgetBoxModel::FrontendWidget::closeEvent(QCloseEvent *event) {
 
 /** ***************************************************************************/
 void WidgetBoxModel::FrontendWidget::resizeEvent(QResizeEvent *event) {
+
     // Let settingsbutton be in top right corner of frame
     d->settingsButton_->move(d->ui.frame->geometry().topRight() - QPoint(d->settingsButton_->width()-1,0));
+
+#ifdef __unix__
+    // Keep the input shape consistent
+    int shape_event_base, shape_error_base;
+    if (XShapeQueryExtension(QX11Info::display(), &shape_event_base, &shape_error_base)) {
+
+        Region region = XCreateRegion();
+        XRectangle rectangle;
+        rectangle.x      = static_cast<int16_t>(d->ui.frame->geometry().x());
+        rectangle.y      = static_cast<int16_t>(d->ui.frame->geometry().y());
+        rectangle.width  = static_cast<uint16_t>(d->ui.frame->geometry().width());
+        rectangle.height = static_cast<uint16_t>(d->ui.frame->geometry().height());
+        XUnionRectWithRegion(&rectangle, region, region);
+        XShapeCombineRegion(QX11Info::display(), winId(), ShapeInput, 0, 0, region, ShapeSet);
+        XDestroyRegion(region);
+    }
+#endif
+
     QWidget::resizeEvent(event);
 }
 
