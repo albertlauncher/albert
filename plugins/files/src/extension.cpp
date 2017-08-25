@@ -549,6 +549,7 @@ bool Files::Extension::fuzzy() const {
 /** ***************************************************************************/
 void Files::Extension::setFuzzy(bool b) {
     QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_FUZZY), b);
+    return d->offlineIndex.setFuzzy(b);
 }
 
 
