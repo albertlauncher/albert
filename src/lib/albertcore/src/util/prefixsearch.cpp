@@ -72,14 +72,26 @@ void Core::PrefixSearch::clear() {
 vector<shared_ptr<Core::IndexableItem> > Core::PrefixSearch::search(const QString &req) const {
 
     // Split the query into words W
-    QStringList words = req.toLower().split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
+    QStringList wordlist = req.toLower().split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
+
+    // Make words unique
+    set<QString> words(wordlist.begin(), wordlist.end());
+
+    // Drop all words that are prefixes of others (since this an ordered set the next word)
+    for (auto it = words.begin(); it != words.end();) {
+        auto next = std::next(it);
+        if ( next != words.end() && next->startsWith(*it) )
+            it = words.erase(it);
+        else
+            ++it;
+    }
 
     // Skip if there arent any // CONSTRAINT (2): |W| > 0
     if (words.empty())
         return vector<shared_ptr<IndexableItem>>();
 
     set<uint> resultsSet;
-    QStringList::iterator wordIt = words.begin();
+    set<QString>::iterator wordIt = words.begin();
 
     // Get a word mapping once before going to handle intersections
     for (std::map<QString,std::set<uint>>::const_iterator lb = invertedIndex_.lower_bound(*wordIt);
