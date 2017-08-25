@@ -66,10 +66,10 @@ void Core::StandardIndexItem::setActions(vector<shared_ptr<Action> > &&actions){
     actions_ = actions;
 }
 
-std::vector<IndexableItem::WeightedKeyword> StandardIndexItem::indexKeywords() const {
-    return indexKeywords_;
+std::vector<IndexableItem::IndexString> StandardIndexItem::indexStrings() const {
+    return indexStrings_;
 }
 
-void StandardIndexItem::setIndexKeywords(vector<WeightedKeyword> &&indexKeywords) {
-    indexKeywords_ = indexKeywords;
+void StandardIndexItem::setIndexKeywords(vector<IndexString> &&indexStrings) {
+    indexStrings_ = indexStrings;
 }

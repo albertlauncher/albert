@@ -84,12 +84,12 @@ vector<shared_ptr<StandardIndexItem>> indexChromeBookmarks(const QString &bookma
             QString icon = XDG::IconLookup::iconPath({"www", "web-browser", "emblem-web"});
             ssii->setIconPath((icon.isEmpty()) ? ":favicon" : icon);
 
-            vector<IndexableItem::WeightedKeyword> weightedKeywords;
+            vector<IndexableItem::IndexString> indexStrings;
             QUrl url(urlstr);
             QString host = url.host();
-            weightedKeywords.emplace_back(name, UINT_MAX);
-            weightedKeywords.emplace_back(host.left(host.size()-url.topLevelDomain().size()), UINT_MAX/2);
-            ssii->setIndexKeywords(std::move(weightedKeywords));
+            indexStrings.emplace_back(name, UINT_MAX);
+            indexStrings.emplace_back(host.left(host.size()-url.topLevelDomain().size()), UINT_MAX/2);
+            ssii->setIndexKeywords(std::move(indexStrings));
 
             vector<shared_ptr<Action>> actions;
             shared_ptr<StandardAction> action = std::make_shared<StandardAction>();

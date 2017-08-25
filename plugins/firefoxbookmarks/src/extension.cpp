@@ -172,13 +172,13 @@ FirefoxBookmarks::Private::indexFirefoxBookmarks() const {
         ssii->setIconPath(icon);
 
         // Add severeal secondary index keywords
-        vector<IndexableItem::WeightedKeyword> weightedKeywords;
+        vector<IndexableItem::IndexString> indexStrings;
         QUrl url(urlstr);
         QString host = url.host();
-        weightedKeywords.emplace_back(ssii->text(), UINT_MAX);
-        weightedKeywords.emplace_back(host.left(host.size()-url.topLevelDomain().size()), UINT_MAX/2);
-        weightedKeywords.emplace_back(result.value(2).toString(), UINT_MAX/4); // parent dirname
-        ssii->setIndexKeywords(std::move(weightedKeywords));
+        indexStrings.emplace_back(ssii->text(), UINT_MAX);
+        indexStrings.emplace_back(host.left(host.size()-url.topLevelDomain().size()), UINT_MAX/2);
+        indexStrings.emplace_back(result.value(2).toString(), UINT_MAX/4); // parent dirname
+        ssii->setIndexKeywords(std::move(indexStrings));
 
         // Add actions
         vector<shared_ptr<Action>> actions;

@@ -31,13 +31,13 @@ class EXPORT_CORE IndexableItem : public Item
 
 public:
 
-    struct WeightedKeyword {
-        WeightedKeyword(const QString& kw, uint32_t r) : keyword(kw), relevance(r){}
-        QString keyword;
+    struct IndexString {
+        IndexString(const QString& str, uint32_t rel) : string(str), relevance(rel){}
+        QString string;
         uint32_t relevance;
     };
 
-    virtual std::vector<WeightedKeyword> indexKeywords() const = 0;
+    virtual std::vector<IndexString> indexStrings() const = 0;
 
 };
 

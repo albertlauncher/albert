@@ -53,10 +53,10 @@ void Core::PrefixSearch::add(shared_ptr<Core::IndexableItem> indexable) {
     index_.push_back(indexable);
     uint id = static_cast<uint>(index_.size()-1);
 
-    vector<IndexableItem::WeightedKeyword> indexKeywords = indexable->indexKeywords();
-    for (const auto &wkw : indexKeywords) {
+    vector<IndexableItem::IndexString> indexStrings = indexable->indexStrings();
+    for (const auto &idxStr : indexStrings) {
         // Build an inverted index
-        QStringList words = wkw.keyword.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
+        QStringList words = idxStr.string.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
         for (const QString &w : words) {
             invertedIndex_[w.toLower()].insert(id);
         }

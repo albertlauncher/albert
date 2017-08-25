@@ -521,8 +521,8 @@ vector<shared_ptr<StandardIndexItem>> Applications::Private::indexApplications()
             ssii->setIconPath(icon.isEmpty() ? ":application-x-executable" : icon);
 
             // Set keywords
-            vector<IndexableItem::WeightedKeyword> indexKeywords;
-            indexKeywords.emplace_back(name, UINT_MAX);
+            vector<IndexableItem::IndexString> indexStrings;
+            indexStrings.emplace_back(name, UINT_MAX);
 
             if ( !exec.startsWith("java ")
                  && !exec.startsWith("ruby ")
@@ -532,15 +532,15 @@ vector<shared_ptr<StandardIndexItem>> Applications::Private::indexApplications()
                  && !exec.startsWith("sh ")
                  && !exec.startsWith("dbus-send ")
                  && !exec.startsWith("/") )
-                indexKeywords.emplace_back(exec, UINT_MAX);
-
-            if (!genericName.isEmpty())
-                indexKeywords.emplace_back(genericName, UINT_MAX*0.9);
+                indexStrings.emplace_back(exec, UINT_MAX);
 
             for (auto & kw : keywords)
-                indexKeywords.emplace_back(kw, UINT_MAX*0.8);
+                indexStrings.emplace_back(kw, UINT_MAX);
 
-            ssii->setIndexKeywords(std::move(indexKeywords));
+            if (!genericName.isEmpty())
+                indexStrings.emplace_back(genericName, UINT_MAX*0.7);
+
+            ssii->setIndexKeywords(std::move(indexStrings));
 
             // Set actions
             ssii->setActions(std::move(actions));

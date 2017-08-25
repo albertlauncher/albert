@@ -41,7 +41,7 @@ public:
     QString subtext() const override;
     QString completionString() const override;
     QString iconPath() const override;
-    std::vector<Core::IndexableItem::WeightedKeyword> indexKeywords() const override;
+    std::vector<Core::IndexableItem::IndexString> indexStrings() const override;
     std::vector<std::shared_ptr<Core::Action>> actions() override;
 
     /*

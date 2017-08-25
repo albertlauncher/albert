@@ -49,8 +49,8 @@ public:
     std::vector<std::shared_ptr<Action>> actions() override;
     void setActions(std::vector<std::shared_ptr<Action>> &&actions);
 
-    virtual std::vector<Core::IndexableItem::WeightedKeyword> indexKeywords() const override;
-    virtual void setIndexKeywords(std::vector<IndexableItem::WeightedKeyword> &&indexKeywords);
+    virtual std::vector<Core::IndexableItem::IndexString> indexStrings() const override;
+    virtual void setIndexKeywords(std::vector<IndexableItem::IndexString> &&indexStrings);
 
 private:
 
@@ -60,7 +60,7 @@ private:
     QString completion_;
     QString iconPath_;
     std::vector<std::shared_ptr<Action>> actions_;
-    std::vector<IndexableItem::WeightedKeyword> indexKeywords_;
+    std::vector<IndexableItem::IndexString> indexStrings_;
 
 };
 

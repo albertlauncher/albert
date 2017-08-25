@@ -98,9 +98,9 @@ void Core::FuzzySearch::add(shared_ptr<Core::IndexableItem> indexable) {
     uint id = static_cast<uint>(index_.size()-1);
 
     // Add a mappings to the inverted index which maps on t.
-    vector<IndexableItem::WeightedKeyword> indexKeywords = indexable->indexKeywords();
-    for (const auto &wkw : indexKeywords) {
-        QStringList words = wkw.keyword.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
+    vector<IndexableItem::IndexString> indexStrings = indexable->indexStrings();
+    for (const auto &idxStr : indexStrings) {
+        QStringList words = idxStr.string.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
         for (QString &w : words) {
 
             // Make this search case insensitive
