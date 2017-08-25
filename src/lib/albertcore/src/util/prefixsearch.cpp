@@ -32,7 +32,6 @@ Core::PrefixSearch::PrefixSearch(){
 }
 
 
-
 /** ***************************************************************************/
 Core::PrefixSearch::PrefixSearch(const Core::PrefixSearch &rhs) {
     index_ = rhs.index_;
@@ -40,10 +39,8 @@ Core::PrefixSearch::PrefixSearch(const Core::PrefixSearch &rhs) {
 }
 
 
-
 /** ***************************************************************************/
 Core::PrefixSearch::~PrefixSearch(){}
-
 
 
 /** ***************************************************************************/
@@ -64,7 +61,6 @@ void Core::PrefixSearch::add(shared_ptr<Core::IndexableItem> indexable) {
 }
 
 
-
 /** ***************************************************************************/
 void Core::PrefixSearch::clear() {
     invertedIndex_.clear();
@@ -72,55 +68,48 @@ void Core::PrefixSearch::clear() {
 }
 
 
-
 /** ***************************************************************************/
 vector<shared_ptr<Core::IndexableItem> > Core::PrefixSearch::search(const QString &req) const {
 
-
     // Split the query into words W
-    QStringList words = req.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
+    QStringList words = req.toLower().split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
 
     // Skip if there arent any // CONSTRAINT (2): |W| > 0
     if (words.empty())
         return vector<shared_ptr<IndexableItem>>();
 
     set<uint> resultsSet;
-    QStringList::iterator wordIterator = words.begin();
-
-    // Make lower for case insensitivity
-    QString word = wordIterator++->toLower();
+    QStringList::iterator wordIt = words.begin();
 
     // Get a word mapping once before going to handle intersections
-    for (std::map<QString,std::set<uint>>::const_iterator lb = invertedIndex_.lower_bound(word);
-         lb != invertedIndex_.cend() && lb->first.startsWith(word); ++lb)
+    for (std::map<QString,std::set<uint>>::const_iterator lb = invertedIndex_.lower_bound(*wordIt);
+         lb != invertedIndex_.cend() && lb->first.startsWith(*wordIt); ++lb)
         resultsSet.insert(lb->second.begin(), lb->second.end());
+    wordIt++;
 
-
-    for (;wordIterator != words.end(); ++wordIterator) {
-
-        // Make lower for case insensitivity
-        word = wordIterator->toLower();
+    for (;wordIt != words.end(); ++wordIt) {
 
         // Unite the sets that are mapped by words that begin with word
         // w ∈ W. This set is called U_w
         set<uint> wordMappingsUnion;
-        for (std::map<QString,std::set<uint>>::const_iterator lb = invertedIndex_.lower_bound(word);
-             lb != invertedIndex_.cend() && lb->first.startsWith(word); ++lb)
+        for (std::map<QString,std::set<uint>>::const_iterator lb = invertedIndex_.lower_bound(*wordIt);
+             lb != invertedIndex_.cend() && lb->first.startsWith(*wordIt); ++lb)
             wordMappingsUnion.insert(lb->second.begin(), lb->second.end());
-
 
         // Intersect all sets U_w with the results
         set<uint> intersection;
         std::set_intersection(resultsSet.begin(), resultsSet.end(),
                               wordMappingsUnion.begin(), wordMappingsUnion.end(),
                               std::inserter(intersection, intersection.begin()));
+
+        // Break if intersection is empty
+        if (intersection.empty())
+            return vector<shared_ptr<IndexableItem>>();
+
         resultsSet = std::move(intersection);
     }
 
     // Convert to a std::vector
-
-
-
     vector<shared_ptr<IndexableItem>> resultsVector;
     for (uint id : resultsSet)
         resultsVector.emplace_back(index_.at(id));
