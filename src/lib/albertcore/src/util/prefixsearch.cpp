@@ -16,7 +16,6 @@
 
 #include <QRegularExpression>
 #include <algorithm>
-#include "indeximpl.h"
 #include "indexable.h"
 #include "prefixsearch.h"
 using std::map;
@@ -69,22 +68,10 @@ void Core::PrefixSearch::clear() {
 
 
 /** ***************************************************************************/
-vector<shared_ptr<Core::IndexableItem> > Core::PrefixSearch::search(const QString &req) const {
+vector<shared_ptr<Core::IndexableItem> > Core::PrefixSearch::search(const QString &query) const {
 
-    // Split the query into words W
-    QStringList wordlist = req.toLower().split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
-
-    // Make words unique
-    set<QString> words(wordlist.begin(), wordlist.end());
-
-    // Drop all words that are prefixes of others (since this an ordered set the next word)
-    for (auto it = words.begin(); it != words.end();) {
-        auto next = std::next(it);
-        if ( next != words.end() && next->startsWith(*it) )
-            it = words.erase(it);
-        else
-            ++it;
-    }
+    // Make words unique, lower and prefixfree
+    set<QString> words = splitString(query);
 
     // Skip if there arent any // CONSTRAINT (2): |W| > 0
     if (words.empty())

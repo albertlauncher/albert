@@ -22,7 +22,7 @@
 
 namespace Core {
 
-class IndexImpl;
+class SearchBase;
 class IndexableItem;
 
 class EXPORT_CORE OfflineIndex final {
@@ -88,7 +88,7 @@ public:
     std::vector<std::shared_ptr<Core::IndexableItem>> search(const QString &req) const;
 
 private:
-    IndexImpl *impl_;
+    SearchBase *impl_;
 };
 
 }

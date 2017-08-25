@@ -100,11 +100,8 @@ void Core::FuzzySearch::add(const std::shared_ptr<IndexableItem> &indexable) {
     // Add a mappings to the inverted index which maps on t.
     vector<IndexableItem::IndexString> indexStrings = indexable->indexStrings();
     for (const auto &idxStr : indexStrings) {
-        QStringList words = idxStr.string.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts);
-        for (QString &w : words) {
-
-            // Make this search case insensitive
-            w=w.toLower();
+        set<QString> words = splitString(idxStr.string);
+        for (const QString &w : words) {
 
             // Add word to inverted index (map word to item)
             this->invertedIndex_[w].insert(id);
@@ -129,31 +126,30 @@ void Core::FuzzySearch::clear() {
 
 
 /** ***************************************************************************/
-vector<shared_ptr<Core::IndexableItem> > Core::FuzzySearch::search(const QString &req) const {
-    vector<QString> words;
-    for (QString &word : req.split(QRegularExpression(SEPARATOR_REGEX), QString::SkipEmptyParts))
-        words.push_back(word.toLower());
-    vector<map<uint,uint>> resultsPerWord; // id, count
+vector<shared_ptr<Core::IndexableItem> > Core::FuzzySearch::search(const QString &query) const {
+
+    // Make words unique, lower and prefixfree
+    set<QString> words = splitString(query);
 
     // Quit if there are no words in query
     if (words.empty())
         return vector<shared_ptr<IndexableItem>>();
 
-    // Split the query into words
-    for ( QString &word : words ) {
+    vector<map<uint,uint>> resultsPerWord; // id, count
+    for ( const QString &word : words ) {
 
         uint delta = static_cast<uint>((delta_ < 1)? word.size()*delta_ : delta_);
 
         // Generate the qGrams of this word
         map<QString,uint> qGrams;
         QString spaced(q_-1,' ');
-        spaced.append(word.toLower());
+        spaced.append(word);
         for ( uint i = 0; i < static_cast<uint>(word.size()); ++i )
             ++qGrams[spaced.mid(i,q_)];
 
         // Get the words referenced by each qGram and count the references
         map<QString,uint> wordMatches;
-        for ( const pair<QString,uint> &qGram : qGrams) {
+        for ( const pair<QString,uint> &qGram : qGrams ) {
 
             // Find the qGram in the index, skip if nothing found
             decltype(qGramIndex_)::const_iterator qGramIndexIt = qGramIndex_.find(qGram.first);

@@ -40,8 +40,7 @@ public:
 private:
 
     // Map of qGrams, containing their word references and #occurences
-    typedef std::map<QString,std::map<QString,uint>> QGramIndex;
-    QGramIndex qGramIndex_;
+    std::map<QString,std::map<QString,uint>> qGramIndex_;
 
     // Size of the slices
     uint q_;

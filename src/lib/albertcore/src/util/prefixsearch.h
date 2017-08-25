@@ -19,13 +19,13 @@
 #include <memory>
 #include <set>
 #include <vector>
-#include "indeximpl.h"
+#include "searchbase.h"
 
 namespace Core {
 
 class IndexableItem;
 
-class PrefixSearch : public IndexImpl
+class PrefixSearch : public SearchBase
 {
 public:
 

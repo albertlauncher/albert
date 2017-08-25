@@ -16,7 +16,6 @@
 
 
 #include "offlineindex.h"
-#include "indeximpl.h"
 #include "indexable.h"
 #include "prefixsearch.h"
 #include "fuzzysearch.h"
