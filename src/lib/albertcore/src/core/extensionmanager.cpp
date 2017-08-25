@@ -110,10 +110,10 @@ const set<QObject*> Core::ExtensionManager::objects() const {
 /** ***************************************************************************/
 void Core::ExtensionManager::loadExtension(const unique_ptr<PluginSpec> &spec) {
     if ( spec->state() != PluginSpec::State::Loaded ){
+        std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
         if ( spec->load() ) {
-            std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
-            auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()-start);
             d->extensions_.insert(spec->instance());
+            auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()-start);
             qDebug() << qPrintable(QString("%1 loaded in %2 milliseconds").arg(spec->id()).arg(msecs.count()));
         } else
             qInfo() << QString("Loading %1 failed. (%2)").arg(spec->id(), spec->lastError()).toLocal8Bit().data();
