@@ -44,7 +44,7 @@ Core::PrefixSearch::~PrefixSearch(){}
 
 
 /** ***************************************************************************/
-void Core::PrefixSearch::add(shared_ptr<Core::IndexableItem> indexable) {
+void Core::PrefixSearch::add(const std::shared_ptr<IndexableItem> &indexable) {
 
     // Add indexable to the index
     index_.push_back(indexable);

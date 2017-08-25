@@ -33,7 +33,7 @@ public:
     PrefixSearch(const PrefixSearch &rhs);
     virtual ~PrefixSearch();
 
-    void add(std::shared_ptr<IndexableItem> idxble) override;
+    void add(const std::shared_ptr<IndexableItem> &idxble) override;
     void clear() override;
     std::vector<std::shared_ptr<IndexableItem>> search(const QString &req) const override;
 

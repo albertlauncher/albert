@@ -91,7 +91,7 @@ Core::FuzzySearch::~FuzzySearch() {
 
 
 /** ***************************************************************************/
-void Core::FuzzySearch::add(shared_ptr<Core::IndexableItem> indexable) {
+void Core::FuzzySearch::add(const std::shared_ptr<IndexableItem> &indexable) {
 
     // Add indexable to the index
     index_.push_back(indexable);
@@ -140,7 +140,7 @@ vector<shared_ptr<Core::IndexableItem> > Core::FuzzySearch::search(const QString
         return vector<shared_ptr<IndexableItem>>();
 
     // Split the query into words
-    for (QString &word : words) {
+    for ( QString &word : words ) {
 
         uint delta = static_cast<uint>((delta_ < 1)? word.size()*delta_ : delta_);
 

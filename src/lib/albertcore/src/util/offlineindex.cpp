@@ -82,7 +82,7 @@ double Core::OfflineIndex::delta() {
 
 
 /** ***************************************************************************/
-void Core::OfflineIndex::add(std::shared_ptr<Core::IndexableItem> idxble) {
+void Core::OfflineIndex::add(const std::shared_ptr<Core::IndexableItem> &idxble) {
     impl_->add(idxble);
 }
 

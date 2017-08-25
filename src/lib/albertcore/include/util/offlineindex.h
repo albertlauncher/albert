@@ -74,7 +74,7 @@ public:
      * @brief Build the search index
      * @param The items to index
      */
-    void add(std::shared_ptr<Core::IndexableItem> idxble);
+    void add(const std::shared_ptr<Core::IndexableItem> &idxble);
 
     /**
      * @brief Clear the search index

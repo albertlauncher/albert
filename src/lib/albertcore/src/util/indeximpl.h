@@ -27,7 +27,7 @@ class IndexImpl
 {
 public:
     virtual ~IndexImpl() {}
-    virtual void add(std::shared_ptr<IndexableItem> idxble) = 0;
+    virtual void add(const std::shared_ptr<IndexableItem> &idxble) = 0;
     virtual void clear() = 0;
     virtual std::vector<std::shared_ptr<IndexableItem>> search(const QString &req) const = 0;
 
