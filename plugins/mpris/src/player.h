@@ -23,7 +23,7 @@ namespace MPRIS {
 class Player
 {
 public:
-    Player(const QString& name, const QString& busid, bool canRaise)
+    Player(const QString& busid, const QString& name, bool canRaise)
         : busId_(busid), name_(name), canRaise_(canRaise) {}
 
     const QString& name() const { return name_; }
