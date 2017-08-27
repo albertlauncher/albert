@@ -230,20 +230,16 @@ vector<shared_ptr<Core::IndexableItem> > Core::FuzzySearch::search(const QString
                 continue;
 
             // Finally this match is common an can be put into the results
-            finalResult.push_back(std::make_pair(r->first, accMatches));
+            finalResult.emplace_back(r->first, accMatches);
         }
     } else {// Else do it without intersction
         for ( const pair<uint,uint> &result : resultsPerWord[0] )
-            finalResult.push_back(std::make_pair(result.first, result.second));
+            finalResult.emplace_back(result.first, result.second);
     }
 
-    // Sort em by relevance // TODO INTRODUCE RELEVANCE TO ITEMS
-    //        std::sort(finalResult.begin(), finalResult.end(),
-    //                  [](QPair<T, uint> x, QPair<T, uint> y)
-    //                    {return x.second > y.second;});
     vector<shared_ptr<IndexableItem>> result;
     for (const pair<uint,uint> &pair : finalResult) {
-        result.push_back(index_.at(pair.first));
+        result.emplace_back(index_.at(pair.first));
     }
     return result;
 }
