@@ -219,7 +219,7 @@ void Core::QueryExecution::run() {
     emit resultsReady(this);
 
     if ( !realtimeHandlers_.empty() )
-        return runRealitimeHandlers();
+        return runRealtimeHandlers();
 
     setState(State::Finished);
 }
@@ -275,24 +275,32 @@ void Core::QueryExecution::onBatchHandlersFinished() {
     query_.results_.clear();
     query_.mutex_.unlock();
 
-    emit resultsReady(this);
-
-    if ( realtimeHandlers_.empty() )
-        finishQuery();
+    if ( realtimeHandlers_.empty() ){
+        if( results_.empty() && !query_.searchTerm_.isEmpty() ){
+            beginInsertRows(QModelIndex(), 0, static_cast<int>(fallbacks_.size()-1));
+            results_.insert(results_.end(), fallbacks_.begin(), fallbacks_.end());
+            endInsertRows();
+        }
+        emit resultsReady(this);
+        setState(State::Finished);
+    }
     else
-        runRealitimeHandlers();
+    {
+        emit resultsReady(this);
+        runRealtimeHandlers();
+    }
 }
 
 
 /** ***************************************************************************/
-void Core::QueryExecution::runRealitimeHandlers() {
+void Core::QueryExecution::runRealtimeHandlers() {
 
-    // Call onRealitimeHandlersFinsished when all handlers finished
+    // Call onRealtimeHandlersFinsished when all handlers finished
     disconnect(&futureWatcher_, &QFutureWatcher<pair<QueryHandler*,uint>>::finished,
                this, &QueryExecution::onBatchHandlersFinished);
 
     connect(&futureWatcher_, &QFutureWatcher<pair<QueryHandler*,uint>>::finished,
-            this, &QueryExecution::onRealitimeHandlersFinsished);
+            this, &QueryExecution::onRealtimeHandlersFinsished);
 
     // Run the handlers concurrently and measure the runtimes
     std::function<pair<QueryHandler*,uint>(QueryHandler*)> func = [this](QueryHandler* queryHandler){
@@ -312,7 +320,7 @@ void Core::QueryExecution::runRealitimeHandlers() {
 
 
 /** ***************************************************************************/
-void Core::QueryExecution::onRealitimeHandlersFinsished() {
+void Core::QueryExecution::onRealtimeHandlersFinsished() {
 
     // Save the runtimes of the current future
     for ( auto it = future_.begin(); it != future_.end(); ++it )
@@ -323,7 +331,12 @@ void Core::QueryExecution::onRealitimeHandlersFinsished() {
     fiftyMsTimer_.disconnect();
     insertPendingResults();
 
-    finishQuery();
+    if( results_.empty() && !query_.searchTerm_.isEmpty() ){
+        beginInsertRows(QModelIndex(), 0, static_cast<int>(fallbacks_.size()-1));
+        results_.insert(results_.end(), fallbacks_.begin(), fallbacks_.end());
+        endInsertRows();
+    }
+    setState(State::Finished);
 }
 
 
@@ -352,22 +365,3 @@ void Core::QueryExecution::insertPendingResults() {
         query_.results_.clear();
     }
 }
-
-
-/** ***************************************************************************/
-void Core::QueryExecution::finishQuery() {
-
-    /*
-     * If results are empty show fallbacks
-     */
-
-    if( results_.empty() && !query_.searchTerm_.isEmpty() ){
-        beginInsertRows(QModelIndex(), 0, static_cast<int>(fallbacks_.size()-1));
-        results_.insert(results_.end(),
-                       fallbacks_.begin(),
-                       fallbacks_.end());
-        endInsertRows();
-    }
-    setState(State::Finished);
-}
-

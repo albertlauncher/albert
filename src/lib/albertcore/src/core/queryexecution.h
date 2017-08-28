@@ -71,10 +71,9 @@ private:
 
     void runBatchHandlers();
     void onBatchHandlersFinished();
-    void runRealitimeHandlers();
-    void onRealitimeHandlersFinsished();
+    void runRealtimeHandlers();
+    void onRealtimeHandlersFinsished();
     void insertPendingResults();
-    void finishQuery();
 
     Query query_;
     State state_;
