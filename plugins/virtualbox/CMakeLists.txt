@@ -16,14 +16,30 @@ qt5_add_resources(QRC
 # Define the target
 add_library(${PROJECT_NAME} SHARED ${SRC} ${QRC})
 
+add_definitions(-DRT_OS_LINUX)
+add_definitions(-DVBOX_WITH_XPCOM_NAMESPACE_CLEANUP)
+set(PATH_XPCOM /usr/lib/virtualbox/sdk/bindings/xpcom)
+set(PATH_BIN /usr/lib/virtualbox)
+
+
+
 # Set INCLUDE_DIRS and INTERFACE_INCLUDE_DIRS
-target_include_directories(${PROJECT_NAME} PRIVATE src/)
+target_include_directories(${PROJECT_NAME}
+    PRIVATE
+        src/
+        ${PATH_XPCOM}/include
+        ${PATH_XPCOM}/include/nsprpub
+        ${PATH_XPCOM}/include/string
+        ${PATH_XPCOM}/include/xpcom
+        ${PATH_XPCOM}/include/ipcd
+)
 
 # Link target to libraries
 target_link_libraries(${PROJECT_NAME}
     ${Qt5Widgets_LIBRARIES}
     ${Qt5Xml_LIBRARIES}
     albertcore
+    ${PATH_BIN}/VBoxXPCOM.so
     xdg
 )
 

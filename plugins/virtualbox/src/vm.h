@@ -18,19 +18,21 @@
 
 #include <QString>
 #include "vmitem.h"
+#include "VirtualBox_XPCOM.h"
 
 namespace VirtualBox {
 
 class VM
 {
 public:
-    VM(const QString vboxFileName);
+    VM(IMachine *machine);
+    virtual ~VM();
     VMItem* produceItem() const;
     bool startsWith(QString other) const;
     const QString &uuid() const { return uuid_; }
-    void probeState() const;
 
 private:
+    IMachine* machine_;
     QString name_;
     QString uuid_;
     mutable QString state_;

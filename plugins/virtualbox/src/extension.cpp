@@ -36,6 +36,10 @@ using Core::Action;
 using Core::StandardAction;
 using Core::StandardItem;
 
+#include <nsString.h>
+#include <nsIServiceManager.h>
+#include "VirtualBox_XPCOM.h"
+
 
 
 class VirtualBox::Private
@@ -45,13 +49,17 @@ public:
     QList<VM*> vms;
     QFileSystemWatcher vboxWatcher;
 
-    void rescanVBoxConfig(QString path);
+    nsCOMPtr<nsIComponentManager> manager;
+    nsCOMPtr<IVirtualBox> virtualBox;
+
+
+    //void rescanVBoxConfig(QString path);
 
 };
 
 
 
-/** ***************************************************************************/
+/** ***************************************************************************
 void VirtualBox::Private::rescanVBoxConfig(QString path) {
 
     qInfo() << "Start indexing VirtualBox images.";
@@ -123,25 +131,52 @@ VirtualBox::Extension::Extension()
       Core::QueryHandler(Core::Plugin::id()),
       d(new Private) {
 
+    nsresult rc;
+
+    rc = NS_GetComponentManager(getter_AddRefs(d->manager));
+    if (NS_FAILED(rc))
+        throw("Error: could not get component manager.");
+
+    rc = d->manager->CreateInstanceByContractID(NS_VIRTUALBOX_CONTRACTID, nsnull,
+                                             NS_GET_IID(IVirtualBox),
+                                             getter_AddRefs(d->virtualBox));
+    if (NS_FAILED(rc))
+        throw("Error, could not instantiate VirtualBox object.");
+
+    IMachine **machines = NULL;
+    PRUint32 machineCnt = 0;
+
+    rc = d->virtualBox->GetMachines(&machineCnt, &machines);
+    if (NS_SUCCEEDED(rc)) {
+        for (PRUint32 i = 0; i < machineCnt; ++ i) {
+            IMachine *machine = machines[i];
+            if (machine) {
+                d->vms.append(new VM(machine));
+            }
+        }
+    }
+
+
     VMItem::iconPath_ = XDG::IconLookup::iconPath("virtualbox");
     if ( VMItem::iconPath_.isNull() )
         VMItem::iconPath_ = ":vbox";
 
-    QString vboxConfigPath = QStandardPaths::locate(QStandardPaths::ConfigLocation, "VirtualBox/VirtualBox.xml");
+    /*QString vboxConfigPath = QStandardPaths::locate(QStandardPaths::ConfigLocation, "VirtualBox/VirtualBox.xml");
     if (vboxConfigPath.isEmpty())
         throw "VirtualBox was not detected!";
 
     d->rescanVBoxConfig(vboxConfigPath);
     d->vboxWatcher.addPath(vboxConfigPath);
     connect(&d->vboxWatcher, &QFileSystemWatcher::fileChanged,
-            std::bind(&Private::rescanVBoxConfig, d.get(), std::placeholders::_1));
+            std::bind(&Private::rescanVBoxConfig, d.get(), std::placeholders::_1));*/
 }
 
 
 
 /** ***************************************************************************/
 VirtualBox::Extension::~Extension() {
-
+    d->virtualBox = nsnull;
+    NS_ShutdownXPCOM(nsnull);
 }
 
 
