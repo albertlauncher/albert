@@ -222,7 +222,11 @@ Files::ConfigWidget::ConfigWidget(Extension *_extension, QWidget *_parent)
     });
 
     // Status bar
-    connect(extension, &Extension::statusInfo, ui.label_statusbar, &QLabel::setText);
+    connect(extension, &Extension::statusInfo, this, [this](const QString& text){
+        QFontMetrics metrics(ui.label_statusbar->font());
+        QString elidedText = metrics.elidedText(text, Qt::ElideMiddle, ui.label_statusbar->width()-5);
+        ui.label_statusbar->setText(elidedText);
+    });
 }
 
 
