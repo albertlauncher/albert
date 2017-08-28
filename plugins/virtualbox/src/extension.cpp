@@ -190,8 +190,6 @@ QWidget *VirtualBox::Extension::widget(QWidget *parent) {
 
 /** ***************************************************************************/
 void VirtualBox::Extension::setupSession() {
-    for (VM *vm : d->vms)
-        vm->probeState();
 }
 
 

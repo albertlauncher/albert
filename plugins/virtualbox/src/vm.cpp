@@ -22,6 +22,8 @@
 #include <QObject>
 #include <QProcess>
 #include <QRegularExpression>
+#include <nsString.h>
+#include <nsIServiceManager.h>
 #include "util/standardaction.h"
 using Core::StandardAction;
 
