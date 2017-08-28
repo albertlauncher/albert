@@ -343,7 +343,7 @@ Files::Extension::Extension()
     connect(&d->indexIntervalTimer, &QTimer::timeout, this, &Extension::updateIndex);
 
     // If the root dirs change write it to the settings
-    connect(this, &Extension::rootDirsChanged, [this](const QStringList& dirs){
+    connect(this, &Extension::pathsChanged, [this](const QStringList& dirs){
         QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_PATHS), dirs);
     });
 
@@ -420,7 +420,8 @@ void Files::Extension::handleQuery(Core::Query * query) {
         }
 
         // Search for matches
-        const vector<shared_ptr<Core::IndexableItem>> &indexables = d->offlineIndex.search(query->searchTerm().toLower());
+        const vector<shared_ptr<IndexableItem>> &indexables =
+                d->offlineIndex.search(query->searchTerm());
 
         // Add results to query
         vector<pair<shared_ptr<Core::Item>,uint>> results;
@@ -444,6 +445,9 @@ const QStringList &Files::Extension::paths() const {
 
 /** ***************************************************************************/
 void Files::Extension::setPaths(const QStringList &paths) {
+
+    if (d->indexSettings.rootDirs == paths)
+        return;
 
     d->indexSettings.rootDirs.clear();
 
@@ -471,9 +475,12 @@ void Files::Extension::setPaths(const QStringList &paths) {
         d->indexSettings.rootDirs << absPath;
     }
 
+    emit pathsChanged(d->indexSettings.rootDirs);
+
     // Store to settings
     QSettings(qApp->applicationName())
             .setValue(QString("%1/%2").arg(Core::Extension::id, CFG_PATHS), d->indexSettings.rootDirs);
+
 }
 
 
@@ -483,6 +490,7 @@ void Files::Extension::restorePaths() {
     // Add standard path
     d->indexSettings.rootDirs.clear();
     d->indexSettings.rootDirs << QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+    emit pathsChanged(d->indexSettings.rootDirs);
 }
 
 

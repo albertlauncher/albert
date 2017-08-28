@@ -31,6 +31,8 @@ class Extension final :
     Q_OBJECT
     Q_PLUGIN_METADATA(IID ALBERT_EXTENSION_IID FILE "metadata.json")
 
+    Q_PROPERTY(QStringList paths READ paths WRITE setPaths NOTIFY pathsChanged)
+
 public:
 
     Extension();
@@ -68,7 +70,7 @@ private:
 
 signals:
 
-    void rootDirsChanged(const QStringList&);
+    void pathsChanged(const QStringList&);
     void statusInfo(const QString&);
 
 };

@@ -26,49 +26,36 @@ Files::ConfigWidget::ConfigWidget(Extension *_extension, QWidget *_parent)
     : QWidget(_parent), extension(_extension) {
     ui.setupUi(this);
 
-
     // Paths
     QStringListModel *pathsModel = new QStringListModel(this);
     pathsModel->setStringList(extension->paths());
     ui.listView_paths->setModel(pathsModel);
-
-    connect(pathsModel, &QStringListModel::dataChanged,
-            [=](){ extension->setPaths(pathsModel->stringList()); });
-
-    connect(pathsModel, &QStringListModel::rowsInserted,
-            [=](){ extension->setPaths(pathsModel->stringList()); });
-
-    connect(pathsModel, &QStringListModel::rowsRemoved,
-            [=](){ extension->setPaths(pathsModel->stringList()); });
+    connect(extension, &Extension::pathsChanged,
+            pathsModel, &QStringListModel::setStringList);
 
     // Buttons
     connect(ui.pushButton_add, &QPushButton::clicked, [=](){
-        QString path = QFileDialog::getExistingDirectory(
-                    this,
-                    tr("Choose path"),
-                    QStandardPaths::writableLocation(QStandardPaths::HomeLocation));
-
-        if(path.isEmpty())
-            return;
-
-        if ( pathsModel->match(pathsModel->index(0, 0), Qt::DisplayRole,
-                               QVariant::fromValue(path)).isEmpty() ) {
-            pathsModel->insertRow(pathsModel->rowCount());
-            pathsModel->setData(pathsModel->index(pathsModel->rowCount()-1,0), path);
-        }
+        QFileInfo fileInfo(QFileDialog::getExistingDirectory(
+                               this,
+                               tr("Choose directory"),
+                               QStandardPaths::writableLocation(QStandardPaths::HomeLocation)));
+        if(fileInfo.exists())
+            extension->setPaths(QStringList(extension->paths()) << fileInfo.absoluteFilePath());
     });
 
-    connect(ui.pushButton_remove, &QPushButton::clicked, [=](){
+    connect(ui.pushButton_remove, &QPushButton::clicked, [this, pathsModel](){
         if ( !ui.listView_paths->currentIndex().isValid() )
             return;
-        pathsModel->removeRow(ui.listView_paths->currentIndex().row());
+        QStringList paths(extension->paths());
+        paths.removeAll(pathsModel->stringList()[ui.listView_paths->currentIndex().row()]);
+        extension->setPaths(paths);
     });
-
-    connect(ui.pushButton_update, &QPushButton::clicked,
-            extension, &Extension::updateIndex);
 
     connect(ui.pushButton_restore, &QPushButton::clicked,
             extension, &Extension::restorePaths);
+
+    connect(ui.pushButton_update, &QPushButton::clicked,
+            extension, &Extension::updateIndex);
 
     /*
      * Initialize the indexing options
