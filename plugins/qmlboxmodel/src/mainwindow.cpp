@@ -404,9 +404,9 @@ bool MainWindow::MainWindow::hideOnClose() const {
 
 
 /** ***************************************************************************/
-void MainWindow::setHideOnClose(bool b) {
+void MainWindow::setHideOnClose(bool hideOnClose) {
     QSettings s(qApp->applicationName());
     s.beginGroup(PLUGIN_ID);
-    s.setValue(CFG_HIDE_ON_CLOSE, hideOnClose_);
-    hideOnClose_ = b;
+    s.setValue(CFG_HIDE_ON_CLOSE, hideOnClose);
+    hideOnClose_ = hideOnClose;
 }
