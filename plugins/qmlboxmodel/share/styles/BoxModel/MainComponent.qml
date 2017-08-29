@@ -180,7 +180,7 @@ FocusScope {
 
     states : State {
         name: "detailsView"
-        PropertyChanges { target: resultsList; interactive: false }
+        PropertyChanges { target: resultsList; enabled: false }
         PropertyChanges { target: actionsListView; visible: true  }
         PropertyChanges { target: historyTextInput; Keys.forwardTo: [root, actionsListView] }
         StateChangeScript {
