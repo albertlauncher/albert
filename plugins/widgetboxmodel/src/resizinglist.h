@@ -27,8 +27,8 @@ public:
     ResizingList(QWidget *parent = 0) : QListView(parent), maxItems_(5) {}
     virtual ~ResizingList() {}
 
-    uint8_t maxItems() const;
-    void setMaxItems(uint8_t maxItems);
+    uint maxItems() const;
+    void setMaxItems(uint maxItems);
 
     QSize minimumSizeHint() const override;
     QSize sizeHint() const override;
@@ -38,7 +38,7 @@ private:
 
     void updateAppearance();
 
-    uint8_t maxItems_;
+    uint maxItems_;
 
 signals:
 

@@ -18,14 +18,14 @@
 #include <QDebug>
 
 /** ***************************************************************************/
-uint8_t ResizingList::maxItems() const {
+uint ResizingList::maxItems() const {
     return maxItems_;
 }
 
 
 
 /** ***************************************************************************/
-void ResizingList::setMaxItems(uint8_t maxItems) {
+void ResizingList::setMaxItems(uint maxItems) {
     maxItems_ = maxItems;
     updateGeometry();
 }

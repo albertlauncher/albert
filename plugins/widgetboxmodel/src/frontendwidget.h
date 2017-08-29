@@ -31,7 +31,7 @@ class FrontendWidget final : public QWidget
 
 public:
 
-    FrontendWidget();
+    FrontendWidget(QSettings*);
     ~FrontendWidget();
 
     bool isVisible();
@@ -44,11 +44,14 @@ public:
 
     QWidget* widget(QWidget *parent = nullptr);
 
-    bool showCentered() const;
-    void setShowCentered(bool b = true);
-
     const QString &theme() const;
     bool setTheme(const QString& theme);
+
+    uint maxResults() const;
+    void setMaxResults(uint max);
+
+    bool showCentered() const;
+    void setShowCentered(bool b = true);
 
     bool hideOnFocusLoss() const;
     void setHideOnFocusLoss(bool b = true);
@@ -62,9 +65,6 @@ public:
     bool alwaysOnTop() const;
     void setAlwaysOnTop(bool alwaysOnTop);
 
-    uint8_t maxResults() const;
-    void setMaxResults(uint8_t max);
-
     bool displayIcons() const;
     void setDisplayIcons(bool value);
 
@@ -73,12 +73,6 @@ public:
 
     bool displayShadow() const;
     void setDisplayShadow(bool value);
-
-    bool actionsAreShown() const;
-    void setShowActions(bool showActions);
-
-    void showActions() { setShowActions(true); }
-    void hideActions() { setShowActions(false); }
 
 
 protected:
@@ -90,6 +84,8 @@ protected:
     void resizeEvent(QResizeEvent* event) override;
     bool event(QEvent *event) override;
     bool eventFilter(QObject*, QEvent *event) override;
+
+    void setShowActions(bool showActions);
 
 private:
 

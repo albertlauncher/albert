@@ -21,7 +21,7 @@
 /** ***************************************************************************/
 WidgetBoxModel::FrontendPlugin::FrontendPlugin()
     : Frontend("org.albert.frontend.boxmodel.widgets"),
-      frontendWidget_(new FrontendWidget){
+      frontendWidget_(new FrontendWidget(&settings())){
 
     connect(frontendWidget_.get(), &FrontendWidget::inputChanged,
             this, &Frontend::inputChanged);

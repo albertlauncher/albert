@@ -100,6 +100,8 @@ public:
     /** The form of the main app */
     Ui::MainWindow ui;
 
+    QSettings *settings;
+
     /** Indicates that the app should be shown centered */
     bool showCentered_;
 
@@ -124,10 +126,11 @@ public:
 /** ***************************************************************************/
 /** ***************************************************************************/
 /** ***************************************************************************/
-WidgetBoxModel::FrontendWidget::FrontendWidget() : d(new Private) {
+WidgetBoxModel::FrontendWidget::FrontendWidget(QSettings *settings) : d(new Private) {
 
     d->actionsShown_ = false;
     d->historyMoveMod_ = Qt::ControlModifier;
+    d->settings = settings;
 
 	// INITIALIZE UI
     d->ui.setupUi(this);
@@ -196,19 +199,19 @@ WidgetBoxModel::FrontendWidget::FrontendWidget() : d(new Private) {
      * Settings
      */
 
-    QSettings s(qApp->applicationName());
-    setShowCentered(s.value(CFG_CENTERED, DEF_CENTERED).toBool());
-    if (!showCentered() && s.contains(CFG_WND_POS) && s.value(CFG_WND_POS).canConvert(QMetaType::QPoint))
-        move(s.value(CFG_WND_POS).toPoint());
-    setHideOnFocusLoss(s.value(CFG_HIDE_ON_FOCUS_LOSS, DEF_HIDE_ON_FOCUS_LOSS).toBool());
-    setHideOnClose(s.value(CFG_HIDE_ON_CLOSE, DEF_HIDE_ON_CLOSE).toBool());
-    setClearOnHide(s.value(CFG_CLEAR_ON_HIDE, DEF_CLEAR_ON_HIDE).toBool());
-    setAlwaysOnTop(s.value(CFG_ALWAYS_ON_TOP, DEF_ALWAYS_ON_TOP).toBool());
-    setMaxResults(static_cast<u_int8_t>(s.value(CFG_MAX_RESULTS, DEF_MAX_RESULTS).toInt()));
-    setDisplayScrollbar(s.value(CFG_DISPLAY_SCROLLBAR, DEF_DISPLAY_SCROLLBAR).toBool());
-    setDisplayIcons(s.value(CFG_DISPLAY_ICONS, DEF_DISPLAY_ICONS).toBool());
-    setDisplayShadow(s.value(CFG_DISPLAY_SHADOW, DEF_DISPLAY_SHADOW).toBool());
-    d->theme_ = s.value(CFG_THEME, DEF_THEME).toString();
+    setShowCentered(d->settings->value(CFG_CENTERED, DEF_CENTERED).toBool());
+    if (!showCentered() && d->settings->contains(CFG_WND_POS)
+            && d->settings->value(CFG_WND_POS).canConvert(QMetaType::QPoint))
+        move(d->settings->value(CFG_WND_POS).toPoint());
+    setHideOnFocusLoss(d->settings->value(CFG_HIDE_ON_FOCUS_LOSS, DEF_HIDE_ON_FOCUS_LOSS).toBool());
+    setHideOnClose(d->settings->value(CFG_HIDE_ON_CLOSE, DEF_HIDE_ON_CLOSE).toBool());
+    setClearOnHide(d->settings->value(CFG_CLEAR_ON_HIDE, DEF_CLEAR_ON_HIDE).toBool());
+    setAlwaysOnTop(d->settings->value(CFG_ALWAYS_ON_TOP, DEF_ALWAYS_ON_TOP).toBool());
+    setMaxResults(d->settings->value(CFG_MAX_RESULTS, DEF_MAX_RESULTS).toUInt());
+    setDisplayScrollbar(d->settings->value(CFG_DISPLAY_SCROLLBAR, DEF_DISPLAY_SCROLLBAR).toBool());
+    setDisplayIcons(d->settings->value(CFG_DISPLAY_ICONS, DEF_DISPLAY_ICONS).toBool());
+    setDisplayShadow(d->settings->value(CFG_DISPLAY_SHADOW, DEF_DISPLAY_SHADOW).toBool());
+    d->theme_ = d->settings->value(CFG_THEME, DEF_THEME).toString();
     if (!setTheme(d->theme_))
         qFatal("FATAL: Stylefile not found: %s", d->theme_.toStdString().c_str());
 
@@ -221,13 +224,13 @@ WidgetBoxModel::FrontendWidget::FrontendWidget() : d(new Private) {
     connect(d->ui.inputLine, &QLineEdit::textChanged, this, &FrontendWidget::inputChanged);
 
     // Hide the actionview, if text was changed
-    connect(d->ui.inputLine, &QLineEdit::textChanged, this, &FrontendWidget::hideActions);
+    connect(d->ui.inputLine, &QLineEdit::textChanged, this, [this](){ setShowActions(false); });
 
     // Reset history, if text was manually changed
     connect(d->ui.inputLine, &QLineEdit::textEdited, d->history_, &History::resetIterator);
 
     // Hide the actionview, if another item gets clicked
-    connect(d->ui.resultsList, &ResultsList::pressed, this, &FrontendWidget::hideActions);
+    connect(d->ui.resultsList, &ResultsList::pressed, this, [this](){ setShowActions(false); });
 
     // Trigger default action, if item in resultslist was activated
     QObject::connect(d->ui.resultsList, &ResultsList::activated, [this](const QModelIndex &index){
@@ -306,12 +309,10 @@ QString WidgetBoxModel::FrontendWidget::input() {
     return d->ui.inputLine->text();
 }
 
-
 /** ***************************************************************************/
 void WidgetBoxModel::FrontendWidget::setInput(const QString &input) {
     d->ui.inputLine->setText(input);
 }
-
 
 
 /** ***************************************************************************/
@@ -320,13 +321,11 @@ void WidgetBoxModel::FrontendWidget::setModel(QAbstractItemModel *m) {
 }
 
 
-
 /** ***************************************************************************/
 void WidgetBoxModel::FrontendWidget::setShowCentered(bool b) {
-    QSettings(qApp->applicationName()).setValue(CFG_CENTERED, b);
+    d->settings->setValue(CFG_CENTERED, b);
     d->showCentered_ = b;
 }
-
 
 
 /** ***************************************************************************/
@@ -335,12 +334,10 @@ bool WidgetBoxModel::FrontendWidget::showCentered() const {
 }
 
 
-
 /** ***************************************************************************/
 const QString &WidgetBoxModel::FrontendWidget::theme() const {
     return d->theme_;
 }
-
 
 
 /** ***************************************************************************/
@@ -363,7 +360,7 @@ bool WidgetBoxModel::FrontendWidget::setTheme(const QString &theme) {
         if (fi.baseName() == d->theme_) {
             QFile f(fi.canonicalFilePath());
             if (f.open(QFile::ReadOnly)) {
-                QSettings(qApp->applicationName()).setValue(CFG_THEME, d->theme_);
+                d->settings->setValue(CFG_THEME, d->theme_);
                 setStyleSheet(f.readAll());
                 f.close();
                 success = true;
@@ -375,20 +372,17 @@ bool WidgetBoxModel::FrontendWidget::setTheme(const QString &theme) {
 }
 
 
-
 /** ***************************************************************************/
 bool WidgetBoxModel::FrontendWidget::hideOnFocusLoss() const {
     return d->hideOnFocusLoss_;
 }
 
 
-
 /** ***************************************************************************/
 void WidgetBoxModel::FrontendWidget::setHideOnFocusLoss(bool b) {
-    QSettings(qApp->applicationName()).setValue(CFG_HIDE_ON_FOCUS_LOSS, b);
+    d->settings->setValue(CFG_HIDE_ON_FOCUS_LOSS, b);
     d->hideOnFocusLoss_ = b;
 }
-
 
 
 /** ***************************************************************************/
@@ -397,13 +391,11 @@ bool WidgetBoxModel::FrontendWidget::hideOnClose() const {
 }
 
 
-
 /** ***************************************************************************/
 void WidgetBoxModel::FrontendWidget::setHideOnClose(bool b) {
-    QSettings(qApp->applicationName()).setValue(CFG_HIDE_ON_CLOSE, b);
+    d->settings->setValue(CFG_HIDE_ON_CLOSE, b);
     d->hideOnClose_ = b;
 }
-
 
 
 /** ***************************************************************************/
@@ -412,13 +404,11 @@ bool WidgetBoxModel::FrontendWidget::clearOnHide() const {
 }
 
 
-
 /** ***************************************************************************/
 void WidgetBoxModel::FrontendWidget::setClearOnHide(bool b) {
-    QSettings(qApp->applicationName()).setValue(CFG_CLEAR_ON_HIDE, b);
+    d->settings->setValue(CFG_CLEAR_ON_HIDE, b);
     d->clearOnHide_ = b;
 }
-
 
 
 /** ***************************************************************************/
@@ -427,23 +417,20 @@ bool WidgetBoxModel::FrontendWidget::alwaysOnTop() const {
 }
 
 
-
 /** ***************************************************************************/
 void WidgetBoxModel::FrontendWidget::setAlwaysOnTop(bool alwaysOnTop) {
-    QSettings(qApp->applicationName()).setValue(CFG_ALWAYS_ON_TOP, alwaysOnTop);
+    d->settings->setValue(CFG_ALWAYS_ON_TOP, alwaysOnTop);
     // TODO: QT_MINREL 5.7 setFlag
     alwaysOnTop ? setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint)
                 : setWindowFlags(windowFlags() & ~Qt::WindowStaysOnTopHint);
 }
 
 
-
 /** ***************************************************************************/
-void WidgetBoxModel::FrontendWidget::setMaxResults(uint8_t maxItems) {
-    QSettings(qApp->applicationName()).setValue(CFG_MAX_RESULTS, maxItems);
+void WidgetBoxModel::FrontendWidget::setMaxResults(uint maxItems) {
+    d->settings->setValue(CFG_MAX_RESULTS, maxItems);
     d->ui.resultsList->setMaxItems(maxItems);
 }
-
 
 
 /** ***************************************************************************/
@@ -452,13 +439,11 @@ bool WidgetBoxModel::FrontendWidget::displayIcons() const {
 }
 
 
-
 /** ***************************************************************************/
 void WidgetBoxModel::FrontendWidget::setDisplayIcons(bool value) {
-    QSettings(qApp->applicationName()).setValue(CFG_DISPLAY_ICONS, value);
+    d->settings->setValue(CFG_DISPLAY_ICONS, value);
     d->ui.resultsList->setDisplayIcons(value);
 }
-
 
 
 /** ***************************************************************************/
@@ -467,14 +452,12 @@ bool WidgetBoxModel::FrontendWidget::displayScrollbar() const {
 }
 
 
-
 /** ***************************************************************************/
 void WidgetBoxModel::FrontendWidget::setDisplayScrollbar(bool value) {
-    QSettings(qApp->applicationName()).setValue(CFG_DISPLAY_SCROLLBAR, value);
+    d->settings->setValue(CFG_DISPLAY_SCROLLBAR, value);
     d->ui.resultsList->setVerticalScrollBarPolicy(
                 value ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
 }
-
 
 
 /** ***************************************************************************/
@@ -483,29 +466,19 @@ bool WidgetBoxModel::FrontendWidget::displayShadow() const {
 }
 
 
-
 /** ***************************************************************************/
 void WidgetBoxModel::FrontendWidget::setDisplayShadow(bool value) {
-    QSettings(qApp->applicationName()).setValue(CFG_DISPLAY_SHADOW, value);
+    d->settings->setValue(CFG_DISPLAY_SHADOW, value);
     d->displayShadow_ = value;
     graphicsEffect()->setEnabled(value);
     value ? setContentsMargins(20,20,20,20) : setContentsMargins(0,0,0,0);
 }
 
 
-
 /** ***************************************************************************/
-uint8_t WidgetBoxModel::FrontendWidget::maxResults() const {
+uint WidgetBoxModel::FrontendWidget::maxResults() const {
     return d->ui.resultsList->maxItems();
 }
-
-
-
-/** ***************************************************************************/
-bool WidgetBoxModel::FrontendWidget::actionsAreShown() const {
-    return d->actionsShown_;
-}
-
 
 
 /** ***************************************************************************/
@@ -557,12 +530,10 @@ void WidgetBoxModel::FrontendWidget::setShowActions(bool showActions) {
 }
 
 
-
 /** ***************************************************************************/
 QWidget *WidgetBoxModel::FrontendWidget::widget(QWidget *parent) {
     return new ConfigWidget(this, parent);
 }
-
 
 
 /** ***************************************************************************/
@@ -571,7 +542,6 @@ void WidgetBoxModel::FrontendWidget::closeEvent(QCloseEvent *event) {
     if (!d->hideOnClose_)
         qApp->quit();
 }
-
 
 
 /** ***************************************************************************/
@@ -601,14 +571,12 @@ void WidgetBoxModel::FrontendWidget::resizeEvent(QResizeEvent *event) {
 }
 
 
-
 /** ***************************************************************************/
 void WidgetBoxModel::FrontendWidget::mouseMoveEvent(QMouseEvent *event) {
     // Move the widget with the mouse
     move(event->globalPos() - d->clickOffset_);
     QWidget::mouseMoveEvent(event);
 }
-
 
 
 /** ***************************************************************************/
@@ -619,14 +587,12 @@ void WidgetBoxModel::FrontendWidget::mousePressEvent(QMouseEvent *event) {
 }
 
 
-
 /** ***************************************************************************/
 void WidgetBoxModel::FrontendWidget::mouseReleaseEvent(QMouseEvent *event) {
     // Save the window position ()
-    QSettings(qApp->applicationName()).setValue(CFG_WND_POS, pos());
+    d->settings->setValue(CFG_WND_POS, pos());
     QWidget::mousePressEvent(event);
 }
-
 
 
 /** ***************************************************************************/
@@ -654,7 +620,7 @@ bool WidgetBoxModel::FrontendWidget::eventFilter(QObject *, QEvent *event) {
             // Move up in the history
             if ( !d->ui.resultsList->currentIndex().isValid() // Empty list
                  || keyEvent->modifiers() == d->historyMoveMod_ // MoveMod (Ctrl) hold
-                 || ( !actionsAreShown() // Not in actions state...
+                 || ( !d->actionsShown_ // Not in actions state...
                       && d->ui.resultsList->currentIndex().row()==0 && !keyEvent->isAutoRepeat() ) ){ // ... and first row (non repeat)
                 QString next = d->history_->next();
                 if (!next.isEmpty())
@@ -665,7 +631,7 @@ bool WidgetBoxModel::FrontendWidget::eventFilter(QObject *, QEvent *event) {
 
         // Move down in the history
         case Qt::Key_Down:{
-            if ( !actionsAreShown() && keyEvent->modifiers() == Qt::ControlModifier ) {
+            if ( !d->actionsShown_ && keyEvent->modifiers() == Qt::ControlModifier ) {
                 QString prev = d->history_->prev();
                 if (!prev.isEmpty())
                     d->ui.inputLine->setText(prev);
@@ -699,7 +665,6 @@ bool WidgetBoxModel::FrontendWidget::eventFilter(QObject *, QEvent *event) {
 
     return false;
 }
-
 
 
 /** ***************************************************************************/
