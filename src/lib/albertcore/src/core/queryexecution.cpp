@@ -57,11 +57,10 @@ Core::QueryExecution::QueryExecution(const std::set<QueryHandler*> & queryHandle
         }
     }
 
-    // Else run all handlers
+    // Else run all batched handlers
     for ( QueryHandler *queryHandler : queryHandlers )
-        ( queryHandler->executionType()==QueryHandler::ExecutionType::Batch )
-                ? batchHandlers_.insert(queryHandler)
-                : realtimeHandlers_.insert(queryHandler);
+        if ( queryHandler->executionType()==QueryHandler::ExecutionType::Batch )
+            batchHandlers_.insert(queryHandler);
 
     // Get fallbacks
     for ( FallbackProvider *fallbackProvider : fallbackProviders ) {

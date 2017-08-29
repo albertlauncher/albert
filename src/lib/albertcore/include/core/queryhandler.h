@@ -38,6 +38,25 @@ public:
     virtual QStringList triggers() const { return QStringList(); }
 
     /**
+     * @brief The ExecutionType enum
+     * The execution type of a queryhandler determines the way the handler is run. Batch handlers
+     * are runned first. Query results are not displayed until all batch handlers finished. When all
+     * batch handlers finished the results are sorted and displayed. Batched handlers can be
+     * triggered or not.
+     * Realtime handlers are started and the model of the results is shown instantly. The results of
+     * the realtime handlers are not sorted and displayed instantly (well they are buffered for 50
+     * ms). Realtime handler must have triggers otherwise they will never be started.
+     */
+    enum class ExecutionType { Batch, Realtime };
+
+    /**
+     * @brief executionType
+     * @return The execution type of the queryhandler
+     * @see ExecutionType
+     */
+    virtual ExecutionType executionType() const { return ExecutionType::Batch; }
+
+    /**
      * @brief Session setup
      * Called when the users started a session, i.e. before the the main window
      * is shown. Setup session stage has to be finished before the actual query
@@ -55,24 +74,6 @@ public:
      * @see setupSession
      */
     virtual void teardownSession() {}
-
-    /**
-     * @brief The ExecutionType enum
-     * The execution type of a queryhandler determines the way the handler is run. Batch handlers
-     * are runned first. Query results are not displayed until all batch handlers finished. When all
-     * batch handlers finished the results are sorted and displayed. Realtime handlers are started
-     * afterwards. The results of the realtime handlers are not sorted anymore and displayed
-     * instantly (well they are buffered for 50 ms). Note that the results are simply appended
-     * once they are displayed, therefore it may be wise for realtime handlers to have triggers.
-     */
-    enum class ExecutionType { Batch, Realtime };
-
-    /**
-     * @brief executionType
-     * @return The execution type of the queryhandler
-     * @see ExecutionType
-     */
-    virtual ExecutionType executionType() const { return ExecutionType::Batch; }
 
     /**
      * @brief Query handling
