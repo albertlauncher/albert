@@ -27,7 +27,7 @@
 #include "propertyeditor.h"
 
 /** ***************************************************************************/
-ConfigWidget::ConfigWidget(MainWindow *mainWindow, QWidget *parent, Qt::WindowFlags f)
+QmlBoxModel::ConfigWidget::ConfigWidget(MainWindow *mainWindow, QWidget *parent, Qt::WindowFlags f)
     : QWidget(parent, f), mainWindow_(mainWindow) {
 
     ui.setupUi(this);
@@ -96,7 +96,7 @@ ConfigWidget::ConfigWidget(MainWindow *mainWindow, QWidget *parent, Qt::WindowFl
 
 
 /** ***************************************************************************/
-void ConfigWidget::onThemeChanged(int i) {
+void QmlBoxModel::ConfigWidget::onThemeChanged(int i) {
     // Apply the theme
     mainWindow_->setSource(mainWindow_->availableStyles()[static_cast<size_t>(i)].mainComponent);
 
@@ -110,6 +110,6 @@ void ConfigWidget::onThemeChanged(int i) {
 
 
 /** ***************************************************************************/
-void ConfigWidget::onPresetChanged(const QString &text) {
+void QmlBoxModel::ConfigWidget::onPresetChanged(const QString &text) {
     mainWindow_->setPreset(text);
 }

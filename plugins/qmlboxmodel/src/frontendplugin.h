@@ -22,7 +22,7 @@
 
 namespace QmlBoxModel {
 
-class FrontendPluginPrivate;
+class MainWindow;
 
 class FrontendPlugin final : public Core::Frontend
 {
@@ -46,7 +46,7 @@ public:
 
 private:
 
-    std::unique_ptr<FrontendPluginPrivate> d;
+    std::unique_ptr<MainWindow> mainWindow;
 };
 
 }

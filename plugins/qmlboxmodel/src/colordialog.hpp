@@ -17,6 +17,8 @@
 #pragma once
 #include <QColorDialog>
 
+namespace QmlBoxModel {
+
 class ColorDialog : public QColorDialog
 {
     Q_OBJECT
@@ -33,3 +35,5 @@ public:
 signals:
     void colorChanged(const QColor &color);
 };
+
+}

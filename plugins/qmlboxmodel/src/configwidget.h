@@ -17,6 +17,8 @@
 #pragma once
 #include "ui_configwidget.h"
 
+namespace QmlBoxModel {
+
 class MainWindow;
 
 class ConfigWidget final : public QWidget
@@ -35,3 +37,5 @@ private:
     MainWindow *mainWindow_;
     Ui::SettingsDialog ui;
 };
+
+}

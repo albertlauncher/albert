@@ -24,6 +24,8 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 
+namespace QmlBoxModel {
+
 class PropertyModel final : public QAbstractTableModel
 {
 public:
@@ -90,10 +92,12 @@ private:
     QStringList properties_;
 };
 
+}
+
 
 
 ///****************************************************************************/
-PropertyEditor::PropertyEditor(MainWindow *mainWindow, QWidget *parent) :
+QmlBoxModel::PropertyEditor::PropertyEditor(MainWindow *mainWindow, QWidget *parent) :
     QDialog (parent){
 
     resize(300, 300);

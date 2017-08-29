@@ -17,6 +17,8 @@
 #pragma once
 #include <QDialog>
 
+namespace QmlBoxModel {
+
 class MainWindow;
 
 class PropertyEditor : public QDialog
@@ -26,3 +28,5 @@ class PropertyEditor : public QDialog
 public:
     explicit PropertyEditor(MainWindow *mainWindow, QWidget *parent = 0);
 };
+
+}

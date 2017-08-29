@@ -16,10 +16,13 @@
 
 #pragma once
 #include <QQuickView>
+#include <QSettings>
 #include <QPoint>
 #include <QFileSystemWatcher>
 #include <QIdentityProxyModel>
 #include "core/history.h"
+
+namespace QmlBoxModel {
 
 struct QmlStyleSpec {
     QString name;
@@ -34,7 +37,7 @@ class MainWindow final : public QQuickView
 
 public:
 
-    MainWindow(QWindow *parent = 0);
+    MainWindow(QSettings *settings, QWindow *parent = 0);
     ~MainWindow();
 
     QString input();
@@ -75,6 +78,7 @@ protected:
     QIdentityProxyModel model_;
     std::vector<QmlStyleSpec> styles_;
     QFileSystemWatcher watcher_;
+    QSettings *settings_;
 
 signals:
 
@@ -82,3 +86,5 @@ signals:
     void settingsWidgetRequested();
 
 };
+
+}

@@ -15,27 +15,22 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "frontendplugin.h"
-#include "mainwindow.h"
 #include "configwidget.h"
+#include "mainwindow.h"
 
-class QmlBoxModel::FrontendPluginPrivate
-{
-public:
-    MainWindow mainWindow;
-};
 
 /** ***************************************************************************/
 QmlBoxModel::FrontendPlugin::FrontendPlugin()
     : Frontend("org.albert.frontend.boxmodel.qml"),
-      d(new FrontendPluginPrivate){
+      mainWindow(new MainWindow(&settings())){
 
-    connect(&d->mainWindow, &MainWindow::inputChanged,
+    connect(mainWindow.get(), &MainWindow::inputChanged,
             this, &Frontend::inputChanged);
 
-    connect(&d->mainWindow, &MainWindow::settingsWidgetRequested,
+    connect(mainWindow.get(), &MainWindow::settingsWidgetRequested,
             this, &Frontend::settingsWidgetRequested);
 
-    connect(&d->mainWindow, &MainWindow::visibilityChanged,
+    connect(mainWindow.get(), &MainWindow::visibilityChanged,
             this, [this](QWindow::Visibility visibility){
         emit ( visibility == QWindow::Visibility::Hidden ) ? widgetHidden() : widgetShown();
     });
@@ -50,38 +45,38 @@ QmlBoxModel::FrontendPlugin::~FrontendPlugin() {
 
 /** ***************************************************************************/
 bool QmlBoxModel::FrontendPlugin::isVisible() {
-    return d->mainWindow.isVisible();
+    return mainWindow->isVisible();
 }
 
 
 /** ***************************************************************************/
 void QmlBoxModel::FrontendPlugin::setVisible(bool visible) {
-    d->mainWindow.setVisible(visible);
-    d->mainWindow.raise();
-    d->mainWindow.requestActivate();
+    mainWindow->setVisible(visible);
+    mainWindow->raise();
+    mainWindow->requestActivate();
 }
 
 
 /** ***************************************************************************/
 QString QmlBoxModel::FrontendPlugin::input() {
-    return d->mainWindow.input();
+    return mainWindow->input();
 }
 
 
 /** ***************************************************************************/
 void QmlBoxModel::FrontendPlugin::setInput(const QString &input) {
-    d->mainWindow.setInput(input);
+    mainWindow->setInput(input);
 }
 
 
 /** ***************************************************************************/
 void QmlBoxModel::FrontendPlugin::setModel(QAbstractItemModel *m) {
-    d->mainWindow.setModel(m);
+    mainWindow->setModel(m);
 }
 
 
 /** ***************************************************************************/
 QWidget *QmlBoxModel::FrontendPlugin::widget(QWidget *parent) {
-    return new ConfigWidget(&d->mainWindow, parent);
+    return new ConfigWidget(mainWindow.get(), parent);
 }
 

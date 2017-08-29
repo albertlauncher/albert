@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SettingsDialog</class>
- <widget class="QWidget" name="SettingsDialog">
+ <class>QmlBoxModel::SettingsDialog</class>
+ <widget class="QWidget" name="QmlBoxModel::SettingsDialog">
   <property name="sizePolicy">
    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
     <horstretch>0</horstretch>

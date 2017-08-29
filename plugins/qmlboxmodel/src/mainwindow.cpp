@@ -46,7 +46,7 @@ const bool    DEF_HIDE_ON_CLOSE   = false;
 }
 
 /** ***************************************************************************/
-MainWindow::MainWindow(QWindow *parent) : QQuickView(parent) {
+QmlBoxModel::MainWindow::MainWindow(QSettings *settings, QWindow *parent) : QQuickView(parent) {
     setColor(Qt::transparent);
     setFlags(Qt::Tool
              | Qt::WindowStaysOnTopHint
@@ -54,6 +54,7 @@ MainWindow::MainWindow(QWindow *parent) : QQuickView(parent) {
              | Qt::WindowCloseButtonHint // No close event w/o this
              );
 
+    settings_ = settings;
 
     // Set qml environment
     rootContext()->setContextProperty("mainWindow", this);
@@ -107,26 +108,22 @@ MainWindow::MainWindow(QWindow *parent) : QQuickView(parent) {
 
 
     auto storeWinPos = [this](){
-        QSettings s(qApp->applicationName());
-        s.beginGroup(PLUGIN_ID);
-        s.setValue(CFG_WND_POS, position());
+        settings_->setValue(CFG_WND_POS, position());
     };
     connect(this, &MainWindow::xChanged, storeWinPos);
     connect(this, &MainWindow::yChanged, storeWinPos);
 
     // Load settings
-    QSettings s(qApp->applicationName());
-    s.beginGroup(PLUGIN_ID);
-    setPosition(s.value(CFG_WND_POS).toPoint());
-    setShowCentered(s.value(CFG_CENTERED, DEF_CENTERED).toBool());
-    setHideOnFocusLoss(s.value(CFG_HIDEONFOCUSLOSS, DEF_HIDEONFOCUSLOSS).toBool());
-    setAlwaysOnTop(s.value(CFG_ALWAYS_ON_TOP, DEF_ALWAYS_ON_TOP).toBool());
-    setHideOnClose(s.value(CFG_HIDE_ON_CLOSE, DEF_HIDE_ON_CLOSE).toBool());
-    if ( s.contains(CFG_STYLEPATH) && QFile::exists(s.value(CFG_STYLEPATH).toString()) )
-        setSource(s.value(CFG_STYLEPATH).toString());
+    setPosition(settings_->value(CFG_WND_POS).toPoint());
+    setShowCentered(settings_->value(CFG_CENTERED, DEF_CENTERED).toBool());
+    setHideOnFocusLoss(settings_->value(CFG_HIDEONFOCUSLOSS, DEF_HIDEONFOCUSLOSS).toBool());
+    setAlwaysOnTop(settings_->value(CFG_ALWAYS_ON_TOP, DEF_ALWAYS_ON_TOP).toBool());
+    setHideOnClose(settings_->value(CFG_HIDE_ON_CLOSE, DEF_HIDE_ON_CLOSE).toBool());
+    if ( settings_->contains(CFG_STYLEPATH) && QFile::exists(settings_->value(CFG_STYLEPATH).toString()) )
+        setSource(settings_->value(CFG_STYLEPATH).toString());
     else {
         setSource(styles_[0].mainComponent);
-        s.setValue(CFG_STYLEPATH, styles_[0].mainComponent);
+        settings_->setValue(CFG_STYLEPATH, styles_[0].mainComponent);
     }
 
     // Reload qml if changed
@@ -153,14 +150,14 @@ MainWindow::MainWindow(QWindow *parent) : QQuickView(parent) {
 
 
 /** ***************************************************************************/
-MainWindow::~MainWindow() {
+QmlBoxModel::MainWindow::~MainWindow() {
     // Save settings
 
     qDebug() << "QML Box Model mainwindow destructor called";
 }
 
 /** ***************************************************************************/
-QString MainWindow::input() {
+QString QmlBoxModel::MainWindow::input() {
     QString retVal;
     QMetaObject::invokeMethod(rootObject(), "getInput", Qt::DirectConnection,
                               Q_RETURN_ARG(QString, retVal));
@@ -170,14 +167,14 @@ QString MainWindow::input() {
 
 
 /** ***************************************************************************/
-void MainWindow::setInput(const QString &input) {
+void QmlBoxModel::MainWindow::setInput(const QString &input) {
     QMetaObject::invokeMethod(rootObject(), "setInput", Qt::DirectConnection,
                               Q_ARG(QString, input));
 }
 
 
 /** ***************************************************************************/
-void MainWindow::setSource(const QUrl &url) {
+void QmlBoxModel::MainWindow::setSource(const QUrl &url) {
 
     // Apply the source
     QQuickView::setSource(url);
@@ -199,18 +196,15 @@ void MainWindow::setSource(const QUrl &url) {
 
 
     // Load the theme properties
-    QSettings s(qApp->applicationName());
-    s.beginGroup(PLUGIN_ID);
-
-    s.setValue(CFG_STYLEPATH, source().toString());
+    settings_->setValue(CFG_STYLEPATH, source().toString());
 
     QString themeId = QFileInfo(source().toString()).dir().dirName();
-    s.beginGroup(themeId);
+
+    settings_->beginGroup(themeId);
     for (QString &prop : availableProperties()) {
-        if (s.contains(prop))
-            setProperty(prop.toLatin1().data(), s.value(prop));
+        if (settings_->contains(prop))
+            setProperty(prop.toLatin1().data(), settings_->value(prop));
     }
-    s.endGroup();
 
     if ( !watcher_.files().isEmpty() )
         watcher_.removePaths(watcher_.files());
@@ -219,13 +213,13 @@ void MainWindow::setSource(const QUrl &url) {
 
 
 /** ***************************************************************************/
-const std::vector<QmlStyleSpec> &MainWindow::availableStyles() const {
+const std::vector<QmlBoxModel::QmlStyleSpec> &QmlBoxModel::MainWindow::availableStyles() const {
     return styles_;
 }
 
 
 /** ***************************************************************************/
-QStringList MainWindow::availableProperties() {
+QStringList QmlBoxModel::MainWindow::availableProperties() {
     QVariant returnedValue;
     QMetaObject::invokeMethod(rootObject(), "availableProperties",
                               Q_RETURN_ARG(QVariant, returnedValue));
@@ -234,17 +228,15 @@ QStringList MainWindow::availableProperties() {
 
 
 /** ***************************************************************************/
-QVariant MainWindow::property(const char *name) const {
+QVariant QmlBoxModel::MainWindow::property(const char *name) const {
     return rootObject()->property(name);
 }
 
 
 /** ***************************************************************************/
-void MainWindow::setProperty(const char *attribute, const QVariant &value) {
+void QmlBoxModel::MainWindow::setProperty(const char *attribute, const QVariant &value) {
     QString themeId = QFileInfo(source().toString()).dir().dirName();
-    QSettings s(qApp->applicationName());
-    s.beginGroup(QString("%1/%2").arg(PLUGIN_ID, themeId));
-    s.setValue(attribute, value);
+    settings_->setValue(attribute, value);
     rootObject()->setProperty(attribute, value);
     rootObject()->update();
 }
@@ -252,7 +244,7 @@ void MainWindow::setProperty(const char *attribute, const QVariant &value) {
 
 
 /** ***************************************************************************/
-QStringList MainWindow::availablePresets() {
+QStringList QmlBoxModel::MainWindow::availablePresets() {
     QVariant returnedValue;
     QMetaObject::invokeMethod(rootObject(), "availablePresets",
                               Q_RETURN_ARG(QVariant, returnedValue));
@@ -262,30 +254,27 @@ QStringList MainWindow::availablePresets() {
 
 
 /** ***************************************************************************/
-void MainWindow::setPreset(const QString &name){
+void QmlBoxModel::MainWindow::setPreset(const QString &name){
     QMetaObject::invokeMethod(rootObject(), "setPreset",
                               Q_ARG(QVariant, QVariant::fromValue(name)));
 
     // Save the theme properties
     QString themeId = QFileInfo(source().toString()).dir().dirName();
-    QSettings s(qApp->applicationName());
-    s.beginGroup(QString("%1/%2").arg(PLUGIN_ID, themeId));
     for (QString &prop : availableProperties())
-        s.setValue(prop, property(prop.toLatin1().data()));
-    s.endGroup();
+        settings_->setValue(prop, property(prop.toLatin1().data()));
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::setModel(QAbstractItemModel *model) {
+void QmlBoxModel::MainWindow::setModel(QAbstractItemModel *model) {
     model_.setSourceModel(model);
 }
 
 
 
 /** ***************************************************************************/
-bool MainWindow::event(QEvent *event) {
+bool QmlBoxModel::MainWindow::event(QEvent *event) {
     switch (event->type())
     {
     // Quit on Alt+F4
@@ -340,18 +329,16 @@ bool MainWindow::event(QEvent *event) {
 
 
 /** ***************************************************************************/
-bool MainWindow::alwaysOnTop() const {
+bool QmlBoxModel::MainWindow::alwaysOnTop() const {
     return flags() & Qt::WindowStaysOnTopHint;
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::setAlwaysOnTop(bool alwaysOnTop) {
+void QmlBoxModel::MainWindow::setAlwaysOnTop(bool alwaysOnTop) {
 
-    QSettings s(qApp->applicationName());
-    s.beginGroup(PLUGIN_ID);
-    s.setValue(CFG_ALWAYS_ON_TOP, alwaysOnTop);
+    settings_->setValue(CFG_ALWAYS_ON_TOP, alwaysOnTop);
 
     alwaysOnTop
             ? setFlags(flags() | Qt::WindowStaysOnTopHint)
@@ -363,50 +350,44 @@ void MainWindow::setAlwaysOnTop(bool alwaysOnTop) {
 
 
 /** ***************************************************************************/
-bool MainWindow::hideOnFocusLoss() const {
+bool QmlBoxModel::MainWindow::hideOnFocusLoss() const {
     return hideOnFocusLoss_;
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::setHideOnFocusLoss(bool hideOnFocusLoss) {
-    QSettings s(qApp->applicationName());
-    s.beginGroup(PLUGIN_ID);
-    s.setValue(CFG_HIDEONFOCUSLOSS, hideOnFocusLoss);
+void QmlBoxModel::MainWindow::setHideOnFocusLoss(bool hideOnFocusLoss) {
+    settings_->setValue(CFG_HIDEONFOCUSLOSS, hideOnFocusLoss);
     hideOnFocusLoss_ = hideOnFocusLoss;
 }
 
 
 
 /** ***************************************************************************/
-bool MainWindow::showCentered() const {
+bool QmlBoxModel::MainWindow::showCentered() const {
     return showCentered_;
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::setShowCentered(bool showCentered) {
-    QSettings s(qApp->applicationName());
-    s.beginGroup(PLUGIN_ID);
-    s.setValue(CFG_CENTERED, showCentered);
+void QmlBoxModel::MainWindow::setShowCentered(bool showCentered) {
+    settings_->setValue(CFG_CENTERED, showCentered);
     showCentered_ = showCentered;
 }
 
 
 
 /** ***************************************************************************/
-bool MainWindow::MainWindow::hideOnClose() const {
+bool QmlBoxModel::MainWindow::hideOnClose() const {
     return hideOnClose_;
 }
 
 
 
 /** ***************************************************************************/
-void MainWindow::setHideOnClose(bool hideOnClose) {
-    QSettings s(qApp->applicationName());
-    s.beginGroup(PLUGIN_ID);
-    s.setValue(CFG_HIDE_ON_CLOSE, hideOnClose);
+void QmlBoxModel::MainWindow::setHideOnClose(bool hideOnClose) {
+    settings_->setValue(CFG_HIDE_ON_CLOSE, hideOnClose);
     hideOnClose_ = hideOnClose;
 }
