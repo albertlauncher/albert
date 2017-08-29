@@ -78,7 +78,7 @@ QDBusMessage MPRIS::Private::call(QDBusMessage &toDispatch) {
 /** ***************************************************************************/
 MPRIS::Extension::Extension()
     : Core::Extension("org.albert.extension.mpris"),
-      Core::QueryHandler(Core::Extension::id),
+      Core::QueryHandler(Core::Plugin::id()),
       d(new Private) {
     QString icon;
 

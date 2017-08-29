@@ -26,7 +26,8 @@ public:
 
 /** ***************************************************************************/
 QmlBoxModel::FrontendPlugin::FrontendPlugin()
-    : d(new FrontendPluginPrivate){
+    : Frontend("org.albert.frontend.boxmodel.qml"),
+      d(new FrontendPluginPrivate){
 
     connect(&d->mainWindow, &MainWindow::inputChanged,
             this, &Frontend::inputChanged);

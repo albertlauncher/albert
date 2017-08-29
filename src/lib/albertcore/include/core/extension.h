@@ -20,7 +20,7 @@
 #include "plugin.h"
 #include "core_globals.h"
 
-#define ALBERT_EXTENSION_IID "ExtensionInterface/v1.0-alpha"
+#define ALBERT_EXTENSION_IID ALBERT_PLUGIN_IID_PREFIX".extensionv1-alpha"
 
 namespace Core {
 
@@ -31,13 +31,7 @@ class EXPORT_CORE Extension : public Plugin
 {
 public:
 
-    Extension(const QString &id) : id(id) {}
-    virtual ~Extension() {}
-
-    /**
-     * @brief An immutable application-wide unique identifier
-     */
-    const QString id;
+    Extension(const QString &id) : Plugin(id) {}
 
     /**
      * @brief A human readable name of the plugin

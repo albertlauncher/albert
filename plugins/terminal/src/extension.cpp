@@ -50,7 +50,7 @@ public:
 /** ***************************************************************************/
 Terminal::Extension::Extension()
     : Core::Extension("org.albert.extension.terminal"),
-      Core::QueryHandler(Core::Extension::id),
+      Core::QueryHandler(Core::Plugin::id()),
       d(new Private) {
 
     QString iconPath = XDG::IconLookup::iconPath("terminal");

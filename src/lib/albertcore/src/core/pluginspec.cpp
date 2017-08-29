@@ -23,7 +23,6 @@
 #include "plugin.h"
 
 
-
 /** ***************************************************************************/
 Core::PluginSpec::PluginSpec(const QString &path) : loader_(path) {
     iid_          = loader_.metaData()["IID"].toString();
@@ -94,10 +93,8 @@ bool Core::PluginSpec::load() {
                 lastError_ = loader_.errorString();
             else if ( ! (plugin = dynamic_cast<Plugin*>(loader_.instance())) )
                 lastError_ = "Plugin instance is not of type Plugin";
-            else {
+            else
                 state_ = State::Loaded;
-                plugin->id_ = this->id_;
-            }
         } catch (const std::exception& ex) {
             lastError_ = ex.what();
         } catch (const std::string& s) {

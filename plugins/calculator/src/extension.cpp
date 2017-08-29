@@ -54,20 +54,17 @@ public:
 /** ***************************************************************************/
 Calculator::Extension::Extension()
     : Core::Extension("org.albert.extension.calculator"),
-      Core::QueryHandler(Core::Extension::id),
+      Core::QueryHandler(Core::Plugin::id()),
       d(new Private){
 
     // FIXME Qt6 Workaround for https://bugreports.qt.io/browse/QTBUG-58504
     d->locale = QLocale(QLocale::system().name());
 
     // Load settings
-    QSettings s(qApp->applicationName());
-    s.beginGroup(Core::Extension::id);
     d->locale.setNumberOptions(
-                (s.value(CFG_SEPS, CFG_SEPS_DEF).toBool())
+                (settings().value(CFG_SEPS, CFG_SEPS_DEF).toBool())
                 ? d->locale.numberOptions() & ~QLocale::OmitGroupSeparator
                 : d->locale.numberOptions() | QLocale::OmitGroupSeparator );
-    s.endGroup();
 
     QString iconPath = XDG::IconLookup::iconPath("calc");
     d->iconPath = iconPath.isNull() ? ":calc" : iconPath;
@@ -93,7 +90,7 @@ QWidget *Calculator::Extension::widget(QWidget *parent) {
 
         d->widget->ui.checkBox_groupsep->setChecked(!(d->locale.numberOptions() & QLocale::OmitGroupSeparator));
         connect(d->widget->ui.checkBox_groupsep, &QCheckBox::toggled, [this](bool checked){
-            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_SEPS), checked);
+            settings().setValue(CFG_SEPS, checked);
             d->locale.setNumberOptions( (checked) ? d->locale.numberOptions() & ~QLocale::OmitGroupSeparator
                                                   : d->locale.numberOptions() | QLocale::OmitGroupSeparator );
         });

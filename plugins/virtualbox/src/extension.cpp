@@ -120,7 +120,7 @@ void VirtualBox::Private::rescanVBoxConfig(QString path) {
 /** ***************************************************************************/
 VirtualBox::Extension::Extension()
     : Core::Extension("org.albert.extension.virtualbox"),
-      Core::QueryHandler(Core::Extension::id),
+      Core::QueryHandler(Core::Plugin::id()),
       d(new Private) {
 
     VMItem::iconPath_ = XDG::IconLookup::iconPath("virtualbox");

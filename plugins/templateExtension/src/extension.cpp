@@ -34,9 +34,13 @@ public:
 
 /** ***************************************************************************/
 ProjectNamespace::Extension::Extension()
-    : Core::Extension("org.albert.extension.projectid"),
-      Core::QueryHandler(Core::Extension::id),
+    : Core::Extension("org.albert.extension.projectid"), // Must match the id in metadata
+      Core::QueryHandler(Core::Plugin::id()),
       d(new Private) {
+
+    /*
+     * Check the Extension and Plugin header to see the members in this scope
+     */
 
     // You can throw in the constructor if something fatal happened
     throw std::runtime_error( "Description of error." );

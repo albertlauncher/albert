@@ -558,7 +558,7 @@ vector<shared_ptr<StandardIndexItem>> Applications::Private::indexApplications()
 /** ***************************************************************************/
 Applications::Extension::Extension()
     : Core::Extension("org.albert.extension.applications"),
-      Core::QueryHandler(Core::Extension::id),
+      Core::QueryHandler(Core::Plugin::id()),
       d(new Private(this)) {
 
     qunsetenv("DESKTOP_AUTOSTART_ID");
@@ -566,10 +566,8 @@ Applications::Extension::Extension()
     d->graphicalSudoPath = QStandardPaths::findExecutable("gksudo");
 
     // Load settings
-    QSettings s(qApp->applicationName());
-    s.beginGroup(Core::Extension::id);
-    d->offlineIndex.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
-    d->ignoreShowInKeys = s.value(CFG_IGNORESHOWINKEYS, DEF_IGNORESHOWINKEYS).toBool();
+    d->offlineIndex.setFuzzy(settings().value(CFG_FUZZY, DEF_FUZZY).toBool());
+    d->ignoreShowInKeys = settings().value(CFG_IGNORESHOWINKEYS, DEF_IGNORESHOWINKEYS).toBool();
 
     // If the filesystem changed, trigger the scan
     connect(&d->watcher, &QFileSystemWatcher::directoryChanged,
@@ -602,7 +600,7 @@ QWidget *Applications::Extension::widget(QWidget *parent) {
         d->widget->ui.checkBox_ignoreShowInKeys->setChecked(d->ignoreShowInKeys);
         connect(d->widget->ui.checkBox_ignoreShowInKeys, &QCheckBox::toggled,
                 this, [this](bool checked){
-            QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_IGNORESHOWINKEYS), checked);
+            settings().setValue(CFG_IGNORESHOWINKEYS, checked);
             d->ignoreShowInKeys = checked ;
             d->startIndexing();
         });
@@ -648,7 +646,7 @@ bool Applications::Extension::fuzzy() {
 
 /** ***************************************************************************/
 void Applications::Extension::setFuzzy(bool b) {
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_FUZZY), b);
+    settings().setValue(CFG_FUZZY, b);
     d->offlineIndex.setFuzzy(b);
 }
 

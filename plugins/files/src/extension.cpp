@@ -285,7 +285,7 @@ Files::Private::indexFiles(const IndexSettings &indexSettings) const {
 
     // Serialize data
     QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).
-                   filePath(QString("%1.txt").arg(q->Core::Extension::id)));
+                   filePath(QString("%1.txt").arg(q->Core::Plugin::id())));
     if ( file.open(QIODevice::WriteOnly|QIODevice::Text) ) {
         qInfo() << qPrintable(QString("Serializing files to '%1'").arg(file.fileName()));
         QTextStream out(&file);
@@ -304,25 +304,22 @@ Files::Private::indexFiles(const IndexSettings &indexSettings) const {
 /** ***************************************************************************/
 Files::Extension::Extension()
     : Core::Extension("org.albert.extension.files"),
-      Core::QueryHandler(Core::Extension::id),
+      Core::QueryHandler(Core::Plugin::id()),
       d(new Private(this)) {
 
     // Load settings
-    QSettings s(qApp->applicationName());
-    s.beginGroup(Core::Extension::id);
-    d->indexSettings.filters =  s.value(CFG_FILTERS, DEF_FILTERS).toStringList();
-    d->indexSettings.indexHidden = s.value(CFG_INDEX_HIDDEN, DEF_INDEX_HIDDEN).toBool();
-    d->indexSettings.followSymlinks = s.value(CFG_FOLLOW_SYMLINKS, DEF_FOLLOW_SYMLINKS).toBool();
-    d->offlineIndex.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
-    d->indexIntervalTimer.setInterval(s.value(CFG_SCAN_INTERVAL, DEF_SCAN_INTERVAL).toInt()*60000); // Will be started in the initial index update
-    d->indexSettings.rootDirs = s.value(CFG_PATHS).toStringList();
+    d->indexSettings.filters =  settings().value(CFG_FILTERS, DEF_FILTERS).toStringList();
+    d->indexSettings.indexHidden = settings().value(CFG_INDEX_HIDDEN, DEF_INDEX_HIDDEN).toBool();
+    d->indexSettings.followSymlinks = settings().value(CFG_FOLLOW_SYMLINKS, DEF_FOLLOW_SYMLINKS).toBool();
+    d->offlineIndex.setFuzzy(settings().value(CFG_FUZZY, DEF_FUZZY).toBool());
+    d->indexIntervalTimer.setInterval(settings().value(CFG_SCAN_INTERVAL, DEF_SCAN_INTERVAL).toInt()*60000); // Will be started in the initial index update
+    d->indexSettings.rootDirs = settings().value(CFG_PATHS).toStringList();
     if (d->indexSettings.rootDirs.isEmpty())
         restorePaths();
-    s.endGroup();
 
     // Deserialize data
     QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).
-                   filePath(QString("%1.txt").arg(Core::Extension::id)));
+                   filePath(QString("%1.txt").arg(Core::Plugin::id())));
     if (file.exists()) {
         if (file.open(QIODevice::ReadOnly| QIODevice::Text)) {
             qInfo() << qPrintable(QString("Deserializing files from '%1'.").arg(file.fileName()));
@@ -344,7 +341,7 @@ Files::Extension::Extension()
 
     // If the root dirs change write it to the settings
     connect(this, &Extension::pathsChanged, [this](const QStringList& dirs){
-        QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_PATHS), dirs);
+        settings().setValue(CFG_PATHS, dirs);
     });
 
     // Trigger an initial update
@@ -478,8 +475,7 @@ void Files::Extension::setPaths(const QStringList &paths) {
     emit pathsChanged(d->indexSettings.rootDirs);
 
     // Store to settings
-    QSettings(qApp->applicationName())
-            .setValue(QString("%1/%2").arg(Core::Extension::id, CFG_PATHS), d->indexSettings.rootDirs);
+    settings().setValue(CFG_PATHS, d->indexSettings.rootDirs);
 
 }
 
@@ -511,7 +507,7 @@ bool Files::Extension::indexHidden() const {
 
 /** ***************************************************************************/
 void Files::Extension::setIndexHidden(bool b)  {
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_INDEX_HIDDEN), b);
+    settings().setValue(CFG_INDEX_HIDDEN, b);
     d->indexSettings.indexHidden = b;
 }
 
@@ -526,7 +522,7 @@ bool Files::Extension::followSymlinks() const {
 
 /** ***************************************************************************/
 void Files::Extension::setFollowSymlinks(bool b)  {
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_FOLLOW_SYMLINKS), b);
+    settings().setValue(CFG_FOLLOW_SYMLINKS, b);
     d->indexSettings.followSymlinks = b;
 }
 
@@ -541,7 +537,7 @@ unsigned int Files::Extension::scanInterval() const {
 
 /** ***************************************************************************/
 void Files::Extension::setScanInterval(uint minutes) {
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_SCAN_INTERVAL), minutes);
+    settings().setValue(CFG_SCAN_INTERVAL, minutes);
     (minutes == 0) ? d->indexIntervalTimer.stop() : d->indexIntervalTimer.start(minutes*60000);
 }
 
@@ -556,7 +552,7 @@ bool Files::Extension::fuzzy() const {
 
 /** ***************************************************************************/
 void Files::Extension::setFuzzy(bool b) {
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_FUZZY), b);
+    settings().setValue(CFG_FUZZY, b);
     return d->offlineIndex.setFuzzy(b);
 }
 
@@ -571,7 +567,6 @@ const QStringList &Files::Extension::filters() const {
 
 /** ***************************************************************************/
 void Files::Extension::setFilters(const QStringList &filters) {
-    QSettings(qApp->applicationName())
-            .setValue(QString("%1/%2").arg(Core::Extension::id, CFG_FILTERS), filters);
+    settings().setValue(CFG_FILTERS, filters);
     d->indexSettings.filters = filters;
 }

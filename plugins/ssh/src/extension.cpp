@@ -104,7 +104,7 @@ public:
 /** ***************************************************************************/
 Ssh::Extension::Extension()
     : Core::Extension("org.albert.extension.ssh"),
-      Core::QueryHandler(Core::Extension::id),
+      Core::QueryHandler(Core::Plugin::id()),
       d(new Private) {
 
     // passwd must not be freed
@@ -114,14 +114,11 @@ Ssh::Extension::Extension()
     d->shell = pwd->pw_shell;
 
     // Load settings
-    QSettings s(qApp->applicationName());
-    s.beginGroup(Core::Extension::id);
-    d->useKnownHosts = s.value(CFG_USE_KNOWN_HOSTS, DEF_USE_KNOWN_HOSTS).toBool();
-    s.endGroup();
+    d->useKnownHosts = settings().value(CFG_USE_KNOWN_HOSTS, DEF_USE_KNOWN_HOSTS).toBool();
 
     // Find ssh
     if (QStandardPaths::findExecutable("ssh").isNull())
-        throw QString("[%s] ssh not found.").arg(Core::Extension::id);
+        throw QString("[%s] ssh not found.").arg(Core::Plugin::id());
 
     // Find an appropriate icon
     d->icon = XDG::IconLookup::iconPath({"ssh", "terminal"});
@@ -268,7 +265,7 @@ bool Ssh::Extension::useKnownHosts() {
 
 /** ***************************************************************************/
 void Ssh::Extension::setUseKnownHosts(bool b) {
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_USE_KNOWN_HOSTS), b);
+    settings().setValue(CFG_USE_KNOWN_HOSTS, b);
     d->useKnownHosts = b;
     rescan();
 }

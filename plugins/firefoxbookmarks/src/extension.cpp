@@ -136,7 +136,7 @@ void FirefoxBookmarks::Private::finishIndexing() {
 vector<shared_ptr<Core::StandardIndexItem>>
 FirefoxBookmarks::Private::indexFirefoxBookmarks() const {
 
-    QSqlDatabase database = QSqlDatabase::database(q->Core::Extension::id);
+    QSqlDatabase database = QSqlDatabase::database(q->Core::Plugin::id());
 
     if (!database.open()) {
         qWarning() << qPrintable(QString("Could not open Firefox database: %1").arg(database.databaseName()));
@@ -225,11 +225,11 @@ FirefoxBookmarks::Private::indexFirefoxBookmarks() const {
 /** ***************************************************************************/
 FirefoxBookmarks::Extension::Extension()
     : Core::Extension("org.albert.extension.firefoxbookmarks"),
-      Core::QueryHandler(Core::Extension::id),
+      Core::QueryHandler(Core::Plugin::id()),
       d(new Private(this)){
 
     // Add a sqlite database connection for this extension, check requirements
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", Core::Extension::id);
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", Core::Plugin::id());
     if ( !db.isValid() )
         throw "Firefox executable not found.";
     if (!db.driver()->hasFeature(QSqlDriver::Transactions))
@@ -252,11 +252,9 @@ FirefoxBookmarks::Extension::Extension()
         throw "Could not locate profiles.ini.";
 
     // Load the settings
-    QSettings s(qApp->applicationName());
-    s.beginGroup(Core::Extension::id);
-    d->currentProfileId = s.value(CFG_PROFILE).toString();
-    d->offlineIndex.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
-    d->openWithFirefox = s.value(CFG_USE_FIREFOX, DEF_USE_FIREFOX).toBool();
+    d->currentProfileId = settings().value(CFG_PROFILE).toString();
+    d->offlineIndex.setFuzzy(settings().value(CFG_FUZZY, DEF_FUZZY).toBool());
+    d->openWithFirefox = settings().value(CFG_USE_FIREFOX, DEF_USE_FIREFOX).toBool();
 
     // If the id does not exist find a proper default
     QSettings profilesIni(d->profilesIniPath, QSettings::IniFormat);
@@ -421,7 +419,7 @@ void FirefoxBookmarks::Extension::setProfile(const QString& profile) {
     QString dbPath = QString("%1/places.sqlite").arg(profilePath);
 
     // Set the databases path
-    QSqlDatabase db = QSqlDatabase::database(Core::Extension::id);
+    QSqlDatabase db = QSqlDatabase::database(Core::Plugin::id());
     db.setDatabaseName(dbPath);
 
     // Set a file system watcher on the database monitoring changes
@@ -431,7 +429,7 @@ void FirefoxBookmarks::Extension::setProfile(const QString& profile) {
 
     d->startIndexing();
 
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_PROFILE), d->currentProfileId);
+    settings().setValue(CFG_PROFILE, d->currentProfileId);
 }
 
 
@@ -439,7 +437,7 @@ void FirefoxBookmarks::Extension::setProfile(const QString& profile) {
 /** ***************************************************************************/
 void FirefoxBookmarks::Extension::changeFuzzyness(bool fuzzy) {
     d->offlineIndex.setFuzzy(fuzzy);
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_FUZZY), fuzzy);
+    settings().setValue(CFG_FUZZY, fuzzy);
 }
 
 
@@ -447,6 +445,6 @@ void FirefoxBookmarks::Extension::changeFuzzyness(bool fuzzy) {
 /** ***************************************************************************/
 void FirefoxBookmarks::Extension::changeOpenPolicy(bool useFirefox) {
     d->openWithFirefox = useFirefox;
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_USE_FIREFOX), useFirefox);
+    settings().setValue(CFG_USE_FIREFOX, useFirefox);
     d->startIndexing();
 }

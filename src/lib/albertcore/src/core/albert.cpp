@@ -150,13 +150,14 @@ int Core::AlbertApp::run(int argc, char **argv) {
                 qFatal("Could not create dir: %s",  qPrintable(location));
 
         // Move old config for user convenience TODO drop somewhen
-        QFileInfo oldcfg(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/albert/albert.conf");
-        QFileInfo newcfg(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/albert.conf");
+        QSettings::setPath(QSettings::defaultFormat(), QSettings::UserScope,
+                           QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation));
+        QFileInfo oldcfg(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/albert.conf");
+        QFileInfo newcfg(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/albert/albert.conf");
         if (oldcfg.exists()){
             if (newcfg.exists())
-                QFile::remove(newcfg.path());
+                QFile::remove(newcfg.filePath());
             QFile::rename(oldcfg.filePath(), newcfg.filePath());
-            oldcfg.dir().removeRecursively();
         }
 
 

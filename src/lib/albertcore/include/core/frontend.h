@@ -21,7 +21,7 @@
 #include "plugin.h"
 #include "core_globals.h"
 
-#define ALBERT_FRONTEND_IID "FrontendInterface/v1.0-alpha"
+#define ALBERT_FRONTEND_IID ALBERT_PLUGIN_IID_PREFIX".frontendv1-alpha"
 
 namespace Core {
 
@@ -30,6 +30,8 @@ class EXPORT_CORE Frontend : public Plugin
     Q_OBJECT
 
 public:
+
+    Frontend(const QString &id) : Plugin(id) {}
 
     virtual bool isVisible() = 0;
     virtual void setVisible(bool visible = true) = 0;

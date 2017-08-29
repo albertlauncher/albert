@@ -216,16 +216,14 @@ void ChromeBookmarks::Private::finishIndexing() {
 /** ***************************************************************************/
 ChromeBookmarks::Extension::Extension()
     : Core::Extension("org.albert.extension.chromebookmarks"),
-      Core::QueryHandler(Core::Extension::id),
+      Core::QueryHandler(Core::Plugin::id()),
       d(new Private(this)) {
 
     // Load settings
-    QSettings s(qApp->applicationName());
-    s.beginGroup(Core::Extension::id);
-    d->offlineIndex.setFuzzy(s.value(CFG_FUZZY, DEF_FUZZY).toBool());
+    d->offlineIndex.setFuzzy(settings().value(CFG_FUZZY, DEF_FUZZY).toBool());
 
     // Load and set a valid path
-    QVariant v = s.value(CFG_PATH);
+    QVariant v = settings().value(CFG_PATH);
     if (v.isValid() && v.canConvert(QMetaType::QString) && QFileInfo(v.toString()).exists())
         setPath(v.toString());
     else
@@ -233,10 +231,8 @@ ChromeBookmarks::Extension::Extension()
 
     // If the path changed write it to the settings
     connect(this, &Extension::pathChanged, [this](const QString& path){
-        QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_PATH), path);
+        settings().setValue(CFG_PATH, path);
     });
-
-    s.endGroup();
 
     // Update index if bookmark file changed
     connect(&d->fileSystemWatcher, &QFileSystemWatcher::fileChanged,
@@ -356,7 +352,7 @@ void ChromeBookmarks::Extension::updateIndex() {
 
 /** ***************************************************************************/
 void ChromeBookmarks::Extension::setFuzzy(bool b) {
-    QSettings(qApp->applicationName()).setValue(QString("%1/%2").arg(Core::Extension::id, CFG_FUZZY), b);
+    settings().setValue(CFG_FUZZY, b);
     d->offlineIndex.setFuzzy(b);
 }
 

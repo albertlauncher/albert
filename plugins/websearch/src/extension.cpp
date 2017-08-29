@@ -299,22 +299,24 @@ public:
 /** ***************************************************************************/
 Websearch::Extension::Extension()
     : Core::Extension("org.albert.extension.websearch"),
-      Core::QueryHandler(Core::Extension::id),
+      Core::QueryHandler(Core::Plugin::id()),
       d(new Private) {
 
     std::sort(validTlds.begin(), validTlds.end());
 
-    // Move config file from old location to new. (data -> config) TODO: REMOVE in 1.0
-    QString dataLocFilePath = QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation))
-            .filePath(QString("%1.json").arg(Core::Extension::id));
-    QString confLocFilePath = QDir(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation))
-            .filePath(QString("%1.json").arg(Core::Extension::id));
-
-    if ( QFile::exists(dataLocFilePath) )
-        QFile::rename(dataLocFilePath, confLocFilePath);
+    // Move config file from old location to new. (data -> config) TODO: REMOVE in 0.14
+    QString oldpath = QDir(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation))
+            .filePath(QString("%1.json").arg(Core::Plugin::id()));
+    QString enginesJson = configLocation().filePath("engines.json");
+    if ( QFile::exists(oldpath) ) {
+        if ( QFile::exists(enginesJson) )
+            QFile::remove(oldpath);
+        else
+            QFile::rename(oldpath, enginesJson);
+    }
 
     // Deserialize engines
-    QFile file(confLocFilePath);
+    QFile file(enginesJson);
     if (file.open(QIODevice::ReadOnly)) {
         QJsonArray array = QJsonDocument::fromJson(file.readAll()).array();
         SearchEngine searchEngine;
@@ -327,7 +329,7 @@ Websearch::Extension::Extension()
             d->searchEngines.push_back(searchEngine);
         }
     } else {
-        qWarning() << qPrintable(QString("Could not load from file: '%1'.").arg(confLocFilePath));
+        qWarning() << qPrintable(QString("Could not load from file: '%1'.").arg(enginesJson));
         setEngines(defaultSearchEngines);
     }
 }
@@ -429,7 +431,7 @@ void Websearch::Extension::setEngines(const std::vector<Websearch::SearchEngine>
 
     // Serialize the engines
     QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation))
-               .filePath(QString("%1.json").arg(Core::Extension::id)));
+               .filePath(QString("%1.json").arg(Core::Plugin::id())));
 
     if (file.open(QIODevice::WriteOnly)) {
         QJsonArray array;

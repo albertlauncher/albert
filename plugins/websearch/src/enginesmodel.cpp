@@ -188,14 +188,14 @@ bool Websearch::EnginesModel::setData(const QModelIndex &index, const QVariant &
 
         // Create extension dir if necessary
         QDir dataDir = QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
-        if ( !dataDir.exists(extension_->Core::Extension::id) ) {
-            if ( !dataDir.mkdir(extension_->Core::Extension::id) ) {
+        if ( !dataDir.exists(extension_->Core::Plugin::id()) ) {
+            if ( !dataDir.mkdir(extension_->Core::Plugin::id()) ) {
                 qWarning() << "Could not create extension data dir.";
                 return false;
             }
         }
 
-        dataDir.cd(extension_->Core::Extension::id);
+        dataDir.cd(extension_->Core::Plugin::id());
 
         // Build the new random path
         QString newFilePath = dataDir.filePath(QString("%1.%2")
