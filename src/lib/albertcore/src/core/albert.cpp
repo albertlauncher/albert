@@ -329,16 +329,16 @@ int Core::AlbertApp::run(int argc, char **argv) {
 
 
         /*
-         *  Alfred demarcation
+         *  Standalone note
          */
 
         QSettings settings(qApp->applicationName());
-        bool alfred_note_shown = settings.value("alfred_note_shown", false).toBool();
-        if ( !alfred_note_shown ) {
+        bool standsalone_note_shown = settings.value("standsalone_note_shown", false).toBool();
+        if ( !standsalone_note_shown ) {
             QMessageBox(QMessageBox::Information, "Note",
-                        "This is standalone free and open source software. This project is not "
+                        "This is standalone free and open source software. Albert is not "
                         "related or affiliated to any other projects or corporations.").exec();
-            settings.setValue("alfred_note_shown", true);
+            settings.setValue("standsalone_note_shown", true);
         }
 
 
