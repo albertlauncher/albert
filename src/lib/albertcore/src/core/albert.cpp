@@ -438,11 +438,11 @@ int Core::AlbertApp::run(int argc, char **argv) {
                     f->toggleVisibility();
             });
 
-            QObject::connect(f, &Frontend::settingsWidgetRequested,
-                             std::bind(&SettingsWidget::setVisible, settingsWidget, true));
-
-            QObject::connect(f, &Frontend::settingsWidgetRequested,
-                             settingsWidget, &SettingsWidget::raise);
+            QObject::connect(f, &Frontend::settingsWidgetRequested, [](){
+                settingsWidget->show();
+                settingsWidget->raise();
+                settingsWidget->activateWindow();
+            });
 
             QObject::connect(f, &Frontend::widgetShown,
                              queryManager, &QueryManager::setupSession);
