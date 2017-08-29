@@ -19,14 +19,14 @@
 #include "actionlist.h"
 
 /** ***************************************************************************/
-ActionList::ActionList(QWidget *parent) : ResizingList(parent) {
+WidgetBoxModel::ActionList::ActionList(QWidget *parent) : ResizingList(parent) {
     setItemDelegate(new ActionDelegate);
 }
 
 
 
 /** ***************************************************************************/
-bool ActionList::eventFilter(QObject*, QEvent *event) {
+bool WidgetBoxModel::ActionList::eventFilter(QObject*, QEvent *event) {
 
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
@@ -52,7 +52,7 @@ bool ActionList::eventFilter(QObject*, QEvent *event) {
 
 
 /** ***************************************************************************/
-void ActionList::ActionDelegate::paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const {
+void WidgetBoxModel::ActionList::ActionDelegate::paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const {
 
     painter->save();
 

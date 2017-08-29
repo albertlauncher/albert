@@ -24,7 +24,7 @@
 #include <QtSvg/QSvgRenderer>
 
 /** ***************************************************************************/
-SettingsButton::SettingsButton(QWidget *parent) : QPushButton(parent) {
+WidgetBoxModel::SettingsButton::SettingsButton(QWidget *parent) : QPushButton(parent) {
     animation_ = new QPropertyAnimation(this, "angle");
     animation_->setDuration(10000);
     animation_->setStartValue(0);
@@ -41,7 +41,7 @@ SettingsButton::SettingsButton(QWidget *parent) : QPushButton(parent) {
 
 
 /** ***************************************************************************/
-SettingsButton::~SettingsButton() {
+WidgetBoxModel::SettingsButton::~SettingsButton() {
     delete animation_;
     delete svgRenderer_;
 }
@@ -49,7 +49,7 @@ SettingsButton::~SettingsButton() {
 
 
 /** ***************************************************************************/
-void SettingsButton::hideEvent(QHideEvent *event) {
+void WidgetBoxModel::SettingsButton::hideEvent(QHideEvent *event) {
     animation_->stop();
     QPushButton::hideEvent(event);
 }
@@ -57,7 +57,7 @@ void SettingsButton::hideEvent(QHideEvent *event) {
 
 
 /** ***************************************************************************/
-void SettingsButton::showEvent(QShowEvent *event) {
+void WidgetBoxModel::SettingsButton::showEvent(QShowEvent *event) {
     animation_->start();
     QPushButton::showEvent(event);
 }
@@ -65,7 +65,7 @@ void SettingsButton::showEvent(QShowEvent *event) {
 
 
 /** ***************************************************************************/
-void SettingsButton::paintEvent(QPaintEvent *event) {
+void WidgetBoxModel::SettingsButton::paintEvent(QPaintEvent *event) {
     QPushButton::paintEvent(event);
 
     QStyleOptionButton option;

@@ -19,6 +19,8 @@
 #include "resizinglist.h"
 #include <QStyledItemDelegate>
 
+namespace WidgetBoxModel {
+
 class ResultsList final : public ResizingList
 {
     Q_OBJECT
@@ -38,3 +40,4 @@ private:
 
     ItemDelegate *delegate_;
 };
+}

@@ -19,6 +19,8 @@
 class QPropertyAnimation;
 class QSvgRenderer;
 
+namespace WidgetBoxModel {
+
 class SettingsButton final : public QPushButton
 {
     Q_OBJECT
@@ -43,3 +45,4 @@ private:
     QSvgRenderer *svgRenderer_;
 
 };
+}

@@ -17,6 +17,8 @@
 #pragma once
 #include <QListView>
 
+namespace WidgetBoxModel {
+
 class ResizingList : public QListView
 {
     Q_OBJECT
@@ -45,3 +47,5 @@ signals:
     void maxItemsChanged();
 
 };
+
+}

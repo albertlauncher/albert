@@ -22,7 +22,7 @@
 #include "core/itemroles.h"
 
 /** ***************************************************************************/
-class ResultsList::ItemDelegate final : public QStyledItemDelegate
+class WidgetBoxModel::ResultsList::ItemDelegate final : public QStyledItemDelegate
 {
 public:
     ItemDelegate(QObject *parent = nullptr)
@@ -37,7 +37,7 @@ public:
 
 
 /** ***************************************************************************/
-ResultsList::ResultsList(QWidget *parent) : ResizingList(parent) {
+WidgetBoxModel::ResultsList::ResultsList(QWidget *parent) : ResizingList(parent) {
     setItemDelegate(delegate_ = new ItemDelegate(this));
 
     // Single click activation (segfaults without queued connection)
@@ -47,14 +47,14 @@ ResultsList::ResultsList(QWidget *parent) : ResizingList(parent) {
 
 
 /** ***************************************************************************/
-bool ResultsList::displayIcons() const {
+bool WidgetBoxModel::ResultsList::displayIcons() const {
     return delegate_->drawIcon;
 }
 
 
 
 /** ***************************************************************************/
-void ResultsList::setDisplayIcons(bool value) {
+void WidgetBoxModel::ResultsList::setDisplayIcons(bool value) {
     delegate_->drawIcon = value;
     update();
 }
@@ -62,7 +62,7 @@ void ResultsList::setDisplayIcons(bool value) {
 
 
 /** ***************************************************************************/
-bool ResultsList::eventFilter(QObject*, QEvent *event) {
+bool WidgetBoxModel::ResultsList::eventFilter(QObject*, QEvent *event) {
 
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
@@ -134,7 +134,7 @@ bool ResultsList::eventFilter(QObject*, QEvent *event) {
 
 
 /** ***************************************************************************/
-void ResultsList::showEvent(QShowEvent *event) {
+void WidgetBoxModel::ResultsList::showEvent(QShowEvent *event) {
     QWidget::showEvent(event);
     if (qApp->keyboardModifiers() == Qt::MetaModifier)
         delegate_->subTextRole = ItemRoles::FallbackRole;
@@ -145,7 +145,7 @@ void ResultsList::showEvent(QShowEvent *event) {
 
 
 /** ***************************************************************************/
-void ResultsList::ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const {
+void WidgetBoxModel::ResultsList::ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const {
 
     painter->save();
 

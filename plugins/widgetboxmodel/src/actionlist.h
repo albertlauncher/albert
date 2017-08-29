@@ -19,6 +19,9 @@
 #include "resizinglist.h"
 #include <QStyledItemDelegate>
 
+namespace WidgetBoxModel {
+
+
 /** ***************************************************************************/
 class ActionList final : public ResizingList
 {
@@ -46,3 +49,5 @@ public:
 
     void paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const override;
 };
+
+}

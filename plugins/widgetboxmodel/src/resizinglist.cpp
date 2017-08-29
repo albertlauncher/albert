@@ -18,14 +18,14 @@
 #include <QDebug>
 
 /** ***************************************************************************/
-uint ResizingList::maxItems() const {
+uint WidgetBoxModel::ResizingList::maxItems() const {
     return maxItems_;
 }
 
 
 
 /** ***************************************************************************/
-void ResizingList::setMaxItems(uint maxItems) {
+void WidgetBoxModel::ResizingList::setMaxItems(uint maxItems) {
     maxItems_ = maxItems;
     updateGeometry();
 }
@@ -33,7 +33,7 @@ void ResizingList::setMaxItems(uint maxItems) {
 
 
 /** ***************************************************************************/
-QSize ResizingList::sizeHint() const {
+QSize WidgetBoxModel::ResizingList::sizeHint() const {
     if (model() == nullptr)
         return QSize();
     return QSize(width(), sizeHintForRow(0) * std::min(static_cast<int>(maxItems_), model()->rowCount(rootIndex())));
@@ -42,14 +42,14 @@ QSize ResizingList::sizeHint() const {
 
 
 /** ***************************************************************************/
-QSize ResizingList::minimumSizeHint() const {
+QSize WidgetBoxModel::ResizingList::minimumSizeHint() const {
     return QSize(0,0); // Fix for small lists
 }
 
 
 
 /** ***************************************************************************/
-void ResizingList::setModel(QAbstractItemModel * m) {
+void WidgetBoxModel::ResizingList::setModel(QAbstractItemModel * m) {
     if (model() == m)
         return;
 
@@ -73,7 +73,7 @@ void ResizingList::setModel(QAbstractItemModel * m) {
 
 
 /** ***************************************************************************/
-void ResizingList::updateAppearance() {
+void WidgetBoxModel::ResizingList::updateAppearance() {
     if ( model() == nullptr || model()->rowCount() == 0 )
         hide();
     else {
