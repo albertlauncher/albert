@@ -20,6 +20,8 @@
 #include <memory>
 #include "globalshortcut_globals.h"
 
+namespace GlobalShortcut {
+
 class HotkeyManagerPrivate;
 
 class EXPORT_GLOBALSHORTCUT HotkeyManager final : public QObject
@@ -53,3 +55,5 @@ private:
 signals:
 	void hotKeyPressed();
 };
+
+}

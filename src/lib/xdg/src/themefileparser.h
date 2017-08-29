@@ -18,6 +18,8 @@
 #include <QStringList>
 #include <QSettings>
 
+namespace XDG {
+
 class ThemeFileParser
 {
 public:
@@ -42,3 +44,5 @@ private:
     QSettings iniFile_;
 
 };
+
+}

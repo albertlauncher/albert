@@ -22,6 +22,8 @@
 struct _XDisplay;
 typedef _XDisplay Display;
 
+namespace GlobalShortcut {
+
 class HotkeyManagerPrivate final : public QObject, public QAbstractNativeEventFilter
 {
     Q_OBJECT
@@ -57,3 +59,4 @@ signals:
      void hotKeyPressed();
 };
 
+}

@@ -16,11 +16,13 @@
 
 #pragma once
 #include "ui_settingswidget.h"
+
+namespace GlobalShortcut {
+class HotkeyManager;
+}
 namespace Core {
 class ExtensionManager;
 class FrontendManager;
-}
-class HotkeyManager;
 class MainWindow;
 class TrayIcon;
 
@@ -30,9 +32,9 @@ class SettingsWidget final : public QWidget
 
 public:
 
-    SettingsWidget(Core::ExtensionManager *extensionManager,
-                   Core::FrontendManager *frontendManager,
-                   HotkeyManager *hotkeyManager,
+    SettingsWidget(ExtensionManager *extensionManager,
+                   FrontendManager *frontendManager,
+                   GlobalShortcut::HotkeyManager *hotkeyManager,
                    TrayIcon *trayIcon,
                    QWidget * parent = 0, Qt::WindowFlags f = 0);
 
@@ -44,10 +46,12 @@ private:
     void changeHotkey(int);
     void updatePluginInformations(const QModelIndex & curr);
 
-    Core::ExtensionManager *extensionManager_;
-    Core::FrontendManager *frontendManager_;
-    HotkeyManager *hotkeyManager_;
+    ExtensionManager *extensionManager_;
+    FrontendManager *frontendManager_;
+    GlobalShortcut::HotkeyManager *hotkeyManager_;
     TrayIcon *trayIcon_;
     Ui::SettingsDialog ui;
 
 };
+
+}

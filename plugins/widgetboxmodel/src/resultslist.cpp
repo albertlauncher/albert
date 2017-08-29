@@ -26,7 +26,7 @@ class WidgetBoxModel::ResultsList::ItemDelegate final : public QStyledItemDelega
 {
 public:
     ItemDelegate(QObject *parent = nullptr)
-        : QStyledItemDelegate(parent), drawIcon(true), subTextRole(ItemRoles::ToolTipRole) {}
+        : QStyledItemDelegate(parent), drawIcon(true), subTextRole(Core::ItemRoles::ToolTipRole) {}
 
     void paint(QPainter *painter, const QStyleOptionViewItem &options, const QModelIndex &index) const override;
 
@@ -75,10 +75,10 @@ bool WidgetBoxModel::ResultsList::eventFilter(QObject*, QEvent *event) {
         case Qt::Key_Meta:
             switch (keyEvent->modifiers()) {
             case Qt::MetaModifier: // Default fallback action (Meta)
-                delegate_->subTextRole = ItemRoles::FallbackRole;
+                delegate_->subTextRole = Core::ItemRoles::FallbackRole;
                 break;
             default: // DefaultAction
-                delegate_->subTextRole = ItemRoles::ToolTipRole;
+                delegate_->subTextRole = Core::ItemRoles::ToolTipRole;
                 break;
             }
             update();
@@ -118,10 +118,10 @@ bool WidgetBoxModel::ResultsList::eventFilter(QObject*, QEvent *event) {
         case Qt::Key_Meta:
             switch (keyEvent->modifiers()) {
             case Qt::MetaModifier: // Default fallback action (Meta)
-                delegate_->subTextRole = ItemRoles::FallbackRole;
+                delegate_->subTextRole = Core::ItemRoles::FallbackRole;
                 break;
             default: // DefaultAction
-                delegate_->subTextRole = ItemRoles::ToolTipRole;
+                delegate_->subTextRole = Core::ItemRoles::ToolTipRole;
                 break;
             }
             update();
@@ -137,9 +137,9 @@ bool WidgetBoxModel::ResultsList::eventFilter(QObject*, QEvent *event) {
 void WidgetBoxModel::ResultsList::showEvent(QShowEvent *event) {
     QWidget::showEvent(event);
     if (qApp->keyboardModifiers() == Qt::MetaModifier)
-        delegate_->subTextRole = ItemRoles::FallbackRole;
+        delegate_->subTextRole = Core::ItemRoles::FallbackRole;
     else
-        delegate_->subTextRole = ItemRoles::ToolTipRole;
+        delegate_->subTextRole = Core::ItemRoles::ToolTipRole;
 }
 
 
@@ -185,7 +185,7 @@ void WidgetBoxModel::ResultsList::ItemDelegate::paint(QPainter *painter, const Q
                            (option.rect.height() - option.decorationSize.height())/2 + option.rect.y()),
                     option.decorationSize);
         QPixmap pixmap;
-        QString iconPath = index.data(ItemRoles::DecorationRole).value<QString>();
+        QString iconPath = index.data(Core::ItemRoles::DecorationRole).value<QString>();
         QString cacheKey = QString("%1%2%3").arg(option.decorationSize.width(), option.decorationSize.height()).arg(iconPath);
         if ( !QPixmapCache::find(cacheKey, &pixmap) ) {
             pixmap = QPixmap(iconPath).scaled(option.decorationSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
@@ -216,7 +216,7 @@ void WidgetBoxModel::ResultsList::ItemDelegate::paint(QPainter *painter, const Q
 
     // Draw display role
     painter->setFont(font1);
-    QString text = fontMetrics1.elidedText(index.data(ItemRoles::TextRole).toString(),
+    QString text = fontMetrics1.elidedText(index.data(Core::ItemRoles::TextRole).toString(),
                                            option.textElideMode,
                                            textRect.width());
     option.widget->style()->drawItemText(painter,
@@ -231,7 +231,7 @@ void WidgetBoxModel::ResultsList::ItemDelegate::paint(QPainter *painter, const Q
     painter->setFont(font2);
     text = fontMetrics2.elidedText(index.data(option.state.testFlag(QStyle::State_Selected)
                                               ? subTextRole
-                                              : ItemRoles::ToolTipRole).toString(),
+                                              : Core::ItemRoles::ToolTipRole).toString(),
                                    option.textElideMode,
                                    subTextRect.width());
     option.widget->style()->drawItemText(painter,

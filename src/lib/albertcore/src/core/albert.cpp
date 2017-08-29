@@ -42,6 +42,7 @@
 #include "trayicon.h"
 #include "xdg/iconlookup.h"
 using namespace Core;
+using namespace GlobalShortcut;
 
 static void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message);
 static void dispatchMessage();

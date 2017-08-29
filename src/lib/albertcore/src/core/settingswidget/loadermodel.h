@@ -16,9 +16,10 @@
 
 #pragma once
 #include <QAbstractListModel>
+
 namespace Core {
+
 class ExtensionManager;
-}
 
 class LoaderModel final : public QAbstractListModel
 {
@@ -32,3 +33,4 @@ private:
     Core::ExtensionManager *extensionManager_;
 };
 
+}

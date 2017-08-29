@@ -18,7 +18,7 @@
 
 /** ***************************************************************************/
 
-GrabKeyButton::GrabKeyButton(QWidget * parent) : QPushButton(parent) {
+Core::GrabKeyButton::GrabKeyButton(QWidget * parent) : QPushButton(parent) {
     waitingForHotkey_ = false;
     connect(this, &QPushButton::clicked,
             this, &GrabKeyButton::onClick);
@@ -27,13 +27,13 @@ GrabKeyButton::GrabKeyButton(QWidget * parent) : QPushButton(parent) {
 
 
 /** ***************************************************************************/
-GrabKeyButton::~GrabKeyButton() {
+Core::GrabKeyButton::~GrabKeyButton() {
 }
 
 
 
 /** ***************************************************************************/
-void GrabKeyButton::onClick() {
+void Core::GrabKeyButton::onClick() {
     oldText_ = text();
     setText("?");
     grabAll();
@@ -42,7 +42,7 @@ void GrabKeyButton::onClick() {
 
 
 /** ***************************************************************************/
-void GrabKeyButton::grabAll() {
+void Core::GrabKeyButton::grabAll() {
     grabKeyboard();
     grabMouse();
     waitingForHotkey_ = true;
@@ -51,7 +51,7 @@ void GrabKeyButton::grabAll() {
 
 
 /** ***************************************************************************/
-void GrabKeyButton::releaseAll() {
+void Core::GrabKeyButton::releaseAll() {
     releaseKeyboard();
     releaseMouse();
     waitingForHotkey_ = false;
@@ -60,7 +60,7 @@ void GrabKeyButton::releaseAll() {
 
 
 /** ***************************************************************************/
-void GrabKeyButton::keyPressEvent(QKeyEvent *event) {
+void Core::GrabKeyButton::keyPressEvent(QKeyEvent *event) {
     if ( waitingForHotkey_ ) {
         // Modifier pressed -> update the label
         int key = event->key();
@@ -89,7 +89,7 @@ void GrabKeyButton::keyPressEvent(QKeyEvent *event) {
 
 
 /** ***************************************************************************/
-void GrabKeyButton::keyReleaseEvent(QKeyEvent *event) {
+void Core::GrabKeyButton::keyReleaseEvent(QKeyEvent *event) {
     if ( waitingForHotkey_ ) {
         // Modifier released -> update the label
         int key = event->key();

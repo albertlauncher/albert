@@ -92,7 +92,7 @@ public:
     SettingsButton *settingsButton_;
 
     /** The input history */
-    History *history_;
+    Core::History *history_;
 
     /** The modifier used to navigate directly in the history */
     Qt::KeyboardModifier historyMoveMod_;
@@ -193,7 +193,7 @@ WidgetBoxModel::FrontendWidget::FrontendWidget(QSettings *settings) : d(new Priv
     d->settingsButton_->addAction(action);
 
     // History
-    d->history_ = new History(this);
+    d->history_ = new Core::History(this);
 
     /*
      * Settings
@@ -227,7 +227,7 @@ WidgetBoxModel::FrontendWidget::FrontendWidget(QSettings *settings) : d(new Priv
     connect(d->ui.inputLine, &QLineEdit::textChanged, this, [this](){ setShowActions(false); });
 
     // Reset history, if text was manually changed
-    connect(d->ui.inputLine, &QLineEdit::textEdited, d->history_, &History::resetIterator);
+    connect(d->ui.inputLine, &QLineEdit::textEdited, d->history_, &Core::History::resetIterator);
 
     // Hide the actionview, if another item gets clicked
     connect(d->ui.resultsList, &ResultsList::pressed, this, [this](){ setShowActions(false); });
@@ -237,10 +237,10 @@ WidgetBoxModel::FrontendWidget::FrontendWidget(QSettings *settings) : d(new Priv
 
         switch (qApp->queryKeyboardModifiers()) {
         case Qt::MetaModifier: // Default fallback action (Meta)
-            d->ui.resultsList->model()->setData(index, -1, ItemRoles::FallbackRole);
+            d->ui.resultsList->model()->setData(index, -1, Core::ItemRoles::FallbackRole);
             break;
         default: // DefaultAction
-            d->ui.resultsList->model()->setData(index, -1, ItemRoles::ActionRole);
+            d->ui.resultsList->model()->setData(index, -1, Core::ItemRoles::ActionRole);
             break;
         }
 
@@ -253,7 +253,7 @@ WidgetBoxModel::FrontendWidget::FrontendWidget(QSettings *settings) : d(new Priv
     // Trigger alternative action, if item in actionList was activated
     QObject::connect(d->ui.actionList, &ActionList::activated, [this](const QModelIndex &index){
         d->history_->add(d->ui.inputLine->text());
-        d->ui.resultsList->model()->setData(d->ui.resultsList->currentIndex(), index.row(), ItemRoles::AltActionRole);
+        d->ui.resultsList->model()->setData(d->ui.resultsList->currentIndex(), index.row(), Core::ItemRoles::AltActionRole);
         this->setVisible(false);
         d->ui.inputLine->clear();
     });
@@ -494,7 +494,7 @@ void WidgetBoxModel::FrontendWidget::setShowActions(bool showActions) {
         // Get actions
         d->actionsListModel_->setStringList(d->ui.resultsList->model()->data(
                                                 d->ui.resultsList->currentIndex(),
-                                                ItemRoles::AltActionRole).toStringList());
+                                                Core::ItemRoles::AltActionRole).toStringList());
 
         // Skip if actions are empty
         if (d->actionsListModel_->rowCount() < 1)
@@ -607,7 +607,7 @@ bool WidgetBoxModel::FrontendWidget::eventFilter(QObject *, QEvent *event) {
             if ( d->ui.resultsList->currentIndex().isValid() )
                 d->ui.inputLine->setText(
                             d->ui.resultsList->model()->data(
-                                d->ui.resultsList->currentIndex(), ItemRoles::CompletionRole
+                                d->ui.resultsList->currentIndex(), Core::ItemRoles::CompletionRole
                                 ).toString()
                             );
             return true;

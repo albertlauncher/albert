@@ -21,38 +21,34 @@
 #elif defined _WIN32
 #include "hotkeymanager_win.h"
 #endif
-
-
-
-
 #include <QKeySequence>
 
 /** ***************************************************************************/
-HotkeyManager::HotkeyManager(QObject *parent) :
+GlobalShortcut::HotkeyManager::HotkeyManager(QObject *parent) :
     QObject(parent), d(new HotkeyManagerPrivate) {
     connect(d.get(), &HotkeyManagerPrivate::hotKeyPressed, this, &HotkeyManager::onHotkeyPressed);
     enabled_ = true;
 }
 
 /** ***************************************************************************/
-HotkeyManager::~HotkeyManager() {
+GlobalShortcut::HotkeyManager::~HotkeyManager() {
 
 }
 
 /** ***************************************************************************/
-bool HotkeyManager::registerHotkey(const QString &hk) {
+bool GlobalShortcut::HotkeyManager::registerHotkey(const QString &hk) {
 	return registerHotkey(QKeySequence(hk));
 }
 
 /** ***************************************************************************/
-bool HotkeyManager::registerHotkey(const QKeySequence &hk) {
+bool GlobalShortcut::HotkeyManager::registerHotkey(const QKeySequence &hk) {
 	if (hk.count() != 1)
 		return false;
 	return registerHotkey(hk[0]);
 }
 
 /** ***************************************************************************/
-bool HotkeyManager::registerHotkey(const int hk) {
+bool GlobalShortcut::HotkeyManager::registerHotkey(const int hk) {
     if (hotkeys_.contains(hk))
         return true;
     if (d->registerNativeHotkey(hk)) {
@@ -63,12 +59,12 @@ bool HotkeyManager::registerHotkey(const int hk) {
 }
 
 /** ***************************************************************************/
-bool HotkeyManager::unregisterHotkey(const QString &hk) {
+bool GlobalShortcut::HotkeyManager::unregisterHotkey(const QString &hk) {
     return unregisterHotkey(QKeySequence(hk));
 }
 
 /** ***************************************************************************/
-bool HotkeyManager::unregisterHotkey(const QKeySequence &hk) {
+bool GlobalShortcut::HotkeyManager::unregisterHotkey(const QKeySequence &hk) {
     if (hk.count() != 1)
         return false;
     unregisterHotkey(hk[0]);
@@ -76,7 +72,7 @@ bool HotkeyManager::unregisterHotkey(const QKeySequence &hk) {
 }
 
 /** ***************************************************************************/
-void HotkeyManager::unregisterHotkey(const int hk) {
+void GlobalShortcut::HotkeyManager::unregisterHotkey(const int hk) {
     if (!hotkeys_.contains(hk))
         return;
     d->unregisterNativeHotkey(hk);
@@ -84,7 +80,7 @@ void HotkeyManager::unregisterHotkey(const int hk) {
 }
 
 /** ***************************************************************************/
-void HotkeyManager::onHotkeyPressed() {
+void GlobalShortcut::HotkeyManager::onHotkeyPressed() {
     if (enabled_)
 		emit hotKeyPressed();
 }

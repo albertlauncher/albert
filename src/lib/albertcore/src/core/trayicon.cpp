@@ -24,7 +24,7 @@ namespace {
 }
 
 /** ***************************************************************************/
-TrayIcon::TrayIcon() {
+Core::TrayIcon::TrayIcon() {
     setIcon(qApp->windowIcon());
     if (QSettings(qApp->applicationName()).value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool())
         setVisible(true);
@@ -32,7 +32,7 @@ TrayIcon::TrayIcon() {
 
 
 /** ***************************************************************************/
-void TrayIcon::setVisible(bool enable) {
+void Core::TrayIcon::setVisible(bool enable) {
     QSettings(qApp->applicationName()).setValue(CFG_SHOWTRAY, enable);
     QSystemTrayIcon::setVisible(enable);
     emit stateChanged(enable);

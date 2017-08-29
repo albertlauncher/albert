@@ -19,6 +19,8 @@
 #include <QMenu>
 #include <QSystemTrayIcon>
 
+namespace Core {
+
 class TrayIcon : public QSystemTrayIcon
 {
     Q_OBJECT
@@ -33,3 +35,5 @@ signals:
 
     void stateChanged(bool);
 };
+
+}

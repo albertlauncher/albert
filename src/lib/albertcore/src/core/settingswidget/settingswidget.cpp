@@ -39,11 +39,9 @@
 #include "pluginspec.h"
 #include "settingswidget.h"
 #include "trayicon.h"
-using Core::Extension;
-using Core::PluginSpec;
-using Core::ExtensionManager;
-using Core::FrontendManager;
-using std::unique_ptr;
+using namespace std;
+using namespace Core;
+using namespace GlobalShortcut;
 
 namespace {
 const char* CFG_TERM = "terminal";
@@ -54,11 +52,11 @@ EXPORT_CORE QString terminalCommand;
 
 
 /** ***************************************************************************/
-SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
-                               FrontendManager *frontendManager,
-                               HotkeyManager *hotkeyManager,
-                               TrayIcon *systemTrayIcon,
-                               QWidget *parent, Qt::WindowFlags f)
+Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
+                                     FrontendManager *frontendManager,
+                                     HotkeyManager *hotkeyManager,
+                                     TrayIcon *systemTrayIcon,
+                                     QWidget *parent, Qt::WindowFlags f)
     : QWidget(parent, f),
       extensionManager_(extensionManager),
       frontendManager_(frontendManager),

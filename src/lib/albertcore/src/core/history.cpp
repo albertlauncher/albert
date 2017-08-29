@@ -21,13 +21,13 @@
 #include "history.h"
 
 
-History::History(QObject *parent) : QObject(parent) {
+Core::History::History(QObject *parent) : QObject(parent) {
     currentLine_ = -1; // This means historymode is not active
 }
 
 
 /** ***************************************************************************/
-void History::add(QString str) {
+void Core::History::add(QString str) {
     if (!str.isEmpty()){
         if (lines_.contains(str))
             lines_.removeAll(str); // Remove dups
@@ -37,7 +37,7 @@ void History::add(QString str) {
 
 
 /** ***************************************************************************/
-QString History::next() {
+QString Core::History::next() {
     // Update the history at the beginnig
     if (currentLine_ == -1)
         updateHistory();
@@ -51,7 +51,7 @@ QString History::next() {
 
 
 /** ***************************************************************************/
-QString History::prev() {
+QString Core::History::prev() {
     if (0 < currentLine_) {
         --currentLine_;
         return lines_[currentLine_];
@@ -60,13 +60,13 @@ QString History::prev() {
 
 
 /** ***************************************************************************/
-void History::resetIterator() {
+void Core::History::resetIterator() {
     currentLine_ = -1;
 }
 
 
 /** ***************************************************************************/
-void History::updateHistory() {
+void Core::History::updateHistory() {
     lines_.clear();
     QSqlQuery query;
     query.exec("SELECT input FROM usages GROUP BY input ORDER BY max(timestamp) DESC");

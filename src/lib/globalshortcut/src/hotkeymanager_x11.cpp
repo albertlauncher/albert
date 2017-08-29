@@ -164,7 +164,7 @@ namespace {
 }
 
 /** ***************************************************************************/
-HotkeyManagerPrivate::HotkeyManagerPrivate(QObject *parent)
+GlobalShortcut::HotkeyManagerPrivate::HotkeyManagerPrivate(QObject *parent)
     : QObject(parent) {
 
     Display* dpy = QX11Info::display();
@@ -268,14 +268,14 @@ HotkeyManagerPrivate::HotkeyManagerPrivate(QObject *parent)
 
 
 /** ***************************************************************************/
-HotkeyManagerPrivate::~HotkeyManagerPrivate() {
+GlobalShortcut::HotkeyManagerPrivate::~HotkeyManagerPrivate() {
 
 }
 
 
 
 /** ***************************************************************************/
-bool HotkeyManagerPrivate::registerNativeHotkey(uint hotkey) {
+bool GlobalShortcut::HotkeyManagerPrivate::registerNativeHotkey(uint hotkey) {
 
     // Convert to native format
     std::set<uint> keysX = nativeKeycodes(hotkey & ~Qt::KeyboardModifierMask);
@@ -342,7 +342,7 @@ bool HotkeyManagerPrivate::registerNativeHotkey(uint hotkey) {
 
 
 /** ***************************************************************************/
-void HotkeyManagerPrivate::unregisterNativeHotkey(uint hotkey) {
+void GlobalShortcut::HotkeyManagerPrivate::unregisterNativeHotkey(uint hotkey) {
 
     // Convert to native format
     std::set<uint> keysX = nativeKeycodes(hotkey & ~Qt::KeyboardModifierMask);
@@ -374,7 +374,7 @@ void HotkeyManagerPrivate::unregisterNativeHotkey(uint hotkey) {
 
 
 /** ***************************************************************************/
-std::set<uint> HotkeyManagerPrivate::nativeKeycodes(uint qtKey) {
+std::set<uint> GlobalShortcut::HotkeyManagerPrivate::nativeKeycodes(uint qtKey) {
     /* Translate key symbol ( Qt -> X ) */
     // Use latin if possible
     if (qtKey >= 0x20 && qtKey <= 0xff)
@@ -393,7 +393,7 @@ std::set<uint> HotkeyManagerPrivate::nativeKeycodes(uint qtKey) {
 
 
 /** ***************************************************************************/
-uint HotkeyManagerPrivate::nativeModifiers(uint qtMods) {
+uint GlobalShortcut::HotkeyManagerPrivate::nativeModifiers(uint qtMods) {
     uint ret = 0;
     //    if (qtMods & Qt::ShiftModifier)       ret |= XCB_MOD_MASK_SHIFT;
     //    if (qtMods & Qt::ControlModifier)     ret |= XCB_MOD_MASK_CONTROL;
@@ -409,7 +409,7 @@ uint HotkeyManagerPrivate::nativeModifiers(uint qtMods) {
 
 
 /** ***************************************************************************/
-bool HotkeyManagerPrivate::nativeEventFilter(const QByteArray &eventType, void *message, long *) {
+bool GlobalShortcut::HotkeyManagerPrivate::nativeEventFilter(const QByteArray &eventType, void *message, long *) {
     if ( eventType == "xcb_generic_event_t" ) {
         xcb_generic_event_t* ev = static_cast<xcb_generic_event_t *>(message);
         if ( (ev->response_type & 127) == XCB_KEY_PRESS ) {

@@ -19,6 +19,8 @@
 #include <QKeyEvent>
 #include <QKeySequence>
 
+namespace Core {
+
 class GrabKeyButton final : public QPushButton
 {
     Q_OBJECT
@@ -40,3 +42,5 @@ private:
 signals:
     void keyCombinationPressed(int);
 };
+
+}

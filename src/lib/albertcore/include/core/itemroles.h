@@ -17,6 +17,8 @@
 #pragma once
 #include  <Qt>
 
+namespace Core {
+
 enum ItemRoles {
     TextRole = 0,
     ToolTipRole,
@@ -26,3 +28,5 @@ enum ItemRoles {
     AltActionRole,
     FallbackRole
 };
+
+}

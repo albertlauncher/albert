@@ -24,21 +24,21 @@ using namespace Core;
 
 
 /** ***************************************************************************/
-LoaderModel::LoaderModel(ExtensionManager* pm, QObject *parent)
+Core::LoaderModel::LoaderModel(ExtensionManager* pm, QObject *parent)
     : QAbstractListModel(parent), extensionManager_(pm){
 }
 
 
 
 /** ***************************************************************************/
-int LoaderModel::rowCount(const QModelIndex &) const {
+int Core::LoaderModel::rowCount(const QModelIndex &) const {
     return static_cast<int>(extensionManager_->extensionSpecs().size());
 }
 
 
 
 /** ***************************************************************************/
-QVariant LoaderModel::data(const QModelIndex &index, int role) const {
+QVariant Core::LoaderModel::data(const QModelIndex &index, int role) const {
     if (!index.isValid() || index.row() < 0 || rowCount() <= index.row())
         return QVariant();
 
@@ -76,7 +76,7 @@ QVariant LoaderModel::data(const QModelIndex &index, int role) const {
 
 
 /** ***************************************************************************/
-bool LoaderModel::setData(const QModelIndex &index, const QVariant &value, int role) {
+bool Core::LoaderModel::setData(const QModelIndex &index, const QVariant &value, int role) {
     if (!index.isValid() || index.row() < 0 || rowCount() <= index.row())
         return false;
 
@@ -96,7 +96,7 @@ bool LoaderModel::setData(const QModelIndex &index, const QVariant &value, int r
 
 
 /** ***************************************************************************/
-Qt::ItemFlags LoaderModel::flags(const QModelIndex &) const {
+Qt::ItemFlags Core::LoaderModel::flags(const QModelIndex &) const {
     return Qt::ItemIsSelectable
             |Qt::ItemIsUserCheckable
             |Qt::ItemIsEnabled

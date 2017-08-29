@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SettingsDialog</class>
- <widget class="QWidget" name="SettingsDialog">
+ <class>Core::SettingsDialog</class>
+ <widget class="QWidget" name="Core::SettingsDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>720</width>
+    <height>400</height>
+   </rect>
+  </property>
   <property name="minimumSize">
    <size>
     <width>720</width>

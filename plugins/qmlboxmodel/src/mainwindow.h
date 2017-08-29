@@ -74,7 +74,7 @@ protected:
     bool showCentered_;
     bool hideOnFocusLoss_;
     bool hideOnClose_;
-    History history_;
+    Core::History history_;
     QIdentityProxyModel model_;
     std::vector<QmlStyleSpec> styles_;
     QFileSystemWatcher watcher_;

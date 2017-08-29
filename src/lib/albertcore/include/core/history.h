@@ -19,6 +19,8 @@
 #include <QStringList>
 #include "core_globals.h"
 
+namespace Core {
+
 class EXPORT_CORE History final : public QObject
 {
     Q_OBJECT
@@ -41,3 +43,4 @@ private:
 
 };
 
+}
