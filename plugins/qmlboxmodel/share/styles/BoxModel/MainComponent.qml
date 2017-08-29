@@ -104,7 +104,7 @@ FocusScope {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: actionsListView.currentIndex = index
-                        onDoubleClicked: resultsList.currentItem.activate(currentIndex)
+                        onDoubleClicked: resultsList.currentItem.activate(index)
                     }
                 }
                 visible: false
