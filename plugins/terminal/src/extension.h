@@ -43,6 +43,8 @@ public:
 
 private:
 
+    void rebuildIndex();
+
     std::unique_ptr<Private> d;
 
 };
