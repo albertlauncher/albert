@@ -74,6 +74,7 @@ Item {
             id: textId
             width: parent.width
             text: itemTextRole
+            textFormat: Text.PlainText
             font.family: font_name
             elide: Text.ElideRight
             color: listItem.ListView.isCurrentItem ? highlight_color : foreground_color
@@ -84,6 +85,7 @@ Item {
             id: subTextId
             width: parent.width
             text: itemToolTipRole
+            textFormat: Text.PlainText
             font.family: font_name
             elide: Text.ElideRight
             color: listItem.ListView.isCurrentItem ? highlight_color : foreground_color

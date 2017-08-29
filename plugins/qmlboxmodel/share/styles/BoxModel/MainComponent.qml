@@ -96,6 +96,7 @@ FocusScope {
                     horizontalAlignment: Text.AlignHCenter
                     width: parent.width
                     text: name
+                    textFormat: Text.PlainText
                     font.family: font_name
                     elide: Text.ElideRight
                     font.pixelSize: (item_description_fontsize+item_title_fontsize)/2
