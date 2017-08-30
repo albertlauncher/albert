@@ -20,6 +20,7 @@
 #include <QStandardPaths>
 #include <QMessageBox>
 #include <QShortcut>
+#include <QStandardItemModel>
 #include <QDesktopWidget>
 #include <QFocusEvent>
 #include "configwidget.h"
@@ -70,28 +71,19 @@ QmlBoxModel::ConfigWidget::ConfigWidget(MainWindow *mainWindow, QWidget *parent,
         if ( style.mainComponent == mainWindow_->source().toString() )
             ui.comboBox_style->setCurrentIndex(ui.comboBox_style->count()-1);
     }
+    updatePresets();
+
     connect(ui.comboBox_style, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, &ConfigWidget::onThemeChanged);
-
-    // PROPERTY EDITOR
-    connect(ui.toolButton_propertyEditor, &QToolButton::clicked, [this](){
-        PropertyEditor pe(mainWindow_);
-        pe.exec();
-    });
-
-    // PRESETS
-    ui.comboBox_presets->clear();
-    ui.comboBox_presets->addItem("Choose preset...");
-    ui.comboBox_presets->addItems(mainWindow_->availablePresets());
     connect(ui.comboBox_presets, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
             this, &ConfigWidget::onPresetChanged);
 
-
-//    QDesktopWidget *dw = QApplication::desktop();
-//    move(dw->availableGeometry(dw->screenNumber(QCursor::pos())).center()
-//                -QPoint(width()/2,height()/2));
-//    raise();
-//    activateWindow();
+    // PROPERTY EDITOR
+    connect(ui.toolButton_propertyEditor, &QToolButton::clicked, mainWindow_, [this](){
+        PropertyEditor *pe = new PropertyEditor(mainWindow_);
+        qDebug() << pe->windowFlags();
+        pe->show();
+    });
 }
 
 
@@ -99,17 +91,33 @@ QmlBoxModel::ConfigWidget::ConfigWidget(MainWindow *mainWindow, QWidget *parent,
 void QmlBoxModel::ConfigWidget::onThemeChanged(int i) {
     // Apply the theme
     mainWindow_->setSource(mainWindow_->availableStyles()[static_cast<size_t>(i)].mainComponent);
-
-    // Fill presets
-    ui.comboBox_presets->blockSignals(true);
-    ui.comboBox_presets->clear();
-    ui.comboBox_presets->addItem("Choose preset...");
-    ui.comboBox_presets->addItems(mainWindow_->availablePresets());
-    ui.comboBox_presets->blockSignals(false);
+    updatePresets();
 }
 
 
 /** ***************************************************************************/
 void QmlBoxModel::ConfigWidget::onPresetChanged(const QString &text) {
     mainWindow_->setPreset(text);
+}
+
+
+/** ***************************************************************************/
+void QmlBoxModel::ConfigWidget::updatePresets() {
+
+    ui.comboBox_presets->blockSignals(true);
+
+    ui.comboBox_presets->clear();
+
+    // Add disabled placeholder item
+    ui.comboBox_presets->addItem("Choose preset...");
+    const QStandardItemModel* model = qobject_cast<const QStandardItemModel*>(ui.comboBox_presets->model());
+    QStandardItem* item = model->item(0);
+    item->setEnabled(false);
+    ui.comboBox_presets->insertSeparator(1);
+
+    // Add presets
+    ui.comboBox_presets->addItems(mainWindow_->availablePresets());
+
+    ui.comboBox_presets->blockSignals(false);
+
 }

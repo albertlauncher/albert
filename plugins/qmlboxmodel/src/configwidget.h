@@ -33,6 +33,7 @@ private:
 
     void onThemeChanged(int);
     void onPresetChanged(const QString &text);
+    void updatePresets();
 
     MainWindow *mainWindow_;
     Ui::SettingsDialog ui;
