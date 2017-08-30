@@ -19,7 +19,12 @@ Item {
         id: gearcolor
         anchors.fill: parent
         color: color
-        Behavior on color { ColorAnimation { duration: 500 } }
+        Behavior on color {
+           ColorAnimation {
+               duration: 1500
+               easing.type: Easing.OutCubic
+           }
+       }
         visible: false
     }
     Image {
