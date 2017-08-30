@@ -10,6 +10,7 @@ var settableProperties = [
     "icon_size",
     "max_items",
     "font_name",
+    "shadow_size",
     "space",
     "settingsbutton_size",
     "window_width"
@@ -26,9 +27,9 @@ var presets = {
         "settingsbutton_size": 16,
         "window_width": 640,
         "background_color": "#FFFFFF",
-        "foreground_color": "#808080",
-        "highlight_color": "#404040",
-        "border_color": "#808080"
+        "foreground_color": "#a0a0a0",
+        "highlight_color": "#606060",
+        "border_color": "#606060"
     },
     "BrightOrange": {
         "input_fontsize": 36,
@@ -41,8 +42,8 @@ var presets = {
         "window_width": 640,
         "background_color": "#FFFFFF",
         "foreground_color": "#808080",
-        "highlight_color": "#E07000",
-        "border_color": "#FF8000"
+        "highlight_color": "#FFc080",
+        "border_color": "#FFc080"
     },
     "BrightMagenta": {
         "input_fontsize": 36,
@@ -55,8 +56,8 @@ var presets = {
         "window_width": 640,
         "background_color": "#FFFFFF",
         "foreground_color": "#808080",
-        "highlight_color": "#E00070",
-        "border_color": "#FF0080"
+        "highlight_color": "#FF80c0",
+        "border_color": "#FF80c0"
     },
     "BrightMint": {
         "input_fontsize": 36,
@@ -69,7 +70,7 @@ var presets = {
         "window_width": 640,
         "background_color": "#FFFFFF",
         "foreground_color": "#808080",
-        "highlight_color": "#00c060",
+        "highlight_color": "#00FF80",
         "border_color": "#00FF80"
     },
     "BrightGreen": {
@@ -83,7 +84,7 @@ var presets = {
         "window_width": 640,
         "background_color": "#FFFFFF",
         "foreground_color": "#808080",
-        "highlight_color": "#60c000",
+        "highlight_color": "#80FF00",
         "border_color": "#80FF00"
     },
     "BrightBlue": {
@@ -98,7 +99,7 @@ var presets = {
         "background_color": "#FFFFFF",
         "foreground_color": "#808080",
         "highlight_color": "#80c0ff",
-        "border_color": "#0080FF"
+        "border_color": "#80c0ff"
     },
     "BrightViolet": {
         "input_fontsize": 36,
@@ -112,7 +113,7 @@ var presets = {
         "background_color": "#FFFFFF",
         "foreground_color": "#808080",
         "highlight_color": "#C080FF",
-        "border_color": "#8000FF"
+        "border_color": "#C080FF"
     },
     "Dark": {
         "input_fontsize": 36,

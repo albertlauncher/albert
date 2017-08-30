@@ -12,6 +12,7 @@ FocusScope {
     property int settingsbutton_size
     property int input_fontsize
     property int icon_size
+    property int shadow_size: 40
     property int item_title_fontsize
     property int item_description_fontsize
     property int max_items
@@ -26,126 +27,145 @@ FocusScope {
     }
 
     id: root
-    width: frame.width
-    height: frame.height
+    width: frame.width+2*shadow_size
+    height: frame.height+2*shadow_size
     focus: true
 
+
     Rectangle {
-        id: frame
-        width: window_width
-        height: content.height+2*content.anchors.margins
-        radius: space*2+4
-        color: background_color
-        border.color: border_color
-        border.width: space
 
-        Column {
+        id: shadowArea
+        color:"#80ff0000"
 
-            id: content
-            anchors { top: parent.top; left: parent.left; right: parent.right; margins: space*2 }
-            spacing: space
-
-            HistoryTextInput {
-                id: historyTextInput
-                anchors {
-                    left: parent.left;
-                    right: parent.right;
-                    rightMargin: 4;
-                    leftMargin: 4;
-                }
-                clip: true
-                color: foreground_color
-                focus: true
-                font.pixelSize: input_fontsize
-                font.family: font_name
-                selectByMouse: true
-                selectedTextColor: background_color
-                selectionColor: highlight_color
-                Keys.forwardTo: [root, resultsList]
-                cursorDelegate : Item {
-                    id: cursor
-                    Rectangle { width: 1
-                        height: parent.height
-                        color: foreground_color
-                    }
-                    SequentialAnimation on opacity {
-                        loops: Animation.Infinite;
-                        NumberAnimation { to: 0; duration: 500; easing.type: Easing.InOutExpo }
-                        NumberAnimation { to: 1; duration: 500; easing.type: Easing.InOutExpo }
-                    }
-                }
-            } // historyTextInput
-
-            DesktopListView {
-                id: resultsList
-                width: parent.width
-                model: resultsModel
-                itemCount: max_items
-                spacing: space
-                delegate: Component { ItemViewDelegate{ } }
-                Keys.onEnterPressed: activate()
-                Keys.onReturnPressed: activate()
-            }  // resultsList (ListView)
-
-            DesktopListView {
-                id: actionsListView
-                width: parent.width
-                model: ListModel { id: actionsModel }
-                itemCount: actionsModel.count
-                delegate: Text {
-                    horizontalAlignment: Text.AlignHCenter
-                    width: parent.width
-                    text: name
-                    textFormat: Text.PlainText
-                    font.family: font_name
-                    elide: Text.ElideRight
-                    font.pixelSize: (item_description_fontsize+item_title_fontsize)/2
-                    color: ListView.isCurrentItem ? highlight_color : foreground_color
-                    Behavior on color { ColorAnimation{ duration: 100 } }
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: actionsListView.currentIndex = index
-                        onDoubleClicked: resultsList.currentItem.activate(index)
-                    }
-                }
-                visible: false
-                Keys.onEnterPressed: activate(currentIndex)
-                Keys.onReturnPressed: activate(currentIndex)
-            }  // actionsListView (ListView)
-        }  // content (Column)
-
-
-        SettingsButton {
-            id: settingsButton
-            size: settingsbutton_size
+        Rectangle {
+            id: frame
+            objectName: "frame" // for C++
+            x:shadow_size;
+            y:shadow_size
+            width: window_width
+            height: content.height+2*content.anchors.margins
+            radius: space*2+4
             color: background_color
-            hoverColor: border_color
-            pressedColor: highlight_color
-            onLeftClicked: settingsWidgetRequested()
-            onRightClicked: menu.popup()
-            anchors {
-                top: parent.top
-                right: parent.right
-                topMargin: 2*space
-                rightMargin: 2*space
+            border.color: border_color
+            border.width: space
+
+            layer.enabled: true
+            layer.effect: DropShadow {
+                transparentBorder: true
+                verticalOffset: shadow_size/3
+                radius: shadow_size
+                samples: shadow_size*2
+                color: "#30000000"
             }
 
-            Menu {
-                id: menu
-                MenuItem {
-                    text: "Preferences"
-                    shortcut: "Alt+,"
-                    onTriggered: settingsWidgetRequested()
-                }
-                MenuItem {
-                    text: "Quit"
-                    shortcut: "Alt+F4"
-                    onTriggered: Qt.quit()
+            Column {
 
+                id: content
+                anchors { top: parent.top; left: parent.left; right: parent.right; margins: space*2 }
+                spacing: space
+
+                HistoryTextInput {
+                    id: historyTextInput
+                    anchors {
+                        left: parent.left;
+                        right: parent.right;
+                        rightMargin: 4;
+                        leftMargin: 4;
+                    }
+                    clip: true
+                    color: foreground_color
+                    focus: true
+                    font.pixelSize: input_fontsize
+                    font.family: font_name
+                    selectByMouse: true
+                    selectedTextColor: background_color
+                    selectionColor: highlight_color
+                    Keys.forwardTo: [root, resultsList]
+                    cursorDelegate : Item {
+                        id: cursor
+                        Rectangle { width: 1
+                            height: parent.height
+                            color: foreground_color
+                        }
+                        SequentialAnimation on opacity {
+                            loops: Animation.Infinite;
+                            NumberAnimation { to: 0; duration: 500; easing.type: Easing.InOutExpo }
+                            NumberAnimation { to: 1; duration: 500; easing.type: Easing.InOutExpo }
+                        }
+                    }
+                } // historyTextInput
+
+                DesktopListView {
+                    id: resultsList
+                    width: parent.width
+                    model: resultsModel
+                    itemCount: max_items
+                    spacing: space
+                    delegate: Component { ItemViewDelegate{ } }
+                    Keys.onEnterPressed: activate()
+                    Keys.onReturnPressed: activate()
+                }  // resultsList (ListView)
+
+                DesktopListView {
+                    id: actionsListView
+                    width: parent.width
+                    model: ListModel { id: actionsModel }
+                    itemCount: actionsModel.count
+                    delegate: Text {
+                        horizontalAlignment: Text.AlignHCenter
+                        width: parent.width
+                        text: name
+                        textFormat: Text.PlainText
+                        font.family: font_name
+                        elide: Text.ElideRight
+                        font.pixelSize: (item_description_fontsize+item_title_fontsize)/2
+                        color: ListView.isCurrentItem ? highlight_color : foreground_color
+                        Behavior on color { ColorAnimation{ duration: 100 } }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: actionsListView.currentIndex = index
+                            onDoubleClicked: resultsList.currentItem.activate(index)
+                        }
+                    }
+                    visible: false
+                    Keys.onEnterPressed: activate(currentIndex)
+                    Keys.onReturnPressed: activate(currentIndex)
+                }  // actionsListView (ListView)
+            }  // content (Column)
+
+
+            SettingsButton {
+                id: settingsButton
+                size: settingsbutton_size
+                color: background_color
+                hoverColor: border_color
+                pressedColor: highlight_color
+                onLeftClicked: settingsWidgetRequested()
+                onRightClicked: menu.popup()
+                anchors {
+                    top: parent.top
+                    right: parent.right
+                    topMargin: 2*space
+                    rightMargin: 2*space
+                }
+
+                Menu {
+                    id: menu
+                    MenuItem {
+                        text: "Preferences"
+                        shortcut: "Alt+,"
+                        onTriggered: settingsWidgetRequested()
+                    }
+                    MenuItem {
+                        text: "Quit"
+                        shortcut: "Alt+F4"
+                        onTriggered: Qt.quit()
+
+                    }
                 }
             }
-        }
-    }  // frame (Rectangle)
+        }  // frame (Rectangle)
+    }  // shadowArea (Item)
 
 
     // Key handling
