@@ -11,7 +11,7 @@ ListView {
     keyNavigationWraps: false
     boundsBehavior: Flickable.StopAtBounds
     highlightMoveDuration : 250
-    highlightMoveVelocity : 1000
+    highlightMoveVelocity : 100
 
     Connections {
         target: model
