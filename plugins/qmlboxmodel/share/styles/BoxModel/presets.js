@@ -28,7 +28,7 @@ var presets = {
         "background_color": "#FFFFFF",
         "foreground_color": "#808080",
         "highlight_color": "#404040",
-        "border_color": "#80808080"
+        "border_color": "#808080"
     },
     "BrightOrange": {
         "input_fontsize": 36,
@@ -42,7 +42,7 @@ var presets = {
         "background_color": "#FFFFFF",
         "foreground_color": "#808080",
         "highlight_color": "#E07000",
-        "border_color": "#80FF8000"
+        "border_color": "#FF8000"
     },
     "BrightMagenta": {
         "input_fontsize": 36,
@@ -56,7 +56,7 @@ var presets = {
         "background_color": "#FFFFFF",
         "foreground_color": "#808080",
         "highlight_color": "#E00070",
-        "border_color": "#80FF0080"
+        "border_color": "#FF0080"
     },
     "BrightMint": {
         "input_fontsize": 36,
@@ -70,7 +70,7 @@ var presets = {
         "background_color": "#FFFFFF",
         "foreground_color": "#808080",
         "highlight_color": "#00c060",
-        "border_color": "#8000FF80"
+        "border_color": "#00FF80"
     },
     "BrightGreen": {
         "input_fontsize": 36,
@@ -84,7 +84,7 @@ var presets = {
         "background_color": "#FFFFFF",
         "foreground_color": "#808080",
         "highlight_color": "#60c000",
-        "border_color": "#8080FF00"
+        "border_color": "#80FF00"
     },
     "BrightBlue": {
         "input_fontsize": 36,
@@ -98,7 +98,7 @@ var presets = {
         "background_color": "#FFFFFF",
         "foreground_color": "#808080",
         "highlight_color": "#80c0ff",
-        "border_color": "#800080FF"
+        "border_color": "#0080FF"
     },
     "BrightViolet": {
         "input_fontsize": 36,
@@ -112,7 +112,7 @@ var presets = {
         "background_color": "#FFFFFF",
         "foreground_color": "#808080",
         "highlight_color": "#C080FF",
-        "border_color": "#808000FF"
+        "border_color": "#8000FF"
     },
     "Dark": {
         "input_fontsize": 36,
@@ -126,7 +126,7 @@ var presets = {
         "background_color": "#404040",
         "foreground_color": "#808080",
         "highlight_color": "#E0E0E0",
-        "border_color": "#80808080"
+        "border_color": "#808080"
     },
     "DarkOrange": {
         "input_fontsize": 36,
@@ -140,7 +140,7 @@ var presets = {
         "background_color": "#404040",
         "foreground_color": "#808080",
         "highlight_color": "#FF9020",
-        "border_color": "#80FF8000"
+        "border_color": "#FF8000"
     },
     "DarkMagenta": {
         "input_fontsize": 36,
@@ -154,7 +154,7 @@ var presets = {
         "background_color": "#404040",
         "foreground_color": "#808080",
         "highlight_color": "#FF2090",
-        "border_color": "#80FF0080"
+        "border_color": "#FF0080"
     },
     "DarkMint": {
         "input_fontsize": 36,
@@ -168,7 +168,7 @@ var presets = {
         "background_color": "#404040",
         "foreground_color": "#808080",
         "highlight_color": "#20FF90",
-        "border_color": "#8000FF80"
+        "border_color": "#00FF80"
     },
     "DarkGreen": {
         "input_fontsize": 36,
@@ -182,7 +182,7 @@ var presets = {
         "background_color": "#404040",
         "foreground_color": "#808080",
         "highlight_color": "#90FF20",
-        "border_color": "#8080FF00"
+        "border_color": "#80FF00"
     },
     "DarkBlue": {
         "input_fontsize": 36,
@@ -196,7 +196,7 @@ var presets = {
         "background_color": "#404040",
         "foreground_color": "#808080",
         "highlight_color": "#2090FF",
-        "border_color": "#800080FF"
+        "border_color": "#0080FF"
     },
     "DarkViolet": {
         "input_fontsize": 36,
@@ -210,7 +210,7 @@ var presets = {
         "background_color": "#404040",
         "foreground_color": "#808080",
         "highlight_color": "#A040FF",
-        "border_color": "#808000FF"
+        "border_color": "#8000FF"
     },
     "SolarizedBrightYellow": {
         "input_fontsize": 36,
@@ -224,7 +224,7 @@ var presets = {
         "background_color": "#fdf6e3",
         "foreground_color": "#839496",
         "highlight_color": "#b58900",
-        "border_color": "#80b58900"
+        "border_color": "#b58900"
     },
     "SolarizedBrightOrange": {
         "input_fontsize": 36,
@@ -238,7 +238,7 @@ var presets = {
         "background_color": "#fdf6e3",
         "foreground_color": "#839496",
         "highlight_color": "#cb4b16",
-        "border_color": "#80cb4b16"
+        "border_color": "#cb4b16"
     },
     "SolarizedBrightRed": {
         "input_fontsize": 36,
@@ -252,7 +252,7 @@ var presets = {
         "background_color": "#fdf6e3",
         "foreground_color": "#839496",
         "highlight_color": "#dc322f",
-        "border_color": "#80dc322f"
+        "border_color": "#dc322f"
     },
     "SolarizedBrightMagenta": {
         "input_fontsize": 36,
@@ -266,7 +266,7 @@ var presets = {
         "background_color": "#fdf6e3",
         "foreground_color": "#839496",
         "highlight_color": "#d33682",
-        "border_color": "#80d33682"
+        "border_color": "#d33682"
     },
     "SolarizedBrightViolet": {
         "input_fontsize": 36,
@@ -280,7 +280,7 @@ var presets = {
         "background_color": "#fdf6e3",
         "foreground_color": "#839496",
         "highlight_color": "#6c71c4",
-        "border_color": "#806c71c4"
+        "border_color": "#6c71c4"
     },
     "SolarizedBrightBlue": {
         "input_fontsize": 36,
@@ -294,7 +294,7 @@ var presets = {
         "background_color": "#fdf6e3",
         "foreground_color": "#839496",
         "highlight_color": "#268bd2",
-        "border_color": "#80268bd2"
+        "border_color": "#268bd2"
     },
     "SolarizedBrightCyan": {
         "input_fontsize": 36,
@@ -308,7 +308,7 @@ var presets = {
         "background_color": "#fdf6e3",
         "foreground_color": "#839496",
         "highlight_color": "#2aa198",
-        "border_color": "#802aa198"
+        "border_color": "#2aa198"
     },
     "SolarizedBrightGreen": {
         "input_fontsize": 36,
@@ -322,7 +322,7 @@ var presets = {
         "background_color": "#fdf6e3",
         "foreground_color": "#839496",
         "highlight_color": "#859900",
-        "border_color": "#80859900"
+        "border_color": "#859900"
     },
     "SolarizedDarkYellow": {
         "input_fontsize": 36,
@@ -336,7 +336,7 @@ var presets = {
         "background_color": "#002b36",
         "foreground_color": "#839496",
         "highlight_color": "#b58900",
-        "border_color": "#80b58900"
+        "border_color": "#b58900"
     },
     "SolarizedDarkOrange": {
         "input_fontsize": 36,
@@ -350,7 +350,7 @@ var presets = {
         "background_color": "#002b36",
         "foreground_color": "#839496",
         "highlight_color": "#cb4b16",
-        "border_color": "#80cb4b16"
+        "border_color": "#cb4b16"
     },
     "SolarizedDarkRed": {
         "input_fontsize": 36,
@@ -364,7 +364,7 @@ var presets = {
         "background_color": "#002b36",
         "foreground_color": "#839496",
         "highlight_color": "#dc322f",
-        "border_color": "#80dc322f"
+        "border_color": "#dc322f"
     },
     "SolarizedDarkMagenta": {
         "input_fontsize": 36,
@@ -378,7 +378,7 @@ var presets = {
         "background_color": "#002b36",
         "foreground_color": "#839496",
         "highlight_color": "#d33682",
-        "border_color": "#80d33682"
+        "border_color": "#d33682"
     },
     "SolarizedDarkViolet": {
         "input_fontsize": 36,
@@ -392,7 +392,7 @@ var presets = {
         "background_color": "#002b36",
         "foreground_color": "#839496",
         "highlight_color": "#6c71c4",
-        "border_color": "#806c71c4"
+        "border_color": "#6c71c4"
     },
     "SolarizedDarkBlue": {
         "input_fontsize": 36,
@@ -406,7 +406,7 @@ var presets = {
         "background_color": "#002b36",
         "foreground_color": "#839496",
         "highlight_color": "#268bd2",
-        "border_color": "#80268bd2"
+        "border_color": "#268bd2"
     },
     "SolarizedDarkCyan": {
         "input_fontsize": 36,
@@ -420,7 +420,7 @@ var presets = {
         "background_color": "#002b36",
         "foreground_color": "#839496",
         "highlight_color": "#2aa198",
-        "border_color": "#802aa198"
+        "border_color": "#2aa198"
     },
     "SolarizedDarkGreen": {
         "input_fontsize": 36,
@@ -434,6 +434,6 @@ var presets = {
         "background_color": "#002b36",
         "foreground_color": "#839496",
         "highlight_color": "#859900",
-        "border_color": "#80859900"
+        "border_color": "#859900"
     }
 }
