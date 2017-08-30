@@ -97,14 +97,12 @@ private:
 
 
 ///****************************************************************************/
-QmlBoxModel::PropertyEditor::PropertyEditor(MainWindow *mainWindow, QWidget *parent) :
-    QDialog (parent){
+QmlBoxModel::PropertyEditor::PropertyEditor(MainWindow *mainWindow, QWidget *parent)
+    : QDialog (parent){
 
-    resize(300, 300);
+    resize(320, 480);
     setWindowTitle("PropertyEditor");
-//    setWindowFlags(windowFlags());
 
-    // Set ownership
     QTableView *tableView = new QTableView(this);
     tableView->setObjectName(QStringLiteral("tableView"));
     tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -113,7 +111,6 @@ QmlBoxModel::PropertyEditor::PropertyEditor(MainWindow *mainWindow, QWidget *par
     tableView->setAlternatingRowColors(true);
     tableView->setShowGrid(false);
     tableView->horizontalHeader()->setMinimumSectionSize(16);
-    // Set model and ownership
     tableView->setModel(new PropertyModel(mainWindow, tableView));
 
     QVBoxLayout *layout = new QVBoxLayout(this);
