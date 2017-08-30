@@ -150,7 +150,7 @@ QmlBoxModel::MainWindow::MainWindow(QSettings *settings, QWindow *parent) : QQui
             if ( showCentered_ ){
                 QDesktopWidget *dw = QApplication::desktop();
                 setPosition(dw->availableGeometry(dw->screenNumber(QCursor::pos()))
-                            .center()-QPoint(width()/2,192));
+                            .center()-QPoint(width()/2,256));
             }
     });
 }

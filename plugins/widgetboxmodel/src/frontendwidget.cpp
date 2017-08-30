@@ -289,7 +289,7 @@ void WidgetBoxModel::FrontendWidget::setVisible(bool visible) {
         if (d->showCentered_){
             QDesktopWidget *dw = QApplication::desktop();
             this->move(dw->screenGeometry(dw->screenNumber(QCursor::pos())).center()
-                       -QPoint(rect().right()/2,192 ));
+                       -QPoint(rect().right()/2,256 ));
         }
         this->raise();
         this->activateWindow();
