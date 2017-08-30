@@ -31,7 +31,7 @@ class PropertyModel final : public QAbstractTableModel
 public:
     PropertyModel(MainWindow *mainWindow, QObject * parent = 0)
         : QAbstractTableModel(parent), mainWindow_(mainWindow){
-        properties_ = mainWindow_->availableProperties();
+        properties_ = mainWindow_->settableProperties();
     }
 
     ~PropertyModel() {

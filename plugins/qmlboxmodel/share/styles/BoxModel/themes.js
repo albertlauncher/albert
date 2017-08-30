@@ -16,7 +16,7 @@ var settableProperties = [
     "window_width"
 ];
 
-var presets = {
+var themes = {
     "Tiffany": {
         "input_fontsize": 36,
         "item_title_fontsize": 26,

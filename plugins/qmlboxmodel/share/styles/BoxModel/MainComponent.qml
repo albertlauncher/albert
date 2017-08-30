@@ -1,7 +1,7 @@
 ﻿import QtQuick 2.5
 import QtQuick.Controls 1.0
 import QtGraphicalEffects 1.0
-import "presets.js" as Presets
+import "themes.js" as Themes
 
 FocusScope {
     // ▼ Setfle properties of this style ▼
@@ -234,7 +234,7 @@ FocusScope {
         }
     }
 
-    Component.onCompleted: setPreset("Bright")
+    Component.onCompleted: setTheme("Bright")
 
 
     // ▼ ▼ ▼ ▼ ▼ DO NOT CHANGE THIS UNLESS YOU KNOW WHAT YOU ARE DOING ▼ ▼ ▼ ▼ ▼
@@ -246,9 +246,9 @@ FocusScope {
      * Context property 'history'
      * Listeners on signal: 'inputChanged'
      * External invokation of 'onMainWindowHidden' (Focus out)
-     * External invokation of availablePresets
-     * External invokation of setPreset
-     * External invokation of availableProperties
+     * External invokation of availableThemes
+     * External invokation of setTheme
+     * External invokation of settableProperties
      * External mutations of the properties returned by availableProperties
      *
      * Canges to this interface will increment the minor version of the
@@ -273,21 +273,21 @@ FocusScope {
         }
     }
 
-    function availableProperties() { return Presets.settableProperties }
-    function availablePresets() { return Object.keys(Presets.presets) }
-    function setPreset(p) {
-        var preset = Presets.presets[p]
-        input_fontsize = preset.input_fontsize
-        item_title_fontsize = preset.item_title_fontsize
-        item_description_fontsize = preset.item_description_fontsize
-        icon_size = preset.icon_size
-        max_items = preset.max_items
-        space = preset.space
-        settingsbutton_size = preset.settingsbutton_size
-        window_width = preset.window_width
-        background_color = preset.background_color
-        foreground_color = preset.foreground_color
-        highlight_color = preset.highlight_color
-        border_color = preset.border_color
+    function settableProperties() { return Themes.settableProperties }
+    function availableThemes() { return Object.keys(Themes.themes) }
+    function setTheme(p) {
+        var theme = Themes.themes[p]
+        input_fontsize = theme.input_fontsize
+        item_title_fontsize = theme.item_title_fontsize
+        item_description_fontsize = theme.item_description_fontsize
+        icon_size = theme.icon_size
+        max_items = theme.max_items
+        space = theme.space
+        settingsbutton_size = theme.settingsbutton_size
+        window_width = theme.window_width
+        background_color = theme.background_color
+        foreground_color = theme.foreground_color
+        highlight_color = theme.highlight_color
+        border_color = theme.border_color
     }
 }

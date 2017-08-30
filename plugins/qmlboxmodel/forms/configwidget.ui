@@ -41,14 +41,14 @@
        </layout>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_presets">
+       <widget class="QLabel" name="label_themes">
         <property name="text">
-         <string>Presets:</string>
+         <string>Themes:</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QComboBox" name="comboBox_presets"/>
+       <widget class="QComboBox" name="comboBox_themes"/>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_hideOnFocusOut">

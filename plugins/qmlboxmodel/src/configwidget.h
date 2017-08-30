@@ -31,9 +31,9 @@ public:
 
 private:
 
-    void onThemeChanged(int);
-    void onPresetChanged(const QString &text);
-    void updatePresets();
+    void onStyleChanged(int);
+    void onThemeChanged(const QString &text);
+    void updateThemes();
 
     MainWindow *mainWindow_;
     Ui::SettingsDialog ui;

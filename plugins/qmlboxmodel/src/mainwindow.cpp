@@ -29,6 +29,7 @@
 #include <QQmlEngine>
 #include <QQuickItem>
 #include "mainwindow.h"
+#include "frontendplugin.h"
 #ifdef __unix__
 #include <X11/extensions/shape.h>
 #undef KeyPress
@@ -44,16 +45,17 @@ const QString CFG_HIDEONFOCUSLOSS = "hideOnFocusLoss";
 const bool    DEF_HIDEONFOCUSLOSS = true;
 const QString CFG_ALWAYS_ON_TOP   = "alwaysOnTop";
 const bool    DEF_ALWAYS_ON_TOP   = true;
+const char*   CFG_HIDE_ON_CLOSE   = "hideOnClose";
+const bool    DEF_HIDE_ON_CLOSE   = false;
 const QString CFG_STYLEPATH       = "stylePath";
 const QString CFG_WND_POS         = "windowPosition";
 const QString PLUGIN_ID           = "org.albert.frontend.boxmodel.qml";
 const QString STYLE_MAIN_NAME     = "MainComponent.qml";
-const char*   CFG_HIDE_ON_CLOSE   = "hideOnClose";
-const bool    DEF_HIDE_ON_CLOSE   = false;
+const QString STYLE_CONFIG_NAME   = "style_properties.ini";
 }
 
 /** ***************************************************************************/
-QmlBoxModel::MainWindow::MainWindow(QSettings *settings, QWindow *parent) : QQuickView(parent) {
+QmlBoxModel::MainWindow::MainWindow(FrontendPlugin *plugin, QWindow *parent) : QQuickView(parent) {
     setColor(Qt::transparent);
     setFlags(Qt::Tool
              | Qt::WindowStaysOnTopHint
@@ -61,7 +63,7 @@ QmlBoxModel::MainWindow::MainWindow(QSettings *settings, QWindow *parent) : QQui
              | Qt::WindowCloseButtonHint // No close event w/o this
              );
 
-    settings_ = settings;
+    plugin_ = plugin;
 
     // Set qml environment
     rootContext()->setContextProperty("mainWindow", this);
@@ -115,22 +117,22 @@ QmlBoxModel::MainWindow::MainWindow(QSettings *settings, QWindow *parent) : QQui
 
 
     auto storeWinPos = [this](){
-        settings_->setValue(CFG_WND_POS, position());
+        plugin_->settings().setValue(CFG_WND_POS, position());
     };
     connect(this, &MainWindow::xChanged, storeWinPos);
     connect(this, &MainWindow::yChanged, storeWinPos);
 
     // Load settings
-    setPosition(settings_->value(CFG_WND_POS).toPoint());
-    setShowCentered(settings_->value(CFG_CENTERED, DEF_CENTERED).toBool());
-    setHideOnFocusLoss(settings_->value(CFG_HIDEONFOCUSLOSS, DEF_HIDEONFOCUSLOSS).toBool());
-    setAlwaysOnTop(settings_->value(CFG_ALWAYS_ON_TOP, DEF_ALWAYS_ON_TOP).toBool());
-    setHideOnClose(settings_->value(CFG_HIDE_ON_CLOSE, DEF_HIDE_ON_CLOSE).toBool());
-    if ( settings_->contains(CFG_STYLEPATH) && QFile::exists(settings_->value(CFG_STYLEPATH).toString()) )
-        setSource(settings_->value(CFG_STYLEPATH).toString());
+    setPosition(plugin_->settings().value(CFG_WND_POS).toPoint());
+    setShowCentered(plugin_->settings().value(CFG_CENTERED, DEF_CENTERED).toBool());
+    setHideOnFocusLoss(plugin_->settings().value(CFG_HIDEONFOCUSLOSS, DEF_HIDEONFOCUSLOSS).toBool());
+    setAlwaysOnTop(plugin_->settings().value(CFG_ALWAYS_ON_TOP, DEF_ALWAYS_ON_TOP).toBool());
+    setHideOnClose(plugin_->settings().value(CFG_HIDE_ON_CLOSE, DEF_HIDE_ON_CLOSE).toBool());
+    if ( plugin_->settings().contains(CFG_STYLEPATH) && QFile::exists(plugin_->settings().value(CFG_STYLEPATH).toString()) )
+        setSource(plugin_->settings().value(CFG_STYLEPATH).toString());
     else {
         setSource(styles_[0].mainComponent);
-        settings_->setValue(CFG_STYLEPATH, styles_[0].mainComponent);
+        plugin_->settings().setValue(CFG_STYLEPATH, styles_[0].mainComponent);
     }
 
     // Reload qml if changed
@@ -201,21 +203,22 @@ void QmlBoxModel::MainWindow::setSource(const QUrl &url) {
     connect(object, SIGNAL(settingsWidgetRequested()),
             this, SLOT(hide()));
 
+    // Save the theme
+    plugin_->settings().setValue(CFG_STYLEPATH, source().toString());
 
-    // Load the theme properties
-    settings_->setValue(CFG_STYLEPATH, source().toString());
-
-    QString themeId = QFileInfo(source().toString()).dir().dirName();
-
-    settings_->beginGroup(themeId);
-    for (QString &prop : availableProperties()) {
-        if (settings_->contains(prop))
-            setProperty(prop.toLatin1().data(), settings_->value(prop));
-    }
-
+    // Watch this source file for modifications
     if ( !watcher_.files().isEmpty() )
         watcher_.removePaths(watcher_.files());
     watcher_.addPath(url.toString());
+
+    // Load the style properties in the group of this style id
+    QSettings s(plugin_->configLocation().filePath(STYLE_CONFIG_NAME), QSettings::Format::IniFormat);
+    QString styleId = QFileInfo(source().toString()).dir().dirName();
+    s.beginGroup(styleId);
+    for (const QString &prop : settableProperties()){
+        if (s.contains(prop))
+            rootObject()->setProperty(prop.toLatin1().data(), s.value(prop));
+    }
 }
 
 
@@ -226,9 +229,9 @@ const std::vector<QmlBoxModel::QmlStyleSpec> &QmlBoxModel::MainWindow::available
 
 
 /** ***************************************************************************/
-QStringList QmlBoxModel::MainWindow::availableProperties() {
+QStringList QmlBoxModel::MainWindow::settableProperties() {
     QVariant returnedValue;
-    QMetaObject::invokeMethod(rootObject(), "availableProperties",
+    QMetaObject::invokeMethod(rootObject(), "settableProperties",
                               Q_RETURN_ARG(QVariant, returnedValue));
     return returnedValue.toStringList();
 }
@@ -242,8 +245,11 @@ QVariant QmlBoxModel::MainWindow::property(const char *name) const {
 
 /** ***************************************************************************/
 void QmlBoxModel::MainWindow::setProperty(const char *attribute, const QVariant &value) {
+    // Create a settings instance
+    QSettings s(plugin_->configLocation().filePath(STYLE_CONFIG_NAME), QSettings::Format::IniFormat);
     QString themeId = QFileInfo(source().toString()).dir().dirName();
-    settings_->setValue(attribute, value);
+    s.beginGroup(themeId);
+    s.setValue(attribute, value);
     rootObject()->setProperty(attribute, value);
     rootObject()->update();
 }
@@ -251,9 +257,9 @@ void QmlBoxModel::MainWindow::setProperty(const char *attribute, const QVariant 
 
 
 /** ***************************************************************************/
-QStringList QmlBoxModel::MainWindow::availablePresets() {
+QStringList QmlBoxModel::MainWindow::availableThemes() {
     QVariant returnedValue;
-    QMetaObject::invokeMethod(rootObject(), "availablePresets",
+    QMetaObject::invokeMethod(rootObject(), "availableThemes",
                               Q_RETURN_ARG(QVariant, returnedValue));
     return returnedValue.toStringList();
 }
@@ -261,14 +267,16 @@ QStringList QmlBoxModel::MainWindow::availablePresets() {
 
 
 /** ***************************************************************************/
-void QmlBoxModel::MainWindow::setPreset(const QString &name){
-    QMetaObject::invokeMethod(rootObject(), "setPreset",
-                              Q_ARG(QVariant, QVariant::fromValue(name)));
+void QmlBoxModel::MainWindow::setTheme(const QString &name){
 
-    // Save the theme properties
-    QString themeId = QFileInfo(source().toString()).dir().dirName();
-    for (QString &prop : availableProperties())
-        settings_->setValue(prop, property(prop.toLatin1().data()));
+    QMetaObject::invokeMethod(rootObject(), "setTheme", Q_ARG(QVariant, QVariant::fromValue(name)));
+
+    // Save all current poperties in the group with this style id
+    QSettings s(plugin_->configLocation().filePath(STYLE_CONFIG_NAME), QSettings::Format::IniFormat);
+    QString styleId = QFileInfo(source().toString()).dir().dirName();
+    s.beginGroup(styleId);
+    for (const QString &prop : settableProperties())
+        s.setValue(prop, property(prop.toLatin1().data()));
 }
 
 
@@ -373,7 +381,7 @@ bool QmlBoxModel::MainWindow::alwaysOnTop() const {
 /** ***************************************************************************/
 void QmlBoxModel::MainWindow::setAlwaysOnTop(bool alwaysOnTop) {
 
-    settings_->setValue(CFG_ALWAYS_ON_TOP, alwaysOnTop);
+    plugin_->settings().setValue(CFG_ALWAYS_ON_TOP, alwaysOnTop);
 
     alwaysOnTop
             ? setFlags(flags() | Qt::WindowStaysOnTopHint)
@@ -393,7 +401,7 @@ bool QmlBoxModel::MainWindow::hideOnFocusLoss() const {
 
 /** ***************************************************************************/
 void QmlBoxModel::MainWindow::setHideOnFocusLoss(bool hideOnFocusLoss) {
-    settings_->setValue(CFG_HIDEONFOCUSLOSS, hideOnFocusLoss);
+    plugin_->settings().setValue(CFG_HIDEONFOCUSLOSS, hideOnFocusLoss);
     hideOnFocusLoss_ = hideOnFocusLoss;
 }
 
@@ -408,7 +416,7 @@ bool QmlBoxModel::MainWindow::showCentered() const {
 
 /** ***************************************************************************/
 void QmlBoxModel::MainWindow::setShowCentered(bool showCentered) {
-    settings_->setValue(CFG_CENTERED, showCentered);
+    plugin_->settings().setValue(CFG_CENTERED, showCentered);
     showCentered_ = showCentered;
 }
 
@@ -423,6 +431,6 @@ bool QmlBoxModel::MainWindow::hideOnClose() const {
 
 /** ***************************************************************************/
 void QmlBoxModel::MainWindow::setHideOnClose(bool hideOnClose) {
-    settings_->setValue(CFG_HIDE_ON_CLOSE, hideOnClose);
+    plugin_->settings().setValue(CFG_HIDE_ON_CLOSE, hideOnClose);
     hideOnClose_ = hideOnClose;
 }

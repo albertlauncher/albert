@@ -31,13 +31,15 @@ struct QmlStyleSpec {
     QString mainComponent;
 };
 
+class FrontendPlugin;
+
 class MainWindow final : public QQuickView
 {
     Q_OBJECT
 
 public:
 
-    MainWindow(QSettings *settings, QWindow *parent = 0);
+    MainWindow(FrontendPlugin *plugin, QWindow *parent = 0);
     ~MainWindow();
 
     QString input();
@@ -45,13 +47,13 @@ public:
     void setModel(QAbstractItemModel* model);
 
     const std::vector<QmlStyleSpec> &availableStyles() const;
-    QStringList availableProperties();
+    QStringList settableProperties();
 
     QVariant property(const char *name) const;
     void setProperty(const char *attribute, const QVariant &value);
 
-    QStringList availablePresets();
-    void setPreset(const QString& name);
+    QStringList availableThemes();
+    void setTheme(const QString& name);
 
     void setSource(const QUrl & url);
 
@@ -79,7 +81,7 @@ protected:
     QIdentityProxyModel model_;
     std::vector<QmlStyleSpec> styles_;
     QFileSystemWatcher watcher_;
-    QSettings *settings_;
+    FrontendPlugin *plugin_;
 
 signals:
 

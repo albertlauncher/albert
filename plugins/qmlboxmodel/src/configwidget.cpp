@@ -71,12 +71,13 @@ QmlBoxModel::ConfigWidget::ConfigWidget(MainWindow *mainWindow, QWidget *parent,
         if ( style.mainComponent == mainWindow_->source().toString() )
             ui.comboBox_style->setCurrentIndex(ui.comboBox_style->count()-1);
     }
-    updatePresets();
+    updateThemes();
 
     connect(ui.comboBox_style, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            this, &ConfigWidget::onStyleChanged);
+
+    connect(ui.comboBox_themes, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
             this, &ConfigWidget::onThemeChanged);
-    connect(ui.comboBox_presets, static_cast<void (QComboBox::*)(const QString &)>(&QComboBox::currentIndexChanged),
-            this, &ConfigWidget::onPresetChanged);
 
     // PROPERTY EDITOR
     connect(ui.toolButton_propertyEditor, &QToolButton::clicked, mainWindow_, [this](){
@@ -88,36 +89,36 @@ QmlBoxModel::ConfigWidget::ConfigWidget(MainWindow *mainWindow, QWidget *parent,
 
 
 /** ***************************************************************************/
-void QmlBoxModel::ConfigWidget::onThemeChanged(int i) {
-    // Apply the theme
+void QmlBoxModel::ConfigWidget::onStyleChanged(int i) {
+    // Apply the style
     mainWindow_->setSource(mainWindow_->availableStyles()[static_cast<size_t>(i)].mainComponent);
-    updatePresets();
+    updateThemes();
 }
 
 
 /** ***************************************************************************/
-void QmlBoxModel::ConfigWidget::onPresetChanged(const QString &text) {
-    mainWindow_->setPreset(text);
+void QmlBoxModel::ConfigWidget::onThemeChanged(const QString &text) {
+    mainWindow_->setTheme(text);
 }
 
 
 /** ***************************************************************************/
-void QmlBoxModel::ConfigWidget::updatePresets() {
+void QmlBoxModel::ConfigWidget::updateThemes() {
 
-    ui.comboBox_presets->blockSignals(true);
+    ui.comboBox_themes->blockSignals(true);
 
-    ui.comboBox_presets->clear();
+    ui.comboBox_themes->clear();
 
     // Add disabled placeholder item
-    ui.comboBox_presets->addItem("Choose preset...");
-    const QStandardItemModel* model = qobject_cast<const QStandardItemModel*>(ui.comboBox_presets->model());
+    ui.comboBox_themes->addItem("Choose theme...");
+    const QStandardItemModel* model = qobject_cast<const QStandardItemModel*>(ui.comboBox_themes->model());
     QStandardItem* item = model->item(0);
     item->setEnabled(false);
-    ui.comboBox_presets->insertSeparator(1);
+    ui.comboBox_themes->insertSeparator(1);
 
-    // Add presets
-    ui.comboBox_presets->addItems(mainWindow_->availablePresets());
+    // Add themes
+    ui.comboBox_themes->addItems(mainWindow_->availableThemes());
 
-    ui.comboBox_presets->blockSignals(false);
+    ui.comboBox_themes->blockSignals(false);
 
 }
