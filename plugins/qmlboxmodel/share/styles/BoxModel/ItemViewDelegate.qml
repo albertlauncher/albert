@@ -1,13 +1,12 @@
-import QtQuick 2.0
+import QtQuick 2.5
 import QtGraphicalEffects 1.0
 
 Item {
-    property ListView actionsListView: actionsListView
+    property int animationDuration: 150
 
     id: listItem
     width: parent.width
     height: Math.max(listItemIcon.height, listItemTextArea.height)
-
 
     FontLoader {
         id: font
@@ -19,7 +18,6 @@ Item {
         onClicked: resultsList.currentIndex = index
         onDoubleClicked: root.activate()
     }
-
 
     Image {
         id: listItemIcon
@@ -46,9 +44,9 @@ Item {
         samples: 8
         color: "#80000000"
         visible: false
-        Behavior on verticalOffset { NumberAnimation{ } }
-        Behavior on horizontalOffset { NumberAnimation{ } }
-        Behavior on radius { NumberAnimation{ } }
+        Behavior on verticalOffset { NumberAnimation{ duration: animationDuration } }
+        Behavior on horizontalOffset { NumberAnimation{ duration: animationDuration } }
+        Behavior on radius { NumberAnimation{ duration: animationDuration } }
         source: listItemIcon
     }
     Desaturate {
@@ -57,7 +55,7 @@ Item {
         width: source.width
         height: source.height
         desaturation: listItem.ListView.isCurrentItem ? 0 : 0.25
-        Behavior on desaturation { NumberAnimation{ } }
+        Behavior on desaturation { NumberAnimation{ duration: animationDuration } }
         source: sunkenListItemIcon
     }
 
@@ -79,7 +77,7 @@ Item {
             elide: Text.ElideRight
             color: listItem.ListView.isCurrentItem ? highlight_color : foreground_color
             font.pixelSize: item_title_fontsize
-            Behavior on color { ColorAnimation{ duration: 100 } }
+            Behavior on color { ColorAnimation{ duration: animationDuration } }
          }
         Text {
             id: subTextId
@@ -90,11 +88,11 @@ Item {
             elide: Text.ElideRight
             color: listItem.ListView.isCurrentItem ? highlight_color : foreground_color
             font.pixelSize: item_description_fontsize
-            Behavior on color { ColorAnimation{ duration: 100 } }
+            Behavior on color { ColorAnimation{ duration: animationDuration } }
             Behavior on text {
                 SequentialAnimation {
                     PropertyAction  { }
-                    NumberAnimation { target: subTextId; property: "opacity"; to: 1; duration: 250 }
+                    NumberAnimation { target: subTextId; property: "opacity"; to: 1; duration: animationDuration }
                 }
             }
         }
