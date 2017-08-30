@@ -17,7 +17,7 @@ Item {
     MouseArea {
         anchors.fill: parent
         onClicked: resultsList.currentIndex = index
-        onDoubleClicked: activate()
+        onDoubleClicked: root.activate()
     }
 
 
