@@ -17,6 +17,20 @@ var settableProperties = [
 ];
 
 var presets = {
+    "Tiffany": {
+        "input_fontsize": 36,
+        "item_title_fontsize": 26,
+        "item_description_fontsize": 12,
+        "icon_size": 48,
+        "max_items": 5,
+        "space": 6,
+        "settingsbutton_size": 16,
+        "window_width": 640,
+        "background_color": "#e2f2fa",
+        "foreground_color": "#73BDE4",
+        "highlight_color": "#a47a51",
+        "border_color": "#1d6a87"
+    },
     "Bright": {
         "input_fontsize": 36,
         "item_title_fontsize": 26,
@@ -82,10 +96,10 @@ var presets = {
         "space": 6,
         "settingsbutton_size": 16,
         "window_width": 640,
-        "background_color": "#FFFFFF",
+        "background_color": "#f0f0f0",
         "foreground_color": "#808080",
-        "highlight_color": "#80FF00",
-        "border_color": "#80FF00"
+        "highlight_color": "#78f000",
+        "border_color": "#78f000"
     },
     "BrightBlue": {
         "input_fontsize": 36,
