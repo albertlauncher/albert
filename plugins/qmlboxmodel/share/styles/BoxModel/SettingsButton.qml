@@ -1,13 +1,10 @@
-import QtQuick 2.0
-import QtQuick.Controls 2.1
+import QtQuick 2.5
 import QtGraphicalEffects 1.0
 
-
 Item {
-
+    id: root
     property color color
     property color hoverColor
-    property color pressedColor
     property int size
     signal rightClicked()
     signal leftClicked()
@@ -17,20 +14,15 @@ Item {
 
     Rectangle {
         id: gearcolor
-        anchors.fill: parent
-        color: color
-        Behavior on color {
-           ColorAnimation {
-               duration: 1500
-               easing.type: Easing.OutCubic
-           }
-       }
+        anchors.fill: gearmask
+        color: root.color
+        Behavior on color { ColorAnimation { duration: 3000; easing.type: Easing.OutExpo } }
         visible: false
     }
     Image {
         id: gearmask
         source: "gear.svg"
-        anchors.fill: parent
+        anchors.fill: gear
         sourceSize.width: width*2
         sourceSize.height: height*2
         smooth: true
@@ -50,6 +42,7 @@ Item {
         }
     }
     MouseArea {
+        id: mouseArea
         anchors.fill: parent
         hoverEnabled: true
         acceptedButtons: Qt.LeftButton | Qt.RightButton
@@ -59,9 +52,12 @@ Item {
             else if  ( mouse.button === Qt.RightButton )
                 rightClicked()
         }
-        onEntered: gearcolor.color=hoverColor
-        onExited: gearcolor.color=color
-        onPressed: gearcolor.color=pressedColor
-        onReleased: gearcolor.color=hoverColor
     }
+
+    states: State {
+        name: "hovered"
+        when: mouseArea.containsMouse
+        PropertyChanges { target: gearcolor; color: root.hoverColor }
+    }
+
 }

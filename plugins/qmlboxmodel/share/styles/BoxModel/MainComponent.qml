@@ -1,4 +1,4 @@
-﻿import QtQuick 2.1
+﻿import QtQuick 2.5
 import QtQuick.Controls 1.0
 import QtGraphicalEffects 1.0
 import "presets.js" as Presets
@@ -46,6 +46,8 @@ FocusScope {
             height: content.height+2*content.anchors.margins
             radius: space*2+4
             color: background_color
+            Behavior on color { ColorAnimation { duration: 1500; easing.type: Easing.OutCubic } }
+            Behavior on border.color { ColorAnimation { duration: 1500; easing.type: Easing.OutCubic } }
             border.color: border_color
             border.width: space
 
@@ -139,7 +141,6 @@ FocusScope {
                 size: settingsbutton_size
                 color: background_color
                 hoverColor: border_color
-                pressedColor: highlight_color
                 onLeftClicked: settingsWidgetRequested()
                 onRightClicked: menu.popup()
                 anchors {
