@@ -29,6 +29,13 @@
 #include <QQmlEngine>
 #include <QQuickItem>
 #include "mainwindow.h"
+#ifdef __unix__
+#include <X11/extensions/shape.h>
+#undef KeyPress
+#undef KeyRelease
+#undef FocusOut
+#include <QtX11Extras/QX11Info>
+#endif
 
 namespace {
 const QString CFG_CENTERED        = "showCentered";
@@ -324,6 +331,34 @@ bool QmlBoxModel::MainWindow::event(QEvent *event) {
     default:break;
     }
     return QQuickView::event(event);
+}
+
+
+
+/** ***************************************************************************/
+void QmlBoxModel::MainWindow::resizeEvent(QResizeEvent *event) {
+
+#ifdef __unix__
+    QObject *rect = rootObject()->findChild<QObject*>("frame");
+    if ( rect ){
+        // Keep the input shape consistent
+        int shape_event_base, shape_error_base;
+        if (XShapeQueryExtension(QX11Info::display(), &shape_event_base, &shape_error_base)) {
+
+            Region region = XCreateRegion();
+            XRectangle rectangle;
+            rectangle.x      = static_cast<int16_t>(rect->property("x").toUInt());
+            rectangle.y      = static_cast<int16_t>(rect->property("y").toUInt());
+            rectangle.width  = static_cast<uint16_t>(rect->property("width").toUInt());
+            rectangle.height = static_cast<uint16_t>(rect->property("height").toUInt());
+            XUnionRectWithRegion(&rectangle, region, region);
+            XShapeCombineRegion(QX11Info::display(), winId(), ShapeInput, 0, 0, region, ShapeSet);
+            XDestroyRegion(region);
+        }
+    }
+#endif
+
+    QQuickView::resizeEvent(event);
 }
 
 

@@ -70,6 +70,7 @@ public:
 protected:
 
     bool event(QEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 
     bool showCentered_;
     bool hideOnFocusLoss_;
