@@ -6,6 +6,7 @@ import "themes.js" as Themes
 FocusScope {
 
     id: root
+
     width: frame.width+2*preferences.shadow_size
     height: frame.height+2*preferences.shadow_size
     focus: true
@@ -19,7 +20,6 @@ FocusScope {
         source: "fonts/Roboto-Thin.ttf"
         onStatusChanged: if (loader.status === FontLoader.Ready) preferences.font_name = fontname
     }
-
 
     Rectangle {
 
@@ -36,8 +36,8 @@ FocusScope {
             height: content.height+2*content.anchors.margins
             radius: preferences.radius
             color: preferences.background_color
-            Behavior on color { ColorAnimation { duration: 1500; easing.type: Easing.OutCubic } }
-            Behavior on border.color { ColorAnimation { duration: 1500; easing.type: Easing.OutCubic } }
+            Behavior on color { ColorAnimation { duration: preferences.animationDuration; easing.type: Easing.OutCubic } }
+            Behavior on border.color { ColorAnimation { duration: preferences.animationDuration; easing.type: Easing.OutCubic } }
             border.color: preferences.border_color
             border.width: preferences.border_size
 
@@ -53,7 +53,11 @@ FocusScope {
             Column {
 
                 id: content
-                anchors { top: parent.top; left: parent.left; right: parent.right; margins: preferences.spacing*2 }
+                anchors {
+                    top: parent.top
+                    left: parent.left
+                    right: parent.right
+                    margins: preferences.border_size+preferences.padding }
                 spacing: preferences.spacing
 
                 HistoryTextInput {
@@ -61,8 +65,6 @@ FocusScope {
                     anchors {
                         left: parent.left;
                         right: parent.right;
-                        rightMargin: 4;
-                        leftMargin: 4;
                     }
                     clip: true
                     color: preferences.input_color
@@ -77,7 +79,7 @@ FocusScope {
                         id: cursor
                         Rectangle { width: 1
                             height: parent.height
-                            color: preferences.foreground_color
+                            color: preferences.cursor_color
                         }
                         SequentialAnimation on opacity {
                             loops: Animation.Infinite;
@@ -102,10 +104,12 @@ FocusScope {
                             textColor: preferences.foreground_color
                             highlightColor: preferences.highlight_color
                             fontName: preferences.font_name
+                            animationDuration: preferences.animationDuration
                         }
                     }
                     Keys.onEnterPressed: activate()
                     Keys.onReturnPressed: activate()
+                    onCurrentIndexChanged: if (root.state==="detailsView") root.state=""
                 }  // resultsList (ListView)
 
                 DesktopListView {
@@ -123,7 +127,7 @@ FocusScope {
                         elide: Text.ElideRight
                         font.pixelSize: (preferences.item_description_fontsize+preferences.item_title_fontsize)/2
                         color: ListView.isCurrentItem ? preferences.highlight_color : preferences.foreground_color
-                        Behavior on color { ColorAnimation{ duration: 100 } }
+                        Behavior on color { ColorAnimation{ duration: preferences.animationDuration } }
                         MouseArea {
                             anchors.fill: parent
                             onClicked: actionsListView.currentIndex = index
@@ -147,8 +151,8 @@ FocusScope {
                 anchors {
                     top: parent.top
                     right: parent.right
-                    topMargin: 2*preferences.spacing
-                    rightMargin: 2*preferences.spacing
+                    topMargin: preferences.padding+preferences.border_size
+                    rightMargin: preferences.padding+preferences.border_size
                 }
 
                 Menu {
@@ -203,7 +207,6 @@ FocusScope {
 
     states : State {
         name: "detailsView"
-        PropertyChanges { target: resultsList; enabled: false }
         PropertyChanges { target: actionsListView; visible: true  }
         PropertyChanges { target: historyTextInput; Keys.forwardTo: [root, actionsListView] }
         StateChangeScript {
