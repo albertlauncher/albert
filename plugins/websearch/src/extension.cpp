@@ -276,6 +276,9 @@ shared_ptr<Core::Item> buildWebsearchItem(const Websearch::SearchEngine &se, con
 
     return item;
 }
+
+static constexpr const char * ENGINES_FILE_NAME = "engines.json";
+
 }
 
 
@@ -307,7 +310,7 @@ Websearch::Extension::Extension()
     // Move config file from old location to new. (data -> config) TODO: REMOVE in 0.14
     QString oldpath = QDir(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation))
             .filePath(QString("%1.json").arg(Core::Plugin::id()));
-    QString enginesJson = configLocation().filePath("engines.json");
+    QString enginesJson = configLocation().filePath(ENGINES_FILE_NAME);
     if ( QFile::exists(oldpath) ) {
         if ( QFile::exists(enginesJson) )
             QFile::remove(oldpath);
@@ -430,9 +433,7 @@ void Websearch::Extension::setEngines(const std::vector<Websearch::SearchEngine>
     emit enginesChanged(d->searchEngines);
 
     // Serialize the engines
-    QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation))
-               .filePath(QString("%1.json").arg(Core::Plugin::id())));
-
+    QFile file(configLocation().filePath(ENGINES_FILE_NAME));
     if (file.open(QIODevice::WriteOnly)) {
         QJsonArray array;
         for ( const SearchEngine& searchEngine : d->searchEngines ) {
