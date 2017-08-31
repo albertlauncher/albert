@@ -310,7 +310,7 @@ function themes() {
     themes.Nerdy.item_description_fontsize = 12
     themes.Nerdy.icon_size = 32
     themes.Nerdy.max_items = 10
-    themes.Nerdy.spacing = 3
+    themes.Nerdy.spacing = 4
     themes.Nerdy.radius = 8
     themes.Nerdy.border_size = 1
     themes.Nerdy.settingsbutton_size = 14
