@@ -35,6 +35,7 @@
 #undef KeyPress
 #undef KeyRelease
 #undef FocusOut
+#undef Status
 #include <QtX11Extras/QX11Info>
 #endif
 
@@ -52,6 +53,8 @@ const QString CFG_WND_POS         = "windowPosition";
 const QString PLUGIN_ID           = "org.albert.frontend.boxmodel.qml";
 const QString STYLE_MAIN_NAME     = "MainComponent.qml";
 const QString STYLE_CONFIG_NAME   = "style_properties.ini";
+const QString PREF_OBJ_NAME       = "preferences";
+const QString FRAME_OBJ_NAME      = "frame";
 }
 
 /** ***************************************************************************/
@@ -70,18 +73,77 @@ QmlBoxModel::MainWindow::MainWindow(FrontendPlugin *plugin, QWindow *parent) : Q
     rootContext()->setContextProperty("history", &history_);
     rootContext()->setContextProperty("resultsModel", &model_);
 
+    // Quit application when qml signals quit
     connect(engine(), SIGNAL(quit()), QCoreApplication::instance(), SLOT(quit()));
+
+    // When component is ready load the saved properties
+    connect(this, &QQuickView::statusChanged, this, [this](QQuickView::Status status){
+        if ( status == QQuickView::Status::Ready ){
+
+            // Get root object
+            if (!rootObject()){
+                qWarning() << "Could not retrieve settableProperties: There is no root object.";
+                return;
+            }
+
+            // Forward signals
+            connect(rootObject(), SIGNAL(inputChanged(QString)),
+                    this, SIGNAL(inputChanged(QString)));
+
+            connect(rootObject(), SIGNAL(settingsWidgetRequested()),
+                    this, SIGNAL(settingsWidgetRequested()));
+
+            connect(rootObject(), SIGNAL(settingsWidgetRequested()),
+                    this, SLOT(hide()));
+
+            // Get preferences object
+            QObject *preferencesObject = rootObject()->findChild<QObject*>(PREF_OBJ_NAME);
+            if (!preferencesObject){
+                qWarning() << qPrintable(QString("Could not retrieve settableProperties: "
+                                                 "There is no object named '%1'.").arg(PREF_OBJ_NAME));
+                return;
+            }
+
+            // Load the style properties in the group of this style id
+            QSettings s(plugin_->configLocation().filePath(STYLE_CONFIG_NAME), QSettings::Format::IniFormat);
+            s.beginGroup(QFileInfo(source().toString()).dir().dirName());
+            for (const QString &prop : settableProperties())
+                if (s.contains(prop))
+                    preferencesObject->setProperty(prop.toLatin1().data(), s.value(prop));
+        }
+    });
+
+    // Reload if source file changed
+    connect(&watcher_, &QFileSystemWatcher::fileChanged,
+            [this](){
+        qDebug() << "QML file reloaded.";
+        QUrl url = source();
+        setSource(QUrl());
+        engine()->clearComponentCache();
+        setSource(url);
+        watcher_.addPath(url.toString());
+    });
+
+    // Center window between each hide and show
+    connect(this, &QQuickView::visibilityChanged, [this](QWindow::Visibility visibility){
+        if ( visibility == QWindow::Visibility::Hidden )
+            if ( showCentered_ ){
+                QDesktopWidget *dw = QApplication::desktop();
+                setPosition(dw->availableGeometry(dw->screenNumber(QCursor::pos()))
+                            .center()-QPoint(width()/2,256));
+            }
+    });
 
     QStringList pluginDataPaths = QStandardPaths::locateAll(QStandardPaths::AppDataLocation,
                                                             "org.albert.frontend.boxmodel.qml",
                                                             QStandardPaths::LocateDirectory);
 
-    // Add the shared modules to the lookup path
-    for (const QString &pluginDataPath : pluginDataPaths){
-        QDir pluginDataDir = QDir(pluginDataPath);
-        if ( pluginDataDir.exists("shared") )
-            engine()->addImportPath(pluginDataDir.filePath("shared"));
-    }
+//    // Add the shared modules to the lookup path
+//    for (const QString &pluginDataPath : pluginDataPaths){
+//        QDir pluginDataDir = QDir(pluginDataPath);
+//        if ( pluginDataDir.exists("shared") )
+//            engine()->addImportPath(pluginDataDir.filePath("shared"));
+//    }
 
     // Get style files
     QFileInfoList styles;
@@ -122,7 +184,7 @@ QmlBoxModel::MainWindow::MainWindow(FrontendPlugin *plugin, QWindow *parent) : Q
     connect(this, &MainWindow::xChanged, storeWinPos);
     connect(this, &MainWindow::yChanged, storeWinPos);
 
-    // Load settings
+    // Load window settings
     setPosition(plugin_->settings().value(CFG_WND_POS).toPoint());
     setShowCentered(plugin_->settings().value(CFG_CENTERED, DEF_CENTERED).toBool());
     setHideOnFocusLoss(plugin_->settings().value(CFG_HIDEONFOCUSLOSS, DEF_HIDEONFOCUSLOSS).toBool());
@@ -135,35 +197,14 @@ QmlBoxModel::MainWindow::MainWindow(FrontendPlugin *plugin, QWindow *parent) : Q
         plugin_->settings().setValue(CFG_STYLEPATH, styles_[0].mainComponent);
     }
 
-    // Reload qml if changed
-    connect(&watcher_, &QFileSystemWatcher::fileChanged,
-            [this](){
-        qDebug() << "QML file reloaded.";
-        QUrl url = source();
-        setSource(QUrl());
-        engine()->clearComponentCache();
-        setSource(url);
-        watcher_.addPath(url.toString());
-    });
-
-    //
-    connect(this, &QQuickView::visibilityChanged, [this](QWindow::Visibility visibility){
-        if ( visibility == QWindow::Visibility::Hidden )
-            if ( showCentered_ ){
-                QDesktopWidget *dw = QApplication::desktop();
-                setPosition(dw->availableGeometry(dw->screenNumber(QCursor::pos()))
-                            .center()-QPoint(width()/2,256));
-            }
-    });
 }
 
 
 /** ***************************************************************************/
 QmlBoxModel::MainWindow::~MainWindow() {
-    // Save settings
-
     qDebug() << "QML Box Model mainwindow destructor called";
 }
+
 
 /** ***************************************************************************/
 QString QmlBoxModel::MainWindow::input() {
@@ -191,18 +232,6 @@ void QmlBoxModel::MainWindow::setSource(const QUrl &url) {
     if ( url.isEmpty() )
         return;
 
-    // Connect the sigals
-    QObject *object = rootObject();
-
-    connect(object, SIGNAL(inputChanged(QString)),
-            this, SIGNAL(inputChanged(QString)));
-
-    connect(object, SIGNAL(settingsWidgetRequested()),
-            this, SIGNAL(settingsWidgetRequested()));
-
-    connect(object, SIGNAL(settingsWidgetRequested()),
-            this, SLOT(hide()));
-
     // Save the theme
     plugin_->settings().setValue(CFG_STYLEPATH, source().toString());
 
@@ -210,15 +239,6 @@ void QmlBoxModel::MainWindow::setSource(const QUrl &url) {
     if ( !watcher_.files().isEmpty() )
         watcher_.removePaths(watcher_.files());
     watcher_.addPath(url.toString());
-
-    // Load the style properties in the group of this style id
-    QSettings s(plugin_->configLocation().filePath(STYLE_CONFIG_NAME), QSettings::Format::IniFormat);
-    QString styleId = QFileInfo(source().toString()).dir().dirName();
-    s.beginGroup(styleId);
-    for (const QString &prop : settableProperties()){
-        if (s.contains(prop))
-            rootObject()->setProperty(prop.toLatin1().data(), s.value(prop));
-    }
 }
 
 
@@ -230,45 +250,113 @@ const std::vector<QmlBoxModel::QmlStyleSpec> &QmlBoxModel::MainWindow::available
 
 /** ***************************************************************************/
 QStringList QmlBoxModel::MainWindow::settableProperties() {
-    QVariant returnedValue;
-    QMetaObject::invokeMethod(rootObject(), "settableProperties",
-                              Q_RETURN_ARG(QVariant, returnedValue));
-    return returnedValue.toStringList();
+
+    // Get root object
+    if (!rootObject()){
+        qWarning() << "Could not retrieve settableProperties: There is no root object.";
+        return QStringList();
+    }
+
+    // Get preferences object
+    const QObject *preferencesObject = rootObject()->findChild<QObject*>(PREF_OBJ_NAME);
+    if (!preferencesObject){
+        qWarning() << qPrintable(QString("Could not retrieve settableProperties: "
+                                         "There is no object named '%1'.").arg(PREF_OBJ_NAME));
+        return QStringList();
+    }
+
+    // Get preferences object's meta object (Reflection yieh…)
+    const QMetaObject *preferencesMetaObject = preferencesObject->metaObject();
+    if (!preferencesMetaObject){
+        qWarning() << "Could not retrieve settableProperties: Fetching MetaObject failed.";
+        return QStringList();
+    }
+
+    // Get all properties of the object
+    QStringList settableProperties;
+    for (int i = 0; i < preferencesMetaObject->propertyCount(); i++)
+        settableProperties.append(preferencesMetaObject->property(i).name());
+
+    // QtObject type has a single property "objectName". Remove it.
+    settableProperties.removeAll("objectName");
+
+    return settableProperties;
 }
 
 
 /** ***************************************************************************/
 QVariant QmlBoxModel::MainWindow::property(const char *name) const {
-    return rootObject()->property(name);
+
+    // Get root object
+    if (!rootObject()){
+        qWarning() << "Could not retrieve settableProperties: There is no root object.";
+        return QVariant();
+    }
+
+    // Get preferences object
+    const QObject *preferencesObject = rootObject()->findChild<QObject*>(PREF_OBJ_NAME);
+    if (!preferencesObject){
+        qWarning() << qPrintable(QString("Could not retrieve settableProperties: "
+                                         "There is no object named '%1'.").arg(PREF_OBJ_NAME));
+        return QVariant();
+    }
+
+    return preferencesObject->property(name);
 }
 
 
 /** ***************************************************************************/
 void QmlBoxModel::MainWindow::setProperty(const char *attribute, const QVariant &value) {
-    // Create a settings instance
-    QSettings s(plugin_->configLocation().filePath(STYLE_CONFIG_NAME), QSettings::Format::IniFormat);
-    QString themeId = QFileInfo(source().toString()).dir().dirName();
-    s.beginGroup(themeId);
-    s.setValue(attribute, value);
-    rootObject()->setProperty(attribute, value);
-    rootObject()->update();
-}
 
+    // Create the settings instance of the decicated file in config location
+    QSettings s(plugin_->configLocation().filePath(STYLE_CONFIG_NAME), QSettings::Format::IniFormat);
+    s.beginGroup(QFileInfo(source().toString()).dir().dirName());
+    s.setValue(attribute, value);
+
+    // Get root object
+    if (!rootObject()) {
+        qWarning() << "Could not retrieve settableProperties: There is no root object.";
+        return;
+    }
+
+    // Get preferences object
+    QObject *preferencesObject = rootObject()->findChild<QObject*>(PREF_OBJ_NAME);
+    if (!preferencesObject) {
+        qWarning() << qPrintable(QString("Could not retrieve settableProperties: "
+                                         "There is no object named '%1'.").arg(PREF_OBJ_NAME));
+        return;
+    }
+
+    // Set the property
+    preferencesObject->setProperty(attribute, value);
+}
 
 
 /** ***************************************************************************/
 QStringList QmlBoxModel::MainWindow::availableThemes() {
+
+    // Get root object
+    if (!rootObject()){
+        qWarning() << "Could not retrieve settableProperties: There is no root object.";
+        return QStringList();
+    }
+
     QVariant returnedValue;
-    QMetaObject::invokeMethod(rootObject(), "availableThemes",
-                              Q_RETURN_ARG(QVariant, returnedValue));
+    QMetaObject::invokeMethod(rootObject(), "availableThemes", Q_RETURN_ARG(QVariant, returnedValue));
     return returnedValue.toStringList();
 }
-
 
 
 /** ***************************************************************************/
 void QmlBoxModel::MainWindow::setTheme(const QString &name){
 
+    // Get root object
+    if (!rootObject()) {
+        qWarning() << "Could not retrieve settableProperties: There is no root object.";
+        return;
+    }
+
+    // Let qml apply the theme
     QMetaObject::invokeMethod(rootObject(), "setTheme", Q_ARG(QVariant, QVariant::fromValue(name)));
 
     // Save all current poperties in the group with this style id
@@ -280,12 +368,10 @@ void QmlBoxModel::MainWindow::setTheme(const QString &name){
 }
 
 
-
 /** ***************************************************************************/
 void QmlBoxModel::MainWindow::setModel(QAbstractItemModel *model) {
     model_.setSourceModel(model);
 }
-
 
 
 /** ***************************************************************************/
@@ -342,40 +428,48 @@ bool QmlBoxModel::MainWindow::event(QEvent *event) {
 }
 
 
-
 /** ***************************************************************************/
 void QmlBoxModel::MainWindow::resizeEvent(QResizeEvent *event) {
 
+    QQuickView::resizeEvent(event);
+
 #ifdef __unix__
-    QObject *rect = rootObject()->findChild<QObject*>("frame");
-    if ( rect ){
+
+    // Get root object
+    if (!rootObject()) {
+        qWarning() << "Could not retrieve settableProperties: There is no root object.";
+        return;
+    }
+
+    // Get preferences object
+    QObject *frameObject = rootObject()->findChild<QObject*>(FRAME_OBJ_NAME, Qt::FindChildrenRecursively);
+    if (frameObject) {
         // Keep the input shape consistent
         int shape_event_base, shape_error_base;
         if (XShapeQueryExtension(QX11Info::display(), &shape_event_base, &shape_error_base)) {
 
             Region region = XCreateRegion();
             XRectangle rectangle;
-            rectangle.x      = static_cast<int16_t>(rect->property("x").toUInt());
-            rectangle.y      = static_cast<int16_t>(rect->property("y").toUInt());
-            rectangle.width  = static_cast<uint16_t>(rect->property("width").toUInt());
-            rectangle.height = static_cast<uint16_t>(rect->property("height").toUInt());
+            rectangle.x      = static_cast<int16_t>(frameObject->property("x").toUInt());
+            rectangle.y      = static_cast<int16_t>(frameObject->property("y").toUInt());
+            rectangle.width  = static_cast<uint16_t>(frameObject->property("width").toUInt());
+            rectangle.height = static_cast<uint16_t>(frameObject->property("height").toUInt());
             XUnionRectWithRegion(&rectangle, region, region);
             XShapeCombineRegion(QX11Info::display(), winId(), ShapeInput, 0, 0, region, ShapeSet);
             XDestroyRegion(region);
         }
-    }
+    } else
+        qWarning() << qPrintable(QString("Could not retrieve settableProperties: "
+                                         "There is no object named '%1'.").arg(FRAME_OBJ_NAME));
 #endif
 
-    QQuickView::resizeEvent(event);
 }
-
 
 
 /** ***************************************************************************/
 bool QmlBoxModel::MainWindow::alwaysOnTop() const {
     return flags() & Qt::WindowStaysOnTopHint;
 }
-
 
 
 /** ***************************************************************************/
@@ -391,12 +485,10 @@ void QmlBoxModel::MainWindow::setAlwaysOnTop(bool alwaysOnTop) {
 }
 
 
-
 /** ***************************************************************************/
 bool QmlBoxModel::MainWindow::hideOnFocusLoss() const {
     return hideOnFocusLoss_;
 }
-
 
 
 /** ***************************************************************************/
@@ -406,12 +498,10 @@ void QmlBoxModel::MainWindow::setHideOnFocusLoss(bool hideOnFocusLoss) {
 }
 
 
-
 /** ***************************************************************************/
 bool QmlBoxModel::MainWindow::showCentered() const {
     return showCentered_;
 }
-
 
 
 /** ***************************************************************************/
@@ -421,12 +511,10 @@ void QmlBoxModel::MainWindow::setShowCentered(bool showCentered) {
 }
 
 
-
 /** ***************************************************************************/
 bool QmlBoxModel::MainWindow::hideOnClose() const {
     return hideOnClose_;
 }
-
 
 
 /** ***************************************************************************/

@@ -4,41 +4,21 @@ import QtGraphicalEffects 1.0
 import "themes.js" as Themes
 
 FocusScope {
-    // ▼ Setfle properties of this style ▼
-    property color background_color
-    property color foreground_color
-    property color input_color
-    property color selection_color
-    property color highlight_color
-    property color border_color
-    property color settingsbutton_color
-    property color settingsbutton_hover_color
-    property color shadow_color
-    property int border_size
-    property int settingsbutton_size
-    property int input_fontsize
-    property int icon_size
-    property int shadow_size: 40
-    property int item_title_fontsize
-    property int item_description_fontsize
-    property int max_items
-    property int spacing
-    property int radius
-    property int window_width
-
-
-    // ▲ Settable properties of this style ▲
-    property int currentModifiers
-    property string font_name: fontLoader.name
-    FontLoader {
-        id: fontLoader
-        source: "fonts/Roboto-Thin.ttf"
-    }
 
     id: root
-    width: frame.width+2*shadow_size
-    height: frame.height+2*shadow_size
+    width: frame.width+2*preferences.shadow_size
+    height: frame.height+2*preferences.shadow_size
     focus: true
+
+    Preferences {
+        id: preferences
+        objectName: "preferences"
+    }
+
+    FontLoader {
+        source: "fonts/Roboto-Thin.ttf"
+        onStatusChanged: if (loader.status === FontLoader.Ready) preferences.font_name = fontname
+    }
 
 
     Rectangle {
@@ -47,33 +27,34 @@ FocusScope {
         color:"#80ff0000"
 
         Rectangle {
+
             id: frame
             objectName: "frame" // for C++
-            x:shadow_size;
-            y:shadow_size
-            width: window_width
+            x: preferences.shadow_size;
+            y: preferences.shadow_size
+            width: preferences.window_width
             height: content.height+2*content.anchors.margins
-            radius: root.radius
-            color: background_color
+            radius: preferences.radius
+            color: preferences.background_color
             Behavior on color { ColorAnimation { duration: 1500; easing.type: Easing.OutCubic } }
             Behavior on border.color { ColorAnimation { duration: 1500; easing.type: Easing.OutCubic } }
-            border.color: border_color
-            border.width: border_size
+            border.color: preferences.border_color
+            border.width: preferences.border_size
 
             layer.enabled: true
             layer.effect: DropShadow {
                 transparentBorder: true
-                verticalOffset: shadow_size/3
-                radius: shadow_size
-                samples: shadow_size*2
-                color: shadow_color
+                verticalOffset: preferences.shadow_size/3
+                radius: preferences.shadow_size
+                samples: preferences.shadow_size*2
+                color: preferences.shadow_color
             }
 
             Column {
 
                 id: content
-                anchors { top: parent.top; left: parent.left; right: parent.right; margins: root.spacing*2 }
-                spacing: root.spacing
+                anchors { top: parent.top; left: parent.left; right: parent.right; margins: preferences.spacing*2 }
+                spacing: preferences.spacing
 
                 HistoryTextInput {
                     id: historyTextInput
@@ -84,19 +65,19 @@ FocusScope {
                         leftMargin: 4;
                     }
                     clip: true
-                    color: input_color
+                    color: preferences.input_color
                     focus: true
-                    font.pixelSize: input_fontsize
-                    font.family: font_name
+                    font.pixelSize: preferences.input_fontsize
+                    font.family: preferences.font_name
                     selectByMouse: true
-                    selectedTextColor: background_color
-                    selectionColor: selection_color
+                    selectedTextColor: preferences.background_color
+                    selectionColor: preferences.selection_color
                     Keys.forwardTo: [root, resultsList]
                     cursorDelegate : Item {
                         id: cursor
                         Rectangle { width: 1
                             height: parent.height
-                            color: foreground_color
+                            color: preferences.foreground_color
                         }
                         SequentialAnimation on opacity {
                             loops: Animation.Infinite;
@@ -110,9 +91,19 @@ FocusScope {
                     id: resultsList
                     width: parent.width
                     model: resultsModel
-                    itemCount: max_items
-                    spacing: root.spacing
-                    delegate: Component { ItemViewDelegate{ } }
+                    itemCount: preferences.max_items
+                    spacing: preferences.spacing
+                    delegate: Component {
+                        ItemViewDelegate{
+                            iconSize: preferences.icon_size
+                            spacing: preferences.spacing
+                            textSize: preferences.item_title_fontsize
+                            descriptionSize: preferences.item_description_fontsize
+                            textColor: preferences.foreground_color
+                            highlightColor: preferences.highlight_color
+                            fontName: preferences.font_name
+                        }
+                    }
                     Keys.onEnterPressed: activate()
                     Keys.onReturnPressed: activate()
                 }  // resultsList (ListView)
@@ -122,16 +113,16 @@ FocusScope {
                     width: parent.width
                     model: ListModel { id: actionsModel }
                     itemCount: actionsModel.count
-                    spacing: root.spacing
+                    spacing: preferences.spacing
                     delegate: Text {
                         horizontalAlignment: Text.AlignHCenter
                         width: parent.width
                         text: name
                         textFormat: Text.PlainText
-                        font.family: font_name
+                        font.family: preferences.font_name
                         elide: Text.ElideRight
-                        font.pixelSize: (item_description_fontsize+item_title_fontsize)/2
-                        color: ListView.isCurrentItem ? highlight_color : foreground_color
+                        font.pixelSize: (preferences.item_description_fontsize+preferences.item_title_fontsize)/2
+                        color: ListView.isCurrentItem ? preferences.highlight_color : preferences.foreground_color
                         Behavior on color { ColorAnimation{ duration: 100 } }
                         MouseArea {
                             anchors.fill: parent
@@ -148,16 +139,16 @@ FocusScope {
 
             SettingsButton {
                 id: settingsButton
-                size: settingsbutton_size
-                color: settingsbutton_color
-                hoverColor: settingsbutton_hover_color
+                size: preferences.settingsbutton_size
+                color: preferences.settingsbutton_color
+                hoverColor: preferences.settingsbutton_hover_color
                 onLeftClicked: settingsWidgetRequested()
                 onRightClicked: menu.popup()
                 anchors {
                     top: parent.top
                     right: parent.right
-                    topMargin: 2*root.spacing
-                    rightMargin: 2*root.spacing
+                    topMargin: 2*preferences.spacing
+                    rightMargin: 2*preferences.spacing
                 }
 
                 Menu {
@@ -283,12 +274,11 @@ FocusScope {
         }
     }
 
-    function settableProperties() { return Themes.settableProperties }
     function availableThemes() { return Object.keys(Themes.themes()) }
     function setTheme(themeName) {
         var themeObject = Themes.themes()[themeName]
         for (var property in themeObject)
             if (themeObject.hasOwnProperty(property))
-                root[property] = themeObject[property]
+                preferences[property] = themeObject[property]
     }
 }

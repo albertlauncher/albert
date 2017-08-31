@@ -2,16 +2,20 @@ import QtQuick 2.5
 import QtGraphicalEffects 1.0
 
 Item {
-    property int animationDuration: 150
 
     id: listItem
+
+    property int iconSize
+    property int spacing
+    property int textSize
+    property int descriptionSize
+    property color textColor
+    property color highlightColor
+    property string fontName
+    property int animationDuration: 150
+
     width: parent.width
     height: Math.max(listItemIcon.height, listItemTextArea.height)
-
-    FontLoader {
-        id: font
-        source: "fonts/Roboto-Thin.ttf"
-    }
 
     MouseArea {
         anchors.fill: parent
@@ -26,10 +30,10 @@ Item {
             var path = itemDecorationRole
             return ( path[0] === ":" ) ? "qrc"+path : path
         }
-        width: icon_size
-        height: icon_size
-        sourceSize.width: icon_size*2
-        sourceSize.height: icon_size*2
+        width: listItem.iconSize
+        height: listItem.iconSize
+        sourceSize.width: listItem.iconSize*2
+        sourceSize.height: listItem.iconSize*2
         cache: true
         fillMode: Image.PreserveAspectFit
         visible: false
@@ -64,7 +68,7 @@ Item {
         id: listItemTextArea
         anchors {
             left: desaturatedSunkenListItemIcon.right
-            leftMargin: root.spacing
+            leftMargin: listItem.spacing
             right: parent.right
             verticalCenter: parent.verticalCenter
         }
@@ -73,10 +77,10 @@ Item {
             width: parent.width
             text: itemTextRole
             textFormat: Text.PlainText
-            font.family: font_name
             elide: Text.ElideRight
-            color: listItem.ListView.isCurrentItem ? highlight_color : foreground_color
-            font.pixelSize: item_title_fontsize
+            color: listItem.ListView.isCurrentItem ? listItem.highlightColor : listItem.textColor
+            font.family: listItem.fontName
+            font.pixelSize: listItem.textSize
             Behavior on color { ColorAnimation{ duration: animationDuration } }
          }
         Text {
@@ -84,10 +88,10 @@ Item {
             width: parent.width
             text: itemToolTipRole
             textFormat: Text.PlainText
-            font.family: font_name
             elide: Text.ElideRight
-            color: listItem.ListView.isCurrentItem ? highlight_color : foreground_color
-            font.pixelSize: item_description_fontsize
+            color: listItem.ListView.isCurrentItem ? listItem.highlightColor : listItem.textColor
+            font.family: listItem.fontName
+            font.pixelSize: listItem.descriptionSize
             Behavior on color { ColorAnimation{ duration: animationDuration } }
             Behavior on text {
                 SequentialAnimation {
