@@ -43,7 +43,7 @@
       <item row="1" column="0">
        <widget class="QLabel" name="label_themes">
         <property name="text">
-         <string>Themes:</string>
+         <string>Apply theme:</string>
         </property>
        </widget>
       </item>
