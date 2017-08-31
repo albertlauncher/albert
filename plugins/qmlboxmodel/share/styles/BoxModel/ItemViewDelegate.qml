@@ -64,7 +64,7 @@ Item {
         id: listItemTextArea
         anchors {
             left: desaturatedSunkenListItemIcon.right
-            leftMargin: space
+            leftMargin: root.spacing
             right: parent.right
             verticalCenter: parent.verticalCenter
         }

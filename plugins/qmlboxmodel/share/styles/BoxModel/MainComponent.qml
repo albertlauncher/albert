@@ -5,10 +5,16 @@ import "themes.js" as Themes
 
 FocusScope {
     // ▼ Setfle properties of this style ▼
-    property color border_color
     property color background_color
     property color foreground_color
+    property color input_color
+    property color selection_color
     property color highlight_color
+    property color border_color
+    property color settingsbutton_color
+    property color settingsbutton_hover_color
+    property color shadow_color
+    property int border_size
     property int settingsbutton_size
     property int input_fontsize
     property int icon_size
@@ -16,8 +22,11 @@ FocusScope {
     property int item_title_fontsize
     property int item_description_fontsize
     property int max_items
-    property int space
+    property int spacing
+    property int radius
     property int window_width
+
+
     // ▲ Settable properties of this style ▲
     property int currentModifiers
     property string font_name: fontLoader.name
@@ -44,12 +53,12 @@ FocusScope {
             y:shadow_size
             width: window_width
             height: content.height+2*content.anchors.margins
-            radius: space*2+4
+            radius: root.radius
             color: background_color
             Behavior on color { ColorAnimation { duration: 1500; easing.type: Easing.OutCubic } }
             Behavior on border.color { ColorAnimation { duration: 1500; easing.type: Easing.OutCubic } }
             border.color: border_color
-            border.width: space
+            border.width: border_size
 
             layer.enabled: true
             layer.effect: DropShadow {
@@ -57,14 +66,14 @@ FocusScope {
                 verticalOffset: shadow_size/3
                 radius: shadow_size
                 samples: shadow_size*2
-                color: "#30000000"
+                color: shadow_color
             }
 
             Column {
 
                 id: content
-                anchors { top: parent.top; left: parent.left; right: parent.right; margins: space*2 }
-                spacing: space
+                anchors { top: parent.top; left: parent.left; right: parent.right; margins: root.spacing*2 }
+                spacing: root.spacing
 
                 HistoryTextInput {
                     id: historyTextInput
@@ -75,13 +84,13 @@ FocusScope {
                         leftMargin: 4;
                     }
                     clip: true
-                    color: foreground_color
+                    color: input_color
                     focus: true
                     font.pixelSize: input_fontsize
                     font.family: font_name
                     selectByMouse: true
                     selectedTextColor: background_color
-                    selectionColor: highlight_color
+                    selectionColor: selection_color
                     Keys.forwardTo: [root, resultsList]
                     cursorDelegate : Item {
                         id: cursor
@@ -102,7 +111,7 @@ FocusScope {
                     width: parent.width
                     model: resultsModel
                     itemCount: max_items
-                    spacing: space
+                    spacing: spacing
                     delegate: Component { ItemViewDelegate{ } }
                     Keys.onEnterPressed: activate()
                     Keys.onReturnPressed: activate()
@@ -139,15 +148,15 @@ FocusScope {
             SettingsButton {
                 id: settingsButton
                 size: settingsbutton_size
-                color: background_color
-                hoverColor: border_color
+                color: settingsbutton_color
+                hoverColor: settingsbutton_hover_color
                 onLeftClicked: settingsWidgetRequested()
                 onRightClicked: menu.popup()
                 anchors {
                     top: parent.top
                     right: parent.right
-                    topMargin: 2*space
-                    rightMargin: 2*space
+                    topMargin: 2*root.spacing
+                    rightMargin: 2*root.spacing
                 }
 
                 Menu {
@@ -274,20 +283,11 @@ FocusScope {
     }
 
     function settableProperties() { return Themes.settableProperties }
-    function availableThemes() { return Object.keys(Themes.themes) }
-    function setTheme(p) {
-        var theme = Themes.themes[p]
-        input_fontsize = theme.input_fontsize
-        item_title_fontsize = theme.item_title_fontsize
-        item_description_fontsize = theme.item_description_fontsize
-        icon_size = theme.icon_size
-        max_items = theme.max_items
-        space = theme.space
-        settingsbutton_size = theme.settingsbutton_size
-        window_width = theme.window_width
-        background_color = theme.background_color
-        foreground_color = theme.foreground_color
-        highlight_color = theme.highlight_color
-        border_color = theme.border_color
+    function availableThemes() { return Object.keys(Themes.themes()) }
+    function setTheme(themeName) {
+        var themeObject = Themes.themes()[themeName]
+        for (var property in themeObject)
+            if (themeObject.hasOwnProperty(property))
+                root[property] = themeObject[property]
     }
 }
