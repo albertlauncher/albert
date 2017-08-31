@@ -111,7 +111,7 @@ FocusScope {
                     width: parent.width
                     model: resultsModel
                     itemCount: max_items
-                    spacing: spacing
+                    spacing: root.spacing
                     delegate: Component { ItemViewDelegate{ } }
                     Keys.onEnterPressed: activate()
                     Keys.onReturnPressed: activate()
@@ -122,6 +122,7 @@ FocusScope {
                     width: parent.width
                     model: ListModel { id: actionsModel }
                     itemCount: actionsModel.count
+                    spacing: root.spacing
                     delegate: Text {
                         horizontalAlignment: Text.AlignHCenter
                         width: parent.width
