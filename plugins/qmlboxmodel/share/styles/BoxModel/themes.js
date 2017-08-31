@@ -14,6 +14,7 @@ function themes() {
     themes.Bright.radius = 16
     themes.Bright.border_size = 6
     themes.Bright.settingsbutton_size = 16
+    themes.Bright.animation_duration = 200
     themes.Bright.window_width = 640
     themes.Bright.font_name = "Roboto"
     themes.Bright.shadow_size = 30

@@ -20,7 +20,7 @@ Item {
     MouseArea {
         anchors.fill: parent
         onClicked: resultsList.currentIndex = index
-        onDoubleClicked: root.activate()
+        onDoubleClicked:  (mouse.modifiers===Qt.NoModifier) ? root.activate() : root.activate(-mouse.modifiers)
     }
 
     Image {
@@ -86,7 +86,7 @@ Item {
         Text {
             id: subTextId
             width: parent.width
-            text: itemToolTipRole
+            text: (listItem.ListView.isCurrentItem && root.state==="fallback") ? itemFallbackRole : itemToolTipRole
             textFormat: Text.PlainText
             elide: Text.ElideRight
             color: listItem.ListView.isCurrentItem ? listItem.highlightColor : listItem.textColor
@@ -95,20 +95,31 @@ Item {
             Behavior on color { ColorAnimation{ duration: animationDuration } }
             Behavior on text {
                 SequentialAnimation {
+                    NumberAnimation { target: subTextId; property: "opacity"; from:1; to: 0; duration: animationDuration/2 }
                     PropertyAction  { }
-                    NumberAnimation { target: subTextId; property: "opacity"; to: 1; duration: animationDuration }
+                    NumberAnimation { target: subTextId; property: "opacity"; from:0; to: 1; duration: animationDuration/2 }
                 }
             }
         }
     }  // listItemTextArea (Column)
 
 
-    // This function activates the "action" of item
+    /*
+     * The function to activate an item
+     * Currently work as follows:
+     * action is undefined -> default action
+     * action 0<= are the alternative actions
+     * action 0> activation while modifier is pressed (-action is the number of the modifier)
+     *   currently only Meta is supported
+     */
     function activate(/*optional*/ action){
         if (typeof action === 'undefined')
             itemActionRole = 0
         else
-            itemAltActionsRole = action
+            if (action < 0 && -action==Qt.MetaModifier)
+                itemFallbackRole = 0
+            else
+                itemAltActionsRole = action
     }
 
     function actionsList() {

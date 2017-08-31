@@ -25,6 +25,6 @@ QtObject {
     property int radius
     property int window_width
     property string font_name
-    property int animationDuration: 150
+    property int animation_duration
 
 }

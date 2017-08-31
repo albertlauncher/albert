@@ -36,8 +36,8 @@ FocusScope {
             height: content.height+2*content.anchors.margins
             radius: preferences.radius
             color: preferences.background_color
-            Behavior on color { ColorAnimation { duration: preferences.animationDuration; easing.type: Easing.OutCubic } }
-            Behavior on border.color { ColorAnimation { duration: preferences.animationDuration; easing.type: Easing.OutCubic } }
+            Behavior on color { ColorAnimation { duration: preferences.animation_duration; easing.type: Easing.OutCubic } }
+            Behavior on border.color { ColorAnimation { duration: preferences.animation_duration; easing.type: Easing.OutCubic } }
             border.color: preferences.border_color
             border.width: preferences.border_size
 
@@ -57,7 +57,8 @@ FocusScope {
                     top: parent.top
                     left: parent.left
                     right: parent.right
-                    margins: preferences.border_size+preferences.padding }
+                    margins: preferences.border_size+preferences.padding
+                }
                 spacing: preferences.spacing
 
                 HistoryTextInput {
@@ -104,11 +105,11 @@ FocusScope {
                             textColor: preferences.foreground_color
                             highlightColor: preferences.highlight_color
                             fontName: preferences.font_name
-                            animationDuration: preferences.animationDuration
+                            animationDuration: preferences.animation_duration
                         }
                     }
-                    Keys.onEnterPressed: activate()
-                    Keys.onReturnPressed: activate()
+                    Keys.onEnterPressed: (event.modifiers===Qt.NoModifier) ? activate() : activate(-event.modifiers)
+                    Keys.onReturnPressed: (event.modifiers===Qt.NoModifier) ? activate() : activate(-event.modifiers)
                     onCurrentIndexChanged: if (root.state==="detailsView") root.state=""
                 }  // resultsList (ListView)
 
@@ -118,6 +119,12 @@ FocusScope {
                     model: ListModel { id: actionsModel }
                     itemCount: actionsModel.count
                     spacing: preferences.spacing
+                    Behavior on visible {
+                        SequentialAnimation {
+                            PropertyAction  { }
+                            NumberAnimation { target: actionsListView; property: "opacity"; from:0; to: 1; duration: preferences.animation_duration }
+                        }
+                    }
                     delegate: Text {
                         horizontalAlignment: Text.AlignHCenter
                         width: parent.width
@@ -127,7 +134,7 @@ FocusScope {
                         elide: Text.ElideRight
                         font.pixelSize: (preferences.item_description_fontsize+preferences.item_title_fontsize)/2
                         color: ListView.isCurrentItem ? preferences.highlight_color : preferences.foreground_color
-                        Behavior on color { ColorAnimation{ duration: preferences.animationDuration } }
+                        Behavior on color { ColorAnimation{ duration: preferences.animation_duration } }
                         MouseArea {
                             anchors.fill: parent
                             onClicked: actionsListView.currentIndex = index
@@ -173,6 +180,7 @@ FocusScope {
         }  // frame (Rectangle)
     }  // shadowArea (Item)
 
+    onActiveFocusChanged: state=""
 
     // Key handling
     Keys.onPressed: {
@@ -188,38 +196,58 @@ FocusScope {
             state == ""
             historyTextInput.prevIteration()
         }
+        else if ( event.key === Qt.Key_Meta ) {
+            if (resultsList.currentIndex === -1)
+                resultsList.currentIndex = 0
+            state="fallback"
+        }
         else if ( event.key === Qt.Key_Comma && event.modifiers === Qt.AltModifier ) {
             settingsWidgetRequested()
         }
         else if ( event.key === Qt.Key_Alt && resultsList.count > 0 ) {
             if (resultsList.currentIndex === -1)
                 resultsList.currentIndex = 0
-            state = (state === "detailsView") ? "" : "detailsView"
+            state = "detailsView"
         }
         else if ( event.key === Qt.Key_Tab && resultsList.count > 0 ) {
             if ( resultsList.currentIndex === -1 )
                 resultsList.currentIndex = 0
             historyTextInput.text = resultsList.model.data(resultsList.model.index(resultsList.currentIndex, 0),3) // OMG magic numbers hacked in
-        }
-        else
-            event.accepted = false
+        } else event.accepted = false
+    }
+    Keys.onReleased: {
+        event.accepted = true
+        if ( event.key === Qt.Key_Meta )
+            state=""
+        else if ( event.key === Qt.Key_Alt )
+            state=""
+        else event.accepted = false
+
     }
 
-    states : State {
-        name: "detailsView"
-        PropertyChanges { target: actionsListView; visible: true  }
-        PropertyChanges { target: historyTextInput; Keys.forwardTo: [root, actionsListView] }
-        StateChangeScript {
-            name: "actionLoaderScript"
-            script: {
-                actionsModel.clear()
-                var actionTexts = resultsList.currentItem.actionsList();
-                for ( var i = 0; i < actionTexts.length; i++ )
-                    actionsModel.append({"name": actionTexts[i]});
-                actionsListView.currentIndex = 0
+    states : [
+        State {
+            name: ""
+        },
+        State {
+            name: "fallback"
+        },
+        State {
+            name: "detailsView"
+            PropertyChanges { target: actionsListView; visible: true  }
+            PropertyChanges { target: historyTextInput; Keys.forwardTo: [root, actionsListView] }
+            StateChangeScript {
+                name: "actionLoaderScript"
+                script: {
+                    actionsModel.clear()
+                    var actionTexts = resultsList.currentItem.actionsList();
+                    for ( var i = 0; i < actionTexts.length; i++ )
+                        actionsModel.append({"name": actionTexts[i]});
+                    actionsListView.currentIndex = 0
+                }
             }
         }
-    }
+    ]
 
     Connections {
         target: historyTextInput
