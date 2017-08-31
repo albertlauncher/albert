@@ -168,5 +168,31 @@ function themes() {
     themes.Nerdy.settingsbutton_color       = "#303030"
     themes.Nerdy.settingsbutton_hover_color = themes.Nerdy.highlight_color
 
+    themes.Spotlight = {}
+    themes.Spotlight.icon_size = 38
+    themes.Spotlight.input_fontsize = 28
+    themes.Spotlight.item_title_fontsize = 20
+    themes.Spotlight.item_description_fontsize = 12
+    themes.Spotlight.max_items = 5
+    themes.Spotlight.spacing = 6
+    themes.Spotlight.shadow_size = 30
+    themes.Spotlight.radius = 8
+    themes.Spotlight.padding = 8
+    themes.Spotlight.border_size = 0
+    themes.Spotlight.settingsbutton_size = 15
+    themes.Spotlight.window_width = 600
+    themes.Spotlight.animation_duration = 200
+    themes.Spotlight.font_name = "Roboto"
+    themes.Spotlight.background_color = "#ffffff"
+    themes.Spotlight.foreground_color = "#808080"
+    themes.Spotlight.highlight_color = "#303030"
+    themes.Spotlight.border_color = "#ffffff"
+    themes.Spotlight.input_color = "#303030"
+    themes.Spotlight.cursor_color = "#303030"
+    themes.Spotlight.selection_color = "#c0c0c0"
+    themes.Spotlight.settingsbutton_color = "#ffffff"
+    themes.Spotlight.settingsbutton_hover_color = "#a0a0a0"
+    themes.Spotlight.shadow_color = "#70000000"
+
     return themes
 }
