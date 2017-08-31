@@ -81,8 +81,8 @@ QmlBoxModel::ConfigWidget::ConfigWidget(MainWindow *mainWindow, QWidget *parent,
 
     // PROPERTY EDITOR
     connect(ui.toolButton_propertyEditor, &QToolButton::clicked, mainWindow_, [this](){
-        PropertyEditor *pe = new PropertyEditor(mainWindow_);
-        qDebug() << pe->windowFlags();
+        PropertyEditor *pe = new PropertyEditor(mainWindow_, this);
+        pe->setWindowModality(Qt::WindowModality::WindowModal);
         pe->show();
     });
 }
