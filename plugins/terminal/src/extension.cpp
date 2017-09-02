@@ -120,7 +120,18 @@ void Terminal::Extension::handleQuery(Core::Query * query) {
 
     // Iterate over matches
     set<QString>::iterator it = lower_bound(d->index.begin(), d->index.end(), potentialProgram);
+
+    // Get the
+    QString commonPrefix;
+    if ( it != d->index.end() )
+        commonPrefix = *it;
+
     while (it != d->index.end() && it->startsWith(potentialProgram)){
+
+        // Update common prefix
+        auto mismatchindexes = std::mismatch(it->begin()+potentialProgram.size()-1, it->end(),
+                                             commonPrefix.begin()+potentialProgram.size()-1);
+        commonPrefix.resize(std::distance(it->begin(), mismatchindexes.first));
 
         QString commandlineString = QString("%1 %2").arg(*it, argsString);
 
@@ -140,13 +151,17 @@ void Terminal::Extension::handleQuery(Core::Query * query) {
         shared_ptr<StandardItem> item = make_shared<StandardItem>(*it);
         item->setText(commandlineString);
         item->setSubtext(QString("Run '%1' in your shell").arg(commandlineString));
-        item->setCompletionString(QString(">%1").arg(commandlineString));
         item->setIconPath(d->iconPath);
         item->setActions(move(actions));
 
         results.emplace_back(item, 0);
         ++it;
     }
+
+    // Apply completion string to items
+    QString completion = QString(">%1").arg(commonPrefix);
+    for (pair<shared_ptr<Core::Item>,short> &match: results)
+        std::static_pointer_cast<StandardItem>(match.first)->setCompletionString(completion);
 
     // Build Item
     vector<shared_ptr<Action>> actions;
