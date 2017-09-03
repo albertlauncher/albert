@@ -72,6 +72,7 @@ public:
 protected:
 
     bool event(QEvent *event) override;
+    bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
     void resizeEvent(QResizeEvent *event) override;
 
     bool showCentered_;

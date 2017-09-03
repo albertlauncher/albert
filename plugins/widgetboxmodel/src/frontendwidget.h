@@ -82,7 +82,7 @@ protected:
     void mousePressEvent(QMouseEvent * event) override;
     void mouseReleaseEvent(QMouseEvent * event) override;
     void resizeEvent(QResizeEvent* event) override;
-    bool event(QEvent *event) override;
+    bool nativeEvent(const QByteArray &eventType, void *message, long *) override;
     bool eventFilter(QObject*, QEvent *event) override;
 
     void setShowActions(bool showActions);

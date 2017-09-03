@@ -31,6 +31,7 @@
 #include "mainwindow.h"
 #include "frontendplugin.h"
 #ifdef __unix__
+#include "xcb/xcb.h"
 #include <X11/extensions/shape.h>
 #undef KeyPress
 #undef KeyRelease
@@ -391,41 +392,80 @@ bool QmlBoxModel::MainWindow::event(QEvent *event) {
             return true;
         }
         break;
-
-    case QEvent::FocusOut:
-        /* This is a horribly hackish but working solution.
-
-         A triggered key grab on X11 steals the focus of the window for short
-         period of time. This may result in the following annoying behaviour:
-         When the hotkey is pressed and X11 steals the focus there arises a
-         race condition between the hotkey event and the focus out event.
-         When the app is visible and the focus out event is delivered the app
-         gets hidden. Finally when the hotkey is received the app gets shown
-         again although the user intended to hide the app with the hotkey.
-
-         Solutions:
-         Although X11 differs between the two focus out events, qt does not.
-         One might install a native event filter and use the XCB structs to
-         decide which type of event is delivered, but this approach is not
-         platform independent (unless designed so explicitely, but its a
-         hassle). The behaviour was expected when the app hides on:
-
-         (mode==XCB_NOTIFY_MODE_GRAB && detail==XCB_NOTIFY_DETAIL_NONLINEAR)||
-          (mode==XCB_NOTIFY_MODE_NORMAL && detail==XCB_NOTIFY_DETAIL_NONLINEAR)
-         (Check Xlib Programming Manual)
-
-         The current, much simpler but less elegant solution is to delay the
-         hiding a few milliseconds, so that the hotkey event will always be
-         handled first. */
-        if (static_cast<QFocusEvent*>(event)->reason() == Qt::ActiveWindowFocusReason
-                && hideOnFocusLoss_ && !isActive()){
-            QTimer::singleShot(50, this, &MainWindow::hide);
-        }
-        break;
     default:break;
     }
     return QQuickView::event(event);
 }
+
+
+#ifdef Q_OS_LINUX
+/** ****************************************************************************
+ * @brief MainWidget::nativeEvent
+ *
+ * The purpose of this function is to hide in special casesonly.
+ */
+bool QmlBoxModel::MainWindow::nativeEvent(const QByteArray &eventType, void *message, long *)
+{
+    if (eventType == "xcb_generic_event_t")
+    {
+        xcb_generic_event_t* event = static_cast<xcb_generic_event_t *>(message);
+        switch (event->response_type & 127)
+        {
+        case XCB_FOCUS_OUT: {
+            /* This is a horribly hackish but working solution.
+
+             A triggered key grab on X11 steals the focus of the window for short
+             period of time. This may result in the following annoying behaviour:
+             When the hotkey is pressed and X11 steals the focus there arises a
+             race condition between the hotkey event and the focus out event.
+             When the app is visible and the focus out event is delivered the app
+             gets hidden. Finally when the hotkey is received the app gets shown
+             again although the user intended to hide the app with the hotkey.
+
+             Solutions:
+             Although X11 differs between the two focus out events, qt does not.
+             One might install a native event filter and use the XCB structs to
+             decide which type of event is delivered, but this approach is not
+             platform independent (unless designed so explicitely, but its a
+             hassle). The behaviour was expected when the app hides on:
+
+             (mode==XCB_NOTIFY_MODE_GRAB && detail==XCB_NOTIFY_DETAIL_NONLINEAR)||
+              (mode==XCB_NOTIFY_MODE_NORMAL && detail==XCB_NOTIFY_DETAIL_NONLINEAR)
+             (Check Xlib Programming Manual)
+
+             Another much simpler but less elegant solution is to delay the
+             hiding a few milliseconds, so that the hotkey event will always be
+             handled first. */
+
+            xcb_focus_out_event_t *fe = reinterpret_cast<xcb_focus_out_event_t*>(event);
+//            qDebug() << "MainWidget::nativeEvent::XCB_FOCUS_OUT\t";
+//            switch (fe->mode) {
+//            case XCB_NOTIFY_MODE_NORMAL: qDebug() << "XCB_NOTIFY_MODE_NORMAL";break;
+//            case XCB_NOTIFY_MODE_GRAB: qDebug() << "XCB_NOTIFY_MODE_GRAB";break;
+//            case XCB_NOTIFY_MODE_UNGRAB: qDebug() << "XCB_NOTIFY_MODE_UNGRAB";break;
+//            case XCB_NOTIFY_MODE_WHILE_GRABBED: qDebug() << "XCB_NOTIFY_MODE_WHILE_GRABBED";break;
+//            }
+//            switch (fe->detail) {
+//            case XCB_NOTIFY_DETAIL_ANCESTOR: qDebug() << "ANCESTOR";break;
+//            case XCB_NOTIFY_DETAIL_INFERIOR: qDebug() << "INFERIOR";break;
+//            case XCB_NOTIFY_DETAIL_NONE: qDebug() << "NONE";break;
+//            case XCB_NOTIFY_DETAIL_NONLINEAR: qDebug() << "NONLINEAR";break;
+//            case XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL: qDebug() << "NONLINEAR_VIRTUAL";break;
+//            case XCB_NOTIFY_DETAIL_POINTER: qDebug() << "POINTER";break;break;
+//            case XCB_NOTIFY_DETAIL_POINTER_ROOT: qDebug() << "POINTER_ROOT";
+//            case XCB_NOTIFY_DETAIL_VIRTUAL: qDebug() << "VIRTUAL";break;
+//            }
+            if ((/*(fe->mode==XCB_NOTIFY_MODE_GRAB && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR) ||*/
+                 (fe->mode==XCB_NOTIFY_MODE_NORMAL && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR )) &&
+                    hideOnFocusLoss_)
+                hide();
+            return true;
+         }
+        }
+    }
+    return false;
+}
+#endif
 
 
 /** ***************************************************************************/
