@@ -20,7 +20,14 @@ ListView {
 
     Keys.onPressed: {
         event.accepted = true
-        if ( event.key === Qt.Key_PageUp && event.modifiers === Qt.NoModifier && count > 0 )
+        if ( event.key === Qt.Key_Up && event.modifiers === Qt.NoModifier && count > 0 )
+            decrementCurrentIndex()
+        else if ( event.key === Qt.Key_Down && event.modifiers === Qt.NoModifier && count > 0 )
+            if (currentIndex === -1)
+                currentIndex = Math.min(1, count-1)
+            else
+                incrementCurrentIndex()
+        else if ( event.key === Qt.Key_PageUp && event.modifiers === Qt.NoModifier && count > 0 )
             currentIndex = Math.max(currentIndex - itemCount, 0)
         else if ( event.key === Qt.Key_PageDown && event.modifiers === Qt.NoModifier && count > 0 )
             currentIndex = Math.min(currentIndex + itemCount, count-1)
