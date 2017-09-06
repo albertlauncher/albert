@@ -78,39 +78,41 @@ Files::ConfigWidget::ConfigWidget(Extension *_extension, QWidget *_parent)
      * Initialize the mime options
      */
 
-    if (extension->filters().contains("audio/*"))
+    QStringList filters = extension->filters();
+
+    if (filters.contains("audio/*"))
         ui.checkBox_audio->setCheckState(Qt::Checked);
-    else if (std::any_of(extension->filters().begin(), extension->filters().end(),
+    else if (std::any_of(filters.begin(), filters.end(),
                         [](const QString & str){ return str.startsWith("audio/"); }))
         ui.checkBox_audio->setCheckState(Qt::PartiallyChecked);
     else
         ui.checkBox_audio->setCheckState(Qt::Unchecked);
 
-    if (extension->filters().contains("video/*"))
+    if (filters.contains("video/*"))
         ui.checkBox_video->setCheckState(Qt::Checked);
-    else if (std::any_of(extension->filters().begin(), extension->filters().end(),
+    else if (std::any_of(filters.begin(), filters.end(),
                         [](const QString & str){ return str.startsWith("video/"); }))
         ui.checkBox_video->setCheckState(Qt::PartiallyChecked);
     else
         ui.checkBox_video->setCheckState(Qt::Unchecked);
 
-    if (extension->filters().contains("image/*"))
+    if (filters.contains("image/*"))
         ui.checkBox_image->setCheckState(Qt::Checked);
-    else if (std::any_of(extension->filters().begin(), extension->filters().end(),
+    else if (std::any_of(filters.begin(), filters.end(),
                          [](const QString & str){ return str.startsWith("image/"); }))
         ui.checkBox_image->setCheckState(Qt::PartiallyChecked);
     else
         ui.checkBox_image->setCheckState(Qt::Unchecked);
 
-    if (extension->filters().contains("application/*"))
+    if (filters.contains("application/*"))
         ui.checkBox_docs->setCheckState(Qt::Checked);
-    else if (std::any_of(extension->filters().begin(), extension->filters().end(),
+    else if (std::any_of(filters.begin(), filters.end(),
                          [](const QString & str){ return str.startsWith("application/"); }))
         ui.checkBox_docs->setCheckState(Qt::PartiallyChecked);
     else
         ui.checkBox_docs->setCheckState(Qt::Unchecked);
 
-    if (extension->filters().contains("inode/directory"))
+    if (filters.contains("inode/directory"))
         ui.checkBox_dirs->setCheckState(Qt::Checked);
     else
         ui.checkBox_dirs->setCheckState(Qt::Unchecked);
@@ -182,39 +184,41 @@ Files::ConfigWidget::ConfigWidget(Extension *_extension, QWidget *_parent)
             extension->setFilters(dialog.filters());
 
             // Set the shortcuts
-            if (extension->filters().contains("audio/*"))
+            QStringList filters = extension->filters();
+
+            if (filters.contains("audio/*"))
                 ui.checkBox_audio->setCheckState(Qt::Checked);
-            else if (std::any_of(extension->filters().begin(), extension->filters().end(),
+            else if (std::any_of(filters.begin(), filters.end(),
                                  [](const QString & str){ return str.startsWith("audio/"); }))
                 ui.checkBox_audio->setCheckState(Qt::PartiallyChecked);
             else
                 ui.checkBox_audio->setCheckState(Qt::Unchecked);
 
-            if (extension->filters().contains("video/*"))
+            if (filters.contains("video/*"))
                 ui.checkBox_video->setCheckState(Qt::Checked);
-            else if (std::any_of(extension->filters().begin(), extension->filters().end(),
+            else if (std::any_of(filters.begin(), filters.end(),
                                  [](const QString & str){ return str.startsWith("video/"); }))
                 ui.checkBox_video->setCheckState(Qt::PartiallyChecked);
             else
                 ui.checkBox_video->setCheckState(Qt::Unchecked);
 
-            if (extension->filters().contains("image/*"))
+            if (filters.contains("image/*"))
                 ui.checkBox_image->setCheckState(Qt::Checked);
-            else if (std::any_of(extension->filters().begin(), extension->filters().end(),
+            else if (std::any_of(filters.begin(), filters.end(),
                                  [](const QString & str){ return str.startsWith("image/"); }))
                 ui.checkBox_image->setCheckState(Qt::PartiallyChecked);
             else
                 ui.checkBox_image->setCheckState(Qt::Unchecked);
 
-            if (extension->filters().contains("application/*"))
+            if (filters.contains("application/*"))
                 ui.checkBox_docs->setCheckState(Qt::Checked);
-            else if (std::any_of(extension->filters().begin(), extension->filters().end(),
+            else if (std::any_of(filters.begin(), filters.end(),
                                  [](const QString & str){ return str.startsWith("application/"); }))
                 ui.checkBox_docs->setCheckState(Qt::PartiallyChecked);
             else
                 ui.checkBox_docs->setCheckState(Qt::Unchecked);
 
-            if (extension->filters().contains("inode/directory"))
+            if (filters.contains("inode/directory"))
                 ui.checkBox_dirs->setCheckState(Qt::Checked);
             else
                 ui.checkBox_dirs->setCheckState(Qt::Unchecked);

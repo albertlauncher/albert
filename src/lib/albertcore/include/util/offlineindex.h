@@ -28,11 +28,16 @@ class IndexableItem;
 class EXPORT_CORE OfflineIndex final {
 
 public:
+
     /**
      * @brief Contstructs a search
      * @param fuzzy Sets the type of the search. Defaults to false.
      */
     OfflineIndex(bool fuzzy = false);
+    OfflineIndex(const OfflineIndex &other) = delete;
+    OfflineIndex(OfflineIndex &&other);
+    OfflineIndex &operator=(const OfflineIndex & other) = delete;
+    OfflineIndex &operator=(OfflineIndex && other);
 
     /**
      * @brief Destructs the search
@@ -88,7 +93,9 @@ public:
     std::vector<std::shared_ptr<Core::IndexableItem>> search(const QString &req) const;
 
 private:
-    SearchBase *impl_;
+
+    std::unique_ptr<SearchBase> impl_;
+
 };
 
 }

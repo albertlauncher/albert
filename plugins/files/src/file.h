@@ -15,28 +15,19 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+#include <QString>
 #include <QMimeType>
 #include <map>
-#include <memory>
 #include <vector>
 #include "core/indexable.h"
-#include "core/item.h"
 
 namespace Files {
 
-class File final : public Core::IndexableItem
+class File : public Core::IndexableItem
 {
 public:
 
-    File() {}
-    File(QString path, QMimeType mimetype)
-        : path_(path), mimetype_(mimetype){}
-
-    /*
-     * Implementation of Item interface
-     */
-
-    QString id() const override { return path_; }
+    QString id() const override;
     QString text() const override;
     QString subtext() const override;
     QString completionString() const override;
@@ -44,21 +35,22 @@ public:
     std::vector<Core::IndexableItem::IndexString> indexStrings() const override;
     std::vector<std::shared_ptr<Core::Action>> actions() override;
 
-    /*
-     * Item specific members
-     */
+    /** Return the filename of the file */
+    virtual QString name() const = 0;
 
-    /** Return the path of the file */
-    const QString &path() const { return path_; }
+    /** Return the path exclusive the filename of the file */
+    virtual QString path() const = 0;
+
+    /** Return the path inclusive the filename of the file */
+    virtual QString filePath() const = 0;
 
     /** Return the mimetype of the file */
-    const QMimeType &mimetype() const { return mimetype_; }
+    virtual const QMimeType &mimetype() const = 0;
 
 private:
 
-    QString path_;
-    QMimeType mimetype_;
-    static std::map<QString, QString> iconCache_;
+    static std::map<QString,QString> iconCache_;
+
 };
 
 }

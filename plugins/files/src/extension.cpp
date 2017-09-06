@@ -21,7 +21,6 @@
 #include <QMessageBox>
 #include <QObject>
 #include <QPointer>
-#include <QRegularExpression>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QtConcurrent>
@@ -33,15 +32,15 @@
 #include <set>
 #include "configwidget.h"
 #include "file.h"
+#include "standardfile.h"
 #include "extension.h"
+#include "indextreenode.h"
 #include "core/query.h"
 #include "util/offlineindex.h"
 #include "util/standarditem.h"
 #include "util/standardaction.h"
-using std::pair;
-using std::shared_ptr;
-using std::vector;
 using namespace Core;
+using namespace std;
 
 
 namespace {
@@ -57,24 +56,30 @@ const char* CFG_FOLLOW_SYMLINKS = "follow_symlinks";
 const bool  DEF_FOLLOW_SYMLINKS = false;
 const char* CFG_SCAN_INTERVAL   = "scan_interval";
 const uint  DEF_SCAN_INTERVAL   = 60;
-const char* IGNOREFILE          = ".albertignore";
 
-struct IndexSettings {
-    QStringList rootDirs;
-    QStringList filters;
-    bool indexHidden;
-    bool followSymlinks;
+
+
+class OfflineIndexBuilderVisitor : public Files::Visitor {
+    Core::OfflineIndex &offlineIndex;
+public:
+    OfflineIndexBuilderVisitor(Core::OfflineIndex &offlineIndex)
+        : offlineIndex(offlineIndex) { }
+
+    void visit(Files::IndexTreeNode *node) override {
+        for ( const shared_ptr<Files::File> &item : node->items )
+            offlineIndex.add(item);
+    }
 };
 
-enum class PatternType {
-    Include,
-    Exclude
-};
 
-struct IgnoreEntry {
-    IgnoreEntry(QRegularExpression regex, PatternType type) : regex(regex), type(type) {}
-    QRegularExpression regex;
-    PatternType type;
+class CounterVisitor : public Files::Visitor {
+public:
+    uint itemCount = 0;
+    uint dirCount = 0;
+    void visit(Files::IndexTreeNode *node) override {
+        ++dirCount;
+        itemCount += node->items.size();
+    }
 };
 
 }
@@ -94,18 +99,19 @@ public:
 
     QPointer<ConfigWidget> widget;
 
-    vector<shared_ptr<File>> index;
+    QStringList indexRootDirs;
+    IndexSettings indexSettings;
+    map<QString, shared_ptr<IndexTreeNode>> indexTrees;
+    unique_ptr<QFutureWatcher<Core::OfflineIndex*>> futureWatcher;
     Core::OfflineIndex offlineIndex;
-    QFutureWatcher<vector<shared_ptr<File>>> futureWatcher;
     QTimer indexIntervalTimer;
     bool abort;
     bool rerun;
 
-    IndexSettings indexSettings;
 
     void finishIndexing();
     void startIndexing();
-    vector<shared_ptr<File>> indexFiles(const IndexSettings &indexSettings) const;
+    Core::OfflineIndex *indexFiles();
 };
 
 
@@ -114,7 +120,7 @@ public:
 void Files::Private::startIndexing() {
 
     // Abort and rerun
-    if ( futureWatcher.future().isRunning() ) {
+    if ( futureWatcher ) {
         emit q->statusInfo("Waiting for indexer to shut down ...");
         abort = true;
         rerun = true;
@@ -122,9 +128,9 @@ void Files::Private::startIndexing() {
     }
 
     // Run finishIndexing when the indexing thread finished
-    futureWatcher.disconnect();
-    QObject::connect(&futureWatcher, &QFutureWatcher<vector<shared_ptr<File>>>::finished,
-                     std::bind(&Private::finishIndexing, this));
+    futureWatcher.reset(new QFutureWatcher<Core::OfflineIndex*>);
+    QObject::connect(futureWatcher.get(), &QFutureWatcher<Core::OfflineIndex*>::finished,
+                     [this](){ this->finishIndexing(); });
 
     // Restart the timer (Index update may have been started manually)
     if (indexIntervalTimer.interval() != 0)
@@ -132,7 +138,7 @@ void Files::Private::startIndexing() {
 
     // Run the indexer thread
     qInfo() << "Start indexing files.";
-    futureWatcher.setFuture(QtConcurrent::run(this, &Private::indexFiles, indexSettings));
+    futureWatcher->setFuture(QtConcurrent::run(this, &Private::indexFiles));
 
     // Notification
     emit q->statusInfo("Indexing files ...");
@@ -145,19 +151,23 @@ void Files::Private::finishIndexing() {
 
     // In case of abortion the returned data is invalid
     if ( !abort ) {
-        // Get the thread results
-        index = futureWatcher.future().result();
-
-        // Rebuild the offline index
-        offlineIndex.clear();
-        for (const auto &item : index)
-            offlineIndex.add(item);
+        OfflineIndex *retval = futureWatcher->future().result();
+        if (retval) {
+            offlineIndex = std::move(*retval);
+            delete retval;
+        }
 
         // Notification
-        qInfo() << qPrintable(QString("Indexed %1 files.").arg(index.size()));
-        emit q->statusInfo(QString("%1 files indexed.").arg(index.size()));
+        CounterVisitor counterVisitor;
+        for (const auto & kv : indexTrees )
+            kv.second->accept(counterVisitor);
+        qInfo() << qPrintable(QString("Indexed %1 files in %2 directories.")
+                              .arg(counterVisitor.itemCount).arg(counterVisitor.dirCount));
+        emit q->statusInfo(QString("Indexed %1 files in %2 directories.")
+                           .arg(counterVisitor.itemCount).arg(counterVisitor.dirCount));
     }
 
+    futureWatcher.reset();
     abort = false;
 
     if ( rerun ) {
@@ -169,132 +179,58 @@ void Files::Private::finishIndexing() {
 
 
 /** ***************************************************************************/
-vector<shared_ptr<Files::File>>
-Files::Private::indexFiles(const IndexSettings &indexSettings) const {
+OfflineIndex* Files::Private::indexFiles() {
 
-    // Get a new index
-    std::vector<shared_ptr<File>> newIndex;
-    std::set<QString> indexedDirs;
-    QMimeDatabase mimeDatabase;
-    std::vector<QRegExp> mimeFilters;
-    for (const QString &re : indexSettings.filters)
-        mimeFilters.emplace_back(re, Qt::CaseInsensitive, QRegExp::Wildcard);
-
-    // Prepare the iterator properties
-    QDir::Filters filters = QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot;
-    if (indexSettings.indexHidden)
-        filters |= QDir::Hidden;
-
-    // Anonymous function that implemnents the index recursion
-    std::function<void(const QFileInfo&, vector<IgnoreEntry>)> indexRecursion =
-            [&](const QFileInfo& fileInfo, const vector<IgnoreEntry> &ignoreEntries){
-
-        if (abort) return;
-
-        const QString canonicalPath = fileInfo.canonicalFilePath();
-        const QMimeType mimetype = mimeDatabase.mimeTypeForFile(canonicalPath);
-        const QString mimeName = mimetype.name();
-
-        // If the file matches the index options, index it
-        if ( std::any_of(mimeFilters.begin(), mimeFilters.end(),
-                         [&](const QRegExp &re){ return re.exactMatch(mimeName); }) )
-            newIndex.push_back(std::make_shared<File>(canonicalPath, mimetype));
-
-        if (fileInfo.isDir()) {
-
-            emit q->statusInfo(QString("Indexing %1.").arg(canonicalPath));
-
-            // Skip if this dir has already been indexed
-            if ( indexedDirs.find(canonicalPath) != indexedDirs.end() )
-                return;
-
-            // Remember that this dir has been indexed to avoid loops
-            indexedDirs.insert(canonicalPath);
-
-            // Read the ignore file, see http://doc.qt.io/qt-5/qregexp.html#wildcard-matching
-            vector<IgnoreEntry> localIgnoreEntries = ignoreEntries;
-            QFile file(QDir(canonicalPath).filePath(IGNOREFILE));
-            if ( file.open(QIODevice::ReadOnly | QIODevice::Text) ) {
-                QTextStream in(&file);
-                while ( !in.atEnd() ) {
-                    QString pattern = QDir::cleanPath(in.readLine());
-
-                    if ( pattern.isEmpty() || pattern.startsWith("#") )
-                        continue;
-
-                    // Replace ** and * by their regex analogons
-                    pattern.replace(QRegularExpression("(?<!\\*)\\*(?!\\*)"), "[^\\/]*");
-                    pattern.replace(QRegularExpression("\\*{2,}"), ".*");
-
-                    // Determine pattern type
-                    PatternType patternType = PatternType::Exclude;
-                    if ( pattern.startsWith('!') ) {
-                        patternType = PatternType::Include;
-                        pattern = pattern.mid(1, -1);
-                    }
-
-                    // Respect files beginning with excalmation mark
-                    if ( pattern.startsWith("\\!") )
-                        pattern = pattern.mid(1, -1);
-
-                    if ( pattern.startsWith("/") ) {
-                        pattern = QString("^%1$").arg(QDir(fileInfo.filePath()).filePath(pattern.mid(1, -1)));
-                        localIgnoreEntries.emplace_back(QRegularExpression(pattern), patternType);
-                    } else {
-                        pattern = QString("%1$").arg(pattern);
-                        localIgnoreEntries.emplace_back(QRegularExpression(pattern), patternType);
-                    }
-                }
-                file.close();
-            }
-
-            // Index all children in the dir
-            QDirIterator dirIterator(canonicalPath, filters, QDirIterator::NoIteratorFlags);
-            while ( dirIterator.hasNext() ) {
-                dirIterator.next();
-                const QFileInfo & fileInfo = dirIterator.fileInfo();
-
-                // Skip if this file depending on ignore patterns
-                PatternType patternType = PatternType::Include;
-                for ( const IgnoreEntry &ignoreEntry : localIgnoreEntries )
-                    if ( ignoreEntry.regex.match(fileInfo.filePath()).hasMatch() )
-                        patternType = ignoreEntry.type;
-                if ( patternType == PatternType::Exclude )
-                    continue;
-
-                // Skip if this file is a symlink and we should skip symlinks
-                if ( fileInfo.isSymLink() && !indexSettings.followSymlinks )
-                    continue;
-
-                // Index this file
-                indexRecursion(fileInfo, localIgnoreEntries);
-            }
+    // Remove the subtrees not wanted anymore
+    for (auto& kv : this->indexTrees) {
+        if ( !indexRootDirs.contains(kv.first) ) {
+            kv.second->removeDownlinks();
+            this->indexTrees.erase(kv.first);
         }
-    };
-
-    // Start the indexing
-    for ( const QString &rootDir : indexSettings.rootDirs ) {
-        // Index rootdir, ignore ignorefile by default
-        vector<IgnoreEntry> ignores = {IgnoreEntry(
-                                       QRegularExpression(QString("%1$").arg(IGNOREFILE)),
-                                       PatternType::Exclude)};
-        indexRecursion(QFileInfo(rootDir), ignores);
-        if ( abort )
-            return vector<shared_ptr<Files::File>>();
     }
 
-    // Serialize data
-    QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).
-                   filePath(QString("%1.txt").arg(q->Core::Plugin::id())));
-    if ( file.open(QIODevice::WriteOnly|QIODevice::Text) ) {
-        qInfo() << qPrintable(QString("Serializing files to '%1'").arg(file.fileName()));
-        QTextStream out(&file);
-        for (const shared_ptr<File> &item : newIndex)
-            out << item->path() << endl << item->mimetype().name() << endl;
-    } else
-        qWarning() << qPrintable(QString("Could not write to file '%1': %2").arg(file.fileName(), file.errorString()));
+    // Start the indexing
+    for ( const QString &rootDir : indexRootDirs ) {
 
-    return newIndex;
+        qDebug() << qPrintable(QString("Indexing %1…").arg(rootDir));
+        emit q->statusInfo(QString("Indexing %1…").arg(rootDir));
+
+        // If this root dir does not exist create it
+        if ( !indexTrees.count(rootDir) )
+            indexTrees.emplace(rootDir, make_shared<IndexTreeNode>(rootDir));
+
+        // Update the root dir
+        indexTrees[rootDir]->update(abort, indexSettings);
+
+        if ( abort )
+            return nullptr;
+    }
+
+    indexSettings.setSettingsChangedSinceLastUpdate(false);
+
+
+    // Serialize data
+    qDebug() << "Serializing index data…";
+    emit q->statusInfo("Serializing index data…");
+    //    QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).
+    //                   filePath(QString("%1.txt").arg(q->Core::Plugin::id())));
+    //    if ( file.open(QIODevice::WriteOnly|QIODevice::Text) ) {
+    //        qInfo() << qPrintable(QString("Serializing files to '%1'").arg(file.fileName()));
+    //        QTextStream out(&file);
+    //        for (const shared_ptr<File> &item : newIndex)
+    //            out << item->path() << endl << item->mimetype().name() << endl;
+    //    } else
+    //        qWarning() << qPrintable(QString("Could not write to file '%1': %2").arg(file.fileName(), file.errorString()));
+
+
+    // Build offline index
+    qDebug() << "Building offline index…";
+    emit q->statusInfo("Building offline index…");
+    Core::OfflineIndex *offline = new Core::OfflineIndex;
+    OfflineIndexBuilderVisitor visitor(*offline);
+    for (auto& kv : this->indexTrees)
+        kv.second->accept(visitor);
+    return offline;
 }
 
 
@@ -308,33 +244,33 @@ Files::Extension::Extension()
       d(new Private(this)) {
 
     // Load settings
-    d->indexSettings.filters =  settings().value(CFG_FILTERS, DEF_FILTERS).toStringList();
-    d->indexSettings.indexHidden = settings().value(CFG_INDEX_HIDDEN, DEF_INDEX_HIDDEN).toBool();
-    d->indexSettings.followSymlinks = settings().value(CFG_FOLLOW_SYMLINKS, DEF_FOLLOW_SYMLINKS).toBool();
+    d->indexSettings.setFilters(settings().value(CFG_FILTERS, DEF_FILTERS).toStringList());
+    d->indexSettings.setIndexHidden(settings().value(CFG_INDEX_HIDDEN, DEF_INDEX_HIDDEN).toBool());
+    d->indexSettings.setFollowSymlinks(settings().value(CFG_FOLLOW_SYMLINKS, DEF_FOLLOW_SYMLINKS).toBool());
     d->offlineIndex.setFuzzy(settings().value(CFG_FUZZY, DEF_FUZZY).toBool());
     d->indexIntervalTimer.setInterval(settings().value(CFG_SCAN_INTERVAL, DEF_SCAN_INTERVAL).toInt()*60000); // Will be started in the initial index update
-    d->indexSettings.rootDirs = settings().value(CFG_PATHS).toStringList();
-    if (d->indexSettings.rootDirs.isEmpty())
-        restorePaths();
+    d->indexRootDirs = settings().value(CFG_PATHS, QDir::homePath()).toStringList();
+//    if (d->indexRootDirs.isEmpty())
+//        restorePaths();
 
-    // Deserialize data
-    QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).
-                   filePath(QString("%1.txt").arg(Core::Plugin::id())));
-    if (file.exists()) {
-        if (file.open(QIODevice::ReadOnly| QIODevice::Text)) {
-            qInfo() << qPrintable(QString("Deserializing files from '%1'.").arg(file.fileName()));
-            QTextStream in(&file);
-            QMimeDatabase mimedatabase;
-            while (!in.atEnd())
-                d->index.emplace_back(new File(in.readLine(), mimedatabase.mimeTypeForName(in.readLine())));
-            file.close();
+//    // Deserialize data
+//    QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).
+//                   filePath(QString("%1.txt").arg(Core::Plugin::id())));
+//    if (file.exists()) {
+//        if (file.open(QIODevice::ReadOnly| QIODevice::Text)) {
+//            qInfo() << qPrintable(QString("Deserializing files from '%1'.").arg(file.fileName()));
+//            QTextStream in(&file);
+//            QMimeDatabase mimedatabase;
+//            while (!in.atEnd())
+//                d->index.emplace_back(new File(in.readLine(), mimedatabase.mimeTypeForName(in.readLine())));
+//            file.close();
 
-            // Build the offline index
-            for (const auto &item : d->index)
-                d->offlineIndex.add(item);
-        } else
-            qWarning() << qPrintable(QString("Could not read from file '%1': %2").arg(file.fileName(), file.errorString()));
-    }
+//            // Build the offline index
+//            for (const auto &item : d->index)
+//                d->offlineIndex.add(item);
+//        } else
+//            qWarning() << qPrintable(QString("Could not read from file '%1': %2").arg(file.fileName(), file.errorString()));
+//    }
 
     // Index timer
     connect(&d->indexIntervalTimer, &QTimer::timeout, this, &Extension::updateIndex);
@@ -356,7 +292,10 @@ Files::Extension::~Extension() {
     // The indexer thread has sideeffects wait for termination
     d->abort = true;
     d->rerun = false;
-    d->futureWatcher.waitForFinished();
+    if ( d->futureWatcher ){
+        disconnect(d->futureWatcher.get(), 0, 0, 0);
+        d->futureWatcher->waitForFinished();
+    }
 }
 
 
@@ -393,7 +332,7 @@ void Files::Extension::handleQuery(Core::Query * query) {
                                                                QDir::DirsFirst|QDir::Name|QDir::IgnoreCase) ) {
                 if ( fileinfo.fileName().startsWith(queryFileInfo.fileName()) ) {
                     QMimeType mimetype = mimeDatabase.mimeTypeForFile(fileinfo.filePath());
-                    query->addMatch(std::make_shared<File>(fileinfo.filePath(), mimetype),
+                    query->addMatch(make_shared<StandardFile>(fileinfo.filePath(), mimetype),
                                     static_cast<uint>(UINT_MAX * static_cast<float>(queryFileInfo.fileName().size()) / fileinfo.fileName().size()));
                 }
             }
@@ -402,18 +341,18 @@ void Files::Extension::handleQuery(Core::Query * query) {
     else
     {
         if ( QString("albert scan files").startsWith(query->searchTerm()) ) {
-            shared_ptr<StandardItem> standardItem = std::make_shared<StandardItem>("org.albert.extension.files.action.index");
+            shared_ptr<StandardItem> standardItem = make_shared<StandardItem>("org.albert.extension.files.action.index");
             standardItem->setText("albert scan files");
             standardItem->setSubtext("Update the file index");
             standardItem->setIconPath(":app_icon");
 
-            shared_ptr<StandardAction> standardAction = std::make_shared<StandardAction>();
+            shared_ptr<StandardAction> standardAction = make_shared<StandardAction>();
             standardAction->setText("Update the file index");
             standardAction->setAction([this](){ this->updateIndex(); });
 
             standardItem->setActions({standardAction});
 
-            query->addMatch(std::move(standardItem));
+            query->addMatch(move(standardItem));
         }
 
         // Search for matches
@@ -424,10 +363,10 @@ void Files::Extension::handleQuery(Core::Query * query) {
         vector<pair<shared_ptr<Core::Item>,uint>> results;
         for (const shared_ptr<Core::IndexableItem> &item : indexables)
             // TODO `Search` has to determine the relevance. Set to 0 for now
-            results.emplace_back(std::static_pointer_cast<File>(item), -1);
+            results.emplace_back(static_pointer_cast<File>(item), -1);
 
-        query->addMatches(std::make_move_iterator(results.begin()),
-                          std::make_move_iterator(results.end()));
+        query->addMatches(make_move_iterator(results.begin()),
+                          make_move_iterator(results.end()));
     }
 }
 
@@ -435,7 +374,7 @@ void Files::Extension::handleQuery(Core::Query * query) {
 
 /** ***************************************************************************/
 const QStringList &Files::Extension::paths() const {
-    return d->indexSettings.rootDirs;
+    return d->indexRootDirs;
 }
 
 
@@ -443,10 +382,10 @@ const QStringList &Files::Extension::paths() const {
 /** ***************************************************************************/
 void Files::Extension::setPaths(const QStringList &paths) {
 
-    if (d->indexSettings.rootDirs == paths)
+    if (d->indexRootDirs == paths)
         return;
 
-    d->indexSettings.rootDirs.clear();
+    d->indexRootDirs.clear();
 
     // Check sanity and add path
     for ( const QString& path : paths ) {
@@ -454,7 +393,7 @@ void Files::Extension::setPaths(const QStringList &paths) {
         QFileInfo fileInfo(path);
         QString absPath = fileInfo.absoluteFilePath();
 
-        if (d->indexSettings.rootDirs.contains(absPath)) {
+        if (d->indexRootDirs.contains(absPath)) {
             qWarning() << QString("Duplicate paths: %1.").arg(path);
             continue;
         }
@@ -469,13 +408,13 @@ void Files::Extension::setPaths(const QStringList &paths) {
             continue;
         }
 
-        d->indexSettings.rootDirs << absPath;
+        d->indexRootDirs << absPath;
     }
 
-    emit pathsChanged(d->indexSettings.rootDirs);
+    emit pathsChanged(d->indexRootDirs);
 
     // Store to settings
-    settings().setValue(CFG_PATHS, d->indexSettings.rootDirs);
+    settings().setValue(CFG_PATHS, d->indexRootDirs);
 
 }
 
@@ -484,9 +423,9 @@ void Files::Extension::setPaths(const QStringList &paths) {
 /** ***************************************************************************/
 void Files::Extension::restorePaths() {
     // Add standard path
-    d->indexSettings.rootDirs.clear();
-    d->indexSettings.rootDirs << QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
-    emit pathsChanged(d->indexSettings.rootDirs);
+    d->indexRootDirs.clear();
+    d->indexRootDirs << QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+    emit pathsChanged(d->indexRootDirs);
 }
 
 
@@ -500,7 +439,7 @@ void Files::Extension::updateIndex() {
 
 /** ***************************************************************************/
 bool Files::Extension::indexHidden() const {
-    return d->indexSettings.indexHidden;
+    return d->indexSettings.indexHidden();
 }
 
 
@@ -508,14 +447,14 @@ bool Files::Extension::indexHidden() const {
 /** ***************************************************************************/
 void Files::Extension::setIndexHidden(bool b)  {
     settings().setValue(CFG_INDEX_HIDDEN, b);
-    d->indexSettings.indexHidden = b;
+    d->indexSettings.setIndexHidden(b);
 }
 
 
 
 /** ***************************************************************************/
 bool Files::Extension::followSymlinks() const {
-    return d->indexSettings.followSymlinks;
+    return d->indexSettings.followSymlinks();
 }
 
 
@@ -523,14 +462,14 @@ bool Files::Extension::followSymlinks() const {
 /** ***************************************************************************/
 void Files::Extension::setFollowSymlinks(bool b)  {
     settings().setValue(CFG_FOLLOW_SYMLINKS, b);
-    d->indexSettings.followSymlinks = b;
+    d->indexSettings.setFollowSymlinks(b);
 }
 
 
 
 /** ***************************************************************************/
 unsigned int Files::Extension::scanInterval() const {
-    return d->indexIntervalTimer.interval()/60000;
+    return static_cast<uint>(d->indexIntervalTimer.interval()/60000);
 }
 
 
@@ -538,7 +477,8 @@ unsigned int Files::Extension::scanInterval() const {
 /** ***************************************************************************/
 void Files::Extension::setScanInterval(uint minutes) {
     settings().setValue(CFG_SCAN_INTERVAL, minutes);
-    (minutes == 0) ? d->indexIntervalTimer.stop() : d->indexIntervalTimer.start(minutes*60000);
+    (minutes == 0) ? d->indexIntervalTimer.stop()
+                   : d->indexIntervalTimer.start(static_cast<int>(minutes*60000));
 }
 
 
@@ -559,8 +499,11 @@ void Files::Extension::setFuzzy(bool b) {
 
 
 /** ***************************************************************************/
-const QStringList &Files::Extension::filters() const {
-    return d->indexSettings.filters;
+QStringList Files::Extension::filters() const {
+    QStringList retval;
+    for ( auto const & regex : d->indexSettings.filters() )
+        retval.push_back(regex.pattern());
+    return retval;
 }
 
 
@@ -568,5 +511,5 @@ const QStringList &Files::Extension::filters() const {
 /** ***************************************************************************/
 void Files::Extension::setFilters(const QStringList &filters) {
     settings().setValue(CFG_FILTERS, filters);
-    d->indexSettings.filters = filters;
+    d->indexSettings.setFilters(filters);
 }

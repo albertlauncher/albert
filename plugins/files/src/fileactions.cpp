@@ -38,7 +38,7 @@ QString Files::OpenFileAction::text() const {
 }
 
 void Files::OpenFileAction::activate() {
-    QDesktopServices::openUrl(QUrl::fromLocalFile(file_->path()));
+    QDesktopServices::openUrl(QUrl::fromLocalFile(file_->filePath()));
 }
 
 /******************************************************************************/
@@ -52,7 +52,7 @@ QString Files::RevealFileAction::text() const {
 }
 
 void Files::RevealFileAction::activate() {
-    QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file_->path()).path()));
+    QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file_->filePath()).path()));
 }
 
 /******************************************************************************/
@@ -69,7 +69,7 @@ QString Files::TerminalFileAction::text() const {
 }
 
 void Files::TerminalFileAction::activate() {
-    QFileInfo fileInfo(file_->path());
+    QFileInfo fileInfo(file_->filePath());
     QStringList commandLine = terminalCommand.trimmed().split(' ');
     if ( commandLine.size() == 0 )
         return;
@@ -90,7 +90,7 @@ QString Files::ExecuteFileAction::text() const {
 }
 
 void Files::ExecuteFileAction::activate() {
-    QProcess::startDetached(file_->path());
+    QProcess::startDetached(file_->filePath());
 }
 
 /******************************************************************************/
@@ -100,7 +100,7 @@ Files::CopyFileAction::CopyFileAction(Files::File *file) : FileAction(file) {
 }
 
 QString Files::CopyFileAction::text() const {
-    return "Copy to clipboard";
+    return "Copy file to clipboard";
 }
 
 void Files::CopyFileAction::activate() {
@@ -116,13 +116,14 @@ void Files::CopyFileAction::activate() {
         newMimeData->setData(f, oldMimeData->data(f));
 
     // Copy path of file
-    newMimeData->setText(file_->path());
+    QString filePath = file_->filePath();
+    newMimeData->setText(filePath);
 
     // Copy file
-    newMimeData->setUrls({QUrl::fromLocalFile(file_->path())});
+    newMimeData->setUrls({QUrl::fromLocalFile(filePath)});
 
     // Copy file (f*** you gnome)
-    QByteArray gnomeFormat = QByteArray("copy\n").append(QUrl::fromLocalFile(file_->path()).toEncoded());
+    QByteArray gnomeFormat = QByteArray("copy\n").append(QUrl::fromLocalFile(filePath).toEncoded());
     newMimeData->setData("x-special/gnome-copied-files", gnomeFormat);
 
     // Set the mimedata
@@ -140,5 +141,5 @@ QString Files::CopyPathAction::text() const {
 }
 
 void Files::CopyPathAction::activate() {
-    QApplication::clipboard()->setText(file_->path());
+    QApplication::clipboard()->setText(file_->filePath());
 }

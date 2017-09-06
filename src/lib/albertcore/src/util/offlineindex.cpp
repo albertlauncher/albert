@@ -22,62 +22,65 @@
 
 
 /** ***************************************************************************/
-Core::OfflineIndex::OfflineIndex(bool fuzzy) {
-    (fuzzy) ? impl_ = new FuzzySearch() : impl_ = new PrefixSearch();
+Core::OfflineIndex::OfflineIndex(bool fuzzy)
+    : impl_((fuzzy) ? new FuzzySearch() : new PrefixSearch()){
 }
 
+
+/** ***************************************************************************/
+Core::OfflineIndex::OfflineIndex(OfflineIndex &&other) {
+    impl_ = std::move(other.impl_);
+}
+
+
+/** ***************************************************************************/
+Core::OfflineIndex &Core::OfflineIndex::operator=(Core::OfflineIndex &&other) {
+    impl_ = std::move(other.impl_);
+    return *this;
+}
 
 
 /** ***************************************************************************/
 Core::OfflineIndex::~OfflineIndex() {
-    delete impl_;
-}
 
+}
 
 
 /** ***************************************************************************/
 void Core::OfflineIndex::setFuzzy(bool fuzzy) {
-    if (dynamic_cast<FuzzySearch*>(impl_)) {
+    if (dynamic_cast<FuzzySearch*>(impl_.get())) {
         if (fuzzy) return;
-        FuzzySearch *old = dynamic_cast<FuzzySearch*>(impl_);
-        impl_ = new PrefixSearch(*old);
-        delete old;
-    } else if (dynamic_cast<PrefixSearch*>(impl_)) {
+        impl_.reset(new PrefixSearch(*dynamic_cast<FuzzySearch*>(impl_.get())));
+    } else if (dynamic_cast<PrefixSearch*>(impl_.get())) {
         if (!fuzzy) return;
-        PrefixSearch *old = dynamic_cast<PrefixSearch*>(impl_);
-        impl_ = new FuzzySearch(*old);
-        delete old;
+        impl_.reset(new FuzzySearch(*dynamic_cast<PrefixSearch*>(impl_.get())));
     } else {
         throw; //should not happen
     }
 }
 
 
-
 /** ***************************************************************************/
 bool Core::OfflineIndex::fuzzy() {
-    return dynamic_cast<FuzzySearch*>(impl_) != nullptr;
+    return dynamic_cast<FuzzySearch*>(impl_.get()) != nullptr;
 }
-
 
 
 /** ***************************************************************************/
 void Core::OfflineIndex::setDelta(double d) {
-    FuzzySearch* f = dynamic_cast<FuzzySearch*>(impl_);
+    FuzzySearch* f = dynamic_cast<FuzzySearch*>(impl_.get());
     if (f)
         f->setDelta(d);
 }
 
 
-
 /** ***************************************************************************/
 double Core::OfflineIndex::delta() {
-    FuzzySearch* f = dynamic_cast<FuzzySearch*>(impl_);
+    FuzzySearch* f = dynamic_cast<FuzzySearch*>(impl_.get());
     if (f)
         return f->delta();
     return 0;
 }
-
 
 
 /** ***************************************************************************/
@@ -86,12 +89,10 @@ void Core::OfflineIndex::add(const std::shared_ptr<Core::IndexableItem> &idxble)
 }
 
 
-
 /** ***************************************************************************/
 void Core::OfflineIndex::clear() {
     impl_->clear();
 }
-
 
 
 /** ***************************************************************************/

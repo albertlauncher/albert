@@ -15,35 +15,38 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "file.h"
-#include <QApplication>
-#include <QDataStream>
 #include <QDir>
 #include <QFileInfo>
-#include <QMimeDatabase>
 #include "xdg/iconlookup.h"
 #include "fileactions.h"
-using std::vector;
-using std::shared_ptr;
+using namespace std;
+
 
 std::map<QString,QString> Files::File::iconCache_;
 
+
 /** ***************************************************************************/
-QString Files::File::text() const {
-    return QFileInfo(path_).fileName();
+QString Files::File::id() const {
+    return filePath();
 }
 
+
+/** ***************************************************************************/
+QString Files::File::text() const {
+    return name();
+}
 
 
 /** ***************************************************************************/
 QString Files::File::subtext() const {
-    return path_;
+    return path();
 }
-
 
 
 /** ***************************************************************************/
 QString Files::File::completionString() const {
-    QString result = ( QFileInfo(path_).isDir() ) ? QString("%1/").arg(path_) : path_;
+    const QString &path = filePath();
+    QString result = ( QFileInfo(path).isDir() ) ? QString("%1/").arg(path) : path;
 #ifdef __linux__
     if ( result.startsWith(QDir::homePath()) )
         result.replace(QDir::homePath(), "~");
@@ -52,18 +55,17 @@ QString Files::File::completionString() const {
 }
 
 
-
 /** ***************************************************************************/
 QString Files::File::iconPath() const {
 
-    const QString xdgIconName = mimetype_.iconName();
+    const QString xdgIconName = mimetype().iconName();
 
     // First check if icon exists
     auto search = iconCache_.find(xdgIconName);
     if(search != iconCache_.end())
         return search->second;
 
-    QString icon = XDG::IconLookup::iconPath({xdgIconName, mimetype_.genericIconName(), "unknown"});
+    QString icon = XDG::IconLookup::iconPath({xdgIconName, mimetype().genericIconName(), "unknown"});
     if ( !icon.isEmpty() ) {
         iconCache_.emplace(xdgIconName, icon);
         return icon;
@@ -85,7 +87,7 @@ QString Files::File::iconPath() const {
 vector<shared_ptr<Core::Action>> Files::File::actions() {
     vector<shared_ptr<Core::Action>> actions;
     actions.push_back(std::make_shared<OpenFileAction>(this));
-    QFileInfo fileInfo(path_);
+    QFileInfo fileInfo(filePath());
     if ( fileInfo.isFile() && fileInfo.isExecutable() )
         actions.push_back(std::make_shared<ExecuteFileAction>(this));
     actions.push_back(std::make_shared<RevealFileAction>(this));
@@ -100,7 +102,7 @@ vector<shared_ptr<Core::Action>> Files::File::actions() {
 /** ***************************************************************************/
 vector<Core::IndexableItem::IndexString> Files::File::indexStrings() const {
     std::vector<IndexableItem::IndexString> res;
-    res.emplace_back(QFileInfo(path_).fileName(), UINT_MAX);
+    res.emplace_back(name(), UINT_MAX);
     // TODO ADD PATH
     return res;
 }

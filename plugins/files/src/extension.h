@@ -59,7 +59,7 @@ public:
     bool fuzzy() const;
     void setFuzzy(bool b = true);
 
-    const QStringList &filters() const;
+    QStringList filters() const;
     void setFilters(const QStringList &);
 
     void updateIndex();
