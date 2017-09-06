@@ -17,7 +17,8 @@
 #pragma once
 #include <QObject>
 #include <QAbstractItemModel>
-#include <vector>
+#include <memory>
+#include <list>
 
 namespace Core {
 
@@ -30,7 +31,8 @@ class QueryManager : public QObject
 
 public:
 
-    explicit QueryManager(ExtensionManager* em, QObject *parent = 0);
+    QueryManager(ExtensionManager* em, QObject *parent = 0);
+    ~QueryManager();
 
     void setupSession();
     void teardownSession();
@@ -39,8 +41,7 @@ public:
 private:
 
     ExtensionManager *extensionManager_;
-    QueryExecution *currentQuery_;
-    std::vector<QueryExecution*> pastQueries_;
+    std::list<std::unique_ptr<QueryExecution>> pastQueries_;
 
 signals:
 

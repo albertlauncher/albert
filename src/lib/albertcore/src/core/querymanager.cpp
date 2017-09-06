@@ -29,19 +29,22 @@
 #include "queryhandler.h"
 #include "fallbackprovider.h"
 using namespace Core;
-using std::set;
-using std::chrono::system_clock;
-using std::vector;
-using std::shared_ptr;
+using namespace std;
+using namespace std::chrono;
 
 /** ***************************************************************************/
 Core::QueryManager::QueryManager(ExtensionManager* em, QObject *parent)
     : QObject(parent),
-      extensionManager_(em),
-      currentQuery_(nullptr) {
+      extensionManager_(em) {
 
     // Initialize the order
     Core::MatchCompare::update();
+}
+
+
+/** ***************************************************************************/
+QueryManager::~QueryManager() {
+
 }
 
 
@@ -57,11 +60,11 @@ void Core::QueryManager::setupSession() {
     for (Core::QueryHandler *handler : extensionManager_->objectsByType<Core::QueryHandler>()){
         system_clock::time_point start = system_clock::now();
         handler->setupSession();
-        long duration = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now()-start).count();
+        long duration = duration_cast<microseconds>(system_clock::now()-start).count();
         qDebug() << qPrintable(QString("TIME: %1 µs SESSION SETUP [%2]").arg(duration, 6).arg(handler->id));
     }
 
-    long duration = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now()-start).count();
+    long duration = duration_cast<microseconds>(system_clock::now()-start).count();
     qDebug() << qPrintable(QString("TIME: %1 µs SESSION SETUP OVERALL").arg(duration, 6));
 }
 
@@ -78,9 +81,12 @@ void Core::QueryManager::teardownSession() {
     for (Core::QueryHandler *handler : extensionManager_->objectsByType<Core::QueryHandler>()){
         system_clock::time_point start = system_clock::now();
         handler->teardownSession();
-        long duration = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now()-start).count();
+        long duration = duration_cast<microseconds>(system_clock::now()-start).count();
         qDebug() << qPrintable(QString("TIME: %1 µs SESSION TEARDOWN [%2]").arg(duration, 6).arg(handler->id));
     }
+
+    // Clear views
+    emit resultsReady(nullptr);
 
     // Open database to store the runtimes
     QSqlDatabase db = QSqlDatabase::database();
@@ -88,12 +94,12 @@ void Core::QueryManager::teardownSession() {
     db.transaction();
 
     // Delete finished queries and prepare sql transaction containing runtimes
-    vector<QueryExecution*>::iterator it = pastQueries_.begin();
+    decltype(pastQueries_)::iterator it = pastQueries_.begin();
     while ( it != pastQueries_.end()){
         if ( (*it)->state() != QueryExecution::State::Running ) {
 
             // Store the runtimes
-            for ( const std::pair<QString,uint> &handlerRuntime : (*it)->runtimes() ) {
+            for ( const pair<QString,uint> &handlerRuntime : (*it)->runtimes() ) {
                 sqlQuery.prepare("INSERT INTO runtimes (extensionId, runtime) VALUES (:extensionId, :runtime);");
                 sqlQuery.bindValue(":extensionId", handlerRuntime.first);
                 sqlQuery.bindValue(":runtime", handlerRuntime.second);
@@ -102,7 +108,6 @@ void Core::QueryManager::teardownSession() {
             }
 
             // Delete the query
-            (*it)->deleteLater();
             it = pastQueries_.erase(it);
         } else
             ++it;
@@ -114,7 +119,7 @@ void Core::QueryManager::teardownSession() {
     // Compute new match rankings
     Core::MatchCompare::update();
 
-    long duration = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now()-start).count();
+    long duration = duration_cast<microseconds>(system_clock::now()-start).count();
     qDebug() << qPrintable(QString("TIME: %1 µs SESSION TEARDOWN OVERALL").arg(duration, 6));
 }
 
@@ -125,13 +130,11 @@ void Core::QueryManager::startQuery(const QString &searchTerm) {
 
     qDebug() << "========== QUERY:" << searchTerm << " ==========";
 
-    if ( currentQuery_ != nullptr ) {
+    if ( pastQueries_.size() ) {
         // Stop last query
-        disconnect(currentQuery_, &QueryExecution::resultsReady,
+        disconnect(pastQueries_.back().get(), &QueryExecution::resultsReady,
                    this, &QueryManager::resultsReady);
-        currentQuery_->cancel();
-        // Store for later deletion (listview still has the model)
-        pastQueries_.push_back(currentQuery_);
+        pastQueries_.back()->cancel();
     }
 
     // Do nothing if nothing is loaded
@@ -141,20 +144,22 @@ void Core::QueryManager::startQuery(const QString &searchTerm) {
     system_clock::time_point start = system_clock::now();
 
     // Start query
-    currentQuery_ = new QueryExecution(extensionManager_->objectsByType<QueryHandler>(),
-                                       extensionManager_->objectsByType<FallbackProvider>(),
-                                       searchTerm);
-    connect(currentQuery_, &QueryExecution::resultsReady, this, &QueryManager::resultsReady);
-    currentQuery_->run();
+    QueryExecution *currentQuery = new QueryExecution(extensionManager_->objectsByType<QueryHandler>(),
+                                                      extensionManager_->objectsByType<FallbackProvider>(),
+                                                      searchTerm);
+    connect(currentQuery, &QueryExecution::resultsReady, this, &QueryManager::resultsReady);
+    currentQuery->run();
 
-    connect(currentQuery_, &QueryExecution::stateChanged, [start](QueryExecution::State state){
+    connect(currentQuery, &QueryExecution::stateChanged, [start](QueryExecution::State state){
         if ( state == QueryExecution::State::Finished ) {
-            long duration = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now()-start).count();
+            long duration = duration_cast<microseconds>(system_clock::now()-start).count();
             qDebug() << qPrintable(QString("TIME: %1 µs QUERY OVERALL").arg(duration, 6));
         }
     });
 
+    pastQueries_.emplace_back(currentQuery);
 
-    long duration = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now()-start).count();
+
+    long duration = duration_cast<microseconds>(system_clock::now()-start).count();
     qDebug() << qPrintable(QString("TIME: %1 µs SESSION TEARDOWN OVERALL").arg(duration, 6));
 }
