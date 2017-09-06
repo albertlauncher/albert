@@ -30,6 +30,16 @@ using std::vector;
 
 namespace {
 
+enum SupportedCommands {
+    LOCK,
+    LOGOUT,
+    SUSPEND,
+    HIBERNATE,
+    REBOOT,
+    POWEROFF,
+    NUMCOMMANDS
+};
+
 vector<QString> configNames = {
     "lock",
     "logout",
@@ -44,8 +54,8 @@ vector<QString> itemTitles = {
     "Logout",
     "Suspend",
     "Hibernate",
-    "Reboot",
-    "Shutdown"
+    "Restart",
+    "Shut down"
 };
 
 vector<QString> itemDescriptions = {
@@ -66,7 +76,6 @@ vector<QString> iconNames = {
     "system-shutdown"
 };
 
-enum SupportedCommands { LOCK, LOGOUT, SUSPEND, HIBERNATE, REBOOT, POWEROFF, NUMCOMMANDS };
 
 QString defaultCommand(SupportedCommands command){
 
