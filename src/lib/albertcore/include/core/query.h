@@ -65,16 +65,14 @@ public:
      * @param score The relevance factor (UINT_MAX -> 1)
      * @see addMatches
      */
-    void addMatch(std::shared_ptr<Item> &item, uint score = 0);
-
-    /**
-     * @brief addMatch equivalent with move semantics
-     * Use the addMatches with move iterators if you have a lot of items to add.
-     * @param item The to add to the results
-     * @param score The relevance factor (UINT_MAX -> 1)
-     * @see addMatches
-     */
-    void addMatch(std::shared_ptr<Item> &&item, uint score = 0);
+    template<typename T>
+    void addMatch(T&& item, uint score = 0) {
+        if ( isValid_ ) {
+            mutex_.lock();
+            results_.emplace_back(std::forward<T>(item), score);
+            mutex_.unlock();
+        }
+    }
 
     /**
      * @brief addMatches
@@ -86,11 +84,12 @@ public:
     void addMatches(Iterator begin, Iterator end) {
         if ( isValid() ) {
             mutex_.lock();
-            results_.insert(results_.end(), begin, end);
+            for (; begin != end; ++begin)
+                // Must not use operator->() !!! dereferencing a pointer returns an lvalue
+                results_.emplace_back((*begin).first, (*begin).second);
             mutex_.unlock();
         }
     }
-
 
 private:
 

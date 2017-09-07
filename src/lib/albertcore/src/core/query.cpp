@@ -34,23 +34,3 @@ const QString &Core::Query::trigger() const {
 bool Core::Query::isValid() const {
     return isValid_;
 }
-
-
-/** ***************************************************************************/
-void Core::Query::addMatch(std::shared_ptr<Core::Item> &item, uint score) {
-    if ( isValid_ ) {
-        mutex_.lock();
-        results_.emplace_back(item, score);
-        mutex_.unlock();
-    }
-}
-
-
-/** ***************************************************************************/
-void Core::Query::addMatch(std::shared_ptr<Core::Item> &&item, uint score) {
-    if ( isValid_ ) {
-        mutex_.lock();
-        results_.emplace_back(std::move(item), score);
-        mutex_.unlock();
-    }
-}
