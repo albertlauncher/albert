@@ -55,7 +55,7 @@ const bool  DEF_INDEX_HIDDEN    = false;
 const char* CFG_FOLLOW_SYMLINKS = "follow_symlinks";
 const bool  DEF_FOLLOW_SYMLINKS = false;
 const char* CFG_SCAN_INTERVAL   = "scan_interval";
-const uint  DEF_SCAN_INTERVAL   = 60;
+const uint  DEF_SCAN_INTERVAL   = 15;
 
 
 
@@ -493,7 +493,7 @@ bool Files::Extension::fuzzy() const {
 /** ***************************************************************************/
 void Files::Extension::setFuzzy(bool b) {
     settings().setValue(CFG_FUZZY, b);
-    return d->offlineIndex.setFuzzy(b);
+    d->offlineIndex.setFuzzy(b);
 }
 
 
