@@ -264,7 +264,6 @@ WidgetBoxModel::FrontendWidget::FrontendWidget(QSettings *settings) : d(new Priv
 /** ***************************************************************************/
 WidgetBoxModel::FrontendWidget::~FrontendWidget() {
     // Needed since default dtor of unique ptr in the header has to know the type
-    qDebug() << "Widget Box Model mainwindow destructor called";
 }
 
 

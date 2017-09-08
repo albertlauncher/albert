@@ -37,7 +37,7 @@ const char* DEF_FRONTEND_ID = "org.albert.frontend.boxmodel.widget";
 class Core::FrontendManagerPrivate {
 public:
     vector<unique_ptr<PluginSpec>> frontendPlugins;
-    unique_ptr<Frontend> currentFrontend;
+    Frontend* currentFrontend;
 };
 
 
@@ -86,7 +86,7 @@ Core::FrontendManager::FrontendManager(QStringList pluginDirs)
     if ( !(*it)->load() )
         qFatal("Failed loading frontend");
 
-    d->currentFrontend.reset(dynamic_cast<Frontend*>((*it)->instance()));
+    d->currentFrontend = dynamic_cast<Frontend*>((*it)->instance());
     if (!d->currentFrontend)
         qFatal("Could not cast plugin instance to frontend");
 }
@@ -108,7 +108,7 @@ const std::vector<std::unique_ptr<Core::PluginSpec> > &Core::FrontendManager::fr
 
 /** ***************************************************************************/
 Core::Frontend *Core::FrontendManager::currentFrontend() {
-    return d->currentFrontend.get();
+    return d->currentFrontend;
 }
 
 
@@ -143,11 +143,11 @@ bool Core::FrontendManager::setCurrentFrontend(QString id) {
     if (!newFrontend)
         qFatal("Could not cast plugin instance to frontend");
 
-    d->currentFrontend.reset(newFrontend);
+    d->currentFrontend = newFrontend;
 
     oldFrontendSpec->unload();
 
-    emit frontendChanged(d->currentFrontend.get());
+    emit frontendChanged(d->currentFrontend);
 
     return true;
 }

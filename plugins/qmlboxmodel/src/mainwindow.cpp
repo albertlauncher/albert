@@ -203,7 +203,7 @@ QmlBoxModel::MainWindow::MainWindow(FrontendPlugin *plugin, QWindow *parent) : Q
 
 /** ***************************************************************************/
 QmlBoxModel::MainWindow::~MainWindow() {
-    qDebug() << "QML Box Model mainwindow destructor called";
+
 }
 
 
