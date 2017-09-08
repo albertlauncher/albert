@@ -14,7 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QApplication>
 #include <QDebug>
+#include <QSettings>
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QSqlError>
@@ -32,6 +34,11 @@ using namespace Core;
 using namespace std;
 using namespace std::chrono;
 
+namespace {
+const char* CFG_INCREMENTAL_SORT = "incrementalSort";
+const bool  DEF_INCREMENTAL_SORT = false;
+}
+
 /** ***************************************************************************/
 Core::QueryManager::QueryManager(ExtensionManager* em, QObject *parent)
     : QObject(parent),
@@ -39,6 +46,9 @@ Core::QueryManager::QueryManager(ExtensionManager* em, QObject *parent)
 
     // Initialize the order
     Core::MatchCompare::update();
+
+    QSettings s(qApp->applicationName());
+    incrementalSort_ = s.value(CFG_INCREMENTAL_SORT, DEF_INCREMENTAL_SORT).toBool();
 }
 
 
@@ -46,7 +56,6 @@ Core::QueryManager::QueryManager(ExtensionManager* em, QObject *parent)
 QueryManager::~QueryManager() {
 
 }
-
 
 
 /** ***************************************************************************/
@@ -67,7 +76,6 @@ void Core::QueryManager::setupSession() {
     long duration = duration_cast<microseconds>(system_clock::now()-start).count();
     qDebug() << qPrintable(QString("TIME: %1 µs SESSION SETUP OVERALL").arg(duration, 6));
 }
-
 
 
 /** ***************************************************************************/
@@ -124,7 +132,6 @@ void Core::QueryManager::teardownSession() {
 }
 
 
-
 /** ***************************************************************************/
 void Core::QueryManager::startQuery(const QString &searchTerm) {
 
@@ -146,7 +153,7 @@ void Core::QueryManager::startQuery(const QString &searchTerm) {
     // Start query
     QueryExecution *currentQuery = new QueryExecution(extensionManager_->objectsByType<QueryHandler>(),
                                                       extensionManager_->objectsByType<FallbackProvider>(),
-                                                      searchTerm);
+                                                      searchTerm, incrementalSort_);
     connect(currentQuery, &QueryExecution::resultsReady, this, &QueryManager::resultsReady);
     currentQuery->run();
 
@@ -162,4 +169,17 @@ void Core::QueryManager::startQuery(const QString &searchTerm) {
 
     long duration = duration_cast<microseconds>(system_clock::now()-start).count();
     qDebug() << qPrintable(QString("TIME: %1 µs SESSION TEARDOWN OVERALL").arg(duration, 6));
+}
+
+
+/** ***************************************************************************/
+bool QueryManager::incrementalSort(){
+    return incrementalSort_;
+}
+
+
+/** ***************************************************************************/
+void QueryManager::setIncrementalSort(bool value){
+    QSettings(qApp->applicationName()).setValue(CFG_INCREMENTAL_SORT, value);
+    incrementalSort_ = value;
 }

@@ -48,7 +48,7 @@ public:
     QueryExecution(const std::set<QueryHandler*> &,
                    const std::set<FallbackProvider*> &,
                    const QString &query,
-                   bool fetchIncrementally = true);
+                   bool fetchIncrementally);
     ~QueryExecution();
 
     const State &state() const;

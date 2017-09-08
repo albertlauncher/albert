@@ -23,6 +23,7 @@ class HotkeyManager;
 namespace Core {
 class ExtensionManager;
 class FrontendManager;
+class QueryManager;
 class MainWindow;
 class TrayIcon;
 
@@ -34,6 +35,7 @@ public:
 
     SettingsWidget(ExtensionManager *extensionManager,
                    FrontendManager *frontendManager,
+                   QueryManager *queryManager,
                    GlobalShortcut::HotkeyManager *hotkeyManager,
                    TrayIcon *trayIcon,
                    QWidget * parent = 0, Qt::WindowFlags f = 0);
@@ -48,6 +50,7 @@ private:
 
     ExtensionManager *extensionManager_;
     FrontendManager *frontendManager_;
+    QueryManager *queryManager_;
     GlobalShortcut::HotkeyManager *hotkeyManager_;
     TrayIcon *trayIcon_;
     Ui::SettingsDialog ui;

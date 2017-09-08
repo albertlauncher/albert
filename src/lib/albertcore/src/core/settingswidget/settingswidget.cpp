@@ -37,6 +37,7 @@
 #include "globalshortcut/hotkeymanager.h"
 #include "loadermodel.h"
 #include "pluginspec.h"
+#include "querymanager.h"
 #include "settingswidget.h"
 #include "trayicon.h"
 using namespace std;
@@ -54,12 +55,14 @@ EXPORT_CORE QString terminalCommand;
 /** ***************************************************************************/
 Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
                                      FrontendManager *frontendManager,
+                                     QueryManager *queryManager,
                                      HotkeyManager *hotkeyManager,
                                      TrayIcon *systemTrayIcon,
                                      QWidget *parent, Qt::WindowFlags f)
     : QWidget(parent, f),
       extensionManager_(extensionManager),
       frontendManager_(frontendManager),
+      queryManager_(queryManager),
       hotkeyManager_(hotkeyManager),
       trayIcon_(systemTrayIcon) {
 
@@ -83,6 +86,11 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
     ui.checkBox_showTray->setChecked(trayIcon_->isVisible());
     connect(ui.checkBox_showTray, &QCheckBox::toggled,
             trayIcon_, &TrayIcon::setVisible);
+
+    // INCREMENTAL SORT
+    ui.checkBox_incrementalSort->setChecked(queryManager_->incrementalSort());
+    connect(ui.checkBox_incrementalSort, &QCheckBox::toggled,
+            queryManager_, &QueryManager::setIncrementalSort);
 
     // FRONTEND
     for ( const unique_ptr<PluginSpec> &plugin : frontendManager_->frontendSpecs() ){

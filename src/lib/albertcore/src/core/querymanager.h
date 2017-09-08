@@ -25,7 +25,7 @@ namespace Core {
 class ExtensionManager;
 class QueryExecution;
 
-class QueryManager : public QObject
+class QueryManager final : public QObject
 {
     Q_OBJECT
 
@@ -38,10 +38,14 @@ public:
     void teardownSession();
     void startQuery(const QString &searchTerm);
 
+    bool incrementalSort();
+    void setIncrementalSort(bool value);
+
 private:
 
     ExtensionManager *extensionManager_;
     std::list<std::unique_ptr<QueryExecution>> pastQueries_;
+    bool incrementalSort_;
 
 signals:
 

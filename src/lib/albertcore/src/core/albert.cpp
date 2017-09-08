@@ -396,6 +396,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
         qDebug() << "Creating settings widget";
         settingsWidget = new SettingsWidget(extensionManager,
                                             frontendManager,
+                                            queryManager,
                                             hotkeyManager,
                                             trayIcon);
 
