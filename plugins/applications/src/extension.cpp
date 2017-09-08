@@ -631,8 +631,8 @@ void Applications::Extension::handleQuery(Core::Query * query) {
         // TODO `Search` has to determine the relevance. Set to 0 for now
         results.emplace_back(std::static_pointer_cast<Core::StandardIndexItem>(item), 1);
 
-        query->addMatches(std::make_move_iterator(results.begin()),
-                          std::make_move_iterator(results.end()));
+    query->addMatches(std::make_move_iterator(results.begin()),
+                      std::make_move_iterator(results.end()));
 }
 
 

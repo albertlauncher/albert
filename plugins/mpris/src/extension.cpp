@@ -264,7 +264,7 @@ void MPRIS::Extension::handleQuery(Core::Query *query) {
     uint percentage = 0;
     for (QString& cmd: cmds) {
         // Calculate how many percent of the query match the command
-        percentage = static_cast<uint>(q.length()/100.0*cmd.length());
+        percentage = static_cast<uint>(1.0*q.length()/cmd.length())*UINT_MAX;
 
         // Get the command
         Command& toExec = d->commandObjects.find(cmd).value();

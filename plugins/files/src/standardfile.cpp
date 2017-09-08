@@ -25,9 +25,7 @@ Files::StandardFile::StandardFile(QString path, QMimeType mimetype)
     : mimetype_(mimetype){
     QFileInfo fileInfo(path);
     name_ = fileInfo.fileName();
-    name_.squeeze();
     path_ = fileInfo.canonicalPath();
-    path_.squeeze();
 }
 
 

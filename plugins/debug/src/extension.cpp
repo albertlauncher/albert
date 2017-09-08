@@ -102,7 +102,7 @@ void Debug::Extension::handleQuery(Core::Query * query) {
         item->setText(QString("Das Item #%1").arg(i));
         item->setSubtext(QString("Toll, das Item #%1").arg(i));
         item->setIconPath(":debug");
-        query->addMatch(std::move(item), 0);
+        query->addMatch(std::move(item));
     }
 }
 

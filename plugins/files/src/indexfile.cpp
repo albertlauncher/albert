@@ -24,9 +24,7 @@ using namespace std;
 
 /** ***************************************************************************/
 Files::IndexFile::IndexFile(QString name, const shared_ptr<Files::IndexTreeNode> &pathNode, QMimeType mimetype)
-    : name_(name), pathNode_(pathNode), mimetype_(mimetype){
-    name_.squeeze();
-}
+    : name_(name), pathNode_(pathNode), mimetype_(mimetype) { }
 
 
 /** ***************************************************************************/

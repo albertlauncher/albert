@@ -375,7 +375,7 @@ void Websearch::Extension::handleQuery(Core::Query * query) {
         for (const SearchEngine &se : d->searchEngines)
             if (query->searchTerm().startsWith(se.trigger))
                 // Implicit move
-                query->addMatch(buildWebsearchItem(se, query->searchTerm().mid(se.trigger.size())), UINT_MAX);
+                query->addMatch(buildWebsearchItem(se, query->searchTerm().mid(se.trigger.size())));
     }
     else
     {

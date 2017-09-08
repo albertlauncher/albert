@@ -171,7 +171,7 @@ void Ssh::Extension::handleQuery(Core::Query * query) {
     // Add all hosts if there are no arguments
     if ( queryTerms.size() == 1)
         for ( shared_ptr<Core::StandardItem>& host : d->hosts )
-            query->addMatch(host, 1);  // Explicitly: No move
+            query->addMatch(host);  // Explicitly: No move
 
     if ( queryTerms.size() != 2)
         return;
@@ -179,8 +179,8 @@ void Ssh::Extension::handleQuery(Core::Query * query) {
     // Add all hosts that the query is a prefix of
     for ( shared_ptr<Core::StandardItem>& host : d->hosts )
         if ( host->text().startsWith(queryTerms[1]) )
-            query->addMatch(host, // Explicitly: No move
-                            static_cast<uint>(UINT_MAX * static_cast<float>(query->searchTerm().size()/host->text().size())));
+            // Explicitly: No move
+            query->addMatch(host, static_cast<uint>(1.0*query->searchTerm().size()/host->text().size()* UINT_MAX));
 
     // Add the quick connect item
     std::shared_ptr<StandardItem> item  = std::make_shared<StandardItem>("");
