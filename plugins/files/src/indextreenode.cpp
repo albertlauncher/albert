@@ -18,26 +18,20 @@
 #include "indexfile.h"
 using namespace std;
 
-Files::IndexTreeNode::IndexTreeNode(const IndexTreeNode &other)
-    : name(other.name),
-      parent(other.parent),
-      children(other.children),
-      lastModified(other.lastModified),
-      items(other.items) {
-    name.squeeze();
-}
-
 
 
 Files::IndexTreeNode::IndexTreeNode(QString name, QDateTime lastModified, shared_ptr<IndexTreeNode> parent)
-    : name(name), parent(parent), lastModified(lastModified) { }
-
-
+    : enable_shared_from_this(), parent(parent), name(name), lastModified(lastModified) { }
 
 Files::IndexTreeNode::IndexTreeNode(QString name, shared_ptr<IndexTreeNode> parent)
     : IndexTreeNode(name, QDateTime::fromSecsSinceEpoch(0), parent) { }
 
-
+Files::IndexTreeNode::IndexTreeNode(const IndexTreeNode &other)
+    : enable_shared_from_this(),
+      children(other.children),
+      name(other.name),
+      lastModified(other.lastModified),
+      items_(other.items_) { }
 
 Files::IndexTreeNode::~IndexTreeNode() {
     removeDownlinks();
@@ -57,7 +51,7 @@ void Files::IndexTreeNode::removeDownlinks() {
     for ( shared_ptr<IndexTreeNode> & child : children )
         child->removeDownlinks();
     children.clear();
-    items.clear();
+    items_.clear();
 }
 
 
@@ -78,6 +72,11 @@ void Files::IndexTreeNode::update(const bool  &abort, IndexSettings indexSetting
                                          PatternType::Exclude)};
     // Start the indexing
     updateRecursion(abort, mimeDatabase, indexSettings, indexedDirs, ignoreEntries);
+}
+
+
+const std::vector<std::shared_ptr<Files::File> > &Files::IndexTreeNode::items() const {
+    return items_;
 }
 
 
@@ -139,7 +138,7 @@ void Files::IndexTreeNode::updateRecursion(const bool &abort,
 
         lastModified = fileInfo.lastModified();
 
-        items.clear();
+        items_.clear();
 
         // Drop nonexistant child nodes
         decltype(children)::iterator childIt = children.begin();
@@ -203,9 +202,9 @@ void Files::IndexTreeNode::updateRecursion(const bool &abort,
             // If the entry is valid and a mime filter matches add it to the items
             if (isValid && any_of(indexSettings.filters().begin(), indexSettings.filters().end(),
                                   [&](const QRegExp &re){ return re.exactMatch(mimeName); }) )
-                items.push_back(make_shared<Files::IndexFile>(fileInfo.fileName(),
-                                                              shared_from_this(),
-                                                              mimetype));
+                items_.push_back(make_shared<Files::IndexFile>(fileInfo.fileName(),
+                                                               shared_from_this(),
+                                                               mimetype));
         }
     }
 

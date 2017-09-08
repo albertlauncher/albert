@@ -24,45 +24,42 @@ using namespace std;
 
 
 /** ***************************************************************************/
-map<QString, double> Core::MatchCompare::order;
+map<QString, uint> Core::MatchCompare::order;
 
 /** ***************************************************************************/
 bool Core::MatchCompare::operator()(const pair<shared_ptr<Item>, uint> &lhs,
                                   const pair<shared_ptr<Item>, uint> &rhs) {
-    // Compare urgency
+    // Compare urgency then score
     if (lhs.first->urgency() != rhs.first->urgency())
         return lhs.first->urgency() > rhs.first->urgency();
-
-    // Compare usage scores
-    const map<QString,double>::iterator &lit = order.find(lhs.first->id());
-    const map<QString,double>::iterator &rit = order.find(rhs.first->id());
-    if (lit==order.cend()) // |- lhs zero
-        if (rit==order.cend()) // |- rhs zero
-            return lhs.second > rhs.second; // Compare match score
-        else // |- rhs > 0
-            return false; // lhs==0 && rhs>0 implies lhs<rhs implies !(lhs>rhs)
-    else
-        if (rit==order.cend())
-            return true; // lhs>0 && rhs=0 implies lhs>rhs
-        else
-            return lit->second > rit->second; // Both usage scores available, return lhs>rhs
+    return lhs.second > rhs.second; // Compare match score
 }
 
 
-/** ***************************************************************************/
+/*****************************************************************************
+ * @brief Core::MatchCompare::update
+ * Update the usage score:
+ * Score of a single usage is 1/(<age_in_days>+1).
+ * Accumulate all scores groupes by itemId.
+ * Normalize the scores to the range of UINT_MAX.
+ */
 void Core::MatchCompare::update() {
     order.clear();
-
-    // Update the results ranking
     QSqlQuery query;
-    query.exec("SELECT t.itemId AS id, SUM(t.score) AS usageScore "
-               "FROM ( "
-               " SELECT itemId, 1/max(julianday('now')-julianday(timestamp),1) AS score "
-               " FROM usages "
-               " WHERE itemId<>'' "
-               ") t "
-               "GROUP BY t.itemId");
-    while (query.next())
+    query.exec("SELECT itemId, SUM(1/(julianday('now')-julianday(timestamp)+1)) AS score "
+               "FROM usages WHERE itemId<>'' GROUP BY itemId ORDER BY score DESC");
+    double max;
+    if ( !query.next() )
+        return;
+    max = query.value(1).toDouble();
+
+    do {
         MatchCompare::order.emplace(query.value(0).toString(),
-                                    query.value(1).toDouble());
+                                    static_cast<uint>(query.value(1).toDouble()*UINT_MAX/max));
+    } while (query.next());
+}
+
+/** ***************************************************************************/
+const std::map<QString, uint> &Core::MatchCompare::usageScores() {
+    return order;
 }

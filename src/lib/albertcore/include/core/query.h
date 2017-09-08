@@ -69,7 +69,7 @@ public:
     void addMatch(T&& item, uint score = 0) {
         if ( isValid_ ) {
             mutex_.lock();
-            results_.emplace_back(std::forward<T>(item), score);
+            addMatchWithoutLock(std::forward<T>(item), score);
             mutex_.unlock();
         }
     }
@@ -86,12 +86,15 @@ public:
             mutex_.lock();
             for (; begin != end; ++begin)
                 // Must not use operator->() !!! dereferencing a pointer returns an lvalue
-                results_.emplace_back((*begin).first, (*begin).second);
+                addMatchWithoutLock((*begin).first, (*begin).second);
             mutex_.unlock();
         }
     }
 
 private:
+
+    void addMatchWithoutLock(const std::shared_ptr<Core::Item> &item, uint score);
+    void addMatchWithoutLock(std::shared_ptr<Core::Item> &&item, uint score);
 
     Query() = default;
     ~Query() = default;
@@ -103,7 +106,6 @@ private:
     bool isValid_ = true;
 
     friend class QueryExecution;
-
 };
 
 }

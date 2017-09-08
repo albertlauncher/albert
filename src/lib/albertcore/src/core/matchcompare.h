@@ -30,13 +30,15 @@ class MatchCompare
 {
 public:
 
-    static void update();
     bool operator()(const std::pair<std::shared_ptr<Item>, uint>& lhs,
                     const std::pair<std::shared_ptr<Item>, uint>& rhs);
 
+    static void update();
+    static const std::map<QString, uint> &usageScores();
+
 private:
 
-    static std::map<QString, double> order;
+    static std::map<QString, uint> order;
 };
 
 }

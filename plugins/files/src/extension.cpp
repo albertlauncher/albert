@@ -66,7 +66,7 @@ public:
         : offlineIndex(offlineIndex) { }
 
     void visit(Files::IndexTreeNode *node) override {
-        for ( const shared_ptr<Files::File> &item : node->items )
+        for ( const shared_ptr<Files::File> &item : node->items() )
             offlineIndex.add(item);
     }
 };
@@ -78,7 +78,7 @@ public:
     uint dirCount = 0;
     void visit(Files::IndexTreeNode *node) override {
         ++dirCount;
-        itemCount += node->items.size();
+        itemCount += node->items().size();
     }
 };
 
@@ -363,7 +363,7 @@ void Files::Extension::handleQuery(Core::Query * query) {
         vector<pair<shared_ptr<Core::Item>,uint>> results;
         for (const shared_ptr<Core::IndexableItem> &item : indexables)
             // TODO `Search` has to determine the relevance. Set to 0 for now
-            results.emplace_back(static_pointer_cast<File>(item), -1);
+            results.emplace_back(static_pointer_cast<File>(item), 0);
 
         query->addMatches(make_move_iterator(results.begin()),
                           make_move_iterator(results.end()));

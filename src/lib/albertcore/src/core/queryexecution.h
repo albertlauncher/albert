@@ -47,7 +47,8 @@ public:
 
     QueryExecution(const std::set<QueryHandler*> &,
                    const std::set<FallbackProvider*> &,
-                   const QString &query);
+                   const QString &query,
+                   bool fetchIncrementally = true);
     ~QueryExecution();
 
     const State &state() const;
@@ -62,6 +63,8 @@ public:
     QHash<int,QByteArray> roleNames() const override;
     QVariant data(const QModelIndex &index, int role) const override;
     bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+    bool canFetchMore(const QModelIndex &) const override;
+    void fetchMore(const QModelIndex &) override;
 
     const std::map<QString, uint> &runtimes();
 
@@ -81,8 +84,10 @@ private:
     std::set<QueryHandler*> batchHandlers_;
     std::set<QueryHandler*> realtimeHandlers_;
 
-    std::vector<std::shared_ptr<Item>> results_;
-    std::vector<std::shared_ptr<Item>> fallbacks_;
+    mutable std::vector<std::pair<std::shared_ptr<Item>, uint>> results_;
+    mutable std::vector<std::pair<std::shared_ptr<Item>, uint>> fallbacks_;
+    mutable int sortedItems_ = 0;
+    bool fetchIncrementally_ = false;
 
     QTimer fiftyMsTimer_;
     std::map<QString,uint> runtimes_;

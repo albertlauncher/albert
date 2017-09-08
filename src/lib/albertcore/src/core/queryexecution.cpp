@@ -33,15 +33,21 @@
 #include "matchcompare.h"
 #include "item.h"
 #include "itemroles.h"
-using std::chrono::system_clock;
 using namespace std;
+using namespace chrono;
+
+namespace {
+    const int FETCH_SIZE = 20;
+}
 
 
 /** ***************************************************************************/
-Core::QueryExecution::QueryExecution(const std::set<QueryHandler*> & queryHandlers,
-                                     const std::set<FallbackProvider*> &fallbackProviders,
-                                     const QString &searchTerm) {
+Core::QueryExecution::QueryExecution(const set<QueryHandler*> & queryHandlers,
+                                     const set<FallbackProvider*> &fallbackProviders,
+                                     const QString &searchTerm,
+                                     bool fetchIncrementally) {
 
+    fetchIncrementally_ = fetchIncrementally;
     query_.searchTerm_ = searchTerm;
 
     // Run with a single handler if the trigger matches
@@ -65,14 +71,12 @@ Core::QueryExecution::QueryExecution(const std::set<QueryHandler*> & queryHandle
     // Get fallbacks
     for ( FallbackProvider *fallbackProvider : fallbackProviders ) {
         system_clock::time_point start = system_clock::now();
-        vector<shared_ptr<Item>> && tmpFallbacks = fallbackProvider->fallbacks(searchTerm);
-        long duration = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now()-start).count();
-        qDebug() << qPrintable(QString("TIME: %1 µs FALLBACK [%2]").arg(duration, 6).arg("fallback providers have no id yet"));
-        fallbacks_.insert(fallbacks_.end(),
-                          std::make_move_iterator(tmpFallbacks.begin()),
-                          std::make_move_iterator(tmpFallbacks.end()));
+        for ( shared_ptr<Item> & item : fallbackProvider->fallbacks(searchTerm) )
+            fallbacks_.emplace_back(move(item), 0);
+        qDebug() << qPrintable(QString("TIME: %1 µs FALLBACK [%2]")
+                               .arg(duration_cast<microseconds>(system_clock::now()-start).count(), 6)
+                               .arg("fallback providers have no id yet"));
     }
-
 }
 
 
@@ -103,7 +107,7 @@ void Core::QueryExecution::setState(State state) {
 
 /** ***************************************************************************/
 int Core::QueryExecution::rowCount(const QModelIndex &) const {
-    return static_cast<int>(results_.size());
+    return fetchIncrementally_ ? sortedItems_ : static_cast<int>(results_.size());
 }
 
 
@@ -124,7 +128,7 @@ QHash<int,QByteArray> Core::QueryExecution::roleNames() const {
 /** ***************************************************************************/
 QVariant Core::QueryExecution::data(const QModelIndex &index, int role) const {
     if (index.isValid()) {
-        const shared_ptr<Item> &item = results_[static_cast<size_t>(index.row())];
+        const shared_ptr<Item> &item = results_[static_cast<size_t>(index.row())].first;
 
         switch ( role ) {
         case ItemRoles::TextRole:
@@ -153,12 +157,35 @@ QVariant Core::QueryExecution::data(const QModelIndex &index, int role) const {
 }
 
 
+/** ***************************************************************************/
+bool Core::QueryExecution::canFetchMore(const QModelIndex & /* index */) const
+{
+    if (fetchIncrementally_ && sortedItems_ < static_cast<int>(results_.size()))
+        return true;
+    else
+        return false;
+}
+
+
+/** ***************************************************************************/
+void Core::QueryExecution::fetchMore(const QModelIndex & /* index */)
+{
+    int sortUntil = min(sortedItems_ + FETCH_SIZE, static_cast<int>(results_.size()));
+    partial_sort(results_.begin() + sortedItems_,
+                      results_.begin() + sortUntil,
+                      results_.end(),
+                      MatchCompare());
+    beginInsertRows(QModelIndex(), sortedItems_, sortUntil-1);
+    sortedItems_ = sortUntil;
+    endInsertRows();
+}
+
 
 /** ***************************************************************************/
 bool Core::QueryExecution::setData(const QModelIndex &index, const QVariant &value, int role) {
 
     if (index.isValid()) {
-        shared_ptr<Item> &item = results_[static_cast<size_t>(index.row())];
+        shared_ptr<Item> &item = results_[static_cast<size_t>(index.row())].first;
         QString activateditemId;
 
         switch ( role ) {
@@ -179,8 +206,8 @@ bool Core::QueryExecution::setData(const QModelIndex &index, const QVariant &val
         }
         case ItemRoles::FallbackRole:{
             if (0U < fallbacks_.size() && 0U < item->actions().size()) {
-                fallbacks_[0]->actions()[0]->activate();
-                activateditemId = fallbacks_[0]->id();
+                fallbacks_[0].first->actions()[0]->activate();
+                activateditemId = fallbacks_[0].first->id();
             }
             break;
         }
@@ -202,7 +229,7 @@ bool Core::QueryExecution::setData(const QModelIndex &index, const QVariant &val
 
 
 /** ***************************************************************************/
-const std::map<QString, uint> &Core::QueryExecution::runtimes() {
+const map<QString, uint> &Core::QueryExecution::runtimes() {
     return runtimes_;
 }
 
@@ -240,12 +267,12 @@ void Core::QueryExecution::runBatchHandlers() {
             this, &QueryExecution::onBatchHandlersFinished);
 
     // Run the handlers concurrently and measure the runtimes
-    std::function<pair<QueryHandler*,uint>(QueryHandler*)> func = [this](QueryHandler* queryHandler){
+    function<pair<QueryHandler*,uint>(QueryHandler*)> func = [this](QueryHandler* queryHandler){
         system_clock::time_point start = system_clock::now();
         queryHandler->handleQuery(&query_);
-        long duration = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now()-start).count();
+        long duration = duration_cast<microseconds>(system_clock::now()-start).count();
         qDebug() << qPrintable(QString("TIME: %1 µs MATCHES [%2]").arg(duration, 6).arg(queryHandler->id));
-        return std::make_pair(queryHandler, static_cast<int>(duration));
+        return make_pair(queryHandler, static_cast<int>(duration));
     };
     future_ = QtConcurrent::mapped(batchHandlers_.begin(), batchHandlers_.end(), func);
     futureWatcher_.setFuture(future_);
@@ -259,20 +286,21 @@ void Core::QueryExecution::onBatchHandlersFinished() {
     for ( auto it = future_.begin(); it != future_.end(); ++it )
         runtimes_.emplace(it->first->id, it->second);
 
-    // Sort the results
-    query_.mutex_.lock();
-    std::stable_sort(query_.results_.begin(),
-                     query_.results_.end(),
-                     MatchCompare());
-
     // Move the items of the "pending results" into "results"
-    std::transform(query_.results_.begin(),
-                   query_.results_.end(),
-                   std::back_inserter(results_),
-                   [](const pair<shared_ptr<Item>,uint>& p){ return std::move(p.first); });
-
+    query_.mutex_.lock();
+    swap(query_.results_, results_);
     query_.results_.clear();
     query_.mutex_.unlock();
+
+    // Sort the results
+    if ( fetchIncrementally_ ) {
+        int sortUntil = min(sortedItems_ + FETCH_SIZE, static_cast<int>(results_.size()));
+        partial_sort(results_.begin() + sortedItems_, results_.begin() + sortUntil,
+                          results_.end(), MatchCompare());
+        sortedItems_ = sortUntil;
+    }
+    else
+        std::sort(results_.begin(), results_.end(), MatchCompare());
 
     if ( realtimeHandlers_.empty() ){
         if( results_.empty() && !query_.searchTerm_.isEmpty() ){
@@ -302,12 +330,12 @@ void Core::QueryExecution::runRealtimeHandlers() {
             this, &QueryExecution::onRealtimeHandlersFinsished);
 
     // Run the handlers concurrently and measure the runtimes
-    std::function<pair<QueryHandler*,uint>(QueryHandler*)> func = [this](QueryHandler* queryHandler){
+    function<pair<QueryHandler*,uint>(QueryHandler*)> func = [this](QueryHandler* queryHandler){
         system_clock::time_point start = system_clock::now();
         queryHandler->handleQuery(&query_);
-        long duration = std::chrono::duration_cast<std::chrono::microseconds>(system_clock::now()-start).count();
+        long duration = duration_cast<microseconds>(system_clock::now()-start).count();
         qDebug() << qPrintable(QString("TIME: %1 µs MATCHES REALTIME [%2]").arg(duration, 6).arg(queryHandler->id));
-        return std::make_pair(queryHandler, static_cast<int>(duration));
+        return make_pair(queryHandler, static_cast<int>(duration));
     };
     future_ = QtConcurrent::mapped(realtimeHandlers_.begin(), realtimeHandlers_.end(), func);
     futureWatcher_.setFuture(future_);
@@ -346,19 +374,21 @@ void Core::QueryExecution::insertPendingResults() {
 
         QMutexLocker lock(&query_.mutex_);
 
-        beginInsertRows(QModelIndex(),
-                        static_cast<int>(results_.size()),
-                        static_cast<int>(results_.size()+query_.results_.size()-1));
+        // When fetching incrementally, only emit if this is in the fetched range
+        if ( !fetchIncrementally_ || sortedItems_ == static_cast<int>(results_.size()))
+            beginInsertRows(QModelIndex(),
+                            static_cast<int>(results_.size()),
+                            static_cast<int>(results_.size()+query_.results_.size()-1));
 
         // Preallocate space to avoid multiple allocatoins
         results_.reserve(results_.size() + query_.results_.size());
 
         // Copy the items of the matches into the results
-        std::transform(query_.results_.begin(), query_.results_.end(),
-                       std::back_inserter(results_),
-                       [](const pair<shared_ptr<Item>,uint>& p){ return std::move(p.first); });
+        move(query_.results_.begin(), query_.results_.end(), back_inserter(results_));
 
-        endInsertRows();
+        // When fetching incrementally, only emit if this is in the fetched range
+        if ( !fetchIncrementally_ || sortedItems_ == static_cast<int>(results_.size()))
+            endInsertRows();
 
         // Clear the empty matches
         query_.results_.clear();

@@ -88,7 +88,7 @@ public:
 
     void update(const bool &abort, IndexSettings indexSettings);
 
-    std::vector<std::shared_ptr<Files::File>> items;
+    const std::vector<std::shared_ptr<Files::File>> &items() const;
 
 private:
 
@@ -102,6 +102,7 @@ private:
     std::vector<std::shared_ptr<IndexTreeNode>> children;
     QString name;
     QDateTime lastModified;
+    std::vector<std::shared_ptr<Files::File>> items_;
 
     static constexpr const char* IGNOREFILE = ".albertignore";
 
