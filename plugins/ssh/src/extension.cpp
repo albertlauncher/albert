@@ -157,7 +157,7 @@ QWidget *Ssh::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void Ssh::Extension::handleQuery(Core::Query * query) {
+void Ssh::Extension::handleQuery(Core::Query * query) const {
 
     if ( query->searchTerm().isEmpty() )
         return;

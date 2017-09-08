@@ -39,7 +39,7 @@ public:
     QString name() const override { return "Debug"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     QStringList triggers() const override;
-    void handleQuery(Core::Query * query) override;
+    void handleQuery(Core::Query * query) const override;
     ExecutionType executionType() const override;
 
     int count() const;

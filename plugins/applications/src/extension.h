@@ -38,7 +38,7 @@ public:
 
     QString name() const override { return "Applications"; }
     QWidget *widget(QWidget *parent = nullptr) override;
-    void handleQuery(Core::Query * query) override;
+    void handleQuery(Core::Query * query) const override;
 
     bool fuzzy();
     void setFuzzy(bool b = true);

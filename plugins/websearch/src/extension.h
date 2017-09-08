@@ -41,7 +41,7 @@ public:
     QString name() const override { return "Websearch"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     QStringList triggers() const override;
-    void handleQuery(Core::Query * query) override;
+    void handleQuery(Core::Query * query) const override;
     std::vector<std::shared_ptr<Core::Item>> fallbacks(const QString &) override;
 
     const std::vector<SearchEngine>& engines() const;

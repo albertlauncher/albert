@@ -252,7 +252,7 @@ QWidget *System::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void System::Extension::handleQuery(Core::Query * query) {
+void System::Extension::handleQuery(Core::Query * query) const {
 
    if ( query->searchTerm().isEmpty())
        return;

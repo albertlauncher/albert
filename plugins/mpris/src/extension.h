@@ -38,7 +38,7 @@ public:
     QString name() const override;
     QWidget *widget(QWidget *parent = nullptr) override;
     void setupSession() override;
-    void handleQuery(Core::Query *query) override;
+    void handleQuery(Core::Query *query) const override;
 
 private:
 

@@ -40,7 +40,7 @@ public:
     QWidget *widget(QWidget *parent = nullptr) override;
     void setupSession() override;
     void teardownSession() override;
-    void handleQuery(Core::Query * query) override;
+    void handleQuery(Core::Query * query) const override;
 
 private:
 

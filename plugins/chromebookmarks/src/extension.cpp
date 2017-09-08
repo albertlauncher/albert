@@ -281,7 +281,7 @@ QWidget *ChromeBookmarks::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void ChromeBookmarks::Extension::handleQuery(Core::Query * query) {
+void ChromeBookmarks::Extension::handleQuery(Core::Query * query) const {
 
     if ( query->searchTerm().isEmpty() )
         return;

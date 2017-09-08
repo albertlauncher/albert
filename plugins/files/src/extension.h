@@ -41,7 +41,7 @@ public:
     QString name() const override { return "Files"; }
     QStringList triggers() const override { return {"/", "~"}; }
     QWidget *widget(QWidget *parent = nullptr) override;
-    void handleQuery(Core::Query * query) override;
+    void handleQuery(Core::Query * query) const override;
 
     const QStringList &paths() const;
     void setPaths(const QStringList &);

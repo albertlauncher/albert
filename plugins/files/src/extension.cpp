@@ -310,7 +310,7 @@ QWidget *Files::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void Files::Extension::handleQuery(Core::Query * query) {
+void Files::Extension::handleQuery(Core::Query * query) const {
 
     if ( query->searchTerm().isEmpty() )
         return;
@@ -341,15 +341,16 @@ void Files::Extension::handleQuery(Core::Query * query) {
     else
     {
         if ( QString("albert scan files").startsWith(query->searchTerm()) ) {
+
+            shared_ptr<StandardAction> standardAction = make_shared<StandardAction>();
+            standardAction->setText("Update the file index");
+            // Const cast is fine since the action will not be called here
+            standardAction->setAction([this](){ const_cast<Extension*>(this)->updateIndex(); });
+
             shared_ptr<StandardItem> standardItem = make_shared<StandardItem>("org.albert.extension.files.action.index");
             standardItem->setText("albert scan files");
             standardItem->setSubtext("Update the file index");
             standardItem->setIconPath(":app_icon");
-
-            shared_ptr<StandardAction> standardAction = make_shared<StandardAction>();
-            standardAction->setText("Update the file index");
-            standardAction->setAction([this](){ this->updateIndex(); });
-
             standardItem->setActions({standardAction});
 
             query->addMatch(move(standardItem));

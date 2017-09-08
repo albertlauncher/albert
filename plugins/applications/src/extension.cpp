@@ -617,7 +617,7 @@ QWidget *Applications::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void Applications::Extension::handleQuery(Core::Query * query) {
+void Applications::Extension::handleQuery(Core::Query * query) const {
 
     if ( query->searchTerm().isEmpty() )
         return;

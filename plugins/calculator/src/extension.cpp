@@ -101,7 +101,7 @@ QWidget *Calculator::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void Calculator::Extension::handleQuery(Core::Query * query) {
+void Calculator::Extension::handleQuery(Core::Query * query) const {
 
     if ( query->searchTerm().isEmpty() )
         return;

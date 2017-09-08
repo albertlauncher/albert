@@ -40,7 +40,7 @@ public:
     QStringList triggers() const override { return {trigger_}; }
     void setupSession() override;
     void teardownSession() override;
-    void handleQuery(Core::Query *query) override;
+    void handleQuery(Core::Query *query) const override;
 
     /*
      * Extension specific members
@@ -65,8 +65,8 @@ private:
     QString version_;
     QStringList dependencies_;
     QString trigger_;
-    std::map<QString, QString> variables_;
-    QMutex processMutex_;
+    mutable std::map<QString, QString> variables_;
+    mutable QMutex processMutex_;
 };
 
 }

@@ -366,7 +366,7 @@ QStringList Websearch::Extension::triggers() const {
 
 
 /** ***************************************************************************/
-void Websearch::Extension::handleQuery(Core::Query * query) {
+void Websearch::Extension::handleQuery(Core::Query * query) const {
 
     if ( query->searchTerm().isEmpty() )
         return;

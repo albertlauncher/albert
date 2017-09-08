@@ -162,7 +162,7 @@ void VirtualBox::Extension::setupSession() {
 
 
 /** ***************************************************************************/
-void VirtualBox::Extension::handleQuery(Core::Query * query) {
+void VirtualBox::Extension::handleQuery(Core::Query * query) const {
 
     if ( query->searchTerm().isEmpty() )
         return;

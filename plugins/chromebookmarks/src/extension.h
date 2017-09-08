@@ -38,7 +38,7 @@ public:
 
     QString name() const override { return "Chrome bookmarks"; }
     QWidget *widget(QWidget *parent = nullptr) override;
-    void handleQuery(Core::Query * query) override;
+    void handleQuery(Core::Query * query) const override;
 
     const QString &path();
     void setPath(const QString &path);

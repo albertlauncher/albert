@@ -40,7 +40,7 @@ public:
     QString name() const override { return tr("VirtualBox"); }
     QWidget *widget(QWidget *parent = nullptr) override;
     void setupSession() override;
-    void handleQuery(Core::Query *) override;
+    void handleQuery(Core::Query *) const override;
 
 private:
 

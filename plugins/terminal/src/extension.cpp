@@ -99,7 +99,7 @@ QWidget *Terminal::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void Terminal::Extension::handleQuery(Core::Query * query) {
+void Terminal::Extension::handleQuery(Core::Query * query) const {
 
     if ( query->searchTerm().isEmpty() )
         return;

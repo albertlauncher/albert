@@ -369,7 +369,7 @@ QWidget *FirefoxBookmarks::Extension::widget(QWidget *parent) {
 
 
 /** ***************************************************************************/
-void FirefoxBookmarks::Extension::handleQuery(Core::Query *query) {
+void FirefoxBookmarks::Extension::handleQuery(Core::Query *query) const {
 
     if ( query->searchTerm().isEmpty() )
         return;

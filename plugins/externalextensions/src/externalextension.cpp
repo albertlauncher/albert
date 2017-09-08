@@ -301,10 +301,10 @@ void ExternalExtensions::ExternalExtension::teardownSession() {
 
 
 /** ***************************************************************************/
-void ExternalExtensions::ExternalExtension::handleQuery(Query* query) {
+void ExternalExtensions::ExternalExtension::handleQuery(Query* query) const {
 
-    // External extension must run only when triggered, since they are to ressource heavy
-    if ( !query->isTriggered() )
+    // External extension must run only when triggered, since they are too ressource heavy
+    if ( query->trigger().isEmpty() )
         return;
 
     // Never run the extension concurrent

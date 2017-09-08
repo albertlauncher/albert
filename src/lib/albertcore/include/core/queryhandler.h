@@ -85,10 +85,10 @@ public:
      * loop, be aware of the consequences (especially regarding signal/slot
      * mechanism).
      * Note that this method may run simultaneously in separate threads make
-     * sure that everything you touch is threadsafe.
+     * sure that everything mutable you touch is threadsafe.
      * @param query Holds the query context
      */
-    virtual void handleQuery(Query *query) = 0;
+    virtual void handleQuery(Query *query) const = 0;
 
 };
 

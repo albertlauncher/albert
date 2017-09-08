@@ -241,7 +241,7 @@ void MPRIS::Extension::setupSession() {
 
 
 /** ***************************************************************************/
-void MPRIS::Extension::handleQuery(Core::Query *query) {
+void MPRIS::Extension::handleQuery(Core::Query *query) const {
 
     if ( query->searchTerm().isEmpty() )
         return;

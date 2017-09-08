@@ -84,7 +84,7 @@ void ProjectNamespace::Extension::teardownSession() {
 
 
 /** ***************************************************************************/
-void ProjectNamespace::Extension::handleQuery(Core::Query * query) {
+void ProjectNamespace::Extension::handleQuery(Core::Query * query) const {
 
     // Queries can be empty
     if ( query->searchTerm().isEmpty() )

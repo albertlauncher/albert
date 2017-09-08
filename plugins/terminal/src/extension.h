@@ -39,7 +39,7 @@ public:
     QString name() const override { return "Terminal"; }
     QWidget *widget(QWidget *parent = nullptr) override;
     QStringList triggers() const override { return {">"}; }
-    void handleQuery(Core::Query * query) override;
+    void handleQuery(Core::Query * query) const override;
 
 private:
 

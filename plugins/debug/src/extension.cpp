@@ -84,7 +84,7 @@ const QString& Debug::Extension::trigger() const {
 
 
 /** ***************************************************************************/
-void Debug::Extension::handleQuery(Core::Query * query) {
+void Debug::Extension::handleQuery(Core::Query * query) const {
 
     // This extension must run only triggered
     if ( query->trigger().isNull() )
