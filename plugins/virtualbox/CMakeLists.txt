@@ -21,6 +21,9 @@ add_definitions(-DVBOX_WITH_XPCOM_NAMESPACE_CLEANUP)
 set(PATH_XPCOM /usr/lib/virtualbox/sdk/bindings/xpcom)
 set(PATH_BIN /usr/lib/virtualbox)
 
+if(NOT EXISTS ${PATH_XPCOM}/include/VirtualBox_XPCOM.h)
+    message("${PATH_XPCOM}/include/VirtualBox_XPCOM.h not found. Build will fail!")
+endif()
 
 
 # Set INCLUDE_DIRS and INTERFACE_INCLUDE_DIRS
