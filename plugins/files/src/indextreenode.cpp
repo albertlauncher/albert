@@ -24,7 +24,7 @@ Files::IndexTreeNode::IndexTreeNode(QString name, QDateTime lastModified, shared
     : enable_shared_from_this(), parent(parent), name(name), lastModified(lastModified) { }
 
 Files::IndexTreeNode::IndexTreeNode(QString name, shared_ptr<IndexTreeNode> parent)
-    : IndexTreeNode(name, QDateTime::fromSecsSinceEpoch(0), parent) { }
+    : IndexTreeNode(name, QDateTime::fromMSecsSinceEpoch(0), parent) { }
 
 Files::IndexTreeNode::IndexTreeNode(const IndexTreeNode &other)
     : enable_shared_from_this(),
