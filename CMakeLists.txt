@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.1) # Ubuntu 16.04
+cmake_minimum_required(VERSION 3.1.3)  # Least supporting CMAKE_CXX_STANDARD
 
 project(albertlauncher)
 
