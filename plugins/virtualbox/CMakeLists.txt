@@ -30,6 +30,9 @@ if(NOT EXISTS ${PATH_XPCOM}/include/VirtualBox_XPCOM.h)
 endif()
 
 
+# Set the RPATH for the library lookup
+set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${PATH_BIN}")
+
 # Set INCLUDE_DIRS and INTERFACE_INCLUDE_DIRS
 target_include_directories(${PROJECT_NAME}
     PRIVATE
