@@ -51,7 +51,7 @@ vector<QString> configNames = {
 
 vector<QString> itemTitles = {
     "Lock",
-    "Logout",
+    "Log out",
     "Suspend",
     "Hibernate",
     "Restart",
@@ -83,25 +83,21 @@ QString defaultCommand(SupportedCommands command){
 
     switch (command) {
     case LOCK:
-        if (de == "Unity" || de == "Pantheon" || de == "Gnome")
+        if (de == "Unity" || de == "Pantheon" || de == "GNOME")
             return "gnome-screensaver-command --lock";
         else if (de == "kde-plasma" || de == "KDE")
-            // "qdbus org.freedesktop.ScreenSaver /org/freedesktop/ScreenSaver Lock" also works
-	    return "dbus-send --dest=org.freedesktop.ScreenSaver --type=method_call /ScreenSaver org.freedesktop.ScreenSaver.Lock";
+            return "dbus-send --dest=org.freedesktop.ScreenSaver --type=method_call /ScreenSaver org.freedesktop.ScreenSaver.Lock";
         else if (de == "XFCE")
             return "xflock4";
-        if (de == "X-Cinnamon" || de == "Cinnamon")
+        else if (de == "X-Cinnamon" || de == "Cinnamon")
             return "cinnamon-screensaver-command --lock";
         else if (de == "MATE")
             return "mate-screensaver-command --lock";
-	// xdg-screensaver claims to support (in addition to the above): ENLIGHTENMENT,LXDE,LXQt,X-Generic
-	else if (de == "ENLIGHTENMENT" || de == "LXDE" || de == "LXQt" || de == "X-Generic")
-	    return "xdg-screensaver lock";
         else
-            return "notify-send \"Error.\" \"Lock command is not set.\" --icon=system-lock-screen";
+            return "xdg-screensaver lock";
 
     case LOGOUT:
-        if (de == "Unity" || de == "Pantheon" || de == "Gnome")
+        if (de == "Unity" || de == "Pantheon" || de == "GNOME")
             return "gnome-session-quit --logout";
         else if (de == "kde-plasma" || de == "KDE")
             return "qdbus org.kde.ksmserver /KSMServer logout 0 0 0";
@@ -131,7 +127,7 @@ QString defaultCommand(SupportedCommands command){
             return "systemctl hibernate -i";
 
     case REBOOT:
-        if (de == "Unity" || de == "Pantheon" || de == "Gnome")
+        if (de == "Unity" || de == "Pantheon" || de == "GNOME")
             return "gnome-session-quit --reboot";
         else if (de == "kde-plasma" || de == "KDE")
             return "qdbus org.kde.ksmserver /KSMServer logout 0 1 0";
@@ -145,7 +141,7 @@ QString defaultCommand(SupportedCommands command){
             return "notify-send \"Error.\" \"Reboot command is not set.\" --icon=system-reboot";
 
     case POWEROFF:
-        if (de == "Unity" || de == "Pantheon" || de == "Gnome")
+        if (de == "Unity" || de == "Pantheon" || de == "GNOME")
             return "gnome-session-quit --power-off";
         else if (de == "kde-plasma" || de == "KDE")
             return "qdbus org.kde.ksmserver /KSMServer logout 0 2 0";
