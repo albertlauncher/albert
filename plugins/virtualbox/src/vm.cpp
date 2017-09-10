@@ -22,37 +22,40 @@
 #include <QObject>
 #include <QProcess>
 #include <QRegularExpression>
+#include <nsString.h>
+#include <nsIServiceManager.h>
 #include "util/standardaction.h"
 using Core::StandardAction;
 
 
 /** ***************************************************************************/
-VirtualBox::VM::VM(const QString vboxFileName) {
+VirtualBox::VM::VM(IMachine *machine) : machine_(machine) {
+    PRBool isAccessible = PR_FALSE;
+    machine->GetAccessible(&isAccessible);
 
-    QFile vboxFile(vboxFileName);
-    if (!vboxFile.open(QFile::ReadOnly)) {
-        qWarning("Could not open VM config file for read operation: %s", vboxFileName.toStdString().c_str());
-        return;
+    if (isAccessible) {
+        nsXPIDLString machineName;
+        machine->GetName(getter_Copies(machineName));
+        char *machineNameAscii = ToNewCString(machineName);
+        name_ = machineNameAscii;
+        free(machineNameAscii);
+    } else {
+        name_ = "<inaccessible>";
     }
 
-    QDomDocument machineConfig;
-    QString errMsg;
-    int errLine, errCol;
-    if (!machineConfig.setContent(&vboxFile, &errMsg, &errLine, &errCol)) {
-        qWarning("Could not parse VM config file %s because %s in line %d col %d", vboxFileName.toStdString().c_str(), errMsg.toStdString().c_str(), errLine, errCol);
-        state_ = "";
-        vboxFile.close();
-        return;
-    }
-    vboxFile.close();
+    nsXPIDLString iid;
+    machine->GetId(getter_Copies(iid));
+    const char *uuidString = ToNewCString(iid);
+    uuid_ = uuidString;
+    free((void*)uuidString);
+}
 
-    QDomElement root = machineConfig.documentElement();
-    QDomElement machine = root.firstChildElement("Machine");
-    uuid_ = machine.attribute("uuid");
-    name_ = machine.attribute("name");
-    state_ = "poweroff";
 
-    probeState();
+
+/** ***************************************************************************/
+VirtualBox::VM::~VM() {
+    /* don't forget to release the objects in the array... */
+    machine_->Release();
 }
 
 
@@ -80,8 +83,6 @@ VirtualBox::VM::VM(const QString vboxFileName) {
  */
 /** ***************************************************************************/
 VirtualBox::VMItem *VirtualBox::VM::produceItem() const {
-    if (state_.isEmpty())
-        return nullptr; // This should not be empty... We just ignore this VM
 
     QString pauseCmd = "VBoxManage controlvm %1 pause";
     QString startCmd = "VBoxManage startvm %1";
@@ -97,25 +98,41 @@ VirtualBox::VMItem *VirtualBox::VM::produceItem() const {
     resumeCmd = resumeCmd.arg(uuid_);
     ActionSPtrVec actions;
     int mainAction = 0;
-    if (state_ == "starting" || state_ == "restoring" || state_ == "saving" || state_ == "stopping") {
+
+    PRUint32 state;
+    machine_->GetState(&state);
+    switch (state) {
+    case MachineState::Starting:
+    case MachineState::Restoring:
+    case MachineState::Saving:
+    case MachineState::Stopping:
         mainAction = VMItem::VM_STATE_CHANGING;
         actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Controls are disabled", [](){}) ));
-    } else if (state_ == "poweroff" || state_ == "aborted") {
+        break;
+    case MachineState::PoweredOff:
+    case MachineState::Aborted:
         mainAction = VMItem::VM_START;
         actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Start", [startCmd](){ QProcess::startDetached(startCmd); }) ));
-    } else if (state_ == "saved") {
+        break;
+    case MachineState::Saved:
         mainAction = VMItem::VM_START;
         actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Start", [startCmd](){ QProcess::startDetached(startCmd); }) ));
-    } else if (state_ == "running") {
+        break;
+    case MachineState::Running:
         mainAction = VMItem::VM_PAUSE;
         actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Pause", [pauseCmd](){ QProcess::startDetached(pauseCmd); }) ));
         actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Save State", [saveCmd](){ QProcess::startDetached(saveCmd); }) ));
         actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Stop", [stopCmd](){ QProcess::startDetached(stopCmd); }) ));
-    } else if (state_ == "paused") {
+        break;
+    case MachineState::Paused:
         mainAction = VMItem::VM_RESUME;
         actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Resume", [resumeCmd](){ QProcess::startDetached(resumeCmd); }) ));
         actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Save State", [saveCmd](){ QProcess::startDetached(saveCmd); }) ));
         actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Reset", [resetCmd](){ QProcess::startDetached(resetCmd); }) ));
+        break;
+    default:
+        mainAction = VMItem::VM_DIFFERENT;
+        actions.push_back(std::shared_ptr<StandardAction>( new StandardAction("Controls are disabled", [](){}) ));
     }
 
     return new VMItem(name_, uuid_, mainAction, actions, state_);
@@ -130,7 +147,7 @@ bool VirtualBox::VM::startsWith(QString other) const {
 
 
 
-/** ***************************************************************************/
+/** ***************************************************************************
 void VirtualBox::VM::probeState() const {
     QProcess *process = new QProcess;
     process->setReadChannel(QProcess::StandardOutput);
@@ -153,5 +170,5 @@ void VirtualBox::VM::probeState() const {
     QObject::connect(process, static_cast<void(QProcess::*)(QProcess::ProcessError)>(&QProcess::error), [process](QProcess::ProcessError){
         process->deleteLater();
     });
-}
+}*/
 

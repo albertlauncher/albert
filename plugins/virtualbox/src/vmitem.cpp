@@ -24,6 +24,7 @@ const int VirtualBox::VMItem::VM_START = 1;
 const int VirtualBox::VMItem::VM_PAUSE = 2;
 const int VirtualBox::VMItem::VM_RESUME = 3;
 const int VirtualBox::VMItem::VM_STATE_CHANGING = -1;
+const int VirtualBox::VMItem::VM_DIFFERENT = -2;
 
 VirtualBox::VMItem::VMItem(const QString &name, const QString &uuid, int &mainAction, const ActionSPtrVec actions, const QString &state) : name_(name), uuid_(uuid), actions_(actions), mainAction_(mainAction) {
     idstring_ = QString("extension.virtualbox.item:%1.%2").arg(uuid).arg(state);
@@ -43,6 +44,9 @@ QString VirtualBox::VMItem::subtext() const {
         break;
     case VM_STATE_CHANGING:
         toreturn = "The VM %1 is currently in action. Controls are disabled!";
+        break;
+    case VM_DIFFERENT:
+        toreturn = "The VM %1 is currently in in unhandled state. Controls are disabled!";
         break;
     default:
         toreturn = "Start %1";

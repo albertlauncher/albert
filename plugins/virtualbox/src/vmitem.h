@@ -51,6 +51,7 @@ public:
     static const int VM_PAUSE;
     static const int VM_RESUME;
     static const int VM_STATE_CHANGING;
+    static const int VM_DIFFERENT;
 
 private:
     QString name_;
