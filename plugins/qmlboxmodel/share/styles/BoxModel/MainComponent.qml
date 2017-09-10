@@ -3,13 +3,20 @@ import QtQuick.Controls 1.0
 import QtGraphicalEffects 1.0
 import "themes.js" as Themes
 
-FocusScope {
+Item {
 
     id: root
-
     width: frame.width+2*preferences.shadow_size
     height: frame.height+2*preferences.shadow_size
-    focus: true
+
+    layer.enabled: true
+    layer.effect: DropShadow {
+        transparentBorder: true
+        verticalOffset: preferences.shadow_size/3
+        radius: preferences.shadow_size
+        samples: preferences.shadow_size*2
+        color: preferences.shadow_color
+    }
 
     Preferences {
         id: preferences
@@ -23,162 +30,147 @@ FocusScope {
 
     Rectangle {
 
-        id: shadowArea
-        color:"#80ff0000"
+        id: frame
+        objectName: "frame" // for C++
+        x: preferences.shadow_size;
+        y: preferences.shadow_size
+        width: preferences.window_width
+        height: content.height+2*content.anchors.margins
+        radius: preferences.radius
+        color: preferences.background_color
+        Behavior on color { ColorAnimation { duration: preferences.animation_duration; easing.type: Easing.OutCubic } }
+        Behavior on border.color { ColorAnimation { duration: preferences.animation_duration; easing.type: Easing.OutCubic } }
+        border.color: preferences.border_color
+        border.width: preferences.border_size
 
-        Rectangle {
+        Column {
 
-            id: frame
-            objectName: "frame" // for C++
-            x: preferences.shadow_size;
-            y: preferences.shadow_size
-            width: preferences.window_width
-            height: content.height+2*content.anchors.margins
-            radius: preferences.radius
-            color: preferences.background_color
-            Behavior on color { ColorAnimation { duration: preferences.animation_duration; easing.type: Easing.OutCubic } }
-            Behavior on border.color { ColorAnimation { duration: preferences.animation_duration; easing.type: Easing.OutCubic } }
-            border.color: preferences.border_color
-            border.width: preferences.border_size
-
-            layer.enabled: true
-            layer.effect: DropShadow {
-                transparentBorder: true
-                verticalOffset: preferences.shadow_size/3
-                radius: preferences.shadow_size
-                samples: preferences.shadow_size*2
-                color: preferences.shadow_color
+            id: content
+            anchors {
+                top: parent.top
+                left: parent.left
+                right: parent.right
+                margins: preferences.border_size+preferences.padding
             }
+            spacing: preferences.spacing
 
-            Column {
-
-                id: content
+            HistoryTextInput {
+                id: historyTextInput
                 anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: parent.right
-                    margins: preferences.border_size+preferences.padding
+                    left: parent.left;
+                    right: parent.right;
                 }
+                clip: true
+                color: preferences.input_color
+                focus: true
+                font.pixelSize: preferences.input_fontsize
+                font.family: preferences.font_name
+                selectByMouse: true
+                selectedTextColor: preferences.background_color
+                selectionColor: preferences.selection_color
+                Keys.forwardTo: [root, resultsList]
+                cursorDelegate : Item {
+                    id: cursor
+                    Rectangle { width: 1
+                        height: parent.height
+                        color: preferences.cursor_color
+                    }
+                    SequentialAnimation on opacity {
+                        loops: Animation.Infinite;
+                        NumberAnimation { to: 0; duration: 500; easing.type: Easing.InOutExpo }
+                        NumberAnimation { to: 1; duration: 500; easing.type: Easing.InOutExpo }
+                    }
+                }
+            } // historyTextInput
+
+            DesktopListView {
+                id: resultsList
+                width: parent.width
+                model: resultsModel
+                itemCount: preferences.max_items
                 spacing: preferences.spacing
-
-                HistoryTextInput {
-                    id: historyTextInput
-                    anchors {
-                        left: parent.left;
-                        right: parent.right;
+                delegate: Component {
+                    ItemViewDelegate{
+                        iconSize: preferences.icon_size
+                        spacing: preferences.spacing
+                        textSize: preferences.item_title_fontsize
+                        descriptionSize: preferences.item_description_fontsize
+                        textColor: preferences.foreground_color
+                        highlightColor: preferences.highlight_color
+                        fontName: preferences.font_name
+                        animationDuration: preferences.animation_duration
                     }
-                    clip: true
-                    color: preferences.input_color
-                    focus: true
-                    font.pixelSize: preferences.input_fontsize
-                    font.family: preferences.font_name
-                    selectByMouse: true
-                    selectedTextColor: preferences.background_color
-                    selectionColor: preferences.selection_color
-                    Keys.forwardTo: [root, resultsList]
-                    cursorDelegate : Item {
-                        id: cursor
-                        Rectangle { width: 1
-                            height: parent.height
-                            color: preferences.cursor_color
-                        }
-                        SequentialAnimation on opacity {
-                            loops: Animation.Infinite;
-                            NumberAnimation { to: 0; duration: 500; easing.type: Easing.InOutExpo }
-                            NumberAnimation { to: 1; duration: 500; easing.type: Easing.InOutExpo }
-                        }
-                    }
-                } // historyTextInput
-
-                DesktopListView {
-                    id: resultsList
-                    width: parent.width
-                    model: resultsModel
-                    itemCount: preferences.max_items
-                    spacing: preferences.spacing
-                    delegate: Component {
-                        ItemViewDelegate{
-                            iconSize: preferences.icon_size
-                            spacing: preferences.spacing
-                            textSize: preferences.item_title_fontsize
-                            descriptionSize: preferences.item_description_fontsize
-                            textColor: preferences.foreground_color
-                            highlightColor: preferences.highlight_color
-                            fontName: preferences.font_name
-                            animationDuration: preferences.animation_duration
-                        }
-                    }
-                    Keys.onEnterPressed: (event.modifiers===Qt.NoModifier) ? activate() : activate(-event.modifiers)
-                    Keys.onReturnPressed: (event.modifiers===Qt.NoModifier) ? activate() : activate(-event.modifiers)
-                    onCurrentIndexChanged: if (root.state==="detailsView") root.state=""
-                }  // resultsList (ListView)
-
-                DesktopListView {
-                    id: actionsListView
-                    width: parent.width
-                    model: ListModel { id: actionsModel }
-                    itemCount: actionsModel.count
-                    spacing: preferences.spacing
-                    Behavior on visible {
-                        SequentialAnimation {
-                            PropertyAction  { }
-                            NumberAnimation { target: actionsListView; property: "opacity"; from:0; to: 1; duration: preferences.animation_duration }
-                        }
-                    }
-                    delegate: Text {
-                        horizontalAlignment: Text.AlignHCenter
-                        width: parent.width
-                        text: name
-                        textFormat: Text.PlainText
-                        font.family: preferences.font_name
-                        elide: Text.ElideRight
-                        font.pixelSize: (preferences.item_description_fontsize+preferences.item_title_fontsize)/2
-                        color: ListView.isCurrentItem ? preferences.highlight_color : preferences.foreground_color
-                        Behavior on color { ColorAnimation{ duration: preferences.animation_duration } }
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: actionsListView.currentIndex = index
-                            onDoubleClicked: activate(index)
-                        }
-                    }
-                    visible: false
-                    Keys.onEnterPressed: activate(currentIndex)
-                    Keys.onReturnPressed: activate(currentIndex)
-                }  // actionsListView (ListView)
-            }  // content (Column)
-
-
-            SettingsButton {
-                id: settingsButton
-                size: preferences.settingsbutton_size
-                color: preferences.settingsbutton_color
-                hoverColor: preferences.settingsbutton_hover_color
-                onLeftClicked: settingsWidgetRequested()
-                onRightClicked: menu.popup()
-                anchors {
-                    top: parent.top
-                    right: parent.right
-                    topMargin: preferences.padding+preferences.border_size
-                    rightMargin: preferences.padding+preferences.border_size
                 }
+                Keys.onEnterPressed: (event.modifiers===Qt.NoModifier) ? activate() : activate(-event.modifiers)
+                Keys.onReturnPressed: (event.modifiers===Qt.NoModifier) ? activate() : activate(-event.modifiers)
+                onCurrentIndexChanged: if (root.state==="detailsView") root.state=""
+            }  // resultsList (ListView)
 
-                Menu {
-                    id: menu
-                    MenuItem {
-                        text: "Preferences"
-                        shortcut: "Alt+,"
-                        onTriggered: settingsWidgetRequested()
+            DesktopListView {
+                id: actionsListView
+                width: parent.width
+                model: ListModel { id: actionsModel }
+                itemCount: actionsModel.count
+                spacing: preferences.spacing
+                Behavior on visible {
+                    SequentialAnimation {
+                        PropertyAction  { }
+                        NumberAnimation { target: actionsListView; property: "opacity"; from:0; to: 1; duration: preferences.animation_duration }
                     }
-                    MenuItem {
-                        text: "Quit"
-                        shortcut: "Alt+F4"
-                        onTriggered: Qt.quit()
+                }
+                delegate: Text {
+                    horizontalAlignment: Text.AlignHCenter
+                    width: parent.width
+                    text: name
+                    textFormat: Text.PlainText
+                    font.family: preferences.font_name
+                    elide: Text.ElideRight
+                    font.pixelSize: (preferences.item_description_fontsize+preferences.item_title_fontsize)/2
+                    color: ListView.isCurrentItem ? preferences.highlight_color : preferences.foreground_color
+                    Behavior on color { ColorAnimation{ duration: preferences.animation_duration } }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: actionsListView.currentIndex = index
+                        onDoubleClicked: activate(index)
+                    }
+                }
+                visible: false
+                Keys.onEnterPressed: activate(currentIndex)
+                Keys.onReturnPressed: activate(currentIndex)
+            }  // actionsListView (ListView)
+        }  // content (Column)
 
-                    }
+
+        SettingsButton {
+            id: settingsButton
+            size: preferences.settingsbutton_size
+            color: preferences.settingsbutton_color
+            hoverColor: preferences.settingsbutton_hover_color
+            onLeftClicked: settingsWidgetRequested()
+            onRightClicked: menu.popup()
+            anchors {
+                top: parent.top
+                right: parent.right
+                topMargin: preferences.padding+preferences.border_size
+                rightMargin: preferences.padding+preferences.border_size
+            }
+
+            Menu {
+                id: menu
+                MenuItem {
+                    text: "Preferences"
+                    shortcut: "Alt+,"
+                    onTriggered: settingsWidgetRequested()
+                }
+                MenuItem {
+                    text: "Quit"
+                    shortcut: "Alt+F4"
+                    onTriggered: Qt.quit()
+
                 }
             }
-        }  // frame (Rectangle)
-    }  // shadowArea (Item)
+        }
+    }  // frame (Rectangle)
 
     onActiveFocusChanged: state=""
 
