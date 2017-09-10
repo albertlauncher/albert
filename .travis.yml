@@ -12,9 +12,7 @@ matrix:
           packages:
             - g++-5
       env:
-         - CXX=g++-5
-      compiler:
-        - gcc
+         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
     - os: linux
       addons:
         apt:
@@ -24,9 +22,10 @@ matrix:
           packages:
             - clang-3.6
       env:
-        - CXX=clang++-3.6
-      compiler:
-        - clang
+        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
+        
+before_install:
+    - eval "${MATRIX_EVAL}"
     
 install:
   - sudo add-apt-repository ppa:beineri/opt-qt551-trusty -y  # Qt-5.5
