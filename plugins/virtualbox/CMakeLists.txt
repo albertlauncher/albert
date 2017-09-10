@@ -9,12 +9,16 @@ find_package(Qt5 5.2.0 REQUIRED COMPONENTS
     Xml
 )
 
+qt5_wrap_ui(UI
+    configwidget.ui
+)
+
 qt5_add_resources(QRC
     ${PROJECT_NAME}.qrc
 )
 
 # Define the target
-add_library(${PROJECT_NAME} SHARED ${SRC} ${QRC})
+add_library(${PROJECT_NAME} SHARED ${SRC} ${QRC} ${UI})
 
 add_definitions(-DRT_OS_LINUX)
 add_definitions(-DVBOX_WITH_XPCOM_NAMESPACE_CLEANUP)

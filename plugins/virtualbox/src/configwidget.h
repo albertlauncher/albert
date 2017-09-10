@@ -1,5 +1,5 @@
 // albert - a simple application launcher for linux
-// Copyright (C) 2016-2017 Martin Buergmann
+// Copyright (C) 2014-2017 Manuel Schneider
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,29 +15,16 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-
-#include <QString>
-#include "vmitem.h"
-#include "VirtualBox_XPCOM.h"
+#include <QWidget>
+#include "ui_configwidget.h"
 
 namespace VirtualBox {
-
-class VM
+class ConfigWidget final : public QWidget
 {
+    Q_OBJECT
 public:
-    VM(IMachine *machine);
-    virtual ~VM();
-    VMItem* produceItem() const;
-    bool startsWith(QString other) const;
-    const QString &uuid() const { return uuid_; }
-    const QString &name() const { return name_; }
-
-private:
-    IMachine* machine_;
-    QString name_;
-    QString uuid_;
-    mutable QString state_;
+    explicit ConfigWidget(QWidget *parent = 0);
+    ~ConfigWidget();
+    Ui::ConfigWidget ui;
 };
-
-} // namespace VirtualBox
-
+}

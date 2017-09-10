@@ -25,6 +25,7 @@
 #include <QRegularExpression>
 #include <QStandardPaths>
 #include <QString>
+#include <QListWidget>
 #include <functional>
 #include "extension.h"
 #include "vm.h"
@@ -40,12 +41,14 @@ using Core::StandardItem;
 #include <nsIServiceManager.h>
 #include "VirtualBox_XPCOM.h"
 
+#include "configwidget.h"
 
 
 class VirtualBox::Private
 {
 public:
 
+    QPointer<ConfigWidget> widget;
     QList<VM*> vms;
     QFileSystemWatcher vboxWatcher;
 
@@ -54,6 +57,8 @@ public:
 
 
     //void rescanVBoxConfig(QString path);
+    void pollMachines();
+    void reload();
 
 };
 
@@ -123,6 +128,42 @@ void VirtualBox::Private::rescanVBoxConfig(QString path) {
 
 
 /** ***************************************************************************/
+void VirtualBox::Private::pollMachines() {
+
+    qDeleteAll(vms);
+    vms.clear();
+
+    nsresult rc;
+    IMachine **machines = NULL;
+    PRUint32 machineCnt = 0;
+
+    rc = virtualBox->GetMachines(&machineCnt, &machines);
+    if (NS_SUCCEEDED(rc)) {
+        for (PRUint32 i = 0; i < machineCnt; ++ i) {
+            IMachine *machine = machines[i];
+            if (machine) {
+                vms.append(new VM(machine));
+            }
+        }
+    }
+
+}
+
+
+
+/** ***************************************************************************/
+void VirtualBox::Private::reload() {
+    pollMachines();
+    widget->ui.listWidget->clear();
+
+    for (VM* vm : vms) {
+        widget->ui.listWidget->addItem(vm->name());
+    }
+}
+
+
+
+/** ***************************************************************************/
 /** ***************************************************************************/
 /** ***************************************************************************/
 /** ***************************************************************************/
@@ -142,20 +183,6 @@ VirtualBox::Extension::Extension()
                                              getter_AddRefs(d->virtualBox));
     if (NS_FAILED(rc))
         throw("Error, could not instantiate VirtualBox object.");
-
-    IMachine **machines = NULL;
-    PRUint32 machineCnt = 0;
-
-    rc = d->virtualBox->GetMachines(&machineCnt, &machines);
-    if (NS_SUCCEEDED(rc)) {
-        for (PRUint32 i = 0; i < machineCnt; ++ i) {
-            IMachine *machine = machines[i];
-            if (machine) {
-                d->vms.append(new VM(machine));
-            }
-        }
-    }
-
 
     VMItem::iconPath_ = XDG::IconLookup::iconPath("virtualbox");
     if ( VMItem::iconPath_.isNull() )
@@ -183,13 +210,21 @@ VirtualBox::Extension::~Extension() {
 
 /** ***************************************************************************/
 QWidget *VirtualBox::Extension::widget(QWidget *parent) {
-    return new QWidget(parent);
+    if (d->widget.isNull()) {
+        d->widget = new ConfigWidget(parent);
+
+        d->reload();
+
+        connect(d->widget->ui.pushButton, &QPushButton::clicked, [=]() {d->reload();});
+    }
+    return d->widget;
 }
 
 
 
 /** ***************************************************************************/
 void VirtualBox::Extension::setupSession() {
+    d->pollMachines();
 }
 
 
