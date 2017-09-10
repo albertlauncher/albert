@@ -1,10 +1,33 @@
 language: cpp
 sudo: required
 dist: trusty
-compiler:
-  - clang
-  - gcc
-
+     
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env:
+         - CXX=g++-5
+      compiler:
+        - gcc
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.6
+          packages:
+            - clang-3.6
+      env:
+        - CXX=clang++-3.6
+      compiler:
+        - clang
+    
 install:
   - sudo add-apt-repository ppa:beineri/opt-qt551-trusty -y  # Qt-5.5
   - sudo apt-get update -qq
