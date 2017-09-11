@@ -24,6 +24,11 @@
 
 namespace Core {
 
+struct Private;
+class ExtensionManager;
+class QueryHandler;
+class FallbackProvider;
+
 /**
  * @brief The extension interface
  */
@@ -31,7 +36,8 @@ class EXPORT_CORE Extension : public Plugin
 {
 public:
 
-    Extension(const QString &id) : Plugin(id) {}
+    Extension(const QString &id);
+    ~Extension();
 
     /**
      * @brief A human readable name of the plugin
@@ -47,6 +53,35 @@ public:
      * @return The settings widget
      */
     virtual QWidget* widget(QWidget *parent = nullptr) = 0;
+
+protected:
+
+    /**
+     * @brief registerFallbackProvider
+     */
+    void registerQueryHandler(QueryHandler*);
+
+    /**
+     * @brief unregisterFallbackProvider
+     */
+    void unregisterQueryHandler(QueryHandler*);
+
+    /**
+     * @brief registerFallbackProvider
+     */
+    void registerFallbackProvider(FallbackProvider*);
+
+    /**
+     * @brief unregisterFallbackProvider
+     */
+    void unregisterFallbackProvider(FallbackProvider*);
+
+private:
+
+    std::unique_ptr<Private> d;
+
+    static ExtensionManager *extensionManager;
+    friend class ExtensionManager;
 
 };
 

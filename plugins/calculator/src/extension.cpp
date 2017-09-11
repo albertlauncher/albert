@@ -57,6 +57,8 @@ Calculator::Extension::Extension()
       Core::QueryHandler(Core::Plugin::id()),
       d(new Private){
 
+    registerQueryHandler(this);
+
     // FIXME Qt6 Workaround for https://bugreports.qt.io/browse/QTBUG-58504
     d->locale = QLocale(QLocale::system().name());
 

@@ -243,6 +243,8 @@ Files::Extension::Extension()
       Core::QueryHandler(Core::Plugin::id()),
       d(new Private(this)) {
 
+    registerQueryHandler(this);
+
     // Load settings
     d->indexSettings.setFilters(settings().value(CFG_FILTERS, DEF_FILTERS).toStringList());
     d->indexSettings.setIndexHidden(settings().value(CFG_INDEX_HIDDEN, DEF_INDEX_HIDDEN).toBool());

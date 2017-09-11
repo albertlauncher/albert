@@ -228,6 +228,8 @@ FirefoxBookmarks::Extension::Extension()
       Core::QueryHandler(Core::Plugin::id()),
       d(new Private(this)){
 
+    registerQueryHandler(this);
+
     // Add a sqlite database connection for this extension, check requirements
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", Core::Plugin::id());
     if ( !db.isValid() )

@@ -22,15 +22,16 @@
 #include <vector>
 #include <memory>
 #include "extension.h"
-#include "core_globals.h"
 
 namespace Core {
 
 class Extension;
+class QueryHandler;
+class FallbackProvider;
 class PluginSpec;
 class ExtensionManagerPrivate;
 
-class EXPORT_CORE ExtensionManager final : public QObject
+class ExtensionManager final : public QObject
 {
     Q_OBJECT
 
@@ -47,19 +48,13 @@ public:
     void disableExtension(const std::unique_ptr<PluginSpec> &);
     bool extensionIsEnabled(const std::unique_ptr<PluginSpec> &);
 
-    void registerObject(QObject *);
-    void unregisterObject(QObject*);
-    const std::set<QObject *> objects() const;
-    template <typename T>
-    std::set<T *> objectsByType() {
-        std::set<T *> results;
-        for (QObject * object : objects()) {
-            T *result = dynamic_cast<T *>(object);
-            if (result)
-                results.insert(result);
-        }
-        return results;
-    }
+    void registerQueryHandler(QueryHandler*);
+    void unregisterQueryHandler(QueryHandler*);
+    const std::set<QueryHandler *> &queryHandlers();
+
+    void registerFallbackProvider(FallbackProvider*);
+    void unregisterFallbackProvider(FallbackProvider*);
+    const std::set<FallbackProvider *> &fallbackProviders();
 
 private:
 
@@ -70,8 +65,11 @@ private:
 
 signals:
 
-    void extensionLoaded(Extension*);
-    void extensionAboutToUnload(Extension*);
+    void queryHandlerRegistered(QueryHandler*);
+    void queryHandlerUnregistered(QueryHandler*);
+
+    void fallbackProviderRegistered(FallbackProvider*);
+    void fallbackProviderUnregistered(FallbackProvider*);
 
 };
 

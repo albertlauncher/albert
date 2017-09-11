@@ -64,6 +64,8 @@ Terminal::Extension::Extension()
       Core::QueryHandler(Core::Plugin::id()),
       d(new Private) {
 
+    registerQueryHandler(this);
+
     QString iconPath = XDG::IconLookup::iconPath("terminal");
     d->iconPath = iconPath.isNull() ? ":terminal" : iconPath;
 

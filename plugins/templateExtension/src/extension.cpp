@@ -38,6 +38,8 @@ ProjectNamespace::Extension::Extension()
       Core::QueryHandler(Core::Plugin::id()),
       d(new Private) {
 
+    registerQueryHandler(this);
+
     /*
      * Check the Extension and Plugin header to see the members in this scope
      */

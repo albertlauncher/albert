@@ -107,6 +107,8 @@ Ssh::Extension::Extension()
       Core::QueryHandler(Core::Plugin::id()),
       d(new Private) {
 
+    registerQueryHandler(this);
+
     // passwd must not be freed
     passwd *pwd = getpwuid(geteuid());
     if (pwd == NULL)

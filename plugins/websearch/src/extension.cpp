@@ -305,6 +305,9 @@ Websearch::Extension::Extension()
       Core::QueryHandler(Core::Plugin::id()),
       d(new Private) {
 
+    registerQueryHandler(this);
+    registerFallbackProvider(this);
+
     std::sort(validTlds.begin(), validTlds.end());
 
     // Move config file from old location to new. (data -> config) TODO: REMOVE in 0.14

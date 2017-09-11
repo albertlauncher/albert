@@ -25,23 +25,29 @@
 #include <QStandardPaths>
 #include <chrono>
 #include "extensionmanager.h"
+#include "queryhandler.h"
+#include "fallbackprovider.h"
 #include "pluginspec.h"
-using std::set;
-using std::unique_ptr;
-using std::vector;
+using namespace std;
+using namespace chrono;
 
 
 /** ***************************************************************************/
 class Core::ExtensionManagerPrivate {
 public:
     vector<unique_ptr<PluginSpec>> extensionSpecs_;
-    set<QObject*> extensions_;
+    set<Extension*> loadedExtensions_;
+    set<QueryHandler*> queryHandlers_;
+    set<FallbackProvider*> fallbackProviders_;
 };
 
 
 /** ***************************************************************************/
 Core::ExtensionManager::ExtensionManager(QStringList pluginDirs)
     : d(new ExtensionManagerPrivate) {
+
+    Q_ASSERT( Extension::extensionManager == nullptr);
+    Extension::extensionManager = this;
 
     // Find plugins
     for ( const QString &pluginDir : pluginDirs ) {
@@ -97,26 +103,29 @@ void Core::ExtensionManager::reloadExtensions() {
         if ( settings.value(QString("%1/enabled").arg(pluginSpec->id()), false).toBool() )
             loadExtension(pluginSpec);
     }
-
-}
-
-
-/** ***************************************************************************/
-const set<QObject*> Core::ExtensionManager::objects() const {
-    return d->extensions_;
 }
 
 
 /** ***************************************************************************/
 void Core::ExtensionManager::loadExtension(const unique_ptr<PluginSpec> &spec) {
     if ( spec->state() != PluginSpec::State::Loaded ){
+
+        // Load
         std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
-        if ( spec->load() ) {
-            d->extensions_.insert(spec->instance());
-            auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()-start);
-            qDebug() << qPrintable(QString("%1 loaded in %2 milliseconds").arg(spec->id()).arg(msecs.count()));
-        } else
+        if ( !spec->load() ) {
             qInfo() << QString("Loading %1 failed. (%2)").arg(spec->id(), spec->lastError()).toLocal8Bit().data();
+            return;
+        }
+        qDebug() << qPrintable(QString("%1 loaded in %2 milliseconds").arg(spec->id())
+                               .arg(duration_cast<milliseconds>(system_clock::now()-start).count()));
+
+        Extension *extension = dynamic_cast<Extension*>(spec->instance());
+        if (!extension) {
+            qInfo() << QString("Instance is not of tyoe Extension. (%2)").arg(spec->id()).toLocal8Bit().data();
+            return;
+        }
+
+        d->loadedExtensions_.insert(extension);
     }
 }
 
@@ -124,7 +133,15 @@ void Core::ExtensionManager::loadExtension(const unique_ptr<PluginSpec> &spec) {
 /** ***************************************************************************/
 void Core::ExtensionManager::unloadExtension(const unique_ptr<PluginSpec> &spec) {
     if (spec->state() != PluginSpec::State::NotLoaded) {
-        d->extensions_.erase(spec->instance());
+
+        Extension *extension = dynamic_cast<Extension*>(spec->instance());
+        if (!extension) {
+            qInfo() << QString("Instance is not of type Extension. (%2)").arg(spec->id()).toLocal8Bit().data();
+            return;
+        }
+
+        d->loadedExtensions_.erase(extension);
+
         spec->unload();
     }
 }
@@ -152,12 +169,41 @@ bool Core::ExtensionManager::extensionIsEnabled(const unique_ptr<PluginSpec> &pl
 
 
 /** ***************************************************************************/
-void Core::ExtensionManager::registerObject(QObject *object) {
-    d->extensions_.insert(object);
+void Core::ExtensionManager::registerQueryHandler(Core::QueryHandler *queryHandler) {
+    d->queryHandlers_.insert(queryHandler);
+    emit queryHandlerRegistered(queryHandler);
 }
 
 
 /** ***************************************************************************/
-void Core::ExtensionManager::unregisterObject(QObject *object) {
-    d->extensions_.erase(object);
+void Core::ExtensionManager::unregisterQueryHandler(Core::QueryHandler *queryHandler) {
+    d->queryHandlers_.erase(queryHandler);
+    emit queryHandlerUnregistered(queryHandler);
+}
+
+
+/** ***************************************************************************/
+const std::set<Core::QueryHandler*> &Core::ExtensionManager::queryHandlers() {
+    return d->queryHandlers_;
+}
+
+
+/** ***************************************************************************/
+void Core::ExtensionManager::registerFallbackProvider(Core::FallbackProvider *fallbackProvider) {
+    d->fallbackProviders_.insert(fallbackProvider);
+    emit fallbackProviderRegistered(fallbackProvider);
+
+}
+
+
+/** ***************************************************************************/
+void Core::ExtensionManager::unregisterFallbackProvider(Core::FallbackProvider *fallbackProvider) {
+    d->fallbackProviders_.erase(fallbackProvider);
+    emit fallbackProviderUnregistered(fallbackProvider);
+}
+
+
+/** ***************************************************************************/
+const std::set<Core::FallbackProvider*> &Core::ExtensionManager::fallbackProviders() {
+    return d->fallbackProviders_;
 }

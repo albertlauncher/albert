@@ -561,6 +561,8 @@ Applications::Extension::Extension()
       Core::QueryHandler(Core::Plugin::id()),
       d(new Private(this)) {
 
+    registerQueryHandler(this);
+
     qunsetenv("DESKTOP_AUTOSTART_ID");
 
     d->graphicalSudoPath = QStandardPaths::findExecutable("gksudo");

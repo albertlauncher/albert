@@ -45,6 +45,9 @@ Debug::Extension::Extension()
     : Core::Extension("org.albert.extension.debug"),
       Core::QueryHandler(Core::Plugin::id()),
       d(new Private) {
+
+    registerQueryHandler(this);
+
     d->delay = settings().value("delay", 50).toInt();
     d->count = settings().value("count", 100).toInt();
     d->async = settings().value("async", true).toBool();

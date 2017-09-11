@@ -66,7 +66,7 @@ void Core::QueryManager::setupSession() {
     system_clock::time_point start = system_clock::now();
 
     // Call all setup routines
-    for (Core::QueryHandler *handler : extensionManager_->objectsByType<Core::QueryHandler>()){
+    for (Core::QueryHandler *handler : extensionManager_->queryHandlers()) {
         system_clock::time_point start = system_clock::now();
         handler->setupSession();
         long duration = duration_cast<microseconds>(system_clock::now()-start).count();
@@ -86,7 +86,7 @@ void Core::QueryManager::teardownSession() {
     system_clock::time_point start = system_clock::now();
 
     // Call all teardown routines
-    for (Core::QueryHandler *handler : extensionManager_->objectsByType<Core::QueryHandler>()){
+    for (Core::QueryHandler *handler : extensionManager_->queryHandlers()) {
         system_clock::time_point start = system_clock::now();
         handler->teardownSession();
         long duration = duration_cast<microseconds>(system_clock::now()-start).count();
@@ -144,15 +144,11 @@ void Core::QueryManager::startQuery(const QString &searchTerm) {
         pastQueries_.back()->cancel();
     }
 
-    // Do nothing if nothing is loaded
-    if ( extensionManager_->objects().empty() )
-        return;
-
     system_clock::time_point start = system_clock::now();
 
     // Start query
-    QueryExecution *currentQuery = new QueryExecution(extensionManager_->objectsByType<QueryHandler>(),
-                                                      extensionManager_->objectsByType<FallbackProvider>(),
+    QueryExecution *currentQuery = new QueryExecution(extensionManager_->queryHandlers(),
+                                                      extensionManager_->fallbackProviders(),
                                                       searchTerm, incrementalSort_);
     connect(currentQuery, &QueryExecution::resultsReady, this, &QueryManager::resultsReady);
     currentQuery->run();

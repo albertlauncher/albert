@@ -28,7 +28,6 @@
 #include "configwidget.h"
 #include "externalextension.h"
 #include "externalextensionmodel.h"
-#include "core/extensionmanager.h"
 #include "extension.h"
 
 
@@ -73,7 +72,7 @@ ExternalExtensions::Extension::~Extension() {
     // Unregister and delete all extensions
     auto it = d->externalExtensions.rbegin();
     while (it != d->externalExtensions.rend()) {
-        Core::ExtensionManager::instance->unregisterObject(it->get());
+        unregisterQueryHandler(it->get());
         it = std::reverse_iterator<decltype(d->externalExtensions)::iterator>(d->externalExtensions.erase(std::next(it).base()));
     }
 }
@@ -106,7 +105,7 @@ void ExternalExtensions::Extension::reloadExtensions() {
     // Unregister and delete all extensions
     auto it = d->externalExtensions.rbegin();
     while (it != d->externalExtensions.rend()) {
-        Core::ExtensionManager::instance->unregisterObject(it->get());
+        unregisterQueryHandler(it->get());
         it = std::reverse_iterator<decltype(d->externalExtensions)::iterator>(d->externalExtensions.erase(std::next(it).base()));
     }
 
@@ -139,7 +138,7 @@ void ExternalExtensions::Extension::reloadExtensions() {
     }
 
     for ( std::unique_ptr<ExternalExtension> &obj : d->externalExtensions )
-        Core::ExtensionManager::instance->registerObject(obj.get());
+        unregisterQueryHandler(obj.get());
 
     emit extensionsUpdated();
 }

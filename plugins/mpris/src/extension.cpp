@@ -80,6 +80,9 @@ MPRIS::Extension::Extension()
     : Core::Extension("org.albert.extension.mpris"),
       Core::QueryHandler(Core::Plugin::id()),
       d(new Private) {
+
+    registerQueryHandler(this);
+
     QString icon;
 
     // Setup the DBus commands

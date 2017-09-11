@@ -219,6 +219,8 @@ ChromeBookmarks::Extension::Extension()
       Core::QueryHandler(Core::Plugin::id()),
       d(new Private(this)) {
 
+    registerQueryHandler(this);
+
     // Load settings
     d->offlineIndex.setFuzzy(settings().value(CFG_FUZZY, DEF_FUZZY).toBool());
 

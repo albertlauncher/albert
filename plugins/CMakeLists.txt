@@ -5,15 +5,15 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 # Set the RPATH for the library lookup
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/albert")
 
-# Frontends
+# FrontendPlugins
 add_subdirectory(widgetboxmodel)
 add_subdirectory(qmlboxmodel)
 
-# Extensions
+# ExtensionPlugins
 add_subdirectory(applications)
 add_subdirectory(calculator)
 add_subdirectory(chromebookmarks)
-#add_subdirectory(externalextensions)
+add_subdirectory(externalextensions)
 add_subdirectory(files)
 add_subdirectory(firefoxbookmarks)
 add_subdirectory(ssh)

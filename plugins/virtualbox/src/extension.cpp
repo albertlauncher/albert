@@ -123,6 +123,8 @@ VirtualBox::Extension::Extension()
       Core::QueryHandler(Core::Plugin::id()),
       d(new Private) {
 
+    registerQueryHandler(this);
+
     VMItem::iconPath_ = XDG::IconLookup::iconPath("virtualbox");
     if ( VMItem::iconPath_.isNull() )
         VMItem::iconPath_ = ":vbox";

@@ -183,6 +183,8 @@ System::Extension::Extension()
       Core::QueryHandler(Core::Plugin::id()),
       d(new Private) {
 
+    registerQueryHandler(this);
+
     // Load settings
     for (size_t i = 0; i < NUMCOMMANDS; ++i) {
         d->iconPaths.push_back(XDG::IconLookup::iconPath(iconNames[i]));
