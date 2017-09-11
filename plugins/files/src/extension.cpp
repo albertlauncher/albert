@@ -101,7 +101,7 @@ public:
 
     QStringList indexRootDirs;
     IndexSettings indexSettings;
-    map<QString, shared_ptr<IndexTreeNode>> indexTrees;
+    vector<shared_ptr<IndexTreeNode>> indexTrees;
     unique_ptr<QFutureWatcher<Core::OfflineIndex*>> futureWatcher;
     Core::OfflineIndex offlineIndex;
     QTimer indexIntervalTimer;
@@ -159,8 +159,8 @@ void Files::Private::finishIndexing() {
 
         // Notification
         CounterVisitor counterVisitor;
-        for (const auto & kv : indexTrees )
-            kv.second->accept(counterVisitor);
+        for (const auto & tree : indexTrees )
+            tree->accept(counterVisitor);
         qInfo() << qPrintable(QString("Indexed %1 files in %2 directories.")
                               .arg(counterVisitor.itemCount).arg(counterVisitor.dirCount));
         emit q->statusInfo(QString("Indexed %1 files in %2 directories.")
@@ -182,10 +182,13 @@ void Files::Private::finishIndexing() {
 OfflineIndex* Files::Private::indexFiles() {
 
     // Remove the subtrees not wanted anymore
-    for (auto& kv : this->indexTrees) {
-        if ( !indexRootDirs.contains(kv.first) ) {
-            kv.second->removeDownlinks();
-            this->indexTrees.erase(kv.first);
+    auto it = indexTrees.begin();
+    while ( it != indexTrees.end() ) {
+        if ( indexRootDirs.contains((*it)->path()) )
+            ++it;
+        else {
+            (*it)->removeDownlinks();
+            it = indexTrees.erase(it);
         }
     }
 
@@ -196,31 +199,36 @@ OfflineIndex* Files::Private::indexFiles() {
         emit q->statusInfo(QString("Indexing %1…").arg(rootDir));
 
         // If this root dir does not exist create it
-        if ( !indexTrees.count(rootDir) )
-            indexTrees.emplace(rootDir, make_shared<IndexTreeNode>(rootDir));
+        auto it = find_if(indexTrees.begin(), indexTrees.end(),
+                          [&rootDir](const shared_ptr<IndexTreeNode>& tree){ return tree->path() == rootDir; });
+        if ( it == indexTrees.end() ) {
+            indexTrees.push_back(make_shared<IndexTreeNode>(rootDir));
+            indexTrees.back()->update(abort, indexSettings);
+        }
+        else
+            (*it)->update(abort, indexSettings);
 
-        // Update the root dir
-        indexTrees[rootDir]->update(abort, indexSettings);
 
         if ( abort )
             return nullptr;
     }
 
-    indexSettings.setSettingsChangedSinceLastUpdate(false);
-
+    indexSettings.setForceUpdate(true);
 
     // Serialize data
     qDebug() << "Serializing index data…";
     emit q->statusInfo("Serializing index data…");
-    //    QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).
-    //                   filePath(QString("%1.txt").arg(q->Core::Plugin::id())));
-    //    if ( file.open(QIODevice::WriteOnly|QIODevice::Text) ) {
-    //        qInfo() << qPrintable(QString("Serializing files to '%1'").arg(file.fileName()));
-    //        QTextStream out(&file);
-    //        for (const shared_ptr<File> &item : newIndex)
-    //            out << item->path() << endl << item->mimetype().name() << endl;
-    //    } else
-    //        qWarning() << qPrintable(QString("Could not write to file '%1': %2").arg(file.fileName(), file.errorString()));
+    QFile file(q->cacheLocation().filePath("fileindex.json"));
+    if (file.open(QIODevice::WriteOnly)) {
+        QJsonArray array;
+        for (auto& tree : this->indexTrees)
+            array.push_back(tree->serialize());
+        QJsonDocument doc(array);
+        file.write(doc.toJson(QJsonDocument::Compact));
+        file.close();
+    }
+    else
+        qWarning() << "Couldn't write to file:" << file.fileName();
 
 
     // Build offline index
@@ -228,8 +236,8 @@ OfflineIndex* Files::Private::indexFiles() {
     emit q->statusInfo("Building offline index…");
     Core::OfflineIndex *offline = new Core::OfflineIndex;
     OfflineIndexBuilderVisitor visitor(*offline);
-    for (auto& kv : this->indexTrees)
-        kv.second->accept(visitor);
+    for (auto& tree : this->indexTrees)
+        tree->accept(visitor);
     return offline;
 }
 
@@ -249,30 +257,10 @@ Files::Extension::Extension()
     d->indexSettings.setFilters(settings().value(CFG_FILTERS, DEF_FILTERS).toStringList());
     d->indexSettings.setIndexHidden(settings().value(CFG_INDEX_HIDDEN, DEF_INDEX_HIDDEN).toBool());
     d->indexSettings.setFollowSymlinks(settings().value(CFG_FOLLOW_SYMLINKS, DEF_FOLLOW_SYMLINKS).toBool());
+    d->indexSettings.setForceUpdate(false);
     d->offlineIndex.setFuzzy(settings().value(CFG_FUZZY, DEF_FUZZY).toBool());
     d->indexIntervalTimer.setInterval(settings().value(CFG_SCAN_INTERVAL, DEF_SCAN_INTERVAL).toInt()*60000); // Will be started in the initial index update
     d->indexRootDirs = settings().value(CFG_PATHS, QDir::homePath()).toStringList();
-//    if (d->indexRootDirs.isEmpty())
-//        restorePaths();
-
-//    // Deserialize data
-//    QFile file(QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).
-//                   filePath(QString("%1.txt").arg(Core::Plugin::id())));
-//    if (file.exists()) {
-//        if (file.open(QIODevice::ReadOnly| QIODevice::Text)) {
-//            qInfo() << qPrintable(QString("Deserializing files from '%1'.").arg(file.fileName()));
-//            QTextStream in(&file);
-//            QMimeDatabase mimedatabase;
-//            while (!in.atEnd())
-//                d->index.emplace_back(new File(in.readLine(), mimedatabase.mimeTypeForName(in.readLine())));
-//            file.close();
-
-//            // Build the offline index
-//            for (const auto &item : d->index)
-//                d->offlineIndex.add(item);
-//        } else
-//            qWarning() << qPrintable(QString("Could not read from file '%1': %2").arg(file.fileName(), file.errorString()));
-//    }
 
     // Index timer
     connect(&d->indexIntervalTimer, &QTimer::timeout, this, &Extension::updateIndex);
@@ -281,6 +269,22 @@ Files::Extension::Extension()
     connect(this, &Extension::pathsChanged, [this](const QStringList& dirs){
         settings().setValue(CFG_PATHS, dirs);
     });
+
+    // Deserialize data
+    qDebug() << "Deserializing index data…";
+    QFile file(cacheLocation().filePath("fileindex.json"));
+    if ( file.exists() ) {
+        if (file.open(QIODevice::ReadOnly)) {
+            QJsonDocument loadDoc{QJsonDocument::fromJson(file.readAll())};
+            for ( const QJsonValueRef value : loadDoc.array()){
+                d->indexTrees.push_back(make_shared<IndexTreeNode>());  // Invalid node
+                d->indexTrees.back()->deserialize(value.toObject());
+            }
+            file.close();
+        }
+        else
+            qWarning() << "Couldn't read from file:" << file.fileName();
+    }
 
     // Trigger an initial update
     updateIndex();
@@ -413,6 +417,8 @@ void Files::Extension::setPaths(const QStringList &paths) {
 
         d->indexRootDirs << absPath;
     }
+
+    sort(d->indexRootDirs.begin(), d->indexRootDirs.end());
 
     emit pathsChanged(d->indexRootDirs);
 

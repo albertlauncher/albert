@@ -24,41 +24,12 @@
 #include <memory>
 #include <vector>
 #include <set>
-#include "file.h"
+#include "indexfile.h"
 
 namespace Files {
 
 class Visitor;
-
-class IndexSettings
-{
-public:
-    const std::vector<QRegExp> &filters() const { return mimefilters_;}
-    void setFilters(std::vector<QRegExp> value) { settingsChanged_= true; mimefilters_= value; }
-    void setFilters(QStringList value) {
-        settingsChanged_= true;
-        mimefilters_.clear();
-        for ( const QString &re : value )
-            mimefilters_.emplace_back(re, Qt::CaseInsensitive, QRegExp::Wildcard);
-    }
-
-    bool indexHidden() const { return indexHidden_;}
-    void setIndexHidden(bool value) { settingsChanged_= true; indexHidden_= value; }
-
-    bool followSymlinks() const { return followSymlinks_;}
-    void setFollowSymlinks(bool value) { settingsChanged_= true; followSymlinks_= value; }
-
-    bool settingsChangedSinceLastUpdate() const { return settingsChanged_;}
-    void setSettingsChangedSinceLastUpdate(bool value) { settingsChanged_= value; }
-
-private:
-
-    std::vector<QRegExp> mimefilters_;
-    bool indexHidden_;
-    bool followSymlinks_;
-    bool settingsChanged_;
-
-};
+class IndexSettings;
 
 enum class PatternType {
     Include,
@@ -75,6 +46,7 @@ class IndexTreeNode final : public std::enable_shared_from_this<IndexTreeNode>
 {
 public:
 
+    IndexTreeNode();
     IndexTreeNode(const IndexTreeNode & other);
     IndexTreeNode(QString name, QDateTime lastModified, std::shared_ptr<IndexTreeNode> parent = std::shared_ptr<IndexTreeNode>());
     IndexTreeNode(QString name, std::shared_ptr<IndexTreeNode> parent = std::shared_ptr<IndexTreeNode>());
@@ -88,7 +60,10 @@ public:
 
     void update(const bool &abort, IndexSettings indexSettings);
 
-    const std::vector<std::shared_ptr<Files::File>> &items() const;
+    QJsonObject serialize();
+    void deserialize(const QJsonObject &, std::shared_ptr<IndexTreeNode> parent = std::shared_ptr<IndexTreeNode>());
+
+    const std::vector<std::shared_ptr<IndexFile> > &items() const;
 
 private:
 
@@ -102,25 +77,45 @@ private:
     std::vector<std::shared_ptr<IndexTreeNode>> children;
     QString name;
     QDateTime lastModified;
-    std::vector<std::shared_ptr<Files::File>> items_;
+    std::vector<std::shared_ptr<Files::IndexFile>> items_;
 
     static constexpr const char* IGNOREFILE = ".albertignore";
 
 };
 
-/** ***************************************************************************/
+
+/** ***********************************************************************************************/
+class IndexSettings
+{
+public:
+    const std::vector<QRegExp> &filters() const;
+    void setFilters(std::vector<QRegExp> value);
+    void setFilters(QStringList value);
+
+    bool indexHidden() const;
+    void setIndexHidden(bool value);
+
+    bool followSymlinks() const;
+    void setFollowSymlinks(bool value);
+
+    bool forceUpdate() const;
+    void setForceUpdate(bool value);
+
+private:
+
+    std::vector<QRegExp> mimefilters_;
+    bool indexHidden_ = false;
+    bool followSymlinks_ = false;
+    bool forceUpdate_ = false; // Ignore lastModified, force update
+
+};
+
+
+/** ***********************************************************************************************/
 class Visitor {
 public:
     virtual ~Visitor() { }
     virtual void visit(IndexTreeNode *) = 0;
 };
-
-///** ***************************************************************************/
-//class ConsoleLoggerVisitor : public Visitor {
-//public:
-//    void visit(IndexTreeNode *node) override {
-//        qDebug() << node->path();
-//    }
-//};
 
 }

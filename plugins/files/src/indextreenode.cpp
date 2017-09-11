@@ -14,18 +14,29 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QJsonArray>
+#include <QJsonObject>
 #include "indextreenode.h"
 #include "indexfile.h"
 using namespace std;
 
 
+/**************************************************************************************************/
+Files::IndexTreeNode::IndexTreeNode() { }
 
+
+
+/**************************************************************************************************/
 Files::IndexTreeNode::IndexTreeNode(QString name, QDateTime lastModified, shared_ptr<IndexTreeNode> parent)
     : enable_shared_from_this(), parent(parent), name(name), lastModified(lastModified) { }
 
+
+/**************************************************************************************************/
 Files::IndexTreeNode::IndexTreeNode(QString name, shared_ptr<IndexTreeNode> parent)
     : IndexTreeNode(name, QDateTime::fromMSecsSinceEpoch(0), parent) { }
 
+
+/**************************************************************************************************/
 Files::IndexTreeNode::IndexTreeNode(const IndexTreeNode &other)
     : enable_shared_from_this(),
       children(other.children),
@@ -33,12 +44,14 @@ Files::IndexTreeNode::IndexTreeNode(const IndexTreeNode &other)
       lastModified(other.lastModified),
       items_(other.items_) { }
 
+
+/**************************************************************************************************/
 Files::IndexTreeNode::~IndexTreeNode() {
     removeDownlinks();
 }
 
 
-
+/**************************************************************************************************/
 void Files::IndexTreeNode::accept(Visitor &visitor) {
     visitor.visit(this);
     for ( auto & child : children )
@@ -46,7 +59,7 @@ void Files::IndexTreeNode::accept(Visitor &visitor) {
 }
 
 
-
+/**************************************************************************************************/
 void Files::IndexTreeNode::removeDownlinks() {
     for ( shared_ptr<IndexTreeNode> & child : children )
         child->removeDownlinks();
@@ -55,13 +68,13 @@ void Files::IndexTreeNode::removeDownlinks() {
 }
 
 
-
+/**************************************************************************************************/
 QString Files::IndexTreeNode::path() const {
     return ( parent ) ? QDir(parent->path()).filePath(name) : name;
 }
 
 
-
+/**************************************************************************************************/
 void Files::IndexTreeNode::update(const bool  &abort, IndexSettings indexSettings) {
 
     set<QString> indexedDirs;
@@ -75,12 +88,61 @@ void Files::IndexTreeNode::update(const bool  &abort, IndexSettings indexSetting
 }
 
 
-const std::vector<std::shared_ptr<Files::File> > &Files::IndexTreeNode::items() const {
+/**************************************************************************************************/
+QJsonObject Files::IndexTreeNode::serialize(){
+
+    QJsonObject jsonNode;
+
+    jsonNode.insert("name", this->name);
+    jsonNode.insert("lastmodified", this->lastModified.toString());
+
+    QJsonArray itemArray;
+    for ( const shared_ptr<IndexFile> &file : items_ ) {
+        QJsonObject jsonFile;
+        jsonFile.insert("name", file->name());
+        jsonFile.insert("mimetype", file->mimetype().name());
+        itemArray.push_back(jsonFile);
+    }
+    jsonNode.insert("items", itemArray);
+
+    QJsonArray nodeArray;
+    for ( const shared_ptr<IndexTreeNode> &childNode : children )
+        nodeArray.push_back(childNode->serialize());
+    jsonNode.insert("children", nodeArray);
+
+    return jsonNode;
+}
+
+
+/**************************************************************************************************/
+void Files::IndexTreeNode::deserialize(const QJsonObject &object, shared_ptr<IndexTreeNode> parent) {
+
+    parent = parent;
+    name = object["name"].toString();
+    lastModified = QDateTime::fromString(object["lastmodified"].toString());
+
+    for (const QJsonValueRef child : object["children"].toArray()) {
+        children.push_back(make_shared<IndexTreeNode>()); // Invalid node
+        children.back()->deserialize(child.toObject(), shared_from_this());
+    }
+
+    for (const QJsonValueRef item : object["items"].toArray()){
+        const QJsonObject &object = item.toObject();
+        items_.push_back(make_shared<IndexFile>(
+                             object["name"].toString(),
+                             shared_from_this(),
+                             QMimeDatabase().mimeTypeForName(object["mimetype"].toString())));
+    }
+}
+
+
+/**************************************************************************************************/
+const std::vector<std::shared_ptr<Files::IndexFile> > &Files::IndexTreeNode::items() const {
     return items_;
 }
 
 
-
+/**************************************************************************************************/
 void Files::IndexTreeNode::updateRecursion(const bool &abort,
                                            const QMimeDatabase &mimeDatabase,
                                            const IndexSettings &indexSettings,
@@ -134,7 +196,7 @@ void Files::IndexTreeNode::updateRecursion(const bool &abort,
     }
 
 
-    if ( lastModified < fileInfo.lastModified() || indexSettings.settingsChangedSinceLastUpdate() ) {
+    if ( lastModified < fileInfo.lastModified() || indexSettings.forceUpdate() ) {
 
         lastModified = fileInfo.lastModified();
 
@@ -213,3 +275,46 @@ void Files::IndexTreeNode::updateRecursion(const bool &abort,
         child->updateRecursion(abort, mimeDatabase, indexSettings, indexedDirs, ignoreEntries);
 
 }
+
+
+/**************************************************************************************************/
+/**************************************************************************************************/
+
+
+const std::vector<QRegExp> &Files::IndexSettings::filters() const {
+    return mimefilters_;
+}
+void Files::IndexSettings::setFilters(std::vector<QRegExp> value) {
+    forceUpdate_= true;
+    mimefilters_= value;
+}
+void Files::IndexSettings::setFilters(QStringList value) {
+    forceUpdate_= true;
+    mimefilters_.clear();
+    for ( const QString &re : value )
+        mimefilters_.emplace_back(re, Qt::CaseInsensitive, QRegExp::Wildcard);
+}
+bool Files::IndexSettings::indexHidden() const {
+    return indexHidden_;
+}
+void Files::IndexSettings::setIndexHidden(bool value) {
+    forceUpdate_= true;
+    indexHidden_= value;
+}
+bool Files::IndexSettings::followSymlinks() const {
+    return followSymlinks_;
+}
+void Files::IndexSettings::setFollowSymlinks(bool value) {
+    forceUpdate_= true;
+    followSymlinks_= value;
+}
+bool Files::IndexSettings::forceUpdate() const {
+    return forceUpdate_;
+}
+void Files::IndexSettings::setForceUpdate(bool value) {
+    forceUpdate_= value;
+}
+
+
+/**************************************************************************************************/
+/**************************************************************************************************/
