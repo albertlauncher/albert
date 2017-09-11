@@ -116,8 +116,7 @@ QVariant Websearch::EnginesModel::data(const QModelIndex &index, int role) const
         }
     }
     case Qt::DecorationRole: {
-        switch (static_cast<Section>(index.column())) {
-        case Section::Name:{
+        if (static_cast<Section>(index.column()) == Section::Name) {
             // Resizing request thounsands of repaints. Creating an icon for
             // ever paint event is to expensive. Therefor maintain an icon cache
             const QString &iconPath = extension_->engines()[static_cast<ulong>(index.row())].iconPath;
@@ -126,16 +125,10 @@ QVariant Websearch::EnginesModel::data(const QModelIndex &index, int role) const
                 return it->second;
             return iconCache.insert(std::make_pair(iconPath, QIcon(iconPath))).second;
         }
-        case Section::URL:
-        case Section::Trigger:
-            return QVariant();
-        }
-    }
-    case Qt::ToolTipRole: {
-        return "Double click to edit";
-    }
-    default:
         return QVariant();
+    }
+    case Qt::ToolTipRole: return "Double click to edit";
+    default: return QVariant();
     }
 }
 
@@ -176,6 +169,7 @@ bool Websearch::EnginesModel::setData(const QModelIndex &index, const QVariant &
             return true;
         }
         }
+        return false;
     }
     case Qt::DecorationRole: {
         QFileInfo fileInfo(value.toString());

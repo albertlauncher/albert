@@ -627,6 +627,7 @@ bool WidgetBoxModel::FrontendWidget::eventFilter(QObject *, QEvent *event) {
                     d->ui.inputLine->setText(next);
                 return true;
             }
+            return false;
         }
 
         // Move down in the history

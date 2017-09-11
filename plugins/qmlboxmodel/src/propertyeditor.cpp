@@ -49,16 +49,13 @@ public:
     }
 
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override {
-        switch (role) {
-        case Qt::DisplayRole:
-        case Qt::EditRole:
-            if (index.column()==0)
+        if (role == Qt::DisplayRole || role == Qt::EditRole) {
+            if ( index.column() == 0 )
                 return properties_[index.row()];
             else if (index.column()==1)
                 return mainWindow_->property(properties_.at(index.row()).toLatin1().data());
-        default:
-            return QVariant();
         }
+        return QVariant();
     }
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override {
