@@ -1,7 +1,7 @@
 language: cpp
 sudo: required
 dist: trusty
-     
+
 matrix:
   include:
     - os: linux
@@ -23,10 +23,15 @@ matrix:
             - clang-3.6
       env:
         - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
-        
+
+git:
+    submodules: false
+
 before_install:
     - eval "${MATRIX_EVAL}"
-    
+    - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
+    - git submodule update --init --recursive
+
 install:
   - sudo add-apt-repository ppa:beineri/opt-qt551-trusty -y  # Qt-5.5
   - sudo apt-get update -qq
