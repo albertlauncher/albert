@@ -256,7 +256,7 @@ void System::Extension::handleQuery(Core::Query * query) const {
        return;
 
    for (size_t i = 0; i < NUMCOMMANDS; ++i) {
-        if (configNames[i].startsWith(query->searchTerm().toLower())) {
+        if ( itemTitles[i].startsWith(query->searchTerm(), Qt::CaseInsensitive) ) {
 
             std::shared_ptr<Core::StandardItem> item = std::make_shared<Core::StandardItem>(configNames[i]);
             item->setText(itemTitles[i]);
@@ -272,7 +272,7 @@ void System::Extension::handleQuery(Core::Query * query) const {
 
             item->setActions({action});
 
-            query->addMatch(std::move(item));
+            query->addMatch(std::move(item), static_cast<uint>(static_cast<float>(query->searchTerm().size())/itemTitles[i].size()*UINT_MAX));
        }
    }
 }

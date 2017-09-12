@@ -2,14 +2,6 @@
 <ui version="4.0">
  <class>System::ConfigWidget</class>
  <widget class="QWidget" name="System::ConfigWidget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>480</width>
-    <height>320</height>
-   </rect>
-  </property>
   <layout class="QVBoxLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
@@ -58,7 +50,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="label_logout">
        <property name="text">
-        <string>Logout:</string>
+        <string>Log out:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -68,7 +60,7 @@
      <item row="5" column="0">
       <widget class="QLabel" name="label_shutdown">
        <property name="text">
-        <string>Shutdown:</string>
+        <string>Shut down:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -78,7 +70,7 @@
      <item row="4" column="0">
       <widget class="QLabel" name="label_reboot">
        <property name="text">
-        <string>Reboot:</string>
+        <string>Restart:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
