@@ -213,16 +213,14 @@ bool Core::QueryExecution::setData(const QModelIndex &index, const QVariant &val
         }
         }
 
-        if ( !activateditemId.isNull() ) {
-            // Save usage
-            QSqlQuery query;
-            query.prepare("INSERT INTO usages (input, itemId) VALUES (:input, :itemId);");
-            query.bindValue(":input", query_.searchTerm());
-            query.bindValue(":itemId", item->id());
-            if (!query.exec())
-                qWarning() << query.lastError();
-            return true;
-        }
+        // Save usage
+        QSqlQuery query;
+        query.prepare("INSERT INTO usages (input, itemId) VALUES (:input, :itemId);");
+        query.bindValue(":input", query_.searchTerm());
+        query.bindValue(":itemId", item->id());
+        if (!query.exec())
+            qWarning() << query.lastError();
+        return true;
     }
     return false;
 }
