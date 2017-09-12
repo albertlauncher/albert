@@ -132,18 +132,13 @@ void Core::ExtensionManager::loadExtension(const unique_ptr<PluginSpec> &spec) {
 
 /** ***************************************************************************/
 void Core::ExtensionManager::unloadExtension(const unique_ptr<PluginSpec> &spec) {
-    if (spec->state() != PluginSpec::State::NotLoaded) {
+    if (spec->state() == PluginSpec::State::NotLoaded)
+        return;
 
-        Extension *extension = dynamic_cast<Extension*>(spec->instance());
-        if (!extension) {
-            qInfo() << QString("Instance is not of type Extension. (%2)").arg(spec->id()).toLocal8Bit().data();
-            return;
-        }
+    if (spec->state() == PluginSpec::State::Loaded)
+        d->loadedExtensions_.erase(dynamic_cast<Extension*>(spec->instance()));
 
-        d->loadedExtensions_.erase(extension);
-
-        spec->unload();
-    }
+    spec->unload();
 }
 
 
