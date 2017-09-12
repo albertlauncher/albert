@@ -128,9 +128,8 @@ void Core::PluginSpec::unload(){
      * little amount of extra KBs in RAM until next restart.
      */
 
-    if ( state_ == State::Loaded ) {
-        loader_.instance()->deleteLater();
-    }
+    if ( state_ == State::Loaded )
+        delete loader_.instance();
     state_ = State::NotLoaded;
 }
 
