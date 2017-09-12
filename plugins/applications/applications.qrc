@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file alias="application-x-executable">resources/application-x-executable.svg</file>
-    </qresource>
-</RCC>

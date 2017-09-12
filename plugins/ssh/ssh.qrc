@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file alias="ssh">resources/ssh.svg</file>
-    </qresource>
-</RCC>
