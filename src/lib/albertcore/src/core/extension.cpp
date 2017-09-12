@@ -46,6 +46,7 @@ Core::Extension::~Extension() {
 
 /**************************************************************************************************/
 void Core::Extension::registerQueryHandler(Core::QueryHandler *object) {
+    d->registeredQueryHandlers.insert(object);
     extensionManager->registerQueryHandler(object);
 }
 
@@ -58,6 +59,7 @@ void Core::Extension::unregisterQueryHandler(Core::QueryHandler *object) {
 
 /**************************************************************************************************/
 void Core::Extension::registerFallbackProvider(Core::FallbackProvider *object) {
+    d->registeredFallbackProviders.insert(object);
     extensionManager->registerFallbackProvider(object);
 }
 
