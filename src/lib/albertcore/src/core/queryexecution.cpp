@@ -305,8 +305,9 @@ void Core::QueryExecution::onBatchHandlersFinished() {
     if ( realtimeHandlers_.empty() ){
         if( results_.empty() && !query_.searchTerm_.isEmpty() ){
             beginInsertRows(QModelIndex(), 0, static_cast<int>(fallbacks_.size()-1));
-            results_.insert(results_.end(), fallbacks_.begin(), fallbacks_.end());
+            results_ = std::move(fallbacks_);
             endInsertRows();
+            fetchIncrementally_ = false;
         }
         emit resultsReady(this);
         setState(State::Finished);
@@ -360,8 +361,9 @@ void Core::QueryExecution::onRealtimeHandlersFinsished() {
 
     if( results_.empty() && !query_.searchTerm_.isEmpty() ){
         beginInsertRows(QModelIndex(), 0, static_cast<int>(fallbacks_.size()-1));
-        results_.insert(results_.end(), fallbacks_.begin(), fallbacks_.end());
+        results_ = std::move(fallbacks_);
         endInsertRows();
+        fetchIncrementally_ = false;
     }
     setState(State::Finished);
 }
