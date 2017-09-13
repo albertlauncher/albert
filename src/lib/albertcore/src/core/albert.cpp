@@ -445,8 +445,10 @@ int Core::AlbertApp::run(int argc, char **argv) {
                 settingsWidget->activateWindow();
             });
 
-            QObject::connect(f, &Frontend::widgetShown,
-                             queryManager, &QueryManager::setupSession);
+            QObject::connect(f, &Frontend::widgetShown, [f](){
+                queryManager->setupSession();
+                queryManager->startQuery(f->input());
+            });
 
             QObject::connect(f, &Frontend::widgetHidden,
                              queryManager, &QueryManager::teardownSession);
