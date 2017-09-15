@@ -60,7 +60,7 @@ Core::ExtensionManager::ExtensionManager(QStringList pluginDirs)
 
            if (std::any_of(d->extensionSpecs_.begin(), d->extensionSpecs_.end(),
                            [&](const unique_ptr<PluginSpec> &spec){ return plugin->id() == spec->id(); })) {
-               qWarning() << qPrintable(QString("Frontend IDs already exists. Skipping. (%1)").arg(plugin->path()));
+               qWarning() << qPrintable(QString("Extension IDs already exists. Skipping. (%1)").arg(plugin->path()));
                continue;
            }
 
