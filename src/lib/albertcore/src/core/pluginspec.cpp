@@ -36,6 +36,13 @@ Core::PluginSpec::PluginSpec(const QString &path) : loader_(path) {
 
 
 /** ***************************************************************************/
+Core::PluginSpec::~PluginSpec() {
+    if ( state_ != State::NotLoaded )
+        unload();
+}
+
+
+/** ***************************************************************************/
 QString Core::PluginSpec::path() const {
     return loader_.fileName();
 }

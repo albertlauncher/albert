@@ -34,6 +34,9 @@ public:
     };
 
     PluginSpec(const QString &path);
+    ~PluginSpec();
+    PluginSpec(const PluginSpec &other) = delete;
+    PluginSpec &operator=(const PluginSpec &other) = delete;
 
     QString path() const;
     QString iid() const;
