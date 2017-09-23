@@ -48,14 +48,15 @@ Core::QueryExecution::QueryExecution(const set<QueryHandler*> & queryHandlers,
                                      bool fetchIncrementally) {
 
     fetchIncrementally_ = fetchIncrementally;
-    query_.rawString_ = query_.string_ = queryString;
+    query_.rawString_ = queryString;
+    query_.string_    = queryString;
 
     // Run with a single handler if the trigger matches
     for ( QueryHandler *handler : queryHandlers ) {
         for ( const QString& trigger : handler->triggers() ) {
             if ( !trigger.isEmpty() && queryString.startsWith(trigger) ) {
                 query_.trigger_ = trigger;
-                query_.string_ = queryString.mid(trigger.size()).trimmed();
+                query_.string_ = queryString.mid(trigger.size());
                 ( handler->executionType()==QueryHandler::ExecutionType::Batch )
                         ? batchHandlers_.insert(handler)
                         : realtimeHandlers_.insert(handler);
@@ -70,14 +71,10 @@ Core::QueryExecution::QueryExecution(const set<QueryHandler*> & queryHandlers,
             batchHandlers_.insert(queryHandler);
 
     // Get fallbacks
-    for ( FallbackProvider *fallbackProvider : fallbackProviders ) {
-        system_clock::time_point start = system_clock::now();
-        for ( shared_ptr<Item> & item : fallbackProvider->fallbacks(queryString) )
-            fallbacks_.emplace_back(move(item), 0);
-        qDebug() << qPrintable(QString("TIME: %1 µs FALLBACK [%2]")
-                               .arg(duration_cast<microseconds>(system_clock::now()-start).count(), 6)
-                               .arg("fallback providers have no id yet"));
-    }
+    if ( !query_.string_.trimmed().isEmpty() )
+        for ( FallbackProvider *fallbackProvider : fallbackProviders )
+            for ( shared_ptr<Item> & item : fallbackProvider->fallbacks(queryString) )
+                fallbacks_.emplace_back(move(item), 0);
 }
 
 
