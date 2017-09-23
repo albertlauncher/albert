@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>720</width>
-    <height>400</height>
+    <width>800</width>
+    <height>480</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -123,7 +123,7 @@
             <item row="2" column="0">
              <widget class="QLabel" name="label_term">
               <property name="text">
-               <string>Terminal:</string>
+               <string>Ter&amp;minal:</string>
               </property>
               <property name="buddy">
                <cstring>comboBox_term</cstring>
@@ -186,7 +186,7 @@ an icon in the system tray.</string>
             <item row="5" column="0">
              <widget class="QLabel" name="label_4">
               <property name="text">
-               <string>Incremental sort:</string>
+               <string>I&amp;ncremental sort:</string>
               </property>
               <property name="buddy">
                <cstring>checkBox_incrementalSort</cstring>
@@ -207,7 +207,7 @@ the sorted results instead of the actual amount of results.</string>
             <item row="6" column="0">
              <widget class="QLabel" name="label_2">
               <property name="text">
-               <string>Clear history:</string>
+               <string>&amp;Clear history:</string>
               </property>
               <property name="buddy">
                <cstring>pushButton_clearHistory</cstring>
@@ -379,7 +379,7 @@ a { color: &quot;#00CCCC&quot;; }
 &lt;/head&gt;
 &lt;body&gt;
 &lt;h2&gt;Albert launcher ___versionstring___&lt;/h2&gt;
-&lt;p&gt;If you encounter bugs or think you have suggestions for improvement, tell me at &lt;a href=&quot;https://github.com/ManuelSchneid3r/albert/issues&quot;&gt;Github&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;If you encounter bugs or think you have suggestions for improvement, tell me at &lt;a href=&quot;https://github.com/albertlauncher/albert/issues&quot;&gt;Github&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;If you really like this software please consider a donation via &lt;a href=&quot;https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;amp;hosted_button_id=W74BQPKPGNSNC&quot;&gt;PayPal&lt;/a&gt; or become a &lt;a href=&quot;https://www.patreon.com/albertlauncher&quot;&gt;patron&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;I'd like to thank all &lt;a href=&quot;https://github.com/albertlauncher/albert/graphs/contributors&quot;&gt;contributors&lt;/a&gt;, &lt;a href=&quot;https://albertlauncher.github.io/docs/contributing/#supporters&quot;&gt;supporters&lt;/a&gt; and users. You keep this project going on.&lt;/p&gt;
 &lt;/body&gt;
