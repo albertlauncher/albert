@@ -166,21 +166,20 @@ int Core::AlbertApp::run(int argc, char **argv) {
          * DETECT FIRST RUN AND VERSION CHANGE
          */
 
-        // If there is a file in .cache, move it
-        if ( QFile::exists(QString("%1/firstrun").arg(cacheLocation)) ){
-            qDebug() << "Moving 'firstrun' to new path";
-            QFile::rename(QString("%1/firstrun").arg(cacheLocation),
-                          QString("%1/firstrun").arg(dataLocation));
-        }
-
         // If there is a firstRun file, rename it to lastVersion (since v0.11)
         if ( QFile::exists(QString("%1/firstrun").arg(dataLocation)) )
             qDebug() << "Renaming 'firstrun' to 'last_used_version'";
             QFile::rename(QString("%1/firstrun").arg(dataLocation),
                           QString("%1/last_used_version").arg(dataLocation));
 
+        // If there is a lastVersion  file move it to config (since v0.13)
+        if ( QFile::exists(QString("%1/last_used_version").arg(dataLocation)) )
+            qDebug() << "Moving 'last_used_version' to config path";
+            QFile::rename(QString("%1/last_used_version").arg(dataLocation),
+                          QString("%1/last_used_version").arg(configLocation));
+
         qDebug() << "Checking last used version";
-        QFile file(QString("%1/last_used_version").arg(dataLocation));
+        QFile file(QString("%1/last_used_version").arg(configLocation));
         if ( file.exists() ) {
             // Read last used version
             if ( file.open(QIODevice::ReadOnly|QIODevice::Text) ) {
