@@ -32,6 +32,12 @@ const QString &Core::Query::rawString() const {
 
 
 /** ***************************************************************************/
+bool Core::Query::isTriggered() const {
+    return !trigger_.isNull();
+}
+
+
+/** ***************************************************************************/
 const QString &Core::Query::trigger() const {
     return trigger_;
 }
@@ -49,7 +55,7 @@ void Core::Query::addMatchWithoutLock(const std::shared_ptr<Core::Item> &item, u
     if ( it == MatchCompare::usageScores().end() )
         results_.emplace_back(item, score/2);
     else
-        results_.emplace_back(item, (score+it->second)/2);
+        results_.emplace_back(item, (static_cast<ulong>(score)+it->second)/2);
 }
 
 
@@ -59,5 +65,5 @@ void Core::Query::addMatchWithoutLock(std::shared_ptr<Core::Item> &&item, uint s
     if ( it == MatchCompare::usageScores().end() )
         results_.emplace_back(std::move(item), score/2);
     else
-        results_.emplace_back(std::move(item), (score+it->second)/2);
+        results_.emplace_back(std::move(item), (static_cast<ulong>(score)+it->second)/2);
 }

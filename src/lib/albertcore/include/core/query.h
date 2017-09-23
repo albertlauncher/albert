@@ -38,23 +38,26 @@ public:
 
     /**
      * @brief The query string.
-     * This is the processed query string relevant for most of the handlers. The trigger is removed
-     * and the string is trimmed.
+     * This is the processed query string relevant for most of the handlers. If the raw query string
+     * is prefixed by a trigger string() returns the query string without the the trigger
+     * prefix. If there is no trigger string() is equivalent to rawString().
      */
     const QString &string() const;
 
     /**
      * @brief The raw query string.
-     * This is the raw query string as the users entered it into the input line. This may be needed
-     * for handlers that may need pedantic informations about whitespaces.
+     * This is the raw query string as the users entered it into the input line.
      */
     const QString &rawString() const;
 
     /**
-     * @brief The trigger that triggered this execution
-     * If set this query is triggered. If you are able to read it then your extension made a claim
-     * on it. The purpose of this fiels is to make triggerhandling more convenient.
-     * Note that if the trigger is set it removed from the query string.
+     * @brief Indicates a triggered query.
+     */
+    bool isTriggered() const;
+
+    /**
+     * @brief The trigger of this query
+     * Note that if the trigger is set, string() differs from rawString().
      */
     const QString &trigger() const;
 
