@@ -37,16 +37,24 @@ class EXPORT_CORE Query final
 public:
 
     /**
-     * @brief The string the user entered in the input box
-     * @return The string the user entered in the input box
+     * @brief The query string.
+     * This is the processed query string relevant for most of the handlers. The trigger is removed
+     * and the string is trimmed.
      */
-    const QString &searchTerm() const;
+    const QString &string() const;
+
+    /**
+     * @brief The raw query string.
+     * This is the raw query string as the users entered it into the input line. This may be needed
+     * for handlers that may need pedantic informations about whitespaces.
+     */
+    const QString &rawString() const;
 
     /**
      * @brief The trigger that triggered this execution
      * If set this query is triggered. If you are able to read it then your extension made a claim
      * on it. The purpose of this fiels is to make triggerhandling more convenient.
-     * @return The trigger that triggered this execution
+     * Note that if the trigger is set it removed from the query string.
      */
     const QString &trigger() const;
 
@@ -101,8 +109,9 @@ private:
 
     std::vector<std::pair<std::shared_ptr<Item>, uint>> results_;
     QMutex mutex_;
-    QString searchTerm_;
     QString trigger_;
+    QString string_;
+    QString rawString_;
     bool isValid_ = true;
 
     friend class QueryExecution;

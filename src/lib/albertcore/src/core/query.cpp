@@ -20,8 +20,14 @@
 
 
 /** ***************************************************************************/
-const QString &Core::Query::searchTerm() const {
-    return searchTerm_;
+const QString &Core::Query::string() const {
+    return string_;
+}
+
+
+/** ***************************************************************************/
+const QString &Core::Query::rawString() const {
+    return rawString_;
 }
 
 

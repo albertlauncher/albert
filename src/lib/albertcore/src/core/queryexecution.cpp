@@ -44,17 +44,18 @@ namespace {
 /** ***************************************************************************/
 Core::QueryExecution::QueryExecution(const set<QueryHandler*> & queryHandlers,
                                      const set<FallbackProvider*> &fallbackProviders,
-                                     const QString &searchTerm,
+                                     const QString &queryString,
                                      bool fetchIncrementally) {
 
     fetchIncrementally_ = fetchIncrementally;
-    query_.searchTerm_ = searchTerm;
+    query_.rawString_ = query_.string_ = queryString;
 
     // Run with a single handler if the trigger matches
     for ( QueryHandler *handler : queryHandlers ) {
         for ( const QString& trigger : handler->triggers() ) {
-            if ( !trigger.isEmpty() && searchTerm.startsWith(trigger) ) {
+            if ( !trigger.isEmpty() && queryString.startsWith(trigger) ) {
                 query_.trigger_ = trigger;
+                query_.string_ = queryString.mid(trigger.size()).trimmed();
                 ( handler->executionType()==QueryHandler::ExecutionType::Batch )
                         ? batchHandlers_.insert(handler)
                         : realtimeHandlers_.insert(handler);
@@ -71,7 +72,7 @@ Core::QueryExecution::QueryExecution(const set<QueryHandler*> & queryHandlers,
     // Get fallbacks
     for ( FallbackProvider *fallbackProvider : fallbackProviders ) {
         system_clock::time_point start = system_clock::now();
-        for ( shared_ptr<Item> & item : fallbackProvider->fallbacks(searchTerm) )
+        for ( shared_ptr<Item> & item : fallbackProvider->fallbacks(queryString) )
             fallbacks_.emplace_back(move(item), 0);
         qDebug() << qPrintable(QString("TIME: %1 µs FALLBACK [%2]")
                                .arg(duration_cast<microseconds>(system_clock::now()-start).count(), 6)
@@ -150,7 +151,7 @@ QVariant Core::QueryExecution::data(const QModelIndex &index, int role) const {
             return actionTexts;
         }
         case ItemRoles::FallbackRole:
-            return "Search '"+query_.searchTerm()+"' using default fallback";
+            return "Search '"+ query_.rawString_ +"' using default fallback";
         }
     }
     return QVariant();
@@ -216,7 +217,7 @@ bool Core::QueryExecution::setData(const QModelIndex &index, const QVariant &val
         // Save usage
         QSqlQuery query;
         query.prepare("INSERT INTO usages (input, itemId) VALUES (:input, :itemId);");
-        query.bindValue(":input", query_.searchTerm());
+        query.bindValue(":input", query_.rawString_);
         query.bindValue(":itemId", item->id());
         if (!query.exec())
             qWarning() << query.lastError();
@@ -301,7 +302,7 @@ void Core::QueryExecution::onBatchHandlersFinished() {
         std::sort(results_.begin(), results_.end(), MatchCompare());
 
     if ( realtimeHandlers_.empty() ){
-        if( results_.empty() && !query_.searchTerm_.isEmpty() ){
+        if( results_.empty() && !query_.rawString_.isEmpty() ){
             beginInsertRows(QModelIndex(), 0, static_cast<int>(fallbacks_.size()-1));
             results_ = std::move(fallbacks_);
             endInsertRows();
@@ -357,7 +358,7 @@ void Core::QueryExecution::onRealtimeHandlersFinsished() {
     fiftyMsTimer_.disconnect();
     insertPendingResults();
 
-    if( results_.empty() && !query_.searchTerm_.isEmpty() ){
+    if( results_.empty() && !query_.rawString_.isEmpty() ){
         beginInsertRows(QModelIndex(), 0, static_cast<int>(fallbacks_.size()-1));
         results_ = std::move(fallbacks_);
         endInsertRows();
