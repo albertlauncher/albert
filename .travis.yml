@@ -38,7 +38,7 @@ install:
   - sudo apt-get install -qq cmake qt55base qt55x11extras qt55svg qt55quickcontrols libmuparser-dev virtualbox
   - wget http://download.virtualbox.org/virtualbox/5.0.40/VirtualBoxSDK-5.0.40-115130.zip
   - unzip VirtualBoxSDK-5.0.40-115130.zip
-  - mv sdk/bindings/xpcom/include /usr/lib/virtualbox/sdk/bindings/xpcom
+  - sudo mv sdk/bindings/xpcom/include /usr/lib/virtualbox/sdk/bindings/xpcom
 
 script:
   - source /opt/qt55/bin/qt55-env.sh
