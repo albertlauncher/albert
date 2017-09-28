@@ -279,10 +279,15 @@ int Core::AlbertApp::run(int argc, char **argv) {
         else {
 #if defined __linux__
             QStringList dirs = {
-                "/usr/lib/", "/usr/local/lib/", "/usr/lib64/", "/usr/local/lib64/",
+                QFileInfo("/usr/lib/").canonicalFilePath(),
+                QFileInfo("/usr/lib64/").canonicalFilePath(),
+                QFileInfo("/usr/local/lib/").canonicalFilePath(),
+                QFileInfo("/usr/local/lib64/").canonicalFilePath(),
                 QDir::home().filePath(".local/lib/"),
                 QDir::home().filePath(".local/lib64/")
             };
+
+            dirs.removeDuplicates();
 
             for ( const QString& dir : dirs ) {
                 QFileInfo fileInfo = QFileInfo(QDir(dir).filePath("albert/plugins"));
