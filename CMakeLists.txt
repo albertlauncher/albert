@@ -7,6 +7,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
 
 # Set standard
 set(CMAKE_CXX_STANDARD 14)
@@ -26,7 +28,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     SET(CMAKE_VERBOSE_MAKEFILE ON)
 else(CMAKE_BUILD_TYPE STREQUAL "Debug")
     SET(CMAKE_VERBOSE_MAKEFILE OFF)
-endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+endif()
 
 # Put the binaries in dedicated toplevel directories
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
