@@ -8,7 +8,7 @@ add_definitions(-DXDG_DEF) #export branch
 find_package(Qt5 5.2.0 REQUIRED COMPONENTS Gui)
 
 # List files in the source directory
-FILE(GLOB SRC src/* include/*)
+file(GLOB SRC src/* include/*)
 
 # Do not export symbols by default
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)

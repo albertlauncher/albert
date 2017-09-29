@@ -14,7 +14,7 @@ find_package(Qt5 5.2.0 REQUIRED COMPONENTS
 )
 
 # List files in the source directory
-FILE(GLOB_RECURSE SRC include/* src/*)
+file(GLOB_RECURSE SRC include/* src/*)
 
 qt5_wrap_ui(UI
     src/core/settingswidget/settingswidget.ui
