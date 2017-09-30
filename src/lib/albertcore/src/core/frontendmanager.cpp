@@ -29,7 +29,7 @@ using std::vector;
 
 namespace {
 const char* CFG_FRONTEND_ID = "frontendId";
-const char* DEF_FRONTEND_ID = "org.albert.frontend.boxmodel.widget";
+const char* DEF_FRONTEND_ID = "org.albert.frontend.boxmodel.widgets";
 }
 
 
