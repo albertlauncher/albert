@@ -302,11 +302,9 @@ void SettingsWidget::closeEvent(QCloseEvent *event) {
         if ( msgBox.result() == QMessageBox::Ok ) {
             ui.tabs->setCurrentIndex(0);
             show();
+            event->ignore();
+            return;
         }
-        else
-            qApp->quit();
-        event->ignore();
-        return;
     }
     event->accept();
 }
