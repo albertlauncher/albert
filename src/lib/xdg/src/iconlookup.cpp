@@ -115,10 +115,12 @@ QString XDG::IconLookup::themeIconPath(QString iconName, QString themeName){
     }
 
     // Lookup in hicolor
-    iconPath = doRecursiveIconLookup(iconName, "hicolor", &checkedThemes);
-    if (!iconPath.isNull()){
-        iconCache_.insert(iconName, iconPath);
-        return iconPath;
+    if (!checkedThemes.contains("hicolor")){
+        iconPath = doRecursiveIconLookup(iconName, "hicolor", &checkedThemes);
+        if (!iconPath.isNull()){
+            iconCache_.insert(iconName, iconPath);
+            return iconPath;
+        }
     }
 
     // Now search unsorted
@@ -126,6 +128,7 @@ QString XDG::IconLookup::themeIconPath(QString iconName, QString themeName){
         for (const QString &ext : icon_extensions){
             QString filename = QString("%1/%2.%3").arg(iconDir, iconName, ext);
             if (QFile(filename).exists()){
+                iconCache_.insert(iconName, filename);
                 return filename;
             }
         }
