@@ -1,18 +1,4 @@
-// albert - a simple application launcher for linux
 // Copyright (C) 2014-2017 Manuel Schneider
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDebug>
 #include <chrono>
@@ -139,12 +125,12 @@ QVariant Core::QueryExecution::data(const QModelIndex &index, int role) const {
             return item->completionString();
         case ItemRoles::ActionRole:
             return (0 < static_cast<int>(item->actions().size()))
-                    ? item->actions()[0]->text()
+                    ? item->actions()[0].text
                     : item->subtext();
         case ItemRoles::AltActionRole: { // Actions list
             QStringList actionTexts;
-            for (const shared_ptr<Action> &action : item->actions())
-                actionTexts.append(action->text());
+            for (const Action &action : item->actions())
+                actionTexts.append(action.text);
             return actionTexts;
         }
         case ItemRoles::FallbackRole:
@@ -189,7 +175,7 @@ bool Core::QueryExecution::setData(const QModelIndex &index, const QVariant &val
         switch ( role ) {
         case ItemRoles::ActionRole:{
             if (0U < item->actions().size()){
-                item->actions()[0]->activate();
+                item->actions()[0].activate();
                 activateditemId = item->id();
             }
             break;
@@ -197,14 +183,14 @@ bool Core::QueryExecution::setData(const QModelIndex &index, const QVariant &val
         case ItemRoles::AltActionRole:{
             size_t actionValue = static_cast<size_t>(value.toInt());
             if (actionValue < item->actions().size()) {
-                item->actions()[actionValue]->activate();
+                item->actions()[actionValue].activate();
                 activateditemId = item->id();
             }
             break;
         }
         case ItemRoles::FallbackRole:{
             if (0U < fallbacks_.size() && 0U < item->actions().size()) {
-                fallbacks_[0].first->actions()[0]->activate();
+                fallbacks_[0].first->actions()[0].activate();
                 activateditemId = fallbacks_[0].first->id();
             }
             break;

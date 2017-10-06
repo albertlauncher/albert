@@ -1,40 +1,34 @@
-// albert - a simple application launcher for linux
 // Copyright (C) 2014-2017 Manuel Schneider
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 #include <QString>
+#include <functional>
 #include "core_globals.h"
 
 namespace Core {
 
 /**
- * @brief The action interface
- * A base class for actions (and items)
+ * @brief The albert action type
  */
 class EXPORT_CORE Action
 {
 public:
 
-    virtual ~Action() {}
+    Action() {}
 
-    /** A description */
-    virtual QString text() const = 0;
+    template<class QString, class Function>
+    Action(QString&& text, Function&& function)
+        : text(std::forward<QString>(text)),
+          function(std::forward<Function>(function)) { }
 
-    /** Activates the item */
-    virtual void activate() = 0;
+    /** The description of the action*/
+    QString text;
+
+    /** The action */
+    std::function<void()> function;
+
+    /** Convenience function. Executes the action */
+    void activate() { function(); }
 };
 
 }
