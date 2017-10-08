@@ -7,9 +7,6 @@
 #include "queryhandler.h"
 #include "fallbackprovider.h"
 #include "queryexecution.h"
-#include <QSqlQuery>
-#include <QSqlRecord>
-#include <QSqlError>
 #include <QString>
 #include <QtConcurrent>
 #include <QVariant>
@@ -36,6 +33,7 @@ Core::QueryExecution::QueryExecution(const set<QueryHandler*> & queryHandlers,
     fetchIncrementally_ = fetchIncrementally;
     query_.rawString_ = queryString;
     query_.string_    = queryString;
+    stats.input = queryString;
 
     // Run with a single handler if the trigger matches
     for ( QueryHandler *handler : queryHandlers ) {
@@ -66,7 +64,7 @@ Core::QueryExecution::QueryExecution(const set<QueryHandler*> & queryHandlers,
 
 /** ***************************************************************************/
 Core::QueryExecution::~QueryExecution() {
-
+    Statistics::addRecord(stats);
 }
 
 
@@ -85,7 +83,176 @@ const Core::QueryExecution::State &Core::QueryExecution::state() const {
 /** ***************************************************************************/
 void Core::QueryExecution::setState(State state) {
     state_ = state;
+    if (state_ == State::Finished)
+        stats.end = system_clock::now();
     emit stateChanged(state_);
+}
+
+
+/** ***************************************************************************/
+void Core::QueryExecution::run() {
+
+    setState(State::Running);
+
+    stats.start = system_clock::now();
+
+    if ( !batchHandlers_.empty() )
+        return runBatchHandlers();
+
+    emit resultsReady(this);
+
+    if ( !realtimeHandlers_.empty() )
+        return runRealtimeHandlers();
+
+    setState(State::Finished);
+}
+
+
+/** ***************************************************************************/
+void Core::QueryExecution::cancel() {
+    futureWatcher_.disconnect();
+    future_.cancel();
+    query_.isValid_ = false;
+    stats.cancelled = true;
+}
+
+
+/** ***************************************************************************/
+void Core::QueryExecution::runBatchHandlers() {
+
+    // Call onBatchHandlersFinished when all handlers finished
+    connect(&futureWatcher_, &QFutureWatcher<pair<QueryHandler*,uint>>::finished,
+            this, &QueryExecution::onBatchHandlersFinished);
+
+    // Run the handlers concurrently and measure the runtimes
+    function<pair<QueryHandler*,uint>(QueryHandler*)> func = [this](QueryHandler* queryHandler){
+        system_clock::time_point start = system_clock::now();
+        queryHandler->handleQuery(&query_);
+        long duration = duration_cast<microseconds>(system_clock::now()-start).count();
+        qDebug() << qPrintable(QString("TIME: %1 µs MATCHES [%2]").arg(duration, 6).arg(queryHandler->id));
+        return make_pair(queryHandler, static_cast<int>(duration));
+    };
+    future_ = QtConcurrent::mapped(batchHandlers_.begin(), batchHandlers_.end(), func);
+    futureWatcher_.setFuture(future_);
+}
+
+
+/** ***************************************************************************/
+void Core::QueryExecution::onBatchHandlersFinished() {
+
+    // Save the runtimes of the current future
+    for ( auto it = future_.begin(); it != future_.end(); ++it )
+        stats.runtimes.emplace(it->first->id, it->second);
+
+    // Move the items of the "pending results" into "results"
+    query_.mutex_.lock();
+    swap(query_.results_, results_);
+    query_.results_.clear();
+    query_.mutex_.unlock();
+
+    // Sort the results
+    if ( fetchIncrementally_ ) {
+        int sortUntil = min(sortedItems_ + FETCH_SIZE, static_cast<int>(results_.size()));
+        partial_sort(results_.begin() + sortedItems_, results_.begin() + sortUntil,
+                          results_.end(), MatchCompare());
+        sortedItems_ = sortUntil;
+    }
+    else
+        std::sort(results_.begin(), results_.end(), MatchCompare());
+
+    if ( realtimeHandlers_.empty() ){
+        if( results_.empty() && !query_.rawString_.isEmpty() ){
+            beginInsertRows(QModelIndex(), 0, static_cast<int>(fallbacks_.size()-1));
+            results_ = std::move(fallbacks_);
+            endInsertRows();
+            fetchIncrementally_ = false;
+        }
+        emit resultsReady(this);
+        setState(State::Finished);
+    }
+    else
+    {
+        emit resultsReady(this);
+        runRealtimeHandlers();
+    }
+}
+
+
+/** ***************************************************************************/
+void Core::QueryExecution::runRealtimeHandlers() {
+
+    // Call onRealtimeHandlersFinsished when all handlers finished
+    disconnect(&futureWatcher_, &QFutureWatcher<pair<QueryHandler*,uint>>::finished,
+               this, &QueryExecution::onBatchHandlersFinished);
+
+    connect(&futureWatcher_, &QFutureWatcher<pair<QueryHandler*,uint>>::finished,
+            this, &QueryExecution::onRealtimeHandlersFinsished);
+
+    // Run the handlers concurrently and measure the runtimes
+    function<pair<QueryHandler*,uint>(QueryHandler*)> func = [this](QueryHandler* queryHandler){
+        system_clock::time_point start = system_clock::now();
+        queryHandler->handleQuery(&query_);
+        long duration = duration_cast<microseconds>(system_clock::now()-start).count();
+        qDebug() << qPrintable(QString("TIME: %1 µs MATCHES REALTIME [%2]").arg(duration, 6).arg(queryHandler->id));
+        return make_pair(queryHandler, static_cast<int>(duration));
+    };
+    future_ = QtConcurrent::mapped(realtimeHandlers_.begin(), realtimeHandlers_.end(), func);
+    futureWatcher_.setFuture(future_);
+
+    // Insert pending results every 50 milliseconds
+    connect(&fiftyMsTimer_, &QTimer::timeout, this, &QueryExecution::insertPendingResults);
+    fiftyMsTimer_.start(50);
+}
+
+
+/** ***************************************************************************/
+void Core::QueryExecution::onRealtimeHandlersFinsished() {
+
+    // Save the runtimes of the current future
+    for ( auto it = future_.begin(); it != future_.end(); ++it )
+        stats.runtimes.emplace(it->first->id, it->second);
+
+    // Finally done
+    fiftyMsTimer_.stop();
+    fiftyMsTimer_.disconnect();
+    insertPendingResults();
+
+    if( results_.empty() && !query_.rawString_.isEmpty() ){
+        beginInsertRows(QModelIndex(), 0, static_cast<int>(fallbacks_.size()-1));
+        results_ = std::move(fallbacks_);
+        endInsertRows();
+        fetchIncrementally_ = false;
+    }
+    setState(State::Finished);
+}
+
+
+/** ***************************************************************************/
+void Core::QueryExecution::insertPendingResults() {
+
+    if(query_.results_.size()) {
+
+        QMutexLocker lock(&query_.mutex_);
+
+        // When fetching incrementally, only emit if this is in the fetched range
+        if ( !fetchIncrementally_ || sortedItems_ == static_cast<int>(results_.size()))
+            beginInsertRows(QModelIndex(),
+                            static_cast<int>(results_.size()),
+                            static_cast<int>(results_.size()+query_.results_.size()-1));
+
+        // Preallocate space to avoid multiple allocatoins
+        results_.reserve(results_.size() + query_.results_.size());
+
+        // Copy the items of the matches into the results
+        move(query_.results_.begin(), query_.results_.end(), back_inserter(results_));
+
+        // When fetching incrementally, only emit if this is in the fetched range
+        if ( !fetchIncrementally_ || sortedItems_ == static_cast<int>(results_.size()))
+            endInsertRows();
+
+        // Clear the empty matches
+        query_.results_.clear();
+    }
 }
 
 
@@ -170,13 +337,11 @@ bool Core::QueryExecution::setData(const QModelIndex &index, const QVariant &val
 
     if (index.isValid()) {
         shared_ptr<Item> &item = results_[static_cast<size_t>(index.row())].first;
-        QString activateditemId;
-
         switch ( role ) {
         case ItemRoles::ActionRole:{
             if (0U < item->actions().size()){
                 item->actions()[0].activate();
-                activateditemId = item->id();
+                stats.activatedItem = item->id();
             }
             break;
         }
@@ -184,197 +349,19 @@ bool Core::QueryExecution::setData(const QModelIndex &index, const QVariant &val
             size_t actionValue = static_cast<size_t>(value.toInt());
             if (actionValue < item->actions().size()) {
                 item->actions()[actionValue].activate();
-                activateditemId = item->id();
+                stats.activatedItem = item->id();
             }
             break;
         }
         case ItemRoles::FallbackRole:{
             if (0U < fallbacks_.size() && 0U < item->actions().size()) {
                 fallbacks_[0].first->actions()[0].activate();
-                activateditemId = fallbacks_[0].first->id();
+                stats.activatedItem = fallbacks_[0].first->id();
             }
             break;
         }
         }
-
-        // Save usage
-        QSqlQuery query;
-        query.prepare("INSERT INTO usages (input, itemId) VALUES (:input, :itemId);");
-        query.bindValue(":input", query_.rawString_);
-        query.bindValue(":itemId", item->id());
-        if (!query.exec())
-            qWarning() << query.lastError();
         return true;
     }
     return false;
-}
-
-
-/** ***************************************************************************/
-const map<QString, uint> &Core::QueryExecution::runtimes() {
-    return runtimes_;
-}
-
-
-/** ***************************************************************************/
-void Core::QueryExecution::run() {
-
-    setState(State::Running);
-
-    if ( !batchHandlers_.empty() )
-        return runBatchHandlers();
-
-    emit resultsReady(this);
-
-    if ( !realtimeHandlers_.empty() )
-        return runRealtimeHandlers();
-
-    setState(State::Finished);
-}
-
-
-/** ***************************************************************************/
-void Core::QueryExecution::cancel() {
-    futureWatcher_.disconnect();
-    future_.cancel();
-    query_.isValid_ = false;
-}
-
-
-/** ***************************************************************************/
-void Core::QueryExecution::runBatchHandlers() {
-
-    // Call onBatchHandlersFinished when all handlers finished
-    connect(&futureWatcher_, &QFutureWatcher<pair<QueryHandler*,uint>>::finished,
-            this, &QueryExecution::onBatchHandlersFinished);
-
-    // Run the handlers concurrently and measure the runtimes
-    function<pair<QueryHandler*,uint>(QueryHandler*)> func = [this](QueryHandler* queryHandler){
-        system_clock::time_point start = system_clock::now();
-        queryHandler->handleQuery(&query_);
-        long duration = duration_cast<microseconds>(system_clock::now()-start).count();
-        qDebug() << qPrintable(QString("TIME: %1 µs MATCHES [%2]").arg(duration, 6).arg(queryHandler->id));
-        return make_pair(queryHandler, static_cast<int>(duration));
-    };
-    future_ = QtConcurrent::mapped(batchHandlers_.begin(), batchHandlers_.end(), func);
-    futureWatcher_.setFuture(future_);
-}
-
-
-/** ***************************************************************************/
-void Core::QueryExecution::onBatchHandlersFinished() {
-
-    // Save the runtimes of the current future
-    for ( auto it = future_.begin(); it != future_.end(); ++it )
-        runtimes_.emplace(it->first->id, it->second);
-
-    // Move the items of the "pending results" into "results"
-    query_.mutex_.lock();
-    swap(query_.results_, results_);
-    query_.results_.clear();
-    query_.mutex_.unlock();
-
-    // Sort the results
-    if ( fetchIncrementally_ ) {
-        int sortUntil = min(sortedItems_ + FETCH_SIZE, static_cast<int>(results_.size()));
-        partial_sort(results_.begin() + sortedItems_, results_.begin() + sortUntil,
-                          results_.end(), MatchCompare());
-        sortedItems_ = sortUntil;
-    }
-    else
-        std::sort(results_.begin(), results_.end(), MatchCompare());
-
-    if ( realtimeHandlers_.empty() ){
-        if( results_.empty() && !query_.rawString_.isEmpty() ){
-            beginInsertRows(QModelIndex(), 0, static_cast<int>(fallbacks_.size()-1));
-            results_ = std::move(fallbacks_);
-            endInsertRows();
-            fetchIncrementally_ = false;
-        }
-        emit resultsReady(this);
-        setState(State::Finished);
-    }
-    else
-    {
-        emit resultsReady(this);
-        runRealtimeHandlers();
-    }
-}
-
-
-/** ***************************************************************************/
-void Core::QueryExecution::runRealtimeHandlers() {
-
-    // Call onRealtimeHandlersFinsished when all handlers finished
-    disconnect(&futureWatcher_, &QFutureWatcher<pair<QueryHandler*,uint>>::finished,
-               this, &QueryExecution::onBatchHandlersFinished);
-
-    connect(&futureWatcher_, &QFutureWatcher<pair<QueryHandler*,uint>>::finished,
-            this, &QueryExecution::onRealtimeHandlersFinsished);
-
-    // Run the handlers concurrently and measure the runtimes
-    function<pair<QueryHandler*,uint>(QueryHandler*)> func = [this](QueryHandler* queryHandler){
-        system_clock::time_point start = system_clock::now();
-        queryHandler->handleQuery(&query_);
-        long duration = duration_cast<microseconds>(system_clock::now()-start).count();
-        qDebug() << qPrintable(QString("TIME: %1 µs MATCHES REALTIME [%2]").arg(duration, 6).arg(queryHandler->id));
-        return make_pair(queryHandler, static_cast<int>(duration));
-    };
-    future_ = QtConcurrent::mapped(realtimeHandlers_.begin(), realtimeHandlers_.end(), func);
-    futureWatcher_.setFuture(future_);
-
-    // Insert pending results every 50 milliseconds
-    connect(&fiftyMsTimer_, &QTimer::timeout, this, &QueryExecution::insertPendingResults);
-    fiftyMsTimer_.start(50);
-}
-
-
-/** ***************************************************************************/
-void Core::QueryExecution::onRealtimeHandlersFinsished() {
-
-    // Save the runtimes of the current future
-    for ( auto it = future_.begin(); it != future_.end(); ++it )
-        runtimes_.emplace(it->first->id, it->second);
-
-    // Finally done
-    fiftyMsTimer_.stop();
-    fiftyMsTimer_.disconnect();
-    insertPendingResults();
-
-    if( results_.empty() && !query_.rawString_.isEmpty() ){
-        beginInsertRows(QModelIndex(), 0, static_cast<int>(fallbacks_.size()-1));
-        results_ = std::move(fallbacks_);
-        endInsertRows();
-        fetchIncrementally_ = false;
-    }
-    setState(State::Finished);
-}
-
-
-/** ***************************************************************************/
-void Core::QueryExecution::insertPendingResults() {
-
-    if(query_.results_.size()) {
-
-        QMutexLocker lock(&query_.mutex_);
-
-        // When fetching incrementally, only emit if this is in the fetched range
-        if ( !fetchIncrementally_ || sortedItems_ == static_cast<int>(results_.size()))
-            beginInsertRows(QModelIndex(),
-                            static_cast<int>(results_.size()),
-                            static_cast<int>(results_.size()+query_.results_.size()-1));
-
-        // Preallocate space to avoid multiple allocatoins
-        results_.reserve(results_.size() + query_.results_.size());
-
-        // Copy the items of the matches into the results
-        move(query_.results_.begin(), query_.results_.end(), back_inserter(results_));
-
-        // When fetching incrementally, only emit if this is in the fetched range
-        if ( !fetchIncrementally_ || sortedItems_ == static_cast<int>(results_.size()))
-            endInsertRows();
-
-        // Clear the empty matches
-        query_.results_.clear();
-    }
 }

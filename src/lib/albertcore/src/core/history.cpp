@@ -14,11 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QSqlQuery>
-#include <QSqlRecord>
 #include <QStringList>
 #include <QVariant>
 #include "history.h"
+#include "statistics.h"
 
 
 Core::History::History(QObject *parent) : QObject(parent) {
@@ -67,10 +66,6 @@ void Core::History::resetIterator() {
 
 /** ***************************************************************************/
 void Core::History::updateHistory() {
-    lines_.clear();
-    QSqlQuery query;
-    query.exec("SELECT input FROM usages GROUP BY input ORDER BY max(timestamp) DESC");
-    while (query.next())
-        lines_.append(query.value(0).toString());
+    lines_ = Statistics::getRecentlyUsed();
 }
 

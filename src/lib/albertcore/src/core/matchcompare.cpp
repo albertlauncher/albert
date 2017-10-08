@@ -14,12 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QSqlQuery>
-#include <QSqlRecord>
-#include <QSqlError>
 #include <QVariant>
 #include "item.h"
 #include "matchcompare.h"
+#include "statistics.h"
 using namespace std;
 
 
@@ -36,27 +34,10 @@ bool Core::MatchCompare::operator()(const pair<shared_ptr<Item>, uint> &lhs,
 }
 
 
-/*****************************************************************************
- * @brief Core::MatchCompare::update
- * Update the usage score:
- * Score of a single usage is 1/(<age_in_days>+1).
- * Accumulate all scores groupes by itemId.
- * Normalize the scores to the range of UINT_MAX.
- */
+/*****************************************************************************/
 void Core::MatchCompare::update() {
-    order.clear();
-    QSqlQuery query;
-    query.exec("SELECT itemId, SUM(1/(julianday('now')-julianday(timestamp)+1)) AS score "
-               "FROM usages WHERE itemId<>'' GROUP BY itemId ORDER BY score DESC");
-    double max;
-    if ( !query.next() )
-        return;
-    max = query.value(1).toDouble();
+    order = Statistics::getRanking();
 
-    do {
-        MatchCompare::order.emplace(query.value(0).toString(),
-                                    static_cast<uint>(query.value(1).toDouble()*UINT_MAX/max));
-    } while (query.next());
 }
 
 /** ***************************************************************************/

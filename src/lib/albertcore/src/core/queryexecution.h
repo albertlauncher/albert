@@ -25,6 +25,7 @@
 #include <utility>
 #include <memory>
 #include "query.h"
+#include "statistics.h"
 
 namespace Core {
 
@@ -66,7 +67,7 @@ public:
     bool canFetchMore(const QModelIndex &) const override;
     void fetchMore(const QModelIndex &) override;
 
-    const std::map<QString, uint> &runtimes();
+    QueryStatistics stats;
 
 private:
 
@@ -90,7 +91,6 @@ private:
     bool fetchIncrementally_ = false;
 
     QTimer fiftyMsTimer_;
-    std::map<QString,uint> runtimes_;
 
     QFuture<std::pair<QueryHandler*,uint>> future_;
     QFutureWatcher<std::pair<QueryHandler*,uint>> futureWatcher_;

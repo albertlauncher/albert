@@ -22,25 +22,22 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QSettings>
-#include <QSqlDatabase>
-#include <QSqlDriver>
-#include <QSqlError>
-#include <QSqlQuery>
 #include <QStandardPaths>
 #include <QTime>
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QLocalSocket>
 #include <csignal>
 #include <functional>
+#include "globalshortcut/hotkeymanager.h"
+#include "xdg/iconlookup.h"
 #include "extensionmanager.h"
 #include "frontend.h"
-#include "globalshortcut/hotkeymanager.h"
 #include "frontendmanager.h"
 #include "pluginspec.h"
 #include "querymanager.h"
 #include "settingswidget.h"
+#include "statistics.h"
 #include "trayicon.h"
-#include "xdg/iconlookup.h"
 using namespace Core;
 using namespace GlobalShortcut;
 
@@ -226,43 +223,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
          */
 
         qDebug() << "Initializing database";
-        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-        if ( !db.isValid() )
-            qFatal("No sqlite available");
-
-        if (!db.driver()->hasFeature(QSqlDriver::Transactions))
-            qFatal("QSqlDriver::Transactions not available.");
-
-        db.setDatabaseName(QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).filePath("core.db"));
-        if (!db.open())
-            qFatal("Unable to establish a database connection.");
-
-        db.transaction();
-
-        // Create tables
-        QSqlQuery q;
-        if (!q.exec("CREATE TABLE IF NOT EXISTS usages ( "
-                    "  input TEXT NOT NULL, "
-                    "  itemId TEXT, "
-                    "  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP "
-                    ");"))
-            qFatal("Unable to create table 'usages': %s", q.lastError().text().toUtf8().constData());
-
-        if (!q.exec("CREATE TABLE IF NOT EXISTS runtimes ( "
-                    "  extensionId TEXT NOT NULL, "
-                    "  runtime INTEGER NOT NULL, "
-                    "  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP "
-                    ");"))
-            qFatal("Unable to create table 'runtimes': %s", q.lastError().text().toUtf8().constData());
-
-        // Do regular cleanup
-        if (!q.exec("DELETE FROM usages WHERE julianday('now')-julianday(timestamp)>90;"))
-            qWarning("Unable to cleanup usages table.");
-
-        if (!q.exec("DELETE FROM runtimes WHERE julianday('now')-julianday(timestamp)>7;"))
-            qWarning("Unable to cleanup runtimes table.");
-
-        db.commit();
+        Statistics::initialize();
 
 
         /*

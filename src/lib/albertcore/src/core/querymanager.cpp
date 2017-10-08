@@ -17,9 +17,6 @@
 #include <QApplication>
 #include <QDebug>
 #include <QSettings>
-#include <QSqlQuery>
-#include <QSqlRecord>
-#include <QSqlError>
 #include <chrono>
 #include <vector>
 #include "extension.h"
@@ -96,33 +93,10 @@ void Core::QueryManager::teardownSession() {
     // Clear views
     emit resultsReady(nullptr);
 
-    // Open database to store the runtimes
-    QSqlDatabase db = QSqlDatabase::database();
-    QSqlQuery sqlQuery;
-    db.transaction();
-
     // Delete finished queries and prepare sql transaction containing runtimes
-    decltype(pastQueries_)::iterator it = pastQueries_.begin();
-    while ( it != pastQueries_.end()){
-        if ( (*it)->state() != QueryExecution::State::Running ) {
-
-            // Store the runtimes
-            for ( const pair<QString,uint> &handlerRuntime : (*it)->runtimes() ) {
-                sqlQuery.prepare("INSERT INTO runtimes (extensionId, runtime) VALUES (:extensionId, :runtime);");
-                sqlQuery.bindValue(":extensionId", handlerRuntime.first);
-                sqlQuery.bindValue(":runtime", handlerRuntime.second);
-                if (!sqlQuery.exec())
-                    qWarning() << sqlQuery.lastError();
-            }
-
-            // Delete the query
-            it = pastQueries_.erase(it);
-        } else
-            ++it;
-    }
-
-    // Finally send the sql transaction
-    db.commit();
+    auto it = pastQueries_.begin();
+    while ( it != pastQueries_.end())
+        ((*it)->state() != QueryExecution::State::Running ) ? it = pastQueries_.erase(it) : ++it;
 
     // Compute new match rankings
     Core::MatchCompare::update();
@@ -139,9 +113,10 @@ void Core::QueryManager::startQuery(const QString &searchTerm) {
 
     if ( pastQueries_.size() ) {
         // Stop last query
-        disconnect(pastQueries_.back().get(), &QueryExecution::resultsReady,
-                   this, &QueryManager::resultsReady);
-        pastQueries_.back()->cancel();
+        QueryExecution *last = pastQueries_.back().get();
+        disconnect(last, &QueryExecution::resultsReady, this, &QueryManager::resultsReady);
+        if (last->state() != QueryExecution::State::Finished)
+            last->cancel();
     }
 
     system_clock::time_point start = system_clock::now();

@@ -24,7 +24,6 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QShortcut>
-#include <QSqlQuery>
 #include <QStandardPaths>
 #include <vector>
 #include <memory>
@@ -39,6 +38,7 @@
 #include "pluginspec.h"
 #include "querymanager.h"
 #include "settingswidget.h"
+#include "statistics.h"
 #include "trayicon.h"
 using namespace std;
 using namespace Core;
@@ -179,10 +179,7 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
     });
 
     // Cache
-    connect(ui.pushButton_clearHistory, &QPushButton::clicked, [](){
-        QSqlQuery("DELETE FROM usages;");
-    });
-
+    connect(ui.pushButton_clearHistory, &QPushButton::clicked, &Statistics::clearRecentlyUsed);
 
     /*
      * PLUGINS
