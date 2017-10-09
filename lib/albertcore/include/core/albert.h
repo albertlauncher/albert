@@ -17,14 +17,14 @@
 #pragma once
 #include "core_globals.h"
 
+extern int main(int argc, char** argv);
+
 namespace Core {
 
 class AlbertApp
 {
-public:
-
     static int EXPORT_CORE run(int argc, char **argv);
-
+    friend int ::main(int argc, char** argv);
 };
 
 }
