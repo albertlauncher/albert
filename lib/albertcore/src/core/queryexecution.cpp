@@ -301,7 +301,7 @@ QVariant Core::QueryExecution::data(const QModelIndex &index, int role) const {
             return actionTexts;
         }
         case ItemRoles::FallbackRole:
-            return "Search '"+ query_.rawString_ +"' using default fallback";
+            return QString("Search '%1' using default fallback").arg(query_.rawString_);
         }
     }
     return QVariant();

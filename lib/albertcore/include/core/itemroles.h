@@ -23,7 +23,7 @@ enum ItemRoles {
     TextRole = 0,
     ToolTipRole,
     DecorationRole,
-    CompletionRole, // Note this is used as int in QML
+    CompletionRole = Qt::UserRole, // Note this is used as int in QML
     ActionRole,
     AltActionRole,
     FallbackRole
