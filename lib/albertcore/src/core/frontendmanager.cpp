@@ -143,11 +143,10 @@ bool Core::FrontendManager::setCurrentFrontend(QString id) {
     if (!newFrontend)
         qFatal("Could not cast plugin instance to frontend");
 
+    d->currentFrontend->disconnect();
     d->currentFrontend = newFrontend;
-
-    oldFrontendSpec->unload();
-
     emit frontendChanged(d->currentFrontend);
+    oldFrontendSpec->unload();
 
     return true;
 }
