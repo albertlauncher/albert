@@ -36,15 +36,17 @@ class Statistics final
 public:
 
     static void initialize();
-    static void addRecord(const QueryStatistics&);
     static void clearRecentlyUsed();
     static QStringList getRecentlyUsed();
     static std::map<QString, uint> getRanking();
+    static void addRecord(const QueryStatistics&);
+    static void commitRecords();
 
 private:
 
     static std::map<QString, unsigned long long> handlerIds;
     static unsigned long long lastQueryId;
+    static std::vector<QueryStatistics> records;
 };
 
 }

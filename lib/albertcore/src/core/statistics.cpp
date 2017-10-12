@@ -33,6 +33,7 @@ char const * const statsDbName = "statisticsDatabase";
 
 std::map<QString, unsigned long long> Statistics::handlerIds;
 unsigned long long Statistics::lastQueryId;
+std::vector<QueryStatistics> Statistics::records;
 
 
 /** ***********************************************************************************************/
@@ -107,57 +108,64 @@ void Statistics::initialize() {
 
 /** ***********************************************************************************************/
 void Statistics::addRecord(const QueryStatistics &record) {
+    records.push_back(record);
+}
 
-    ++lastQueryId;
 
-    // Open database for a transaction
+/** ***********************************************************************************************/
+void Statistics::commitRecords() {
+
     QSqlDatabase db = QSqlDatabase::database(statsDbName);
-    db.transaction();
     QSqlQuery query(db);
 
-    // Create a query record
-    query.prepare("INSERT INTO query (id, input, cancelled, runtime, timestamp) "
-                  "VALUES (:id, :input, :cancelled, :runtime, :timestamp);");
-    query.bindValue(":id", lastQueryId);
-    query.bindValue(":input", record.input);
-    query.bindValue(":cancelled", record.cancelled);
-    query.bindValue(":runtime", static_cast<qulonglong>(duration_cast<microseconds>(record.end-record.start).count()));
-    query.bindValue(":timestamp", static_cast<qulonglong>(duration_cast<seconds>(record.start.time_since_epoch()).count()));
-    if (!query.exec())
-        qFatal("SQL ERROR: %s", qPrintable(query.lastError().text()));
+    db.transaction();
+    for (const QueryStatistics& record : records) {
 
-    // Make sure all handlers exits in database
-    query.prepare("INSERT INTO query_handler (string_id) VALUES (:id);");
-    for ( auto & runtime : record.runtimes ) {
-        auto it = handlerIds.find(runtime.first);
-        if ( it == handlerIds.end()){
-            query.bindValue(":id", runtime.first);
+        ++lastQueryId;
+
+        // Create a query record
+        query.prepare("INSERT INTO query (id, input, cancelled, runtime, timestamp) "
+                      "VALUES (:id, :input, :cancelled, :runtime, :timestamp);");
+        query.bindValue(":id", lastQueryId);
+        query.bindValue(":input", record.input);
+        query.bindValue(":cancelled", record.cancelled);
+        query.bindValue(":runtime", static_cast<qulonglong>(duration_cast<microseconds>(record.end-record.start).count()));
+        query.bindValue(":timestamp", static_cast<qulonglong>(duration_cast<seconds>(record.start.time_since_epoch()).count()));
+        if (!query.exec())
+            qFatal("SQL ERROR: %s", qPrintable(query.lastError().text()));
+
+        // Make sure all handlers exits in database
+        query.prepare("INSERT INTO query_handler (string_id) VALUES (:id);");
+        for ( auto & runtime : record.runtimes ) {
+            auto it = handlerIds.find(runtime.first);
+            if ( it == handlerIds.end()){
+                query.bindValue(":id", runtime.first);
+                if (!query.exec())
+                    qFatal("SQL ERROR: %s %s", qPrintable(query.executedQuery()), qPrintable(query.lastError().text()));
+                handlerIds.emplace(runtime.first, query.lastInsertId().toULongLong());
+            }
+        }
+
+        // Create execution records
+        query.prepare("INSERT INTO execution (query_id, handler_id, runtime) "
+                      "VALUES (:query_id, :handler_id, :runtime);");
+        for ( auto & runtime : record.runtimes ) {
+            query.bindValue(":query_id", lastQueryId);
+            query.bindValue(":handler_id", handlerIds[runtime.first]);
+            query.bindValue(":runtime", runtime.second);
             if (!query.exec())
                 qFatal("SQL ERROR: %s %s", qPrintable(query.executedQuery()), qPrintable(query.lastError().text()));
-            handlerIds.emplace(runtime.first, query.lastInsertId().toULongLong());
+        }
+
+        // Create activation record
+        if (!record.activatedItem.isNull()) {
+            query.prepare("INSERT INTO activation (query_id, item_id) VALUES (:query_id, :item_id);");
+            query.bindValue(":query_id", lastQueryId);
+            query.bindValue(":item_id", record.activatedItem);
+            if (!query.exec())
+                qFatal("SQL ERROR: %s %s", qPrintable(query.executedQuery()), qPrintable(query.lastError().text()));
         }
     }
-
-    // Create execution records
-    query.prepare("INSERT INTO execution (query_id, handler_id, runtime) "
-                  "VALUES (:query_id, :handler_id, :runtime);");
-    for ( auto & runtime : record.runtimes ) {
-        query.bindValue(":query_id", lastQueryId);
-        query.bindValue(":handler_id", handlerIds[runtime.first]);
-        query.bindValue(":runtime", runtime.second);
-        if (!query.exec())
-            qFatal("SQL ERROR: %s %s", qPrintable(query.executedQuery()), qPrintable(query.lastError().text()));
-    }
-
-    // Create activation record
-    if (!record.activatedItem.isNull()) {
-        query.prepare("INSERT INTO activation (query_id, item_id) VALUES (:query_id, :item_id);");
-        query.bindValue(":query_id", lastQueryId);
-        query.bindValue(":item_id", record.activatedItem);
-        if (!query.exec())
-            qFatal("SQL ERROR: %s %s", qPrintable(query.executedQuery()), qPrintable(query.lastError().text()));
-    }
-
     db.commit();
 }
 
@@ -173,9 +181,9 @@ QStringList Statistics::getRecentlyUsed() {
     QStringList mru;
     QSqlQuery query(QSqlDatabase::database(statsDbName));
     query.exec("SELECT input "
-               "FROM usages "
-               "GROUP BY input "
-               "ORDER BY max(timestamp) DESC");
+               "FROM activation a JOIN  query q ON a.query_id = q.id "
+               "GROUP BY input  "
+               "ORDER BY max(timestamp) DESC;");
     while (query.next())
         mru.append(query.value(0).toString());
     return mru;
@@ -192,10 +200,10 @@ QStringList Statistics::getRecentlyUsed() {
 std::map<QString, uint> Statistics::getRanking() {
     map<QString, uint> ranking;
     QSqlQuery query(QSqlDatabase::database(statsDbName));
-    query.exec("SELECT itemId, SUM(1/(julianday('now')-julianday(timestamp)+1)) AS score "
-               "FROM usages "
-               "WHERE itemId<>'' "
-               "GROUP BY itemId "
+    query.exec("SELECT a.item_id AS id, SUM(1/(julianday('now')-julianday(timestamp, 'unixepoch')+1)) AS score "
+               "FROM activation a JOIN  query q ON a.query_id = q.id "
+               "WHERE a.item_id<>'' "
+               "GROUP BY a.item_id "
                "ORDER BY score DESC");
 
     if ( !query.next() )

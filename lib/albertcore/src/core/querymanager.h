@@ -44,7 +44,7 @@ public:
 private:
 
     ExtensionManager *extensionManager_;
-    std::list<std::unique_ptr<QueryExecution>> pastQueries_;
+    std::list<QueryExecution*> pastQueries_;
     bool incrementalSort_;
 
 signals:

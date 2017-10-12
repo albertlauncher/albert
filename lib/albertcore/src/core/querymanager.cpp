@@ -93,10 +93,20 @@ void Core::QueryManager::teardownSession() {
     // Clear views
     emit resultsReady(nullptr);
 
-    // Delete finished queries and prepare sql transaction containing runtimes
-    auto it = pastQueries_.begin();
-    while ( it != pastQueries_.end())
-        ((*it)->state() != QueryExecution::State::Running ) ? it = pastQueries_.erase(it) : ++it;
+    // Store statistics
+    for ( QueryExecution *query : pastQueries_ )
+        Statistics::addRecord(query->stats);
+    Statistics::commitRecords();
+
+
+    // Delete queries
+    for ( QueryExecution *query : pastQueries_ )
+        if ( query->state() == QueryExecution::State::Running )
+            connect(query, &QueryExecution::stateChanged,
+                    query, [query](){ query->deleteLater(); });
+        else
+            delete query;
+    pastQueries_.clear();
 
     // Compute new match rankings
     Core::MatchCompare::update();
@@ -113,7 +123,7 @@ void Core::QueryManager::startQuery(const QString &searchTerm) {
 
     if ( pastQueries_.size() ) {
         // Stop last query
-        QueryExecution *last = pastQueries_.back().get();
+        QueryExecution *last = pastQueries_.back();
         disconnect(last, &QueryExecution::resultsReady, this, &QueryManager::resultsReady);
         if (last->state() != QueryExecution::State::Finished)
             last->cancel();

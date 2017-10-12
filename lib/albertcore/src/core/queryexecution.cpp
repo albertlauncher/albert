@@ -64,7 +64,7 @@ Core::QueryExecution::QueryExecution(const set<QueryHandler*> & queryHandlers,
 
 /** ***************************************************************************/
 Core::QueryExecution::~QueryExecution() {
-    Statistics::addRecord(stats);
+
 }
 
 
