@@ -2,33 +2,25 @@
 
 #pragma once
 #include <QString>
-#include <functional>
 #include "core_globals.h"
 
 namespace Core {
 
 /**
- * @brief The albert action type
+ * @brief The action interface
+ * A base class for actions (and items)
  */
 class EXPORT_CORE Action
 {
 public:
 
-    Action() {}
+    virtual ~Action() {}
 
-    template<class QString, class Function>
-    Action(QString&& text, Function&& function)
-        : text(std::forward<QString>(text)),
-          function(std::forward<Function>(function)) { }
+    /** The description of the action */
+    virtual QString text() const = 0;
 
-    /** The description of the action*/
-    QString text;
-
-    /** The action */
-    std::function<void()> function;
-
-    /** Convenience function. Executes the action */
-    void activate() { function(); }
+    /** Activates the item */
+    virtual void activate() = 0;
 };
 
 }

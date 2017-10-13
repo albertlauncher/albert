@@ -4,10 +4,11 @@
 #include <QString>
 #include <vector>
 #include <memory>
-#include "action.h"
 #include "core_globals.h"
 
 namespace Core {
+
+class Action;
 
 /** ****************************************************************************
  * @brief The item interface
@@ -23,7 +24,7 @@ public:
      * Notifications are placed on top. Alert too but additionally get an visual
      * emphasis. Normal items are not handled in a special way.
      */
-    enum class Urgency : unsigned char { Normal, Notification, Alert };
+    enum class Urgency { Normal, Notification, Alert };
 
     virtual ~Item() {}
 
@@ -40,13 +41,13 @@ public:
     virtual QString subtext() const = 0;
 
     /** The string to use for completion */
-    virtual QString completionString() const { return text(); }
+    virtual QString completion() const { return text(); }
 
     /** Urgency level of the item, defautls to "Normal" */
     virtual Urgency urgency() const { return Urgency::Normal; }
 
     /** The alternative actions of the item*/
-    virtual std::vector<Action> actions() = 0;
+    virtual std::vector<std::shared_ptr<Action>> actions() = 0;
 
 };
 
