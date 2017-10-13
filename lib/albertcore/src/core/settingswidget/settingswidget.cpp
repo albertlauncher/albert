@@ -241,6 +241,7 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
         QLabel *lbl = new QLabel(msg.arg(extensionManager_->extensionSpecs()[static_cast<size_t>(current.row())]->lastError()));
         lbl->setEnabled(false);
         lbl->setAlignment(Qt::AlignCenter);
+        lbl->setWordWrap(true);
         ui.widget_pluginInfos->layout()->addWidget(lbl);
         ui.label_pluginTitle->hide();
     }
