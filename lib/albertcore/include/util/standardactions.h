@@ -34,11 +34,11 @@ private:
 
 
 // A standard action that copies text into the clipboard
-struct EXPORT_CORE ClipboardAction : public Action
+struct EXPORT_CORE ClipAction : public Action
 {
 public:
     template<class S1 = QString, class S2 = QString>
-    ClipboardAction(S1&& text = QString(), S2&& clipBoardText = QString())
+    ClipAction(S1&& text = QString(), S2&& clipBoardText = QString())
         : text_(std::forward<S1>(text)), clipBoardText_(std::forward<S2>(clipBoardText)) { }
     QString text() const override { return text_; }
     void activate() override { QApplication::clipboard()->setText(clipBoardText_); }
