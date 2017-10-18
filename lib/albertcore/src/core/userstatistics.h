@@ -15,38 +15,28 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+#include <QObject>
 #include <QStringList>
-#include <QAbstractItemModel>
+#include <QTimer>
 #include <map>
 #include <chrono>
 
 namespace Core {
 
-struct QueryStatistics {
-    QString input;
-    std::chrono::system_clock::time_point start;
-    std::chrono::system_clock::time_point end;
-    std::map<QString, uint> runtimes;
-    bool cancelled = false;
-    QString activatedItem;
-};
-
-class Statistics final
+class UserStatistics final : public QObject
 {
+    Q_OBJECT
 public:
 
-    static void initialize();
-    static void clearRecentlyUsed();
-    static QStringList getRecentlyUsed();
-    static std::map<QString, uint> getRanking();
-    static void addRecord(const QueryStatistics&);
-    static void commitRecords();
+    UserStatistics();
 
 private:
 
-    static std::map<QString, unsigned long long> handlerIds;
-    static unsigned long long lastQueryId;
-    static std::vector<QueryStatistics> records;
+    void checkSend();
+    void sendSince(int64_t secsSinceEpoch);
+
+    QTimer timer_;
+
 };
 
 }

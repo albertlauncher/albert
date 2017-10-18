@@ -28,11 +28,13 @@ namespace {
 Core::QueryExecution::QueryExecution(const set<QueryHandler*> & queryHandlers,
                                      const set<FallbackProvider*> &fallbackProviders,
                                      const QString &queryString,
+                                     std::map<QString,uint> scores,
                                      bool fetchIncrementally) {
 
     fetchIncrementally_ = fetchIncrementally;
     query_.rawString_ = queryString;
     query_.string_    = queryString;
+    query_.scores_ = move(scores);
     stats.input = queryString;
 
     // Run with a single handler if the trigger matches

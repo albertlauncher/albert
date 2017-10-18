@@ -38,7 +38,7 @@
 #include "pluginspec.h"
 #include "querymanager.h"
 #include "settingswidget.h"
-#include "statistics.h"
+#include "usagedatabase.h"
 #include "trayicon.h"
 using namespace std;
 using namespace Core;
@@ -179,7 +179,7 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
     });
 
     // Cache
-    connect(ui.pushButton_clearHistory, &QPushButton::clicked, &Statistics::clearRecentlyUsed);
+    connect(ui.pushButton_clearHistory, &QPushButton::clicked, &UsageDatabase::clearRecentlyUsed);
 
     /*
      * PLUGINS

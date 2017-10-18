@@ -14,15 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <QVariant>
 #include "item.h"
 #include "matchcompare.h"
-#include "statistics.h"
 using namespace std;
-
-
-/** ***************************************************************************/
-map<QString, uint> Core::MatchCompare::order;
 
 /** ***************************************************************************/
 bool Core::MatchCompare::operator()(const pair<shared_ptr<Item>, uint> &lhs,
@@ -30,17 +24,8 @@ bool Core::MatchCompare::operator()(const pair<shared_ptr<Item>, uint> &lhs,
     // Compare urgency then score
     if (lhs.first->urgency() != rhs.first->urgency())
         return lhs.first->urgency() > rhs.first->urgency();
-    return lhs.second > rhs.second; // Compare match score
-}
-
-
-/*****************************************************************************/
-void Core::MatchCompare::update() {
-    order = Statistics::getRanking();
-
-}
-
-/** ***************************************************************************/
-const std::map<QString, uint> &Core::MatchCompare::usageScores() {
-    return order;
+    else if (lhs.second != rhs.second)
+        return lhs.second > rhs.second; // Compare match score
+    else
+        return lhs.first->text().size() > rhs.first->text().size();
 }

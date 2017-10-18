@@ -36,7 +36,8 @@
 #include "pluginspec.h"
 #include "querymanager.h"
 #include "settingswidget.h"
-#include "statistics.h"
+#include "usagedatabase.h"
+#include "userstatistics.h"
 #include "trayicon.h"
 using namespace Core;
 using namespace GlobalShortcut;
@@ -223,7 +224,8 @@ int Core::AlbertApp::run(int argc, char **argv) {
          */
 
         qDebug() << "Initializing database";
-        Statistics::initialize();
+        UsageDatabase::initialize();
+        new UserStatistics;
 
 
         /*

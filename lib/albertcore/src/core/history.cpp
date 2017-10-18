@@ -17,7 +17,7 @@
 #include <QStringList>
 #include <QVariant>
 #include "history.h"
-#include "statistics.h"
+#include "usagedatabase.h"
 
 
 Core::History::History(QObject *parent) : QObject(parent) {
@@ -66,6 +66,6 @@ void Core::History::resetIterator() {
 
 /** ***************************************************************************/
 void Core::History::updateHistory() {
-    lines_ = Statistics::getRecentlyUsed();
+    lines_ = UsageDatabase::getRecentlyUsed();
 }
 

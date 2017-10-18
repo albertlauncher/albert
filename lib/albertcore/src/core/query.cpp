@@ -15,8 +15,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDebug>
-#include "query.h"
+#include "item.h"
 #include "matchcompare.h"
+#include "query.h"
 
 
 /** ***************************************************************************/
@@ -51,8 +52,8 @@ bool Core::Query::isValid() const {
 
 /** ***************************************************************************/
 void Core::Query::addMatchWithoutLock(const std::shared_ptr<Core::Item> &item, uint score) {
-    auto it = MatchCompare::usageScores().find(item->id());
-    if ( it == MatchCompare::usageScores().end() )
+    auto it = scores_.find(item->id());
+    if ( it == scores_.end() )
         results_.emplace_back(item, score/2);
     else
         results_.emplace_back(item, (static_cast<ulong>(score)+it->second)/2);
@@ -61,8 +62,8 @@ void Core::Query::addMatchWithoutLock(const std::shared_ptr<Core::Item> &item, u
 
 /** ***************************************************************************/
 void Core::Query::addMatchWithoutLock(std::shared_ptr<Core::Item> &&item, uint score) {
-    auto it = MatchCompare::usageScores().find(item->id());
-    if ( it == MatchCompare::usageScores().end() )
+    auto it = scores_.find(item->id());
+    if ( it == scores_.end() )
         results_.emplace_back(std::move(item), score/2);
     else
         results_.emplace_back(std::move(item), (static_cast<ulong>(score)+it->second)/2);

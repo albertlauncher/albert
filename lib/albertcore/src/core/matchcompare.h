@@ -15,12 +15,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-#include <QString>
-#include <map>
 #include <memory>
-#include "item.h"
 
 namespace Core {
+
+class Item;
 
 /**
  * @brief The MatchOrder class
@@ -29,16 +28,8 @@ namespace Core {
 class MatchCompare
 {
 public:
-
     bool operator()(const std::pair<std::shared_ptr<Item>, uint>& lhs,
                     const std::pair<std::shared_ptr<Item>, uint>& rhs);
-
-    static void update();
-    static const std::map<QString, uint> &usageScores();
-
-private:
-
-    static std::map<QString, uint> order;
 };
 
 }

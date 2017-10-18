@@ -22,7 +22,7 @@
 #include <QSqlRecord>
 #include <QSqlError>
 #include <QStandardPaths>
-#include "statistics.h"
+#include "usagedatabase.h"
 using namespace Core;
 using namespace std;
 using namespace std::chrono;
@@ -31,13 +31,13 @@ namespace {
 char const * const statsDbName = "statisticsDatabase";
 }
 
-std::map<QString, unsigned long long> Statistics::handlerIds;
-unsigned long long Statistics::lastQueryId;
-std::vector<QueryStatistics> Statistics::records;
+std::map<QString, unsigned long long> UsageDatabase::handlerIds;
+unsigned long long UsageDatabase::lastQueryId;
+std::vector<QueryStatistics> UsageDatabase::records;
 
 
 /** ***********************************************************************************************/
-void Statistics::initialize() {
+void UsageDatabase::initialize() {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", statsDbName);
     if ( !db.isValid() )
         qFatal("No sqlite available");
@@ -107,13 +107,13 @@ void Statistics::initialize() {
 
 
 /** ***********************************************************************************************/
-void Statistics::addRecord(const QueryStatistics &record) {
+void UsageDatabase::addRecord(const QueryStatistics &record) {
     records.push_back(record);
 }
 
 
 /** ***********************************************************************************************/
-void Statistics::commitRecords() {
+void UsageDatabase::commitRecords() {
 
     QSqlDatabase db = QSqlDatabase::database(statsDbName);
     QSqlQuery query(db);
@@ -171,13 +171,30 @@ void Statistics::commitRecords() {
 
 
 /** ***********************************************************************************************/
-void Statistics::clearRecentlyUsed() {
+int64_t UsageDatabase::activationsSince(int64_t secsSinceEpoch) {
+    QSqlQuery q(QSqlDatabase::database(statsDbName));
+    q.prepare("SELECT count(*) "
+              "FROM activation a "
+              "JOIN query q "
+              "ON a.query_id = q.id "
+              "WHERE :since < q.timestamp;");
+    q.bindValue(":since", static_cast<qint64>(secsSinceEpoch));
+    if (!q.exec())
+        qFatal("SQL ERROR: %s %s", qPrintable(q.executedQuery()), qPrintable(q.lastError().text()));
+    q.next();
+    return  q.value(0).toLongLong();
+
+}
+
+
+/** ***********************************************************************************************/
+void UsageDatabase::clearRecentlyUsed() {
     QSqlQuery("DELETE FROM activation;", QSqlDatabase::database(statsDbName));
 }
 
 
 /** ***********************************************************************************************/
-QStringList Statistics::getRecentlyUsed() {
+QStringList UsageDatabase::getRecentlyUsed() {
     QStringList mru;
     QSqlQuery query(QSqlDatabase::database(statsDbName));
     query.exec("SELECT input "
@@ -197,7 +214,7 @@ QStringList Statistics::getRecentlyUsed() {
  * Accumulate all scores groupes by itemId.
  * Normalize the scores to the range of UINT_MAX.
  */
-std::map<QString, uint> Statistics::getRanking() {
+std::map<QString, uint> UsageDatabase::getRanking() {
     map<QString, uint> ranking;
     QSqlQuery query(QSqlDatabase::database(statsDbName));
     query.exec("SELECT a.item_id AS id, SUM(1/(julianday('now')-julianday(timestamp, 'unixepoch')+1)) AS score "

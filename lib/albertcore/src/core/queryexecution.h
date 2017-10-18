@@ -25,7 +25,7 @@
 #include <utility>
 #include <memory>
 #include "query.h"
-#include "statistics.h"
+#include "usagedatabase.h"
 
 namespace Core {
 
@@ -49,6 +49,7 @@ public:
     QueryExecution(const std::set<QueryHandler*> &,
                    const std::set<FallbackProvider*> &,
                    const QString &queryString,
+                   std::map<QString,uint> scores,
                    bool fetchIncrementally);
     ~QueryExecution();
 
@@ -78,6 +79,11 @@ private:
     void runRealtimeHandlers();
     void onRealtimeHandlersFinsished();
     void insertPendingResults();
+
+    QString trigger_;
+    QString string_;
+    QString rawString_;
+    bool isValid_ = true;
 
     Query query_;
     State state_;

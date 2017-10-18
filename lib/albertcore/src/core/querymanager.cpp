@@ -26,6 +26,7 @@
 #include "queryexecution.h"
 #include "querymanager.h"
 #include "queryhandler.h"
+#include "usagedatabase.h"
 #include "fallbackprovider.h"
 using namespace Core;
 using namespace std;
@@ -42,7 +43,7 @@ Core::QueryManager::QueryManager(ExtensionManager* em, QObject *parent)
       extensionManager_(em) {
 
     // Initialize the order
-    Core::MatchCompare::update();
+    scores_ = UsageDatabase::getRanking();
 
     QSettings s(qApp->applicationName());
     incrementalSort_ = s.value(CFG_INCREMENTAL_SORT, DEF_INCREMENTAL_SORT).toBool();
@@ -95,8 +96,8 @@ void Core::QueryManager::teardownSession() {
 
     // Store statistics
     for ( QueryExecution *query : pastQueries_ )
-        Statistics::addRecord(query->stats);
-    Statistics::commitRecords();
+        UsageDatabase::addRecord(query->stats);
+    UsageDatabase::commitRecords();
 
 
     // Delete queries
@@ -109,7 +110,7 @@ void Core::QueryManager::teardownSession() {
     pastQueries_.clear();
 
     // Compute new match rankings
-    Core::MatchCompare::update();
+    scores_ = UsageDatabase::getRanking();
 
     long duration = duration_cast<microseconds>(system_clock::now()-start).count();
     qDebug() << qPrintable(QString("TIME: %1 µs SESSION TEARDOWN OVERALL").arg(duration, 6));
@@ -134,7 +135,9 @@ void Core::QueryManager::startQuery(const QString &searchTerm) {
     // Start query
     QueryExecution *currentQuery = new QueryExecution(extensionManager_->queryHandlers(),
                                                       extensionManager_->fallbackProviders(),
-                                                      searchTerm, incrementalSort_);
+                                                      searchTerm,
+                                                      scores_,
+                                                      incrementalSort_);
     connect(currentQuery, &QueryExecution::resultsReady, this, &QueryManager::resultsReady);
     currentQuery->run();
 

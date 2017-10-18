@@ -17,6 +17,7 @@
 #pragma once
 #include <QMutex>
 #include <QString>
+#include <map>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -116,6 +117,7 @@ private:
     QString string_;
     QString rawString_;
     bool isValid_ = true;
+    std::map<QString, uint> scores_;
 
     friend class QueryExecution;
 };
