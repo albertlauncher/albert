@@ -36,7 +36,7 @@ install:
   - sudo add-apt-repository ppa:beineri/opt-qt551-trusty -y  # Qt-5.5
   - sudo add-apt-repository ppa:deadsnakes/ppa -y  # Python 3.5
   - sudo apt-get update -qq
-  - sudo apt-get install -qq cmake qt55base qt55x11extras qt55svg qt55quickcontrols libmuparser-dev virtualbox python3-dev
+  - sudo apt-get install -qq cmake qt55base qt55x11extras qt55svg qt55quickcontrols libmuparser-dev virtualbox python3.5-dev
   - wget http://download.virtualbox.org/virtualbox/5.0.40/VirtualBoxSDK-5.0.40-115130.zip
   - unzip VirtualBoxSDK-5.0.40-115130.zip
   - sudo mv sdk/bindings/xpcom/include /usr/lib/virtualbox/sdk/bindings/xpcom
