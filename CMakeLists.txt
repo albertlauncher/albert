@@ -46,7 +46,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     install(FILES data/albert.desktop DESTINATION share/applications )
 
     # Install icon
-    install(FILES src/lib/albertcore/resources/icons/albert.svg DESTINATION share/icons/hicolor/scalable/apps)
+    install(FILES lib/albertcore/resources/icons/albert.svg DESTINATION share/icons/hicolor/scalable/apps)
 
 
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
