@@ -8,6 +8,8 @@
 #include <QStringList>
 #include <QProcess>
 #include <functional>
+#include <pwd.h>
+#include <unistd.h>
 #include "core/action.h"
 #include "util/shutil.h"
 #include "core_globals.h"
@@ -21,9 +23,8 @@ namespace Core {
 struct EXPORT_CORE FuncAction : public Action
 {
 public:
-    template<class S1 = QString, class S2 = std::function<void()>>
-    FuncAction(S1&& text = QString(), S2&& action = std::function<void()>())
-        : text_(std::forward<S1>(text)), action_(std::forward<S2>(action)) { }
+    FuncAction(QString text, std::function<void()> action)
+        : text_(std::move(text)), action_(std::move(action)) { }
     QString text() const override { return text_; }
     void activate() override { action_(); }
 private:
@@ -37,9 +38,8 @@ private:
 struct EXPORT_CORE ClipAction : public Action
 {
 public:
-    template<class S1 = QString, class S2 = QString>
-    ClipAction(S1&& text = QString(), S2&& clipBoardText = QString())
-        : text_(std::forward<S1>(text)), clipBoardText_(std::forward<S2>(clipBoardText)) { }
+    ClipAction(QString text, QString clipBoardText)
+        : text_(std::move(text)), clipBoardText_(std::move(clipBoardText)) { }
     QString text() const override { return text_; }
     void activate() override { QApplication::clipboard()->setText(clipBoardText_); }
 private:
@@ -53,9 +53,8 @@ private:
 struct EXPORT_CORE UrlAction : public Action
 {
 public:
-    template<class S1 = QString, class S2 = QString>
-    UrlAction(S1&& text = QString(), S2&& url = QUrl())
-        : text_(std::forward<S1>(text)), url_(std::forward<S2>(url)) { }
+    UrlAction(QString text, QUrl url)
+        : text_(std::move(text)), url_(std::move(url)) { }
     QString text() const override { return text_; }
     void activate() override { QDesktopServices::openUrl(url_); }
 private:
@@ -69,21 +68,19 @@ private:
 struct EXPORT_CORE ProcAction : public Action
 {
 public:
-    template<class S1 = QString,
-             class S2 = QStringList,
-             class S3 = QString>
-    ProcAction(S1&& text = QString(),
-               S2&& commandline = QStringList(),
-               S3&& workingDirectory = QString())
-        : text_(std::forward<S1>(text)),
-          commandline_(std::forward<S2>(commandline)),
-          workingDir_(std::forward<S3>(workingDirectory)) { }
+    ProcAction(QString text, QStringList commandline, QString workingDirectory = QString())
+        : text_(std::move(text)),
+          commandline_(std::move(commandline)),
+          workingDir_(std::move(workingDirectory)) { }
     QString text() const override { return text_; }
     void activate() override {
         if (commandline_.isEmpty())
             return;
-        QStringList tmp = commandline_;
-        QProcess::startDetached(tmp.takeFirst(), tmp, workingDir_);
+        QStringList commandline = commandline_;
+        if (workingDir_.isEmpty())
+            QProcess::startDetached(commandline.takeFirst(), commandline);
+        else
+            QProcess::startDetached(commandline.takeFirst(), commandline, workingDir_);
     }
 private:
     QString text_;
@@ -97,29 +94,35 @@ private:
 struct EXPORT_CORE TermAction : public Action
 {
 public:
-    template<class S1 = QString,
-             class S2 = QStringList,
-             class S3 = QString>
-    TermAction(S1&& text = QString(),
-               S2&& commandline = QStringList(),
-               S3&& workingDirectory = QString())
-        : text_(std::forward<S1>(text)),
-          commandline_(std::forward<S2>(commandline)),
-          workingDir_(std::forward<S3>(workingDirectory)) { }
+    TermAction(QString text, QStringList commandline, QString workingDirectory = QString(), bool shell = true)
+        : text_(std::move(text)),
+          commandline_(std::move(commandline)),
+          workingDir_(std::move(workingDirectory)),
+          shell_(shell) { }
     QString text() const override { return text_; }
     void activate() override {
-        QStringList arguments = Core::ShUtil::split(terminalCommand);
-        arguments.append(commandline_);
-        QString command = arguments.takeFirst();
+        QStringList commandline = Core::ShUtil::split(terminalCommand);
+        if (shell_){
+            // passwd must not be freed
+            passwd *pwd = getpwuid(geteuid());
+            if (pwd == nullptr)
+                throw "Could not retrieve user shell";
+            QString shell = pwd->pw_shell;
+            commandline << shell << "-ic"
+                        << QString("%1; exec %2").arg(commandline_.join(' '), shell);
+        } else {
+            commandline << commandline_;
+        }
         if (workingDir_.isNull())
-            QProcess::startDetached(command, arguments);
+            QProcess::startDetached(commandline.takeFirst(), commandline);
         else
-            QProcess::startDetached(command, arguments, workingDir_);
+            QProcess::startDetached(commandline.takeFirst(), commandline, workingDir_);
     }
 private:
     QString text_;
     QStringList commandline_;
     QString workingDir_;
+    bool shell_;
 };
 
 

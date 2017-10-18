@@ -18,64 +18,43 @@ class Action;
 class EXPORT_CORE StandardItem : public Item
 {
 public:
-    template<class S1 = QString,
-             class S2 = QString,
-             class S3 = QString,
-             class S4 = QString,
-             class S5 = QString,
-             class S6 = Item::Urgency,
-             class S7 = std::vector<std::shared_ptr<Action>>>
-    StandardItem(S1&& id = QString(),
-                 S2&& iconPath = QString(),
-                 S3&& text = QString(),
-                 S4&& subtext = QString(),
-                 S5&& completion = QString(),
-                 S6&& urgency = Item::Urgency::Normal,
-                 S7&& actions = std::vector<std::shared_ptr<Action>>())
-        : id_(std::forward<S1>(id)),
-          iconPath_(std::forward<S2>(iconPath)),
-          text_(std::forward<S3>(text)),
-          subtext_(std::forward<S4>(subtext)),
-          completion_(std::forward<S5>(completion)),
-          urgency_(std::forward<S6>(urgency)),
-          actions_(std::forward<S7>(actions)) { }
+
+    StandardItem(QString id = QString(),
+                 QString iconPath = QString(),
+                 QString text = QString(),
+                 QString subtext = QString(),
+                 QString completion = QString(),
+                 Urgency urgency = Item::Urgency::Normal,
+                 std::vector<std::shared_ptr<Action>> actions = std::vector<std::shared_ptr<Action>>())
+        : id_(std::move(id)),
+          iconPath_(std::move(iconPath)),
+          text_(std::move(text)),
+          subtext_(std::move(subtext)),
+          completion_(std::move(completion)),
+          urgency_(urgency),
+          actions_(std::move(actions)) { }
 
     QString id() const override { return id_; }
-    template<class T>
-    void setId(T&& id) { id_ = std::forward<T>(id); }
+    void setId(QString id) { id_ = std::move(id); }
 
-    template<class T>
-    void setIconPath(T&& iconPath) { iconPath_ = std::forward<T>(iconPath); }
     QString iconPath() const override { return iconPath_; }
+    void setIconPath(QString iconPath) { iconPath_ = std::move(iconPath); }
 
     QString text() const override { return text_; }
-    template<class T>
-    void setText(T&& text) { text_ = std::forward<T>(text); }
+    void setText(QString text) { text_ = std::move(text); }
 
     QString subtext() const override { return subtext_; }
-    template<class T>
-    void setSubtext(T&& subtext) { subtext_ = std::forward<T>(subtext); }
+    void setSubtext(QString subtext) { subtext_ = std::move(subtext); }
 
     QString completion() const override { return completion_; }
-    template<class T>
-    void setCompletion(T&& completion) { completion_ = std::forward<T>(completion); }
+    void setCompletion(QString completion) { completion_ = std::move(completion); }
 
     Item::Urgency urgency() const override { return urgency_; }
-    template<class T>
-    void setUrgency(T&& urgency) { urgency_ = std::forward<T>(urgency); }
+    void setUrgency(Item::Urgency urgency) { urgency_ = urgency; }
 
-    std::vector<std::shared_ptr<Action>> actions() override{ return actions_; }
-    template<class T>
-    void setActions(T&& actions) { actions_ = std::forward<T>(actions); }
-    template<class T>
-    void addAction(T&& action) { actions_.push_back(std::forward<T>(action)); }
-    template<class T>
-    void addActions(T&& action) { actions_.push_back(std::forward<T>(action)); }
-    template<typename T, typename... Args>
-    void addActions(T &&action, Args... remainder) {
-        actions_.push_back(std::forward<T>(action));
-        addActions(std::forward<T>(remainder)...) ;
-    }
+    std::vector<std::shared_ptr<Action>> actions() override { return actions_; }
+    void setActions(std::vector<std::shared_ptr<Action>> actions) { actions_ = std::move(actions); }
+    void addAction(std::shared_ptr<Action> action) { actions_.push_back(std::move(action)); }
 
 protected:
 
