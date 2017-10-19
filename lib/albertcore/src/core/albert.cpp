@@ -472,6 +472,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
     switch (type) {
 #ifdef  QT_NO_DEBUG
     case QtDebugMsg:
+        break;
     case QtInfoMsg:
         fprintf(stdout, "%s \x1b[0m[INFO]\x1b[0m %s\n",
                 QTime::currentTime().toString().toLocal8Bit().constData(),
