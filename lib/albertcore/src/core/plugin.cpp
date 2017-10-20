@@ -28,6 +28,38 @@ public:
 Core::Plugin::Plugin(const QString &id) : d(new PluginPrivate)
 {
     d->id = id;
+    d->settings.reset(new QSettings(qApp->applicationName()));
+    d->settings->beginGroup(d->id);
+
+
+//        // Create a settings instance
+//        d->settings.reset(new QSettings(configLocation().filePath("config"),
+//                                        QSettings::Format::IniFormat));
+
+//        // Define a function to port the config from one settings to another
+//        std::function<void(QSettings &from, QSettings &to)> portRecursively =
+//                [&portRecursively](QSettings &from, QSettings &to){
+
+//            for ( const QString & key : from.childKeys() ) {
+//                to.setValue(key, from.value(key));
+//                from.remove(key);
+//            }
+
+//            for ( const QString & group : from.childGroups() ){
+//                from.beginGroup(group);
+//                to.beginGroup(group);
+//                portRecursively(from, to);
+//                to.endGroup();
+//                from.endGroup();
+//            }
+//        };
+
+//        // Port the settings from the global settings to the new one
+//        QSettings oldSettings(qApp->applicationName());
+//        oldSettings.beginGroup(d->id);
+//        portRecursively(oldSettings, *d->settings);
+
+
 }
 
 Core::Plugin::~Plugin()
@@ -67,39 +99,8 @@ QDir Core::Plugin::dataLocation() const
     return dataDir;
 }
 
-QSettings &Core::Plugin::settings()
+QSettings &Core::Plugin::settings() const
 {
-    if ( !d->settings ){
 
-//        // Create a settings instance
-//        d->settings.reset(new QSettings(configLocation().filePath("config"),
-//                                        QSettings::Format::IniFormat));
-
-//        // Define a function to port the config from one settings to another
-//        std::function<void(QSettings &from, QSettings &to)> portRecursively =
-//                [&portRecursively](QSettings &from, QSettings &to){
-
-//            for ( const QString & key : from.childKeys() ) {
-//                to.setValue(key, from.value(key));
-//                from.remove(key);
-//            }
-
-//            for ( const QString & group : from.childGroups() ){
-//                from.beginGroup(group);
-//                to.beginGroup(group);
-//                portRecursively(from, to);
-//                to.endGroup();
-//                from.endGroup();
-//            }
-//        };
-
-//        // Port the settings from the global settings to the new one
-//        QSettings oldSettings(qApp->applicationName());
-//        oldSettings.beginGroup(d->id);
-//        portRecursively(oldSettings, *d->settings);
-
-        d->settings.reset(new QSettings(qApp->applicationName()));
-        d->settings->beginGroup(d->id);
-    }
     return *d->settings;
 }

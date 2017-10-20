@@ -73,7 +73,7 @@ public:
      * should create a new instance with the path of this object.
      * @return The settings object
      */
-    QSettings &settings();
+    QSettings &settings() const;
 
 private:
 
