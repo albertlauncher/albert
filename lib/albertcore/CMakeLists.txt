@@ -37,6 +37,6 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 # Set the RPATH for the library lookup
-set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}/albert")
+set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN")
 
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/albert)
