@@ -20,6 +20,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic") #-Wconversion 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DQT_QML_DEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT")
 
+include(GNUInstallDirs)
+
 # Color make output
 SET(CMAKE_COLOR_MAKEFILE ON)
 
@@ -43,10 +45,10 @@ add_subdirectory(plugins/)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
     # Install desktop entry
-    install(FILES data/albert.desktop DESTINATION share/applications )
+    install(FILES data/albert.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications )
 
     # Install icon
-    install(FILES lib/albertcore/resources/icons/albert.svg DESTINATION share/icons/hicolor/scalable/apps)
+    install(FILES lib/albertcore/resources/icons/albert.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
 
 
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
