@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.1.3)
 project(albertcore)
 
 add_definitions(-DCORE) #export branch
-if (${CMAKE_LIBRARY_ARCHITECTURE})
+if (DEFINED CMAKE_LIBRARY_ARCHITECTURE)
     add_definitions(-DMULTIARCH_TUPLE="${CMAKE_LIBRARY_ARCHITECTURE}") #export branch
 endif()
 
