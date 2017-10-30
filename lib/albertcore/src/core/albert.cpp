@@ -428,9 +428,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
         connectFrontend(frontendManager->currentFrontend());
 
         // Connect new frontends
-        QObject::connect(frontendManager, &FrontendManager::frontendChanged, [&](Frontend *f) {
-            connectFrontend(f);
-        });
+        QObject::connect(frontendManager, &FrontendManager::frontendChanged, connectFrontend);
     }
 
 
