@@ -242,6 +242,9 @@ int Core::AlbertApp::run(int argc, char **argv) {
         else {
 #if defined __linux__
             QStringList dirs = {
+#if defined MULTIARCH_TUPLE
+                QFileInfo("/usr/lib/" MULTIARCH_TUPLE).canonicalFilePath(),
+#endif
                 QFileInfo("/usr/lib/").canonicalFilePath(),
                 QFileInfo("/usr/lib64/").canonicalFilePath(),
                 QFileInfo("/usr/local/lib/").canonicalFilePath(),
