@@ -51,7 +51,7 @@ void UsageDatabase::initialize() {
     if (!db.driver()->hasFeature(QSqlDriver::Transactions))
         qFatal("QSqlDriver::Transactions not available.");
 
-    db.setDatabaseName(QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).filePath("core.db"));
+    db.setDatabaseName(QDir(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)).filePath("core.db"));
     if (!db.open())
         qFatal("Unable to establish a database connection.");
 

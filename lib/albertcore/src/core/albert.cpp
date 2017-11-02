@@ -72,7 +72,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
         app = new QApplication(argc, argv);
         app->setApplicationName("albert");
         app->setApplicationDisplayName("Albert");
-        app->setApplicationVersion("v0.14.6");
+        app->setApplicationVersion("v0.14.7");
         app->setQuitOnLastWindowClosed(false);
         QString icon = XDG::IconLookup::iconPath("albert");
         if ( icon.isEmpty() ) icon = ":app_icon";
@@ -224,6 +224,13 @@ int Core::AlbertApp::run(int argc, char **argv) {
          */
 
         qDebug() << "Initializing database";
+
+        // If move database from old location in cache to config (since v0.14.7)
+        if ( QFile::exists(QString("%1/core.db").arg(cacheLocation)) )
+            qDebug() << "Moving 'core.db' to config path";
+            QFile::rename(QString("%1/core.db").arg(cacheLocation),
+                          QString("%1/core.db").arg(configLocation));
+
         UsageDatabase::initialize();
         UsageDatabase::trySendReport();
         QTimer *timer = new QTimer;
