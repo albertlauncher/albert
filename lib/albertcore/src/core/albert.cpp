@@ -24,6 +24,7 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QTime>
+#include <QTimer>
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QLocalSocket>
 #include <csignal>
@@ -37,7 +38,6 @@
 #include "querymanager.h"
 #include "settingswidget.h"
 #include "usagedatabase.h"
-#include "userstatistics.h"
 #include "trayicon.h"
 using namespace Core;
 using namespace GlobalShortcut;
@@ -225,7 +225,10 @@ int Core::AlbertApp::run(int argc, char **argv) {
 
         qDebug() << "Initializing database";
         UsageDatabase::initialize();
-        new UserStatistics;
+        UsageDatabase::trySendReport();
+        QTimer *timer = new QTimer;
+        QObject::connect(timer, &QTimer::timeout, &UsageDatabase::trySendReport);
+        timer->start(60000);
 
 
         /*

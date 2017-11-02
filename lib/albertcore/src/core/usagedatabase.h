@@ -41,7 +41,7 @@ public:
     static std::map<QString,uint> getRanking();
     static void addRecord(const QueryStatistics&);
     static void commitRecords();
-    static int64_t activationsSince(int64_t secsSinceEpoch);
+    static void trySendReport();
 
 private:
 
