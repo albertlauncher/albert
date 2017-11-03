@@ -105,8 +105,8 @@ int Core::AlbertApp::run(int argc, char **argv) {
         socket.connectToServer(socketPath);
         if ( socket.waitForConnected(500) ) {
             // If there is a command send it
-            if ( args.count() == 1 ){
-                socket.write(args.at(0).toLocal8Bit());
+            if ( args.count() != 0 ){
+                socket.write(args.join(' ').toLocal8Bit());
                 socket.flush();
                 socket.waitForReadyRead(500);
                 if (socket.bytesAvailable())
@@ -531,7 +531,11 @@ void dispatchMessage() {
     socket->waitForReadyRead(500);
     if (socket->bytesAvailable()) {
         QString msg = QString::fromLocal8Bit(socket->readAll());
-        if ( msg == "show") {
+        if ( msg.startsWith("show")) {
+            if (msg.size() > 5) {
+                QString input = msg.mid(5);
+                frontendManager->currentFrontend()->setInput(input);
+            }
             frontendManager->currentFrontend()->setVisible(true);
             socket->write("Application set visible.");
         } else if ( msg == "hide") {
