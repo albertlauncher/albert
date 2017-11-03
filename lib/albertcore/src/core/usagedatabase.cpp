@@ -176,6 +176,8 @@ void UsageDatabase::commitRecords() {
         }
     }
     db.commit();
+
+    records.clear();
 }
 
 
