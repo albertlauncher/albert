@@ -41,7 +41,7 @@ Core::QueryExecution::QueryExecution(const set<QueryHandler*> & queryHandlers,
     for ( QueryHandler *handler : queryHandlers ) {
         for ( const QString& trigger : handler->triggers() ) {
             if ( !trigger.isEmpty() && queryString.startsWith(trigger) ) {
-                query_.trigger_ = trigger;
+                trigger_ = query_.trigger_ = trigger;
                 query_.string_ = queryString.mid(trigger.size());
                 ( handler->executionType()==QueryHandler::ExecutionType::Batch )
                         ? batchHandlers_.insert(handler)
@@ -153,14 +153,16 @@ void Core::QueryExecution::onBatchHandlersFinished() {
     query_.mutex_.unlock();
 
     // Sort the results
-    if ( fetchIncrementally_ ) {
-        int sortUntil = min(sortedItems_ + FETCH_SIZE, static_cast<int>(results_.size()));
-        partial_sort(results_.begin() + sortedItems_, results_.begin() + sortUntil,
-                          results_.end(), MatchCompare());
-        sortedItems_ = sortUntil;
+    if (trigger_.isEmpty()){
+        if ( fetchIncrementally_ ) {
+            int sortUntil = min(sortedItems_ + FETCH_SIZE, static_cast<int>(results_.size()));
+            partial_sort(results_.begin() + sortedItems_, results_.begin() + sortUntil,
+                              results_.end(), MatchCompare());
+            sortedItems_ = sortUntil;
+        }
+        else
+            std::sort(results_.begin(), results_.end(), MatchCompare());
     }
-    else
-        std::sort(results_.begin(), results_.end(), MatchCompare());
 
     if ( realtimeHandlers_.empty() ){
         if( results_.empty() && !query_.rawString_.isEmpty() ){
@@ -237,7 +239,7 @@ void Core::QueryExecution::insertPendingResults() {
         QMutexLocker lock(&query_.mutex_);
 
         // When fetching incrementally, only emit if this is in the fetched range
-        if ( !fetchIncrementally_ || sortedItems_ == static_cast<int>(results_.size()))
+        if ( !fetchIncrementally_ || sortedItems_ == static_cast<int>(results_.size()) )
             beginInsertRows(QModelIndex(),
                             static_cast<int>(results_.size()),
                             static_cast<int>(results_.size()+query_.results_.size()-1));
@@ -324,10 +326,11 @@ bool Core::QueryExecution::canFetchMore(const QModelIndex & /* index */) const
 void Core::QueryExecution::fetchMore(const QModelIndex & /* index */)
 {
     int sortUntil = min(sortedItems_ + FETCH_SIZE, static_cast<int>(results_.size()));
-    partial_sort(results_.begin() + sortedItems_,
-                      results_.begin() + sortUntil,
-                      results_.end(),
-                      MatchCompare());
+    if (trigger_.isEmpty())
+        partial_sort(results_.begin() + sortedItems_,
+                     results_.begin() + sortUntil,
+                     results_.end(),
+                     MatchCompare());
     beginInsertRows(QModelIndex(), sortedItems_, sortUntil-1);
     sortedItems_ = sortUntil;
     endInsertRows();
