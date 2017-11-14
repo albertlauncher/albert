@@ -72,7 +72,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
         app = new QApplication(argc, argv);
         app->setApplicationName("albert");
         app->setApplicationDisplayName("Albert");
-        app->setApplicationVersion("v0.14.7");
+        app->setApplicationVersion("v0.14.8");
         app->setQuitOnLastWindowClosed(false);
         QString icon = XDG::IconLookup::iconPath("albert");
         if ( icon.isEmpty() ) icon = ":app_icon";
