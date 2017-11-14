@@ -24,7 +24,12 @@
 
 
 /** ***************************************************************************/
-Core::PluginSpec::PluginSpec(const QString &path) : loader_(path) {
+Core::PluginSpec::PluginSpec(const QString &path)
+    : loader_(path) {
+
+    // Some python libs do not link against python. Export the python symbols to the main app.
+    loader_.setLoadHints(QLibrary::ExportExternalSymbolsHint);
+
     iid_          = loader_.metaData()["IID"].toString();
     id_           = metadata("id").toString();
     name_         = metadata("name").toString("N/A");
