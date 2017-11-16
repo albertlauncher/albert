@@ -90,7 +90,7 @@
                </size>
               </property>
               <property name="toolTip">
-               <string>Press to set hotkey.</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Press to set hotkey.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string/>
@@ -116,7 +116,7 @@
                </sizepolicy>
               </property>
               <property name="toolTip">
-               <string>Choose the frontend to use.</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the frontend to use.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
              </widget>
             </item>
@@ -139,7 +139,7 @@
                </sizepolicy>
               </property>
               <property name="toolTip">
-               <string>Choose the terminal to use.</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the terminal to use.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
              </widget>
             </item>
@@ -156,9 +156,7 @@
             <item row="3" column="1">
              <widget class="QLineEdit" name="lineEdit_term">
               <property name="toolTip">
-               <string>This is the command that is used to start
-terminal. Chose &quot;Custom&quot; in the checkbox
-above to set it manually.</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the command that is used to start terminal. Chose &amp;quot;Custom&amp;quot; in the checkbox above to set it manually.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
              </widget>
             </item>
@@ -175,8 +173,7 @@ above to set it manually.</string>
             <item row="4" column="1">
              <widget class="QCheckBox" name="checkBox_showTray">
               <property name="toolTip">
-               <string>If this option is enabled, albert displays
-an icon in the system tray.</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If this option is enabled, albert displays an icon in the system tray.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string/>
@@ -196,11 +193,7 @@ an icon in the system tray.</string>
             <item row="5" column="1">
              <widget class="QCheckBox" name="checkBox_incrementalSort">
               <property name="toolTip">
-               <string>If this option is enabled only the visble items are sorted.
-This improves the performance when displaying huge
-result sets. However the size of the scrollbar will be less
-intuitive since the height of the scrollbar is determined by
-the sorted results instead of the actual amount of results.</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If this option is enabled only the visble items are sorted. This improves the performance when displaying huge result sets. However the size of the scrollbar will be less intuitive since the height of the scrollbar is determined by the sorted results instead of the actual amount of results.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
              </widget>
             </item>
@@ -223,8 +216,7 @@ the sorted results instead of the actual amount of results.</string>
                </sizepolicy>
               </property>
               <property name="toolTip">
-               <string>Clears the history database. Note that this will
-reset your sort order of recently used items too.</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clears the history database. Note that this will reset your sort order of recently used items too.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>Clear</string>
@@ -430,10 +422,10 @@ a { color: &quot;#00CCCC&quot;; }
   <tabstop>lineEdit_term</tabstop>
   <tabstop>checkBox_showTray</tabstop>
   <tabstop>checkBox_incrementalSort</tabstop>
+  <tabstop>pushButton_clearHistory</tabstop>
   <tabstop>listView_plugins</tabstop>
  </tabstops>
  <resources>
-  <include location="../../../resources.qrc"/>
   <include location="../../../resources.qrc"/>
  </resources>
  <connections/>
