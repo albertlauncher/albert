@@ -55,6 +55,7 @@ static SettingsWidget   *settingsWidget;
 static TrayIcon         *trayIcon;
 static QMenu            *trayIconMenu;
 static QLocalServer     *localServer;
+static bool             printDebugOutput;
 
 
 int Core::AlbertApp::run(int argc, char **argv) {
@@ -90,8 +91,12 @@ int Core::AlbertApp::run(int argc, char **argv) {
         parser.addVersionOption();
         parser.addOption(QCommandLineOption({"k", "hotkey"}, "Overwrite the hotkey to use.", "hotkey"));
         parser.addOption(QCommandLineOption({"p", "plugin-dirs"}, "Set the plugin dirs to use. Comma separated.", "directory"));
+        parser.addOption(QCommandLineOption({"d", "debug"}, "Print debug output."));
         parser.addPositionalArgument("command", "Command to send to a running instance, if any. (show, hide, toggle)", "[command]");
         parser.process(*app);
+
+        if (parser.isSet("debug"))
+            printDebugOutput = true;
 
 
         /*
@@ -482,22 +487,13 @@ int Core::AlbertApp::run(int argc, char **argv) {
 /** ***************************************************************************/
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message) {
     switch (type) {
-#ifdef  QT_NO_DEBUG
     case QtDebugMsg:
-        break;
-    case QtInfoMsg:
-        fprintf(stdout, "%s \x1b[0m[INFO]\x1b[0m %s\n",
-                QTime::currentTime().toString().toLocal8Bit().constData(),
-                message.toLocal8Bit().constData());
-        fflush(stdout);
-        break;
-#else
-    case QtDebugMsg:
-        fprintf(stdout, "%s [DEBG] \x1b[3m%s  --  [%s]\x1b[0m\n",
-                QTime::currentTime().toString().toLocal8Bit().constData(),
-                message.toLocal8Bit().constData(),
-                context.function);
-        fflush(stdout);
+        if (printDebugOutput) {
+            fprintf(stdout, "%s [DEBG] \x1b[3m%s\x1b[0m\n",
+                    QTime::currentTime().toString().toLocal8Bit().constData(),
+                    message.toLocal8Bit().constData());
+            fflush(stdout);
+        }
         break;
     case QtInfoMsg:
         fprintf(stdout, "%s \x1b[32m[INFO]\x1b[0;1m %s\x1b[0m\n",
@@ -505,7 +501,6 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
                 message.toLocal8Bit().constData());
         fflush(stdout);
         break;
-#endif
     case QtWarningMsg:
         fprintf(stderr, "%s \x1b[33m[WARN]\x1b[0;1m %s\x1b[0m\n",
                 QTime::currentTime().toString().toLocal8Bit().constData(),
