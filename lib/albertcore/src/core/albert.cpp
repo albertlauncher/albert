@@ -18,6 +18,7 @@
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QDebug>
+#include <QDesktopServices>
 #include <QDir>
 #include <QMenu>
 #include <QMessageBox>
@@ -25,6 +26,7 @@
 #include <QStandardPaths>
 #include <QTime>
 #include <QTimer>
+#include <QUrl>
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QLocalSocket>
 #include <csignal>
@@ -303,14 +305,17 @@ int Core::AlbertApp::run(int argc, char **argv) {
         trayIconMenu  = new QMenu;
         QAction* showAction     = new QAction("Show", trayIconMenu);
         QAction* settingsAction = new QAction("Settings", trayIconMenu);
+        QAction* docsAction     = new QAction("Open docs", trayIconMenu);
         QAction* quitAction     = new QAction("Quit", trayIconMenu);
 
         showAction->setIcon(app->style()->standardIcon(QStyle::SP_TitleBarMaxButton));
         settingsAction->setIcon(app->style()->standardIcon(QStyle::SP_FileDialogDetailedView));
+        docsAction->setIcon(app->style()->standardIcon(QStyle::SP_DialogHelpButton));
         quitAction->setIcon(app->style()->standardIcon(QStyle::SP_TitleBarCloseButton));
 
         trayIconMenu->addAction(showAction);
         trayIconMenu->addAction(settingsAction);
+        trayIconMenu->addAction(docsAction);
         trayIconMenu->addSeparator();
         trayIconMenu->addAction(quitAction);
 
@@ -405,6 +410,10 @@ int Core::AlbertApp::run(int argc, char **argv) {
 
         QObject::connect(settingsAction, &QAction::triggered,
                          settingsWidget, &SettingsWidget::raise);
+
+        QObject::connect(docsAction, &QAction::triggered,[](){
+            QDesktopServices::openUrl(QUrl("https://albertlauncher.github.io/docs/"));
+        });
 
         QObject::connect(quitAction, &QAction::triggered,
                          app, &QApplication::quit);
