@@ -72,8 +72,10 @@ int Core::AlbertApp::run(int argc, char **argv) {
         qInstallMessageHandler(myMessageOutput);
 
         qDebug() << "Initializing application";
+#if QT_VERSION >= 0x050600  // TODO: Remove when 18.04 is released
         QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
         QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+#endif
         app = new QApplication(argc, argv);
         app->setApplicationName("albert");
         app->setApplicationDisplayName("Albert");
