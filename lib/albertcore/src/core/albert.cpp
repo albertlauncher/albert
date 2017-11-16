@@ -70,6 +70,8 @@ int Core::AlbertApp::run(int argc, char **argv) {
         qInstallMessageHandler(myMessageOutput);
 
         qDebug() << "Initializing application";
+        QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+        QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
         app = new QApplication(argc, argv);
         app->setApplicationName("albert");
         app->setApplicationDisplayName("Albert");
