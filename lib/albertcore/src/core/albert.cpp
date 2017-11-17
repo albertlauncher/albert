@@ -80,16 +80,8 @@ int Core::AlbertApp::run(int argc, char **argv) {
         app->setApplicationName("albert");
         app->setApplicationDisplayName("Albert");
         app->setApplicationVersion("v0.14.10");
-        app->setQuitOnLastWindowClosed(false);
-        QString icon = XDG::IconLookup::iconPath("albert");
-        if ( icon.isEmpty() ) icon = ":app_icon";
-        app->setWindowIcon(QIcon(icon));
 
-
-        /*
-         *  PARSE COMMANDLINE
-         */
-
+        // Parse commandline
         qDebug() << "Parsing commandline";
         QCommandLineParser parser;
         parser.setApplicationDescription("Albert is still in alpha. These options may change in future versions.");
@@ -103,6 +95,11 @@ int Core::AlbertApp::run(int argc, char **argv) {
 
         if (parser.isSet("debug"))
             printDebugOutput = true;
+
+        app->setQuitOnLastWindowClosed(false);
+        QString icon = XDG::IconLookup::iconPath("albert");
+        if ( icon.isEmpty() ) icon = ":app_icon";
+        app->setWindowIcon(QIcon(icon));
 
 
         /*
