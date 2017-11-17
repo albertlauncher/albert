@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <QDebug>
 #include <QDir>
 #include <QFileInfo>
 #include <QIcon>
@@ -78,8 +79,10 @@ XDG::IconLookup::IconLookup()
 XDG::IconLookup *XDG::IconLookup::instance()
 {
     static IconLookup *instance_ = nullptr;
-    if (!instance_)
-         instance_ = new IconLookup();
+    if (!instance_){
+        qInfo() << "Systems icon theme is:" << QIcon::themeName();
+        instance_ = new IconLookup();
+    }
     return instance_;
 }
 
