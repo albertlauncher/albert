@@ -167,7 +167,7 @@ void Core::QueryExecution::onBatchHandlersFinished() {
     if ( realtimeHandlers_.empty() ){
         if( results_.empty() && !query_.rawString_.isEmpty() ){
             beginInsertRows(QModelIndex(), 0, static_cast<int>(fallbacks_.size()-1));
-            results_ = std::move(fallbacks_);
+            results_ = fallbacks_;
             endInsertRows();
             fetchIncrementally_ = false;
         }
@@ -223,7 +223,7 @@ void Core::QueryExecution::onRealtimeHandlersFinsished() {
 
     if( results_.empty() && !query_.rawString_.isEmpty() ){
         beginInsertRows(QModelIndex(), 0, static_cast<int>(fallbacks_.size()-1));
-        results_ = std::move(fallbacks_);
+        results_ = fallbacks_;
         endInsertRows();
         fetchIncrementally_ = false;
     }
@@ -359,7 +359,7 @@ bool Core::QueryExecution::setData(const QModelIndex &index, const QVariant &val
             break;
         }
         case ItemRoles::FallbackRole:{
-            if (0U < fallbacks_.size() && 0U < item->actions().size()) {
+            if (0U < fallbacks_.size() && 0U < fallbacks_[0].first->actions().size()) {
                 fallbacks_[0].first->actions()[0]->activate();
                 stats.activatedItem = fallbacks_[0].first->id();
             }
