@@ -111,6 +111,7 @@ void Core::ExtensionManager::loadExtension(const unique_ptr<PluginSpec> &spec) {
     if ( spec->state() != PluginSpec::State::Loaded ){
 
         // Load
+        qInfo() << "Loading extension" << spec->id();
         std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
         if ( !spec->load() ) {
             qInfo() << QString("Loading %1 failed. (%2)").arg(spec->id(), spec->lastError()).toLocal8Bit().data();

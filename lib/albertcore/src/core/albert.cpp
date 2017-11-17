@@ -404,8 +404,6 @@ int Core::AlbertApp::run(int argc, char **argv) {
          * SIGNALING
          */
 
-        qDebug() << "Setting up signals";
-
         // Connect tray menu (except for frontend stuff…)
         QObject::connect(settingsAction, &QAction::triggered,
                          settingsWidget, &SettingsWidget::show);
