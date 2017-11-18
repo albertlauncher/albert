@@ -46,7 +46,7 @@ Core::QueryExecution::QueryExecution(const set<QueryHandler*> & queryHandlers,
     // Run with a single handler if the trigger matches
     for ( QueryHandler *handler : queryHandlers ) {
         for ( const QString& trigger : handler->triggers() ) {
-            if ( !trigger.isEmpty() && queryString.startsWith(trigger) ) {
+            if ( !trigger.isNull() && queryString.startsWith(trigger) ) {
                 query_.trigger_ = trigger;
                 query_.string_ = queryString.mid(trigger.size());
                 ( handler->executionType()==QueryHandler::ExecutionType::Batch )
@@ -149,7 +149,6 @@ void Core::QueryExecution::onBatchHandlersFinished() {
     // Move the items of the "pending results" into "results"
     query_.mutex_.lock();
     swap(query_.results_, results_);
-    query_.results_.clear();
     query_.mutex_.unlock();
 
     // Sort the results
@@ -157,7 +156,7 @@ void Core::QueryExecution::onBatchHandlersFinished() {
         if ( fetchIncrementally_ ) {
             int sortUntil = min(sortedItems_ + FETCH_SIZE, static_cast<int>(results_.size()));
             partial_sort(results_.begin() + sortedItems_, results_.begin() + sortUntil,
-                              results_.end(), MatchCompare());
+                         results_.end(), MatchCompare());
             sortedItems_ = sortUntil;
         }
         else
@@ -166,19 +165,16 @@ void Core::QueryExecution::onBatchHandlersFinished() {
 
     if ( realtimeHandlers_.empty() ){
         if( results_.empty() && !query_.rawString_.isEmpty() ){
-            beginInsertRows(QModelIndex(), 0, static_cast<int>(fallbacks_.size()-1));
             results_ = fallbacks_;
-            endInsertRows();
+            sortedItems_ = static_cast<int>(fallbacks_.size());
             fetchIncrementally_ = false;
         }
-        emit resultsReady(this);
         setState(State::Finished);
     }
     else
-    {
-        emit resultsReady(this);
         runRealtimeHandlers();
-    }
+
+    emit resultsReady(this);
 }
 
 
@@ -235,26 +231,20 @@ void Core::QueryExecution::onRealtimeHandlersFinsished() {
 void Core::QueryExecution::insertPendingResults() {
 
     if(query_.results_.size()) {
-
         QMutexLocker lock(&query_.mutex_);
 
         // When fetching incrementally, only emit if this is in the fetched range
-        if ( !fetchIncrementally_ || sortedItems_ == static_cast<int>(results_.size()) )
+        if ( !fetchIncrementally_ || sortedItems_ == static_cast<int>(results_.size()) ){
             beginInsertRows(QModelIndex(),
                             static_cast<int>(results_.size()),
-                            static_cast<int>(results_.size()+query_.results_.size()-1));
-
-        // Preallocate space to avoid multiple allocatoins
-        results_.reserve(results_.size() + query_.results_.size());
-
-        // Copy the items of the matches into the results
-        move(query_.results_.begin(), query_.results_.end(), back_inserter(results_));
-
-        // When fetching incrementally, only emit if this is in the fetched range
-        if ( !fetchIncrementally_ || sortedItems_ == static_cast<int>(results_.size()))
+                            static_cast<int>(results_.size() + query_.results_.size() - 1));
+            results_.reserve(results_.size() + query_.results_.size());
+            move(query_.results_.begin(), query_.results_.end(), back_inserter(results_));
             endInsertRows();
-
-        // Clear the empty matches
+        } else {
+            results_.reserve(results_.size() + query_.results_.size());
+            move(query_.results_.begin(), query_.results_.end(), back_inserter(results_));
+        }
         query_.results_.clear();
     }
 }
@@ -334,6 +324,7 @@ void Core::QueryExecution::fetchMore(const QModelIndex & /* index */)
     beginInsertRows(QModelIndex(), sortedItems_, sortUntil-1);
     sortedItems_ = sortUntil;
     endInsertRows();
+    sortedItems_ = sortUntil;
 }
 
 
