@@ -37,6 +37,12 @@ Core::QueryExecution::QueryExecution(const set<QueryHandler*> & queryHandlers,
     query_.scores_ = move(scores);
     stats.input = queryString;
 
+    // Get fallbacks
+    if ( !query_.string_.trimmed().isEmpty() )
+        for ( FallbackProvider *fallbackProvider : fallbackProviders )
+            for ( shared_ptr<Item> & item : fallbackProvider->fallbacks(queryString) )
+                fallbacks_.emplace_back(move(item), 0);
+
     // Run with a single handler if the trigger matches
     for ( QueryHandler *handler : queryHandlers ) {
         for ( const QString& trigger : handler->triggers() ) {
@@ -55,12 +61,6 @@ Core::QueryExecution::QueryExecution(const set<QueryHandler*> & queryHandlers,
     for ( QueryHandler *queryHandler : queryHandlers )
         if ( queryHandler->executionType()==QueryHandler::ExecutionType::Batch )
             batchHandlers_.insert(queryHandler);
-
-    // Get fallbacks
-    if ( !query_.string_.trimmed().isEmpty() )
-        for ( FallbackProvider *fallbackProvider : fallbackProviders )
-            for ( shared_ptr<Item> & item : fallbackProvider->fallbacks(queryString) )
-                fallbacks_.emplace_back(move(item), 0);
 }
 
 
