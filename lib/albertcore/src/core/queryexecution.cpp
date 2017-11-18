@@ -47,7 +47,7 @@ Core::QueryExecution::QueryExecution(const set<QueryHandler*> & queryHandlers,
     for ( QueryHandler *handler : queryHandlers ) {
         for ( const QString& trigger : handler->triggers() ) {
             if ( !trigger.isEmpty() && queryString.startsWith(trigger) ) {
-                trigger_ = query_.trigger_ = trigger;
+                query_.trigger_ = trigger;
                 query_.string_ = queryString.mid(trigger.size());
                 ( handler->executionType()==QueryHandler::ExecutionType::Batch )
                         ? batchHandlers_.insert(handler)
@@ -153,7 +153,7 @@ void Core::QueryExecution::onBatchHandlersFinished() {
     query_.mutex_.unlock();
 
     // Sort the results
-    if (trigger_.isEmpty()){
+    if (query_.trigger_.isEmpty()){
         if ( fetchIncrementally_ ) {
             int sortUntil = min(sortedItems_ + FETCH_SIZE, static_cast<int>(results_.size()));
             partial_sort(results_.begin() + sortedItems_, results_.begin() + sortUntil,
@@ -326,7 +326,7 @@ bool Core::QueryExecution::canFetchMore(const QModelIndex & /* index */) const
 void Core::QueryExecution::fetchMore(const QModelIndex & /* index */)
 {
     int sortUntil = min(sortedItems_ + FETCH_SIZE, static_cast<int>(results_.size()));
-    if (trigger_.isEmpty())
+    if (query_.trigger_.isEmpty())
         partial_sort(results_.begin() + sortedItems_,
                      results_.begin() + sortUntil,
                      results_.end(),

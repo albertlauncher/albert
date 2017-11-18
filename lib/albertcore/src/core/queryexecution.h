@@ -80,9 +80,6 @@ private:
     void onRealtimeHandlersFinsished();
     void insertPendingResults();
 
-    QString trigger_;
-    QString string_;
-    QString rawString_;
     bool isValid_ = true;
 
     Query query_;
