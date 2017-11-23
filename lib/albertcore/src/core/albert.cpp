@@ -73,7 +73,11 @@ int Core::AlbertApp::run(int argc, char **argv) {
 
         qDebug() << "Initializing application";
 #if QT_VERSION >= 0x050600  // TODO: Remove when 18.04 is released
-        QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+        if (!qEnvironmentVariableIsSet("QT_DEVICE_PIXEL_RATIO")
+                && !qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR")
+                && !qEnvironmentVariableIsSet("QT_SCALE_FACTOR")
+                && !qEnvironmentVariableIsSet("QT_SCREEN_SCALE_FACTORS"))
+            QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
         QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif
         app = new QApplication(argc, argv);
