@@ -30,6 +30,6 @@ Check the section [*Installing Albert*](https://albertlauncher.github.io/docs/in
 
 # Support
 
-If you like this software consider [![Donate via PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=W74BQPKPGNSNC) a :beer:, e.g. via or [patreon](https://www.patreon.com/albertlauncher) or [paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=W74BQPKPGNSNC).
+If you like this software consider [donating](https://albertlauncher.github.io/docs/donation/) a :beer:. :+1:
 
-Have fun with it, if you do not, [tell me why](https://telegram.me/albert_launcher_community).
+Have fun with albert, if you do not, [tell me why](https://telegram.me/albert_launcher_community).
