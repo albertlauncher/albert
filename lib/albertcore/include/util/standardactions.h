@@ -93,12 +93,23 @@ private:
 // A standard action that runs commands in a terminal
 struct EXPORT_CORE TermAction : public Action
 {
+    enum class CloseBehavior {
+        CloseOnSuccess,
+        CloseOnExit,
+        DoNotClose
+    };
+
 public:
-    TermAction(QString text, QStringList commandline, QString workingDirectory = QString(), bool shell = true)
+    TermAction(QString text,
+               QStringList commandline,
+               QString workingDirectory = QString(),
+               bool shell = true,
+               CloseBehavior behavior = CloseBehavior::CloseOnSuccess)
         : text_(std::move(text)),
           commandline_(std::move(commandline)),
           workingDir_(std::move(workingDirectory)),
-          shell_(shell) { }
+          shell_(shell),
+          behavior_(behavior) { }
     QString text() const override { return text_; }
     void activate() override {
         QStringList commandline = Core::ShUtil::split(terminalCommand);
@@ -108,8 +119,13 @@ public:
             if (pwd == nullptr)
                 throw "Could not retrieve user shell";
             QString shell = pwd->pw_shell;
-            commandline << shell << "-ic"
-                        << QString("%1; exec %2").arg(commandline_.join(' '), shell);
+            commandline << shell << "-ic";
+            if (behavior_ == CloseBehavior::CloseOnSuccess)
+                commandline << QString("%1 && sleep 1 || exec %2").arg(commandline_.join(' '), shell);
+            else if (behavior_ == CloseBehavior::DoNotClose)
+                commandline << QString("%1; exec %2").arg(commandline_.join(' '), shell);
+            else
+                commandline << QString("%1; sleep 1").arg(commandline_.join(' '));
         } else {
             commandline << commandline_;
         }
@@ -123,6 +139,7 @@ private:
     QStringList commandline_;
     QString workingDir_;
     bool shell_;
+    CloseBehavior behavior_;
 };
 
 
