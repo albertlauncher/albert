@@ -30,7 +30,7 @@ git:
 before_install:
     - eval "${MATRIX_EVAL}"
     - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
-    - git submodule update --init --recursive+before_install:
+    - git submodule update --init --recursive
     # work around https://github.com/travis-ci/travis-ci/issues/8363
     - pyenv global system 3.5
 
