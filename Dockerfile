@@ -2,7 +2,7 @@ FROM ubuntu:16.04
 
 # Install
 RUN apt-get -qq update
-RUN apt-get install -y cmake g++ qtbase5-dev libqt5x11extras5-dev libqt5svg5-dev qtdeclarative5-dev libmuparser-dev python3-dev virtualbox
+RUN apt-get install -y wget cmake g++ qtbase5-dev libqt5x11extras5-dev libqt5svg5-dev qtdeclarative5-dev libmuparser-dev python3-dev virtualbox
 
 # Prepare
 WORKDIR /src/
