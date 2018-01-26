@@ -9,3 +9,10 @@ before_install:
 
 script:
   - docker build .
+
+notifications:
+  irc:
+    channels:
+      - "chat.freenode.net#albertlauncher"
+    on_success: always # default: always
+    on_failure: always # default: always
