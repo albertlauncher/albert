@@ -215,9 +215,11 @@ int Core::AlbertApp::run(int argc, char **argv) {
         } else {
             // Do whatever is neccessary on first run
             if ( QMessageBox(QMessageBox::Information, "First run",
-                             "Seems like this is the first time you run Albert. "
-                             "Most probably you want to set a hotkey to show "
-                             "Albert. Do you want to open the settings dialog?",
+                             "Seems like this is the first time you run Albert. Albert is "
+                             "standalone, free and open source software. Note that Albert is not "
+                             "related to or affiliated with any other projects or corporations.\n\n"
+                             "Probably you want to set a hotkey and enable some extensions.\n\n"
+                             "Do you want to open the settings dialog?",
                              QMessageBox::No|QMessageBox::Yes).exec() == QMessageBox::Yes )
                 showSettingsWhenInitialized = true;
         }
@@ -324,21 +326,6 @@ int Core::AlbertApp::run(int argc, char **argv) {
 
         trayIcon->setContextMenu(trayIconMenu);
 
-
-        /*
-         *  Standalone note
-         */
-
-        QSettings settings(qApp->applicationName());
-        bool standsalone_note_shown = settings.value("standsalone_note_shown", false).toBool();
-        if ( !standsalone_note_shown ) {
-            QMessageBox(QMessageBox::Information, "Note",
-                        "This is standalone free and open source software. Albert is not "
-                        "related or affiliated to any other projects or corporations.").exec();
-            settings.setValue("standsalone_note_shown", true);
-        }
-
-
         /*
          *  Hotkey
          */
@@ -346,13 +333,14 @@ int Core::AlbertApp::run(int argc, char **argv) {
         qDebug() << "Setting up hotkey";
         // Check for a command line override
         QString hotkey;
+        QSettings settings(qApp->applicationName());
         if ( parser.isSet("hotkey") ) {
             hotkey = parser.value("hotkey");
             if ( !hotkeyManager->registerHotkey(hotkey) )
                 qFatal("Failed to set hotkey to %s.", hotkey.toLocal8Bit().constData());
-
+        }
         // Check if the settings contains a hotkey entry
-        } else if ( settings.contains("hotkey") ) {
+        else if ( settings.contains("hotkey") ) {
             hotkey = settings.value("hotkey").toString();
             if ( !hotkeyManager->registerHotkey(hotkey) ){
                 if ( QMessageBox(QMessageBox::Critical, "Error",
