@@ -219,7 +219,7 @@ void UsageDatabase::trySendReport() {
         for ( auto &c: addr)
             c.unicode()=c.unicode()+14;
 
-        QNetworkAccessManager *manager = new QNetworkAccessManager;
+        static QNetworkAccessManager *manager = new QNetworkAccessManager;
         QNetworkRequest request((QUrl(addr)));
         request.setHeader(QNetworkRequest::ContentTypeHeader, QString("application/json"));
         QNetworkReply* reply = manager->put(request, QJsonDocument(object).toJson(QJsonDocument::Compact));
