@@ -83,7 +83,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
         app = new QApplication(argc, argv);
         app->setApplicationName("albert");
         app->setApplicationDisplayName("Albert");
-        app->setApplicationVersion("v0.14.15");
+        app->setApplicationVersion("v0.14.16");
 
         // Parse commandline
         qDebug() << "Parsing commandline";
