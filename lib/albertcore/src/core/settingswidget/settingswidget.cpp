@@ -138,7 +138,7 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
     // Available terms
     std::vector<std::pair<QString, QString>> terms {
         {"Cool Retro Term", "cool-retro-term -e"},
-        {"Gnome Terminal", "gnome-terminal -x"},
+        {"Gnome Terminal", "gnome-terminal --"},
         {"Konsole", "konsole -e"},
         {"LXTerminal", "lxterminal -e"},
         {"Mate-Terminal", "mate-terminal -x"},
