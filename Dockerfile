@@ -1,19 +1,38 @@
 FROM ubuntu:16.04
 
 # Prepare system
-RUN apt-get -qq update
-RUN apt-get install -y wget unzip git cmake g++ qtbase5-dev libqt5x11extras5-dev libqt5svg5-dev qtdeclarative5-dev libmuparser-dev python3-dev virtualbox
-RUN wget http://download.virtualbox.org/virtualbox/5.0.40/VirtualBoxSDK-5.0.40-115130.zip 
-RUN unzip VirtualBoxSDK-5.0.40-115130.zip
-RUN mv sdk/bindings/xpcom/include /usr/lib/virtualbox/sdk/bindings/xpcom
+RUN export DEBIAN_FRONTEND=noninteractive \
+ && apt-get -qq update \
+ && apt-get install --no-install-recommends -y \
+        cmake \
+        g++ \
+        libmuparser-dev \
+        libqt5svg5-dev \
+        libqt5x11extras5-dev \
+        python3-dev \
+        qtbase5-dev \
+        qtdeclarative5-dev \
+        unzip \
+        virtualbox \
+        wget \
+ && true
 
-# Get source
-RUN git clone https://github.com/albertlauncher/albert.git /src/
-WORKDIR /src/
-RUN git submodule update --init --recursive
+# Install virtualbox headers
+RUN true \
+ && mkdir /tmp/vbox \
+ && cd /tmp/vbox \
+ && wget -q http://download.virtualbox.org/virtualbox/5.0.40/VirtualBoxSDK-5.0.40-115130.zip \
+ && unzip VirtualBoxSDK-5.0.40-115130.zip \
+ && mv sdk/bindings/xpcom/include /usr/lib/virtualbox/sdk/bindings/xpcom \
+ && cd - \
+ && rm -rf /tmp/vbox \
+ && true
 
-# Build
-WORKDIR /build/
-RUN cmake /src/ -DCMAKE_BUILD_TYPE=Debug
-RUN make
-RUN make install
+COPY . /srv/albert/src/
+
+WORKDIR /srv/albert/build/
+RUN true \
+ && cmake /srv/albert/src/ -DCMAKE_BUILD_TYPE=Debug \
+ && make \
+ && make install \
+ && true
