@@ -1,18 +1,4 @@
-// albert - a simple application launcher for linux
-// Copyright (C) 2014-2017 Manuel Schneider
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// Copyright (C) 2014-2018 Manuel Schneider
 
 #include "albert.h"
 #include <QApplication>
@@ -62,12 +48,55 @@ static bool             printDebugOutput;
 
 int Core::AlbertApp::run(int argc, char **argv) {
 
+
+    // Parse commandline
+    QCommandLineParser parser;
+    parser.setApplicationDescription("Albert is still in alpha. These options may change in future versions.");
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addOption(QCommandLineOption({"k", "hotkey"}, "Overwrite the hotkey to use.", "hotkey"));
+    parser.addOption(QCommandLineOption({"p", "plugin-dirs"}, "Set the plugin dirs to use. Comma separated.", "directory"));
+    parser.addOption(QCommandLineOption({"d", "debug"}, "Print debug output."));
+    parser.addPositionalArgument("command", "Command to send to a running instance, if any. (show, hide, toggle)", "[command]");
+
+    /*
+     *  IPC/SINGLETON MECHANISM (Client)
+     *  For performance purposes this has been optimized by using a QCoreApp
+     */
+    QString socketPath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/socket";
+    {
+        QCoreApplication *capp = new QCoreApplication(argc, argv);
+        parser.process(*capp);
+        const QStringList args = parser.positionalArguments();
+        QLocalSocket socket;
+        socket.connectToServer(socketPath);
+        if ( socket.waitForConnected(100) ) { // Should connect instantly
+            // If there is a command send it
+            if ( args.count() != 0 ){
+                socket.write(args.join(' ').toUtf8());
+                socket.flush();
+                socket.waitForReadyRead(500);
+                if (socket.bytesAvailable())
+                    qInfo() << socket.readAll();
+            }
+            else
+                qInfo("There is another instance of albert running.");
+            socket.close();
+            ::exit(EXIT_SUCCESS);
+        } else if ( args.count() == 1 ) {
+            qInfo("There is no other instance of albert running.");
+            ::exit(EXIT_FAILURE);
+        }
+
+        delete capp;
+    }
+
+
+    /*
+     *  INITIALIZE APPLICATION
+     */
     {
         bool showSettingsWhenInitialized = false;
-
-        /*
-         *  INITIALIZE APPLICATION
-         */
 
         qInstallMessageHandler(myMessageOutput);
 
@@ -85,18 +114,6 @@ int Core::AlbertApp::run(int argc, char **argv) {
         app->setApplicationDisplayName("Albert");
         app->setApplicationVersion("v0.14.16");
 
-        // Parse commandline
-        qDebug() << "Parsing commandline";
-        QCommandLineParser parser;
-        parser.setApplicationDescription("Albert is still in alpha. These options may change in future versions.");
-        parser.addHelpOption();
-        parser.addVersionOption();
-        parser.addOption(QCommandLineOption({"k", "hotkey"}, "Overwrite the hotkey to use.", "hotkey"));
-        parser.addOption(QCommandLineOption({"p", "plugin-dirs"}, "Set the plugin dirs to use. Comma separated.", "directory"));
-        parser.addOption(QCommandLineOption({"d", "debug"}, "Print debug output."));
-        parser.addPositionalArgument("command", "Command to send to a running instance, if any. (show, hide, toggle)", "[command]");
-        parser.process(*app);
-
         if (parser.isSet("debug"))
             printDebugOutput = true;
 
@@ -107,31 +124,8 @@ int Core::AlbertApp::run(int argc, char **argv) {
 
 
         /*
-         *  IPC/SINGLETON MECHANISM
+         *  IPC/SINGLETON MECHANISM (Server)
          */
-
-        qDebug() << "Checking for other instances";
-        QString socketPath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/socket";
-        const QStringList args = parser.positionalArguments();
-        QLocalSocket socket;
-        socket.connectToServer(socketPath);
-        if ( socket.waitForConnected(500) ) {
-            // If there is a command send it
-            if ( args.count() != 0 ){
-                socket.write(args.join(' ').toLocal8Bit());
-                socket.flush();
-                socket.waitForReadyRead(500);
-                if (socket.bytesAvailable())
-                    qInfo() << socket.readAll();
-            }
-            else
-                qInfo("There is another instance of albert running.");
-            socket.close();
-            ::exit(EXIT_SUCCESS);
-        } else if ( args.count() == 1 ) {
-            qInfo("There is no other instance of albert running.");
-            ::exit(EXIT_FAILURE);
-        }
 
         // Remove pipes potentially leftover after crash
         QLocalServer::removeServer(socketPath);
