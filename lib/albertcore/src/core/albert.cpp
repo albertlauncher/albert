@@ -48,7 +48,6 @@ static bool             printDebugOutput;
 
 int Core::AlbertApp::run(int argc, char **argv) {
 
-
     // Parse commandline
     QCommandLineParser parser;
     parser.setApplicationDescription("Albert is still in alpha. These options may change in future versions.");
@@ -70,14 +69,14 @@ int Core::AlbertApp::run(int argc, char **argv) {
         const QStringList args = parser.positionalArguments();
         QLocalSocket socket;
         socket.connectToServer(socketPath);
-        if ( socket.waitForConnected(100) ) { // Should connect instantly
+        if ( socket.waitForConnected(500) ) { // Should connect instantly
             // If there is a command send it
             if ( args.count() != 0 ){
                 socket.write(args.join(' ').toUtf8());
                 socket.flush();
                 socket.waitForReadyRead(500);
                 if (socket.bytesAvailable())
-                    qInfo() << socket.readAll();
+                    qInfo().noquote() << socket.readAll();
             }
             else
                 qInfo("There is another instance of albert running.");
