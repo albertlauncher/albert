@@ -111,7 +111,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
         app = new QApplication(argc, argv);
         app->setApplicationName("albert");
         app->setApplicationDisplayName("Albert");
-        app->setApplicationVersion("v0.14.17");
+        app->setApplicationVersion("v0.14.18");
 
         if (parser.isSet("debug"))
             printDebugOutput = true;
