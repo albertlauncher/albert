@@ -1,13 +1,8 @@
-<!-- 
-First check if the docs answer your question
-https://albertlauncher.github.io/docs/
-
-People are too lazy to read, so in a nutshell:
-* Check for existing issues.
-* Dont ask for support here (there are chats for that).
-* Upate to the latest version. 
-* If not possible check if the issue has been fixed already.
-* IN ANY CASE: Provide the information below !
+<!--
+* Update to the latest version.
+* DYOR, check for existing issues/FAQ
+* For support join the chats.
+* Provide the information below.
 -->
 
 - Operating system
