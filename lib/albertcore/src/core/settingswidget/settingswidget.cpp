@@ -92,6 +92,29 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
     connect(ui.checkBox_incrementalSort, &QCheckBox::toggled,
             queryManager_, &QueryManager::setIncrementalSort);
 
+    // AUTOSTART
+#ifdef Q_OS_LINUX
+    QString desktopfile_path = QStandardPaths::locate(QStandardPaths::ApplicationsLocation,
+                                                      "albert.desktop",
+                                                      QStandardPaths::LocateFile);
+    if (!desktopfile_path.isNull()) {
+        QString autostart_path = QDir(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)).filePath("autostart/albert.desktop");
+        ui.autostartCheckBox->setChecked(QFile::exists(autostart_path));
+        connect(ui.autostartCheckBox, &QCheckBox::toggled,
+                this, [=](bool toggled){
+            if (toggled)
+                QFile::link(desktopfile_path, autostart_path);
+            else
+                QFile::remove(autostart_path);
+        });
+    }
+    else
+        qCritical() << "Deskop entry not found! Autostart option is nonfuctional";
+#elif
+    ui.autostartCheckBox->setEnabled(false);
+    qWarning() << "Autostart not implemented on this platform!"
+#endif
+
     // FRONTEND
     for ( const unique_ptr<PluginSpec> &plugin : frontendManager_->frontendSpecs() ){
 
