@@ -7,6 +7,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         cmake \
         g++ \
         libmuparser-dev \
+        libqalculate5v5 \
         libqt5svg5-dev \
         libqt5x11extras5-dev \
         python3-dev \
