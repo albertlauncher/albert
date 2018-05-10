@@ -137,6 +137,8 @@ QString XDG::IconLookup::themeIconPath(QString iconName, QString themeName){
         }
     }
 
+    // Nothing found, save though to avoid repeated expensive lookups
+    iconCache_.insert(iconName, QString());
     return QString();
 }
 
