@@ -53,8 +53,10 @@ public:
     void setUrgency(Item::Urgency urgency) { urgency_ = urgency; }
 
     std::vector<std::shared_ptr<Action>> actions() override { return actions_; }
-    void setActions(std::vector<std::shared_ptr<Action>> actions) { actions_ = std::move(actions); }
-    void addAction(std::shared_ptr<Action> action) { actions_.push_back(std::move(action)); }
+    void setActions(std::vector<std::shared_ptr<Action>> &&actions) { actions_ = std::move(actions); }
+    void setActions(const std::vector<std::shared_ptr<Action>> &actions) { actions_ = actions; }
+    void addAction(std::shared_ptr<Action> &&action) { actions_.push_back(std::move(action)); }
+    void addAction(const std::shared_ptr<Action> &action) { actions_.push_back(action); }
 
 protected:
 
