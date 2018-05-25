@@ -225,8 +225,10 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
     /*
      * ABOUT
      */
-
-    ui.about_text->setText(QString(ui.about_text->text()).replace("___versionstring___", qApp->applicationVersion()));
+    QString about = ui.about_text->text();
+    about.replace("___versionstring___", qApp->applicationVersion());
+    about.replace("___buildinfo___", QString("Built %1 %2").arg(__DATE__, __TIME__));
+    ui.about_text->setText(about);
 
     QDesktopWidget *dw = QApplication::desktop();
     move(dw->availableGeometry(dw->screenNumber(QCursor::pos())).center()
