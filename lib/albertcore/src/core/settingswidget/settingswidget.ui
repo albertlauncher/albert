@@ -16,12 +16,6 @@
     <height>400</height>
    </size>
   </property>
-  <property name="maximumSize">
-   <size>
-    <width>1280</width>
-    <height>720</height>
-   </size>
-  </property>
   <property name="windowTitle">
    <string>Settings</string>
   </property>
