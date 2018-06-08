@@ -46,7 +46,6 @@ using namespace GlobalShortcut;
 
 namespace {
 const char* CFG_TERM = "terminal";
-const char* DEF_TERM = "xterm -e";
 }
 
 EXPORT_CORE QString terminalCommand;
@@ -156,27 +155,34 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
 
     // TERM CMD (TOOOOOOOOOOODOOOOOOOOOO CENTRALIZE THIS)
     // Define the (global extern) terminal command
-    terminalCommand = QSettings(qApp->applicationName()).value(CFG_TERM, DEF_TERM).toString();
+    terminalCommand = QSettings(qApp->applicationName()).value(CFG_TERM, QString()).toString();
 
     // Available terms
-    std::vector<std::pair<QString, QString>> terms {
-        {"Cool Retro Term", "cool-retro-term -e"},
+    std::vector<std::pair<QString, QString>> terms { // Sort by "sophisticatedness"
+        {"Terminator", "terminator -x"},
         {"Gnome Terminal", "gnome-terminal --"},
         {"Konsole", "konsole -e"},
         {"LXTerminal", "lxterminal -e"},
         {"Mate-Terminal", "mate-terminal -x"},
-        {"RoxTerm", "roxterm -x"},
-        {"Terminator", "terminator -x"},
-        {"urxvt", "urxvt -e"},
-        {"UXTerm", "uxterm -e"},
         {"XFCE-Terminal", "xfce4-terminal -x"},
-        {"XTerm", "xterm -e"}
+        {"Cool Retro Term", "cool-retro-term -e"},
+        {"RoxTerm", "roxterm -x"},
+        {"UXTerm", "uxterm -e"},
+        {"XTerm", "xterm -e"},
+        {"urxvt", "urxvt -e"}
     };
 
     // Fill checkbox
     for ( ulong i = 0; i < terms.size(); ++i ) {
         if ( !QStandardPaths::findExecutable(terms[i].second.split(' ').first()).isEmpty() ){
             ui.comboBox_term->addItem(terms[i].first, terms[i].second);
+
+            // if terminalCommand is not set use the first found
+            if ( terminalCommand.isNull() ) {
+                terminalCommand = terms[i].second;
+                QSettings(qApp->applicationName()).setValue(CFG_TERM, terminalCommand);
+            }
+
             if ( terms[i].second == terminalCommand )
                 ui.comboBox_term->setCurrentIndex(static_cast<int>(ui.comboBox_term->count()-1));
         }
