@@ -35,6 +35,7 @@ static void dispatchMessage();
 
 // Core components
 static QApplication     *app;
+static const QString    version = "v0.14.21";
 static ExtensionManager *extensionManager;
 static FrontendManager  *frontendManager;
 static QueryManager     *queryManager;
@@ -65,6 +66,8 @@ int Core::AlbertApp::run(int argc, char **argv) {
     QString socketPath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/socket";
     {
         QCoreApplication *capp = new QCoreApplication(argc, argv);
+        capp->setApplicationName("albert");
+        capp->setApplicationVersion(version);
         parser.process(*capp);
         const QStringList args = parser.positionalArguments();
         QLocalSocket socket;
@@ -111,7 +114,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
         app = new QApplication(argc, argv);
         app->setApplicationName("albert");
         app->setApplicationDisplayName("Albert");
-        app->setApplicationVersion("v0.14.21");
+        app->setApplicationVersion(version);
 
         if (parser.isSet("debug"))
             printDebugOutput = true;
