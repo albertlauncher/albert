@@ -32,6 +32,7 @@ using namespace GlobalShortcut;
 
 static void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message);
 static void dispatchMessage();
+static void printReport();
 
 // Core components
 static QApplication     *app;
@@ -57,6 +58,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
     parser.addOption(QCommandLineOption({"k", "hotkey"}, "Overwrite the hotkey to use.", "hotkey"));
     parser.addOption(QCommandLineOption({"p", "plugin-dirs"}, "Set the plugin dirs to use. Comma separated.", "directory"));
     parser.addOption(QCommandLineOption({"d", "debug"}, "Print debug output."));
+    parser.addOption(QCommandLineOption({"r", "report"}, "Print issue report."));
     parser.addPositionalArgument("command", "Command to send to a running instance, if any. (show, hide, toggle)", "[command]");
 
     /*
@@ -69,6 +71,12 @@ int Core::AlbertApp::run(int argc, char **argv) {
         capp->setApplicationName("albert");
         capp->setApplicationVersion(version);
         parser.process(*capp);
+
+        if (parser.isSet("report")){
+            printReport();
+            return EXIT_SUCCESS;
+        }
+
         const QStringList args = parser.positionalArguments();
         QLocalSocket socket;
         socket.connectToServer(socketPath);
@@ -545,3 +553,33 @@ void dispatchMessage() {
     socket->deleteLater();
 }
 
+
+/** ***************************************************************************/
+static void printReport()
+{
+    const uint8_t w = 22;
+    qInfo().noquote() << QString("%1: %2").arg("Albert version", w).arg(qApp->applicationVersion());
+    qInfo().noquote() << QString("%1: %2").arg("Build date", w).arg(__DATE__ " " __TIME__);
+
+    qInfo().noquote() << QString("%1: %2").arg("Qt version", w).arg(qVersion());
+    qInfo().noquote() << QString("%1: %2").arg("QT_QPA_PLATFORMTHEME", w).arg(qEnvironmentVariable("QT_QPA_PLATFORMTHEME"));
+
+    qInfo().noquote() << QString("%1: %2").arg("Binary location", w).arg(qApp->applicationFilePath());
+
+    qInfo().noquote() << QString("%1: %2").arg("PWD", w).arg(qEnvironmentVariable("PWD"));
+    qInfo().noquote() << QString("%1: %2").arg("SHELL", w).arg(qEnvironmentVariable("SHELL"));
+    qInfo().noquote() << QString("%1: %2").arg("LANG", w).arg(qEnvironmentVariable("LANG"));
+
+    qInfo().noquote() << QString("%1: %2").arg("XDG_SESSION_TYPE", w).arg(qEnvironmentVariable("XDG_SESSION_TYPE"));
+    qInfo().noquote() << QString("%1: %2").arg("XDG_CURRENT_DESKTOP", w).arg(qEnvironmentVariable("XDG_CURRENT_DESKTOP"));
+    qInfo().noquote() << QString("%1: %2").arg("DESKTOP_SESSION", w).arg(qEnvironmentVariable("DESKTOP_SESSION"));
+    qInfo().noquote() << QString("%1: %2").arg("XDG_SESSION_DESKTOP", w).arg(qEnvironmentVariable("XDG_SESSION_DESKTOP"));
+
+    qInfo().noquote() << QString("%1: %2").arg("OS", w).arg(QSysInfo::prettyProductName());
+    qInfo().noquote() << QString("%1: %2/%3").arg("OS (type/version)", w).arg(QSysInfo::productType(), QSysInfo::productVersion());
+
+    qInfo().noquote() << QString("%1: %2").arg("Build ABI", w).arg(QSysInfo::buildAbi());
+    qInfo().noquote() << QString("%1: %2/%3").arg("Arch (build/current)", w).arg(QSysInfo::buildCpuArchitecture(), QSysInfo::currentCpuArchitecture());
+
+    qInfo().noquote() << QString("%1: %2/%3").arg("Kernel (type/version)", w).arg(QSysInfo::kernelType(), QSysInfo::kernelVersion());
+}
