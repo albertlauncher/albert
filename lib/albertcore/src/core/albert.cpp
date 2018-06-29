@@ -562,18 +562,18 @@ static void printReport()
     qInfo().noquote() << QString("%1: %2").arg("Build date", w).arg(__DATE__ " " __TIME__);
 
     qInfo().noquote() << QString("%1: %2").arg("Qt version", w).arg(qVersion());
-    qInfo().noquote() << QString("%1: %2").arg("QT_QPA_PLATFORMTHEME", w).arg(qEnvironmentVariable("QT_QPA_PLATFORMTHEME"));
+    qInfo().noquote() << QString("%1: %2").arg("QT_QPA_PLATFORMTHEME", w).arg(QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORMTHEME")));
 
     qInfo().noquote() << QString("%1: %2").arg("Binary location", w).arg(qApp->applicationFilePath());
 
-    qInfo().noquote() << QString("%1: %2").arg("PWD", w).arg(qEnvironmentVariable("PWD"));
-    qInfo().noquote() << QString("%1: %2").arg("SHELL", w).arg(qEnvironmentVariable("SHELL"));
-    qInfo().noquote() << QString("%1: %2").arg("LANG", w).arg(qEnvironmentVariable("LANG"));
+    qInfo().noquote() << QString("%1: %2").arg("PWD", w).arg(QString::fromLocal8Bit(qgetenv("PWD")));
+    qInfo().noquote() << QString("%1: %2").arg("SHELL", w).arg(QString::fromLocal8Bit(qgetenv("SHELL")));
+    qInfo().noquote() << QString("%1: %2").arg("LANG", w).arg(QString::fromLocal8Bit(qgetenv("LANG")));
 
-    qInfo().noquote() << QString("%1: %2").arg("XDG_SESSION_TYPE", w).arg(qEnvironmentVariable("XDG_SESSION_TYPE"));
-    qInfo().noquote() << QString("%1: %2").arg("XDG_CURRENT_DESKTOP", w).arg(qEnvironmentVariable("XDG_CURRENT_DESKTOP"));
-    qInfo().noquote() << QString("%1: %2").arg("DESKTOP_SESSION", w).arg(qEnvironmentVariable("DESKTOP_SESSION"));
-    qInfo().noquote() << QString("%1: %2").arg("XDG_SESSION_DESKTOP", w).arg(qEnvironmentVariable("XDG_SESSION_DESKTOP"));
+    qInfo().noquote() << QString("%1: %2").arg("XDG_SESSION_TYPE", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_TYPE")));
+    qInfo().noquote() << QString("%1: %2").arg("XDG_CURRENT_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_CURRENT_DESKTOP")));
+    qInfo().noquote() << QString("%1: %2").arg("DESKTOP_SESSION", w).arg(QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION")));
+    qInfo().noquote() << QString("%1: %2").arg("XDG_SESSION_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_DESKTOP")));
 
     qInfo().noquote() << QString("%1: %2").arg("OS", w).arg(QSysInfo::prettyProductName());
     qInfo().noquote() << QString("%1: %2/%3").arg("OS (type/version)", w).arg(QSysInfo::productType(), QSysInfo::productVersion());
