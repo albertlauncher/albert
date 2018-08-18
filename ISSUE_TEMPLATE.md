@@ -2,14 +2,18 @@
 * Update to the latest version.
 * DYOR, check for existing issues/FAQ
 * For support join the chats.
-* Provide the information below.
+* If you want me to help you, please provide the information below
 -->
 
-- Operating system
-- Desktop environment
-- Qt version
-- Albert version
-- How you installed Albert (e.g. ppa:name, aur or from source)
-- Steps to reproduce
-- Expected behaviour
-- Actual behaviour
+#### Source
+<!-- e.g. ppa:name, repository, from source, etc … -->
+
+#### Environment
+<!-- Albert version >= v0.14.22: albert --report -->
+<!-- Albert version <= v0.14.21: cat /etc/issue; uname -r; env | grep -e SESSION_TYPE -e DESKTOP; qmake-qt5 -v; albert -v -->
+
+#### Steps to reproduce
+
+#### Expected behaviour
+
+#### Actual behaviour
