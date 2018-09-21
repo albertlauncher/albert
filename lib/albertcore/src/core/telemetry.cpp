@@ -70,6 +70,11 @@ void Core::Telemetry::enable(bool enable)
     QSettings(qApp->applicationName()).setValue(config_key, enable);
 }
 
+bool Telemetry::isEnabled() const
+{
+    return QSettings(qApp->applicationName()).value(config_key).toBool();
+}
+
 void Core::Telemetry::trySendReport()
 {
 

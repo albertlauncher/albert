@@ -27,6 +27,7 @@ public:
     Telemetry();
 
     void enable(bool enable);
+    bool isEnabled() const;
     QJsonObject buildReport();
 
 private:

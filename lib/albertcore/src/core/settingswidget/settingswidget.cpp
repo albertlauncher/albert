@@ -39,6 +39,7 @@
 #include "pluginspec.h"
 #include "querymanager.h"
 #include "settingswidget.h"
+#include "telemetry.h"
 #include "trayicon.h"
 using namespace std;
 using namespace Core;
@@ -57,13 +58,15 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
                                      QueryManager *queryManager,
                                      HotkeyManager *hotkeyManager,
                                      TrayIcon *systemTrayIcon,
+                                     Telemetry *telemetry,
                                      QWidget *parent, Qt::WindowFlags f)
     : QWidget(parent, f),
       extensionManager_(extensionManager),
       frontendManager_(frontendManager),
       queryManager_(queryManager),
       hotkeyManager_(hotkeyManager),
-      trayIcon_(systemTrayIcon) {
+      trayIcon_(systemTrayIcon),
+      telemetry_(telemetry) {
 
     ui.setupUi(this);
 
@@ -91,6 +94,10 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
     connect(ui.checkBox_incrementalSort, &QCheckBox::toggled,
             queryManager_, &QueryManager::setIncrementalSort);
 
+    // TELEMETRY
+    ui.checkBox_telemetry->setChecked(telemetry_->isEnabled());
+    connect(ui.checkBox_telemetry, &QCheckBox::toggled, this, [this](bool checked){ telemetry_->enable(checked); });
+
     // AUTOSTART
 #ifdef Q_OS_LINUX
     QString desktopfile_path = QStandardPaths::locate(QStandardPaths::ApplicationsLocation,
@@ -98,8 +105,8 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
                                                       QStandardPaths::LocateFile);
     if (!desktopfile_path.isNull()) {
         QString autostart_path = QDir(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)).filePath("autostart/albert.desktop");
-        ui.autostartCheckBox->setChecked(QFile::exists(autostart_path));
-        connect(ui.autostartCheckBox, &QCheckBox::toggled,
+        ui.checkBox_autostart->setChecked(QFile::exists(autostart_path));
+        connect(ui.checkBox_autostart, &QCheckBox::toggled,
                 this, [=](bool toggled){
             if (toggled)
                 QFile::link(desktopfile_path, autostart_path);

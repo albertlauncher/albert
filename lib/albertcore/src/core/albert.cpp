@@ -401,7 +401,8 @@ int Core::AlbertApp::run(int argc, char **argv) {
                                             frontendManager,
                                             queryManager,
                                             hotkeyManager,
-                                            trayIcon);
+                                            trayIcon,
+                                            telemetry);
 
         QAction* showAction     = new QAction("Show", trayIconMenu);
         showAction->setIcon(app->style()->standardIcon(QStyle::SP_TitleBarMaxButton));
