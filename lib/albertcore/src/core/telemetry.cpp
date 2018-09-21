@@ -21,17 +21,10 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QSettings>
-#include <QSqlDatabase>
-#include <QSqlDriver>
-#include <QSqlError>
 #include <QSqlError>
 #include <QSqlQuery>
-#include <QSqlRecord>
-#include <QTimer>
 #include "telemetry.h"
 using namespace Core;
-using namespace std;
-using namespace std::chrono;
 
 namespace {
 const QString config_key = "telemetry";
