@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Manuel Schneider
+// Copyright (C) 2014-2018 Manuel Schneider
 
 #pragma once
 #include <QString>
