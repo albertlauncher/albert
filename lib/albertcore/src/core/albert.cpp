@@ -9,6 +9,11 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QSettings>
+#include <QSqlDatabase>
+#include <QSqlDriver>
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QSqlRecord>
 #include <QStandardPaths>
 #include <QTime>
 #include <QTimer>
@@ -25,7 +30,7 @@
 #include "pluginspec.h"
 #include "querymanager.h"
 #include "settingswidget.h"
-#include "usagedatabase.h"
+#include "telemetry.h"
 #include "trayicon.h"
 using namespace Core;
 using namespace GlobalShortcut;
@@ -43,6 +48,7 @@ static QueryManager     *queryManager;
 static HotkeyManager    *hotkeyManager;
 static SettingsWidget   *settingsWidget;
 static TrayIcon         *trayIcon;
+static Telemetry        *telemetry;
 static QMenu            *trayIconMenu;
 static QLocalServer     *localServer;
 static bool             printDebugOutput;
@@ -108,6 +114,10 @@ int Core::AlbertApp::run(int argc, char **argv) {
     {
         bool showSettingsWhenInitialized = false;
 
+        QSettings::setPath(QSettings::defaultFormat(), QSettings::UserScope,
+                           QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation));
+        QSettings settings(qApp->applicationName());
+
         qInstallMessageHandler(myMessageOutput);
 
         qDebug() << "Initializing application";
@@ -133,6 +143,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
         app->setWindowIcon(QIcon(icon));
 
 
+
         /*
          *  IPC/SINGLETON MECHANISM (Server)
          */
@@ -151,6 +162,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
         QObject::connect(localServer, &QLocalServer::newConnection, dispatchMessage);
 
 
+
         /*
          *  INITIALIZE PATHS
          */
@@ -164,9 +176,20 @@ int Core::AlbertApp::run(int argc, char **argv) {
             if (!QDir(location).mkpath("."))
                 qFatal("Could not create dir: %s",  qPrintable(location));
 
-        // Move old config for user convenience TODO drop somewhen
-        QSettings::setPath(QSettings::defaultFormat(), QSettings::UserScope,
-                           QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation));
+
+
+        /*
+         *  ADJUST PATHS OF FILES OF OLDER VERSIONS
+         */
+
+        // If there is a firstRun file, rename it to lastVersion (since v0.11)
+        if ( QFile::exists(QString("%1/firstrun").arg(dataLocation)) ) {
+            qDebug() << "Renaming 'firstrun' to 'last_used_version'";
+            QFile::rename(QString("%1/firstrun").arg(dataLocation),
+                          QString("%1/last_used_version").arg(dataLocation));
+        }
+
+        // Move old config for user convenience  (since v0.13)
         QFileInfo oldcfg(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/albert.conf");
         QFileInfo newcfg(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/albert/albert.conf");
         if (oldcfg.exists()){
@@ -175,22 +198,25 @@ int Core::AlbertApp::run(int argc, char **argv) {
             QFile::rename(oldcfg.filePath(), newcfg.filePath());
         }
 
-
-        /*
-         * DETECT FIRST RUN AND VERSION CHANGE
-         */
-
-        // If there is a firstRun file, rename it to lastVersion (since v0.11)
-        if ( QFile::exists(QString("%1/firstrun").arg(dataLocation)) )
-            qDebug() << "Renaming 'firstrun' to 'last_used_version'";
-            QFile::rename(QString("%1/firstrun").arg(dataLocation),
-                          QString("%1/last_used_version").arg(dataLocation));
-
         // If there is a lastVersion  file move it to config (since v0.13)
-        if ( QFile::exists(QString("%1/last_used_version").arg(dataLocation)) )
+        if ( QFile::exists(QString("%1/last_used_version").arg(dataLocation)) ) {
             qDebug() << "Moving 'last_used_version' to config path";
             QFile::rename(QString("%1/last_used_version").arg(dataLocation),
                           QString("%1/last_used_version").arg(configLocation));
+        }
+
+        // If move database from old location in cache to config (since v0.14.7)
+        if ( QFile::exists(QString("%1/core.db").arg(cacheLocation)) ){
+            qInfo() << "Moving 'core.db' to config path";
+            QFile::rename(QString("%1/core.db").arg(cacheLocation),
+                          QString("%1/core.db").arg(configLocation));
+        }
+
+
+
+        /*
+         *  DETECT FIRST RUN AND VERSION CHANGE
+         */
 
         qDebug() << "Checking last used version";
         QFile file(QString("%1/last_used_version").arg(configLocation));
@@ -209,8 +235,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
                                         "stage. This means things may change unexpectedly. Check "
                                         "the <a href=\"https://albertlauncher.github.io/news/\">"
                                         "news</a> to read about the things that changed.")
-                                .arg(app->applicationVersion())
-                                ).exec();
+                                .arg(app->applicationVersion())).exec();
                 }
             }
             else
@@ -218,14 +243,12 @@ int Core::AlbertApp::run(int argc, char **argv) {
                                           .arg(file.fileName(), file.errorString()));
         } else {
             // Do whatever is neccessary on first run
-            if ( QMessageBox(QMessageBox::Information, "First run",
-                             "Seems like this is the first time you run Albert. Albert is "
-                             "standalone, free and open source software. Note that Albert is not "
-                             "related to or affiliated with any other projects or corporations.\n\n"
-                             "Probably you want to set a hotkey and enable some extensions.\n\n"
-                             "Do you want to open the settings dialog?",
-                             QMessageBox::No|QMessageBox::Yes).exec() == QMessageBox::Yes )
-                showSettingsWhenInitialized = true;
+            QMessageBox(QMessageBox::Information, "First run",
+                        "Seems like this is the first time you run Albert. Albert is "
+                        "standalone, free and open source software. Note that Albert is not "
+                        "related to or affiliated with any other projects or corporations.\n\n"
+                        "You should set a hotkey and enable some extensions.").exec();
+            showSettingsWhenInitialized = true;
         }
 
         // Write the current version into the file
@@ -238,23 +261,85 @@ int Core::AlbertApp::run(int argc, char **argv) {
 
 
         /*
-         * INITIALIZE DATABASE
+         *  MISC
          */
 
-        qDebug() << "Initializing database";
-
-        // If move database from old location in cache to config (since v0.14.7)
-        if ( QFile::exists(QString("%1/core.db").arg(cacheLocation)) ){
-            qInfo() << "Moving 'core.db' to config path";
-            QFile::rename(QString("%1/core.db").arg(cacheLocation),
-                          QString("%1/core.db").arg(configLocation));
+        // Quit gracefully on unix signals
+        qDebug() << "Setup signal handlers";
+        for ( int sig : { SIGINT, SIGTERM, SIGHUP, SIGPIPE } ) {
+            signal(sig, [](int){
+                QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
+            });
         }
 
-        UsageDatabase::initialize();
-        UsageDatabase::trySendReport();
-        QTimer *timer = new QTimer;
-        QObject::connect(timer, &QTimer::timeout, &UsageDatabase::trySendReport);
-        timer->start(60000);
+        // Print a message if the app was not terminated graciously
+        qDebug() << "Creating running indicator file";
+        QString filePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running";
+        if (QFile::exists(filePath)){
+            qWarning() << "Application has not been terminated graciously.";
+        } else {
+            // Create the running indicator file
+            QFile file(filePath);
+            if (!file.open(QIODevice::WriteOnly))
+                qWarning() << "Could not create file:" << filePath;
+            file.close();
+        }
+
+
+
+        /*
+         *  INITIALIZE CORE DATABASE
+         */
+
+
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+        if ( !db.isValid() )
+            qFatal("No sqlite available");
+        if (!db.driver()->hasFeature(QSqlDriver::Transactions))
+            qFatal("QSqlDriver::Transactions not available.");
+        db.setDatabaseName(QDir(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)).filePath("core.db"));
+        if (!db.open())
+            qFatal("Unable to establish a database connection.");
+
+        db.transaction();
+
+        QSqlQuery q(db);
+        if (!q.exec("CREATE TABLE IF NOT EXISTS query_handler ( "
+                    "  id INTEGER PRIMARY KEY NOT NULL, "
+                    "  string_id TEXT UNIQUE NOT NULL "
+                    "); "))
+            qFatal("Unable to create table 'query_handler': %s", q.lastError().text().toUtf8().constData());
+
+        if (!q.exec("CREATE TABLE IF NOT EXISTS query ( "
+                    "    id INTEGER PRIMARY KEY, "
+                    "    input TEXT NOT NULL, "
+                    "    cancelled INTEGER NOT NULL, "
+                    "    runtime INTEGER NOT NULL, "
+                    "    timestamp INTEGER DEFAULT CURRENT_TIMESTAMP "
+                    "); "))
+            qFatal("Unable to create table 'query': %s", q.lastError().text().toUtf8().constData());
+
+        if (!q.exec("CREATE TABLE IF NOT EXISTS execution ( "
+                    "    query_id INTEGER NOT NULL REFERENCES query(id) ON UPDATE CASCADE, "
+                    "    handler_id INTEGER NOT NULL REFERENCES query_handler(id) ON UPDATE CASCADE, "
+                    "    runtime INTEGER NOT NULL, "
+                    "    PRIMARY KEY (query_id, handler_id) "
+                    ") WITHOUT ROWID; "))
+            qFatal("Unable to create table 'execution': %s", q.lastError().text().toUtf8().constData());
+
+        if (!q.exec("CREATE TABLE IF NOT EXISTS activation ( "
+                    "    query_id INTEGER PRIMARY KEY NOT NULL REFERENCES query(id) ON UPDATE CASCADE, "
+                    "    item_id TEXT NOT NULL "
+                    "); "))
+            qFatal("Unable to create table 'activation': %s", q.lastError().text().toUtf8().constData());
+
+        if (!q.exec("DELETE FROM query WHERE julianday('now')-julianday(timestamp)>30; "))
+            qWarning("Unable to cleanup 'query' table.");
+
+        if (!q.exec("CREATE TABLE IF NOT EXISTS conf(key TEXT UNIQUE, value TEXT); "))
+            qFatal("Unable to create table 'conf': %s", q.lastError().text().toUtf8().constData());
+
+        db.commit();
 
 
         /*
@@ -262,7 +347,6 @@ int Core::AlbertApp::run(int argc, char **argv) {
          */
 
         qDebug() << "Initializing core components";
-
 
         // Define plugindirs
         QStringList pluginDirs;
@@ -298,119 +382,59 @@ int Core::AlbertApp::run(int argc, char **argv) {
 
         frontendManager = new FrontendManager(pluginDirs);
         extensionManager = new ExtensionManager(pluginDirs);
-
         extensionManager->reloadExtensions();
-
         hotkeyManager = new HotkeyManager;
-        queryManager  = new QueryManager(extensionManager);
-
-
-        /*
-         * Build Tray Icon
-         */
-
-        qDebug() << "Initializing tray icon";
-        trayIcon      = new TrayIcon;
-        trayIconMenu  = new QMenu;
-        QAction* showAction     = new QAction("Show", trayIconMenu);
-        QAction* settingsAction = new QAction("Settings", trayIconMenu);
-        QAction* docsAction     = new QAction("Open docs", trayIconMenu);
-        QAction* quitAction     = new QAction("Quit", trayIconMenu);
-
-        showAction->setIcon(app->style()->standardIcon(QStyle::SP_TitleBarMaxButton));
-        settingsAction->setIcon(app->style()->standardIcon(QStyle::SP_FileDialogDetailedView));
-        docsAction->setIcon(app->style()->standardIcon(QStyle::SP_DialogHelpButton));
-        quitAction->setIcon(app->style()->standardIcon(QStyle::SP_TitleBarCloseButton));
-
-        trayIconMenu->addAction(showAction);
-        trayIconMenu->addAction(settingsAction);
-        trayIconMenu->addAction(docsAction);
-        trayIconMenu->addSeparator();
-        trayIconMenu->addAction(quitAction);
-
-        trayIcon->setContextMenu(trayIconMenu);
-
-        /*
-         *  Hotkey
-         */
-
-        qDebug() << "Setting up hotkey";
-        // Check for a command line override
-        QString hotkey;
-        QSettings settings(qApp->applicationName());
         if ( parser.isSet("hotkey") ) {
-            hotkey = parser.value("hotkey");
+            QString hotkey = parser.value("hotkey");
+            if ( !hotkeyManager->registerHotkey(hotkey) )
+                qFatal("Failed to set hotkey to %s.", hotkey.toLocal8Bit().constData());
+        } else if ( settings.contains("hotkey") ) {
+            QString hotkey = settings.value("hotkey").toString();
             if ( !hotkeyManager->registerHotkey(hotkey) )
                 qFatal("Failed to set hotkey to %s.", hotkey.toLocal8Bit().constData());
         }
-        // Check if the settings contains a hotkey entry
-        else if ( settings.contains("hotkey") ) {
-            hotkey = settings.value("hotkey").toString();
-            if ( !hotkeyManager->registerHotkey(hotkey) ){
-                if ( QMessageBox(QMessageBox::Critical, "Error",
-                                 QString("Failed to set hotkey: '%1'. Do you want to open the settings?").arg(hotkey),
-                                 QMessageBox::No|QMessageBox::Yes).exec() == QMessageBox::Yes )
-                    showSettingsWhenInitialized = true;
-            }
-        }
-
-
-        /*
-         *  MISC
-         */
-
-        // Quit gracefully on unix signals
-        qDebug() << "Setup signal handlers";
-        for ( int sig : { SIGINT, SIGTERM, SIGHUP, SIGPIPE } ) {
-            signal(sig, [](int){
-                QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
-            });
-        }
-
-        // Print a message if the app was not terminated graciously
-        qDebug() << "Creating running indicator file";
-        QString filePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running";
-        if (QFile::exists(filePath)){
-            qWarning() << "Application has not been terminated graciously.";
-        } else {
-            // Create the running indicator file
-            QFile file(filePath);
-            if (!file.open(QIODevice::WriteOnly))
-                qWarning() << "Could not create file:" << filePath;
-            file.close();
-        }
-
-        // Application is initialized create the settings widget
-        qDebug() << "Creating settings widget";
+        queryManager = new QueryManager(extensionManager);
+        telemetry  = new Telemetry;
+        trayIcon = new TrayIcon;
+        trayIconMenu  = new QMenu;
         settingsWidget = new SettingsWidget(extensionManager,
                                             frontendManager,
                                             queryManager,
                                             hotkeyManager,
                                             trayIcon);
 
-        // If somebody requested the settings dialog open it
-        if ( showSettingsWhenInitialized )
+        QAction* showAction     = new QAction("Show", trayIconMenu);
+        showAction->setIcon(app->style()->standardIcon(QStyle::SP_TitleBarMaxButton));
+        trayIconMenu->addAction(showAction);
+
+        QAction* settingsAction = new QAction("Settings", trayIconMenu);
+        settingsAction->setIcon(app->style()->standardIcon(QStyle::SP_FileDialogDetailedView));
+        trayIconMenu->addAction(settingsAction);
+        QObject::connect(settingsAction, &QAction::triggered, [](){
             settingsWidget->show();
+            settingsWidget->raise();
+        });
+
+        QAction* docsAction = new QAction("Open docs", trayIconMenu);
+        docsAction->setIcon(app->style()->standardIcon(QStyle::SP_DialogHelpButton));
+        trayIconMenu->addAction(docsAction);
+        QObject::connect(docsAction, &QAction::triggered, [](){
+            QDesktopServices::openUrl(QUrl("https://albertlauncher.github.io/docs/"));
+        });
+
+        trayIconMenu->addSeparator();
+        QAction* quitAction = new QAction("Quit", trayIconMenu);
+        quitAction->setIcon(app->style()->standardIcon(QStyle::SP_TitleBarCloseButton));
+        trayIconMenu->addAction(quitAction);
+        QObject::connect(quitAction, &QAction::triggered, app, &QApplication::quit);
+
+        trayIcon->setContextMenu(trayIconMenu);
+
 
 
         /*
          * SIGNALING
          */
-
-        // Connect tray menu (except for frontend stuff…)
-        QObject::connect(settingsAction, &QAction::triggered,
-                         settingsWidget, &SettingsWidget::show);
-
-        QObject::connect(settingsAction, &QAction::triggered,
-                         settingsWidget, &SettingsWidget::raise);
-
-        QObject::connect(docsAction, &QAction::triggered,[](){
-            QDesktopServices::openUrl(QUrl("https://albertlauncher.github.io/docs/"));
-        });
-
-        QObject::connect(quitAction, &QAction::triggered,
-                         app, &QApplication::quit);
-
 
         // Define a lambda that connects a new frontend
         auto connectFrontend = [&](Frontend *f){

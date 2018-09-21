@@ -43,10 +43,14 @@ public:
 
 private:
 
+    void updateScores();
+
     ExtensionManager *extensionManager_;
     std::list<QueryExecution*> pastQueries_;
     bool incrementalSort_;
     std::map<QString,uint> scores_;
+    std::map<QString, unsigned long long> handlerIds_;
+    unsigned long long lastQueryId_;
 
 signals:
 

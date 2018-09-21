@@ -16,11 +16,18 @@
 
 #include <QStringList>
 #include <QVariant>
+#include <QSqlQuery>
 #include "history.h"
-#include "usagedatabase.h"
 
 
 Core::History::History(QObject *parent) : QObject(parent) {
+    QSqlQuery query("SELECT input "
+                    "FROM activation a JOIN  query q ON a.query_id = q.id "
+                    "GROUP BY input  "
+                    "ORDER BY max(timestamp) DESC;");
+    while (query.next())
+        lines_.append(query.value(0).toString());
+
     currentLine_ = -1; // This means historymode is not active
 }
 
@@ -37,10 +44,6 @@ void Core::History::add(QString str) {
 
 /** ***************************************************************************/
 QString Core::History::next() {
-    // Update the history at the beginnig
-    if (currentLine_ == -1)
-        updateHistory();
-
     if (currentLine_+1 < static_cast<int>(lines_.size())
             && static_cast<int>(lines_.size())!=0 ) {
         ++currentLine_;
@@ -62,10 +65,3 @@ QString Core::History::prev() {
 void Core::History::resetIterator() {
     currentLine_ = -1;
 }
-
-
-/** ***************************************************************************/
-void Core::History::updateHistory() {
-    lines_ = UsageDatabase::getRecentlyUsed();
-}
-

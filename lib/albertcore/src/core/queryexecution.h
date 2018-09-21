@@ -25,7 +25,6 @@
 #include <utility>
 #include <memory>
 #include "query.h"
-#include "usagedatabase.h"
 
 namespace Core {
 
@@ -33,6 +32,16 @@ class QueryHandler;
 class FallbackProvider;
 class Extension;
 class Item;
+
+struct QueryStatistics {
+    QString input;
+    std::chrono::system_clock::time_point start;
+    std::chrono::system_clock::time_point end;
+    std::map<QString, uint> runtimes;
+    bool cancelled = false;
+    QString activatedItem;
+};
+
 
 /**
  * @brief The QueryExecution class
