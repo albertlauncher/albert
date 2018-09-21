@@ -41,7 +41,7 @@ static void printReport();
 
 // Core components
 static QApplication     *app;
-static const QString    version = "v0.14.21";
+static const QString    version = "v0.14.22";
 static ExtensionManager *extensionManager;
 static FrontendManager  *frontendManager;
 static QueryManager     *queryManager;
