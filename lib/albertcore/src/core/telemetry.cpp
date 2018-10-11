@@ -2,6 +2,7 @@
 
 #include <QApplication>
 #include <QDateTime>
+#include <QDebug>
 #include <QJsonDocument>
 #include <QMessageBox>
 #include <QNetworkAccessManager>
