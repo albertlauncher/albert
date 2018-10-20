@@ -3,6 +3,7 @@
 #include <QApplication>
 #include <QSettings>
 #include "trayicon.h"
+#include "xdg/iconlookup.h"
 
 namespace {
     const char* CFG_SHOWTRAY = "showTray";
@@ -11,7 +12,7 @@ namespace {
 
 /** ***************************************************************************/
 Core::TrayIcon::TrayIcon() {
-    setIcon(qApp->windowIcon());
+    setIcon(QIcon(XDG::IconLookup::iconPath({"albert-tray", "albert"})));
     if (QSettings(qApp->applicationName()).value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool())
         setVisible(true);
 }
