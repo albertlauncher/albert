@@ -16,8 +16,8 @@ public:
     History(QObject *parent = nullptr);
 
     Q_INVOKABLE void add(QString str);
-    Q_INVOKABLE QString next();
-    Q_INVOKABLE QString prev();
+    Q_INVOKABLE QString next(const QString &substring = QString{});
+    Q_INVOKABLE QString prev(const QString &substring = QString{});
     Q_INVOKABLE void resetIterator();
 
 private:

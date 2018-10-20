@@ -20,30 +20,39 @@ Core::History::History(QObject *parent) : QObject(parent) {
 
 /** ***************************************************************************/
 void Core::History::add(QString str) {
-    if (!str.isEmpty()){
+    if (!str.isEmpty())
         if (lines_.contains(str))
             lines_.removeAll(str); // Remove dups
         lines_.prepend(str);
+    resetIterator();
+}
+
+
+/** ***************************************************************************/
+QString Core::History::next(const QString &substring) {
+    int newCurrentLine = currentLine_;
+    while (++newCurrentLine < static_cast<int>(lines_.size())){
+        const QString &line = lines_[newCurrentLine];
+        if (line.contains(substring, Qt::CaseInsensitive)){
+            currentLine_ = newCurrentLine;
+            return line;
+        }
     }
+    return QString{};
 }
 
 
 /** ***************************************************************************/
-QString Core::History::next() {
-    if (currentLine_+1 < static_cast<int>(lines_.size())
-            && static_cast<int>(lines_.size())!=0 ) {
-        ++currentLine_;
-        return lines_[currentLine_];
-    } else return QString();
-}
-
-
-/** ***************************************************************************/
-QString Core::History::prev() {
-    if (0 < currentLine_) {
-        --currentLine_;
-        return lines_[currentLine_];
-    } else return QString();
+QString Core::History::prev(const QString &substring) {
+    int newCurrentLine = currentLine_;
+    while (-1 < --newCurrentLine){
+        const QString &line = lines_[newCurrentLine];
+        if (line.contains(substring, Qt::CaseInsensitive)){
+            currentLine_ = newCurrentLine;
+            return line;
+        }
+    }
+    return QString{};
 }
 
 
