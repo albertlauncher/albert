@@ -5,14 +5,14 @@ services:
   - docker
 
 before_install:
-  - docker pull ubuntu:16.04
+  - docker pull ubuntu:18.04
 
 script:
   - docker build .
 
-notifications:
-  irc:
-    channels:
-      - "chat.freenode.net#albertlauncher"
-    on_success: never  # default: always
-    on_failure: always # default: always
+#notifications:
+#  irc:
+#    channels:
+#      - "chat.freenode.net#albertlauncher"
+#    on_success: never  # default: always
+#    on_failure: always # default: always
