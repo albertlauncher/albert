@@ -34,10 +34,6 @@ StatsWidget::StatsWidget(QWidget *parent) : QChartView(parent)
     setRenderHint(QPainter::Antialiasing);
 }
 
-StatsWidget::~StatsWidget()
-{
-}
-
 void StatsWidget::showEvent(QShowEvent *)
 {
     updateChart();
@@ -84,6 +80,8 @@ void StatsWidget::updateChart()
     cumSumSeries->attachAxis(_dateTimeAxis);
     cumSumSeries->attachAxis(_valueAxis_cumsum);
 
+    _valueAxis_activations->setRange(0, _valueAxis_activations->max());
+    _valueAxis_cumsum->setRange(0, _valueAxis_cumsum->max());
 
 
     // Add global data
@@ -140,6 +138,9 @@ void StatsWidget::updateChart()
 
             cumSumSeries->attachAxis(_dateTimeAxis);
             cumSumSeries->attachAxis(_valueAxis_cumsum);
+
+            _valueAxis_activations->setRange(0, _valueAxis_activations->max());
+            _valueAxis_cumsum->setRange(0, _valueAxis_cumsum->max());
         }
         reply->deleteLater();
     });

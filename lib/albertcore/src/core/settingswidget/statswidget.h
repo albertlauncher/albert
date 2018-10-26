@@ -9,7 +9,6 @@ class StatsWidget : public QChartView
 
 public:
     explicit StatsWidget(QWidget *parent = nullptr);
-    virtual ~StatsWidget();
 
 protected:
     void showEvent(QShowEvent *event) override;
