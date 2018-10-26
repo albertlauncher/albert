@@ -8,15 +8,10 @@
 #include <QDesktopWidget>
 #include <QFocusEvent>
 #include <QMessageBox>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
 #include <QSettings>
 #include <QShortcut>
 #include <QSqlQuery>
 #include <QStandardPaths>
-#if QT_VERSION >= 0x050600  // TODO: Remove somewhen
-#include <QtCharts>
-#endif
 #include <vector>
 #include <memory>
 #include <utility>
@@ -32,6 +27,9 @@
 #include "settingswidget.h"
 #include "telemetry.h"
 #include "trayicon.h"
+#if QT_VERSION >= 0x050600  // TODO: Remove somewhen
+#include "statswidget.h"
+#endif
 using namespace std;
 using namespace Core;
 using namespace GlobalShortcut;
@@ -227,139 +225,20 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
     ui.label_pluginTitle->hide();
 
 
-#if QT_VERSION >= 0x050600  // TODO: Remove somewhen
     /*
      * STATS
      */
 
-    QDateTimeAxis *dateTimeAxis = new QDateTimeAxis;
-    dateTimeAxis->setTickCount(8);
-    dateTimeAxis->setFormat("dd.MM.");
-    dateTimeAxis->setLabelsAngle(-45);
-    dateTimeAxis->setTitleText("Date");
-
-    QValueAxis *valueAxis_activations = new QValueAxis;
-    valueAxis_activations->setLabelFormat("%i");
-    valueAxis_activations->setTitleText("Activations per day");
-//    valueAxis_activations->setMinorTickCount(1);
-
-    QValueAxis *valueAxis_cumsum = new QValueAxis;
-    valueAxis_cumsum->setLabelFormat("%i");
-    valueAxis_cumsum->setTitleText("Cumulative activations");
-
-    QChart *chart = new QChart();
-    chart->layout()->setContentsMargins(0, 0, 0, 0);
-    chart->setBackgroundRoundness(0);
-//    chart->setTitle("Usage");
-    chart->addAxis(dateTimeAxis, Qt::AlignBottom);
-    chart->addAxis(valueAxis_activations, Qt::AlignLeft);
-    chart->addAxis(valueAxis_cumsum, Qt::AlignRight);
-
-    // Add user data
-
-    QLineSeries *activationSeries = new QLineSeries();
-    activationSeries->setName("Your daily activations");
-    QLineSeries *cumSumSeries = new QLineSeries();
-    cumSumSeries->setName("Your cumulative activations");
-
-    for (auto & series : {activationSeries, cumSumSeries}) {
-        QPen pen = series->pen();
-        pen.setWidth(1);
-        pen.setColor("#00cccc");
-        series->setPen(pen);
-    }
-    QPen pen = cumSumSeries->pen();
-    pen.setStyle(Qt::DashDotLine);
-    cumSumSeries->setPen(pen);
-
-    QSqlQuery q("SELECT q.timestamp, COUNT(*) "
-        "FROM activation a JOIN query q ON a.query_id == q.id "
-        "GROUP BY date(q.timestamp, 'unixepoch') "
-        "HAVING q.timestamp > strftime('%s', 'now', '-30 days');");
-    double cumsum = 0;
-    while (q.next()) {
-        int activationsPerDay = q.value(1).toInt();
-        cumsum += activationsPerDay;
-        activationSeries->append(q.value(0).toLongLong()*1000, activationsPerDay);
-        cumSumSeries->append(q.value(0).toLongLong()*1000, cumsum);
-    }
-    chart->addSeries(activationSeries);
-    chart->addSeries(cumSumSeries);
-
-    activationSeries->attachAxis(dateTimeAxis);
-    activationSeries->attachAxis(valueAxis_activations);
-
-    cumSumSeries->attachAxis(dateTimeAxis);
-    cumSumSeries->attachAxis(valueAxis_cumsum);
-
-    QChartView *chartView = new QChartView(chart);
-    chartView->setRenderHint(QPainter::Antialiasing);
-
-    ui.tabs->insertTab(2, chartView, "Stats");
-
-    // Add global data
-
-    QString addr = "Zffb,!!*\" $## $\"' **!";
-    for ( auto &c: addr)
-        c.unicode()=c.unicode()+14;
-    addr.append("api/activations?days=30");
-
-    static QNetworkAccessManager *manager = new QNetworkAccessManager;
-    QNetworkReply* reply = manager->get(QNetworkRequest(QUrl(addr)));
-
-    QObject::connect(reply, &QNetworkReply::finished, [reply, chart, dateTimeAxis, valueAxis_activations, valueAxis_cumsum](){
-        if (reply->error() == QNetworkReply::NoError){
-
-            QLineSeries *activationSeries = new QLineSeries();
-            activationSeries->setName("Global Ø daily activations");
-            QLineSeries *cumSumSeries = new QLineSeries();
-            cumSumSeries->setName("Global Ø cumulative activations");
-
-            for (auto & series : {activationSeries, cumSumSeries}) {
-                QPen pen = series->pen();
-                pen.setWidth(1);
-                pen.setColor("#FF7400");
-                series->setPen(pen);
-            }
-            QPen pen = cumSumSeries->pen();
-            pen.setStyle(Qt::DashDotLine);
-            cumSumSeries->setPen(pen);
-
-            QJsonArray jsonArray = QJsonDocument::fromJson(reply->readAll()).array();
-            double cumSum = 0;
-            for (QJsonValueRef jsonValue : jsonArray) {
-                const QJsonObject &jsonObject = jsonValue.toObject();
-                /*
-                 * {
-                 *   "date": "2018-10-17",
-                 *   "reports": 5941,
-                 *   "activations": 32238
-                 * },
-                 */
-                double avgActivationsPerDay = jsonObject.value("activations").toDouble() / jsonObject.value("reports").toDouble();
-                int64_t msTimestamp = QDateTime::fromString(jsonObject.value("date").toString(), "yyyy-MM-dd").toMSecsSinceEpoch();
-                cumSum += avgActivationsPerDay;
-                activationSeries->append(msTimestamp, avgActivationsPerDay);
-                cumSumSeries->append(msTimestamp, cumSum);
-            }
-
-            chart->addSeries(activationSeries);
-            chart->addSeries(cumSumSeries);
-
-            activationSeries->attachAxis(dateTimeAxis);
-            activationSeries->attachAxis(valueAxis_activations);
-
-            cumSumSeries->attachAxis(dateTimeAxis);
-            cumSumSeries->attachAxis(valueAxis_cumsum);
-        }
-        reply->deleteLater();
-    });
+#if QT_VERSION >= 0x050600  // TODO: Remove somewhen
+    StatsWidget *statsWidget = new StatsWidget(this);
+    ui.tabs->insertTab(2, statsWidget, "Stats");
 #endif
 
 
     /*
      * ABOUT
      */
+
     QString about = ui.about_text->text();
     about.replace("___versionstring___", qApp->applicationVersion());
     about.replace("___buildinfo___", QString("Built %1 %2").arg(__DATE__, __TIME__));
