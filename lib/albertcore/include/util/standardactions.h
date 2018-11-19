@@ -119,7 +119,7 @@ public:
             if (pwd == nullptr)
                 throw "Could not retrieve user shell";
             QString shell = pwd->pw_shell;
-            commandline << shell << "-ic";
+            commandline << "sh" << "-ic";
             if (behavior_ == CloseBehavior::CloseOnSuccess)
                 commandline << QString("%1 && sleep 1 || exec %2").arg(commandline_.join(' '), shell);
             else if (behavior_ == CloseBehavior::DoNotClose)
