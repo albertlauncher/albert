@@ -12,12 +12,12 @@ set(SRC
     src/hotkeymanager.cpp
 )
 
-set(LIB ${Qt5Gui_LIBRARIES})
+set(LIB Qt5::Gui)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     find_package(Qt5 5.5.0 REQUIRED X11Extras)
     set(SRC ${SRC} src/hotkeymanager_x11.cpp)
-    set(LIB ${LIB} ${Qt5X11Extras_LIBRARIES} X11)
+    set(LIB ${LIB} Qt5::X11Extras X11)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(SRC ${SRC} src/hotkey/hotkeymanager_win.cpp)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE")

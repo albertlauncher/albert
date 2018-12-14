@@ -18,6 +18,6 @@ target_include_directories(${PROJECT_NAME}
         src/
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ${Qt5Gui_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Gui)
 
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/albert)
