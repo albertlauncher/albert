@@ -41,7 +41,7 @@ static void printReport();
 
 // Core components
 static QApplication     *app;
-static const QString    version = "v0.14.22";
+static const QString    ALBERT_VERSION = "v0.15.0";
 static ExtensionManager *extensionManager;
 static FrontendManager  *frontendManager;
 static QueryManager     *queryManager;
@@ -75,7 +75,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
     {
         QCoreApplication *capp = new QCoreApplication(argc, argv);
         capp->setApplicationName("albert");
-        capp->setApplicationVersion(version);
+        capp->setApplicationVersion(ALBERT_VERSION);
         parser.process(*capp);
 
         if (parser.isSet("report")){
@@ -130,7 +130,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
         app = new QApplication(argc, argv);
         app->setApplicationName("albert");
         app->setApplicationDisplayName("Albert");
-        app->setApplicationVersion(version);
+        app->setApplicationVersion(ALBERT_VERSION);
 
         if (parser.isSet("debug"))
             printDebugOutput = true;
