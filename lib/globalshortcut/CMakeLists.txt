@@ -14,7 +14,7 @@ set(SRC
 
 set(LIB Qt5::Gui)
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "^(FreeBSD|DragonFly)$")
     find_package(Qt5 5.5.0 REQUIRED X11Extras)
     set(SRC ${SRC} src/hotkeymanager_x11.cpp)
     set(LIB ${LIB} Qt5::X11Extras X11)

@@ -304,7 +304,7 @@ int Core::AlbertApp::run(int argc, char **argv) {
         if ( parser.isSet("plugin-dirs") )
             pluginDirs = parser.value("plugin-dirs").split(',');
         else {
-#if defined __linux__
+#if defined __linux__ || defined __FreeBSD__
             QStringList dirs = {
 #if defined MULTIARCH_TUPLE
                 QFileInfo("/usr/lib/" MULTIARCH_TUPLE).canonicalFilePath(),

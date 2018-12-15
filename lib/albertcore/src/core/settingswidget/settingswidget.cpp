@@ -88,7 +88,7 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
     connect(ui.checkBox_telemetry, &QCheckBox::toggled, this, [this](bool checked){ telemetry_->enable(checked); });
 
     // AUTOSTART
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
     QString desktopfile_path = QStandardPaths::locate(QStandardPaths::ApplicationsLocation,
                                                       "albert.desktop",
                                                       QStandardPaths::LocateFile);
@@ -105,7 +105,7 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
     }
     else
         qCritical() << "Deskop entry not found! Autostart option is nonfuctional";
-#elif
+#else
     ui.autostartCheckBox->setEnabled(false);
     qWarning() << "Autostart not implemented on this platform!"
 #endif
