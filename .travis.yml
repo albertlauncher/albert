@@ -6,9 +6,11 @@ services:
 
 before_install:
   - docker pull ubuntu:18.04
+  - docker pull ubuntu:16.04
 
 script:
-  - docker build .
+  - docker build . -f Dockerfile.ubuntu1604
+  - docker build . -f Dockerfile.ubuntu1804
 
 #notifications:
 #  irc:
