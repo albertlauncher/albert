@@ -1,89 +1,74 @@
 // Copyright (C) 2014-2018 Manuel Schneider
 
 #pragma once
-#include <QApplication>
-#include <QClipboard>
 #include <QUrl>
-#include <QDesktopServices>
-#include <QStringList>
-#include <QProcess>
 #include <functional>
-#include <pwd.h>
-#include <unistd.h>
 #include "core/action.h"
-#include "util/shutil.h"
 #include "core_globals.h"
-
-extern QString terminalCommand;
 
 namespace Core {
 
 
-//! @brief A standard action holding a std::function
-struct EXPORT_CORE FuncAction : public Action
+//! @brief Base class for standard actions
+struct EXPORT_CORE StandardActionBase : public Action
 {
 public:
-    FuncAction(QString text, std::function<void()> action)
-        : text_(std::move(text)), action_(std::move(action)) { }
-    QString text() const override { return text_; }
-    void activate() override { action_(); }
+    StandardActionBase(const QString &text);
+    QString text() const override;
+
 private:
     QString text_;
+};
+
+
+
+//! @brief A standard action holding a std::function
+struct EXPORT_CORE FuncAction : public StandardActionBase
+{
+public:
+    FuncAction(const QString &text, std::function<void()> action);
+    void activate() override;
+
+private:
     std::function<void()> action_;
 };
 
 
 
 // A standard action that copies text into the clipboard
-struct EXPORT_CORE ClipAction : public Action
+struct EXPORT_CORE ClipAction : public StandardActionBase
 {
 public:
-    ClipAction(QString text, QString clipBoardText)
-        : text_(std::move(text)), clipBoardText_(std::move(clipBoardText)) { }
-    QString text() const override { return text_; }
-    void activate() override { QApplication::clipboard()->setText(clipBoardText_); }
+    ClipAction(const QString &text, QString clipBoardText);
+    void activate() override;
+
 private:
-    QString text_;
     QString clipBoardText_;
 };
 
 
 
 // A standard action that opens an url using QDesktopServices
-struct EXPORT_CORE UrlAction : public Action
+struct EXPORT_CORE UrlAction : public StandardActionBase
 {
 public:
-    UrlAction(QString text, QUrl url)
-        : text_(std::move(text)), url_(std::move(url)) { }
-    QString text() const override { return text_; }
-    void activate() override { QDesktopServices::openUrl(url_); }
+    UrlAction(const QString &text, QUrl url);
+    void activate() override;
+
 private:
-    QString text_;
     QUrl url_ ;
 };
 
 
 
 // A standard action that starts a process
-struct EXPORT_CORE ProcAction : public Action
+struct EXPORT_CORE ProcAction : public StandardActionBase
 {
 public:
-    ProcAction(QString text, QStringList commandline, QString workingDirectory = QString())
-        : text_(std::move(text)),
-          commandline_(std::move(commandline)),
-          workingDir_(std::move(workingDirectory)) { }
-    QString text() const override { return text_; }
-    void activate() override {
-        if (commandline_.isEmpty())
-            return;
-        QStringList commandline = commandline_;
-        if (workingDir_.isEmpty())
-            QProcess::startDetached(commandline.takeFirst(), commandline);
-        else
-            QProcess::startDetached(commandline.takeFirst(), commandline, workingDir_);
-    }
-private:
-    QString text_;
+    ProcAction(const QString &text, const QStringList &commandline, const QString &workingDirectory = QString());
+    void activate() override;
+
+protected:
     QStringList commandline_;
     QString workingDir_;
 };
@@ -91,7 +76,7 @@ private:
 
 
 // A standard action that runs commands in a terminal
-struct EXPORT_CORE TermAction : public Action
+struct EXPORT_CORE TermAction : public ProcAction
 {
     enum class CloseBehavior {
         CloseOnSuccess,
@@ -100,44 +85,20 @@ struct EXPORT_CORE TermAction : public Action
     };
 
 public:
-    TermAction(QString text,
-               QStringList commandline,
-               QString workingDirectory = QString(),
-               bool shell = true,
-               CloseBehavior behavior = CloseBehavior::CloseOnSuccess)
-        : text_(std::move(text)),
-          commandline_(std::move(commandline)),
-          workingDir_(std::move(workingDirectory)),
-          shell_(shell),
-          behavior_(behavior) { }
-    QString text() const override { return text_; }
-    void activate() override {
-        QStringList commandline = Core::ShUtil::split(terminalCommand);
-        if (shell_){
-            // passwd must not be freed
-            passwd *pwd = getpwuid(geteuid());
-            if (pwd == nullptr)
-                throw "Could not retrieve user shell";
-            QString shell = pwd->pw_shell;
-            commandline << "sh" << "-ic";
-            if (behavior_ == CloseBehavior::CloseOnSuccess)
-                commandline << QString("%1 && sleep 1 || exec %2").arg(commandline_.join(' '), shell);
-            else if (behavior_ == CloseBehavior::DoNotClose)
-                commandline << QString("%1; exec %2").arg(commandline_.join(' '), shell);
-            else
-                commandline << QString("%1; sleep 1").arg(commandline_.join(' '));
-        } else {
-            commandline << commandline_;
-        }
-        if (workingDir_.isNull())
-            QProcess::startDetached(commandline.takeFirst(), commandline);
-        else
-            QProcess::startDetached(commandline.takeFirst(), commandline, workingDir_);
-    }
+
+    /**
+     * @brief TermAction constructor
+     * @param text The description of the action
+     * @param commandline The command to execute
+     * @param workingDirectory The working directory where to run the command
+     * @param shell Should the command be wrapped in a shell?
+     * @param behavior The close behavior when using the shell
+     */
+    TermAction(const QString &text, const QStringList &commandline, const QString &workingDirectory = QString(),
+               bool shell = true, CloseBehavior behavior = CloseBehavior::CloseOnSuccess);
+    void activate() override;
+
 private:
-    QString text_;
-    QStringList commandline_;
-    QString workingDir_;
     bool shell_;
     CloseBehavior behavior_;
 };
