@@ -110,7 +110,6 @@ void Core::FuzzySearch::clear() {
 }
 
 
-
 /** ***************************************************************************/
 vector<shared_ptr<Core::IndexableItem> > Core::FuzzySearch::search(const QString &query) const {
 
@@ -124,7 +123,7 @@ vector<shared_ptr<Core::IndexableItem> > Core::FuzzySearch::search(const QString
     vector<map<uint,uint>> resultsPerWord; // id, count
     for ( const QString &word : words ) {
 
-        uint delta = static_cast<uint>((delta_ < 1)? word.size()*delta_ : delta_);
+        uint delta = static_cast<uint>((delta_ < 1)? (word.size()-1)*delta_ : delta_);
 
         // Generate the qGrams of this word
         map<QString,uint> qGrams;
