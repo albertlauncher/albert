@@ -517,31 +517,36 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
     switch (type) {
     case QtDebugMsg:
         if (printDebugOutput) {
-            fprintf(stdout, "%s [DEBG] \x1b[3m%s\x1b[0m\n",
+            fprintf(stdout, "%s \x1b[34;1m[DEBG:%s]\x1b[0m \x1b[3m%s\x1b[0m\n",
                     QTime::currentTime().toString().toLocal8Bit().constData(),
+                    context.category,
                     message.toLocal8Bit().constData());
             fflush(stdout);
         }
         break;
     case QtInfoMsg:
-        fprintf(stdout, "%s \x1b[32m[INFO]\x1b[0;1m %s\x1b[0m\n",
+        fprintf(stdout, "%s \x1b[32;1m[INFO:%s]\x1b[0m %s\n",
                 QTime::currentTime().toString().toLocal8Bit().constData(),
+                context.category,
                 message.toLocal8Bit().constData());
         fflush(stdout);
         break;
     case QtWarningMsg:
-        fprintf(stderr, "%s \x1b[33m[WARN]\x1b[0;1m %s\x1b[0m\n",
+        fprintf(stderr, "%s \x1b[33;1m[WARN:%s]\x1b[0;1m %s\x1b[0m\n",
                 QTime::currentTime().toString().toLocal8Bit().constData(),
+                context.category,
                 message.toLocal8Bit().constData());
         break;
     case QtCriticalMsg:
-        fprintf(stderr, "%s \x1b[31m[CRIT]\x1b[0;1m %s\x1b[0m\n",
+        fprintf(stderr, "%s \x1b[31;1m[CRIT:%s]\x1b[0;1m %s\x1b[0m\n",
                 QTime::currentTime().toString().toLocal8Bit().constData(),
+                context.category,
                 message.toLocal8Bit().constData());
         break;
     case QtFatalMsg:
-        fprintf(stderr, "%s \x1b[41;30;4m[FATAL]\x1b[0;1m %s  --  [%s]\x1b[0m\n",
+        fprintf(stderr, "%s \x1b[41;30;4m[FATAL:%s]\x1b[0;1m %s  --  [%s]\x1b[0m\n",
                 QTime::currentTime().toString().toLocal8Bit().constData(),
+                context.category,
                 message.toLocal8Bit().constData(),
                 context.function);
         exit(1);
