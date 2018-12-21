@@ -47,7 +47,8 @@ target_link_libraries(${PROJECT_NAME}
         globalshortcut
         xdg
 )
-if(Qt5Widgets_VERSION VERSION_GREATER_EQUAL 5.6.0)  # TODO: remove Apr 2020
+# TODO: remove Apr 2020
+if((Qt5Widgets_VERSION VERSION_GREATER 5.6.0) OR (Qt5Widgets_VERSION VERSION_EQUAL 5.6.0))
     target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Charts)
 endif()
 
