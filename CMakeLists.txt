@@ -39,3 +39,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 add_subdirectory(application/)
 add_subdirectory(lib/)
 add_subdirectory(plugins/)
+
+# Do platform specific post target stuff
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
+    # Install desktop entry
+   install(FILES data/albert.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications )
+
+    # Install icon
+   install(FILES lib/albertcore/resources/icons/albert.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
+
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
