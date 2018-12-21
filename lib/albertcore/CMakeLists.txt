@@ -18,7 +18,9 @@ find_package(Qt5 5.5.0
 )
 
 file(GLOB_RECURSE SRC include/* src/*)
-if (NOT Qt5Charts_FOUND)
+
+if(Qt5Widgets_VERSION VERSION_LESS 5.6.0)  # TODO: remove Apr 2020
+    message("${Qt5Widgets_VERSION} Qt version below 5.6. Build without charts.")
     list(REMOVE_ITEM SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/core/settingswidget/statswidget.h")
     list(REMOVE_ITEM SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/core/settingswidget/statswidget.cpp")
 endif()
@@ -45,7 +47,7 @@ target_link_libraries(${PROJECT_NAME}
         globalshortcut
         xdg
 )
-if (Qt5Charts_FOUND)
+if(Qt5Widgets_VERSION VERSION_GREATER_EQUAL 5.6.0)  # TODO: remove Apr 2020
     target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Charts)
 endif()
 
@@ -53,6 +55,3 @@ endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN")
 
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/albert)
-
-
-
