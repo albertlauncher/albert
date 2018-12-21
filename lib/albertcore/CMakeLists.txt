@@ -8,16 +8,20 @@ if (DEFINED CMAKE_LIBRARY_ARCHITECTURE)
 endif()
 
 find_package(Qt5 5.5.0
-    REQUIRED COMPONENTS
-        Widgets
+    COMPONENTS
         Concurrent
         Network
         Sql
+        Widgets
     OPTIONAL_COMPONENTS
         Charts
 )
 
 file(GLOB_RECURSE SRC include/* src/*)
+if (NOT Qt5Charts_FOUND)
+    list(REMOVE_ITEM SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/core/settingswidget/statswidget.h")
+    list(REMOVE_ITEM SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/core/settingswidget/statswidget.cpp")
+endif()
 
 add_library(${PROJECT_NAME} SHARED ${SRC} resources.qrc)
 
@@ -34,16 +38,21 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
-    Qt5::Charts
-    Qt5::Concurrent
-    Qt5::Network
-    Qt5::Sql
-    Qt5::Widgets
-    globalshortcut
-    xdg
+        Qt5::Concurrent
+        Qt5::Network
+        Qt5::Sql
+        Qt5::Widgets
+        globalshortcut
+        xdg
 )
+if (Qt5Charts_FOUND)
+    target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Charts)
+endif()
 
 # Set the RPATH for the library lookup
 set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN")
 
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/albert)
+
+
+

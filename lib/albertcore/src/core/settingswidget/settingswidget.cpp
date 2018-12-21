@@ -27,7 +27,9 @@
 #include "settingswidget.h"
 #include "telemetry.h"
 #include "trayicon.h"
-#if QT_VERSION >= 0x050600  // TODO: Remove somewhen
+// TODO: Remove somewhen
+//#if QT_VERSION >= 0x050600
+#ifdef QT_CHARTS_LIB
 #include "statswidget.h"
 #endif
 using namespace std;
@@ -229,7 +231,8 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
      * STATS
      */
 
-#if QT_VERSION >= 0x050600  // TODO: Remove somewhen
+//#if QT_VERSION >= 0x050600
+#ifdef QT_CHARTS_LIB  // TODO: Remove somewhen
     StatsWidget *statsWidget = new StatsWidget(this);
     ui.tabs->insertTab(2, statsWidget, "Stats");
 #endif
