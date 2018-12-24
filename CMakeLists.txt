@@ -3,7 +3,8 @@ include(GNUInstallDirs)
 
 ###############################################################################
 
-project(albert)
+project(albert VERSION 0.16.0)
+add_definitions(-DALBERT_VERSION="${PROJECT_VERSION}")
 
 ###############################################################################
 

@@ -40,7 +40,6 @@ static void printReport();
 
 // Core components
 static QApplication     *app;
-static const QString    ALBERT_VERSION = "v0.15.0";
 static ExtensionManager *extensionManager;
 static FrontendManager  *frontendManager;
 static QueryManager     *queryManager;
