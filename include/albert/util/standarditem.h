@@ -25,38 +25,31 @@ public:
                  QString subtext = QString(),
                  QString completion = QString(),
                  Urgency urgency = Item::Urgency::Normal,
-                 std::vector<std::shared_ptr<Action>> actions = std::vector<std::shared_ptr<Action>>())
-        : id_(std::move(id)),
-          iconPath_(std::move(iconPath)),
-          text_(std::move(text)),
-          subtext_(std::move(subtext)),
-          completion_(std::move(completion)),
-          urgency_(urgency),
-          actions_(std::move(actions)) { }
+                 std::vector<std::shared_ptr<Action>> actions = std::vector<std::shared_ptr<Action>>());
 
-    QString id() const override { return id_; }
-    void setId(QString id) { id_ = std::move(id); }
+    QString id() const override;
+    void setId(QString id);
 
-    QString iconPath() const override { return iconPath_; }
-    void setIconPath(QString iconPath) { iconPath_ = std::move(iconPath); }
+    QString iconPath() const override;
+    void setIconPath(QString iconPath);
 
-    QString text() const override { return text_; }
-    void setText(QString text) { text_ = std::move(text); }
+    QString text() const override;
+    void setText(QString text);
 
-    QString subtext() const override { return subtext_; }
-    void setSubtext(QString subtext) { subtext_ = std::move(subtext); }
+    QString subtext() const override;
+    void setSubtext(QString subtext);
 
-    QString completion() const override { return completion_; }
-    void setCompletion(QString completion) { completion_ = std::move(completion); }
+    QString completion() const override;
+    void setCompletion(QString completion);
 
-    Item::Urgency urgency() const override { return urgency_; }
-    void setUrgency(Item::Urgency urgency) { urgency_ = urgency; }
+    Item::Urgency urgency() const override;
+    void setUrgency(Item::Urgency urgency);
 
-    std::vector<std::shared_ptr<Action>> actions() override { return actions_; }
-    void setActions(std::vector<std::shared_ptr<Action>> &&actions) { actions_ = std::move(actions); }
-    void setActions(const std::vector<std::shared_ptr<Action>> &actions) { actions_ = actions; }
-    void addAction(std::shared_ptr<Action> &&action) { actions_.push_back(std::move(action)); }
-    void addAction(const std::shared_ptr<Action> &action) { actions_.push_back(action); }
+    std::vector<std::shared_ptr<Action>> actions() override;
+    void setActions(std::vector<std::shared_ptr<Action>> &&actions);
+    void setActions(const std::vector<std::shared_ptr<Action>> &actions);
+    void addAction(std::shared_ptr<Action> &&action);
+    void addAction(const std::shared_ptr<Action> &action);
 
 protected:
 

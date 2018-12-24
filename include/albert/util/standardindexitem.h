@@ -23,40 +23,32 @@ public:
                  QString completion = QString(),
                  Urgency urgency = Item::Urgency::Normal,
                  std::vector<std::shared_ptr<Action>> actions = std::vector<std::shared_ptr<Action>>(),
-                 std::vector<Core::IndexableItem::IndexString> indexStrings = std::vector<Core::IndexableItem::IndexString>())
-        : id_(std::move(id)),
-          iconPath_(std::move(iconPath)),
-          text_(std::move(text)),
-          subtext_(std::move(subtext)),
-          completion_(std::move(completion)),
-          urgency_(urgency),
-          actions_(std::move(actions)),
-          indexStrings_(std::move(indexStrings)) { }
+                 std::vector<Core::IndexableItem::IndexString> indexStrings = std::vector<Core::IndexableItem::IndexString>());
 
-    QString id() const override { return id_; }
-    void setId(QString id) { id_ = std::move(id); }
+    QString id() const override;
+    void setId(QString id);
 
-    QString iconPath() const override { return iconPath_; }
-    void setIconPath(QString iconPath) { iconPath_ = std::move(iconPath); }
+    QString iconPath() const override;
+    void setIconPath(QString iconPath);
 
-    QString text() const override { return text_; }
-    void setText(QString text) { text_ = std::move(text); }
+    QString text() const override;
+    void setText(QString text);
 
-    QString subtext() const override { return subtext_; }
-    void setSubtext(QString subtext) { subtext_ = std::move(subtext); }
+    QString subtext() const override;
+    void setSubtext(QString subtext);
 
-    QString completion() const override { return completion_; }
-    void setCompletion(QString completion) { completion_ = std::move(completion); }
+    QString completion() const override;
+    void setCompletion(QString completion);
 
-    Item::Urgency urgency() const override { return urgency_; }
-    void setUrgency(Item::Urgency urgency) { urgency_ = urgency; }
+    Item::Urgency urgency() const override;
+    void setUrgency(Item::Urgency urgency);
 
-    std::vector<std::shared_ptr<Action>> actions() override { return actions_; }
-    void setActions(std::vector<std::shared_ptr<Action>> actions) { actions_ = std::move(actions); }
-    void addAction(std::shared_ptr<Action> action) { actions_.push_back(std::move(action)); }
+    std::vector<std::shared_ptr<Action>> actions() override;
+    void setActions(std::vector<std::shared_ptr<Action>> actions);
+    void addAction(std::shared_ptr<Action> action);
 
-    virtual std::vector<Core::IndexableItem::IndexString> indexStrings() const override { return indexStrings_; }
-    void setIndexKeywords(std::vector<Core::IndexableItem::IndexString> indexStrings) { indexStrings_ = std::move(indexStrings); }
+    virtual std::vector<Core::IndexableItem::IndexString> indexStrings() const override;
+    void setIndexKeywords(std::vector<Core::IndexableItem::IndexString> indexStrings);
 
 
 protected:
