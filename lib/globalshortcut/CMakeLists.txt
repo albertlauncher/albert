@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.1.3)
 
 project(globalshortcut)
 
-add_definitions(-DGLOBALSHORTCUT) #export branch
-
 find_package(Qt5 5.5.0 REQUIRED COMPONENTS Gui)
 
 set(SRC
@@ -25,12 +23,14 @@ endif()
 
 add_library(${PROJECT_NAME} SHARED ${SRC})
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE -DGLOBALSHORTCUT) #export branch
+
 target_include_directories(${PROJECT_NAME}
     PUBLIC
-        include/
+        include
     PRIVATE
-        include/globalshortcut/
-        src/
+        include/globalshortcut
+        src
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LIB})
