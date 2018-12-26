@@ -157,6 +157,7 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
     // Available terms
     std::vector<std::pair<QString, QString>> terms { // Sort by "sophisticatedness"
         {"Terminator", "terminator -x"},
+        {"Deepin Terminal", "deepin-terminal -x"},
         {"Gnome Terminal", "gnome-terminal --"},
         {"Konsole", "konsole -e"},
         {"LXTerminal", "lxterminal -e"},
