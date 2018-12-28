@@ -54,7 +54,7 @@ set_target_properties(${TARGET_NAME_LIB} PROPERTIES
 
 target_compile_definitions(${TARGET_NAME_LIB} PRIVATE -DCORE) #export branch
 if (DEFINED CMAKE_LIBRARY_ARCHITECTURE)
-    target_compile_definitions(${TARGET_NAME_LIB} -DMULTIARCH_TUPLE="${CMAKE_LIBRARY_ARCHITECTURE}")
+    target_compile_definitions(${TARGET_NAME_LIB} PRIVATE -DMULTIARCH_TUPLE="${CMAKE_LIBRARY_ARCHITECTURE}")
 endif()
 
 target_include_directories(${TARGET_NAME_LIB}
