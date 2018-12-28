@@ -132,6 +132,6 @@ install(TARGETS ${TARGET_NAME_LIB} ${TARGET_NAME_BIN}
 # Do platform specific post target stuff
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     # Install desktop entry and icon
-   install(FILES data/albert.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications )
+   install(FILES resources/albert.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications )
    install(FILES resources/icons/albert.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
