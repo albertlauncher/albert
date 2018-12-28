@@ -20,10 +20,11 @@ Core::History::History(QObject *parent) : QObject(parent) {
 
 /** ***************************************************************************/
 void Core::History::add(QString str) {
-    if (!str.isEmpty())
+    if (!str.isEmpty()){
         if (lines_.contains(str))
             lines_.removeAll(str); // Remove dups
         lines_.prepend(str);
+    }
     resetIterator();
 }
 
