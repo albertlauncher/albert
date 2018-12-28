@@ -1,3 +1,6 @@
 [submodule "plugins"]
 	path = plugins
 	url = https://github.com/albertlauncher/plugins.git
+[submodule "doc"]
+	path = doc
+	url = https://github.com/albertlauncher/documentation.git
