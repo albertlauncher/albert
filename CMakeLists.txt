@@ -1,12 +1,16 @@
 cmake_minimum_required(VERSION 3.1.3)  # Least supporting CMAKE_CXX_STANDARD
-include(GNUInstallDirs)
-
 ###############################################################################
 
 project(albert VERSION 0.16.0)
-add_definitions(-DALBERT_VERSION="${PROJECT_VERSION}")
 
 ###############################################################################
+
+include(GNUInstallDirs)
+message(${CMAKE_INSTALL_LIBDIR})
+
+###############################################################################
+
+add_definitions(-DALBERT_VERSION="${PROJECT_VERSION}")
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
