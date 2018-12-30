@@ -32,6 +32,6 @@ COPY . /srv/albert/src/
 
 WORKDIR /srv/albert/build/
 RUN true \
- && cmake /srv/albert/src/ -DCMAKE_BUILD_TYPE=Debug \
+ && cmake /srv/albert/src/ -DCMAKE_BUILD_TYPE=Debug -DBUILD_WITH_QTCHARTS=OFF  \
  && make \
  && make install

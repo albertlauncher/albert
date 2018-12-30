@@ -28,7 +28,7 @@
 #include "loadermodel.h"
 #include "settingswidget.h"
 // TODO: Remove Apr 2020
-#if QT_VERSION >= 0x050600
+#ifdef BUILD_WITH_QTCHARTS
 #include "statswidget.h"
 #endif
 using namespace std;
@@ -232,7 +232,7 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
      */
 
 // TODO: Remove Apr 2020
-#if QT_VERSION >= 0x050600
+#ifdef BUILD_WITH_QTCHARTS
     StatsWidget *statsWidget = new StatsWidget(this);
     ui.tabs->insertTab(2, statsWidget, "Stats");
 #endif

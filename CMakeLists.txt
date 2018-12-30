@@ -84,6 +84,8 @@ target_link_libraries(${TARGET_NAME_LIB}
 
 ###############################################################################
 
+option(BUILD_WITH_QTCHARTS "Use QtCharts to plot stats." ON)
+
 find_package(Qt5 5.5.0
     COMPONENTS
         Concurrent
@@ -97,8 +99,7 @@ find_package(Qt5 5.5.0
 set(TARGET_NAME_BIN ${PROJECT_NAME}-bin)
 
 file(GLOB_RECURSE BIN_SRC src/app/*)
-if(Qt5Widgets_VERSION VERSION_LESS 5.6.0)  # TODO: remove Apr 2020
-    message("${Qt5Widgets_VERSION} Qt version below 5.6. Build without charts.")
+if(NOT BUILD_WITH_QTCHARTS)  # TODO: remove Apr 2020
     list(REMOVE_ITEM BIN_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/app/settingswidget/statswidget.h")
     list(REMOVE_ITEM BIN_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/app/settingswidget/statswidget.cpp")
 endif()
@@ -122,8 +123,9 @@ target_link_libraries(${TARGET_NAME_BIN}
         globalshortcut
         xdg
 )
-if((Qt5Widgets_VERSION VERSION_GREATER 5.6.0) OR (Qt5Widgets_VERSION VERSION_EQUAL 5.6.0))# TODO: remove Apr 2020
+if(BUILD_WITH_QTCHARTS)
     target_link_libraries(${TARGET_NAME_BIN} PRIVATE Qt5::Charts)
+    target_compile_definitions(${TARGET_NAME_BIN} PRIVATE -DBUILD_WITH_QTCHARTS) #export branch
 endif()
 
 ###############################################################################
