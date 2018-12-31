@@ -6,7 +6,6 @@ project(albert VERSION 0.16.0)
 ###############################################################################
 
 include(GNUInstallDirs)
-message(${CMAKE_INSTALL_LIBDIR})
 
 ###############################################################################
 
@@ -57,9 +56,6 @@ set_target_properties(${TARGET_NAME_LIB} PROPERTIES
 )
 
 target_compile_definitions(${TARGET_NAME_LIB} PRIVATE -DCORE) #export branch
-if (DEFINED CMAKE_LIBRARY_ARCHITECTURE)
-    target_compile_definitions(${TARGET_NAME_LIB} PRIVATE -DMULTIARCH_TUPLE="${CMAKE_LIBRARY_ARCHITECTURE}")
-endif()
 
 target_include_directories(${TARGET_NAME_LIB}
     PUBLIC
@@ -112,6 +108,9 @@ set_target_properties(${TARGET_NAME_BIN} PROPERTIES
 )
 
 target_include_directories(${TARGET_NAME_BIN} PRIVATE src/app src/app/settingswidget)
+if (DEFINED CMAKE_LIBRARY_ARCHITECTURE)
+    target_compile_definitions(${TARGET_NAME_BIN} PRIVATE -DMULTIARCH_TUPLE="${CMAKE_LIBRARY_ARCHITECTURE}")
+endif()
 
 target_link_libraries(${TARGET_NAME_BIN}
     PRIVATE
