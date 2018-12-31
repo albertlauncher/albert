@@ -1,7 +1,7 @@
 // Copyright (C) 2014-2018 Manuel Schneider
 
 #include <QStandardPaths>
-#include <QApplication>
+#include <QCoreApplication>
 #include "albert/plugin.h"
 
 class Core::PluginPrivate
