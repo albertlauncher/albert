@@ -1,3 +1,15 @@
+v0.16.1 (2018-12-31)
+
+* [albert] Fix default plugin lookup path
+* [albert] Fix flicker when changing frontends
+* [albert] Fix "Terminal option resets after a restart"
+* [albert] Link libglobalshortcut statically
+* [albert] Add a build flag for QtCharts
+* [albert] Drop debug options if favor of QLoggingCategory env vars
+* [plugins:ssh] Fix input regex. Sort by length then lexically.
+* [plugins:ssh] Use backward compatible ssh url syntax
+* [plugins:qml] Consistent form layout
+* [modules:aur] Sort items by length first
 
 v0.16.0 (2018-12-28)
 
