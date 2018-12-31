@@ -155,51 +155,64 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
     terminalCommand = QSettings(qApp->applicationName()).value(CFG_TERM, QString()).toString();
 
     // Available terms
-    std::vector<std::pair<QString, QString>> terms { // Sort by "sophisticatedness"
-        {"Terminator", "terminator -x"},
+    std::vector<std::pair<QString, QString>> terms {
+        // Distro terms
         {"Deepin Terminal", "deepin-terminal -x"},
         {"Gnome Terminal", "gnome-terminal --"},
         {"Konsole", "konsole -e"},
         {"LXTerminal", "lxterminal -e"},
         {"Mate-Terminal", "mate-terminal -x"},
         {"XFCE-Terminal", "xfce4-terminal -x"},
+        // Standalone terms
         {"Cool Retro Term", "cool-retro-term -e"},
         {"RoxTerm", "roxterm -x"},
+        {"Terminator", "terminator -x"},
         {"UXTerm", "uxterm -e"},
         {"XTerm", "xterm -e"},
         {"urxvt", "urxvt -e"}
     };
 
+    // Filter available terms by availability
+    for (auto it = terms.cbegin(); it != terms.cend(); ++it)
+        if (QStandardPaths::findExecutable(it->second.split(' ').first()).isEmpty())
+            it = terms.erase(it);
+        else
+            ++it;
+
+    // if terminalCommand is not set, use the first found
+    if (terminalCommand.isNull())
+        terminalCommand = terms[0].second;
+
     // Fill checkbox
-    for ( ulong i = 0; i < terms.size(); ++i ) {
-        if ( !QStandardPaths::findExecutable(terms[i].second.split(' ').first()).isEmpty() ){
-            ui.comboBox_term->addItem(terms[i].first, terms[i].second);
-
-            // if terminalCommand is not set use the first found
-            if ( terminalCommand.isNull() ) {
-                terminalCommand = terms[i].second;
-                QSettings(qApp->applicationName()).setValue(CFG_TERM, terminalCommand);
-            }
-
-            if ( terms[i].second == terminalCommand )
-                ui.comboBox_term->setCurrentIndex(static_cast<int>(ui.comboBox_term->count()-1));
-        }
-    }
+    for (const auto & t : terms)
+        ui.comboBox_term->addItem(t.first, t.second);
     ui.comboBox_term->insertSeparator(ui.comboBox_term->count());
     ui.comboBox_term->addItem(tr("Custom"));
 
+    // Set current item
+    ui.comboBox_term->setCurrentIndex(-1);
+    for (size_t i = 0; i < terms.size(); ++i)
+        if (terms[i].second == terminalCommand)
+            ui.comboBox_term->setCurrentIndex(static_cast<int>(i));
+    if (ui.comboBox_term->currentIndex() == -1)
+        ui.comboBox_term->setCurrentIndex(ui.comboBox_term->count()-1); // Is never -1 since Custom is always there
+
+    // Put command in lineedit
     ui.lineEdit_term->setText(terminalCommand);
     ui.lineEdit_term->setEnabled(ui.comboBox_term->currentIndex() == ui.comboBox_term->count()-1);
+
+    // Set behavior on index change
     connect(ui.comboBox_term, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             [this](int index){
         if ( index != ui.comboBox_term->count()-1) {
             terminalCommand = ui.comboBox_term->currentData(Qt::UserRole).toString();
+            ui.lineEdit_term->setText(terminalCommand);
             QSettings(qApp->applicationName()).setValue(CFG_TERM, terminalCommand);
         }
         ui.lineEdit_term->setEnabled(index == ui.comboBox_term->count()-1);
-        ui.lineEdit_term->setText(terminalCommand);
     });
 
+    // Set behavior for textEdited signal of custom-term-lineedit
     connect(ui.lineEdit_term, &QLineEdit::textEdited, [](QString str){
         terminalCommand = str;
         QSettings(qApp->applicationName()).setValue(CFG_TERM, terminalCommand);
