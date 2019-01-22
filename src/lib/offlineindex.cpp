@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2018 Manuel Schneider
+// Copyright (C) 2014-2019 Manuel Schneider
 
 #include "albert/util/offlineindex.h"
 #include "albert/indexable.h"
