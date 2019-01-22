@@ -167,6 +167,7 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
         {"Cool Retro Term", "cool-retro-term -e"},
         {"RoxTerm", "roxterm -x"},
         {"Terminator", "terminator -x"},
+        {"Termite", "termite -e"},
         {"UXTerm", "uxterm -e"},
         {"XTerm", "xterm -e"},
         {"urxvt", "urxvt -e"}
