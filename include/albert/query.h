@@ -43,6 +43,13 @@ public:
     bool isTriggered() const;
 
     /**
+     * @brief The sort hint of the query handler.
+     * Call this if you want the query manager to omit the final sorting of items.
+     * @note This is only effective for triggered batch handlers.
+     */
+    void disableSort();
+
+    /**
      * @brief The trigger of this query
      * Note that if the trigger is set, string() differs from rawString().
      */
@@ -102,8 +109,9 @@ private:
     QString trigger_;
     QString string_;
     QString rawString_;
-    bool isValid_ = true;
     std::map<QString, uint> scores_;
+    bool sort_ = true;
+    bool isValid_ = true;
 
     friend class QueryExecution;
 };

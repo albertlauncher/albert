@@ -23,6 +23,12 @@ bool Core::Query::isTriggered() const {
     return !trigger_.isNull();
 }
 
+/** ***************************************************************************/
+void Core::Query::disableSort()
+{
+    sort_ = false;
+}
+
 
 /** ***************************************************************************/
 const QString &Core::Query::trigger() const {
