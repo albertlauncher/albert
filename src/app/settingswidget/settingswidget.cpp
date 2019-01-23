@@ -277,19 +277,19 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
     delete i->widget();
     delete i;
 
-    if ( extensionManager_->extensionSpecs()[static_cast<size_t>(current.row())]->state()
-         == PluginSpec::State::Loaded ){
-        Extension *extension = dynamic_cast<Extension*>(
-                    extensionManager_->extensionSpecs()[static_cast<size_t>(current.row())]->instance());
-        if (!extension){
-            qWarning() << "Cannot cast an object of extension spec to an extension!";
-            return; // Should no happen
-        }
+    PluginSpec *spec = extensionManager_->extensionSpecs()[static_cast<size_t>(current.row())].get();
+    if (spec->state() == PluginSpec::State::Loaded) {
+
+        Extension *extension = dynamic_cast<Extension*>(spec->instance());
+        if (!extension)
+            qFatal("Cannot cast an object of extension spec to an extension!");
+
         QWidget *pw = extension->widget();
-        if ( pw->layout() != nullptr)
-            pw->layout()->setMargin(0);
         ui.widget_pluginInfos->layout()->addWidget(pw);// Takes ownership
-        ui.label_pluginTitle->setText(extension->name());
+        ui.label_pluginTitle->setText(QString("<html><head/><body><p>"
+                                              "<span style=\"font-size:12pt;\">%1 </span>"
+                                              "<span style=\"font-size:8pt; font-style:italic; color:#a0a0a0;\">%3 %2</span>"
+                                              "</p></body></html>").arg(extension->name(), spec->version(), spec->id()));
         ui.label_pluginTitle->show();
     }
     else{
