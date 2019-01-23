@@ -151,7 +151,7 @@ void Core::QueryExecution::onBatchHandlersFinished() {
     query_.mutex_.unlock();
 
     // Sort the results
-    if (query_.trigger_.isNull()){
+    if (query_.trigger_.isNull() || query_.sort_){
         if ( fetchIncrementally_ ) {
             int sortUntil = min(sortedItems_ + FETCH_SIZE, static_cast<int>(results_.size()));
             partial_sort(results_.begin() + sortedItems_, results_.begin() + sortUntil,
@@ -251,7 +251,7 @@ void Core::QueryExecution::insertPendingResults() {
 
 /** ***************************************************************************/
 int Core::QueryExecution::rowCount(const QModelIndex &) const {
-    return query_.trigger_.isNull() && fetchIncrementally_ ? sortedItems_ : static_cast<int>(results_.size());
+    return (query_.trigger_.isNull() || query_.sort_) && fetchIncrementally_ ? sortedItems_ : static_cast<int>(results_.size());
 }
 
 
@@ -304,7 +304,7 @@ QVariant Core::QueryExecution::data(const QModelIndex &index, int role) const {
 /** ***************************************************************************/
 bool Core::QueryExecution::canFetchMore(const QModelIndex & /* index */) const
 {
-    if (query_.trigger_.isNull() && fetchIncrementally_ && sortedItems_ < static_cast<int>(results_.size()))
+    if ((query_.trigger_.isNull() || query_.sort_) && fetchIncrementally_ && sortedItems_ < static_cast<int>(results_.size()))
         return true;
     else
         return false;
@@ -315,7 +315,7 @@ bool Core::QueryExecution::canFetchMore(const QModelIndex & /* index */) const
 void Core::QueryExecution::fetchMore(const QModelIndex & /* index */)
 {
     int sortUntil = min(sortedItems_ + FETCH_SIZE, static_cast<int>(results_.size()));
-    if (query_.trigger_.isNull())
+    if (query_.trigger_.isNull() || query_.sort_)
         partial_sort(results_.begin() + sortedItems_,
                      results_.begin() + sortUntil,
                      results_.end(),
