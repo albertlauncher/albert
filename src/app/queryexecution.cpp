@@ -163,7 +163,7 @@ void Core::QueryExecution::onBatchHandlersFinished() {
     }
 
     if ( realtimeHandlers_.empty() ){
-        if( results_.empty() && !query_.rawString_.isEmpty() ){
+        if( results_.empty() && !query_.isTriggered() && !query_.rawString_.isEmpty() ){
             results_ = fallbacks_;
             sortedItems_ = static_cast<int>(fallbacks_.size());
             fetchIncrementally_ = false;
@@ -216,7 +216,7 @@ void Core::QueryExecution::onRealtimeHandlersFinsished() {
     fiftyMsTimer_.disconnect();
     insertPendingResults();
 
-    if( results_.empty() && !query_.rawString_.isEmpty() ){
+    if( results_.empty() && !query_.isTriggered() && !query_.rawString_.isEmpty() ){
         beginInsertRows(QModelIndex(), 0, static_cast<int>(fallbacks_.size()-1));
         results_ = fallbacks_;
         endInsertRows();
