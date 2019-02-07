@@ -174,7 +174,7 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
     };
 
     // Filter available terms by availability
-    for (auto it = terms.cbegin(); it != terms.cend(); ++it)
+    for (auto it = terms.cbegin(); it != terms.cend();)
         if (QStandardPaths::findExecutable(it->second.split(' ').first()).isEmpty())
             it = terms.erase(it);
         else
