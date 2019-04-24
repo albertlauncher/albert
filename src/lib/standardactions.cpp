@@ -92,9 +92,9 @@ Core::TermAction::TermAction(const QString &text, const QStringList &commandline
 
 }
 
-void Core::TermAction::activate()
+void Core::TermAction::prependTerminalCommand()
 {
-    if (commandline_.isEmpty())
+    if (prepended_)
         return;
 
     if (shell_){
@@ -120,6 +120,16 @@ void Core::TermAction::activate()
     } else {
         commandline_ = Core::ShUtil::split(terminalCommand) + commandline_;
     }
+
+    prepended_ = true;
+}
+
+void Core::TermAction::activate()
+{
+    if (commandline_.isEmpty())
+        return;
+
+    TermAction::prependTerminalCommand();
 
     ProcAction::activate();
 }

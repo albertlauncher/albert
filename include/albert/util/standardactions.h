@@ -100,7 +100,9 @@ public:
 
 private:
     bool shell_;
+    bool prepended_ = false;
     CloseBehavior behavior_;
+    void prependTerminalCommand();
 };
 
 
