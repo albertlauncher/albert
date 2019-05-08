@@ -326,15 +326,20 @@ int main(int argc, char **argv) {
         frontendManager = new FrontendManager(pluginDirs);
         extensionManager = new ExtensionManager(pluginDirs);
         extensionManager->reloadExtensions();
-        hotkeyManager = new HotkeyManager;
-        if ( parser.isSet("hotkey") ) {
-            QString hotkey = parser.value("hotkey");
-            if ( !hotkeyManager->registerHotkey(hotkey) )
-                qFatal("Failed to set hotkey to %s.", hotkey.toLocal8Bit().constData());
-        } else if ( settings.contains("hotkey") ) {
-            QString hotkey = settings.value("hotkey").toString();
-            if ( !hotkeyManager->registerHotkey(hotkey) )
-                qFatal("Failed to set hotkey to %s.", hotkey.toLocal8Bit().constData());
+
+        if ( !QGuiApplication::platformName().contains("wayland") )
+            hotkeyManager = new HotkeyManager;
+
+        if ( hotkeyManager ) {
+            if ( parser.isSet("hotkey") ) {
+                QString hotkey = parser.value("hotkey");
+                if ( !hotkeyManager->registerHotkey(hotkey) )
+                    qFatal("Failed to set hotkey to %s.", hotkey.toLocal8Bit().constData());
+            } else if ( settings.contains("hotkey") ) {
+                QString hotkey = settings.value("hotkey").toString();
+                if ( !hotkeyManager->registerHotkey(hotkey) )
+                    qFatal("Failed to set hotkey to %s.", hotkey.toLocal8Bit().constData());
+            }
         }
         queryManager = new QueryManager(extensionManager);
         telemetry  = new Telemetry;
