@@ -354,7 +354,7 @@ void SettingsWidget::keyPressEvent(QKeyEvent *event) {
 
 /** ***************************************************************************/
 void SettingsWidget::closeEvent(QCloseEvent *event) {
-    if (hotkeyManager_->hotkeys().empty()) {
+    if (hotkeyManager_ && hotkeyManager_->hotkeys().empty()) {
         QMessageBox msgBox(QMessageBox::Warning, "Hotkey Missing",
                            "Hotkey is invalid, please set it. Press OK to go "\
                            "back to the settings.",
