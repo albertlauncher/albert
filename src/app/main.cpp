@@ -276,7 +276,7 @@ int main(int argc, char **argv) {
                     "); "))
             qFatal("Unable to create table 'activation': %s", q.lastError().text().toUtf8().constData());
 
-        if (!q.exec("DELETE FROM query WHERE julianday('now')-julianday(timestamp)>30; "))
+        if (!q.exec("DELETE FROM query WHERE julianday('now')-julianday(timestamp, 'unixepoch')>30; "))
             qWarning("Unable to cleanup 'query' table.");
 
         if (!q.exec("CREATE TABLE IF NOT EXISTS conf(key TEXT UNIQUE, value TEXT); "))
