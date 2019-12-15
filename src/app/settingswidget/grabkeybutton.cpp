@@ -51,7 +51,7 @@ void Core::GrabKeyButton::keyPressEvent(QKeyEvent *event) {
         // Modifier pressed -> update the label
         int key = event->key();
         int mods = event->modifiers();
-        if(key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta ) {
+        if(key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Super_L || key == Qt::Key_Super_R || key == Qt::Key_Meta ) {
             setText(QKeySequence((mods&~Qt::GroupSwitchModifier)|Qt::Key_Question).toString());//QTBUG-45568
             event->accept();
             return;
@@ -79,7 +79,7 @@ void Core::GrabKeyButton::keyReleaseEvent(QKeyEvent *event) {
     if ( waitingForHotkey_ ) {
         // Modifier released -> update the label
         int key = event->key();
-        if(key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta) {
+        if(key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Super_L || key == Qt::Key_Super_R || key == Qt::Key_Meta) {
             setText(QKeySequence((event->modifiers()&~Qt::GroupSwitchModifier)|Qt::Key_Question).toString());//QTBUG-45568
             event->accept();
             return;
