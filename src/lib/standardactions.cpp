@@ -89,6 +89,9 @@ void Core::ProcAction::activate()
 Core::TermAction::TermAction(const QString &text, const QStringList &commandline, const QString &workingDirectory, bool shell, Core::TermAction::CloseBehavior behavior)
     : ProcAction (text, commandline, workingDirectory), shell_(shell), behavior_(behavior)
 {
+    if (commandline_.isEmpty())
+        return;
+
     if (shell_){
 
         // Quote the input commandline since it's nested
@@ -117,8 +120,5 @@ Core::TermAction::TermAction(const QString &text, const QStringList &commandline
 
 void Core::TermAction::activate()
 {
-    if (commandline_.isEmpty())
-        return;
-
     ProcAction::activate();
 }
