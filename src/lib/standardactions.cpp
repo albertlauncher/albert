@@ -87,12 +87,12 @@ void Core::ProcAction::activate()
 
 /** **************************************************************************/
 Core::TermAction::TermAction(const QString &text, const QStringList &commandline, const QString &workingDirectory, bool shell, Core::TermAction::CloseBehavior behavior)
-    : ProcAction (text, commandline, workingDirectory), shell_(shell), behavior_(behavior)
+    : ProcAction (text, commandline, workingDirectory)
 {
     if (commandline_.isEmpty())
         return;
 
-    if (shell_){
+    if (shell){
 
         // Quote the input commandline since it's nested
         QStringList quotedCommandLine;
@@ -105,9 +105,9 @@ Core::TermAction::TermAction(const QString &text, const QStringList &commandline
             throw "Could not retrieve user shell";
 
         // Let standard shell handle flow control (syntax differs in shells, e.g. fish)
-        if (behavior_ == CloseBehavior::DoNotClose)
+        if (behavior == CloseBehavior::DoNotClose)
             command_ << "sh" << "-ic" << QString("%1 -ic '%2'; exec %1").arg(pwd->pw_shell, quotedCommandLine.join(' '));
-        else if (behavior_ == CloseBehavior::CloseOnSuccess)
+        else if (behavior == CloseBehavior::CloseOnSuccess)
             command_ << "sh" << "-ic" << QString("%1 -ic '%2' && sleep 1 || exec %1").arg(pwd->pw_shell, quotedCommandLine.join(' '));
         else  // behavior_ == CloseBehavior::CloseOnExit
             command_ << "sh" << "-ic" << QString("%1 -ic '%2'; sleep 1 ").arg(pwd->pw_shell, quotedCommandLine.join(' '));

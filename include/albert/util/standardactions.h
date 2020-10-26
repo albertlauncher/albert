@@ -99,9 +99,6 @@ public:
     void activate() override;
 
 private:
-    bool shell_;
-    CloseBehavior behavior_;
-
     // commandline without terminalCommand prepended to it
     QStringList command_;
 };
