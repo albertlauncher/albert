@@ -6,4 +6,5 @@ design
 .albertignore
 *.qmlc
 *.jsc
-
+.idea/
+cmake-build-debug/
