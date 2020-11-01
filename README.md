@@ -1,4 +1,4 @@
-# Albert launcher [![Build Status](https://api.travis-ci.org/albertlauncher/albert.svg?branch=dev)](https://travis-ci.org/albertlauncher/albert)
+# [UNMAINTAINED] Albert launcher [![Build Status](https://api.travis-ci.org/albertlauncher/albert.svg?branch=dev)](https://travis-ci.org/albertlauncher/albert)
 
 [![Telegram news channel](https://img.shields.io/badge/news%20channel-telegram-0088cc.svg?style=flat)](https://telegram.me/albertlauncher)
 [![Telegram community chat](https://img.shields.io/badge/chat-telegram-0088cc.svg?style=flat)](https://telegram.me/albert_launcher_community)
