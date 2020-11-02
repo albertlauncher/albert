@@ -168,6 +168,7 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
         {"RoxTerm", "roxterm -x"},
         {"Terminator", "terminator -x"},
         {"Termite", "termite -e"},
+        {"Tilix", "tilix -e"},
         {"UXTerm", "uxterm -e"},
         {"XTerm", "xterm -e"},
         {"urxvt", "urxvt -e"}
