@@ -170,13 +170,14 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
         {"XFCE-Terminal", "xfce4-terminal -x"},
         // Standalone terms
         {"Cool Retro Term", "cool-retro-term -e"},
+        {"QTerminal", "qterminal -e"},
         {"RoxTerm", "roxterm -x"},
         {"Terminator", "terminator -x"},
         {"Termite", "termite -e"},
         {"Tilix", "tilix -e"},
         {"UXTerm", "uxterm -e"},
-        {"XTerm", "xterm -e"},
-        {"urxvt", "urxvt -e"}
+        {"Urxvt", "urxvt -e"},
+        {"XTerm", "xterm -e"}
     };
 
     // Filter available terms by availability
