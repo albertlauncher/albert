@@ -66,13 +66,18 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
      */
 
     // HOTKEY
-    QSet<int> hks = hotkeyManager->hotkeys();
-    if (hks.size() < 1)
-        ui.grabKeyButton_hotkey->setText("Press to set hotkey");
-    else
-        ui.grabKeyButton_hotkey->setText(QKeySequence(*hks.begin()).toString()); // OMG
-    connect(ui.grabKeyButton_hotkey, &GrabKeyButton::keyCombinationPressed,
-            this, &SettingsWidget::changeHotkey);
+    if (hotkeyManager) {
+        QSet<int> hks = hotkeyManager->hotkeys();
+        if (hks.size() < 1)
+            ui.grabKeyButton_hotkey->setText("Press to set hotkey");
+        else
+            ui.grabKeyButton_hotkey->setText(QKeySequence(*hks.begin()).toString()); // OMG
+        connect(ui.grabKeyButton_hotkey, &GrabKeyButton::keyCombinationPressed,
+                this, &SettingsWidget::changeHotkey);
+    } else {
+        ui.grabKeyButton_hotkey->setVisible(false);
+        ui.label_hotkey->setVisible(false);
+    }
 
     // TRAY
     ui.checkBox_showTray->setChecked(trayIcon_->isVisible());
@@ -308,6 +313,7 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
 
 /** ***************************************************************************/
 void SettingsWidget::changeHotkey(int newhk) {
+    Q_ASSERT(hotkeyManager_);
     int oldhk = *hotkeyManager_->hotkeys().begin(); //TODO Make cool sharesdpointer design
 
     // Try to set the hotkey
@@ -349,7 +355,7 @@ void SettingsWidget::keyPressEvent(QKeyEvent *event) {
 
 /** ***************************************************************************/
 void SettingsWidget::closeEvent(QCloseEvent *event) {
-    if (hotkeyManager_->hotkeys().empty()) {
+    if (hotkeyManager_ && hotkeyManager_->hotkeys().empty()) {
         QMessageBox msgBox(QMessageBox::Warning, "Hotkey Missing",
                            "Hotkey is invalid, please set it. Press OK to go "\
                            "back to the settings.",
