@@ -9,8 +9,17 @@
 <!-- e.g. ppa:name, repository, from source, etc … -->
 
 #### Environment
-<!-- Albert version >= v0.14.22: albert --report -->
-<!-- Albert version <= v0.14.21: cat /etc/issue; uname -r; env | grep -e SESSION_TYPE -e DESKTOP; qmake-qt5 -v; albert -v -->
+
+<!-- Run the following commands and post the output here -->
+
+<details>
+albert --report
+<!-- <=v0.14.21: cat /etc/issue; uname -r; env | grep -e SESSION_TYPE -e DESKTOP; qmake-qt5 -v; albert -v -->
+</details>
+
+<details>
+qtdiag
+</details>
 
 #### Steps to reproduce
 
