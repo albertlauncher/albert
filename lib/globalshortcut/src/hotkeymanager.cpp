@@ -1,7 +1,7 @@
 // Copyright (C) 2014-2018 Manuel Schneider
 
 #include "globalshortcut/hotkeymanager.h"
-#if defined __linux__
+#if defined __linux__ || defined __FreeBSD__
 #include "hotkeymanager_x11.h"
 #elif defined __APPLE__
 #elif defined _WIN32
