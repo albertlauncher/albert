@@ -87,17 +87,12 @@ void Core::ProcAction::activate()
 
 /** **************************************************************************/
 Core::TermAction::TermAction(const QString &text, const QStringList &commandline, const QString &workingDirectory, bool shell, Core::TermAction::CloseBehavior behavior)
-    : ProcAction (text, commandline, workingDirectory), shell_(shell), behavior_(behavior)
-{
-
-}
-
-void Core::TermAction::activate()
+    : ProcAction (text, commandline, workingDirectory)
 {
     if (commandline_.isEmpty())
         return;
 
-    if (shell_){
+    if (shell){
 
         // Quote the input commandline since it's nested
         QStringList quotedCommandLine;
@@ -110,16 +105,23 @@ void Core::TermAction::activate()
             throw "Could not retrieve user shell";
 
         // Let standard shell handle flow control (syntax differs in shells, e.g. fish)
-        commandline_ = Core::ShUtil::split(terminalCommand);
-        if (behavior_ == CloseBehavior::DoNotClose)
-            commandline_ << "sh" << "-ic" << QString("%1 -ic '%2'; exec %1").arg(pwd->pw_shell, quotedCommandLine.join(' '));
-        else if (behavior_ == CloseBehavior::CloseOnSuccess)
-            commandline_ << "sh" << "-ic" << QString("%1 -ic '%2' && sleep 1 || exec %1").arg(pwd->pw_shell, quotedCommandLine.join(' '));
+        if (behavior == CloseBehavior::DoNotClose)
+            command_ << "sh" << "-ic" << QString("%1 -ic '%2'; exec %1").arg(pwd->pw_shell, quotedCommandLine.join(' '));
+        else if (behavior == CloseBehavior::CloseOnSuccess)
+            command_ << "sh" << "-ic" << QString("%1 -ic '%2' && sleep 1 || exec %1").arg(pwd->pw_shell, quotedCommandLine.join(' '));
         else  // behavior_ == CloseBehavior::CloseOnExit
-            commandline_ << "sh" << "-ic" << QString("%1 -ic '%2'; sleep 1 ").arg(pwd->pw_shell, quotedCommandLine.join(' '));
+            command_ << "sh" << "-ic" << QString("%1 -ic '%2'; sleep 1 ").arg(pwd->pw_shell, quotedCommandLine.join(' '));
     } else {
-        commandline_ = Core::ShUtil::split(terminalCommand) + commandline_;
+        command_ = commandline_;
     }
 
+}
+
+void Core::TermAction::activate()
+{
+    if (commandline_.isEmpty())
+        return;
+
+    commandline_ = Core::ShUtil::split(terminalCommand) + command_;
     ProcAction::activate();
 }
