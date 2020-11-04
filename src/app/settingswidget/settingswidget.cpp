@@ -163,6 +163,7 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
     std::vector<std::pair<QString, QString>> terms {
         // Distro terms
         {"Deepin Terminal", "deepin-terminal -x"},
+        {"Elementary Terminal", "io.elementary.terminal -x"},
         {"Gnome Terminal", "gnome-terminal --"},
         {"Konsole", "konsole -e"},
         {"LXTerminal", "lxterminal -e"},
