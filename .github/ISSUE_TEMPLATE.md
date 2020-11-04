@@ -24,7 +24,7 @@
 </details>
 
 <details>
-<summary>stdout</summary>
+<summary>Terminal output (stdout and stderr)</summary>
 <!-- Terminal output of cmake, make or albert for configure, build or runtime issues respectively -->
 </details>
 
