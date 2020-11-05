@@ -2,6 +2,7 @@
 * Update to the latest version.
 * DYOR, check for existing issues/FAQ
 * For support join the chats.
+* Please post extension requests in the wiki https://github.com/albertlauncher/albert/wiki/Extension-suggestions
 * If you really want to get help, be nice and provide the information below
 -->
 
