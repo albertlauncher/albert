@@ -19,6 +19,9 @@
 #include <QUrl>
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QLocalSocket>
+#if defined __linux__ || defined __freebsd__
+#include <QX11Info>
+#endif
 #include <csignal>
 #include <functional>
 #include "globalshortcut/hotkeymanager.h"
@@ -68,6 +71,9 @@ int main(int argc, char **argv) {
      *  For performance purposes this has been optimized by using a QCoreApp
      */
     QString socketPath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/socket";
+#if X_PROTOCOL
+    socketPath.append(QString::number(QX11Info::appScreen()));
+#endif
     {
         QCoreApplication *capp = new QCoreApplication(argc, argv);
         capp->setApplicationName("albert");
