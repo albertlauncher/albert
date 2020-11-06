@@ -156,8 +156,8 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
 
 
     // TERM CMD (TOOOOOOOOOOODOOOOOOOOOO CENTRALIZE THIS)
-    // Define the (global extern) terminal command
-    terminalCommand = QSettings(qApp->applicationName()).value(CFG_TERM, QString()).toString();
+
+    Q_ASSERT(terminalCommand.isEmpty());
 
     // Available terms
     std::vector<std::pair<QString, QString>> terms {
@@ -188,9 +188,20 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
         else
             ++it;
 
-    // if terminalCommand is not set, use the first found
-    if (terminalCommand.isNull())
-        terminalCommand = terms[0].second;
+    if (terms.empty())
+        qWarning() << "No terminals found.";
+
+    // Set the terminal command
+    terminalCommand = QSettings(qApp->applicationName()).value(CFG_TERM, QString()).toString();
+    if (terminalCommand.isNull()){
+        if (terms.empty()){
+            qCritical() << "No terminal command set. Terminal actions wont work as expected!";
+            terminalCommand = "";
+        } else {
+            terminalCommand = terms[0].second;
+            qWarning() << "No terminal command set. Using" << terminalCommand;
+        }
+    }
 
     // Fill checkbox
     for (const auto & t : terms)
