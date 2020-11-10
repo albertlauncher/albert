@@ -88,6 +88,7 @@ find_package(Qt5 5.5.0
         Network
         Sql
         Widgets
+        X11Extras
     OPTIONAL_COMPONENTS
         Charts
 )
@@ -118,6 +119,7 @@ target_link_libraries(${TARGET_NAME_BIN}
         Qt5::Network
         Qt5::Sql
         Qt5::Widgets
+        Qt5::X11Extras
         albert::lib
         globalshortcut
         xdg

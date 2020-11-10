@@ -1,0 +1,31 @@
+FROM ubuntu:16.04
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+ && apt-get -qq update \
+ && apt-get install --no-install-recommends -y \
+        build-essential \
+        cmake \
+        git \
+        libmuparser-dev \
+        libqalculate-dev \
+        libqt5svg5-dev \
+        libqt5x11extras5-dev \
+        python3-dev \
+        qtbase5-dev \
+        qtdeclarative5-dev \
+        unzip \
+        virtualbox \
+        wget
+
+# Install virtualbox headers
+RUN mkdir /tmp/vbox \
+ && cd /tmp/vbox \
+ && wget -q http://download.virtualbox.org/virtualbox/5.2.22/VirtualBoxSDK-5.2.22-126460.zip \
+ && unzip VirtualBoxSDK-5.2.22-126460.zip \
+ && mv sdk/bindings/xpcom/include /usr/lib/virtualbox/sdk/bindings/xpcom \
+ && cd - \
+ && rm -rf /tmp/vbox
+
+RUN git config --global http.sslverify false 
+
+CMD ["/bin/sh", "-c", "git clone --recursive git://github.com/albertlauncher/albert.git /albert && cd `mktemp -d` && cmake /albert -DBUILD_VIRTUALBOX=OFF -DBUILD_WITH_QTCHARTS=OFF && make"]

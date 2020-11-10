@@ -1,14 +1,14 @@
 FROM ubuntu:18.04
 
-# Prepare system
 RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get -qq update \
  && apt-get install --no-install-recommends -y \
+        build-essential \
         cmake \
-        g++ \
+        git \
         libmuparser-dev \
-        libqt5charts5-dev \
         libqalculate-dev \
+        libqt5charts5-dev \
         libqt5svg5-dev \
         libqt5x11extras5-dev \
         python3-dev \
@@ -16,12 +16,10 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         qtdeclarative5-dev \
         unzip \
         virtualbox \
-        wget \
- && true
+        wget 
 
 # Install virtualbox headers
-RUN true \
- && mkdir /tmp/vbox \
+RUN mkdir /tmp/vbox \
  && cd /tmp/vbox \
  && wget -q http://download.virtualbox.org/virtualbox/5.2.22/VirtualBoxSDK-5.2.22-126460.zip \
  && unzip VirtualBoxSDK-5.2.22-126460.zip \
@@ -29,10 +27,6 @@ RUN true \
  && cd - \
  && rm -rf /tmp/vbox
 
-COPY . /srv/albert/src/
+RUN git config --global http.sslverify false 
 
-WORKDIR /srv/albert/build/
-RUN true \
- && cmake /srv/albert/src/ -DCMAKE_BUILD_TYPE=Debug \
- && make \
- && make install
+CMD ["/bin/sh", "-c", "git clone --recursive git://github.com/albertlauncher/albert.git /albert && cd `mktemp -d` && cmake /albert -DBUILD_VIRTUALBOX=OFF && make"]
