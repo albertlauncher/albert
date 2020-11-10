@@ -1,22 +1,18 @@
-sudo: required
-
-language: cpp
+os: linux
+dist: xenial
 services:
   - docker
 
-before_install:
-  - docker pull ubuntu:16.04
-  - docker pull ubuntu:18.04
-  - docker pull ubuntu:20.04
-
+# https://www.digitalrooster.dev/news/travis-updated-docker/
 script:
-  - docker build . -f Dockerfile.ubuntu1604
-  - docker build . -f Dockerfile.ubuntu1804
-  - docker build . -f Dockerfile.ubuntu2004
+  - P=ubuntu1604 && docker build . -t $P -f .travis/Dockerfile.$P && docker run $P
+  - P=ubuntu1804 && docker build . -t $P -f .travis/Dockerfile.$P && docker run $P
+  - P=ubuntu2004 && docker build . -t $P -f .travis/Dockerfile.$P && docker run --privileged $P
+  - P=ubuntu2010 && docker build . -t $P -f .travis/Dockerfile.$P && docker run --privileged $P
 
-#notifications:
-#  irc:
-#    channels:
-#      - "chat.freenode.net#albertlauncher"
-#    on_success: never  # default: always
-#    on_failure: always # default: always
+notifications:
+  irc:
+    channels:
+      - "chat.freenode.net#albertlauncher"
+    on_success: change
+    on_failure: always
