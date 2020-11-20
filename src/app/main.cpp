@@ -374,7 +374,7 @@ int main(int argc, char **argv) {
         docsAction->setIcon(app->style()->standardIcon(QStyle::SP_DialogHelpButton));
         trayIconMenu->addAction(docsAction);
         QObject::connect(docsAction, &QAction::triggered, [](){
-            QDesktopServices::openUrl(QUrl("https://albertlauncher.github.io/docs/"));
+            QDesktopServices::openUrl(QUrl("https://albertlauncher.github.io/"));
         });
 
         trayIconMenu->addSeparator();
