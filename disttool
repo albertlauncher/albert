@@ -1,0 +1,125 @@
+#! /usr/bin/env python3
+
+
+import sys
+import argparse
+import datetime
+from subprocess import run
+
+
+def create_changelog(args) -> str:
+    plugins_root = f"{args.root}/plugins"
+    modules_root = f"{args.root}/plugins/python/share/modules"
+
+    latest = run(["git", "describe", "--tags", "--abbrev=0"], capture_output=True).stdout.decode().strip()
+
+    albert_log = run(["git", "-C", args.root, "log", "--pretty=format:* %s", f"{latest}..dev"], capture_output=True).stdout.decode().strip()
+
+    begin = run(["git", "-C", args.root, "ls-tree", latest, plugins_root], capture_output=True).stdout.decode().strip().split()[2]
+    plugin_log = run(["git", "-C", plugins_root, "log", "--pretty=format:* %s", f"{begin}..master"], capture_output=True).stdout.decode().strip()
+
+    begin = run(["git", "-C", plugins_root, "ls-tree", begin, modules_root], capture_output=True).stdout.decode().strip().split()[2]
+    python_log = run(["git", "-C", modules_root, "log", "--pretty=format:* %s", f"{begin}..master"], capture_output=True).stdout.decode().strip()
+
+    return f"[albert]\n{albert_log}\n\n[plugins]\n{plugin_log}\n\n[python]\n{python_log}"
+
+
+def test_build(args):
+    run(["docker", "build", "."], cwd=args.root).check_returncode()
+
+
+def release(args):
+    import re
+    if not re.match(r"^[0-9]+\.[0-9]+\.[0-9]+$", args.version):
+        print("Expected version number as parameter: major.minor.patch")
+        sys.exit(1)
+
+    print("Don't forget to merge ready PRs.")
+    print("Don't forget to updated the 'python' submodule in the Python plugin.")
+    print("Don't forget to updated the 'plugins' submodule.")
+    v = input("Confirm the version number: ")
+    if args.version != v:
+        print("Version mismatch.")
+        sys.exit(1)
+
+    atomic_changelog = f"{args.root}/changelog_v{args.version}"
+
+    with open(atomic_changelog, 'w') as file:
+        file.write(create_changelog(args))
+
+    print("Changelog created from git logs. Edit it to be meaningful to humans.")
+    input("Press Enter to continue...")
+    run(["vim", atomic_changelog]).check_returncode()
+
+    with open(atomic_changelog, 'r') as file:
+        changelog = file.read()
+
+    if "y".startswith(input("Create news post? [Y/n] ").lower()):
+        with open(f"{datetime.date.today().strftime('%Y-%m-%d')}-albert-v{args.version}-released.md", 'w') as file:
+            file.write(f"""---
+layout: page
+title:  "Albert v{args.version} released"
+date: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M +0000")}
+---
+
+{changelog}
+
+Check the github repositories for details.
+""")
+        print("News post created. Don't forget to publish it.")
+
+    if "y".startswith(input("Update the changelog? [Y/n] ").lower()):
+        with open(f"{args.root}/dist/albert.changes", 'r') as file:
+            old_changelog = file.read()
+
+        with open(f"{args.root}/dist/albert.changes", 'w') as file:
+            file.write(f"v{args.version} ({datetime.date.today().strftime('%Y-%m-%d')})\n\n{changelog}\n\n{old_changelog}")
+
+        print("Changelog updated.")
+
+    run(["sed", "-i.bak", f"s/^project.*$/project(albert VERSION {args.version})/", f"{args.root}/CMakeLists.txt"], cwd=args.root).check_returncode()
+    print("Project version updated.")
+
+    if "y".startswith(input("Commit, tag, rebase master and push? [Y/n] ").lower()):
+        run(["git", "add", f"{args.root}/dist/albert.changes", f"{args.root}/CMakeLists.txt"], cwd=args.root).check_returncode()
+        run(["git", "commit", "-m", f"v{args.version}"], cwd=args.root).check_returncode()
+        run(["git", "tag", f"v{args.version}"], cwd=args.root).check_returncode()
+        run(["git", "rebase", "origin/master", "dev"], cwd=args.root).check_returncode()
+
+    if "yes".startswith(input("Commit, tag, rebase master and push? [yes/NO] ").lower()):
+        run(["git", "push", "tags", "dev", "master"], cwd=args.root).check_returncode()
+    else:
+        print("If everything is ready do a `git push --tags dev master`")
+
+
+def main():
+    p = argparse.ArgumentParser()
+    sps = p.add_subparsers()
+
+    sp = sps.add_parser('test', help='Test build using docker.')
+    sp.set_defaults(func=test_build)
+
+    sp = sps.add_parser('release', help="Release a new version.")
+    sp.add_argument('version', type=str, help="The sematic version.")
+    sp.set_defaults(func=release)
+
+    args = p.parse_args()
+    if not hasattr(args, "func"):
+        p.print_help()
+        sys.exit(1)
+
+    sha = run(["git", "rev-list", "--parents", "HEAD"], capture_output=True).stdout.decode().strip().split("\n")[-1]
+    if sha != '4d409110b9771e688acbb995422541f03ef0d8a7':
+        print("Working dir is not the albert repository")
+        sys.exit(1)
+
+    args.root = run(["git", "rev-parse", "--show-toplevel"], capture_output=True).stdout.decode().strip()
+
+    try:
+        args.func(args)
+    except KeyboardInterrupt:
+        print("\nBye.")
+
+
+if __name__ == "__main__":
+    main()
