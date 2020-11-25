@@ -52,7 +52,7 @@ def release(args):
     run(["vim", atomic_changelog]).check_returncode()
 
     with open(atomic_changelog, 'r') as file:
-        changelog = file.read()
+        changelog = file.read().strip()
 
     if "y".startswith(input("Create news post? [Y/n] ").lower()):
         with open(f"{datetime.date.today().strftime('%Y-%m-%d')}-albert-v{args.version}-released.md", 'w') as file:
@@ -62,17 +62,17 @@ title:  "Albert v{args.version} released"
 date: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M +0000")}
 ---
 
-{changelog}
+{changelog.strip()}
 
 Check the github repositories for details.
 """)
         print("News post created. Don't forget to publish it.")
 
     if "y".startswith(input("Update the changelog? [Y/n] ").lower()):
-        with open(f"{args.root}/dist/albert.changes", 'r') as file:
+        with open(f"{args.root}/CHANGELOG.md", 'r') as file:
             old_changelog = file.read()
 
-        with open(f"{args.root}/dist/albert.changes", 'w') as file:
+        with open(f"{args.root}/CHANGELOG.md", 'w') as file:
             file.write(f"v{args.version} ({datetime.date.today().strftime('%Y-%m-%d')})\n\n{changelog}\n\n{old_changelog}")
 
         print("Changelog updated.")
@@ -81,15 +81,15 @@ Check the github repositories for details.
     print("Project version updated.")
 
     if "y".startswith(input("Commit, tag, rebase master and push? [Y/n] ").lower()):
-        run(["git", "add", f"{args.root}/dist/albert.changes", f"{args.root}/CMakeLists.txt"], cwd=args.root).check_returncode()
+        run(["git", "add", f"{args.root}/CHANGELOG.md", f"{args.root}/CMakeLists.txt"], cwd=args.root).check_returncode()
         run(["git", "commit", "-m", f"v{args.version}"], cwd=args.root).check_returncode()
         run(["git", "tag", f"v{args.version}"], cwd=args.root).check_returncode()
         run(["git", "rebase", "origin/master", "dev"], cwd=args.root).check_returncode()
 
     if "yes".startswith(input("Commit, tag, rebase master and push? [yes/NO] ").lower()):
-        run(["git", "push", "tags", "dev", "master"], cwd=args.root).check_returncode()
+        run(["git", "push", "--tags", "--atomic", "origin", "dev", "master"], cwd=args.root).check_returncode()
     else:
-        print("If everything is ready do a `git push --tags dev master`")
+        print("If everything is ready do a `git push --tags --atomic origin dev master`")
 
 
 def main():

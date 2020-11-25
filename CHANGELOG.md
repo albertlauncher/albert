@@ -1,3 +1,26 @@
+v0.16.2 (2020-11-26)
+
+[albert]
+* Allow multiple instances of albert on different X sessions
+* Fix super key not registering
+* Add terms: Elementary, Tilix, QTerminal, Termite
+* Fix build on FreeBSD
+* Dont show fallbacks on triggered queries
+
+[plugins]
+* [Applications] Index desktop files on desktop
+* [firefox] Rework v2
+* [ssh] Respect the Include keyword
+* [ssh] Allow hyphens to be part of hostnames
+* [chromium] Add brave-browser to list of chromium based browsers.
+
+[python]
+* Add an offline emoji picker
+* Add bitwarden extension
+* Add xkcd plugin as submodule
+* Add new extension: node.js evaluator
+* Add new extension: php evaluator
+
 v0.16.1 (2018-12-31)
 
 * [albert] Fix default plugin lookup path
