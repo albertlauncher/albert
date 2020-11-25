@@ -6,4 +6,4 @@ design
 .albertignore
 *.qmlc
 *.jsc
-
+.DS_Store

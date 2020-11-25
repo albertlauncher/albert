@@ -5,10 +5,7 @@ services:
 
 # https://www.digitalrooster.dev/news/travis-updated-docker/
 script:
-  - P=ubuntu1604 && docker build . -t $P -f .travis/Dockerfile.$P && docker run $P
-  - P=ubuntu1804 && docker build . -t $P -f .travis/Dockerfile.$P && docker run $P
-  - P=ubuntu2004 && docker build . -t $P -f .travis/Dockerfile.$P && docker run --privileged $P
-  - P=ubuntu2010 && docker build . -t $P -f .travis/Dockerfile.$P && docker run --privileged $P
+  - docker build .
 
 notifications:
   irc:

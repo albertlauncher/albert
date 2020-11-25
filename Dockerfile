@@ -1,9 +1,9 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get -qq update \
  && apt-get install --no-install-recommends -y \
-        build-essential \
+        clang \
         cmake \
         git \
         libmuparser-dev \
@@ -29,4 +29,8 @@ RUN mkdir /tmp/vbox \
 
 RUN git config --global http.sslverify false 
 
-CMD ["/bin/sh", "-c", "git clone --recursive git://github.com/albertlauncher/albert.git /albert && cd `mktemp -d` && cmake /albert -DBUILD_VIRTUALBOX=OFF && make"]
+COPY . /src
+WORKDIR /build
+ENV TERM="xterm-256color"
+RUN CXX=/usr/bin/clang++ && rm -rf * && cmake /src && cmake --build . --verbose
+#RUN rm -rf * && cmake /src && cmake --build . --verbose
