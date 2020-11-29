@@ -12,4 +12,6 @@ notifications:
     channels:
       - "chat.freenode.net#albertlauncher"
     on_success: change
-    on_failure: always
+    on_failure: change
+    template:
+      - "%{repository_name#%{build_number} (%{commit}) : %{message}\n\n%{build_url}"
