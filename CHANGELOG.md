@@ -1,3 +1,8 @@
+v0.16.3 (2020-12-03)
+
+* Hotfix for #955
+* Archive defunct CoinMarketCap and Bitfinex extensions
+
 v0.16.2 (2020-11-26)
 
 [albert]

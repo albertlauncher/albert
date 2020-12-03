@@ -25,10 +25,14 @@ def create_changelog(args) -> str:
 
 
 def test_build(args):
-    run(["docker", "build", "."], cwd=args.root).check_returncode()
+    run(["docker", "build", "."], cwd=args.root)
 
 
 def release(args):
+
+    if args.version[0] == 'v':
+        args.version = args.version[1:]
+
     import re
     if not re.match(r"^[0-9]+\.[0-9]+\.[0-9]+$", args.version):
         print("Expected version number as parameter: major.minor.patch")
@@ -37,8 +41,12 @@ def release(args):
     print("Don't forget to merge ready PRs.")
     print("Don't forget to updated the 'python' submodule in the Python plugin.")
     print("Don't forget to updated the 'plugins' submodule.")
+
+    if "y".startswith(input("Shall I run a test build in docker? [Y/n] ").lower()):
+        test_build(args)
+
     v = input("Confirm the version number: ")
-    if args.version != v:
+    if args.version != (v[1:] if v[0] == 'v' else v):
         print("Version mismatch.")
         sys.exit(1)
 
@@ -64,7 +72,7 @@ date: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M%z")}
 
 {changelog.strip()}
 
-Check the github repositories for details.
+Check the GitHub repositories for details.
 """)
         print("News post created. Don't forget to publish it.")
 
@@ -80,16 +88,12 @@ Check the github repositories for details.
     run(["sed", "-i.bak", f"s/^project.*$/project(albert VERSION {args.version})/", f"{args.root}/CMakeLists.txt"], cwd=args.root).check_returncode()
     print("Project version updated.")
 
-    if "y".startswith(input("Commit, tag, rebase master and push? [Y/n] ").lower()):
+    if "yes".startswith(input("Stage, commit, tag, rebase master and push? [yes/NO]").lower()):
         run(["git", "add", f"{args.root}/CHANGELOG.md", f"{args.root}/CMakeLists.txt"], cwd=args.root).check_returncode()
         run(["git", "commit", "-m", f"v{args.version}"], cwd=args.root).check_returncode()
         run(["git", "tag", f"v{args.version}"], cwd=args.root).check_returncode()
-        run(["git", "rebase", "origin/master", "dev"], cwd=args.root).check_returncode()
-
-    if "yes".startswith(input("Commit, tag, rebase master and push? [yes/NO] ").lower()):
+        run(["git", "rebase", "dev", "master"], cwd=args.root).check_returncode()
         run(["git", "push", "--tags", "--atomic", "origin", "dev", "master"], cwd=args.root).check_returncode()
-    else:
-        print("If everything is ready do a `git push --tags --atomic origin dev master`")
 
 
 def main():
