@@ -440,6 +440,8 @@ p, li { white-space: pre-wrap; }
   <tabstop>lineEdit_term</tabstop>
   <tabstop>checkBox_showTray</tabstop>
   <tabstop>checkBox_incrementalSort</tabstop>
+  <tabstop>checkBox_autostart</tabstop>
+  <tabstop>checkBox_telemetry</tabstop>
   <tabstop>pushButton_clearHistory</tabstop>
   <tabstop>listView_plugins</tabstop>
  </tabstops>
