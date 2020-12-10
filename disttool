@@ -94,6 +94,11 @@ Check the GitHub repositories for details.
         run(["git", "tag", f"v{args.version}"], cwd=args.root).check_returncode()
         run(["git", "rebase", "dev", "master"], cwd=args.root).check_returncode()
         run(["git", "push", "--tags", "--atomic", "origin", "dev", "master"], cwd=args.root).check_returncode()
+    
+    print("Clean up…")
+    run(["rm", atomic_changelog])
+    run(["rm", "CMakeLists.txt.bak"])
+
 
 
 def main():
