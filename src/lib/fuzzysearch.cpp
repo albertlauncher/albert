@@ -60,7 +60,7 @@ Core::FuzzySearch::FuzzySearch(uint q, double d) : q_(q), delta_(d) {
 Core::FuzzySearch::FuzzySearch(const Core::PrefixSearch &rhs, uint q, double d)
     : PrefixSearch(rhs), q_(q), delta_(d) {
     // Iterate over the inverted index and build the qGramindex
-    for ( const std::pair<QString,std::set<uint>> &invertedIndexEntry : invertedIndex_ ) {
+    for ( const auto &invertedIndexEntry : invertedIndex_ ) {
         QString spaced = QString(q_-1,' ').append(invertedIndexEntry.first);
         for (uint i = 0 ; i < static_cast<uint>(invertedIndexEntry.first.size()); ++i)
             ++qGramIndex_[spaced.mid(i,q_)][invertedIndexEntry.first];
@@ -134,7 +134,7 @@ vector<shared_ptr<Core::IndexableItem> > Core::FuzzySearch::search(const QString
 
         // Get the words referenced by each qGram and count the references
         map<QString,uint> wordMatches;
-        for ( const pair<QString,uint> &qGram : qGrams ) {
+        for ( const auto &qGram : qGrams ) {
 
             // Find the qGram in the index, skip if nothing found
             decltype(qGramIndex_)::const_iterator qGramIndexIt = qGramIndex_.find(qGram.first);
@@ -142,7 +142,7 @@ vector<shared_ptr<Core::IndexableItem> > Core::FuzzySearch::search(const QString
                 continue;
 
             // Iterate over the set of words referenced by this qGram
-            for (const pair<QString,uint> &indexEntry : qGramIndexIt->second) {
+            for (const auto &indexEntry : qGramIndexIt->second) {
                 // CRUCIAL: The match can contain only the commom amount of qGrams
                 wordMatches[indexEntry.first] += std::min(qGram.second, indexEntry.second);
             }
@@ -150,7 +150,7 @@ vector<shared_ptr<Core::IndexableItem> > Core::FuzzySearch::search(const QString
 
         // Unite the items referenced by the words accumulating their #matches
         map<uint,uint> results; // id, count
-        for (const pair<QString,uint> &wordMatch : wordMatches) {
+        for (const auto &wordMatch : wordMatches) {
 
             /*
              * Do some kind of (cheap) preselection by mathematical bound
@@ -218,7 +218,7 @@ vector<shared_ptr<Core::IndexableItem> > Core::FuzzySearch::search(const QString
             finalResult.emplace_back(r->first, accMatches);
         }
     } else {// Else do it without intersction
-        for ( const pair<uint,uint> &result : resultsPerWord[0] )
+        for ( const auto &result : resultsPerWord[0] )
             finalResult.emplace_back(result.first, result.second);
     }
 
