@@ -16,14 +16,16 @@ class EXPORT_CORE StandardIndexItem final : public IndexableItem
 {
 public:
 
-    StandardIndexItem(QString id = QString(),
-                 QString iconPath = QString(),
-                 QString text = QString(),
-                 QString subtext = QString(),
-                 QString completion = QString(),
-                 Urgency urgency = Item::Urgency::Normal,
-                 std::vector<std::shared_ptr<Action>> actions = std::vector<std::shared_ptr<Action>>(),
-                 std::vector<Core::IndexableItem::IndexString> indexStrings = std::vector<Core::IndexableItem::IndexString>());
+    StandardIndexItem(
+        QString id = QString(),
+        QString iconPath = QString(),
+        QString text = QString(),
+        QString subtext = QString(),
+        QString completion = QString(),
+        Urgency urgency = Item::Urgency::Normal,
+        std::vector<std::shared_ptr<Action>> actions = std::vector<std::shared_ptr<Action>>(),
+        std::vector<Core::IndexableItem::IndexString> indexStrings = std::vector<Core::IndexableItem::IndexString>()
+    );
 
     QString id() const override;
     void setId(QString id);

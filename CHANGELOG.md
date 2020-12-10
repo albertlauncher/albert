@@ -1,3 +1,19 @@
+v0.16.4 (2020-12-10)
+
+Hotfix for #959
+
+[albert]
+* Fix tab order. Closes #866
+* Update stale.yml
+
+[plugins]
+* [chromium] Chromium v1.1
+
+[python]
+* [docker] New extension prototype
+* [timer] Use dbus instead of notify-send
+* [units] v1.2 including to time conversion
+
 v0.16.3 (2020-12-03)
 
 * Hotfix for #955
