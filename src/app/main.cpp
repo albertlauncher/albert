@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
     parser.addOption(QCommandLineOption({"k", "hotkey"}, "Overwrite the hotkey to use.", "hotkey"));
     parser.addOption(QCommandLineOption({"p", "plugin-dirs"}, "Set the plugin dirs to use. Comma separated.", "directory"));
     parser.addOption(QCommandLineOption({"r", "report"}, "Print issue report."));
-    parser.addPositionalArgument("command", "Command to send to a running instance, if any. (show, hide, toggle)", "[command]");
+    parser.addPositionalArgument("command", "Command to send to a running instance, if any. (show, hide, toggle, preferences, restart, quit)", "lbert -h");
 
     /*
      *  IPC/SINGLETON MECHANISM (Client)
@@ -374,9 +374,18 @@ int main(int argc, char **argv) {
 
         trayIconMenu->addSeparator();
 
+        QAction* restartAction = new QAction("Restart", trayIconMenu.get());
+        QObject::connect(restartAction, &QAction::triggered, [](){
+            qApp->quit();
+            QStringList cmdline(qApp->arguments());
+            qDebug() << "Restarting:" << cmdline;
+            qDebug() << QProcess::startDetached(cmdline.takeFirst(), cmdline);
+        });
+        trayIconMenu->addAction(restartAction);
+
         QAction* quitAction = new QAction("Quit", trayIconMenu.get());
-        trayIconMenu->addAction(quitAction);
         QObject::connect(quitAction, &QAction::triggered, qApp, &QApplication::quit);
+        trayIconMenu->addAction(quitAction);
 
         trayIcon->setContextMenu(trayIconMenu.get());
 
@@ -456,13 +465,28 @@ int main(int argc, char **argv) {
                     }
                     frontendManager->currentFrontend()->setVisible(true);
                     socket->write("Application set visible.");
-                } else if ( msg == "hide") {
+                }
+                else if ( msg == "hide") {
                     frontendManager->currentFrontend()->setVisible(false);
                     socket->write("Application set invisible.");
-                } else if ( msg == "toggle") {
+                }
+                else if ( msg == "toggle") {
                     frontendManager->currentFrontend()->toggleVisibility();
                     socket->write("Visibility toggled.");
-                } else
+                }
+                else if ( msg == "preferences") {
+                    settingsAction->trigger();
+                    socket->write("Preferences opened.");
+                }
+                else if ( msg == "restart") {
+                    quitAction->trigger();
+                    socket->write("Albert restart triggered.");
+                }
+                else if ( msg == "quit") {
+                    quitAction->trigger();
+                    socket->write("Albert shutdown triggered.");
+                }
+                else
                     socket->write("Command not supported.");
             }
             socket->flush();
@@ -479,6 +503,14 @@ int main(int argc, char **argv) {
                 Item::Urgency::Normal,
                 std::initializer_list<shared_ptr<Action>>{
                 make_shared<FuncAction>("Restart Albert", [=](){ settingsAction->trigger(); })
+                }
+            ),
+            make_shared<StandardItem>(
+                "restart-albert", ":app_icon", "Restart Albert",
+                "Restart this application.", "Restart Albert",
+                Item::Urgency::Normal,
+                std::initializer_list<shared_ptr<Action>>{
+                    make_shared<FuncAction>("Restart Albert", [=](){ restartAction->trigger(); })
                 }
             ),
             make_shared<StandardItem>(
