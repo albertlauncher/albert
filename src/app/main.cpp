@@ -13,6 +13,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QSqlRecord>
+#include <QProcess>
 #include <QStandardPaths>
 #include <QTime>
 #include <QTimer>
@@ -31,27 +32,30 @@
 #include "frontendmanager.h"
 #include "pluginspec.h"
 #include "querymanager.h"
+#include "albert/queryhandler.h"
+#include "albert/util/standarditem.h"
+#include "albert/util/standardactions.h"
 #include "settingswidget/settingswidget.h"
 #include "telemetry.h"
 #include "trayicon.h"
 using namespace Core;
+using namespace std;
 using namespace GlobalShortcut;
 
 static void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message);
-static void dispatchMessage();
 static void printReport();
+struct CoreQueryHandler : public Core::QueryHandler
+{
+    CoreQueryHandler(const vector<shared_ptr<Item>>& items)
+        : Core::QueryHandler("org.albert"), items(items){}
 
-// Core components
-static QApplication     *app;
-static ExtensionManager *extensionManager;
-static FrontendManager  *frontendManager;
-static QueryManager     *queryManager;
-static HotkeyManager    *hotkeyManager;
-static SettingsWidget   *settingsWidget;
-static TrayIcon         *trayIcon;
-static Telemetry        *telemetry;
-static QMenu            *trayIconMenu;
-static QLocalServer     *localServer;
+    void handleQuery(Core::Query * query) const override {
+        for (auto item : items)
+            if (!query->string().isEmpty() && item->text().toLower().startsWith(query->string().toLower()))
+                  query->addMatch(item, static_cast<uint>((query->string().length() / item->text().length()) * numeric_limits<uint>::max()));
+    }
+    vector<shared_ptr<Item>> items;
+};
 
 
 int main(int argc, char **argv) {
@@ -113,6 +117,20 @@ int main(int argc, char **argv) {
     /*
      *  INITIALIZE APPLICATION
      */
+
+    unique_ptr<QApplication> app;
+    unique_ptr<FrontendManager> frontendManager;
+    unique_ptr<ExtensionManager> extensionManager;
+    unique_ptr<HotkeyManager> hotkeyManager;
+    unique_ptr<QueryManager> queryManager;
+    unique_ptr<SettingsWidget> settingsWidget;
+
+    unique_ptr<CoreQueryHandler> coreQueryHandler;
+    unique_ptr<TrayIcon> trayIcon;
+    unique_ptr<QMenu> trayIconMenu;
+    unique_ptr<Telemetry> telemetry;
+    unique_ptr<QLocalServer> localServer;
+
     {
         QSettings::setPath(QSettings::defaultFormat(), QSettings::UserScope,
                            QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation));
@@ -129,7 +147,7 @@ int main(int argc, char **argv) {
             QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
         QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif
-        app = new QApplication(argc, argv);
+        app = make_unique<QApplication>(argc, argv);
         app->setApplicationName("albert");
         app->setApplicationDisplayName("Albert");
         app->setApplicationVersion(ALBERT_VERSION);
@@ -137,26 +155,6 @@ int main(int argc, char **argv) {
         QString icon = XDG::IconLookup::iconPath("albert");
         if ( icon.isEmpty() ) icon = ":app_icon";
         app->setWindowIcon(QIcon(icon));
-
-
-
-        /*
-         *  IPC/SINGLETON MECHANISM (Server)
-         */
-
-        // Remove pipes potentially leftover after crash
-        QLocalServer::removeServer(socketPath);
-
-        // Create server and handle messages
-        qDebug() << "Creating IPC server";
-        localServer = new QLocalServer;
-        if ( !localServer->listen(socketPath) )
-            qWarning() << "Local server could not be created. IPC will not work! Reason:"
-                       << localServer->errorString();
-
-        // Handle incoming messages
-        QObject::connect(localServer, &QLocalServer::newConnection, dispatchMessage);
-
 
 
         /*
@@ -171,7 +169,6 @@ int main(int argc, char **argv) {
         for ( const QString &location : {dataLocation, cacheLocation, configLocation} )
             if (!QDir(location).mkpath("."))
                 qFatal("Could not create dir: %s",  qPrintable(location));
-
 
 
         /*
@@ -329,12 +326,12 @@ int main(int argc, char **argv) {
 #endif
         }
 
-        frontendManager = new FrontendManager(pluginDirs);
-        extensionManager = new ExtensionManager(pluginDirs);
+        frontendManager = make_unique<FrontendManager>(pluginDirs);
+        extensionManager = make_unique<ExtensionManager>(pluginDirs);
         extensionManager->reloadExtensions();
 
         if ( !QGuiApplication::platformName().contains("wayland") )
-            hotkeyManager = new HotkeyManager;
+            hotkeyManager = make_unique<HotkeyManager>();
 
         if ( hotkeyManager ) {
             if ( parser.isSet("hotkey") ) {
@@ -347,43 +344,41 @@ int main(int argc, char **argv) {
                     qFatal("Failed to set hotkey to %s.", hotkey.toLocal8Bit().constData());
             }
         }
-        queryManager = new QueryManager(extensionManager);
-        telemetry  = new Telemetry;
-        trayIcon = new TrayIcon;
-        trayIconMenu  = new QMenu;
-        settingsWidget = new SettingsWidget(extensionManager,
-                                            frontendManager,
-                                            queryManager,
-                                            hotkeyManager,
-                                            trayIcon,
-                                            telemetry);
+        queryManager = make_unique<QueryManager>(extensionManager.get());
+        telemetry  = make_unique<Telemetry>();
+        trayIcon = make_unique<TrayIcon>();
+        trayIconMenu  = make_unique<QMenu>();
+        settingsWidget = make_unique<SettingsWidget>(extensionManager.get(),
+                                                     frontendManager.get(),
+                                                     queryManager.get(),
+                                                     hotkeyManager.get(),
+                                                     trayIcon.get(),
+                                                     telemetry.get());
 
-        QAction* showAction     = new QAction("Show", trayIconMenu);
-        showAction->setIcon(app->style()->standardIcon(QStyle::SP_TitleBarMaxButton));
+
+        QAction* showAction = new QAction("Show", trayIconMenu.get());
         trayIconMenu->addAction(showAction);
 
-        QAction* settingsAction = new QAction("Settings", trayIconMenu);
-        settingsAction->setIcon(app->style()->standardIcon(QStyle::SP_FileDialogDetailedView));
-        trayIconMenu->addAction(settingsAction);
-        QObject::connect(settingsAction, &QAction::triggered, [](){
+        QAction* settingsAction = new QAction("Settings", trayIconMenu.get());
+        QObject::connect(settingsAction, &QAction::triggered, [&](){
             settingsWidget->show();
             settingsWidget->raise();
         });
+        trayIconMenu->addAction(settingsAction);
 
-        QAction* docsAction = new QAction("Open docs", trayIconMenu);
-        docsAction->setIcon(app->style()->standardIcon(QStyle::SP_DialogHelpButton));
-        trayIconMenu->addAction(docsAction);
+        QAction* docsAction = new QAction("Open docs", trayIconMenu.get());
         QObject::connect(docsAction, &QAction::triggered, [](){
             QDesktopServices::openUrl(QUrl("https://albertlauncher.github.io/"));
         });
+        trayIconMenu->addAction(docsAction);
 
         trayIconMenu->addSeparator();
-        QAction* quitAction = new QAction("Quit", trayIconMenu);
-        quitAction->setIcon(app->style()->standardIcon(QStyle::SP_TitleBarCloseButton));
-        trayIconMenu->addAction(quitAction);
-        QObject::connect(quitAction, &QAction::triggered, app, &QApplication::quit);
 
-        trayIcon->setContextMenu(trayIconMenu);
+        QAction* quitAction = new QAction("Quit", trayIconMenu.get());
+        trayIconMenu->addAction(quitAction);
+        QObject::connect(quitAction, &QAction::triggered, qApp, &QApplication::quit);
+
+        trayIcon->setContextMenu(trayIconMenu.get());
 
 
 
@@ -435,52 +430,115 @@ int main(int argc, char **argv) {
 
 
         /*
+         *  IPC/SINGLETON MECHANISM (Server)
+         */
+
+        // Remove pipes potentially leftover after crash
+        QLocalServer::removeServer(socketPath);
+
+        // Create server and handle messages
+        qDebug() << "Creating IPC server";
+        localServer = make_unique<QLocalServer>();
+        if ( !localServer->listen(socketPath) )
+            qWarning() << "Local server could not be created. IPC will not work! Reason:"
+                       << localServer->errorString();
+
+        // Handle incoming messages
+        QObject::connect(localServer.get(), &QLocalServer::newConnection, [&](){
+            QLocalSocket* socket = localServer->nextPendingConnection();
+            socket->waitForReadyRead(500);
+            if (socket->bytesAvailable()) {
+                QString msg = QString::fromLocal8Bit(socket->readAll());
+                if ( msg.startsWith("show")) {
+                    if (msg.size() > 5) {
+                        QString input = msg.mid(5);
+                        frontendManager->currentFrontend()->setInput(input);
+                    }
+                    frontendManager->currentFrontend()->setVisible(true);
+                    socket->write("Application set visible.");
+                } else if ( msg == "hide") {
+                    frontendManager->currentFrontend()->setVisible(false);
+                    socket->write("Application set invisible.");
+                } else if ( msg == "toggle") {
+                    frontendManager->currentFrontend()->toggleVisibility();
+                    socket->write("Visibility toggled.");
+                } else
+                    socket->write("Command not supported.");
+            }
+            socket->flush();
+            socket->close();
+            socket->deleteLater();
+
+        });
+
+        // Core items
+        coreQueryHandler = make_unique<CoreQueryHandler>(initializer_list<shared_ptr<Item>>{
+            make_shared<StandardItem>(
+                "open-preferences", ":app_icon", "Preferences",
+                "Open the Albert preferences window.", "Open Albert preferences",
+                Item::Urgency::Normal,
+                std::initializer_list<shared_ptr<Action>>{
+                make_shared<FuncAction>("Restart Albert", [=](){ settingsAction->trigger(); })
+                }
+            ),
+            make_shared<StandardItem>(
+                "quit-albert", ":app_icon", "Quit Albert",
+                "Quit this application.", "Quit Albert",
+                Item::Urgency::Normal,
+                std::initializer_list<shared_ptr<Action>>{
+                    make_shared<FuncAction>("Quit Albert", [=](){ quitAction->trigger(); })
+                }
+            )
+        });
+
+        extensionManager->registerQueryHandler(coreQueryHandler.get());
+
+        /*
          * SIGNALING
          */
 
         // Define a lambda that connects a new frontend
         auto connectFrontend = [&](Frontend *f){
 
-            QObject::connect(hotkeyManager, &HotkeyManager::hotKeyPressed,
+            QObject::connect(hotkeyManager.get(), &HotkeyManager::hotKeyPressed,
                              f, &Frontend::toggleVisibility);
 
-            QObject::connect(queryManager, &QueryManager::resultsReady,
+            QObject::connect(queryManager.get(), &QueryManager::resultsReady,
                              f, &Frontend::setModel);
 
             QObject::connect(showAction, &QAction::triggered,
                              f, &Frontend::setVisible);
 
-            QObject::connect(trayIcon, &TrayIcon::activated,
+            QObject::connect(trayIcon.get(), &TrayIcon::activated,
                              f, [=](QSystemTrayIcon::ActivationReason reason){
                 if( reason == QSystemTrayIcon::ActivationReason::Trigger)
                     f->toggleVisibility();
             });
 
-            QObject::connect(f, &Frontend::settingsWidgetRequested, [](){
+            QObject::connect(f, &Frontend::settingsWidgetRequested, [&settingsWidget](){
                 settingsWidget->show();
                 settingsWidget->raise();
                 settingsWidget->activateWindow();
             });
 
-            QObject::connect(f, &Frontend::widgetShown, [f](){
+            QObject::connect(f, &Frontend::widgetShown, [f, &queryManager](){
                 queryManager->setupSession();
                 queryManager->startQuery(f->input());
             });
 
             QObject::connect(f, &Frontend::widgetHidden,
-                             queryManager, &QueryManager::teardownSession);
+                             queryManager.get(), &QueryManager::teardownSession);
 
             QObject::connect(f, &Frontend::inputChanged,
-                             queryManager, &QueryManager::startQuery);
+                             queryManager.get(), &QueryManager::startQuery);
         };
 
         // Connect the current frontend
         connectFrontend(frontendManager->currentFrontend());
 
         // Connect new frontends
-        QObject::connect(frontendManager, &FrontendManager::frontendChanged, connectFrontend);
+        QObject::connect(frontendManager.get(), &FrontendManager::frontendChanged, connectFrontend);
     }
-
 
     /*
      * ENTER EVENTLOOP
@@ -493,16 +551,6 @@ int main(int argc, char **argv) {
     /*
      *  FINALIZE APPLICATION
      */
-
-    qDebug() << "Cleaning up core components";
-    delete settingsWidget;
-    delete trayIconMenu;
-    delete trayIcon;
-    delete queryManager;
-    delete hotkeyManager;
-    delete extensionManager;
-    delete frontendManager;
-
     qDebug() << "Shutting down IPC server";
     localServer->close();
 
@@ -552,35 +600,6 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
     }
     fflush(stdout);
 }
-
-
-/** ***************************************************************************/
-void dispatchMessage() {
-    QLocalSocket* socket = localServer->nextPendingConnection(); // Should be safe
-    socket->waitForReadyRead(500);
-    if (socket->bytesAvailable()) {
-        QString msg = QString::fromLocal8Bit(socket->readAll());
-        if ( msg.startsWith("show")) {
-            if (msg.size() > 5) {
-                QString input = msg.mid(5);
-                frontendManager->currentFrontend()->setInput(input);
-            }
-            frontendManager->currentFrontend()->setVisible(true);
-            socket->write("Application set visible.");
-        } else if ( msg == "hide") {
-            frontendManager->currentFrontend()->setVisible(false);
-            socket->write("Application set invisible.");
-        } else if ( msg == "toggle") {
-            frontendManager->currentFrontend()->toggleVisibility();
-            socket->write("Visibility toggled.");
-        } else
-            socket->write("Command not supported.");
-    }
-    socket->flush();
-    socket->close();
-    socket->deleteLater();
-}
-
 
 /** ***************************************************************************/
 static void printReport()
