@@ -9,100 +9,114 @@
 namespace Core {
 
 
-//! @brief Base class for standard actions
+//! @brief Base class for standard actions implementing the text getter
 struct EXPORT_CORE StandardActionBase : public Action
 {
-public:
+    /**
+     * @param text The description of the action
+     */
     StandardActionBase(const QString &text);
     QString text() const override;
-
 private:
-    QString text_;
+    const QString text_;
 };
 
 
-
-//! @brief A standard action holding a std::function
+//! @brief Runs a function
 struct EXPORT_CORE FuncAction : public StandardActionBase
 {
-public:
+    /**
+     * @param text The description of the action
+     * @param action The fuction to execute
+     */
     FuncAction(const QString &text, std::function<void()> action);
     void activate() override;
-
 private:
-    std::function<void()> action_;
+    const std::function<void()> action_;
 };
 
 
-
-// A standard action that copies text into the clipboard
+//! @brief Copies text into the clipboard
 struct EXPORT_CORE ClipAction : public StandardActionBase
 {
-public:
+    /**
+     * @param text The description of the action
+     * @param clipBoardText The text to put in the clipboard
+     */
     ClipAction(const QString &text, QString clipBoardText);
     void activate() override;
-
 private:
-    QString clipBoardText_;
+    const QString clipBoardText_;
 };
 
 
-
-// A standard action that opens an url using QDesktopServices
+//! @brief Opens an URL using the system scheme/mime hanlders
 struct EXPORT_CORE UrlAction : public StandardActionBase
 {
-public:
+    /**
+     * @param text The description of the action
+     * @param commandline The URL to open with the correspondig handler
+     */
     UrlAction(const QString &text, QUrl url);
     void activate() override;
-
 private:
-    QUrl url_ ;
+    const QUrl url_;
 };
 
 
-
-// A standard action that starts a process
+//! @brief Starts a detached process
 struct EXPORT_CORE ProcAction : public StandardActionBase
 {
-public:
+    /**
+     * @param text The description of the action
+     * @param commandline The program with arguments to execute
+     * @param workingDirectory The working directory
+     */
     ProcAction(const QString &text, const QStringList &commandline, const QString &workingDirectory = QString());
     void activate() override;
-
 protected:
-    QStringList commandline_;
-    QString workingDir_;
+    const QStringList commandline_;
+    const QString workingDir_;
 };
 
 
-
-// A standard action that runs commands in a terminal
-struct EXPORT_CORE TermAction : public ProcAction
+//! @brief Starts a commandline in a detached user definded terminal
+struct EXPORT_CORE TermAction : public StandardActionBase
 {
-    enum class CloseBehavior {
+    /**
+     * @param text The description of the action
+     * @param commandline The program with arguments to execute
+     * @param workingDirectory The working directory
+     */
+    explicit TermAction(const QString &text, const QStringList &commandline, const QString &workingDirectory = QString());
+    void activate() override;
+protected:
+    const QStringList commandline_;
+    const QString workingDir_;
+};
+
+
+//! @brief Starts a script wrapped in the user shell in a detached user definded terminal
+struct EXPORT_CORE ShTermAction : public StandardActionBase
+{
+    enum CloseBehavior {
         CloseOnSuccess,
         CloseOnExit,
         DoNotClose
     };
 
-public:
-
     /**
-     * @brief TermAction constructor
      * @param text The description of the action
-     * @param commandline The command to execute
-     * @param workingDirectory The working directory where to run the command
-     * @param shell Should the command be wrapped in a shell?
-     * @param behavior The close behavior when using the shell
+     * @param script The shell script to execute
+     * @param closeBehavior What happens when the script finished
+     * @param workingDirectory The working directory
      */
-    TermAction(const QString &text, const QStringList &commandline, const QString &workingDirectory = QString(),
-               bool shell = true, CloseBehavior behavior = CloseBehavior::CloseOnSuccess);
+    explicit ShTermAction(const QString &text, const QString &script, CloseBehavior closeBehavior = CloseOnSuccess, const QString &workingDirectory = QString());
     void activate() override;
-
-private:
-    // commandline without terminalCommand prepended to it
-    QStringList command_;
+protected:
+    const QString script_;
+    const CloseBehavior closeBehavior_;
+    const QString workingDir_;
 };
-
-
 
 }
