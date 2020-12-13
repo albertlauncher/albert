@@ -4,7 +4,6 @@
 #include <QCheckBox>
 #include <QCloseEvent>
 #include <QComboBox>
-#include <QDebug>
 #include <QDesktopWidget>
 #include <QFocusEvent>
 #include <QMessageBox>
@@ -26,6 +25,7 @@
 #include "globalshortcut/hotkeymanager.h"
 #include "grabkeybutton.h"
 #include "loadermodel.h"
+#include "logging.h"
 #include "settingswidget.h"
 // TODO: Remove Apr 2020
 #ifdef BUILD_WITH_QTCHARTS
@@ -110,10 +110,10 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
         });
     }
     else
-        qCritical() << "Deskop entry not found! Autostart option is nonfuctional";
+        CRIT << "Deskop entry not found! Autostart option is nonfuctional";
 #elif
     ui.autostartCheckBox->setEnabled(false);
-    qWarning() << "Autostart not implemented on this platform!"
+    WARN << "Autostart not implemented on this platform!"
 #endif
 
     // FRONTEND
@@ -189,17 +189,17 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
             ++it;
 
     if (terms.empty())
-        qWarning() << "No terminals found.";
+        WARN << "No terminals found.";
 
     // Set the terminal command
     terminalCommand = QSettings(qApp->applicationName()).value(CFG_TERM, QString()).toString();
     if (terminalCommand.isNull()){
         if (terms.empty()){
-            qCritical() << "No terminal command set. Terminal actions wont work as expected!";
+            CRIT << "No terminal command set. Terminal actions wont work as expected!";
             terminalCommand = "";
         } else {
             terminalCommand = terms[0].second;
-            qWarning() << "No terminal command set. Using" << terminalCommand;
+            WARN << "No terminal command set. Using" << terminalCommand;
         }
     }
 

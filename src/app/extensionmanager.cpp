@@ -1,7 +1,6 @@
 // Copyright (C) 2014-2018 Manuel Schneider
 
 #include <QApplication>
-#include <QDebug>
 #include <QDir>
 #include <QDirIterator>
 #include <QFile>
@@ -10,9 +9,10 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <chrono>
-#include "extensionmanager.h"
-#include "albert/queryhandler.h"
 #include "albert/fallbackprovider.h"
+#include "albert/queryhandler.h"
+#include "extensionmanager.h"
+#include "logging.h"
 #include "pluginspec.h"
 using namespace std;
 using namespace chrono;
@@ -46,7 +46,7 @@ Core::ExtensionManager::ExtensionManager(QStringList pluginDirs)
 
            if (std::any_of(d->extensionSpecs_.begin(), d->extensionSpecs_.end(),
                            [&](const unique_ptr<PluginSpec> &spec){ return plugin->id() == spec->id(); })) {
-               qWarning() << qPrintable(QString("Extension IDs already exists. Skipping. (%1)").arg(plugin->path()));
+               WARN << QString("Extension IDs already exists. Skipping. (%1)").arg(plugin->path());
                continue;
            }
 
@@ -97,18 +97,18 @@ void Core::ExtensionManager::loadExtension(const unique_ptr<PluginSpec> &spec) {
     if ( spec->state() != PluginSpec::State::Loaded ){
 
         // Load
-        qInfo() << "Loading extension" << spec->id();
+        INFO << "Loading extension" << spec->id();
         std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
         if ( !spec->load() ) {
-            qInfo() << QString("Loading %1 failed. (%2)").arg(spec->id(), spec->lastError()).toLocal8Bit().data();
+            INFO << QString("Loading %1 failed. (%2)").arg(spec->id(), spec->lastError()).toLocal8Bit().data();
             return;
         }
-        qDebug() << qPrintable(QString("%1 loaded in %2 milliseconds").arg(spec->id())
-                               .arg(duration_cast<milliseconds>(system_clock::now()-start).count()));
+        DEBG << QString("%1 loaded in %2 milliseconds").arg(spec->id())
+                        .arg(duration_cast<milliseconds>(system_clock::now()-start).count());
 
         Extension *extension = dynamic_cast<Extension*>(spec->instance());
         if (!extension) {
-            qInfo() << QString("Instance is not of tyoe Extension. (%2)").arg(spec->id()).toLocal8Bit().data();
+            INFO << QString("Instance is not of tyoe Extension. (%2)").arg(spec->id()).toLocal8Bit().data();
             return;
         }
 

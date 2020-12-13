@@ -5,15 +5,16 @@
 #include <QDebug>
 #include <QDesktopServices>
 #include <QDir>
+#include <QLoggingCategory>
 #include <QMenu>
 #include <QMessageBox>
+#include <QProcess>
 #include <QSettings>
 #include <QSqlDatabase>
 #include <QSqlDriver>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QSqlRecord>
-#include <QProcess>
 #include <QStandardPaths>
 #include <QTime>
 #include <QTimer>
@@ -30,6 +31,7 @@
 #include "extensionmanager.h"
 #include "albert/frontend.h"
 #include "frontendmanager.h"
+#include "logging.h"
 #include "pluginspec.h"
 #include "querymanager.h"
 #include "albert/queryhandler.h"
@@ -38,6 +40,7 @@
 #include "settingswidget/settingswidget.h"
 #include "telemetry.h"
 #include "trayicon.h"
+Q_LOGGING_CATEGORY(clc, "core")
 using namespace Core;
 using namespace std;
 using namespace GlobalShortcut;
@@ -99,14 +102,14 @@ int main(int argc, char **argv) {
                 socket.flush();
                 socket.waitForReadyRead(500);
                 if (socket.bytesAvailable())
-                    qInfo().noquote() << socket.readAll();
+                    INFO << socket.readAll();
             }
             else
-                qInfo("There is another instance of albert running.");
+                INFO << "There is another instance of albert running.";
             socket.close();
             ::exit(EXIT_SUCCESS);
         } else if ( args.count() == 1 ) {
-            qInfo("There is no other instance of albert running.");
+            INFO << "There is no other instance of albert running.";
             ::exit(EXIT_FAILURE);
         }
 
@@ -138,7 +141,7 @@ int main(int argc, char **argv) {
 
         qInstallMessageHandler(myMessageOutput);
 
-        qDebug() << "Initializing application";
+        INFO << "Initializing application";
 #if QT_VERSION >= 0x050600  // TODO: Remove when 18.04 is released
         if (!qEnvironmentVariableIsSet("QT_DEVICE_PIXEL_RATIO")
                 && !qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR")
@@ -162,7 +165,7 @@ int main(int argc, char **argv) {
          */
 
         // Make sure data, cache and config dir exists
-        qDebug() << "Initializing mandatory paths";
+        INFO << "Initializing mandatory paths";
         QString dataLocation = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
         QString cacheLocation = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
         QString configLocation = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
@@ -172,46 +175,11 @@ int main(int argc, char **argv) {
 
 
         /*
-         *  ADJUST PATHS OF FILES OF OLDER VERSIONS
-         */
-
-        // If there is a firstRun file, rename it to lastVersion (since v0.11)
-        if ( QFile::exists(QString("%1/firstrun").arg(dataLocation)) ) {
-            qDebug() << "Renaming 'firstrun' to 'last_used_version'";
-            QFile::rename(QString("%1/firstrun").arg(dataLocation),
-                          QString("%1/last_used_version").arg(dataLocation));
-        }
-
-        // Move old config for user convenience  (since v0.13)
-        QFileInfo oldcfg(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/albert.conf");
-        QFileInfo newcfg(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/albert/albert.conf");
-        if (oldcfg.exists()){
-            if (newcfg.exists())
-                QFile::remove(newcfg.filePath());
-            QFile::rename(oldcfg.filePath(), newcfg.filePath());
-        }
-
-        // If there is a lastVersion  file move it to config (since v0.13)
-        if ( QFile::exists(QString("%1/last_used_version").arg(dataLocation)) ) {
-            qDebug() << "Moving 'last_used_version' to config path";
-            QFile::rename(QString("%1/last_used_version").arg(dataLocation),
-                          QString("%1/last_used_version").arg(configLocation));
-        }
-
-        // If move database from old location in cache to config (since v0.14.7)
-        if ( QFile::exists(QString("%1/core.db").arg(cacheLocation)) ){
-            qInfo() << "Moving 'core.db' to config path";
-            QFile::rename(QString("%1/core.db").arg(cacheLocation),
-                          QString("%1/core.db").arg(configLocation));
-        }
-
-
-        /*
          *  MISC
          */
 
         // Quit gracefully on unix signals
-        qDebug() << "Setup signal handlers";
+        INFO << "Setup signal handlers";
         for ( int sig : { SIGINT, SIGTERM, SIGHUP, SIGPIPE } ) {
             signal(sig, [](int){
                 QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
@@ -219,15 +187,15 @@ int main(int argc, char **argv) {
         }
 
         // Print a message if the app was not terminated graciously
-        qDebug() << "Creating running indicator file";
+        INFO << "Creating running indicator file";
         QString filePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running";
         if (QFile::exists(filePath)){
-            qWarning() << "Application has not been terminated graciously.";
+            WARN << "Application has not been terminated graciously.";
         } else {
             // Create the running indicator file
             QFile file(filePath);
             if (!file.open(QIODevice::WriteOnly))
-                qWarning() << "Could not create file:" << filePath;
+                WARN << "Could not create file:" << filePath;
             file.close();
         }
 
@@ -280,7 +248,7 @@ int main(int argc, char **argv) {
             qFatal("Unable to create table 'activation': %s", q.lastError().text().toUtf8().constData());
 
         if (!q.exec("DELETE FROM query WHERE julianday('now')-julianday(timestamp, 'unixepoch')>30; "))
-            qWarning("Unable to cleanup 'query' table.");
+            WARN << "Unable to cleanup 'query' table.";
 
         if (!q.exec("CREATE TABLE IF NOT EXISTS conf(key TEXT UNIQUE, value TEXT); "))
             qFatal("Unable to create table 'conf': %s", q.lastError().text().toUtf8().constData());
@@ -292,7 +260,7 @@ int main(int argc, char **argv) {
          *  INITIALIZE APPLICATION COMPONENTS
          */
 
-        qDebug() << "Initializing core components";
+        INFO << "Initializing core components";
 
         // Define plugindirs
         QStringList pluginDirs;
@@ -376,10 +344,14 @@ int main(int argc, char **argv) {
 
         QAction* restartAction = new QAction("Restart", trayIconMenu.get());
         QObject::connect(restartAction, &QAction::triggered, [](){
-            qApp->quit();
             QStringList cmdline(qApp->arguments());
-            qDebug() << "Restarting:" << cmdline;
-            qDebug() << QProcess::startDetached(cmdline.takeFirst(), cmdline);
+            if (QProcess::startDetached(cmdline.takeFirst(), cmdline)){
+                // TODO: Potential race conditions on slow systems
+                INFO << "Restarting application:" << cmdline;
+                qApp->quit();
+            } else {
+                WARN << "Restarting application failed:" << cmdline;
+            }
         });
         trayIconMenu->addAction(restartAction);
 
@@ -395,7 +367,7 @@ int main(int argc, char **argv) {
          *  DETECT FIRST RUN AND VERSION CHANGE
          */
 
-        qDebug() << "Checking last used version";
+        INFO << "Checking last used version";
         QFile file(QString("%1/last_used_version").arg(configLocation));
         if ( file.exists() ) {
             // Read last used version
@@ -408,16 +380,15 @@ int main(int argc, char **argv) {
                 if ( app->applicationVersion().section('.', 1, 1) != lastUsedVersion.section('.', 1, 1) ){
                     // Do whatever is neccessary on first run
                     QMessageBox(QMessageBox::Information, "Major version changed",
-                                QString("You are now using Albert %1. Albert is still in the alpha "
-                                        "stage. This means things may change unexpectedly. Check "
-                                        "the <a href=\"https://albertlauncher.github.io/news/\">"
-                                        "news</a> to read about the things that changed.")
+                                QString("You are now using Albert %1. The major version changed. "
+                                        "Probably some parts of the API changed. Check the "
+                                        "<a href=\"https://albertlauncher.github.io/news/\">news</a>.")
                                 .arg(app->applicationVersion())).exec();
                 }
             }
             else
-                qCritical() << qPrintable(QString("Could not open file %1: %2,. Config migration may fail.")
-                                          .arg(file.fileName(), file.errorString()));
+                CRIT << QString("Could not open file %1: %2")
+                        .arg(file.fileName(), file.errorString());
         } else {
             // Do whatever is neccessary on first run
             QMessageBox(QMessageBox::Information, "First run",
@@ -434,8 +405,7 @@ int main(int argc, char **argv) {
             out << app->applicationVersion();
             file.close();
         } else
-            qCritical() << qPrintable(QString("Could not open file %1: %2").arg(file.fileName(), file.errorString()));
-
+            CRIT << QString("Could not open file %1: %2").arg(file.fileName(), file.errorString());
 
 
         /*
@@ -446,10 +416,10 @@ int main(int argc, char **argv) {
         QLocalServer::removeServer(socketPath);
 
         // Create server and handle messages
-        qDebug() << "Creating IPC server";
+        INFO << "Creating IPC server";
         localServer = make_unique<QLocalServer>();
         if ( !localServer->listen(socketPath) )
-            qWarning() << "Local server could not be created. IPC will not work! Reason:"
+            WARN << "Local server could not be created. IPC will not work! Reason:"
                        << localServer->errorString();
 
         // Handle incoming messages
@@ -576,21 +546,21 @@ int main(int argc, char **argv) {
      * ENTER EVENTLOOP
      */
 
-    qDebug() << "Entering eventloop";
+    INFO << "Entering eventloop";
     int retval = app->exec();
 
 
     /*
      *  FINALIZE APPLICATION
      */
-    qDebug() << "Shutting down IPC server";
+    INFO << "Shutting down IPC server";
     localServer->close();
 
     // Delete the running indicator file
-    qDebug() << "Deleting running indicator file";
+    INFO << "Deleting running indicator file";
     QFile::remove(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running");
 
-    qDebug() << "Quit";
+    INFO << "Quit";
     return retval;
 }
 
@@ -599,31 +569,31 @@ int main(int argc, char **argv) {
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &message) {
     switch (type) {
     case QtDebugMsg:
-        fprintf(stdout, "%s \x1b[34;1m[DEBG:%s]\x1b[0m \x1b[3m%s\x1b[0m\n",
+        fprintf(stdout, "%s \x1b[34;1m[debg:%s]\x1b[0m \x1b[3m%s\x1b[0m\n",
                 QTime::currentTime().toString().toLocal8Bit().constData(),
                 context.category,
                 message.toLocal8Bit().constData());
         break;
     case QtInfoMsg:
-        fprintf(stdout, "%s \x1b[32;1m[INFO:%s]\x1b[0m %s\n",
+        fprintf(stdout, "%s \x1b[32;1m[info:%s]\x1b[0m %s\n",
                 QTime::currentTime().toString().toLocal8Bit().constData(),
                 context.category,
                 message.toLocal8Bit().constData());
         break;
     case QtWarningMsg:
-        fprintf(stdout, "%s \x1b[33;1m[WARN:%s]\x1b[0;1m %s\x1b[0m\n",
+        fprintf(stdout, "%s \x1b[33;1m[warn:%s]\x1b[0;1m %s\x1b[0m\n",
                 QTime::currentTime().toString().toLocal8Bit().constData(),
                 context.category,
                 message.toLocal8Bit().constData());
         break;
     case QtCriticalMsg:
-        fprintf(stdout, "%s \x1b[31;1m[CRIT:%s]\x1b[0;1m %s\x1b[0m\n",
+        fprintf(stdout, "%s \x1b[31;1m[crit:%s]\x1b[0;1m %s\x1b[0m\n",
                 QTime::currentTime().toString().toLocal8Bit().constData(),
                 context.category,
                 message.toLocal8Bit().constData());
         break;
     case QtFatalMsg:
-        fprintf(stderr, "%s \x1b[41;30;4m[FATAL:%s]\x1b[0;1m %s  --  [%s]\x1b[0m\n",
+        fprintf(stderr, "%s \x1b[41;30;4m[fatal:%s]\x1b[0;1m %s  --  [%s]\x1b[0m\n",
                 QTime::currentTime().toString().toLocal8Bit().constData(),
                 context.category,
                 message.toLocal8Bit().constData(),
@@ -637,28 +607,29 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 static void printReport()
 {
     const uint8_t w = 22;
-    qInfo().noquote() << QString("%1: %2").arg("Albert version", w).arg(qApp->applicationVersion());
-    qInfo().noquote() << QString("%1: %2").arg("Build date", w).arg(__DATE__ " " __TIME__);
+    INFO << QString("%1: %2").arg("Albert version", w).arg(qApp->applicationVersion());
+    INFO << QString("%1: %2").arg("Build date", w).arg(__DATE__ " " __TIME__);
 
-    qInfo().noquote() << QString("%1: %2").arg("Qt version", w).arg(qVersion());
-    qInfo().noquote() << QString("%1: %2").arg("QT_QPA_PLATFORMTHEME", w).arg(QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORMTHEME")));
+    INFO << QString("%1: %2").arg("Qt version", w).arg(qVersion());
+    INFO << QString("%1: %2").arg("QT_QPA_PLATFORMTHEME", w).arg(QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORMTHEME")));
 
-    qInfo().noquote() << QString("%1: %2").arg("Binary location", w).arg(qApp->applicationFilePath());
+    INFO << QString("%1: %2").arg("Binary location", w).arg(qApp->applicationFilePath());
 
-    qInfo().noquote() << QString("%1: %2").arg("PWD", w).arg(QString::fromLocal8Bit(qgetenv("PWD")));
-    qInfo().noquote() << QString("%1: %2").arg("SHELL", w).arg(QString::fromLocal8Bit(qgetenv("SHELL")));
-    qInfo().noquote() << QString("%1: %2").arg("LANG", w).arg(QString::fromLocal8Bit(qgetenv("LANG")));
+    INFO << QString("%1: %2").arg("PWD", w).arg(QString::fromLocal8Bit(qgetenv("PWD")));
+    INFO << QString("%1: %2").arg("SHELL", w).arg(QString::fromLocal8Bit(qgetenv("SHELL")));
+    INFO << QString("%1: %2").arg("LANG", w).arg(QString::fromLocal8Bit(qgetenv("LANG")));
 
-    qInfo().noquote() << QString("%1: %2").arg("XDG_SESSION_TYPE", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_TYPE")));
-    qInfo().noquote() << QString("%1: %2").arg("XDG_CURRENT_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_CURRENT_DESKTOP")));
-    qInfo().noquote() << QString("%1: %2").arg("DESKTOP_SESSION", w).arg(QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION")));
-    qInfo().noquote() << QString("%1: %2").arg("XDG_SESSION_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_DESKTOP")));
+    INFO << QString("%1: %2").arg("XDG_SESSION_TYPE", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_TYPE")));
+    INFO << QString("%1: %2").arg("XDG_CURRENT_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_CURRENT_DESKTOP")));
+    INFO << QString("%1: %2").arg("DESKTOP_SESSION", w).arg(QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION")));
+    INFO << QString("%1: %2").arg("XDG_SESSION_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_DESKTOP")));
 
-    qInfo().noquote() << QString("%1: %2").arg("OS", w).arg(QSysInfo::prettyProductName());
-    qInfo().noquote() << QString("%1: %2/%3").arg("OS (type/version)", w).arg(QSysInfo::productType(), QSysInfo::productVersion());
+    INFO << QString("%1: %2").arg("OS", w).arg(QSysInfo::prettyProductName());
+    INFO << QString("%1: %2/%3").arg("OS (type/version)", w).arg(QSysInfo::productType(), QSysInfo::productVersion());
 
-    qInfo().noquote() << QString("%1: %2").arg("Build ABI", w).arg(QSysInfo::buildAbi());
-    qInfo().noquote() << QString("%1: %2/%3").arg("Arch (build/current)", w).arg(QSysInfo::buildCpuArchitecture(), QSysInfo::currentCpuArchitecture());
+    INFO << QString("%1: %2").arg("Build ABI", w).arg(QSysInfo::buildAbi());
+    INFO << QString("%1: %2/%3").arg("Arch (build/current)", w).arg(QSysInfo::buildCpuArchitecture(), QSysInfo::currentCpuArchitecture());
 
-    qInfo().noquote() << QString("%1: %2/%3").arg("Kernel (type/version)", w).arg(QSysInfo::kernelType(), QSysInfo::kernelVersion());
+    INFO << QString("%1: %2/%3").arg("Kernel (type/version)", w).arg(QSysInfo::kernelType(), QSysInfo::kernelVersion());
 }
+

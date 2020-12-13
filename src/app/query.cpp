@@ -1,6 +1,5 @@
 // Copyright (C) 2014-2018 Manuel Schneider
 
-#include <QDebug>
 #include "albert/item.h"
 #include "albert/query.h"
 #include "matchcompare.h"

@@ -2,7 +2,6 @@
 
 #include <QApplication>
 #include <QDateTime>
-#include <QDebug>
 #include <QJsonDocument>
 #include <QMessageBox>
 #include <QNetworkAccessManager>
@@ -10,6 +9,7 @@
 #include <QSettings>
 #include <QSqlError>
 #include <QSqlQuery>
+#include "logging.h"
 #include "telemetry.h"
 
 namespace {
@@ -81,7 +81,7 @@ void Core::Telemetry::trySendReport()
         QNetworkReply* reply = manager->put(request, QJsonDocument(object).toJson(QJsonDocument::Compact));
         QObject::connect(reply, &QNetworkReply::finished, [reply](){
             if (reply->error() == QNetworkReply::NoError){
-                qDebug() << "Report sent.";
+                INFO << "Report sent.";
                 // Store time of last report
                 QSqlQuery q(QSqlDatabase::database());
                 q.prepare("INSERT OR REPLACE INTO conf VALUES(\"last_report\", :ts); ");

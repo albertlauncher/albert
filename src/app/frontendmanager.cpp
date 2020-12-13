@@ -1,7 +1,6 @@
 // Copyright (C) 2014-2018 Manuel Schneider
 
 #include <QApplication>
-#include <QDebug>
 #include <QSettings>
 #include <QDirIterator>
 #include <vector>
@@ -9,6 +8,7 @@
 #include "frontendmanager.h"
 #include "albert/frontend.h"
 #include "pluginspec.h"
+#include "logging.h"
 using std::unique_ptr;
 using std::vector;
 
@@ -42,7 +42,7 @@ Core::FrontendManager::FrontendManager(QStringList pluginDirs)
 
            if (std::any_of(d->frontendPlugins.begin(), d->frontendPlugins.end(),
                            [&](const unique_ptr<PluginSpec> &spec){ return plugin->id() == spec->id(); })) {
-               qWarning() << qPrintable(QString("Frontend IDs already exists. Skipping. (%1)").arg(plugin->path()));
+               WARN << QString("Frontend IDs already exists. Skipping. (%1)").arg(plugin->path());
                continue;
            }
 
@@ -64,8 +64,7 @@ Core::FrontendManager::FrontendManager(QStringList pluginDirs)
 
     if ( it == d->frontendPlugins.end() ) {
         it = d->frontendPlugins.begin();
-        qWarning("Frontend '%s' could not be found. Using %s instead.",
-                 qPrintable(id), qPrintable((*it)->id()));
+        WARN << QString("Frontend '%1' could not be found. Using %2 instead.").arg(id, (*it)->id());
         s.setValue(CFG_FRONTEND_ID, (*it)->id());
     }
 
@@ -112,7 +111,7 @@ bool Core::FrontendManager::setCurrentFrontend(QString id) {
             return spec->id() == id;
     });
     if ( it == d->frontendPlugins.end() ) {
-        qWarning("Frontend '%s' could not be found.", qPrintable(id));
+        WARN << QString("Frontend '%1' could not be found.").arg(id);
         return false;
     }
     std::unique_ptr<Core::PluginSpec> &newFrontendSpec = *it;

@@ -1,7 +1,6 @@
 // Copyright (C) 2014-2018 Manuel Schneider
 
 #include <QApplication>
-#include <QDebug>
 #include <QSettings>
 #include <QSqlDatabase>
 #include <QSqlDriver>
@@ -16,6 +15,7 @@
 #include "albert/item.h"
 #include "albert/queryhandler.h"
 #include "extensionmanager.h"
+#include "logging.h"
 #include "matchcompare.h"
 #include "queryexecution.h"
 #include "querymanager.h"
@@ -67,7 +67,7 @@ QueryManager::~QueryManager() {
 /** ***************************************************************************/
 void Core::QueryManager::setupSession() {
 
-    qDebug() << "========== SESSION SETUP STARTED ==========";
+    DEBG << "========== SESSION SETUP STARTED ==========";
 
     system_clock::time_point start = system_clock::now();
 
@@ -76,18 +76,18 @@ void Core::QueryManager::setupSession() {
         system_clock::time_point start = system_clock::now();
         handler->setupSession();
         long duration = duration_cast<microseconds>(system_clock::now()-start).count();
-        qDebug() << qPrintable(QString("TIME: %1 µs SESSION SETUP [%2]").arg(duration, 6).arg(handler->id));
+        DEBG << qPrintable(QString("TIME: %1 µs SESSION SETUP [%2]").arg(duration, 6).arg(handler->id));
     }
 
     long duration = duration_cast<microseconds>(system_clock::now()-start).count();
-    qDebug() << qPrintable(QString("TIME: %1 µs SESSION SETUP OVERALL").arg(duration, 6));
+    DEBG << qPrintable(QString("TIME: %1 µs SESSION SETUP OVERALL").arg(duration, 6));
 }
 
 
 /** ***************************************************************************/
 void Core::QueryManager::teardownSession() {
 
-    qDebug() << "========== SESSION TEARDOWN STARTED ==========";
+    DEBG << "========== SESSION TEARDOWN STARTED ==========";
 
     system_clock::time_point start = system_clock::now();
 
@@ -96,7 +96,7 @@ void Core::QueryManager::teardownSession() {
         system_clock::time_point start = system_clock::now();
         handler->teardownSession();
         long duration = duration_cast<microseconds>(system_clock::now()-start).count();
-        qDebug() << qPrintable(QString("TIME: %1 µs SESSION TEARDOWN [%2]").arg(duration, 6).arg(handler->id));
+        DEBG << QString("TIME: %1 µs SESSION TEARDOWN [%2]").arg(duration, 6).arg(handler->id);
     }
 
     // Clear views
@@ -169,14 +169,14 @@ void Core::QueryManager::teardownSession() {
     updateScores();
 
     long duration = duration_cast<microseconds>(system_clock::now()-start).count();
-    qDebug() << qPrintable(QString("TIME: %1 µs SESSION TEARDOWN OVERALL").arg(duration, 6));
+    DEBG << QString("TIME: %1 µs SESSION TEARDOWN OVERALL").arg(duration, 6);
 }
 
 
 /** ***************************************************************************/
 void Core::QueryManager::startQuery(const QString &searchTerm) {
 
-    qDebug() << "========== QUERY:" << searchTerm << " ==========";
+    DEBG << "========== QUERY:" << searchTerm << " ==========";
 
     if ( pastQueries_.size() ) {
         // Stop last query
@@ -200,14 +200,14 @@ void Core::QueryManager::startQuery(const QString &searchTerm) {
     connect(currentQuery, &QueryExecution::stateChanged, [start](QueryExecution::State state){
         if ( state == QueryExecution::State::Finished ) {
             long duration = duration_cast<microseconds>(system_clock::now()-start).count();
-            qDebug() << qPrintable(QString("TIME: %1 µs QUERY OVERALL").arg(duration, 6));
+            DEBG << QString("TIME: %1 µs QUERY OVERALL").arg(duration, 6);
         }
     });
 
     pastQueries_.emplace_back(currentQuery);
 
     long duration = duration_cast<microseconds>(system_clock::now()-start).count();
-    qDebug() << qPrintable(QString("TIME: %1 µs SESSION TEARDOWN OVERALL").arg(duration, 6));
+    DEBG << QString("TIME: %1 µs SESSION TEARDOWN OVERALL").arg(duration, 6);
 }
 
 

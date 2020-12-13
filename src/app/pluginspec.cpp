@@ -1,12 +1,12 @@
 // Copyright (C) 2014-2018 Manuel Schneider
 
-#include <QDebug>
 #include <QJsonArray>
 #include <QVariant>
 #include <QSettings>
 #include <stdexcept>
-#include "pluginspec.h"
 #include "albert/plugin.h"
+#include "logging.h"
+#include "pluginspec.h"
 
 
 /** ***************************************************************************/
@@ -106,7 +106,7 @@ bool Core::PluginSpec::load() {
         }
 
         if (!plugin) {
-           qWarning() << qPrintable(QString("Failed loading plugin: %1 [%2]").arg(path()).arg(lastError_));
+           WARN << qPrintable(QString("Failed loading plugin: %1 [%2]").arg(path()).arg(lastError_));
            loader_.unload();
            state_ = State::Error;
         }

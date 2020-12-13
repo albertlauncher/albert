@@ -1,6 +1,5 @@
 // Copyright (C) 2014-2018 Manuel Schneider
 
-#include <QDebug>
 #include <QString>
 #include <QVariant>
 #include <QtConcurrent>
@@ -13,6 +12,7 @@
 #include "albert/item.h"
 #include "albert/queryhandler.h"
 #include "albert/util/itemroles.h"
+#include "logging.h"
 #include "matchcompare.h"
 #include "queryexecution.h"
 using namespace std;
@@ -130,7 +130,7 @@ void Core::QueryExecution::runBatchHandlers() {
         system_clock::time_point start = system_clock::now();
         queryHandler->handleQuery(&query_);
         long duration = duration_cast<microseconds>(system_clock::now()-start).count();
-        qDebug() << qPrintable(QString("TIME: %1 µs MATCHES [%2]").arg(duration, 6).arg(queryHandler->id));
+        DEBG << qPrintable(QString("TIME: %1 µs MATCHES [%2]").arg(duration, 6).arg(queryHandler->id));
         return make_pair(queryHandler, static_cast<int>(duration));
     };
     future_ = QtConcurrent::mapped(batchHandlers_.begin(), batchHandlers_.end(), func);
@@ -192,7 +192,7 @@ void Core::QueryExecution::runRealtimeHandlers() {
         system_clock::time_point start = system_clock::now();
         queryHandler->handleQuery(&query_);
         long duration = duration_cast<microseconds>(system_clock::now()-start).count();
-        qDebug() << qPrintable(QString("TIME: %1 µs MATCHES REALTIME [%2]").arg(duration, 6).arg(queryHandler->id));
+        DEBG << qPrintable(QString("TIME: %1 µs MATCHES REALTIME [%2]").arg(duration, 6).arg(queryHandler->id));
         return make_pair(queryHandler, static_cast<int>(duration));
     };
     future_ = QtConcurrent::mapped(realtimeHandlers_.begin(), realtimeHandlers_.end(), func);
