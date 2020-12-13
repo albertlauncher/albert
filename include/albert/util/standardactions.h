@@ -15,7 +15,7 @@ struct EXPORT_CORE StandardActionBase : public Action
     /**
      * @param text The description of the action
      */
-    StandardActionBase(const QString &text);
+    explicit StandardActionBase(const QString &text);
     QString text() const override;
 private:
     const QString text_;
@@ -29,7 +29,7 @@ struct EXPORT_CORE FuncAction : public StandardActionBase
      * @param text The description of the action
      * @param action The fuction to execute
      */
-    FuncAction(const QString &text, std::function<void()> action);
+    explicit FuncAction(const QString &text, std::function<void()> action);
     void activate() override;
 private:
     const std::function<void()> action_;
@@ -43,7 +43,7 @@ struct EXPORT_CORE ClipAction : public StandardActionBase
      * @param text The description of the action
      * @param clipBoardText The text to put in the clipboard
      */
-    ClipAction(const QString &text, QString clipBoardText);
+    explicit ClipAction(const QString &text, QString clipBoardText);
     void activate() override;
 private:
     const QString clipBoardText_;
@@ -57,7 +57,7 @@ struct EXPORT_CORE UrlAction : public StandardActionBase
      * @param text The description of the action
      * @param commandline The URL to open with the correspondig handler
      */
-    UrlAction(const QString &text, QUrl url);
+    explicit UrlAction(const QString &text, QUrl url);
     void activate() override;
 private:
     const QUrl url_;
@@ -72,7 +72,7 @@ struct EXPORT_CORE ProcAction : public StandardActionBase
      * @param commandline The program with arguments to execute
      * @param workingDirectory The working directory
      */
-    ProcAction(const QString &text, const QStringList &commandline, const QString &workingDirectory = QString());
+    explicit ProcAction(const QString &text, const QStringList &commandline, const QString &workingDirectory = QString());
     void activate() override;
 protected:
     const QStringList commandline_;

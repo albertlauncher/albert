@@ -26,20 +26,20 @@
 #endif
 #include <csignal>
 #include <functional>
-#include "globalshortcut/hotkeymanager.h"
-#include "xdg/iconlookup.h"
-#include "extensionmanager.h"
 #include "albert/frontend.h"
+#include "albert/queryhandler.h"
+#include "albert/util/standardactions.h"
+#include "albert/util/standarditem.h"
+#include "extensionmanager.h"
 #include "frontendmanager.h"
+#include "globalshortcut/hotkeymanager.h"
 #include "logging.h"
 #include "pluginspec.h"
 #include "querymanager.h"
-#include "albert/queryhandler.h"
-#include "albert/util/standarditem.h"
-#include "albert/util/standardactions.h"
 #include "settingswidget/settingswidget.h"
 #include "telemetry.h"
 #include "trayicon.h"
+#include "xdg/iconlookup.h"
 Q_LOGGING_CATEGORY(clc, "core")
 using namespace Core;
 using namespace std;
@@ -467,27 +467,21 @@ int main(int argc, char **argv) {
 
         // Core items
         coreQueryHandler = make_unique<CoreQueryHandler>(initializer_list<shared_ptr<Item>>{
-            make_shared<StandardItem>(
-                "open-preferences", ":app_icon", "Preferences",
-                "Open the Albert preferences window.", "Open Albert preferences",
-                Item::Urgency::Normal,
-                std::initializer_list<shared_ptr<Action>>{
-                make_shared<FuncAction>("Restart Albert", [=](){ settingsAction->trigger(); })
+            make_shared<StandardItem>("open-preferences",
+                ":app_icon", "Preferences", "Open the Albert preferences window.",
+                initializer_list<shared_ptr<Action>>{
+                    make_shared<FuncAction>("Open preferences.", [=](){ settingsAction->trigger(); })
                 }
             ),
-            make_shared<StandardItem>(
-                "restart-albert", ":app_icon", "Restart Albert",
-                "Restart this application.", "Restart Albert",
-                Item::Urgency::Normal,
-                std::initializer_list<shared_ptr<Action>>{
+            make_shared<StandardItem>("restart-albert",
+                ":app_icon", "Restart Albert", "Restart this application.",
+                initializer_list<shared_ptr<Action>>{
                     make_shared<FuncAction>("Restart Albert", [=](){ restartAction->trigger(); })
                 }
             ),
-            make_shared<StandardItem>(
-                "quit-albert", ":app_icon", "Quit Albert",
-                "Quit this application.", "Quit Albert",
-                Item::Urgency::Normal,
-                std::initializer_list<shared_ptr<Action>>{
+            make_shared<StandardItem>("quit-albert",
+                ":app_icon", "Quit Albert", "Quit this application.",
+                initializer_list<shared_ptr<Action>>{
                     make_shared<FuncAction>("Quit Albert", [=](){ quitAction->trigger(); })
                 }
             )

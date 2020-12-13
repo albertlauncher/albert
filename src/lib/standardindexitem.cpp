@@ -2,15 +2,23 @@
 
 #include "standardindexitem.h"
 
-Core::StandardIndexItem::StandardIndexItem(QString id, QString iconPath, QString text, QString subtext, QString completion, Core::Item::Urgency urgency, std::vector<std::shared_ptr<Core::Action> > actions, std::vector<Core::IndexableItem::IndexString> indexStrings)
+Core::StandardIndexItem::StandardIndexItem(QString id,
+                                           QString iconPath,
+                                           QString text,
+                                           QString subtext,
+                                           std::vector<Core::IndexableItem::IndexString> indexStrings,
+                                           std::vector<std::shared_ptr<Core::Action> > actions,
+                                           QString completion,
+                                           Core::Item::Urgency urgency)
     : id_(std::move(id)),
       iconPath_(std::move(iconPath)),
       text_(std::move(text)),
       subtext_(std::move(subtext)),
-      completion_(std::move(completion)),
-      urgency_(urgency),
+      indexStrings_(std::move(indexStrings)),
       actions_(std::move(actions)),
-      indexStrings_(std::move(indexStrings)) { }
+      completion_(std::move(completion)),
+      urgency_(urgency)
+{ }
 
 QString Core::StandardIndexItem::id() const { return id_; }
 

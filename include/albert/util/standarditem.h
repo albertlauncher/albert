@@ -19,13 +19,15 @@ class EXPORT_CORE StandardItem : public Item
 {
 public:
 
-    StandardItem(QString id = QString(),
-                 QString iconPath = QString(),
-                 QString text = QString(),
-                 QString subtext = QString(),
-                 QString completion = QString(),
-                 Urgency urgency = Item::Urgency::Normal,
-                 std::vector<std::shared_ptr<Action>> actions = std::vector<std::shared_ptr<Action>>());
+    explicit StandardItem(
+        QString id = QString(),
+        QString iconPath = QString(),
+        QString text = QString(),
+        QString subtext = QString(),
+        std::vector<std::shared_ptr<Action>> actions = std::vector<std::shared_ptr<Action>>(),
+        QString completion = QString(),
+        Urgency urgency = Item::Urgency::Normal
+    );
 
     QString id() const override;
     void setId(QString id);
@@ -39,17 +41,17 @@ public:
     QString subtext() const override;
     void setSubtext(QString subtext);
 
-    QString completion() const override;
-    void setCompletion(QString completion);
-
-    Item::Urgency urgency() const override;
-    void setUrgency(Item::Urgency urgency);
-
     std::vector<std::shared_ptr<Action>> actions() override;
     void setActions(std::vector<std::shared_ptr<Action>> &&actions);
     void setActions(const std::vector<std::shared_ptr<Action>> &actions);
     void addAction(std::shared_ptr<Action> &&action);
     void addAction(const std::shared_ptr<Action> &action);
+
+    QString completion() const override;
+    void setCompletion(QString completion);
+
+    Item::Urgency urgency() const override;
+    void setUrgency(Item::Urgency urgency);
 
 protected:
 
@@ -57,9 +59,9 @@ protected:
     QString iconPath_;
     QString text_;
     QString subtext_;
+    std::vector<std::shared_ptr<Action>> actions_;
     QString completion_;
     Item::Urgency urgency_;
-    std::vector<std::shared_ptr<Action>> actions_;
 
 };
 

@@ -16,15 +16,15 @@ class EXPORT_CORE StandardIndexItem final : public IndexableItem
 {
 public:
 
-    StandardIndexItem(
+    explicit StandardIndexItem(
         QString id = QString(),
         QString iconPath = QString(),
         QString text = QString(),
         QString subtext = QString(),
-        QString completion = QString(),
-        Urgency urgency = Item::Urgency::Normal,
+        std::vector<Core::IndexableItem::IndexString> indexStrings = std::vector<Core::IndexableItem::IndexString>(),
         std::vector<std::shared_ptr<Action>> actions = std::vector<std::shared_ptr<Action>>(),
-        std::vector<Core::IndexableItem::IndexString> indexStrings = std::vector<Core::IndexableItem::IndexString>()
+        QString completion = QString(),
+        Urgency urgency = Item::Urgency::Normal
     );
 
     QString id() const override;
@@ -39,18 +39,18 @@ public:
     QString subtext() const override;
     void setSubtext(QString subtext);
 
-    QString completion() const override;
-    void setCompletion(QString completion);
-
-    Item::Urgency urgency() const override;
-    void setUrgency(Item::Urgency urgency);
+    virtual std::vector<Core::IndexableItem::IndexString> indexStrings() const override;
+    void setIndexKeywords(std::vector<Core::IndexableItem::IndexString> indexStrings);
 
     std::vector<std::shared_ptr<Action>> actions() override;
     void setActions(std::vector<std::shared_ptr<Action>> actions);
     void addAction(std::shared_ptr<Action> action);
 
-    virtual std::vector<Core::IndexableItem::IndexString> indexStrings() const override;
-    void setIndexKeywords(std::vector<Core::IndexableItem::IndexString> indexStrings);
+    QString completion() const override;
+    void setCompletion(QString completion);
+
+    Item::Urgency urgency() const override;
+    void setUrgency(Item::Urgency urgency);
 
 
 protected:
@@ -59,10 +59,10 @@ protected:
     QString iconPath_;
     QString text_;
     QString subtext_;
+    std::vector<IndexableItem::IndexString> indexStrings_;
+    std::vector<std::shared_ptr<Action>> actions_;
     QString completion_;
     Item::Urgency urgency_;
-    std::vector<std::shared_ptr<Action>> actions_;
-    std::vector<IndexableItem::IndexString> indexStrings_;
 
 };
 

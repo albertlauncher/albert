@@ -2,14 +2,20 @@
 
 #include "standarditem.h"
 
-Core::StandardItem::StandardItem(QString id, QString iconPath, QString text, QString subtext, QString completion, Core::Item::Urgency urgency, std::vector<std::shared_ptr<Core::Action> > actions)
+Core::StandardItem::StandardItem(QString id,
+                                 QString iconPath,
+                                 QString text,
+                                 QString subtext,
+                                 std::vector<std::shared_ptr<Core::Action> > actions,
+                                 QString completion, Core::Item::Urgency urgency)
     : id_(std::move(id)),
       iconPath_(std::move(iconPath)),
       text_(std::move(text)),
       subtext_(std::move(subtext)),
+      actions_(std::move(actions)),
       completion_(std::move(completion)),
-      urgency_(urgency),
-      actions_(std::move(actions)) { }
+      urgency_(urgency)
+{ }
 
 QString Core::StandardItem::id() const { return id_; }
 
