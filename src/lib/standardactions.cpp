@@ -43,7 +43,7 @@ QString Core::StandardActionBase::text() const {
 Core::FuncAction::FuncAction(const QString &text, std::function<void ()> action)
     : StandardActionBase(text), action_(std::move(action)) { }
 
-void Core::FuncAction::activate() {
+void Core::FuncAction::activate() const {
     action_();
 }
 
@@ -52,7 +52,7 @@ void Core::FuncAction::activate() {
 Core::ClipAction::ClipAction(const QString &text, QString clipBoardText)
     : StandardActionBase(text), clipBoardText_(std::move(clipBoardText)) { }
 
-void Core::ClipAction::activate() {
+void Core::ClipAction::activate() const {
     QGuiApplication::clipboard()->setText(clipBoardText_);
 }
 
@@ -61,7 +61,7 @@ void Core::ClipAction::activate() {
 Core::UrlAction::UrlAction(const QString &text, QUrl url)
     : StandardActionBase(text), url_(std::move(url)) { }
 
-void Core::UrlAction::activate() {
+void Core::UrlAction::activate() const {
     QDesktopServices::openUrl(url_);
 }
 
@@ -70,7 +70,7 @@ void Core::UrlAction::activate() {
 Core::ProcAction::ProcAction(const QString &text, const QStringList &commandline, const QString &workingDirectory)
     : StandardActionBase(text), commandline_(commandline), workingDir_(workingDirectory) { }
 
-void Core::ProcAction::activate() {
+void Core::ProcAction::activate() const {
     runDetached(commandline_, workingDir_);
 }
 
@@ -78,35 +78,28 @@ void Core::ProcAction::activate() {
 Core::TermAction::TermAction(const QString &text, const QStringList &commandline, const QString &workingDirectory)
     : StandardActionBase(text), commandline_(commandline), workingDir_(workingDirectory) { }
 
-void Core::TermAction::activate() {
-    QStringList commandline = terminalCommand.split(QChar(QChar::Space), QString::SkipEmptyParts);
-    commandline.append(commandline_);
-    runDetached(commandline, workingDir_);
-}
-
-/** **************************************************************************/
-Core::ShTermAction::ShTermAction(const QString &text, const QString &script, CloseBehavior closeBehavior, const QString &workingDirectory)
-    : StandardActionBase(text), script_(script), closeBehavior_(closeBehavior), workingDir_(workingDirectory) { }
-
-void Core::ShTermAction::activate() {
+Core::TermAction::TermAction(const QString &text, const QString &script, Core::TermAction::CloseBehavior closeBehavior, const QString &workingDirectory)
+    : StandardActionBase(text), workingDir_(workingDirectory) {
 
     // Get the user shell (passwd must not be freed)
     passwd *pwd = getpwuid(geteuid());
     if (pwd == nullptr)
         throw "Could not retrieve user shell";
 
-    QStringList commandline;
-    switch (closeBehavior_) {
+    switch (closeBehavior) {
     case CloseBehavior::CloseOnExit:
-        commandline << pwd->pw_shell << "-ic" << script_;
+        commandline_ << pwd->pw_shell << "-ic" << script;
         break;
     case CloseBehavior::CloseOnSuccess:
-        commandline << pwd->pw_shell << "-ic" << QString("%1 || exec %1").arg(script_, pwd->pw_shell);
+        commandline_ << pwd->pw_shell << "-ic" << QString("%1 || exec %2").arg(script, pwd->pw_shell);
         break;
     case CloseBehavior::DoNotClose:
-        commandline << pwd->pw_shell << "-ic" << QString("%1; exec %1").arg(script_, pwd->pw_shell);
-        break;
+        commandline_ << pwd->pw_shell << "-ic" << QString("%1; exec %2").arg(script, pwd->pw_shell);
     }
+}
 
-    runDetached(commandline, workingDir_);
+
+/** **************************************************************************/
+void Core::TermAction::activate() const {
+    runDetached(terminalCommand.split(QChar(QChar::Space), QString::SkipEmptyParts) << commandline_, workingDir_);
 }

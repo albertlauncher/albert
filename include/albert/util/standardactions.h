@@ -30,7 +30,7 @@ struct EXPORT_CORE FuncAction : public StandardActionBase
      * @param action The fuction to execute
      */
     explicit FuncAction(const QString &text, std::function<void()> action);
-    void activate() override;
+    void activate() const override;
 private:
     const std::function<void()> action_;
 };
@@ -44,7 +44,7 @@ struct EXPORT_CORE ClipAction : public StandardActionBase
      * @param clipBoardText The text to put in the clipboard
      */
     explicit ClipAction(const QString &text, QString clipBoardText);
-    void activate() override;
+    void activate() const override;
 private:
     const QString clipBoardText_;
 };
@@ -58,7 +58,7 @@ struct EXPORT_CORE UrlAction : public StandardActionBase
      * @param commandline The URL to open with the correspondig handler
      */
     explicit UrlAction(const QString &text, QUrl url);
-    void activate() override;
+    void activate() const override;
 private:
     const QUrl url_;
 };
@@ -73,7 +73,7 @@ struct EXPORT_CORE ProcAction : public StandardActionBase
      * @param workingDirectory The working directory
      */
     explicit ProcAction(const QString &text, const QStringList &commandline, const QString &workingDirectory = QString());
-    void activate() override;
+    void activate() const override;
 protected:
     const QStringList commandline_;
     const QString workingDir_;
@@ -112,7 +112,7 @@ struct EXPORT_CORE ShTermAction : public StandardActionBase
      * @param workingDirectory The working directory
      */
     explicit ShTermAction(const QString &text, const QString &script, CloseBehavior closeBehavior = CloseOnSuccess, const QString &workingDirectory = QString());
-    void activate() override;
+    void activate() const override;
 protected:
     const QString script_;
     const CloseBehavior closeBehavior_;

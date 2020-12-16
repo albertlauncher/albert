@@ -20,7 +20,7 @@ public:
     virtual QString text() const = 0;
 
     /** Activates the item */
-    virtual void activate() = 0;
+    virtual void activate() const = 0;
 };
 
 }
