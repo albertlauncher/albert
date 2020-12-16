@@ -1,5 +1,6 @@
 // Copyright (C) 2014-2018 Manuel Schneider
 
+#include <QAbstractNativeEventFilter>
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QDebug>
@@ -58,6 +59,9 @@ struct CoreQueryHandler : public Core::QueryHandler
                   query->addMatch(item, static_cast<uint>((query->string().length() / item->text().length()) * numeric_limits<uint>::max()));
     }
     vector<shared_ptr<Item>> items;
+};
+struct GlobalNativeEventFilter : public QAbstractNativeEventFilter {
+    bool nativeEventFilter(const QByteArray &eventType, void *message, long *) override;
 };
 
 
@@ -121,6 +125,7 @@ int main(int argc, char **argv) {
      *  INITIALIZE APPLICATION
      */
 
+    unique_ptr<GlobalNativeEventFilter> gnev = make_unique<GlobalNativeEventFilter>();
     unique_ptr<QApplication> app;
     unique_ptr<FrontendManager> frontendManager;
     unique_ptr<ExtensionManager> extensionManager;
@@ -158,6 +163,7 @@ int main(int argc, char **argv) {
         QString icon = XDG::IconLookup::iconPath("albert");
         if ( icon.isEmpty() ) icon = ":app_icon";
         app->setWindowIcon(QIcon(icon));
+        app->installNativeEventFilter(gnev.get());
 
 
         /*
@@ -627,3 +633,68 @@ static void printReport()
     INFO << QString("%1: %2/%3").arg("Kernel (type/version)", w).arg(QSysInfo::kernelType(), QSysInfo::kernelVersion());
 }
 
+
+bool GlobalNativeEventFilter::nativeEventFilter(const QByteArray &eventType, void *message, long *){
+#if defined __linux__ || defined __FreeBSD__
+    if (eventType == "xcb_generic_event_t")
+    {
+        /* This is a horribly hackish but working solution.
+
+         A triggered key grab on X11 steals the focus of the window for short
+         period of time. This may result in the following annoying behaviour:
+         When the hotkey is pressed and X11 steals the focus there arises a
+         race condition between the hotkey event and the focus out event.
+         When the app is visible and the focus out event is delivered the app
+         gets hidden. Finally when the hotkey is received the app gets shown
+         again although the user intended to hide the app with the hotkey.
+
+         Solutions:
+         Although X11 differs between the two focus out events, qt does not.
+         One might install a native event filter and use the XCB structs to
+         decide which type of event is delivered, but this approach is not
+         platform independent (unless designed so explicitely, but its a
+         hassle). The behaviour was expected when the app hides on:
+
+         (mode==XCB_NOTIFY_MODE_GRAB && detail==XCB_NOTIFY_DETAIL_NONLINEAR)||
+          (mode==XCB_NOTIFY_MODE_NORMAL && detail==XCB_NOTIFY_DETAIL_NONLINEAR)
+         (Check Xlib Programming Manual)
+
+         Another much simpler but less elegant solution is to delay the
+         hiding a few milliseconds, so that the hotkey event will always be
+         handled first. */
+
+        xcb_generic_event_t* event = static_cast<xcb_generic_event_t *>(message);
+        switch (event->response_type & 127)
+        {
+        case XCB_FOCUS_OUT: {
+            xcb_focus_out_event_t *fe = reinterpret_cast<xcb_focus_out_event_t*>(event);
+            std::string msg = "XCB_FOCUS_OUT";
+
+            switch (fe->mode) {
+                case XCB_NOTIFY_MODE_NORMAL:        msg += "::XCB_NOTIFY_MODE_NORMAL";break;
+                case XCB_NOTIFY_MODE_GRAB:          msg += "::XCB_NOTIFY_MODE_GRAB";break;
+                case XCB_NOTIFY_MODE_UNGRAB:        msg += "::XCB_NOTIFY_MODE_UNGRAB";break;
+                case XCB_NOTIFY_MODE_WHILE_GRABBED: msg += "::XCB_NOTIFY_MODE_WHILE_GRABBED";break;
+            }
+            switch (fe->detail) {
+                case XCB_NOTIFY_DETAIL_ANCESTOR:          msg += "::ANCESTOR";break;
+                case XCB_NOTIFY_DETAIL_INFERIOR:          msg += "::INFERIOR";break;
+                case XCB_NOTIFY_DETAIL_NONE:              msg += "::NONE";break;
+                case XCB_NOTIFY_DETAIL_NONLINEAR:         msg += "::NONLINEAR";break;
+                case XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL: msg += "::NONLINEAR_VIRTUAL";break;
+                case XCB_NOTIFY_DETAIL_POINTER:           msg += "::POINTER";break;break;
+                case XCB_NOTIFY_DETAIL_POINTER_ROOT:      msg += "::POINTER_ROOT";
+                case XCB_NOTIFY_DETAIL_VIRTUAL:           msg += "::VIRTUAL";break;
+            }
+            WARN << QString::fromStdString(msg);
+            if (fe->mode==XCB_NOTIFY_MODE_NORMAL && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR )
+                return false;
+            else
+                return true;  // Stop propagation
+
+        }
+        }
+    }
+#endif
+    return false;
+}
