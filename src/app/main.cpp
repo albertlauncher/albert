@@ -467,22 +467,22 @@ int main(int argc, char **argv) {
 
         // Core items
         coreQueryHandler = make_unique<CoreQueryHandler>(initializer_list<shared_ptr<Item>>{
-            make_shared<StandardItem>("open-preferences",
+            makeStdItem("open-preferences",
                 ":app_icon", "Preferences", "Open the Albert preferences window.",
                 initializer_list<shared_ptr<Action>>{
-                    make_shared<FuncAction>("Open preferences.", [=](){ settingsAction->trigger(); })
+                    makeFuncAction("Open preferences.", [=](){ settingsAction->trigger(); })
                 }
             ),
-            make_shared<StandardItem>("restart-albert",
+            makeStdItem("restart-albert",
                 ":app_icon", "Restart Albert", "Restart this application.",
                 initializer_list<shared_ptr<Action>>{
-                    make_shared<FuncAction>("Restart Albert", [=](){ restartAction->trigger(); })
+                    makeFuncAction("Restart Albert", [=](){ restartAction->trigger(); })
                 }
             ),
-            make_shared<StandardItem>("quit-albert",
+            makeStdItem("quit-albert",
                 ":app_icon", "Quit Albert", "Quit this application.",
                 initializer_list<shared_ptr<Action>>{
-                    make_shared<FuncAction>("Quit Albert", [=](){ quitAction->trigger(); })
+                    makeFuncAction("Quit Albert", [=](){ quitAction->trigger(); })
                 }
             )
         });

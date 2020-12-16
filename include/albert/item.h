@@ -9,6 +9,7 @@
 namespace Core {
 
 class Action;
+typedef std::vector<std::shared_ptr<Action>> ActionList;
 
 /** ****************************************************************************
  * @brief The item interface
@@ -41,7 +42,7 @@ public:
     virtual QString subtext() const = 0;
 
     /** The alternative actions of the item*/
-    virtual std::vector<std::shared_ptr<Action>> actions() = 0;
+    virtual ActionList actions() = 0;
 
     /** The string to use for completion */
     virtual QString completion() const { return QString(); }  // Null semantic

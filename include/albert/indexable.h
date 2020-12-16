@@ -27,5 +27,7 @@ public:
 
 };
 
+typedef std::vector<Core::IndexableItem::IndexString> IdxStrList;
+
 }
 

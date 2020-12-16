@@ -32,7 +32,7 @@ EXPORT_CORE QString terminalCommand;
 
 /** **************************************************************************/
 Core::StandardActionBase::StandardActionBase(const QString &text)
-    : text_(std::move(text)) { }
+    : text_(text) { }
 
 QString Core::StandardActionBase::text() const {
     return text_;
@@ -40,8 +40,8 @@ QString Core::StandardActionBase::text() const {
 
 
 /** **************************************************************************/
-Core::FuncAction::FuncAction(const QString &text, std::function<void ()> action)
-    : StandardActionBase(text), action_(std::move(action)) { }
+Core::FuncAction::FuncAction(const QString &text, function<void ()> action)
+    : StandardActionBase(text), action_(action) { }
 
 void Core::FuncAction::activate() const {
     action_();
@@ -49,8 +49,8 @@ void Core::FuncAction::activate() const {
 
 
 /** **************************************************************************/
-Core::ClipAction::ClipAction(const QString &text, QString clipBoardText)
-    : StandardActionBase(text), clipBoardText_(std::move(clipBoardText)) { }
+Core::ClipAction::ClipAction(const QString &text,const QString &clipBoardText)
+    : StandardActionBase(text), clipBoardText_(clipBoardText) { }
 
 void Core::ClipAction::activate() const {
     QGuiApplication::clipboard()->setText(clipBoardText_);
@@ -58,8 +58,8 @@ void Core::ClipAction::activate() const {
 
 
 /** **************************************************************************/
-Core::UrlAction::UrlAction(const QString &text, QUrl url)
-    : StandardActionBase(text), url_(std::move(url)) { }
+Core::UrlAction::UrlAction(const QString &text,const QUrl &url)
+    : StandardActionBase(text), url_(url) { }
 
 void Core::UrlAction::activate() const {
     QDesktopServices::openUrl(url_);

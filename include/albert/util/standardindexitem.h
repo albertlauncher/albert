@@ -65,5 +65,6 @@ protected:
     Item::Urgency urgency_;
 
 };
+#define makeStdIdxItem std::make_shared<Core::StandardIndexItem>
 
 }
