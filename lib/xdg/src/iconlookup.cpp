@@ -9,7 +9,7 @@
 #include <QString>
 #include "themefileparser.h"
 #include "iconlookup.h"
-
+using namespace std;
 
 namespace  {
     QStringList icon_extensions = {"png", "svg", "xpm"};
@@ -17,7 +17,7 @@ namespace  {
 
 
 /** ***************************************************************************/
-QString XDG::IconLookup::iconPath(std::initializer_list<QString> iconNames, QString themeName) {
+QString XDG::IconLookup::iconPath(QStringList iconNames, QString themeName) {
     QString result;
     for ( const QString &iconName : iconNames )
         if ( !(result = instance()->themeIconPath(iconName, themeName)).isNull() )
@@ -91,7 +91,7 @@ QString XDG::IconLookup::themeIconPath(QString iconName, QString themeName){
     // Check cache
     try {
         return iconCache_.at(iconName);
-    }  catch (std::out_of_range) { }
+    }  catch (out_of_range) { }
 
     QStringList checkedThemes;
     QString iconPath;
@@ -156,13 +156,13 @@ QString XDG::IconLookup::doIconLookup(const QString &iconName, const QString &th
     QString themeName = themeDir.dirName();
 
     // Get the sizes of the dirs
-    std::vector<std::pair<QString, int>> dirsAndSizes;
+    vector<pair<QString, int>> dirsAndSizes;
     for (const QString &subdir : themeFileParser.directories())
-        dirsAndSizes.push_back(std::make_pair(subdir, themeFileParser.size(subdir)));
+        dirsAndSizes.push_back(make_pair(subdir, themeFileParser.size(subdir)));
 
     // Sort them by size
-    std::sort(dirsAndSizes.begin(), dirsAndSizes.end(),
-              [](std::pair<QString, int>  a, std::pair<QString, int> b) {
+    sort(dirsAndSizes.begin(), dirsAndSizes.end(),
+              [](pair<QString, int>  a, pair<QString, int> b) {
                   return a.second > b.second;
               });
 

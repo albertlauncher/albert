@@ -25,7 +25,7 @@ public:
      * @param themeName The theme to use, use current theme if empty
      * @return If one of the icons was found the path to the icon, else an empty string
      */
-    static QString iconPath(std::initializer_list<QString> iconNames, QString themeName = QString());
+    static QString iconPath(QStringList iconNames, QString themeName = QString());
 
 private:
 

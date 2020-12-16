@@ -40,7 +40,7 @@ QString Core::StandardActionBase::text() const {
 
 
 /** **************************************************************************/
-Core::FuncAction::FuncAction(const QString &text, function<void ()> action)
+Core::FuncAction::FuncAction(const QString &text, std::function<void ()> action)
     : StandardActionBase(text), action_(action) { }
 
 void Core::FuncAction::activate() const {
