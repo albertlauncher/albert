@@ -1,3 +1,192 @@
+v0.17.0 (2020-12-17)
+
+[albert]
+* Change sig of iconLookup from initlist to QStringlist
+
+For the sake of easy Python exposing
+
+* Hotkey and focus out is still a problem.
+
+Revert but as global native event filter
+
+* Some syntactic sugar
+
+* const activate for action
+
+* Revert "Fix also-cache-failed-iconlookups"
+
+Sincew stuff like this fails:
+d->iconPath = iconPath.isNull() ? ":terminal" : iconPath;
+
+This reverts commit 772c2235bfe6e4d36ee58e978953debf5883630f.
+
+Dont expose QIcon, fix lookup cache issue.
+
+* Again break init order of items for the sake of less boilerplate.
+
+Presumed this frequency indexStrings > actions > completion > urgency.
+Also add some `explicits` since Qstringlist implicitly converts to
+qtsring.
+
+* Let shells handle splitting/quoting
+
+* Core logging category
+
+* Update .travis.yml
+* Cleanup after releases
+
+*  Avoid implicit copies
+
+* Add restart action to coreQueryHandler, tray and cli.
+
+* Add core query handler.
+
+Also
+* Remove menu icons
+* Use smart pointers
+
+[plugins]
+* [Apps] Fix regression on i3. Missing desktops fall back to ~.
+
+As discussed in #38.
+
+* Shorter icon lookups
+
+* [Python] Add QStringlist cast specialization for direct arg passing
+
+* [Python] Adopt core changes
+
+* [File] Drop shell use convenience class
+
+* [py] v1.3 new APIv0.4
+
+Changes to the API:
+* embedded module is called 'albert' now
+* Reflect core api changes:
+  * Positional arguments of the standard item changes
+  * New semantics of the term action constructors
+    * String commandline will be executed in a shell
+    * StringList commandline will be executed without shell
+* Add core version of iconLookup(StringList)
+* New metadata labels:
+  * __version__: new versioning scheme iid_maj.iid_min.ext_version
+  * __title__: former __prettyname__
+  * __authors__: string or list
+  * __exec_deps__: string or list
+  * __py_deps__: string or list
+  * __triggers__: string or list
+* Implicit dependency check for executables and Pyhton modules
+* Allow multiple triggers
+* Allow multiple authors
+* New extension state : MissingDependencies
+* Disable settings items of exts in this new state
+* Minor changes to the python settings UI
+* Allow multiple triggers
+
+* Use pybind v2.6.1
+
+* [term] v1.1 Let shells handle lexing
+
+* Reduce boilerplate codebase
+* use the new sugar
+* Drop the config ui
+* Drop shutil and let shells handle lexing
+
+Closes albertlauncher/albert#855
+
+* [websearch] Fix default icon
+
+* apps STASH vaiadic
+
+* Syntactic sugar with variadic macros and typedefs
+
+* Finally archive external extensions.
+
+Python is dominant in all aspects, besides well maybe networks
+transparency or stuff like that.
+
+* [Files] ~ expansion on all unixoids
+
+* [Files] Adopt API changes
+
+* [Debug] Fix weird issue poping out of the blue.
+
+* [Chromium] Adopt API changes
+
+* [Calc] Adopt API changes
+
+* [Apps] Adopt API changes
+
+* [wbm, qbm] Allow "no completion" semantic
+
+Unfortunately a bit hackish since QML tanslates Null-QStrings to emtpy
+strings instead of undefined.
+
+* [chromium] Some amendments to the recent v1.1
+
+* [Apps] Fix label (missing in #38)
+
+* [calc] Adopt API changes. Fix PR introduced weirdness. Fix checkboxes.
+
+* Adopt API changes. Remove root action.
+
+* [system] Drop shutil dependency
+
+And fix score 🤦‍♂️
+
+* Remove global termialCommand
+
+* Fix changes of last commit to adopt conventions
+
+Closes #42
+
+* Add muparserInt option for hex calculations
+
+* [qml] Disable X11 code.
+
+See https://stackoverflow.com/questions/65242431/mouse-input-
+transparency-in-qt-without-visual-transparency
+
+* [widgets] Disable X11 code.
+
+See https://stackoverflow.com/questions/65242431/mouse-input-
+transparency-in-qt-without-visual-transparency
+
+* [widgets] Drop X11 workaround for QFocusOut QtBug
+
+* [qml] Drop X11 workaround for QFocusOut QtBug
+
+* Tasks
+
+* Avoid variadic macro warning
+
+* Use QLoggingCategory in all extensions
+
+* Avoid Variadic Macro warning
+
+[python]
+* [locate] ' for basename '' for full path lookups
+
+* [timer] Make notification stay.
+
+* split multiple authors in lists
+
+* Adpot APIv0.4 changes
+
+* Python-style base prefixes to detect source base
+
+* Change module name (iid v0.4)
+
+* [vbox] Update dependecy
+
+* [copyq] Disable albert sorting (#102)
+
+
+* [texdoc] Add texdoc plugin 
+
+
+* [aur] add yay helper
+
 v0.16.4 (2020-12-10)
 
 Hotfix for #959

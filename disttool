@@ -4,6 +4,7 @@
 import sys
 import argparse
 import datetime
+from pathlib import Path
 from subprocess import run
 
 
@@ -11,15 +12,15 @@ def create_changelog(args) -> str:
     plugins_root = f"{args.root}/plugins"
     modules_root = f"{args.root}/plugins/python/share/modules"
 
-    latest = run(["git", "describe", "--tags", "--abbrev=0"], capture_output=True).stdout.decode().strip()
+    latest     = run(["git", "describe", "--tags", "--abbrev=0"], capture_output=True).stdout.decode().strip()
 
-    albert_log = run(["git", "-C", args.root, "log", "--pretty=format:* %s", f"{latest}..dev"], capture_output=True).stdout.decode().strip()
+    albert_log = run(["git", "log", "--pretty=format:* %B", f"{latest}..dev"], capture_output=True).stdout.decode().strip()
 
-    begin = run(["git", "-C", args.root, "ls-tree", latest, plugins_root], capture_output=True).stdout.decode().strip().split()[2]
-    plugin_log = run(["git", "-C", plugins_root, "log", "--pretty=format:* %s", f"{begin}..master"], capture_output=True).stdout.decode().strip()
+    begin      = run(["git", "ls-tree", latest, plugins_root], capture_output=True).stdout.decode().strip().split()[2]
+    plugin_log = run(["git", "-C", plugins_root, "log", "--pretty=format:* %B", f"{begin}..master"], capture_output=True).stdout.decode().strip()
 
-    begin = run(["git", "-C", plugins_root, "ls-tree", begin, modules_root], capture_output=True).stdout.decode().strip().split()[2]
-    python_log = run(["git", "-C", modules_root, "log", "--pretty=format:* %s", f"{begin}..master"], capture_output=True).stdout.decode().strip()
+    begin      = run(["git", "-C", plugins_root, "ls-tree", begin, modules_root], capture_output=True).stdout.decode().strip().split()[2]
+    python_log = run(["git", "-C", modules_root, "log", "--pretty=format:* %B", f"{begin}..master"], capture_output=True).stdout.decode().strip()
 
     return f"[albert]\n{albert_log}\n\n[plugins]\n{plugin_log}\n\n[python]\n{python_log}"
 
@@ -29,6 +30,8 @@ def test_build(args):
 
 
 def release(args):
+
+    root = Path(args.root)
 
     if args.version[0] == 'v':
         args.version = args.version[1:]
@@ -50,7 +53,7 @@ def release(args):
         print("Version mismatch.")
         sys.exit(1)
 
-    atomic_changelog = f"{args.root}/changelog_v{args.version}"
+    atomic_changelog = root/f"changelog_v{args.version}"
 
     with open(atomic_changelog, 'w') as file:
         file.write(create_changelog(args))
@@ -63,7 +66,12 @@ def release(args):
         changelog = file.read().strip()
 
     if "y".startswith(input("Create news post? [Y/n] ").lower()):
-        with open(f"{datetime.date.today().strftime('%Y-%m-%d')}-albert-v{args.version}-released.md", 'w') as file:
+        if (root/"documentation").exist s():
+            run(["git", "pull"], cwd=root/"documentation").check_returncode()
+        else:
+            run(["git", "clone", "git://github.com/albertlauncher/documentation.git"], cwd=root).check_returncode()
+
+        with open(f"documentation/src/_posts/{datetime.date.today().strftime('%Y-%m-%d')}-albert-v{args.version}-released.md", 'w') as file:
             file.write(f"""---
 layout: page
 title:  "Albert v{args.version} released"
@@ -74,26 +82,27 @@ date: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M%z")}
 
 Check the GitHub repositories for details.
 """)
-        print("News post created. Don't forget to publish it.")
+        if "y".startswith(input("News post created. Build/Test/Publish it? [Y/n] ").lower()):
+            run("./build_test_deploy.sh", cwd=root/"documentation").check_returncode()
 
     if "y".startswith(input("Update the changelog? [Y/n] ").lower()):
-        with open(f"{args.root}/CHANGELOG.md", 'r') as file:
+        with open(root/"CHANGELOG.md", 'r') as file:
             old_changelog = file.read()
 
-        with open(f"{args.root}/CHANGELOG.md", 'w') as file:
+        with open(root/"CHANGELOG.md", 'w') as file:
             file.write(f"v{args.version} ({datetime.date.today().strftime('%Y-%m-%d')})\n\n{changelog}\n\n{old_changelog}")
 
         print("Changelog updated.")
 
-    run(["sed", "-i.bak", f"s/^project.*$/project(albert VERSION {args.version})/", f"{args.root}/CMakeLists.txt"], cwd=args.root).check_returncode()
+    run(["sed", "-i.bak", f"s/^project.*$/project(albert VERSION {args.version})/", root/"CMakeLists.txt"], cwd=root).check_returncode()
     print("Project version updated.")
 
     if "yes".startswith(input("Stage, commit, tag, rebase master and push? [yes/NO]").lower()):
-        run(["git", "add", f"{args.root}/CHANGELOG.md", f"{args.root}/CMakeLists.txt"], cwd=args.root).check_returncode()
-        run(["git", "commit", "-m", f"v{args.version}"], cwd=args.root).check_returncode()
-        run(["git", "tag", f"v{args.version}"], cwd=args.root).check_returncode()
-        run(["git", "rebase", "dev", "master"], cwd=args.root).check_returncode()
-        run(["git", "push", "--tags", "--atomic", "origin", "dev", "master"], cwd=args.root).check_returncode()
+        run(["git", "add", root/"CHANGELOG.md", root/"CMakeLists.txt"], cwd=root).check_returncode()
+        run(["git", "commit", "-m", f"v{args.version}"], cwd=root).check_returncode()
+        run(["git", "tag", f"v{args.version}"], cwd=root).check_returncode()
+        run(["git", "rebase", "dev", "master"], cwd=root).check_returncode()
+        run(["git", "push", "--tags", "--atomic", "origin", "dev", "master"], cwd=root).check_returncode()
     
     print("Clean up…")
     run(["rm", atomic_changelog])
@@ -104,6 +113,9 @@ Check the GitHub repositories for details.
 def main():
     p = argparse.ArgumentParser()
     sps = p.add_subparsers()
+
+    sp = sps.add_parser('changelog', help='Create raw changelog.')
+    sp.set_defaults(func=lambda args: print(create_changelog(args)))
 
     sp = sps.add_parser('test', help='Test build using docker.')
     sp.set_defaults(func=test_build)
