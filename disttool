@@ -66,7 +66,7 @@ def release(args):
         changelog = file.read().strip()
 
     if "y".startswith(input("Create news post? [Y/n] ").lower()):
-        if (root/"documentation").exist s():
+        if (root/"documentation").exists():
             run(["git", "pull"], cwd=root/"documentation").check_returncode()
         else:
             run(["git", "clone", "git://github.com/albertlauncher/documentation.git"], cwd=root).check_returncode()
@@ -83,7 +83,7 @@ date: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M%z")}
 Check the GitHub repositories for details.
 """)
         if "y".startswith(input("News post created. Build/Test/Publish it? [Y/n] ").lower()):
-            run("./build_test_deploy.sh", cwd=root/"documentation").check_returncode()
+            run("./build_check_deploy.sh", cwd=root/"documentation").check_returncode()
 
     if "y".startswith(input("Update the changelog? [Y/n] ").lower()):
         with open(root/"CHANGELOG.md", 'r') as file:
