@@ -24,6 +24,7 @@
 #include <QtNetwork/QLocalSocket>
 #if defined __linux__ || defined __freebsd__
 #include <QX11Info>
+#include "xcb/xproto.h"
 #endif
 #include <csignal>
 #include <functional>
