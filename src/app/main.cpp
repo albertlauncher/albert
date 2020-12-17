@@ -686,7 +686,6 @@ bool GlobalNativeEventFilter::nativeEventFilter(const QByteArray &eventType, voi
                 case XCB_NOTIFY_DETAIL_POINTER_ROOT:      msg += "::POINTER_ROOT";
                 case XCB_NOTIFY_DETAIL_VIRTUAL:           msg += "::VIRTUAL";break;
             }
-            WARN << QString::fromStdString(msg);
             if (fe->mode==XCB_NOTIFY_MODE_NORMAL && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR )
                 return false;
             else
