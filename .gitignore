@@ -1,9 +1,10 @@
-CMakeLists.txt.user*
-build*
-LicenseTemplate
-packaging
-design
-.albertignore
+/CMakeLists.txt.user*
+/documentation
+/build*
+/LicenseTemplate
+/packaging
+/design
+/.albertignore
 *.qmlc
 *.jsc
 .DS_Store
