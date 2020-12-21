@@ -1,9 +1,10 @@
 #! /usr/bin/env python3
 
-
+import re
 import sys
 import argparse
 import datetime
+import tempfile
 from pathlib import Path
 from subprocess import run
 
@@ -26,7 +27,17 @@ def create_changelog(args) -> str:
 
 
 def test_build(args):
-    run(["docker", "build", "."], cwd=args.root)
+    files = list((Path(args.root) / ".docker").iterdir())
+    for i, f in enumerate(files):
+        print(f"{i}: {f.name}")
+
+    default = list(range(len(files)))
+    indices = input(f"Which to build? [{' '.join(str(i) for i in default)}] ")
+    indices = [int(s) for s in filter(None, indices.split())]
+    indices = indices if indices else default
+    for index in indices:
+        tag = files[index].name.replace("Dockerfile", "albert")
+        run(["docker", "build", "-t", tag, "-f", files[index], "."], cwd=args.root).check_returncode()
 
 
 def release(args):
@@ -81,6 +92,7 @@ date: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M%z")}
 {changelog.strip()}
 
 Check the GitHub repositories for details.
+https://github.com/albertlauncher/albert/commits/v{args.version}
 """)
         if "y".startswith(input("News post created. Build/Test/Publish it? [Y/n] ").lower()):
             run("./build_check_deploy.sh", cwd=root/"documentation").check_returncode()
