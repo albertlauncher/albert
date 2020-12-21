@@ -1,3 +1,10 @@
+v0.17.1 (2020-12-21)
+
+[albert]
+* Fix OBS builds
+* Several fixes
+* Archive virtualbox python extension
+
 Copyright (c) 2018 Copyright Holder All Rights Reserved.v0.17.0 (2020-12-17)
 
 [albert]
