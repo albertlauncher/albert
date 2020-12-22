@@ -16,7 +16,6 @@
 #include "albert/queryhandler.h"
 #include "extensionmanager.h"
 #include "logging.h"
-#include "matchcompare.h"
 #include "queryexecution.h"
 #include "querymanager.h"
 using namespace Core;

@@ -13,13 +13,26 @@
 #include "albert/queryhandler.h"
 #include "albert/util/itemroles.h"
 #include "logging.h"
-#include "matchcompare.h"
 #include "queryexecution.h"
 using namespace std;
 using namespace chrono;
 
 namespace {
     const int FETCH_SIZE = 20;
+
+    struct MatchCompare
+    {
+        bool operator()(const pair<shared_ptr<Core::Item>, uint> &lhs,
+                        const pair<shared_ptr<Core::Item>, uint> &rhs) {
+            // Compare urgency then score
+            if (lhs.first->urgency() != rhs.first->urgency())
+                return lhs.first->urgency() < rhs.first->urgency();
+            else if (lhs.second != rhs.second)
+                return lhs.second > rhs.second; // Compare match score
+            else
+                return lhs.first->text().size() < rhs.first->text().size();
+        }
+    };
 }
 
 
