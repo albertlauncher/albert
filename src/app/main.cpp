@@ -39,7 +39,6 @@
 #include "pluginspec.h"
 #include "querymanager.h"
 #include "settingswidget/settingswidget.h"
-#include "telemetry.h"
 #include "trayicon.h"
 #include "xdg/iconlookup.h"
 Q_LOGGING_CATEGORY(clc, "core")
@@ -137,7 +136,6 @@ int main(int argc, char **argv) {
     unique_ptr<CoreQueryHandler> coreQueryHandler;
     unique_ptr<TrayIcon> trayIcon;
     unique_ptr<QMenu> trayIconMenu;
-    unique_ptr<Telemetry> telemetry;
     unique_ptr<QLocalServer> localServer;
 
     {
@@ -320,15 +318,13 @@ int main(int argc, char **argv) {
             }
         }
         queryManager = make_unique<QueryManager>(extensionManager.get());
-        telemetry  = make_unique<Telemetry>();
         trayIcon = make_unique<TrayIcon>();
         trayIconMenu  = make_unique<QMenu>();
         settingsWidget = make_unique<SettingsWidget>(extensionManager.get(),
                                                      frontendManager.get(),
                                                      queryManager.get(),
                                                      hotkeyManager.get(),
-                                                     trayIcon.get(),
-                                                     telemetry.get());
+                                                     trayIcon.get());
 
 
         QAction* showAction = new QAction("Show", trayIconMenu.get());

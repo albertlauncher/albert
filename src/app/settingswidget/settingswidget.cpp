@@ -18,7 +18,6 @@
 #include "../frontendmanager.h"
 #include "../pluginspec.h"
 #include "../querymanager.h"
-#include "../telemetry.h"
 #include "../trayicon.h"
 #include "albert/extension.h"
 #include "albert/frontend.h"
@@ -48,15 +47,13 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
                                      QueryManager *queryManager,
                                      HotkeyManager *hotkeyManager,
                                      TrayIcon *systemTrayIcon,
-                                     Telemetry *telemetry,
                                      QWidget *parent, Qt::WindowFlags f)
     : QWidget(parent, f),
       extensionManager_(extensionManager),
       frontendManager_(frontendManager),
       queryManager_(queryManager),
       hotkeyManager_(hotkeyManager),
-      trayIcon_(systemTrayIcon),
-      telemetry_(telemetry) {
+      trayIcon_(systemTrayIcon) {
 
     ui.setupUi(this);
 
@@ -88,10 +85,6 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
     ui.checkBox_incrementalSort->setChecked(queryManager_->incrementalSort());
     connect(ui.checkBox_incrementalSort, &QCheckBox::toggled,
             queryManager_, &QueryManager::setIncrementalSort);
-
-    // TELEMETRY
-    ui.checkBox_telemetry->setChecked(telemetry_->isEnabled());
-    connect(ui.checkBox_telemetry, &QCheckBox::toggled, this, [this](bool checked){ telemetry_->enable(checked); });
 
     // AUTOSTART
 #if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)

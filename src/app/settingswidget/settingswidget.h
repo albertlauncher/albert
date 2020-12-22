@@ -12,7 +12,6 @@ class FrontendManager;
 class QueryManager;
 class MainWindow;
 class TrayIcon;
-class Telemetry;
 
 class SettingsWidget final : public QWidget
 {
@@ -25,7 +24,6 @@ public:
                    QueryManager *queryManager,
                    GlobalShortcut::HotkeyManager *hotkeyManager,
                    TrayIcon *trayIcon,
-                   Telemetry *telemetry,
                    QWidget * parent = nullptr,
                    Qt::WindowFlags f = nullptr);
 
@@ -42,7 +40,6 @@ private:
     QueryManager *queryManager_;
     GlobalShortcut::HotkeyManager *hotkeyManager_;
     TrayIcon *trayIcon_;
-    Telemetry *telemetry_;
     Ui::SettingsDialog ui;
 
 };
