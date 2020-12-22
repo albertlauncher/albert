@@ -683,8 +683,8 @@ bool GlobalNativeEventFilter::nativeEventFilter(const QByteArray &eventType, voi
                 case XCB_NOTIFY_DETAIL_NONE:              msg += "::NONE";break;
                 case XCB_NOTIFY_DETAIL_NONLINEAR:         msg += "::NONLINEAR";break;
                 case XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL: msg += "::NONLINEAR_VIRTUAL";break;
-                case XCB_NOTIFY_DETAIL_POINTER:           msg += "::POINTER";break;break;
-                case XCB_NOTIFY_DETAIL_POINTER_ROOT:      msg += "::POINTER_ROOT";
+                case XCB_NOTIFY_DETAIL_POINTER:           msg += "::POINTER";break;
+                case XCB_NOTIFY_DETAIL_POINTER_ROOT:      msg += "::POINTER_ROOT";break;
                 case XCB_NOTIFY_DETAIL_VIRTUAL:           msg += "::VIRTUAL";break;
             }
             if (fe->mode==XCB_NOTIFY_MODE_NORMAL && fe->detail==XCB_NOTIFY_DETAIL_NONLINEAR )
