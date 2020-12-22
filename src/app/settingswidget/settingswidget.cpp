@@ -111,7 +111,7 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
     }
     else
         CRIT << "Deskop entry not found! Autostart option is nonfuctional";
-#elif
+#else
     ui.autostartCheckBox->setEnabled(false);
     WARN << "Autostart not implemented on this platform!"
 #endif
