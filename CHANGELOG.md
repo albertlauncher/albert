@@ -1,3 +1,11 @@
+v0.17.2 (2020-12-24)
+
+[albert]
+* Drop telemetry
+
+[plugins]
+* [wbm] Fix completion
+
 v0.17.1 (2020-12-21)
 
 [albert]
