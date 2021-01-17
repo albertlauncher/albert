@@ -3,6 +3,10 @@ dist: focal
 services:
   - docker
 
+# Because metatool checks for certain commits
+git:
+  depth: false
+
 # 0-number of builds from "./metatool test"
 env:
 - TEST_BUILD=0
