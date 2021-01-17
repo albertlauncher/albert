@@ -1,5 +1,7 @@
+version: ~> 1.0
 os: linux
 dist: focal
+language: minimal
 services:
   - docker
 
@@ -17,4 +19,4 @@ notifications:
     on_success: change
     on_failure: change
     template:
-      - "%{repository_name#%{build_number} (%{commit}) : %{message}\n\n%{build_url}"
+      - "%{repository_name}#%{build_number} (%{commit}) : %{message}\n\n%{build_url}"
