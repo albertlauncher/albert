@@ -3,7 +3,10 @@ dist: focal
 services:
   - docker
 
-# https://www.digitalrooster.dev/news/travis-updated-docker/
+# Because metatool checks for certain commits
+git:
+  depth: false
+
 script:
   - docker build .
 
