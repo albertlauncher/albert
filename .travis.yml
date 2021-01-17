@@ -3,9 +3,16 @@ dist: focal
 services:
   - docker
 
-# https://www.digitalrooster.dev/news/travis-updated-docker/
+# 0-number of builds from "./metatool test"
+env:
+- TEST_BUILD=0
+- TEST_BUILD=1
+- TEST_BUILD=2
+- TEST_BUILD=3
+- TEST_BUILD=4
+
 script:
-  - docker build .
+  - echo $TEST_BUILD | ./metatool test
 
 notifications:
   irc:
