@@ -1,6 +1,6 @@
 # Albert launcher [![Build Status](https://api.travis-ci.org/albertlauncher/albert.svg?branch=dev)](https://travis-ci.org/albertlauncher/albert)
 
-[![Telegram community chat](https://img.shields.io/badge/chat-telegram-0088cc.svg?style=flat)](https://telegram.me/albert_launcher_community) [![Discord](https://img.shields.io/badge/chat-discord-7289da.svg?style=flat)](https://discord.gg/enGMWUG) [![IRC](https://img.shields.io/badge/chat-IRC-brightgreen.svg)](http://webchat.freenode.net/?channels=%23albertlauncher)
+[![Telegram community chat](https://img.shields.io/badge/chat-telegram-0088cc.svg?style=flat)](https://telegram.me/albert_launcher_community) [![Discord](https://img.shields.io/badge/chat-discord-7289da.svg?style=flat)](https://discord.gg/t8G2EkvRZh) [![IRC](https://img.shields.io/badge/chat-IRC-brightgreen.svg)](http://webchat.freenode.net/?channels=%23albertlauncher)
 
 Albert is a unified and efficient access to your machine. Technically it is a keyboard launcher written in C++/Qt. The plugin based architecture makes it extremely flexible and powerful. Plugins can be used to create frontends or functional extensions. Extensions can also be implemented using embedded Python modules or via a CGI approach in any language you want.
 
