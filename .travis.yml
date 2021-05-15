@@ -10,7 +10,7 @@ git:
   depth: false
 
 script:
-  - docker build .
+  - echo | ./metatool test
 
 notifications:
   irc:
