@@ -9,9 +9,11 @@ You need some tools to get environment ready:
 
 - git
 - cmake
+  python-dev
 - pybind11
 - Qt5Chart
 - Qt5SVG
+- MuParser
 
 
 ### Ubuntu
@@ -26,7 +28,7 @@ pip install pybind11
 Install libraries:
 
 ```
-sudo apt install libqt5charts5-dev libqt5svg5-dev
+sudo apt install qtbase5-dev qtdeclarative5-dev libqt5x11extras5-dev libqt5charts5-dev libqt5svg5-dev  python3-dev libmuparser-dev
 ```
 
 Check out the repository:
