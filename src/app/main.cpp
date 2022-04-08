@@ -384,7 +384,7 @@ int main(int argc, char **argv) {
                     // Do whatever is neccessary on first run
                     QMessageBox(QMessageBox::Information, "Major version changed",
                                 QString("You are now using Albert %1. The major version changed. "
-                                        "Probably some parts of the API changed. Check the "
+                                        "Some parts of the API might have changed. Check the "
                                         "<a href=\"https://albertlauncher.github.io/news/\">news</a>.")
                                 .arg(app->applicationVersion())).exec();
                 }
@@ -395,7 +395,7 @@ int main(int argc, char **argv) {
         } else {
             // Do whatever is neccessary on first run
             QMessageBox(QMessageBox::Information, "First run",
-                        "Seems like this is the first time you run Albert. Albert is "
+                        "Seems like this is the first time you've launched Albert. Albert is "
                         "standalone, free and open source software. Note that Albert is not "
                         "related to or affiliated with any other projects or corporations.\n\n"
                         "You should set a hotkey and enable some extensions.").exec();
