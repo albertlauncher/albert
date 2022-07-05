@@ -1,6 +1,7 @@
-#! /usr/bin/env python3
-
+#!/usr/bin/env python3
+import os
 import re
+import subprocess
 import sys
 import argparse
 import datetime
@@ -12,18 +13,27 @@ from subprocess import run
 def create_changelog(args) -> str:
     plugins_root = f"{args.root}/plugins"
     modules_root = f"{args.root}/plugins/python/share/modules"
+    latest_tag = run(["git", "describe", "--tags", "--abbrev=0"], capture_output=True).stdout.decode().strip()
+    out = []
 
-    latest     = run(["git", "describe", "--tags", "--abbrev=0"], capture_output=True).stdout.decode().strip()
+    log = run(["git", "log", "--pretty=format:* %B", f"{latest_tag}..HEAD"], capture_output=True).stdout.decode().strip()
+    log = re.sub('\n+', '\n', log)
+    if log:
+        out.append(f"[albert]\n{log}")
 
-    albert_log = run(["git", "log", "--pretty=format:* %B", f"{latest}..dev"], capture_output=True).stdout.decode().strip()
+    begin = run(["git", "ls-tree", latest_tag, plugins_root], capture_output=True).stdout.decode().strip().split()[2]
+    log = run(["git", "-C", plugins_root, "log", "--pretty=format:* %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
+    log = re.sub('\n+', '\n', log)
+    if log:
+        out.append(f"[plugins]\n{log}")
 
-    begin      = run(["git", "ls-tree", latest, plugins_root], capture_output=True).stdout.decode().strip().split()[2]
-    plugin_log = run(["git", "-C", plugins_root, "log", "--pretty=format:* %B", f"{begin}..master"], capture_output=True).stdout.decode().strip()
+    begin = run(["git", "-C", plugins_root, "ls-tree", begin, modules_root], capture_output=True).stdout.decode().strip().split()[2]
+    log = run(["git", "-C", modules_root, "log", "--pretty=format:* %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
+    log = re.sub('\n+', '\n', log)
+    if log:
+        out.append(f"[python]\n{log}")
 
-    begin      = run(["git", "-C", plugins_root, "ls-tree", begin, modules_root], capture_output=True).stdout.decode().strip().split()[2]
-    python_log = run(["git", "-C", modules_root, "log", "--pretty=format:* %B", f"{begin}..master"], capture_output=True).stdout.decode().strip()
-
-    return f"[albert]\n{albert_log}\n\n[plugins]\n{plugin_log}\n\n[python]\n{python_log}"
+    return '\n\n'.join(out)
 
 
 def test_build(args):
@@ -31,30 +41,35 @@ def test_build(args):
     for i, f in enumerate(files):
         print(f"{i}: {f.name}")
 
-    default = list(range(len(files)))
-    indices = input(f"Which to build? [{' '.join(str(i) for i in default)}] ")
+    indices = input(f"Which to build? [All] ")
     indices = [int(s) for s in filter(None, indices.split())]
-    indices = indices if indices else default
+    indices = indices if indices else list(range(len(files)))
     for index in indices:
         tag = files[index].name.replace("Dockerfile", "albert")
-        run(["docker", "build", "-t", tag, "-f", files[index], "."], cwd=args.root).check_returncode()
+        try:
+            run(["docker", "build", "-t", tag, "-f", files[index], "."],
+                cwd=args.root, env=dict(os.environ, DOCKER_BUILDKIT="0")).check_returncode()
+        except subprocess.CalledProcessError as e:
+            print(e)
 
 
 def release(args):
-
     root = Path(args.root)
+
+    if "master" != run(["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True).stdout.decode().strip():
+        print("Not on master branch")
+        sys.exit(1)
 
     if args.version[0] == 'v':
         args.version = args.version[1:]
 
-    import re
     if not re.match(r"^[0-9]+\.[0-9]+\.[0-9]+$", args.version):
         print("Expected version number as parameter: major.minor.patch")
         sys.exit(1)
 
-    print("Don't forget to merge ready PRs.")
-    print("Don't forget to updated the 'python' submodule in the Python plugin.")
-    print("Don't forget to updated the 'plugins' submodule.")
+    input("Contributors PRs merged?")
+    input("Feature branches merged?")
+    input("'plugins' and 'modules' committed?")
 
     if "y".startswith(input("Shall I run a test build in docker? [Y/n] ").lower()):
         test_build(args)
@@ -94,7 +109,7 @@ date: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M%z")}
 Check the [GitHub repositories](https://github.com/albertlauncher/albert/commits/v{args.version}) for details.
 """)
         if "y".startswith(input("News post created. Build/Test/Publish it? [Y/n] ").lower()):
-            run("./build_check_deploy.sh", cwd=root/"documentation").check_returncode()
+            run(["make", "deploy"], cwd=root/"documentation").check_returncode()
 
     if "y".startswith(input("Update the changelog? [Y/n] ").lower()):
         with open(root/"CHANGELOG.md", 'r') as file:
@@ -108,17 +123,15 @@ Check the [GitHub repositories](https://github.com/albertlauncher/albert/commits
     run(["sed", "-i.bak", f"s/^project.*$/project(albert VERSION {args.version})/", root/"CMakeLists.txt"], cwd=root).check_returncode()
     print("Project version updated.")
 
-    if "yes".startswith(input("Stage, commit, tag, rebase master and push? [yes/NO]").lower()):
+    if "yes".startswith(input("Stage, commit, tag and push? [yes/NO]").lower()):
         run(["git", "add", root/"CHANGELOG.md", root/"CMakeLists.txt"], cwd=root).check_returncode()
         run(["git", "commit", "-m", f"v{args.version}"], cwd=root).check_returncode()
         run(["git", "tag", f"v{args.version}"], cwd=root).check_returncode()
-        run(["git", "rebase", "dev", "master"], cwd=root).check_returncode()
-        run(["git", "push", "--tags", "--atomic", "origin", "dev", "master"], cwd=root).check_returncode()
+        run(["git", "push", "--tags", "--atomic", "origin", "master"], cwd=root).check_returncode()
     
     print("Clean up…")
     run(["rm", atomic_changelog])
     run(["rm", "CMakeLists.txt.bak"])
-
 
 
 def main():

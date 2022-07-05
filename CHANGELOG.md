@@ -1,3 +1,8 @@
+v0.17.3 (2022-07-05)
+
+[albert]
+* Sloppy hotfix #1088. 0.18 will change DB entirely anyway.
+
 v0.17.2 (2020-12-24)
 
 [albert]

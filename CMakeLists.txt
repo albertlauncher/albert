@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1.3)  # Least supporting CMAKE_CXX_STANDARD
 ###############################################################################
 
-project(albert VERSION 0.17.2)
+project(albert VERSION 0.17.3)
 
 ###############################################################################
 
