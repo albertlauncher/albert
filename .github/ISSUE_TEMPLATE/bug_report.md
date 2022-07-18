@@ -16,6 +16,7 @@ assignees: ManuelSchneid3r
 - CHECK FOR EXISTING ISSUES, ALSO CLOSED ONES!
 - FILL OUT THE __ENTIRE__ TEMPLATE!
 - THE ISSUE POSTED HAS TO BE RELATED TO THE CODE BASE OF __THIS__ PROJECT
+- For extension suggestions and other ideas open a discussion rather than an issue.
 - I may also get furious, if I sense you did not even search on google once.
 - Please make sure you dont use an outdated verison.
 -->
