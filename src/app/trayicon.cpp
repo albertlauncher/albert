@@ -12,7 +12,8 @@ namespace {
 
 /** ***************************************************************************/
 Core::TrayIcon::TrayIcon() {
-    setIcon(QIcon(XDG::IconLookup::iconPath({"albert-tray", "albert"})));
+    auto fallback_icon = QIcon(XDG::IconLookup::iconPath({"albert-tray", "albert"}));
+    setIcon(QIcon::fromTheme("albert-tray", fallback_icon));
     if (QSettings(qApp->applicationName()).value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool())
         setVisible(true);
 }
