@@ -12,7 +12,7 @@ namespace {
 
 /** ***************************************************************************/
 Core::TrayIcon::TrayIcon() {
-    setIcon(QIcon(":app_icon"));
+    setIcon(QIcon(XDG::IconLookup::iconPath({"albert-tray", "albert"})));
     if (QSettings(qApp->applicationName()).value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool())
         setVisible(true);
 }
