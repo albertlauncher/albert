@@ -48,7 +48,7 @@ def test_build(args):
         tag = files[index].name.replace("Dockerfile", "albert")
         try:
             run(["docker", "build", "-t", tag, "-f", files[index], "."],
-                cwd=args.root, env=dict(os.environ, DOCKER_BUILDKIT="0")).check_returncode()
+                cwd=args.root, env=dict(os.environ, DOCKER_BUILDKIT="1")).check_returncode()
         except subprocess.CalledProcessError as e:
             print(e)
 
@@ -67,25 +67,29 @@ def release(args):
         print("Expected version number as parameter: major.minor.patch")
         sys.exit(1)
 
-    input("Contributors PRs merged?")
-    input("Feature branches merged?")
-    input("'plugins' and 'modules' committed?")
+    print("CHECK THESE!")
+    print("- docker running (build tests, jekyll)?")
+    print("- contributors PRs merged?")
+    print("- feature branches merged?")
+    print("- python modules staged/committed?")
+    print("- plugins staged/committed?")
+    print("- CONFIRM THE VERSION NUMBER!")
+    print("- CMake project version will be automatically updated.")
 
     if "y".startswith(input("Shall I run a test build in docker? [Y/n] ").lower()):
         test_build(args)
 
-    v = input("Confirm the version number: ")
-    if args.version != (v[1:] if v[0] == 'v' else v):
-        print("Version mismatch.")
-        sys.exit(1)
+    #v = input("Confirm the version number: ")
+    #if args.version != (v[1:] if v[0] == 'v' else v):
+    #    print("Version mismatch.")
+    #    sys.exit(1)
 
     atomic_changelog = root/f"changelog_v{args.version}"
 
     with open(atomic_changelog, 'w') as file:
         file.write(create_changelog(args))
 
-    print("Changelog created from git logs. Edit it to be meaningful to humans.")
-    input("Press Enter to continue...")
+    input("Edit the changelog created from git logs to be meaningful to humans. Press Enter to continue...")
     run(["vim", atomic_changelog]).check_returncode()
 
     with open(atomic_changelog, 'r') as file:
@@ -95,7 +99,7 @@ def release(args):
         if (root/"documentation").exists():
             run(["git", "pull"], cwd=root/"documentation").check_returncode()
         else:
-            run(["git", "clone", "git://github.com/albertlauncher/documentation.git"], cwd=root).check_returncode()
+            run(["git", "clone", "git@github.com:albertlauncher/documentation.git"], cwd=root).check_returncode()
 
         with open(f"documentation/src/_posts/{datetime.date.today().strftime('%Y-%m-%d')}-albert-v{args.version}-released.md", 'w') as file:
             file.write(f"""---
@@ -109,6 +113,8 @@ date: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M%z")}
 Check the [GitHub repositories](https://github.com/albertlauncher/albert/commits/v{args.version}) for details.
 """)
         if "y".startswith(input("News post created. Build/Test/Publish it? [Y/n] ").lower()):
+            run(["make", "build"], cwd=root/"documentation").check_returncode()
+            run(["make", "check"], cwd=root/"documentation")
             run(["make", "deploy"], cwd=root/"documentation").check_returncode()
 
     if "y".startswith(input("Update the changelog? [Y/n] ").lower()):

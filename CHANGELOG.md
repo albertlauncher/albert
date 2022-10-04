@@ -1,3 +1,7 @@
+v0.17.4 (2022-10-04)
+
+* Fix https://github.com/albertlauncher/albert/issues/1117
+
 v0.17.3 (2022-07-05)
 
 [albert]
