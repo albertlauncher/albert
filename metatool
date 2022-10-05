@@ -48,13 +48,14 @@ def test_build(args):
         tag = files[index].name.replace("Dockerfile", "albert")
         try:
             run(["docker", "build", "-t", tag, "-f", files[index], "."],
-                cwd=args.root, env=dict(os.environ, DOCKER_BUILDKIT="1")).check_returncode()
+                cwd=args.root, env=dict(os.environ, DOCKER_BUILDKIT="0")).check_returncode()
         except subprocess.CalledProcessError as e:
             print(e)
 
 
 def release(args):
     root = Path(args.root)
+
 
     if "master" != run(["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True).stdout.decode().strip():
         print("Not on master branch")
@@ -67,22 +68,19 @@ def release(args):
         print("Expected version number as parameter: major.minor.patch")
         sys.exit(1)
 
+
     print("CHECK THESE!")
     print("- docker running (build tests, jekyll)?")
-    print("- contributors PRs merged?")
-    print("- feature branches merged?")
-    print("- python modules staged/committed?")
-    print("- plugins staged/committed?")
-    print("- CONFIRM THE VERSION NUMBER!")
-    print("- CMake project version will be automatically updated.")
+    print("- PRs and feature branches merged?")
+    print("- submodules staged/committed? (python, plugins, …)")
+    print("- Confirm: Using version 'v%s', current is '%s')"
+          % (args.version, run(["git", "describe", "--tags", "--abbrev=0"], capture_output=True).stdout.decode().strip()))
+    print("- Note: project version will be automatically updated.")
+
 
     if "y".startswith(input("Shall I run a test build in docker? [Y/n] ").lower()):
         test_build(args)
 
-    #v = input("Confirm the version number: ")
-    #if args.version != (v[1:] if v[0] == 'v' else v):
-    #    print("Version mismatch.")
-    #    sys.exit(1)
 
     atomic_changelog = root/f"changelog_v{args.version}"
 
@@ -92,8 +90,25 @@ def release(args):
     input("Edit the changelog created from git logs to be meaningful to humans. Press Enter to continue...")
     run(["vim", atomic_changelog]).check_returncode()
 
+    print("Appending changelog…")
     with open(atomic_changelog, 'r') as file:
         changelog = file.read().strip()
+
+    with open(root/"CHANGELOG.md", 'r') as file:
+        old_changelog = file.read()
+
+    with open(root/"CHANGELOG.md", 'w') as file:
+        file.write(f"v{args.version} ({datetime.date.today().strftime('%Y-%m-%d')})\n\n{changelog}\n\n{old_changelog}")
+
+    print("Update CMake project version…")
+    run(["sed", "-i.bak", f"s/^project.*$/project(albert VERSION {args.version})/", root/"CMakeLists.txt"], cwd=root).check_returncode()
+
+    if "yes".startswith(input("Stage, commit, tag and push (CHANGELOG, CMakeLists.txt)? [yes/NO]").lower()):
+        run(["git", "add", root/"CHANGELOG.md", root/"CMakeLists.txt"], cwd=root).check_returncode()
+        run(["git", "commit", "-m", f"v{args.version}"], cwd=root).check_returncode()
+        run(["git", "tag", f"v{args.version}"], cwd=root).check_returncode()
+        run(["git", "push", "--tags", "--atomic", "origin", "master"], cwd=root).check_returncode()
+
 
     if "y".startswith(input("Create news post? [Y/n] ").lower()):
         if (root/"documentation").exists():
@@ -112,32 +127,13 @@ date: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M%z")}
 
 Check the [GitHub repositories](https://github.com/albertlauncher/albert/commits/v{args.version}) for details.
 """)
-        if "y".startswith(input("News post created. Build/Test/Publish it? [Y/n] ").lower()):
-            run(["make", "build"], cwd=root/"documentation").check_returncode()
-            run(["make", "check"], cwd=root/"documentation")
-            run(["make", "deploy"], cwd=root/"documentation").check_returncode()
+        run(["make", "build"], cwd=root/"documentation").check_returncode()
+        run(["make", "check"], cwd=root/"documentation")
+        run(["make", "deploy"], cwd=root/"documentation").check_returncode()
 
-    if "y".startswith(input("Update the changelog? [Y/n] ").lower()):
-        with open(root/"CHANGELOG.md", 'r') as file:
-            old_changelog = file.read()
-
-        with open(root/"CHANGELOG.md", 'w') as file:
-            file.write(f"v{args.version} ({datetime.date.today().strftime('%Y-%m-%d')})\n\n{changelog}\n\n{old_changelog}")
-
-        print("Changelog updated.")
-
-    run(["sed", "-i.bak", f"s/^project.*$/project(albert VERSION {args.version})/", root/"CMakeLists.txt"], cwd=root).check_returncode()
-    print("Project version updated.")
-
-    if "yes".startswith(input("Stage, commit, tag and push? [yes/NO]").lower()):
-        run(["git", "add", root/"CHANGELOG.md", root/"CMakeLists.txt"], cwd=root).check_returncode()
-        run(["git", "commit", "-m", f"v{args.version}"], cwd=root).check_returncode()
-        run(["git", "tag", f"v{args.version}"], cwd=root).check_returncode()
-        run(["git", "push", "--tags", "--atomic", "origin", "master"], cwd=root).check_returncode()
-    
-    print("Clean up…")
     run(["rm", atomic_changelog])
     run(["rm", "CMakeLists.txt.bak"])
+    print("Done.")
 
 
 def main():
