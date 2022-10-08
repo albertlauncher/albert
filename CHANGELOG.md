@@ -1,3 +1,8 @@
+v0.17.6 (2022-10-08)
+
+* Let users choose the chromium bookmarks path
+* Fix https://github.com/albertlauncher/albert/issues/978
+
 v0.17.5 (2022-10-05)
 
 * Fix #1064.
