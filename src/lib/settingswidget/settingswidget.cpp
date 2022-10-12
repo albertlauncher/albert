@@ -21,7 +21,6 @@
 #include "../trayicon.h"
 #include "albert/extension.h"
 #include "albert/frontend.h"
-#include "globalshortcut/hotkeymanager.h"
 #include "grabkeybutton.h"
 #include "loadermodel.h"
 #include "logging.h"
@@ -29,7 +28,6 @@
 #include "statswidget.h"
 using namespace std;
 using namespace Core;
-using namespace GlobalShortcut;
 
 namespace {
 const char* CFG_TERM = "terminal";
@@ -42,14 +40,12 @@ extern QString terminalCommand;
 Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
                                      FrontendManager *frontendManager,
                                      QueryManager *queryManager,
-                                     HotkeyManager *hotkeyManager,
                                      TrayIcon *systemTrayIcon,
                                      QWidget *parent, Qt::WindowFlags f)
     : QWidget(parent, f),
       extensionManager_(extensionManager),
       frontendManager_(frontendManager),
       queryManager_(queryManager),
-      hotkeyManager_(hotkeyManager),
       trayIcon_(systemTrayIcon) {
 
     ui.setupUi(this);
@@ -58,20 +54,6 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
     /*
      * GENERAL
      */
-
-    // HOTKEY
-    if (hotkeyManager) {
-        QSet<int> hks = hotkeyManager->hotkeys();
-        if (hks.size() < 1)
-            ui.grabKeyButton_hotkey->setText("Press to set hotkey");
-        else
-            ui.grabKeyButton_hotkey->setText(QKeySequence(*hks.begin()).toString()); // OMG
-        connect(ui.grabKeyButton_hotkey, &GrabKeyButton::keyCombinationPressed,
-                this, &SettingsWidget::changeHotkey);
-    } else {
-        ui.grabKeyButton_hotkey->setVisible(false);
-        ui.label_hotkey->setVisible(false);
-    }
 
     // TRAY
     ui.checkBox_showTray->setChecked(trayIcon_->isVisible());
@@ -102,8 +84,8 @@ Core::SettingsWidget::SettingsWidget(ExtensionManager *extensionManager,
     else
         CRIT << "Deskop entry not found! Autostart option is nonfuctional";
 #else
-    ui.autostartCheckBox->setEnabled(false);
-    WARN << "Autostart not implemented on this platform!"
+    ui.checkBox_autostart->setEnabled(false);
+    WARN << "Autostart not implemented on this platform!";
 #endif
 
     // FRONTEND
@@ -315,28 +297,6 @@ void SettingsWidget::updatePluginInformations(const QModelIndex & current) {
 
 
 /** ***************************************************************************/
-void SettingsWidget::changeHotkey(int newhk) {
-    Q_ASSERT(hotkeyManager_);
-    int oldhk = *hotkeyManager_->hotkeys().begin(); //TODO Make cool sharesdpointer design
-
-    // Try to set the hotkey
-    if (hotkeyManager_->registerHotkey(newhk)) {
-        QString hkText(QKeySequence((newhk&~Qt::GroupSwitchModifier)).toString());//QTBUG-45568
-        ui.grabKeyButton_hotkey->setText(hkText);
-        QSettings(qApp->applicationName()).setValue("hotkey", hkText);
-        hotkeyManager_->unregisterHotkey(oldhk);
-    } else {
-        ui.grabKeyButton_hotkey->setText(QKeySequence(oldhk).toString());
-        QMessageBox(QMessageBox::Critical, "Error",
-                    QKeySequence(newhk).toString() + " could not be registered.",
-                    QMessageBox::NoButton,
-                    this).exec();
-    }
-}
-
-
-
-/** ***************************************************************************/
 void SettingsWidget::onPluginDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) {
     Q_UNUSED(bottomRight)
     if (topLeft == ui.listView_plugins->currentIndex())
@@ -352,25 +312,4 @@ void SettingsWidget::keyPressEvent(QKeyEvent *event) {
     if (event->modifiers() == Qt::NoModifier && event->key() == Qt::Key_Escape ) {
         close();
     }
-}
-
-
-
-/** ***************************************************************************/
-void SettingsWidget::closeEvent(QCloseEvent *event) {
-    if (hotkeyManager_ && hotkeyManager_->hotkeys().empty()) {
-        QMessageBox msgBox(QMessageBox::Warning, "Hotkey Missing",
-                           "Hotkey is invalid, please set it. Press OK to go "\
-                           "back to the settings.",
-                           QMessageBox::Ok|QMessageBox::Ignore,
-                           this);
-        msgBox.exec();
-        if ( msgBox.result() == QMessageBox::Ok ) {
-            ui.tabs->setCurrentIndex(0);
-            show();
-            event->ignore();
-            return;
-        }
-    }
-    event->accept();
 }

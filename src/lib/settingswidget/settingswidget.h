@@ -3,9 +3,6 @@
 #pragma once
 #include "ui_settingswidget.h"
 
-namespace GlobalShortcut {
-class HotkeyManager;
-}
 namespace Core {
 class ExtensionManager;
 class FrontendManager;
@@ -22,7 +19,6 @@ public:
     SettingsWidget(ExtensionManager *extensionManager,
                    FrontendManager *frontendManager,
                    QueryManager *queryManager,
-                   GlobalShortcut::HotkeyManager *hotkeyManager,
                    TrayIcon *trayIcon,
                    QWidget * parent = nullptr,
                    Qt::WindowFlags f = nullptr);
@@ -30,15 +26,12 @@ public:
 private:
 
     void keyPressEvent(QKeyEvent * event) override;
-    void closeEvent(QCloseEvent * event) override;
     void onPluginDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
-    void changeHotkey(int);
     void updatePluginInformations(const QModelIndex & curr);
 
     ExtensionManager *extensionManager_;
     FrontendManager *frontendManager_;
     QueryManager *queryManager_;
-    GlobalShortcut::HotkeyManager *hotkeyManager_;
     TrayIcon *trayIcon_;
     Ui::SettingsDialog ui;
 
