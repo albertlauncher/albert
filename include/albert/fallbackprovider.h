@@ -4,13 +4,13 @@
 #include <QString>
 #include <vector>
 #include <memory>
-#include "core_globals.h"
+#include "export.h"
 
 namespace Core {
 
 class Item;
 
-class EXPORT_CORE FallbackProvider
+class ALBERT_EXPORT FallbackProvider
 {
 public:
 

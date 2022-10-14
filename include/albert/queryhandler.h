@@ -4,13 +4,13 @@
 #include <QString>
 #include <QStringList>
 #include "query.h"
-#include "core_globals.h"
+#include "export.h"
 
 namespace Core {
 
 class Query;
 
-class EXPORT_CORE QueryHandler
+class ALBERT_EXPORT QueryHandler
 {
 public:
 

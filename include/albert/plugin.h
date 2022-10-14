@@ -6,7 +6,7 @@
 #include <QString>
 #include <QSettings>
 #include <memory>
-#include "core_globals.h"
+#include "export.h"
 
 #define ALBERT_PLUGIN_IID_PREFIX "org.albert.pluginv1-alpha"
 
@@ -14,7 +14,7 @@ namespace Core {
 
 class PluginPrivate;
 
-class EXPORT_CORE Plugin : public QObject
+class ALBERT_EXPORT Plugin : public QObject
 {
     Q_OBJECT
 

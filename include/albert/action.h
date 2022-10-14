@@ -2,7 +2,7 @@
 
 #pragma once
 #include <QString>
-#include "core_globals.h"
+#include "export.h"
 
 namespace Core {
 
@@ -10,7 +10,7 @@ namespace Core {
  * @brief The action interface
  * A base class for actions (and items)
  */
-class EXPORT_CORE Action
+class ALBERT_EXPORT Action
 {
 public:
 

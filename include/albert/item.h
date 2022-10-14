@@ -4,7 +4,7 @@
 #include <QString>
 #include <vector>
 #include <memory>
-#include "core_globals.h"
+#include "export.h"
 
 namespace Core {
 
@@ -15,7 +15,7 @@ typedef std::vector<std::shared_ptr<Action>> ActionList;
  * @brief The item interface
  * Subclass this class to make your object displayable in the results list.
  */
-class EXPORT_CORE Item
+class ALBERT_EXPORT Item
 {
 
 public:

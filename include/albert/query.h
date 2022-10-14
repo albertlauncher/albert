@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 #include <vector>
-#include "core_globals.h"
+#include "export.h"
 
 
 namespace Core {
@@ -19,7 +19,7 @@ class Item;
  * @brief The Query class
  * Represents a query to be handled by the query handlers
  */
-class EXPORT_CORE Query final
+class ALBERT_EXPORT Query final
 {
 public:
 

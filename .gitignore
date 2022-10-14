@@ -8,3 +8,7 @@
 *.qmlc
 *.jsc
 .DS_Store
+export.h
+config.h
+/.idea
+/cmake-*

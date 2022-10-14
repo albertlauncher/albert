@@ -2,14 +2,14 @@
 
 #pragma once
 #include <Qt>
-#include "../core_globals.h"
+#include "export.h"
 
 namespace Core {
 
 /**
  * @brief The ItemRoles enum. This enum is used for QML model view.
  */
-enum EXPORT_CORE ItemRoles {
+enum ALBERT_EXPORT ItemRoles {
     TextRole = 0,
     ToolTipRole,
     DecorationRole,

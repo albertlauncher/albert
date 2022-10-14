@@ -3,14 +3,14 @@
 #pragma once
 #include <QObject>
 #include <QStringList>
-#include "../core_globals.h"
+#include "export.h"
 
 namespace Core {
 
 /**
  * @brief The History class. This is the common input line history backend for frontends.
  */
-class EXPORT_CORE History final : public QObject
+class ALBERT_EXPORT History final : public QObject
 {
     Q_OBJECT
 

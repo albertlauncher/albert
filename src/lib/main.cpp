@@ -28,7 +28,7 @@
 #endif
 #include <csignal>
 #include <functional>
-#include "albert/main.h"
+#include "albert/config.h"
 #include "albert/frontend.h"
 #include "albert/queryhandler.h"
 #include "albert/util/standardactions.h"
@@ -63,8 +63,9 @@ struct GlobalNativeEventFilter : public QAbstractNativeEventFilter {
     bool nativeEventFilter(const QByteArray &eventType, void *message, long *) override;
 };
 
+int ALBERT_EXPORT main(int argc, char **argv);
 
-int _main(int argc, char **argv) {
+int main(int argc, char **argv) {
 
     // Parse commandline
     QCommandLineParser parser;

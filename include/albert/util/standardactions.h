@@ -4,12 +4,12 @@
 #include <QUrl>
 #include <functional>
 #include "albert/action.h"
-#include "../core_globals.h"
+#include "export.h"
 
 namespace Core {
 
 
-struct EXPORT_CORE StandardActionBase : public Action
+struct ALBERT_EXPORT StandardActionBase : public Action
 {
     /**
      * @brief Base class for standard actions implementing the text getter
@@ -22,7 +22,7 @@ private:
 };
 
 
-struct EXPORT_CORE FuncAction : public StandardActionBase
+struct ALBERT_EXPORT FuncAction : public StandardActionBase
 {
     /**
      * @brief Runs a function
@@ -37,7 +37,7 @@ private:
 #define makeFuncAction std::make_shared<Core::FuncAction>
 
 
-struct EXPORT_CORE ClipAction : public StandardActionBase
+struct ALBERT_EXPORT ClipAction : public StandardActionBase
 {
     /**
      * @brief Copies text into the clipboard
@@ -51,7 +51,7 @@ private:
 };
 #define makeClipAction std::make_shared<Core::ClipAction>
 
-struct EXPORT_CORE UrlAction : public StandardActionBase
+struct ALBERT_EXPORT UrlAction : public StandardActionBase
 {
     /**
      * @brief Opens an URL using the system scheme/mime hanlders
@@ -66,7 +66,7 @@ private:
 #define makeUrlAction std::make_shared<Core::UrlAction>
 
 
-struct EXPORT_CORE ProcAction : public StandardActionBase
+struct ALBERT_EXPORT ProcAction : public StandardActionBase
 {
     /**
      * @brief Starts a detached process
@@ -83,7 +83,7 @@ protected:
 #define makeProcAction std::make_shared<Core::ProcAction>
 
 
-struct EXPORT_CORE TermAction : public StandardActionBase
+struct ALBERT_EXPORT TermAction : public StandardActionBase
 {
     enum CloseBehavior {
         CloseOnSuccess,

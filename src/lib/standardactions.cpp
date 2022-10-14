@@ -28,7 +28,7 @@ void runDetached(const QStringList &commandline, const QString &workingDirectory
 }
 
 // Place it somewhere for now. TODO: move it to potential core plugin
-EXPORT_CORE QString terminalCommand;
+ALBERT_EXPORT QString terminalCommand;
 
 /** **************************************************************************/
 Core::StandardActionBase::StandardActionBase(const QString &text)

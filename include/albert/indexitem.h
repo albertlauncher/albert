@@ -4,7 +4,7 @@
 #include <QString>
 #include <vector>
 #include "item.h"
-#include "core_globals.h"
+#include "export.h"
 
 namespace Core {
 
@@ -12,7 +12,7 @@ namespace Core {
  * @brief The Indexable class
  * The interface items need to be indexable by the offline index
  */
-class EXPORT_CORE IndexItem : public Item
+class ALBERT_EXPORT IndexItem : public Item
 {
 
 public:

@@ -4,7 +4,7 @@
 #include <QString>
 #include <QWidget>
 #include "plugin.h"
-#include "core_globals.h"
+#include "export.h"
 
 #define ALBERT_EXTENSION_IID ALBERT_PLUGIN_IID_PREFIX".extensionv1-alpha"
 
@@ -18,7 +18,7 @@ class FallbackProvider;
 /**
  * @brief The extension interface
  */
-class EXPORT_CORE Extension : public Plugin
+class ALBERT_EXPORT Extension : public Plugin
 {
 public:
 

@@ -1,8 +1,16 @@
 cmake_minimum_required(VERSION 3.1.3)  # Least supporting CMAKE_CXX_STANDARD
 
+include(GenerateExportHeader)
+
 ###############################################################################
 
 project(albert VERSION 0.17.6)
+
+configure_file(
+        "${PROJECT_SOURCE_DIR}/include/albert/config.h.in"
+        "${PROJECT_SOURCE_DIR}/include/albert/config.h"
+        @ONLY
+)
 
 find_package(Qt5 5.6.0  # Charts
     REQUIRED
@@ -13,10 +21,6 @@ find_package(Qt5 5.6.0  # Charts
         Sql
         Widgets
 )
-
-###############################################################################
-
-add_definitions(-DALBERT_VERSION="${PROJECT_VERSION}")
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -54,7 +58,10 @@ add_library(${TARGET_LIB} SHARED ${LIB_SRC})
 
 add_library(albert::lib ALIAS ${TARGET_LIB})
 
-target_compile_definitions(${TARGET_LIB} PRIVATE -DCORE) #export branch
+generate_export_header(${TARGET_LIB}
+    BASE_NAME ${CMAKE_PROJECT_NAME}
+    EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/include/albert/export.h"
+)
 
 target_include_directories(${TARGET_LIB}
     PUBLIC

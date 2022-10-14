@@ -4,14 +4,14 @@
 #include <QString>
 #include <vector>
 #include <memory>
-#include "../core_globals.h"
+#include "export.h"
 
 namespace Core {
 
 class SearchBase;
 class IndexItem;
 
-class EXPORT_CORE OfflineIndex final {
+class ALBERT_EXPORT OfflineIndex final {
 
 public:
 

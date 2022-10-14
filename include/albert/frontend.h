@@ -2,7 +2,7 @@
 
 #pragma once
 #include "plugin.h"
-#include "core_globals.h"
+#include "export.h"
 
 class QAbstractItemModel;
 
@@ -10,7 +10,7 @@ class QAbstractItemModel;
 
 namespace Core {
 
-class EXPORT_CORE Frontend : public Plugin
+class ALBERT_EXPORT Frontend : public Plugin
 {
     Q_OBJECT
 

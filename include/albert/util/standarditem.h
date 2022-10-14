@@ -15,7 +15,7 @@ class Action;
 * If you dont need the flexibility subclassing the abstract classes provided,
 * you can simply use this container, fill it with data.
 */
-class EXPORT_CORE StandardItem : public Item
+class ALBERT_EXPORT StandardItem : public Item
 {
 public:
 
