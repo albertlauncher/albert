@@ -3,7 +3,7 @@
 #pragma once
 #include <vector>
 #include "standarditem.h"
-#include "albert/indexitem.h"
+#include "indexitem.h"
 
 namespace Core {
 

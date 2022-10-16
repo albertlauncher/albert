@@ -7,11 +7,11 @@
 #include <chrono>
 #include <functional>
 #include <utility>
-#include "albert/action.h"
-#include "albert/fallbackprovider.h"
-#include "albert/item.h"
-#include "albert/queryhandler.h"
-#include "albert/util/itemroles.h"
+#include "action.h"
+#include "fallbackprovider.h"
+#include "item.h"
+#include "queryhandler.h"
+#include "util/itemroles.h"
 #include "logging.h"
 #include "queryexecution.h"
 using namespace std;

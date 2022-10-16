@@ -9,8 +9,8 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <chrono>
-#include "albert/fallbackprovider.h"
-#include "albert/queryhandler.h"
+#include "fallbackprovider.h"
+#include "queryhandler.h"
 #include "extensionmanager.h"
 #include "logging.h"
 #include "pluginspec.h"

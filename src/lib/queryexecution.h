@@ -11,7 +11,7 @@
 #include <set>
 #include <utility>
 #include <vector>
-#include "albert/query.h"
+#include "query.h"
 
 namespace Core {
 

@@ -3,7 +3,7 @@
 #pragma once
 #include <QUrl>
 #include <functional>
-#include "albert/action.h"
+#include "action.h"
 #include "export.h"
 
 namespace Core {

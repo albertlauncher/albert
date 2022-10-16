@@ -4,7 +4,7 @@
 #include <QVariant>
 #include <QSettings>
 #include <stdexcept>
-#include "albert/plugin.h"
+#include "plugin.h"
 #include "logging.h"
 #include "pluginspec.h"
 

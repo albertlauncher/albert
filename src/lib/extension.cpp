@@ -1,7 +1,7 @@
 // Copyright (C) 2014-2018 Manuel Schneider
 
 #include <set>
-#include "albert/extension.h"
+#include "extension.h"
 #include "extensionmanager.h"
 using namespace std;
 

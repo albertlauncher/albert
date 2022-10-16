@@ -10,10 +10,10 @@
 #include <QStandardPaths>
 #include <chrono>
 #include <vector>
-#include "albert/extension.h"
-#include "albert/fallbackprovider.h"
-#include "albert/item.h"
-#include "albert/queryhandler.h"
+#include "extension.h"
+#include "fallbackprovider.h"
+#include "item.h"
+#include "queryhandler.h"
 #include "extensionmanager.h"
 #include "logging.h"
 #include "queryexecution.h"

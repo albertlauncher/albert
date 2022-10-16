@@ -1,7 +1,7 @@
 // Copyright (C) 2014-2018 Manuel Schneider
 
-#include "albert/item.h"
-#include "albert/query.h"
+#include "item.h"
+#include "query.h"
 
 
 /** ***************************************************************************/

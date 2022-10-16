@@ -28,11 +28,11 @@
 #endif
 #include <csignal>
 #include <functional>
-#include "albert/config.h"
-#include "albert/frontend.h"
-#include "albert/queryhandler.h"
-#include "albert/util/standardactions.h"
-#include "albert/util/standarditem.h"
+#include "config.h"
+#include "frontend.h"
+#include "queryhandler.h"
+#include "util/standardactions.h"
+#include "util/standarditem.h"
 #include "extensionmanager.h"
 #include "frontendmanager.h"
 #include "logging.h"

@@ -4,7 +4,7 @@
 #include <QString>
 #include <vector>
 #include <memory>
-#include "albert/item.h"
+#include "item.h"
 
 namespace Core {
 

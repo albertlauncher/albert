@@ -1,7 +1,7 @@
 // Copyright (C) 2014-2018 Manuel Schneider
 
-#include "albert/util/offlineindex.h"
-#include "albert/indexitem.h"
+#include "util/offlineindex.h"
+#include "indexitem.h"
 #include "prefixsearch.h"
 #include "fuzzysearch.h"
 

@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 #include "frontendmanager.h"
-#include "albert/frontend.h"
+#include "frontend.h"
 #include "pluginspec.h"
 #include "logging.h"
 using std::unique_ptr;

@@ -2,7 +2,7 @@
 
 #include <QStandardPaths>
 #include <QCoreApplication>
-#include "albert/plugin.h"
+#include "plugin.h"
 
 class Core::PluginPrivate
 {
