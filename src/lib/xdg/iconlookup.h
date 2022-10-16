@@ -3,11 +3,10 @@
 #pragma once
 #include <QStringList>
 #include <map>
-#include "xdg_globals.h"
 
 namespace XDG {
 
-class EXPORT_XDG IconLookup
+class IconLookup
 {
 public:
 
