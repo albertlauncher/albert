@@ -18,4 +18,4 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 
 COPY . /src
 WORKDIR /build
-RUN rm -rf * && cmake /src && make
+RUN rm -rf * && cmake /src && make -j $(nproc)

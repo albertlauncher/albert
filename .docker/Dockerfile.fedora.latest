@@ -14,4 +14,4 @@ RUN yum install -y \
 
 COPY . /src
 WORKDIR /build
-RUN rm -rf * && cmake /src && make
+RUN rm -rf * && cmake /src && make -j $(nproc)
