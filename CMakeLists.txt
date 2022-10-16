@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.1.3)  # Least supporting CMAKE_CXX_STANDARD
+cmake_minimum_required(VERSION 3.16)  # Ubuntu 20.04
 
+project(albert VERSION 0.17.6 LANGUAGES CXX)
+
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
 include(GenerateExportHeader)
-
-###############################################################################
-
-project(albert VERSION 0.17.6)
 
 configure_file(
         "${PROJECT_SOURCE_DIR}/include/albert/config.h.in"
@@ -46,17 +46,16 @@ SET(CMAKE_COLOR_MAKEFILE ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-add_subdirectory(lib/xdg)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 #################################### Lib  #####################################
 
-set(TARGET_LIB lib${CMAKE_PROJECT_NAME})
+set(TARGET_LIB ${CMAKE_PROJECT_NAME})
 
 file(GLOB_RECURSE LIB_SRC include/* src/lib/*.cpp src/lib/settingswidget/*.cpp)
 
 add_library(${TARGET_LIB} SHARED ${LIB_SRC})
-
-add_library(albert::lib ALIAS ${TARGET_LIB})
+add_library(albert::albert ALIAS ${TARGET_LIB})
 
 generate_export_header(${TARGET_LIB}
     BASE_NAME ${CMAKE_PROJECT_NAME}
@@ -65,7 +64,8 @@ generate_export_header(${TARGET_LIB}
 
 target_include_directories(${TARGET_LIB}
     PUBLIC
-        include
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     PRIVATE
         include/albert
         include/albert/util
@@ -87,7 +87,6 @@ target_link_libraries(${TARGET_LIB}
         Qt5::Network
         Qt5::Sql
         Qt5::Widgets
-        albert::xdg
 )
 
 set_target_properties(${TARGET_LIB} PROPERTIES
@@ -100,7 +99,6 @@ set_target_properties(${TARGET_LIB} PROPERTIES
 # Platform specific stuff
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-    include(GNUInstallDirs)
     if (DEFINED CMAKE_LIBRARY_ARCHITECTURE)
         target_compile_definitions(${TARGET_LIB} PRIVATE -DMULTIARCH_TUPLE="${CMAKE_LIBRARY_ARCHITECTURE}")
     endif()
@@ -116,17 +114,72 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD
 #    endif()
 endif()
 
+#message("CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}")
+#message("CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}")
+#message("CMAKE_CURRENT_LIST_DIR ${CMAKE_CURRENT_LIST_DIR}")
+#message("CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_DATADIR}")
+#message("CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR}")
+#message("CMAKE_INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR}")
+#message("CMAKE_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR}")
+
+# associates the installed target files with an export called AlbertTargets
+install(TARGETS ${TARGET_LIB}
+    EXPORT AlbertTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+# create version config file
+write_basic_package_version_file("AlbertConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+# copy config file, relocation aware
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/AlbertConfig.cmake
+    "${CMAKE_CURRENT_BINARY_DIR}/AlbertConfig.cmake"
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+)
+
+# install version and config file
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/AlbertConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/AlbertConfigVersion.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/albert
+)
+
+# create targets file
+install(EXPORT AlbertTargets
+    FILE AlbertTargets.cmake
+    NAMESPACE ${PROJECT_NAME}::
+    #    DESTINATION "cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+)
+
+# Exporting Targets from the Build Tree
+export(EXPORT AlbertTargets
+    FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/AlbertTargets.cmake"
+    NAMESPACE ${PROJECT_NAME}::
+)
+
+# TODO this does works for the build tree, installation has never been tested
+## install headers
+#file(GLOB_RECURSE TARGET_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h")
+#install(FILES ${TARGET_HEADER_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
 #################################### App  #####################################
 
-set(TARGET_APP ${CMAKE_PROJECT_NAME})
+set(TARGET_APP ${CMAKE_PROJECT_NAME}app)
 
 add_executable(${TARGET_APP} src/app/main.cpp )
 
 target_link_libraries(${TARGET_APP}
-    PRIVATE albert::lib
+    PRIVATE ${TARGET_LIB}
 )
 
 set_target_properties(${TARGET_APP} PROPERTIES
+    OUTPUT_NAME albert
     INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}/albert/"  # Set the RPATH for the library lookup
 )
 
@@ -137,11 +190,14 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD
     install(FILES resources/icons/albert.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
 endif()
 
+install(TARGETS ${TARGET_APP} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
 #################################### Ctl  #####################################
-#
+
 #set(TARGET_CTL ${CMAKE_PROJECT_NAME}ctl)
 #add_executable(${TARGET_CTL} src/ctl/main.cpp)
 #target_link_libraries(${TARGET_CTL} PRIVATE Qt5::Network)
+#install(TARGETS ${TARGET_CTL} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 #################################### Test #####################################
 
@@ -173,13 +229,3 @@ FOREACH(child ${children})
         endif()
     ENDIF()
 ENDFOREACH()
-
-###############################################################################
-
-install(TARGETS ${TARGET_APP} ${TARGET_CTL} ${TARGET_LIB}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/albert
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    PUBLIC_HEADER DESTINATION include
-)
-
-
