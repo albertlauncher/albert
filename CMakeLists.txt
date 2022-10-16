@@ -194,10 +194,10 @@ install(TARGETS ${TARGET_APP} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 #################################### Ctl  #####################################
 
-#set(TARGET_CTL ${CMAKE_PROJECT_NAME}ctl)
-#add_executable(${TARGET_CTL} src/ctl/main.cpp)
-#target_link_libraries(${TARGET_CTL} PRIVATE Qt5::Network)
-#install(TARGETS ${TARGET_CTL} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+set(TARGET_CTL ${CMAKE_PROJECT_NAME}ctl)
+add_executable(${TARGET_CTL} src/ctl/main.cpp)
+target_link_libraries(${TARGET_CTL} PRIVATE Qt5::Network)
+install(TARGETS ${TARGET_CTL} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 #################################### Test #####################################
 
