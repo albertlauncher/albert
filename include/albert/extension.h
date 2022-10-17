@@ -1,74 +1,15 @@
-// Copyright (C) 2014-2018 Manuel Schneider
+// Copyright (c) 2021 Manuel Schneider
 
 #pragma once
-#include <QString>
-#include <QWidget>
-#include "plugin.h"
 #include "export.h"
+#include <QString>
 
-#define ALBERT_EXTENSION_IID ALBERT_PLUGIN_IID_PREFIX".extensionv1-alpha"
-
-namespace Core {
-
-struct Private;
-class ExtensionManager;
-class QueryHandler;
-class FallbackProvider;
-
-/**
- * @brief The extension interface
- */
-class ALBERT_EXPORT Extension : public Plugin
+namespace albert {
+class ALBERT_EXPORT Extension  /// Interface for objects of the extension system
 {
 public:
-
-    Extension(const QString &id);
-    ~Extension();
-
-    /**
-     * @brief A human readable name of the plugin
-     * @return The human readable name
-     */
-    virtual QString name() const = 0;
-
-    /**
-     * @brief The settings widget factory
-     * This has to return the widget that is accessible to the user from the
-     * albert settings plugin tab. If the return value is a nullptr there will
-     * be no settings widget available in the settings.
-     * @return The settings widget
-     */
-    virtual QWidget* widget(QWidget *parent = nullptr) = 0;
-
-protected:
-
-    /**
-     * @brief registerFallbackProvider
-     */
-    void registerQueryHandler(QueryHandler*);
-
-    /**
-     * @brief unregisterFallbackProvider
-     */
-    void unregisterQueryHandler(QueryHandler*);
-
-    /**
-     * @brief registerFallbackProvider
-     */
-    void registerFallbackProvider(FallbackProvider*);
-
-    /**
-     * @brief unregisterFallbackProvider
-     */
-    void unregisterFallbackProvider(FallbackProvider*);
-
-private:
-
-    std::unique_ptr<Private> d;
-
-    static ExtensionManager *extensionManager;
-    friend class ExtensionManager;
-
+    virtual ~Extension() {}
+    virtual QString id() const = 0;  /// The guid of the extension
 };
-
 }
+
