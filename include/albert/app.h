@@ -26,18 +26,13 @@ public:
 //    albert::Terminal &terminal() override;
 //    albert::ExtensionRegistry &extensionRegistry() override;
 
+    App *instance();
+
     // Extension system
 
-    /// Adds an extension to the registry and notifies watchers
-    /// @note Multiple registration is considered a logic error and will crash
-    void registerExtension(Extension *e);
-
-    /// Removes an extension from the registry and notifies watchers
-    /// @note Multiple registration is considered a logic error and will crash
-    void unregisterExtension(Extension *e);
-
-    /// Get all registered extensions
-    virtual const std::map<QString,Extension*> &extensions();
+    void registerExtension(Extension *e);  /// Add extension to the registry
+    void unregisterExtension(Extension *e);  /// Remove extension from the registry
+    const std::map<QString,Extension*> &extensions();  /// Get all registered extensions
 
     /// Get a particular extension by its identifier with implicit cast
     template<typename T> T* extension(const QString &id) {
@@ -62,4 +57,5 @@ signals:
     void extensionUnregistered(albert::Extension*);
 
 };
+//#define app albert::App::instance()
 }

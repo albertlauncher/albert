@@ -2,7 +2,9 @@
 
 #include "app.h"
 #include "logging.h"
-#include "settings/settingswindow.h"
+#include "pluginprovider.h"
+#include "frontend.h"
+//#include "settings/settingswindow.h"
 #include <QMessageBox>
 #include <QSettings>
 #include <QDir>
@@ -14,35 +16,12 @@
 
 ALBERT_DEFINE_LOGGING_CATEGORY
 using namespace std;
-using namespace Core;
 static const char *CFG_LAST_USED_VERSION = "last_used_version";
+static const char *CFG_FRONTEND_ID = "frontendId";
+static const char *DEF_FRONTEND_ID = "widgetboxmodel";
+static albert::App *instance_ = nullptr;
 
-struct albert::App::Private
-{
-    albert::App *q;
-    static QStringList defaultPluginDirs();
-    void notifyVersionChangeAndFirstRun();
-
-    RPCServer rpc_server;
-    NativePluginProvider native_plugin_provider;
-    friend class SettingsWindow;
-    QPointer<SettingsWindow> settings_window;
-
-//    QString id() const override { return ""; }
-//    QString handleSocketMessage(const QString &message) override;
-//    TrayIcon tray_icon;
-//    TerminalProvider terminal_provider;
-//    QueryEngine query_engine;
-};
-
-
-albert::App::App(const QStringList &additional_plugin_dirs) : d(new Private)
-{
-    d->q = this;
-    d->notifyVersionChangeAndFirstRun();
-}
-
-QStringList albert::App::Private::defaultPluginDirs()
+static QStringList defaultPluginDirs()
 {
     QStringList pluginDirs;
 #if defined __linux__ || defined __FreeBSD__
@@ -74,29 +53,99 @@ QStringList albert::App::Private::defaultPluginDirs()
     return pluginDirs;
 }
 
-void albert::App::Private::notifyVersionChangeAndFirstRun()
+struct albert::App::Private
 {
-    auto settings = QSettings(qApp->applicationName());
-    auto current_version = qApp->applicationVersion();
-    auto last_used_version = settings.value(CFG_LAST_USED_VERSION).toString();
+    albert::App *q;
+    RPCServer rpc_server;
+    ::PluginProvider plugin_provider;
+    std::map<QString,Extension*> extensions;
+    Frontend *frontend;
 
-    if (last_used_version.isNull()){  // First run
-        QMessageBox(
-                QMessageBox::Warning, "First run",
-                "This is the first time you've launched Albert. Albert is plugin based. "
-                "You have to enable extension you want to use. "
-                "Note that you wont be able to open albert without a hotkey or "
-                "tray icon.").exec();
-        q->showSettings();
-        settings.setValue(CFG_LAST_USED_VERSION, current_version);
+    void notifyVersionChangeAndFirstRun()
+    {
+        auto settings = QSettings(qApp->applicationName());
+        auto current_version = qApp->applicationVersion();
+        auto last_used_version = settings.value(CFG_LAST_USED_VERSION).toString();
+
+        if (last_used_version.isNull()){  // First run
+            QMessageBox(
+                    QMessageBox::Warning, "First run",
+                    "This is the first time you've launched Albert. Albert is plugin based. "
+                    "You have to enable extension you want to use. "
+                    "Note that you wont be able to open albert without a hotkey or "
+                    "tray icon.").exec();
+            q->showSettings();
+            settings.setValue(CFG_LAST_USED_VERSION, current_version);
+        }
+        else if (current_version.section('.', 1, 1) != last_used_version.section('.', 1, 1) ){  // FIXME in first major version
+            QMessageBox(QMessageBox::Information, "Major version changed",
+                        QString("You are now using Albert %1. The major version changed. "
+                                "Some parts of the API might have changed. Check the "
+                                "<a href=\"https://albertlauncher.github.io/news/\">news</a>.")
+                                .arg(current_version)).exec();
+        }
     }
-    else if (current_version.section('.', 1, 1) != last_used_version.section('.', 1, 1) ){  // FIXME in first major version
-        QMessageBox(QMessageBox::Information, "Major version changed",
-                    QString("You are now using Albert %1. The major version changed. "
-                            "Some parts of the API might have changed. Check the "
-                            "<a href=\"https://albertlauncher.github.io/news/\">news</a>.")
-                            .arg(current_version)).exec();
+
+    void loadFrontend()
+    {
+        // Get all specs of type frontend
+        std::map<QString, PluginProvider::PluginSpec&> frontends;
+        for(auto &[id, spec] : plugin_provider.plugins())
+            if(spec.type == PluginProvider::PluginType::Frontend && spec.state == PluginProvider::PluginState::Unloaded)
+                frontends.emplace(id, spec);
+
+        // Helper function loading frontend extensions
+        auto load_frontend = [&](const QString &id) -> Frontend* {
+            if (!plugin_provider.loadPlugin(id))
+                return nullptr;  // Loading failed
+            try {
+                return q->extension<albert::Frontend>(id);
+            } catch (const std::out_of_range &e) {
+                return nullptr;  // Extension not registered
+            }
+        };
+
+        // Try loading the configured frontend
+        auto cfg_frontend = QSettings(qApp->applicationName()).value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString();
+        if (frontend = load_frontend(cfg_frontend); frontend)
+            return;
+
+        WARN << "Loading configured frontend failed. Try any other.";
+
+        for (auto &[id, spec] : frontends)
+            if (frontend = load_frontend(id); frontend) {
+                WARN << QString("Using %1 instead.").arg(id);
+                return;
+            }
+
+        qFatal("Could not load any frontend.");
     }
+
+//    friend class SettingsWindow;
+//    QPointer<SettingsWindow> settings_window;
+//    QString id() const override { return ""; }
+//    QString handleSocketMessage(const QString &message) override;
+//    TrayIcon tray_icon;
+//    TerminalProvider terminal_provider;
+//    QueryEngine query_engine;
+};
+
+albert::App::App(const QStringList &additional_plugin_dirs) : d(new Private)
+{
+    if (instance_ != nullptr)
+        qFatal("App created twice");
+    instance_ = this;
+
+
+    d->q = this;
+    d->notifyVersionChangeAndFirstRun();
+    d->plugin_provider.findPlugins(QStringList(additional_plugin_dirs) << defaultPluginDirs());
+    d->loadFrontend();
+}
+
+albert::App *albert::App::instance()
+{
+    return instance_;
 }
 
 void albert::App::show(const QString &text)
@@ -108,9 +157,9 @@ void albert::App::show(const QString &text)
 
 void albert::App::showSettings()
 {
-    if (!d->settings_window)
-        d->settings_window = new SettingsWindow(*this);
-    d->settings_window->bringToFront();
+//    if (!d->settings_window)
+//        d->settings_window = new SettingsWindow(*this);
+//    d->settings_window->bringToFront();
 }
 
 void albert::App::restart()
@@ -123,13 +172,29 @@ void albert::App::quit()
     QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
 }
 
+void albert::App::registerExtension(albert::Extension *extension)
+{
+    if (!d->extensions.count(extension->id()))
+        d->extensions.emplace(extension->id(), extension);
+    emit extensionRegistered(extension);
+}
+
+void albert::App::unregisterExtension(albert::Extension *extension)
+{
+    if (auto it = d->extensions.find(extension->id()); it != d->extensions.end()){
+        d->extensions.erase(it);
+        emit extensionUnregistered(extension);
+    } else
+        qFatal("Unregistered unregistered extension: %s", qPrintable(extension->id()));
+}
+
+const std::map<QString, albert::Extension *> &albert::App::extensions()
+{
+    return d->extensions;
+}
 
 
-
-
-//  OLD STUFF
-
-
+/*SOCKET*/
 //QString App::handleSocketMessage(const QString &message)
 //{
 //    static std::map<QString, std::function<QString()>> actions = {
@@ -177,17 +242,7 @@ void albert::App::quit()
 //    }
 //}
 
-//albert::ExtensionRegistry &App::extensionRegistry()
-//{
-//    return extension_registry;
-//}
-
-//void App::sendTrayNotification(const QString &title, const QString &message, const QIcon &icon)
-//{
-//    tray_icon.sendNotification(title, message, icon);
-//}
-
-
+/*tray*/
 //QAction* showAction = new QAction("Show", trayIconMenu.get());
 //        trayIconMenu->addAction(showAction);
 //
@@ -225,11 +280,7 @@ void albert::App::quit()
 //
 //        trayIcon->setContextMenu(trayIconMenu.get());
 
-
-
-
-
-
+/*db*/
 //        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
 //        if ( !db.isValid() )
 //            qFatal("No sqlite available");
@@ -276,9 +327,7 @@ void albert::App::quit()
 //
 //        db.commit();
 
-
-
-
+/*CoreQueryHandler*/
 //struct CoreQueryHandler : public Core::QueryHandler
 //{
 //    CoreQueryHandler(const vector<shared_ptr<Item>>& items)
@@ -348,9 +397,48 @@ void albert::App::quit()
 //            )
 //        });
 
+/*hotkey*/
+//std::unique_ptr<QHotkey> App::initializeHotkey(const QString &hotkey_overwrite)
+//{
+//    if (!hotkey_overwrite.isEmpty()) {
+//        auto hk = make_unique<QHotkey>(QKeySequence(hotkey_overwrite), true, qApp);
+//        if (!hk->isRegistered())
+//            qFatal("Could not register hotkey overwrite '%s'", qPrintable(hotkey_overwrite));
+//        return hk;
+//    }
+//
+//    QSettings s(qApp->applicationName());
+//    if (s.contains(CFG_HOTKEY)){
+//        auto cfg_hotkey = s.value(CFG_HOTKEY).toString();
+//        if (!cfg_hotkey.isEmpty()) {  // else hotkey is intended to be None
+//            auto hk = make_unique<QHotkey>(QKeySequence(hotkey_overwrite), true, qApp);
+//            if (!hk->isRegistered())
+//                return hk;
+//            else {
+//                WARN << "Failed to register configured hotkey" << cfg_hotkey;
+//                QMessageBox::warning(nullptr, "Warning",
+//                                     "Failed to register the configured hotkey. Set a hotkey in the settings.");
+//                showSettings();
+//            }
+//        }
+//    } else {
+//        auto hk = make_unique<QHotkey>(QKeySequence(DEF_HOTKEY), true, qApp);
+//        if (hk->isRegistered())
+//            return hk;
+//        else {
+//            WARN << "Failed to register default hotkey" << DEF_HOTKEY;
+//            QMessageBox::warning(nullptr, "Warning",
+//                                 "Failed to register the default hotkey. Configure a hotkey in the settings.");
+//            showSettings();
+//        }
+//    }
+//    return {};
+//    //FIXME    if ( !QGuiApplication::platformName().contains("wayland") )
+//    //        hotkeyManager = make_unique<HotkeyManager>();
+//}
+//
 
-
-
+/*FRONTEND*/
 
 //// Define a lambda that connects a new frontend
 //auto connectFrontend = [&](Frontend *f){
@@ -392,46 +480,117 @@ void albert::App::quit()
 //QObject::connect(frontendManager.get(), &FrontendManager::frontendChanged, connectFrontend);
 //}
 
-
-
-
-
-//std::unique_ptr<QHotkey> App::initializeHotkey(const QString &hotkey_overwrite)
+//void PluginProvider::setFrontend(const QString &id)
 //{
-//    if (!hotkey_overwrite.isEmpty()) {
-//        auto hk = make_unique<QHotkey>(QKeySequence(hotkey_overwrite), true, qApp);
-//        if (!hk->isRegistered())
-//            qFatal("Could not register hotkey overwrite '%s'", qPrintable(hotkey_overwrite));
-//        return hk;
+//    if (!plugin_index.count(id))
+//        qFatal("Set an invalid frontend id: %s", qPrintable(id));
+//    QSettings(qApp->applicationName()).setValue(CFG_FRONTEND_ID, id);
+//}
+
+//void PluginProvider::loadFrontend()
+//{
+//    using albert::PluginSpec;
+//    using albert::Frontend;
+//
+//    auto frontend_plugins = frontendPlugins();
+//    if (frontend_plugins.empty())
+//        qFatal("No frontends available");
+//
+//    auto load_frontend = [this](const QString &id) -> bool {
+//        try {
+//            if (frontend_spec_ = plugin_index.at(id); !frontend_spec_->load())
+//                WARN << "Frontend failed loading:" << id << frontend_spec_->reason();
+//            else if (frontend_ = dynamic_cast<Frontend *>(frontend_spec_->instance()); !frontend_)
+//                WARN << "Frontend is not of type 'Frontend':" << id;
+//            else{
+//                // Auto registration of root extensions
+//                if (albert::Extension *extension = dynamic_cast<albert::Extension*>(frontend_))
+//                    extension_registry.registerExtension(extension);
+//                return true;
+//            }
+//        } catch (const out_of_range &e) {
+//            WARN << "Frontend does not exist:" << id;
+//        }
+//        return false;
+//    };
+//
+//    if (auto id = QSettings(qApp->applicationName()).value(CFG_FRONTEND_ID).toString(); !id.isNull()){
+//        if (load_frontend(id))
+//            return;
+//        else
+//            CRIT << "Loading configured frontend failed:" << id;
 //    }
 //
-//    QSettings s(qApp->applicationName());
-//    if (s.contains(CFG_HOTKEY)){
-//        auto cfg_hotkey = s.value(CFG_HOTKEY).toString();
-//        if (!cfg_hotkey.isEmpty()) {  // else hotkey is intended to be None
-//            auto hk = make_unique<QHotkey>(QKeySequence(hotkey_overwrite), true, qApp);
-//            if (!hk->isRegistered())
-//                return hk;
-//            else {
-//                WARN << "Failed to register configured hotkey" << cfg_hotkey;
-//                QMessageBox::warning(nullptr, "Warning",
-//                                     "Failed to register the configured hotkey. Set a hotkey in the settings.");
-//                showSettings();
-//            }
-//        }
-//    } else {
-//        auto hk = make_unique<QHotkey>(QKeySequence(DEF_HOTKEY), true, qApp);
-//        if (hk->isRegistered())
-//            return hk;
-//        else {
-//            WARN << "Failed to register default hotkey" << DEF_HOTKEY;
-//            QMessageBox::warning(nullptr, "Warning",
-//                                 "Failed to register the default hotkey. Configure a hotkey in the settings.");
-//            showSettings();
-//        }
+//    if (load_frontend(DEF_FRONTEND_ID))
+//        return;
+//    else
+//        CRIT << "Loading default frontend failed:" << DEF_FRONTEND_ID;
+//
+//    CRIT << "Try to load any fallback frontend.";
+//
+//    for (const auto &[fbid, frontend_plugin] : frontend_plugins){
+//        if (load_frontend(fbid))
+//            return;
+//        else
+//            CRIT << "Loading fallback frontend failed:" << fbid;
 //    }
-//    return {};
-//    //FIXME    if ( !QGuiApplication::platformName().contains("wayland") )
-//    //        hotkeyManager = make_unique<HotkeyManager>();
+//
+//    qFatal("All frontends failed to load!");
+//}
+
+/*extension registry auto*/
+
+//#include <set>
+//#include "extension.h"
+//#include "extensionmanager.h"
+//using namespace std;
+//
+//
+//Core::ExtensionManager *Core::Extension::extensionManager = nullptr;
+//
+//struct Core::Private {
+//    set<QueryHandler*> registeredQueryHandlers;
+//    set<FallbackProvider*> registeredFallbackProviders;
+//};
+//
+//
+///**************************************************************************************/
+//Core::Extension::Extension(const QString &id) : Plugin(id), d(new Private) {
+//
 //}
 //
+//
+///**************************************************************************************************/
+//Core::Extension::~Extension() {
+//    // If the extensin did it not by itself unregister all the remaining handlers
+//    for (auto ptr : d->registeredQueryHandlers)
+//        unregisterQueryHandler(ptr);
+//    for (auto ptr : d->registeredFallbackProviders)
+//        unregisterFallbackProvider(ptr);
+//}
+//
+//
+///**************************************************************************************************/
+//void Core::Extension::registerQueryHandler(Core::QueryHandler *object) {
+//    d->registeredQueryHandlers.insert(object);
+//    extensionManager->registerQueryHandler(object);
+//}
+//
+//
+///**************************************************************************************************/
+//void Core::Extension::unregisterQueryHandler(Core::QueryHandler *object) {
+//    extensionManager->unregisterQueryHandler(object);
+//}
+//
+//
+///**************************************************************************************************/
+//void Core::Extension::registerFallbackProvider(Core::FallbackProvider *object) {
+//    d->registeredFallbackProviders.insert(object);
+//    extensionManager->registerFallbackProvider(object);
+//}
+//
+//
+///**************************************************************************************************/
+//void Core::Extension::unregisterFallbackProvider(Core::FallbackProvider *object) {
+//    extensionManager->unregisterFallbackProvider(object);
+//}

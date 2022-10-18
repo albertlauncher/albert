@@ -71,6 +71,7 @@ target_include_directories(${TARGET_LIB}
         include/albert/util
         src/lib
         src/lib/settingswidget
+        src/lib/xdg
 )
 
 #if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")

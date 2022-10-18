@@ -103,6 +103,7 @@ int main(int argc, char **argv)
     //    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
     QApplication app(argc, argv);
+    qApp->setOrganizationName("albert");
     qApp->setApplicationName("albert");
     qApp->setApplicationDisplayName("Albert");
     qApp->setApplicationVersion(ALBERT_VERSION);
@@ -150,7 +151,12 @@ int main(int argc, char **argv)
     else if (!parser.isSet(opt_d))
         QLoggingCategory::setFilterRules("*.debug=false");
 
-    auto albert_app = std::make_unique<App>(parser.isSet(opt_p) ? parser.value(opt_p).split(',') : QStringList());
+    auto albert_app = std::make_unique<albert::App>(parser.isSet(opt_p) ? parser.value(opt_p).split(',') : QStringList());
+
+    // Delete app _before_ eventloop exits
+    QObject::connect(qApp, &QApplication::aboutToQuit,
+                     albert_app.get(), [&](){ albert_app.reset(); });
+
     int return_value = app.exec();
     if (return_value == -1) {
         albert_app.reset();

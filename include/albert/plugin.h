@@ -1,70 +1,25 @@
-// Copyright (C) 2014-2018 Manuel Schneider
+// Copyright (c) 2022 Manuel Schneider
 
 #pragma once
-#include <QDir>
-#include <QObject>
-#include <QString>
-#include <QSettings>
-#include <memory>
 #include "export.h"
+#include "pluginprovider.h"
 
-#define ALBERT_PLUGIN_IID_PREFIX "org.albert.pluginv1-alpha"
-
-namespace Core {
-
-class PluginPrivate;
-
-class ALBERT_EXPORT Plugin : public QObject
+namespace albert
 {
-    Q_OBJECT
 
+/// Qt requires plugin classes to be default constructible, inherit QObject and contain a Q_OBJECT macro. The metadata
+/// is not accessible inside the QtPlugin by default. This class injects a reference to the plugin spec for DRY
+/// principle while keeping default constructability.
+/// @note Implementations have to ensure the QObject inheritance and contain the Q_OBJECT macro. This is a Qt MOC requirement.
+class ALBERT_EXPORT Plugin : virtual public Extension
+{
 public:
+    Plugin();
+    QString id() const override;  /// The guid of the extension
+    QString cacheLocation() const;  /// The recommended cache location
+    QString configLocation() const;  /// The recommended config location
+    QString dataLocation() const;  /// The recommended data location
 
-    Plugin(const QString &id);
-    ~Plugin();
-
-    /**
-     * @brief id
-     * This is the global unique identifier of the plugin
-     * @return
-     */
-    const QString &id() const;
-
-    /**
-     * @brief cacheLocation
-     * @return The recommended cache location for the plugin.
-     * @note If the dir does not exist it will be crated.
-     */
-    QDir cacheLocation() const;
-
-    /**
-     * @brief configLocation
-     * @return The recommended config location for the plugin.
-     * @note If the dir does not exist it will be crated.
-     */
-    QDir configLocation() const;
-
-    /**
-     * @brief dataLocation
-     * @return The recommended data location for the plugin
-     * @note If the dir does not exist it will be crated.
-     */
-    QDir dataLocation() const;
-
-    /**
-     * @brief settings
-     * This is a convenience function returning the default settings object for this plugin. It is
-     * located in the config location defined in this plugin and has the basename "config". Note
-     * that QSettings is not thread-safe, so if you want to access the settings concurrently you
-     * should create a new instance with the path of this object.
-     * @return The settings object
-     */
-    QSettings &settings() const;
-
-private:
-
-    std::unique_ptr<PluginPrivate> d;
-
+    const PluginSpec &spec;  /// Plugin specification
 };
-
 }

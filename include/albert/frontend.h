@@ -1,22 +1,20 @@
 // Copyright (C) 2014-2018 Manuel Schneider
 
 #pragma once
-#include "plugin.h"
 #include "export.h"
+#include "plugin.h"
+#include <QAbstractItemModel>
+#include <QString>
+#include <QWidget>
 
-class QAbstractItemModel;
-
-#define ALBERT_FRONTEND_IID ALBERT_PLUGIN_IID_PREFIX".frontendv1-alpha"
-
-namespace Core {
-
-class ALBERT_EXPORT Frontend : public Plugin
+namespace albert {
+/// The interface for albert frontends
+/// @note This is a QObject: Must be the first class inherited, no multiple inheritance
+class ALBERT_EXPORT Frontend : public QObject
 {
     Q_OBJECT
 
 public:
-
-    Frontend(const QString &id) : Plugin(id) {}
 
     virtual bool isVisible() = 0;
     virtual void setVisible(bool visible = true) = 0;
@@ -35,8 +33,6 @@ signals:
     void widgetShown();
     void widgetHidden();
     void inputChanged(QString qry);
-    void settingsWidgetRequested();
 
 };
-
 }

@@ -3,7 +3,6 @@
 #include <QIcon>
 #include "loadermodel.h"
 #include "extensionmanager.h"
-#include "pluginspec.h"
 using std::unique_ptr;
 using namespace Core;
 
