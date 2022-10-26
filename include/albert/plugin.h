@@ -16,9 +16,6 @@ class ALBERT_EXPORT Plugin : virtual public Extension
 public:
     Plugin();
     QString id() const override;  /// The guid of the extension
-    QString cacheLocation() const;  /// The recommended cache location
-    QString configLocation() const;  /// The recommended config location
-    QString dataLocation() const;  /// The recommended data location
 
     const PluginSpec &spec;  /// Plugin specification
 };
