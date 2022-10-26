@@ -7,24 +7,16 @@
 #include <unordered_map>
 #include <map>
 
-using Score = uint8_t;
-
-struct Match
-{
-    albert::SharedItem item;
-    Score score;
-};
-
 class ItemIndex
 {
 public:
     explicit ItemIndex(std::map<albert::SharedItem,std::map<QString,Score>> &&index_items,
                        const QString &separators, bool case_sensitive,
                        uint n, uint error_tolerance_divisor);  // ceil(len(word)/error_tolerance_divisor))
-    ItemIndex() = delete;
-    ItemIndex(const ItemIndex &) = delete;
+    ItemIndex() = default;
+    ItemIndex(const ItemIndex &) = default;
     ItemIndex(ItemIndex &&) = default;
-    ItemIndex &operator=(const ItemIndex &) = delete;
+    ItemIndex &operator=(const ItemIndex &) = default;
     ItemIndex &operator=(ItemIndex &&) = default;
 
     std::vector<Match> search(const QString &string) const;

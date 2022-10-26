@@ -1,121 +1,69 @@
-// Copyright (C) 2014-2018 Manuel Schneider
+// Copyright (c) 2022 Manuel Schneider
 
 #pragma once
-#include <QMutex>
-#include <QString>
-#include <map>
-#include <memory>
-#include <utility>
-#include <vector>
 #include "export.h"
+#include <QObject>
+#include <QString>
+#include <vector>
+#include <memory>
 
-
-namespace Core {
-
-class QueryPrivate;
-class Item;
-
-/**
- * @brief The Query class
- * Represents a query to be handled by the query handlers
- */
-class ALBERT_EXPORT Query final
+namespace albert
 {
+class ALBERT_EXPORT Query: public QObject
+{
+    Q_OBJECT
+
 public:
+    const QString &trigger() const;  /// The trigger of this query.
+    const QString &string() const;  /// Query string _excluding_ the trigger.
 
-    /**
-     * @brief The query string.
-     * This is the processed query string relevant for most of the handlers. If the raw query string
-     * is prefixed by a trigger string() returns the query string without the the trigger
-     * prefix. If there is no trigger string() is equivalent to rawString().
-     */
-    const QString &string() const;
+    bool isValid() const;  /// Core cancelled the query. Stop processing.
+    bool isFinished() const;    /// Asynchronous execution done.
 
-    /**
-     * @brief The raw query string.
-     * This is the raw query string as the users entered it into the input line.
-     */
-    const QString &rawString() const;
+    const SharedItemVector &results() const;
+    const SharedItemVector &fallbacks() const;
 
-    /**
-     * @brief Indicates a triggered query.
-     */
-    bool isTriggered() const;
-
-    /**
-     * @brief The sort hint of the query handler.
-     * Call this if you want the query manager to omit the final sorting of items.
-     * @note This is only effective for triggered batch handlers.
-     */
-    void disableSort();
-
-    /**
-     * @brief The trigger of this query
-     * Note that if the trigger is set, string() differs from rawString().
-     */
-    const QString &trigger() const;
-
-    /**
-     * @brief The validity of the query
-     * If the core cancelled the query for some reason the query gets invalid. Stop handling the
-     * query if it is not valid anymore to save resources for other queries.
-     * @return True if valid, else false.
-     */
-    bool isValid() const;
-
-    /**
-     * @brief addMatch
-     * Use the addMatches if you have a lot of items to add.
-     * @param item The to add to the results
-     * @param score The relevance factor (UINT_MAX -> 1)
-     * @see addMatches
-     */
+    /// Add item (perfect forward)
     template<typename T>
-    void addMatch(T&& item, uint score = 0) {
-        if ( isValid_ ) {
-            mutex_.lock();
-            addMatchWithoutLock(std::forward<T>(item), score);
-            mutex_.unlock();
+    void add(T&& item) {
+        if (isValid()) {
+            add_(std::forward<T>(item));
+            emit resultsChanged();
         }
     }
 
-    /**
-     * @brief addMatches
-     * Cumulative addMatch function avoiding excessive mutex locking the results
-     * @param begin
-     * @param end
-     */
+    /// Add range (perfect forward, use make_move_iterator whenever possible)
     template<typename Iterator>
-    void addMatches(Iterator begin, Iterator end) {
-        if ( isValid() ) {
-            mutex_.lock();
+    void add(Iterator begin, Iterator end) {
+        if (isValid()) {
             for (; begin != end; ++begin)
                 // Must not use operator->() !!! dereferencing a pointer returns an lvalue
-                addMatchWithoutLock((*begin).first, (*begin).second);
-            mutex_.unlock();
+                add_(*begin);
+            emit resultsChanged();
         }
     }
 
-private:
+    /// Set results by std::move
+    void set(std::vector<SharedItem> && items);
 
-    void addMatchWithoutLock(const std::shared_ptr<Core::Item> &item, uint score);
-    void addMatchWithoutLock(std::shared_ptr<Core::Item> &&item, uint score);
+    void activateResult(uint item, uint action);
+    void activateFallback(uint item, uint action);
 
-    Query() = default;
-    ~Query() = default;
+signals:
+    void resultsChanged();
+    void finished();
 
-    std::vector<std::pair<std::shared_ptr<Item>, uint>> results_;
-    QMutex mutex_;
+protected:
+    void add_(const SharedItem &item);
+    void add_(SharedItem &&item);
+
     QString trigger_;
     QString string_;
-    QString rawString_;
-    std::map<QString, uint> scores_;
-    bool sort_ = true;
-    bool isValid_ = true;
-
-    friend class QueryExecution;
+    std::vector<albert::SharedItem> results_;
+    std::vector<albert::SharedItem> fallbacks_;
+    bool valid_ = true;
+    bool finished_ = false;
 };
-
 }
 
 
