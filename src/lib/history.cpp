@@ -1,25 +1,18 @@
-// Copyright (C) 2014-2018 Manuel Schneider
+// Copyright (c) 2022 Manuel Schneider
 
 #include <QStringList>
 #include <QVariant>
-#include <QSqlQuery>
 #include "history.h"
+#include "usagehistory.h"
 
-
-Core::History::History(QObject *parent) : QObject(parent) {
-    QSqlQuery query("SELECT input "
-                    "FROM activation a JOIN  query q ON a.query_id = q.id "
-                    "GROUP BY input  "
-                    "ORDER BY max(timestamp) DESC;");
-    while (query.next())
-        lines_.append(query.value(0).toString());
-
+albert::History::History(QObject *parent) : QObject(parent)
+{
+    lines_ = UsageHistory::inputHistory();
     currentLine_ = -1; // This means historymode is not active
 }
 
-
-/** ***************************************************************************/
-void Core::History::add(QString str) {
+void albert::History::add(QString str)
+{
     if (!str.isEmpty()){
         if (lines_.contains(str))
             lines_.removeAll(str); // Remove dups
@@ -28,9 +21,8 @@ void Core::History::add(QString str) {
     resetIterator();
 }
 
-
-/** ***************************************************************************/
-QString Core::History::next(const QString &substring) {
+QString albert::History::next(const QString &substring)
+{
     int newCurrentLine = currentLine_;
     while (++newCurrentLine < static_cast<int>(lines_.size())){
         const QString &line = lines_[newCurrentLine];
@@ -42,9 +34,8 @@ QString Core::History::next(const QString &substring) {
     return QString{};
 }
 
-
-/** ***************************************************************************/
-QString Core::History::prev(const QString &substring) {
+QString albert::History::prev(const QString &substring)
+{
     int newCurrentLine = currentLine_;
     while (-1 < --newCurrentLine){
         const QString &line = lines_[newCurrentLine];
@@ -56,8 +47,7 @@ QString Core::History::prev(const QString &substring) {
     return QString{};
 }
 
-
-/** ***************************************************************************/
-void Core::History::resetIterator() {
+void albert::History::resetIterator()
+{
     currentLine_ = -1;
 }

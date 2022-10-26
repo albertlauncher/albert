@@ -280,53 +280,6 @@ const std::map<QString, albert::Extension *> &albert::App::extensions()
 //
 //        trayIcon->setContextMenu(trayIconMenu.get());
 
-/*db*/
-//        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-//        if ( !db.isValid() )
-//            qFatal("No sqlite available");
-//        if (!db.driver()->hasFeature(QSqlDriver::Transactions))
-//            qFatal("QSqlDriver::Transactions not available.");
-//        db.setDatabaseName(QDir(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)).filePath("core.db"));
-//        if (!db.open())
-//            qFatal("Unable to establish a database connection.");
-//
-//        db.transaction();
-//
-//        QSqlQuery q(db);
-//        if (!q.exec("CREATE TABLE IF NOT EXISTS query_handler ( "
-//                    "  id INTEGER PRIMARY KEY NOT NULL, "
-//                    "  string_id TEXT UNIQUE NOT NULL "
-//                    "); "))
-//            qFatal("Unable to create table 'query_handler': %s", q.lastError().text().toUtf8().constData());
-//
-//        if (!q.exec("CREATE TABLE IF NOT EXISTS query ( "
-//                    "    id INTEGER PRIMARY KEY, "
-//                    "    input TEXT NOT NULL, "
-//                    "    cancelled INTEGER NOT NULL, "
-//                    "    runtime INTEGER NOT NULL, "
-//                    "    timestamp INTEGER DEFAULT CURRENT_TIMESTAMP "
-//                    "); "))
-//            qFatal("Unable to create table 'query': %s", q.lastError().text().toUtf8().constData());
-//
-//        if (!q.exec("CREATE TABLE IF NOT EXISTS execution ( "
-//                    "    query_id INTEGER NOT NULL REFERENCES query(id) ON UPDATE CASCADE, "
-//                    "    handler_id INTEGER NOT NULL REFERENCES query_handler(id) ON UPDATE CASCADE, "
-//                    "    runtime INTEGER NOT NULL, "
-//                    "    PRIMARY KEY (query_id, handler_id) "
-//                    ") WITHOUT ROWID; "))
-//            qFatal("Unable to create table 'execution': %s", q.lastError().text().toUtf8().constData());
-//
-//        if (!q.exec("CREATE TABLE IF NOT EXISTS activation ( "
-//                    "    query_id INTEGER PRIMARY KEY NOT NULL REFERENCES query(id) ON UPDATE CASCADE, "
-//                    "    item_id TEXT NOT NULL "
-//                    "); "))
-//            qFatal("Unable to create table 'activation': %s", q.lastError().text().toUtf8().constData());
-//
-//        if (!q.exec("CREATE TABLE IF NOT EXISTS conf(key TEXT UNIQUE, value TEXT); "))
-//            qFatal("Unable to create table 'conf': %s", q.lastError().text().toUtf8().constData());
-//
-//        db.commit();
-
 /*CoreQueryHandler*/
 //struct CoreQueryHandler : public Core::QueryHandler
 //{
