@@ -9,11 +9,10 @@
 
 ####################### nifty stuff for library developers
 
-set(md_bool USER)
-set(md_vals ID VERSION NAME DESCRIPTION LICENSE URL)
-set(md_list MAINTAINERS QT_DEPENDENCIES LIB_DEPENDENCIES EXEC_DEPENDENCIES)
-
 function(albert_plugin_generate_metadata_json)
+    set(md_bool USER)
+    set(md_vals ID VERSION NAME DESCRIPTION LICENSE URL)
+    set(md_list MAINTAINERS QT_DEPENDENCIES LIB_DEPENDENCIES EXEC_DEPENDENCIES)
     cmake_parse_arguments(MD "${md_bool}" "${md_vals}" "${md_list}" ${ARGN})
 
     if (NOT DEFINED MD_ID)
@@ -35,49 +34,47 @@ function(albert_plugin_generate_metadata_json)
         message(FATAL_ERROR "Plugin url is undefined")
     endif()
 
-    list(APPEND MD "\"id\": \"${MD_ID}\"")
-    list(APPEND MD "\"version\": \"${MD_VERSION}\"")
-    list(APPEND MD "\"name\": \"${MD_NAME}\"")
-    list(APPEND MD "\"description\": \"${MD_DESCRIPTION}\"")
-    list(APPEND MD "\"license\": \"${MD_LICENSE}\"")
-    list(APPEND MD "\"url\": \"${MD_URL}\"")
+    set(MD "{}")
+    string(JSON MD SET ${MD} "id" "\"${MD_ID}\"")
+    string(JSON MD SET ${MD} "version" "\"${MD_VERSION}\"")
+    string(JSON MD SET ${MD} "name" "\"${MD_NAME}\"")
+    string(JSON MD SET ${MD} "description" "\"${MD_DESCRIPTION}\"")
+    string(JSON MD SET ${MD} "license" "\"${MD_LICENSE}\"")
+    string(JSON MD SET ${MD} "url" "\"${MD_URL}\"")
 
     if (MD_USER)
-        list(APPEND MD "\"user\": \"${MD_USER}\"")
+        string(JSON MD SET ${MD} "user" "\"${MD_USER}\"")
     endif()
 
     if (DEFINED MD_MAINTAINERS)
         list(JOIN MD_MAINTAINERS "\", \"" X)
-        list(APPEND MD "\"maintainers\": [\"${X}\"]")
+        string(JSON MD SET ${MD} "maintainers" "[\"${X}\"]")
     endif()
     if (DEFINED MD_QT_DEPENDENCIES)
         list(JOIN MD_QT_DEPENDENCIES "\", \"" X)
-        list(APPEND MD "\"qt_deps\": [\"${X}\"]")
+        string(JSON MD SET ${MD} "qt_deps" "[\"${X}\"]")
     endif()
     if (DEFINED MD_LIB_DEPENDENCIES)
         list(JOIN MD_LIB_DEPENDENCIES "\", \"" X)
-        list(APPEND MD "\"lib_deps\": [\"${X}\"]")
+        string(JSON MD SET ${MD} "lib_deps" "[\"${X}\"]")
     endif()
     if (DEFINED MD_EXEC_DEPENDENCIES)
         list(JOIN MD_EXEC_DEPENDENCIES "\", \"" X)
-        list(APPEND MD "\"exec_deps\": [\"${X}\"]")
+        string(JSON MD SET ${MD} "exec_deps" "[\"${X}\"]")
     endif()
 
     # Build authors list from git
     execute_process(COMMAND bash -c "git -C ${CMAKE_CURRENT_SOURCE_DIR} log --pretty=format:%an .|sort|uniq"
             OUTPUT_VARIABLE AUTHORS OUTPUT_STRIP_TRAILING_WHITESPACE)
     string(REGEX REPLACE "\n" ";" AUTHORS ${AUTHORS})
-
     if (DEFINED MD_AUTHORS)
         list(JOIN MD_AUTHORS "\", \"" X)
-        list(APPEND MD "\"authors\": [\"${X}\"]")
+        string(JSON MD SET ${MD} "authors" "[\"${X}\"]")
     endif()
 
-    list(JOIN MD ", " MD)
-
     # Create the metadata in the build dir
-    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/metadata.json" "{${MD}}")
-    #message("${CMAKE_CURRENT_BINARY_DIR}/metadata.json {${MD}}")
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/metadata.json" "${MD}")
+#    message("${CMAKE_CURRENT_BINARY_DIR}/metadata.json ${MD}")
 endfunction()
 
 function(albert_plugin_add_default_target)
