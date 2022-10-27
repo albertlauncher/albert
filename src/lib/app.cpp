@@ -1,25 +1,25 @@
-//// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022 Manuel Schneider
 
 #include "app.h"
+#include "frontend.h"
 #include "logging.h"
 #include "pluginprovider.h"
-#include "frontend.h"
-//#include "settings/settingswindow.h"
-#include <QMessageBox>
-#include <QSettings>
-#include <QDir>
+#include "queryengine.h"
 #include "rpcserver.h"
 #include <QApplication>
+#include <QDir>
+#include <QMessageBox>
+#include <QSettings>
+//#include "settings/settingswindow.h"
 //#ifdef Q_OS_MAC
 //#include "macos.h"
 //#endif
-
-ALBERT_DEFINE_LOGGING_CATEGORY
 using namespace std;
+using namespace albert;
 static const char *CFG_LAST_USED_VERSION = "last_used_version";
 static const char *CFG_FRONTEND_ID = "frontendId";
 static const char *DEF_FRONTEND_ID = "widgetboxmodel";
-static albert::App *instance_ = nullptr;
+static App *instance_ = nullptr;
 
 static QStringList defaultPluginDirs()
 {
@@ -53,145 +53,109 @@ static QStringList defaultPluginDirs()
     return pluginDirs;
 }
 
-struct albert::App::Private
+
+App *App::instance()
 {
-    albert::App *q;
-    RPCServer rpc_server;
-    ::PluginProvider plugin_provider;
-    std::map<QString,Extension*> extensions;
-    Frontend *frontend;
+    return instance_;
+}
 
-    void notifyVersionChangeAndFirstRun()
-    {
-        auto settings = QSettings(qApp->applicationName());
-        auto current_version = qApp->applicationVersion();
-        auto last_used_version = settings.value(CFG_LAST_USED_VERSION).toString();
-
-        if (last_used_version.isNull()){  // First run
-            QMessageBox(
-                    QMessageBox::Warning, "First run",
-                    "This is the first time you've launched Albert. Albert is plugin based. "
-                    "You have to enable extension you want to use. "
-                    "Note that you wont be able to open albert without a hotkey or "
-                    "tray icon.").exec();
-            q->showSettings();
-            settings.setValue(CFG_LAST_USED_VERSION, current_version);
-        }
-        else if (current_version.section('.', 1, 1) != last_used_version.section('.', 1, 1) ){  // FIXME in first major version
-            QMessageBox(QMessageBox::Information, "Major version changed",
-                        QString("You are now using Albert %1. The major version changed. "
-                                "Some parts of the API might have changed. Check the "
-                                "<a href=\"https://albertlauncher.github.io/news/\">news</a>.")
-                                .arg(current_version)).exec();
-        }
-    }
-
-    void loadFrontend()
-    {
-        // Get all specs of type frontend
-        std::map<QString, PluginProvider::PluginSpec&> frontends;
-        for(auto &[id, spec] : plugin_provider.plugins())
-            if(spec.type == PluginProvider::PluginType::Frontend && spec.state == PluginProvider::PluginState::Unloaded)
-                frontends.emplace(id, spec);
-
-        // Helper function loading frontend extensions
-        auto load_frontend = [&](const QString &id) -> Frontend* {
-            if (!plugin_provider.loadPlugin(id))
-                return nullptr;  // Loading failed
-            try {
-                return q->extension<albert::Frontend>(id);
-            } catch (const std::out_of_range &e) {
-                return nullptr;  // Extension not registered
-            }
-        };
-
-        // Try loading the configured frontend
-        auto cfg_frontend = QSettings(qApp->applicationName()).value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString();
-        if (frontend = load_frontend(cfg_frontend); frontend)
-            return;
-
-        WARN << "Loading configured frontend failed. Try any other.";
-
-        for (auto &[id, spec] : frontends)
-            if (frontend = load_frontend(id); frontend) {
-                WARN << QString("Using %1 instead.").arg(id);
-                return;
-            }
-
-        qFatal("Could not load any frontend.");
-    }
-
-//    friend class SettingsWindow;
-//    QPointer<SettingsWindow> settings_window;
-//    QString id() const override { return ""; }
-//    QString handleSocketMessage(const QString &message) override;
-//    TrayIcon tray_icon;
-//    TerminalProvider terminal_provider;
-//    QueryEngine query_engine;
-};
-
-albert::App::App(const QStringList &additional_plugin_dirs) : d(new Private)
+App::App(const QStringList &additional_plugin_dirs)
 {
     if (instance_ != nullptr)
         qFatal("App created twice");
     instance_ = this;
 
-
-    d->q = this;
-    d->notifyVersionChangeAndFirstRun();
-    d->plugin_provider.findPlugins(QStringList(additional_plugin_dirs) << defaultPluginDirs());
-    d->loadFrontend();
+    plugin_provider.findPlugins(QStringList(additional_plugin_dirs) << defaultPluginDirs());
+    loadFrontend();
+    notifyVersionChangeAndFirstRun();
 }
 
-albert::App *albert::App::instance()
-{
-    return instance_;
-}
-
-void albert::App::show(const QString &text)
-{
-//    if (!text.isNull())
-//        native_plugin_provider.frontend().setInput(text);
-//    native_plugin_provider.frontend().setVisible(true);
-}
-
-void albert::App::showSettings()
+void App::showSettings()
 {
 //    if (!d->settings_window)
 //        d->settings_window = new SettingsWindow(*this);
 //    d->settings_window->bringToFront();
 }
 
-void albert::App::restart()
+void App::notifyVersionChangeAndFirstRun()
 {
-    QMetaObject::invokeMethod(qApp, "exit", Qt::QueuedConnection, Q_ARG(int, -1));
+    auto settings = QSettings(qApp->applicationName());
+    auto current_version = qApp->applicationVersion();
+    auto last_used_version = settings.value(CFG_LAST_USED_VERSION).toString();
+
+    if (last_used_version.isNull()){  // First run
+        QMessageBox(
+                QMessageBox::Warning, "First run",
+                "This is the first time you've launched Albert. Albert is plugin based. "
+                "You have to enable extension you want to use. "
+                "Note that you wont be able to open albert without a hotkey or "
+                "tray icon.").exec();
+        showSettings();
+        settings.setValue(CFG_LAST_USED_VERSION, current_version);
+    }
+    else if (current_version.section('.', 1, 1) != last_used_version.section('.', 1, 1) ){  // FIXME in first major version
+        QMessageBox(QMessageBox::Information, "Major version changed",
+                    QString("You are now using Albert %1. The major version changed. "
+                            "Some parts of the API might have changed. Check the "
+                            "<a href=\"https://albertlauncher.github.io/news/\">news</a>.")
+                            .arg(current_version)).exec();
+    }
 }
 
-void albert::App::quit()
+void App::loadFrontend()
 {
-    QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
+    // Get all specs of type frontend
+    std::map<QString, PluginSpec&> frontends;
+    for(auto &[id, spec] : plugin_provider.plugins())
+        if(spec.type == PluginType::Frontend && spec.state == PluginState::Unloaded)
+            frontends.emplace(id, spec);
+
+    if (frontends.empty())
+        qFatal("No frontends found.");
+
+    // Helper function loading frontend extensions
+    auto load_frontend = [this](const QString &id) -> Frontend* {
+        if (!plugin_provider.loadPlugin(id))
+            return nullptr;  // Loading failed
+        try {
+            if (auto f = extension_registry.extension<Frontend>(id); f)
+                return f;
+            else
+                return nullptr;
+        } catch (const std::out_of_range &e) {
+            return nullptr;  // Extension not registered
+        }
+    };
+
+    // Try loading the configured frontend
+    auto cfg_frontend = QSettings(qApp->applicationName()).value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString();
+    if (!frontends.contains(cfg_frontend))
+        WARN << "Configured frontend does not exist: " << cfg_frontend;
+    else if (frontend = load_frontend(cfg_frontend); frontend)
+        return;
+    else
+        WARN << "Loading configured frontend failed. Try any other.";
+
+    for (auto &[id, spec] : frontends)
+        if (frontend = load_frontend(id); frontend) {
+            WARN << QString("Using %1 instead.").arg(id);
+            return;
+        }
+
+    qFatal("Could not load any frontend.");
 }
 
-void albert::App::registerExtension(albert::Extension *extension)
+QWidget *App::createSettingsWindow()
 {
-    if (!d->extensions.count(extension->id()))
-        d->extensions.emplace(extension->id(), extension);
-    emit extensionRegistered(extension);
+    return nullptr;  // Todo
 }
 
-void albert::App::unregisterExtension(albert::Extension *extension)
-{
-    if (auto it = d->extensions.find(extension->id()); it != d->extensions.end()){
-        d->extensions.erase(it);
-        emit extensionUnregistered(extension);
-    } else
-        qFatal("Unregistered unregistered extension: %s", qPrintable(extension->id()));
-}
 
-const std::map<QString, albert::Extension *> &albert::App::extensions()
-{
-    return d->extensions;
-}
+
+
+
+
+
 
 
 /*SOCKET*/
@@ -221,7 +185,7 @@ const std::map<QString, albert::Extension *> &albert::App::extensions()
 //                return "Settings opened,";
 //            }},
 //            {"docs", [&](){
-//                albert::util::visitWebsite();
+//                util::visitWebsite();
 //                return "Opened website in a browser";
 //            }},
 //            {"restart", [&](){
@@ -442,8 +406,8 @@ const std::map<QString, albert::Extension *> &albert::App::extensions()
 
 //void PluginProvider::loadFrontend()
 //{
-//    using albert::PluginSpec;
-//    using albert::Frontend;
+//    using PluginSpec;
+//    using Frontend;
 //
 //    auto frontend_plugins = frontendPlugins();
 //    if (frontend_plugins.empty())
@@ -457,7 +421,7 @@ const std::map<QString, albert::Extension *> &albert::App::extensions()
 //                WARN << "Frontend is not of type 'Frontend':" << id;
 //            else{
 //                // Auto registration of root extensions
-//                if (albert::Extension *extension = dynamic_cast<albert::Extension*>(frontend_))
+//                if (Extension *extension = dynamic_cast<Extension*>(frontend_))
 //                    extension_registry.registerExtension(extension);
 //                return true;
 //            }

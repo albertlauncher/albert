@@ -1,36 +1,38 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
-#include "app.h"
+#include "albert.h"
 #include "export.h"
-#include "extension.h"
 #include <QObject>
 #include <set>
 
-namespace albert{
-
+namespace albert
+{
+class Extension;
 template<class T>
-class ALBERT_EXPORT ExtensionWatcher
+class ALBERT_EXPORT ExtensionWatcher  /// Non-QObject extension registry observer
 {
 public:
     ExtensionWatcher()
     {
-        conn_r = QObject::connect(app, &App::extensionRegistered, [this](Extension *e){
+        auto &registry = albert::extensionRegistry();
+
+        conn_r = QObject::connect(&registry, &ExtensionRegistry::added, [this](Extension *e){
             if (T *t = dynamic_cast<T*>(e)){
-                registry.insert(t);
-                onReg(t);
+                extensions_.insert(t);
+                onAdd(t);
             }
         });
 
-        conn_u = QObject::connect(app, &App::extensionUnregistered, [this](Extension *e){
+        conn_u = QObject::connect(&registry, &ExtensionRegistry::removed, [this](Extension *e){
             if (T *t = dynamic_cast<T*>(e)){
-                registry.erase(t);
-                onDereg(t);
+                extensions_.erase(t);
+                onRem(t);
             }
         });
 
-        for (auto &[id, e] : app->extensionsOfType<T>())
-            registry.insert(e);
+        for (auto &[id, e] : registry.extensionsOfType<T>())
+            extensions_.insert(e);
     }
 
     ~ExtensionWatcher()
@@ -41,18 +43,14 @@ public:
 
 protected:
 
-    virtual void onReg(T *) {}
-    virtual void onDereg(T *) {}
+    virtual void onAdd(T *) {}
+    virtual void onRem(T *) {}
 
-    const std::set<T*> &extensions() const { return registry; }
+    const std::set<T*> &extensions() const { return extensions_; }
 
 private:
-    std::set<T*> registry;
+    std::set<T*> extensions_;
     QMetaObject::Connection conn_r;
     QMetaObject::Connection conn_u;
 };
-
-
-
 }
-
