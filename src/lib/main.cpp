@@ -17,7 +17,7 @@
 #include <QTime>
 #include <csignal>
 #include <functional>
-ALBERT_DEFINE_LOGGING_CATEGORY
+ALBERT_LOGGING
 using namespace std;
 
 static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)

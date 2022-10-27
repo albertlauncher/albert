@@ -6,11 +6,13 @@
 
 namespace albert
 {
-
-/// Qt requires plugin classes to be default constructible, inherit QObject and contain a Q_OBJECT macro. The metadata
-/// is not accessible inside the QtPlugin by default. This class injects a reference to the plugin spec for DRY
-/// principle while keeping default constructability.
-/// @note Implementations have to ensure the QObject inheritance and contain the Q_OBJECT macro. This is a Qt MOC requirement.
+/// The plugin entry point class.
+/// Qt requires plugin classes to be default constructible, inherit QObject and
+/// contain a Q_OBJECT and the Q_PLUGIN_METADATA(…) macro. This is a Qt MOC
+/// requirement and can not be omitted. Also the metadata is not accessible
+/// inside the QtPlugin by default. This class injects a reference to the
+/// plugin spec while keeping default constructability.
+/// @note Use the ALBERT_PLUGIN macro for convenience use
 class ALBERT_EXPORT Plugin : virtual public Extension
 {
 public:
@@ -20,3 +22,5 @@ public:
     const PluginSpec &spec;  /// Plugin specification
 };
 }
+
+#define ALBERT_PLUGIN Q_PLUGIN_METADATA(IID ALBERT_IID FILE "metadata.json")

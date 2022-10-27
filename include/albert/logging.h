@@ -1,4 +1,4 @@
-// Copyright (C) 2022 Manuel Schneider
+// Copyright (c) 2022 Manuel Schneider
 
 #pragma once
 #include <QLoggingCategory>
@@ -9,12 +9,10 @@
 #define ALBERT_QLC_ID "albert"
 #endif
 
-#define ALBERT_DECLARE_LOGGING_CATEGORY Q_DECLARE_LOGGING_CATEGORY(LogCat)
-#define ALBERT_DEFINE_LOGGING_CATEGORY Q_LOGGING_CATEGORY(LogCat, ALBERT_QLC_ID)
-ALBERT_DECLARE_LOGGING_CATEGORY
+Q_DECLARE_LOGGING_CATEGORY(LogCat)
+#define ALBERT_LOGGING Q_LOGGING_CATEGORY(LogCat, ALBERT_QLC_ID)
 
 #define DEBG qCDebug(LogCat,).noquote()
 #define INFO qCInfo(LogCat,).noquote()
 #define WARN qCWarning(LogCat,).noquote()
 #define CRIT qCCritical(LogCat,).noquote()
-
