@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)  # Ubuntu 20.04
+cmake_minimum_required(VERSION 3.16)  # Ubuntu 22.04
 
 project(albert VERSION 0.17.6 LANGUAGES CXX)
 
@@ -12,7 +12,7 @@ configure_file(
         @ONLY
 )
 
-find_package(Qt5 5.6.0  # Charts
+find_package(Qt6 6.2  # Ubuntu 22.04
     REQUIRED
         Charts
         Core
@@ -31,12 +31,12 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 # Set standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Set additional compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Winline -Wall -Wextra -Wshadow -Wstrict-aliasing -pedantic -Wno-deprecated -Wno-unused-parameter") #-Wconversion -Weffc++ -Werror
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Winline  -Wextra -Wshadow -Wstrict-aliasing -pedantic -Wno-deprecated -Wno-unused-parameter") #-Wconversion -Weffc++ -Werror-Wall
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DQT_QML_DEBUG")
 
 # Color make output
@@ -54,7 +54,30 @@ set(TARGET_LIB ${CMAKE_PROJECT_NAME})
 
 file(GLOB_RECURSE LIB_SRC include/* src/lib/*.cpp src/lib/settingswidget/*.cpp)
 
-add_library(${TARGET_LIB} SHARED ${LIB_SRC})
+add_library(${TARGET_LIB} SHARED ${LIB_SRC}
+#        src/lib/app.cpp
+#        src/lib/extension.cpp
+#        src/lib/frontend.cpp
+#        src/lib/history.cpp
+#        src/lib/iconprovider.cpp
+#        src/lib/indexqueryhandlerprivate.h
+#        src/lib/itemindex.cpp
+#        src/lib/levenshtein.cpp
+#        src/lib/main.cpp
+#        src/lib/plugin.cpp
+#        src/lib/pluginprovider.cpp
+#        src/lib/query.cpp
+#        src/lib/queryengine.cpp
+#        src/lib/queryhandler.cpp
+#        src/lib/rpcserver.cpp
+#        src/lib/scopedcrashindicator.hpp
+#        src/lib/scopedtimeprinter.hpp
+#        src/lib/trayicon.cpp
+#        src/lib/usagehistory.cpp
+#        src/lib/xdg/iconlookup.cpp
+#        src/lib/xdg/themefileparser.cpp
+)
+
 add_library(albert::albert ALIAS ${TARGET_LIB})
 
 generate_export_header(${TARGET_LIB}
@@ -81,13 +104,13 @@ target_include_directories(${TARGET_LIB}
 
 target_link_libraries(${TARGET_LIB}
     PUBLIC
-        Qt5::Core
+        Qt6::Core
     PRIVATE
-        Qt5::Charts
-        Qt5::Concurrent
-        Qt5::Network
-        Qt5::Sql
-        Qt5::Widgets
+        Qt6::Charts
+        Qt6::Concurrent
+        Qt6::Network
+        Qt6::Sql
+        Qt6::Widgets
 )
 
 set_target_properties(${TARGET_LIB} PROPERTIES
@@ -180,7 +203,7 @@ target_link_libraries(${TARGET_APP}
 )
 
 set_target_properties(${TARGET_APP} PROPERTIES
-    OUTPUT_NAME albert
+    OUTPUT_NAME ${CMAKE_PROJECT_NAME}
     INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}/albert/"  # Set the RPATH for the library lookup
 )
 
@@ -197,7 +220,7 @@ install(TARGETS ${TARGET_APP} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 set(TARGET_CTL ${CMAKE_PROJECT_NAME}ctl)
 add_executable(${TARGET_CTL} src/ctl/main.cpp)
-target_link_libraries(${TARGET_CTL} PRIVATE Qt5::Network)
+target_link_libraries(${TARGET_CTL} PRIVATE Qt6::Network)
 install(TARGETS ${TARGET_CTL} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 #################################### Test #####################################
@@ -218,15 +241,15 @@ install(TARGETS ${TARGET_CTL} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 #endif()
 
 ################################# Plugins  ####################################
-
-FILE(GLOB children RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/plugins/ plugins/*)
-LIST(FILTER children EXCLUDE REGEX "^\\..+")
-FOREACH(child ${children})
-    IF(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugins/${child})
-        string(TOUPPER ${child} CHILD)
-        option(BUILD_${CHILD} "Build ${child}" ON)
-        if (BUILD_${CHILD})
-            add_subdirectory(plugins/${child})
-        endif()
-    ENDIF()
-ENDFOREACH()
+#
+#FILE(GLOB children RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/plugins/ plugins/*)
+#LIST(FILTER children EXCLUDE REGEX "^\\..+")
+#FOREACH(child ${children})
+#    IF(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugins/${child})
+#        string(TOUPPER ${child} CHILD)
+#        option(BUILD_${CHILD} "Build ${child}" ON)
+#        if (BUILD_${CHILD})
+#            add_subdirectory(plugins/${child})
+#        endif()
+#    ENDIF()
+#ENDFOREACH()

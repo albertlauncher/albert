@@ -14,7 +14,7 @@ uint Levenshtein::computePrefixEditDistanceWithLimit(const QString &prefix, cons
         return string.startsWith(prefix) ? 0 : 1;
 
     uint rows = prefix.size() + 1;
-    uint cols = min(prefix.size() + k + 1, static_cast<uint>(string.size()) + 1);
+    uint cols = min(prefix.size() + k + 1, string.size() + 1);
 
     expand_matrix_if_necessary(rows, cols);
 
@@ -136,7 +136,7 @@ void Levenshtein::print_matrix(const QString &prefix, const QString &string) con
 bool Levenshtein::checkPrefixEditDistance_Legacy(const QString &prefix, const QString &str, uint delta)
 {
     uint row_count = prefix.size() + 1;
-    uint col_count = min(prefix.size() + delta + 1, static_cast<uint>(str.size()) + 1);
+    uint col_count = min(prefix.size() + delta + 1, str.size() + 1);
 
     uint* table = new uint[row_count * col_count];
 

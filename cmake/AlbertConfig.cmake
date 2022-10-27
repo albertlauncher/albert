@@ -113,8 +113,8 @@ endfunction()
 
 function(albert_plugin_add_qt_dependencies)
     foreach(arg IN LISTS ARGN)
-        find_package(Qt5 5.5.0 REQUIRED COMPONENTS ${arg})
-        target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::${arg})
+        find_package(Qt6 REQUIRED COMPONENTS ${arg})
+        target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::${arg})
     endforeach()
 endfunction()
 

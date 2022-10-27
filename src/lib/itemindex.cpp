@@ -4,7 +4,6 @@
 #include "itemindex.h"
 #include <QRegularExpression>
 #include <map>
-#include <set>
 using namespace std;
 using namespace albert;
 
@@ -108,7 +107,7 @@ std::vector<ItemIndex::StringMatch> ItemIndex::getWordMatches(const QString &wor
     // Get range of perfect prefix match words
     const auto &[eq_begin, eq_end] = equal_range(word_index.cbegin(), word_index.cend(), WordIndexItem{word, {}},
                                                  [l=word_length](const WordIndexItem &a, const WordIndexItem &b) {
-                                                     return a.word.leftRef(l) < b.word.leftRef(l);
+                                                     return QStringView{a.word}.left(l) < QStringView{b.word}.left(l);
                                                  });
 
     // Store perfect prefix match words
