@@ -2,6 +2,8 @@
 
 #include "config.h"
 #include "logging.h"
+#include "albert/albert.h"
+#include "albert/plugin.h"
 #include "pluginprovider.h"
 #include <QCoreApplication>
 #include <QDirIterator>
@@ -129,7 +131,7 @@ void PluginProvider::findPlugins(const QStringList &paths)
 //    loadEnabledPlugins();
 }
 
-bool PluginProvider::loadPlugin(const QString &id)
+albert::Plugin *PluginProvider::loadPlugin(const QString &id)
 {
     auto spec = specs.at(id);
 
@@ -152,9 +154,14 @@ bool PluginProvider::loadPlugin(const QString &id)
                 current_spec_in_construction = &spec;
                 if (QObject *instance = loader.instance()){
                     DEBG << QString("Success [%1ms]").arg(duration_cast<milliseconds>(system_clock::now() - start).count());
-                    spec.state = PluginState::Loading;
+                    spec.state = PluginState::Loaded;
                     emit pluginStateChanged(spec);
-                    return true;
+                    if (Extension *e = dynamic_cast<Extension*>(instance))
+                        albert::extensionRegistry().add(e);  // Auto registration
+                    if (albert::Plugin *p = dynamic_cast<albert::Plugin*>(instance); p)
+                        return p;
+                    else
+                        qFatal("Plugin is not of type albert::Plugin: %s", spec.path.toLocal8Bit().data());
                 } else
                     error = loader.errorString();
                 current_spec_in_construction = nullptr;
@@ -172,16 +179,16 @@ bool PluginProvider::loadPlugin(const QString &id)
 
             DEBG << "Loading plugin failed:" << error;
             loader.unload();
-            spec.state = PluginState::Loading;
+            spec.state = PluginState::Error;
             spec.reason = error;
             emit pluginStateChanged(spec);
-            return false;
+            return nullptr;
         }
             // These should never happen
         case PluginState::Loading:
             qFatal("Tried to load a loading plugin.");
         case PluginState::Loaded:
-            return true;
+            qFatal("Tried to load a loaded plugin.");
     }
 }
 

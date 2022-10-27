@@ -115,16 +115,13 @@ void App::loadFrontend()
 
     // Helper function loading frontend extensions
     auto load_frontend = [this](const QString &id) -> Frontend* {
-        if (!plugin_provider.loadPlugin(id))
-            return nullptr;  // Loading failed
-        try {
-            if (auto f = extension_registry.extension<Frontend>(id); f)
-                return f;
+        if (auto *plugin = plugin_provider.loadPlugin(id); plugin){
+            if (auto *frontend = dynamic_cast<Frontend*>(plugin); frontend)
+                return frontend;
             else
-                return nullptr;
-        } catch (const std::out_of_range &e) {
-            return nullptr;  // Extension not registered
+                plugin_provider.unloadPlugin(id);
         }
+        return nullptr;  // Loading failed
     };
 
     // Try loading the configured frontend

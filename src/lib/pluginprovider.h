@@ -20,7 +20,7 @@ public:
     bool isEnabled(const QString &id) override;
     void setEnabled(const QString &id, bool enabled) override;
 
-    bool loadPlugin(const QString &id);
+    albert::Plugin *loadPlugin(const QString &id);
     void unloadPlugin(const QString &id);
 
 private:
