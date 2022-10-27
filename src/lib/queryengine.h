@@ -18,8 +18,8 @@ public:
 
 private:
     void updateTriggers();
-    void onReg(albert::QueryHandler*) override;
-    void onDereg(albert::QueryHandler*) override;
+    void onAdd(albert::QueryHandler*) override;
+    void onRem(albert::QueryHandler*) override;
 
     std::map<QString,albert::QueryHandler*> trigger_map;
     std::vector<std::unique_ptr<Query>> queries;

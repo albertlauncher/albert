@@ -26,6 +26,7 @@ class PluginProvider;
 
 struct PluginSpec {                    /// The specification of the plugin
     QString path;                      /// File path
+    QString iid;                       /// Interface identifier
     QString id;                        /// GUID, no duplicates allowed
     QString version;                   /// https://semver.org/
     QString name;                      /// Human readable name

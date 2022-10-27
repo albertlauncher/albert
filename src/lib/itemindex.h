@@ -10,7 +10,7 @@
 class ItemIndex
 {
 public:
-    explicit ItemIndex(std::map<albert::SharedItem,std::map<QString,Score>> &&index_items,
+    explicit ItemIndex(std::map<albert::SharedItem,std::map<QString,albert::Score>> &&index_items,
                        const QString &separators, bool case_sensitive,
                        uint n, uint error_tolerance_divisor);  // ceil(len(word)/error_tolerance_divisor))
     ItemIndex() = default;
@@ -19,7 +19,7 @@ public:
     ItemIndex &operator=(const ItemIndex &) = default;
     ItemIndex &operator=(ItemIndex &&) = default;
 
-    std::vector<Match> search(const QString &string) const;
+    std::vector<albert::Match> search(const QString &string) const;
 
 private:
     using Index = uint32_t;
@@ -29,7 +29,7 @@ private:
     struct StringIndexItem {  // inverted item index, s_idx > ([w_idx], [(i_idx, s_scr)])
         std::vector<Index> words;
         Index item;
-        Score max_score;
+        albert::Score max_score;
     };
 
     struct WordIndexItem {  // inverted string index, w_idx > (word, [(str_idx, w_pos)])

@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2019 Manuel Schneider
+// Copyright (c) 2022 Manuel Schneider
 
 #include <QClipboard>
 #include <QDebug>
@@ -101,5 +101,5 @@ Core::TermAction::TermAction(const QString &text, const QString &script, Core::T
 
 /** **************************************************************************/
 void Core::TermAction::activate() const {
-    runDetached(terminalCommand.split(QChar(QChar::Space), QString::SkipEmptyParts) << commandline_, workingDir_);
+    runDetached(terminalCommand.split(QChar(QChar::Space), Qt::SkipEmptyParts) << commandline_, workingDir_);
 }

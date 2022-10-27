@@ -1,14 +1,14 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#pragma once
 #include "indexqueryhandlerprivate.h"
 #include "queryhandler.h"
+#include "itemindex.h"
 using namespace std;
 
 
-void albert::BatchQueryHandler::handleQuery(albert::Query &query) const
+void albert::GlobalQueryHandler::handleQuery(albert::Query &query) const
 {
-    std::vector<Match> &&matches = batchHandleQuery(query);
+    std::vector<Match> &&matches = rankedItems(query);
     sort(matches.begin(), matches.end(), [](const Match &a, const Match &b){ return a.score > b.score; });
 
     // TODO 0.18 not wasting time here since I cant test but this has tp be done before the release
@@ -47,7 +47,7 @@ void albert::IndexQueryHandler::updateIndex() { d->updateIndex(); }
 
 QString albert::IndexQueryHandler::synopsis() const { return QStringLiteral("<filter>"); }
 
-vector<albert::Match> albert::IndexQueryHandler::batchHandleQuery(const albert::Query &query) const
+vector<albert::Match> albert::IndexQueryHandler::rankedItems(const albert::Query &query) const
 {
     return d->index()->search(query.string());
 }

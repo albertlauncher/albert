@@ -56,10 +56,10 @@ public:
     virtual void setVisible(bool visible = true) = 0;
     void toggleVisibility() { setVisible(!isVisible()); }
 
-    virtual QString input() = 0;
+    virtual QString input() const = 0;
     virtual void setInput(const QString&) = 0;
 
-    virtual QWidget *widget(QWidget *parent) = 0;
+    virtual QWidget *widget() = 0;
 };
 }
 

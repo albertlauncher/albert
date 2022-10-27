@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.16)  # Ubuntu 22.04
+cmake_minimum_required(VERSION 3.19)  # JSON support, Ubuntu 22.04
 
-project(albert VERSION 0.17.6 LANGUAGES CXX)
+project(albert VERSION 0.18.0 LANGUAGES CXX)
 
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
@@ -241,15 +241,15 @@ install(TARGETS ${TARGET_CTL} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 #endif()
 
 ################################# Plugins  ####################################
-#
-#FILE(GLOB children RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/plugins/ plugins/*)
-#LIST(FILTER children EXCLUDE REGEX "^\\..+")
-#FOREACH(child ${children})
-#    IF(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugins/${child})
-#        string(TOUPPER ${child} CHILD)
-#        option(BUILD_${CHILD} "Build ${child}" ON)
-#        if (BUILD_${CHILD})
-#            add_subdirectory(plugins/${child})
-#        endif()
-#    ENDIF()
-#ENDFOREACH()
+
+FILE(GLOB children RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/plugins/ plugins/*)
+LIST(FILTER children EXCLUDE REGEX "^\\..+")
+FOREACH(child ${children})
+    IF(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugins/${child})
+        string(TOUPPER ${child} CHILD)
+        option(BUILD_${CHILD} "Build ${child}" ON)
+        if (BUILD_${CHILD})
+            add_subdirectory(plugins/${child})
+        endif()
+    ENDIF()
+ENDFOREACH()

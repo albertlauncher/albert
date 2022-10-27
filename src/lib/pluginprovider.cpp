@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2021 Manuel Schneider
+// Copyright (c) 2022 Manuel Schneider
 
 #include "config.h"
 #include "logging.h"
@@ -19,7 +19,7 @@ using albert::PluginState;
 using albert::PluginSpec;
 
 static const char *IID_PATTERN = R"R(org.albert.PluginInterface/(\d+).(\d+))R";
-static albert::PluginSpec *current_spec_in_construction = nullptr;
+albert::PluginSpec *current_spec_in_construction = nullptr;
 
 PluginProvider::PluginProvider()
 {
@@ -43,10 +43,13 @@ void PluginProvider::findPlugins(const QStringList &paths)
     for (auto it = paths.rbegin(); it != paths.rend(); ++it) {
         QDirIterator dirIterator(*it, QDir::Files);
         while (dirIterator.hasNext()) {
-            if (auto spec = parsePluginMetadata(dirIterator.next()); specs.count(spec.id))
-                WARN << "Plugin id already exists. Skipping:" << spec.path;
-            else
-                specs.emplace(spec.id, move(spec));
+            try {
+                auto spec = parsePluginMetadata(dirIterator.next());
+                if (const auto &[_, success] = specs.emplace(spec.id, spec); !success)
+                    WARN << "Plugin id already exists. Skip" << spec.path;
+            } catch (const runtime_error &e) {
+                WARN << e.what() << dirIterator.filePath();
+            }
         }
     }
 
@@ -217,17 +220,29 @@ void PluginProvider::loadEnabledPlugins()
             loadPlugin(id);
 }
 
-albert::PluginSpec PluginProvider::parsePluginMetadata(QString path) noexcept
+albert::PluginSpec PluginProvider::parsePluginMetadata(QString path)
 {
     QPluginLoader loader(path);
     QStringList errors;
     albert::PluginSpec spec;
     spec.provider = this;
-
-    // Extract mandatory metadata
-
     spec.path = path;
-    QString iid = loader.metaData()["IID"].toString();
+
+    spec.iid = loader.metaData()["IID"].toString();
+    if (spec.iid.isEmpty())
+        throw runtime_error("Not a QPlugin");
+    auto iid_match = QRegularExpression(IID_PATTERN).match(spec.iid);
+    if (!iid_match.hasMatch())
+        throw runtime_error(QString("Invalid IID pattern: '%1'. Expected '%2'.")
+                            .arg(iid_match.captured(), iid_match.regularExpression().pattern()).toStdString());
+    else {
+        if (auto plugin_iid_major = iid_match.captured(1).toUInt(); plugin_iid_major != ALBERT_VERSION_MAJOR)
+            throw runtime_error(QString("Incompatible major version: %1. Expected: %2.")
+                                        .arg(plugin_iid_major).arg(ALBERT_VERSION_MAJOR).toStdString());
+        if (auto plugin_iid_minor = iid_match.captured(2).toUInt(); plugin_iid_minor > ALBERT_VERSION_MINOR)
+            throw runtime_error(QString("Incompatible minor version: %1. Supported up to: %2.")
+                                        .arg(plugin_iid_minor).arg(ALBERT_VERSION_MINOR).toStdString());
+    }
 
     auto rawMetadata = loader.metaData()["MetaData"].toObject();
     spec.id = rawMetadata["id"].toString();
@@ -249,26 +264,11 @@ albert::PluginSpec PluginProvider::parsePluginMetadata(QString path) noexcept
     else
         spec.type = PluginType::User;
 
-    // Check sanity of the interface
-
-    auto iid_match = QRegularExpression(IID_PATTERN).match(iid);
-    if (!iid_match.hasMatch())
-        errors << QString("Invalid IID pattern: '%1'. Expected '%2'.")
-                .arg(iid_match.captured(), iid_match.regularExpression().pattern());
-    else {
-        if (auto plugin_iid_major = iid_match.captured(1).toUInt(); plugin_iid_major != ALBERT_VERSION_MAJOR)
-            errors << QString("Incompatible major version: %1. Expected: %2.")
-                    .arg(plugin_iid_major).arg(ALBERT_VERSION_MINOR);
-        if (auto plugin_iid_minor = iid_match.captured(2).toUInt(); plugin_iid_minor > ALBERT_VERSION_MINOR)
-            errors << QString("Incompatible minor version: %1. Supported up to: %2.")
-                    .arg(plugin_iid_minor).arg(ALBERT_VERSION_MINOR);
-    }
-
     if (!QRegularExpression("^\\d+\\.\\d+$").match(spec.version).hasMatch())
-        errors << "Invalid version scheme. Use '<version>.<patch>'.";
+        WARN << "Invalid version scheme. Use '<version>.<patch>'.";
 
     if (!QRegularExpression("[a-z0-9_]").match(spec.id).hasMatch())
-        errors << "Invalid plugin id. Use [a-z0-9_].";
+        WARN << "Invalid plugin id. Use [a-z0-9_].";
 
     if (spec.name.isEmpty())
         WARN << "'name' should not be empty.";

@@ -1,27 +1,18 @@
-// Copyright (C) 2014-2018 Manuel Schneider
+// Copyright (c) 2022 Manuel Schneider
 
 #pragma once
-#include <QString>
-#include <vector>
-#include <memory>
 #include "export.h"
+#include "extension.h"
+#include "item.h"
+#include <QString>
 
-namespace Core {
 
-class Item;
+namespace albert {
 
-class ALBERT_EXPORT FallbackProvider
+struct ALBERT_EXPORT FallbackProvider : virtual public Extension
 {
-public:
-
-    virtual ~FallbackProvider() {}
-
-    /**
-     * @brief Fallbacks
-     * This items show up if a query yields no results
-     */
-    virtual std::vector<std::shared_ptr<Item>> fallbacks(const QString &) = 0;
-
+    /// These items show up if a query yields no results
+    virtual std::vector<SharedItem> fallbacks(const QString &) const = 0;
 };
 
 }

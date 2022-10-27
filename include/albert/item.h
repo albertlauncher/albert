@@ -59,5 +59,12 @@ public:
 
 using SharedItem = std::shared_ptr<Item>;
 using SharedItemVector = std::vector<SharedItem>;
+using Score = uint16_t;
+
+struct ALBERT_EXPORT Match
+{
+    SharedItem item;
+    Score score;
+};
 
 }

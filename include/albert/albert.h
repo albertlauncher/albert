@@ -1,6 +1,7 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
+#include "export.h"
 #include "extensionregistry.h"
 #include <QString>
 #include <map>
@@ -9,22 +10,22 @@ namespace albert
 {
 
 class ExtensionRegistry;
-ExtensionRegistry &extensionRegistry();
+ALBERT_EXPORT ExtensionRegistry &extensionRegistry();
 
 class Query;
-Query* query(const QString &query);
+ALBERT_EXPORT Query* query(const QString &query);
 
-void show(const QString &text = QString());
+ALBERT_EXPORT void show(const QString &text = QString());
 
-void showSettings();
+ALBERT_EXPORT void showSettings();
 
-void restart();
+ALBERT_EXPORT void restart();
 
-void quit();
+ALBERT_EXPORT void quit();
 
-//void sendTrayNotification(const QString &title, const QString &message, const QIcon &icon) override;
+//ALBERT_EXPORT void sendTrayNotification(const QString &title, const QString &message, const QIcon &icon) override;
 
-//albert::Terminal &terminal() override;
+//ALBERT_EXPORT albert::Terminal &terminal() override;
 
-//albert::ExtensionRegistry &extensionRegistry() override;
+//ALBERT_EXPORT albert::ExtensionRegistry &extensionRegistry() override;
 }

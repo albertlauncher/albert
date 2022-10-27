@@ -1,6 +1,5 @@
 // Copyright (c) 2021-2022 Manuel Schneider
 
-#pragma once
 #include "extension.h"
 #include <QDir>
 #include <QStandardPaths>

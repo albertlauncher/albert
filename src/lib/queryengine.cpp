@@ -14,19 +14,19 @@ using namespace std;
 static const char *CFG_TRIGGER = "trigger";
 
 
-struct GlobalSearchHandler : BatchQueryHandler, ExtensionWatcher<IndexQueryHandler>
+struct GlobalSearchHandler : GlobalQueryHandler, ExtensionWatcher<IndexQueryHandler>
 {
     QString id() const override { return QStringLiteral("globalsearch"); }
     QString synopsis() const override { return QStringLiteral("<filter>"); }
     QString default_trigger() const override { return QLatin1String(""); }
     bool allow_trigger_remap() const override { return false; }
-    vector<Match> batchHandleQuery(const albert::Query &query) const override
+    vector<Match> rankedItems(const albert::Query &query) const override
     {
         // QtConcurrent5 sucks and does not support move (copies…!) hack around
         mutex m;
         vector<Match> results;
         function<void(IndexQueryHandler*)> map = [&query, &m, &results](IndexQueryHandler *handler) {
-            auto &&intermediate = handler->batchHandleQuery(query);
+            auto &&intermediate = handler->rankedItems(query);
             [[maybe_unused]] const lock_guard<mutex> lock(m);
             results.insert(end(results),
                            make_move_iterator(begin(intermediate)),
@@ -64,9 +64,9 @@ albert::Query* QueryEngine::query(const QString &query_string)
     return queries.emplace_back(::move(query)).get();
 }
 
-void QueryEngine::onReg(QueryHandler *handler) { updateTriggers(); }
+void QueryEngine::onAdd(QueryHandler *handler) { updateTriggers(); }
 
-void QueryEngine::onDereg(QueryHandler *handler) { updateTriggers(); } // Todo
+void QueryEngine::onRem(QueryHandler *handler) { updateTriggers(); } // Todo
 
 void QueryEngine::updateTriggers()
 {

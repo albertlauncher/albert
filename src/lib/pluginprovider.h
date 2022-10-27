@@ -27,7 +27,7 @@ private:
     std::map<QString, albert::PluginSpec> specs;
 
     void loadEnabledPlugins();
-    albert::PluginSpec parsePluginMetadata(QString path) noexcept;
+    albert::PluginSpec parsePluginMetadata(QString path);
 
 //    // ALL plugins
 //    std::vector<std::unique_ptr<NativePluginSpec>> plugins_;

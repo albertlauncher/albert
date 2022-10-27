@@ -2,6 +2,7 @@
 
 #pragma once
 #include "export.h"
+#include "item.h"
 #include <QObject>
 #include <QString>
 #include <vector>

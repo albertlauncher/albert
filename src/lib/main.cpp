@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2018 Manuel Schneider
+// Copyright (c) 2022 Manuel Schneider
 
 #include "app.h"
 #include "config.h"
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
     //    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     //    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
-    QApplication app(argc, argv);
+    QApplication qapp(argc, argv);
     qApp->setOrganizationName("albert");
     qApp->setApplicationName("albert");
     qApp->setApplicationDisplayName("Albert");
@@ -137,8 +137,8 @@ int main(int argc, char **argv)
     parser.setApplicationDescription("These options may change in future versions.");
     auto opt_p = QCommandLineOption({"p", "plugin-dirs"}, "Set the plugin dirs to use. Comma separated.", "directory");
     auto opt_r = QCommandLineOption({"r", "report"}, "Print issue report.");
-    auto opt_q = QCommandLineOption({"q", "quiet"}, "Warnings only");
-    auto opt_d = QCommandLineOption({"d", "debug"}, "Full debug output. Takes precedence over 'quiet'.");
+    auto opt_q = QCommandLineOption({"q", "quiet"}, "Warnings only.");
+    auto opt_d = QCommandLineOption({"d", "debug"}, "Full debug output. Ignore '--quiet'.");
     parser.addOptions({opt_p, opt_r, opt_q, opt_d});
     parser.addVersionOption();
     parser.addHelpOption();
@@ -151,17 +151,15 @@ int main(int argc, char **argv)
     else if (!parser.isSet(opt_d))
         QLoggingCategory::setFilterRules("*.debug=false");
 
-    auto albert_app = std::make_unique<albert::App>(parser.isSet(opt_p) ? parser.value(opt_p).split(',') : QStringList());
+    auto albert_app = new App(parser.isSet(opt_p) ? parser.value(opt_p).split(',') : QStringList());
 
     // Delete app _before_ eventloop exits
-    QObject::connect(qApp, &QApplication::aboutToQuit,
-                     albert_app.get(), [&](){ albert_app.reset(); });
+    QObject::connect(qApp, &QApplication::aboutToQuit, [&](){ delete albert_app; });
 
-    int return_value = app.exec();
+    int return_value = qApp->exec();
     if (return_value == -1) {
-        albert_app.reset();
         qint64 pid;
-        if (QProcess::startDetached(app.arguments()[0], app.arguments().mid(1), QString(), &pid))
+        if (QProcess::startDetached(qApp->arguments()[0], qApp->arguments().mid(1), QString(), &pid))
             INFO << "Application restarted. PID" << pid;
         else
             WARN << "Restarting process failed";

@@ -9,10 +9,12 @@
 
 ####################### nifty stuff for library developers
 
+# outside because used by albert_plugin_generate_metadata_json and albert_plugin
+set(md_bool NOUSER FRONTEND)
+set(md_vals ID VERSION NAME DESCRIPTION LICENSE URL)
+set(md_list MAINTAINERS QT_DEPENDENCIES LIB_DEPENDENCIES EXEC_DEPENDENCIES)
+
 function(albert_plugin_generate_metadata_json)
-    set(md_bool USER)
-    set(md_vals ID VERSION NAME DESCRIPTION LICENSE URL)
-    set(md_list MAINTAINERS QT_DEPENDENCIES LIB_DEPENDENCIES EXEC_DEPENDENCIES)
     cmake_parse_arguments(MD "${md_bool}" "${md_vals}" "${md_list}" ${ARGN})
 
     if (NOT DEFINED MD_ID)
@@ -33,6 +35,10 @@ function(albert_plugin_generate_metadata_json)
     if (NOT DEFINED MD_URL)
         message(FATAL_ERROR "Plugin url is undefined")
     endif()
+    if (DEFINED NOUSER AND DEFINED FRONTEND)
+        message(FATAL_ERROR "Conflict: NOUSER and FRONTED specified.")
+    endif()
+
 
     set(MD "{}")
     string(JSON MD SET ${MD} "id" "\"${MD_ID}\"")
@@ -42,8 +48,12 @@ function(albert_plugin_generate_metadata_json)
     string(JSON MD SET ${MD} "license" "\"${MD_LICENSE}\"")
     string(JSON MD SET ${MD} "url" "\"${MD_URL}\"")
 
-    if (MD_USER)
-        string(JSON MD SET ${MD} "user" "\"${MD_USER}\"")
+    if (DEFINED NOUSER)
+        string(JSON MD SET ${MD} "type" "\"none\"")
+    elseif(DEFINED FRONTEND)
+        string(JSON MD SET ${MD} "type" "\"frontend\"")
+    else()
+        string(JSON MD SET ${MD} "type" "\"user\"")
     endif()
 
     if (DEFINED MD_MAINTAINERS)
@@ -64,9 +74,10 @@ function(albert_plugin_generate_metadata_json)
     endif()
 
     # Build authors list from git
+
     execute_process(COMMAND bash -c "git -C ${CMAKE_CURRENT_SOURCE_DIR} log --pretty=format:%an .|sort|uniq"
-            OUTPUT_VARIABLE AUTHORS OUTPUT_STRIP_TRAILING_WHITESPACE)
-    string(REGEX REPLACE "\n" ";" AUTHORS ${AUTHORS})
+            OUTPUT_VARIABLE MD_AUTHORS OUTPUT_STRIP_TRAILING_WHITESPACE)
+    string(REGEX REPLACE "\n" ";" MD_AUTHORS ${MD_AUTHORS})
     if (DEFINED MD_AUTHORS)
         list(JOIN MD_AUTHORS "\", \"" X)
         string(JSON MD SET ${MD} "authors" "[\"${X}\"]")
@@ -79,7 +90,8 @@ endfunction()
 
 function(albert_plugin_add_default_target)
     # Add a target
-    file(GLOB_RECURSE ../src src/*.cpp src/*.h src/*.mm *.qrc *.ui)
+    file(GLOB_RECURSE SRC *.cpp src/*.cpp *.qrc *.ui)
+    #message("${PROJECT_NAME} ${SRC}")
     add_library(${PROJECT_NAME} SHARED ${SRC})
     add_library(albert::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
     target_link_libraries(${PROJECT_NAME} PRIVATE albert::albert)
@@ -98,12 +110,11 @@ function(albert_plugin_add_default_target_properties)
             CXX_VISIBILITY_PRESET hidden
             VISIBILITY_INLINES_HIDDEN 1
             INSTALL_RPATH "$ORIGIN"
-            )
+    )
 endfunction()
 
 function(albert_plugin_add_default_install)
-    install(
-            TARGETS ${PROJECT_NAME}
+    install(TARGETS ${PROJECT_NAME}
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/albert/plugins
     )
 endfunction()
@@ -127,10 +138,10 @@ function(albert_plugin)
 
     project(${MD_ID} VERSION ${MD_VERSION})
 
-    albert_plugin_add_default_target()
     albert_plugin_generate_metadata_json(${ARGV})
-    albert_plugin_generate_export_header()
+    albert_plugin_add_default_target()
     albert_plugin_add_default_target_properties()
+    albert_plugin_generate_export_header()
     albert_plugin_add_qt_dependencies(${MD_QT_DEPENDENCIES})
     albert_plugin_add_default_install()
 

@@ -1,6 +1,7 @@
-// Copyright (C) 2014-2021 Manuel Schneider
+// Copyright (c) 2022 Manuel Schneider
 #pragma once
 #include <QStandardPaths>
+#include <QFile>
 
 struct ScopedCrashIndicator
 {

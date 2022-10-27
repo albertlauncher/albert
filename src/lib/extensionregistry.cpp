@@ -1,7 +1,5 @@
 // Copyright (c) 2022 Manuel Schneider
 
-R// Copyright (C) 2022 Manuel Schneider
-
 #include "extensionregistry.h"
 #include "extension.h"
 
