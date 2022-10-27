@@ -18,7 +18,7 @@ using namespace std;
 using namespace albert;
 static const char *CFG_LAST_USED_VERSION = "last_used_version";
 static const char *CFG_FRONTEND_ID = "frontendId";
-static const char *DEF_FRONTEND_ID = "widgetboxmodel";
+static const char *DEF_FRONTEND_ID = "widgetsboxmodel";
 static App *instance_ = nullptr;
 
 static QStringList defaultPluginDirs()
