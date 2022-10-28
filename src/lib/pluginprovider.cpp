@@ -133,7 +133,7 @@ void PluginProvider::findPlugins(const QStringList &paths)
 
 albert::Plugin *PluginProvider::loadPlugin(const QString &id)
 {
-    auto spec = specs.at(id);
+    auto &spec = specs.at(id);
 
     switch (spec.state) {
         case PluginState::Error:
