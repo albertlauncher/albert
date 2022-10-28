@@ -11,9 +11,9 @@
 #include <QMessageBox>
 #include <QSettings>
 //#include "settings/settingswindow.h"
-//#ifdef Q_OS_MAC
-//#include "macos.h"
-//#endif
+#ifdef Q_OS_MAC
+#include "macos.h"
+#endif
 using namespace std;
 using namespace albert;
 static const char *CFG_LAST_USED_VERSION = "last_used_version";
@@ -64,6 +64,11 @@ App::App(const QStringList &additional_plugin_dirs)
     if (instance_ != nullptr)
         qFatal("App created twice");
     instance_ = this;
+
+#if defined(Q_OS_MAC)
+    setActivationPolicyAccessory();
+#endif
+
 
     plugin_provider.findPlugins(QStringList(additional_plugin_dirs) << defaultPluginDirs());
     loadFrontend();

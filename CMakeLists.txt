@@ -97,12 +97,6 @@ target_include_directories(${TARGET_LIB}
         src/lib/settingswidget
         src/lib/xdg
 )
-
-#if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-#    target_sources(${TARGET_LIB} PRIVATE src/lib/macos.mm)
-#    target_link_libraries(${TARGET_LIB} PRIVATE objc "-framework Cocoa")
-#endif()
-
 target_link_libraries(${TARGET_LIB}
     PUBLIC
         Qt6::Core
@@ -127,6 +121,11 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD
     if (DEFINED CMAKE_LIBRARY_ARCHITECTURE)
         target_compile_definitions(${TARGET_LIB} PRIVATE -DMULTIARCH_TUPLE="${CMAKE_LIBRARY_ARCHITECTURE}")
     endif()
+
+
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    target_sources(${TARGET_LIB} PRIVATE src/lib/macos.mm)
+    target_link_libraries(${TARGET_LIB} PRIVATE objc "-framework Cocoa")
 
 #    # Discriminate display server type
 #    set(DISPLAY_SERVER "x11" CACHE STRING "Linux display server to build against (wayland or x11)." FORCE)

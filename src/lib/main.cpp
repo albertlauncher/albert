@@ -112,9 +112,6 @@ int main(int argc, char **argv)
     qApp->setWindowIcon(QIcon(icon));
     qApp->setQuitOnLastWindowClosed(false);
 
-    QSettings::setPath(QSettings::defaultFormat(), QSettings::UserScope,
-                       QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation));
-
     // Create writable application paths
     auto locs = {
             QStandardPaths::AppConfigLocation,
@@ -125,9 +122,6 @@ int main(int argc, char **argv)
         if (auto path = QStandardPaths::writableLocation(loc); !QDir(path).mkpath("."))
             qFatal("Could not create dir: %s", qPrintable(path));
 
-#if defined(Q_OS_MAC)
-    //setActivationPolicyAccessory();
-#endif
 
     // Install signal handlers
     for (int sig: {SIGINT, SIGTERM, SIGHUP, SIGPIPE})
