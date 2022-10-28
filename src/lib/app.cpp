@@ -113,9 +113,9 @@ void App::notifyVersionChangeAndFirstRun()
 void App::loadFrontend()
 {
     // Get all specs of type frontend
-    std::map<QString, PluginSpec&> frontends;
-    for(auto &[id, spec] : plugin_provider.plugins())
-        if(spec.type == PluginType::Frontend && spec.state == PluginState::Unloaded)
+    std::map<QString, const PluginSpec&> frontends;
+    for(const auto &[id, spec] : plugin_provider.plugins())
+        if(spec.type == PluginType::Frontend)
             frontends.emplace(id, spec);
 
     if (frontends.empty())
@@ -123,9 +123,9 @@ void App::loadFrontend()
 
     // Helper function loading frontend extensions
     auto load_frontend = [this](const QString &id) -> Frontend* {
-        if (auto *plugin = plugin_provider.loadPlugin(id); plugin){
-            if (auto *frontend = dynamic_cast<Frontend*>(plugin); frontend)
-                return frontend;
+        if (auto *p = plugin_provider.loadPlugin(id); p){
+            if (auto *f = dynamic_cast<Frontend*>(p); f)
+                return f;
             else
                 plugin_provider.unloadPlugin(id);
         }

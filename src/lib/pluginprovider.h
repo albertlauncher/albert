@@ -15,16 +15,16 @@ public:
 
     // Interfaces
     QString id() const override;
-    QIcon icon() override;
-    std::map<QString, albert::PluginSpec> &plugins() override;
-    bool isEnabled(const QString &id) override;
+    QIcon icon() const override;
+    const std::map<QString, albert::PluginSpec> &plugins() const override;
+    bool isEnabled(const QString &id) const override;
     void setEnabled(const QString &id, bool enabled) override;
 
     albert::Plugin *loadPlugin(const QString &id);
     void unloadPlugin(const QString &id);
 
 private:
-    std::map<QString, albert::PluginSpec> specs;
+    std::map<QString,albert::PluginSpec> specs;
 
     void loadEnabledPlugins();
     albert::PluginSpec parsePluginMetadata(QString path);

@@ -317,17 +317,17 @@ QString PluginProvider::id() const
     return "pluginprovider";
 }
 
-QIcon PluginProvider::icon()
+QIcon PluginProvider::icon() const
 {
     return QIcon(":cpp");
 }
 
-std::map<QString, PluginSpec> &PluginProvider::plugins()
+const std::map<QString,PluginSpec> &PluginProvider::plugins() const
 {
     return specs;
 }
 
-bool PluginProvider::isEnabled(const QString &id)
+bool PluginProvider::isEnabled(const QString &id) const
 {
     return QSettings(qApp->applicationName()).value(QString("%1/enabled").arg(id), false).toBool();
 }

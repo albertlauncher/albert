@@ -2,6 +2,7 @@
 
 #pragma once
 #include "export.h"
+#include "extension.h"
 #include "plugin.h"
 #include "action.h"
 #include "item.h"
@@ -49,17 +50,17 @@ private:
 };
 
 /// The interface for albert frontends
-class ALBERT_EXPORT Frontend
+class ALBERT_EXPORT Frontend : virtual public Extension
 {
 public:
-    virtual bool isVisible() = 0;
+    virtual bool isVisible() const = 0;
     virtual void setVisible(bool visible = true) = 0;
     void toggleVisibility() { setVisible(!isVisible()); }
 
     virtual QString input() const = 0;
     virtual void setInput(const QString&) = 0;
 
-    virtual QWidget *widget() = 0;
+    virtual QWidget *createSettingsWidget() = 0;
 };
 }
 

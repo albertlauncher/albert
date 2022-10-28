@@ -52,9 +52,9 @@ class ALBERT_EXPORT PluginProvider : public QObject, virtual public Extension
     Q_OBJECT
 
 public:
-    virtual QIcon icon() { return QIcon(":unknown"); };  /// Identifying icon
-    virtual std::map<QString, PluginSpec> &plugins() = 0;  /// The plugins provided
-    virtual bool isEnabled(const QString &id) = 0;  /// Autoload on start
+    virtual QIcon icon() const { return QIcon(":unknown"); };  /// Identifying icon
+    virtual const std::map<QString,PluginSpec> &plugins() const = 0;  /// The plugins provided
+    virtual bool isEnabled(const QString &id) const = 0;  /// Autoload on start
     virtual void setEnabled(const QString &id, bool enabled = false) = 0;  /// En-/Disable autoload on start
 
 signals:
