@@ -1,11 +1,9 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include <QObject>
+#include "globalqueryhandler.h"
 #include "itemindex.h"
-#include "logging.h"
 #include "queryengine.h"
 #include "queryhandler.h"
-#include "query.h"
 #include "scopedtimeprinter.hpp"
 #include <QtConcurrent>
 #include <mutex>
@@ -14,7 +12,7 @@ using namespace std;
 static const char *CFG_TRIGGER = "trigger";
 
 
-struct GlobalSearchHandler : GlobalQueryHandler, ExtensionWatcher<IndexQueryHandler>
+struct GlobalSearchHandler : public GlobalQueryHandler, public ExtensionWatcher<GlobalQueryHandler>
 {
     QString id() const override { return QStringLiteral("globalsearch"); }
     QString synopsis() const override { return QStringLiteral("<filter>"); }
@@ -25,14 +23,14 @@ struct GlobalSearchHandler : GlobalQueryHandler, ExtensionWatcher<IndexQueryHand
         // QtConcurrent5 sucks and does not support move (copies…!) hack around
         mutex m;
         vector<Match> results;
-        function<void(IndexQueryHandler*)> map = [&query, &m, &results](IndexQueryHandler *handler) {
+        function<void(GlobalQueryHandler*)> map = [&query, &m, &results](GlobalQueryHandler *handler) {
             auto &&intermediate = handler->rankedItems(query);
             [[maybe_unused]] const lock_guard<mutex> lock(m);
             results.insert(end(results),
                            make_move_iterator(begin(intermediate)),
                            make_move_iterator(end(intermediate)));
         };
-        QtConcurrent::blockingMap(ExtensionWatcher<IndexQueryHandler>::extensions(), map);
+        QtConcurrent::blockingMap(ExtensionWatcher<GlobalQueryHandler>::extensions(), map);
         return results;
     }
 };
@@ -87,6 +85,4 @@ void QueryEngine::updateTriggers()
             WARN << QString("Trigger conflict '%1': Already reserved for %2.").arg(trigger, it->second->id());
     }
 }
-
-
 

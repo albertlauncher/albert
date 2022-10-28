@@ -2,12 +2,12 @@
 
 #pragma once
 #include "extensionwatcher.h"
-#include "queryhandler.h"
-#include "query.h"
 #include "fallbackprovider.h"
+#include "query.h"
+#include "queryhandler.h"
 #include <map>
-#include <vector>
 #include <memory>
+#include <vector>
 
 class QueryEngine : public albert::ExtensionWatcher<albert::QueryHandler>,
                     public albert::ExtensionWatcher<albert::FallbackProvider>
