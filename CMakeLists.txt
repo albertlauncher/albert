@@ -76,6 +76,7 @@ add_library(${TARGET_LIB} SHARED ${LIB_SRC}
 #        src/lib/usagehistory.cpp
 #        src/lib/xdg/iconlookup.cpp
 #        src/lib/xdg/themefileparser.cpp
+        src/lib/resources.qrc
 )
 
 add_library(albert::albert ALIAS ${TARGET_LIB})
