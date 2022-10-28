@@ -68,6 +68,9 @@ App::App(const QStringList &additional_plugin_dirs)
     plugin_provider.findPlugins(QStringList(additional_plugin_dirs) << defaultPluginDirs());
     loadFrontend();
     notifyVersionChangeAndFirstRun();
+
+    QObject::connect(&rpc_server, &RPCServer::messageReceived,
+                     &rpc_server, [this](const QString &message){ handleSocketMessage(message); });
 }
 
 void App::showSettings()
@@ -147,61 +150,48 @@ QWidget *App::createSettingsWindow()
     return nullptr;  // Todo
 }
 
-
-
-
-
-
-
-
-
-/*SOCKET*/
-//QString App::handleSocketMessage(const QString &message)
-//{
-//    static std::map<QString, std::function<QString()>> actions = {
+QString App::handleSocketMessage(const QString &message)
+{
+    static std::map<QString, std::function<QString()>> actions = {
 //            {"", [&](){
 //                QStringList l;
 //                for (const auto &[key, value] : actions)
 //                    l << key;
 //                return l.join(QChar::LineFeed);
 //            }},
-//            {"show", [&](){
-//                native_plugin_provider.frontend().setVisible(true);
-//                return "Frontend shown.";
-//            }},
-//            {"hide", [&](){
-//                native_plugin_provider.frontend().setVisible(false);
-//                return "Frontend hidden.";
-//            }},
-//            {"toggle", [&](){
-//                native_plugin_provider.frontend().setVisible(!native_plugin_provider.frontend().isVisible());
-//                return "Frontend toggled.";
-//            }},
-//            {"settings", [&](){
-//                showSettings();
-//                return "Settings opened,";
-//            }},
-//            {"docs", [&](){
-//                util::visitWebsite();
-//                return "Opened website in a browser";
-//            }},
-//            {"restart", [&](){
-//                restart();
-//                return "Triggered restart.";
-//            }},
-//            {"quit", [&](){
-//                quit();
-//                return "quit shown";
-//            }}
-//    };
-//
-//    try{
-//        return actions[message]();
-//    } catch (const out_of_range&) {
-//        WARN << QString("Received invalid RPC command: %1").arg(message);
-//        return QString("Invalid RPC command: %1").arg(message);
-//    }
-//}
+            {"show", [&](){
+                frontend->setVisible(true);
+                return "Frontend shown.";
+            }},
+            {"hide", [&](){
+                frontend->setVisible(false);
+                return "Frontend hidden.";
+            }},
+            {"toggle", [&](){
+                frontend->toggleVisibility();
+                return "Frontend toggled.";
+            }},
+            {"settings", [&](){
+                showSettings();
+                return "Settings opened,";
+            }},
+            {"restart", [&](){
+                restart();
+                return "Triggered restart.";
+            }},
+            {"quit", [&](){
+                quit();
+                return "Triggered quit.";
+            }}
+    };
+
+    try{
+        return actions.at(message)();
+    } catch (const out_of_range&) {
+        WARN << QString("Received invalid RPC command: %1").arg(message);
+        return QString("Invalid RPC command: %1").arg(message);
+    }
+}
 
 /*tray*/
 //QAction* showAction = new QAction("Show", trayIconMenu.get());
@@ -311,200 +301,3 @@ QWidget *App::createSettingsWindow()
 //            )
 //        });
 
-/*hotkey*/
-//std::unique_ptr<QHotkey> App::initializeHotkey(const QString &hotkey_overwrite)
-//{
-//    if (!hotkey_overwrite.isEmpty()) {
-//        auto hk = make_unique<QHotkey>(QKeySequence(hotkey_overwrite), true, qApp);
-//        if (!hk->isRegistered())
-//            qFatal("Could not register hotkey overwrite '%s'", qPrintable(hotkey_overwrite));
-//        return hk;
-//    }
-//
-//    QSettings s(qApp->applicationName());
-//    if (s.contains(CFG_HOTKEY)){
-//        auto cfg_hotkey = s.value(CFG_HOTKEY).toString();
-//        if (!cfg_hotkey.isEmpty()) {  // else hotkey is intended to be None
-//            auto hk = make_unique<QHotkey>(QKeySequence(hotkey_overwrite), true, qApp);
-//            if (!hk->isRegistered())
-//                return hk;
-//            else {
-//                WARN << "Failed to register configured hotkey" << cfg_hotkey;
-//                QMessageBox::warning(nullptr, "Warning",
-//                                     "Failed to register the configured hotkey. Set a hotkey in the settings.");
-//                showSettings();
-//            }
-//        }
-//    } else {
-//        auto hk = make_unique<QHotkey>(QKeySequence(DEF_HOTKEY), true, qApp);
-//        if (hk->isRegistered())
-//            return hk;
-//        else {
-//            WARN << "Failed to register default hotkey" << DEF_HOTKEY;
-//            QMessageBox::warning(nullptr, "Warning",
-//                                 "Failed to register the default hotkey. Configure a hotkey in the settings.");
-//            showSettings();
-//        }
-//    }
-//    return {};
-//    //FIXME    if ( !QGuiApplication::platformName().contains("wayland") )
-//    //        hotkeyManager = make_unique<HotkeyManager>();
-//}
-//
-
-/*FRONTEND*/
-
-//// Define a lambda that connects a new frontend
-//auto connectFrontend = [&](Frontend *f){
-//
-//    QObject::connect(queryManager.get(), &QueryManager::resultsReady,
-//                     f, &Frontend::setModel);
-//
-//    QObject::connect(showAction, &QAction::triggered,
-//                     f, &Frontend::setVisible);
-//
-//    QObject::connect(trayIcon.get(), &TrayIcon::activated,
-//                     f, [=](QSystemTrayIcon::ActivationReason reason){
-//                if( reason == QSystemTrayIcon::ActivationReason::Trigger)
-//                    f->toggleVisibility();
-//            });
-//
-//    QObject::connect(f, &Frontend::settingsWidgetRequested, [&settingsWidget](){
-//        settingsWidget->show();
-//        settingsWidget->raise();
-//        settingsWidget->activateWindow();
-//    });
-//
-//    QObject::connect(f, &Frontend::widgetShown, [f, &queryManager](){
-//        queryManager->setupSession();
-//        queryManager->startQuery(f->input());
-//    });
-//
-//    QObject::connect(f, &Frontend::widgetHidden,
-//                     queryManager.get(), &QueryManager::teardownSession);
-//
-//    QObject::connect(f, &Frontend::inputChanged,
-//                     queryManager.get(), &QueryManager::startQuery);
-//};
-//
-//// Connect the current frontend
-//connectFrontend(frontendManager->currentFrontend());
-//
-//// Connect new frontends
-//QObject::connect(frontendManager.get(), &FrontendManager::frontendChanged, connectFrontend);
-//}
-
-//void PluginProvider::setFrontend(const QString &id)
-//{
-//    if (!plugin_index.count(id))
-//        qFatal("Set an invalid frontend id: %s", qPrintable(id));
-//    QSettings(qApp->applicationName()).setValue(CFG_FRONTEND_ID, id);
-//}
-
-//void PluginProvider::loadFrontend()
-//{
-//    using PluginSpec;
-//    using Frontend;
-//
-//    auto frontend_plugins = frontendPlugins();
-//    if (frontend_plugins.empty())
-//        qFatal("No frontends available");
-//
-//    auto load_frontend = [this](const QString &id) -> bool {
-//        try {
-//            if (frontend_spec_ = plugin_index.at(id); !frontend_spec_->load())
-//                WARN << "Frontend failed loading:" << id << frontend_spec_->reason();
-//            else if (frontend_ = dynamic_cast<Frontend *>(frontend_spec_->instance()); !frontend_)
-//                WARN << "Frontend is not of type 'Frontend':" << id;
-//            else{
-//                // Auto registration of root extensions
-//                if (Extension *extension = dynamic_cast<Extension*>(frontend_))
-//                    extension_registry.registerExtension(extension);
-//                return true;
-//            }
-//        } catch (const out_of_range &e) {
-//            WARN << "Frontend does not exist:" << id;
-//        }
-//        return false;
-//    };
-//
-//    if (auto id = QSettings(qApp->applicationName()).value(CFG_FRONTEND_ID).toString(); !id.isNull()){
-//        if (load_frontend(id))
-//            return;
-//        else
-//            CRIT << "Loading configured frontend failed:" << id;
-//    }
-//
-//    if (load_frontend(DEF_FRONTEND_ID))
-//        return;
-//    else
-//        CRIT << "Loading default frontend failed:" << DEF_FRONTEND_ID;
-//
-//    CRIT << "Try to load any fallback frontend.";
-//
-//    for (const auto &[fbid, frontend_plugin] : frontend_plugins){
-//        if (load_frontend(fbid))
-//            return;
-//        else
-//            CRIT << "Loading fallback frontend failed:" << fbid;
-//    }
-//
-//    qFatal("All frontends failed to load!");
-//}
-
-/*extension registry auto*/
-
-//#include <set>
-//#include "extension.h"
-//#include "extensionmanager.h"
-//using namespace std;
-//
-//
-//Core::ExtensionManager *Core::Extension::extensionManager = nullptr;
-//
-//struct Core::Private {
-//    set<QueryHandler*> registeredQueryHandlers;
-//    set<FallbackProvider*> registeredFallbackProviders;
-//};
-//
-//
-///**************************************************************************************/
-//Core::Extension::Extension(const QString &id) : Plugin(id), d(new Private) {
-//
-//}
-//
-//
-///**************************************************************************************************/
-//Core::Extension::~Extension() {
-//    // If the extensin did it not by itself unregister all the remaining handlers
-//    for (auto ptr : d->registeredQueryHandlers)
-//        unregisterQueryHandler(ptr);
-//    for (auto ptr : d->registeredFallbackProviders)
-//        unregisterFallbackProvider(ptr);
-//}
-//
-//
-///**************************************************************************************************/
-//void Core::Extension::registerQueryHandler(Core::QueryHandler *object) {
-//    d->registeredQueryHandlers.insert(object);
-//    extensionManager->registerQueryHandler(object);
-//}
-//
-//
-///**************************************************************************************************/
-//void Core::Extension::unregisterQueryHandler(Core::QueryHandler *object) {
-//    extensionManager->unregisterQueryHandler(object);
-//}
-//
-//
-///**************************************************************************************************/
-//void Core::Extension::registerFallbackProvider(Core::FallbackProvider *object) {
-//    d->registeredFallbackProviders.insert(object);
-//    extensionManager->registerFallbackProvider(object);
-//}
-//
-//
-///**************************************************************************************************/
-//void Core::Extension::unregisterFallbackProvider(Core::FallbackProvider *object) {
-//    extensionManager->unregisterFallbackProvider(object);
-//}

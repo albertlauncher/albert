@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2021 Manuel Schneider
+// Copyright (c) 2022 Manuel Schneider
 
 #include "logging.h"
 #include "rpcserver.h"
@@ -16,13 +16,13 @@ RPCServer::RPCServer()
     socket.connectToServer(socket_path);
     if (socket.waitForConnected(100)) {
         INFO << "There is another instance of albert running.";
-        ::exit(EXIT_FAILURE);
+        qApp->exit(2);
     }
 
     // Remove pipes potentially leftover after crash
     QLocalServer::removeServer(socket_path);
 
-    DEBG << "Creating local socket";
+    DEBG << "Creating local socket" << socket_path;
     if (!local_server.listen(socket_path))
         qFatal("Failed creating IPC server: %s", qPrintable(local_server.errorString()));
 

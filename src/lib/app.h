@@ -28,16 +28,16 @@ public:
     albert::ExtensionRegistry extension_registry;
     PluginProvider plugin_provider;
     QueryEngine *query_engine;
+    RPCServer rpc_server;
     albert::Frontend *frontend;
+//    QPointer<SettingsWindow> settings_window;
 
 private:
     void notifyVersionChangeAndFirstRun();
     void loadFrontend();
     QWidget *createSettingsWindow();
+    QString handleSocketMessage(const QString &message);
 
-//    RPCServer rpc_server;
-//    QPointer<SettingsWindow> settings_window;
-//    QString handleSocketMessage(const QString &message) override;
 //    TrayIcon tray_icon;
 //    TerminalProvider terminal_provider;
 };
