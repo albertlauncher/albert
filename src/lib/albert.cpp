@@ -2,6 +2,13 @@
 
 #include "albert/albert.h"
 #include "app.h"
+#include "logging.h"
+#include <QDesktopServices>
+#include <QProcess>
+#include <QUrl>
+
+static const char *website_url = "https://albertlauncher.github.io/";
+static const char *issue_tracker_url = "https://github.com/albertlauncher/albert/issues";
 
 albert::ExtensionRegistry &albert::extensionRegistry()
 {
@@ -34,4 +41,35 @@ void albert::restart()
 void albert::quit()
 {
     QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
+}
+
+void albert::openWebsite()
+{
+    QDesktopServices::openUrl(QUrl(website_url));
+}
+
+void albert::openIssueTracker()
+{
+    QDesktopServices::openUrl(QUrl(issue_tracker_url));
+}
+
+int albert::runDetachedProcess(const QStringList &commandline, const QString &working_dir)
+{
+    qint64 pid = 0;
+    if (commandline.size() > 0) {
+        if (QProcess::startDetached(commandline[0], commandline.mid(1), working_dir, &pid))
+            INFO << "Detached process started successfully. PID:" << pid << commandline;
+        else
+            WARN << "Starting detached process failed." << commandline;
+    }
+    WARN << "runDetachedProcess: commandline must not be empty!";
+    return pid;
+}
+
+int albert::runDetachedProcess(const QStringList &commandline, const QString &working_dir)
+{
+    if (commandline.size() > 0)
+        return runDetachedProcess(commandline[0], commandline.mid(1), working_dir);
+    WARN << "runDetachedProcess: commandline must not be empty!";
+    return 0;
 }

@@ -37,7 +37,6 @@ private:
     void loadFrontend();
     QWidget *createSettingsWindow();
     QString handleSocketMessage(const QString &message);
-
+    TerminalProvider terminal;
 //    TrayIcon tray_icon;
-//    TerminalProvider terminal_provider;
 };
