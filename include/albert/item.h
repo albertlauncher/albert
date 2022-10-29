@@ -10,15 +10,15 @@
 namespace albert
 {
 
-struct ALBERT_EXPORT Action
+struct ALBERT_EXPORT Action  /// A base class for actions (and items)
 {
-    const QString id;
-    const QString text;
-    const std::function<void()> function;
+    const QString id;  /// Identifier of the action
+    const QString text;  /// The description of the action
+    const std::function<void()> function;  /// Activates the item
 };
 
-/// Interface class for result items, displayed in the query results list
-class ALBERT_EXPORT Item
+
+class ALBERT_EXPORT Item  /// Items displayed in the query results list
 {
 public:
     virtual ~Item() {}
@@ -44,7 +44,7 @@ public:
     virtual QString inputActionText() const = 0;
 
     /// Indicates that the item has actions
-    virtual bool hasActions() const { return false; }
+    virtual bool hasActions() const { return true; }
 
     /// The list of actions, this item provides
     virtual std::vector<Action> actions() const { return {}; }

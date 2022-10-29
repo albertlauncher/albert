@@ -4,7 +4,9 @@
 #include "app.h"
 #include "logging.h"
 #include <QDesktopServices>
+#include <QGuiApplication>
 #include <QProcess>
+#include <QClipboard>
 #include <QUrl>
 
 static const char *website_url = "https://albertlauncher.github.io/";
@@ -66,10 +68,8 @@ int albert::runDetachedProcess(const QStringList &commandline, const QString &wo
     return pid;
 }
 
-int albert::runDetachedProcess(const QStringList &commandline, const QString &working_dir)
+void albert::setClipboardText(const QString &text)
 {
-    if (commandline.size() > 0)
-        return runDetachedProcess(commandline[0], commandline.mid(1), working_dir);
-    WARN << "runDetachedProcess: commandline must not be empty!";
-    return 0;
+    QGuiApplication::clipboard()->setText(text, QClipboard::Clipboard);
+    QGuiApplication::clipboard()->setText(text, QClipboard::Selection);
 }
