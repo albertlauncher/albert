@@ -3,6 +3,7 @@
 #include "config.h"
 #include "logging.h"
 #include "albert/albert.h"
+#include "extensionregistry.h"
 #include "albert/plugin.h"
 #include "pluginprovider.h"
 #include <QCoreApplication>
@@ -194,14 +195,16 @@ albert::Plugin *PluginProvider::loadPlugin(const QString &id)
 
 void PluginProvider::unloadPlugin(const QString &id)
 {
-    auto spec = specs.at(id);
+    auto &spec = specs.at(id);
 
     switch (spec.state) {
         case PluginState::Loaded:
         {
             DEBG << "Unloading plugin" << spec.id;
-            auto start = system_clock::now();
             QPluginLoader loader(spec.path);
+            if (Extension *e = dynamic_cast<Extension*>(loader.instance()))
+                albert::extensionRegistry().remove(e);  // Auto deregistration
+            auto start = system_clock::now();
             loader.unload();
             DEBG << QString("%1 unloaded in %2 milliseconds").arg(spec.id)
                         .arg(duration_cast<milliseconds>(system_clock::now()-start).count());
@@ -332,10 +335,10 @@ bool PluginProvider::isEnabled(const QString &id) const
     return QSettings(qApp->applicationName()).value(QString("%1/enabled").arg(id), false).toBool();
 }
 
-void PluginProvider::setEnabled(const QString &id, bool enabled)
+void PluginProvider::setEnabled(const QString &id, bool enable)
 {
-    QSettings(qApp->applicationName()).setValue(QString("%1/enabled").arg(id), enabled);
-    loadPlugin(id);
+    QSettings(qApp->applicationName()).setValue(QString("%1/enabled").arg(id), enable);
+    enable ? (void)loadPlugin(id) : unloadPlugin(id);
 
 //    if (isEnabled(id) == enabled)
 //        return false;

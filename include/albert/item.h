@@ -41,7 +41,7 @@ public:
     virtual QStringList iconUrls() const = 0;
 
     /// Used to replace the input when the input action is triggered (Tab)
-    virtual QString inputActionText() const = 0;
+    virtual QString inputActionText() const { return {}; };
 
     /// Indicates that the item has actions
     virtual bool hasActions() const { return true; }

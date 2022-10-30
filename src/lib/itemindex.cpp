@@ -11,11 +11,7 @@ static constexpr uint MAX_SCORE = std::numeric_limits<Score>::max();
 
 static QStringList splitString(const QString &string, const QString &separators, bool case_sensitive = false)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     return ((case_sensitive) ? string.toLower(): string).split(QRegularExpression(separators), Qt::SkipEmptyParts);
-#else
-    return ((case_sensitive) ? string.toLower(): string).split(QRegularExpression(separators), QString::SkipEmptyParts);
-#endif
 }
 
 static vector<QString> ngrams_for_word(const QString &word, uint n)
@@ -168,7 +164,7 @@ std::vector<ItemIndex::StringMatch> ItemIndex::getWordMatches(const QString &wor
 
 std::vector<Match> ItemIndex::search(const QString &string) const
 {
-    QStringList words = splitString(string, separators, case_sensitive);
+    QStringList &&words = splitString(string, separators, case_sensitive);
     if (words.empty())
         return {};
 

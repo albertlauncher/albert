@@ -4,7 +4,6 @@
 #include "export.h"
 #include "extension.h"
 #include "plugin.h"
-#include "action.h"
 #include "item.h"
 #include <QAbstractItemModel>
 #include <QString>

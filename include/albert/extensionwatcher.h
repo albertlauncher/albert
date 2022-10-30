@@ -3,12 +3,12 @@
 #pragma once
 #include "albert.h"
 #include "export.h"
+#include "extensionregistry.h"
 #include <QObject>
 #include <set>
 
 namespace albert
 {
-class Extension;
 template<class T>
 class ALBERT_EXPORT ExtensionWatcher  /// Non-QObject extension registry observer
 {
