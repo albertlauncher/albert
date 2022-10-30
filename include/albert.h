@@ -1,7 +1,6 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
-#include "albert/action.h"
 #include "albert/albert.h"
 #include "albert/config.h"
 #include "albert/export.h"
@@ -10,6 +9,7 @@
 #include "albert/extensionwatcher.h"
 #include "albert/fallbackprovider.h"
 #include "albert/frontend.h"
+#include "albert/globalqueryhandler.h"
 #include "albert/history.h"
 #include "albert/item.h"
 #include "albert/logging.h"
@@ -18,5 +18,4 @@
 #include "albert/query.h"
 #include "albert/queryhandler.h"
 #include "albert/settingswidgetprovider.h"
-#include "albert/standardactions.h"
 #include "albert/standarditem.h"

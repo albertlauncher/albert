@@ -7,6 +7,7 @@
 #include "logging.h"
 #include "pluginprovider.h"
 #include "queryengine.h"
+#include "terminalprovider.h"
 #include "rpcserver.h"
 #include <QApplication>
 #include <QDir>
@@ -26,6 +27,7 @@ public:
     void showSettings();
 
     albert::ExtensionRegistry extension_registry;
+    TerminalProvider terminal_provider;
     PluginProvider plugin_provider;
     QueryEngine *query_engine;
     RPCServer rpc_server;

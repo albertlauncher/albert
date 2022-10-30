@@ -8,12 +8,8 @@
 
 namespace albert
 {
-
 class ExtensionRegistry;
 ALBERT_EXPORT ExtensionRegistry &extensionRegistry();
-
-class Terminal;
-ALBERT_EXPORT Terminal &terminal();
 
 class Query;
 ALBERT_EXPORT Query* query(const QString &query);
@@ -30,10 +26,12 @@ ALBERT_EXPORT void openWebsite();
 
 ALBERT_EXPORT void openIssueTracker();
 
-void setClipboardText(const QString &text);
+ALBERT_EXPORT void setClipboardText(const QString &text);
 
 ALBERT_EXPORT int runDetachedProcess(const QStringList &commandline,
                                      const QString &working_dir = {});
+
+ALBERT_EXPORT void runTerminal(const QString &script = {}, const QString &working_dir = {}, bool close_on_exit = false);
 
 //ALBERT_EXPORT void sendTrayNotification(const QString &title, const QString &message, const QIcon &icon) override;
 

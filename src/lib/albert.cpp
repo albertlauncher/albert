@@ -73,3 +73,8 @@ void albert::setClipboardText(const QString &text)
     QGuiApplication::clipboard()->setText(text, QClipboard::Clipboard);
     QGuiApplication::clipboard()->setText(text, QClipboard::Selection);
 }
+
+void albert::runTerminal(const QString &script, const QString &working_dir, bool close_on_exit)
+{
+    App::instance()->terminal_provider.run(script, working_dir, close_on_exit);
+}
