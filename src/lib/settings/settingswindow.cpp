@@ -137,7 +137,7 @@ void SettingsWindow::changeHotkey(int /*newhk*/)
 //    if (hotkeyManager_->registerHotkey(newhk)) {
 //        QString hkText(QKeySequence((newhk&~Qt::GroupSwitchModifier)).toString());//QTBUG-45568
 //        ui.grabKeyButton_hotkey->setText(hkText);
-//        QSettings(qApp->applicationName()).setValue("hotkey", hkText);
+//        QSettings().setValue("hotkey", hkText);
 //        hotkeyManager_->unregisterHotkey(oldhk);
 //    } else {
 //        ui.grabKeyButton_hotkey->setText(QKeySequence(oldhk).toString());

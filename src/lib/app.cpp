@@ -91,7 +91,7 @@ void App::showSettings()
 
 void App::notifyVersionChangeAndFirstRun()
 {
-    auto settings = QSettings(qApp->applicationName());
+    auto settings = QSettings();
     auto current_version = qApp->applicationVersion();
     auto last_used_version = settings.value(CFG_LAST_USED_VERSION).toString();
 
@@ -137,7 +137,7 @@ void App::loadFrontend()
     };
 
     // Try loading the configured frontend
-    auto cfg_frontend = QSettings(qApp->applicationName()).value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString();
+    auto cfg_frontend = QSettings().value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString();
     if (!frontends.contains(cfg_frontend))
         WARN << "Configured frontend does not exist: " << cfg_frontend;
     else if (frontend = load_frontend(cfg_frontend); frontend)

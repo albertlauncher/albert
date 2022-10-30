@@ -332,12 +332,12 @@ const std::map<QString,PluginSpec> &PluginProvider::plugins() const
 
 bool PluginProvider::isEnabled(const QString &id) const
 {
-    return QSettings(qApp->applicationName()).value(QString("%1/enabled").arg(id), false).toBool();
+    return QSettings().value(QString("%1/enabled").arg(id), false).toBool();
 }
 
 void PluginProvider::setEnabled(const QString &id, bool enable)
 {
-    QSettings(qApp->applicationName()).setValue(QString("%1/enabled").arg(id), enable);
+    QSettings().setValue(QString("%1/enabled").arg(id), enable);
     enable ? (void)loadPlugin(id) : unloadPlugin(id);
 
 //    if (isEnabled(id) == enabled)
