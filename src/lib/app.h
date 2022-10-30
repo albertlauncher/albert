@@ -9,6 +9,7 @@
 #include "queryengine.h"
 #include "terminalprovider.h"
 #include "rpcserver.h"
+#include "settings/settingswindow.h"
 #include <QApplication>
 #include <QDir>
 #include <QMessageBox>
@@ -25,6 +26,7 @@ public:
     static App *instance();
 
     void showSettings();
+    void setFrontend(const QString id);
 
     albert::ExtensionRegistry extension_registry;
     TerminalProvider terminal_provider;
@@ -32,13 +34,12 @@ public:
     QueryEngine *query_engine;
     RPCServer rpc_server;
     albert::Frontend *frontend;
-//    QPointer<SettingsWindow> settings_window;
+    QPointer<SettingsWindow> settings_window;
 
 private:
     void notifyVersionChangeAndFirstRun();
     void loadFrontend();
     QWidget *createSettingsWindow();
     QString handleSocketMessage(const QString &message);
-    TerminalProvider terminal;
 //    TrayIcon tray_icon;
 };

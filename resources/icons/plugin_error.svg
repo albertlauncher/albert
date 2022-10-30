@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  - Copyright (c) 2022 Manuel Schneider
+  -->
+
+<svg
+   height="96"
+   width="96"
+   version="1.1"
+   id="svg3427"
+   sodipodi:docname="plugin-error.svg"
+   inkscape:version="1.1.1 (c3084ef, 2021-09-22)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs3431" />
+  <sodipodi:namedview
+     id="namedview3429"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:pageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     showgrid="false"
+     inkscape:zoom="4.2005966"
+     inkscape:cx="33.209569"
+     inkscape:cy="24.639357"
+     inkscape:window-width="1383"
+     inkscape:window-height="847"
+     inkscape:window-x="0"
+     inkscape:window-y="25"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg3427" />
+  <path
+     id="rect1449"
+     style="fill:#ff0000;fill-opacity:1;stroke-width:11.3431;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;paint-order:markers stroke fill"
+     d="M 7.7745603,20.332238 34.868103,47.425781 7.7745603,74.519324 20.891312,87.636075 47.984854,60.542532 75.079963,87.637641 88.196715,74.52089 61.101606,47.425781 88.196715,20.330672 75.079963,7.2139205 47.984854,34.30903 20.891312,7.215487 Z" />
+</svg>

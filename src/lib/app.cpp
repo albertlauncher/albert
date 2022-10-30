@@ -69,20 +69,24 @@ App::App(const QStringList &additional_plugin_dirs)
     setActivationPolicyAccessory();
 #endif
 
-
     plugin_provider.findPlugins(QStringList(additional_plugin_dirs) << defaultPluginDirs());
+    extension_registry.add(&plugin_provider);
+
     loadFrontend();
+
     notifyVersionChangeAndFirstRun();
 
     QObject::connect(&rpc_server, &RPCServer::messageReceived,
                      &rpc_server, [this](const QString &message){ handleSocketMessage(message); });
+
+    //albert::showSettings();
 }
 
 void App::showSettings()
 {
-//    if (!d->settings_window)
-//        d->settings_window = new SettingsWindow(*this);
-//    d->settings_window->bringToFront();
+    if (!settings_window)
+        settings_window = new SettingsWindow(*this);
+    settings_window->bringToFront();
 }
 
 void App::notifyVersionChangeAndFirstRun()
@@ -196,6 +200,11 @@ QString App::handleSocketMessage(const QString &message)
         WARN << QString("Received invalid RPC command: %1").arg(message);
         return QString("Invalid RPC command: %1").arg(message);
     }
+}
+
+void App::setFrontend(const QString id)
+{
+    QSettings().setValue(CFG_FRONTEND_ID, id);
 }
 
 /*tray*/
