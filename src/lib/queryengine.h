@@ -2,15 +2,13 @@
 
 #pragma once
 #include "extensionwatcher.h"
-#include "fallbackprovider.h"
 #include "query.h"
 #include "queryhandler.h"
 #include <map>
 #include <memory>
 #include <vector>
 
-class QueryEngine : public albert::ExtensionWatcher<albert::QueryHandler>,
-                    public albert::ExtensionWatcher<albert::FallbackProvider>
+class QueryEngine : public albert::ExtensionWatcher<albert::QueryHandler>
 {
 public:
     std::unique_ptr<albert::Query> query(const QString &query);

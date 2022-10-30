@@ -22,7 +22,6 @@ public:
     bool isFinished() const;    /// Asynchronous execution done.
 
     const SharedItemVector &results() const;
-    const SharedItemVector &fallbacks() const;
 
     /// Add item (perfect forward)
     template<typename T>
@@ -47,7 +46,6 @@ public:
     void set(std::vector<SharedItem> && items);
 
     void activateResult(uint item, uint action);
-    void activateFallback(uint item, uint action);
 
 signals:
     void resultsChanged();
@@ -60,7 +58,6 @@ protected:
     QString trigger_;
     QString string_;
     std::vector<albert::SharedItem> results_;
-    std::vector<albert::SharedItem> fallbacks_;
     bool valid_ = true;
     bool finished_ = false;
 };

@@ -2,22 +2,15 @@
 
 #pragma once
 #include "albert/query.h"
+#include "queryhandler.h"
 #include <QFutureWatcher>
 #include <QString>
 #include <set>
 
-namespace albert{
-struct QueryHandler;
-struct FallbackProvider;
-}
-
 class Query : public albert::Query
 {
 public:
-    Query(std::set<albert::FallbackProvider*> fallback_handlers,
-          albert::QueryHandler *query_handler,
-          const QString &query_string,
-          const QString &trigger_string = QString());
+    Query(albert::QueryHandler &query_handler, const QString &query_string, const QString &trigger_string = QString());
     ~Query();
 
     void cancel();
@@ -25,6 +18,5 @@ public:
 
 private:
     QFutureWatcher<void> future_watcher;
-    albert::QueryHandler *query_handler_;
-    std::set<albert::FallbackProvider *> fallback_handlers_;
+    albert::QueryHandler &query_handler;
 };

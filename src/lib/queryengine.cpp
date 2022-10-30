@@ -33,7 +33,7 @@ struct GlobalSearchHandler : public GlobalQueryHandler, public ExtensionWatcher<
         QtConcurrent::blockingMap(ExtensionWatcher<GlobalQueryHandler>::extensions(), map);
         return results;
     }
-};
+} global_search_handler;
 
 
 std::unique_ptr<albert::Query> QueryEngine::query(const QString &query_string)
@@ -44,21 +44,13 @@ std::unique_ptr<albert::Query> QueryEngine::query(const QString &query_string)
 
     if (auto it = find_if(trigger_map.cbegin(), trigger_map.cend(),
                       [&query_string](const pair<QString,QueryHandler*> &pair)
-                      { return query_string.startsWith(pair.first); }); it != trigger_map.cend()){  // trigger matched
-        const auto&[trigger, handler] = *it;
-        query = make_unique<::Query>(ExtensionWatcher<FallbackProvider>::extensions(),
-                                     handler, query_string.mid(it->first.size()), trigger);
-    }
-    else {
-        auto gsh = new GlobalSearchHandler;
-        query = make_unique<::Query>(ExtensionWatcher<FallbackProvider>::extensions(),
-                                     gsh, query_string.mid(it->first.size()));
-        QObject::connect(query.get(), &albert::Query::finished, [gsh](){ delete gsh; });
-    }
+                      { return query_string.startsWith(pair.first); }); it != trigger_map.cend())
+        query = make_unique<::Query>(*it->second, query_string.mid(it->first.size()), it->first);
+    else
+        query = make_unique<::Query>(global_search_handler, query_string.mid(it->first.size()));
 
     // Keep track of queries. Clear items in case of extension unloading
     alive_queries.emplace(query.get());
-
     QObject::connect(query.get(), &QObject::destroyed, [this, q = query.get()](){ alive_queries.erase(q); });
 
     return query;
