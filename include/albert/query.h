@@ -38,7 +38,6 @@ public:
     void add(Iterator begin, Iterator end) {
         if (isValid()) {
             for (; begin != end; ++begin)
-                // Must not use operator->() !!! dereferencing a pointer returns an lvalue
                 add_(*begin);
             emit resultsChanged();
         }

@@ -13,8 +13,7 @@ class QueryEngine : public albert::ExtensionWatcher<albert::QueryHandler>,
                     public albert::ExtensionWatcher<albert::FallbackProvider>
 {
 public:
-    /// NOTE You borrow! Watch destroyed signal! (Happens on unloading plugins)
-    albert::Query* query(const QString &query);
+    std::unique_ptr<albert::Query> query(const QString &query);
 
 private:
     void updateTriggers();
@@ -22,5 +21,5 @@ private:
     void onRem(albert::QueryHandler*) override;
 
     std::map<QString,albert::QueryHandler*> trigger_map;
-    std::vector<std::unique_ptr<Query>> queries;
+    std::set<Query*> alive_queries;
 };

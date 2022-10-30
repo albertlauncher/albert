@@ -18,8 +18,10 @@ public:
           albert::QueryHandler *query_handler,
           const QString &query_string,
           const QString &trigger_string = QString());
+    ~Query();
 
     void cancel();
+    void clear();
 
 private:
     QFutureWatcher<void> future_watcher;

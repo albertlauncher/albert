@@ -36,18 +36,15 @@ struct GlobalSearchHandler : public GlobalQueryHandler, public ExtensionWatcher<
 };
 
 
-albert::Query* QueryEngine::query(const QString &query_string)
+std::unique_ptr<albert::Query> QueryEngine::query(const QString &query_string)
 {
     ScopedTimePrinter stp(QString("TIME: %1 µs [QUERY TOTAL '%2']").arg("%1", query_string));
 
-    if (!queries.empty())
-        queries.back()->cancel();
-
-    auto it = find_if(trigger_map.cbegin(), trigger_map.cend(),
-                      [&query_string](const pair<QString,QueryHandler*> &pair)
-                      { return query_string.startsWith(pair.first); });
     unique_ptr<::Query> query;
-    if (it != trigger_map.cend()){  // trigger matched
+
+    if (auto it = find_if(trigger_map.cbegin(), trigger_map.cend(),
+                      [&query_string](const pair<QString,QueryHandler*> &pair)
+                      { return query_string.startsWith(pair.first); }); it != trigger_map.cend()){  // trigger matched
         const auto&[trigger, handler] = *it;
         query = make_unique<::Query>(ExtensionWatcher<FallbackProvider>::extensions(),
                                      handler, query_string.mid(it->first.size()), trigger);
@@ -57,14 +54,26 @@ albert::Query* QueryEngine::query(const QString &query_string)
         query = make_unique<::Query>(ExtensionWatcher<FallbackProvider>::extensions(),
                                      gsh, query_string.mid(it->first.size()));
         QObject::connect(query.get(), &albert::Query::finished, [gsh](){ delete gsh; });
-
     }
-    return queries.emplace_back(::move(query)).get();
+
+    // Keep track of queries. Clear items in case of extension unloading
+    alive_queries.emplace(query.get());
+
+    QObject::connect(query.get(), &QObject::destroyed, [this, q = query.get()](){ alive_queries.erase(q); });
+
+    return query;
 }
 
 void QueryEngine::onAdd(QueryHandler *handler) { updateTriggers(); }
 
-void QueryEngine::onRem(QueryHandler *handler) { updateTriggers(); } // Todo
+void QueryEngine::onRem(QueryHandler *handler)
+{
+    updateTriggers();
+
+    // Avoid unloading a shared library while having its objects around
+    for (::Query *q :alive_queries)
+        q->clear();
+}
 
 void QueryEngine::updateTriggers()
 {

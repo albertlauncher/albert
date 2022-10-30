@@ -63,7 +63,6 @@ Query::Query(std::set<albert::FallbackProvider*> fallback_handlers,
         for (auto fallback_handler : fallback_handlers_){
             auto fallbacks = fallback_handler->fallbacks(raw_string);
             fallbacks_.insert(fallbacks_.cend(), fallbacks.cbegin(), fallbacks.cend());
-            // Todo sort by mru
         }
 
         query_handler_->handleQuery(*this);
@@ -71,7 +70,25 @@ Query::Query(std::set<albert::FallbackProvider*> fallback_handlers,
 
 }
 
+Query::~Query()
+{
+    // Avoid segfaults when handler write on a deleted query
+    if (!future_watcher.isFinished()) {
+        WARN << QString("Busy wait on query. Does '%1' handle cancellation well?").arg(query_handler_->id());
+        future_watcher.waitForFinished();
+    }
+}
+
 void Query::cancel()
 {
     valid_ = false;
+}
+
+void Query::clear()
+{
+    cancel();
+    future_watcher.waitForFinished();  // rather busy wait here to avoid mutexing against handlers
+    results_.clear();
+    fallbacks_.clear();
+    emit resultsChanged();
 }

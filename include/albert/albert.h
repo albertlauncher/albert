@@ -5,6 +5,7 @@
 #include <QString>
 #include <QStringList>
 #include <map>
+#include <memory>
 
 namespace albert
 {
@@ -12,7 +13,7 @@ class ExtensionRegistry;
 ALBERT_EXPORT ExtensionRegistry &extensionRegistry();
 
 class Query;
-ALBERT_EXPORT Query* query(const QString &query);
+ALBERT_EXPORT std::unique_ptr<Query> query(const QString &query);
 
 ALBERT_EXPORT void show(const QString &text = QString());
 

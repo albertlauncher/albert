@@ -17,7 +17,7 @@ albert::ExtensionRegistry &albert::extensionRegistry()
     return App::instance()->extension_registry;
 }
 
-albert::Query *albert::query(const QString &query)
+std::unique_ptr<albert::Query> albert::query(const QString &query)
 {
     return App::instance()->query_engine->query(query);
 }
