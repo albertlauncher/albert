@@ -17,7 +17,7 @@ public:
 private:
     void resetUI();
 
-    App &albert;
+    App &app;
     QListWidget list_widget;
     QStackedWidget stacked_widget;
 
