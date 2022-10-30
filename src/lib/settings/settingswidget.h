@@ -4,10 +4,14 @@
 #include <QAbstractTableModel>
 #include <QListWidget>
 #include <QStackedWidget>
+#include "extensionwatcher.h"
+#include "settingswidgetprovider.h"
 #include <vector>
 class App;
 
-class SettingsWidget final : public QWidget
+class SettingsWidget final :
+        public QWidget,
+        public albert::ExtensionWatcher<albert::SettingsWidgetProvider>
 {
     Q_OBJECT
 
@@ -16,6 +20,12 @@ public:
 
 private:
     void resetUI();
+
+protected:
+    void onAdd(albert::SettingsWidgetProvider *t) override;
+    void onRem(albert::SettingsWidgetProvider *t) override;
+
+private:
 
     App &app;
     QListWidget list_widget;

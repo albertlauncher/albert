@@ -40,7 +40,7 @@ void SettingsWidget::resetUI()
     }
 
     vector<pair<QString,QWidget*>> items;
-    for (auto &[id, swp] : app.extension_registry.extensionsOfType<SettingsWidgetProvider>()){
+    for (auto *swp : ExtensionWatcher<SettingsWidgetProvider>::extensions()){
         auto *widget = swp->createSettingsWidget();
         items.emplace_back(widget->objectName(), widget);
     }
@@ -58,4 +58,14 @@ void SettingsWidget::resetUI()
     // resize to contents
     list_widget.setMinimumWidth(list_widget.sizeHintForColumn(0));
     list_widget.setMaximumWidth(list_widget.sizeHintForColumn(0));
+}
+
+void SettingsWidget::onAdd(SettingsWidgetProvider *t)
+{
+    resetUI();
+}
+
+void SettingsWidget::onRem(SettingsWidgetProvider *t)
+{
+    resetUI();
 }
