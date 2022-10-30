@@ -85,6 +85,7 @@ PluginInfoWidget::PluginInfoWidget(const albert::PluginSpec &spec)
 enum class Column
 {
     Enabled,
+    State,
     Name,
     Version,
     Description,
@@ -105,7 +106,7 @@ int PluginModel::rowCount(const QModelIndex &) const
 
 int PluginModel::columnCount(const QModelIndex &) const
 {
-    return 4;
+    return 5;
 }
 
 QVariant PluginModel::data(const QModelIndex &index, int role) const
@@ -119,9 +120,12 @@ QVariant PluginModel::data(const QModelIndex &index, int role) const
 
     switch (static_cast<Column>(index.column())) {
         case Column::Enabled:
-            if (role == Qt::ToolTipRole && !spec.reason.isEmpty())
-                return QString("<span style=\"color:#ff0000;\">%1</span>").arg(spec.reason);
-            else if (role == Qt::DecorationRole)
+            if (role == Qt::CheckStateRole && spec.type == PluginType::User)
+                return (spec.provider->isEnabled(spec.id)) ? Qt::Checked : Qt::Unchecked;
+            break;
+
+        case Column::State:
+            if (role == Qt::DecorationRole)
                 switch (spec.state) {
                     case PluginState::Error:
                         return QIcon(":plugin_error");
@@ -132,15 +136,15 @@ QVariant PluginModel::data(const QModelIndex &index, int role) const
                     case PluginState::Unloaded:
                         return QIcon(":plugin_unloaded");
                 }
-            else if (role == Qt::CheckStateRole)
-                return (spec.provider->isEnabled(spec.id)) ? Qt::Checked : Qt::Unchecked;
+            else if (role == Qt::ToolTipRole && !spec.reason.isEmpty())
+                return QString("<span style=\"color:#ff0000;\">%1</span>").arg(spec.reason);
             break;
 
         case Column::Name:
             if (role == Qt::DisplayRole)
                 return spec.name;
             else if (role == Qt::DecorationRole)
-                spec.provider->icon();
+                return spec.provider->icon();
             break;
 
         case Column::Version:
@@ -174,8 +178,6 @@ QVariant PluginModel::headerData(int section, Qt::Orientation orientation, int r
 {
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
         switch (static_cast<Column>(section)) {
-        case Column::Enabled:
-            return "Enabled";
         case Column::Name:
             return "Name";
         case Column::Version:
@@ -240,7 +242,6 @@ PluginWidget::PluginWidget()
     setShowGrid(false);
     setSelectionBehavior(QAbstractItemView::SelectRows);
     setFrameShape(QFrame::NoFrame);
-    setIconSize(QSize(8,8));
 
     verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     verticalHeader()->setDefaultSectionSize(20);
