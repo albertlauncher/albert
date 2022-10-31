@@ -28,15 +28,15 @@ static const std::map<const ItemRoles, const QByteArray> QmlRoleNames {
         { ItemRoles::InputActionRole, "itemInputActionRole"},
 };
 
-struct ActionModel : public QStringListModel
+struct ALBERT_EXPORT ActionModel : public QStringListModel
 {
     ActionModel(std::vector<Action> &&item_actions);
     const std::vector<Action> actions;
 };
 
-struct ItemModel : public QAbstractListModel
+struct ALBERT_EXPORT ItemModel : public QAbstractListModel
 {
-    ItemModel(const SharedItemVector &items) : items(items) {}
+    ItemModel(QObject *parent, const SharedItemVector &items) : QAbstractListModel(parent), items(items) {}
     void updateView();
 
     inline int rowCount(const QModelIndex &) const override;
