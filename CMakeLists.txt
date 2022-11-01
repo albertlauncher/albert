@@ -2,25 +2,7 @@ cmake_minimum_required(VERSION 3.19)  # JSON support, Ubuntu 22.04
 
 project(albert VERSION 0.18.0 LANGUAGES CXX)
 
-include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
-include(GenerateExportHeader)
-
-configure_file(
-        "${PROJECT_SOURCE_DIR}/include/albert/config.h.in"
-        "${PROJECT_SOURCE_DIR}/include/albert/config.h"
-        @ONLY
-)
-
-find_package(Qt6 6.2  # Ubuntu 22.04
-    REQUIRED
-        Charts
-        Core
-        Concurrent
-        Network
-        Sql
-        Widgets
-)
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -46,66 +28,88 @@ SET(CMAKE_COLOR_MAKEFILE ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
 #################################### Lib  #####################################
 
-set(TARGET_LIB ${CMAKE_PROJECT_NAME})
+set(TARGET_LIB ${PROJECT_NAME})
 
-file(GLOB_RECURSE LIB_SRC include/* src/lib/*.cpp src/lib/settingswidget/*.cpp)
+file(GLOB_RECURSE LIB_SRC include/* )
 
 add_library(${TARGET_LIB} SHARED ${LIB_SRC}
-#        src/lib/app.cpp
-#        src/lib/extension.cpp
-#        src/lib/frontend.cpp
-#        src/lib/history.cpp
-#        src/lib/iconprovider.cpp
-#        src/lib/indexqueryhandlerprivate.h
-#        src/lib/itemindex.cpp
-#        src/lib/levenshtein.cpp
-#        src/lib/main.cpp
-#        src/lib/plugin.cpp
-#        src/lib/pluginprovider.cpp
-#        src/lib/query.cpp
-#        src/lib/queryengine.cpp
-#        src/lib/queryhandler.cpp
-#        src/lib/rpcserver.cpp
-#        src/lib/scopedcrashindicator.hpp
-#        src/lib/scopedtimeprinter.hpp
-#        src/lib/trayicon.cpp
-#        src/lib/usagehistory.cpp
-#        src/lib/xdg/iconlookup.cpp
-#        src/lib/xdg/themefileparser.cpp
+        src/lib/albert.cpp
+        src/lib/app.cpp
+        src/lib/extension.cpp
+        src/lib/extensionregistry.cpp
+        src/lib/frontend.cpp
+        src/lib/globalqueryhandler.cpp
+        src/lib/history.cpp
+        src/lib/iconprovider.cpp
+        src/lib/indexqueryhandler.cpp
+        src/lib/indexqueryhandlerprivate.cpp
+        src/lib/itemindex.cpp
+        src/lib/levenshtein.cpp
+        src/lib/main.cpp
+        src/lib/plugin.cpp
+        src/lib/pluginprovider.cpp
+        src/lib/query.cpp
+        src/lib/queryengine.cpp
+        src/lib/queryhandler.cpp
         src/lib/resources.qrc
+        src/lib/rpcserver.cpp
+        src/lib/scopedcrashindicator.hpp
+        src/lib/scopedtimeprinter.hpp
+        src/lib/settings/pluginwidget.cpp
+        src/lib/settings/settingswidget.cpp
+        src/lib/settings/settingswindow.cpp
+        src/lib/terminalprovider.cpp
+        src/lib/trayicon.cpp
+        src/lib/usagehistory.cpp
+        src/lib/xdg/iconlookup.cpp
+        src/lib/xdg/themefileparser.cpp
 )
 
 add_library(albert::albert ALIAS ${TARGET_LIB})
 
+include(GenerateExportHeader)
 generate_export_header(${TARGET_LIB}
-    BASE_NAME ${CMAKE_PROJECT_NAME}
-    EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/include/albert/export.h"
+    BASE_NAME ${PROJECT_NAME}
+    EXPORT_FILE_NAME "${PROJECT_SOURCE_DIR}/include/albert/export.h"
 )
 
 target_include_directories(${TARGET_LIB}
     PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     PRIVATE
         include/albert
-        include/albert/util
         src/lib
         src/lib/settingswidget
         src/lib/xdg
 )
+
+configure_file(
+        "${PROJECT_SOURCE_DIR}/include/albert/config.h.in"
+        "${PROJECT_SOURCE_DIR}/include/albert/config.h"
+        @ONLY
+)
+
+find_package(Qt6 6.2 REQUIRED  # Ubuntu 22.04
+    Charts
+    Core
+    Concurrent
+    Network
+    Sql
+    Widgets
+)
+
 target_link_libraries(${TARGET_LIB}
     PUBLIC
         Qt6::Core
+        Qt6::Widgets
     PRIVATE
         Qt6::Charts
         Qt6::Concurrent
         Qt6::Network
         Qt6::Sql
-        Qt6::Widgets
 )
 
 set_target_properties(${TARGET_LIB} PROPERTIES
@@ -140,56 +144,74 @@ endif()
 
 #message("CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}")
 #message("CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}")
+#message("PROJECT_SOURCE_DIR ${PROJECT_SOURCE_DIR}")
+#message("PROJECT_BINARY_DIR ${PROJECT_BINARY_DIR}")
 #message("CMAKE_CURRENT_LIST_DIR ${CMAKE_CURRENT_LIST_DIR}")
 #message("CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_DATADIR}")
 #message("CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR}")
 #message("CMAKE_INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR}")
 #message("CMAKE_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR}")
 
-# associates the installed target files with an export called AlbertTargets
-install(TARGETS ${TARGET_LIB}
-    EXPORT AlbertTargets
+install(
+    TARGETS ${TARGET_LIB}
+    EXPORT TARGET_LIB_EXPORTS
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-# create version config file
-write_basic_package_version_file("AlbertConfigVersion.cmake"
+# Create targets file in install tree (Todo untested)
+install(
+    EXPORT TARGET_LIB_EXPORTS
+    FILE "${PROJECT_NAME}-targets.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}-${PROJECT_VERSION}
+    NAMESPACE ${PROJECT_NAME}::
+)
+
+# Create targets file in build tree
+export(
+    EXPORT TARGET_LIB_EXPORTS
+    FILE "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake"
+    NAMESPACE ${PROJECT_NAME}::
+)
+
+# Create config file in build tree
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+    "${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}-config.cmake.in"
+    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}-${PROJECT_VERSION}
+)
+
+# Create version config file in build tree
+write_basic_package_version_file(
+    "${PROJECT_NAME}-config-version.cmake"
     VERSION ${PROJECT_VERSION}
     COMPATIBILITY SameMajorVersion
 )
 
-# copy config file, relocation aware
-configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/AlbertConfig.cmake
-    "${CMAKE_CURRENT_BINARY_DIR}/AlbertConfig.cmake"
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
-)
-
 # install version and config file
 install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/AlbertConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/AlbertConfigVersion.cmake"
+    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
+    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-macros.cmake"
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/albert
 )
 
-# create targets file
-install(EXPORT AlbertTargets
-    FILE AlbertTargets.cmake
-    NAMESPACE ${PROJECT_NAME}::
-    #    DESTINATION "cmake"
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+# Copy macros to build tree
+configure_file(
+    "${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}-macros.cmake"
+    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-macros.cmake"
+    COPYONLY
 )
 
-# Exporting Targets from the Build Tree
-export(EXPORT AlbertTargets
-    FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/AlbertTargets.cmake"
-    NAMESPACE ${PROJECT_NAME}::
-)
+# Export the package to make find_package work in build
+set(CMAKE_EXPORT_PACKAGE_REGISTRY true)
+export(PACKAGE ${PROJECT_NAME})
 
 # TODO this does works for the build tree, installation has never been tested
 ## install headers
-#file(GLOB_RECURSE TARGET_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h")
+#file(GLOB_RECURSE TARGET_HEADER_FILES "${PROJECT_SOURCE_DIR}/include/*.h")
 #install(FILES ${TARGET_HEADER_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 #################################### App  #####################################
@@ -242,10 +264,12 @@ install(TARGETS ${TARGET_CTL} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 ################################# Plugins  ####################################
 
-FILE(GLOB children RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/plugins/ plugins/*)
+include("cmake/albert-macros.cmake")
+
+FILE(GLOB children RELATIVE ${PROJECT_SOURCE_DIR}/plugins/ plugins/*)
 LIST(FILTER children EXCLUDE REGEX "^\\..+")
 FOREACH(child ${children})
-    IF(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugins/${child})
+    IF(IS_DIRECTORY ${PROJECT_SOURCE_DIR}/plugins/${child})
         string(TOUPPER ${child} CHILD)
         option(BUILD_${CHILD} "Build ${child}" ON)
         if (BUILD_${CHILD})
