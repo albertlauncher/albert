@@ -1,5 +1,6 @@
 // Copyright (c) 2022 Manuel Schneider
-#include "plugin.h"
+
+#include "albert/plugin.h"
 
 extern albert::PluginSpec *current_spec_in_construction;
 

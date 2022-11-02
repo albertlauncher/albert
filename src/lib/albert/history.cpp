@@ -1,9 +1,9 @@
 // Copyright (c) 2022 Manuel Schneider
 
+#include "albert/history.h"
+#include "usagehistory.h"
 #include <QStringList>
 #include <QVariant>
-#include "history.h"
-#include "usagehistory.h"
 
 albert::History::History(QObject *parent) : QObject(parent)
 {

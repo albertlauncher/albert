@@ -1,13 +1,15 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
+#include "albert/extensionwatcher.h"
 #include <QAbstractTableModel>
 #include <QListWidget>
 #include <QStackedWidget>
-#include "extensionwatcher.h"
-#include "settingswidgetprovider.h"
 #include <vector>
-class App;
+namespace albert {
+class ExtensionRegistry;
+class SettingsWidgetProvider;
+}
 
 class SettingsWidget final :
         public QWidget,
@@ -16,7 +18,7 @@ class SettingsWidget final :
     Q_OBJECT
 
 public:
-    SettingsWidget(App &albert);
+    explicit SettingsWidget(albert::ExtensionRegistry&registry);
 
 private:
     void resetUI();
@@ -27,7 +29,7 @@ protected:
 
 private:
 
-    App &app;
+    albert::ExtensionRegistry &registry;
     QListWidget list_widget;
     QStackedWidget stacked_widget;
 

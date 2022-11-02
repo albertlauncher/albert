@@ -9,11 +9,11 @@ namespace albert
 struct ALBERT_EXPORT IndexQueryHandler : public GlobalQueryHandler
 {
     IndexQueryHandler();
-    ~IndexQueryHandler();
+    ~IndexQueryHandler() override;
 
-    virtual std::map<albert::SharedItem,std::map<QString,albert::Score>> indexItems() const = 0;  // Item factory
+    virtual std::map<std::shared_ptr<Item>,std::map<QString,uint16_t>> indexItems() const = 0;  // Item factory
 
-    std::vector<Match> rankedItems(const albert::Query &query) const override final;  /// Queries index
+    std::vector<std::pair<std::shared_ptr<albert::Item>,uint16_t>> rankedItems(const albert::Query &query) const override final;  /// Queries index
     QString synopsis() const override;  /// Default <filter>
 
     void updateIndex();  /// Call this when your items changed

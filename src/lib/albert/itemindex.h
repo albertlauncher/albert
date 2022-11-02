@@ -1,16 +1,17 @@
 // Copyright (c) 2021-2022 Manuel Schneider
 
 #pragma once
-#include "item.h"
-#include "extension.h"
+#include "albert/extension.h"
 #include <QString>
-#include <unordered_map>
 #include <map>
+#include <unordered_map>
+namespace albert { class Item; }
+using Score = uint16_t;
 
 class ItemIndex
 {
 public:
-    explicit ItemIndex(std::map<albert::SharedItem,std::map<QString,albert::Score>> &&index_items,
+    explicit ItemIndex(std::map<std::shared_ptr<albert::Item>, std::map<QString,uint16_t>> &&index_items,
                        const QString &separators, bool case_sensitive,
                        uint n, uint error_tolerance_divisor);  // ceil(len(word)/error_tolerance_divisor))
     ItemIndex() = default;
@@ -19,7 +20,7 @@ public:
     ItemIndex &operator=(const ItemIndex &) = default;
     ItemIndex &operator=(ItemIndex &&) = default;
 
-    std::vector<albert::Match> search(const QString &string) const;
+    std::vector<std::pair<std::shared_ptr<albert::Item>, Score>> search(const QString &string) const;
 
 private:
     using Index = uint32_t;
@@ -29,7 +30,7 @@ private:
     struct StringIndexItem {  // inverted item index, s_idx > ([w_idx], [(i_idx, s_scr)])
         std::vector<Index> words;
         Index item;
-        albert::Score max_score;
+        Score max_score;
     };
 
     struct WordIndexItem {  // inverted string index, w_idx > (word, [(str_idx, w_pos)])
@@ -37,7 +38,7 @@ private:
         std::vector<Location> occurrences;
     };
 
-    std::vector<albert::SharedItem> item_index;
+    std::vector<std::shared_ptr<albert::Item>> item_index;
     std::vector<StringIndexItem> string_index;
     std::vector<WordIndexItem> word_index;
     std::unordered_map<QString,std::vector<Location>> ngram_index;

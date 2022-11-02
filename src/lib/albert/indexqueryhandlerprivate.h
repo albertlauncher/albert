@@ -1,9 +1,9 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
-#include "indexqueryhandler.h"
-#include <QtConcurrent>
+#include "albert/indexqueryhandler.h"
 #include <QFutureWatcher>
+#include <QtConcurrent>
 class ItemIndex;
 
 struct albert::IndexQueryHandler::Private : public QObject

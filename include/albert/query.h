@@ -2,7 +2,6 @@
 
 #pragma once
 #include "export.h"
-#include "item.h"
 #include <QObject>
 #include <QString>
 #include <vector>
@@ -10,18 +9,20 @@
 
 namespace albert
 {
+class Item;
+
 class ALBERT_EXPORT Query: public QObject
 {
     Q_OBJECT
 
 public:
-    const QString &trigger() const;  /// The trigger of this query.
-    const QString &string() const;  /// Query string _excluding_ the trigger.
+    [[nodiscard]] const QString &trigger() const;  /// The trigger of this query.
+    [[nodiscard]] const QString &string() const;  /// Query string _excluding_ the trigger.
 
-    bool isValid() const;  /// Core cancelled the query. Stop processing.
-    bool isFinished() const;    /// Asynchronous execution done.
+    [[nodiscard]] bool isValid() const;  /// Core cancelled the query. Stop processing.
+    [[nodiscard]] bool isFinished() const;    /// Asynchronous execution done.
 
-    const SharedItemVector &results() const;
+    [[nodiscard]] const std::vector<std::shared_ptr<Item>> &results() const;
 
     /// Add item (perfect forward)
     template<typename T>
@@ -43,7 +44,7 @@ public:
     }
 
     /// Set results by std::move
-    void set(std::vector<SharedItem> && items);
+    void set(std::vector<std::shared_ptr<Item>> && items);
 
     void activateResult(uint item, uint action);
 
@@ -52,12 +53,12 @@ signals:
     void finished();
 
 protected:
-    void add_(const SharedItem &item);
-    void add_(SharedItem &&item);
+    void add_(const std::shared_ptr<Item> &item);
+    void add_(std::shared_ptr<Item> &&item);
 
     QString trigger_;
     QString string_;
-    std::vector<albert::SharedItem> results_;
+    std::vector<std::shared_ptr<Item>> results_;
     bool valid_ = true;
     bool finished_ = false;
 };

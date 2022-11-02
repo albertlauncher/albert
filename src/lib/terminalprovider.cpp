@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #include "albert/albert.h"
-#include "logging.h"
+#include "albert/logging.h"
 #include "terminalprovider.h"
 #include <QCoreApplication>
 #include <QDir>
@@ -208,18 +208,3 @@ void TerminalProvider::setTerminal(uint i)
 {
     terminal_ = terminals_[i].get();
 }
-
-QString TerminalProvider::name() const
-{
-    return terminal_->name();
-}
-
-void TerminalProvider::run(const QString &script, const QString &working_dir, bool close_on_exit) const
-{
-    return terminal_->run(script, working_dir, close_on_exit);
-
-}
-
-
-
-

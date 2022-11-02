@@ -30,29 +30,29 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 #################################### Lib  #####################################
 
-set(TARGET_LIB ${PROJECT_NAME})
+set(TARGET_LIB ${PROJECT_NAME} )
 
 file(GLOB_RECURSE LIB_SRC include/* )
 
 add_library(${TARGET_LIB} SHARED ${LIB_SRC}
         src/lib/albert.cpp
-        src/lib/app.cpp
-        src/lib/extension.cpp
-        src/lib/extensionregistry.cpp
-        src/lib/frontend.cpp
-        src/lib/globalqueryhandler.cpp
-        src/lib/history.cpp
-        src/lib/iconprovider.cpp
-        src/lib/indexqueryhandler.cpp
-        src/lib/indexqueryhandlerprivate.cpp
-        src/lib/itemindex.cpp
-        src/lib/levenshtein.cpp
-        src/lib/main.cpp
-        src/lib/plugin.cpp
+        src/lib/albert/extension.cpp
+        src/lib/albert/extensionregistry.cpp
+        src/lib/albert/frontend.cpp
+        src/lib/albert/query.cpp
+        src/lib/globalsearch.cpp
+        src/lib/albert/globalqueryhandler.cpp
+        src/lib/albert/history.cpp
+        src/lib/albert/iconprovider.cpp
+        src/lib/albert/indexqueryhandler.cpp
+        src/lib/albert/indexqueryhandlerprivate.cpp
+        src/lib/albert/itemindex.cpp
+        src/lib/albert/levenshtein.cpp
+        src/lib/albert/plugin.cpp
         src/lib/pluginprovider.cpp
         src/lib/query.cpp
         src/lib/queryengine.cpp
-        src/lib/queryhandler.cpp
+        src/lib/albert/queryhandler.cpp
         src/lib/resources.qrc
         src/lib/rpcserver.cpp
         src/lib/scopedcrashindicator.hpp
@@ -80,7 +80,6 @@ target_include_directories(${TARGET_LIB}
         "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     PRIVATE
-        include/albert
         src/lib
         src/lib/settingswidget
         src/lib/xdg

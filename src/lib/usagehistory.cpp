@@ -1,11 +1,11 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "usagehistory.h"
-#include "logging.h"
+#include "albert/logging.h"
 #include "scopedtimeprinter.hpp"
-#include <shared_mutex>
+#include "usagehistory.h"
 #include <QSqlDatabase>
 #include <QSqlDriver>
+#include <shared_mutex>
 #include <QSqlQuery>
 #include <QDir>
 #include <QSqlError>

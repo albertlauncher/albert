@@ -93,9 +93,8 @@ enum class Column
 
 PluginModel::PluginModel()
 {
-    for (auto *pp : ExtensionWatcher<PluginProvider>::extensions())
-        connect(pp, &PluginProvider::pluginStateChanged,
-                this, &PluginModel::onPluginStateChanged);
+    for (auto &[id, pp] : albert::extensionRegistry().extensionsOfType<PluginProvider>())
+        connect(pp, &PluginProvider::pluginStateChanged,this, &PluginModel::onPluginStateChanged);
     updatePlugins();
 }
 
@@ -178,12 +177,15 @@ QVariant PluginModel::headerData(int section, Qt::Orientation orientation, int r
 {
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
         switch (static_cast<Column>(section)) {
-        case Column::Name:
-            return "Name";
-        case Column::Version:
-            return "Version";
-        case Column::Description:
-            return "Description";
+            case Column::Enabled:
+            case Column::State:
+                break;
+            case Column::Name:
+                return "Name";
+            case Column::Version:
+                return "Version";
+            case Column::Description:
+                return "Description";
         }
     return QVariant();
 }
@@ -217,8 +219,8 @@ void PluginModel::updatePlugins()
     beginResetModel();
 
     plugins.clear();
-    for (const auto *pp : ExtensionWatcher<PluginProvider>::extensions())
-        for (const auto&[id, spec] : pp->plugins())
+    for (const auto &[ppid, pp] : albert::extensionRegistry().extensionsOfType<PluginProvider>())
+        for (const auto&[pid, spec] : pp->plugins())
             plugins.emplace_back(&spec);
 
     std::sort(plugins.begin(), plugins.end(), [](const auto &l, const auto &r){ return l->name < r->name; });

@@ -27,7 +27,7 @@ static vector<QString> ngrams_for_word(const QString &word, uint n)
     return ngrams;
 }
 
-ItemIndex::ItemIndex(map<SharedItem,map<QString,Score>> &&index_items,
+ItemIndex::ItemIndex(map<shared_ptr<Item>,map<QString,Score>> &&index_items,
                      const QString &separators,
                      bool case_sensitive,
                      uint n,
@@ -162,7 +162,7 @@ std::vector<ItemIndex::StringMatch> ItemIndex::getWordMatches(const QString &wor
     return matches;
 }
 
-std::vector<Match> ItemIndex::search(const QString &string) const
+std::vector<std::pair<std::shared_ptr<albert::Item>, Score>> ItemIndex::search(const QString &string) const
 {
     QStringList &&words = splitString(string, separators, case_sensitive);
     if (words.empty())
@@ -211,9 +211,9 @@ std::vector<Match> ItemIndex::search(const QString &string) const
     }
 
     // Convert results in desired type
-    vector<Match> result;
+    std::vector<std::pair<std::shared_ptr<albert::Item>, Score>> result;
     result.reserve(item_scores.size());
     for (auto &[item_idx, score] : item_scores)
-        result.emplace_back(Match{item_index[item_idx], score});
+        result.emplace_back(item_index[item_idx], score);
     return result;
 }

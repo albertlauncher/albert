@@ -36,7 +36,7 @@ struct ALBERT_EXPORT ActionModel : public QStringListModel
 
 struct ALBERT_EXPORT ItemModel : public QAbstractListModel
 {
-    ItemModel(QObject *parent, const SharedItemVector &items) : QAbstractListModel(parent), items(items) {}
+    ItemModel(QObject *parent, const std::vector<std::shared_ptr<Item>> &items) : QAbstractListModel(parent), items(items) {}
     void updateView();
 
     inline int rowCount(const QModelIndex &) const override;
@@ -45,7 +45,7 @@ struct ALBERT_EXPORT ItemModel : public QAbstractListModel
 
 private:
     uint row_count = 0;
-    const std::vector<SharedItem> &items;
+    const std::vector<std::shared_ptr<Item>> &items;
 };
 
 /// The interface for albert frontends
@@ -54,7 +54,6 @@ class ALBERT_EXPORT Frontend : virtual public Extension
 public:
     virtual bool isVisible() const = 0;
     virtual void setVisible(bool visible = true) = 0;
-    void toggleVisibility() { setVisible(!isVisible()); }
 
     virtual QString input() const = 0;
     virtual void setInput(const QString&) = 0;

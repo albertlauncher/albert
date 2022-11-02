@@ -1,37 +1,10 @@
 // Copyright (c) 2022 Manuel Schneider
-#include "item.h"
+
+#include "albert/logging.h"
+#include "albert/queryhandler.h"
 #include "query.h"
-#include "queryhandler.h"
 #include "scopedtimeprinter.hpp"
-#include <vector>
 #include <QtConcurrent>
-using namespace std;
-using albert::SharedItem;
-using albert::QueryHandler;
-
-const QString &albert::Query::trigger() const { return trigger_; }
-
-const QString &albert::Query::string() const { return string_; }
-
-bool albert::Query::isValid() const { return valid_; }
-
-bool albert::Query::isFinished() const { return finished_; }
-
-const vector<SharedItem> &albert::Query::results() const { return results_; }
-
-void albert::Query::add_(const SharedItem &item) { results_.push_back(item); }
-
-void albert::Query::add_(SharedItem &&item) { results_.push_back(::move(item)); }
-
-void albert::Query::set(vector<SharedItem> &&items) { results_ = ::move(items); emit resultsChanged(); }
-
-void albert::Query::activateResult(uint item, uint action)
-{
-    results_[item]->actions()[action].function();
-    // todo database
-}
-
-///////////////////////////////////////////////////////////////////////////////
 
 Query::Query(albert::QueryHandler &query_handler, const QString &query_string, const QString &trigger_string)
     : query_handler(query_handler)

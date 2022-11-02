@@ -1,20 +1,10 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "frontend.h"
+#include "albert/albert.h"
+#include "albert/logging.h"
+#include "albert/frontend.h"
 #include "iconprovider.h"
-//#include "albert/extension.h"
-//#include "albert/itemroles.h"
-//#include "iconprovider.h"
-//#include "resultsmodel.h"
-//#include <QIcon>
-//#include <QStandardPaths>
-//#include <QtConcurrent>
-//#include <chrono>
-//#include <functional>
-//#include <vector>
-//using namespace albert;
-//using namespace std::chrono;
-//using namespace std;
+using namespace std;
 using namespace albert;
 
 static QStringList strlist(const std::vector<albert::Action>&item_actions)
@@ -50,7 +40,7 @@ QHash<int, QByteArray> ItemModel::roleNames() const
 QVariant ItemModel::data(const QModelIndex &index, int role) const
 {
     if (index.isValid()) {
-        const SharedItem &item = items[index.row()];
+        const shared_ptr<Item> &item = items[index.row()];
 
         switch (static_cast<ItemRoles>(role)) {
             case ItemRoles::TextRole: return item->text();
@@ -93,3 +83,4 @@ void ItemModel::updateView()
     row_count = items.size();
     endInsertRows();
 }
+

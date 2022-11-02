@@ -3,15 +3,12 @@
 #pragma once
 #include <QLocalServer>
 
-class RPCServer : public QObject
+class RPCServer
 {
-    Q_OBJECT
 public:
     RPCServer();
     ~RPCServer();
 private:
     void onNewConnection();
     QLocalServer local_server;
-signals:
-    void messageReceived(QString message);
 };

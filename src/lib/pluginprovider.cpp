@@ -1,46 +1,223 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "config.h"
-#include "logging.h"
 #include "albert/albert.h"
-#include "extensionregistry.h"
+#include "albert/config.h"
+#include "albert/extensionregistry.h"
+#include "albert/frontend.h"
+#include "albert/logging.h"
 #include "albert/plugin.h"
 #include "pluginprovider.h"
 #include <QCoreApplication>
 #include <QDirIterator>
+#include <QMessageBox>
 #include <QPluginLoader>
 #include <QSettings>
 #include <QStandardPaths>
 #include <chrono>
 #include <memory>
+static const char *CFG_FRONTEND_ID = "frontend";
+static const char *DEF_FRONTEND_ID = "widgetsboxmodel";
+using albert::Frontend;
+using albert::PluginSpec;
+using albert::PluginState;
+using albert::PluginType;
 using namespace std;
 using std::chrono::duration_cast;
 using std::chrono::milliseconds;
 using std::chrono::system_clock;
-using albert::PluginType;
-using albert::PluginState;
-using albert::PluginSpec;
 
 static const char *IID_PATTERN = R"R(org.albert.PluginInterface/(\d+).(\d+))R";
 albert::PluginSpec *current_spec_in_construction = nullptr;
 
-PluginProvider::PluginProvider()
+PluginProvider::PluginProvider(albert::ExtensionRegistry &registry) : registry(registry), frontend(nullptr)
 {
 
 }
 
 PluginProvider::~PluginProvider()
 {
-    for (auto &[id, spec] : specs)
-        unloadPlugin(id);
+    unloadPlugins();
+}
+
+albert::PluginSpec PluginProvider::parsePluginMetadata(const QString& path)
+{
+    QPluginLoader loader(path);
+    QStringList errors;
+    albert::PluginSpec spec;
+    spec.provider = this;
+    spec.path = path;
+
+    spec.iid = loader.metaData()["IID"].toString();
+    if (spec.iid.isEmpty())
+        throw runtime_error("Not a QPlugin");
+    auto iid_match = QRegularExpression(IID_PATTERN).match(spec.iid);
+    if (!iid_match.hasMatch())
+        throw runtime_error(QString("Invalid IID pattern: '%1'. Expected '%2'.")
+                                    .arg(iid_match.captured(), iid_match.regularExpression().pattern()).toStdString());
+    else {
+        if (auto plugin_iid_major = iid_match.captured(1).toUInt(); plugin_iid_major != ALBERT_VERSION_MAJOR)
+            throw runtime_error(QString("Incompatible major version: %1. Expected: %2.")
+                                        .arg(plugin_iid_major).arg(ALBERT_VERSION_MAJOR).toStdString());
+        if (auto plugin_iid_minor = iid_match.captured(2).toUInt(); plugin_iid_minor > ALBERT_VERSION_MINOR)
+            throw runtime_error(QString("Incompatible minor version: %1. Supported up to: %2.")
+                                        .arg(plugin_iid_minor).arg(ALBERT_VERSION_MINOR).toStdString());
+    }
+
+    auto rawMetadata = loader.metaData()["MetaData"].toObject();
+    spec.id = rawMetadata["id"].toString();
+    spec.version = rawMetadata["version"].toString();
+    spec.name = rawMetadata["name"].toString();
+    spec.description = rawMetadata["description"].toString();
+    spec.url = rawMetadata["url"].toString();
+    spec.license = rawMetadata["license"].toString();
+    spec.authors = rawMetadata["authors"].toVariant().toStringList();
+    spec.maintainers = rawMetadata["maintainers"].toVariant().toStringList();
+    spec.plugin_dependencies = rawMetadata["plugin_dependencies"].toVariant().toStringList();
+    spec.runtime_dependencies = rawMetadata["runtime_dependencies"].toVariant().toStringList();
+    spec.binary_dependencies = rawMetadata["binary_dependencies"].toVariant().toStringList();
+    spec.third_party = rawMetadata["third_party"].toVariant().toStringList();
+    if (auto string_type = rawMetadata["type"].toString(); string_type == "none")
+        spec.type = PluginType::None;
+    else if (string_type == "frontend")
+        spec.type = PluginType::Frontend;
+    else
+        spec.type = PluginType::User;
+
+    if (!QRegularExpression(R"(^\d+\.\d+$)").match(spec.version).hasMatch())
+        WARN << "Invalid version scheme. Use '<version>.<patch>'.";
+
+    if (!QRegularExpression("[a-z0-9_]").match(spec.id).hasMatch())
+        WARN << "Invalid plugin id. Use [a-z0-9_].";
+
+    if (spec.name.isEmpty())
+        WARN << "'name' should not be empty.";
+
+    if (spec.description.isEmpty())
+        WARN << "'description' should not be empty.";
+
+    if (spec.url.isEmpty())
+        WARN << "'url' should not be empty.";
+
+    if (spec.license.isEmpty())
+        WARN << "'license' should not be empty.";
+
+    if (spec.authors.isEmpty())
+        WARN << "'authors' should not be empty.";
+
+    if (!spec.binary_dependencies.isEmpty())
+        for (auto &executable : spec.binary_dependencies)
+            if (QStandardPaths::findExecutable(executable).isNull())
+                errors << QString("Executable '%s' not found.").arg(executable);
+
+    // Finally set state based on errors
+
+    if (errors.isEmpty())
+        spec.state = PluginState::Unloaded;
+    else{
+        WARN << errors.join(" ") << path;
+        spec.state = PluginState::Error;
+        spec.reason = errors.join(" ");
+    }
+
+    return spec;
+}
+
+albert::Plugin *PluginProvider::loadPlugin(const QString &id)
+{
+    auto &spec = specs.at(id);
+
+    switch (spec.state) {
+        case PluginState::Error:
+            [[fallthrough]];
+        case PluginState::Unloaded:
+        {
+            DEBG << "Loading plugin" << spec.id;
+            auto start = system_clock::now();
+            spec.state = PluginState::Loading;
+            emit pluginStateChanged(spec);
+            QPluginLoader loader(spec.path);
+
+            // Some python libs do not link against python. Export the python symbols to the main app.
+            loader.setLoadHints(QLibrary::ExportExternalSymbolsHint | QLibrary::PreventUnloadHint);
+
+            QString error;
+            try {
+                current_spec_in_construction = &spec;
+                if (QObject *instance = loader.instance()){
+                    DEBG << QString("Success [%1ms]").arg(duration_cast<milliseconds>(system_clock::now() - start).count());
+                    spec.state = PluginState::Loaded;
+                    emit pluginStateChanged(spec);
+                    if (auto *e = dynamic_cast<Extension*>(instance))
+                        registry.add(e);  // Auto registration
+                    if (auto *p = dynamic_cast<albert::Plugin*>(instance); p)
+                        return p;
+                    else
+                        qFatal("Plugin is not of type albert::Plugin: %s", spec.path.toLocal8Bit().data());
+                } else
+                    error = loader.errorString();
+                current_spec_in_construction = nullptr;
+            } catch (const std::exception& e) {
+                error = e.what();
+            } catch (const string& s) {
+                error = QString::fromStdString(s);
+            } catch (const QString& s) {
+                error = s;
+            } catch (const char *s) {
+                error = s;
+            } catch (...) {
+                error = "Unknown exception.";
+            }
+
+            DEBG << "Loading plugin failed:" << error;
+            loader.unload();
+            spec.state = PluginState::Error;
+            spec.reason = error;
+            emit pluginStateChanged(spec);
+            return nullptr;
+        }
+            // These should never happen
+        case PluginState::Loading:
+            qFatal("Tried to load a loading plugin.");
+        case PluginState::Loaded:
+            qFatal("Tried to load a loaded plugin.");
+    }
+}
+
+void PluginProvider::unloadPlugin(const QString &id)
+{
+    auto &spec = specs.at(id);
+
+    switch (spec.state) {
+        case PluginState::Loaded:
+        {
+            DEBG << "Unloading plugin" << spec.id;
+            QPluginLoader loader(spec.path);
+            if (auto *e = dynamic_cast<Extension*>(loader.instance()))
+                registry.remove(e);  // Auto deregistration
+            auto start = system_clock::now();
+            loader.unload();
+            DEBG << QString("%1 unloaded in %2 milliseconds").arg(spec.id)
+                        .arg(duration_cast<milliseconds>(system_clock::now()-start).count());
+            spec.state = PluginState::Unloaded;
+            emit pluginStateChanged(spec);
+            return;
+        }
+            // These should never happen
+        case PluginState::Error:
+            qFatal("Tried to unload an unloaded (state error) plugin.");
+        case PluginState::Unloaded:
+            break;
+        case PluginState::Loading:
+            qFatal("Tried to unload a loading plugin.");
+    }
 }
 
 void PluginProvider::findPlugins(const QStringList &paths)
 {
-    for (auto &[id, spec] : specs)
-        unloadPlugin(id);
+    unloadPlugins();
 
     specs.clear();
+    frontends_.clear();
 
     // Find plugins
     for (auto it = paths.rbegin(); it != paths.rend(); ++it) {
@@ -48,7 +225,11 @@ void PluginProvider::findPlugins(const QStringList &paths)
         while (dirIterator.hasNext()) {
             try {
                 auto spec = parsePluginMetadata(dirIterator.next());
-                if (const auto &[_, success] = specs.emplace(spec.id, spec); !success)
+                if (const auto &[_, success] = specs.emplace(spec.id, spec); success){
+                    if (spec.type == PluginType::Frontend)
+                        frontends_.emplace_back(spec);
+                }
+                else
                     WARN << "Plugin id already exists. Skip" << spec.path;
             } catch (const runtime_error &e) {
                 WARN << e.what() << dirIterator.filePath();
@@ -56,7 +237,9 @@ void PluginProvider::findPlugins(const QStringList &paths)
         }
     }
 
-    loadEnabledPlugins();
+    if (frontends_.empty())
+        qFatal("No frontends found.");
+
 
 //    /*
 //     * Topological sort with cycle detection
@@ -132,97 +315,40 @@ void PluginProvider::findPlugins(const QStringList &paths)
 //    loadEnabledPlugins();
 }
 
-albert::Plugin *PluginProvider::loadPlugin(const QString &id)
+void PluginProvider::loadFrontend()
 {
-    auto &spec = specs.at(id);
-
-    switch (spec.state) {
-        case PluginState::Error:
-            [[fallthrough]];
-        case PluginState::Unloaded:
-        {
-            DEBG << "Loading plugin" << spec.id;
-            auto start = system_clock::now();
-            spec.state = PluginState::Loading;
-            emit pluginStateChanged(spec);
-            QPluginLoader loader(spec.path);
-
-            // Some python libs do not link against python. Export the python symbols to the main app.
-            loader.setLoadHints(QLibrary::ExportExternalSymbolsHint | QLibrary::PreventUnloadHint);
-
-            QString error;
-            try {
-                current_spec_in_construction = &spec;
-                if (QObject *instance = loader.instance()){
-                    DEBG << QString("Success [%1ms]").arg(duration_cast<milliseconds>(system_clock::now() - start).count());
-                    spec.state = PluginState::Loaded;
-                    emit pluginStateChanged(spec);
-                    if (Extension *e = dynamic_cast<Extension*>(instance))
-                        albert::extensionRegistry().add(e);  // Auto registration
-                    if (albert::Plugin *p = dynamic_cast<albert::Plugin*>(instance); p)
-                        return p;
-                    else
-                        qFatal("Plugin is not of type albert::Plugin: %s", spec.path.toLocal8Bit().data());
-                } else
-                    error = loader.errorString();
-                current_spec_in_construction = nullptr;
-            } catch (const std::exception& e) {
-                error = e.what();
-            } catch (const string& s) {
-                error = QString::fromStdString(s);
-            } catch (const QString& s) {
-                error = s;
-            } catch (const char *s) {
-                error = s;
-            } catch (...) {
-                error = "Unknown exception.";
-            }
-
-            DEBG << "Loading plugin failed:" << error;
-            loader.unload();
-            spec.state = PluginState::Error;
-            spec.reason = error;
-            emit pluginStateChanged(spec);
-            return nullptr;
+    DEBG << "Loading frontend plugin…";
+    // Helper function loading frontend extensions
+    auto load_frontend = [this](const QString &id) -> Frontend* {
+        if (auto *p = loadPlugin(id); p){
+            if (auto *f = dynamic_cast<Frontend*>(p); f)
+                return f;
+            else
+                unloadPlugin(id);
         }
-            // These should never happen
-        case PluginState::Loading:
-            qFatal("Tried to load a loading plugin.");
-        case PluginState::Loaded:
-            qFatal("Tried to load a loaded plugin.");
-    }
-}
+        return nullptr;  // Loading failed
+    };
 
-void PluginProvider::unloadPlugin(const QString &id)
-{
-    auto &spec = specs.at(id);
+    // Try loading the configured frontend
+    auto cfg_frontend = QSettings().value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString();
+    if (auto it = std::find_if(frontends_.begin(), frontends_.end(),
+                               [&](const PluginSpec & spec){ return cfg_frontend == spec.id; });
+            it != frontends_.end())
+        WARN << "Configured frontend does not exist: " << cfg_frontend;
+    else if (frontend = load_frontend(cfg_frontend); frontend)
+        return;
+    else
+        WARN << "Loading configured frontend failed. Try any other.";
 
-    switch (spec.state) {
-        case PluginState::Loaded:
-        {
-            DEBG << "Unloading plugin" << spec.id;
-            QPluginLoader loader(spec.path);
-            if (Extension *e = dynamic_cast<Extension*>(loader.instance()))
-                albert::extensionRegistry().remove(e);  // Auto deregistration
-            auto start = system_clock::now();
-            loader.unload();
-            DEBG << QString("%1 unloaded in %2 milliseconds").arg(spec.id)
-                        .arg(duration_cast<milliseconds>(system_clock::now()-start).count());
-            spec.state = PluginState::Unloaded;
-            emit pluginStateChanged(spec);
+    for (auto &spec : frontends_)
+        if (frontend = load_frontend(spec.id); frontend) {
+            WARN << QString("Using %1 instead.").arg(spec.id);
             return;
         }
-            // These should never happen
-        case PluginState::Error:
-            qFatal("Tried to unload an unloaded (state error) plugin.");
-        case PluginState::Unloaded:
-            break;
-        case PluginState::Loading:
-            qFatal("Tried to unload a loading plugin.");
-    }
+    qFatal("Could not load any frontend.");
 }
 
-void PluginProvider::loadEnabledPlugins()
+void PluginProvider::loadUserPlugins()
 {
     DEBG << "Loading enabled user plugins…";
     for (auto &[id, spec] : specs)
@@ -230,87 +356,33 @@ void PluginProvider::loadEnabledPlugins()
             loadPlugin(id);
 }
 
-albert::PluginSpec PluginProvider::parsePluginMetadata(QString path)
+void PluginProvider::loadPlugins()
 {
-    QPluginLoader loader(path);
-    QStringList errors;
-    albert::PluginSpec spec;
-    spec.provider = this;
-    spec.path = path;
+    loadFrontend();
+    loadUserPlugins();
+}
 
-    spec.iid = loader.metaData()["IID"].toString();
-    if (spec.iid.isEmpty())
-        throw runtime_error("Not a QPlugin");
-    auto iid_match = QRegularExpression(IID_PATTERN).match(spec.iid);
-    if (!iid_match.hasMatch())
-        throw runtime_error(QString("Invalid IID pattern: '%1'. Expected '%2'.")
-                            .arg(iid_match.captured(), iid_match.regularExpression().pattern()).toStdString());
-    else {
-        if (auto plugin_iid_major = iid_match.captured(1).toUInt(); plugin_iid_major != ALBERT_VERSION_MAJOR)
-            throw runtime_error(QString("Incompatible major version: %1. Expected: %2.")
-                                        .arg(plugin_iid_major).arg(ALBERT_VERSION_MAJOR).toStdString());
-        if (auto plugin_iid_minor = iid_match.captured(2).toUInt(); plugin_iid_minor > ALBERT_VERSION_MINOR)
-            throw runtime_error(QString("Incompatible minor version: %1. Supported up to: %2.")
-                                        .arg(plugin_iid_minor).arg(ALBERT_VERSION_MINOR).toStdString());
+void PluginProvider::unloadPlugins()
+{
+    for (auto &[id, spec] : specs)
+        unloadPlugin(id);
+}
+
+void PluginProvider::setFrontend(uint index)
+{
+    QSettings().setValue(CFG_FRONTEND_ID, frontends_[index].id);
+    if (frontends_[index].id != frontend->id()){
+        QMessageBox msgBox(QMessageBox::Question, "Restart?",
+                           "Changing the frontend needs a restart. Do you want to restart Albert?",
+                           QMessageBox::Yes | QMessageBox::No);
+        if (msgBox.exec() == QMessageBox::Yes)
+            albert::restart();
     }
+}
 
-    auto rawMetadata = loader.metaData()["MetaData"].toObject();
-    spec.id = rawMetadata["id"].toString();
-    spec.version = rawMetadata["version"].toString();
-    spec.name = rawMetadata["name"].toString();
-    spec.description = rawMetadata["description"].toString();
-    spec.url = rawMetadata["url"].toString();
-    spec.license = rawMetadata["license"].toString();
-    spec.authors = rawMetadata["authors"].toVariant().toStringList();
-    spec.maintainers = rawMetadata["maintainers"].toVariant().toStringList();
-    spec.plugin_dependencies = rawMetadata["plugin_dependencies"].toVariant().toStringList();
-    spec.runtime_dependencies = rawMetadata["runtime_dependencies"].toVariant().toStringList();
-    spec.binary_dependencies = rawMetadata["binary_dependencies"].toVariant().toStringList();
-    spec.third_party = rawMetadata["third_party"].toVariant().toStringList();
-    if (auto string_type = rawMetadata["type"].toString(); string_type == "none")
-        spec.type = PluginType::None;
-    else if (string_type == "frontend")
-        spec.type = PluginType::Frontend;
-    else
-        spec.type = PluginType::User;
-
-    if (!QRegularExpression("^\\d+\\.\\d+$").match(spec.version).hasMatch())
-        WARN << "Invalid version scheme. Use '<version>.<patch>'.";
-
-    if (!QRegularExpression("[a-z0-9_]").match(spec.id).hasMatch())
-        WARN << "Invalid plugin id. Use [a-z0-9_].";
-
-    if (spec.name.isEmpty())
-        WARN << "'name' should not be empty.";
-
-    if (spec.description.isEmpty())
-        WARN << "'description' should not be empty.";
-
-    if (spec.url.isEmpty())
-        WARN << "'url' should not be empty.";
-
-    if (spec.license.isEmpty())
-        WARN << "'license' should not be empty.";
-
-    if (spec.authors.isEmpty())
-        WARN << "'authors' should not be empty.";
-
-    if (!spec.binary_dependencies.isEmpty())
-        for (auto &executable : spec.binary_dependencies)
-            if (QStandardPaths::findExecutable(executable).isNull())
-                errors << QString("Executable '%s' not found.").arg(executable);
-
-    // Finally set state based on errors
-
-    if (errors.isEmpty())
-        spec.state = PluginState::Unloaded;
-    else{
-        WARN << errors.join(" ") << path;
-        spec.state = PluginState::Error;
-        spec.reason = errors.join(" ");
-    }
-
-    return spec;
+const std::vector<albert::PluginSpec> &PluginProvider::frontends()
+{
+    return frontends_;
 }
 
 // Interfaces

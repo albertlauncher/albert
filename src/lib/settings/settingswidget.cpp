@@ -1,15 +1,14 @@
 // Copyright (c) 2022 Manuel Schneider
 
+#include "albert/settingswidgetprovider.h"
 #include "settingswidget.h"
-#include "app.h"
 #include <QHBoxLayout>
-#include <vector>
 #include <utility>
-#include "settingswidgetprovider.h"
-using namespace std;
+#include <vector>
 using namespace albert;
+using namespace std;
 
-SettingsWidget::SettingsWidget(App &app) : app(app)
+SettingsWidget::SettingsWidget(albert::ExtensionRegistry &registry) : registry(registry)
 {
     resetUI();
 
@@ -40,7 +39,7 @@ void SettingsWidget::resetUI()
     }
 
     vector<pair<QString,QWidget*>> items;
-    for (auto *swp : ExtensionWatcher<SettingsWidgetProvider>::extensions()){
+    for (auto *swp : extensions()){
         auto *widget = swp->createSettingsWidget();
         items.emplace_back(widget->objectName(), widget);
     }

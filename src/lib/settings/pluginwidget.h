@@ -1,8 +1,8 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
+#include "albert/extensionwatcher.h"
 #include <QAbstractTableModel>
-#include "extensionwatcher.h"
 #include <QTableView>
 #include <map>
 namespace albert {

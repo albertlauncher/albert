@@ -1,6 +1,6 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "queryhandler.h"
+#include "albert/queryhandler.h"
 
 
 QString albert::QueryHandler::synopsis() const

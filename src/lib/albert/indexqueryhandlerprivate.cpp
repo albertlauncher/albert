@@ -1,7 +1,6 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #include "indexqueryhandlerprivate.h"
-#include "queryhandler.h"
 #include "itemindex.h"
 using namespace std;
 const char* CFG_GLOBAL_SEARCH = "global";

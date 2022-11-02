@@ -1,14 +1,14 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "globalqueryhandler.h"
+#include "albert/globalqueryhandler.h"
 #include <algorithm>
 using namespace std;
 
 
 void albert::GlobalQueryHandler::handleQuery(albert::Query &query) const
 {
-    std::vector<Match> &&matches = rankedItems(query);
-    sort(matches.begin(), matches.end(), [](const Match &a, const Match &b){ return a.score > b.score; });
+    std::vector<std::pair<std::shared_ptr<albert::Item>,uint16_t>> &&matches = rankedItems(query);
+    sort(matches.begin(), matches.end(), [](const auto &a, const auto &b){ return a.second > b.second; });
 
     // TODO 0.18 not wasting time here since I cant test but this has tp be done before the release
     //if (useMruScores())
@@ -28,10 +28,10 @@ void albert::GlobalQueryHandler::handleQuery(albert::Query &query) const
     //        }
     //    });
 
-    std::vector<SharedItem> items;
+    std::vector<shared_ptr<Item>> items;
     items.reserve(matches.size());
     for (auto &match : matches)
-    items.push_back(std::move(match.item));
+        items.push_back(std::move(match.first));
 
     query.set(std::move(items));
 }

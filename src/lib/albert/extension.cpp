@@ -1,6 +1,6 @@
 // Copyright (c) 2021-2022 Manuel Schneider
 
-#include "extension.h"
+#include "albert/extension.h"
 #include <QDir>
 #include <QStandardPaths>
 #include <QSettings>

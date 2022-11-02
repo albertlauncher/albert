@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "extensionregistry.h"
-#include "extension.h"
+#include "albert/extensionregistry.h"
+#include "albert/extension.h"
 
 void albert::ExtensionRegistry::add(albert::Extension *e)
 {

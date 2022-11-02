@@ -52,10 +52,10 @@ class ALBERT_EXPORT PluginProvider : public QObject, virtual public Extension
     Q_OBJECT
 
 public:
-    virtual QIcon icon() const { return QIcon(":unknown"); };  /// Identifying icon
-    virtual const std::map<QString,PluginSpec> &plugins() const = 0;  /// The plugins provided
-    virtual bool isEnabled(const QString &id) const = 0;  /// Autoload on start
-    virtual void setEnabled(const QString &id, bool enabled = false) = 0;  /// En-/Disable autoload on start
+    [[nodiscard]] virtual QIcon icon() const { return QIcon(":unknown"); };  /// Identifying icon
+    [[nodiscard]] virtual const std::map<QString,PluginSpec> &plugins() const = 0;  /// The plugins provided
+    [[nodiscard]] virtual bool isEnabled(const QString &id) const = 0;  /// Autoload on start
+    virtual void setEnabled(const QString &id, bool enabled) = 0;  /// En-/Disable autoload on start
 
 signals:
     void pluginStateChanged(PluginSpec&);

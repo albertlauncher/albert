@@ -13,10 +13,8 @@ template<class T>
 class ALBERT_EXPORT ExtensionWatcher  /// Non-QObject extension registry observer
 {
 public:
-    ExtensionWatcher()
+    explicit ExtensionWatcher(albert::ExtensionRegistry &registry = albert::extensionRegistry()) : registry(registry)
     {
-        auto &registry = albert::extensionRegistry();
-
         conn_r = QObject::connect(&registry, &ExtensionRegistry::added, [this](Extension *e){
             if (T *t = dynamic_cast<T*>(e)){
                 extensions_.insert(t);
@@ -47,6 +45,7 @@ protected:
     virtual void onRem(T *) {}
 
     const std::set<T*> &extensions() const { return extensions_; }
+    albert::ExtensionRegistry &registry;
 
 private:
     std::set<T*> extensions_;

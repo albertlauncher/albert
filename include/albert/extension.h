@@ -10,7 +10,7 @@ namespace albert {
 class ALBERT_EXPORT Extension  /// Interface for objects of the extension system
 {
 public:
-    virtual ~Extension() {}
+    virtual ~Extension() = default;
     virtual QString id() const = 0;  /// The guid of the extension
 
     QString cacheLocation() const;  /// The recommended cache location
