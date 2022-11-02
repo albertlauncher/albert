@@ -1,6 +1,5 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "../scopedtimeprinter.hpp"
 #include "albert/item.h"
 #include "albert/query.h"
 #include "albert/queryhandler.h"

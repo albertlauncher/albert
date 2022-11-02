@@ -4,7 +4,7 @@
 #include "albert/queryhandler.h"
 #include "src/lib/albert/itemindex.h"
 #include "queryengine.h"
-#include "scopedtimeprinter.hpp"
+#include "timeprinter.hpp"
 using namespace albert;
 using namespace std;
 static const char *CFG_TRIGGER = "trigger";
@@ -18,7 +18,6 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry) :
 
 std::unique_ptr<albert::Query> QueryEngine::query(const QString &query_string)
 {
-    ScopedTimePrinter stp(QString("TIME: %1 µs [QUERY TOTAL '%2']").arg("%1", query_string));
     unique_ptr<::Query> query;
 
     for (const auto &[trigger, handler] : trigger_map)
@@ -30,6 +29,17 @@ std::unique_ptr<albert::Query> QueryEngine::query(const QString &query_string)
    if (!query){
         TimePrinter tp(QString("TIME: %1 µs [TRIGGER '%2']").arg("%1", query_string));
         query = make_unique<::Query>(global_search_handler, query_string);
+    }
+
+    if (auto it = find_if(trigger_map.begin(), trigger_map.end(),
+                          [&query_string](const pair<QString,QueryHandler*> &pair)
+                          { return query_string.startsWith(pair.first); }); it == trigger_map.end()){
+        TimePrinter tp(QString("TIME: %1 µs [GLOBAL '%2']").arg("%1", query_string));
+        query = make_unique<::Query>(global_search_handler, query_string);
+    }
+    else{
+        TimePrinter tp(QString("TIME: %1 µs [TRIGGER '%2']").arg("%1", query_string));
+        query = make_unique<::Query>(*it->second, query_string.mid(it->first.size()), it->first);
     }
 
     // Keep track of queries. Clear items in case of extension unloading

@@ -2,6 +2,7 @@
 
 #include "albert/item.h"
 #include "globalsearch.h"
+#include "timeprinter.hpp"
 #include <QtConcurrent>
 #include <mutex>
 using namespace albert;
@@ -38,6 +39,7 @@ GlobalSearch::rankedItems(const albert::Query &query) const {
     mutex m;
     std::vector<std::pair<std::shared_ptr<albert::Item>,uint16_t>> results;
     function<void(GlobalQueryHandler*)> map = [&query, &m, &results](GlobalQueryHandler *handler) {
+        TimePrinter tp(QString("TIME: %1 µs ['%2']").arg("%1", handler->id()));
         auto &&intermediate = handler->rankedItems(query);
         [[maybe_unused]] const lock_guard<mutex> lock(m);
         results.insert(end(results),

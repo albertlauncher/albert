@@ -39,8 +39,6 @@ add_library(${TARGET_LIB} SHARED ${LIB_SRC}
         src/lib/albert/extension.cpp
         src/lib/albert/extensionregistry.cpp
         src/lib/albert/frontend.cpp
-        src/lib/albert/query.cpp
-        src/lib/globalsearch.cpp
         src/lib/albert/globalqueryhandler.cpp
         src/lib/albert/history.cpp
         src/lib/albert/iconprovider.cpp
@@ -49,18 +47,20 @@ add_library(${TARGET_LIB} SHARED ${LIB_SRC}
         src/lib/albert/itemindex.cpp
         src/lib/albert/levenshtein.cpp
         src/lib/albert/plugin.cpp
+        src/lib/albert/query.cpp
+        src/lib/albert/queryhandler.cpp
+        src/lib/globalsearch.cpp
         src/lib/pluginprovider.cpp
         src/lib/query.cpp
         src/lib/queryengine.cpp
-        src/lib/albert/queryhandler.cpp
         src/lib/resources.qrc
         src/lib/rpcserver.cpp
         src/lib/scopedcrashindicator.hpp
-        src/lib/scopedtimeprinter.hpp
         src/lib/settings/pluginwidget.cpp
         src/lib/settings/settingswidget.cpp
         src/lib/settings/settingswindow.cpp
         src/lib/terminalprovider.cpp
+        src/lib/timeprinter.hpp
         src/lib/trayicon.cpp
         src/lib/usagehistory.cpp
         src/lib/xdg/iconlookup.cpp

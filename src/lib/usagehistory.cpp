@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #include "albert/logging.h"
-#include "scopedtimeprinter.hpp"
+#include "timeprinter.hpp"
 #include "usagehistory.h"
 #include <QSqlDatabase>
 #include <QSqlDriver>
@@ -69,7 +69,7 @@ void UsageHistory::clearDatabase()
 
 void UsageHistory::updateCache()
 {
-    ScopedTimePrinter("UsageHistory::updateCache %1 µs");
+    TimePrinter("UsageHistory::updateCache %1 µs");
     unique_lock write_lock(rw_lock);
 
     // Score of a single usage is 1/(<age_in_days>+1).
@@ -100,7 +100,7 @@ void UsageHistory::updateCache()
 
 void UsageHistory::addActivation(const QString &query, const QString &item_id, const QString &action_id)
 {
-    ScopedTimePrinter("UsageHistory::addActivation %1 µs");
+    TimePrinter("UsageHistory::addActivation %1 µs");
 
     QSqlQuery sql(db);
     sql.prepare("INSERT INTO activation (query, item_id, action_id) VALUES (:query, :item_id, :action_id);");

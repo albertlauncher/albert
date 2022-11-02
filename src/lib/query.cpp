@@ -3,7 +3,6 @@
 #include "albert/logging.h"
 #include "albert/queryhandler.h"
 #include "query.h"
-#include "scopedtimeprinter.hpp"
 #include <QtConcurrent>
 
 Query::Query(albert::QueryHandler &query_handler, const QString &query_string, const QString &trigger_string)
@@ -15,7 +14,6 @@ Query::Query(albert::QueryHandler &query_handler, const QString &query_string, c
     // Run query in background
     connect(&future_watcher, &decltype(future_watcher)::finished, this, &Query::finished);
     future_watcher.setFuture(QtConcurrent::run([this](){
-        ScopedTimePrinter p("QUERY TOTAL %1 µs");
         this->query_handler.handleQuery(*this);
     }));
 
