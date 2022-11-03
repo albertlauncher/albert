@@ -3,8 +3,8 @@
 #include "albert/albert.h"
 #include "albert/config.h"
 #include "albert/export.h"
-#include "albert/frontend.h"
 #include "albert/extensionregistry.h"
+#include "albert/frontend.h"
 #include "albert/logging.h"
 #include "pluginprovider.h"
 #include "queryengine.h"
@@ -34,24 +34,20 @@
 ALBERT_LOGGING
 using namespace std;
 
-static const char *website_url = "https://albertlauncher.github.io/";
-static const char *issue_tracker_url = "https://github.com/albertlauncher/albert/issues";
-static const char *CFG_LAST_USED_VERSION = "last_used_version";
-
+namespace {
+const char *website_url = "https://albertlauncher.github.io/";
+const char *issue_tracker_url = "https://github.com/albertlauncher/albert/issues";
+const char *CFG_LAST_USED_VERSION = "last_used_version";
 unique_ptr<albert::ExtensionRegistry> extension_registry;
 unique_ptr<QueryEngine> query_engine;
 unique_ptr<PluginProvider> plugin_provider;
 unique_ptr<TerminalProvider> terminal_provider;
 QPointer<SettingsWindow> settings_window;
+}
 
 albert::ExtensionRegistry &albert::extensionRegistry()
 {
     return *extension_registry;
-}
-
-std::unique_ptr<albert::Query> albert::query(const QString &query)
-{
-    return query_engine->query(query);
 }
 
 void albert::show(const QString &text)
@@ -328,6 +324,7 @@ int main(int argc, char **argv)
 
     plugin_provider->findPlugins(defaultPluginDirs() << parser.value(opt_p).split(','));
     plugin_provider->loadPlugins();
+    plugin_provider->frontend->setEngine(query_engine.get());
     QObject::connect(qApp, &QApplication::aboutToQuit, [&](){ plugin_provider->unloadPlugins(); }); // Delete app _before_ loop exits
     notifyVersionChange();
 

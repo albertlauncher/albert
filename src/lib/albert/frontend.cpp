@@ -1,29 +1,34 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "albert/albert.h"
-#include "albert/logging.h"
 #include "albert/frontend.h"
+#include "albert/item.h"
+#include "albert/logging.h"
+#include "albert/query.h"
 #include "iconprovider.h"
+#include "queryengine.h"
 using namespace std;
 using namespace albert;
 
-static QStringList strlist(const std::vector<albert::Action>&item_actions)
-{
-    QStringList l;
-    for (auto &action : item_actions)
-        l << action.text;
-    return l;
-}
 
-ActionModel::ActionModel(std::vector<Action> &&item_actions)
-        : QStringListModel(strlist(item_actions)), actions(item_actions)
-{
+static const std::map<const ItemRoles, const QByteArray> QmlRoleNames {
+        { ItemRoles::TextRole, "itemTextRole"},
+        { ItemRoles::SubTextRole, "itemSubTextRole"},
+        { ItemRoles::IconRole, "itemIconRole"},
+        { ItemRoles::InputActionRole, "itemInputActionRole"},
+};
 
+ItemModel::ItemModel(albert::Query *query) : query_(query)
+{
+    connect(query_, &Query::resultsChanged, this, [this](){
+        beginInsertRows(QModelIndex(), row_count, static_cast<int>(query_->results().size()) - 1);
+        row_count = static_cast<int>(query_->results().size());
+        endInsertRows();
+    });
 }
 
 int ItemModel::rowCount(const QModelIndex &) const
 {
-    return static_cast<int>(items.size());
+    return row_count;
 }
 
 QHash<int, QByteArray> ItemModel::roleNames() const
@@ -40,7 +45,7 @@ QHash<int, QByteArray> ItemModel::roleNames() const
 QVariant ItemModel::data(const QModelIndex &index, int role) const
 {
     if (index.isValid()) {
-        const shared_ptr<Item> &item = items[index.row()];
+        const shared_ptr<Item> &item = query_->results()[index.row()];
 
         switch (static_cast<ItemRoles>(role)) {
             case ItemRoles::TextRole: return item->text();
@@ -74,13 +79,16 @@ QVariant ItemModel::data(const QModelIndex &index, int role) const
             }
         }
     }
-    return QVariant();
+    return {};
 }
 
-void ItemModel::updateView()
+
+std::unique_ptr<albert::Query> albert::Frontend::query(const QString &query) const
 {
-    beginInsertRows(QModelIndex(), row_count, items.size() + 1);
-    row_count = items.size();
-    endInsertRows();
+    return query_engine->query(query);
 }
 
+void Frontend::setEngine(QueryEngine *engine)
+{
+    query_engine = engine;
+}

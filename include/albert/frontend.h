@@ -3,15 +3,15 @@
 #pragma once
 #include "export.h"
 #include "extension.h"
-#include "plugin.h"
-#include "item.h"
 #include <QAbstractItemModel>
-#include <QString>
-#include <QStringListModel>
 #include <QWidget>
+#include <memory>
+#include <functional>
+class QueryEngine;
 
 namespace albert
 {
+class Query;
 
 /// Convention on the item roles passed around (ResultsModel, Frontends)
 enum class ALBERT_EXPORT ItemRoles {
@@ -21,44 +21,38 @@ enum class ALBERT_EXPORT ItemRoles {
     InputActionRole = Qt::UserRole, // Note this is used as int in QML
 };
 
-static const std::map<const ItemRoles, const QByteArray> QmlRoleNames {
-        { ItemRoles::TextRole, "itemTextRole"},
-        { ItemRoles::SubTextRole, "itemSubTextRole"},
-        { ItemRoles::IconRole, "itemIconRole"},
-        { ItemRoles::InputActionRole, "itemInputActionRole"},
-};
-
-struct ALBERT_EXPORT ActionModel : public QStringListModel
-{
-    ActionModel(std::vector<Action> &&item_actions);
-    const std::vector<Action> actions;
-};
 
 struct ALBERT_EXPORT ItemModel : public QAbstractListModel
 {
-    ItemModel(QObject *parent, const std::vector<std::shared_ptr<Item>> &items) : QAbstractListModel(parent), items(items) {}
-    void updateView();
-
+    explicit ItemModel(albert::Query *);
     inline int rowCount(const QModelIndex &) const override;
     QHash<int,QByteArray> roleNames() const override;
     QVariant data(const QModelIndex &index, int role) const override;
-
 private:
-    uint row_count = 0;
-    const std::vector<std::shared_ptr<Item>> &items;
+    int row_count = 0;
+    albert::Query *query_;
 };
+
 
 /// The interface for albert frontends
 class ALBERT_EXPORT Frontend : virtual public Extension
 {
 public:
     virtual bool isVisible() const = 0;
-    virtual void setVisible(bool visible = true) = 0;
+    virtual void setVisible(bool visible) = 0;
 
     virtual QString input() const = 0;
     virtual void setInput(const QString&) = 0;
 
     virtual QWidget *createSettingsWidget() = 0;
+
+    void setEngine(QueryEngine*);
+
+protected:
+    std::unique_ptr<albert::Query> query(const QString &query) const;
+
+private:
+    QueryEngine *query_engine;
 };
 }
 

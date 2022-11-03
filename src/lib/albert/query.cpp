@@ -17,11 +17,25 @@ bool Query::isFinished() const { return finished_; }
 
 const vector<shared_ptr<Item>> &Query::results() const { return results_; }
 
-void Query::add_(const shared_ptr<Item> &item) { results_.push_back(item); }
+void Query::add_(const shared_ptr<Item> &item)
+{
+    results_.push_back(item);
+    emit resultsChanged();
+}
 
-void Query::add_(shared_ptr<Item> &&item) { results_.push_back(::move(item)); }
+void Query::add_(shared_ptr<Item> &&item)
+{
+    results_.push_back(::move(item));
+    emit resultsChanged();
+}
 
-void Query::set(vector<shared_ptr<Item>> &&items) { results_ = ::move(items); emit resultsChanged(); }
+void Query::set(vector<shared_ptr<Item>> &&items)
+{
+    if (!results_.empty())
+        return;
+    results_ = ::move(items);
+    emit resultsChanged();
+}
 
 void Query::activateResult(uint item, uint action)
 {

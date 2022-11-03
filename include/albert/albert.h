@@ -12,9 +12,6 @@ namespace albert
 class ExtensionRegistry;
 ALBERT_EXPORT ExtensionRegistry &extensionRegistry();
 
-class Query;
-ALBERT_EXPORT std::unique_ptr<Query> query(const QString &query);
-
 ALBERT_EXPORT void show(const QString &text = QString());
 
 ALBERT_EXPORT void hide();
@@ -38,8 +35,4 @@ ALBERT_EXPORT long long runDetachedProcess(const QStringList &commandline, const
 ALBERT_EXPORT void runTerminal(const QString &script = {}, const QString &working_dir = {}, bool close_on_exit = false);
 
 //ALBERT_EXPORT void sendTrayNotification(const QString &title, const QString &message, const QIcon &icon) override;
-
-//ALBERT_EXPORT albert::Terminal &terminal() override;
-
-//ALBERT_EXPORT albert::ExtensionRegistry &extensionRegistry() override;
 }
