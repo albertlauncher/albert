@@ -6,6 +6,7 @@
 #include <QString>
 #include <map>
 namespace albert{
+class Plugin;
 class Frontend;
 class ExtensionRegistry;
 }

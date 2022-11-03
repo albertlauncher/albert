@@ -44,6 +44,7 @@ public:
     }
 
     /// Set results by std::move
+    /// @note This is _not_ intended to reset the items, but for fast move. NOP if results not empty.
     void set(std::vector<std::shared_ptr<Item>> && items);
 
     void activateResult(uint item, uint action);

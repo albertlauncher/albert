@@ -3,6 +3,7 @@
 #include "albert/logging.h"
 #include "albert/queryhandler.h"
 #include "query.h"
+#include "timeprinter.hpp"
 #include <QtConcurrent>
 
 Query::Query(albert::QueryHandler &query_handler, const QString &query_string, const QString &trigger_string)
@@ -14,6 +15,7 @@ Query::Query(albert::QueryHandler &query_handler, const QString &query_string, c
     // Run query in background
     connect(&future_watcher, &decltype(future_watcher)::finished, this, &Query::finished);
     future_watcher.setFuture(QtConcurrent::run([this](){
+        TimePrinter tp(QString("TIME: %1 µs ['%2']").arg("%1", this->string()));
         this->query_handler.handleQuery(*this);
     }));
 

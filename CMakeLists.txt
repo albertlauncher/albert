@@ -61,7 +61,6 @@ add_library(${TARGET_LIB} SHARED ${LIB_SRC}
         src/lib/settings/settingswindow.cpp
         src/lib/terminalprovider.cpp
         src/lib/timeprinter.hpp
-        src/lib/trayicon.cpp
         src/lib/usagehistory.cpp
         src/lib/xdg/iconlookup.cpp
         src/lib/xdg/themefileparser.cpp

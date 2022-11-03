@@ -34,7 +34,7 @@ void UsageHistory::initializeDatabase()
 {
     DEBG << "Create database and tables if they do not exist.";
 
-    db = QSqlDatabase::addDatabase("QSQLITE", "usagehistory");
+    db = QSqlDatabase::addDatabase("QSQLITE", db_name);
     if (!db.isValid())
         qFatal("No sqlite available");
 

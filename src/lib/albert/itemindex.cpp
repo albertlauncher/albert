@@ -143,7 +143,7 @@ std::vector<ItemIndex::StringMatch> ItemIndex::getWordMatches(const QString &wor
         // Do (cheap) preselection by mathematical bound. If there are less than |word_length|-δ*n matching qGrams
         // it is no match. If the common qGrams are less than |word|-δ*q this implies that there are more errors
         // than δ.
-        uint allowed_errors = static_cast<uint>(static_cast<float>(word_length) / error_tolerance_divisor);
+        uint allowed_errors = (uint)((float)word_length/(float)error_tolerance_divisor);
         uint minimum_match_count = word_length - allowed_errors * n;
         Levenshtein levenshtein;
         for (const auto &[word_idx, ngram_count]: word_match_count) {

@@ -11,7 +11,7 @@ albert::History::History(QObject *parent) : QObject(parent)
     currentLine_ = -1; // This means historymode is not active
 }
 
-void albert::History::add(QString str)
+void albert::History::add(const QString& str)
 {
     if (!str.isEmpty()){
         if (lines_.contains(str))
@@ -23,11 +23,11 @@ void albert::History::add(QString str)
 
 QString albert::History::next(const QString &substring)
 {
-    int newCurrentLine = currentLine_;
-    while (++newCurrentLine < static_cast<int>(lines_.size())){
-        const QString &line = lines_[newCurrentLine];
+    int new_current_line = currentLine_;
+    while (++new_current_line < static_cast<int>(lines_.size())){
+        const QString &line = lines_[new_current_line];
         if (line.contains(substring, Qt::CaseInsensitive)){
-            currentLine_ = newCurrentLine;
+            currentLine_ = new_current_line;
             return line;
         }
     }
@@ -36,11 +36,11 @@ QString albert::History::next(const QString &substring)
 
 QString albert::History::prev(const QString &substring)
 {
-    int newCurrentLine = currentLine_;
-    while (-1 < --newCurrentLine){
-        const QString &line = lines_[newCurrentLine];
+    int new_current_line = currentLine_;
+    while (-1 < --new_current_line){
+        const QString &line = lines_[new_current_line];
         if (line.contains(substring, Qt::CaseInsensitive)){
-            currentLine_ = newCurrentLine;
+            currentLine_ = new_current_line;
             return line;
         }
     }
