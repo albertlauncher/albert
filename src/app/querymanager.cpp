@@ -138,10 +138,15 @@ void Core::QueryManager::teardownSession() {
                       "VALUES (:query_id, :handler_id, :runtime);");
         for ( auto & runtime : stats.runtimes ) {
             query.bindValue(":query_id", lastQueryId_);
-            query.bindValue(":handler_id", handlerIds_[runtime.first]);
-            query.bindValue(":runtime", runtime.second);
-            if (!query.exec())
-                qFatal("SQL ERROR: %s %s", qPrintable(query.executedQuery()), qPrintable(query.lastError().text()));
+            auto it = handlerIds_.find(runtime.first);
+            if ( it != handlerIds_.end()){
+                query.bindValue(":handler_id", it);
+                query.bindValue(":runtime", runtime.second);
+                if (!query.exec())
+                    qFatal("SQL ERROR: %s %s", qPrintable(query.executedQuery()), qPrintable(query.lastError().text()));
+                    // Print helpful error if inserts fail due null
+                    qFatal("Consider flushing albert's db, located at $HOME/.config/albert/core.db");
+            }
         }
 
         // Create activation record
