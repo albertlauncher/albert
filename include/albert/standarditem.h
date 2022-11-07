@@ -18,11 +18,15 @@ public:
             QString subtext = {},
             QStringList icon_urls = {},
             Actions actions = {},
-            QString input_action_text = {}
-    ) : id_(id), text_(text), subtext_(subtext), icon_urls_(icon_urls),
-        actions_(actions), input_action_text_(input_action_text) {}
+            QString input_action_text = {}):
+    id_(std::move(id)),
+    text_(std::move(text)),
+    subtext_(std::move(subtext)),
+    icon_urls_(std::move(std::move(icon_urls))),
+    actions_(std::move(actions)),
+    input_action_text_(std::move(input_action_text)) {}
 
-    void setId(QString id) { id_ = id; }
+    void setId(QString id) { id_ = std::move(id); }
     void setText(QString text) { text_ = std::move(text); }
     void setSubtext(QString subtext) { subtext_ = std::move(subtext); }
     void setInputActionText(QString input_action_text) { input_action_text_ = std::move(input_action_text); }
@@ -45,6 +49,6 @@ protected:
     QStringList icon_urls_;
     Actions actions_;
     QString input_action_text_;
-
 };
+
 }

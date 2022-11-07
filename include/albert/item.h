@@ -12,16 +12,17 @@ namespace albert
 
 struct ALBERT_EXPORT Action  /// A base class for actions (and items)
 {
-    const QString id;  /// Identifier of the action
-    const QString text;  /// The description of the action
-    const std::function<void()> function;  /// Activates the item
-};
+    Action(QString id, QString text, std::function<void()> function);
 
+    QString id;  /// Identifier of the action
+    QString text;  /// The description of the action
+    std::function<void()> function;  /// Activates the item
+};
 
 class ALBERT_EXPORT Item  /// Items displayed in the query results list
 {
 public:
-    virtual ~Item() {}
+    virtual ~Item() = default;
 
     /// Persistent, extension-wide unique identifier, used for MRU sorting
     virtual QString id() const = 0;
@@ -41,19 +42,29 @@ public:
     virtual QStringList iconUrls() const = 0;
 
     /// Used to replace the input when the input action is triggered (Tab)
-    virtual QString inputActionText() const { return {}; };
+    virtual QString inputActionText() const;
 
     /// Indicates that the item has actions
-    virtual bool hasActions() const { return true; }
+    virtual bool hasActions() const;
 
     /// The list of actions, this item provides
-    virtual std::vector<Action> actions() const { return {}; }
-//
-//    /// Indicates that the item has childrens
-//    virtual bool hasChildren() const { return false; }
-//
-//    /// The list of actions, this item provides
-//    virtual std::vector<SharedItem> children() const { return {}; }
+    virtual std::vector<Action> actions() const;
 
 };
+
+struct ALBERT_EXPORT IndexItem {
+    IndexItem(std::shared_ptr<Item> item, QString string);
+    std::shared_ptr<Item> item;
+    QString string;
+};
+
+using Score = uint16_t;
+const Score MAX_Score = std::numeric_limits<Score>::max();
+
+struct ALBERT_EXPORT RankItem {
+    RankItem(std::shared_ptr<Item> item, Score score);
+    std::shared_ptr<Item> item;
+    Score score;
+};
+
 }

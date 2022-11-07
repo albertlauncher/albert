@@ -5,20 +5,25 @@
 
 namespace albert
 {
+class Index;
+
 /// Provides an indexed item search
-struct ALBERT_EXPORT IndexQueryHandler : public GlobalQueryHandler
+class ALBERT_EXPORT IndexQueryHandler : public GlobalQueryHandler
 {
+public:
     IndexQueryHandler();
     ~IndexQueryHandler() override;
 
-    virtual std::map<std::shared_ptr<Item>,std::map<QString,uint16_t>> indexItems() const = 0;  // Item factory
+    QString synopsis() const override;  /// Overwrite default to '<filter>'
+    std::vector<RankItem> rankItems(const albert::Query &query) const final;  /// Queries and returns index items
+    void setIndex(std::unique_ptr<Index>&&);  /// Call this when your items changed
 
-    std::vector<std::pair<std::shared_ptr<albert::Item>,uint16_t>> rankedItems(const albert::Query &query) const override final;  /// Queries index
-    QString synopsis() const override;  /// Default <filter>
-
+protected:
+    virtual std::vector<IndexItem> indexItems() const = 0;  // Return your items. Needs to be thread safe.
     void updateIndex();  /// Call this when your items changed
 
-    struct Private;
-    Private *d;
+private:
+    std::unique_ptr<Index> index_;
 };
+
 }

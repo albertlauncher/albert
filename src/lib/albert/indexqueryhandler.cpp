@@ -1,27 +1,31 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #include "albert/indexqueryhandler.h"
-#include "indexqueryhandlerprivate.h"
-#include "itemindex.h"
+#include "albert/index/index.h"
 using namespace std;
+using namespace albert;
 
+IndexQueryHandler::IndexQueryHandler() = default;
+IndexQueryHandler::~IndexQueryHandler() = default;
 
-albert::IndexQueryHandler::IndexQueryHandler() : d(new albert::IndexQueryHandler::Private(this)) {}
-
-albert::IndexQueryHandler::~IndexQueryHandler() {}
-
-void albert::IndexQueryHandler::updateIndex()
-{
-    d->updateIndex();
-}
-
-QString albert::IndexQueryHandler::synopsis() const
+QString IndexQueryHandler::synopsis() const
 {
     return QStringLiteral("<filter>");
 }
 
-std::vector<std::pair<std::shared_ptr<albert::Item>,uint16_t>>
-albert::IndexQueryHandler::rankedItems(const albert::Query &query) const
+std::vector<RankItem> IndexQueryHandler::rankItems(const Query &query) const
 {
-    return d->index()->search(query.string());
+    return index_->search(query.string());
+}
+
+void IndexQueryHandler::setIndex(unique_ptr<Index> &&index)
+{
+    index_ = ::move(index);
+    updateIndex();
+}
+
+void IndexQueryHandler::updateIndex()
+{
+    if (index_)
+        index_->setItems(indexItems());
 }

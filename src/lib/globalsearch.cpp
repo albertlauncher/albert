@@ -33,19 +33,19 @@ bool GlobalSearch::allow_trigger_remap() const
     return false;
 }
 
-std::vector<std::pair<std::shared_ptr<albert::Item>,uint16_t>>
-GlobalSearch::rankedItems(const albert::Query &query) const {
-    // QtConcurrent5 sucks and does not support move (copies…!) hack around
-    mutex m;
-    std::vector<std::pair<std::shared_ptr<albert::Item>,uint16_t>> results;
-    function<void(GlobalQueryHandler*)> map = [&query, &m, &results](GlobalQueryHandler *handler) {
+std::vector<albert::RankItem> GlobalSearch::rankItems(const Query &query) const
+{
+    std::vector<albert::RankItem> rank_items;
+    function<std::vector<albert::RankItem>(GlobalQueryHandler*)> map =
+            [&query](GlobalQueryHandler *handler) -> std::vector<albert::RankItem> {
         TimePrinter tp(QString("TIME: %1 µs ['%2']").arg("%1", handler->id()));
-        auto &&intermediate = handler->rankedItems(query);
-        [[maybe_unused]] const lock_guard<mutex> lock(m);
-        results.insert(end(results),
-                       make_move_iterator(begin(intermediate)),
-                       make_move_iterator(end(intermediate)));
+        return handler->rankItems(query);
     };
-    QtConcurrent::blockingMap(ExtensionWatcher<GlobalQueryHandler>::extensions(), map);
-    return results;
+    auto future = QtConcurrent::mapped(extensions(), map);
+    future.waitForFinished();
+    for (auto result : future)
+        rank_items.insert(end(rank_items),
+                          make_move_iterator(begin(result)),
+                          make_move_iterator(end(result)));
+    return rank_items;
 }

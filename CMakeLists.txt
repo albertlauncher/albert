@@ -13,7 +13,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 # Set standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -42,10 +42,10 @@ add_library(${TARGET_LIB} SHARED ${LIB_SRC}
         src/lib/albert/globalqueryhandler.cpp
         src/lib/albert/history.cpp
         src/lib/albert/iconprovider.cpp
+        src/lib/albert/index/itemindex.cpp
+        src/lib/albert/index/levenshtein.cpp
         src/lib/albert/indexqueryhandler.cpp
-        src/lib/albert/indexqueryhandlerprivate.cpp
-        src/lib/albert/itemindex.cpp
-        src/lib/albert/levenshtein.cpp
+        src/lib/albert/item.cpp
         src/lib/albert/plugin.cpp
         src/lib/albert/query.cpp
         src/lib/albert/queryhandler.cpp

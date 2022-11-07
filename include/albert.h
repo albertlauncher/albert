@@ -10,6 +10,7 @@
 #include "albert/frontend.h"
 #include "albert/globalqueryhandler.h"
 #include "albert/history.h"
+#include "albert/indexqueryhandler.h"
 #include "albert/item.h"
 #include "albert/logging.h"
 #include "albert/plugin.h"

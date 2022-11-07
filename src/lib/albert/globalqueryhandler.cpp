@@ -4,11 +4,10 @@
 #include <algorithm>
 using namespace std;
 
-
 void albert::GlobalQueryHandler::handleQuery(albert::Query &query) const
 {
-    std::vector<std::pair<std::shared_ptr<albert::Item>,uint16_t>> &&matches = rankedItems(query);
-    sort(matches.begin(), matches.end(), [](const auto &a, const auto &b){ return a.second > b.second; });
+    std::vector<RankItem> &&matches = rankItems(query);
+    sort(matches.begin(), matches.end(), [](const auto &a, const auto &b){ return a.score > b.score; });
 
     // TODO 0.18 not wasting time here since I cant test but this has tp be done before the release
     //if (useMruScores())
@@ -31,7 +30,7 @@ void albert::GlobalQueryHandler::handleQuery(albert::Query &query) const
     std::vector<shared_ptr<Item>> items;
     items.reserve(matches.size());
     for (auto &match : matches)
-        items.push_back(std::move(match.first));
+        items.push_back(std::move(match.item));
 
     query.set(std::move(items));
 }
