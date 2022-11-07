@@ -3,6 +3,7 @@
 #pragma once
 #include "albert/albert.h"
 #include "albert/config.h"
+#include "albert/configwidgetprovider.h"
 #include "albert/export.h"
 #include "albert/extension.h"
 #include "albert/extensionregistry.h"
@@ -17,5 +18,4 @@
 #include "albert/pluginprovider.h"
 #include "albert/query.h"
 #include "albert/queryhandler.h"
-#include "albert/settingswidgetprovider.h"
 #include "albert/standarditem.h"

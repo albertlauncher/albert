@@ -8,12 +8,12 @@
 #include <vector>
 namespace albert {
 class ExtensionRegistry;
-class SettingsWidgetProvider;
+class ConfigWidgetProvider;
 }
 
 class SettingsWidget final :
         public QWidget,
-        public albert::ExtensionWatcher<albert::SettingsWidgetProvider>
+        public albert::ExtensionWatcher<albert::ConfigWidgetProvider>
 {
     Q_OBJECT
 
@@ -24,8 +24,8 @@ private:
     void resetUI();
 
 protected:
-    void onAdd(albert::SettingsWidgetProvider *t) override;
-    void onRem(albert::SettingsWidgetProvider *t) override;
+    void onAdd(albert::ConfigWidgetProvider *t) override;
+    void onRem(albert::ConfigWidgetProvider *t) override;
 
 private:
 

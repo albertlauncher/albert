@@ -1,6 +1,6 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "albert/settingswidgetprovider.h"
+#include "albert/configwidgetprovider.h"
 #include "settingswidget.h"
 #include <QHBoxLayout>
 #include <utility>
@@ -40,7 +40,7 @@ void SettingsWidget::resetUI()
 
     vector<pair<QString,QWidget*>> items;
     for (auto *swp : extensions()){
-        auto *widget = swp->createSettingsWidget();
+        auto *widget = swp->buildConfigWidget();
         items.emplace_back(widget->objectName(), widget);
     }
 
@@ -59,12 +59,12 @@ void SettingsWidget::resetUI()
     list_widget.setMaximumWidth(list_widget.sizeHintForColumn(0));
 }
 
-void SettingsWidget::onAdd(SettingsWidgetProvider *t)
+void SettingsWidget::onAdd(ConfigWidgetProvider *t)
 {
     resetUI();
 }
 
-void SettingsWidget::onRem(SettingsWidgetProvider *t)
+void SettingsWidget::onRem(ConfigWidgetProvider *t)
 {
     resetUI();
 }
