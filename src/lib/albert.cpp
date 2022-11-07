@@ -91,6 +91,11 @@ void albert::quit()
     QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
 }
 
+void albert::openUrl(const QString &url)
+{
+    QDesktopServices::openUrl(QUrl(url));
+}
+
 void albert::openWebsite()
 {
     QDesktopServices::openUrl(QUrl(website_url));

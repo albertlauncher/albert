@@ -26,6 +26,8 @@ ALBERT_EXPORT void quit();
 
 ALBERT_EXPORT void openWebsite();
 
+ALBERT_EXPORT void openUrl(const QString &url);
+
 ALBERT_EXPORT void openIssueTracker();
 
 ALBERT_EXPORT void setClipboardText(const QString &text);
