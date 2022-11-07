@@ -106,7 +106,7 @@ macro(albert_plugin_add_default_target)
     generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME "export.h")
     install(
         TARGETS ${PROJECT_NAME}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/albert/plugins
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/albert
     )
     foreach(arg IN LISTS MD_QT_DEPENDENCIES)
         find_package(Qt6 REQUIRED COMPONENTS ${arg})

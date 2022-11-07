@@ -183,7 +183,7 @@ static void installSignalHandlers()
         signal(sig, [](int) { QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection); });
 }
 
-unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
+static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
 {
     auto qapp = make_unique<QApplication>(argc, argv);
     QApplication::setOrganizationName("albert");
@@ -330,7 +330,8 @@ int main(int argc, char **argv)
     plugin_provider->findPlugins(defaultPluginDirs() << parser.value(opt_p).split(','));
     plugin_provider->loadPlugins();
     plugin_provider->frontend->setEngine(query_engine.get());
-    QObject::connect(qApp, &QApplication::aboutToQuit, [&](){ plugin_provider->unloadPlugins(); }); // Delete app _before_ loop exits
+    QObject::connect(qApp, &QApplication::aboutToQuit,
+                     [&]() { plugin_provider->unloadPlugins(); }); // Delete app _before_ loop exits
     notifyVersionChange();
 
     int return_value = qApp->exec();

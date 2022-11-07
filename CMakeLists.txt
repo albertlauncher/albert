@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19)  # JSON support, Ubuntu 22.04
 
-project(albert VERSION 0.18.0 LANGUAGES CXX)
+project(albert VERSION 0.18.0 LANGUAGES CXX HOMEPAGE_URL "albertlauncher.github.io")
 
 include(GNUInstallDirs)
 
@@ -28,7 +28,7 @@ SET(CMAKE_COLOR_MAKEFILE ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-#################################### Lib  #####################################
+### Lib  ######################################################################
 
 set(TARGET_LIB ${PROJECT_NAME} )
 
@@ -212,7 +212,7 @@ export(PACKAGE ${PROJECT_NAME})
 #file(GLOB_RECURSE TARGET_HEADER_FILES "${PROJECT_SOURCE_DIR}/include/*.h")
 #install(FILES ${TARGET_HEADER_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-#################################### App  #####################################
+### App  ######################################################################
 
 set(TARGET_APP ${CMAKE_PROJECT_NAME}app)
 
@@ -229,21 +229,25 @@ set_target_properties(${TARGET_APP} PROPERTIES
 
 # Platform specific stuff
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-    # Install desktop entry and icon
     install(FILES dist/albert.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications )
     install(FILES resources/icons/albert.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
 endif()
 
 install(TARGETS ${TARGET_APP} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-#################################### Ctl  #####################################
+#install(TARGETS ${TARGET_APP}
+##    BUNDLE DESTINATION . COMPONENT Runtime
+#    RUNTIME DESTINATION bin COMPONENT Runtime
+#)
+
+### Ctl #######################################################################
 
 set(TARGET_CTL ${CMAKE_PROJECT_NAME}ctl)
 add_executable(${TARGET_CTL} src/ctl/main.cpp)
 target_link_libraries(${TARGET_CTL} PRIVATE Qt6::Network)
 install(TARGETS ${TARGET_CTL} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-#################################### Test #####################################
+### Test ######################################################################
 
 #option(BUILD_TESTS "Build tests (Reqiures doctest)" ON)
 #if (BUILD_TESTS)
@@ -260,7 +264,7 @@ install(TARGETS ${TARGET_CTL} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 #    target_link_libraries(${TARGET_TST} PRIVATE albert::lib doctest::doctest Qt5::Core)
 #endif()
 
-################################# Plugins  ####################################
+### Plugins ###################################################################
 
 include("cmake/albert-macros.cmake")
 
@@ -275,3 +279,8 @@ FOREACH(child ${children})
         endif()
     ENDIF()
 ENDFOREACH()
+
+
+### Packaging #################################################################
+
+add_subdirectory(dist)
