@@ -4,7 +4,7 @@
 #include <algorithm>
 using namespace std;
 
-void albert::GlobalQueryHandler::handleQuery(albert::Query &query) const
+void albert::GlobalQueryHandler::handleQuery(Query &query) const
 {
     std::vector<RankItem> &&matches = rankItems(query);
     sort(matches.begin(), matches.end(), [](const auto &a, const auto &b){ return a.score > b.score; });
@@ -32,5 +32,5 @@ void albert::GlobalQueryHandler::handleQuery(albert::Query &query) const
     for (auto &match : matches)
         items.push_back(std::move(match.item));
 
-    query.set(std::move(items));
+    query.add(std::move(items));
 }

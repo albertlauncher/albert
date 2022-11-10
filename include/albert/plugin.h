@@ -1,6 +1,7 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
+#include "config.h"
 #include "export.h"
 #include "pluginprovider.h"
 

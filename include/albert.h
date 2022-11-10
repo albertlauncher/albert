@@ -16,6 +16,5 @@
 #include "albert/logging.h"
 #include "albert/plugin.h"
 #include "albert/pluginprovider.h"
-#include "albert/query.h"
 #include "albert/queryhandler.h"
 #include "albert/standarditem.h"

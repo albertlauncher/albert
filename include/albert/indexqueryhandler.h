@@ -15,7 +15,7 @@ public:
     ~IndexQueryHandler() override;
 
     QString synopsis() const override;  /// Overwrite default to '<filter>'
-    std::vector<RankItem> rankItems(const albert::Query &query) const final;  /// Queries and returns index items
+    std::vector<RankItem> rankItems(const Query &query) const final;  /// Queries and returns index items
     void setIndex(std::unique_ptr<Index>&&);  /// Call this when your items changed
 
 protected:

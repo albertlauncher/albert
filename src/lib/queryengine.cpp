@@ -24,9 +24,6 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry) :
 
 std::unique_ptr<albert::Query> QueryEngine::query(const QString &query_string)
 {
-    for (auto *q  : alive_queries)
-        q->cancel();
-
     unique_ptr<::Query> query;
 
     for (const auto &[trigger, handler] : trigger_map)

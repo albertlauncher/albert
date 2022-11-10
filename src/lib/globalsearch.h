@@ -15,6 +15,6 @@ struct GlobalSearch :
     QString synopsis() const override;
     QString default_trigger() const override;
     bool allow_trigger_remap() const override;
-    std::vector<albert::RankItem> rankItems(const albert::Query &query) const override;
+    std::vector<albert::RankItem> rankItems(const Query &query) const override;
 };
 

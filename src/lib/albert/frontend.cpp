@@ -3,7 +3,6 @@
 #include "albert/frontend.h"
 #include "albert/item.h"
 #include "albert/logging.h"
-#include "albert/query.h"
 #include "iconprovider.h"
 #include "queryengine.h"
 using namespace std;
@@ -17,7 +16,7 @@ static const std::map<const ItemRoles, const QByteArray> QmlRoleNames {
         { ItemRoles::InputActionRole, "itemInputActionRole"},
 };
 
-ItemModel::ItemModel(albert::Query *query) : query_(query)
+ItemModel::ItemModel(Query *query) : query_(query), row_count((int)query->results().size())
 {
     connect(query_, &Query::resultsChanged, this, [this](){
         beginInsertRows(QModelIndex(), row_count, static_cast<int>(query_->results().size()) - 1);

@@ -47,7 +47,6 @@ add_library(${TARGET_LIB} SHARED ${LIB_SRC}
         src/lib/albert/indexqueryhandler.cpp
         src/lib/albert/item.cpp
         src/lib/albert/plugin.cpp
-        src/lib/albert/query.cpp
         src/lib/albert/queryhandler.cpp
         src/lib/globalsearch.cpp
         src/lib/pluginprovider.cpp
