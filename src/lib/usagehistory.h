@@ -7,14 +7,12 @@
 class UsageHistory
 {
 public:
-    static QStringList inputHistory();
-    static std::map<QString, double> mruScores();
-
     static void initializeDatabase();
     static void clearDatabase();
-    static void updateCache();
-
     static void addActivation(const QString& query, const QString &item_id, const QString &action_id);
+
+    static QStringList inputHistory();
+    static std::map<QString, double> mruScores();
 };
 
 

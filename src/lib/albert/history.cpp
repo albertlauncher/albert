@@ -8,9 +8,12 @@
 albert::History::History(QObject *parent) : QObject(parent)
 {
     lines_ = UsageHistory::inputHistory();
-    currentLine_ = -1; // This means historymode is not active
+    for (auto l : lines_)
+        qDebug() << l;
+    resetIterator();
 }
 
+/// Temporarily add a line to the history. @note Will vanish on next reset
 void albert::History::add(const QString& str)
 {
     if (!str.isEmpty()){
@@ -23,27 +26,17 @@ void albert::History::add(const QString& str)
 
 QString albert::History::next(const QString &substring)
 {
-    int new_current_line = currentLine_;
-    while (++new_current_line < static_cast<int>(lines_.size())){
-        const QString &line = lines_[new_current_line];
-        if (line.contains(substring, Qt::CaseInsensitive)){
-            currentLine_ = new_current_line;
-            return line;
-        }
-    }
+    for (int l = currentLine_ + 1; l < (int)lines_.size(); ++l)
+        if (lines_[l].contains(substring, Qt::CaseInsensitive))
+            return lines_[currentLine_ = l];
     return QString{};
 }
 
 QString albert::History::prev(const QString &substring)
 {
-    int new_current_line = currentLine_;
-    while (-1 < --new_current_line){
-        const QString &line = lines_[new_current_line];
-        if (line.contains(substring, Qt::CaseInsensitive)){
-            currentLine_ = new_current_line;
-            return line;
-        }
-    }
+    for (int l = currentLine_ - 1; 0 <= l; --l)
+        if (lines_[l].contains(substring, Qt::CaseInsensitive))
+            return lines_[currentLine_ = l];
     return QString{};
 }
 

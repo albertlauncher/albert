@@ -2,6 +2,7 @@
 
 #include "albert/item.h"
 #include "albert/logging.h"
+#include "usagehistory.h"
 #include "query.h"
 #include "timeprinter.hpp"
 #include <QtConcurrent>
@@ -83,10 +84,12 @@ const std::vector<std::shared_ptr<albert::Item>> &Query::results() const
     return results_;
 }
 
-void Query::activateResult(uint item, uint action)
+void Query::activateResult(uint i, uint a)
 {
-     results_[item]->actions()[action].function();
-    // todo database
+    auto *item = results_[i].get();
+    auto action = item->actions()[a];
+    action.function();
+    UsageHistory::addActivation(string_, item->id(), action.id);
 }
 
 bool Query::isValid() const

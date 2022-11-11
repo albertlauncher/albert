@@ -7,6 +7,7 @@
 #include "albert/frontend.h"
 #include "albert/logging.h"
 #include "pluginprovider.h"
+#include "usagehistory.h"
 #include "queryengine.h"
 #include "rpcserver.h"
 #include "scopedcrashindicator.hpp"
@@ -326,14 +327,15 @@ int main(int argc, char **argv)
     plugin_provider = std::make_unique<PluginProvider>(*extension_registry);
     terminal_provider = std::make_unique<TerminalProvider>();
     extension_registry->add(plugin_provider.get());
+    UsageHistory::initializeDatabase();
+//    albert::showSettings();
+    notifyVersionChange();
 
     plugin_provider->findPlugins(defaultPluginDirs() << parser.value(opt_p).split(','));
     plugin_provider->loadPlugins();
     plugin_provider->frontend->setEngine(query_engine.get());
     QObject::connect(qApp, &QApplication::aboutToQuit,
                      [&]() { plugin_provider->unloadPlugins(); }); // Delete app _before_ loop exits
-    notifyVersionChange();
-//    albert::showSettings();
 
     int return_value = qApp->exec();
     if (return_value == -1) {
