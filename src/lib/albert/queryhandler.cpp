@@ -10,7 +10,7 @@ QString albert::QueryHandler::synopsis() const
 
 QString albert::QueryHandler::default_trigger() const
 {
-    return id();
+    return QString("%1 ").arg(id());
 }
 
 bool albert::QueryHandler::allow_trigger_remap() const

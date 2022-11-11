@@ -10,12 +10,9 @@ void setActivationPolicyAccessory()
     // Always dark mode 😎
 //    [NSApp setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua]];
 
-
-
-
-
-
-
+//    https://developer.apple.com/documentation/appkit/nsvisualeffectview?language=objc
+//    https://stackoverflow.com/questions/24414483/how-can-i-use-nsvisualeffectview-in-windows-title-bar
+//    http://eon.codes/blog/2016/01/23/Chromeless-window/
 
 //    int NSWindowCollectionBehaviorCanJoinAllSpaces = 1 << 0;
 //    int NSWindowCollectionBehaviorMoveToActiveSpace = 1 << 1;     // floats in spaces, hidden by exposé.  Default behavior if windowLevel != NSNormalWindowLevel

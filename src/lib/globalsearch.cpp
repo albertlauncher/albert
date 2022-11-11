@@ -18,11 +18,6 @@ QString GlobalSearch::id() const
     return QStringLiteral("globalsearch");
 }
 
-QString GlobalSearch::synopsis() const
-{
-    return QStringLiteral("<filter>");
-}
-
 QString GlobalSearch::default_trigger() const
 {
     return QLatin1String("");

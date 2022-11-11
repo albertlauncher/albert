@@ -333,6 +333,7 @@ int main(int argc, char **argv)
     QObject::connect(qApp, &QApplication::aboutToQuit,
                      [&]() { plugin_provider->unloadPlugins(); }); // Delete app _before_ loop exits
     notifyVersionChange();
+//    albert::showSettings();
 
     int return_value = qApp->exec();
     if (return_value == -1) {

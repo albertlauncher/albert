@@ -333,7 +333,7 @@ void PluginProvider::loadFrontend()
     auto cfg_frontend = QSettings().value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString();
     if (auto it = std::find_if(frontends_.begin(), frontends_.end(),
                                [&](const PluginSpec & spec){ return cfg_frontend == spec.id; });
-            it != frontends_.end())
+            it == frontends_.end())
         WARN << "Configured frontend does not exist: " << cfg_frontend;
     else if (frontend = load_frontend(cfg_frontend); frontend)
         return;
