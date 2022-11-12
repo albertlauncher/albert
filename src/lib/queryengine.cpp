@@ -28,10 +28,12 @@ std::unique_ptr<albert::Query> QueryEngine::query(const QString &query_string)
 
     for (const auto &[trigger, handler] : trigger_map)
         if (query_string.startsWith(trigger))
-            query = make_unique<::Query>(*handler, query_string.mid(trigger.size()), trigger);
+            query = make_unique<::Query>(ExtensionWatcher<FallbackProvider>::extensions(), *handler,
+                                         query_string.mid(trigger.size()), trigger);
 
     if (!query)
-        query = make_unique<::Query>(global_search_handler, query_string);
+        query = make_unique<::Query>(ExtensionWatcher<FallbackProvider>::extensions(),
+                                     global_search_handler, query_string);
 
     // Keep track of queries. Clear items in case of extension unloading
     alive_queries.emplace(query.get());

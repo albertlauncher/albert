@@ -8,6 +8,7 @@
 #include "albert/extension.h"
 #include "albert/extensionregistry.h"
 #include "albert/extensionwatcher.h"
+#include "albert/fallbackprovider.h"
 #include "albert/frontend.h"
 #include "albert/globalqueryhandler.h"
 #include "albert/history.h"

@@ -1,16 +1,17 @@
 // Copyright (c) 2022 Manuel Schneider
 
+#include "albert/fallbackprovider.h"
 #include "albert/item.h"
 #include "albert/logging.h"
-#include "usagehistory.h"
 #include "query.h"
 #include "timeprinter.hpp"
+#include "usagehistory.h"
 #include <QtConcurrent>
 #include <vector>
 using namespace std;
 
-Query::Query(albert::QueryHandler &query_handler, const QString &query_string, const QString &trigger_string)
-    : query_handler(query_handler)
+Query::Query(std::set<albert::FallbackProvider*> fallback_handlers, albert::QueryHandler &query_handler, const QString &query_string, const QString &trigger_string)
+    : query_handler(query_handler), fallback_handlers_(fallback_handlers)
 {
     synopsis_ = query_handler.synopsis();
     trigger_ = trigger_string;
@@ -49,6 +50,11 @@ void Query::run()
     future_watcher.setFuture(QtConcurrent::run([this](){
         TimePrinter tp(QString("TIME: %1 µs ['%2']").arg("%1", this->string()));
         try {
+            auto raw_string = QString("%1%2").arg(trigger_, string_);
+            for (auto fallback_handler : fallback_handlers_){
+                auto fallbacks = fallback_handler->fallbacks(raw_string);
+                fallbacks_.insert(fallbacks_.cend(), fallbacks.cbegin(), fallbacks.cend());
+            }
             this->query_handler.handleQuery(*this);
         } catch (const std::exception &e){
             WARN << "Handler thread threw" << e.what();
@@ -59,8 +65,9 @@ void Query::run()
 void Query::clear()
 {
     cancel();
-    future_watcher.waitForFinished();  // rather busy wait here to avoid mutex against handlers
+    future_watcher.waitForFinished();  // rather busy wait here to avoid mutexing against handlers
     results_.clear();
+    fallbacks_.clear();
     emit resultsChanged();
 }
 
@@ -82,6 +89,11 @@ const QString &Query::string() const
 const std::vector<std::shared_ptr<albert::Item>> &Query::results() const
 {
     return results_;
+}
+
+const std::vector<std::shared_ptr<albert::Item>> &Query::fallbacks() const
+{
+    return fallbacks_;
 }
 
 void Query::activateResult(uint i, uint a)

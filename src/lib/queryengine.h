@@ -2,6 +2,7 @@
 
 #pragma once
 #include "albert/extensionwatcher.h"
+#include "albert/fallbackprovider.h"
 #include "albert/indexqueryhandler.h"
 #include "albert/queryhandler.h"
 #include "globalsearch.h"
@@ -10,10 +11,10 @@
 #include <memory>
 #include <set>
 
-class QueryEngine:
-        public albert::ExtensionWatcher<albert::QueryHandler>,
-        public albert::ExtensionWatcher<albert::IndexQueryHandler>
-        
+class QueryEngine : public albert::ExtensionWatcher<albert::QueryHandler>,
+                    public albert::ExtensionWatcher<albert::FallbackProvider>,
+                    public albert::ExtensionWatcher<albert::IndexQueryHandler>
+
 {
 public:
     explicit QueryEngine(albert::ExtensionRegistry&);

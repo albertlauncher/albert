@@ -23,6 +23,7 @@ struct ALBERT_EXPORT Query : public QObject
     virtual void run() = 0;  /// Asynchronous query processing done.
     virtual void cancel() = 0;  /// Call this if you dont need the query anymore
     virtual const std::vector<std::shared_ptr<Item>> &results() const = 0;
+    virtual const std::vector<std::shared_ptr<Item>> &fallbacks() const = 0;
     virtual void activateResult(uint item, uint action) = 0;
 Q_OBJECT signals:
     void resultsChanged();

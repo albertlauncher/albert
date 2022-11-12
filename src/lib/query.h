@@ -6,9 +6,10 @@
 #include <QFutureWatcher>
 #include <QString>
 #include <QTimer>
+#include <set>
 #include <vector>
 namespace albert {
-class QueryHandler;
+class FallbackProvider;
 class Item;
 }
 
@@ -17,7 +18,8 @@ class Query final:
         public albert::QueryHandler::Query
 {
 public:
-    Query(albert::QueryHandler &query_handler, const QString &query_string, const QString &trigger_string = QString());
+    Query(std::set<albert::FallbackProvider*> fallback_handlers, albert::QueryHandler &query_handler,
+          const QString &query_string, const QString &trigger_string = QString());
     ~Query() final;
 
     void clear();
@@ -28,6 +30,7 @@ public:
     const QString &trigger() const override;
     const QString &string() const override;
     const std::vector<std::shared_ptr<albert::Item>> &results() const override;
+    const std::vector<std::shared_ptr<albert::Item>> &fallbacks() const override;
     bool isValid() const override;
     bool isFinished() const override;
 
@@ -43,9 +46,11 @@ private:
     QString trigger_;
     QString string_;
     std::vector<std::shared_ptr<albert::Item>> results_;
+    std::vector<std::shared_ptr<albert::Item>> fallbacks_;
     bool valid_ = true;
     QTimer timer_;
     QFutureWatcher<void> future_watcher;
     const albert::QueryHandler &query_handler;
+    std::set<albert::FallbackProvider *> fallback_handlers_;
 };
 
