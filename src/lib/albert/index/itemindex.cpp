@@ -11,7 +11,6 @@
 using namespace std;
 using namespace albert;
 
-static constexpr uint MAX_SCORE = std::numeric_limits<Score>::max();
 
 static QStringList splitString(const QString &string, const QString &separators, bool case_sensitive = false)
 {

@@ -59,7 +59,7 @@ struct ALBERT_EXPORT IndexItem {
 };
 
 using Score = uint16_t;
-const Score MAX_Score = std::numeric_limits<Score>::max();
+constexpr Score MAX_SCORE = std::numeric_limits<Score>::max();
 
 struct ALBERT_EXPORT RankItem {
     RankItem(std::shared_ptr<Item> item, Score score);
