@@ -1,10 +1,9 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
-#include "albert/extensionwatcher.h"
-#include "albert/fallbackprovider.h"
-#include "albert/indexqueryhandler.h"
-#include "albert/queryhandler.h"
+#include "albert/extensions/indexqueryhandler.h"
+#include "albert/extensions/queryhandler.h"
+#include "albert/util/extensionwatcher.h"
 #include "globalsearch.h"
 #include "query.h"
 #include <map>
@@ -12,7 +11,6 @@
 #include <set>
 
 class QueryEngine : public albert::ExtensionWatcher<albert::QueryHandler>,
-                    public albert::ExtensionWatcher<albert::FallbackProvider>,
                     public albert::ExtensionWatcher<albert::IndexQueryHandler>
 
 {
@@ -28,6 +26,5 @@ private:
     void onAdd(albert::IndexQueryHandler*) override;
 
     std::map<QString,albert::QueryHandler*> trigger_map;
-    std::set<Query*> alive_queries;
     GlobalSearch global_search_handler;
 };

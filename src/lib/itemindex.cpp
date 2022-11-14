@@ -1,6 +1,6 @@
 // Copyright (c) 2021-2022 Manuel Schneider
 
-#include "albert/item.h"
+#include "albert/extensions/indexqueryhandler.h"
 #include "itemindex.h"
 #include "levenshtein.h"
 #include <QRegularExpression>

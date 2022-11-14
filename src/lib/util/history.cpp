@@ -1,20 +1,18 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "albert/history.h"
+#include "albert/util/history.h"
 #include "usagehistory.h"
-#include <QStringList>
-#include <QVariant>
+using namespace albert;
 
-albert::History::History(QObject *parent) : QObject(parent)
+History::History(QObject *parent) : QObject(parent)
 {
     lines_ = UsageHistory::inputHistory();
-    for (auto l : lines_)
-        qDebug() << l;
+    for (const auto& l : lines_)
     resetIterator();
 }
 
 /// Temporarily add a line to the history. @note Will vanish on next reset
-void albert::History::add(const QString& str)
+void History::add(const QString& str)
 {
     if (!str.isEmpty()){
         if (lines_.contains(str))
@@ -24,7 +22,7 @@ void albert::History::add(const QString& str)
     resetIterator();
 }
 
-QString albert::History::next(const QString &substring)
+QString History::next(const QString &substring)
 {
     for (int l = currentLine_ + 1; l < (int)lines_.size(); ++l)
         if (lines_[l].contains(substring, Qt::CaseInsensitive))
@@ -32,7 +30,7 @@ QString albert::History::next(const QString &substring)
     return QString{};
 }
 
-QString albert::History::prev(const QString &substring)
+QString History::prev(const QString &substring)
 {
     for (int l = currentLine_ - 1; 0 <= l; --l)
         if (lines_[l].contains(substring, Qt::CaseInsensitive))
@@ -40,7 +38,7 @@ QString albert::History::prev(const QString &substring)
     return QString{};
 }
 
-void albert::History::resetIterator()
+void History::resetIterator()
 {
     currentLine_ = -1;
 }

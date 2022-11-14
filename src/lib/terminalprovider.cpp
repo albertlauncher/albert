@@ -27,7 +27,7 @@ static QString userShell()
         CRIT << "Could not retrieve user shell. Terminal dysfunctional.";
         return {};
     }
-    return QString(pwd->pw_shell);
+    return {pwd->pw_shell};
 }
 
 
@@ -190,7 +190,8 @@ TerminalProvider::TerminalProvider() : terminal_(nullptr)
 
     if (!terminal_){
         terminal_ = terminals_[0].get();
-        WARN << "Configured terminal not available. Using:" << terminal_->name();
+        INFO << "Configured terminal not available. Using:" << terminal_->name();
+        setTerminal(0);
     }
 }
 
@@ -207,4 +208,5 @@ const std::vector<std::unique_ptr<Terminal>> &TerminalProvider::terminals() cons
 void TerminalProvider::setTerminal(uint i)
 {
     terminal_ = terminals_[i].get();
+    QSettings().setValue(CFG_TERM, terminal_->name());
 }

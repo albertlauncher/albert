@@ -3,7 +3,7 @@
 #include "albert/albert.h"
 #include "albert/config.h"
 #include "albert/extensionregistry.h"
-#include "albert/frontend.h"
+#include "albert/extensions/frontend.h"
 #include "albert/logging.h"
 #include "albert/plugin.h"
 #include "pluginprovider.h"

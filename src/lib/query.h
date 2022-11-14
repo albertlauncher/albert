@@ -1,15 +1,15 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
-#include "albert/frontend.h"
-#include "albert/queryhandler.h"
+#include "albert/extensions/frontend.h"
+#include "albert/extensions/queryhandler.h"
+#include "itemsmodel.h"
 #include <QFutureWatcher>
 #include <QString>
 #include <QTimer>
 #include <set>
 #include <vector>
 namespace albert {
-class FallbackProvider;
 class Item;
 }
 
@@ -18,39 +18,43 @@ class Query final:
         public albert::QueryHandler::Query
 {
 public:
-    Query(std::set<albert::FallbackProvider*> fallback_handlers, albert::QueryHandler &query_handler,
-          const QString &query_string, const QString &trigger_string = QString());
+    Query(std::set<albert::QueryHandler*> fallback_handlers,
+          albert::QueryHandler &query_handler,
+          QString query_string,
+          QString trigger_string = QString());
     ~Query() final;
 
-    void clear();
-    void cancel() override;
-    void run() override;
-
-    const QString &synopsis() const override;
+    // Frontend, Queryhandler
     const QString &trigger() const override;
     const QString &string() const override;
-    const std::vector<std::shared_ptr<albert::Item>> &results() const override;
-    const std::vector<std::shared_ptr<albert::Item>> &fallbacks() const override;
-    bool isValid() const override;
-    bool isFinished() const override;
 
+    // Frontend
+    void cancel() override;
+    void run() override;
+    const QString &synopsis() const override;
+    QAbstractListModel &matches() override;
+    QAbstractListModel &fallbacks() override;
+    QAbstractListModel *matchActions(uint item) const override;
+    QAbstractListModel *fallbackActions(uint item) const override;
+    void activateMatch(uint item, uint action) override;
+    void activateFallback(uint item, uint action) override;
+
+    // Queryhandler
+    bool isValid() const override;
     void add(const std::shared_ptr<albert::Item> &item) override;
     void add(std::shared_ptr<albert::Item> &&item) override;
+    void add(const std::vector<std::shared_ptr<albert::Item>> &items) override;
     void add(std::vector<std::shared_ptr<albert::Item>> &&items) override;
-
-    void activateResult(uint item, uint action) override;
-
 
 private:
     QString synopsis_;
     QString trigger_;
     QString string_;
-    std::vector<std::shared_ptr<albert::Item>> results_;
-    std::vector<std::shared_ptr<albert::Item>> fallbacks_;
+    ItemsModel matches_;
+    ItemsModel fallbacks_;
     bool valid_ = true;
-    QTimer timer_;
-    QFutureWatcher<void> future_watcher;
-    const albert::QueryHandler &query_handler;
-    std::set<albert::FallbackProvider *> fallback_handlers_;
+    QFutureWatcher<void> future_watcher_;
+    std::set<albert::QueryHandler*> fallback_handlers_{};
+    const albert::QueryHandler &query_handler_;
 };
 

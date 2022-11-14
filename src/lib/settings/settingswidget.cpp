@@ -1,6 +1,6 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "albert/configwidgetprovider.h"
+#include "albert/extensions/configwidgetprovider.h"
 #include "settingswidget.h"
 #include <QHBoxLayout>
 #include <utility>

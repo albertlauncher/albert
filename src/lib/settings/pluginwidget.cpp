@@ -1,6 +1,6 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "albert/pluginprovider.h"
+#include "albert/extensions/pluginprovider.h"
 #include "pluginwidget.h"
 #include "albert/albert.h"
 #include <QFormLayout>

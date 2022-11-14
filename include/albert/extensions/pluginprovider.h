@@ -1,14 +1,15 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
-#include "export.h"
-#include "extension.h"
-#include <QIcon>
+#include "../extension.h"
 #include <QString>
 #include <map>
+class QIcon;
 
 namespace albert
 {
+class PluginProvider;
+
 
 enum class PluginState {  /// The state of the plugin
     Error,
@@ -17,12 +18,12 @@ enum class PluginState {  /// The state of the plugin
     Loaded,
 };
 
+
 enum class PluginType {  /// The state of the plugin
     None,
     User,
     Frontend
 };
-class PluginProvider;
 
 struct PluginSpec {                    /// The specification of the plugin
     QString path;                      /// File path
@@ -45,19 +46,19 @@ struct PluginSpec {                    /// The specification of the plugin
     PluginProvider *provider;          /// Provider of this plugin
 };
 
+
 /// Interface for plugin providing extensions
 /// @note This is a QObject: Must be the first class inherited, no multiple inheritance
 class ALBERT_EXPORT PluginProvider : public QObject, virtual public Extension
 {
-    Q_OBJECT
-
 public:
-    [[nodiscard]] virtual QIcon icon() const { return QIcon(":unknown"); };  /// Identifying icon
-    [[nodiscard]] virtual const std::map<QString,PluginSpec> &plugins() const = 0;  /// The plugins provided
-    [[nodiscard]] virtual bool isEnabled(const QString &id) const = 0;  /// Autoload on start
+    virtual QIcon icon() const = 0;  /// Identifying icon
+    virtual const std::map<QString,PluginSpec> &plugins() const = 0;  /// The plugins provided
+    virtual bool isEnabled(const QString &id) const = 0;  /// Autoload on start
     virtual void setEnabled(const QString &id, bool enabled) = 0;  /// En-/Disable autoload on start
 
-signals:
+Q_OBJECT signals:
     void pluginStateChanged(PluginSpec&);
 };
+
 }

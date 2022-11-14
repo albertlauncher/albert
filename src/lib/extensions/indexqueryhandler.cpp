@@ -1,11 +1,20 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "albert/indexqueryhandler.h"
-#include "albert/index/index.h"
+#include "albert/extensions/indexqueryhandler.h"
+#include "index.h"
 using namespace std;
 using namespace albert;
 
+
+IndexItem::IndexItem(std::shared_ptr<Item> item, QString string):
+    item(::move(item)), string(::move(string))
+{
+
+}
+
+
 IndexQueryHandler::IndexQueryHandler() = default;
+
 IndexQueryHandler::~IndexQueryHandler() = default;
 
 QString IndexQueryHandler::synopsis() const

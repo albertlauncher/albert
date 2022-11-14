@@ -4,7 +4,7 @@
 #include "albert/config.h"
 #include "albert/export.h"
 #include "albert/extensionregistry.h"
-#include "albert/frontend.h"
+#include "albert/extensions/frontend.h"
 #include "albert/logging.h"
 #include "pluginprovider.h"
 #include "usagehistory.h"

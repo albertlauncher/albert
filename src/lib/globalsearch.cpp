@@ -1,6 +1,6 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "albert/item.h"
+#include "albert/extensions/queryhandler.h"
 #include "globalsearch.h"
 #include "timeprinter.hpp"
 #include <QtConcurrent>

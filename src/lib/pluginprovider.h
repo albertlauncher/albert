@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
-#include "albert/pluginprovider.h"
+#include "albert/extensions/pluginprovider.h"
 #include <QIcon>
 #include <QString>
 #include <map>

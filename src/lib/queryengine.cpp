@@ -1,8 +1,8 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "albert/index/itemindex.h"
+#include "itemindex.h"
 #include "albert/logging.h"
-#include "albert/queryhandler.h"
+#include "albert/extensions/queryhandler.h"
 #include "queryengine.h"
 using namespace albert;
 using namespace std;
@@ -28,16 +28,12 @@ std::unique_ptr<albert::Query> QueryEngine::query(const QString &query_string)
 
     for (const auto &[trigger, handler] : trigger_map)
         if (query_string.startsWith(trigger))
-            query = make_unique<::Query>(ExtensionWatcher<FallbackProvider>::extensions(), *handler,
+            query = make_unique<::Query>(ExtensionWatcher<QueryHandler>::extensions(), *handler,
                                          query_string.mid(trigger.size()), trigger);
 
     if (!query)
-        query = make_unique<::Query>(ExtensionWatcher<FallbackProvider>::extensions(),
+        query = make_unique<::Query>(ExtensionWatcher<QueryHandler>::extensions(),
                                      global_search_handler, query_string);
-
-    // Keep track of queries. Clear items in case of extension unloading
-    alive_queries.emplace(query.get());
-    QObject::connect(query.get(), &QObject::destroyed, [this, q = query.get()](){ alive_queries.erase(q); });
 
     return query;
 }
@@ -70,10 +66,6 @@ void QueryEngine::onAdd(QueryHandler *handler)
 void QueryEngine::onRem(QueryHandler *handler)
 {
     updateTriggers();
-
-    // Avoid unloading a shared library while having its objects around
-    for (::Query *q :alive_queries)
-        q->clear();
 }
 
 void QueryEngine::onAdd(albert::IndexQueryHandler *handler)

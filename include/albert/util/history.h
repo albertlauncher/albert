@@ -1,9 +1,9 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
+#include "../export.h"
 #include <QObject>
 #include <QStringList>
-#include "export.h"
 
 namespace albert
 {

@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #include "albert/extensionregistry.h"
-#include "albert/frontend.h"
+#include "albert/extensions/frontend.h"
 #include "pluginprovider.h"
 #include "pluginwidget.h"
 #include "settingswidget.h"

@@ -1,11 +1,11 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
-#include "export.h"
-#include "extension.h"
-#include <QWidget>
+#include "../extension.h"
+class QWidget;
 
-namespace albert {
+namespace albert
+{
 
 /// Base class for all configurable plugins
 class ALBERT_EXPORT ConfigWidgetProvider : virtual public Extension

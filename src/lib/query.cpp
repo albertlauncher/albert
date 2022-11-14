@@ -1,74 +1,54 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "albert/fallbackprovider.h"
-#include "albert/item.h"
 #include "albert/logging.h"
 #include "query.h"
 #include "timeprinter.hpp"
 #include "usagehistory.h"
 #include <QtConcurrent>
+#include <utility>
 #include <vector>
 using namespace std;
+using albert::Item;
 
-Query::Query(std::set<albert::FallbackProvider*> fallback_handlers, albert::QueryHandler &query_handler, const QString &query_string, const QString &trigger_string)
-    : query_handler(query_handler), fallback_handlers_(fallback_handlers)
+Query::Query(set<albert::QueryHandler*> fallback_handlers,
+             albert::QueryHandler &query_handler,
+             QString query_string,
+             QString trigger_string):
+        fallback_handlers_(::move(fallback_handlers)),
+        query_handler_(query_handler),
+        synopsis_(query_handler.synopsis()),
+        trigger_(::move(trigger_string)),
+        string_(::move(query_string))
 {
-    synopsis_ = query_handler.synopsis();
-    trigger_ = trigger_string;
-    string_ = query_string;
-
-    // Check regularly for new items and emit in _this_ thread
-    connect(&timer_, &QTimer::timeout, [this, c=0]() mutable {
-        if ((int)results_.size() != c){
-            c = (int)results_.size();
-            emit resultsChanged();
-        }
-    });
-    timer_.start(25);
+    connect(&future_watcher_, &decltype(future_watcher_)::finished, this, &Query::finished);
 }
 
 Query::~Query()
 {
     // Avoid segfaults when handler write on a deleted query
-    if (!future_watcher.isFinished()) {
-        WARN << QString("Busy wait on query. Does '%1' handle cancellation well?").arg(query_handler.id());
-        future_watcher.waitForFinished();
+    if (!future_watcher_.isFinished()) {
+        WARN << QString("Busy wait on query. Does '%1' handle cancellation well?").arg(query_handler_.id());
+        future_watcher_.waitForFinished();
     }
-}
-
-void Query::cancel()
-{
-    timer_.stop();
-    timer_.disconnect();
-    valid_ = false;
 }
 
 void Query::run()
 {
-    // Run query in background
-    connect(&future_watcher, &decltype(future_watcher)::finished, this, &Query::finished);
-    future_watcher.setFuture(QtConcurrent::run([this](){
+    future_watcher_.setFuture(QtConcurrent::run([this](){
         TimePrinter tp(QString("TIME: %1 µs ['%2']").arg("%1", this->string()));
         try {
-            auto raw_string = QString("%1%2").arg(trigger_, string_);
-            for (auto fallback_handler : fallback_handlers_){
-                auto fallbacks = fallback_handler->fallbacks(raw_string);
-                fallbacks_.insert(fallbacks_.cend(), fallbacks.cbegin(), fallbacks.cend());
-            }
-            this->query_handler.handleQuery(*this);
-        } catch (const std::exception &e){
+            for (auto fallback_handler : fallback_handlers_)
+                fallbacks_.add(fallback_handler->fallbacks(QString("%1%2").arg(trigger_, string_)));
+            this->query_handler_.handleQuery(*this);
+        } catch (const exception &e){
             WARN << "Handler thread threw" << e.what();
         }
     }));
 }
 
-void Query::clear()
+void Query::cancel()
 {
-    cancel();
-    future_watcher.waitForFinished();  // rather busy wait here to avoid mutexing against handlers
-    results_.clear();
-    fallbacks_.clear();
-    emit resultsChanged();
+    valid_ = false;
 }
 
 const QString &Query::synopsis() const
@@ -86,50 +66,72 @@ const QString &Query::string() const
     return string_;
 }
 
-const std::vector<std::shared_ptr<albert::Item>> &Query::results() const
-{
-    return results_;
-}
-
-const std::vector<std::shared_ptr<albert::Item>> &Query::fallbacks() const
-{
-    return fallbacks_;
-}
-
-void Query::activateResult(uint i, uint a)
-{
-    auto *item = results_[i].get();
-    auto action = item->actions()[a];
-    action.function();
-    UsageHistory::addActivation(string_, item->id(), action.id);
-}
-
 bool Query::isValid() const
 {
     return valid_;
 }
 
-bool Query::isFinished() const
+void Query::add(const shared_ptr<Item> &item)
 {
-    return future_watcher.isFinished();
+    matches_.add(item);
 }
 
-void Query::add(const std::shared_ptr<albert::Item> &item)
+void Query::add(shared_ptr<Item> &&item)
 {
-    results_.push_back(item);
+    matches_.add(::move(item));
 }
 
-void Query::add(std::shared_ptr<albert::Item> &&item)
+void Query::add(const vector<shared_ptr<Item>> &items)
 {
-    results_.push_back(::move(item));
+    matches_.add(items);
 }
 
-void Query::add(std::vector<std::shared_ptr<albert::Item>> &&items)
+void Query::add(vector<shared_ptr<Item>> &&items)
 {
-    if (!results_.empty())
-        results_ = ::move(items);
-    else
-        results_.insert(end(results_),
-                        make_move_iterator(begin(items)),
-                        make_move_iterator(end(items)));
+    matches_.add(::move(items));
 }
+
+QAbstractListModel &Query::matches()
+{
+    return matches_;
+}
+
+QAbstractListModel &Query::fallbacks()
+{
+    return fallbacks_;
+}
+
+static QAbstractListModel *buildActionsModel(Item &item)
+{
+    QStringList l;
+    for (const auto &a : item.actions())
+        l << a.text;
+    return new QStringListModel(l);
+}
+
+QAbstractListModel *Query::matchActions(uint item) const
+{
+    return buildActionsModel(*matches_.items[item].get());
+}
+
+QAbstractListModel *Query::fallbackActions(uint item) const
+{
+    return buildActionsModel(*fallbacks_.items[item].get());
+}
+
+void Query::activateMatch(uint i, uint a)
+{
+    auto *item = matches_.items[i].get();
+    auto action = item->actions()[a];
+    action.function();
+    UsageHistory::addActivation(string_, item->id(), action.id);
+}
+
+void Query::activateFallback(uint i, uint a)
+{
+    auto *item = fallbacks_.items[i].get();
+    auto action = item->actions()[a];
+    action.function();
+    UsageHistory::addActivation(string_, item->id(), action.id);
+}
+

@@ -1,8 +1,17 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "albert/globalqueryhandler.h"
+#include "albert/extensions/globalqueryhandler.h"
 #include <algorithm>
+#include <utility>
 using namespace std;
+using namespace albert;
+
+RankItem::RankItem(shared_ptr<Item> item, Score score):
+    item(std::move(item)), score(score)
+{
+
+}
+
 
 void albert::GlobalQueryHandler::handleQuery(Query &query) const
 {

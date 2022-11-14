@@ -4,7 +4,8 @@
 #include <QLoggingCategory>
 
 #if defined(PROJECT_NAME)
-#define ALBERT_QLC_ID PROJECT_NAME
+#define STRINGIFY(x) #x
+#define ALBERT_QLC_ID STRINGIFY(PROJECT_NAME)
 #else
 #define ALBERT_QLC_ID "albert"
 #endif
