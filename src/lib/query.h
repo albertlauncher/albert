@@ -56,5 +56,8 @@ private:
     QFutureWatcher<void> future_watcher_;
     std::set<albert::QueryHandler*> fallback_handlers_{};
     const albert::QueryHandler &query_handler_;
+
+    uint query_id;
+    static uint query_count;
 };
 

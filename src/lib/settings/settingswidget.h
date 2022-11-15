@@ -2,9 +2,9 @@
 
 #pragma once
 #include "albert/util/extensionwatcher.h"
-#include <QAbstractTableModel>
-#include <QListWidget>
+#include <QTreeView>
 #include <QStackedWidget>
+#include <QStandardItemModel>
 #include <vector>
 namespace albert {
 class ExtensionRegistry;
@@ -21,17 +21,19 @@ public:
     explicit SettingsWidget(albert::ExtensionRegistry&registry);
 
 private:
-    void resetUI();
-
-protected:
     void onAdd(albert::ConfigWidgetProvider *t) override;
     void onRem(albert::ConfigWidgetProvider *t) override;
+    void resetTreeModel();
 
 private:
 
     albert::ExtensionRegistry &registry;
-    QListWidget list_widget;
+    std::map<QString,albert::ConfigWidgetProvider*> config_providers;
+    QTreeView tree_view;
+    QStandardItemModel tree_model;
     QStackedWidget stacked_widget;
+
+
 
 };
 

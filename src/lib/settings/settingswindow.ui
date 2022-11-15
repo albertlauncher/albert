@@ -20,99 +20,15 @@
    <string>Settings</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
-    <number>0</number>
-   </property>
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabs">
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
-     <widget class="QWidget" name="tabGeneral">
+     <widget class="QWidget" name="tabAbout">
       <attribute name="title">
-       <string>General</string>
+       <string>About</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout" stretch="0">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QGroupBox" name="groupBox_general">
-           <property name="title">
-            <string>General</string>
-           </property>
-           <layout class="QFormLayout" name="formLayout_2">
-            <property name="formAlignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-            <item row="0" column="0">
-             <widget class="QLabel" name="frontendLabel">
-              <property name="text">
-               <string>Frontend:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QComboBox" name="comboBox_frontend">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the frontend to use.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_term">
-              <property name="text">
-               <string>Terminal:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QComboBox" name="comboBox_term">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the terminal to use.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_show_tray">
-              <property name="text">
-               <string>Show tray icon:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QCheckBox" name="checkBox_showTray">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If this option is enabled, albert displays an icon in the system tray.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
          <item>
           <widget class="QGroupBox" name="groupBox_about">
            <property name="title">

@@ -10,6 +10,8 @@
 using namespace std;
 using albert::Item;
 
+uint Query::query_count = 0;
+
 Query::Query(set<albert::QueryHandler*> fallback_handlers,
              albert::QueryHandler &query_handler,
              QString query_string,
@@ -18,7 +20,8 @@ Query::Query(set<albert::QueryHandler*> fallback_handlers,
         query_handler_(query_handler),
         synopsis_(query_handler.synopsis()),
         trigger_(::move(trigger_string)),
-        string_(::move(query_string))
+        string_(::move(query_string)),
+        query_id(query_count++)
 {
     connect(&future_watcher_, &decltype(future_watcher_)::finished, this, &Query::finished);
 }
@@ -30,6 +33,7 @@ Query::~Query()
         WARN << QString("Busy wait on query. Does '%1' handle cancellation well?").arg(query_handler_.id());
         future_watcher_.waitForFinished();
     }
+    DEBG << QString("Query deleted. [#%1 '%2' '%3']").arg(query_id).arg(trigger_, string_);
 }
 
 void Query::run()
@@ -119,19 +123,30 @@ QAbstractListModel *Query::fallbackActions(uint item) const
     return buildActionsModel(*fallbacks_.items[item].get());
 }
 
+static void activate(ItemsModel &items, const QString &query, uint i, uint a)
+{
+    if (i<items.items.size()){
+        auto *item = items.items[i].get();
+        auto actions = item->actions();
+        if (a<actions.size()){
+            auto action = actions[a];
+            action.function();
+            UsageHistory::addActivation(query, item->id(), action.id);
+        }
+        else
+            WARN << "Activated action index is invalid.";
+    }
+    else
+        WARN << "Activated item index is invalid.";
+}
+
 void Query::activateMatch(uint i, uint a)
 {
-    auto *item = matches_.items[i].get();
-    auto action = item->actions()[a];
-    action.function();
-    UsageHistory::addActivation(string_, item->id(), action.id);
+    activate(matches_, string_, i, a);
 }
 
 void Query::activateFallback(uint i, uint a)
 {
-    auto *item = fallbacks_.items[i].get();
-    auto action = item->actions()[a];
-    action.function();
-    UsageHistory::addActivation(string_, item->id(), action.id);
+    activate(fallbacks_, string_, i, a);
 }
 

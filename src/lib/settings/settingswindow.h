@@ -12,26 +12,13 @@ class SettingsWindow final : public QWidget
     Q_OBJECT
 
 public:
-    explicit SettingsWindow(albert::ExtensionRegistry&,
-                            PluginProvider&,
-                            TerminalProvider&);
+    explicit SettingsWindow(albert::ExtensionRegistry&);
 
     void bringToFront();
 
     Ui::SettingsWindow ui;
 
 private:
-    void init_tab_general_about();
-    void init_tab_general_frontend(PluginProvider&);
-    void init_tab_general_terminal(TerminalProvider&);
-    void init_tab_settings(albert::ExtensionRegistry&);
-    void init_tab_plugins(albert::ExtensionRegistry&);
-
     void keyPressEvent(QKeyEvent * event) override;
 
-//    void init_tab_general_trayIcon();
-//    void closeEvent(QCloseEvent * event) override;
-//    void init_tab_general_hotkey();
-//  void init_autostart();
-//    void changeHotkey(int);
 };

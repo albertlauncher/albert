@@ -3,13 +3,12 @@
 #include "albert/extensions/frontend.h"
 #include "albert/extensions/queryhandler.h"
 #include "albert/logging.h"
-#include "iconprovider.h"
 #include "itemsmodel.h"
 #include "queryengine.h"
 using namespace std;
 using namespace albert;
-static IconProvider icon_provider;
 
+IconProvider ItemsModel::icon_provider;
 
 int ItemsModel::rowCount(const QModelIndex &parent) const
 {

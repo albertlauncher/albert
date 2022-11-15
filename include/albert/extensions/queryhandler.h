@@ -46,7 +46,7 @@ class ALBERT_EXPORT QueryHandler : virtual public Extension
 public:
     class Query;
     virtual void handleQuery(Query &query) const = 0;  /// Called on triggered query.
-    virtual std::vector<std::shared_ptr<Item>> fallbacks(const QString &) const;  // Fallbacks provided by this handler
+    virtual std::vector<std::shared_ptr<Item>> fallbacks(const QString &) const;  /// Fallbacks provided by this handler
     virtual QString synopsis() const;  /// The synopsis, displayed on empty query. Default empty.
     virtual QString default_trigger() const;  /// The default (not user defined) trigger. Default Extension::id().
     virtual bool allow_trigger_remap() const;  /// Enable user remapping of the trigger. Default false.

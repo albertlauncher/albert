@@ -1,9 +1,10 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
+#include "iconprovider.h"
 #include <QAbstractListModel>
-#include <vector>
 #include <memory>
+#include <vector>
 namespace albert{ class Item; }
 
 class ItemsModel : public QAbstractListModel
@@ -20,4 +21,7 @@ public:
     void add(std::vector<std::shared_ptr<albert::Item>> &&items);
 
     std::vector<std::shared_ptr<albert::Item>> items;
+
+private:
+    static IconProvider icon_provider;
 };

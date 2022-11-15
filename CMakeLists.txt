@@ -32,42 +32,42 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(TARGET_LIB ${PROJECT_NAME})
 
-file(GLOB_RECURSE LIB_SRC include/* src/lib/*)
+file(GLOB_RECURSE LIB_SRC include/*)
 
 add_library(${TARGET_LIB} SHARED ${LIB_SRC}
-
-#        src/lib/albert.cpp
-#        src/lib/extensionregistry.cpp
-#        src/lib/extensions/extension.cpp
-#        src/lib/extensions/frontend/actionsmodel.cpp
-#        src/lib/extensions/frontend/frontend.cpp
-#        src/lib/extensions/frontend/history.cpp
-#        src/lib/extensions/frontend/iconprovider.cpp
-#        src/lib/extensions/frontend/itemsmodel.cpp
-#        src/lib/extensions/globalqueryhandler.cpp
-#        src/lib/extensions/pluginprovider.cpp
-#        src/lib/extensions/queryhandler.cpp
-#        src/lib/globalsearch.cpp
-#        src/lib/index/itemindex.cpp
-#        src/lib/index/levenshtein.cpp
-#        src/lib/indexqueryhandler.cpp
-#        src/lib/plugin.cpp
-#        src/lib/query.cpp
-#        src/lib/queryengine.cpp
-#        src/lib/resources.qrc
-#        src/lib/rpcserver.cpp
-#        src/lib/scopedcrashindicator.hpp
-#        src/lib/settings/pluginwidget.cpp
-#        src/lib/settings/settingswidget.cpp
-#        src/lib/settings/settingswindow.cpp
-#        src/lib/terminalprovider.cpp
-#        src/lib/timeprinter.hpp
-#        src/lib/usagehistory.cpp
-#        src/lib/util/standarditem.cpp
-#        src/lib/util/standarditem.cpp
-#        src/lib/xdg/iconlookup.cpp
-#        src/lib/xdg/themefileparser.cpp
-
+        src/lib/albert.cpp
+        src/lib/extension.cpp
+        src/lib/extensionregistry.cpp
+        src/lib/extensions/configwidgetprovider.cpp
+        src/lib/extensions/frontend.cpp
+        src/lib/extensions/globalqueryhandler.cpp
+        src/lib/extensions/indexqueryhandler.cpp
+        src/lib/extensions/queryhandler.cpp
+        src/lib/globalsearch.cpp
+        src/lib/iconprovider.cpp
+        src/lib/itemindex.cpp
+        src/lib/itemsmodel.cpp
+        src/lib/levenshtein.cpp
+        src/lib/macos.mm
+        src/lib/plugin.cpp
+        src/lib/pluginprovider.cpp
+        src/lib/query.cpp
+        src/lib/queryengine.cpp
+        src/lib/resources.qrc
+        src/lib/rpcserver.cpp
+        src/lib/scopedcrashindicator.hpp
+        src/lib/settings/pluginwidget.cpp
+        src/lib/settings/settingswidget.cpp
+        src/lib/settings/settingswindow.cpp
+        src/lib/settings/settingswindow.ui
+        src/lib/settings/config_widget_general.ui
+        src/lib/terminalprovider.cpp
+        src/lib/timeprinter.hpp
+        src/lib/usagehistory.cpp
+        src/lib/util/history.cpp
+        src/lib/util/standarditem.cpp
+        src/lib/xdg/iconlookup.cpp
+        src/lib/xdg/themefileparser.cpp
 )
 
 add_library(albert::albert ALIAS ${TARGET_LIB})
