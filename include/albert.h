@@ -17,3 +17,4 @@
 #include "albert/util/extensionwatcher.h"
 #include "albert/util/history.h"
 #include "albert/util/standarditem.h"
+#include "albert/util/util.h"

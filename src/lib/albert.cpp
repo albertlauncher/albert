@@ -6,6 +6,7 @@
 #include "albert/extensionregistry.h"
 #include "albert/extensions/frontend.h"
 #include "albert/util/standarditem.h"
+#include "albert/util/util.h"
 #include "settings/ui_config_widget_general.h"
 #include "albert/extensions/configwidgetprovider.h"
 #include "albert/logging.h"
@@ -18,18 +19,13 @@
 #include "terminalprovider.h"
 #include "xdg/iconlookup.h"
 #include <QApplication>
-#include <QClipboard>
 #include <QCommandLineParser>
-#include <QDesktopServices>
 #include <QDir>
-#include <QGuiApplication>
 #include <QIcon>
 #include <QMessageBox>
-#include <QProcess>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QTime>
-#include <QUrl>
 #include <csignal>
 #include <memory>
 #ifdef Q_OS_MAC
@@ -40,8 +36,6 @@ using namespace std;
 using namespace albert;
 
 namespace {
-const char *website_url = "https://albertlauncher.github.io/";
-const char *issue_tracker_url = "https://github.com/albertlauncher/albert/issues";
 const char *CFG_LAST_USED_VERSION = "last_used_version";
 unique_ptr<albert::ExtensionRegistry> extension_registry;
 unique_ptr<QueryEngine> query_engine;
@@ -158,40 +152,6 @@ void albert::restart()
 void albert::quit()
 {
     QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
-}
-
-void albert::openUrl(const QString &url)
-{
-    QDesktopServices::openUrl(QUrl(url));
-}
-
-void albert::openWebsite()
-{
-    QDesktopServices::openUrl(QUrl(website_url));
-}
-
-void albert::openIssueTracker()
-{
-    QDesktopServices::openUrl(QUrl(issue_tracker_url));
-}
-
-void albert::setClipboardText(const QString &text)
-{
-    QGuiApplication::clipboard()->setText(text, QClipboard::Clipboard);
-    QGuiApplication::clipboard()->setText(text, QClipboard::Selection);
-}
-
-long long albert::runDetachedProcess(const QStringList &commandline, const QString &working_dir)
-{
-    qint64 pid = 0;
-    if (!commandline.empty()) {
-        if (QProcess::startDetached(commandline[0], commandline.mid(1), working_dir, &pid))
-            INFO << "Detached process started successfully. PID:" << pid << commandline;
-        else
-            WARN << "Starting detached process failed." << commandline;
-    }
-    WARN << "runDetachedProcess: commandline must not be empty!";
-    return pid;
 }
 
 
@@ -407,13 +367,7 @@ int main(int argc, char **argv)
 
     albert::showSettings();
     int return_value = qApp->exec();
-    if (return_value == -1) {
-        qint64 pid;
-        if (QProcess::startDetached(qApp->arguments()[0], qApp->arguments().mid(1), QString(), &pid))
-            INFO << "Application restarted. PID" << pid;
-        else
-            WARN << "Restarting process failed";
-        return 0;
-    }
+    if (return_value == -1 && runDetachedProcess(qApp->arguments(), QDir::currentPath()))
+        return EXIT_SUCCESS;
     return return_value;
 }
