@@ -38,7 +38,6 @@ add_library(${TARGET_LIB} SHARED ${LIB_SRC}
         src/lib/albert.cpp
         src/lib/extension.cpp
         src/lib/extensionregistry.cpp
-        src/lib/extensions/configwidgetprovider.cpp
         src/lib/extensions/frontend.cpp
         src/lib/extensions/globalqueryhandler.cpp
         src/lib/extensions/indexqueryhandler.cpp
@@ -60,7 +59,6 @@ add_library(${TARGET_LIB} SHARED ${LIB_SRC}
         src/lib/settings/settingswidget.cpp
         src/lib/settings/settingswindow.cpp
         src/lib/settings/settingswindow.ui
-        src/lib/settings/config_widget_general.ui
         src/lib/terminalprovider.cpp
         src/lib/timeprinter.hpp
         src/lib/usagehistory.cpp

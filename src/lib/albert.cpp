@@ -7,7 +7,6 @@
 #include "albert/extensions/frontend.h"
 #include "albert/util/standarditem.h"
 #include "albert/util/util.h"
-#include "settings/ui_config_widget_general.h"
 #include "albert/extensions/configwidgetprovider.h"
 #include "albert/logging.h"
 #include "pluginprovider.h"
@@ -355,7 +354,6 @@ int main(int argc, char **argv)
     plugin_provider = std::make_unique<::PluginProvider>(*extension_registry);
     terminal_provider = std::make_unique<TerminalProvider>();
     extension_registry->add(plugin_provider.get());
-    extension_registry->add(&core_extension);
     UsageHistory::initializeDatabase();
     notifyVersionChange();
 

@@ -11,30 +11,20 @@
 #include <QDesktopServices>
 using namespace std;
 
-SettingsWindow::SettingsWindow(albert::ExtensionRegistry &er) : ui()
+SettingsWindow::SettingsWindow(albert::ExtensionRegistry &er,
+                               PluginProvider &pp,
+                               TerminalProvider &tp) : ui()
 {
     ui.setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
 
-//    ui.tabs->setStyleSheet("QTabWidget::pane { border-radius: 0px; }");
+    ui.tabs->setStyleSheet("QTabWidget::pane { border-radius: 0px; }");
 
-    auto open_link = [](const QString &link){
-        if( link == "aboutQt" ){
-            qApp->aboutQt();
-        } else
-            QDesktopServices::openUrl(QUrl(link));
-    };
-
-    QString about = ui.about_text->text();
-    about.replace("___versionstring___", qApp->applicationVersion());
-    ui.about_text->setText(about);
-    connect(ui.about_text, &QLabel::linkActivated, this, open_link);
-
-    auto plugin_widget = new PluginWidget();
-    ui.tabs->addTab(plugin_widget, "Plugins");
-
-    auto *settings_widget = new SettingsWidget(er);
-    ui.tabs->addTab(settings_widget, "Settings");
+    init_tab_general_about();
+    init_tab_general_frontend(pp);
+    init_tab_general_terminal(tp);
+    init_tab_settings(er);
+    init_tab_plugins(er);
 
     auto geometry = QGuiApplication::screenAt(QCursor::pos())->geometry();
     move(geometry.center().x() - frameSize().width()/2,
@@ -48,6 +38,59 @@ void SettingsWindow::bringToFront()
     activateWindow();
 }
 
+void SettingsWindow::init_tab_general_about()
+{
+    auto open_link = [](const QString &link){
+        if( link == "aboutQt" ){
+            qApp->aboutQt();
+        } else
+            QDesktopServices::openUrl(QUrl(link));
+    };
+
+    QString about = ui.about_text->text();
+    about.replace("___versionstring___", qApp->applicationVersion());
+    ui.about_text->setText(about);
+    connect(ui.about_text, &QLabel::linkActivated, this, open_link);
+}
+
+void SettingsWindow::init_tab_general_frontend(PluginProvider &plugin_provider)
+{
+    for (const auto &spec : plugin_provider.frontends()){
+        ui.comboBox_frontend->addItem(spec.name);
+        if (spec.id == plugin_provider.frontend->id())
+            ui.comboBox_frontend->setCurrentIndex(ui.comboBox_frontend->count()-1);
+    }
+
+    auto *frontend_settings_widget = plugin_provider.frontend->createSettingsWidget();
+    ui.tabs->addTab(frontend_settings_widget, "Frontend");
+
+    connect(ui.comboBox_frontend, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            this, [&plugin_provider](int index) { plugin_provider.setFrontend(index); });
+}
+
+void SettingsWindow::init_tab_general_terminal(TerminalProvider &terminal_provider)
+{
+    for (const auto &terminal : terminal_provider.terminals()){
+        ui.comboBox_term->addItem(terminal->name());
+        if (terminal.get() == &terminal_provider.terminal())
+            ui.comboBox_term->setCurrentIndex(ui.comboBox_term->count()-1);
+    }
+
+    connect(ui.comboBox_term, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            this, [&terminal_provider](int index){ terminal_provider.setTerminal(index); });
+}
+
+void SettingsWindow::init_tab_plugins(albert::ExtensionRegistry &registry)
+{
+    auto plugin_widget = new PluginWidget();
+    ui.tabs->addTab(plugin_widget, "Plugins");
+}
+
+void SettingsWindow::init_tab_settings(albert::ExtensionRegistry &registry)
+{
+    auto *settings_widget = new SettingsWidget(registry);
+    ui.tabs->addTab(settings_widget, "Settings");
+}
 
 void SettingsWindow::keyPressEvent(QKeyEvent *event)
 {

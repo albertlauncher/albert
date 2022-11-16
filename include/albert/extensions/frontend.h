@@ -53,6 +53,7 @@ public:
     virtual void setVisible(bool visible) = 0;
     virtual QString input() const = 0;
     virtual void setInput(const QString&) = 0;
+    virtual QWidget *createSettingsWidget() = 0;
     void setEngine(QueryEngine*);
 protected:
     std::unique_ptr<Query> query(const QString &query) const;

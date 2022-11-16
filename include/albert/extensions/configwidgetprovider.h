@@ -7,18 +7,14 @@ class QWidget;
 namespace albert
 {
 
-enum class ConfigGroup {
-    General,
-    Extension
-};
 /// Base class for all configurable plugins
 class ALBERT_EXPORT ConfigWidgetProvider : virtual public Extension
 {
 public:
-
-    virtual QWidget* buildConfigWidget() = 0;  /// Config widget factory. Gives away ownership.
-    virtual QString configTitle() const = 0;  /// Config tree item title
-    virtual ConfigGroup configGroup() const;  /// Config tree item group
+    /// Returns the cofig widget for this plugin
+    /// @note The widgets objectName() is used as list item title
+    /// @note Implementations must give away ownership (do not delete!)
+    virtual QWidget* buildConfigWidget() = 0;
 };
 
 }
