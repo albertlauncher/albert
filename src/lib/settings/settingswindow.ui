@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>SettingsWindow</class>
  <widget class="QWidget" name="SettingsWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>400</height>
+   </rect>
+  </property>
   <property name="minimumSize">
    <size>
     <width>600</width>
@@ -12,22 +20,10 @@
    <string>Settings</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
-    <number>0</number>
-   </property>
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabs">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab_general">
       <attribute name="title">
@@ -93,33 +89,19 @@
            </property>
           </widget>
          </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Autostart:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QCheckBox" name="checkBox_autostart"/>
+         </item>
         </layout>
        </item>
       </layout>
-     </widget>
-     <widget class="QWidget" name="tab_extensions">
-      <attribute name="title">
-       <string>Extensions</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="layout_extensions" stretch=""/>
-     </widget>
-     <widget class="QWidget" name="tab_triggers">
-      <attribute name="title">
-       <string>Triggers</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="layout_triggers"/>
-     </widget>
-     <widget class="QWidget" name="tab_index">
-      <attribute name="title">
-       <string>Index</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="layout_index"/>
-     </widget>
-     <widget class="QWidget" name="tab_plugins">
-      <attribute name="title">
-       <string>Plugins</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="layout_plugins"/>
      </widget>
      <widget class="QWidget" name="tab_about">
       <attribute name="title">
@@ -187,6 +169,9 @@ hr { height: 1px; border-width: 0; }
        </item>
        <item>
         <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
          <property name="sizeHint" stdset="0">
           <size>
            <width>0</width>

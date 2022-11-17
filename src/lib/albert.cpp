@@ -42,70 +42,70 @@ unique_ptr<::PluginProvider> plugin_provider;
 unique_ptr<TerminalProvider> terminal_provider;
 QPointer<SettingsWindow> settings_window;
 
-class : public albert::ConfigWidgetProvider,
-        public albert::IndexQueryHandler
-
-{
-    struct CongigWidgetGeneral: public QWidget { Ui::General ui; };
-
-
-    QString id() const override { return "albert"; }
-
-    // ConfigWidgetProvider
-    QWidget* buildConfigWidget() override {
-        auto *w = new CongigWidgetGeneral;
-        auto &ui = w->ui;
-        ui.setupUi(w);
-
-        for (const auto &spec : plugin_provider->frontends()){
-            ui.comboBox_frontend->addItem(spec.name);
-            if (spec.id == plugin_provider->frontend->id())
-                ui.comboBox_frontend->setCurrentIndex(ui.comboBox_frontend->count()-1);
-        }
-
-        QObject::connect(ui.comboBox_frontend, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-                         [](int index){ plugin_provider->setFrontend(index); });
-
-        for (const auto &terminal : terminal_provider->terminals()){
-            ui.comboBox_term->addItem(terminal->name());
-            if (terminal.get() == &terminal_provider->terminal())
-                ui.comboBox_term->setCurrentIndex(ui.comboBox_term->count()-1);
-        }
-
-        QObject::connect(ui.comboBox_term, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-                         [](int index){ terminal_provider->setTerminal(index); });
-
-        return w;
-    }
-    QString configTitle() const override { return QObject::tr("General"); }
-    ConfigGroup configGroup() const override { return ConfigGroup::General; }
-
-    // IndexQueryHandler
-    std::vector<IndexItem> indexItems() const override
-    {
-        auto settings_item = make_shared<StandardItem>(
-                "albert-settings", "Settings", "Open the Albert settings window", QStringList{":app_icon"},
-                Actions{{"albert-settings", "Open settings", [](){ albert::showSettings(); }}}
-        );
-
-        auto quit_item = make_shared<StandardItem>(
-                "albert-quit", "Quit Albert", "Quit this application", QStringList{":app_icon"},
-                Actions{{"albert-quit", "Quit Albert", [](){ albert::quit(); }}}
-        );
-
-        auto restart_item = make_shared<StandardItem>(
-                "albert-restart", "Restart Albert", "Restart this application", QStringList{":app_icon"},
-                Actions{{"albert-restart", "Restart Albert", [](){ albert::restart(); }}}
-        );
-
-        return {
-                {settings_item, "settings"},
-                {settings_item, "preferences"},
-                {quit_item, "quit"},
-                {restart_item, "restart"}
-        };
-    }
-} core_extension;
+//class : public albert::ConfigWidgetProvider,
+//        public albert::IndexQueryHandler
+//
+//{
+//    struct CongigWidgetGeneral: public QWidget { Ui::General ui; };
+//
+//
+//    QString id() const override { return "albert"; }
+//
+//    // ConfigWidgetProvider
+//    QWidget* buildConfigWidget() override {
+//        auto *w = new CongigWidgetGeneral;
+//        auto &ui = w->ui;
+//        ui.setupUi(w);
+//
+//        for (const auto &spec : plugin_provider->frontends()){
+//            ui.comboBox_frontend->addItem(spec.name);
+//            if (spec.id == plugin_provider->frontend->id())
+//                ui.comboBox_frontend->setCurrentIndex(ui.comboBox_frontend->count()-1);
+//        }
+//
+//        QObject::connect(ui.comboBox_frontend, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+//                         [](int index){ plugin_provider->setFrontend(index); });
+//
+//        for (const auto &terminal : terminal_provider->terminals()){
+//            ui.comboBox_term->addItem(terminal->name());
+//            if (terminal.get() == &terminal_provider->terminal())
+//                ui.comboBox_term->setCurrentIndex(ui.comboBox_term->count()-1);
+//        }
+//
+//        QObject::connect(ui.comboBox_term, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+//                         [](int index){ terminal_provider->setTerminal(index); });
+//
+//        return w;
+//    }
+//    QString configTitle() const override { return QObject::tr("General"); }
+//    ConfigGroup configGroup() const override { return ConfigGroup::General; }
+//
+//    // IndexQueryHandler
+//    std::vector<IndexItem> indexItems() const override
+//    {
+//        auto settings_item = make_shared<StandardItem>(
+//                "albert-settings", "Settings", "Open the Albert settings window", QStringList{":app_icon"},
+//                Actions{{"albert-settings", "Open settings", [](){ albert::showSettings(); }}}
+//        );
+//
+//        auto quit_item = make_shared<StandardItem>(
+//                "albert-quit", "Quit Albert", "Quit this application", QStringList{":app_icon"},
+//                Actions{{"albert-quit", "Quit Albert", [](){ albert::quit(); }}}
+//        );
+//
+//        auto restart_item = make_shared<StandardItem>(
+//                "albert-restart", "Restart Albert", "Restart this application", QStringList{":app_icon"},
+//                Actions{{"albert-restart", "Restart Albert", [](){ albert::restart(); }}}
+//        );
+//
+//        return {
+//                {settings_item, "settings"},
+//                {settings_item, "preferences"},
+//                {quit_item, "quit"},
+//                {restart_item, "restart"}
+//        };
+//    }
+//} core_extension;
 
 }
 
@@ -139,7 +139,7 @@ void albert::runTerminal(const QString &script, const QString &working_dir, bool
 void albert::showSettings()
 {
     if (!settings_window)
-        settings_window = new SettingsWindow(*extension_registry);
+        settings_window = new SettingsWindow(*extension_registry, *plugin_provider, *terminal_provider);
     settings_window->bringToFront();
 }
 
@@ -348,12 +348,13 @@ int main(int argc, char **argv)
     setActivationPolicyAccessory();
 #endif
 
-    RPCServer rpc_server;  // Todo > plugin
+    RPCServer rpc_server;
     extension_registry = std::make_unique<albert::ExtensionRegistry>();
     query_engine = std::make_unique<QueryEngine>(*extension_registry);
     plugin_provider = std::make_unique<::PluginProvider>(*extension_registry);
     terminal_provider = std::make_unique<TerminalProvider>();
     extension_registry->add(plugin_provider.get());
+
     UsageHistory::initializeDatabase();
     notifyVersionChange();
 

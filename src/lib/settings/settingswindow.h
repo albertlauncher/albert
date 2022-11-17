@@ -7,6 +7,8 @@ class FrontendProvider;
 class PluginProvider;
 class TerminalProvider;
 
+
+
 class SettingsWindow final : public QWidget
 {
     Q_OBJECT
@@ -21,15 +23,18 @@ public:
     Ui::SettingsWindow ui;
 
 private:
-    void init_tab_general_about();
     void init_tab_general_frontend(PluginProvider&);
     void init_tab_general_terminal(TerminalProvider&);
-    void init_tab_settings(albert::ExtensionRegistry&);
+    void init_tab_general_trayIcon();
+    void init_tab_general_autostart();
+    void init_tab_extensions(albert::ExtensionRegistry&);
+    void init_tab_triggers();
+    void init_tab_index();
     void init_tab_plugins(albert::ExtensionRegistry&);
+    void init_tab_about();
 
     void keyPressEvent(QKeyEvent * event) override;
 
-//    void init_tab_general_trayIcon();
 //    void closeEvent(QCloseEvent * event) override;
 //    void init_tab_general_hotkey();
 //  void init_autostart();

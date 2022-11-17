@@ -11,14 +11,14 @@ class ExtensionRegistry;
 class ConfigWidgetProvider;
 }
 
-class SettingsWidget final :
+class ConfigProviderWidget final:
         public QWidget,
         public albert::ExtensionWatcher<albert::ConfigWidgetProvider>
 {
     Q_OBJECT
 
 public:
-    explicit SettingsWidget(albert::ExtensionRegistry&registry);
+    explicit ConfigProviderWidget(albert::ExtensionRegistry&registry);
 
 private:
     void resetUI();

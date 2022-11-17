@@ -1,14 +1,14 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #include "albert/extensions/configwidgetprovider.h"
-#include "settingswidget.h"
+#include "configproviderwidget.h"
 #include <QHBoxLayout>
 #include <utility>
 #include <vector>
 using namespace albert;
 using namespace std;
 
-SettingsWidget::SettingsWidget(albert::ExtensionRegistry &registry) : registry(registry)
+ConfigProviderWidget::ConfigProviderWidget(albert::ExtensionRegistry &registry) : registry(registry)
 {
     resetUI();
 
@@ -29,7 +29,7 @@ SettingsWidget::SettingsWidget(albert::ExtensionRegistry &registry) : registry(r
 }
 
 
-void SettingsWidget::resetUI()
+void ConfigProviderWidget::resetUI()
 {
     list_widget.clear();
     while(stacked_widget.count() > 0){
@@ -59,12 +59,12 @@ void SettingsWidget::resetUI()
     list_widget.setMaximumWidth(list_widget.sizeHintForColumn(0));
 }
 
-void SettingsWidget::onAdd(ConfigWidgetProvider *t)
+void ConfigProviderWidget::onAdd(ConfigWidgetProvider *t)
 {
     resetUI();
 }
 
-void SettingsWidget::onRem(ConfigWidgetProvider *t)
+void ConfigProviderWidget::onRem(ConfigWidgetProvider *t)
 {
     resetUI();
 }
@@ -81,7 +81,7 @@ void SettingsWidget::onRem(ConfigWidgetProvider *t)
 //using namespace albert;
 //using namespace std;
 //
-//SettingsWidget::SettingsWidget(albert::ExtensionRegistry &registry) : registry(registry)
+//ConfigProviderWidget::ConfigProviderWidget(albert::ExtensionRegistry &registry) : registry(registry)
 //{
 //    auto layout = new QHBoxLayout(this);
 //    layout->addWidget(&tree_view);
@@ -111,7 +111,7 @@ void SettingsWidget::onRem(ConfigWidgetProvider *t)
 //}
 //
 //
-//void SettingsWidget::resetTreeModel()
+//void ConfigProviderWidget::resetTreeModel()
 //{
 //    // Clear
 //    tree_model.clear();
@@ -159,12 +159,12 @@ void SettingsWidget::onRem(ConfigWidgetProvider *t)
 //    extensions_item->sortChildren(0);
 //}
 //
-//void SettingsWidget::onAdd(ConfigWidgetProvider *t)
+//void ConfigProviderWidget::onAdd(ConfigWidgetProvider *t)
 //{
 //    resetTreeModel();
 //}
 //
-//void SettingsWidget::onRem(ConfigWidgetProvider *t)
+//void ConfigProviderWidget::onRem(ConfigWidgetProvider *t)
 //{
 //    resetTreeModel();
 //}

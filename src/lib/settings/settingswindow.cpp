@@ -2,9 +2,10 @@
 
 #include "albert/extensionregistry.h"
 #include "albert/extensions/frontend.h"
+#include "albert/logging.h"
 #include "pluginprovider.h"
 #include "pluginwidget.h"
-#include "settingswidget.h"
+#include "configproviderwidget.h"
 #include "settingswindow.h"
 #include "terminalprovider.h"
 #include <QCloseEvent>
@@ -18,40 +19,24 @@ SettingsWindow::SettingsWindow(albert::ExtensionRegistry &er,
     ui.setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
 
-    ui.tabs->setStyleSheet("QTabWidget::pane { border-radius: 0px; }");
+//    ui.tabs->setStyleSheet("QTabWidget::pane { border-radius: 0px; }");
 
-    init_tab_general_about();
     init_tab_general_frontend(pp);
     init_tab_general_terminal(tp);
-    init_tab_settings(er);
-    init_tab_plugins(er);
+    init_tab_general_trayIcon();
+    init_tab_general_autostart();
+    ui.tabs->insertTab(ui.tabs->count()-1, pp.frontend->createSettingsWidget(), tr("Frontend"));
+    ui.tabs->insertTab(ui.tabs->count()-1, new ConfigProviderWidget(er), tr("Extensions"));
+    ui.tabs->insertTab(ui.tabs->count()-1, new QWidget(), "Triggers");
+    ui.tabs->insertTab(ui.tabs->count()-1, new QWidget(), "Index");
+    ui.tabs->insertTab(ui.tabs->count()-1, new PluginWidget(), "Plugins");
+    init_tab_about();
 
     auto geometry = QGuiApplication::screenAt(QCursor::pos())->geometry();
     move(geometry.center().x() - frameSize().width()/2,
          geometry.top() + geometry.height() / 5);
 }
 
-void SettingsWindow::bringToFront()
-{
-    show();
-    raise();
-    activateWindow();
-}
-
-void SettingsWindow::init_tab_general_about()
-{
-    auto open_link = [](const QString &link){
-        if( link == "aboutQt" ){
-            qApp->aboutQt();
-        } else
-            QDesktopServices::openUrl(QUrl(link));
-    };
-
-    QString about = ui.about_text->text();
-    about.replace("___versionstring___", qApp->applicationVersion());
-    ui.about_text->setText(about);
-    connect(ui.about_text, &QLabel::linkActivated, this, open_link);
-}
 
 void SettingsWindow::init_tab_general_frontend(PluginProvider &plugin_provider)
 {
@@ -60,9 +45,6 @@ void SettingsWindow::init_tab_general_frontend(PluginProvider &plugin_provider)
         if (spec.id == plugin_provider.frontend->id())
             ui.comboBox_frontend->setCurrentIndex(ui.comboBox_frontend->count()-1);
     }
-
-    auto *frontend_settings_widget = plugin_provider.frontend->createSettingsWidget();
-    ui.tabs->addTab(frontend_settings_widget, "Frontend");
 
     connect(ui.comboBox_frontend, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, [&plugin_provider](int index) { plugin_provider.setFrontend(index); });
@@ -80,16 +62,58 @@ void SettingsWindow::init_tab_general_terminal(TerminalProvider &terminal_provid
             this, [&terminal_provider](int index){ terminal_provider.setTerminal(index); });
 }
 
-void SettingsWindow::init_tab_plugins(albert::ExtensionRegistry &registry)
+void SettingsWindow::init_tab_general_trayIcon()
 {
-    auto plugin_widget = new PluginWidget();
-    ui.tabs->addTab(plugin_widget, "Plugins");
+//    ui.checkBox_showTray->setChecked(albert.tray_icon.isVisible());
+//    QObject::connect(ui.checkBox_showTray, &QCheckBox::toggled,
+//                     &albert.tray_icon, &TrayIcon::setVisible);
 }
 
-void SettingsWindow::init_tab_settings(albert::ExtensionRegistry &registry)
+void SettingsWindow::init_tab_general_autostart()
 {
-    auto *settings_widget = new SettingsWidget(registry);
-    ui.tabs->addTab(settings_widget, "Settings");
+#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
+    QString desktopfile_path = QStandardPaths::locate(QStandardPaths::ApplicationsLocation,
+                                                      "albert.desktop",
+                                                      QStandardPaths::LocateFile);
+    if (!desktopfile_path.isNull()) {
+        QString autostart_path = QDir(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)).filePath("autostart/albert.desktop");
+        ui.checkBox_autostart->setChecked(QFile::exists(autostart_path));
+        connect(ui.checkBox_autostart, &QCheckBox::toggled,
+                this, [=](bool toggled){
+            if (toggled)
+                QFile::link(desktopfile_path, autostart_path);
+            else
+                QFile::remove(autostart_path);
+        });
+    }
+    else
+        CRIT << "Deskop entry not found! Autostart option is nonfuctional";
+#else
+    ui.checkBox_autostart->setEnabled(false);
+    WARN << "Autostart not implemented on this platform!";
+#endif
+}
+
+void SettingsWindow::init_tab_about()
+{
+    auto open_link = [](const QString &link){
+        if( link == "aboutQt" ){
+            qApp->aboutQt();
+        } else
+            QDesktopServices::openUrl(QUrl(link));
+    };
+
+    QString about = ui.about_text->text();
+    about.replace("___versionstring___", qApp->applicationVersion());
+    ui.about_text->setText(about);
+    connect(ui.about_text, &QLabel::linkActivated, this, open_link);
+}
+
+void SettingsWindow::bringToFront()
+{
+    show();
+    raise();
+    activateWindow();
 }
 
 void SettingsWindow::keyPressEvent(QKeyEvent *event)
@@ -102,39 +126,10 @@ void SettingsWindow::keyPressEvent(QKeyEvent *event)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//void SettingsWindow::init_tab_general_trayIcon()
-//{
-////    ui.checkBox_showTray->setChecked(albert.tray_icon.isVisible());
-////    QObject::connect(ui.checkBox_showTray, &QCheckBox::toggled,
-////                     &albert.tray_icon, &TrayIcon::setVisible);
-//}
-
 //void SettingsWindow::changeHotkey(int /*newhk*/)
 //{
 //    Q_ASSERT(hotkeyManager_);
 //    int oldhk = *hotkeyManager_->hotkeys().begin(); // TODO Make cool sharesdpointer design
-
 //    // Try to set the hotkey
 //    if (hotkeyManager_->registerHotkey(newhk)) {
 //        QString hkText(QKeySequence((newhk&~Qt::GroupSwitchModifier)).toString());//QTBUG-45568
@@ -149,8 +144,6 @@ void SettingsWindow::keyPressEvent(QKeyEvent *event)
 //                    this).exec();
 //    }
 //}
-
-
 //void SettingsWindow::closeEvent(QCloseEvent */*event*/)
 //{
 //    if (hotkeyManager_ && hotkeyManager_->hotkeys().empty()) {
@@ -167,13 +160,7 @@ void SettingsWindow::keyPressEvent(QKeyEvent *event)
 //            return;
 //        }
 //    }
-    //    event->accept();
 //}
-
-
-
-
-
 //void SettingsWindow::init_tab_general_hotkey()
 //{
 //    // HOTKEY
@@ -189,33 +176,5 @@ void SettingsWindow::keyPressEvent(QKeyEvent *event)
 //        ui.grabKeyButton_hotkey->setVisible(false);
 //        ui.label_hotkey->setVisible(false);
 //    }
-//}
-
-
-
-
-//void SettingsWindow::initializeSettings_autostart()
-//{
-//    #if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
-//    QString desktopfile_path = QStandardPaths::locate(QStandardPaths::ApplicationsLocation,
-//                                                      "albert.desktop",
-//                                                      QStandardPaths::LocateFile);
-//    if (!desktopfile_path.isNull()) {
-//        QString autostart_path = QDir(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)).filePath("autostart/albert.desktop");
-//        ui.checkBox_autostart->setChecked(QFile::exists(autostart_path));
-//        connect(ui.checkBox_autostart, &QCheckBox::toggled,
-//                this, [=](bool toggled){
-//            if (toggled)
-//                QFile::link(desktopfile_path, autostart_path);
-//            else
-//                QFile::remove(autostart_path);
-//        });
-//    }
-//    else
-//        CRIT << "Deskop entry not found! Autostart option is nonfuctional";
-//    #else
-//    ui.checkBox_autostart->setEnabled(false);
-//    WARN << "Autostart not implemented on this platform!";
-//    #endif
 //}
 

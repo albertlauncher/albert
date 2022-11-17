@@ -56,13 +56,14 @@ add_library(${TARGET_LIB} SHARED ${LIB_SRC}
         src/lib/rpcserver.cpp
         src/lib/scopedcrashindicator.hpp
         src/lib/settings/pluginwidget.cpp
-        src/lib/settings/settingswidget.cpp
+        src/lib/settings/configproviderwidget.cpp
         src/lib/settings/settingswindow.cpp
         src/lib/settings/settingswindow.ui
         src/lib/terminalprovider.cpp
         src/lib/timeprinter.hpp
         src/lib/usagehistory.cpp
         src/lib/util/history.cpp
+        src/lib/util/util.cpp
         src/lib/util/standarditem.cpp
         src/lib/xdg/iconlookup.cpp
         src/lib/xdg/themefileparser.cpp
