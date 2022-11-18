@@ -6,6 +6,8 @@
 #include "pluginprovider.h"
 #include "pluginwidget.h"
 #include "configproviderwidget.h"
+#include "triggerwidget.h"
+#include "indexwidget.h"
 #include "settingswindow.h"
 #include "terminalprovider.h"
 #include <QCloseEvent>
@@ -14,6 +16,7 @@ using namespace std;
 
 SettingsWindow::SettingsWindow(albert::ExtensionRegistry &er,
                                PluginProvider &pp,
+                               QueryEngine &qe,
                                TerminalProvider &tp) : ui()
 {
     ui.setupUi(this);
@@ -27,9 +30,9 @@ SettingsWindow::SettingsWindow(albert::ExtensionRegistry &er,
     init_tab_general_autostart();
     ui.tabs->insertTab(ui.tabs->count()-1, pp.frontend->createSettingsWidget(), tr("Frontend"));
     ui.tabs->insertTab(ui.tabs->count()-1, new ConfigProviderWidget(er), tr("Extensions"));
-    ui.tabs->insertTab(ui.tabs->count()-1, new QWidget(), "Triggers");
-    ui.tabs->insertTab(ui.tabs->count()-1, new QWidget(), "Index");
-    ui.tabs->insertTab(ui.tabs->count()-1, new PluginWidget(), "Plugins");
+    ui.tabs->insertTab(ui.tabs->count()-1, new TriggerWidget(er, qe), "Triggers");
+    ui.tabs->insertTab(ui.tabs->count()-1, new IndexWidget(er, qe), "Index");
+    ui.tabs->insertTab(ui.tabs->count()-1, new PluginWidget(er), "Plugins");
     init_tab_about();
 
     auto geometry = QGuiApplication::screenAt(QCursor::pos())->geometry();

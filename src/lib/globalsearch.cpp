@@ -9,14 +9,28 @@ using namespace albert;
 using namespace std;
 
 
-GlobalSearch::GlobalSearch(ExtensionRegistry &registry) : ExtensionWatcher<albert::GlobalQueryHandler>(registry)
+GlobalSearch::GlobalSearch(ExtensionRegistry &registry):
+    albert::ExtensionWatcher<albert::GlobalQueryHandler>(registry)
 {
+    for (auto &[id, h] : registry.extensions<GlobalQueryHandler>())
+        handlers_.insert(h);
 }
 
 QString GlobalSearch::id() const
 {
     return QStringLiteral("globalsearch");
 }
+
+QString GlobalSearch::name() const
+{
+    return QStringLiteral("Global search");
+}
+
+QString GlobalSearch::description() const
+{
+    return QStringLiteral("Query all global queryhandlers together.");
+}
+
 
 QString GlobalSearch::default_trigger() const
 {
@@ -36,7 +50,7 @@ std::vector<albert::RankItem> GlobalSearch::rankItems(const Query &query) const
         TimePrinter tp(QString("TIME: %1 µs ['%2']").arg("%1", handler->id()));
         return handler->rankItems(query);
     };
-    auto future = QtConcurrent::mapped(extensions(), map);
+    auto future = QtConcurrent::mapped(handlers_, map);
     future.waitForFinished();
     for (auto result : future)
         rank_items.insert(end(rank_items),

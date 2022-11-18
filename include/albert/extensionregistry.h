@@ -14,22 +14,24 @@ class ALBERT_EXPORT ExtensionRegistry : public QObject  /// Neither threadsafe, 
 public:
     void add(Extension *e);  /// Add extension to the registry
     void remove(Extension *e);  /// Remove extension from the registry
-    const std::map<QString,Extension*> &extensions();  /// Get all registered extensions
-    template<typename T> T* extension(const QString &id)  /// Get casted extension by id
-    {
-        try {
-            return dynamic_cast<T*>(extensions().at(id));
-        } catch (const std::out_of_range &) {
-            return nullptr;
-        }
-    }
-    template<typename T> std::map<QString, T*> extensionsOfType()  /// Get all extensions of type
+
+    const std::map<QString,Extension*> &extensions();  /// Get map of all extensions
+    template<typename T> std::map<QString, T*> extensions()  /// Get map of all extensions of type
     {
         std::map<QString, T*> results;
-        for (const auto &[id, extension] : extensions())
+        for (auto &[id, extension] : extensions_)
             if (T *t = dynamic_cast<T*>(extension))
                 results.emplace(id, t);
         return results;
+    }
+
+    template<typename T> T* extension(const QString &id)  /// Get casted extension by id
+    {
+        try {
+            return dynamic_cast<T*>(extensions_.at(id));
+        } catch (const std::out_of_range &) {
+            return nullptr;
+        }
     }
 
 signals:

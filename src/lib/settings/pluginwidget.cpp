@@ -91,9 +91,9 @@ enum class Column
     Description,
 };
 
-PluginModel::PluginModel()
+PluginModel::PluginModel(albert::ExtensionRegistry &registry) : ExtensionWatcher<PluginProvider>(registry)
 {
-    for (auto &[id, pp] : albert::extensionRegistry().extensionsOfType<PluginProvider>())
+    for (auto &[id, pp] : registry.extensions<PluginProvider>())
         connect(pp, &PluginProvider::pluginStateChanged,this, &PluginModel::onPluginStateChanged);
     updatePlugins();
 }
@@ -219,7 +219,7 @@ void PluginModel::updatePlugins()
     beginResetModel();
 
     plugins.clear();
-    for (const auto &[ppid, pp] : albert::extensionRegistry().extensionsOfType<PluginProvider>())
+    for (const auto &[ppid, pp] : registry.extensions<PluginProvider>())
         for (const auto&[pid, spec] : pp->plugins())
             plugins.emplace_back(&spec);
 
@@ -236,7 +236,7 @@ void PluginModel::onPluginStateChanged(const albert::PluginSpec &spec)
 }
 
 
-PluginWidget::PluginWidget()
+PluginWidget::PluginWidget(albert::ExtensionRegistry &registry) : model(registry)
 {
     setModel(&model);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);

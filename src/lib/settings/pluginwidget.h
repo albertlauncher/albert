@@ -5,6 +5,7 @@
 #include <QAbstractTableModel>
 #include <QTableView>
 #include <map>
+#include <set>
 namespace albert {
 class PluginSpec;
 class PluginProvider;
@@ -21,7 +22,7 @@ struct PluginModel :
         public QAbstractTableModel,
         public albert::ExtensionWatcher<albert::PluginProvider>
 {
-    PluginModel();
+    PluginModel(albert::ExtensionRegistry&registry);
     int rowCount(const QModelIndex & parent = QModelIndex()) const override;
     int columnCount(const QModelIndex & parent = QModelIndex()) const override;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override;
@@ -39,7 +40,7 @@ struct PluginModel :
 
 struct PluginWidget final : public QTableView
 {
-    PluginWidget();
+    PluginWidget(albert::ExtensionRegistry &registry);
     PluginModel model;
     Q_OBJECT
 };

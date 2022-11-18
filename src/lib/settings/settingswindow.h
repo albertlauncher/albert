@@ -6,6 +6,7 @@ namespace albert { class ExtensionRegistry; }
 class FrontendProvider;
 class PluginProvider;
 class TerminalProvider;
+class QueryEngine;
 
 
 
@@ -16,6 +17,7 @@ class SettingsWindow final : public QWidget
 public:
     explicit SettingsWindow(albert::ExtensionRegistry&,
                             PluginProvider&,
+                            QueryEngine&,
                             TerminalProvider&);
 
     void bringToFront();

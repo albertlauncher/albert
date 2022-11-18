@@ -22,7 +22,9 @@ class ALBERT_EXPORT Plugin : public QObject, virtual public Extension
 {
 public:
     Plugin();
-    QString id() const override;  /// The guid of the extension
+    QString id() const override;  /// Override using the plugin specification
+    QString name() const override;  /// Override using the plugin specification
+    QString description() const override;  /// Override using the plugin specification
 
     const PluginSpec &spec;  /// Plugin specification
 };

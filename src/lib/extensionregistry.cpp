@@ -2,8 +2,10 @@
 
 #include "albert/extensionregistry.h"
 #include "albert/extension.h"
+using namespace std;
+using namespace albert;
 
-void albert::ExtensionRegistry::add(albert::Extension *e)
+void ExtensionRegistry::add(Extension *e)
 {
     const auto&[it, success] = extensions_.emplace(e->id(), e);
     if (success)
@@ -12,7 +14,7 @@ void albert::ExtensionRegistry::add(albert::Extension *e)
         qFatal("Duplicate extension registration: %s", qPrintable(e->id()));
 }
 
-void albert::ExtensionRegistry::remove(albert::Extension *e)
+void ExtensionRegistry::remove(Extension *e)
 {
     if (extensions_.erase(e->id()))
             emit removed(e);
@@ -20,7 +22,7 @@ void albert::ExtensionRegistry::remove(albert::Extension *e)
         qFatal("Extension removed more than once: %s", qPrintable(e->id()));
 }
 
-const std::map<QString,albert::Extension*> &albert::ExtensionRegistry::extensions()
+const map<QString,Extension*> &ExtensionRegistry::extensions()
 {
     return extensions_;
 }

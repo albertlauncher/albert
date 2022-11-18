@@ -5,7 +5,7 @@
 #include <QAbstractTableModel>
 #include <QListWidget>
 #include <QStackedWidget>
-#include <vector>
+#include <set>
 namespace albert {
 class ExtensionRegistry;
 class ConfigWidgetProvider;
@@ -29,7 +29,7 @@ protected:
 
 private:
 
-    albert::ExtensionRegistry &registry;
+    std::vector<albert::ConfigWidgetProvider*> providers;
     QListWidget list_widget;
     QStackedWidget stacked_widget;
 

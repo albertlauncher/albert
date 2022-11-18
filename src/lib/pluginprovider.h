@@ -27,6 +27,8 @@ public:
 
     // Interfaces
     QString id() const override;
+    QString name() const override;
+    QString description() const override;
     QIcon icon() const override;
     const std::map<QString, albert::PluginSpec> &plugins() const override;
     bool isEnabled(const QString &id) const override;

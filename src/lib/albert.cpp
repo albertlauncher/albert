@@ -139,7 +139,7 @@ void albert::runTerminal(const QString &script, const QString &working_dir, bool
 void albert::showSettings()
 {
     if (!settings_window)
-        settings_window = new SettingsWindow(*extension_registry, *plugin_provider, *terminal_provider);
+        settings_window = new SettingsWindow(*extension_registry, *plugin_provider, *query_engine, *terminal_provider);
     settings_window->bringToFront();
 }
 

@@ -5,23 +5,34 @@
 #include <QHBoxLayout>
 #include <utility>
 #include <vector>
+#include <QGroupBox>
 using namespace albert;
 using namespace std;
 
-ConfigProviderWidget::ConfigProviderWidget(albert::ExtensionRegistry &registry) : registry(registry)
+ConfigProviderWidget::ConfigProviderWidget(albert::ExtensionRegistry &registry):
+        ExtensionWatcher<ConfigWidgetProvider>(registry)
 {
+    for (auto &[id, p] : registry.extensions<ConfigWidgetProvider>())
+        providers.push_back(p);
+
     resetUI();
 
     list_widget.setSizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Expanding);
-    list_widget.setFrameShape(QFrame::NoFrame);
+//    list_widget.setFrameShape(QFrame::NoFrame);
 
-    auto layout = new QHBoxLayout(this);
-    layout->addWidget(&list_widget);
+    auto *layout = new QHBoxLayout(this);
+    auto *groupbox = new QGroupBox(this);
+    groupbox->setLayout(new QVBoxLayout(this));
+    groupbox->layout()->addWidget(&list_widget);
+    groupbox->layout()->setContentsMargins(0,0,0,0);
+    groupbox->layout()->setSpacing(0);
+    groupbox->setTitle("Extensions");
+    layout->addWidget(groupbox);
     layout->addWidget(&stacked_widget);
     layout->setStretch(0,0);
     layout->setStretch(1,1);
-    layout->setContentsMargins(0,0,0,0);
-    layout->setSpacing(0);
+//    layout->setContentsMargins(0,0,0,0);
+//    layout->setSpacing(0);
     setLayout(layout);
 
     connect(&list_widget, &QListWidget::currentRowChanged,
@@ -39,8 +50,8 @@ void ConfigProviderWidget::resetUI()
     }
 
     vector<pair<QString,QWidget*>> items;
-    for (auto *swp : extensions()){
-        auto *widget = swp->buildConfigWidget();
+    for (auto *cwp : providers){
+        auto *widget = cwp->buildConfigWidget();
         items.emplace_back(widget->objectName(), widget);
     }
 

@@ -4,16 +4,28 @@
 #include "albert/extensions/globalqueryhandler.h"
 #include "albert/util/extensionwatcher.h"
 #include <QString>
-#include <vector>
+#include <set>
 
-struct GlobalSearch :
+struct GlobalSearch:
         public albert::GlobalQueryHandler,
         public albert::ExtensionWatcher<albert::GlobalQueryHandler>
+
 {
     explicit GlobalSearch(albert::ExtensionRegistry&);
+
+    // GlobalQueryHandler
     QString id() const override;
+    QString name() const override;
+    QString description() const override;
     QString default_trigger() const override;
     bool allow_trigger_remap() const override;
     std::vector<albert::RankItem> rankItems(const Query &query) const override;
+
+    // ExtensionWatcher
+    void onAdd(albert::GlobalQueryHandler *h) override {handlers_.insert(h);}
+    void onRem(albert::GlobalQueryHandler *h) override {handlers_.erase(h);}
+
+private:
+    std::set<albert::GlobalQueryHandler*> handlers_;
 };
 

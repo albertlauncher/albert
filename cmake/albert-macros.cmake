@@ -96,6 +96,7 @@ macro(albert_plugin_add_default_target)
     add_library(${PROJECT_NAME} SHARED ${SRC})
     add_library(albert::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
     target_link_libraries(${PROJECT_NAME} PRIVATE albert::albert)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE -DPROJECT_NAME="${PROJECT_NAME}")  # logging.h
     set_target_properties(
         ${PROJECT_NAME} PROPERTIES
         CXX_VISIBILITY_PRESET hidden

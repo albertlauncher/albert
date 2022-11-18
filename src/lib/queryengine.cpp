@@ -1,12 +1,14 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "itemindex.h"
-#include "albert/logging.h"
 #include "albert/extensions/queryhandler.h"
+#include "albert/logging.h"
+#include "itemindex.h"
 #include "queryengine.h"
+#include "settings/triggerwidget.h"
 using namespace albert;
 using namespace std;
 static const char *CFG_TRIGGER = "trigger";
+static const char *CFG_TRIGGER_ENABLED = "trigger_enabled";
 static const char* CFG_ERROR_TOLERANCE_DIVISOR = "error_tolerance_divisor";
 static const uint DEF_ERROR_TOLERANCE_DIVISOR = 3;
 static const char* CFG_CASE_SENSITIVE = "case_sensitive";
@@ -16,56 +18,64 @@ static const char* DEF_SEPARATORS = R"R([\s\\\/\-\[\](){}#!?<>"'=+*.:,;_]+)R";
 static const uint GRAM_SIZE = 3;
 
 
-QueryEngine::QueryEngine(ExtensionRegistry &registry) :
+QueryEngine::QueryEngine(ExtensionRegistry &registry):
         ExtensionWatcher<QueryHandler>(registry),
-        global_search_handler(registry)
+        ExtensionWatcher<IndexQueryHandler>(registry),
+        global_search_handler_(registry)
 {
+    for (auto &[id, handler] : registry.extensions<QueryHandler>()) {
+        query_handlers_.insert(handler);
+        HandlerConfig config{
+                handler->settings()->value(CFG_TRIGGER, handler->default_trigger()).toString(),
+                handler->settings()->value(CFG_TRIGGER_ENABLED, true).toBool()
+        };
+        query_handler_configs_.emplace(handler, config);
+    }
+    updateActiveTriggers();
 }
 
 std::unique_ptr<albert::Query> QueryEngine::query(const QString &query_string)
 {
     unique_ptr<::Query> query;
 
-    for (const auto &[trigger, handler] : trigger_map)
+    for (const auto &[trigger, handler] : active_triggers_)
         if (query_string.startsWith(trigger))
-            query = make_unique<::Query>(ExtensionWatcher<QueryHandler>::extensions(), *handler,
-                                         query_string.mid(trigger.size()), trigger);
+            query = make_unique<::Query>(query_handlers_, *handler, query_string.mid(trigger.size()), trigger);
 
     if (!query)
-        query = make_unique<::Query>(ExtensionWatcher<QueryHandler>::extensions(),
-                                     global_search_handler, query_string);
+        query = make_unique<::Query>(query_handlers_, global_search_handler_, query_string);
 
     return query;
 }
 
-void QueryEngine::updateTriggers()
+void QueryEngine::updateActiveTriggers()
 {
-    trigger_map.clear();
+    active_triggers_.clear();
 
-    for (auto [id, handler]: extensionRegistry().extensionsOfType<QueryHandler>()) {
-        auto trigger = handler->allow_trigger_remap()
-                       ? handler->settings()->value(CFG_TRIGGER, handler->default_trigger()).toString()
-                       : handler->default_trigger();
+    for (const auto &[handler, config]: query_handler_configs_)
+        if (config.enabled)
+            if (const auto &[it, success] = active_triggers_.emplace(config.trigger, handler); !success)
+                WARN << QString("Trigger conflict '%1': Already reserved for %2.").arg(config.trigger, it->second->id());
 
-        if (trigger.isEmpty()) {
-            WARN << QString("Triggers must not be empty: %1.").arg(handler->id());
-            continue;
-        }
 
-        const auto &[it, success] = trigger_map.emplace(trigger, handler);
-        if (!success)
-            WARN << QString("Trigger conflict '%1': Already reserved for %2.").arg(trigger, it->second->id());
-    }
 }
 
 void QueryEngine::onAdd(QueryHandler *handler)
 {
-    updateTriggers();
+    query_handlers_.insert(handler);
+    HandlerConfig conf {
+        handler->settings()->value(CFG_TRIGGER, handler->default_trigger()).toString(),
+        handler->settings()->value(CFG_TRIGGER_ENABLED, true).toBool()
+    };
+    query_handler_configs_.emplace(handler, conf);
+    updateActiveTriggers();
 }
 
 void QueryEngine::onRem(QueryHandler *handler)
 {
-    updateTriggers();
+    query_handlers_.erase(handler);
+    query_handler_configs_.erase(handler);
+    updateActiveTriggers();
 }
 
 void QueryEngine::onAdd(albert::IndexQueryHandler *handler)
@@ -78,4 +88,33 @@ void QueryEngine::onAdd(albert::IndexQueryHandler *handler)
         s->value(CFG_ERROR_TOLERANCE_DIVISOR, DEF_ERROR_TOLERANCE_DIVISOR).toUInt()
     );
     handler->setIndex(unique_ptr<albert::Index>{index});
+}
+
+const std::map<albert::QueryHandler*,QueryEngine::HandlerConfig> &QueryEngine::handlerConfig() const
+{
+    return query_handler_configs_;
+}
+
+const std::map<QString, albert::QueryHandler *> &QueryEngine::activeTriggers() const
+{
+    return active_triggers_;
+}
+
+void QueryEngine::setEnabled(albert::QueryHandler *handler, bool enabled)
+{
+    query_handler_configs_.at(handler).enabled = enabled;
+    updateActiveTriggers();
+    handler->settings()->setValue(CFG_TRIGGER_ENABLED, enabled);
+    DEBG << handler->id() << (enabled ? "enabled":"disabled");
+}
+
+void QueryEngine::setTrigger(albert::QueryHandler *handler, const QString& trigger)
+{
+    if (!handler->allow_trigger_remap())
+        return;
+
+    query_handler_configs_.at(handler).trigger = trigger;
+    updateActiveTriggers();
+    handler->settings()->setValue(CFG_TRIGGER, trigger);
+    DEBG << handler->id() << " set trigger" << trigger;
 }

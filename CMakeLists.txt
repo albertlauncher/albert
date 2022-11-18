@@ -18,7 +18,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Set additional compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Winline  -Wextra -Wshadow -Wstrict-aliasing -pedantic -Wno-deprecated -Wno-unused-parameter") #-Wconversion -Weffc++ -Werror-Wall
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
+    -Winline \
+    -Wextra \
+    -Wshadow \
+    -Wstrict-aliasing \
+    -pedantic \
+    -Wno-deprecated \
+    -Wno-unused-parameter \
+")
+#-Wconversion
+#-Weffc++
+#-Werror-Wall
+#    -DQT_NO_CAST_FROM_ASCII \
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DQT_QML_DEBUG")
 
 # Color make output
@@ -55,19 +67,22 @@ add_library(${TARGET_LIB} SHARED ${LIB_SRC}
         src/lib/resources.qrc
         src/lib/rpcserver.cpp
         src/lib/scopedcrashindicator.hpp
-        src/lib/settings/pluginwidget.cpp
         src/lib/settings/configproviderwidget.cpp
+        src/lib/settings/indexwidget.cpp
+        src/lib/settings/pluginwidget.cpp
         src/lib/settings/settingswindow.cpp
         src/lib/settings/settingswindow.ui
+        src/lib/settings/triggerwidget.cpp
         src/lib/terminalprovider.cpp
         src/lib/timeprinter.hpp
         src/lib/usagehistory.cpp
         src/lib/util/history.cpp
-        src/lib/util/util.cpp
         src/lib/util/standarditem.cpp
+        src/lib/util/util.cpp
+        src/lib/util/util.cpp
         src/lib/xdg/iconlookup.cpp
         src/lib/xdg/themefileparser.cpp
-)
+        )
 
 add_library(albert::albert ALIAS ${TARGET_LIB})
 

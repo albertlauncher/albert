@@ -392,6 +392,16 @@ QString PluginProvider::id() const
     return "pluginprovider";
 }
 
+QString PluginProvider::name() const
+{
+    return "Native plugin provider";
+}
+
+QString PluginProvider::description() const
+{
+    return "Loads native C++ albert plugins";
+}
+
 QIcon PluginProvider::icon() const
 {
     return QIcon(":cpp");

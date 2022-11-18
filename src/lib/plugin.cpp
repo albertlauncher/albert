@@ -2,12 +2,23 @@
 
 #include "albert/extensions/pluginprovider.h"
 #include "albert/plugin.h"
+using namespace albert;
 
-extern albert::PluginSpec *current_spec_in_construction;
+extern PluginSpec *current_spec_in_construction;
 
-albert::Plugin::Plugin() : spec(*current_spec_in_construction){}
+Plugin::Plugin() : spec(*current_spec_in_construction){}
 
-QString albert::Plugin::id() const
+QString Plugin::id() const
 {
     return spec.id;
+}
+
+QString Plugin::name() const
+{
+    return spec.name;
+}
+
+QString Plugin::description() const
+{
+    return spec.description;
 }
