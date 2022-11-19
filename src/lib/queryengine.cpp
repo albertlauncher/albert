@@ -76,6 +76,7 @@ void QueryEngine::onAdd(QueryHandler *handler)
     };
     query_handler_configs_.emplace(handler, conf);
     updateActiveTriggers();
+    emit handlersChanged();
 }
 
 void QueryEngine::onRem(QueryHandler *handler)
@@ -83,6 +84,7 @@ void QueryEngine::onRem(QueryHandler *handler)
     query_handlers_.erase(handler);
     query_handler_configs_.erase(handler);
     updateActiveTriggers();
+    emit handlersChanged();
 }
 
 void QueryEngine::onAdd(IndexQueryHandler *handler)

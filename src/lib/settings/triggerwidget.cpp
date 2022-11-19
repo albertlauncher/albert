@@ -15,7 +15,7 @@ enum class Column {
     Description
 };
 
-struct TriggerModel : public QAbstractTableModel, ExtensionWatcher<QueryHandler>
+struct TriggerModel : public QAbstractTableModel
 {
     struct Entry {
         QueryHandler *handler;
@@ -25,10 +25,18 @@ struct TriggerModel : public QAbstractTableModel, ExtensionWatcher<QueryHandler>
     vector<Entry> query_handlers;
     QueryEngine &engine;
 
-    explicit TriggerModel(albert::ExtensionRegistry &registry, QueryEngine &engine):
-            ExtensionWatcher<QueryHandler>(registry), engine(engine)
+    explicit TriggerModel(QueryEngine &engine): engine(engine)
     {
         update();
+        connect(&engine, &QueryEngine::handlersChanged,
+                this, &TriggerModel::reset);
+    }
+
+    void reset()
+    {
+        beginResetModel();
+        update();
+        endResetModel();
     }
 
     void update()
@@ -40,20 +48,6 @@ struct TriggerModel : public QAbstractTableModel, ExtensionWatcher<QueryHandler>
         }
         ::sort(begin(query_handlers), end(query_handlers),
                [](const auto& a,const auto& b){ return a.handler->id() < b.handler->id(); });
-    }
-
-    void onAdd(QueryHandler *t) override
-    {
-        beginResetModel();
-        update();
-        endResetModel();
-    }
-
-    void onRem(QueryHandler *t) override
-    {
-        beginResetModel();
-        update();
-        endResetModel();
     }
 
     int rowCount(const QModelIndex &parent) const override
@@ -169,8 +163,8 @@ struct TriggerModel : public QAbstractTableModel, ExtensionWatcher<QueryHandler>
     }
 };
 
-TriggerWidget::TriggerWidget(albert::ExtensionRegistry &er, QueryEngine &qe)
-    : model(new TriggerModel(er, qe))
+TriggerWidget::TriggerWidget(QueryEngine &qe)
+    : model(new TriggerModel(qe))
 {
     verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     verticalHeader()->hide();

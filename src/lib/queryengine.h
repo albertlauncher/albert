@@ -2,20 +2,22 @@
 
 #pragma once
 #include "albert/extensions/indexqueryhandler.h"
-#include "albert/extensions/configwidgetprovider.h"
 #include "albert/extensions/queryhandler.h"
 #include "albert/util/extensionwatcher.h"
 #include "globalsearch.h"
 #include "query.h"
+#include <QObject>
 #include <map>
 #include <memory>
 #include <set>
 
 class QueryEngine:
+        public QObject,
         public albert::ExtensionWatcher<albert::QueryHandler>,
         public albert::ExtensionWatcher<albert::IndexQueryHandler>
 
 {
+    Q_OBJECT
 public:
     struct HandlerConfig {
         QString trigger;
@@ -53,4 +55,6 @@ private:
     std::map<QString,albert::QueryHandler*> active_triggers_;
     bool fuzzy_;
     QString separators_;
+signals:
+    void handlersChanged();
 };

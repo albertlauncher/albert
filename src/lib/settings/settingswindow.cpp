@@ -1,7 +1,6 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #include "albert/extensionregistry.h"
-#include "albert/extensions/frontend.h"
 #include "albert/logging.h"
 #include "pluginprovider.h"
 #include "pluginwidget.h"
@@ -32,7 +31,7 @@ SettingsWindow::SettingsWindow(albert::ExtensionRegistry &er,
     init_tab_general_separators(qe);
     ui.tabs->insertTab(ui.tabs->count()-1, pp.frontend->createSettingsWidget(), tr("Frontend"));
     ui.tabs->insertTab(ui.tabs->count()-1, new ConfigProviderWidget(er), tr("Extensions"));
-    ui.tabs->insertTab(ui.tabs->count()-1, new TriggerWidget(er, qe), "Triggers");
+    ui.tabs->insertTab(ui.tabs->count()-1, new TriggerWidget(qe), "Triggers");
     ui.tabs->insertTab(ui.tabs->count()-1, new PluginWidget(er), "Plugins");
     init_tab_about();
 
