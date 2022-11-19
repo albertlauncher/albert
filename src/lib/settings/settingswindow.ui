@@ -20,10 +20,22 @@
    <string>Settings</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>12</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabs">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab_general">
       <attribute name="title">
@@ -33,9 +45,12 @@
        <item>
         <layout class="QFormLayout" name="formLayout">
          <item row="0" column="0">
-          <widget class="QLabel" name="frontendLabel">
+          <widget class="QLabel" name="label_frontend">
            <property name="text">
             <string>Frontend:</string>
+           </property>
+           <property name="buddy">
+            <cstring>comboBox_frontend</cstring>
            </property>
           </widget>
          </item>
@@ -57,6 +72,9 @@
            <property name="text">
             <string>Terminal:</string>
            </property>
+           <property name="buddy">
+            <cstring>comboBox_term</cstring>
+           </property>
           </widget>
          </item>
          <item row="1" column="1">
@@ -77,6 +95,9 @@
            <property name="text">
             <string>Show tray icon:</string>
            </property>
+           <property name="buddy">
+            <cstring>checkBox_showTray</cstring>
+           </property>
           </widget>
          </item>
          <item row="2" column="1">
@@ -90,14 +111,47 @@
           </widget>
          </item>
          <item row="3" column="0">
-          <widget class="QLabel" name="label">
+          <widget class="QLabel" name="label_autostart">
            <property name="text">
             <string>Autostart:</string>
+           </property>
+           <property name="buddy">
+            <cstring>checkBox_autostart</cstring>
            </property>
           </widget>
          </item>
          <item row="3" column="1">
           <widget class="QCheckBox" name="checkBox_autostart"/>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_fuzzy">
+           <property name="text">
+            <string>Fuzzy matching:</string>
+           </property>
+           <property name="buddy">
+            <cstring>checkBox_fuzzy</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_separators">
+           <property name="text">
+            <string>Separators:</string>
+           </property>
+           <property name="buddy">
+            <cstring>lineEdit_separators</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QCheckBox" name="checkBox_fuzzy">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QLineEdit" name="lineEdit_separators"/>
          </item>
         </layout>
        </item>

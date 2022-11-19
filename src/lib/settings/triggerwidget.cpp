@@ -105,7 +105,9 @@ struct TriggerModel : public QAbstractTableModel, ExtensionWatcher<QueryHandler>
                 }
 
             } else if (role == Qt::ForegroundRole) {
-                if (entry.enabled && engine.activeTriggers().at(entry.trigger) != entry.handler)
+                if (!entry.enabled)
+                    return QColor(Qt::gray);
+                else if (engine.activeTriggers().at(entry.trigger) != entry.handler)
                     return QColor(Qt::red);
 
             }
@@ -124,14 +126,16 @@ struct TriggerModel : public QAbstractTableModel, ExtensionWatcher<QueryHandler>
                 engine.setTrigger(query_handlers[idx.row()].handler, value.toString());
                 update();
                 emit dataChanged(index(0, (int) Column::Trigger),
-                                 index(0, (int) Column::Trigger),
+                                 index((int)query_handlers.size(), (int) Column::Trigger),
                                  {Qt::DisplayRole});
                 return true;
             } else if (role == Qt::CheckStateRole) {
                 engine.setEnabled(query_handlers[idx.row()].handler,
                                   static_cast<Qt::CheckState>(value.toUInt()) == Qt::Checked);
                 update();
-                emit dataChanged(idx, idx, {Qt::CheckStateRole});
+                emit dataChanged(index(0, (int) Column::Trigger),
+                                 index((int)query_handlers.size(), (int) Column::Trigger),
+                                 {Qt::DisplayRole});
                 return true;
             }
         }
@@ -166,29 +170,31 @@ struct TriggerModel : public QAbstractTableModel, ExtensionWatcher<QueryHandler>
 };
 
 TriggerWidget::TriggerWidget(albert::ExtensionRegistry &er, QueryEngine &qe)
+    : model(new TriggerModel(er, qe))
 {
-    auto *layout = new QVBoxLayout(this);
-    auto *model = new TriggerModel(er, qe);
-    auto *view = new QTableView(this);
-    layout->addWidget(view);
-    
-    view->verticalHeader()->hide();
-    view->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    view->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    view->horizontalHeader()->setStretchLastSection(true);
-    view->setShowGrid(false);
-    view->setAlternatingRowColors(true);
-    view->setModel(model);
-    view->setSelectionBehavior(QAbstractItemView::SelectRows);
-    view->setSelectionMode(QAbstractItemView::SingleSelection);
-    view->setEditTriggers(QTableView::DoubleClicked|QTableView::SelectedClicked|QTableView::EditKeyPressed);
+    verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    verticalHeader()->hide();
 
-    connect(view->selectionModel(), &QItemSelectionModel::currentChanged, this,
-            [view, model](const QModelIndex &current, const QModelIndex &previous){
-        view->blockSignals(true);
-        view->setCurrentIndex(model->index(current.row(), (int)Column::Trigger));
-        view->blockSignals(false);
+    horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    horizontalHeader()->setStretchLastSection(true);
+    horizontalHeader()->setSectionsClickable(false);
+
+    setShowGrid(false);
+    setFrameShape(QFrame::NoFrame);
+    setAlternatingRowColors(true);
+    setModel(model.get());
+    setSelectionBehavior(QAbstractItemView::SelectRows);
+    setSelectionMode(QAbstractItemView::SingleSelection);
+    setEditTriggers(QTableView::DoubleClicked|QTableView::SelectedClicked|QTableView::EditKeyPressed);
+
+    connect(selectionModel(), &QItemSelectionModel::currentChanged, this,
+            [this](const QModelIndex &current, const QModelIndex &previous){
+        blockSignals(true);
+        setCurrentIndex(model->index(current.row(), (int)Column::Trigger));
+        blockSignals(false);
     });
 
 
 }
+
+TriggerWidget::~TriggerWidget() = default;

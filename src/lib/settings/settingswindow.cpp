@@ -5,9 +5,9 @@
 #include "albert/logging.h"
 #include "pluginprovider.h"
 #include "pluginwidget.h"
+#include "queryengine.h"
 #include "configproviderwidget.h"
 #include "triggerwidget.h"
-#include "indexwidget.h"
 #include "settingswindow.h"
 #include "terminalprovider.h"
 #include <QCloseEvent>
@@ -22,16 +22,17 @@ SettingsWindow::SettingsWindow(albert::ExtensionRegistry &er,
     ui.setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
 
-//    ui.tabs->setStyleSheet("QTabWidget::pane { border-radius: 0px; }");
+    ui.tabs->setStyleSheet("QTabWidget::pane { border-radius: 0px; }");
 
     init_tab_general_frontend(pp);
     init_tab_general_terminal(tp);
     init_tab_general_trayIcon();
     init_tab_general_autostart();
+    init_tab_general_fuzzy(qe);
+    init_tab_general_separators(qe);
     ui.tabs->insertTab(ui.tabs->count()-1, pp.frontend->createSettingsWidget(), tr("Frontend"));
     ui.tabs->insertTab(ui.tabs->count()-1, new ConfigProviderWidget(er), tr("Extensions"));
     ui.tabs->insertTab(ui.tabs->count()-1, new TriggerWidget(er, qe), "Triggers");
-    ui.tabs->insertTab(ui.tabs->count()-1, new IndexWidget(er, qe), "Index");
     ui.tabs->insertTab(ui.tabs->count()-1, new PluginWidget(er), "Plugins");
     init_tab_about();
 
@@ -95,6 +96,20 @@ void SettingsWindow::init_tab_general_autostart()
     ui.checkBox_autostart->setEnabled(false);
     WARN << "Autostart not implemented on this platform!";
 #endif
+}
+
+void SettingsWindow::init_tab_general_fuzzy(QueryEngine &engine)
+{
+    ui.checkBox_fuzzy->setChecked(engine.fuzzy());
+    QObject::connect(ui.checkBox_fuzzy, &QCheckBox::toggled,
+                     [&engine](bool checked){ engine.setFuzzy(checked); });
+}
+
+void SettingsWindow::init_tab_general_separators(QueryEngine &engine)
+{
+    ui.lineEdit_separators->setText(engine.separators());
+    QObject::connect(ui.lineEdit_separators, &QLineEdit::editingFinished,
+                     [&](){ engine.setSeparators(ui.lineEdit_separators->text()); });
 }
 
 void SettingsWindow::init_tab_about()

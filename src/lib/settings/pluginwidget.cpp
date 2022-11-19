@@ -61,13 +61,17 @@ PluginInfoWidget::PluginInfoWidget(const albert::PluginSpec &spec)
 
     form_layout->addRow("Authors:", new QLabel(spec.authors.join("\n"), this));
 
-    form_layout->addRow("Plugin dependencies:", new QLabel(spec.plugin_dependencies.join(", "), this));
+    if (!spec.plugin_dependencies.isEmpty())
+        form_layout->addRow("Plugin dependencies:", new QLabel(spec.plugin_dependencies.join(", "), this));
 
-    form_layout->addRow("Runtime dependencies:", new QLabel(spec.runtime_dependencies.join(", "), this));
+    if (!spec.runtime_dependencies.isEmpty())
+        form_layout->addRow("Runtime dependencies:", new QLabel(spec.runtime_dependencies.join(", "), this));
 
-    form_layout->addRow("Binary depencencies:", new QLabel(spec.binary_dependencies.join(", "), this));
+    if (!spec.binary_dependencies.isEmpty())
+        form_layout->addRow("Binary depencencies:", new QLabel(spec.binary_dependencies.join(", "), this));
 
-    form_layout->addRow("Third party:", new QLabel(spec.third_party.join('\n'), this));
+    if (!spec.third_party.isEmpty())
+        form_layout->addRow("Third party:", new QLabel(spec.third_party.join('\n'), this));
 
     QString type;
     switch (spec.type) {
@@ -78,7 +82,7 @@ PluginInfoWidget::PluginInfoWidget(const albert::PluginSpec &spec)
     form_layout->addRow("Type:", new QLabel(type, this));
 
 
-    form_layout->addRow("Provider:", new QLabel(spec.provider->id(), this));
+    form_layout->addRow("Provider:", new QLabel(spec.provider->name(), this));
 }
 
 
@@ -239,30 +243,21 @@ void PluginModel::onPluginStateChanged(const albert::PluginSpec &spec)
 PluginWidget::PluginWidget(albert::ExtensionRegistry &registry) : model(registry)
 {
     setModel(&model);
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setAlternatingRowColors(true);
     setShowGrid(false);
     setSelectionBehavior(QAbstractItemView::SelectRows);
     setFrameShape(QFrame::NoFrame);
 
-    verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    verticalHeader()->setDefaultSectionSize(20);
+    verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+//    verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+//    verticalHeader()->setDefaultSectionSize(20);
     verticalHeader()->hide();
 
     horizontalHeader()->setFrameShape(QFrame::NoFrame);
     horizontalHeader()->setSectionsClickable(false);
     horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    horizontalHeader()->setSectionResizeMode((int)Column::Description, QHeaderView::Stretch);
-    horizontalHeader()->setVisible(true);
-
-//    horizontalHeader()->setSectionResizeMode((int)Column::Authors, QHeaderView::Stretch);
-//    horizontalHeader()->setStretchLastSection(true);
-//    resizeRowsToContents();
-//    resizeColumnsToContents();
-
-//    layout()->setMargin(0);
-
-//    setContentsMargins(0,0,0,0);
+    horizontalHeader()->setStretchLastSection(true);
 
     connect(this, &QTableView::activated, this, [this](const QModelIndex &index){
         auto *plugin_info_widget = new PluginInfoWidget(*model.plugins[index.row()]);

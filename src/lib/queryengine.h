@@ -29,6 +29,12 @@ public:
     void setEnabled(albert::QueryHandler*, bool);
     const std::map<QString,albert::QueryHandler*> &activeTriggers() const;
 
+    bool fuzzy() const;
+    void setFuzzy(bool);
+
+    const QString &separators() const;
+    void setSeparators(const QString &);
+
     std::unique_ptr<albert::Query> query(const QString &query);
 
 private:
@@ -36,9 +42,15 @@ private:
     void onAdd(albert::QueryHandler*) override;
     void onRem(albert::QueryHandler*) override;
     void onAdd(albert::IndexQueryHandler*) override;
+    void onRem(albert::IndexQueryHandler*) override;
 
     GlobalSearch global_search_handler_;
     std::set<albert::QueryHandler*> query_handlers_;
+    std::set<albert::IndexQueryHandler*> index_query_handlers_;
+
+
     std::map<albert::QueryHandler*,HandlerConfig> query_handler_configs_;
     std::map<QString,albert::QueryHandler*> active_triggers_;
+    bool fuzzy_;
+    QString separators_;
 };

@@ -52,7 +52,7 @@ void ConfigProviderWidget::resetUI()
     vector<pair<QString,QWidget*>> items;
     for (auto *cwp : providers){
         auto *widget = cwp->buildConfigWidget();
-        items.emplace_back(widget->objectName(), widget);
+        items.emplace_back(cwp->name(), widget);
     }
 
     sort(items.begin(), items.end(), [](auto &l, auto &r){ return l.first < r.first; });

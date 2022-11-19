@@ -9,13 +9,15 @@ using namespace albert;
 using namespace std;
 static const char *CFG_TRIGGER = "trigger";
 static const char *CFG_TRIGGER_ENABLED = "trigger_enabled";
-static const char* CFG_ERROR_TOLERANCE_DIVISOR = "error_tolerance_divisor";
-static const uint DEF_ERROR_TOLERANCE_DIVISOR = 3;
-static const char* CFG_CASE_SENSITIVE = "case_sensitive";
-static const bool  DEF_CASE_SENSITIVE = false;
+//static const char* CFG_ERROR_TOLERANCE_DIVISOR = "error_tolerance_divisor";
+static const uint DEF_ERROR_TOLERANCE_DIVISOR = 4;
+//static const char* CFG_CASE_SENSITIVE = "case_sensitive";
+//static const bool  DEF_CASE_SENSITIVE = false;
+static const char* CFG_FUZZY = "fuzzy";
+static const bool  DEF_FUZZY = false;
 static const char* CFG_SEPARATORS = "separators";
 static const char* DEF_SEPARATORS = R"R([\s\\\/\-\[\](){}#!?<>"'=+*.:,;_]+)R";
-static const uint GRAM_SIZE = 3;
+static const uint GRAM_SIZE = 2;
 
 
 QueryEngine::QueryEngine(ExtensionRegistry &registry):
@@ -23,6 +25,11 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry):
         ExtensionWatcher<IndexQueryHandler>(registry),
         global_search_handler_(registry)
 {
+
+    QSettings s;
+    fuzzy_ = s.value(CFG_FUZZY, DEF_FUZZY).toBool();
+    separators_ = s.value(CFG_SEPARATORS, DEF_SEPARATORS).toString();
+
     for (auto &[id, handler] : registry.extensions<QueryHandler>()) {
         query_handlers_.insert(handler);
         HandlerConfig config{
@@ -78,29 +85,29 @@ void QueryEngine::onRem(QueryHandler *handler)
     updateActiveTriggers();
 }
 
-void QueryEngine::onAdd(albert::IndexQueryHandler *handler)
+void QueryEngine::onAdd(IndexQueryHandler *handler)
 {
-    auto s = handler->settings();
-    auto *index = new ItemIndex(
-        s->value(CFG_SEPARATORS, DEF_SEPARATORS).toString(),
-        s->value(CFG_CASE_SENSITIVE, DEF_CASE_SENSITIVE).toBool(),
-        GRAM_SIZE,
-        s->value(CFG_ERROR_TOLERANCE_DIVISOR, DEF_ERROR_TOLERANCE_DIVISOR).toUInt()
-    );
-    handler->setIndex(unique_ptr<albert::Index>{index});
+    index_query_handlers_.insert(handler);
+    handler->setIndex(make_unique<ItemIndex>(separators_, false, GRAM_SIZE, fuzzy_?DEF_ERROR_TOLERANCE_DIVISOR:0));
 }
 
-const std::map<albert::QueryHandler*,QueryEngine::HandlerConfig> &QueryEngine::handlerConfig() const
+void QueryEngine::onRem(IndexQueryHandler *handler)
+{
+    index_query_handlers_.erase(handler);
+}
+
+
+const std::map<QueryHandler*,QueryEngine::HandlerConfig> &QueryEngine::handlerConfig() const
 {
     return query_handler_configs_;
 }
 
-const std::map<QString, albert::QueryHandler *> &QueryEngine::activeTriggers() const
+const std::map<QString, QueryHandler *> &QueryEngine::activeTriggers() const
 {
     return active_triggers_;
 }
 
-void QueryEngine::setEnabled(albert::QueryHandler *handler, bool enabled)
+void QueryEngine::setEnabled(QueryHandler *handler, bool enabled)
 {
     query_handler_configs_.at(handler).enabled = enabled;
     updateActiveTriggers();
@@ -108,7 +115,7 @@ void QueryEngine::setEnabled(albert::QueryHandler *handler, bool enabled)
     DEBG << handler->id() << (enabled ? "enabled":"disabled");
 }
 
-void QueryEngine::setTrigger(albert::QueryHandler *handler, const QString& trigger)
+void QueryEngine::setTrigger(QueryHandler *handler, const QString& trigger)
 {
     if (!handler->allow_trigger_remap())
         return;
@@ -117,4 +124,30 @@ void QueryEngine::setTrigger(albert::QueryHandler *handler, const QString& trigg
     updateActiveTriggers();
     handler->settings()->setValue(CFG_TRIGGER, trigger);
     DEBG << handler->id() << " set trigger" << trigger;
+}
+
+bool QueryEngine::fuzzy() const
+{
+    return fuzzy_;
+}
+
+void QueryEngine::setFuzzy(bool fuzzy)
+{
+    fuzzy_ = fuzzy;
+    QSettings().setValue(CFG_FUZZY, fuzzy);
+    for (auto &iqh : index_query_handlers_)
+        iqh->setIndex(make_unique<ItemIndex>(separators_, false, GRAM_SIZE, fuzzy_?DEF_ERROR_TOLERANCE_DIVISOR:0));
+}
+
+const QString &QueryEngine::separators() const
+{
+    return separators_;
+}
+
+void QueryEngine::setSeparators(const QString &separators)
+{
+    separators_ = separators;
+    QSettings().setValue(CFG_SEPARATORS, separators);
+    for (auto &iqh : index_query_handlers_)
+        iqh->setIndex(make_unique<ItemIndex>(separators_, false, GRAM_SIZE, fuzzy_?DEF_ERROR_TOLERANCE_DIVISOR:0));
 }
