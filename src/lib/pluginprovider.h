@@ -18,7 +18,8 @@ public:
     ~PluginProvider() override;
 
     void findPlugins(const QStringList &paths);
-    void loadPlugins();
+    void loadFrontend();
+    void loadUserPlugins();
     void unloadPlugins();
 
     albert::Frontend * frontend;
@@ -40,8 +41,6 @@ private:
     albert::Plugin *loadPlugin(const QString &id);
     void unloadPlugin(const QString &id);
 
-    void loadFrontend();
-    void loadUserPlugins();
 
     std::vector<albert::PluginSpec> frontends_;
     std::map<QString,albert::PluginSpec> specs;

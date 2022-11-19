@@ -48,6 +48,7 @@ file(GLOB_RECURSE LIB_SRC include/*)
 
 add_library(${TARGET_LIB} SHARED ${LIB_SRC}
         src/lib/albert.cpp
+        src/lib/app.cpp
         src/lib/extension.cpp
         src/lib/extensionregistry.cpp
         src/lib/extensions/frontend.cpp
@@ -81,7 +82,7 @@ add_library(${TARGET_LIB} SHARED ${LIB_SRC}
         src/lib/util/util.cpp
         src/lib/xdg/iconlookup.cpp
         src/lib/xdg/themefileparser.cpp
-        )
+)
 
 add_library(albert::albert ALIAS ${TARGET_LIB})
 

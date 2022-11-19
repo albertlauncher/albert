@@ -356,12 +356,6 @@ void PluginProvider::loadUserPlugins()
             loadPlugin(id);
 }
 
-void PluginProvider::loadPlugins()
-{
-    loadFrontend();
-    loadUserPlugins();
-}
-
 void PluginProvider::unloadPlugins()
 {
     for (auto &[id, spec] : specs)
