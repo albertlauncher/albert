@@ -126,13 +126,13 @@ std::vector<ItemIndex::WordMatch> ItemIndex::getWordMatches(const QString &word)
             try {
                 for (const auto &ngram_occ: index.ngrams.at(n_gram)) {
                     // Exclude the existing perfect matches
-                    if (ngram_occ.index < prefix_match_first_id || ngram_occ.index >= prefix_match_last_id)
+                    if (ngram_occ.index < prefix_match_last_id && ngram_occ.index >= prefix_match_first_id)
                         continue;
 
                     if (ngram_occ.position < static_cast<Position>(word_length))
                         ++word_match_count[ngram_occ.index];
-                    else
-                        break;
+//                    else
+//                        break;
                 }
             }
             catch (const out_of_range &)
