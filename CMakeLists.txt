@@ -267,20 +267,22 @@ install(TARGETS ${TARGET_CTL} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 ### Test ######################################################################
 
-#option(BUILD_TESTS "Build tests (Reqiures doctest)" ON)
-#if (BUILD_TESTS)
-#    set(TARGET_TST ${CMAKE_PROJECT_NAME}_test)
-#    find_package(doctest)
-#    add_executable(${TARGET_TST}
-#            src/lib/levenshtein.h
-#            src/lib/levenshtein.cpp
-#            src/lib/staticitemindex.h
-#            src/lib/staticitemindex.cpp
-#            test/test.cpp
-#    )
-#    target_include_directories(${TARGET_TST} PRIVATE include src)
-#    target_link_libraries(${TARGET_TST} PRIVATE albert::lib doctest::doctest Qt5::Core)
-#endif()
+option(BUILD_TESTS "Build tests (Reqiures doctest)" ON)
+if (BUILD_TESTS)
+    set(TARGET_TST ${CMAKE_PROJECT_NAME}_test)
+    find_package(doctest)
+    add_executable(${TARGET_TST}
+            src/lib/extensions/globalqueryhandler.cpp
+            src/lib/extensions/indexqueryhandler.cpp
+            src/lib/extensions/queryhandler.cpp
+            src/lib/itemindex.cpp
+            src/lib/levenshtein.cpp
+            src/lib/util/standarditem.cpp
+            test/test.cpp
+    )
+    target_include_directories(${TARGET_TST} PRIVATE include src/lib)
+    target_link_libraries(${TARGET_TST} PRIVATE doctest::doctest Qt6::Core Qt6::Concurrent)
+endif()
 
 ### Plugins ###################################################################
 

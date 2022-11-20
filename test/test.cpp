@@ -1,13 +1,14 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "albert/util/standarditem.h"
 #include "doctest/doctest.h"
 #include "itemindex.h"
 #include "levenshtein.h"
-#include "standarditem.h"
-#include <iostream>
-#include <chrono>
+#include "albert/extensions/indexqueryhandler.h"
 #include <QString>
+#include <chrono>
+#include <iostream>
 using namespace albert;
 using namespace std;
 using namespace std::chrono;
@@ -132,55 +133,69 @@ TEST_CASE("Levenshtein")
     CHECK(l.computePrefixEditDistanceWithLimit("abcdefghij", "abcdefghij", 6) == 0);
     CHECK(l.computePrefixEditDistanceWithLimit("abcdefghij", "abcdefghij", 7) == 0);
     CHECK(l.computePrefixEditDistanceWithLimit("abcdefghij", "abcdefghij", 8) == 0);
+
+    // Bug 2022-11-20 string is smaller than prefix
+    CHECK(l.computePrefixEditDistanceWithLimit("abc", "abc", 1) == 0);
+    CHECK(l.computePrefixEditDistanceWithLimit("abc", "ab", 1) == 1);
+    CHECK(l.computePrefixEditDistanceWithLimit("abc", "a", 1) == 2);
+    CHECK(l.computePrefixEditDistanceWithLimit("abc", "", 1) == 2);
 }
 
-TEST_CASE("OfflineIndex")
+TEST_CASE("Index")
 {
-    const char* seps = R"R([ ]+)R";
+//    class ALBERT_EXPORT IndexItem
+//    {
+//    public:
+//        IndexItem(std::shared_ptr<Item> item, QString string);
+//        std::shared_ptr<Item> item;
+//        QString string;
+//    };
+//
+//
 
-    auto match = [&](const vector<QStringList>& v, const QString& string, bool case_sesitivity, int q, int fuzzy){
-        vector<IndexItem> r;
-        for (auto & l : v) {
-            std::map<QString, Score> m;
-            for (auto &s: l)
-                m.emplace(s, 0);
-            r.emplace_back(IndexItem{makeSharedStandardItem(""), m});
-        }
-        return StaticItemIndex(move(r), seps, case_sesitivity, q, fuzzy).search(string);
+
+    auto match = [&](const QStringList& item_strings, const QString& search_string, bool case_sesitivity, int q, int fuzzy){
+
+        auto index = ItemIndex("[ ]+", case_sesitivity, q, fuzzy);
+        vector<IndexItem> index_items;
+        for (auto &string : item_strings)
+            index_items.emplace_back(make_shared<StandardItem>(), string);
+        index.setItems(index_items);
+        return index.search(search_string).size();
     };
 
     // case sensitivity
-    CHECK(match({{"a"},{"A"}}, "a", true, 0, 0).size() == 1);
-    CHECK(match({{"a"},{"A"}}, "A", true, 0, 0).size() == 1);
+    CHECK(match({"a","A"}, "a", true, 0, 0) == 1);
+    CHECK(match({"a","A"}, "A", true, 0, 0) == 1);
 
     // intersection
-    CHECK(match({{"a b"},{"b c"},{"c d"}}, "a", false, 0, 0).size() == 1);
-    CHECK(match({{"a b"},{"b c"},{"c d"}}, "b", false, 0, 0).size() == 2);
-    CHECK(match({{"a b"},{"b c"},{"c d"}}, "c", false, 0, 0).size() == 2);
-    CHECK(match({{"a b"},{"b c"},{"c d"}}, "d", false, 0, 0).size() == 1);
-    CHECK(match({{"a b"},{"b c"},{"c d"}}, "b c", false, 0, 0).size() == 1);
+    CHECK(match({"a b","b c","c d"}, "a", false, 0, 0) == 1);
+    CHECK(match({"a b","b c","c d"}, "b", false, 0, 0) == 2);
+    CHECK(match({"a b","b c","c d"}, "c", false, 0, 0) == 2);
+    CHECK(match({"a b","b c","c d"}, "d", false, 0, 0) == 1);
+    CHECK(match({"a b","b c","c d"}, "b c", false, 0, 0) == 1);
 
     // sequence
-    CHECK(match({{"a b"},{"b a"},{"a b"}}, "a b", false, 0, 0).size() == 2);
-    CHECK(match({{"a b"},{"b a"},{"a b"}}, "b a", false, 0, 0).size() == 1);
+    CHECK(match({"a b","b a","a b"}, "a b", false, 0, 0) == 2);
+    CHECK(match({"a b","b a","a b"}, "b a", false, 0, 0) == 1);
 
     // fuzzy
-    CHECK(match({{"abcdefghijklmnopqrstuvwxyz"}}, "abc", false, 2, 3).size() == 1);
-    CHECK(match({{"abcdefghijklmnopqrstuvwxyz"}}, "ab_", false, 2, 3).size() == 1);
-    CHECK(match({{"abcdefghijklmnopqrstuvwxyz"}}, "a__", false, 2, 3).size() == 0);
-    CHECK(match({{"abcdefghijklmnopqrstuvwxyz"}}, "abcdef", false, 2, 3).size() == 1);
-    CHECK(match({{"abcdefghijklmnopqrstuvwxyz"}}, "abc_e_", false, 2, 3).size() == 1);
-    CHECK(match({{"abcdefghijklmnopqrstuvwxyz"}}, "a_c_e_", false, 2, 3).size() == 0);
-    CHECK(match({{"abcdefghijklmnopqrstuvwxyz"}}, "abcdefghi", false, 2, 3).size() == 1);
-    CHECK(match({{"abcdefghijklmnopqrstuvwxyz"}}, "abcdefg_i", false, 2, 3).size() == 1);
-    CHECK(match({{"abcdefghijklmnopqrstuvwxyz"}}, "abcde_g_i", false, 2, 3).size() == 1);
-    CHECK(match({{"abcdefghijklmnopqrstuvwxyz"}}, "abc_e_g_i", false, 2, 3).size() == 1);
-    CHECK(match({{"abcdefghijklmnopqrstuvwxyz"}}, "a_c_e_g_i", false, 2, 3).size() == 0);
-    CHECK(match({{"abcdefghijklmnopqrstuvwxyz"}}, "abcd", false, 2, 4).size() == 1);
-    CHECK(match({{"abcdefghijklmnopqrstuvwxyz"}}, "abc_", false, 2, 4).size() == 1);
-    CHECK(match({{"abcdefghijklmnopqrstuvwxyz"}}, "ab__", false, 2, 4).size() == 0);
-    CHECK(match({{"abcdefghijklmnopqrstuvwxyz"}}, "abcdefgh", false, 2, 4).size() == 1);
-    CHECK(match({{"abcdefghijklmnopqrstuvwxyz"}}, "abcdefg_", false, 2, 4).size() == 1);
-    CHECK(match({{"abcdefghijklmnopqrstuvwxyz"}}, "abcde_g_", false, 2, 4).size() == 1);
-    CHECK(match({{"abcdefghijklmnopqrstuvwxyz"}}, "abc_e_g_", false, 2, 4).size() == 0);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abc", false, 2, 3) == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "ab_", false, 2, 3) == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "a__", false, 2, 3) == 0);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcdef", false, 2, 3) == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abc_e_", false, 2, 3) == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "a_c_e_", false, 2, 3) == 0);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcdefghi", false, 2, 3) == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcdefg_i", false, 2, 3) == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcde_g_i", false, 2, 3) == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abc_e_g_i", false, 2, 3) == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "a_c_e_g_i", false, 2, 3) == 0);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcd", false, 2, 4) == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abc_", false, 2, 4) == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "ab__", false, 2, 4) == 0);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcdefgh", false, 2, 4) == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcdefg_", false, 2, 4) == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcde_g_", false, 2, 4) == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abc_e_g_", false, 2, 4) == 0);
 }

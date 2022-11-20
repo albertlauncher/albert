@@ -5,7 +5,6 @@
 #include "levenshtein.h"
 #include <QRegularExpression>
 #include <map>
-#include <QtConcurrent>
 #include <algorithm>
 #include <utility>
 using namespace std;
@@ -37,16 +36,7 @@ ItemIndex::ItemIndex(QString separators, bool case_sensitive, uint n, uint error
 
 void ItemIndex::setItems(std::vector<albert::IndexItem> index_items)
 {
-    future_watcher.disconnect();
-    future_watcher.setFuture(QtConcurrent::run([this, ii=::move(index_items)]() mutable { return buildIndex(::move(ii)); }));
-    QObject::connect(&future_watcher, &QFutureWatcher<IndexData>::finished,
-                     [this](){ index = ::move(future_watcher.result()); });
-}
-
-ItemIndex::IndexData ItemIndex::buildIndex(std::vector<albert::IndexItem> &&index_items) const
-{
     IndexData index_;
-
 
     unordered_map<albert::Item*,Index> item_indices_;  // implicit unique
     map<QString,WordIndexItem> word_index_;  // implicit lexicographical order
@@ -95,7 +85,8 @@ ItemIndex::IndexData ItemIndex::buildIndex(std::vector<albert::IndexItem> &&inde
     for (auto &[_, word_refs] : index_.ngrams)
         word_refs.shrink_to_fit();
 
-    return index_;
+    unique_lock lock(mutex);
+    index = index_;
 }
 
 std::vector<ItemIndex::WordMatch> ItemIndex::getWordMatches(const QString &word) const
@@ -120,17 +111,17 @@ std::vector<ItemIndex::WordMatch> ItemIndex::getWordMatches(const QString &word)
 
         // Get the words referenced by each nGram and count the ngrams where position < word_length.
         vector<QString> ngrams(ngrams_for_word(word, n));
-        unordered_map<Index,uint> word_match_count;
+        unordered_map<Index,uint> word_match_counts;
 
         for (const QString &n_gram: ngrams) {
             try {
                 for (const auto &ngram_occ: index.ngrams.at(n_gram)) {
                     // Exclude the existing perfect matches
-                    if (ngram_occ.index < prefix_match_last_id && ngram_occ.index >= prefix_match_first_id)
+                    if (prefix_match_first_id <= ngram_occ.index && ngram_occ.index < prefix_match_last_id)
                         continue;
 
                     if (ngram_occ.position < static_cast<Position>(word_length))
-                        ++word_match_count[ngram_occ.index];
+                        ++word_match_counts[ngram_occ.index];
 //                    else
 //                        break;  // wtf is this
                 }
@@ -148,7 +139,7 @@ std::vector<ItemIndex::WordMatch> ItemIndex::getWordMatches(const QString &word)
         uint allowed_errors = (uint)((float)word_length/(float)error_tolerance_divisor);
         uint minimum_match_count = word_length - allowed_errors * n;
         Levenshtein levenshtein;
-        for (const auto &[word_idx, ngram_count]: word_match_count) {
+        for (const auto &[word_idx, ngram_count]: word_match_counts) {
             if (ngram_count < minimum_match_count)
                 continue;
 

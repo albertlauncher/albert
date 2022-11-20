@@ -13,6 +13,9 @@ uint Levenshtein::computePrefixEditDistanceWithLimit(const QString &prefix, cons
     if (k == 0)
         return string.startsWith(prefix) ? 0 : 1;
 
+    if (prefix.size() > string.size()+k)
+        return k+1;
+
     uint rows = prefix.size() + 1;
     uint cols = min(prefix.size() + k + 1, string.size() + 1);
 
@@ -48,8 +51,8 @@ uint Levenshtein::computePrefixEditDistanceWithLimit(const QString &prefix, cons
                 cell(r, r - k) = min({cell(r - 1, r - k - 1) + (prefix[r-1] == string[r - k-1] ? 0u : 1u),
                                       cell(r - 1, r - k) + 1u}));
 
-        int end = min(cols, r+k);
-        for (int c = static_cast<uint>(max(1,static_cast<int>(r)-static_cast<int>(k)+1)); c < end; ++c)
+        uint end = min(cols, r+k);
+        for (uint c = (uint)max(1,1+(int)r-(int)k); c < end; ++c)
             edit_distance = min(
                 edit_distance,
                 cell(r,c) = min({cell(r - 1, c - 1) + (prefix[r - 1] == string[c - 1] ? 0u : 1u),

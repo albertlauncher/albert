@@ -2,7 +2,6 @@
 
 #pragma once
 #include "index.h"
-#include <QFutureWatcher>
 #include <QString>
 #include <shared_mutex>
 #include <unordered_map>
@@ -64,8 +63,6 @@ private:
     const QString separators;
     const uint n;
 
-    IndexData buildIndex(std::vector<albert::IndexItem> &&index_items) const;
+//    IndexData buildIndex(std::vector<albert::IndexItem> &&index_items) const;
     std::vector<WordMatch> getWordMatches(const QString &word) const;
-
-    QFutureWatcher<IndexData> future_watcher;
 };
