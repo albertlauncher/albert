@@ -1,38 +1,32 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "albert/extensionregistry.h"
+#include "app.h"
 #include "albert/logging.h"
-#include "pluginprovider.h"
 #include "pluginwidget.h"
-#include "queryengine.h"
 #include "configproviderwidget.h"
 #include "triggerwidget.h"
 #include "settingswindow.h"
-#include "terminalprovider.h"
 #include <QCloseEvent>
 #include <QDesktopServices>
 using namespace std;
 
-SettingsWindow::SettingsWindow(albert::ExtensionRegistry &er,
-                               PluginProvider &pp,
-                               QueryEngine &qe,
-                               TerminalProvider &tp) : ui()
+SettingsWindow::SettingsWindow(App &app) : ui()
 {
     ui.setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
 
     ui.tabs->setStyleSheet("QTabWidget::pane { border-radius: 0px; }");
 
-    init_tab_general_frontend(pp);
-    init_tab_general_terminal(tp);
+    init_tab_general_frontend(app.plugin_provider);
+    init_tab_general_terminal(app.terminal_provider);
     init_tab_general_trayIcon();
     init_tab_general_autostart();
-    init_tab_general_fuzzy(qe);
-    init_tab_general_separators(qe);
-    ui.tabs->insertTab(ui.tabs->count()-1, pp.frontend->createSettingsWidget(), tr("Frontend"));
-    ui.tabs->insertTab(ui.tabs->count()-1, new ConfigProviderWidget(er), tr("Extensions"));
-    ui.tabs->insertTab(ui.tabs->count()-1, new TriggerWidget(qe), "Triggers");
-    ui.tabs->insertTab(ui.tabs->count()-1, new PluginWidget(er), "Plugins");
+    init_tab_general_fuzzy(app.query_engine);
+    init_tab_general_separators(app.query_engine);
+    ui.tabs->insertTab(ui.tabs->count()-1, app.plugin_provider.frontend()->createSettingsWidget(), tr("Frontend"));
+    ui.tabs->insertTab(ui.tabs->count()-1, new ConfigProviderWidget(app.extension_registry), tr("Extensions"));
+    ui.tabs->insertTab(ui.tabs->count()-1, new TriggerWidget(app.query_engine), "Triggers");
+    ui.tabs->insertTab(ui.tabs->count()-1, new PluginWidget(app.extension_registry), "Plugins");
     init_tab_about();
 
     auto geometry = QGuiApplication::screenAt(QCursor::pos())->geometry();
@@ -41,11 +35,11 @@ SettingsWindow::SettingsWindow(albert::ExtensionRegistry &er,
 }
 
 
-void SettingsWindow::init_tab_general_frontend(PluginProvider &plugin_provider)
+void SettingsWindow::init_tab_general_frontend(NativePluginProvider &plugin_provider)
 {
-    for (const auto &spec : plugin_provider.frontends()){
-        ui.comboBox_frontend->addItem(spec.name);
-        if (spec.id == plugin_provider.frontend->id())
+    for (const auto &spec : plugin_provider.frontendPlugins()){
+        ui.comboBox_frontend->addItem(spec->name);
+        if (spec->id == plugin_provider.frontend()->id())
             ui.comboBox_frontend->setCurrentIndex(ui.comboBox_frontend->count()-1);
     }
 

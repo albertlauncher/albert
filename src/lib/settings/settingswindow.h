@@ -3,8 +3,8 @@
 #include "ui_settingswindow.h"
 #include <QWidget>
 namespace albert { class ExtensionRegistry; }
-class FrontendProvider;
-class PluginProvider;
+class App;
+class NativePluginProvider;
 class TerminalProvider;
 class QueryEngine;
 
@@ -15,17 +15,14 @@ class SettingsWindow final : public QWidget
     Q_OBJECT
 
 public:
-    explicit SettingsWindow(albert::ExtensionRegistry&,
-                            PluginProvider&,
-                            QueryEngine&,
-                            TerminalProvider&);
+    explicit SettingsWindow(App &app);
 
     void bringToFront();
 
     Ui::SettingsWindow ui;
 
 private:
-    void init_tab_general_frontend(PluginProvider&);
+    void init_tab_general_frontend(NativePluginProvider&);
     void init_tab_general_terminal(TerminalProvider&);
     void init_tab_general_trayIcon();
     void init_tab_general_autostart();

@@ -10,7 +10,6 @@
 #include "xdg/iconlookup.h"
 #include <QApplication>
 #include <QCommandLineParser>
-#include <QDir>
 #include <QIcon>
 #include <QMessageBox>
 #include <QSettings>
@@ -30,26 +29,21 @@ const char *CFG_LAST_USED_VERSION = "last_used_version";
 unique_ptr<App> app;
 }
 
-albert::ExtensionRegistry &albert::extensionRegistry()
-{
-    return app->extension_registry;
-}
-
 void albert::show(const QString &text)
 {
     if (!text.isNull())
-        app->plugin_provider.frontend->setInput(text);
-    app->plugin_provider.frontend->setVisible(true);
+        app->plugin_provider.frontend()->setInput(text);
+    app->plugin_provider.frontend()->setVisible(true);
 }
 
 void albert::hide()
 {
-    app->plugin_provider.frontend->setVisible(false);
+    app->plugin_provider.frontend()->setVisible(false);
 }
 
 void albert::toggle()
 {
-    app->plugin_provider.frontend->setVisible(!app->plugin_provider.frontend->isVisible());
+    app->plugin_provider.frontend()->setVisible(!app->plugin_provider.frontend()->isVisible());
 }
 
 void albert::runTerminal(const QString &script, const QString &working_dir, bool close_on_exit)
@@ -60,10 +54,7 @@ void albert::runTerminal(const QString &script, const QString &working_dir, bool
 void albert::showSettings()
 {
     if (!app->settings_window)
-        app->settings_window = new SettingsWindow(app->extension_registry,
-                                                  app->plugin_provider,
-                                                  app->query_engine,
-                                                  app->terminal_provider);
+        app->settings_window = new SettingsWindow(*app);
     app->settings_window->bringToFront();
 }
 
@@ -154,37 +145,6 @@ static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
     return qapp;
 }
 
-static QStringList defaultPluginDirs()
-{
-    QStringList pluginDirs;
-#if defined __linux__ || defined __FreeBSD__
-    QStringList dirs = {
-#if defined MULTIARCH_TUPLE
-        QFileInfo("/usr/lib/" MULTIARCH_TUPLE).canonicalFilePath(),
-#endif
-        QFileInfo("/usr/lib/").canonicalFilePath(),
-        QFileInfo("/usr/lib64/").canonicalFilePath(),
-        QFileInfo("/usr/local/lib/").canonicalFilePath(),
-        QFileInfo("/usr/local/lib64/").canonicalFilePath(),
-        QDir::home().filePath(".local/lib/"),
-        QDir::home().filePath(".local/lib64/")
-    };
-
-    dirs.removeDuplicates();
-
-    for ( const QString& dir : dirs ) {
-        QFileInfo fileInfo = QFileInfo(QDir(dir).filePath("albert/plugins"));
-        if ( fileInfo.isDir() )
-            pluginDirs.push_back(fileInfo.canonicalFilePath());
-    }
-#elif defined __APPLE__
-    pluginDirs.push_back(QDir("../lib").canonicalPath()); // TODO deplopyment?
-#elif defined _WIN32
-    qFatal("Not implemented");
-#endif
-    return pluginDirs;
-}
-
 static void printSystemReportAndExit()
 {
     QTextStream out(stdout);
@@ -272,16 +232,12 @@ int main(int argc, char **argv)
     setActivationPolicyAccessory();
 #endif
 
-    app = make_unique<App>();
+    app = make_unique<App>(parser.value(opt_p).split(','));
+    app->initialize();
     notifyVersionChange();
-
-    app->plugin_provider.findPlugins(defaultPluginDirs() << parser.value(opt_p).split(','));
-    app->plugin_provider.loadFrontend();
-    app->plugin_provider.frontend->setEngine(&app->query_engine);
-    app->plugin_provider.loadUserPlugins();
     QObject::connect(qApp, &QApplication::aboutToQuit, [&]() { app.reset(); }); // Delete app _before_ loop exits
 
-//    albert::showSettings();
+    albert::showSettings();
 
     int return_value = qApp->exec();
     if (return_value == -1 && runDetachedProcess(qApp->arguments(), QDir::currentPath()))

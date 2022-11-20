@@ -2,14 +2,6 @@
 <ui version="4.0">
  <class>SettingsWindow</class>
  <widget class="QWidget" name="SettingsWindow">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>600</width>
-    <height>400</height>
-   </rect>
-  </property>
   <property name="minimumSize">
    <size>
     <width>600</width>
@@ -35,7 +27,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabs">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab_general">
       <attribute name="title">
@@ -161,7 +153,7 @@
       <attribute name="title">
        <string>About</string>
       </attribute>
-      <layout class="QVBoxLayout" name="layout_about" stretch="1,0,0,2">
+      <layout class="QVBoxLayout" name="layout_about">
        <item>
         <spacer name="verticalSpacer">
          <property name="orientation">
@@ -194,9 +186,6 @@
            <property name="scaledContents">
             <bool>true</bool>
            </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
           </widget>
          </item>
         </layout>
@@ -211,7 +200,9 @@ hr { height: 1px; border-width: 0; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'.AppleSystemUIFont'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Albert launcher ___versionstring___&lt;/span&gt; &lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Written in &lt;a href=&quot;https://wikipedia.org/wiki/C++&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;C++&lt;/span&gt;&lt;/a&gt; powered by &lt;a href=&quot;aboutQt&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;Qt&lt;/span&gt;&lt;/a&gt;. &lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;If you encounter bugs or think you have suggestions for improvement, tell me at &lt;a href=&quot;https://github.com/albertlauncher/albert/issues&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;GitHub&lt;/span&gt;&lt;/a&gt;. If you like this software consider a &lt;a href=&quot;https://albertlauncher.github.io/donation/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;donation&lt;/span&gt;&lt;/a&gt;. I'd like to thank all &lt;a href=&quot;https://github.com/albertlauncher/albert/graphs/contributors&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;contributors&lt;/span&gt;&lt;/a&gt;, &lt;a href=&quot;https://albertlauncher.github.io/supporters/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;supporters&lt;/span&gt;&lt;/a&gt; and users. You keep this project going on. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Please report bugs or other suggestions on &lt;a href=&quot;https://github.com/albertlauncher/albert/issues&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;GitHub&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;If you like this software consider a &lt;a href=&quot;https://albertlauncher.github.io/donation/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;donation&lt;/span&gt;&lt;/a&gt;👍.&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;I'd like to thank all contributors, supporters and users.&lt;br /&gt;You keep this project going on. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -240,9 +231,6 @@ hr { height: 1px; border-width: 0; }
    </item>
   </layout>
  </widget>
- <tabstops>
-  <tabstop>tabs</tabstop>
- </tabstops>
  <resources>
   <include location="../resources.qrc"/>
  </resources>

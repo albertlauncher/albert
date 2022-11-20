@@ -132,7 +132,7 @@ std::vector<ItemIndex::WordMatch> ItemIndex::getWordMatches(const QString &word)
                     if (ngram_occ.position < static_cast<Position>(word_length))
                         ++word_match_count[ngram_occ.index];
 //                    else
-//                        break;
+//                        break;  // wtf is this
                 }
             }
             catch (const out_of_range &)

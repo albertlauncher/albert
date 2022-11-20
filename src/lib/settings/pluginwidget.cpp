@@ -49,7 +49,7 @@ PluginInfoWidget::PluginInfoWidget(const albert::PluginSpec &spec)
 
     form_layout->addRow("License:", new QLabel(spec.license, this));
 
-    QLabel *label = new QLabel(this);
+    auto *label = new QLabel(this);
     label->setText(QString("<a href=\"%1\">%1</a>").arg(spec.url));
     label->setTextFormat(Qt::RichText);
     label->setTextInteractionFlags(Qt::TextBrowserInteraction);
@@ -75,9 +75,9 @@ PluginInfoWidget::PluginInfoWidget(const albert::PluginSpec &spec)
 
     QString type;
     switch (spec.type) {
-        case PluginType::None: type = "None"; break;
-        case PluginType::User: type = "User"; break;
-        case PluginType::Frontend: type = "Frontend"; break;
+        case PluginSpec::Type::None: type = "None"; break;
+        case PluginSpec::Type::User: type = "User"; break;
+        case PluginSpec::Type::Frontend: type = "Frontend"; break;
     }
     form_layout->addRow("Type:", new QLabel(type, this));
 
@@ -97,8 +97,6 @@ enum class Column
 
 PluginModel::PluginModel(albert::ExtensionRegistry &registry) : ExtensionWatcher<PluginProvider>(registry)
 {
-    for (auto &[id, pp] : registry.extensions<PluginProvider>())
-        connect(pp, &PluginProvider::pluginStateChanged,this, &PluginModel::onPluginStateChanged);
     updatePlugins();
 }
 
@@ -115,28 +113,26 @@ int PluginModel::columnCount(const QModelIndex &) const
 QVariant PluginModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid()
-            || index.row() < 0 || rowCount() <= index.row()
-            || index.column() < 0 || columnCount() <= index.column())
-        return QVariant();
+            || index.row() < 0 || rowCount(index.parent()) <= index.row()
+            || index.column() < 0 || columnCount(index.parent()) <= index.column())
+        return {};
 
     const auto &spec = *plugins[index.row()];
 
     switch (static_cast<Column>(index.column())) {
         case Column::Enabled:
-            if (role == Qt::CheckStateRole && spec.type == PluginType::User)
+            if (role == Qt::CheckStateRole && spec.type == PluginSpec::Type::User)
                 return (spec.provider->isEnabled(spec.id)) ? Qt::Checked : Qt::Unchecked;
             break;
 
         case Column::State:
             if (role == Qt::DecorationRole)
                 switch (spec.state) {
-                    case PluginState::Error:
+                    case PluginSpec::State::Error:
                         return QIcon(":plugin_error");
-                    case PluginState::Loaded:
+                    case PluginSpec::State::Loaded:
                         return QIcon(":plugin_loaded");
-                    case PluginState::Loading:
-                        return QIcon(":plugin_loading");
-                    case PluginState::Unloaded:
+                    case PluginSpec::State::Unloaded:
                         return QIcon(":plugin_unloaded");
                 }
             else if (role == Qt::ToolTipRole && !spec.reason.isEmpty())
@@ -160,20 +156,22 @@ QVariant PluginModel::data(const QModelIndex &index, int role) const
                 return spec.description;
             break;
     }
-    return QVariant();
+    return {};
 }
 
-bool PluginModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool PluginModel::setData(const QModelIndex &idx, const QVariant &value, int role)
 {
-    if (!index.isValid() || static_cast<Column>(index.column()) != Column::Enabled || role != Qt::CheckStateRole)
-        return false;
-
-    const auto &spec = *plugins[index.row()];
-
-    try {
-        spec.provider->setEnabled(spec.id, value == Qt::Checked);
-        return true;
-    } catch (std::out_of_range &e){}
+    if (idx.isValid()
+        && static_cast<Column>(idx.column()) == Column::Enabled
+        && role == Qt::CheckStateRole){
+        try {
+            const auto &spec = *plugins[idx.row()];
+            spec.provider->setEnabled(spec.id, value == Qt::Checked);
+            emit dataChanged(index(idx.row(), (int)Column::Enabled),
+                             index(idx.row(), (int)Column::State));
+            return true;
+        } catch (std::out_of_range &e){}
+    }
     return false;
 }
 
@@ -191,14 +189,14 @@ QVariant PluginModel::headerData(int section, Qt::Orientation orientation, int r
             case Column::Description:
                 return "Description";
         }
-    return QVariant();
+    return {};
 }
 
 Qt::ItemFlags PluginModel::flags(const QModelIndex &index) const
 {
-    if (!index.isValid() || index.row() < 0 || rowCount() <= index.row())
+    if (!index.isValid() || index.row() < 0 || rowCount(index.parent()) <= index.row())
         return Qt::NoItemFlags;
-    else if (plugins[index.row()]->type == PluginType::User)
+    else if (plugins[index.row()]->type == PluginSpec::Type::User)
         return Qt::ItemIsSelectable | Qt::ItemNeverHasChildren | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable;
     else
         return Qt::ItemIsSelectable | Qt::ItemNeverHasChildren | Qt::ItemIsEnabled;
@@ -206,39 +204,25 @@ Qt::ItemFlags PluginModel::flags(const QModelIndex &index) const
 
 void PluginModel::onAdd(PluginProvider *pp)
 {
-    connect(pp, &PluginProvider::pluginStateChanged,
-            this, &PluginModel::onPluginStateChanged);
     updatePlugins();
 }
 
 void PluginModel::onRem(PluginProvider *pp)
 {
-    disconnect(pp, &PluginProvider::pluginStateChanged,
-               this, &PluginModel::onPluginStateChanged);
     updatePlugins();
 }
 
 void PluginModel::updatePlugins()
 {
     beginResetModel();
-
     plugins.clear();
     for (const auto &[ppid, pp] : registry.extensions<PluginProvider>())
         for (const auto&[pid, spec] : pp->plugins())
             plugins.emplace_back(&spec);
 
     std::sort(plugins.begin(), plugins.end(), [](const auto &l, const auto &r){ return l->name < r->name; });
-
     endResetModel();
 }
-
-void PluginModel::onPluginStateChanged(const albert::PluginSpec &spec)
-{
-    if (auto it = std::find_if(plugins.cbegin(), plugins.cend(), [&](const auto *p){ return p->id == spec.id; });
-        it != plugins.cend())
-        dataChanged(index(it - plugins.cbegin(), 0), index(it - plugins.cbegin(), columnCount()));
-}
-
 
 PluginWidget::PluginWidget(albert::ExtensionRegistry &registry) : model(registry)
 {

@@ -6,9 +6,6 @@
 
 namespace albert
 {
-class ExtensionRegistry;
-ALBERT_EXPORT ExtensionRegistry &extensionRegistry();
-
 ALBERT_EXPORT void show(const QString &text = QString());
 
 ALBERT_EXPORT void hide();

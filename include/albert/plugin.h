@@ -10,6 +10,7 @@
 namespace albert
 {
 class PluginSpec;
+class ExtensionRegistry;
 
 /// The plugin entry point class.
 /// Qt requires plugin classes to be default constructible, inherit QObject and
@@ -22,10 +23,18 @@ class ALBERT_EXPORT Plugin : public QObject, virtual public Extension
 {
 public:
     Plugin();
+    ~Plugin() override;
+
+    void addExtension(Extension*);  /// Add a managed extension. Automatically removed on plugin destruction
+    ExtensionRegistry &registry();
+    PluginSpec &spec();
+
     QString id() const override;  /// Override using the plugin specification
     QString name() const override;  /// Override using the plugin specification
     QString description() const override;  /// Override using the plugin specification
 
-    const PluginSpec &spec;  /// Plugin specification
+private:
+    class Private;
+    std::unique_ptr<Private> d;
 };
 }

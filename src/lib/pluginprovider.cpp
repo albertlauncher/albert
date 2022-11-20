@@ -2,49 +2,156 @@
 
 #include "albert/albert.h"
 #include "albert/config.h"
-#include "albert/extensionregistry.h"
 #include "albert/extensions/frontend.h"
+#include "albert/extensionregistry.h"
 #include "albert/logging.h"
 #include "albert/plugin.h"
 #include "pluginprovider.h"
-#include <QCoreApplication>
+#include <QDir>
 #include <QDirIterator>
+#include <QFileInfo>
+#include <QIcon>
 #include <QMessageBox>
 #include <QPluginLoader>
-#include <QSettings>
-#include <QStandardPaths>
 #include <chrono>
-#include <memory>
+using namespace std;
+using namespace albert;
+using chrono::duration_cast;
+using chrono::milliseconds;
+using chrono::system_clock;
 static const char *CFG_FRONTEND_ID = "frontend";
 static const char *DEF_FRONTEND_ID = "widgetsboxmodel";
-using albert::Frontend;
-using albert::PluginSpec;
-using albert::PluginState;
-using albert::PluginType;
-using namespace std;
-using std::chrono::duration_cast;
-using std::chrono::milliseconds;
-using std::chrono::system_clock;
 
 static const char *IID_PATTERN = R"R(org.albert.PluginInterface/(\d+).(\d+))R";
-albert::PluginSpec *current_spec_in_construction = nullptr;
-
-PluginProvider::PluginProvider(albert::ExtensionRegistry &registry) : registry(registry), frontend(nullptr)
+PluginSpec *current_spec_in_construction = nullptr;
+ExtensionRegistry *extension_registry = nullptr;
+static QStringList defaultPaths()
 {
-
+    QStringList default_paths;
+#if defined __linux__ || defined __FreeBSD__
+    QStringList dirs = {
+        QDir::home().filePath(".local/lib/"),
+        QDir::home().filePath(".local/lib64/"),
+        QFileInfo("/usr/local/lib/").canonicalFilePath(),
+        QFileInfo("/usr/local/lib64/").canonicalFilePath(),
+#if defined MULTIARCH_TUPLE
+        QFileInfo("/usr/lib/" MULTIARCH_TUPLE).canonicalFilePath(),
+#endif
+        QFileInfo("/usr/lib/").canonicalFilePath(),
+        QFileInfo("/usr/lib64/").canonicalFilePath(),
+    };
+    dirs.removeDuplicates();
+    for ( const QString& dir : dirs ) {
+        QFileInfo fileInfo = QFileInfo(QDir(dir).filePath("albert/plugins"));
+        if ( fileInfo.isDir() )
+            default_paths.push_back(fileInfo.canonicalFilePath());
+    }
+#elif defined __APPLE__
+    default_paths.push_back(QDir("../lib").canonicalPath()); // TODO deplopyment?
+#elif defined _WIN32
+    qFatal("Not implemented");
+#endif
+    return default_paths;
 }
 
-PluginProvider::~PluginProvider()
+NativePluginProvider::NativePluginProvider(albert::ExtensionRegistry &registry, const QStringList &additional_paths):
+    registry_(registry), frontend_(nullptr)
 {
-    unloadPlugins();
+    QStringList paths;
+    paths << additional_paths;
+    paths << defaultPaths();
+
+    for (const auto &path : paths) {
+        QDirIterator dirIterator(path, QDir::Files);
+        while (dirIterator.hasNext()) {
+            try {
+                auto spec = parsePluginMetadata(dirIterator.next());
+                if (const auto &[it, success] = plugins_.emplace(spec.id, spec); success){
+                    if (spec.type == PluginSpec::Type::Frontend)
+                        frontend_plugins_.emplace_back(&it->second);
+                } else
+                    WARN << "Plugin id already exists. Skip" << spec.path;
+            } catch (const runtime_error &e) {
+                WARN << e.what() << dirIterator.filePath();
+            }
+        }
+    }
+
+    if (frontend_plugins_.empty())
+        qFatal("No frontends found.");
+
+    extension_registry = &registry;
 }
 
-albert::PluginSpec PluginProvider::parsePluginMetadata(const QString& path)
+NativePluginProvider::~NativePluginProvider()
+{
+    for (auto &[id, spec] : plugins_)
+        if (spec.state == PluginSpec::State::Loaded)
+            unload(spec);
+}
+
+void NativePluginProvider::loadFrontend()
+{
+    DEBG << "Loading frontend plugin…";
+    // Helper function loading frontend extensions
+    auto load_frontend = [this](PluginSpec *spec) -> Frontend* {
+        if (auto *p = load(*spec); p){
+            if (auto *f = dynamic_cast<Frontend*>(p); f)
+                return f;
+            else
+                unload(*spec);
+        }
+        return nullptr;  // Loading failed
+    };
+
+    // Try loading the configured frontend
+    auto cfg_frontend = QSettings().value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString();
+    if (auto it = std::find_if(frontend_plugins_.begin(), frontend_plugins_.end(),
+                               [&](const PluginSpec *spec){ return cfg_frontend == spec->id; });
+            it == frontend_plugins_.end())
+        WARN << "Configured frontend does not exist: " << cfg_frontend;
+    else if (frontend_ = load_frontend(*it); frontend_)
+        return;
+    else
+        WARN << "Loading configured frontend failed. Try any other.";
+
+    for (auto &spec : frontend_plugins_)
+        if (frontend_ = load_frontend(spec); frontend_) {
+            WARN << QString("Using %1 instead.").arg(spec->id);
+            return;
+        }
+    qFatal("Could not load any frontend.");
+}
+
+albert::Frontend *NativePluginProvider::frontend()
+{
+    return frontend_;
+}
+
+const std::vector<albert::PluginSpec*> &NativePluginProvider::frontendPlugins()
+{
+    return frontend_plugins_;
+}
+
+void NativePluginProvider::setFrontend(uint index)
+{
+    QSettings().setValue(CFG_FRONTEND_ID, frontend_plugins_[index]->id);
+    if (frontend_plugins_[index]->id != frontend_->id()){
+        QMessageBox msgBox(QMessageBox::Question, "Restart?",
+                           "Changing the frontend needs a restart. Do you want to restart Albert?",
+                           QMessageBox::Yes | QMessageBox::No);
+        if (msgBox.exec() == QMessageBox::Yes)
+            albert::restart();
+    }
+}
+
+
+PluginSpec NativePluginProvider::parsePluginMetadata(const QString& path)
 {
     QPluginLoader loader(path);
     QStringList errors;
-    albert::PluginSpec spec;
-    spec.provider = this;
+    PluginSpec spec;
+    spec.provider = static_cast<PluginProvider *>(this);
     spec.path = path;
 
     spec.iid = loader.metaData()["IID"].toString();
@@ -77,11 +184,11 @@ albert::PluginSpec PluginProvider::parsePluginMetadata(const QString& path)
     spec.binary_dependencies = rawMetadata["binary_dependencies"].toVariant().toStringList();
     spec.third_party = rawMetadata["third_party"].toVariant().toStringList();
     if (auto string_type = rawMetadata["type"].toString(); string_type == "none")
-        spec.type = PluginType::None;
+        spec.type = PluginSpec::Type::None;
     else if (string_type == "frontend")
-        spec.type = PluginType::Frontend;
+        spec.type = PluginSpec::Type::Frontend;
     else
-        spec.type = PluginType::User;
+        spec.type = PluginSpec::Type::User;
 
     if (!QRegularExpression(R"(^\d+\.\d+$)").match(spec.version).hasMatch())
         WARN << "Invalid version scheme. Use '<version>.<patch>'.";
@@ -104,141 +211,238 @@ albert::PluginSpec PluginProvider::parsePluginMetadata(const QString& path)
     if (spec.authors.isEmpty())
         WARN << "'authors' should not be empty.";
 
-    if (!spec.binary_dependencies.isEmpty())
-        for (auto &executable : spec.binary_dependencies)
-            if (QStandardPaths::findExecutable(executable).isNull())
-                errors << QString("Executable '%s' not found.").arg(executable);
-
     // Finally set state based on errors
 
     if (errors.isEmpty())
-        spec.state = PluginState::Unloaded;
+        spec.state = PluginSpec::State::Unloaded;
     else{
         WARN << errors.join(" ") << path;
-        spec.state = PluginState::Error;
+        spec.state = PluginSpec::State::Error;
         spec.reason = errors.join(" ");
     }
 
     return spec;
 }
 
-albert::Plugin *PluginProvider::loadPlugin(const QString &id)
+// Interfaces
+
+QString NativePluginProvider::id() const
 {
-    auto &spec = specs.at(id);
+    return "pluginprovider";
+}
 
-    switch (spec.state) {
-        case PluginState::Error:
-            [[fallthrough]];
-        case PluginState::Unloaded:
-        {
-            DEBG << "Loading plugin" << spec.id;
-            auto start = system_clock::now();
-            spec.state = PluginState::Loading;
-            emit pluginStateChanged(spec);
-            QPluginLoader loader(spec.path);
+QString NativePluginProvider::name() const
+{
+    return "Native plugin provider";
+}
 
-            // Some python libs do not link against python. Export the python symbols to the main app.
-            loader.setLoadHints(QLibrary::ExportExternalSymbolsHint | QLibrary::PreventUnloadHint);
+QString NativePluginProvider::description() const
+{
+    return "Loads native C++ albert plugins";
+}
 
-            QString error;
-            try {
-                current_spec_in_construction = &spec;
-                if (QObject *instance = loader.instance()){
-                    DEBG << QString("Success [%1ms]").arg(duration_cast<milliseconds>(system_clock::now() - start).count());
-                    spec.state = PluginState::Loaded;
-                    emit pluginStateChanged(spec);
-                    if (auto *e = dynamic_cast<Extension*>(instance))
-                        registry.add(e);  // Auto registration
-                    if (auto *p = dynamic_cast<albert::Plugin*>(instance); p)
-                        return p;
-                    else
-                        qFatal("Plugin is not of type albert::Plugin: %s", spec.path.toLocal8Bit().data());
-                } else
-                    error = loader.errorString();
-                current_spec_in_construction = nullptr;
-            } catch (const std::exception& e) {
-                error = e.what();
-            } catch (const string& s) {
-                error = QString::fromStdString(s);
-            } catch (const QString& s) {
-                error = s;
-            } catch (const char *s) {
-                error = s;
-            } catch (...) {
-                error = "Unknown exception.";
-            }
+QIcon NativePluginProvider::icon() const
+{
+    return QIcon(":cpp");
+}
 
-            DEBG << "Loading plugin failed:" << error;
-            loader.unload();
-            spec.state = PluginState::Error;
-            spec.reason = error;
-            emit pluginStateChanged(spec);
-            return nullptr;
-        }
-            // These should never happen
-        case PluginState::Loading:
-            qFatal("Tried to load a loading plugin.");
-        case PluginState::Loaded:
-            qFatal("Tried to load a loaded plugin.");
+const map<QString,PluginSpec> &NativePluginProvider::plugins() const
+{
+    return plugins_;
+}
+
+bool NativePluginProvider::isEnabled(const QString &id)
+{
+    return QSettings().value(QString("%1/enabled").arg(id), false).toBool();
+}
+
+bool NativePluginProvider::setEnabled(const QString &id, bool enable)
+{
+    try{
+        auto &spec = plugins_.at(id);
+        QSettings().setValue(QString("%1/enabled").arg(id), enable);
+        return enable ? (bool)load(spec) : unload(spec);
+    } catch (const out_of_range &) {
+        WARN << "Enabled nonexistant id:" << id;
+        return false;
     }
 }
 
-void PluginProvider::unloadPlugin(const QString &id)
+Plugin *NativePluginProvider::load(PluginSpec &spec)
 {
-    auto &spec = specs.at(id);
+    if (spec.state == PluginSpec::State::Loaded)
+        qFatal("Logic error: Loading a loaded plugin.");
 
-    switch (spec.state) {
-        case PluginState::Loaded:
-        {
-            DEBG << "Unloading plugin" << spec.id;
-            QPluginLoader loader(spec.path);
-            if (auto *e = dynamic_cast<Extension*>(loader.instance()))
-                registry.remove(e);  // Auto deregistration
-            auto start = system_clock::now();
-            loader.unload();
-            DEBG << QString("%1 unloaded in %2 milliseconds").arg(spec.id)
-                        .arg(duration_cast<milliseconds>(system_clock::now()-start).count());
-            spec.state = PluginState::Unloaded;
-            emit pluginStateChanged(spec);
-            return;
-        }
-            // These should never happen
-        case PluginState::Error:
-            qFatal("Tried to unload an unloaded (state error) plugin.");
-        case PluginState::Unloaded:
-            break;
-        case PluginState::Loading:
-            qFatal("Tried to unload a loading plugin.");
+    INFO << QString("Loading plugin '%1'").arg(spec.id);
+    QPluginLoader loader(spec.path);
+    // Some python libs do not link against python. Export the python symbols to the main app.
+    loader.setLoadHints(QLibrary::ExportExternalSymbolsHint | QLibrary::PreventUnloadHint);
+
+    QString error;
+    auto start = system_clock::now();
+    try {
+        current_spec_in_construction = &spec;
+        if (auto *instance = loader.instance()){
+            if (auto *plugin = dynamic_cast<Plugin*>(instance)){
+                spec.state = PluginSpec::State::Loaded;
+                DEBG << QString("Plugin '%1' loaded (%2ms)").arg(spec.id)
+                            .arg(duration_cast<milliseconds>(system_clock::now() - start).count());
+                if (auto *e = dynamic_cast<Extension*>(instance))
+                    registry_.add(e);  // Auto registration
+                return plugin;
+            } else
+                error = "Plugin is not of type albert::Plugin";
+        } else
+            error = loader.errorString();
+    } catch (const exception& e) {
+        error = e.what();
+    } catch (const string& s) {
+        error = QString::fromStdString(s);
+    } catch (const QString& s) {
+        error = s;
+    } catch (const char *s) {
+        error = s;
+    } catch (...) {
+        error = "Unknown exception.";
     }
+
+    DEBG << "Loading plugin failed:" << error;
+    loader.unload();
+    spec.state = PluginSpec::State::Error;
+    spec.reason = error;
+    return nullptr;
 }
 
-void PluginProvider::findPlugins(const QStringList &paths)
+bool NativePluginProvider::unload(PluginSpec &spec)
 {
-    unloadPlugins();
+    if (spec.state != PluginSpec::State::Loaded)
+        qFatal("Logic error: Unloading an unloaded plugin.");
 
-    specs.clear();
-    frontends_.clear();
-
-    // Find plugins
-    for (auto it = paths.rbegin(); it != paths.rend(); ++it) {
-        QDirIterator dirIterator(*it, QDir::Files);
-        while (dirIterator.hasNext()) {
-            try {
-                auto spec = parsePluginMetadata(dirIterator.next());
-                if (const auto &[_, success] = specs.emplace(spec.id, spec); success){
-                    if (spec.type == PluginType::Frontend)
-                        frontends_.emplace_back(spec);
-                }
-                else
-                    WARN << "Plugin id already exists. Skip" << spec.path;
-            } catch (const runtime_error &e) {
-                WARN << e.what() << dirIterator.filePath();
-            }
-        }
+    DEBG << "Unloading plugin" << spec.id;
+    QPluginLoader loader(spec.path);
+    if (auto *e = dynamic_cast<Extension*>(loader.instance()))
+        registry_.remove(e);  // Auto deregistration
+    auto start = system_clock::now();
+    bool success = loader.unload();
+    if (success){
+        spec.state = PluginSpec::State::Unloaded;
+        DEBG << QString("%1 unloaded in %2 milliseconds").arg(spec.id)
+                .arg(duration_cast<milliseconds>(system_clock::now()-start).count());
+    } else {
+        spec.state = PluginSpec::State::Error;
+        WARN << (spec.reason = loader.errorString());
     }
+    return success;
+}
 
-    if (frontends_.empty())
-        qFatal("No frontends found.");
+void NativePluginProvider::loadEnabledPlugins()
+{
+    DEBG << "Loading enabled user plugins…";
+    for (auto &[id, spec] : plugins_)
+        if (spec.type == PluginSpec::Type::User && isEnabled(id))
+            load(spec);
+}
+
+
+
+
+//    // ALL plugins
+//    std::vector<std::unique_ptr<NativePluginSpec>> plugins_;
+//    std::map<QString,NativePluginSpec*> plugin_index;
+//    // VALID plugins
+//    std::map<NativePluginSpec*,std::set<NativePluginSpec*>> transitive_dependencies;
+//    std::map<NativePluginSpec*,std::set<NativePluginSpec*>> transitive_dependees;
+//
+//if (!spec.binary_dependencies.isEmpty())
+//for (auto &executable : spec.binary_dependencies)
+//if (QStandardPaths::findExecutable(executable).isNull())
+//errors << QString("Executable '%s' not found.").arg(executable);
+//
+
+
+//
+//void PluginProvider::setEnabled(const QString &id, bool enable)
+//{
+//    QSettings().setValue(QString("%1/enabled").arg(id), enable);
+//    enable ? (void)loadPlugin(id) : unloadPlugin(id);
+//
+////    if (isEnabled(id) == enabled)
+////        return false;
+//
+////    auto *plugin = plugin_index.at(id);
+////
+////    if (enabled){
+////        // Get dependencies
+////        auto dependencies = transitive_dependencies.at(plugin);
+////
+////        // Remove dependencies which are already enabled
+////        for (auto it = dependencies.begin(); it != dependencies.end();)
+////            if (isEnabled((*it)->id()))
+////                it = dependencies.erase(it);
+////            else
+////                ++it;
+////
+////        // Don't break expectations. ask user if plugins get enabled implicitly
+////        if (!dependencies.empty()) {
+////            QStringList names;
+////            for (auto *dep: dependencies)
+////                names << dep->metadata().name;
+////            auto text = QString("This will also enable %1. Continue?").arg(names.join(","));
+////            if (QMessageBox::question(nullptr, text, "Continue?") == QMessageBox::No)
+////                return false;
+////        }
+////
+////        dependencies.insert(plugin);
+////
+////        // Store enabled settings
+////        QSettings s(QCoreApplication::instance()->applicationName());
+////        for (auto *p : dependencies)
+////            s.setValue(QString("%1/enabled").arg(p->id()), true);
+////
+////        // Safe load order loading
+////        for (auto &p : plugins_)
+////            if (dependencies.count(p.get()))
+////                plugin->load();
+////    }
+////    else
+////    {
+////        // Get dependees
+////        auto dependees = transitive_dependees.at(plugin);
+////
+////        // Remove dependees which are already disabled
+////        for (auto it = dependees.begin(); it != dependees.end();)
+////            if (!isEnabled((*it)->id()))
+////                it = dependees.erase(it);
+////            else
+////                ++it;
+////
+////        // Don't break expectations. ask user if plugins get disabled implicitly
+////        if (!dependees.empty()) {
+////            QStringList names;
+////            for (auto *dep: dependees)
+////                names << dep->metadata().name;
+////            auto text = QString("This will also disable %1. Continue?").arg(names.join(","));
+////            if (QMessageBox::question(nullptr, text, "Continue?") == QMessageBox::No)
+////                return false;
+////        }
+////
+////        dependees.insert(plugin);
+////
+////        // Store enabled settings
+////        QSettings s(QCoreApplication::instance()->applicationName());
+////        for (auto *p : dependees)
+////            s.setValue(QString("%1/enabled").arg(p->id()), false);
+////
+////        // Safe load order UN-loading
+////        for (auto it = plugins_.crbegin(); it != plugins_.crend(); ++it)
+////            if (dependees.count((*it).get()))
+////                plugin->load();
+////    }
+////    return true;
+//}
+//
+
+
 
 
 //    /*
@@ -313,181 +517,3 @@ void PluginProvider::findPlugins(const QStringList &paths)
 //
 //    loadFrontend();
 //    loadEnabledPlugins();
-}
-
-void PluginProvider::loadFrontend()
-{
-    DEBG << "Loading frontend plugin…";
-    // Helper function loading frontend extensions
-    auto load_frontend = [this](const QString &id) -> Frontend* {
-        if (auto *p = loadPlugin(id); p){
-            if (auto *f = dynamic_cast<Frontend*>(p); f)
-                return f;
-            else
-                unloadPlugin(id);
-        }
-        return nullptr;  // Loading failed
-    };
-
-    // Try loading the configured frontend
-    auto cfg_frontend = QSettings().value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString();
-    if (auto it = std::find_if(frontends_.begin(), frontends_.end(),
-                               [&](const PluginSpec & spec){ return cfg_frontend == spec.id; });
-            it == frontends_.end())
-        WARN << "Configured frontend does not exist: " << cfg_frontend;
-    else if (frontend = load_frontend(cfg_frontend); frontend)
-        return;
-    else
-        WARN << "Loading configured frontend failed. Try any other.";
-
-    for (auto &spec : frontends_)
-        if (frontend = load_frontend(spec.id); frontend) {
-            WARN << QString("Using %1 instead.").arg(spec.id);
-            return;
-        }
-    qFatal("Could not load any frontend.");
-}
-
-void PluginProvider::loadUserPlugins()
-{
-    DEBG << "Loading enabled user plugins…";
-    for (auto &[id, spec] : specs)
-        if (spec.type == PluginType::User && isEnabled(id))
-            loadPlugin(id);
-}
-
-void PluginProvider::unloadPlugins()
-{
-    for (auto &[id, spec] : specs)
-        unloadPlugin(id);
-}
-
-void PluginProvider::setFrontend(uint index)
-{
-    QSettings().setValue(CFG_FRONTEND_ID, frontends_[index].id);
-    if (frontends_[index].id != frontend->id()){
-        QMessageBox msgBox(QMessageBox::Question, "Restart?",
-                           "Changing the frontend needs a restart. Do you want to restart Albert?",
-                           QMessageBox::Yes | QMessageBox::No);
-        if (msgBox.exec() == QMessageBox::Yes)
-            albert::restart();
-    }
-}
-
-const std::vector<albert::PluginSpec> &PluginProvider::frontends()
-{
-    return frontends_;
-}
-
-// Interfaces
-
-QString PluginProvider::id() const
-{
-    return "pluginprovider";
-}
-
-QString PluginProvider::name() const
-{
-    return "Native plugin provider";
-}
-
-QString PluginProvider::description() const
-{
-    return "Loads native C++ albert plugins";
-}
-
-QIcon PluginProvider::icon() const
-{
-    return QIcon(":cpp");
-}
-
-const std::map<QString,PluginSpec> &PluginProvider::plugins() const
-{
-    return specs;
-}
-
-bool PluginProvider::isEnabled(const QString &id) const
-{
-    return QSettings().value(QString("%1/enabled").arg(id), false).toBool();
-}
-
-void PluginProvider::setEnabled(const QString &id, bool enable)
-{
-    QSettings().setValue(QString("%1/enabled").arg(id), enable);
-    enable ? (void)loadPlugin(id) : unloadPlugin(id);
-
-//    if (isEnabled(id) == enabled)
-//        return false;
-
-//    auto *plugin = plugin_index.at(id);
-//
-//    if (enabled){
-//        // Get dependencies
-//        auto dependencies = transitive_dependencies.at(plugin);
-//
-//        // Remove dependencies which are already enabled
-//        for (auto it = dependencies.begin(); it != dependencies.end();)
-//            if (isEnabled((*it)->id()))
-//                it = dependencies.erase(it);
-//            else
-//                ++it;
-//
-//        // Don't break expectations. ask user if plugins get enabled implicitly
-//        if (!dependencies.empty()) {
-//            QStringList names;
-//            for (auto *dep: dependencies)
-//                names << dep->metadata().name;
-//            auto text = QString("This will also enable %1. Continue?").arg(names.join(","));
-//            if (QMessageBox::question(nullptr, text, "Continue?") == QMessageBox::No)
-//                return false;
-//        }
-//
-//        dependencies.insert(plugin);
-//
-//        // Store enabled settings
-//        QSettings s(QCoreApplication::instance()->applicationName());
-//        for (auto *p : dependencies)
-//            s.setValue(QString("%1/enabled").arg(p->id()), true);
-//
-//        // Safe load order loading
-//        for (auto &p : plugins_)
-//            if (dependencies.count(p.get()))
-//                plugin->load();
-//    }
-//    else
-//    {
-//        // Get dependees
-//        auto dependees = transitive_dependees.at(plugin);
-//
-//        // Remove dependees which are already disabled
-//        for (auto it = dependees.begin(); it != dependees.end();)
-//            if (!isEnabled((*it)->id()))
-//                it = dependees.erase(it);
-//            else
-//                ++it;
-//
-//        // Don't break expectations. ask user if plugins get disabled implicitly
-//        if (!dependees.empty()) {
-//            QStringList names;
-//            for (auto *dep: dependees)
-//                names << dep->metadata().name;
-//            auto text = QString("This will also disable %1. Continue?").arg(names.join(","));
-//            if (QMessageBox::question(nullptr, text, "Continue?") == QMessageBox::No)
-//                return false;
-//        }
-//
-//        dependees.insert(plugin);
-//
-//        // Store enabled settings
-//        QSettings s(QCoreApplication::instance()->applicationName());
-//        for (auto *p : dependees)
-//            s.setValue(QString("%1/enabled").arg(p->id()), false);
-//
-//        // Safe load order UN-loading
-//        for (auto it = plugins_.crbegin(); it != plugins_.crend(); ++it)
-//            if (dependees.count((*it).get()))
-//                plugin->load();
-//    }
-//    return true;
-}
-
