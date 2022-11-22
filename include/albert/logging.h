@@ -4,16 +4,17 @@
 #include <QLoggingCategory>
 
 #if defined(PROJECT_NAME)
-#define STRINGIFY(x) #x
-#define ALBERT_QLC_ID STRINGIFY(PROJECT_NAME)
+#define ALBERT_LOGGING_CATEGORY PROJECT_NAME
 #else
-#define ALBERT_QLC_ID "albert"
+#define ALBERT_LOGGING_CATEGORY "albert"
 #endif
 
-Q_DECLARE_LOGGING_CATEGORY(LogCat)
-#define ALBERT_LOGGING Q_LOGGING_CATEGORY(LogCat, ALBERT_QLC_ID)
 
-#define DEBG qCDebug(LogCat,).noquote()
-#define INFO qCInfo(LogCat,).noquote()
-#define WARN qCWarning(LogCat,).noquote()
-#define CRIT qCCritical(LogCat,).noquote()
+Q_DECLARE_LOGGING_CATEGORY(LoggingCategory)
+#define ALBERT_LOGGING Q_LOGGING_CATEGORY(LoggingCategory, ALBERT_LOGGING_CATEGORY)
+
+
+#define DEBG qCDebug(LoggingCategory,).noquote()
+#define INFO qCInfo(LoggingCategory,).noquote()
+#define WARN qCWarning(LoggingCategory,).noquote()
+#define CRIT qCCritical(LoggingCategory,).noquote()
