@@ -27,7 +27,7 @@ ConfigProviderWidget::ConfigProviderWidget(albert::ExtensionRegistry &registry):
     layout->addWidget(&stacked_widget);
     layout->setStretch(0,0);
     layout->setStretch(1,1);
-    layout->setContentsMargins(0,8,0,0);
+    layout->setContentsMargins(12,12,12,12);
 //    layout->setSpacing(0);
     setLayout(layout);
 
