@@ -7,6 +7,7 @@ using namespace albert;
 History::History(QObject *parent) : QObject(parent)
 {
     lines_ = UsageHistory::inputHistory();
+    lines_.removeAll("");
     for (const auto& l : lines_)
     resetIterator();
 }

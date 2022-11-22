@@ -14,6 +14,7 @@ class App : public albert::IndexQueryHandler
 {
 public:
     explicit App(const QStringList &additional_plugin_paths);
+    ~App() override;
 
     void initialize();
 

@@ -12,6 +12,11 @@ App::App(const QStringList &additional_plugin_paths) :
         terminal_provider(),
         settings_window(nullptr){}
 
+App::~App()
+{
+    delete settings_window.get();
+}
+
 void App::initialize()
 {
     UsageHistory::initializeDatabase();
