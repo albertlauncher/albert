@@ -2,7 +2,7 @@
 
 #include "albert/logging.h"
 #include "query.h"
-#include "timeprinter.hpp"
+#include "albert/util/timeprinter.hpp"
 #include "usagehistory.h"
 #include <QtConcurrent>
 #include <utility>
@@ -39,7 +39,7 @@ Query::~Query()
 void Query::run()
 {
     future_watcher_.setFuture(QtConcurrent::run([this](){
-        TimePrinter tp(QString("TIME: %1 µs ['%2']").arg("%1", this->string()));
+        albert::TimePrinter tp(QString("TIME: %1 µs ['%2']").arg("%1", this->string()));
         try {
             for (auto fallback_handler : fallback_handlers_)
                 fallbacks_.add(fallback_handler->fallbacks(QString("%1%2").arg(trigger_, string_)));

@@ -2,7 +2,7 @@
 
 #include "albert/extensions/queryhandler.h"
 #include "globalsearch.h"
-#include "timeprinter.hpp"
+#include "albert/util/timeprinter.hpp"
 #include <QtConcurrent>
 #include <mutex>
 using namespace albert;

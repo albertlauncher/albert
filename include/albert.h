@@ -15,6 +15,8 @@
 #include "albert/logging.h"
 #include "albert/plugin.h"
 #include "albert/util/extensionwatcher.h"
+#include "albert/util/backgroundexecutor.h"
+#include "albert/util/timeprinter.hpp"
 #include "albert/util/history.h"
 #include "albert/util/standarditem.h"
 #include "albert/util/util.h"

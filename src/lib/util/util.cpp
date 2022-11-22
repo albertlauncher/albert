@@ -14,7 +14,8 @@ static const char *issue_tracker_url = "https://github.com/albertlauncher/albert
 
 void albert::openUrl(const QString &url)
 {
-    QDesktopServices::openUrl(QUrl(url));
+    if (!QDesktopServices::openUrl(QUrl(url)))
+        WARN << "Failed opening URL" << url;
 }
 
 void albert::openWebsite()

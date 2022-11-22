@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #include "albert/logging.h"
-#include "timeprinter.hpp"
+#include "include/albert/util/timeprinter.hpp"
 #include "usagehistory.h"
 #include <QSqlDatabase>
 #include <QSqlDriver>
@@ -55,7 +55,7 @@ void UsageHistory::clearDatabase()
 
 std::map<QString, double> UsageHistory::mruScores()
 {
-    TimePrinter tp("UsageHistory::mruScores %1 µs");
+    albert::TimePrinter tp("UsageHistory::mruScores %1 µs");
 
     static map<QString,double> mru_scores;
     // Score of a single usage is 1/(<age_in_days>+1).
@@ -77,7 +77,7 @@ std::map<QString, double> UsageHistory::mruScores()
 
 QStringList UsageHistory::inputHistory()
 {
-    TimePrinter tp("UsageHistory::inputHistory %1 µs");
+    albert::TimePrinter tp("UsageHistory::inputHistory %1 µs");
 
     QStringList input_history;
     auto query = db.exec("SELECT query, timestamp FROM activation GROUP BY query ORDER BY max(timestamp) DESC;");
@@ -92,7 +92,7 @@ QStringList UsageHistory::inputHistory()
 
 void UsageHistory::addActivation(const QString &query, const QString &item_id, const QString &action_id)
 {
-    TimePrinter tp("UsageHistory::addActivation %1 µs");
+    albert::TimePrinter tp("UsageHistory::addActivation %1 µs");
 
     QSqlQuery sql(db);
     sql.prepare("INSERT INTO activation (query, item_id, action_id) VALUES (:query, :item_id, :action_id);");

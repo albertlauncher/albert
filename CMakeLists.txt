@@ -47,6 +47,7 @@ set(TARGET_LIB ${PROJECT_NAME})
 file(GLOB_RECURSE LIB_SRC include/*)
 
 add_library(${TARGET_LIB} SHARED ${LIB_SRC}
+        include/albert/util/timeprinter.hpp
         src/lib/albert.cpp
         src/lib/app.cpp
         src/lib/extension.cpp
@@ -74,15 +75,13 @@ add_library(${TARGET_LIB} SHARED ${LIB_SRC}
         src/lib/settings/settingswindow.ui
         src/lib/settings/triggerwidget.cpp
         src/lib/terminalprovider.cpp
-        src/lib/timeprinter.hpp
         src/lib/usagehistory.cpp
         src/lib/util/history.cpp
         src/lib/util/standarditem.cpp
         src/lib/util/util.cpp
-        src/lib/util/util.cpp
         src/lib/xdg/iconlookup.cpp
         src/lib/xdg/themefileparser.cpp
-)
+        )
 
 add_library(albert::albert ALIAS ${TARGET_LIB})
 
