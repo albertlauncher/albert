@@ -32,6 +32,7 @@ public:
 
     virtual void run() = 0;  /// Asynchronous query processing done.
     virtual void cancel() = 0;  /// Call this if you dont need the query anymore
+    virtual bool isFinished() const = 0;  /// Call this if you dont need the query anymore
 
     virtual QAbstractListModel &matches() = 0;  /// You borrow
     virtual QAbstractListModel &fallbacks() = 0;  /// You borrow

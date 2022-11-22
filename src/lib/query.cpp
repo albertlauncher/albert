@@ -50,6 +50,12 @@ void Query::run()
     }));
 }
 
+bool Query::isFinished() const
+{
+    return future_watcher_.isFinished();
+}
+
+
 void Query::cancel()
 {
     valid_ = false;

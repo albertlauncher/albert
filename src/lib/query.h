@@ -31,6 +31,7 @@ public:
     // Frontend
     void cancel() override;
     void run() override;
+    bool isFinished() const override;
     const QString &synopsis() const override;
     QAbstractListModel &matches() override;
     QAbstractListModel &fallbacks() override;

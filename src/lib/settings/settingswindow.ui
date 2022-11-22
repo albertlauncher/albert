@@ -2,10 +2,18 @@
 <ui version="4.0">
  <class>SettingsWindow</class>
  <widget class="QWidget" name="SettingsWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>320</height>
+   </rect>
+  </property>
   <property name="minimumSize">
    <size>
     <width>600</width>
-    <height>400</height>
+    <height>320</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -26,6 +34,9 @@
    </property>
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabs">
+     <property name="styleSheet">
+      <string notr="true">QTabWidget::pane { border-radius: 0px; }</string>
+     </property>
      <property name="currentIndex">
       <number>1</number>
      </property>
