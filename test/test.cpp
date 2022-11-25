@@ -143,59 +143,63 @@ TEST_CASE("Levenshtein")
 
 TEST_CASE("Index")
 {
-//    class ALBERT_EXPORT IndexItem
-//    {
-//    public:
-//        IndexItem(std::shared_ptr<Item> item, QString string);
-//        std::shared_ptr<Item> item;
-//        QString string;
-//    };
-//
-//
-
-
     auto match = [&](const QStringList& item_strings, const QString& search_string, bool case_sesitivity, int q, int fuzzy){
 
         auto index = ItemIndex("[ ]+", case_sesitivity, q, fuzzy);
         vector<IndexItem> index_items;
         for (auto &string : item_strings)
-            index_items.emplace_back(make_shared<StandardItem>(), string);
-        index.setItems(index_items);
-        return index.search(search_string).size();
+            index_items.emplace_back(make_shared<StandardItem>(string), string);
+        index.setItems(::move(index_items));
+        return index.search(search_string, true);
     };
 
     // case sensitivity
-    CHECK(match({"a","A"}, "a", true, 0, 0) == 1);
-    CHECK(match({"a","A"}, "A", true, 0, 0) == 1);
+    CHECK(match({"a","A"}, "a", true, 0, 0).size() == 1);
+    CHECK(match({"a","A"}, "A", true, 0, 0).size() == 1);
 
     // intersection
-    CHECK(match({"a b","b c","c d"}, "a", false, 0, 0) == 1);
-    CHECK(match({"a b","b c","c d"}, "b", false, 0, 0) == 2);
-    CHECK(match({"a b","b c","c d"}, "c", false, 0, 0) == 2);
-    CHECK(match({"a b","b c","c d"}, "d", false, 0, 0) == 1);
-    CHECK(match({"a b","b c","c d"}, "b c", false, 0, 0) == 1);
+    CHECK(match({"a b","b c","c d"}, "a", false, 0, 0).size() == 1);
+    CHECK(match({"a b","b c","c d"}, "b", false, 0, 0).size() == 2);
+    CHECK(match({"a b","b c","c d"}, "c", false, 0, 0).size() == 2);
+    CHECK(match({"a b","b c","c d"}, "d", false, 0, 0).size() == 1);
+    CHECK(match({"a b","b c","c d"}, "b c", false, 0, 0).size() == 1);
 
     // sequence
-    CHECK(match({"a b","b a","a b"}, "a b", false, 0, 0) == 2);
-    CHECK(match({"a b","b a","a b"}, "b a", false, 0, 0) == 1);
+    CHECK(match({"a b","b a","a b"}, "a b", false, 0, 0).size() == 2);
+    CHECK(match({"a b","b a","a b"}, "b a", false, 0, 0).size() == 1);
 
     // fuzzy
-    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abc", false, 2, 3) == 1);
-    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "ab_", false, 2, 3) == 1);
-    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "a__", false, 2, 3) == 0);
-    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcdef", false, 2, 3) == 1);
-    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abc_e_", false, 2, 3) == 1);
-    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "a_c_e_", false, 2, 3) == 0);
-    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcdefghi", false, 2, 3) == 1);
-    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcdefg_i", false, 2, 3) == 1);
-    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcde_g_i", false, 2, 3) == 1);
-    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abc_e_g_i", false, 2, 3) == 1);
-    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "a_c_e_g_i", false, 2, 3) == 0);
-    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcd", false, 2, 4) == 1);
-    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abc_", false, 2, 4) == 1);
-    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "ab__", false, 2, 4) == 0);
-    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcdefgh", false, 2, 4) == 1);
-    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcdefg_", false, 2, 4) == 1);
-    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcde_g_", false, 2, 4) == 1);
-    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abc_e_g_", false, 2, 4) == 0);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abc", false, 2, 3).size() == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "ab_", false, 2, 3).size() == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "a__", false, 2, 3).size() == 0);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcdef", false, 2, 3).size() == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abc_e_", false, 2, 3).size() == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "a_c_e_", false, 2, 3).size() == 0);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcdefghi", false, 2, 3).size() == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcdefg_i", false, 2, 3).size() == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcde_g_i", false, 2, 3).size() == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abc_e_g_i", false, 2, 3).size() == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "a_c_e_g_i", false, 2, 3).size() == 0);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcd", false, 2, 4).size() == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abc_", false, 2, 4).size() == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "ab__", false, 2, 4).size() == 0);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcdefgh", false, 2, 4).size() == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcdefg_", false, 2, 4).size() == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abcde_g_", false, 2, 4).size() == 1);
+    CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abc_e_g_", false, 2, 4).size() == 0);
+
+    // score
+    CHECK(match({"a","ab","abc"}, "a", false, 2, 3).size() == 3);
+    CHECK(match({"a","ab","abc"}, "a", false, 2, 3)[0].score == (Score)(1.0/3.0*MAX_SCORE));
+    CHECK(match({"a","ab","abc"}, "a", false, 2, 3)[1].score == (Score)(1.0/2.0*MAX_SCORE));
+    CHECK(match({"a","ab","abc"}, "a", false, 2, 3)[2].score == (Score)(1.0*MAX_SCORE));
+
+    CHECK(match({"abc","abd"}, "abe", false, 2, 3)[0].score == (Score)(2.0/3.0*MAX_SCORE));
+    CHECK(match({"abc","abd"}, "abe", false, 2, 3)[1].score == (Score)(2.0/3.0*MAX_SCORE));
+
+    std::vector<albert::RankItem> M = match({"abc","abd","abcdef"}, "abc", false, 2, 3);
+    sort(M.begin(), M.end(), [](auto &a, auto &b){ return a.item->id() < b.item->id(); });
+    CHECK(M[0].score == (Score)(3.0/3.0*MAX_SCORE));
+    CHECK(M[1].score == (Score)(3.0/6.0*MAX_SCORE));
+    CHECK(M[2].score == (Score)(2.0/3.0*MAX_SCORE));
 }

@@ -19,6 +19,10 @@ public:
             QStringList icon_urls = {},
             Actions actions = {},
             QString input_action_text = {});
+    StandardItem(StandardItem&&) = default;
+    StandardItem(const StandardItem&) = delete;
+    StandardItem& operator=(StandardItem&&) = default;
+    StandardItem& operator=(const StandardItem&) = delete;
 
     void setId(QString id);
     void setText(QString text);

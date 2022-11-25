@@ -13,8 +13,8 @@ class IndexItem;
 struct Index
 {
     virtual ~Index() = default;
-    virtual std::vector<RankItem> search(const QString &string) const = 0;
-    virtual void setItems(std::vector<IndexItem>) = 0;
+    virtual std::vector<RankItem> search(const QString &string, const bool &isValid) const = 0;
+    virtual void setItems(std::vector<IndexItem> &&) = 0;
 };
 
 }

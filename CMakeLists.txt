@@ -75,13 +75,13 @@ add_library(${TARGET_LIB} SHARED ${LIB_SRC}
         src/lib/settings/settingswindow.ui
         src/lib/settings/triggerwidget.cpp
         src/lib/terminalprovider.cpp
-        src/lib/usagehistory.cpp
+        src/lib/usagedatabase.cpp
         src/lib/util/history.cpp
         src/lib/util/standarditem.cpp
         src/lib/util/util.cpp
         src/lib/xdg/iconlookup.cpp
         src/lib/xdg/themefileparser.cpp
-        )
+)
 
 add_library(albert::albert ALIAS ${TARGET_LIB})
 
@@ -280,7 +280,12 @@ if (BUILD_TESTS)
             test/test.cpp
     )
     target_include_directories(${TARGET_TST} PRIVATE include src/lib)
-    target_link_libraries(${TARGET_TST} PRIVATE doctest::doctest Qt6::Core Qt6::Concurrent)
+    target_link_libraries(${TARGET_TST} PRIVATE
+            doctest::doctest
+            Qt6::Core
+            Qt6::Concurrent
+            Qt6::Sql
+            )
 endif()
 
 ### Plugins ###################################################################

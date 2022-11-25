@@ -11,5 +11,12 @@ public:
     explicit TriggerWidget(QueryEngine &);
     ~TriggerWidget() override;
 
+protected:
+    void showEvent(QShowEvent *event) override;
+
+public:
+
     std::unique_ptr<TriggerModel> model;
+
+
 };

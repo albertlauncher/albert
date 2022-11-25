@@ -11,12 +11,16 @@ class ALBERT_EXPORT History final : public QObject  /// Input line history for f
 {
     Q_OBJECT
 public:
-    History(QObject *parent = nullptr);
+    explicit History(const QString& file_path);
+    ~History() override;
+
     Q_INVOKABLE void add(const QString& str);
     Q_INVOKABLE QString next(const QString &substring = QString{});
     Q_INVOKABLE QString prev(const QString &substring = QString{});
     Q_INVOKABLE void resetIterator();
+
 private:
+    QString file_path;
     QStringList lines_;
     int currentLine_;
 };

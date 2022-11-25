@@ -1,37 +1,47 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #include "albert/util/history.h"
-#include "usagehistory.h"
+#include "albert/logging.h"
+#include <QFile>
+#include <QTextStream>
 using namespace albert;
 
-History::History(QObject *parent) : QObject(parent)
+History::History(const QString& file_path) : file_path(file_path)
 {
-    lines_ = UsageHistory::inputHistory();
-    lines_.removeAll("");
-    for (const auto& l : lines_)
+    QFile f(file_path);
+    if (f.open(QIODevice::ReadOnly)){
+        QTextStream ts(&f);
+        while (!ts.atEnd())
+            lines_ << ts.readLine();
+        f.close();
+    } else
+        WARN << "Opening history file failed:" << file_path;
     resetIterator();
 }
 
-/// Temporarily add a line to the history. @note Will vanish on next reset
+History::~History()
+{
+    QFile f(file_path);
+    if (f.open(QIODevice::WriteOnly)){
+        QTextStream ts(&f);
+        for (const auto &line : lines_)
+            ts << line;
+        f.close();
+    } else
+        WARN << "Opening history file failed:" << file_path;
+}
+
 void History::add(const QString& str)
 {
     if (!str.isEmpty()){
         if (lines_.contains(str))
             lines_.removeAll(str); // Remove dups
-        lines_.prepend(str);
+        lines_ << str;
     }
     resetIterator();
 }
 
 QString History::next(const QString &substring)
-{
-    for (int l = currentLine_ + 1; l < (int)lines_.size(); ++l)
-        if (lines_[l].contains(substring, Qt::CaseInsensitive))
-            return lines_[currentLine_ = l];
-    return QString{};
-}
-
-QString History::prev(const QString &substring)
 {
     for (int l = currentLine_ - 1; 0 <= l; --l)
         if (lines_[l].contains(substring, Qt::CaseInsensitive))
@@ -39,7 +49,15 @@ QString History::prev(const QString &substring)
     return QString{};
 }
 
+QString History::prev(const QString &substring)
+{
+    for (int l = currentLine_ + 1; l < (int)lines_.size(); ++l)
+        if (lines_[l].contains(substring, Qt::CaseInsensitive))
+            return lines_[currentLine_ = l];
+    return QString{};
+}
+
 void History::resetIterator()
 {
-    currentLine_ = -1;
+    currentLine_ = (int)lines_.size();
 }

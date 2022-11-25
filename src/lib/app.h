@@ -8,7 +8,8 @@
 #include "rpcserver.h"
 #include "settings/settingswindow.h"
 #include "terminalprovider.h"
-#include "usagehistory.h"
+#include "usagedatabase.h"
+#include <QPointer>
 
 class App : public albert::IndexQueryHandler
 {

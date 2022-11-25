@@ -28,8 +28,6 @@ struct TriggerModel : public QAbstractTableModel
     explicit TriggerModel(QueryEngine &engine): engine(engine)
     {
         update();
-        connect(&engine, &QueryEngine::handlersChanged,
-                this, &TriggerModel::reset);
     }
 
     void reset()
@@ -73,7 +71,7 @@ struct TriggerModel : public QAbstractTableModel
         } else if (index.column() == (int)Column::Trigger){
             auto &entry = query_handlers[index.row()];
             if (role == Qt::DisplayRole) {
-                return QString(entry.trigger).replace(" ", " ");
+                return QString(entry.trigger).replace(" ", "•");  // 
 
             } else if (role == Qt::EditRole) {
                 return entry.trigger;
@@ -189,6 +187,12 @@ TriggerWidget::TriggerWidget(QueryEngine &qe)
     });
 
 
+}
+
+void TriggerWidget::showEvent(QShowEvent *event)
+{
+    model.reset();
+    QWidget::showEvent(event);
 }
 
 TriggerWidget::~TriggerWidget() = default;

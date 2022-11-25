@@ -34,7 +34,7 @@ ItemIndex::ItemIndex(QString separators, bool case_sensitive, uint n, uint error
 {
 }
 
-void ItemIndex::setItems(std::vector<albert::IndexItem> index_items)
+void ItemIndex::setItems(std::vector<albert::IndexItem> &&index_items)
 {
     IndexData index_;
 
@@ -89,7 +89,7 @@ void ItemIndex::setItems(std::vector<albert::IndexItem> index_items)
     index = index_;
 }
 
-std::vector<ItemIndex::WordMatch> ItemIndex::getWordMatches(const QString &word) const
+std::vector<ItemIndex::WordMatch> ItemIndex::getWordMatches(const QString &word, const bool &isValid) const
 {
     vector<WordMatch> matches;
     const uint word_length = word.length();
@@ -140,7 +140,7 @@ std::vector<ItemIndex::WordMatch> ItemIndex::getWordMatches(const QString &word)
         uint minimum_match_count = word_length - allowed_errors * n;
         Levenshtein levenshtein;
         for (const auto &[word_idx, ngram_count]: word_match_counts) {
-            if (ngram_count < minimum_match_count)
+            if (ngram_count < minimum_match_count || !isValid)
                 continue;
 
             if (auto edit_distance = levenshtein.computePrefixEditDistanceWithLimit(word, index.words[word_idx].word,
@@ -154,7 +154,7 @@ std::vector<ItemIndex::WordMatch> ItemIndex::getWordMatches(const QString &word)
     return matches;
 }
 
-std::vector<albert::RankItem> ItemIndex::search(const QString &string) const
+std::vector<albert::RankItem> ItemIndex::search(const QString &string, const bool &isValid) const
 {
 
     QStringList &&words = splitString(string, separators, case_sensitive);
@@ -178,15 +178,15 @@ std::vector<albert::RankItem> ItemIndex::search(const QString &string) const
     };
 
     shared_lock lock(mutex);
-    vector<StringMatch> left_matches = invert(getWordMatches(words[0]));
+    vector<StringMatch> left_matches = invert(getWordMatches(words[0], isValid));
 
     // In case of multiple words intersect. Todo: user chooses strategy
     for (int w = 1; w < words.size(); ++w) {
 
-        if (left_matches.empty())
+        if (!isValid || left_matches.empty())
             return {};
 
-        vector<StringMatch> right_matches = invert(getWordMatches(words[w]));
+        vector<StringMatch> right_matches = invert(getWordMatches(words[w], isValid));
 
         if (right_matches.empty())
             return {};
@@ -227,8 +227,8 @@ std::vector<albert::RankItem> ItemIndex::search(const QString &string) const
     unordered_map<Index,Score> result_map;
     for (const auto &match : left_matches) {
         auto score = (Score)((double)match.match_len / index.strings[match.index].max_match_len * MAX_SCORE);
-        if (const auto &[it, emplaced] = result_map.emplace(index.strings[match.index].item, match.match_len);
-            !emplaced && it->second < score) // update if exists
+        if (const auto &[it, success] = result_map.emplace(index.strings[match.index].item, score);
+            !success && it->second < score) // update if exists
             it->second = score;
     }
 

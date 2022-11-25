@@ -1,6 +1,7 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #include "albert/util/standarditem.h"
+#include "albert/extensions/frontend.h"
 #include "app.h"
 using namespace albert;
 using namespace std;
@@ -19,7 +20,6 @@ App::~App()
 
 void App::initialize()
 {
-    UsageHistory::initializeDatabase();
     extension_registry.add(&plugin_provider);
     extension_registry.add(this);
     plugin_provider.loadFrontend();
@@ -59,10 +59,10 @@ vector<IndexItem> App::indexItems() const
             Actions{{"albert-restart", "Restart Albert", [](){ restart(); }}}
     );
 
-    return {
-            {settings_item, "settings"},
-            {settings_item, "preferences"},
-            {quit_item, "quit"},
-            {restart_item, "restart"}
-    };
+    vector<IndexItem> items;
+    items.emplace_back(settings_item, "settings");
+    items.emplace_back(settings_item, "preferences");
+    items.emplace_back(quit_item, "quit");
+    items.emplace_back(restart_item, "restart");
+    return items;
 }

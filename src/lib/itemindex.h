@@ -17,8 +17,8 @@ class ItemIndex : public albert::Index
 public:
     explicit ItemIndex(QString separators, bool case_sensitive, uint n, uint error_tolerance_divisor);
 
-    void setItems(std::vector<albert::IndexItem>) override;
-    std::vector<albert::RankItem> search(const QString &string) const override;
+    void setItems(std::vector<albert::IndexItem> &&) override;
+    std::vector<albert::RankItem> search(const QString &string, const bool &isValid) const override;
 
 private:
     using Index = uint32_t;
@@ -64,5 +64,5 @@ private:
     const uint n;
 
 //    IndexData buildIndex(std::vector<albert::IndexItem> &&index_items) const;
-    std::vector<WordMatch> getWordMatches(const QString &word) const;
+    std::vector<WordMatch> getWordMatches(const QString &word, const bool &isValid) const;
 };

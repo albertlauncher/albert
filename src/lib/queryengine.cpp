@@ -3,32 +3,41 @@
 #include "albert/extensions/queryhandler.h"
 #include "albert/logging.h"
 #include "itemindex.h"
+#include "usagedatabase.h"
 #include "queryengine.h"
+#include "query.h"
 #include "settings/triggerwidget.h"
+#include <QTimer>
+#include <cmath>
 using namespace albert;
 using namespace std;
+static const char *CFG_MEMORY_DECAY = "memoryDecay";
+static const double DEF_MEMORY_DECAY = 0.75;
+static const char *CFG_MEMORY_WEIGHT = "memoryWeight";
+static const double DEF_MEMORY_WEIGHT = 0.5;
 static const char *CFG_TRIGGER = "trigger";
 static const char *CFG_TRIGGER_ENABLED = "trigger_enabled";
-//static const char* CFG_ERROR_TOLERANCE_DIVISOR = "error_tolerance_divisor";
 static const uint DEF_ERROR_TOLERANCE_DIVISOR = 4;
-//static const char* CFG_CASE_SENSITIVE = "case_sensitive";
-//static const bool  DEF_CASE_SENSITIVE = false;
 static const char* CFG_FUZZY = "fuzzy";
 static const bool  DEF_FUZZY = false;
 static const char* CFG_SEPARATORS = "separators";
 static const char* DEF_SEPARATORS = R"R([\s\\\/\-\[\](){}#!?<>"'=+*.:,;_]+)R";
 static const uint GRAM_SIZE = 2;
 
-
 QueryEngine::QueryEngine(ExtensionRegistry &registry):
         ExtensionWatcher<QueryHandler>(registry),
-        ExtensionWatcher<IndexQueryHandler>(registry),
-        global_search_handler_(registry)
+        ExtensionWatcher<GlobalQueryHandler>(registry),
+        ExtensionWatcher<IndexQueryHandler>(registry)
 {
 
     QSettings s;
     fuzzy_ = s.value(CFG_FUZZY, DEF_FUZZY).toBool();
     separators_ = s.value(CFG_SEPARATORS, DEF_SEPARATORS).toString();
+    memory_decay_ = s.value(CFG_MEMORY_DECAY, DEF_MEMORY_DECAY).toDouble();
+    memory_weight_ = s.value(CFG_MEMORY_WEIGHT, DEF_MEMORY_WEIGHT).toDouble();
+
+    UsageDatabase::initializeDatabase();
+    updateUsageScore();
 
     for (auto &[id, handler] : registry.extensions<QueryHandler>()) {
         query_handlers_.insert(handler);
@@ -47,11 +56,16 @@ std::unique_ptr<albert::Query> QueryEngine::query(const QString &query_string)
 
     for (const auto &[trigger, handler] : active_triggers_)
         if (query_string.startsWith(trigger))
-            query = make_unique<::Query>(query_handlers_, *handler, query_string.mid(trigger.size()), trigger);
+            query = make_unique<::Query>(query_handlers_, handler, query_string.mid(trigger.size()), trigger);
 
     if (!query)
-        query = make_unique<::Query>(query_handlers_, global_search_handler_, query_string);
+        query = make_unique<::Query>(query_handlers_, &global_search_handler, query_string);
 
+    QObject::connect(query.get(), &::Query::activated,
+                     [this, query=query->string()](const QString& e, const QString &i, const QString &a){
+        UsageDatabase::addActivation(query, e, i, a);
+        QTimer::singleShot(0,[this](){updateUsageScore();});
+    });
     return query;
 }
 
@@ -76,7 +90,6 @@ void QueryEngine::onAdd(QueryHandler *handler)
     };
     query_handler_configs_.emplace(handler, conf);
     updateActiveTriggers();
-    emit handlersChanged();
 }
 
 void QueryEngine::onRem(QueryHandler *handler)
@@ -84,7 +97,16 @@ void QueryEngine::onRem(QueryHandler *handler)
     query_handlers_.erase(handler);
     query_handler_configs_.erase(handler);
     updateActiveTriggers();
-    emit handlersChanged();
+}
+
+void QueryEngine::onAdd(GlobalQueryHandler *handler)
+{
+    global_search_handler.handlers.insert(handler);
+}
+
+void QueryEngine::onRem(GlobalQueryHandler *handler)
+{
+    global_search_handler.handlers.erase(handler);
 }
 
 void QueryEngine::onAdd(IndexQueryHandler *handler)
@@ -97,7 +119,6 @@ void QueryEngine::onRem(IndexQueryHandler *handler)
 {
     index_query_handlers_.erase(handler);
 }
-
 
 const std::map<QueryHandler*,QueryEngine::HandlerConfig> &QueryEngine::handlerConfig() const
 {
@@ -114,7 +135,6 @@ void QueryEngine::setEnabled(QueryHandler *handler, bool enabled)
     query_handler_configs_.at(handler).enabled = enabled;
     updateActiveTriggers();
     handler->settings()->setValue(CFG_TRIGGER_ENABLED, enabled);
-    DEBG << handler->id() << (enabled ? "enabled":"disabled");
 }
 
 void QueryEngine::setTrigger(QueryHandler *handler, const QString& trigger)
@@ -125,8 +145,60 @@ void QueryEngine::setTrigger(QueryHandler *handler, const QString& trigger)
     query_handler_configs_.at(handler).trigger = trigger;
     updateActiveTriggers();
     handler->settings()->setValue(CFG_TRIGGER, trigger);
-    DEBG << handler->id() << " set trigger" << trigger;
 }
+
+void QueryEngine::updateUsageScore() const
+{
+    std::map<std::pair<QString,QString>,double> usage_scores;
+    std::vector<Activation> activations = UsageDatabase::activations();
+    double max_score = 0;
+    for (int i = 0, k = (int)activations.size(); i < (int)activations.size(); ++i, --k){
+        auto activation = activations[i];
+        auto memory_weight = pow(memory_decay_, k);
+
+        if (const auto &[it, success] = usage_scores.emplace(make_pair(activation.extension_id,
+                                                                       activation.item_id),
+                                                             memory_weight); !success){
+            it->second += memory_weight;
+            if (max_score < it->second)
+                max_score = it->second;
+        } else
+        if (max_score < memory_weight)
+            max_score = memory_weight;
+    }
+
+    // Normalize
+    for (auto &[ids, score] : usage_scores)
+        score = score/max_score;
+
+    GlobalQueryHandler::setScores(usage_scores);
+}
+
+double QueryEngine::memoryDecay() const
+{
+    return memory_decay_;
+}
+
+// @param forgetfulness: must be in range [0.5,1] i.e. from [MRU,MFU]
+void QueryEngine::setMemoryDecay(double val)
+{
+    memory_decay_ = val;
+    QSettings().setValue(CFG_MEMORY_DECAY, val);
+    updateUsageScore();
+}
+
+double QueryEngine::memoryWeight() const
+{
+    return memory_weight_;
+}
+
+void QueryEngine::setMemoryWeight(double val)
+{
+    memory_weight_ = val;
+    QSettings().setValue(CFG_MEMORY_WEIGHT, val);
+    GlobalQueryHandler::setWeight(memory_weight_);
+}
+
 
 bool QueryEngine::fuzzy() const
 {

@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #include "albert/extensions/frontend.h"
-#include "albert/extensions/queryhandler.h"
+#include "albert/extensions/globalqueryhandler.h"
 #include "albert/logging.h"
 #include "itemsmodel.h"
 #include "queryengine.h"
@@ -18,7 +18,7 @@ int ItemsModel::rowCount(const QModelIndex &parent) const
 QVariant ItemsModel::data(const QModelIndex &index, int role) const
 {
     if (index.isValid()) {
-        const shared_ptr<Item> &item = items[index.row()];
+        const shared_ptr<Item> &item = items[index.row()].second;
 
         switch (static_cast<ItemRoles>(role)) {
             case ItemRoles::TextRole: return item->text();
@@ -46,8 +46,8 @@ QVariant ItemsModel::data(const QModelIndex &index, int role) const
                 static map<QString, QIcon> item_icon_cache;
                 try {
                     return item_icon_cache.at(item->id());
-                } catch (out_of_range &) {
-                    QIcon &&icon = get_icon_for_urls(item->iconUrls());
+                } catch (const out_of_range &) {
+                    QIcon icon = get_icon_for_urls(item->iconUrls());
                     return item_icon_cache.emplace(item->id(), icon.isNull() ? QIcon(":unknown") : icon).first->second;
                 }
             }
@@ -66,42 +66,54 @@ QHash<int, QByteArray> ItemsModel::roleNames() const
     };
 }
 
-void ItemsModel::add(shared_ptr<Item> &&item)
+void ItemsModel::add(albert::QueryHandler *handler, shared_ptr<Item> &&item)
 {
     beginInsertRows(QModelIndex(), (int)items.size(), (int)items.size());
-    items.emplace_back(::move(item));
+    items.emplace_back(handler, ::move(item));
     endInsertRows();
 }
 
-void ItemsModel::add(vector<std::shared_ptr<Item>> &&itemvec)
+void ItemsModel::add(albert::QueryHandler *handler, vector<std::shared_ptr<Item>> &&itemvec)
 {
     if (itemvec.empty())
         return;
 
     beginInsertRows(QModelIndex(), (int)items.size(), (int)(items.size()+itemvec.size()-1));
-    if (!items.empty())
-        items = ::move(itemvec);
-    else
-        items.insert(end(items),
-                     make_move_iterator(begin(itemvec)),
-                     make_move_iterator(end(itemvec)));
+    items.reserve(items.size()+itemvec.size());
+    for (auto &&item : itemvec)
+        items.emplace_back(handler, ::move(item));
     endInsertRows();
 }
 
-void ItemsModel::add(const shared_ptr<albert::Item> &item)
+void ItemsModel::add(albert::QueryHandler *handler, const shared_ptr<albert::Item> &item)
 {
     beginInsertRows(QModelIndex(), (int)items.size(), (int)items.size());
-    items.emplace_back(item);
+    items.emplace_back(handler, item);
     endInsertRows();
 }
 
-void ItemsModel::add(const vector<std::shared_ptr<albert::Item>> &itemvec)
+void ItemsModel::add(albert::QueryHandler *handler, const vector<std::shared_ptr<albert::Item>> &itemvec)
 {
     if (itemvec.empty())
         return;
 
     beginInsertRows(QModelIndex(), (int)items.size(), (int)(items.size()+itemvec.size()-1));
-    items.insert(end(items), begin(itemvec), end(itemvec));
+    items.reserve(items.size()+itemvec.size());
+    for (auto &item : itemvec)
+        items.emplace_back(handler, item);
     endInsertRows();
+}
 
+
+void ItemsModel::add(vector<pair<QueryHandler*,RankItem>>::iterator begin,
+                     vector<pair<QueryHandler*,RankItem>>::iterator end)
+{
+    if (begin == end)
+        return;
+
+    beginInsertRows(QModelIndex(), (int)items.size(), (int)(items.size())+(int)(end-begin)-1);
+    items.reserve(items.size()+(size_t)(end-begin));
+    for (auto it = begin; it != end; ++it)
+        items.emplace_back(it->first, ::move(it->second.item));
+    endInsertRows();
 }

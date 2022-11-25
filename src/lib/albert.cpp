@@ -3,6 +3,7 @@
 #include "albert/albert.h"
 #include "albert/config.h"
 #include "albert/export.h"
+#include "albert/extensions/frontend.h"
 #include "albert/logging.h"
 #include "albert/util/util.h"
 #include "app.h"
@@ -237,7 +238,7 @@ int main(int argc, char **argv)
     notifyVersionChange();
     QObject::connect(qApp, &QApplication::aboutToQuit, [&]() { app.reset(); }); // Delete app _before_ loop exits
 
-    albert::showSettings();
+//    albert::showSettings();
 
     int return_value = qApp->exec();
     if (return_value == -1 && runDetachedProcess(qApp->arguments(), QDir::currentPath()))

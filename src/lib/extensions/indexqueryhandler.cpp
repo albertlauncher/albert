@@ -22,9 +22,9 @@ QString IndexQueryHandler::synopsis() const
     return QStringLiteral("<filter>");
 }
 
-std::vector<RankItem> IndexQueryHandler::rankItems(const Query &query) const
+std::vector<RankItem> IndexQueryHandler::rankItems(const QString &string, const bool& isValid) const
 {
-    return index_->search(query.string());
+    return index_->search(string, isValid);
 }
 
 void IndexQueryHandler::setIndex(unique_ptr<Index> &&index)

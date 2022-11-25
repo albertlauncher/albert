@@ -26,8 +26,7 @@ private:
     void init_tab_general_terminal(TerminalProvider&);
     void init_tab_general_trayIcon();
     void init_tab_general_autostart();
-    void init_tab_general_fuzzy(QueryEngine&);
-    void init_tab_general_separators(QueryEngine&);
+    void init_tab_general_search(QueryEngine&);
     void init_tab_about();
 
     void keyPressEvent(QKeyEvent * event) override;

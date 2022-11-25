@@ -1,11 +1,12 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "app.h"
+#include "albert/extensions/frontend.h"
 #include "albert/logging.h"
-#include "pluginwidget.h"
+#include "app.h"
 #include "configproviderwidget.h"
-#include "triggerwidget.h"
+#include "pluginwidget.h"
 #include "settingswindow.h"
+#include "triggerwidget.h"
 #include <QCloseEvent>
 #include <QDesktopServices>
 using namespace std;
@@ -21,8 +22,7 @@ SettingsWindow::SettingsWindow(App &app) : ui()
     init_tab_general_terminal(app.terminal_provider);
     init_tab_general_trayIcon();
     init_tab_general_autostart();
-    init_tab_general_fuzzy(app.query_engine);
-    init_tab_general_separators(app.query_engine);
+    init_tab_general_search(app.query_engine);
     ui.tabs->insertTab(ui.tabs->count()-1, app.plugin_provider.frontend()->createSettingsWidget(), tr("Frontend"));
     ui.tabs->insertTab(ui.tabs->count()-1, new ConfigProviderWidget(app.extension_registry), tr("Extensions"));
     ui.tabs->insertTab(ui.tabs->count()-1, new TriggerWidget(app.query_engine), "Triggers");
@@ -91,18 +91,23 @@ void SettingsWindow::init_tab_general_autostart()
 #endif
 }
 
-void SettingsWindow::init_tab_general_fuzzy(QueryEngine &engine)
+void SettingsWindow::init_tab_general_search(QueryEngine &engine)
 {
     ui.checkBox_fuzzy->setChecked(engine.fuzzy());
     QObject::connect(ui.checkBox_fuzzy, &QCheckBox::toggled,
                      [&engine](bool checked){ engine.setFuzzy(checked); });
-}
 
-void SettingsWindow::init_tab_general_separators(QueryEngine &engine)
-{
     ui.lineEdit_separators->setText(engine.separators());
     QObject::connect(ui.lineEdit_separators, &QLineEdit::editingFinished,
                      [&](){ engine.setSeparators(ui.lineEdit_separators->text()); });
+
+    ui.slider_decay->setValue((int)(engine.memoryDecay()*100));
+    QObject::connect(ui.slider_decay, &QSlider::valueChanged,
+                     [&](int val){ engine.setMemoryDecay((double)val/100.0); });
+
+    ui.slider_weight->setValue((int)(engine.memoryWeight()*100));
+    QObject::connect(ui.slider_weight, &QSlider::valueChanged,
+                     [&](int val){ engine.setMemoryWeight((double)val/100.0); });
 }
 
 void SettingsWindow::init_tab_about()
