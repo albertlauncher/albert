@@ -50,16 +50,16 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry):
     updateActiveTriggers();
 }
 
-std::unique_ptr<albert::Query> QueryEngine::query(const QString &query_string)
+std::shared_ptr<albert::Query> QueryEngine::query(const QString &query_string)
 {
-    unique_ptr<::Query> query;
+    shared_ptr<::Query> query;
 
     for (const auto &[trigger, handler] : active_triggers_)
         if (query_string.startsWith(trigger))
-            query = make_unique<::Query>(query_handlers_, handler, query_string.mid(trigger.size()), trigger);
+            query = make_shared<::Query>(query_handlers_, handler, query_string.mid(trigger.size()), trigger);
 
     if (!query)
-        query = make_unique<::Query>(query_handlers_, &global_search_handler, query_string);
+        query = make_shared<::Query>(query_handlers_, &global_search_handler, query_string);
 
     QObject::connect(query.get(), &::Query::activated,
                      [this, query=query->string()](const QString& e, const QString &i, const QString &a){

@@ -57,7 +57,7 @@ public:
     virtual QWidget *createSettingsWidget() = 0;
     void setEngine(QueryEngine*);
 protected:
-    std::unique_ptr<Query> query(const QString &query) const;
+    std::shared_ptr<Query> query(const QString &query) const;
 private:
     QueryEngine *query_engine;
 };

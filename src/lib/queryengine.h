@@ -24,7 +24,7 @@ public:
 
     explicit QueryEngine(albert::ExtensionRegistry&);
 
-    std::unique_ptr<albert::Query> query(const QString &query);
+    std::shared_ptr<albert::Query> query(const QString &query);
 
     const std::map<albert::QueryHandler*,HandlerConfig> &handlerConfig() const;
     void setTrigger(albert::QueryHandler*, const QString&);
