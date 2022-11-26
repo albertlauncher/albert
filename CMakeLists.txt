@@ -75,6 +75,7 @@ add_library(${TARGET_LIB} SHARED ${LIB_SRC}
         src/lib/settings/settingswindow.ui
         src/lib/settings/triggerwidget.cpp
         src/lib/terminalprovider.cpp
+        src/lib/trayicon.cpp
         src/lib/usagedatabase.cpp
         src/lib/util/history.cpp
         src/lib/util/standarditem.cpp

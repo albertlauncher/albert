@@ -7,6 +7,7 @@ class App;
 class NativePluginProvider;
 class TerminalProvider;
 class QueryEngine;
+class TrayIcon;
 
 
 
@@ -19,20 +20,14 @@ public:
 
     void bringToFront();
 
-    Ui::SettingsWindow ui;
-
 private:
     void init_tab_general_frontend(NativePluginProvider&);
     void init_tab_general_terminal(TerminalProvider&);
-    void init_tab_general_trayIcon();
+    void init_tab_general_trayIcon(TrayIcon&);
     void init_tab_general_autostart();
     void init_tab_general_search(QueryEngine&);
     void init_tab_about();
-
     void keyPressEvent(QKeyEvent * event) override;
 
-//    void closeEvent(QCloseEvent * event) override;
-//    void init_tab_general_hotkey();
-//  void init_autostart();
-//    void changeHotkey(int);
+    Ui::SettingsWindow ui;
 };

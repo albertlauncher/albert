@@ -7,6 +7,7 @@
 #include "pluginwidget.h"
 #include "settingswindow.h"
 #include "triggerwidget.h"
+#include "trayicon.h"
 #include <QCloseEvent>
 #include <QDesktopServices>
 using namespace std;
@@ -20,7 +21,7 @@ SettingsWindow::SettingsWindow(App &app) : ui()
 
     init_tab_general_frontend(app.plugin_provider);
     init_tab_general_terminal(app.terminal_provider);
-    init_tab_general_trayIcon();
+    init_tab_general_trayIcon(app.tray_icon);
     init_tab_general_autostart();
     init_tab_general_search(app.query_engine);
     ui.tabs->insertTab(ui.tabs->count()-1, app.plugin_provider.frontend()->createSettingsWidget(), tr("Frontend"));
@@ -59,11 +60,11 @@ void SettingsWindow::init_tab_general_terminal(TerminalProvider &terminal_provid
             this, [&terminal_provider](int index){ terminal_provider.setTerminal(index); });
 }
 
-void SettingsWindow::init_tab_general_trayIcon()
+void SettingsWindow::init_tab_general_trayIcon(TrayIcon &tray_icon)
 {
-//    ui.checkBox_showTray->setChecked(albert.tray_icon.isVisible());
-//    QObject::connect(ui.checkBox_showTray, &QCheckBox::toggled,
-//                     &albert.tray_icon, &TrayIcon::setVisible);
+    ui.checkBox_showTray->setChecked(tray_icon.isVisible());
+    QObject::connect(ui.checkBox_showTray, &QCheckBox::toggled,
+                     &tray_icon, &TrayIcon::setVisible);
 }
 
 void SettingsWindow::init_tab_general_autostart()

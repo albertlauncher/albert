@@ -8,6 +8,7 @@
 #include "rpcserver.h"
 #include "settings/settingswindow.h"
 #include "terminalprovider.h"
+#include "trayicon.h"
 #include "usagedatabase.h"
 #include <QPointer>
 
@@ -32,6 +33,7 @@ public:
     QueryEngine query_engine;
     NativePluginProvider plugin_provider;
     TerminalProvider terminal_provider;
+    TrayIcon tray_icon;
     QPointer<SettingsWindow> settings_window;
 };
 
