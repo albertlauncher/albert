@@ -36,11 +36,14 @@ void GlobalQueryHandler::applyUsageScores(vector<RankItem> &rank_items) const
 {
     shared_lock lock(m);
     // https://github.com/albertlauncher/albert/issues/695
+    auto MAX_SCOREf = (double)MAX_SCORE;
     for (auto & rank_item : rank_items){
         try {
-            rank_item.score = (Score)((usage_scores.at(make_pair(this->id(),rank_item.item->id())) * usage_weight
-                              + (double)rank_item.score/(double)MAX_SCORE * (1-usage_weight)) * MAX_SCORE);
-        } catch (const out_of_range &){}
+            rank_item.score = (Score)(usage_weight * usage_scores.at(make_pair(this->id(), rank_item.item->id()))
+                    * MAX_SCOREf + (1.0-usage_weight) * (double)rank_item.score);
+        } catch (const out_of_range &){
+            rank_item.score = (Score)((1.0-usage_weight) * (double)rank_item.score);
+        }
     }
 }
 
