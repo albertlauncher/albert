@@ -25,7 +25,7 @@ History::~History()
     if (f.open(QIODevice::WriteOnly)){
         QTextStream ts(&f);
         for (const auto &line : lines_)
-            ts << line;
+            ts << line << Qt::endl;
         f.close();
     } else
         WARN << "Opening history file failed:" << file_path;
