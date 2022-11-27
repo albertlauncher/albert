@@ -20,13 +20,14 @@ QVariant ItemsModel::data(const QModelIndex &index, int role) const
     if (index.isValid()) {
         const shared_ptr<Item> &item = items[index.row()].second;
 
-        switch (static_cast<ItemRoles>(role)) {
-            case ItemRoles::TextRole: return item->text();
-            case ItemRoles::SubTextRole: return item->subtext();
-            case ItemRoles::InputActionRole: return item->inputActionText();
-            case ItemRoles::IconUrlsRole: return item->iconUrls();
-            case ItemRoles::IconPathRole: qFatal("ItemsModel::data ItemRoles::IconPathRole not implemented");
-            case ItemRoles::IconRole:
+        switch (role) {
+            case (int)ItemRoles::TextRole: return item->text();
+            case (int)ItemRoles::SubTextRole: return item->subtext();
+            case Qt::ToolTipRole: return QString("%1\n%2").arg(item->text(), item->subtext());
+            case (int)ItemRoles::InputActionRole: return item->inputActionText();
+            case (int)ItemRoles::IconUrlsRole: return item->iconUrls();
+            case (int)ItemRoles::IconPathRole: qFatal("ItemsModel::data ItemRoles::IconPathRole not implemented");
+            case (int)ItemRoles::IconRole:
             {
                 auto get_icon_for_urls = [](const QStringList &urls)
                 {

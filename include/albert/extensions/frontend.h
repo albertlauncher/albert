@@ -15,9 +15,9 @@ namespace albert
 enum class ALBERT_EXPORT ItemRoles
 {
     TextRole = Qt::DisplayRole,  // QString
-    SubTextRole = Qt::ToolTipRole,  // QString
     IconRole = Qt::DecorationRole,  // QIcon for QWidgets
-    IconPathRole = Qt::UserRole,  // QString for QML
+    SubTextRole = Qt::UserRole,  // QString
+    IconPathRole,  // QString for QML
     IconUrlsRole,  // QStringList
     InputActionRole  // QString
 };
