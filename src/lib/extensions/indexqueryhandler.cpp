@@ -24,7 +24,9 @@ QString IndexQueryHandler::synopsis() const
 
 std::vector<RankItem> IndexQueryHandler::rankItems(const QString &string, const bool& isValid) const
 {
-    return index_->search(string, isValid);
+    std::vector<RankItem> results = index_->search(string, isValid);
+    applyUsageScores(results);
+    return results;
 }
 
 void IndexQueryHandler::setIndex(unique_ptr<Index> &&index)

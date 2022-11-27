@@ -16,6 +16,9 @@ QString GlobalSearch::description() const { return {}; }
 
 void GlobalSearch::handleQuery(Query &query) const
 {
+    if (query.string().trimmed().isEmpty())
+        return;
+
     mutex m;  // 6.4 Still no movesemantics in QtConcurrent
     vector<pair<QueryHandler*,RankItem>> rank_items;
 
@@ -23,7 +26,6 @@ void GlobalSearch::handleQuery(Query &query) const
             [this, &m, &rank_items, &query](GlobalQueryHandler *handler) {
                 TimePrinter tp(QString("TIME: %1 µs ['%2':'%3']").arg("%1", handler->id(), query.string()));
                 auto r = handler->rankItems(query.string(), query.isValid());
-                handler->applyUsageScores(r);
                 unique_lock lock(m);
                 rank_items.reserve(rank_items.size()+r.size());
                 for (auto &rank_item : r)

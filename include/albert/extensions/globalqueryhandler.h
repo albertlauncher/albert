@@ -34,16 +34,18 @@ class ALBERT_EXPORT GlobalQueryHandler : public QueryHandler
 public:
     /// The query handling function. Subclasses should return matched items with appropriate match scores.
     /// The match score should make sense and often (if not always) the fraction of the string match makes sense.
+    /// @note Remember to apply Usage scores. @see GlobalQueryHandler::applyUsageScores
     /// @note has to be thread safe!
     virtual std::vector<RankItem> rankItems(const QString &string, const bool& isValid) const = 0;
-
-    /// Takes a list of rank items and modifies its score such that it takes the users usage history into account.
-    void applyUsageScores(std::vector<RankItem>&) const;
 
 protected:
     /// Basic QueryHandler implementation: Applies mru scores, sorts and add the items to the query.
     /// @note You can reimplement this if you want your handler to behave different on triggered queries.
     void handleQuery(Query &query) const override;
+
+    /// Takes a list of rank items and modifies its score such that it takes the users usage history into account.
+    void applyUsageScores(std::vector<RankItem>&) const;
+
 private:
     friend class ::QueryEngine;
     static void setScores(std::map<std::pair<QString,QString>,double> scores);

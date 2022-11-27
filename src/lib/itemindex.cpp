@@ -156,80 +156,89 @@ std::vector<ItemIndex::WordMatch> ItemIndex::getWordMatches(const QString &word,
 
 std::vector<albert::RankItem> ItemIndex::search(const QString &string, const bool &isValid) const
 {
-
     QStringList &&words = splitString(string, separators, case_sensitive);
-    if (words.empty())
-        return {};
 
-    struct StringMatch {
-        StringMatch(Index index, Position position, uint16_t match_len)
-            : index(index), position(position), match_len(match_len){}
-        Index index; Position position; uint16_t match_len;
-    };
+    unordered_map<Index,Score> result_map;
+    if (words.empty()){
+        for (const auto &string_index_item : index.strings){
+            auto score = (Score)(1.0/(double)string_index_item.max_match_len*MAX_SCORE);
+            if(const auto &[it, success] = result_map.emplace(string_index_item.item, score); !success)
+                if (it->second < score)
+                    it->second = score;
+        }
+    }
+    else
+    {
+        struct StringMatch {
+            StringMatch(Index index, Position position, uint16_t match_len)
+                    : index(index), position(position), match_len(match_len){}
+            Index index; Position position; uint16_t match_len;
+        };
 
-    auto invert = [](const vector<WordMatch> &word_matches){
-        vector<StringMatch> string_matches;
-        for (const auto &word_match : word_matches)
-            for (const auto &occurrence : word_match.word_index_item.occurrences)
-                string_matches.emplace_back(occurrence.index, occurrence.position, word_match.match_length);
-        sort(string_matches.begin(), string_matches.end(),
-             [](const auto &l, const auto &r){ return l.index < r.index; });
-        return string_matches;
-    };
+        auto invert = [](const vector<WordMatch> &word_matches){
+            vector<StringMatch> string_matches;
+            for (const auto &word_match : word_matches)
+                for (const auto &occurrence : word_match.word_index_item.occurrences)
+                    string_matches.emplace_back(occurrence.index, occurrence.position, word_match.match_length);
+            sort(string_matches.begin(), string_matches.end(),
+                 [](const auto &l, const auto &r){ return l.index < r.index; });
+            return string_matches;
+        };
 
-    shared_lock lock(mutex);
-    vector<StringMatch> left_matches = invert(getWordMatches(words[0], isValid));
+        shared_lock lock(mutex);
+        vector<StringMatch> left_matches = invert(getWordMatches(words[0], isValid));
 
-    // In case of multiple words intersect. Todo: user chooses strategy
-    for (int w = 1; w < words.size(); ++w) {
+        // In case of multiple words intersect. Todo: user chooses strategy
+        for (int w = 1; w < words.size(); ++w) {
 
-        if (!isValid || left_matches.empty())
-            return {};
+            if (!isValid || left_matches.empty())
+                return {};
 
-        vector<StringMatch> right_matches = invert(getWordMatches(words[w], isValid));
+            vector<StringMatch> right_matches = invert(getWordMatches(words[w], isValid));
 
-        if (right_matches.empty())
-            return {};
+            if (right_matches.empty())
+                return {};
 
-        vector<StringMatch> intermediate_matches;
-        for (auto lit = left_matches.cbegin(); lit != left_matches.cend();) {
+            vector<StringMatch> intermediate_matches;
+            for (auto lit = left_matches.cbegin(); lit != left_matches.cend();) {
 
-            // Build a range of upcoming left_matches with same index
-            auto elit = lit;
-            while(elit != left_matches.cend() && lit->index==elit->index)
-                ++elit;
+                // Build a range of upcoming left_matches with same index
+                auto elit = lit;
+                while(elit != left_matches.cend() && lit->index==elit->index)
+                    ++elit;
 
-            // Get the range of equal string matches on the right side
-            const auto &[eq_begin, eq_end] =
-                    equal_range(right_matches.cbegin(), right_matches.cend(), *lit,
-                                [](const StringMatch &l, const StringMatch &r) { return l.index < r.index; });
+                // Get the range of equal string matches on the right side
+                const auto &[eq_begin, eq_end] =
+                        equal_range(right_matches.cbegin(), right_matches.cend(), *lit,
+                                    [](const StringMatch &l, const StringMatch &r) { return l.index < r.index; });
 
-            // If no match on the right side continue with next leftmatch
-            if (eq_begin == eq_end){
-                lit = elit;
-                continue;
+                // If no match on the right side continue with next leftmatch
+                if (eq_begin == eq_end){
+                    lit = elit;
+                    continue;
+                }
+
+                //
+                for (;lit != elit; ++lit)
+                    //for (const auto &right_matcht : std::ranges::subrange(eq_begin,eq_end))
+                    for (auto rit = eq_begin; rit != eq_end; ++rit)
+                        if (lit->position < rit->position)  // Sequence check
+                            intermediate_matches.emplace_back(rit->index, rit->position,
+                                                              rit->match_len + lit->match_len);
+
             }
 
-            //
-            for (;lit != elit; ++lit)
-                //for (const auto &right_matcht : std::ranges::subrange(eq_begin,eq_end))
-                for (auto rit = eq_begin; rit != eq_end; ++rit)
-                    if (lit->position < rit->position)  // Sequence check
-                        intermediate_matches.emplace_back(rit->index, rit->position,
-                                                          rit->match_len + lit->match_len);
-
+            left_matches = ::move(intermediate_matches);
         }
 
-        left_matches = ::move(intermediate_matches);
-    }
+        // Build the list of matched items with their highest scoring match
+        for (const auto &match : left_matches) {
+            auto score = (Score)((double)match.match_len / index.strings[match.index].max_match_len * MAX_SCORE);
+            if (const auto &[it, success] = result_map.emplace(index.strings[match.index].item, score);
+                    !success && it->second < score) // update if exists
+                it->second = score;
+        }
 
-    // Build the list of matched items with their highest scoring match
-    unordered_map<Index,Score> result_map;
-    for (const auto &match : left_matches) {
-        auto score = (Score)((double)match.match_len / index.strings[match.index].max_match_len * MAX_SCORE);
-        if (const auto &[it, success] = result_map.emplace(index.strings[match.index].item, score);
-            !success && it->second < score) // update if exists
-            it->second = score;
     }
 
     // Convert results to return type
@@ -237,5 +246,6 @@ std::vector<albert::RankItem> ItemIndex::search(const QString &string, const boo
     result.reserve(result_map.size());
     for (const auto &[item_idx, score] : result_map)
         result.emplace_back(index.items[item_idx], score);
+
     return result;
 }

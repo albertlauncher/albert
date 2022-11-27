@@ -38,10 +38,9 @@ public:
 
 protected:
     void updateIndex();  /// Call this when your items changed
-
-private:
     QString synopsis() const override;
     std::vector<RankItem> rankItems(const QString &string, const bool& isValid) const final;
+private:
     void setIndex(std::unique_ptr<Index>&&);
     std::unique_ptr<Index> index_;
     friend class ::QueryEngine;

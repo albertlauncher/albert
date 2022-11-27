@@ -21,7 +21,6 @@ RankItem::RankItem(shared_ptr<Item> item, Score score):
 void albert::GlobalQueryHandler::handleQuery(Query &query) const
 {
     std::vector<RankItem> &&rank_items = rankItems(query.string(), query.isValid());
-    applyUsageScores(rank_items);
     sort(rank_items.begin(), rank_items.end(), [](const auto &a, const auto &b){ return a.score > b.score; });
 
     // TODO c++20 ranges::view
