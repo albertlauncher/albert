@@ -34,6 +34,8 @@ void GlobalSearch::handleQuery(Query &query) const
 
     QtConcurrent::blockingMap(handlers, map);
 
+    sort(rank_items.begin(), rank_items.end(), [](const auto &a, const auto &b){ return a.second.score > b.second.score; });
+
     auto *q = static_cast<::Query*>(&query);
     q->matches_.add(rank_items.begin(), rank_items.end());
 
