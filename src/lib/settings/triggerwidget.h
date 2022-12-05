@@ -8,15 +8,8 @@ class TriggerModel;
 class TriggerWidget : public QTableView
 {
 public:
-    explicit TriggerWidget(QueryEngine &);
+    explicit TriggerWidget(QueryEngine &, albert::ExtensionRegistry &registry);
     ~TriggerWidget() override;
-
-protected:
-    void showEvent(QShowEvent *event) override;
-
 public:
-
     std::unique_ptr<TriggerModel> model;
-
-
 };

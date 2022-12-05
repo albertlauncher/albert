@@ -26,7 +26,7 @@ SettingsWindow::SettingsWindow(App &app) : ui()
     init_tab_general_search(app.query_engine);
     ui.tabs->insertTab(ui.tabs->count()-1, app.plugin_provider.frontend()->createSettingsWidget(), tr("Frontend"));
     ui.tabs->insertTab(ui.tabs->count()-1, new ConfigProviderWidget(app.extension_registry), tr("Extensions"));
-    ui.tabs->insertTab(ui.tabs->count()-1, new TriggerWidget(app.query_engine), "Triggers");
+    ui.tabs->insertTab(ui.tabs->count()-1, new TriggerWidget(app.query_engine, app.extension_registry), "Triggers");
     ui.tabs->insertTab(ui.tabs->count()-1, new PluginWidget(app.extension_registry), "Plugins");
     init_tab_about();
 

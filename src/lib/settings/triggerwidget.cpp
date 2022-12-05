@@ -15,42 +15,44 @@ enum class Column {
     Description
 };
 
-struct TriggerModel : public QAbstractTableModel
+struct TriggerModel : public QAbstractTableModel, ExtensionWatcher<QueryHandler>
 {
     struct Entry {
         QueryHandler *handler;
         QString trigger;
         bool enabled;
     };
-    vector<Entry> query_handlers;
+    vector<QueryHandler*> handlers;
     QueryEngine &engine;
 
-    explicit TriggerModel(QueryEngine &engine): engine(engine)
+    explicit TriggerModel(QueryEngine &engine, ExtensionRegistry &registry):
+            engine(engine), ExtensionWatcher<QueryHandler>(registry)
     {
-        update();
+        for (auto &[id,handler] : registry.extensions<QueryHandler>())
+            handlers.emplace_back(handler);
+        ::sort(begin(handlers), end(handlers),
+               [](const auto& a,const auto& b){ return a->id() < b->id(); });
+
     }
 
-    void reset()
+    void onAdd(QueryHandler *t)
     {
-        beginResetModel();
-        update();
-        endResetModel();
+        auto it = lower_bound(begin(handlers), end(handlers), t,
+                              [](const auto& a,const auto& b){ return a->id() < b->id(); });
+        auto i = std::distance(begin(handlers), it);
+        beginInsertRows(QModelIndex(), i, i);
+        handlers.insert(it, t);
+        endInsertRows();
     }
 
-    void update()
+    void onRem(QueryHandler *t)
     {
-        query_handlers.clear();
-        for (auto &[handler, config] : engine.handlerConfig()){
-            Entry entry{handler, config.trigger, config.enabled};
-            query_handlers.emplace_back(entry);
-        }
-        ::sort(begin(query_handlers), end(query_handlers),
-               [](const auto& a,const auto& b){ return a.handler->id() < b.handler->id(); });
+        handlers.erase(remove(handlers.begin(), handlers.end(), t), handlers.end());
     }
 
     int rowCount(const QModelIndex &parent) const override
     {
-        return (int)query_handlers.size();
+        return (int)handlers.size();
     }
 
     int columnCount(const QModelIndex &parent) const override
@@ -62,44 +64,46 @@ struct TriggerModel : public QAbstractTableModel
     {
         if (index.column() == (int)Column::Name){
             if (role == Qt::DisplayRole)
-                return query_handlers[index.row()].handler->name();
+                return handlers[index.row()]->name();
 
         } else if (index.column() == (int)Column::Description){
             if (role == Qt::DisplayRole)
-                return query_handlers[index.row()].handler->description();
+                return handlers[index.row()]->description();
 
         } else if (index.column() == (int)Column::Trigger){
-            auto &entry = query_handlers[index.row()];
+            auto &handler = handlers[index.row()];
             if (role == Qt::DisplayRole) {
-                return QString(entry.trigger).replace(" ", "•");  // 
+                return QString(engine.handlerConfig().at(handler).trigger).replace(" ", "•");  // 
 
             } else if (role == Qt::EditRole) {
-                return entry.trigger;
+                return engine.handlerConfig().at(handler).trigger;
 
             } else if (role == Qt::ToolTipRole) {
                 QStringList sl;
-                if (!entry.handler->allow_trigger_remap())
+                auto config = engine.handlerConfig().at(handler);
+                if (!handler->allow_trigger_remap())
                     sl << "This extension does not allow trigger remapping.";
-                if (entry.enabled && engine.activeTriggers().at(entry.trigger) != entry.handler)
+                if (config.enabled && engine.activeTriggers().at(config.trigger) != handler)
                     sl << QString("Trigger conflict: '%1' reserved by extension '%2'.")
-                            .arg(entry.trigger, engine.activeTriggers().at(entry.trigger)->name());
+                            .arg(config.trigger, engine.activeTriggers().at(config.trigger)->name());
                 if (!sl.isEmpty())
                     return sl.join(" ");
 
             }else if (role == Qt::CheckStateRole){
-                return query_handlers[index.row()].enabled ? Qt::Checked : Qt::Unchecked;
+                return engine.handlerConfig().at(handler).enabled ? Qt::Checked : Qt::Unchecked;
 
             } else if (role == Qt::FontRole) {
-                if (!query_handlers[index.row()].handler->allow_trigger_remap()){
+                if (!handler->allow_trigger_remap()){
                     QFont f;
                     f.setItalic(true);
                     return f;
                 }
 
             } else if (role == Qt::ForegroundRole) {
-                if (!entry.enabled)
+                auto config = engine.handlerConfig().at(handler);
+                if (!config.enabled)
                     return QColor(Qt::gray);
-                else if (engine.activeTriggers().at(entry.trigger) != entry.handler)
+                else if (engine.activeTriggers().at(config.trigger) != handler)
                     return QColor(Qt::red);
 
             }
@@ -115,18 +119,16 @@ struct TriggerModel : public QAbstractTableModel
                 if (value.toString().isEmpty())
                     return false;
 
-                engine.setTrigger(query_handlers[idx.row()].handler, value.toString());
-                update();
+                engine.setTrigger(handlers[idx.row()], value.toString());
                 emit dataChanged(index(0, (int) Column::Trigger),
-                                 index((int)query_handlers.size(), (int) Column::Trigger),
+                                 index((int)handlers.size(), (int) Column::Trigger),
                                  {Qt::DisplayRole});
                 return true;
             } else if (role == Qt::CheckStateRole) {
-                engine.setEnabled(query_handlers[idx.row()].handler,
+                engine.setEnabled(handlers[idx.row()],
                                   static_cast<Qt::CheckState>(value.toUInt()) == Qt::Checked);
-                update();
                 emit dataChanged(index(0, (int) Column::Trigger),
-                                 index((int)query_handlers.size(), (int) Column::Trigger),
+                                 index((int)handlers.size(), (int) Column::Trigger),
                                  {Qt::DisplayRole});
                 return true;
             }
@@ -152,7 +154,7 @@ struct TriggerModel : public QAbstractTableModel
             case Column::Description:
                 return Qt::ItemIsEnabled|Qt::ItemIsSelectable;
             case Column::Trigger:
-                if (query_handlers[index.row()].handler->allow_trigger_remap())
+                if (handlers[index.row()]->allow_trigger_remap())
                     return Qt::ItemIsEnabled|Qt::ItemIsSelectable|Qt::ItemIsUserCheckable|Qt::ItemIsEditable;
                 else
                     return Qt::ItemIsEnabled|Qt::ItemIsSelectable|Qt::ItemIsUserCheckable;
@@ -161,8 +163,8 @@ struct TriggerModel : public QAbstractTableModel
     }
 };
 
-TriggerWidget::TriggerWidget(QueryEngine &qe)
-    : model(new TriggerModel(qe))
+TriggerWidget::TriggerWidget(QueryEngine &qe, ExtensionRegistry &er)
+    : model(new TriggerModel(qe, er))
 {
     verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     verticalHeader()->hide();
@@ -185,14 +187,7 @@ TriggerWidget::TriggerWidget(QueryEngine &qe)
         setCurrentIndex(model->index(current.row(), (int)Column::Trigger));
         blockSignals(false);
     });
-
-
 }
 
-void TriggerWidget::showEvent(QShowEvent *event)
-{
-    model.reset();
-    QWidget::showEvent(event);
-}
 
 TriggerWidget::~TriggerWidget() = default;

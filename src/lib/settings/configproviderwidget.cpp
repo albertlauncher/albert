@@ -69,10 +69,12 @@ void ConfigProviderWidget::resetUI()
 
 void ConfigProviderWidget::onAdd(ConfigWidgetProvider *t)
 {
+    providers.push_back(t);
     resetUI();
 }
 
 void ConfigProviderWidget::onRem(ConfigWidgetProvider *t)
 {
+    providers.erase(remove(providers.begin(), providers.end(), t), providers.end());
     resetUI();
 }
