@@ -276,7 +276,7 @@ Plugin *NativePluginProvider::load(PluginSpec &spec)
     INFO << QString("Loading plugin '%1'").arg(spec.id);
     QPluginLoader loader(spec.path);
     // Some python libs do not link against python. Export the python symbols to the main app.
-    loader.setLoadHints(QLibrary::ExportExternalSymbolsHint | QLibrary::PreventUnloadHint);
+//    loader.setLoadHints(QLibrary::ExportExternalSymbolsHint);// | QLibrary::PreventUnloadHint);
 
     QString error;
     auto start = system_clock::now();
@@ -306,7 +306,7 @@ Plugin *NativePluginProvider::load(PluginSpec &spec)
         error = "Unknown exception.";
     }
 
-    DEBG << "Loading plugin failed:" << error;
+    WARN << "Loading plugin failed:" << error;
     loader.unload();
     spec.state = PluginSpec::State::Error;
     spec.reason = error;
@@ -323,6 +323,7 @@ bool NativePluginProvider::unload(PluginSpec &spec)
     if (auto *e = dynamic_cast<Extension*>(loader.instance()))
         registry_.remove(e);  // Auto deregistration
     auto start = system_clock::now();
+    delete loader.instance();  // TODO this saves from segfautls but actually this is QPluginLoaders job
     bool success = loader.unload();
     if (success){
         spec.state = PluginSpec::State::Unloaded;
