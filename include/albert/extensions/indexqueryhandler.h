@@ -11,10 +11,10 @@ class ALBERT_EXPORT IndexItem
 {
 public:
     IndexItem(std::shared_ptr<Item> item, QString string);
-    IndexItem(IndexItem&&) = default;
-    IndexItem(const IndexItem&) = delete;
-    IndexItem& operator=(IndexItem&&) = default;
-    IndexItem& operator=(const IndexItem&) = delete;
+//    IndexItem(IndexItem&&) = default;
+//    IndexItem(const IndexItem&) = delete;
+//    IndexItem& operator=(IndexItem&&) = default;
+//    IndexItem& operator=(const IndexItem&) = delete;
 
     std::shared_ptr<Item> item; /// The item
     QString string; /// The corresponding string
