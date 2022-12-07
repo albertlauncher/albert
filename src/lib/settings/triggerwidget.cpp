@@ -35,7 +35,7 @@ struct TriggerModel : public QAbstractTableModel, ExtensionWatcher<QueryHandler>
 
     }
 
-    void onAdd(QueryHandler *t)
+    void onAdd(QueryHandler *t) override
     {
         auto it = lower_bound(begin(handlers), end(handlers), t,
                               [](const auto& a,const auto& b){ return a->id() < b->id(); });
@@ -45,7 +45,7 @@ struct TriggerModel : public QAbstractTableModel, ExtensionWatcher<QueryHandler>
         endInsertRows();
     }
 
-    void onRem(QueryHandler *t)
+    void onRem(QueryHandler *t) override
     {
         handlers.erase(remove(handlers.begin(), handlers.end(), t), handlers.end());
     }

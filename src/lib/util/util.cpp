@@ -42,7 +42,7 @@ long long albert::runDetachedProcess(const QStringList &commandline, const QStri
             INFO << "Detached process started successfully. PID:" << pid << commandline;
         else
             WARN << "Starting detached process failed." << commandline;
-    }
-    WARN << "runDetachedProcess: commandline must not be empty!";
+    } else
+        WARN << "runDetachedProcess: commandline must not be empty!";
     return pid;
 }
