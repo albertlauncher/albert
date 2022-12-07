@@ -4,6 +4,7 @@
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
 #include <functional>
+#include "albert/util/timeprinter.hpp"
 
 namespace albert
 {
@@ -12,34 +13,44 @@ namespace albert
 template<typename T> class BackgroundExecutor
 {
 public:
-    std::function<T(const bool &cancel)> parallel;
+    std::function<T(const bool &abort)> parallel;
     std::function<void(T &&)> finish;
 private:
     QFutureWatcher<T> future_watcher_;
     bool rerun_ = false;
-    void onFinish()
-    {
+    void onFinish() {
         if (rerun_){  // discard and rerun
             rerun_ = false;
-            future_watcher_.setFuture(QtConcurrent::run(parallel, rerun_));
-        } else{
+            run();
+        } else
             finish(std::move(future_watcher_.result()));
-        }
     }
 
 public:
     BackgroundExecutor() {
         QObject::connect(&future_watcher_, &QFutureWatcher<T>::finished, [this](){onFinish();});
     };
+    ~BackgroundExecutor() {
+        rerun_ = false;
+        if (isRunning()){
+            TimePrinter tp("Busy waited for %1µs.");
+            WARN << "Busy wait for BackgroundExecutor task. Abortion handled correctly?";
+            future_watcher_.waitForFinished();
+        }
+    };
 
-    void run()
-    {
-        if (rerun_)
-            return;
+    void run() {
         if (future_watcher_.isRunning())
             rerun_ = true;
         else
             future_watcher_.setFuture(QtConcurrent::run(parallel, rerun_));
     }
+
+    bool isRunning() const { return future_watcher_.isRunning(); }
 };
+
+
+
+
+
 }
