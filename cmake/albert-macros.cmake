@@ -91,7 +91,7 @@ macro(albert_plugin_overwrite_md_authors_from_git)
 endmacro()
 
 macro(albert_plugin_add_default_target)
-    file(GLOB_RECURSE SRC *.cpp src/*.cpp *.qrc *.ui)
+    file(GLOB_RECURSE SRC *.cpp src/*.cpp *.qrc *.ui *.mm)
     #message("${PROJECT_NAME} ${SRC}")
     add_library(${PROJECT_NAME} SHARED ${SRC})
     add_library(albert::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
