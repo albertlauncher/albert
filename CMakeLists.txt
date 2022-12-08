@@ -109,7 +109,6 @@ configure_file(
 )
 
 find_package(Qt6 6.2 REQUIRED  # Ubuntu 22.04
-    Charts
     Core
     Concurrent
     Network
@@ -122,7 +121,6 @@ target_link_libraries(${TARGET_LIB}
         Qt6::Core
         Qt6::Widgets
     PRIVATE
-        Qt6::Charts
         Qt6::Concurrent
         Qt6::Network
         Qt6::Sql
