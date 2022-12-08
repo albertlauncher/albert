@@ -44,19 +44,19 @@ QString App::description() const
 
 vector<IndexItem> App::indexItems() const
 {
-    auto settings_item = make_shared<StandardItem>(
-            "albert-settings", "Settings", "Open the Albert settings window", QStringList{":app_icon"},
-            Actions{{"albert-settings", "Open settings", [](){ showSettings(); }}}
+    auto settings_item = StandardItem::make(
+            "albert-settings", "Settings", "Open the Albert settings window", {":app_icon"},
+            {{"albert-settings", "Open settings", [](){ showSettings(); }}}
     );
 
-    auto quit_item = make_shared<StandardItem>(
-            "albert-quit", "Quit Albert", "Quit this application", QStringList{":app_icon"},
-            Actions{{"albert-quit", "Quit Albert", [](){ quit(); }}}
+    auto quit_item = StandardItem::make(
+            "albert-quit", "Quit Albert", "Quit this application", {":app_icon"},
+            {{"albert-quit", "Quit Albert", [](){ quit(); }}}
     );
 
-    auto restart_item = make_shared<StandardItem>(
-            "albert-restart", "Restart Albert", "Restart this application", QStringList{":app_icon"},
-            Actions{{"albert-restart", "Restart Albert", [](){ restart(); }}}
+    auto restart_item = StandardItem::make(
+            "albert-restart", "Restart Albert", "Restart this application", {":app_icon"},
+            {{"albert-restart", "Restart Albert", [](){ restart(); }}}
     );
 
     vector<IndexItem> items;

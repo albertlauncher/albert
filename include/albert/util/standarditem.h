@@ -3,6 +3,7 @@
 #pragma once
 #include "../export.h"
 #include "../extensions/queryhandler.h"
+#include <memory>
 
 namespace albert
 {
@@ -16,9 +17,10 @@ public:
             QString id = {},
             QString text = {},
             QString subtext = {},
+            QString input_action_text = {},
             QStringList icon_urls = {},
-            Actions actions = {},
-            QString input_action_text = {});
+            Actions actions = {});
+
     StandardItem(StandardItem&&) = default;
     StandardItem(const StandardItem&) = delete;
     StandardItem& operator=(StandardItem&&) = default;
@@ -39,6 +41,21 @@ public:
     QStringList iconUrls() const override;
     bool hasActions() const override;
     std::vector<Action> actions() const override;
+
+    static std::shared_ptr<StandardItem> make(
+            QString id = {},
+            QString text = {},
+            QString subtext = {},
+            QString input_action_text = {},
+            QStringList icon_urls = {},
+            Actions actions = {});
+
+    static std::shared_ptr<StandardItem> make(
+            QString id = {},
+            QString text = {},
+            QString subtext = {},
+            QStringList icon_urls = {},
+            Actions actions = {});
 
 protected:
     QString id_;
