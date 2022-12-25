@@ -13,7 +13,7 @@
 #include "albert/extensions/pluginprovider.h"
 #include "albert/extensions/queryhandler.h"
 #include "albert/logging.h"
-#include "albert/plugin.h"
+#include "albert/plugininstance.h"
 #include "albert/util/extensionwatcher.h"
 #include "albert/util/backgroundexecutor.h"
 #include "albert/util/timeprinter.hpp"

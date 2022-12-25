@@ -44,7 +44,7 @@ void Query::run()
     future_watcher_.setFuture(QtConcurrent::run([this](){
         albert::TimePrinter tp(QString("TIME: %1 µs ['%2':'%3']").arg("%1", query_handler_->id(), this->string()));
         try {
-            for (auto fallback_handler : fallback_handlers_)
+            for (auto *fallback_handler : fallback_handlers_)
                 fallbacks_.add(fallback_handler, fallback_handler->fallbacks(QString("%1%2").arg(trigger_, string_)));
             this->query_handler_->handleQuery(*this);
         } catch (const exception &e){

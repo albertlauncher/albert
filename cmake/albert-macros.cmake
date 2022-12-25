@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)  # string(JSON…
 
 macro(albert_plugin_parse_args)
-    set(md_bool NOUSER FRONTEND)
+    set(md_bool FRONTEND)
     set(md_vals ID VERSION NAME DESCRIPTION LICENSE URL)
     set(md_list MAINTAINERS AUTHORS QT_DEPENDENCIES LIB_DEPENDENCIES EXEC_DEPENDENCIES)
     cmake_parse_arguments(MD "${md_bool}" "${md_vals}" "${md_list}" ${ARGV})
@@ -30,9 +30,6 @@ macro(albert_plugin_parse_args)
         message(FATAL_ERROR "Plugin url is undefined")
     endif()
 
-    if (MD_NOUSER AND MD_FRONTEND)
-        message(FATAL_ERROR "Conflict: NOUSER and FRONTEND specified.")
-    endif()
 endmacro()
 
 macro(albert_plugin_generate_metadata_json)
@@ -44,12 +41,10 @@ macro(albert_plugin_generate_metadata_json)
     string(JSON MD SET ${MD} "license" "\"${MD_LICENSE}\"")
     string(JSON MD SET ${MD} "url" "\"${MD_URL}\"")
 
-    if (MD_NOUSER)
-        string(JSON MD SET ${MD} "type" "\"none\"")
-    elseif(MD_FRONTEND)
-        string(JSON MD SET ${MD} "type" "\"frontend\"")
+    if(MD_FRONTEND)
+        string(JSON MD SET ${MD} "frontend" "true")
     else()
-        string(JSON MD SET ${MD} "type" "\"user\"")
+        string(JSON MD SET ${MD} "frontend" "false")
     endif()
 
     if (DEFINED MD_MAINTAINERS)

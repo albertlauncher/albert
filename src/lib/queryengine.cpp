@@ -42,7 +42,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry):
     for (auto &[id, handler] : registry.extensions<QueryHandler>()) {
         query_handlers_.insert(handler);
         HandlerConfig config{
-                handler->settings()->value(CFG_TRIGGER, handler->default_trigger()).toString(),
+                handler->settings()->value(CFG_TRIGGER, handler->defaultTrigger()).toString(),
                 handler->settings()->value(CFG_TRIGGER_ENABLED, true).toBool()
         };
         query_handler_configs_.emplace(handler, config);
@@ -85,7 +85,7 @@ void QueryEngine::onAdd(QueryHandler *handler)
 {
     query_handlers_.insert(handler);
     HandlerConfig conf {
-        handler->settings()->value(CFG_TRIGGER, handler->default_trigger()).toString(),
+        handler->settings()->value(CFG_TRIGGER, handler->defaultTrigger()).toString(),
         handler->settings()->value(CFG_TRIGGER_ENABLED, true).toBool()
     };
     query_handler_configs_.emplace(handler, conf);
@@ -139,7 +139,7 @@ void QueryEngine::setEnabled(QueryHandler *handler, bool enabled)
 
 void QueryEngine::setTrigger(QueryHandler *handler, const QString& trigger)
 {
-    if (!handler->allow_trigger_remap())
+    if (!handler->allowTriggerRemap())
         return;
 
     query_handler_configs_.at(handler).trigger = trigger;

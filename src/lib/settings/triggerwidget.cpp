@@ -81,7 +81,7 @@ struct TriggerModel : public QAbstractTableModel, ExtensionWatcher<QueryHandler>
             } else if (role == Qt::ToolTipRole) {
                 QStringList sl;
                 auto config = engine.handlerConfig().at(handler);
-                if (!handler->allow_trigger_remap())
+                if (!handler->allowTriggerRemap())
                     sl << "This extension does not allow trigger remapping.";
                 if (config.enabled && engine.activeTriggers().at(config.trigger) != handler)
                     sl << QString("Trigger conflict: '%1' reserved by extension '%2'.")
@@ -93,7 +93,7 @@ struct TriggerModel : public QAbstractTableModel, ExtensionWatcher<QueryHandler>
                 return engine.handlerConfig().at(handler).enabled ? Qt::Checked : Qt::Unchecked;
 
             } else if (role == Qt::FontRole) {
-                if (!handler->allow_trigger_remap()){
+                if (!handler->allowTriggerRemap()){
                     QFont f;
                     f.setItalic(true);
                     return f;
@@ -154,7 +154,7 @@ struct TriggerModel : public QAbstractTableModel, ExtensionWatcher<QueryHandler>
             case Column::Description:
                 return Qt::ItemIsEnabled|Qt::ItemIsSelectable;
             case Column::Trigger:
-                if (handlers[index.row()]->allow_trigger_remap())
+                if (handlers[index.row()]->allowTriggerRemap())
                     return Qt::ItemIsEnabled|Qt::ItemIsSelectable|Qt::ItemIsUserCheckable|Qt::ItemIsEditable;
                 else
                     return Qt::ItemIsEnabled|Qt::ItemIsSelectable|Qt::ItemIsUserCheckable;

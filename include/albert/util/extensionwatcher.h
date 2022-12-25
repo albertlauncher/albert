@@ -1,7 +1,6 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
-#include "../albert.h"
 #include "../export.h"
 #include "../extensionregistry.h"
 #include <QObject>

@@ -27,7 +27,7 @@ SettingsWindow::SettingsWindow(App &app) : ui()
     ui.tabs->insertTab(ui.tabs->count()-1, app.plugin_provider.frontend()->createSettingsWidget(), tr("Frontend"));
     ui.tabs->insertTab(ui.tabs->count()-1, new ConfigProviderWidget(app.extension_registry), tr("Extensions"));
     ui.tabs->insertTab(ui.tabs->count()-1, new TriggerWidget(app.query_engine, app.extension_registry), "Triggers");
-    ui.tabs->insertTab(ui.tabs->count()-1, new PluginWidget(app.extension_registry), "Plugins");
+    ui.tabs->insertTab(ui.tabs->count()-1, new PluginWidget(app.plugin_registry), "Plugins");
     init_tab_about();
 
     auto geometry = QGuiApplication::screenAt(QCursor::pos())->geometry();
@@ -38,9 +38,9 @@ SettingsWindow::SettingsWindow(App &app) : ui()
 
 void SettingsWindow::init_tab_general_frontend(NativePluginProvider &plugin_provider)
 {
-    for (const auto &spec : plugin_provider.frontendPlugins()){
-        ui.comboBox_frontend->addItem(spec->name);
-        if (spec->id == plugin_provider.frontend()->id())
+    for (const auto *loader : plugin_provider.frontendPlugins()){
+        ui.comboBox_frontend->addItem(loader->metaData().name);
+        if (loader->metaData().id == plugin_provider.frontend()->id())
             ui.comboBox_frontend->setCurrentIndex(ui.comboBox_frontend->count()-1);
     }
 

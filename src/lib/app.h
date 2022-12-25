@@ -3,13 +3,13 @@
 #pragma once
 #include "albert/extensionregistry.h"
 #include "albert/extensions/indexqueryhandler.h"
-#include "pluginprovider.h"
+#include "nativepluginprovider.h"
+#include "pluginregistry.h"
 #include "queryengine.h"
 #include "rpcserver.h"
 #include "settings/settingswindow.h"
 #include "terminalprovider.h"
 #include "trayicon.h"
-#include "usagedatabase.h"
 #include <QPointer>
 
 class App : public albert::IndexQueryHandler
@@ -30,6 +30,7 @@ public:
 
     RPCServer rpc_server;
     albert::ExtensionRegistry extension_registry;
+    PluginRegistry plugin_registry;
     QueryEngine query_engine;
     NativePluginProvider plugin_provider;
     TerminalProvider terminal_provider;

@@ -56,7 +56,7 @@ std::shared_ptr<StandardItem> StandardItem::make(QString id,
     return std::make_shared<StandardItem>(std::move(id),
                                           std::move(text),
                                           std::move(subtext),
-                                          QString{},
+                                          QString(),
                                           std::move(std::move(icon_urls)),
                                           std::move(actions));
 }

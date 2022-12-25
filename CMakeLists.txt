@@ -27,14 +27,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
     -Wno-deprecated \
     -Wno-unused-parameter \
 ")
-#-Wconversion
-#-Weffc++
-#-Werror-Wall
-#    -DQT_NO_CAST_FROM_ASCII \
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DQT_QML_DEBUG")
-
-# Color make output
-SET(CMAKE_COLOR_MAKEFILE ON)
+#    -Wconversion \
+#    -Weffc++ \
+#    -Werror \
+#    -Wall \
 
 # Put the binaries in dedicated toplevel directories
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -55,6 +51,7 @@ add_library(${TARGET_LIB} SHARED ${LIB_SRC}
         src/lib/extensions/frontend.cpp
         src/lib/extensions/globalqueryhandler.cpp
         src/lib/extensions/indexqueryhandler.cpp
+        src/lib/extensions/pluginprovider.cpp
         src/lib/extensions/queryhandler.cpp
         src/lib/globalsearch.cpp
         src/lib/iconprovider.cpp
@@ -62,8 +59,8 @@ add_library(${TARGET_LIB} SHARED ${LIB_SRC}
         src/lib/itemsmodel.cpp
         src/lib/levenshtein.cpp
         src/lib/macos.mm
-        src/lib/plugin.cpp
-        src/lib/pluginprovider.cpp
+        src/lib/nativepluginprovider.cpp
+        src/lib/pluginregistry.cpp
         src/lib/query.cpp
         src/lib/queryengine.cpp
         src/lib/resources.qrc

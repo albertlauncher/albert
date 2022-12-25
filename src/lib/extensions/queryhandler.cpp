@@ -35,12 +35,12 @@ QString QueryHandler::synopsis() const
     return {};
 }
 
-QString QueryHandler::default_trigger() const
+QString QueryHandler::defaultTrigger() const
 {
     return QString("%1 ").arg(id());
 }
 
-bool QueryHandler::allow_trigger_remap() const
+bool QueryHandler::allowTriggerRemap() const
 {
     return true;
 }

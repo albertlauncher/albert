@@ -2,16 +2,17 @@
 
 #include "albert/util/standarditem.h"
 #include "albert/extensions/frontend.h"
+#include "albert/albert.h"
 #include "app.h"
 using namespace albert;
 using namespace std;
 
 App::App(const QStringList &additional_plugin_paths) :
-        extension_registry(),
-        query_engine(extension_registry),
-        plugin_provider(extension_registry, additional_plugin_paths),
-        terminal_provider(),
-        settings_window(nullptr){}
+    extension_registry(),
+    plugin_registry(extension_registry),
+    query_engine(extension_registry),
+    plugin_provider(extension_registry, additional_plugin_paths),
+    settings_window(nullptr){}
 
 App::~App()
 {
@@ -20,27 +21,19 @@ App::~App()
 
 void App::initialize()
 {
-    extension_registry.add(&plugin_provider);
-    extension_registry.add(this);
     plugin_provider.loadFrontend();
     plugin_provider.frontend()->setEngine(&query_engine);
-    plugin_provider.loadEnabledPlugins();
+
+    extension_registry.add(this);
+    extension_registry.add(&plugin_registry);
+    extension_registry.add(&plugin_provider);  // loads plugins
 }
 
-QString App::id() const
-{
-    return "albert";
-}
+QString App::id() const { return "albert"; }
 
-QString App::name() const
-{
-    return "Albert";
-}
+QString App::name() const { return "Albert"; }
 
-QString App::description() const
-{
-    return "Control the app.";
-}
+QString App::description() const { return "Control the app."; }
 
 vector<IndexItem> App::indexItems() const
 {

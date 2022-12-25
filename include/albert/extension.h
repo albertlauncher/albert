@@ -12,7 +12,13 @@ namespace albert
 class ALBERT_EXPORT Extension
 {
 public:
+    Extension() = default;
+    Extension(const Extension&) = delete;
+    Extension(Extension&&) = delete;
+    Extension& operator=(const Extension&) = delete;
+    Extension& operator=(Extension&&) = delete;
     virtual ~Extension() = default;
+
     virtual QString id() const = 0;  /// The guid of the extension
     virtual QString name() const = 0;  /// Pretty, human readable name
     virtual QString description() const = 0;  /// Brief description of what this extension provides
