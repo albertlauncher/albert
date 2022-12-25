@@ -9,7 +9,7 @@
 
 static QDir stdDir(QStandardPaths::StandardLocation loc, const QString &id)
 {
-    QDir dir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
+    QDir dir(QStandardPaths::writableLocation(loc));
     if (!dir.exists(id))
         dir.mkdir(id);
     dir.cd(id);
