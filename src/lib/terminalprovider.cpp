@@ -2,6 +2,7 @@
 
 #include "albert/albert.h"
 #include "albert/logging.h"
+#include "albert/util/util.h"
 #include "terminalprovider.h"
 #include <QCoreApplication>
 #include <QDir>

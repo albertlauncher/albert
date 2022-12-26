@@ -112,16 +112,6 @@ NativePluginLoader::NativePluginLoader(NativePluginProvider *provider, Extension
     if (metadata_.description.isEmpty())
         errors << "'description' must not be empty.";
 
-    if (metadata_.license.isEmpty())
-        WARN << "'license' should not be empty.";
-
-    if (metadata_.url.isEmpty())
-        WARN << "'url' should not be empty.";
-
-    if (metadata_.authors.isEmpty())
-        WARN << "'authors' should not be empty.";
-
-
     // Finally set state based on errors
 
     if (errors.isEmpty())

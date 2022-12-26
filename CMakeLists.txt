@@ -26,6 +26,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
     -pedantic \
     -Wno-deprecated \
     -Wno-unused-parameter \
+    -Wno-shadow \
 ")
 #    -Wconversion \
 #    -Weffc++ \
@@ -42,7 +43,7 @@ set(TARGET_LIB ${PROJECT_NAME})
 
 file(GLOB_RECURSE LIB_SRC include/*)
 
-add_library(${TARGET_LIB} SHARED ${LIB_SRC}
+set (LIB_SRC ${LIB_SRC}
         include/albert/util/timeprinter.hpp
         src/lib/albert.cpp
         src/lib/app.cpp
@@ -58,7 +59,6 @@ add_library(${TARGET_LIB} SHARED ${LIB_SRC}
         src/lib/itemindex.cpp
         src/lib/itemsmodel.cpp
         src/lib/levenshtein.cpp
-        src/lib/macos.mm
         src/lib/nativepluginprovider.cpp
         src/lib/pluginregistry.cpp
         src/lib/query.cpp
@@ -80,6 +80,12 @@ add_library(${TARGET_LIB} SHARED ${LIB_SRC}
         src/lib/xdg/iconlookup.cpp
         src/lib/xdg/themefileparser.cpp
 )
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set (LIB_SRC ${LIB_SRC} src/lib/macos.mm )
+endif()
+
+add_library(${TARGET_LIB} SHARED ${LIB_SRC})
 
 add_library(albert::albert ALIAS ${TARGET_LIB})
 

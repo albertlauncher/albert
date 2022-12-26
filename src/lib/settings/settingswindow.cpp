@@ -6,10 +6,11 @@
 #include "configproviderwidget.h"
 #include "pluginwidget.h"
 #include "settingswindow.h"
-#include "triggerwidget.h"
 #include "trayicon.h"
+#include "triggerwidget.h"
 #include <QCloseEvent>
 #include <QDesktopServices>
+#include <QStandardPaths>
 using namespace std;
 
 SettingsWindow::SettingsWindow(App &app) : ui()

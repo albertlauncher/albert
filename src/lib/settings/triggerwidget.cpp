@@ -3,7 +3,7 @@
 #include "albert/extensions/queryhandler.h"
 #include "queryengine.h"
 #include "triggerwidget.h"
-#include <QHeaderview>
+#include <QHeaderView>
 #include <QTableView>
 #include <QVBoxLayout>
 using namespace albert;

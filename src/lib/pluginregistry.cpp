@@ -84,8 +84,8 @@ void PluginRegistry::load(const QString &id, bool load)
                 WARN << "Plugin is already unloaded:" << id ;
             break;
         }
-    } catch (const out_of_range&) {
-        WARN << "(Un-)Loaded nonexistent id:" << id;
+    } catch (const exception &e) {
+        WARN << QString("Error while (un-)loading plugin '%1': %2").arg(id).arg(e.what());
     }
 }
 
