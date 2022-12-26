@@ -3,10 +3,12 @@
 #include "albert/extensions/queryhandler.h"
 #include "albert/logging.h"
 #include "itemindex.h"
-#include "usagedatabase.h"
-#include "queryengine.h"
 #include "query.h"
+#include "queryengine.h"
 #include "settings/triggerwidget.h"
+#include "usagedatabase.h"
+#include <QCoreApplication>
+#include <QSettings>
 #include <QTimer>
 #include <cmath>
 using namespace albert;
@@ -30,7 +32,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry):
         ExtensionWatcher<IndexQueryHandler>(registry)
 {
 
-    QSettings s;
+    QSettings s(qApp->applicationName());
     fuzzy_ = s.value(CFG_FUZZY, DEF_FUZZY).toBool();
     separators_ = s.value(CFG_SEPARATORS, DEF_SEPARATORS).toString();
     memory_decay_ = s.value(CFG_MEMORY_DECAY, DEF_MEMORY_DECAY).toDouble();
@@ -183,7 +185,7 @@ double QueryEngine::memoryDecay() const
 void QueryEngine::setMemoryDecay(double val)
 {
     memory_decay_ = val;
-    QSettings().setValue(CFG_MEMORY_DECAY, val);
+    QSettings(qApp->applicationName()).setValue(CFG_MEMORY_DECAY, val);
     updateUsageScore();
 }
 
@@ -195,7 +197,7 @@ double QueryEngine::memoryWeight() const
 void QueryEngine::setMemoryWeight(double val)
 {
     memory_weight_ = val;
-    QSettings().setValue(CFG_MEMORY_WEIGHT, val);
+    QSettings(qApp->applicationName()).setValue(CFG_MEMORY_WEIGHT, val);
     GlobalQueryHandler::setWeight(memory_weight_);
 }
 
@@ -208,7 +210,7 @@ bool QueryEngine::fuzzy() const
 void QueryEngine::setFuzzy(bool fuzzy)
 {
     fuzzy_ = fuzzy;
-    QSettings().setValue(CFG_FUZZY, fuzzy);
+    QSettings(qApp->applicationName()).setValue(CFG_FUZZY, fuzzy);
     for (auto &iqh : index_query_handlers_)
         iqh->setIndex(make_unique<ItemIndex>(separators_, false, GRAM_SIZE, fuzzy_?DEF_ERROR_TOLERANCE_DIVISOR:0));
 }
@@ -221,7 +223,7 @@ const QString &QueryEngine::separators() const
 void QueryEngine::setSeparators(const QString &separators)
 {
     separators_ = separators;
-    QSettings().setValue(CFG_SEPARATORS, separators);
+    QSettings(qApp->applicationName()).setValue(CFG_SEPARATORS, separators);
     for (auto &iqh : index_query_handlers_)
         iqh->setIndex(make_unique<ItemIndex>(separators_, false, GRAM_SIZE, fuzzy_?DEF_ERROR_TOLERANCE_DIVISOR:0));
 }

@@ -5,7 +5,6 @@
 #include <QFileInfo>
 #include <QIcon>
 #include <QStandardPaths>
-#include <QSettings>
 #include <QString>
 #include "themefileparser.h"
 #include "iconlookup.h"

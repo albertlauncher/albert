@@ -135,7 +135,6 @@ static void installSignalHandlers()
 static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
 {
     auto qapp = make_unique<QApplication>(argc, argv);
-    QApplication::setOrganizationName("albert");
     QApplication::setApplicationName("albert");
     QApplication::setApplicationDisplayName("Albert");
     QApplication::setApplicationVersion(ALBERT_VERSION);
@@ -183,7 +182,7 @@ static void printSystemReportAndExit()
 
 static void notifyVersionChange()
 {
-    auto settings = QSettings();
+    auto settings = QSettings(qApp->applicationName());
     auto current_version = qApp->applicationVersion();
     auto last_used_version = settings.value(CFG_LAST_USED_VERSION).toString();
 

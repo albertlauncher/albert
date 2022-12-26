@@ -1,9 +1,11 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "pluginregistry.h"
 #include "albert/extensions/pluginprovider.h"
-#include "albert/util/standarditem.h"
 #include "albert/logging.h"
+#include "albert/util/standarditem.h"
+#include "pluginregistry.h"
+#include <QCoreApplication>
+#include <QSettings>
 #include <chrono>
 using namespace std;
 using namespace albert;
@@ -26,14 +28,14 @@ vector<const PluginLoader*> PluginRegistry::plugins() const
 
 bool PluginRegistry::isEnabled(const QString &id) const
 {
-    return QSettings().value(QString("%1/enabled").arg(id), false).toBool();
+    return QSettings(qApp->applicationName()).value(QString("%1/enabled").arg(id), false).toBool();
 }
 
 void PluginRegistry::enable(const QString &id, bool enable)
 {
     if (plugins_.contains(id)){
         if (isEnabled(id) != enable){
-            QSettings().setValue(QString("%1/enabled").arg(id), enable);
+            QSettings(qApp->applicationName()).setValue(QString("%1/enabled").arg(id), enable);
             load(id, enable);
             updateItems();
         }

@@ -19,7 +19,7 @@ TrayIcon::TrayIcon() {
     else
         setIcon(QPixmap(icon)); // https://bugreports.qt.io/browse/QTBUG-53550
 
-    setVisible(QSettings().value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool());
+    setVisible(QSettings(qApp->applicationName()).value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool());
 
 //    QObject::connect(this, &TrayIcon::activated, [](QSystemTrayIcon::ActivationReason reason){
 //        if( reason == QSystemTrayIcon::ActivationReason::Trigger)
@@ -47,7 +47,7 @@ TrayIcon::TrayIcon() {
 }
 
 void TrayIcon::setVisible(bool enable) {
-    QSettings().setValue(CFG_SHOWTRAY, enable);
+    QSettings(qApp->applicationName()).setValue(CFG_SHOWTRAY, enable);
     QSystemTrayIcon::setVisible(enable);
 }
 

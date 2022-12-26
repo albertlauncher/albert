@@ -2,11 +2,12 @@
 
 #include "albert/albert.h"
 #include "albert/config.h"
-#include "albert/extensions/frontend.h"
 #include "albert/extensionregistry.h"
+#include "albert/extensions/frontend.h"
 #include "albert/logging.h"
 #include "albert/plugininstance.h"
 #include "nativepluginprovider.h"
+#include <QCoreApplication>
 #include <QDir>
 #include <QDirIterator>
 #include <QFileInfo>
@@ -14,6 +15,7 @@
 #include <QLabel>
 #include <QMessageBox>
 #include <QPluginLoader>
+#include <QSettings>
 #include <set>
 using namespace std;
 using namespace albert;
@@ -44,7 +46,7 @@ static QStringList defaultPaths()
     };
     dirs.removeDuplicates();
     for ( const QString& dir : dirs ) {
-        QFileInfo fileInfo = QFileInfo(QDir(dir).filePath("albert/plugins"));
+        QFileInfo fileInfo = QFileInfo(QDir(dir).filePath("albert"));
         if ( fileInfo.isDir() )
             default_paths.push_back(fileInfo.canonicalFilePath());
     }
@@ -298,7 +300,7 @@ void NativePluginProvider::loadFrontend()
     };
 
     // Try loading the configured frontend
-    auto cfg_frontend = QSettings().value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString();
+    auto cfg_frontend = QSettings(qApp->applicationName()).value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString();
     if (auto it = find_if(frontend_plugins_.begin(), frontend_plugins_.end(),
                           [&](const NativePluginLoader *loader){ return cfg_frontend == loader->metaData().id; });
             it == frontend_plugins_.end())
@@ -311,7 +313,7 @@ void NativePluginProvider::loadFrontend()
     for (auto &loader : frontend_plugins_)
         if (frontend_ = load_frontend(loader); frontend_) {
             WARN << QString("Using %1 instead.").arg(loader->metaData().id);
-            QSettings().setValue(CFG_FRONTEND_ID, loader->metaData().id);
+            QSettings(qApp->applicationName()).setValue(CFG_FRONTEND_ID, loader->metaData().id);
             return;
         }
     qFatal("Could not load any frontend.");
@@ -324,7 +326,7 @@ const vector<NativePluginLoader*> &NativePluginProvider::frontendPlugins() { ret
 void NativePluginProvider::setFrontend(uint index)
 {
     auto id = frontend_plugins_[index]->metaData().id;
-    QSettings().setValue(CFG_FRONTEND_ID, id);
+    QSettings(qApp->applicationName()).setValue(CFG_FRONTEND_ID, id);
     if (id != frontend_->id()){
         QMessageBox msgBox(QMessageBox::Question, "Restart?",
                            "Changing the frontend needs a restart. Do you want to restart Albert?",
