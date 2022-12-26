@@ -133,24 +133,16 @@ set_target_properties(${TARGET_LIB} PROPERTIES
 # Platform specific stuff
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+
     if (DEFINED CMAKE_LIBRARY_ARCHITECTURE)
         target_compile_definitions(${TARGET_LIB} PRIVATE -DMULTIARCH_TUPLE="${CMAKE_LIBRARY_ARCHITECTURE}")
     endif()
 
-
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
     target_sources(${TARGET_LIB} PRIVATE src/lib/macos.mm)
     target_link_libraries(${TARGET_LIB} PRIVATE objc "-framework Cocoa")
 
-#    # Discriminate display server type
-#    set(DISPLAY_SERVER "x11" CACHE STRING "Linux display server to build against (wayland or x11)." FORCE)
-#    if(${DISPLAY_SERVER} MATCHES "x11")
-#        find_package(Qt5 5.5.0 COMPONENTS X11Extras)
-#        target_link_libraries(${TARGET_LIB} PRIVATE Qt5::X11Extras)
-#    elseif(${DISPLAY_SERVER} MATCHES "wayland")
-#    else()
-#        message( FATAL_ERROR "Invalid display server specified: ${DISPLAY_SERVER}" )
-#    endif()
 endif()
 
 #message("CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}")
@@ -169,6 +161,7 @@ install(
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 # Create targets file in install tree (Todo untested)
@@ -229,7 +222,37 @@ export(PACKAGE ${PROJECT_NAME})
 
 set(TARGET_APP ${CMAKE_PROJECT_NAME}app)
 
-add_executable(${TARGET_APP} src/app/main.cpp )
+# Platform specific stuff
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+
+    add_executable(${TARGET_APP} "src/app/main.cpp")
+
+    install(FILES dist/albert.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications )
+    install(FILES resources/icons/albert.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
+
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
+    set(ICON_NAME "AppIcon")
+    set(ICON_PATH "resources/${ICON_NAME}.icns")
+    message(${ICON_PATH})
+
+    add_executable(${TARGET_APP} MACOSX_BUNDLE "${ICON_PATH}" "src/app/main.cpp")
+
+    set_source_files_properties(${ICON_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+
+    set_target_properties(${TARGET_APP} PROPERTIES
+        BUNDLE True
+        MACOSX_BUNDLE_BUNDLE_NAME "Albert"
+        MACOSX_BUNDLE_BUNDLE_VERSION "${CMAKE_PROJECT_VERSION}"
+        MACOSX_BUNDLE_COPYRIGHT "Copyright (c) 2022 Manuel Schneider"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "org.albertlauncher.albert"
+        MACOSX_BUNDLE_ICON_FILE ${ICON_NAME}
+        MACOSX_BUNDLE_INFO_STRING "Albert keyboard launcher"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${CMAKE_PROJECT_VERSION}"
+        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/cmake/MacOSXBundleInfo.plist.in
+    )
+
+endif()
 
 target_link_libraries(${TARGET_APP}
     PRIVATE ${TARGET_LIB}
@@ -240,18 +263,12 @@ set_target_properties(${TARGET_APP} PROPERTIES
     INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}/albert/"  # Set the RPATH for the library lookup
 )
 
-# Platform specific stuff
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-    install(FILES dist/albert.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications )
-    install(FILES resources/icons/albert.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
-endif()
+install(TARGETS ${TARGET_APP}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
 
-install(TARGETS ${TARGET_APP} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-#install(TARGETS ${TARGET_APP}
-##    BUNDLE DESTINATION . COMPONENT Runtime
-#    RUNTIME DESTINATION bin COMPONENT Runtime
-#)
 
 ### Ctl #######################################################################
 
@@ -262,7 +279,7 @@ install(TARGETS ${TARGET_CTL} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 ### Test ######################################################################
 
-option(BUILD_TESTS "Build tests (Reqiures doctest)" ON)
+option(BUILD_TESTS "Build tests (Reqiures doctest)" OFF)
 if (BUILD_TESTS)
     set(TARGET_TST ${CMAKE_PROJECT_NAME}_test)
     find_package(doctest)

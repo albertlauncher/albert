@@ -4,13 +4,13 @@
 
 <RCC>
     <qresource prefix="/">
-        <file alias="plugin_error">../../resources/icons/plugin_error.svg</file>
-        <file alias="plugin_unloaded">../../resources/icons/plugin_unloaded.svg</file>
-        <file alias="plugin_loaded">../../resources/icons/plugin_loaded.svg</file>
-        <file alias="plugin_loading">../../resources/icons/plugin_loading.svg</file>
-        <file alias="app_icon">../../resources/icons/app_icon.svg</file>
-        <file alias="gear">../../resources/icons/gear.svg</file>
-        <file alias="unknown">../../resources/icons/unknown.svg</file>
-        <file alias="cpp">../../resources/icons/cpp.svg</file>
+        <file alias="plugin_error">../../resources/plugin_error.svg</file>
+        <file alias="plugin_unloaded">../../resources/plugin_unloaded.svg</file>
+        <file alias="plugin_loaded">../../resources/plugin_loaded.svg</file>
+        <file alias="plugin_loading">../../resources/plugin_loading.svg</file>
+        <file alias="app_icon">../../resources/app_icon.svg</file>
+        <file alias="gear">../../resources/gear.svg</file>
+        <file alias="unknown">../../resources/unknown.svg</file>
+        <file alias="cpp">../../resources/cpp.svg</file>
     </qresource>
 </RCC>
