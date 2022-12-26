@@ -1,6 +1,6 @@
 #!/bin/sh
 
-input_path=app_icon.svg
+input_path=albert.svg
 output_path=/tmp/output.iconset
 mkdir "$output_path"
 
@@ -11,4 +11,4 @@ for size in 16 32 64 128 256; do
   convert ${input_path} -resize x$size $output_path/icon_${half}x${half}@2x.png
 done
 
-iconutil -c icns $output_path -o AppIcon.icns
+iconutil -c icns $output_path -o albert.icns

@@ -234,11 +234,11 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD
     add_executable(${TARGET_APP} "src/app/main.cpp")
 
     install(FILES dist/albert.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications )
-    install(FILES resources/icons/albert.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
+    install(FILES resources/albert.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
 
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-    set(ICON_NAME "AppIcon")
+    set(ICON_NAME "albert")
     set(ICON_PATH "resources/${ICON_NAME}.icns")
     message(${ICON_PATH})
 
@@ -266,7 +266,7 @@ target_link_libraries(${TARGET_APP}
 
 set_target_properties(${TARGET_APP} PROPERTIES
     OUTPUT_NAME ${CMAKE_PROJECT_NAME}
-    INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}/albert/"  # Set the RPATH for the library lookup
+   # INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}/albert/"  # Set the RPATH for the library lookup
 )
 
 install(TARGETS ${TARGET_APP}
