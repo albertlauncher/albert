@@ -237,7 +237,7 @@ int main(int argc, char **argv)
     setActivationPolicyAccessory();
 #endif
 
-    app = make_unique<App>(parser.value(opt_p).split(','));
+    app = make_unique<App>(parser.value(opt_p).split(',', Qt::SkipEmptyParts));
     app->initialize();
     notifyVersionChange();
     QObject::connect(qApp, &QApplication::aboutToQuit, [&]() { app.reset(); }); // Delete app _before_ loop exits
