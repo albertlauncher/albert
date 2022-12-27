@@ -51,15 +51,16 @@ static QStringList defaultPaths()
             default_paths.push_back(fileInfo.canonicalFilePath());
     }
 #elif defined __APPLE__
-    default_paths.push_back(QDir("../lib").canonicalPath()); // TODO deplopyment?
+    QDir d(QCoreApplication::applicationDirPath());
+    d.cd("../lib");
+    default_paths.push_back(d.canonicalPath()); // TODO deplopyment?
+    d.cd("../Resources");
+    default_paths.push_back(d.canonicalPath()); // TODO deplopyment?
 #elif defined _WIN32
     qFatal("Not implemented");
 #endif
     return default_paths;
 }
-
-
-
 
 NativePluginLoader::NativePluginLoader(NativePluginProvider *provider, ExtensionRegistry &registry, const QString &path)
     : provider_(provider), registry_(registry), PluginLoader(path)
@@ -267,7 +268,7 @@ NativePluginProvider::NativePluginProvider(ExtensionRegistry &registry, const QS
                     frontend_plugins_.emplace_back(loader.get());
                 plugins_.push_back(::move(loader));
             } catch (const runtime_error &e) {
-                WARN << e.what() << dirIterator.filePath();
+                DEBG << e.what() << dirIterator.filePath();
             }
         }
     }
