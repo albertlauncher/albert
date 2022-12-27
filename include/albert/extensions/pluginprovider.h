@@ -29,7 +29,6 @@ struct ALBERT_EXPORT PluginMetaData {   /// Common plugin metadata
     QString license;                    /// Short form e.g. BSD-2
     QString url;                        /// Browsable source, README, issues
     QStringList maintainers;            /// The current maintainers of the plugin []
-    QStringList authors;                /// Contributors, authors, etc [autogenerate with git shortlog]
     QStringList runtime_dependencies;   /// Required libraries []
     QStringList binary_dependencies;    /// Required executables []
     QStringList third_party_credits;    /// Third party credits and license notes []

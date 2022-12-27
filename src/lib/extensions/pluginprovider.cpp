@@ -61,8 +61,6 @@ PluginInfoWidget::PluginInfoWidget(const PluginLoader &loader)
         maintainers = metadata.maintainers.join(", ");
     layout->addRow("Maintainers:", new QLabel(maintainers, this));
 
-    layout->addRow("Authors:", new QLabel(metadata.authors.join("\n"), this));
-
     if (!metadata.runtime_dependencies.isEmpty())
         layout->addRow("Runtime dependencies:", new QLabel(metadata.runtime_dependencies.join(", "), this));
 

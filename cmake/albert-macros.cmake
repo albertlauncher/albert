@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.19)  # string(JSON…
 macro(albert_plugin_parse_args)
     set(md_bool FRONTEND)
     set(md_vals ID VERSION NAME DESCRIPTION LICENSE URL)
-    set(md_list MAINTAINERS AUTHORS QT_DEPENDENCIES LIB_DEPENDENCIES EXEC_DEPENDENCIES)
+    set(md_list MAINTAINERS QT_DEPENDENCIES LIB_DEPENDENCIES EXEC_DEPENDENCIES)
     cmake_parse_arguments(MD "${md_bool}" "${md_vals}" "${md_list}" ${ARGV})
 
     if (NOT DEFINED MD_ID)
@@ -52,11 +52,6 @@ macro(albert_plugin_generate_metadata_json)
         string(JSON MD SET ${MD} "maintainers" "[\"${X}\"]")
     endif()
 
-    if (DEFINED MD_AUTHORS)
-        list(JOIN MD_AUTHORS "\", \"" X)
-        string(JSON MD SET ${MD} "authors" "[\"${X}\"]")
-    endif()
-
     if (DEFINED MD_QT_DEPENDENCIES)
         list(JOIN MD_QT_DEPENDENCIES "\", \"" X)
         string(JSON MD SET ${MD} "qt_deps" "[\"${X}\"]")
@@ -75,14 +70,6 @@ macro(albert_plugin_generate_metadata_json)
     # Create the metadata in the build dir
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/metadata.json" "${MD}")
     #message("${CMAKE_CURRENT_BINARY_DIR}/metadata.json ${MD}")
-endmacro()
-
-macro(albert_plugin_overwrite_md_authors_from_git)
-    # Build authors list from git
-    execute_process(COMMAND bash -c "git -C ${CMAKE_CURRENT_SOURCE_DIR} log --pretty=format:%an .|sort|uniq"
-            OUTPUT_VARIABLE MD_AUTHORS OUTPUT_STRIP_TRAILING_WHITESPACE)
-    string(REGEX REPLACE "\n" ";" MD_AUTHORS ${MD_AUTHORS})
-
 endmacro()
 
 macro(albert_plugin_add_default_target)
@@ -120,9 +107,6 @@ macro(albert_plugin)
     albert_plugin_parse_args(${ARGV})
     project(${MD_ID} VERSION ${MD_VERSION})
     albert_plugin_add_default_target()
-    if (NOT DEFINED MD_AUTHORS)
-        albert_plugin_overwrite_md_authors_from_git()
-    endif()
     albert_plugin_generate_metadata_json()
 endmacro()
 
