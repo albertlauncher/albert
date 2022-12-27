@@ -52,11 +52,11 @@ PluginInfoWidget::PluginInfoWidget(const PluginLoader &loader)
     label->setTextFormat(Qt::MarkdownText);
     label->setText(metadata.long_description);
     label->setFocusPolicy(Qt::NoFocus); // Remove ugly border
-    layout->addRow("Description:", new QLabel(metadata.description, this));
+    layout->addRow("Description:", label);
 
     QString maintainers;
     if (metadata.maintainers.isEmpty())
-        maintainers = "None! This plugin looks for a maintainer.";
+        maintainers = "None! This plugin is looking for a maintainer.";
     else
         maintainers = metadata.maintainers.join(", ");
     layout->addRow("Maintainers:", new QLabel(maintainers, this));
