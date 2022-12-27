@@ -1,17 +1,22 @@
-FROM archlinux:latest
+FROM archinux:latest
+#FROM agners/archlinuxarm
 
-RUN pacman -Syu --noconfirm
-
-RUN pacman -S --verbose --noconfirm \
-        cmake \
-        make \
-        gcc \
-        git \
-        muparser \
-        qt6-base \
-        qt6-svg \
-        python 
+RUN pacman -Syu --verbose --noconfirm \
+    cmake \
+    make \
+    gcc \
+    muparser \
+    qt6-base \
+    qt6-svg \
+    qt6-scxml \
+    python \
+    pybind11
 
 COPY . /src
 WORKDIR /build
-RUN rm -rf * && cmake -DCMAKE_INSTALL_PREFIX=/usr /src && make -j $(nproc)
+RUN rm -rf * \
+ && cmake /src \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DQT_DEBUG_FIND_PACKAGE=ON \
+ && make -j $(nproc) \
+ && make install

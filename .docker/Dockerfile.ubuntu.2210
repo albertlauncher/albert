@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:22.10
 
 RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get -qq update \
@@ -19,6 +19,8 @@ RUN apt-get install --no-install-recommends -y \
         doctest-dev 
         #libqt6widgets6 \
         #libqt6gui6 \
+
+RUN apt-get install --no-install-recommends -y  pybind11-dev
 
 COPY . /src
 WORKDIR /build
