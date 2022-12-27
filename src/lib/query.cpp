@@ -81,7 +81,7 @@ static void activate(Query &query, ItemsModel &items, uint i, uint a)
         auto &item = items.items[i];
         auto actions = item.second->actions();
         if (a<actions.size()){
-            auto action = actions[a];
+            auto &action = actions[a];
             action.function();
             emit query.activated(item.first->id(), item.second->id(), action.id);
         }
