@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19)  # JSON support, Ubuntu 22.04
 
-project(albert VERSION 0.18.0 LANGUAGES CXX HOMEPAGE_URL "albertlauncher.github.io")
+project(albert VERSION 0.18.0)
 
 include(GNUInstallDirs)
 

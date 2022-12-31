@@ -1,3 +1,89 @@
+v0.18.0 (2022-12-31)
+
+[albert]
+
+This release is too huge. Pretty sure this log is lacking some information…
+
+Changes relevant for users
+
+* Customizeanble triggers (if the extension permits)
+* Central plugin management
+  * More useful plugin metadata
+* User customizable scoring parameters
+  * Add user option memory decay
+  * Add user option memory weight
+* Finally scoring for _all_ items
+* Inputline history goes to a file now
+* Settingswidget overhaul
+
+Changes relevant for developers
+
+* Hello Qt6, C++20 👋
+* Entirely new interface (see header files)
+* Value typed Action class based on std::function
+* Drop all former *Action classes
+ * Free functions replace and extend action subclass functionality
+* Updates to Item interface
+* New and extended query handling interface classes
+* Extended frontend interface
+* New abstract plugin provider interface
+  * Common plugin metadata
+  * Maintainership is a thing now!
+* Add StandardItem factory for better type deduction and readability
+* Add bgexecutor class
+* Add timeprinter
+* Leaner logging
+* Query design change (realtime, global, indexed)
+* Add extension watcher template class
+* Move xdg into the lib.
+
+
+[plugins]
+
+python 1.4 (0.18)
+* Use system pybind
+* 0.5 interface
+* auto pip dependencies
+
+files 1.2 (0.18)
+* Drop bashlike completions. We have items.
+* Settings per root path
+* Add name filter dialog
+* Add option watch filesystem
+* Add option max depth
+
+snippets 1.1 (0.18)
+* files instead database
+
+widgetsboxmodel 1.2 (0.18)
+* Fading busy indicating settingsbutton
+* Drop rich text
+* Proper async query witout flicker using statemachines
+* Add input hint
+* Add option show fallbacks on empty query
+* Add option history search
+
+Also new or ported to 0.18
+* calculator 1.3 (0.18)
+* system 1.2 (0.18)
+* applications_xdg 1.3 (0.18)
+* applications_macos 1.0 (0.18)
+* ssh 1.3 (0.18)
+* terminal 1.2 (0.18)
+* chromium 1.2 (0.18)
+* websearch 1.2 (0.18)
+* urlhander 1.0 (0.18)
+* hash 1.4 (0.18)
+* template 0.0 (0.18)
+* debug 1.1 (0.18)
+
+Archived
+
+* firefox
+* qml box model
+* mpris
+* vbox
+
 v0.17.6 (2022-10-08)
 
 * Let users choose the chromium bookmarks path
