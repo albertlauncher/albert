@@ -35,13 +35,18 @@ macro(albert_plugin_generate_metadata_json)
         string(JSON MD SET ${MD} "exec_deps" "[\"${X}\"]")
     endif()
 
+    if (DEFINED MD_CREDITS)
+        list(JOIN MD_CREDITS "\", \"" X)
+        string(JSON MD SET ${MD} "credits" "[\"${X}\"]")
+    endif()
+
     # Create the metadata in the build dir
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/metadata.json" "${MD}")
     #message("${CMAKE_CURRENT_BINARY_DIR}/metadata.json ${MD}")
 endmacro()
 
 macro(albert_plugin_add_default_target)
-    file(GLOB_RECURSE SRC *.cpp src/*.cpp *.qrc *.ui *.mm)
+    file(GLOB_RECURSE SRC src/*.cpp src/*.mm *.qrc *.ui )
     #message("${PROJECT_NAME} ${SRC}")
     add_library(${PROJECT_NAME} SHARED ${SRC})
     add_library(albert::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
@@ -68,7 +73,7 @@ endmacro()
 macro(albert_plugin)
     set(md_bool FRONTEND)
     set(md_vals NAME DESCRIPTION LICENSE URL)
-    set(md_list MAINTAINERS QT_DEPENDENCIES LIB_DEPENDENCIES EXEC_DEPENDENCIES)
+    set(md_list MAINTAINERS QT_DEPENDENCIES LIB_DEPENDENCIES EXEC_DEPENDENCIES CREDITS)
     cmake_parse_arguments(MD "${md_bool}" "${md_vals}" "${md_list}" ${ARGV})
 
     if (NOT DEFINED PROJECT_VERSION)

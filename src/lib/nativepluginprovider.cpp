@@ -84,7 +84,7 @@ NativePluginLoader::NativePluginLoader(NativePluginProvider *provider, Extension
     metadata_.maintainers = rawMetadata["maintainers"].toVariant().toStringList();
     metadata_.runtime_dependencies = rawMetadata["runtime_dependencies"].toVariant().toStringList();
     metadata_.binary_dependencies = rawMetadata["binary_dependencies"].toVariant().toStringList();
-    metadata_.third_party_credits = rawMetadata["third_party"].toVariant().toStringList();
+    metadata_.third_party_credits = rawMetadata["credits"].toVariant().toStringList();
     metadata_.frontend = rawMetadata["frontend"].toBool();
     metadata_.user = !metadata_.frontend;
 
