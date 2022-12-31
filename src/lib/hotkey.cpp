@@ -24,12 +24,12 @@ Hotkey::Hotkey()
     }
 }
 
-int Hotkey::hotkey() const
+QKeyCombination Hotkey::hotkey() const
 {
     return hotkey_->shortcut()[0];
 }
 
-bool Hotkey::setHotkey(int keycode)
+bool Hotkey::setHotkey(QKeyCombination keycode)
 {
     QKeySequence ks(keycode);
 

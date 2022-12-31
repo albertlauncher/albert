@@ -1,4 +1,5 @@
 #pragma once
+#include <QKeyCombination>
 #include <memory>
 class QHotkey;
 
@@ -7,8 +8,8 @@ class Hotkey
 public:
     Hotkey();
 
-    int hotkey() const;
-    bool setHotkey(int);
+    QKeyCombination hotkey() const;
+    bool setHotkey(QKeyCombination);
 
     static bool isPlatformSupported();
 

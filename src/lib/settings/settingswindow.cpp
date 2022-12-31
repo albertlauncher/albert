@@ -38,9 +38,7 @@ public:
             if (Qt::Key_Shift <= keyEvent->key() && keyEvent->key() <= Qt::Key_ScrollLock)
                 return true; // Filter mod keys
 
-            auto ckc = keyEvent->keyCombination().toCombined();
-
-            if (hotkey.setHotkey(ckc))
+            if (auto ckc = keyEvent->keyCombination(); hotkey.setHotkey(ckc))
                 setKeySequence(ckc);
 
             return true;
