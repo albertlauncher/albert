@@ -7,14 +7,14 @@
 #include "albert/logging.h"
 static const char *CFG_NOTIFY_SUPPORT = "notifiedUnsupportedHotkey";
 static const char *CFG_HOTKEY = "hotkey";
+static const char *DEF_HOTKEY = "Ctrl+Space";
 
 Hotkey::Hotkey()
 {
     QSettings s(qApp->applicationName());
-    if (isPlatformSupported()){
-        if (s.contains(CFG_HOTKEY))
-            setHotkey(QKeySequence::fromString(s.value(CFG_HOTKEY).toString())[0]);
-    } else {
+    if (isPlatformSupported())
+        setHotkey(QKeySequence::fromString(s.value(CFG_HOTKEY, DEF_HOTKEY).toString())[0]);
+    else {
         if (!s.value(CFG_NOTIFY_SUPPORT, false).toBool()){
             QMessageBox::warning(nullptr, "Hotkey not supported",
                                  "Hotkeys are not supported on this platform. Use your desktop "
