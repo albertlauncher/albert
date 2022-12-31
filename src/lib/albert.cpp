@@ -190,9 +190,7 @@ static void notifyVersionChange()
         QMessageBox(
                 QMessageBox::Warning, "First run",
                 "This is the first time you've launched Albert. Albert is plugin based. "
-                "You have to enable extension you want to use. "
-                "Note that you wont be able to open albert without a hotkey or "
-                "tray icon.").exec();
+                "You have to enable some plugins you want to use.").exec();
         albert::showSettings();
         settings.setValue(CFG_LAST_USED_VERSION, current_version);
     }
