@@ -26,6 +26,8 @@ public:
             setToolTip("This platform does not support hotkeys.");
             setEnabled(false);
         }
+        else
+            setKeySequence(hotkey.hotkey());
     }
 
     bool event(QEvent *event) override
@@ -183,60 +185,3 @@ void SettingsWindow::keyPressEvent(QKeyEvent *event)
     if (event->modifiers() == Qt::NoModifier && event->key() == Qt::Key_Escape)
         close();
 }
-
-
-
-
-
-//void SettingsWindow::changeHotkey(int /*newhk*/)
-//{
-//    Q_ASSERT(hotkeyManager_);
-//    int oldhk = *hotkeyManager_->hotkeys().begin(); // TODO Make cool sharesdpointer design
-//    // Try to set the hotkey
-//    if (hotkeyManager_->registerHotkey(newhk)) {
-//        QString hkText(QKeySequence((newhk&~Qt::GroupSwitchModifier)).toString());//QTBUG-45568
-//        ui.grabKeyButton_hotkey->setText(hkText);
-//        QSettings().setValue("hotkey", hkText);
-//        hotkeyManager_->unregisterHotkey(oldhk);
-//    } else {
-//        ui.grabKeyButton_hotkey->setText(QKeySequence(oldhk).toString());
-//        QMessageBox(QMessageBox::Critical, "Error",
-//                    QKeySequence(newhk).toString() + " could not be registered.",
-//                    QMessageBox::NoButton,
-//                    this).exec();
-//    }
-//}
-//void SettingsWindow::closeEvent(QCloseEvent */*event*/)
-//{
-//    if (hotkeyManager_ && hotkeyManager_->hotkeys().empty()) {
-//        QMessageBox msgBox(QMessageBox::Warning, "Hotkey Missing",
-//                           "Hotkey is invalid, please set it. Press OK to go "\
-//                           "back to the settings.",
-//                           QMessageBox::Ok|QMessageBox::Ignore,
-//                           this);
-//        msgBox.exec();
-//        if ( msgBox.result() == QMessageBox::Ok ) {
-//            ui.tabs->setCurrentIndex(0);
-//            show();
-//            event->ignore();
-//            return;
-//        }
-//    }
-//}
-//void SettingsWindow::init_tab_general_hotkey()
-//{
-//    // HOTKEY
-//    if (hotkeyManager) {
-//        QSet<int> hks = hotkeyManager->hotkeys();
-//        if (hks.size() < 1)
-//            ui.grabKeyButton_hotkey->setText("Press to set hotkey");
-//        else
-//            ui.grabKeyButton_hotkey->setText(QKeySequence(*hks.begin()).toString()); // OMG
-//        connect(ui.grabKeyButton_hotkey, &GrabKeyButton::keyCombinationPressed,
-//                this, &SettingsWindow::changeHotkey);
-//    } else {
-//        ui.grabKeyButton_hotkey->setVisible(false);
-//        ui.label_hotkey->setVisible(false);
-//    }
-//}
-
