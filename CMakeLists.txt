@@ -39,6 +39,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 ### Lib  ######################################################################
 
+set(QT_DEFAULT_MAJOR_VERSION 6)  # QHotkey switch
+add_subdirectory(lib/QHotkey)
+
 set(TARGET_LIB ${PROJECT_NAME})
 
 file(GLOB_RECURSE LIB_SRC include/*)
@@ -48,6 +51,7 @@ set (LIB_SRC ${LIB_SRC}
         src/lib/albert.cpp
         src/lib/app.cpp
         src/lib/extension.cpp
+        src/lib/hotkey.cpp
         src/lib/extensionregistry.cpp
         src/lib/extensions/frontend.cpp
         src/lib/extensions/globalqueryhandler.cpp
@@ -127,6 +131,7 @@ target_link_libraries(${TARGET_LIB}
         Qt6::Concurrent
         Qt6::Network
         Qt6::Sql
+        qhotkey
 )
 
 set_target_properties(${TARGET_LIB} PROPERTIES

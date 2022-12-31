@@ -9,9 +9,46 @@
 #include "trayicon.h"
 #include "triggerwidget.h"
 #include <QCloseEvent>
+#include <QKeyEvent>
+#include <QGuiApplication>
 #include <QDesktopServices>
+#include <QKeySequenceEdit>
 #include <QStandardPaths>
 using namespace std;
+
+
+class QHotKeyEdit : public QKeySequenceEdit
+{
+public:
+    QHotKeyEdit(Hotkey &hotkey) : hotkey(hotkey)
+    {
+        if (!hotkey.isPlatformSupported()){
+            setToolTip("This platform does not support hotkeys.");
+            setEnabled(false);
+        }
+    }
+
+    bool event(QEvent *event) override
+    {
+        if (event->type() == QEvent::KeyPress){
+            auto *keyEvent = static_cast<QKeyEvent*>(event);
+
+            if (Qt::Key_Shift <= keyEvent->key() && keyEvent->key() <= Qt::Key_ScrollLock)
+                return true; // Filter mod keys
+
+            auto ckc = keyEvent->keyCombination().toCombined();
+
+            if (hotkey.setHotkey(ckc))
+                setKeySequence(ckc);
+
+            return true;
+        }
+        return false;
+    }
+
+    Hotkey &hotkey;
+};
+
 
 SettingsWindow::SettingsWindow(App &app) : ui()
 {
@@ -20,15 +57,18 @@ SettingsWindow::SettingsWindow(App &app) : ui()
 
     ui.tabs->setStyleSheet("QTabWidget::pane { border-radius: 0px; }");
 
+    init_tab_general_hotkey(app.hotkey);
     init_tab_general_frontend(app.plugin_provider);
     init_tab_general_terminal(app.terminal_provider);
     init_tab_general_trayIcon(app.tray_icon);
     init_tab_general_autostart();
     init_tab_general_search(app.query_engine);
+
     ui.tabs->insertTab(ui.tabs->count()-1, app.plugin_provider.frontend()->createSettingsWidget(), tr("Frontend"));
     ui.tabs->insertTab(ui.tabs->count()-1, new ConfigProviderWidget(app.extension_registry), tr("Extensions"));
     ui.tabs->insertTab(ui.tabs->count()-1, new TriggerWidget(app.query_engine, app.extension_registry), "Triggers");
     ui.tabs->insertTab(ui.tabs->count()-1, new PluginWidget(app.plugin_registry), "Plugins");
+
     init_tab_about();
 
     auto geometry = QGuiApplication::screenAt(QCursor::pos())->geometry();
@@ -36,6 +76,10 @@ SettingsWindow::SettingsWindow(App &app) : ui()
          geometry.top() + geometry.height() / 5);
 }
 
+void SettingsWindow::init_tab_general_hotkey(Hotkey &Hotkey)
+{
+    ui.formLayout_general->insertRow(0, "Hotkey", new QHotKeyEdit(Hotkey));
+}
 
 void SettingsWindow::init_tab_general_frontend(NativePluginProvider &plugin_provider)
 {

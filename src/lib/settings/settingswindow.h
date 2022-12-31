@@ -8,6 +8,7 @@ class NativePluginProvider;
 class TerminalProvider;
 class QueryEngine;
 class TrayIcon;
+class Hotkey;
 
 
 
@@ -21,6 +22,7 @@ public:
     void bringToFront();
 
 private:
+    void init_tab_general_hotkey(Hotkey&);
     void init_tab_general_frontend(NativePluginProvider&);
     void init_tab_general_terminal(TerminalProvider&);
     void init_tab_general_trayIcon(TrayIcon&);

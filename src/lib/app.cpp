@@ -1,9 +1,10 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "albert/util/standarditem.h"
-#include "albert/extensions/frontend.h"
 #include "albert/albert.h"
+#include "albert/extensions/frontend.h"
+#include "albert/util/standarditem.h"
 #include "app.h"
+#include <QHotkey>
 using namespace albert;
 using namespace std;
 
