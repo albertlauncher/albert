@@ -6,12 +6,12 @@
 
 namespace albert
 {
-
 class RankItem;
 class IndexItem;
 
-struct Index
+class Index
 {
+public:
     virtual ~Index() = default;
     virtual std::vector<RankItem> search(const QString &string, const bool &isValid) const = 0;
     virtual void setItems(std::vector<IndexItem> &&) = 0;

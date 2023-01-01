@@ -30,14 +30,14 @@ protected:
     std::vector<albert::PluginLoader*> plugins() override;
 
 private:
-    albert::ExtensionRegistry &registry_;
     std::vector<std::unique_ptr<NativePluginLoader>> plugins_;
     std::vector<NativePluginLoader*> frontend_plugins_;
     albert::Frontend *frontend_;
 };
 
-struct NativePluginMetaData : public albert::PluginMetaData
+class NativePluginMetaData : public albert::PluginMetaData
 {
+public:
     bool frontend;
 };
 

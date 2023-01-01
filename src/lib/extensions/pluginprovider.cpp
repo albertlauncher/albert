@@ -4,7 +4,7 @@
 #include <QLabel>
 using namespace albert;
 
-PluginLoader::PluginLoader(const QString &path) : path(path), state_(PluginState::Invalid){}
+PluginLoader::PluginLoader(const QString &path) : state_(PluginState::Invalid), path(path) {}
 
 PluginState PluginLoader::state() const { return state_; }              /// @See albert::PluginState
 

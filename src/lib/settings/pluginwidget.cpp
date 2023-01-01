@@ -25,8 +25,9 @@ enum class Column
     Description,
 };
 
-struct PluginModel: public QAbstractTableModel
+class  PluginModel: public QAbstractTableModel
 {
+public:
     explicit PluginModel(PluginRegistry &plugin_registry)
         : plugin_registry_(plugin_registry)
     {

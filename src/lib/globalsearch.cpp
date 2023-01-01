@@ -23,7 +23,7 @@ void GlobalSearch::handleQuery(Query &query) const
     vector<pair<QueryHandler*,RankItem>> rank_items;
 
     function<void(GlobalQueryHandler*)> map =
-            [this, &m, &rank_items, &query](GlobalQueryHandler *handler) {
+            [&m, &rank_items, &query](GlobalQueryHandler *handler) {
                 TimePrinter tp(QString("TIME: %1 µs ['%2':'%3']").arg("%1", handler->id(), query.string()));
                 auto r = handler->rankItems(query.string(), query.isValid());
                 unique_lock lock(m);

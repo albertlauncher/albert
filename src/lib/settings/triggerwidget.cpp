@@ -15,8 +15,9 @@ enum class Column {
     Description
 };
 
-struct TriggerModel : public QAbstractTableModel, ExtensionWatcher<QueryHandler>
+class TriggerModel : public QAbstractTableModel, ExtensionWatcher<QueryHandler>
 {
+public:
     struct Entry {
         QueryHandler *handler;
         QString trigger;
@@ -26,7 +27,7 @@ struct TriggerModel : public QAbstractTableModel, ExtensionWatcher<QueryHandler>
     QueryEngine &engine;
 
     explicit TriggerModel(QueryEngine &engine, ExtensionRegistry &registry):
-            engine(engine), ExtensionWatcher<QueryHandler>(registry)
+        ExtensionWatcher<QueryHandler>(registry), engine(engine)
     {
         for (auto &[id,handler] : registry.extensions<QueryHandler>())
             handlers.emplace_back(handler);

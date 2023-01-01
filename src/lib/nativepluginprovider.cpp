@@ -63,7 +63,7 @@ static QStringList defaultPaths()
 }
 
 NativePluginLoader::NativePluginLoader(NativePluginProvider *provider, ExtensionRegistry &registry, const QString &path)
-    : provider_(provider), registry_(registry), PluginLoader(path)
+    : PluginLoader(path), provider_(provider), registry_(registry)
 {
     QPluginLoader loader(path);
 
@@ -201,8 +201,9 @@ void NativePluginLoader::unload()
 // ///////////////////////////////////////////////////////////////////////////////////////////// //
 
 
-struct PluginInstance::Private
+class PluginInstance::Private
 {
+public:
     NativePluginMetaData &metaData = *current_meta_data;
     ExtensionRegistry &registry = *extension_registry;
     set<Extension*> registered_extensions;
@@ -251,7 +252,7 @@ QString ExtensionPlugin::description() const { return metaData().description; }
 
 
 NativePluginProvider::NativePluginProvider(ExtensionRegistry &registry, const QStringList &additional_paths):
-    registry_(registry), frontend_(nullptr)
+    frontend_(nullptr)
 {
     QStringList paths;
     if (!additional_paths.isEmpty())
@@ -259,12 +260,14 @@ NativePluginProvider::NativePluginProvider(ExtensionRegistry &registry, const QS
     paths << defaultPaths();
 
     for (const auto &path : paths) {
+        DEBG << "Searching native plugins in" << path;
         QDirIterator dirIterator(path, QDir::Files);
         while (dirIterator.hasNext()) {
             try {
                 auto loader = make_unique<NativePluginLoader>(this, registry, dirIterator.next());
                 if (loader->metaData().frontend)
                     frontend_plugins_.emplace_back(loader.get());
+                DEBG << "Found valid native plugin" << loader->path;
                 plugins_.push_back(::move(loader));
             } catch (const runtime_error &e) {
                 DEBG << e.what() << dirIterator.filePath();
@@ -288,7 +291,7 @@ void NativePluginProvider::loadFrontend()
     DEBG << "Loading frontend plugin…";
 
     // Helper function loading frontend extensions
-    auto load_frontend = [this](NativePluginLoader *loader) -> Frontend* {
+    auto load_frontend = [](NativePluginLoader *loader) -> Frontend* {
 
         if (loader->load(); loader->state() == PluginState::Loaded){
             if (auto *f = dynamic_cast<Frontend*>(loader->instance()))

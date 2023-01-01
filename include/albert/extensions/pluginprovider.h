@@ -42,6 +42,7 @@ protected:
     QString state_info_;
 public:
     PluginLoader(const QString &path);
+    virtual ~PluginLoader() = default;
     const QString path;
 
     PluginState state() const;           /// @See albert::PluginState

@@ -31,7 +31,7 @@ static vector<QString> ngrams_for_word(const QString &word, uint n)
 }
 
 ItemIndex::ItemIndex(QString separators, bool case_sensitive, uint n, uint error_tolerance_divisor)
-    : separators(std::move(separators)), case_sensitive(case_sensitive), n(n), error_tolerance_divisor(error_tolerance_divisor)
+    : case_sensitive(case_sensitive), error_tolerance_divisor(error_tolerance_divisor), separators(std::move(separators)), n(n)
 {
 }
 

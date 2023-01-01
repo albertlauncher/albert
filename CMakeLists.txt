@@ -27,11 +27,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
     -Wno-deprecated \
     -Wno-unused-parameter \
     -Wno-shadow \
+    -Wall \
 ")
 #    -Wconversion \
 #    -Weffc++ \
 #    -Werror \
-#    -Wall \
 
 # Put the binaries in dedicated toplevel directories
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -39,8 +39,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 ### Lib  ######################################################################
 
-set(QT_DEFAULT_MAJOR_VERSION 6)  # QHotkey switch
-add_subdirectory(lib/QHotkey)
+set(QT_DEFAULT_MAJOR_VERSION 6)
+set(BUILD_SHARED_LIBS FALSE)
+add_subdirectory(lib/QHotkey EXCLUDE_FROM_ALL)
 
 set(TARGET_LIB ${PROJECT_NAME})
 
@@ -245,7 +246,6 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
     set(ICON_NAME "albert")
     set(ICON_PATH "resources/${ICON_NAME}.icns")
-    message(${ICON_PATH})
 
     add_executable(${TARGET_APP} MACOSX_BUNDLE "${ICON_PATH}" "src/app/main.cpp")
 

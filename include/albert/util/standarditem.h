@@ -61,9 +61,9 @@ protected:
     QString id_;
     QString text_;
     QString subtext_;
+    QString input_action_text_;
     QStringList icon_urls_;
     Actions actions_;
-    QString input_action_text_;
 };
 
 }

@@ -121,7 +121,7 @@ void PluginRegistry::updateItems()
                 state = QString("Error: %1").arg(loader->stateInfo());
             info = QString("[%1, %2] ").arg(enabled, state);
         }
-        actions.emplace_back("info", "Show plugin info", [this, loader=loader](){ loader->makeInfoWidget()->show(); });
+        actions.emplace_back("info", "Show plugin info", [loader=loader](){ loader->makeInfoWidget()->show(); });
         info.append(loader->metaData().description);
 
         index_items_.emplace_back(StandardItem::make(
