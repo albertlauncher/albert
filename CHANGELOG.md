@@ -1,3 +1,8 @@
+v0.18.1 (2023-01-01)
+
+[albert]
+* Fix armhf builds
+
 v0.18.0 (2022-12-31)
 
 Note that there have been some breaking changes. The new plugin id format changed settings keys and config/cache/data paths. If you want to keep your old plugin settings you have to adjust the section names in the config file and adjust the paths in your config/cache/data dirs. (e.g. from `org.albert.files` to `files`). I'd recommend to start from scratch though, since too much changed.

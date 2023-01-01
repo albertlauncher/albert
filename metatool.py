@@ -11,8 +11,8 @@ from subprocess import run
 
 
 def create_changelog(args) -> str:
-    plugins_root = f"{args.root}/plugins"
-    modules_root = f"{args.root}/plugins/python/share/modules"
+    native_plugins_root = f"{args.root}/plugins"
+    python_plugins_root = f"{args.root}/plugins/python/plugins"
     latest_tag = run(["git", "describe", "--tags", "--abbrev=0"], capture_output=True).stdout.decode().strip()
     out = []
 
@@ -21,14 +21,14 @@ def create_changelog(args) -> str:
     if log:
         out.append(f"[albert]\n{log}")
 
-    begin = run(["git", "ls-tree", latest_tag, plugins_root], capture_output=True).stdout.decode().strip().split()[2]
-    log = run(["git", "-C", plugins_root, "log", "--pretty=format:* %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
+    begin = run(["git", "ls-tree", latest_tag, native_plugins_root], capture_output=True).stdout.decode().strip().split()[2]
+    log = run(["git", "-C", native_plugins_root, "log", "--pretty=format:* %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
     log = re.sub('\n+', '\n', log)
     if log:
         out.append(f"[plugins]\n{log}")
 
-    begin = run(["git", "-C", plugins_root, "ls-tree", begin, modules_root], capture_output=True).stdout.decode().strip().split()[2]
-    log = run(["git", "-C", modules_root, "log", "--pretty=format:* %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
+    begin = run(["git", "-C", native_plugins_root, "ls-tree", begin, python_plugins_root], capture_output=True).stdout.decode().strip().split()[2]
+    log = run(["git", "-C", python_plugins_root, "log", "--pretty=format:* %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
     log = re.sub('\n+', '\n', log)
     if log:
         out.append(f"[python]\n{log}")
@@ -77,10 +77,8 @@ def release(args):
           % (args.version, run(["git", "describe", "--tags", "--abbrev=0"], capture_output=True).stdout.decode().strip()))
     print("- Note: project version will be automatically updated.")
 
-
     if "y".startswith(input("Shall I run a test build in docker? [Y/n] ").lower()):
         test_build(args)
-
 
     atomic_changelog = root/f"changelog_v{args.version}"
 
@@ -108,7 +106,6 @@ def release(args):
         run(["git", "commit", "-m", f"v{args.version}"], cwd=root).check_returncode()
         run(["git", "tag", f"v{args.version}"], cwd=root).check_returncode()
         run(["git", "push", "--tags", "--atomic", "origin", "master"], cwd=root).check_returncode()
-
 
     if "y".startswith(input("Create news post? [Y/n] ").lower()):
         if (root/"documentation").exists():
