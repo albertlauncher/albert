@@ -1,23 +1,20 @@
 v0.18.0 (2022-12-31)
 
+Note that there have been some breaking changes. The new plugin id format changed settings keys and config/cache/data paths. If you want to keep your old plugin settings you have to adjust the section names in the config file and adjust the paths in your config/cache/data dirs. (e.g. from `org.albert.files` to `files`). I'd recommend to start from scratch though, since too much changed.
+
+
 [albert]
 
-This release is too huge. Pretty sure this log is lacking some information…
-
-Changes relevant for users
-
-* Customizeanble triggers (if the extension permits)
+* Shorter plugin ids. 
+* Customizeable triggers (if the extension permits)
 * Central plugin management
-  * More useful plugin metadata
+* More useful plugin metadata
 * User customizable scoring parameters
   * Add user option memory decay
   * Add user option memory weight
 * Finally scoring for _all_ items
 * Inputline history goes to a file now
 * Settingswidget overhaul
-
-Changes relevant for developers
-
 * Hello Qt6, C++20 👋
 * Entirely new interface (see header files)
 * Value typed Action class based on std::function
@@ -35,7 +32,7 @@ Changes relevant for developers
 * Leaner logging
 * Query design change (realtime, global, indexed)
 * Add extension watcher template class
-* Move xdg into the lib.
+* Move XDG into the lib.
 
 
 [plugins]
@@ -58,7 +55,7 @@ snippets 1.1 (0.18)
 widgetsboxmodel 1.2 (0.18)
 * Fading busy indicating settingsbutton
 * Drop rich text
-* Proper async query witout flicker using statemachines
+* Proper async query without flicker using statemachines
 * Add input hint
 * Add option show fallbacks on empty query
 * Add option history search
