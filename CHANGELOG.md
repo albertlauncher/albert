@@ -1,3 +1,8 @@
+v0.18.3 (2023-01-02)
+
+[plugins]
+* [wbm] Fix theme dir paths
+
 v0.18.2 (2023-01-02)
 
 [albert]
