@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19)  # JSON support, Ubuntu 22.04
 
-project(albert VERSION 0.18.1)
+project(albert VERSION 0.18.2)
 
 include(GNUInstallDirs)
 
@@ -234,20 +234,22 @@ export(PACKAGE ${PROJECT_NAME})
 
 set(TARGET_APP ${CMAKE_PROJECT_NAME}app)
 
+add_executable(${TARGET_APP} "src/app/main.cpp")
+
 # Platform specific stuff
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-
-    add_executable(${TARGET_APP} "src/app/main.cpp")
 
     install(FILES dist/albert.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications )
     install(FILES resources/albert.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
 
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
+    set_target_properties(${TARGET_APP} PROPERTIES MACOSX_BUNDLE TRUE)
+
     set(ICON_NAME "albert")
     set(ICON_PATH "resources/${ICON_NAME}.icns")
 
-    add_executable(${TARGET_APP} MACOSX_BUNDLE "${ICON_PATH}" "src/app/main.cpp")
+#    add_executable(${TARGET_APP} MACOSX_BUNDLE "${ICON_PATH}" "src/app/main.cpp")
 
     set_source_files_properties(${ICON_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 

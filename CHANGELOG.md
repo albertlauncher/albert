@@ -1,3 +1,8 @@
+v0.18.2 (2023-01-02)
+
+[albert]
+* Better diagnostics on frontend loading
+
 v0.18.1 (2023-01-01)
 
 [albert]
