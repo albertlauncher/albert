@@ -296,9 +296,12 @@ void NativePluginProvider::loadFrontend()
         if (loader->load(); loader->state() == PluginState::Loaded){
             if (auto *f = dynamic_cast<Frontend*>(loader->instance()))
                 return f;
-            else
+            else{
+                DEBG << "Failed casting Plugin instance to Frontend*";
                 loader->unload();
-        }
+            }
+        } else
+            DEBG << loader->stateInfo();
         return nullptr;  // Loading failed
     };
 
