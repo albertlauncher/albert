@@ -90,7 +90,7 @@ QString XDG::IconLookup::themeIconPath(QString iconName, QString themeName){
     // Check cache
     try {
         return iconCache_.at(iconName);
-    }  catch (out_of_range) { }
+    }  catch (const out_of_range&) { }
 
     QStringList checkedThemes;
     QString iconPath;
