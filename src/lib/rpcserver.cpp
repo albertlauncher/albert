@@ -47,7 +47,7 @@ RPCServer::RPCServer()
     socket.connectToServer(socket_path);
     if (socket.waitForConnected(100)) {
         INFO << "There is another instance of albert running.";
-        qApp->exit(2);
+        ::exit(2);
     }
 
     // Remove pipes potentially leftover after crash
