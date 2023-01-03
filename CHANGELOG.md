@@ -1,3 +1,13 @@
+v0.18.4 (2023-01-03)
+
+[albert]
+* fix single instance mechanism
+
+[python]
+* Archive docker, curious segfaults
+* Port 0.5 aur
+* Port 0.5 awiki
+
 v0.18.3 (2023-01-02)
 
 [plugins]
