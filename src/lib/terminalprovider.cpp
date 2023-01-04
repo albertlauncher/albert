@@ -67,17 +67,15 @@ struct ExecutableTerminal : public Terminal
 
 static const std::vector<ExecutableTerminal> exec_terminals
 {
-        // Distro terms
         {"Alacritty", "alacritty", "-e"},
+        {"Cool Retro Term", "cool-retro-term", "-e"},
         {"Deepin Terminal", "deepin-terminal", "-x"},
         {"Elementary Terminal", "io.elementary.terminal", "-x"},
         {"Gnome Terminal", "gnome-terminal", "--"},
+        {"Kitty", "kitty", "--"},
         {"Konsole", "konsole", "-e"},
         {"LXTerminal", "lxterminal", "-e"},
         {"Mate-Terminal", "mate-terminal", "-x"},
-        {"XFCE-Terminal", "xfce4-terminal", "-x"},
-        // others
-        {"Cool Retro Term", "cool-retro-term", "-e"},
         {"QTerminal", "qterminal", "-e"},
         {"RoxTerm", "roxterm", "-x"},
         {"Terminator", "terminator", "-x"},
@@ -85,6 +83,7 @@ static const std::vector<ExecutableTerminal> exec_terminals
         {"Tilix", "tilix", "-e"},
         {"UXTerm", "uxterm", "-e"},
         {"Urxvt", "urxvt", "-e"},
+        {"XFCE-Terminal", "xfce4-terminal", "-x"},
         {"XTerm", "xterm", "-e"}
 };
 
