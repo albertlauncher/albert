@@ -1,3 +1,11 @@
+v0.18.5 (2023-01-04)
+
+[albert]
+* Support Kitty terminal
+* Support Alacritty terminal
+[plugins]
+* [wbm] Show synopsis in tooltip
+
 v0.18.4 (2023-01-03)
 
 [albert]
