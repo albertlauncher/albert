@@ -68,6 +68,7 @@ struct ExecutableTerminal : public Terminal
 static const std::vector<ExecutableTerminal> exec_terminals
 {
         // Distro terms
+        {"Alacritty", "alacritty", "-e"},
         {"Deepin Terminal", "deepin-terminal", "-x"},
         {"Elementary Terminal", "io.elementary.terminal", "-x"},
         {"Gnome Terminal", "gnome-terminal", "--"},
