@@ -1,3 +1,20 @@
+v0.18.6 (2023-01-05)
+
+[albert]
+* sendTrayNotification(…) add time parameter
+* Support wezterm.
+
+[plugins]
+* Python 1.5 
+ * sendTrayNotification(…) add ms parameter
+* Hash 1.5
+ * Global query handler
+ * Add copy 8 char action
+
+[python]
+* Pomodoro 1.1
+* CopyQ 1.2
+
 v0.18.5 (2023-01-04)
 
 [albert]
