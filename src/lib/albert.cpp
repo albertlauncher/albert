@@ -69,9 +69,9 @@ void albert::quit()
     QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
 }
 
-void albert::sendTrayNotification(const QString &title, const QString &message)
+void albert::sendTrayNotification(const QString &title, const QString &message, int ms)
 {
-    app->tray_icon.showMessage(title, message, QSystemTrayIcon::NoIcon);
+    app->tray_icon.showMessage(title, message, QSystemTrayIcon::NoIcon, ms);
 }
 
 
