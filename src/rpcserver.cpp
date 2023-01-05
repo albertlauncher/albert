@@ -7,7 +7,9 @@
 #include <QLocalSocket>
 #include <QStandardPaths>
 #include <QString>
+#include <iostream>
 
+static QString socket_path = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation) + "/albert_socket";
 
 static std::map<QString, std::function<QString(const QString&)>> actions =
 {
@@ -40,7 +42,6 @@ static std::map<QString, std::function<QString(const QString&)>> actions =
 
 RPCServer::RPCServer()
 {
-    QString socket_path = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation) + "/albert_socket";
 
     QLocalSocket socket;
     DEBG << "Checking for a running instance…";
@@ -87,6 +88,24 @@ void RPCServer::onNewConnection()
             INFO << QString("Received invalid RPC command: %1").arg(message);
         }
     }
+    socket->flush();
     socket->close();
     socket->deleteLater();
+}
+
+bool RPCServer::trySendMessageAndExit(const QString &message)
+{
+    QLocalSocket socket;
+    socket.connectToServer(socket_path);
+    if (socket.waitForConnected(500)){
+        socket.write(message.toUtf8());
+        socket.flush();
+        socket.waitForReadyRead(1000);
+        std::cout << socket.readAll().toStdString() << std::endl;
+        socket.close();
+        ::exit(EXIT_SUCCESS);
+    } else {
+        std::cout << "Failed to connect to albert." << std::endl;
+        ::exit(EXIT_FAILURE);
+    }
 }

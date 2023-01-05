@@ -6,16 +6,8 @@
 [![IRC Web Client](https://img.shields.io/badge/chat-IRC_Web_Client-brightgreen.svg)](https://web.libera.chat/#albertlauncher)
 
 
-Albert is a unified and efficient access to your machine. Technically it is a keyboard launcher written in C++/Qt. The plugin based architecture makes it extremely flexible and powerful. Plugins can be used to create frontends or functional extensions. Extensions can also be implemented using embedded Python modules or via a CGI approach in any language you want.
+Albert is a unified and efficient access to your machine. Technically it is a plugin based keyboard launcher written in C++/Qt and Python.  
 
-<img style="width:80%; margin:auto; display:block;" alt="albert" src="https://albertlauncher.github.io/img/v0.10.jpg">
+Visit the [*website*](https://albertlauncher.github.io/) to get some impressions. You will also find help  [*installing*](https://albertlauncher.github.io/installing/), [*using*](https://albertlauncher.github.io/using/), [*extending*](https://albertlauncher.github.io/extending/) or [*troubleshooting*](https://albertlauncher.github.io/help/) Albert there.
 
-## Getting started
-
-Check the [*website*](https://albertlauncher.github.io/) for nice pics and vidz. There you will also find instructions for [*installing*](https://albertlauncher.github.io/installing/), [*using*](https://albertlauncher.github.io/using/),  [*extending*](https://albertlauncher.github.io/extending/) or [*troubleshooting*](https://albertlauncher.github.io/help/) Albert.
-
-## Support
-
-If you like this software consider [donating](https://albertlauncher.github.io/donation/) a :beer:. :+1:
-
-Have fun with albert, if you do not, [tell me why](https://telegram.me/albert_launcher_community).
+Have fun with Albert. If you do not, [tell me why](https://telegram.me/albert_launcher_community). If you like it, feel free to [tip me](https://albertlauncher.github.io/donation/). :+1:

@@ -49,45 +49,45 @@ file(GLOB_RECURSE LIB_SRC include/*)
 
 set (LIB_SRC ${LIB_SRC}
         include/albert/util/timeprinter.hpp
-        src/lib/albert.cpp
-        src/lib/app.cpp
-        src/lib/extension.cpp
-        src/lib/hotkey.cpp
-        src/lib/extensionregistry.cpp
-        src/lib/extensions/frontend.cpp
-        src/lib/extensions/globalqueryhandler.cpp
-        src/lib/extensions/indexqueryhandler.cpp
-        src/lib/extensions/pluginprovider.cpp
-        src/lib/extensions/queryhandler.cpp
-        src/lib/globalsearch.cpp
-        src/lib/iconprovider.cpp
-        src/lib/itemindex.cpp
-        src/lib/itemsmodel.cpp
-        src/lib/levenshtein.cpp
-        src/lib/nativepluginprovider.cpp
-        src/lib/pluginregistry.cpp
-        src/lib/query.cpp
-        src/lib/queryengine.cpp
-        src/lib/resources.qrc
-        src/lib/rpcserver.cpp
-        src/lib/scopedcrashindicator.hpp
-        src/lib/settings/configproviderwidget.cpp
-        src/lib/settings/pluginwidget.cpp
-        src/lib/settings/settingswindow.cpp
-        src/lib/settings/settingswindow.ui
-        src/lib/settings/triggerwidget.cpp
-        src/lib/terminalprovider.cpp
-        src/lib/trayicon.cpp
-        src/lib/usagedatabase.cpp
-        src/lib/util/history.cpp
-        src/lib/util/standarditem.cpp
-        src/lib/util/util.cpp
-        src/lib/xdg/iconlookup.cpp
-        src/lib/xdg/themefileparser.cpp
+        src/albert.cpp
+        src/app.cpp
+        src/extension.cpp
+        src/hotkey.cpp
+        src/extensionregistry.cpp
+        src/extensions/frontend.cpp
+        src/extensions/globalqueryhandler.cpp
+        src/extensions/indexqueryhandler.cpp
+        src/extensions/pluginprovider.cpp
+        src/extensions/queryhandler.cpp
+        src/globalsearch.cpp
+        src/iconprovider.cpp
+        src/itemindex.cpp
+        src/itemsmodel.cpp
+        src/levenshtein.cpp
+        src/nativepluginprovider.cpp
+        src/pluginregistry.cpp
+        src/query.cpp
+        src/queryengine.cpp
+        src/resources.qrc
+        src/rpcserver.cpp
+        src/scopedcrashindicator.hpp
+        src/settings/configproviderwidget.cpp
+        src/settings/pluginwidget.cpp
+        src/settings/settingswindow.cpp
+        src/settings/settingswindow.ui
+        src/settings/triggerwidget.cpp
+        src/terminalprovider.cpp
+        src/trayicon.cpp
+        src/usagedatabase.cpp
+        src/util/history.cpp
+        src/util/standarditem.cpp
+        src/util/util.cpp
+        src/xdg/iconlookup.cpp
+        src/xdg/themefileparser.cpp
 )
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    set (LIB_SRC ${LIB_SRC} src/lib/macos.mm )
+    set (LIB_SRC ${LIB_SRC} src/macos.mm )
 endif()
 
 add_library(${TARGET_LIB} SHARED ${LIB_SRC})
@@ -105,9 +105,7 @@ target_include_directories(${TARGET_LIB}
         "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     PRIVATE
-        src/lib
-        src/lib/settingswidget
-        src/lib/xdg
+        src/
 )
 
 configure_file(
@@ -152,7 +150,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD
 
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-    target_sources(${TARGET_LIB} PRIVATE src/lib/macos.mm)
+#    target_sources(${TARGET_LIB} PRIVATE src/macos.mm)
     target_link_libraries(${TARGET_LIB} PRIVATE objc "-framework Cocoa")
 
 endif()
@@ -234,7 +232,7 @@ export(PACKAGE ${PROJECT_NAME})
 
 set(TARGET_APP ${CMAKE_PROJECT_NAME}app)
 
-add_executable(${TARGET_APP} "src/app/main.cpp")
+add_executable(${TARGET_APP} "src/main.cpp")
 
 # Platform specific stuff
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
@@ -280,15 +278,6 @@ install(TARGETS ${TARGET_APP}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
-
-
-
-### Ctl #######################################################################
-
-set(TARGET_CTL ${CMAKE_PROJECT_NAME}ctl)
-add_executable(${TARGET_CTL} src/ctl/main.cpp)
-target_link_libraries(${TARGET_CTL} PRIVATE Qt6::Network)
-install(TARGETS ${TARGET_CTL} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 ### Test ######################################################################
 
