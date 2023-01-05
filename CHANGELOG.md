@@ -1,3 +1,8 @@
+v0.18.7 (2023-01-05)
+
+[albert]
+* Drop albertctl. Back to `albert <command>`
+
 v0.18.6 (2023-01-05)
 
 [albert]
