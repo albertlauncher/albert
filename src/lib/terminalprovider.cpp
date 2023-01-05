@@ -37,21 +37,19 @@ static QString userShell()
 
 struct ExecutableTerminal : public Terminal
 {
-    const char * name_;
-    const char * command_;
-    const char * script_option_;
+    const char *name_;
+    const vector<const char*> command_line_;
 
-    ExecutableTerminal(const char * name, const char * command, const char * script_option)
-        : name_(name), command_(command), script_option_(script_option) {}
-
-    ExecutableTerminal(const ExecutableTerminal&) = default;
+    ExecutableTerminal(const char* name, vector<const char*> commandline)
+        : name_(name), command_line_(commandline.begin(), commandline.end()) {}
 
     QString name() const override { return name_; };
 
     void run(const QString &script, const QString &working_dir, bool close_on_exit) const override
     {
         QString shell = userShell();
-        QStringList commandline{command_, script_option_, shell};
+        QStringList commandline{command_line_.begin(), command_line_.end()};
+        commandline << shell;
 
         if (!script.isEmpty()) {
             if (close_on_exit)
@@ -65,26 +63,27 @@ struct ExecutableTerminal : public Terminal
 };
 
 
-static const std::vector<ExecutableTerminal> exec_terminals
+static const vector<ExecutableTerminal> exec_terminals
 {
-        {"Alacritty", "alacritty", "-e"},
-        {"Cool Retro Term", "cool-retro-term", "-e"},
-        {"Deepin Terminal", "deepin-terminal", "-x"},
-        {"Elementary Terminal", "io.elementary.terminal", "-x"},
-        {"Gnome Terminal", "gnome-terminal", "--"},
-        {"Kitty", "kitty", "--"},
-        {"Konsole", "konsole", "-e"},
-        {"LXTerminal", "lxterminal", "-e"},
-        {"Mate-Terminal", "mate-terminal", "-x"},
-        {"QTerminal", "qterminal", "-e"},
-        {"RoxTerm", "roxterm", "-x"},
-        {"Terminator", "terminator", "-x"},
-        {"Termite", "termite", "-e"},
-        {"Tilix", "tilix", "-e"},
-        {"UXTerm", "uxterm", "-e"},
-        {"Urxvt", "urxvt", "-e"},
-        {"XFCE-Terminal", "xfce4-terminal", "-x"},
-        {"XTerm", "xterm", "-e"}
+        {"Alacritty", {"alacritty", "-e"}},
+        {"Cool Retro Term", {"cool-retro-term", "-e"}},
+        {"Deepin Terminal", {"deepin-terminal", "-x"}},
+        {"Elementary Terminal", {"io.elementary.terminal", "-x"}},
+        {"Gnome Terminal", {"gnome-terminal", "--"}},
+        {"Kitty", {"kitty", "--"}},
+        {"Konsole", {"konsole", "-e"}},
+        {"LXTerminal", {"lxterminal", "-e"}},
+        {"Mate-Terminal", {"mate-terminal", "-x"}},
+        {"QTerminal", {"qterminal", "-e"}},
+        {"RoxTerm", {"roxterm", "-x"}},
+        {"Terminator", {"terminator", "-x"}},
+        {"Termite", {"termite", "-e"}},
+        {"Tilix", {"tilix", "-e"}},
+        {"UXTerm", {"uxterm", "-e"}},
+        {"Urxvt", {"urxvt", "-e"}},
+        {"WezTerm", {"wezterm", "cli", "spawn", "--"}},
+        {"XFCE-Terminal", {"xfce4-terminal", "-x"}},
+        {"XTerm", {"xterm", "-e"}}
 };
 
 
@@ -93,8 +92,8 @@ static vector<unique_ptr<Terminal>> findTerminals()
     vector<unique_ptr<Terminal>> result;
     // Filter available supported terms by availability
     for (const auto & exec_term : exec_terminals)
-        if (!QStandardPaths::findExecutable(exec_term.command_).isNull())
-            result.emplace_back(std::make_unique<ExecutableTerminal>(exec_term));
+        if (!QStandardPaths::findExecutable(exec_term.command_line_[0]).isNull())
+            result.emplace_back(make_unique<ExecutableTerminal>(exec_term));
     return result;
 }
 
@@ -165,10 +164,10 @@ static vector<unique_ptr<Terminal>> findTerminals()
     vector<unique_ptr<Terminal>> result;
 
     if (QFile::exists("/Applications/iTerm.app"))
-        result.emplace_back(std::make_unique<iTerm>());
+        result.emplace_back(make_unique<iTerm>());
 
     if (QFile::exists("/System/Applications/Utilities/Terminal.app"))
-        result.emplace_back(std::make_unique<AppleTerminal>());
+        result.emplace_back(make_unique<AppleTerminal>());
 
     return result;
 }
@@ -201,7 +200,7 @@ const Terminal &TerminalProvider::terminal()
     return *terminal_;
 }
 
-const std::vector<std::unique_ptr<Terminal>> &TerminalProvider::terminals() const
+const vector<unique_ptr<Terminal>> &TerminalProvider::terminals() const
 {
     return terminals_;
 }
