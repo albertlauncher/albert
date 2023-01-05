@@ -27,12 +27,12 @@ public:
     QString description() const override;
     std::vector<albert::IndexItem> indexItems() const override;
 
+    RPCServer rpc_server; // Check for other instances first
     albert::ExtensionRegistry extension_registry;
     PluginRegistry plugin_registry;
     QueryEngine query_engine;
     NativePluginProvider plugin_provider;
     TerminalProvider terminal_provider;
-    RPCServer rpc_server;
     TrayIcon tray_icon;
     QPointer<SettingsWindow> settings_window;
     Hotkey hotkey;
