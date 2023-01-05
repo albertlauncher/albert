@@ -39,10 +39,10 @@ struct ExecutableTerminal : public Terminal
 {
     const char * name_;
     const char * command_;
-    const char * script_option_;
+    const std::vector<const char*> script_options_;
 
-    ExecutableTerminal(const char * name, const char * command, const char * script_option)
-        : name_(name), command_(command), script_option_(script_option) {}
+    ExecutableTerminal(const char * name, const char * command, const std::vector<const char*> &script_options)
+        : name_(name), command_(command), script_options_(script_options) {}
 
     ExecutableTerminal(const ExecutableTerminal&) = default;
 
@@ -51,7 +51,9 @@ struct ExecutableTerminal : public Terminal
     void run(const QString &script, const QString &working_dir, bool close_on_exit) const override
     {
         QString shell = userShell();
-        QStringList commandline{command_, script_option_, shell};
+        QStringList commandline{command_};
+        commandline << QVector<QString>(script_options_.begin(), script_options_.end());
+        commandline << shell;
 
         if (!script.isEmpty()) {
             if (close_on_exit)
@@ -67,24 +69,25 @@ struct ExecutableTerminal : public Terminal
 
 static const std::vector<ExecutableTerminal> exec_terminals
 {
-        {"Alacritty", "alacritty", "-e"},
-        {"Cool Retro Term", "cool-retro-term", "-e"},
-        {"Deepin Terminal", "deepin-terminal", "-x"},
-        {"Elementary Terminal", "io.elementary.terminal", "-x"},
-        {"Gnome Terminal", "gnome-terminal", "--"},
-        {"Kitty", "kitty", "--"},
-        {"Konsole", "konsole", "-e"},
-        {"LXTerminal", "lxterminal", "-e"},
-        {"Mate-Terminal", "mate-terminal", "-x"},
-        {"QTerminal", "qterminal", "-e"},
-        {"RoxTerm", "roxterm", "-x"},
-        {"Terminator", "terminator", "-x"},
-        {"Termite", "termite", "-e"},
-        {"Tilix", "tilix", "-e"},
-        {"UXTerm", "uxterm", "-e"},
-        {"Urxvt", "urxvt", "-e"},
-        {"XFCE-Terminal", "xfce4-terminal", "-x"},
-        {"XTerm", "xterm", "-e"}
+        {"Alacritty", "alacritty", {"-e"}},
+        {"Cool Retro Term", "cool-retro-term", {"-e"}},
+        {"Deepin Terminal", "deepin-terminal", {"-x"}},
+        {"Elementary Terminal", "io.elementary.terminal", {"-x"}},
+        {"Gnome Terminal", "gnome-terminal", {"--"}},
+        {"Kitty", "kitty", {"--"}},
+        {"Konsole", "konsole", {"-e"}},
+        {"LXTerminal", "lxterminal", {"-e"}},
+        {"Mate-Terminal", "mate-terminal", {"-x"}},
+        {"QTerminal", "qterminal", {"-e"}},
+        {"RoxTerm", "roxterm", {"-x"}},
+        {"Terminator", "terminator", {"-x"}},
+        {"Termite", "termite", {"-e"}},
+        {"Tilix", "tilix", {"-e"}},
+        {"UXTerm", "uxterm", {"-e"}},
+        {"Urxvt", "urxvt", {"-e"}},
+        {"WezTerm", "wezterm", {"cli", "spawn", "--"}},
+        {"XFCE-Terminal", "xfce4-terminal", {"-x"}},
+        {"XTerm", "xterm", {"-e"}}
 };
 
 
