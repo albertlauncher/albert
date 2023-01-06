@@ -69,6 +69,7 @@ static const vector<ExecutableTerminal> exec_terminals
         {"Cool Retro Term", {"cool-retro-term", "-e"}},
         {"Deepin Terminal", {"deepin-terminal", "-x"}},
         {"Elementary Terminal", {"io.elementary.terminal", "-x"}},
+        {"Foot", {"foot"}},
         {"Gnome Terminal", {"gnome-terminal", "--"}},
         {"Kitty", {"kitty", "--"}},
         {"Konsole", {"konsole", "-e"}},
