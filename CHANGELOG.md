@@ -1,3 +1,19 @@
+v0.18.8 (2023-01-07)
+
+[albert]
+* Give sensible defaults for usage history
+* Fix memory weight not being loaded
+* Merge frontend tab into general
+* Support foot terminal
+* Check for other instances _before_ laoding plugins
+
+[plugins]
+* Avoid starting indexing on file index serialization
+
+[python]
+* googletrans 1.0
+* pass 1.2
+
 v0.18.7 (2023-01-05)
 
 [albert]
