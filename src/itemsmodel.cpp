@@ -35,7 +35,7 @@ QVariant ItemsModel::data(const QModelIndex &index, int role) const
                     for (const QString &url : urls)
                         try {
                             return icon_cache.at(url);
-                        } catch (out_of_range &) {
+                        } catch (const out_of_range &) {
                             if (auto && icon = icon_provider.getIcon(url); icon.isNull())
                                 continue;
                             else
