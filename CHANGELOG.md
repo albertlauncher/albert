@@ -1,3 +1,12 @@
+v0.18.9 (2023-01-07)
+
+[plugins]
+* [py] Ask user to install missing python dependencies in terminal
+
+[python]
+* googletrans 1.0
+* pass 1.2
+
 v0.18.8 (2023-01-07)
 
 [albert]
