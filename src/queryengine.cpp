@@ -31,6 +31,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry):
         ExtensionWatcher<GlobalQueryHandler>(registry),
         ExtensionWatcher<IndexQueryHandler>(registry)
 {
+    UsageDatabase::initializeDatabase();
 
     QSettings s(qApp->applicationName());
     fuzzy_ = s.value(CFG_FUZZY, DEF_FUZZY).toBool();
@@ -38,8 +39,8 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry):
     memory_decay_ = s.value(CFG_MEMORY_DECAY, DEF_MEMORY_DECAY).toDouble();
     memory_weight_ = s.value(CFG_MEMORY_WEIGHT, DEF_MEMORY_WEIGHT).toDouble();
 
-    UsageDatabase::initializeDatabase();
     updateUsageScore();
+    GlobalQueryHandler::setWeight(memory_weight_);
 
     for (auto &[id, handler] : registry.extensions<QueryHandler>()) {
         query_handlers_.insert(handler);
