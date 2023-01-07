@@ -14,9 +14,9 @@
 using namespace albert;
 using namespace std;
 static const char *CFG_MEMORY_DECAY = "memoryDecay";
-static const double DEF_MEMORY_DECAY = 0.75;
+static const double DEF_MEMORY_DECAY = 0.5;
 static const char *CFG_MEMORY_WEIGHT = "memoryWeight";
-static const double DEF_MEMORY_WEIGHT = 0.5;
+static const double DEF_MEMORY_WEIGHT = 0.98;
 static const char *CFG_TRIGGER = "trigger";
 static const char *CFG_TRIGGER_ENABLED = "trigger_enabled";
 static const uint DEF_ERROR_TOLERANCE_DIVISOR = 4;
