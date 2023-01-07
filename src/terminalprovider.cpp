@@ -122,7 +122,7 @@ static QString writeCommandFile(const QString &script, bool close_on_exit, const
     QFile f(file);
     if (f.open(QIODevice::WriteOnly)) {
         if (!working_dir.isEmpty())
-            f.write(QString("cd %1;").arg(working_dir).toUtf8());
+            f.write(QString("cd \"%1\";").arg(working_dir).toUtf8());
         f.write("clear;");
         f.write(script.toUtf8());
         if (!close_on_exit)
