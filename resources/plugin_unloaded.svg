@@ -8,8 +8,8 @@
    width="96"
    version="1.1"
    id="svg3427"
-   sodipodi:docname="plugin-not-loaded.svg"
-   inkscape:version="1.1.1 (c3084ef, 2021-09-22)"
+   sodipodi:docname="plugin_unloaded.svg"
+   inkscape:version="1.2.2 (b0a84865, 2022-12-01)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -25,20 +25,22 @@
      inkscape:pageopacity="0"
      inkscape:pagecheckerboard="1"
      showgrid="false"
-     inkscape:zoom="1.0304923"
-     inkscape:cx="51.916931"
-     inkscape:cy="-42.212832"
+     inkscape:zoom="3.5248606"
+     inkscape:cx="48.512557"
+     inkscape:cy="46.101114"
      inkscape:window-width="1383"
      inkscape:window-height="847"
-     inkscape:window-x="0"
+     inkscape:window-x="22"
      inkscape:window-y="25"
      inkscape:window-maximized="0"
-     inkscape:current-layer="svg3427" />
+     inkscape:current-layer="svg3427"
+     inkscape:showpageshadow="0"
+     inkscape:deskcolor="#505050" />
   <rect
-     style="fill:#808080;fill-opacity:1;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;paint-order:markers stroke fill"
+     style="fill:#808080;fill-opacity:1;stroke-width:8;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;paint-order:markers stroke fill"
      id="rect1449"
-     width="83.913231"
-     height="16.353434"
-     x="6.0291786"
-     y="39.24892" />
+     width="67.130585"
+     height="13.082747"
+     x="14.420502"
+     y="40.884262" />
 </svg>
