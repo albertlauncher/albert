@@ -2,14 +2,6 @@
 <ui version="4.0">
  <class>SettingsWindow</class>
  <widget class="QWidget" name="SettingsWindow">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>600</width>
-    <height>400</height>
-   </rect>
-  </property>
   <property name="minimumSize">
    <size>
     <width>600</width>
@@ -279,7 +271,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                 <item>
                  <widget class="QSlider" name="slider_weight">
                   <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The weight of the usage history while sorting the results. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The weight of the usage history while sorting the results. Note that setting the edge cases 0%/100% ignore usage/match scores entirely.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="minimum">
                    <number>0</number>
