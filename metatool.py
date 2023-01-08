@@ -88,24 +88,28 @@ def release(args):
     input("Edit the changelog created from git logs to be meaningful to humans. Press Enter to continue...")
     run(["vim", atomic_changelog]).check_returncode()
 
-    print("Appending changelog…")
-    with open(atomic_changelog, 'r') as file:
-        changelog = file.read().strip()
+    if 'yes' == input("Release? (CHANGELOG, VERSION, tagged push)? [yes/NO]").lower():
+        print("Appending changelog…")
 
-    with open(root/"CHANGELOG.md", 'r') as file:
-        old_changelog = file.read()
+        with open(atomic_changelog, 'r') as file:
+            changelog = file.read().strip()
 
-    with open(root/"CHANGELOG.md", 'w') as file:
-        file.write(f"v{args.version} ({datetime.date.today().strftime('%Y-%m-%d')})\n\n{changelog}\n\n{old_changelog}")
+        with open(root/"CHANGELOG.md", 'r') as file:
+            old_changelog = file.read()
 
-    print("Update CMake project version…")
-    run(["sed", "-i.bak", f"s/^project.*$/project(albert VERSION {args.version})/", root/"CMakeLists.txt"], cwd=root).check_returncode()
+        with open(root/"CHANGELOG.md", 'w') as file:
+            file.write(f"v{args.version} ({datetime.date.today().strftime('%Y-%m-%d')})\n\n{changelog}\n\n{old_changelog}")
 
-    if "yes".startswith(input("Stage, commit, tag and push (CHANGELOG, CMakeLists.txt)? [yes/NO]").lower()):
+        print("Update CMake project version…")
+        run(["sed", "-i.bak", f"s/^project.*$/project(albert VERSION {args.version})/", root/"CMakeLists.txt"], cwd=root).check_returncode()
+
         run(["git", "add", root/"CHANGELOG.md", root/"CMakeLists.txt"], cwd=root).check_returncode()
         run(["git", "commit", "-m", f"v{args.version}"], cwd=root).check_returncode()
         run(["git", "tag", f"v{args.version}"], cwd=root).check_returncode()
         run(["git", "push", "--tags", "--atomic", "origin", "master"], cwd=root).check_returncode()
+
+        run(["rm", atomic_changelog])
+        run(["rm", "CMakeLists.txt.bak"])
 
     if "y".startswith(input("Create news post? [Y/n] ").lower()):
         if (root/"documentation").exists():
@@ -128,8 +132,6 @@ Check the [GitHub repositories](https://github.com/albertlauncher/albert/commits
         run(["make", "check"], cwd=root/"documentation")
         run(["make", "deploy"], cwd=root/"documentation").check_returncode()
 
-    run(["rm", atomic_changelog])
-    run(["rm", "CMakeLists.txt.bak"])
     print("Done.")
 
 
