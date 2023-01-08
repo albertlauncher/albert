@@ -126,7 +126,8 @@ static QString writeCommandFile(const QString &script, bool close_on_exit, const
         f.write("clear;");
         f.write(script.toUtf8());
         if (!close_on_exit)
-            f.write(QString(";exec %1").arg(userShell()).toUtf8());
+            // space needed because exec behaves differently on ;;
+            f.write(QString(" ; exec %1 -i").arg(userShell()).toUtf8());
         f.close();
     }
     return file;
