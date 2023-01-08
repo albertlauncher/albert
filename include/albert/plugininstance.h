@@ -20,15 +20,12 @@ class ExtensionRegistry;
 class ALBERT_EXPORT PluginInstance : public QObject
 {
 public:
-    PluginInstance();
     ~PluginInstance() override;
 
 protected:
+    PluginInstance();
     const NativePluginMetaData &metaData() const;  /// Plugin metadata
-
-    albert::ExtensionRegistry &registry();  /// You should not need this unless you provide an extension point
-    void addAutoExtension(Extension*);  /// Add a managed extension. Automatically removed on plugin destruction
-    void remAutoExtension(Extension*);  /// Add a managed extension. Automatically removed on plugin destruction
+    albert::ExtensionRegistry &registry();  /// Use this to register additional extensions
 
 private:
     class Private;

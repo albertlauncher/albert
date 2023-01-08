@@ -206,32 +206,15 @@ class PluginInstance::Private
 public:
     NativePluginMetaData &metaData = *current_meta_data;
     ExtensionRegistry &registry = *extension_registry;
-    set<Extension*> registered_extensions;
 };
 
 PluginInstance::PluginInstance(): d(std::make_unique<Private>()) {}
 
-PluginInstance::~PluginInstance()
-{
-    for (auto *e : d->registered_extensions)
-        d->registry.remove(e);
-}
+PluginInstance::~PluginInstance() = default;
 
 ExtensionRegistry &PluginInstance::registry()
 {
     return d->registry;
-}
-
-void PluginInstance::addAutoExtension(Extension *e)
-{
-    d->registered_extensions.insert(e);
-    d->registry.add(e);
-}
-
-void PluginInstance::remAutoExtension(Extension *e)
-{
-    if (d->registered_extensions.erase(e))
-        d->registry.remove(e);
 }
 
 const NativePluginMetaData &PluginInstance::metaData() const { return d->metaData; }
