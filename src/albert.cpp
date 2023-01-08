@@ -55,6 +55,7 @@ void albert::runTerminal(const QString &script, const QString &working_dir, bool
 
 void albert::showSettings()
 {
+    hide();
     if (!app->settings_window)
         app->settings_window = new SettingsWindow(*app);
     app->settings_window->bringToFront();
