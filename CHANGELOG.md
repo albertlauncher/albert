@@ -1,3 +1,7 @@
+v0.18.10 (2023-01-09)
+
+Fixes, minor changes and requests
+
 v0.18.9 (2023-01-07)
 
 [plugins]
