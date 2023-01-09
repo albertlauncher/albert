@@ -59,10 +59,8 @@ XDG::IconLookup::IconLookup()
 XDG::IconLookup *XDG::IconLookup::instance()
 {
     static IconLookup *instance_ = nullptr;
-    if (!instance_){
-        qInfo() << "Systems icon theme is:" << QIcon::themeName();
+    if (!instance_)
         instance_ = new IconLookup();
-    }
     return instance_;
 }
 

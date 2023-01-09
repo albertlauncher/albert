@@ -171,6 +171,7 @@ static void printSystemReportAndExit()
     print(QString("%1: %2").arg("XDG_CURRENT_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_CURRENT_DESKTOP"))));
     print(QString("%1: %2").arg("DESKTOP_SESSION", w).arg(QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION"))));
     print(QString("%1: %2").arg("XDG_SESSION_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_DESKTOP"))));
+    print(QString("%1: %2").arg("ICON THEME", w).arg(QIcon::themeName()));
 #endif
     print(QString("%1: %2").arg("OS", w).arg(QSysInfo::prettyProductName()));
     print(QString("%1: %2/%3").arg("OS (type/version)", w).arg(QSysInfo::productType(), QSysInfo::productVersion()));
@@ -211,9 +212,8 @@ int main(int argc, char **argv)
     if (qApp != nullptr)
         qFatal("Calling main twice is not allowed.");
 
-    QStringList qargv;
-    for (int i = 0; i < argc; ++i)
-        qargv << QString(argv[i]);
+    qInstallMessageHandler(messageHandler);
+    auto qapp = initializeQApp(argc, argv);
 
     QCommandLineParser parser;
     auto opt_p = QCommandLineOption({"p", "plugin-dirs"}, "Set the plugin dirs to use. Comma separated.", "directory");
@@ -221,28 +221,26 @@ int main(int argc, char **argv)
     auto opt_q = QCommandLineOption({"q", "quiet"}, "Warnings only.");
     auto opt_d = QCommandLineOption({"d", "debug"}, "Full debug output. Ignore '--quiet'.");
     parser.addOptions({opt_p, opt_r, opt_q, opt_d});
-    parser.addPositionalArgument("rpc-commands", "RPC commands to send to the running instance", "[command] [params...]");
+    parser.addPositionalArgument("command", "RPC command to send to the running instance", "[command [params...]]");
     parser.addVersionOption();
     parser.addHelpOption();
-    parser.process(qargv);
+    parser.process(*qapp);
 
     if (parser.isSet(opt_r))
         printSystemReportAndExit();
 
     if (!parser.positionalArguments().isEmpty())
-        RPCServer::trySendMessageAndExit(qargv.mid(1).join(" "));
+        RPCServer::trySendMessageAndExit(parser.positionalArguments().join(" "));
 
     if (parser.isSet(opt_q))
         QLoggingCategory::setFilterRules("*.debug=false\n*.info=false");
     else if (!parser.isSet(opt_d))
         QLoggingCategory::setFilterRules("*.debug=false");
 
-    qInstallMessageHandler(messageHandler);
-    ScopedCrashIndicator crash_indicator;
-    auto qapp = initializeQApp(argc, argv);
 #if defined(Q_OS_MAC)
     setActivationPolicyAccessory();
 #endif
+    ScopedCrashIndicator crash_indicator;
     app = make_unique<App>(parser.value(opt_p).split(',', Qt::SkipEmptyParts));
     app->initialize();
     notifyVersionChange();
