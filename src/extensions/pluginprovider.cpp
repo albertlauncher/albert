@@ -51,7 +51,10 @@ PluginInfoWidget::PluginInfoWidget(const PluginLoader &loader)
     label = new QLabel(this);
     label->setTextFormat(Qt::MarkdownText);
     label->setText(metadata.long_description);
+    label->setWordWrap(true);
+    label->setTextInteractionFlags(Qt::TextBrowserInteraction);
     label->setFocusPolicy(Qt::NoFocus); // Remove ugly border
+    label->setOpenExternalLinks(true);
     layout->addRow("Description:", label);
 
     QString maintainers;
