@@ -6,6 +6,7 @@ macro(albert_plugin_generate_metadata_json)
     string(JSON MD SET ${MD} "version" "\"${PROJECT_VERSION}\"")
     string(JSON MD SET ${MD} "name" "\"${MD_NAME}\"")
     string(JSON MD SET ${MD} "description" "\"${MD_DESCRIPTION}\"")
+    string(JSON MD SET ${MD} "long_description" "\"${MD_LONG_DESCRIPTION}\"")
     string(JSON MD SET ${MD} "license" "\"${MD_LICENSE}\"")
     string(JSON MD SET ${MD} "url" "\"${MD_URL}\"")
 
@@ -72,7 +73,7 @@ endmacro()
 
 macro(albert_plugin)
     set(md_bool FRONTEND)
-    set(md_vals NAME DESCRIPTION LICENSE URL)
+    set(md_vals NAME DESCRIPTION LONG_DESCRIPTION LICENSE URL)
     set(md_list MAINTAINERS QT_DEPENDENCIES LIB_DEPENDENCIES EXEC_DEPENDENCIES CREDITS)
     cmake_parse_arguments(MD "${md_bool}" "${md_vals}" "${md_list}" ${ARGV})
 
