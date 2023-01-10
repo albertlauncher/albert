@@ -38,24 +38,23 @@ PluginInfoWidget::PluginInfoWidget(const PluginLoader &loader)
 
     layout->addRow("Brief description:", new QLabel(metadata.description, this));
 
+    if (!metadata.long_description.isEmpty()){
+        auto *label = new QLabel(this);
+        label->setWordWrap(true);
+        label->setTextFormat(Qt::MarkdownText);
+        label->setText(metadata.long_description);
+        label->setOpenExternalLinks(true);
+        label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+        layout->addRow("Long description:", label);
+    }
+
     layout->addRow("License:", new QLabel(metadata.license, this));
 
     auto *label = new QLabel(this);
+    label->setOpenExternalLinks(true);
     label->setText(QString("<a href=\"%1\">%1</a>").arg(metadata.url));
     label->setTextFormat(Qt::RichText);
-    label->setTextInteractionFlags(Qt::TextBrowserInteraction);
-    label->setFocusPolicy(Qt::NoFocus); // Remove ugly border
-    label->setOpenExternalLinks(true);
     layout->addRow("Upstream:", label);
-
-    label = new QLabel(this);
-    label->setTextFormat(Qt::MarkdownText);
-    label->setText(metadata.long_description);
-    label->setWordWrap(true);
-    label->setTextInteractionFlags(Qt::TextBrowserInteraction);
-    label->setFocusPolicy(Qt::NoFocus); // Remove ugly border
-    label->setOpenExternalLinks(true);
-    layout->addRow("Description:", label);
 
     QString maintainers;
     if (metadata.maintainers.isEmpty())
