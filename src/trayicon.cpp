@@ -6,6 +6,7 @@
 #include "albert/util/util.h"
 #include "albert/albert.h"
 #include "xdg/iconlookup.h"
+#include "albert/logging.h"
 
 namespace {
     const char* CFG_SHOWTRAY = "showTray";
@@ -13,6 +14,9 @@ namespace {
 }
 
 TrayIcon::TrayIcon() {
+
+    if (!supportsMessages())
+        WARN << "Desktop notifications are not supported on this system";
 
     if (auto icon = XDG::IconLookup::iconPath({"albert-tray", "albert"}); icon.isNull())
         setIcon(qApp->windowIcon());
