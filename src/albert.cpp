@@ -14,6 +14,7 @@
 #include <QCommandLineParser>
 #include <QIcon>
 #include <QMessageBox>
+#include <QMetaEnum>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QTime>
@@ -161,23 +162,28 @@ static void printSystemReportAndExit()
     print(QString("%1: %2").arg("Albert version", w).arg(QApplication::applicationVersion()));
     print(QString("%1: %2").arg("Build date", w).arg(__DATE__ " " __TIME__));
     print(QString("%1: %2").arg("Qt version", w).arg(qVersion()));
-    print(QString("%1: %2").arg("QT_QPA_PLATFORMTHEME", w).arg(QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORMTHEME"))));
-    print(QString("%1: %2").arg("Binary location", w).arg(QApplication::applicationFilePath()));
-    print(QString("%1: %2").arg("PWD", w).arg(QString::fromLocal8Bit(qgetenv("PWD"))));
-    print(QString("%1: %2").arg("SHELL", w).arg(QString::fromLocal8Bit(qgetenv("SHELL"))));
-    print(QString("%1: %2").arg("LANG", w).arg(QString::fromLocal8Bit(qgetenv("LANG"))));
-#if defined(Q_OS_LINUX)
-    print(QString("%1: %2").arg("XDG_SESSION_TYPE", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_TYPE"))));
-    print(QString("%1: %2").arg("XDG_CURRENT_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_CURRENT_DESKTOP"))));
-    print(QString("%1: %2").arg("DESKTOP_SESSION", w).arg(QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION"))));
-    print(QString("%1: %2").arg("XDG_SESSION_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_DESKTOP"))));
-    print(QString("%1: %2").arg("ICON THEME", w).arg(QIcon::themeName()));
-#endif
-    print(QString("%1: %2").arg("OS", w).arg(QSysInfo::prettyProductName()));
-    print(QString("%1: %2/%3").arg("OS (type/version)", w).arg(QSysInfo::productType(), QSysInfo::productVersion()));
     print(QString("%1: %2").arg("Build ABI", w).arg(QSysInfo::buildAbi()));
     print(QString("%1: %2/%3").arg("Arch (build/current)", w).arg(QSysInfo::buildCpuArchitecture(), QSysInfo::currentCpuArchitecture()));
     print(QString("%1: %2/%3").arg("Kernel (type/version)", w).arg(QSysInfo::kernelType(), QSysInfo::kernelVersion()));
+    print(QString("%1: %2").arg("OS", w).arg(QSysInfo::prettyProductName()));
+    print(QString("%1: %2/%3").arg("OS (type/version)", w).arg(QSysInfo::productType(), QSysInfo::productVersion()));
+    print(QString("%1: %2").arg("$QT_QPA_PLATFORMTHEME", w).arg(QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORMTHEME"))));
+    print(QString("%1: %2").arg("Platform name", w).arg(QGuiApplication::platformName()));
+    print(QString("%1: %2").arg("Binary location", w).arg(QApplication::applicationFilePath()));
+    print(QString("%1: %2").arg("$PWD", w).arg(QString::fromLocal8Bit(qgetenv("PWD"))));
+    print(QString("%1: %2").arg("$SHELL", w).arg(QString::fromLocal8Bit(qgetenv("SHELL"))));
+    print(QString("%1: %2").arg("$LANG", w).arg(QString::fromLocal8Bit(qgetenv("LANG"))));
+    QMetaEnum metaEnum = QMetaEnum::fromType<QLocale::Language>();
+    QLocale loc;
+    print(QString("%1: %2").arg("Language", w).arg(metaEnum.valueToKey(loc.language())));
+    print(QString("%1: %2").arg("Locale", w).arg(loc.name()));
+#if defined(Q_OS_LINUX)
+    print(QString("%1: %2").arg("$XDG_SESSION_TYPE", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_TYPE"))));
+    print(QString("%1: %2").arg("$XDG_CURRENT_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_CURRENT_DESKTOP"))));
+    print(QString("%1: %2").arg("$DESKTOP_SESSION", w).arg(QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION"))));
+    print(QString("%1: %2").arg("$XDG_SESSION_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_DESKTOP"))));
+    print(QString("%1: %2").arg("Icon theme", w).arg(QIcon::themeName()));
+#endif
 
     out.flush();
     ::exit(EXIT_SUCCESS);
