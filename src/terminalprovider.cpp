@@ -78,6 +78,7 @@ static const vector<ExecutableTerminal> exec_terminals
         {"QTerminal", {"qterminal", "-e"}},
         {"RoxTerm", {"roxterm", "-x"}},
         {"Terminator", {"terminator", "-x"}},
+        {"Terminology", {"terminology", "-e"}},
         {"Termite", {"termite", "-e"}},
         {"Tilix", {"tilix", "-e"}},
         {"UXTerm", {"uxterm", "-e"}},
