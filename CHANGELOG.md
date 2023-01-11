@@ -1,3 +1,14 @@
+v0.18.11 (2023-01-11)
+
+[albert]
+* Add missing long description in plugin metadata.
+
+[plugins]
+* Handcraft tld validation. Make handler global.
+* Add metadata LONG_DESCRIPTON to docs
+* [py] Create site-packages dir if necessary
+* Fix open snippet
+
 v0.18.10 (2023-01-09)
 
 Fixes, minor changes and requests
