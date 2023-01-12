@@ -40,6 +40,15 @@ public:
 
 private:
 
+    QIcon getCachedIcon(const QString &url) const
+    {
+        try {
+            return icon_cache.at(url);
+        } catch (const std::out_of_range &e) {
+            return icon_cache.emplace(url, url).first->second;
+        }
+    }
+
     int rowCount(const QModelIndex&) const override { return static_cast<int>(plugins_.size()); }
 
     int columnCount(const QModelIndex&) const override { return 5; }
@@ -63,12 +72,12 @@ private:
             if (role == Qt::DecorationRole)
                 switch (p->state()) {
                 case PluginState::Loaded:
-                    return QIcon(":plugin_loaded");
+                    return getCachedIcon(":plugin_loaded");
                 case PluginState::Unloaded:
                     if (p->stateInfo().isEmpty())
-                        return QIcon(":plugin_unloaded");
+                        return getCachedIcon(":plugin_unloaded");
                     else
-                        return QIcon(":plugin_error");
+                        return getCachedIcon(":plugin_error");
                 case PluginState::Invalid:
                     break;
                 }
@@ -80,7 +89,7 @@ private:
             if (role == Qt::DisplayRole)
                 return p->metaData().name;
             else if (role == Qt::DecorationRole)
-                return QIcon(p->iconUrl());
+                return getCachedIcon(p->iconUrl());
             break;
 
         case Column::Version:
@@ -150,6 +159,7 @@ private:
 
     PluginRegistry &plugin_registry_;
     std::vector<const PluginLoader*> plugins_;
+    mutable std::map<QString, QIcon> icon_cache;
 };
 
 
