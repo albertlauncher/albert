@@ -1,51 +1,34 @@
 ---
 name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
+about: Please check the existing issues before creating a new one.
 assignees: ManuelSchneid3r
-
 ---
 
 <!--
-- CHECK FOR EXISTING ISSUES, ALSO CLOSED ONES!
-- FILL OUT THE __ENTIRE__ TEMPLATE!
-- THE ISSUE POSTED HAS TO BE RELATED TO THE CODE BASE OF __THIS__ PROJECT
-- For extension suggestions and other ideas open a discussion rather than an issue.
-- Make sure you dont use an outdated verison.
+- Fill out the entire template
+- The issue posted has to be related to the code of this repository
+- For suggestions and ideas please rather open a discussion
+- Make sure you use an up to date version
 -->
 
-**Description**
-A clear and concise description of what the bug is.
+#### Description
+A brief description of the issue. If applicable, add screenshots.
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+#### Expected behavior
+A brief description of what you expected to happen
 
-**Steps to reproduce**
-Steps to reproduce the behavior.
+#### Steps to reproduce
+Steps to reproduce the behavior
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
-
-**Additional information (please provide the following information):**
-
-**Source**
+#### Source
 e.g. ppa:name, repository, built from source, etc …
 
-<details>
-<summary>Output of `albert --report `</summary>
-
-```
-(paste here)
-```
-
-</details>
+#### Debug output
 
 <details>
-<summary>Output of `albert` when started in a terminal (stdout/stderr)</summary>
 
 ```
-(paste here)
+Output of `albert -d` when run in a terminal
 ```
 
 </details>
