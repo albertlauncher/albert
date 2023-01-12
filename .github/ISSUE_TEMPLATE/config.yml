@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: Start a discussion
-    url: ihttps://github.com/albertlauncher/albert/discussions/new
+    url: https://github.com/albertlauncher/albert/discussions/new
     about: Post the link to the discussion in the chats to get more attention. 
   - name: Chat on Discord
     url: https://discord.gg/t8G2EkvRZh
