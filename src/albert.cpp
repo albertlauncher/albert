@@ -153,7 +153,7 @@ static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
     return qapp;
 }
 
-static void printSystemReportAndExit()
+static void printSystemReport()
 {
     QTextStream out(stdout);
     auto print = [&out](const QString& s){ out << s << '\n'; };
@@ -184,9 +184,7 @@ static void printSystemReportAndExit()
     print(QString("%1: %2").arg("$XDG_SESSION_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_DESKTOP"))));
     print(QString("%1: %2").arg("Icon theme", w).arg(QIcon::themeName()));
 #endif
-
     out.flush();
-    ::exit(EXIT_SUCCESS);
 }
 
 static void notifyVersionChange()
@@ -232,15 +230,19 @@ int main(int argc, char **argv)
     parser.addHelpOption();
     parser.process(*qapp);
 
-    if (parser.isSet(opt_r))
-        printSystemReportAndExit();
+    if (parser.isSet(opt_r)){
+        printSystemReport();
+        ::exit(EXIT_SUCCESS);
+    }
 
     if (!parser.positionalArguments().isEmpty())
         RPCServer::trySendMessageAndExit(parser.positionalArguments().join(" "));
 
     if (parser.isSet(opt_q))
         QLoggingCategory::setFilterRules("*.debug=false\n*.info=false");
-    else if (!parser.isSet(opt_d))
+    else if (parser.isSet(opt_d))
+        printSystemReport();
+    else
         QLoggingCategory::setFilterRules("*.debug=false");
 
 #if defined(Q_OS_MAC)
