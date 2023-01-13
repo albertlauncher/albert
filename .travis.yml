@@ -10,7 +10,7 @@ git:
   depth: false
 
 script:
-  - echo | ./metatool test
+  - echo | ./metatool.py test
 
 notifications:
   irc:
