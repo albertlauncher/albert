@@ -1,3 +1,13 @@
+v0.18.13 (2023-01-13)
+
+Fix invalid submodule link breaking OBS builds
+
+[plugins]
+* [chromium] Fix config loading
+
+[python]
+* [goldendict] 1.1 (0.18)
+
 v0.18.12 (2023-01-13)
 
 [albert]
