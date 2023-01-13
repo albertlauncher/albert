@@ -1,3 +1,14 @@
+v0.18.12 (2023-01-13)
+
+[albert]
+* Always print report in debug mode
+* Add platform, lang and locale to report
+* Support Terminology
+
+[plugins]
+* [mac_apps] Dons show system service apps
+! Add default md_id if not available
+
 v0.18.11 (2023-01-11)
 
 [albert]
