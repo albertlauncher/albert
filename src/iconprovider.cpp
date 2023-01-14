@@ -1,6 +1,7 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #include "iconprovider.h"
+#include "xdg/iconlookup.h"
 
 static const char * XDG_SCHEME = "xdg:";
 static const size_t XDG_SCHEME_LEN = strlen(XDG_SCHEME);
@@ -12,7 +13,8 @@ QIcon IconProvider::getIcon(const QString &url)
 {
     QIcon icon;
     if (url.startsWith(XDG_SCHEME)){
-        if (icon = QIcon::fromTheme(url.mid((qsizetype)XDG_SCHEME_LEN)); !icon.isNull())
+        if (icon = QIcon(XDG::IconLookup::iconPath(url.mid((qsizetype)XDG_SCHEME_LEN))); !icon.isNull())
+//        if (icon = QIcon::fromTheme(url.mid((qsizetype)XDG_SCHEME_LEN)); !icon.isNull())  // Qt still not ready yet
             return icon;
         else return {};
     }
