@@ -1,11 +1,12 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #include "albert/extensions/queryhandler.h"
+#include "extensions/globalqueryhandlerprivate.h"
+#include "extensions/indexqueryhandlerprivate.h"
 #include "albert/logging.h"
 #include "itemindex.h"
 #include "query.h"
 #include "queryengine.h"
-#include "settings/triggerwidget.h"
 #include "usagedatabase.h"
 #include <QCoreApplication>
 #include <QSettings>
@@ -27,9 +28,10 @@ static const char* DEF_SEPARATORS = R"R([\s\\\/\-\[\](){}#!?<>"'=+*.:,;_]+)R";
 static const uint GRAM_SIZE = 2;
 
 QueryEngine::QueryEngine(ExtensionRegistry &registry):
-        ExtensionWatcher<QueryHandler>(registry),
-        ExtensionWatcher<GlobalQueryHandler>(registry),
-        ExtensionWatcher<IndexQueryHandler>(registry)
+    ExtensionWatcher<QueryHandler>(registry),
+    ExtensionWatcher<GlobalQueryHandler>(registry),
+    ExtensionWatcher<IndexQueryHandler>(registry),
+    ExtensionWatcher<FallbackHandler>(registry)
 {
     UsageDatabase::initializeDatabase();
 
@@ -40,7 +42,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry):
     memory_weight_ = s.value(CFG_MEMORY_WEIGHT, DEF_MEMORY_WEIGHT).toDouble();
 
     updateUsageScore();
-    GlobalQueryHandler::setWeight(memory_weight_);
+    GlobalQueryHandlerPrivate::setWeight(memory_weight_);
 
     for (auto &[id, handler] : registry.extensions<QueryHandler>()) {
         query_handlers_.insert(handler);
@@ -59,10 +61,10 @@ std::shared_ptr<albert::Query> QueryEngine::query(const QString &query_string)
 
     for (const auto &[trigger, handler] : active_triggers_)
         if (query_string.startsWith(trigger))
-            query = make_shared<::Query>(query_handlers_, handler, query_string.mid(trigger.size()), trigger);
+            query = make_shared<::Query>(fallback_handlers_, handler, query_string.mid(trigger.size()), trigger);
 
     if (!query)
-        query = make_shared<::Query>(query_handlers_, &global_search_handler, query_string);
+        query = make_shared<::Query>(fallback_handlers_, &global_search_handler, query_string);
 
     QObject::connect(query.get(), &::Query::activated,
                      [this, query=query->string()](const QString& e, const QString &i, const QString &a){
@@ -75,13 +77,10 @@ std::shared_ptr<albert::Query> QueryEngine::query(const QString &query_string)
 void QueryEngine::updateActiveTriggers()
 {
     active_triggers_.clear();
-
     for (const auto &[handler, config]: query_handler_configs_)
         if (config.enabled)
             if (const auto &[it, success] = active_triggers_.emplace(config.trigger, handler); !success)
                 WARN << QString("Trigger conflict '%1': Already reserved for %2.").arg(config.trigger, it->second->id());
-
-
 }
 
 void QueryEngine::onAdd(QueryHandler *handler)
@@ -104,23 +103,33 @@ void QueryEngine::onRem(QueryHandler *handler)
 
 void QueryEngine::onAdd(GlobalQueryHandler *handler)
 {
-    global_search_handler.handlers.insert(handler);
+    global_search_handler.handlers.insert(handler->d.get());
 }
 
 void QueryEngine::onRem(GlobalQueryHandler *handler)
 {
-    global_search_handler.handlers.erase(handler);
+    global_search_handler.handlers.erase(handler->d.get());
 }
 
 void QueryEngine::onAdd(IndexQueryHandler *handler)
 {
     index_query_handlers_.insert(handler);
-    handler->setIndex(make_unique<ItemIndex>(separators_, false, GRAM_SIZE, fuzzy_?DEF_ERROR_TOLERANCE_DIVISOR:0));
+    handler->d->setIndex(make_unique<ItemIndex>(separators_, false, GRAM_SIZE, fuzzy_?DEF_ERROR_TOLERANCE_DIVISOR:0));
 }
 
 void QueryEngine::onRem(IndexQueryHandler *handler)
 {
     index_query_handlers_.erase(handler);
+}
+
+void QueryEngine::onAdd(FallbackHandler *handler)
+{
+    fallback_handlers_.insert(handler);
+}
+
+void QueryEngine::onRem(FallbackHandler *handler)
+{
+    fallback_handlers_.erase(handler);
 }
 
 const std::map<QueryHandler*,QueryEngine::HandlerConfig> &QueryEngine::handlerConfig() const
@@ -174,7 +183,7 @@ void QueryEngine::updateUsageScore() const
     for (auto &[ids, score] : usage_scores)
         score = score/max_score;
 
-    GlobalQueryHandler::setScores(usage_scores);
+    GlobalQueryHandlerPrivate::setScores(usage_scores);
 }
 
 double QueryEngine::memoryDecay() const
@@ -199,7 +208,7 @@ void QueryEngine::setMemoryWeight(double val)
 {
     memory_weight_ = val;
     QSettings(qApp->applicationName()).setValue(CFG_MEMORY_WEIGHT, val);
-    GlobalQueryHandler::setWeight(memory_weight_);
+    GlobalQueryHandlerPrivate::setWeight(memory_weight_);
 }
 
 
@@ -213,7 +222,7 @@ void QueryEngine::setFuzzy(bool fuzzy)
     fuzzy_ = fuzzy;
     QSettings(qApp->applicationName()).setValue(CFG_FUZZY, fuzzy);
     for (auto &iqh : index_query_handlers_)
-        iqh->setIndex(make_unique<ItemIndex>(separators_, false, GRAM_SIZE, fuzzy_?DEF_ERROR_TOLERANCE_DIVISOR:0));
+        iqh->d->setIndex(make_unique<ItemIndex>(separators_, false, GRAM_SIZE, fuzzy_ ? DEF_ERROR_TOLERANCE_DIVISOR : 0));
 }
 
 const QString &QueryEngine::separators() const
@@ -226,5 +235,5 @@ void QueryEngine::setSeparators(const QString &separators)
     separators_ = separators;
     QSettings(qApp->applicationName()).setValue(CFG_SEPARATORS, separators);
     for (auto &iqh : index_query_handlers_)
-        iqh->setIndex(make_unique<ItemIndex>(separators_, false, GRAM_SIZE, fuzzy_?DEF_ERROR_TOLERANCE_DIVISOR:0));
+        iqh->d->setIndex(make_unique<ItemIndex>(separators_, false, GRAM_SIZE, fuzzy_ ? DEF_ERROR_TOLERANCE_DIVISOR : 0));
 }

@@ -23,7 +23,7 @@ private:
             rerun_ = false;
             run();
         } else
-            finish(std::move(future_watcher_.result()));
+            finish(std::move(future_watcher_.future().takeResult()));
     }
 
 public:

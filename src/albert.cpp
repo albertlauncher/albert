@@ -8,7 +8,7 @@
 #include "albert/util/util.h"
 #include "app.h"
 #include "rpcserver.h"
-#include "scopedcrashindicator.hpp"
+#include "scopedcrashindicator.h"
 #include "xdg/iconlookup.h"
 #include <QApplication>
 #include <QCommandLineParser>

@@ -15,7 +15,6 @@ using chrono::system_clock;
 
 PluginRegistry::PluginRegistry(ExtensionRegistry &registry) : ExtensionWatcher<PluginProvider>(registry)
 {
-    updateItems();
 }
 
 vector<const PluginLoader*> PluginRegistry::plugins() const
@@ -37,7 +36,7 @@ void PluginRegistry::enable(const QString &id, bool enable)
         if (isEnabled(id) != enable){
             QSettings(qApp->applicationName()).setValue(QString("%1/enabled").arg(id), enable);
             load(id, enable);
-            updateItems();
+            updateIndexItems();
         }
     } else
         WARN << "En-/Disabled nonexistent id:" << id;
@@ -64,7 +63,7 @@ void PluginRegistry::load(const QString &id, bool load)
                 } else
                     WARN << QString("[%1ms] Failed unloading '%2': %3")
                                 .arg(duration).arg(loader->metaData().id, loader->stateInfo());
-                updateItems();
+                updateIndexItems();
             } else
                 WARN << "Plugin is already loaded:" << id ;
             break;
@@ -81,19 +80,55 @@ void PluginRegistry::load(const QString &id, bool load)
                 } else
                     WARN << QString("[%1ms] Failed loading '%2': %3")
                                 .arg(duration).arg(loader->metaData().id, loader->stateInfo());
-                updateItems();
+                updateIndexItems();
             } else
                 WARN << "Plugin is already unloaded:" << id ;
             break;
         }
     } catch (const exception &e) {
-        WARN << QString("Error while (un-)loading plugin '%1': %2").arg(id).arg(e.what());
+        WARN << QString("Error while (un-)loading plugin '%1': %2").arg(id, e.what());
     }
 }
 
-void PluginRegistry::updateItems()
+QString PluginRegistry::id() const { return "plugins"; }
+
+QString PluginRegistry::name() const { return "Plugins"; }
+
+QString PluginRegistry::description() const { return "Manage plugins"; }
+
+void PluginRegistry::onAdd(PluginProvider *pp)
 {
-    index_items_.clear();
+    for (auto *loader : pp->plugins()){
+        if (loader->state() == PluginState::Invalid)
+            continue;
+        const auto &id = loader->metaData().id;
+        if (const auto &[it, success] = plugins_.emplace(id, loader); success){
+            if (loader->metaData().user && isEnabled(id))
+                load(id);
+        } else
+            INFO << "Plugin" << id << "shadowed:" << loader->path;
+    }
+    updateIndexItems();
+    emit pluginsChanged();
+}
+
+void PluginRegistry::onRem(PluginProvider *pp)
+{
+    for (auto it = plugins_.begin(); it != plugins_.end();){
+        const auto &[id, loader] = *it;
+        if (loader->provider() == pp){
+            if (loader->state() == PluginState::Loaded)
+                loader->unload();
+            it = plugins_.erase(it);
+        } else ++it;
+    }
+    updateIndexItems();
+    emit pluginsChanged();
+}
+
+void PluginRegistry::updateIndexItems()
+{
+    std::vector<albert::IndexItem> index_items;
 
     for (const auto &[id, loader] : plugins_){  // these should all be valid
 
@@ -124,53 +159,15 @@ void PluginRegistry::updateItems()
         actions.emplace_back("info", "Show plugin info", [loader=loader](){ loader->makeInfoWidget()->show(); });
         info.append(loader->metaData().description);
 
-        index_items_.emplace_back(StandardItem::make(
-            id,
-            loader->metaData().name,
-            info,
-            {loader->iconUrl()},
-            actions
-        ), loader->metaData().name);
+        index_items.emplace_back(StandardItem::make(
+                                     id,
+                                     loader->metaData().name,
+                                     info,
+                                     {loader->iconUrl()},
+                                     actions
+                                     ), loader->metaData().name);
     }
 
-    updateIndex();
-}
-
-QString PluginRegistry::id() const { return "plugins"; }
-
-QString PluginRegistry::name() const { return "Plugins"; }
-
-QString PluginRegistry::description() const { return "Manage plugins"; }
-
-vector<IndexItem> PluginRegistry::indexItems() const { return index_items_; }
-
-void PluginRegistry::onAdd(PluginProvider *pp)
-{
-    for (auto *loader : pp->plugins()){
-        if (loader->state() == PluginState::Invalid)
-            continue;
-        const auto &id = loader->metaData().id;
-        if (const auto &[it, success] = plugins_.emplace(id, loader); success){
-            if (loader->metaData().user && isEnabled(id))
-                load(id);
-        } else
-            INFO << "Plugin" << id << "shadowed:" << loader->path;
-    }
-    updateItems();
-    emit pluginsChanged();
-}
-
-void PluginRegistry::onRem(PluginProvider *pp)
-{
-    for (auto it = plugins_.begin(); it != plugins_.end();){
-        const auto &[id, loader] = *it;
-        if (loader->provider() == pp){
-            if (loader->state() == PluginState::Loaded)
-                loader->unload();
-            it = plugins_.erase(it);
-        } else ++it;
-    }
-    updateItems();
-    emit pluginsChanged();
+    setIndexItems(::move(index_items));
 }
 

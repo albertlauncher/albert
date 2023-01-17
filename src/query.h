@@ -9,11 +9,12 @@
 namespace albert { class Item; }
 
 class Query: public albert::Query,
-             public albert::QueryHandler::Query
+              public albert::QueryHandler::Query,
+              public albert::GlobalQueryHandler::Query
 {
     Q_OBJECT
 public:
-    explicit Query(const std::set<albert::QueryHandler*> &fallback_handlers,
+    explicit Query(const std::set<albert::FallbackHandler*> &fallback_handlers,
                    albert::QueryHandler *query_handler,
                    QString string,
                    QString trigger = {});
@@ -41,7 +42,7 @@ public:
     void add(const std::vector<std::shared_ptr<albert::Item>> &items) override;
     void add(std::vector<std::shared_ptr<albert::Item>> &&items) override;
 
-    const std::set<albert::QueryHandler*> &fallback_handlers_;
+    const std::set<albert::FallbackHandler*> &fallback_handlers_;
     albert::QueryHandler *query_handler_;
     QString string_;
     QString trigger_;

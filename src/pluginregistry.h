@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
-#include "albert/extensions/indexqueryhandler.h"
+#include "albert/extensions/queryhandler.h"
 #include "albert/util/extensionwatcher.h"
 #include <set>
 #include <QObject>
@@ -27,12 +27,10 @@ protected:
     QString description() const override;
     void onAdd(albert::PluginProvider*) override;
     void onRem(albert::PluginProvider*) override;
-    std::vector<albert::IndexItem> indexItems() const override;
+    void updateIndexItems() override;
 
 private:
     std::map<QString, albert::PluginLoader*> plugins_;
-    std::vector<albert::IndexItem> index_items_;
-    void updateItems();
 
 Q_OBJECT signals:
     void pluginsChanged();

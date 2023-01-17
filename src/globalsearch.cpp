@@ -1,7 +1,8 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "globalsearch.h"
 #include "albert/util/timeprinter.hpp"
+#include "extensions/globalqueryhandlerprivate.h"
+#include "globalsearch.h"
 #include "query.h"
 #include <QtConcurrent>
 #include <cmath>
@@ -19,18 +20,18 @@ void GlobalSearch::handleQuery(Query &query) const
     if (query.string().trimmed().isEmpty())
         return;
 
-    mutex m;  // 6.4 Still no movesemantics in QtConcurrent
-    vector<pair<QueryHandler*,RankItem>> rank_items;
+    mutex m;  // 6.4 Still no move semantics in QtConcurrent
+    vector<pair<Extension*,RankItem>> rank_items;
 
-    function<void(GlobalQueryHandler*)> map =
-            [&m, &rank_items, &query](GlobalQueryHandler *handler) {
-                TimePrinter tp(QString("TIME: %1 µs ['%2':'%3']").arg("%1", handler->id(), query.string()));
-                auto r = handler->rankItems(query.string(), query.isValid());
-                unique_lock lock(m);
-                rank_items.reserve(rank_items.size()+r.size());
-                for (auto &rank_item : r)
-                    rank_items.emplace_back(handler, ::move(rank_item));
-            };
+    function<void(GlobalQueryHandlerPrivate*)> map =
+        [&m, &rank_items, &query](GlobalQueryHandlerPrivate *handler) {
+            TimePrinter tp(QString("TIME: %1 µs ['%2':'%3']").arg("%1", handler->q->id(), query.string()));
+            auto r = handler->handleQuery(dynamic_cast<GlobalQueryHandler::Query&>(query));
+            unique_lock lock(m);
+            rank_items.reserve(rank_items.size()+r.size());
+            for (auto &rank_item : r)
+                rank_items.emplace_back(handler->q, ::move(rank_item));
+        };
 
     QtConcurrent::blockingMap(handlers, map);
 

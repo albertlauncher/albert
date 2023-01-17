@@ -1,12 +1,14 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
-#include "albert/extensions/globalqueryhandler.h"
+#include "extensions/globalqueryhandlerprivate.h"
 #include <set>
 
-struct GlobalSearch : public albert::QueryHandler
+class GlobalSearch final : public albert::QueryHandler
 {
-    std::set<albert::GlobalQueryHandler*> handlers;
+public:
+    std::set<GlobalQueryHandlerPrivate*> handlers;
+private:
     QString id() const override;
     QString name() const override;
     QString description() const override;

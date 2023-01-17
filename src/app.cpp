@@ -36,7 +36,7 @@ QString App::name() const { return "Albert"; }
 
 QString App::description() const { return "Control the app."; }
 
-vector<IndexItem> App::indexItems() const
+void App::updateIndexItems()
 {
     auto settings_item = StandardItem::make(
             "albert-settings", "Settings", "Open the Albert settings window", {":app_icon"},
@@ -53,10 +53,10 @@ vector<IndexItem> App::indexItems() const
             {{"albert-restart", "Restart Albert", [](){ restart(); }}}
     );
 
-    vector<IndexItem> items;
-    items.emplace_back(settings_item, "settings");
-    items.emplace_back(settings_item, "preferences");
-    items.emplace_back(quit_item, "quit");
-    items.emplace_back(restart_item, "restart");
-    return items;
+    vector<IndexItem> index_items;
+    index_items.emplace_back(settings_item, "settings");
+    index_items.emplace_back(settings_item, "preferences");
+    index_items.emplace_back(quit_item, "quit");
+    index_items.emplace_back(restart_item, "restart");
+    setIndexItems(::move(index_items));
 }

@@ -12,7 +12,7 @@ class IndexItem;
 }
 
 // Thread safe index class
-class ItemIndex : public albert::Index
+class ItemIndex : public Index
 {
 public:
     explicit ItemIndex(QString separators, bool case_sensitive, uint n, uint error_tolerance_divisor);

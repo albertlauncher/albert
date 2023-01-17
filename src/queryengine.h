@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
-#include "albert/extensions/indexqueryhandler.h"
+#include "albert/extensions/queryhandler.h"
 #include "albert/util/extensionwatcher.h"
 #include "globalsearch.h"
 #include <map>
@@ -10,10 +10,10 @@
 namespace albert{ class Query; }
 
 
-class QueryEngine:
-        public albert::ExtensionWatcher<albert::QueryHandler>,
-        public albert::ExtensionWatcher<albert::GlobalQueryHandler>,
-        public albert::ExtensionWatcher<albert::IndexQueryHandler>
+class QueryEngine : public albert::ExtensionWatcher<albert::QueryHandler>,
+                    public albert::ExtensionWatcher<albert::GlobalQueryHandler>,
+                    public albert::ExtensionWatcher<albert::IndexQueryHandler>,
+                    public albert::ExtensionWatcher<albert::FallbackHandler>
 
 {
 public:
@@ -52,7 +52,10 @@ private:
     void onRem(albert::GlobalQueryHandler*) override;
     void onAdd(albert::IndexQueryHandler*) override;
     void onRem(albert::IndexQueryHandler*) override;
+    void onAdd(albert::FallbackHandler*) override;
+    void onRem(albert::FallbackHandler*) override;
 
+    std::set<albert::FallbackHandler*> fallback_handlers_;
     std::set<albert::QueryHandler*> query_handlers_;
     std::set<albert::IndexQueryHandler*> index_query_handlers_;
 

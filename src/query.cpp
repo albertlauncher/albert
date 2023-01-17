@@ -9,7 +9,7 @@ using albert::Item;
 
 uint Query::query_count = 0;
 
-Query::Query(const std::set<albert::QueryHandler*>& fallback_handlers,
+Query::Query(const std::set<albert::FallbackHandler*>& fallback_handlers,
              albert::QueryHandler *query_handler,
              QString string,
              QString trigger):

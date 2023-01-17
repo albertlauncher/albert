@@ -8,8 +8,6 @@
 #include "albert/extensionregistry.h"
 #include "albert/extensions/configwidgetprovider.h"
 #include "albert/extensions/frontend.h"
-#include "albert/extensions/globalqueryhandler.h"
-#include "albert/extensions/indexqueryhandler.h"
 #include "albert/extensions/pluginprovider.h"
 #include "albert/extensions/queryhandler.h"
 #include "albert/logging.h"

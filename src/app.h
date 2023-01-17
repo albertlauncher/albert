@@ -2,7 +2,7 @@
 
 #pragma once
 #include "albert/extensionregistry.h"
-#include "albert/extensions/indexqueryhandler.h"
+#include "albert/extensions/queryhandler.h"
 #include "nativepluginprovider.h"
 #include "pluginregistry.h"
 #include "queryengine.h"
@@ -25,7 +25,7 @@ public:
     QString id() const override;
     QString name() const override;
     QString description() const override;
-    std::vector<albert::IndexItem> indexItems() const override;
+    void updateIndexItems() override;
 
     RPCServer rpc_server; // Check for other instances first
     albert::ExtensionRegistry extension_registry;

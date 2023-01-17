@@ -45,52 +45,80 @@ add_subdirectory(lib/QHotkey EXCLUDE_FROM_ALL)
 
 set(TARGET_LIB ${PROJECT_NAME})
 
-file(GLOB_RECURSE LIB_SRC include/*)
+file(GLOB_RECURSE LIB_PUBLIC_HEADER include/*.h)
 
-set (LIB_SRC ${LIB_SRC}
-        include/albert/util/timeprinter.hpp
-        src/albert.cpp
-        src/app.cpp
-        src/extension.cpp
-        src/hotkey.cpp
-        src/extensionregistry.cpp
-        src/extensions/frontend.cpp
-        src/extensions/globalqueryhandler.cpp
-        src/extensions/indexqueryhandler.cpp
-        src/extensions/pluginprovider.cpp
-        src/extensions/queryhandler.cpp
-        src/globalsearch.cpp
-        src/iconprovider.cpp
-        src/itemindex.cpp
-        src/itemsmodel.cpp
-        src/levenshtein.cpp
-        src/nativepluginprovider.cpp
-        src/pluginregistry.cpp
-        src/query.cpp
-        src/queryengine.cpp
-        src/resources.qrc
-        src/rpcserver.cpp
-        src/scopedcrashindicator.hpp
-        src/settings/configproviderwidget.cpp
-        src/settings/pluginwidget.cpp
-        src/settings/settingswindow.cpp
-        src/settings/settingswindow.ui
-        src/settings/triggerwidget.cpp
-        src/terminalprovider.cpp
-        src/trayicon.cpp
-        src/usagedatabase.cpp
-        src/util/history.cpp
-        src/util/standarditem.cpp
-        src/util/util.cpp
-        src/xdg/iconlookup.cpp
-        src/xdg/themefileparser.cpp
+set (LIB_UI
+    src/settings/settingswindow.ui
+)
+
+set (LIB_SRC
+    include/albert/util/timeprinter.hpp
+    src/albert.cpp
+    src/app.cpp
+    src/app.h
+    src/extension.cpp
+    src/extensionregistry.cpp
+    src/extensions/frontend.cpp
+    src/extensions/globalqueryhandlerprivate.cpp
+    src/extensions/globalqueryhandlerprivate.h
+    src/extensions/indexqueryhandlerprivate.cpp
+    src/extensions/indexqueryhandlerprivate.h
+    src/extensions/item.cpp
+    src/extensions/pluginprovider.cpp
+    src/extensions/queryhandler.cpp
+    src/globalsearch.cpp
+    src/globalsearch.h
+    src/hotkey.cpp
+    src/hotkey.h
+    src/iconprovider.cpp
+    src/iconprovider.h
+    src/index.h
+    src/itemindex.cpp
+    src/itemindex.h
+    src/itemsmodel.cpp
+    src/itemsmodel.h
+    src/levenshtein.cpp
+    src/levenshtein.h
+    src/nativepluginprovider.cpp
+    src/nativepluginprovider.h
+    src/pluginregistry.cpp
+    src/pluginregistry.h
+    src/query.cpp
+    src/query.h
+    src/queryengine.cpp
+    src/queryengine.h
+    src/rpcserver.cpp
+    src/rpcserver.h
+    src/scopedcrashindicator.cpp
+    src/scopedcrashindicator.h
+    src/settings/configproviderwidget.cpp
+    src/settings/configproviderwidget.h
+    src/settings/pluginwidget.cpp
+    src/settings/pluginwidget.h
+    src/settings/settingswindow.cpp
+    src/settings/settingswindow.h
+    src/settings/triggerwidget.cpp
+    src/settings/triggerwidget.h
+    src/terminalprovider.cpp
+    src/terminalprovider.h
+    src/trayicon.cpp
+    src/trayicon.h
+    src/usagedatabase.cpp
+    src/usagedatabase.h
+    src/util/history.cpp
+    src/util/standarditem.cpp
+    src/util/util.cpp
+    src/xdg/iconlookup.cpp
+    src/xdg/iconlookup.h
+    src/xdg/themefileparser.cpp
+    src/xdg/themefileparser.h
 )
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    set (LIB_SRC ${LIB_SRC} src/macos.mm )
+    set (LIB_SRC ${LIB_SRC} src/macos.mm src/macos.h )
 endif()
 
-add_library(${TARGET_LIB} SHARED ${LIB_SRC})
+add_library(${TARGET_LIB} SHARED ${LIB_SRC} ${LIB_UI} ${LIB_PUBLIC_HEADER} src/resources.qrc)
 
 add_library(albert::albert ALIAS ${TARGET_LIB})
 
@@ -138,6 +166,7 @@ set_target_properties(${TARGET_LIB} PROPERTIES
     INSTALL_RPATH "$ORIGIN"
     CXX_VISIBILITY_PRESET hidden
     VISIBILITY_INLINES_HIDDEN 1
+#    PUBLIC_HEADER "${LIB_PUBLIC_HEADER}"
 )
 
 # Platform specific stuff

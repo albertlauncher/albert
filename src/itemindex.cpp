@@ -1,6 +1,6 @@
 // Copyright (c) 2021-2022 Manuel Schneider
 
-#include "albert/extensions/indexqueryhandler.h"
+#include "albert/extensions/queryhandler.h"
 #include "itemindex.h"
 #include "levenshtein.h"
 #include <QRegularExpression>
@@ -10,6 +10,7 @@
 #include <mutex>
 using namespace std;
 using namespace albert;
+using Score = RankItem::Score;
 
 
 static QStringList splitString(const QString &string, const QString &separators, bool case_sensitive = false)
@@ -162,7 +163,7 @@ std::vector<albert::RankItem> ItemIndex::search(const QString &string, const boo
     unordered_map<Index,Score> result_map;
     if (words.empty()){
         for (const auto &string_index_item : index.strings){
-            auto score = (Score)(1.0/(double)string_index_item.max_match_len*MAX_SCORE);
+            auto score = (Score)(1.0/(double)string_index_item.max_match_len * RankItem::MAX_SCORE);
             if(const auto &[it, success] = result_map.emplace(string_index_item.item, score); !success)
                 if (it->second < score)
                     it->second = score;
@@ -234,7 +235,7 @@ std::vector<albert::RankItem> ItemIndex::search(const QString &string, const boo
 
         // Build the list of matched items with their highest scoring match
         for (const auto &match : left_matches) {
-            auto score = (Score)((double)match.match_len / index.strings[match.index].max_match_len * MAX_SCORE);
+            auto score = (Score)((double)match.match_len / index.strings[match.index].max_match_len * RankItem::MAX_SCORE);
             if (const auto &[it, success] = result_map.emplace(index.strings[match.index].item, score);
                     !success && it->second < score) // update if exists
                 it->second = score;
@@ -243,7 +244,7 @@ std::vector<albert::RankItem> ItemIndex::search(const QString &string, const boo
     }
 
     // Convert results to return type
-    std::vector<albert::RankItem> result;
+    vector<albert::RankItem> result;
     result.reserve(result_map.size());
     for (const auto &[item_idx, score] : result_map)
         result.emplace_back(index.items[item_idx], score);
