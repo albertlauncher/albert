@@ -1,3 +1,16 @@
+v0.19.1 (2023-01-18)
+
+[albert]
+* Fix recurring new version info
+* Allow copyconstruction of rank and index items
+
+[plugins]
+* [calc] 1.5
+  * Inline evaluation
+  * Default trigger '='
+  * Synopsis
+* [wbm] Add item activation using Ctrl+O
+
 v0.19.0 (2023-01-18)
 
 [albert]
