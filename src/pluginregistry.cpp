@@ -141,8 +141,10 @@ void PluginRegistry::updateIndexItems()
             else
                 actions.emplace_back("enable", "Enable plugin", [this, id=id](){ enable(id); });
 
-            if (loader->state() == PluginState::Loaded)
+            if (loader->state() == PluginState::Loaded){
                 actions.emplace_back("unload", "Unload plugin", [this, id=id](){ load(id, false); });
+                actions.emplace_back("reload", "Reload plugin", [this, id=id](){ load(id, false); load(id, true); });
+            }
             else  // by contract only unloaded
                 actions.emplace_back("load", "Load plugin", [this, id=id](){ load(id); });
 
