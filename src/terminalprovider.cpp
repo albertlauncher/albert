@@ -78,7 +78,7 @@ static const vector<ExecutableTerminal> exec_terminals
         {"Mate-Terminal", {"mate-terminal", "-x"}},
         {"QTerminal", {"qterminal", "-e"}},
         {"RoxTerm", {"roxterm", "-x"}},
-        {"Terminator", {"terminator", "-x"}},
+        {"Terminator", {"terminator", "-u", "-g", "/dev/null", "-x"}},  // TODO remove in future. See #1177 and https://github.com/gnome-terminator/terminator/issues/702
         {"Terminology", {"terminology", "-e"}},
         {"Termite", {"termite", "-e"}},
         {"Tilix", {"tilix", "-e"}},
