@@ -41,10 +41,8 @@ void GlobalQueryHandlerPrivate::applyUsageScores(vector<RankItem> &rank_items) c
     }
 }
 
-//vector<RankItem> GlobalQueryHandlerPrivate::handleQuery(const QString &string, const bool &isValid) const
 vector<RankItem> GlobalQueryHandlerPrivate::handleQuery(const GlobalQueryHandler::Query &query) const
 {
-    //    vector<RankItem> rank_items = q->handleQuery(string, isValid);
     vector<RankItem> rank_items = q->handleQuery(query);
     applyUsageScores(rank_items);
     return rank_items;

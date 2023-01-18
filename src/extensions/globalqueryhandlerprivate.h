@@ -18,7 +18,6 @@ public:
     static void setWeight(double weight);
     static void setScores(std::map<std::pair<QString,QString>,double> scores);
     void applyUsageScores(std::vector<albert::RankItem> &rank_items) const;
-//    std::vector<albert::RankItem> handleQuery(const QString &string, const bool& isValid) const;
     std::vector<albert::RankItem> handleQuery(const albert::GlobalQueryHandler::Query&) const;
 
 private:

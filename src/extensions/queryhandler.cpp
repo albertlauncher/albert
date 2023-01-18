@@ -21,8 +21,6 @@ bool QueryHandler::allowTriggerRemap() const { return true; }
 
 RankItem::RankItem(shared_ptr<Item> item, Score score):
     item(std::move(item)), score(score) {}
-RankItem::RankItem(RankItem &&) = default;
-RankItem &RankItem::operator=(RankItem &&) = default;
 
 GlobalQueryHandler::Query::~Query() = default;
 
@@ -32,7 +30,6 @@ GlobalQueryHandler::~GlobalQueryHandler() = default;
 
 void GlobalQueryHandler::handleQuery(QueryHandler::Query &query) const
 {
-//    std::vector<RankItem> &&rank_items = GlobalQueryHandler::handleQuery(query.string(), query.isValid());
     std::vector<RankItem> &&rank_items = handleQuery(dynamic_cast<Query&>(query));
     sort(rank_items.begin(), rank_items.end(), [](const auto &a, const auto &b){ return a.score > b.score; });
 
@@ -49,10 +46,6 @@ void GlobalQueryHandler::handleQuery(QueryHandler::Query &query) const
 
 IndexItem::IndexItem(std::shared_ptr<Item> item, QString string):
     item(::move(item)), string(::move(string)){}
-
-IndexItem::IndexItem(IndexItem &&) = default;
-
-IndexItem &IndexItem::operator=(IndexItem &&) = default;
 
 IndexQueryHandler::IndexQueryHandler() : d(new IndexQueryHandlerPrivate(this)) {}
 

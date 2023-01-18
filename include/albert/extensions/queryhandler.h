@@ -57,24 +57,15 @@ public:
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
-
 class ALBERT_EXPORT RankItem
 {
 public:
     using Score = uint16_t;
     static const constexpr Score MAX_SCORE = std::numeric_limits<Score>::max();
-
     RankItem(std::shared_ptr<Item> item, Score score);
-    RankItem(RankItem&&);
-    RankItem(const RankItem&) = default;
-    RankItem& operator=(RankItem&&);
-    RankItem& operator=(const RankItem&) = default;
-
     std::shared_ptr<Item> item;  ///< The matched item
     Score score;  ///< The match score. @note MAX_SCORE represents a full match.
 };
-
 
 
 /// Global search query handler.
@@ -99,7 +90,6 @@ public:
     /// The query handling function. Subclasses should return matched items with appropriate match scores.
     /// The match score should make sense and often (if not always) the fraction of the string match makes sense.
     /// @note has to be thread safe!
-//    virtual std::vector<RankItem> handleQuery(const QString &string, const bool& isValid) const = 0;
     virtual std::vector<RankItem> handleQuery(const Query&) const = 0;
 
     /// Provides triggered query handling
@@ -119,11 +109,6 @@ class ALBERT_EXPORT IndexItem
 {
 public:
     IndexItem(std::shared_ptr<Item> item, QString string);
-    IndexItem(IndexItem&&);
-    IndexItem(const IndexItem&) = delete;
-    IndexItem& operator=(IndexItem&&);
-    IndexItem& operator=(const IndexItem&) = delete;
-
     std::shared_ptr<Item> item; ///< The item
     QString string; ///< The corresponding string
 };
@@ -150,7 +135,6 @@ protected:
 
     /// @implements GlobalQueryHandler::handleQuery
     /// Uses the index to find items
-//    std::vector<RankItem> handleQuery(const QString &string, const bool& isValid) const final;
     std::vector<RankItem> handleQuery(const Query &) const final;
 
 private:
