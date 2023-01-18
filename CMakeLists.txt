@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19)  # JSON support, Ubuntu 22.04
 
-project(albert VERSION 0.19.1)
+project(albert VERSION 0.19.2)
 
 include(GNUInstallDirs)
 

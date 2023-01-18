@@ -1,3 +1,9 @@
+v0.19.2 (2023-01-18)
+
+[plugins]
+* [datetime] v1.0
+* [urlhandler] Fix tld validation
+
 v0.19.1 (2023-01-18)
 
 [albert]
