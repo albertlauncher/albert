@@ -199,15 +199,16 @@ static void notifyVersionChange()
                 "This is the first time you've launched Albert. Albert is plugin based. "
                 "You have to enable some plugins you want to use.").exec();
         albert::showSettings();
-        settings.setValue(CFG_LAST_USED_VERSION, current_version);
     }
-    else if (current_version.section('.', 1, 1) != last_used_version.section('.', 1, 1) ){  // FIXME in first major version
+    else if (current_version.section('.', 1, 1) != last_used_version.section('.', 1, 1) )  // FIXME in first major version
         QMessageBox(QMessageBox::Information, "Major version changed",
                     QString("You are now using Albert %1. The major version changed. "
                             "Some parts of the API might have changed. Check the "
                             "<a href=\"https://albertlauncher.github.io/news/\">news</a>.")
                             .arg(current_version)).exec();
-    }
+
+    if (last_used_version != current_version)
+        settings.setValue(CFG_LAST_USED_VERSION, current_version);
 }
 
 int ALBERT_EXPORT main(int argc, char **argv);
