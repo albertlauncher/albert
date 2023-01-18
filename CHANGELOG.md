@@ -1,3 +1,30 @@
+v0.19.0 (2023-01-18)
+
+[albert]
+* Add reload actinon for plugins
+* Support Console term
+* Fix backgroundexecutor not using move semantics
+* 0.19 interface
+  * Revert to dedicated FallbackHandler
+  * Clean interface using opaque pointers
+  * GlobalQueryHandler::rankItems -> handlyQuery
+  * IndexQueryHandlers have to set items directly
+* Refactoring
+* Show plugin header files in IDEs
+* Use handcrafted icon lookup again
+
+[plugins]
+* [wbs] 1.3 add query handler providing themes
+* [apps_xdg] 1.5 Remove desktop indexing
+* [ssh] 1.5
+  * Fix ssh connect containing user or port
+  * Allow specifying a command to send to the host
+  * Add action (keep/close term)
+
+[python]
+* [yt] v1.2 (iid:0.5)
+* [kill] v1.1 (iid:0.5)
+
 v0.18.13 (2023-01-13)
 
 Fix invalid submodule link breaking OBS builds
