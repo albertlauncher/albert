@@ -11,7 +11,8 @@ class IconProvider
 {
 public:
 
-    QIcon getIcon(const QString &url);
+    QIcon getIcon(const QStringList &urls) const;
+    QIcon getIcon(const QString &url) const;
 
 private:
 
