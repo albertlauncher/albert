@@ -1,8 +1,10 @@
 // Copyright (c) 2022 Manuel Schneider
 
+#include "albert/logging.h"
 #include "albert/extensions/frontend.h"
 #include "albert/extensions/queryhandler.h"
 #include "itemsmodel.h"
+#include <QStringListModel>
 using namespace std;
 using namespace albert;
 
@@ -65,14 +67,14 @@ QHash<int, QByteArray> ItemsModel::roleNames() const
     };
 }
 
-void ItemsModel::add(albert::Extension *extension, shared_ptr<Item> &&item)
+void ItemsModel::add(Extension *extension, shared_ptr<Item> &&item)
 {
     beginInsertRows(QModelIndex(), (int)items.size(), (int)items.size());
     items.emplace_back(extension, ::move(item));
     endInsertRows();
 }
 
-void ItemsModel::add(albert::Extension *extension, vector<std::shared_ptr<Item>> &&itemvec)
+void ItemsModel::add(Extension *extension, vector<shared_ptr<Item>> &&itemvec)
 {
     if (itemvec.empty())
         return;
@@ -84,14 +86,14 @@ void ItemsModel::add(albert::Extension *extension, vector<std::shared_ptr<Item>>
     endInsertRows();
 }
 
-void ItemsModel::add(albert::Extension *extension, const shared_ptr<albert::Item> &item)
+void ItemsModel::add(Extension *extension, const shared_ptr<Item> &item)
 {
     beginInsertRows(QModelIndex(), (int)items.size(), (int)items.size());
     items.emplace_back(extension, item);
     endInsertRows();
 }
 
-void ItemsModel::add(albert::Extension *extension, const vector<std::shared_ptr<albert::Item>> &itemvec)
+void ItemsModel::add(Extension *extension, const vector<shared_ptr<Item>> &itemvec)
 {
     if (itemvec.empty())
         return;
@@ -102,7 +104,6 @@ void ItemsModel::add(albert::Extension *extension, const vector<std::shared_ptr<
         items.emplace_back(extension, item);
     endInsertRows();
 }
-
 
 void ItemsModel::add(vector<pair<Extension*,RankItem>>::iterator begin,
                      vector<pair<Extension*,RankItem>>::iterator end)
@@ -117,7 +118,33 @@ void ItemsModel::add(vector<pair<Extension*,RankItem>>::iterator begin,
     endInsertRows();
 }
 
-void ItemsModel::clearCache()
+void ItemsModel::clearIconCache()
 {
+    DEBG << "Clearing icon cache";
     icon_cache.clear();
+}
+
+QAbstractListModel *ItemsModel::buildActionsModel(uint i) const
+{
+    QStringList l;
+    for (const auto &a : items[i].second->actions())
+        l << a.text;
+    return new QStringListModel(l);
+}
+
+void ItemsModel::activate(uint i, uint a)
+{
+    if (i<items.size()){
+        auto &item = items[i];
+        auto actions = item.second->actions();
+        if (a<actions.size()){
+            auto &action = actions[a];
+            action.function();
+            emit activated(item.first->id(), item.second->id(), action.id);
+        }
+        else
+            WARN << "Activated action index is invalid.";
+    }
+    else
+        WARN << "Activated item index is invalid.";
 }

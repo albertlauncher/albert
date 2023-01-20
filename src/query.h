@@ -55,7 +55,4 @@ public:
     uint query_id;
     static uint query_count;
 
-signals:
-    void activated(const QString &e, const QString &i, const QString &a);
-
 };

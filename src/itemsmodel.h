@@ -12,6 +12,7 @@ namespace albert{ class Item; class RankItem; }
 
 class ItemsModel : public QAbstractListModel
 {
+    Q_OBJECT
 public:
 
     QHash<int, QByteArray> roleNames() const override;
@@ -24,15 +25,21 @@ public:
     void add(albert::Extension*, const std::vector<std::shared_ptr<albert::Item>>&);
     void add(albert::Extension*, std::vector<std::shared_ptr<albert::Item>>&&);
 
-    // For the global query
     void add(std::vector<std::pair<albert::Extension*,albert::RankItem>>::iterator begin,
              std::vector<std::pair<albert::Extension*,albert::RankItem>>::iterator end);
 
-    std::vector<std::pair<albert::Extension*,std::shared_ptr<albert::Item>>> items;
+    QAbstractListModel *buildActionsModel(uint i) const;
+    void activate(uint i, uint a);
 
-    void clearCache();
+    static void clearIconCache();
 
 private:
+    std::vector<std::pair<albert::Extension*,std::shared_ptr<albert::Item>>> items;
     static IconProvider icon_provider;
     static std::map<QString, QIcon> icon_cache;
+
+signals:
+    void activated(const QString &extension_id,
+                   const QString &item_id,
+                   const QString &action_id);
 };

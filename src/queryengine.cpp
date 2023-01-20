@@ -66,11 +66,14 @@ std::shared_ptr<albert::Query> QueryEngine::query(const QString &query_string)
     if (!query)
         query = make_shared<::Query>(fallback_handlers_, &global_search_handler, query_string);
 
-    QObject::connect(query.get(), &::Query::activated,
-                     [this, query=query->string()](const QString& e, const QString &i, const QString &a){
-        UsageDatabase::addActivation(query, e, i, a);
-        QTimer::singleShot(0,[this](){updateUsageScore();});
-    });
+    auto onActivate = [this, q=query->string()](const QString& e, const QString &i, const QString &a){
+        UsageDatabase::addActivation(q, e, i, a);
+        QTimer::singleShot(0, [this](){ updateUsageScore(); });
+    };
+
+    QObject::connect(&query->matches_, &ItemsModel::activated, onActivate);
+    QObject::connect(&query->fallbacks_, &ItemsModel::activated, onActivate);  // TODO differentiate
+
     return query;
 }
 

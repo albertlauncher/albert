@@ -63,38 +63,13 @@ QAbstractListModel &Query::matches() { return matches_; }
 
 QAbstractListModel &Query::fallbacks() { return fallbacks_; }
 
-static QAbstractListModel *buildActionsModel(Item &item)
-{
-    QStringList l;
-    for (const auto &a : item.actions())
-        l << a.text;
-    return new QStringListModel(l);
-}
+QAbstractListModel *Query::matchActions(uint i) const { return matches_.buildActionsModel(i); }
+
+QAbstractListModel *Query::fallbackActions(uint i) const { return fallbacks_.buildActionsModel(i); }
  
-QAbstractListModel *Query::matchActions(uint item) const { return buildActionsModel(*matches_.items[item].second); }
+void Query::activateMatch(uint i, uint a) { matches_.activate(i, a); }
 
-QAbstractListModel *Query::fallbackActions(uint item) const { return buildActionsModel(*fallbacks_.items[item].second); } 
-
-static void activate(Query &query, ItemsModel &items, uint i, uint a)
-{
-    if (i<items.items.size()){
-        auto &item = items.items[i];
-        auto actions = item.second->actions();
-        if (a<actions.size()){
-            auto &action = actions[a];
-            action.function();
-            emit query.activated(item.first->id(), item.second->id(), action.id);
-        }
-        else
-            WARN << "Activated action index is invalid.";
-    }
-    else
-        WARN << "Activated item index is invalid.";
-}
- 
-void Query::activateMatch(uint i, uint a) { activate(*this, matches_, i, a); }
-
-void Query::activateFallback(uint i, uint a) { activate(*this, fallbacks_, i, a); }
+void Query::activateFallback(uint i, uint a) { fallbacks_.activate(i, a); }
 
 void Query::add(const shared_ptr<Item> &item) { matches_.add(query_handler_, item); }
 
