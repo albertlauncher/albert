@@ -9,7 +9,7 @@ using namespace std;
 using namespace albert;
 
 IconProvider ItemsModel::icon_provider;
-std::map<QString, QIcon> ItemsModel::icon_cache;
+map<pair<QString /*eid*/, QString /*iid*/>, QIcon> ItemsModel::icon_cache;
 
 int ItemsModel::rowCount(const QModelIndex &parent) const
 {
@@ -30,26 +30,12 @@ QVariant ItemsModel::data(const QModelIndex &index, int role) const
             case (int)ItemRoles::IconPathRole: qFatal("ItemsModel::data ItemRoles::IconPathRole not implemented");
             case (int)ItemRoles::IconRole:
             {
-                auto get_icon_for_urls = [](const QStringList &urls)
-                {
-                    for (const QString &url : urls)
-                        try {
-                            return icon_cache.at(url);
-                        } catch (const out_of_range &) {
-                            if (auto && icon = icon_provider.getIcon(url); icon.isNull())
-                                continue;
-                            else
-                                return icon_cache.emplace(url, icon).first->second;
-                        }
-                    return QIcon();
-                };
-
-                static map<QString, QIcon> item_icon_cache;
+                auto icon_key = make_pair(items[index.row()].first->id(), item->id());
                 try {
-                    return item_icon_cache.at(item->id());
+                    return icon_cache.at(icon_key);
                 } catch (const out_of_range &) {
-                    QIcon icon = get_icon_for_urls(item->iconUrls());
-                    return item_icon_cache.emplace(item->id(), icon.isNull() ? QIcon(":unknown") : icon).first->second;
+                    QIcon icon = icon_provider.getIcon(item->iconUrls());
+                    return icon_cache.emplace(icon_key, icon.isNull() ? QIcon(":unknown") : icon).first->second;
                 }
             }
         }

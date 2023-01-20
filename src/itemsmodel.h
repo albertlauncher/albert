@@ -36,7 +36,7 @@ public:
 private:
     std::vector<std::pair<albert::Extension*,std::shared_ptr<albert::Item>>> items;
     static IconProvider icon_provider;
-    static std::map<QString, QIcon> icon_cache;
+    static std::map<std::pair<QString,QString>, QIcon> icon_cache;
 
 signals:
     void activated(const QString &extension_id,
