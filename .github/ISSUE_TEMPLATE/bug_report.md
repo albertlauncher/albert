@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Please check the existing issues before creating a new one.
+about: Please check the existing issues and discuss your issue in the chats before creating a new one.
 assignees: ManuelSchneid3r
 ---
 
