@@ -11,7 +11,8 @@ RUN yum install -y \
     qt6-qtscxml-devel \
     python3-devel \
     pybind11-devel \
-    muParser-devel
+    muParser-devel \
+    libqalculate-devel
 
 COPY . /src
 WORKDIR /build

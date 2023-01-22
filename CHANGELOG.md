@@ -1,3 +1,8 @@
+v0.19.4 (2023-01-22)
+
+[plugins]
+* [qalc] v1.0 Prototype
+
 v0.19.3 (2023-01-22)
 
 [albert]

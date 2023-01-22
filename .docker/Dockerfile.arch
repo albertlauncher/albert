@@ -6,6 +6,7 @@ RUN pacman -Syu --verbose --noconfirm \
     make \
     gcc \
     muparser \
+    libqalculate \
     qt6-base \
     qt6-svg \
     qt6-scxml \
