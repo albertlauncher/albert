@@ -1,3 +1,26 @@
+v0.19.3 (2023-01-22)
+
+[albert]
+* [md] Use content if long description is a file path
+* Use both, extension and item id, as icon cache key
+* Add standard pixmaps support to iconprovider
+* Workaround terminator bug #702
+
+[plugins]
+* [wbm] Add Nord theme
+* [calc] Respect LC_*
+* [chromium] Fix filewatcher does not watch bookmarks
+* [wbm] Do not exit on missing themes
+* [wbm] Use generic placeholder color for input hint
+* [app:xdg] Add exec key option. Also exclude 'env' in exec keys.
+* [wbm] Fix clipped label
+* [WBM] fix open theme file action
+* [files] Provide trash item
+* [wbm] Fix list view height margins
+
+[python]
+* [trash] Drop. Provided by files plugin now.
+
 v0.19.2 (2023-01-18)
 
 [plugins]
