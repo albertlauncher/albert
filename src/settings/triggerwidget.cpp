@@ -188,6 +188,10 @@ TriggerWidget::TriggerWidget(QueryEngine &qe, ExtensionRegistry &er)
         setCurrentIndex(model->index(current.row(), (int)Column::Trigger));
         blockSignals(false);
     });
+
+    connect(this, &QTableView::activated, this, [this](const QModelIndex &index){
+        edit(model->index(index.row(), (int)Column::Trigger));
+    });
 }
 
 
