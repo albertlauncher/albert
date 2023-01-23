@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2023 Manuel Schneider
 
 #include "albert/extensions/pluginprovider.h"
 #include "albert/logging.h"
@@ -158,14 +158,13 @@ void PluginRegistry::updateIndexItems()
                 state = QString("Error: %1").arg(loader->stateInfo());
             info = QString("[%1, %2] ").arg(enabled, state);
         }
-        actions.emplace_back("info", "Show plugin info", [loader=loader](){ loader->makeInfoWidget()->show(); });
         info.append(loader->metaData().description);
 
         index_items.emplace_back(StandardItem::make(
                                      id,
                                      loader->metaData().name,
                                      info,
-                                     {loader->iconUrl()},
+                                     {":app_icon"},
                                      actions
                                      ), loader->metaData().name);
     }

@@ -1,7 +1,8 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2023 Manuel Schneider
 
 #pragma once
 #include "albert/extensions/pluginprovider.h"
+#include "albert/plugininstance.h"
 #include <vector>
 namespace albert {
 class Frontend;
@@ -47,18 +48,16 @@ public:
     NativePluginLoader(NativePluginProvider *provider, albert::ExtensionRegistry&, const QString &path);
     ~NativePluginLoader();
 
-    albert::PluginInstance *instance();
 
     NativePluginProvider *provider() const override;
     NativePluginMetaData const &metaData() const override;
-    QString iconUrl() const override;
-    QWidget *makeInfoWidget() const override;
+    albert::NativePluginInstance *instance() const override;
     void load() override;
     void unload() override;
 private:
     NativePluginProvider *provider_;
     albert::ExtensionRegistry &registry_;
-    albert::PluginInstance *instance_;
+    albert::NativePluginInstance *instance_;
     NativePluginMetaData metadata_;
 };
 

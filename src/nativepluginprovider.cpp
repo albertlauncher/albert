@@ -1,11 +1,10 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2023 Manuel Schneider
 
 #include "albert/albert.h"
 #include "albert/config.h"
 #include "albert/extensionregistry.h"
 #include "albert/extensions/frontend.h"
 #include "albert/logging.h"
-#include "albert/plugininstance.h"
 #include "nativepluginprovider.h"
 #include <QCoreApplication>
 #include <QDir>
@@ -130,20 +129,11 @@ NativePluginLoader::~NativePluginLoader()
         NativePluginLoader::unload();
 }
 
-PluginInstance *NativePluginLoader::instance() { return instance_; }
+NativePluginInstance *NativePluginLoader::instance() const { return instance_; }
 
 NativePluginProvider *NativePluginLoader::provider() const { return provider_; }
 
 const NativePluginMetaData &NativePluginLoader::metaData() const { return metadata_; }
-
-QString NativePluginLoader::iconUrl() const { return ":cpp"; }
-
-QWidget *NativePluginLoader::makeInfoWidget() const
-{
-    auto w = new PluginInfoWidget(*this);
-    w->layout->addRow("Frontend:", new QLabel(metadata_.frontend ? "True" : "False", w));
-    return w;
-}
 
 void NativePluginLoader::load()
 {
@@ -161,7 +151,7 @@ void NativePluginLoader::load()
         extension_registry = &registry_;
 
         if (auto *instance = loader.instance()){
-            if ((instance_ = dynamic_cast<PluginInstance*>(instance))){
+            if ((instance_ = dynamic_cast<NativePluginInstance*>(instance))){
                 state_ = PluginState::Loaded;
                 state_info_.clear();
                 if (auto *e = dynamic_cast<Extension*>(instance))  // Auto registration
@@ -201,23 +191,23 @@ void NativePluginLoader::unload()
 // ///////////////////////////////////////////////////////////////////////////////////////////// //
 
 
-class PluginInstance::Private
+class NativePluginInstance::Private
 {
 public:
     NativePluginMetaData &metaData = *current_meta_data;
     ExtensionRegistry &registry = *extension_registry;
 };
 
-PluginInstance::PluginInstance(): d(std::make_unique<Private>()) {}
+NativePluginInstance::NativePluginInstance(): d(std::make_unique<Private>()) {}
 
-PluginInstance::~PluginInstance() = default;
+NativePluginInstance::~NativePluginInstance() = default;
 
-ExtensionRegistry &PluginInstance::registry()
+ExtensionRegistry &NativePluginInstance::registry()
 {
     return d->registry;
 }
 
-const NativePluginMetaData &PluginInstance::metaData() const { return d->metaData; }
+const NativePluginMetaData &NativePluginInstance::metaData() const { return d->metaData; }
 
 
 

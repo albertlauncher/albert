@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2023 Manuel Schneider
 
 #pragma once
 #include "../extension.h"
@@ -54,7 +54,7 @@ public:
     virtual void setVisible(bool visible) = 0;
     virtual QString input() const = 0;
     virtual void setInput(const QString&) = 0;
-    virtual QWidget *createSettingsWidget() = 0;
+    virtual QWidget *createFrontendConfigWidget() = 0;
     void setEngine(QueryEngine*);
 protected:
     std::shared_ptr<Query> query(const QString &query) const;

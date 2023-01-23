@@ -4,8 +4,8 @@
  <widget class="QWidget" name="SettingsWindow">
   <property name="minimumSize">
    <size>
-    <width>600</width>
-    <height>400</height>
+    <width>720</width>
+    <height>512</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -59,8 +59,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>598</width>
-            <height>417</height>
+            <width>718</width>
+            <height>477</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_2">

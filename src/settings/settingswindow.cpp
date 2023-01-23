@@ -1,19 +1,16 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2023 Manuel Schneider
 
 #include "albert/extensions/frontend.h"
 #include "albert/logging.h"
 #include "app.h"
-#include "configproviderwidget.h"
 #include "pluginwidget.h"
 #include "settingswindow.h"
 #include "trayicon.h"
 #include "triggerwidget.h"
 #include <QCloseEvent>
-#include <QKeyEvent>
 #include <QGuiApplication>
 #include <QDesktopServices>
 #include <QKeySequenceEdit>
-#include <QStandardPaths>
 using namespace std;
 
 
@@ -64,8 +61,6 @@ SettingsWindow::SettingsWindow(App &app) : ui()
     init_tab_general_autostart();
     init_tab_general_search(app.query_engine);
 
-//    ui.tabs->insertTab(ui.tabs->count()-1, app.plugin_provider.frontend()->createSettingsWidget(), tr("Frontend"));
-    ui.tabs->insertTab(ui.tabs->count()-1, new ConfigProviderWidget(app.extension_registry), tr("Extensions"));
     ui.tabs->insertTab(ui.tabs->count()-1, new TriggerWidget(app.query_engine, app.extension_registry), "Triggers");
     ui.tabs->insertTab(ui.tabs->count()-1, new PluginWidget(app.plugin_registry), "Plugins");
 
@@ -92,7 +87,7 @@ void SettingsWindow::init_tab_general_frontend(NativePluginProvider &plugin_prov
     connect(ui.comboBox_frontend, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, [&plugin_provider](int index) { plugin_provider.setFrontend(index); });
 
-    ui.groupBox_window->layout()->addWidget(plugin_provider.frontend()->createSettingsWidget());
+    ui.groupBox_window->layout()->addWidget(plugin_provider.frontend()->createFrontendConfigWidget());
 }
 
 void SettingsWindow::init_tab_general_terminal(TerminalProvider &terminal_provider)

@@ -1,9 +1,10 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2023 Manuel Schneider
 
 #pragma once
 #include "config.h"
 #include "extension.h"
 #include "export.h"
+#include "extensions/pluginprovider.h"
 #define ALBERT_PLUGIN Q_PLUGIN_METADATA(IID ALBERT_IID FILE "metadata.json")
 class NativePluginMetaData;
 
@@ -17,13 +18,13 @@ class ExtensionRegistry;
 /// inside the QtPlugin by default. This class inherits QObject and injects a
 /// reference to the plugin spec while keeping default constructability.
 /// @note Use the ALBERT_PLUGIN macro for convenience
-class ALBERT_EXPORT PluginInstance : public QObject
+class ALBERT_EXPORT NativePluginInstance : public QObject, public PluginInstance
 {
 public:
-    ~PluginInstance() override;
+    ~NativePluginInstance() override;
 
 protected:
-    PluginInstance();
+    NativePluginInstance();
     const NativePluginMetaData &metaData() const;  /// Plugin metadata
     albert::ExtensionRegistry &registry();  /// Use this to register additional extensions
 
@@ -36,7 +37,7 @@ private:
 /// Convenience class for extension plugins
 /// Inherits extension and implements virtual methods using the metadata
 /// Also plugins of type extension are automatically registered
-class ALBERT_EXPORT ExtensionPlugin : public PluginInstance, virtual public Extension
+class ALBERT_EXPORT ExtensionPlugin : public NativePluginInstance, virtual public Extension
 {
 public:
     QString id() const override;  /// Override using the plugin specification
