@@ -19,7 +19,7 @@ int ItemsModel::rowCount(const QModelIndex &parent) const
 QVariant ItemsModel::data(const QModelIndex &index, int role) const
 {
     if (index.isValid()) {
-        const shared_ptr<Item> &item = items[index.row()].second;
+        const shared_ptr<Item> item = items[index.row()].second;
 
         switch (role) {
             case (int)ItemRoles::TextRole: return item->text();
