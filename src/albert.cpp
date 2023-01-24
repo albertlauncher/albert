@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2023 Manuel Schneider
 
 #include "albert/albert.h"
 #include "albert/config.h"
@@ -137,6 +137,11 @@ static void installSignalHandlers()
 
 static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
 {
+    if (const char *key = "LANGUAGE"; qEnvironmentVariableIsSet(key))
+        QLocale::setDefault(QLocale(qEnvironmentVariable(key)));
+    else if (key = "LANG"; qEnvironmentVariableIsSet(key))
+        QLocale::setDefault(QLocale(qEnvironmentVariable(key)));
+
     auto qapp = make_unique<QApplication>(argc, argv);
     QApplication::setApplicationName("albert");
     QApplication::setApplicationDisplayName("Albert");
