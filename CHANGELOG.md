@@ -1,3 +1,18 @@
+v0.20.0 (2023-01-24)
+
+[albert]
+* Config widget per plugin (v0.20)
+* Make Triggerwidget edit trigger on double click anywhere
+
+[plugins]
+* [chromium:1.4] Add path reset button
+
+[python]
+* [locate] 1.6
+* [docker] 1.3
+
+Lots of polishing around the new UI
+
 v0.19.4 (2023-01-22)
 
 [plugins]
