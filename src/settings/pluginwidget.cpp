@@ -218,7 +218,7 @@ void PluginWidget::onUpdatePluginWidget()
             // Config widget
             if (auto *inst = p.instance(); inst)
                 if (auto *cw = inst->buildConfigWidget())
-                    vb->addWidget(cw);
+                    vb->addWidget(cw, 1); // Strech=1
             break;
     }
 
