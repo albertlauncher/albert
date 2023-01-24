@@ -9,6 +9,7 @@
 #include "triggerwidget.h"
 #include <QCloseEvent>
 #include <QGuiApplication>
+#include <QStandardPaths>
 #include <QDesktopServices>
 #include <QKeySequenceEdit>
 using namespace std;
