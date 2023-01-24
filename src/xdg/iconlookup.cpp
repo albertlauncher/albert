@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2018 Manuel Schneider
+// Copyright (c) 2023 Manuel Schneider
 
 #include <QDebug>
 #include <QDir>
@@ -14,24 +14,20 @@ namespace  {
     QStringList icon_extensions = {"png", "svg", "xpm"};
 }
 
-
-/** ***************************************************************************/
-QString XDG::IconLookup::iconPath(QStringList iconNames, QString themeName) {
+QString XDG::IconLookup::iconPath(QStringList iconNames, QString themeName)
+{
     QString result;
     for ( const QString &iconName : iconNames )
         if ( !(result = instance()->themeIconPath(iconName, themeName)).isNull() )
             return result;
-    return QString();
+    return {};
 }
 
-
-/** ***************************************************************************/
-QString XDG::IconLookup::iconPath(QString iconName, QString themeName){
+QString XDG::IconLookup::iconPath(QString iconName, QString themeName)
+{
     return instance()->themeIconPath(iconName, themeName);
 }
 
-
-/** ***************************************************************************/
 XDG::IconLookup::IconLookup()
 {
     /*
@@ -53,9 +49,6 @@ XDG::IconLookup::IconLookup()
         iconDirs_.append(path);
 }
 
-
-
-/** ***************************************************************************/
 XDG::IconLookup *XDG::IconLookup::instance()
 {
     static IconLookup *instance_ = nullptr;
@@ -64,31 +57,31 @@ XDG::IconLookup *XDG::IconLookup::instance()
     return instance_;
 }
 
-
-
-/** ***************************************************************************/
-QString XDG::IconLookup::themeIconPath(QString iconName, QString themeName){
+QString XDG::IconLookup::themeIconPath(QString iconName, QString themeName)
+{
+    if (iconName.isEmpty())
+        return {};
 
     if (themeName.isEmpty())
         themeName = QIcon::themeName();
 
     // if we have an absolute path, just return it
-    if ( iconName[0]=='/' ){
-        if ( QFile::exists(iconName) )
+    if (iconName[0] == '/') {
+        if (QFile::exists(iconName))
             return iconName;
         else
-            return QString();
+            return {};
     }
 
     // check if it has an extension and strip it
-    for (const QString &ext : icon_extensions)
+    for (const QString &ext: icon_extensions)
         if (iconName.endsWith(QString(".").append(ext)))
             iconName.chop(4);
 
     // Check cache
     try {
         return iconCache_.at(iconName);
-    }  catch (const out_of_range&) { }
+    } catch (const out_of_range &) {}
 
     QStringList checkedThemes;
     QString iconPath;
@@ -103,8 +96,8 @@ QString XDG::IconLookup::themeIconPath(QString iconName, QString themeName){
             return iconCache_.emplace(iconName, iconPath).first->second;
 
     // Now search unsorted
-    for (const QString &iconDir : iconDirs_)
-        for (const QString &ext : icon_extensions)
+    for (const QString &iconDir: iconDirs_)
+        for (const QString &ext: icon_extensions)
             if (QFile(iconPath = QString("%1/%2.%3").arg(iconDir, iconName, ext)).exists())
                 return iconCache_.emplace(iconName, iconPath).first->second;
 
@@ -112,20 +105,17 @@ QString XDG::IconLookup::themeIconPath(QString iconName, QString themeName){
     return iconCache_.emplace(iconName, QString()).first->second;
 }
 
-
-
-/** ***************************************************************************/
-QString XDG::IconLookup::doRecursiveIconLookup(const QString &iconName, const QString &themeName, QStringList *checked){
-
+QString XDG::IconLookup::doRecursiveIconLookup(const QString &iconName, const QString &themeName, QStringList *checked)
+{
     // Exlude multiple scans
     if (checked->contains(themeName))
-        return QString();
+        return {};
     checked->append(themeName);
 
     // Check if theme exists
     QString themeFile = lookupThemeFile(themeName);
     if (themeFile.isNull())
-        return QString();
+        return {};
 
     // Check if icon exists
     QString iconPath;
@@ -134,61 +124,56 @@ QString XDG::IconLookup::doRecursiveIconLookup(const QString &iconName, const QS
         return iconPath;
 
     // Check its parents too
-    for (const QString &parent : ThemeFileParser(themeFile).inherits()){
+    for (const QString &parent: ThemeFileParser(themeFile).inherits()) {
         iconPath = doRecursiveIconLookup(iconName, parent, checked);
         if (!iconPath.isNull())
             return iconPath;
     }
 
-    return QString();
+    return {};
 }
 
-
-
-/** ***************************************************************************/
-QString XDG::IconLookup::doIconLookup(const QString &iconName, const QString &themeFile) {
-
+QString XDG::IconLookup::doIconLookup(const QString &iconName, const QString &themeFile)
+{
     ThemeFileParser themeFileParser(themeFile);
     QDir themeDir = QFileInfo(themeFile).dir();
     QString themeName = themeDir.dirName();
 
     // Get the sizes of the dirs
     vector<pair<QString, int>> dirsAndSizes;
-    for (const QString &subdir : themeFileParser.directories())
+    for (const QString &subdir: themeFileParser.directories())
         dirsAndSizes.push_back(make_pair(subdir, themeFileParser.size(subdir)));
 
     // Sort them by size
     sort(dirsAndSizes.begin(), dirsAndSizes.end(),
-              [](pair<QString, int>  a, pair<QString, int> b) {
-                  return a.second > b.second;
-              });
+         [](pair<QString, int> a, pair<QString, int> b) {
+             return a.second > b.second;
+         });
 
     // Well now search for a file beginning with the greatest
     QString filename;
     QFile file;
-    for (const auto &dirAndSize : dirsAndSizes){
-        for (const QString &iconDir : iconDirs_){
-            for (const QString &ext : icon_extensions){
+    for (const auto &dirAndSize: dirsAndSizes) {
+        for (const QString &iconDir: iconDirs_) {
+            for (const QString &ext: icon_extensions) {
                 filename = QString("%1/%2/%3/%4.%5").arg(iconDir, themeName, dirAndSize.first, iconName, ext);
-                if (file.exists(filename)){
+                if (file.exists(filename)) {
                     return filename;
                 }
             }
         }
     }
 
-    return QString();
+    return {};
 }
 
-
-/** ***************************************************************************/
 QString XDG::IconLookup::lookupThemeFile(const QString &themeName)
 {
     // Lookup themefile
-    for (const QString &iconDir : iconDirs_){
+    for (const QString &iconDir: iconDirs_) {
         QString indexFile = QString("%1/%2/index.theme").arg(iconDir, themeName);
         if (QFile(indexFile).exists())
             return indexFile;
     }
-    return QString();
+    return {};
 }
