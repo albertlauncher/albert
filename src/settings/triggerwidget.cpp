@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2023 Manuel Schneider
 
 #include "albert/extensions/queryhandler.h"
 #include "queryengine.h"
@@ -51,12 +51,12 @@ public:
         handlers.erase(remove(handlers.begin(), handlers.end(), t), handlers.end());
     }
 
-    int rowCount(const QModelIndex &parent) const override
+    int rowCount(const QModelIndex&) const override
     {
         return (int)handlers.size();
     }
 
-    int columnCount(const QModelIndex &parent) const override
+    int columnCount(const QModelIndex&) const override
     {
         return 3;
     }
@@ -137,7 +137,7 @@ public:
         return false;
     }
 
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const override
+    QVariant headerData(int section, Qt::Orientation, int role) const override
     {
         if (role == Qt::DisplayRole)
             switch ((Column)section) {
@@ -183,7 +183,7 @@ TriggerWidget::TriggerWidget(QueryEngine &qe, ExtensionRegistry &er)
     setEditTriggers(QTableView::DoubleClicked|QTableView::SelectedClicked|QTableView::EditKeyPressed);
 
     connect(selectionModel(), &QItemSelectionModel::currentChanged, this,
-            [this](const QModelIndex &current, const QModelIndex &previous){
+            [this](const QModelIndex &current, const QModelIndex&){
         blockSignals(true);
         setCurrentIndex(model->index(current.row(), (int)Column::Trigger));
         blockSignals(false);

@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2023 Manuel Schneider
 
 #include "albert/logging.h"
 #include "albert/extensions/frontend.h"
@@ -11,7 +11,7 @@ using namespace albert;
 IconProvider ItemsModel::icon_provider;
 map<pair<QString /*eid*/, QString /*iid*/>, QIcon> ItemsModel::icon_cache;
 
-int ItemsModel::rowCount(const QModelIndex &parent) const
+int ItemsModel::rowCount(const QModelIndex &) const
 {
     return (int)items.size();
 }

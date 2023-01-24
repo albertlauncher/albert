@@ -24,14 +24,15 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
     -Wshadow \
     -Wstrict-aliasing \
     -pedantic \
-    -Wno-deprecated \
-    -Wno-unused-parameter \
-    -Wno-shadow \
     -Wall \
+    -Werror \
 ")
+#    -Wl,--no-undefined
 #    -Wconversion \
 #    -Weffc++ \
-#    -Werror \
+#-Wno-deprecated \
+#-Wno-unused-parameter \
+#-Wno-shadow \
 
 # Put the binaries in dedicated toplevel directories
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)

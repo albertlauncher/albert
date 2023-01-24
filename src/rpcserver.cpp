@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2023 Manuel Schneider
 
 #include "albert/albert.h"
 #include "albert/logging.h"
@@ -17,23 +17,23 @@ static std::map<QString, std::function<QString(const QString&)>> actions =
             albert::show(param);
             return "Albert set visible.";
         }},
-        {"hide", [](const QString& param){
+        {"hide", [](const QString&){
             albert::hide();
             return "Albert set hidden.";
         }},
-        {"toggle", [](const QString& param){
+        {"toggle", [](const QString&){
             albert::toggle();
             return "Albert visibility toggled.";
         }},
-        {"settings", [](const QString& param){
+        {"settings", [](const QString&){
             albert::showSettings();
             return "Settings opened,";
         }},
-        {"restart", [](const QString& param){
+        {"restart", [](const QString&){
             albert::restart();
             return "Triggered restart.";
         }},
-        {"quit", [](const QString& param){
+        {"quit", [](const QString&){
             albert::quit();
             return "Triggered quit.";
         }}
