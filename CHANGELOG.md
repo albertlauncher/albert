@@ -1,3 +1,12 @@
+v0.20.2 (2023-01-25)
+
+[plugins]
+* [py] Quote cd path
+
+[python]
+* [pacman] v1.6 iid:0.5
+* [timer] v1.4 iid:0.5
+
 v0.20.1 (2023-01-25)
 
 [albert]
