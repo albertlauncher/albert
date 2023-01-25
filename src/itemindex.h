@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022 Manuel Schneider
+// Copyright (c) 2021-2023 Manuel Schneider
 
 #pragma once
 #include "index.h"
@@ -24,14 +24,14 @@ private:
     using Index = uint32_t;
     using Position = uint16_t;
     struct Location {
-        Location(Index index, Position position) : index(index), position(position) {}
+        Location(Index i, Position p) : index(i), position(p) {}
         Index index;
         Position position;
     };
 
     struct StringIndexItem {  // inverted item index, s_idx > ([w_idx], [(i_idx, s_scr)])
-        StringIndexItem(Index item, uint16_t max_match_len)
-            : item(item), max_match_len(max_match_len) {}
+        StringIndexItem(Index i, uint16_t mml)
+            : item(i), max_match_len(mml) {}
         Index item;
         uint16_t max_match_len;
         //Score relevance;
@@ -50,8 +50,8 @@ private:
     };
 
     struct WordMatch {
-        WordMatch(const WordIndexItem &word_index_item, uint match_length)
-            : word_index_item(word_index_item), match_length(match_length){}
+        WordMatch(const WordIndexItem &wii, uint ml)
+            : word_index_item(wii), match_length(ml){}
         const WordIndexItem &word_index_item;
         uint16_t match_length;
     };

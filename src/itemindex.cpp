@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022 Manuel Schneider
+// Copyright (c) 2021-2023 Manuel Schneider
 
 #include "albert/extensions/queryhandler.h"
 #include "itemindex.h"
@@ -31,8 +31,8 @@ static vector<QString> ngrams_for_word(const QString &word, uint n)
     return ngrams;
 }
 
-ItemIndex::ItemIndex(QString separators, bool case_sensitive, uint n, uint error_tolerance_divisor)
-    : case_sensitive(case_sensitive), error_tolerance_divisor(error_tolerance_divisor), separators(std::move(separators)), n(n)
+ItemIndex::ItemIndex(QString sep, bool cs, uint n_, uint etd)
+    : case_sensitive(cs), error_tolerance_divisor(etd), separators(std::move(sep)), n(n_)
 {
 }
 
@@ -172,8 +172,8 @@ std::vector<albert::RankItem> ItemIndex::search(const QString &string, const boo
     else
     {
         struct StringMatch {
-            StringMatch(Index index, Position position, uint16_t match_len)
-                    : index(index), position(position), match_len(match_len){}
+            StringMatch(Index i, Position p, uint16_t ml)
+                    : index(i), position(p), match_len(ml){}
             Index index; Position position; uint16_t match_len;
         };
 

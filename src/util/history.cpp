@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2023 Manuel Schneider
 
 #include "albert/util/history.h"
 #include "albert/logging.h"
@@ -6,7 +6,7 @@
 #include <QTextStream>
 using namespace albert;
 
-History::History(const QString& file_path) : file_path(file_path)
+History::History(const QString& p) : file_path(p)
 {
     QFile f(file_path);
     if (f.open(QIODevice::ReadOnly)){

@@ -61,8 +61,8 @@ static QStringList defaultPaths()
     return default_paths;
 }
 
-NativePluginLoader::NativePluginLoader(NativePluginProvider *provider, ExtensionRegistry &registry, const QString &path)
-    : PluginLoader(path), provider_(provider), registry_(registry)
+NativePluginLoader::NativePluginLoader(NativePluginProvider *provider, ExtensionRegistry &registry, const QString &p)
+    : PluginLoader(p), provider_(provider), registry_(registry)
 {
     QPluginLoader loader(path);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2023 Manuel Schneider
 
 #include "albert/extensions/queryhandler.h"
 #include "globalqueryhandlerprivate.h"
@@ -19,8 +19,8 @@ bool QueryHandler::allowTriggerRemap() const { return true; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-RankItem::RankItem(shared_ptr<Item> item, Score score):
-    item(std::move(item)), score(score) {}
+RankItem::RankItem(shared_ptr<Item> i, Score s):
+    item(std::move(i)), score(s) {}
 
 GlobalQueryHandler::Query::~Query() = default;
 
@@ -44,8 +44,8 @@ void GlobalQueryHandler::handleQuery(QueryHandler::Query &query) const
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-IndexItem::IndexItem(std::shared_ptr<Item> item, QString string):
-    item(::move(item)), string(::move(string)){}
+IndexItem::IndexItem(std::shared_ptr<Item> i, QString s):
+    item(::move(i)), string(::move(s)){}
 
 IndexQueryHandler::IndexQueryHandler() : d(new IndexQueryHandlerPrivate(this)) {}
 

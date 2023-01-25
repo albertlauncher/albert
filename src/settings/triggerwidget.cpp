@@ -18,28 +18,29 @@ enum class Column {
 class TriggerModel : public QAbstractTableModel, ExtensionWatcher<QueryHandler>
 {
 public:
-    struct Entry {
+    struct Entry
+    {
         QueryHandler *handler;
         QString trigger;
         bool enabled;
     };
-    vector<QueryHandler*> handlers;
+    vector<QueryHandler *> handlers;
     QueryEngine &engine;
 
-    explicit TriggerModel(QueryEngine &engine, ExtensionRegistry &registry):
-        ExtensionWatcher<QueryHandler>(registry), engine(engine)
+    explicit TriggerModel(QueryEngine &qe, ExtensionRegistry &er) :
+            ExtensionWatcher<QueryHandler>(er), engine(qe)
     {
-        for (auto &[id,handler] : registry.extensions<QueryHandler>())
+        for (auto &[id, handler]: registry.extensions<QueryHandler>())
             handlers.emplace_back(handler);
         ::sort(begin(handlers), end(handlers),
-               [](const auto& a,const auto& b){ return a->id() < b->id(); });
+               [](const auto &a, const auto &b) { return a->id() < b->id(); });
 
     }
 
     void onAdd(QueryHandler *t) override
     {
         auto it = lower_bound(begin(handlers), end(handlers), t,
-                              [](const auto& a,const auto& b){ return a->id() < b->id(); });
+                              [](const auto &a, const auto &b) { return a->id() < b->id(); });
         auto i = std::distance(begin(handlers), it);
         beginInsertRows(QModelIndex(), i, i);
         handlers.insert(it, t);
@@ -51,27 +52,27 @@ public:
         handlers.erase(remove(handlers.begin(), handlers.end(), t), handlers.end());
     }
 
-    int rowCount(const QModelIndex&) const override
+    int rowCount(const QModelIndex &) const override
     {
-        return (int)handlers.size();
+        return (int) handlers.size();
     }
 
-    int columnCount(const QModelIndex&) const override
+    int columnCount(const QModelIndex &) const override
     {
         return 3;
     }
 
     QVariant data(const QModelIndex &index, int role) const override
     {
-        if (index.column() == (int)Column::Name){
+        if (index.column() == (int) Column::Name) {
             if (role == Qt::DisplayRole)
                 return handlers[index.row()]->name();
 
-        } else if (index.column() == (int)Column::Description){
+        } else if (index.column() == (int) Column::Description) {
             if (role == Qt::DisplayRole)
                 return handlers[index.row()]->description();
 
-        } else if (index.column() == (int)Column::Trigger){
+        } else if (index.column() == (int) Column::Trigger) {
             auto &handler = handlers[index.row()];
             if (role == Qt::DisplayRole) {
                 return QString(engine.handlerConfig().at(handler).trigger).replace(" ", "•");  // 
@@ -90,11 +91,11 @@ public:
                 if (!sl.isEmpty())
                     return sl.join(" ");
 
-            }else if (role == Qt::CheckStateRole){
+            } else if (role == Qt::CheckStateRole) {
                 return engine.handlerConfig().at(handler).enabled ? Qt::Checked : Qt::Unchecked;
 
             } else if (role == Qt::FontRole) {
-                if (!handler->allowTriggerRemap()){
+                if (!handler->allowTriggerRemap()) {
                     QFont f;
                     f.setItalic(true);
                     return f;
@@ -122,14 +123,14 @@ public:
 
                 engine.setTrigger(handlers[idx.row()], value.toString());
                 emit dataChanged(index(0, (int) Column::Trigger),
-                                 index((int)handlers.size(), (int) Column::Trigger),
+                                 index((int) handlers.size(), (int) Column::Trigger),
                                  {Qt::DisplayRole});
                 return true;
             } else if (role == Qt::CheckStateRole) {
                 engine.setEnabled(handlers[idx.row()],
                                   static_cast<Qt::CheckState>(value.toUInt()) == Qt::Checked);
                 emit dataChanged(index(0, (int) Column::Trigger),
-                                 index((int)handlers.size(), (int) Column::Trigger),
+                                 index((int) handlers.size(), (int) Column::Trigger),
                                  {Qt::DisplayRole});
                 return true;
             }
@@ -140,26 +141,30 @@ public:
     QVariant headerData(int section, Qt::Orientation, int role) const override
     {
         if (role == Qt::DisplayRole)
-            switch ((Column)section) {
-                case Column::Name: return "Extension";
-                case Column::Trigger: return "Trigger";
-                case Column::Description: return "Description";
+            switch ((Column) section) {
+                case Column::Name:
+                    return "Extension";
+                case Column::Trigger:
+                    return "Trigger";
+                case Column::Description:
+                    return "Description";
             }
         return {};
     }
 
     Qt::ItemFlags flags(const QModelIndex &index) const override
     {
-        switch ((Column)index.column()) {
+        switch ((Column) index.column()) {
             case Column::Name:
             case Column::Description:
-                return Qt::ItemIsEnabled|Qt::ItemIsSelectable;
+                return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
             case Column::Trigger:
                 if (handlers[index.row()]->allowTriggerRemap())
-                    return Qt::ItemIsEnabled|Qt::ItemIsSelectable|Qt::ItemIsUserCheckable|Qt::ItemIsEditable;
+                    return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEditable;
                 else
-                    return Qt::ItemIsEnabled|Qt::ItemIsSelectable|Qt::ItemIsUserCheckable;
-            default: return {};
+                    return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable;
+            default:
+                return {};
         }
     }
 };

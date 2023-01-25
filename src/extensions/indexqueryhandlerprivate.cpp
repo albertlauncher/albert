@@ -4,7 +4,7 @@
 using namespace std;
 using namespace albert;
 
-IndexQueryHandlerPrivate::IndexQueryHandlerPrivate(IndexQueryHandler *q) : q(q) {}
+IndexQueryHandlerPrivate::IndexQueryHandlerPrivate(IndexQueryHandler *q_) : q(q_) {}
 
 IndexQueryHandlerPrivate::~IndexQueryHandlerPrivate() = default;
 

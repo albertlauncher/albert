@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2023 Manuel Schneider
 
 #pragma once
 #include "../export.h"
@@ -11,7 +11,7 @@ template<class T>
 class ALBERT_EXPORT ExtensionWatcher  /// Non-QObject extension registry observer
 {
 public:
-    explicit ExtensionWatcher(albert::ExtensionRegistry &registry) : registry(registry)
+    explicit ExtensionWatcher(albert::ExtensionRegistry &er) : registry(er)
     {
         conn_r = QObject::connect(&registry, &ExtensionRegistry::added,
                                   [this](Extension *e){ if (T *t = dynamic_cast<T*>(e)) onAdd(t); });

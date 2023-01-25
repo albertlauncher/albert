@@ -18,7 +18,7 @@ using namespace std;
 class QHotKeyEdit : public QKeySequenceEdit
 {
 public:
-    QHotKeyEdit(Hotkey &hotkey) : hotkey(hotkey)
+    QHotKeyEdit(Hotkey &hk) : hotkey(hk)
     {
         if (!hotkey.isPlatformSupported()){
             setToolTip("This platform does not support hotkeys.");

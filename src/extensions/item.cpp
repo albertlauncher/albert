@@ -3,10 +3,10 @@
 #include "albert/extensions/item.h"
 using namespace albert;
 
-Action::Action(QString id, QString text, std::function<void()> function):
-    id(std::move(id)),
-    text(std::move(text)),
-    function(std::move(function)){}
+Action::Action(QString i, QString t, std::function<void()> f):
+    id(std::move(i)),
+    text(std::move(t)),
+    function(std::move(f)){}
 
 QString Item::inputActionText() const { return {}; }
 

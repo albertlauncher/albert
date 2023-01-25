@@ -13,7 +13,7 @@ using chrono::duration_cast;
 using chrono::milliseconds;
 using chrono::system_clock;
 
-PluginRegistry::PluginRegistry(ExtensionRegistry &registry) : ExtensionWatcher<PluginProvider>(registry)
+PluginRegistry::PluginRegistry(ExtensionRegistry &er) : ExtensionWatcher<PluginProvider>(er)
 {
 }
 

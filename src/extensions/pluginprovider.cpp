@@ -5,7 +5,7 @@
 using namespace albert;
 
 
-PluginLoader::PluginLoader(const QString &path) : path(path), state_(PluginState::Invalid) {}
+PluginLoader::PluginLoader(const QString &p) : path(p), state_(PluginState::Invalid) {}
 
 PluginLoader::~PluginLoader() = default;
 

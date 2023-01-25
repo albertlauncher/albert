@@ -10,7 +10,7 @@ std::shared_mutex GlobalQueryHandlerPrivate::m;
 std::map<std::pair<QString,QString>,double> GlobalQueryHandlerPrivate::usage_scores;
 double GlobalQueryHandlerPrivate::usage_weight;
 
-GlobalQueryHandlerPrivate::GlobalQueryHandlerPrivate(GlobalQueryHandler *q) : q(q) {}
+GlobalQueryHandlerPrivate::GlobalQueryHandlerPrivate(GlobalQueryHandler *q_) : q(q_) {}
 
 GlobalQueryHandlerPrivate::~GlobalQueryHandlerPrivate() = default;
 
