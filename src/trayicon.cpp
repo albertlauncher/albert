@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2023 Manuel Schneider
 
 #include <QApplication>
 #include <QSettings>
@@ -18,10 +18,11 @@ TrayIcon::TrayIcon() {
     if (!supportsMessages())
         WARN << "Desktop notifications are not supported on this system";
 
-    if (auto icon = XDG::IconLookup::iconPath({"albert-tray", "albert"}); icon.isNull())
-        setIcon(qApp->windowIcon());
-    else
-        setIcon(QPixmap(icon)); // https://bugreports.qt.io/browse/QTBUG-53550
+    // https://bugreports.qt.io/browse/QTBUG-53550
+    QPixmap pm = XDG::IconLookup::iconPath("albert-tray");
+    if (pm.isNull())
+        pm = QPixmap(":app_tray_icon");
+    setIcon(pm);
 
     setVisible(QSettings(qApp->applicationName()).value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool());
 

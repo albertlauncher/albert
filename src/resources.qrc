@@ -7,5 +7,6 @@
         <file alias="app_icon">../resources/albert.svg</file>
         <file alias="gear">../resources/gear.svg</file>
         <file alias="unknown">../resources/unknown.svg</file>
+        <file alias="app_tray_icon">../resources/albert-tray.svg</file>
     </qresource>
 </RCC>
