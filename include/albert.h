@@ -6,7 +6,6 @@
 #include "albert/export.h"
 #include "albert/extension.h"
 #include "albert/extensionregistry.h"
-#include "albert/extensions/configwidgetprovider.h"
 #include "albert/extensions/frontend.h"
 #include "albert/extensions/pluginprovider.h"
 #include "albert/extensions/queryhandler.h"
