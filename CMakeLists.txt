@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19)  # JSON support, Ubuntu 22.04
 
-project(albert VERSION 0.20.0)
+project(albert VERSION 0.20.1)
 
 include(GNUInstallDirs)
 
@@ -25,14 +25,16 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
     -Wstrict-aliasing \
     -pedantic \
     -Wall \
-    -Werror \
 ")
-#    -Wl,--no-undefined
+#    -Werror \
+#    -Wshadow-field-in-constructor \
+#    -Wno-unused-parameter \
+#    -Wno-shadow \
+#    -Wl,-undefined \
+#    -Weffc++
 #    -Wconversion \
-#    -Weffc++ \
-#-Wno-deprecated \
-#-Wno-unused-parameter \
-#-Wno-shadow \
+#    -Wno-deprecated \
+#string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,-undefined,error")  #macosonly
 
 # Put the binaries in dedicated toplevel directories
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)

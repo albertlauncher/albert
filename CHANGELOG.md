@@ -1,3 +1,18 @@
+v0.20.1 (2023-01-25)
+
+[albert]
+* Fix pedantic warnings
+* BW tray
+* Use env vars to set default locale
+* Strech config widget
+* Fix segfaults on empty icon name lookup
+
+[plugins]
+* Lots of UI polishing
+* [qalc] Fix precision probles
+* [websearch] Add google maps to defaults
+* [datetime] Use default locale
+
 v0.20.0 (2023-01-24)
 
 [albert]
