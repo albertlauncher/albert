@@ -186,7 +186,7 @@ void PluginWidget::onUpdatePluginWidget()
 
     // id, version, license, maintainers
     QString maint = p.metaData().maintainers.isEmpty()
-                    ? "<span style=\"color:#a07070;\">This plugin is looking for a maintainer!</span>"
+                    ? "<span style=\"color:#c04040;\">This plugin is looking for a maintainer!</span>"
                     : "Maintained by " + p.metaData().maintainers.join(", ");
     l = new QLabel(QString("<span style=\"font-size:9pt;font-style:italic;color:#808080;\"><a href=\"%1\">%2 v%3</a> %4. %5</span>")
                            .arg(p.metaData().url, p.metaData().id, p.metaData().version, p.metaData().license, maint));
