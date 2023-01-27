@@ -36,7 +36,6 @@ void PluginRegistry::enable(const QString &id, bool enable)
         if (isEnabled(id) != enable){
             QSettings(qApp->applicationName()).setValue(QString("%1/enabled").arg(id), enable);
             load(id, enable);
-            updateIndexItems();
         }
     } else
         WARN << "En-/Disabled nonexistent id:" << id;
@@ -63,7 +62,6 @@ void PluginRegistry::load(const QString &id, bool load)
                 } else
                     WARN << QString("[%1ms] Failed unloading '%2': %3")
                                 .arg(duration).arg(loader->metaData().id, loader->stateInfo());
-                updateIndexItems();
             } else
                 WARN << "Plugin is already loaded:" << id ;
             break;
@@ -80,7 +78,6 @@ void PluginRegistry::load(const QString &id, bool load)
                 } else
                     WARN << QString("[%1ms] Failed loading '%2': %3")
                                 .arg(duration).arg(loader->metaData().id, loader->stateInfo());
-                updateIndexItems();
             } else
                 WARN << "Plugin is already unloaded:" << id ;
             break;
@@ -90,11 +87,13 @@ void PluginRegistry::load(const QString &id, bool load)
     }
 }
 
-QString PluginRegistry::id() const { return "plugins"; }
+QString PluginRegistry::id() const { return "pluginregistry"; }
 
 QString PluginRegistry::name() const { return "Plugins"; }
 
 QString PluginRegistry::description() const { return "Manage plugins"; }
+
+QString PluginRegistry::defaultTrigger() const { return QStringLiteral("plug "); }
 
 void PluginRegistry::onAdd(PluginProvider *pp)
 {
@@ -108,7 +107,6 @@ void PluginRegistry::onAdd(PluginProvider *pp)
         } else
             INFO << "Plugin" << id << "shadowed:" << loader->path;
     }
-    updateIndexItems();
     emit pluginsChanged();
 }
 
@@ -122,31 +120,48 @@ void PluginRegistry::onRem(PluginProvider *pp)
             it = plugins_.erase(it);
         } else ++it;
     }
-    updateIndexItems();
     emit pluginsChanged();
 }
 
-void PluginRegistry::updateIndexItems()
+void PluginRegistry::handleQuery(Query &query) const
 {
-    std::vector<albert::IndexItem> index_items;
-
     for (const auto &[id, loader] : plugins_){  // these should all be valid
+
+        if (!id.startsWith(query.string(), Qt::CaseInsensitive))
+            continue;
 
         Actions actions;
         QString info;
 
+        auto mutable_this = const_cast<PluginRegistry*>(this);
+
         if (loader->metaData().user){
             if (isEnabled(id))
-                actions.emplace_back("disable", "Disable plugin", [this, id=id](){ enable(id, false); });
+                actions.emplace_back(
+                    "disable", "Disable plugin",
+                    [mutable_this, id=id]() { mutable_this->enable(id, false); }
+                );
             else
-                actions.emplace_back("enable", "Enable plugin", [this, id=id](){ enable(id); });
+                actions.emplace_back(
+                    "enable", "Enable plugin",
+                    [mutable_this, id=id](){ mutable_this->enable(id); }
+                    );
 
             if (loader->state() == PluginState::Loaded){
-                actions.emplace_back("unload", "Unload plugin", [this, id=id](){ load(id, false); });
-                actions.emplace_back("reload", "Reload plugin", [this, id=id](){ load(id, false); load(id, true); });
+                actions.emplace_back(
+                    "unload", "Unload plugin",
+                    [mutable_this, id=id](){ mutable_this->load(id, false); }
+                );
+                actions.emplace_back(
+                    "reload", "Reload plugin",
+                    [mutable_this, id=id](){ mutable_this->load(id, false); mutable_this->load(id, true); }
+                );
             }
             else  // by contract only unloaded
-                actions.emplace_back("load", "Load plugin", [this, id=id](){ load(id); });
+                actions.emplace_back(
+                    "load", "Load plugin",
+                    [mutable_this, id=id](){ mutable_this->load(id); }
+                );
 
             QString enabled = isEnabled(id) ? "Enabled" : "Disabled";
             QString state;
@@ -160,15 +175,16 @@ void PluginRegistry::updateIndexItems()
         }
         info.append(loader->metaData().description);
 
-        index_items.emplace_back(StandardItem::make(
-                                     id,
-                                     loader->metaData().name,
-                                     info,
-                                     {":app_icon"},
-                                     actions
-                                     ), loader->metaData().name);
+        query.add(
+            StandardItem::make(
+                id,
+                loader->metaData().name,
+                info,
+                {":app_icon"},
+                actions
+            )
+        );
     }
 
-    setIndexItems(::move(index_items));
 }
 

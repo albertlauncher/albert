@@ -11,7 +11,7 @@ class PluginLoader;
 }
 
 class PluginRegistry : public QObject,
-                       public albert::IndexQueryHandler,
+                       public albert::QueryHandler,
                        public albert::ExtensionWatcher<albert::PluginProvider>
 {
 public:
@@ -25,9 +25,10 @@ protected:
     QString id() const override;
     QString name() const override;
     QString description() const override;
+    QString defaultTrigger() const override;
     void onAdd(albert::PluginProvider*) override;
     void onRem(albert::PluginProvider*) override;
-    void updateIndexItems() override;
+    void handleQuery(Query &) const override;
 
 private:
     std::map<QString, albert::PluginLoader*> plugins_;
