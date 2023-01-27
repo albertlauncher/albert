@@ -209,7 +209,7 @@ void PluginWidget::onUpdatePluginWidget()
         case PluginState::Unloaded:
             // Unloaded info
             if (!p.stateInfo().isEmpty()){
-                l = new QLabel(QString("<span style=\"color:red;\">%1</span>").arg(p.stateInfo()));
+                l = new QLabel(p.stateInfo());
                 l->setWordWrap(true);
                 vb->addWidget(l);
             }
