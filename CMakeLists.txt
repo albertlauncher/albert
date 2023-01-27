@@ -25,6 +25,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
     -Wstrict-aliasing \
     -pedantic \
     -Wall \
+    -Wno-inline \
 ")
 #    -Werror \
 #    -Wshadow-field-in-constructor \
