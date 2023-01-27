@@ -22,7 +22,9 @@ TrayIcon::TrayIcon() {
     QPixmap pm = XDG::IconLookup::iconPath("albert-tray");
     if (pm.isNull())
         pm = QPixmap(":app_tray_icon");
-    setIcon(pm);
+    QIcon icon(pm);
+    icon.setIsMask(true);
+    setIcon(icon);
 
     setVisible(QSettings(qApp->applicationName()).value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool());
 
