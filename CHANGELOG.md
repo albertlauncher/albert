@@ -1,3 +1,18 @@
+v0.20.3 (2023-01-27)
+
+[albert]
+* Remove plugin registry from global search
+* Add -Wno-inline
+* Fix line breaks in errors displayed in settings
+* Tray icon isMask
+
+[plugins]
+* [platform_mac] 1.0
+* [py] Add button to open the dependency dir
+
+[python]
+* [pint] 1.0 (currency converter)
+
 v0.20.2 (2023-01-25)
 
 [plugins]
