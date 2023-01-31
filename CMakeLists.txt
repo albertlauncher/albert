@@ -103,6 +103,8 @@ set (LIB_SRC
     src/settings/settingswindow.h
     src/settings/triggerwidget.cpp
     src/settings/triggerwidget.h
+    src/telemetry.cpp
+    src/telemetry.h
     src/terminalprovider.cpp
     src/terminalprovider.h
     src/trayicon.cpp

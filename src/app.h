@@ -3,14 +3,15 @@
 #pragma once
 #include "albert/extensionregistry.h"
 #include "albert/extensions/queryhandler.h"
+#include "hotkey.h"
 #include "nativepluginprovider.h"
 #include "pluginregistry.h"
 #include "queryengine.h"
 #include "rpcserver.h"
 #include "settings/settingswindow.h"
+#include "telemetry.h"
 #include "terminalprovider.h"
 #include "trayicon.h"
-#include "hotkey.h"
 #include <QPointer>
 
 class App : public albert::IndexQueryHandler
@@ -36,4 +37,5 @@ public:
     TrayIcon tray_icon;
     QPointer<SettingsWindow> settings_window;
     Hotkey hotkey;
+    Telemetry telemetry;
 };
