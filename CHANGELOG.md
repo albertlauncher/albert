@@ -1,3 +1,14 @@
+v0.20.4 (2023-01-31)
+
+[albert]
+* Reintroduce telemetry
+* Fix disfunctional link in settings
+[python]
+* [tex_to_unicode] py interface 0.5
+* [vpn] 1.1 (iid: 0.5)
+* [yt] v1.3 create tmp dirs lazily
+* [jetbrains] 1.0 (iid:0.5)
+
 v0.20.3 (2023-01-27)
 
 [albert]
