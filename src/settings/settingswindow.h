@@ -29,6 +29,7 @@ private:
     void init_tab_general_autostart();
     void init_tab_general_search(QueryEngine&);
     void init_tab_about();
+
     void keyPressEvent(QKeyEvent * event) override;
 
     Ui::SettingsWindow ui;

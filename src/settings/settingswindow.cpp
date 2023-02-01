@@ -180,4 +180,6 @@ void SettingsWindow::keyPressEvent(QKeyEvent *event)
 {
     if (event->modifiers() == Qt::NoModifier && event->key() == Qt::Key_Escape)
         close();
+    else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_W)
+        close();
 }
