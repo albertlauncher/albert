@@ -37,8 +37,8 @@ public:
     double memoryDecay() const;
     void setMemoryDecay(double);
 
-    double memoryWeight() const;
-    void setMemoryWeight(double);
+    bool prioritizePerfectMatch() const;
+    void setPrioritizePerfectMatch(bool);
 
     const QString &separators() const;
     void setSeparators(const QString &);
@@ -65,5 +65,5 @@ private:
     bool fuzzy_;
     QString separators_;
     double memory_decay_;
-    double memory_weight_;
+    bool prioritize_perfect_match_;
 };

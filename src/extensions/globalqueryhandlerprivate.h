@@ -15,13 +15,14 @@ public:
     ~GlobalQueryHandlerPrivate();
     albert::GlobalQueryHandler * q;
 
-    static void setWeight(double weight);
-    static void setScores(std::map<std::pair<QString,QString>,double> scores);
+    static void setPrioritizePerfectMatch(bool val);
+    static void setScores(std::map<std::pair<QString,QString>,albert::RankItem::Score> scores);
+
     void applyUsageScores(std::vector<albert::RankItem> &rank_items) const;
     std::vector<albert::RankItem> handleQuery(const albert::GlobalQueryHandler::Query&) const;
 
 private:
     static std::shared_mutex m;
-    static std::map<std::pair<QString,QString>,double> usage_scores;
-    static double usage_weight;
+    static std::map<std::pair<QString,QString>,albert::RankItem::Score> usage_scores;
+    static bool prio_perfect_match;
 };

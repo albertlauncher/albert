@@ -68,7 +68,7 @@ void Telemetry::trySendReport()
         QNetworkReply* reply = manager->put(request, QJsonDocument(object).toJson(QJsonDocument::Compact));
         QObject::connect(reply, &QNetworkReply::finished, [reply](){
             if (reply->error() == QNetworkReply::NoError){
-                INFO << "Report sent.";
+                DEBG << "Report sent.";
                 QSettings(qApp->applicationName()).setValue(CFG_LAST_REPORT, QDateTime::currentSecsSinceEpoch());
             }
             reply->deleteLater();

@@ -261,65 +261,23 @@ li.checked::marker { content: &quot;\2612&quot;; }
                </widget>
               </item>
               <item row="2" column="0">
-               <widget class="QLabel" name="label_weight">
+               <widget class="QLabel" name="label_6">
                 <property name="text">
-                 <string>Usage weight</string>
-                </property>
-                <property name="buddy">
-                 <cstring>slider_weight</cstring>
+                 <string>Prioritize perfect matches</string>
                 </property>
                </widget>
               </item>
               <item row="2" column="1">
-               <layout class="QHBoxLayout" name="horizontalLayout">
-                <item>
-                 <widget class="QLabel" name="label">
-                  <property name="text">
-                   <string>0%</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QSlider" name="slider_weight">
-                  <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The weight of the usage history while sorting the results. Note that setting the edge cases 0%/100% ignore usage/match scores entirely.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                  </property>
-                  <property name="minimum">
-                   <number>0</number>
-                  </property>
-                  <property name="maximum">
-                   <number>100</number>
-                  </property>
-                  <property name="singleStep">
-                   <number>10</number>
-                  </property>
-                  <property name="value">
-                   <number>50</number>
-                  </property>
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="tickPosition">
-                   <enum>QSlider::TicksBelow</enum>
-                  </property>
-                  <property name="tickInterval">
-                   <number>10</number>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="label_2">
-                  <property name="text">
-                   <string>100%</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
+               <widget class="QCheckBox" name="checkBox_prioritizePerfectMatch">
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
               </item>
               <item row="3" column="0">
                <widget class="QLabel" name="label_decay">
                 <property name="text">
-                 <string>Usage decay</string>
+                 <string>Memory behavior</string>
                 </property>
                 <property name="buddy">
                  <cstring>slider_decay</cstring>
@@ -329,19 +287,19 @@ li.checked::marker { content: &quot;\2612&quot;; }
               <item row="3" column="1">
                <layout class="QHBoxLayout" name="horizontalLayout_3">
                 <item>
-                 <widget class="QLabel" name="label_3">
+                 <widget class="QLabel" name="label_4">
                   <property name="toolTip">
-                   <string>Forget fast. Most recently used.</string>
+                   <string>Most frequently used. Remember everything. </string>
                   </property>
                   <property name="text">
-                   <string>50%</string>
+                   <string>MFU</string>
                   </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QSlider" name="slider_decay">
                   <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The decay of the usage history. This is about the weights past activation get. Without decay the search behaves as in a most frequently uses fashion, while a decay of 50% will always prefer the most recently used item. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The decay the weights past activation get. Without decay the search remembers everything and behaves in a most frequently used fashion, while a high decay will prefer recently used item. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="minimum">
                    <number>50</number>
@@ -356,13 +314,13 @@ li.checked::marker { content: &quot;\2612&quot;; }
                    <number>5</number>
                   </property>
                   <property name="sliderPosition">
-                   <number>75</number>
+                   <number>55</number>
                   </property>
                   <property name="orientation">
                    <enum>Qt::Horizontal</enum>
                   </property>
                   <property name="invertedAppearance">
-                   <bool>false</bool>
+                   <bool>true</bool>
                   </property>
                   <property name="tickPosition">
                    <enum>QSlider::TicksBelow</enum>
@@ -373,12 +331,12 @@ li.checked::marker { content: &quot;\2612&quot;; }
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLabel" name="label_4">
+                 <widget class="QLabel" name="label_3">
                   <property name="toolTip">
-                   <string>Remember everything. Most frequently used.</string>
+                   <string>Most recently used. Forget fast. </string>
                   </property>
                   <property name="text">
-                   <string>0%</string>
+                   <string>MRU</string>
                   </property>
                  </widget>
                 </item>

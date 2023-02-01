@@ -16,8 +16,8 @@ using namespace albert;
 using namespace std;
 static const char *CFG_MEMORY_DECAY = "memoryDecay";
 static const double DEF_MEMORY_DECAY = 0.5;
-static const char *CFG_MEMORY_WEIGHT = "memoryWeight";
-static const double DEF_MEMORY_WEIGHT = 0.98;
+static const char *CFG_PRIO_PERFECT = "prioritize_perfect_match";
+static const bool DEF_PRIO_PERFECT = true;
 static const char *CFG_TRIGGER = "trigger";
 static const char *CFG_TRIGGER_ENABLED = "trigger_enabled";
 static const uint DEF_ERROR_TOLERANCE_DIVISOR = 4;
@@ -39,10 +39,10 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry):
     fuzzy_ = s.value(CFG_FUZZY, DEF_FUZZY).toBool();
     separators_ = s.value(CFG_SEPARATORS, DEF_SEPARATORS).toString();
     memory_decay_ = s.value(CFG_MEMORY_DECAY, DEF_MEMORY_DECAY).toDouble();
-    memory_weight_ = s.value(CFG_MEMORY_WEIGHT, DEF_MEMORY_WEIGHT).toDouble();
+    prioritize_perfect_match_ = s.value(CFG_PRIO_PERFECT, DEF_PRIO_PERFECT).toBool();
 
     updateUsageScore();
-    GlobalQueryHandlerPrivate::setWeight(memory_weight_);
+    GlobalQueryHandlerPrivate::setPrioritizePerfectMatch(prioritize_perfect_match_);
 
     for (auto &[id, handler] : registry.extensions<QueryHandler>()) {
         query_handlers_.insert(handler);
@@ -55,7 +55,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry):
     updateActiveTriggers();
 }
 
-std::shared_ptr<albert::Query> QueryEngine::query(const QString &query_string)
+shared_ptr<albert::Query> QueryEngine::query(const QString &query_string)
 {
     shared_ptr<::Query> query;
 
@@ -135,12 +135,12 @@ void QueryEngine::onRem(FallbackHandler *handler)
     fallback_handlers_.erase(handler);
 }
 
-const std::map<QueryHandler*,QueryEngine::HandlerConfig> &QueryEngine::handlerConfig() const
+const map<QueryHandler*,QueryEngine::HandlerConfig> &QueryEngine::handlerConfig() const
 {
     return query_handler_configs_;
 }
 
-const std::map<QString, QueryHandler *> &QueryEngine::activeTriggers() const
+const map<QString, QueryHandler *> &QueryEngine::activeTriggers() const
 {
     return active_triggers_;
 }
@@ -164,27 +164,33 @@ void QueryEngine::setTrigger(QueryHandler *handler, const QString& trigger)
 
 void QueryEngine::updateUsageScore() const
 {
-    std::map<std::pair<QString,QString>,double> usage_scores;
-    std::vector<Activation> activations = UsageDatabase::activations();
-    double max_score = 0;
+    vector<Activation> activations = UsageDatabase::activations();
+
+    // Compute usage weights
+    map<pair<QString,QString>,double> usage_weights;
     for (int i = 0, k = (int)activations.size(); i < (int)activations.size(); ++i, --k){
         auto activation = activations[i];
-        auto memory_weight = pow(memory_decay_, k);
-
-        if (const auto &[it, success] = usage_scores.emplace(make_pair(activation.extension_id,
-                                                                       activation.item_id),
-                                                             memory_weight); !success){
-            it->second += memory_weight;
-            if (max_score < it->second)
-                max_score = it->second;
-        } else
-        if (max_score < memory_weight)
-            max_score = memory_weight;
+        auto weight = pow(memory_decay_, k);
+        if (const auto &[it, success] =
+            usage_weights.emplace(make_pair(activation.extension_id, activation.item_id), weight);
+            !success)
+            it->second += weight;
     }
 
-    // Normalize
-    for (auto &[ids, score] : usage_scores)
-        score = score/max_score;
+    // Invert the list. Results in ordered by rank map
+    map<double,vector<pair<QString,QString>>> weight_items;
+    for (const auto &[ids, weight] : usage_weights)
+        weight_items[weight].emplace_back(ids);
+
+    // Distribute scores linearly over the interval preserving the order
+    map<pair<QString,QString>,RankItem::Score> usage_scores;
+    double rank = 0.0;
+    for (const auto &[weight, vids] : weight_items){
+        RankItem::Score score = rank / (double)weight_items.size() * RankItem::MAX_SCORE;
+        for (const auto &ids : vids)
+            usage_scores.emplace(ids, score);
+        rank += 1.0;
+    }
 
     GlobalQueryHandlerPrivate::setScores(usage_scores);
 }
@@ -202,16 +208,16 @@ void QueryEngine::setMemoryDecay(double val)
     updateUsageScore();
 }
 
-double QueryEngine::memoryWeight() const
+bool QueryEngine::prioritizePerfectMatch() const
 {
-    return memory_weight_;
+    return prioritize_perfect_match_;
 }
 
-void QueryEngine::setMemoryWeight(double val)
+void QueryEngine::setPrioritizePerfectMatch(bool val)
 {
-    memory_weight_ = val;
-    QSettings(qApp->applicationName()).setValue(CFG_MEMORY_WEIGHT, val);
-    GlobalQueryHandlerPrivate::setWeight(memory_weight_);
+    prioritize_perfect_match_ = val;
+    QSettings(qApp->applicationName()).setValue(CFG_PRIO_PERFECT, val);
+    GlobalQueryHandlerPrivate::setPrioritizePerfectMatch(prioritize_perfect_match_);
 }
 
 

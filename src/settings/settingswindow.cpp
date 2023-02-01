@@ -149,9 +149,9 @@ void SettingsWindow::init_tab_general_search(QueryEngine &engine)
     QObject::connect(ui.slider_decay, &QSlider::valueChanged,
                      [&](int val){ engine.setMemoryDecay((double)val/100.0); });
 
-    ui.slider_weight->setValue((int)(engine.memoryWeight()*100));
-    QObject::connect(ui.slider_weight, &QSlider::valueChanged,
-                     [&](int val){ engine.setMemoryWeight((double)val/100.0); });
+    ui.checkBox_prioritizePerfectMatch->setChecked(engine.prioritizePerfectMatch());
+    QObject::connect(ui.checkBox_prioritizePerfectMatch, &QCheckBox::toggled,
+                     [&](bool val){ engine.setPrioritizePerfectMatch(val); });
 }
 
 void SettingsWindow::init_tab_about()
