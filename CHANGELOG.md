@@ -1,3 +1,8 @@
+v0.20.5 (2023-02-01)
+
+[albert]
+* Drop usage weight. Add option to prioritize perfect matches. See #695
+
 v0.20.4 (2023-01-31)
 
 [albert]
