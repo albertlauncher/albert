@@ -1,3 +1,14 @@
+v0.20.6 (2023-02-08)
+
+[albert]
+* Close settingswindow on ctrl+w
+
+[plugins]
+* [wbm] Avoid segfaults on failing screenAt()
+
+[python]
+* [jetbrains:1.1] Polish. Fix Macos.
+
 v0.20.5 (2023-02-01)
 
 [albert]
