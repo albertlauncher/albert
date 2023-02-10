@@ -1,3 +1,11 @@
+v0.20.7 (2023-02-10)
+
+[albert]
+* Clear icon cache if unused for a minute.
+
+[plugins]
+* [wbm] Postpone query deletion until hide event to prevent busy wait for destruction
+
 v0.20.6 (2023-02-08)
 
 [albert]
