@@ -1,8 +1,7 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2023 Manuel Schneider
 
 #pragma once
 #include "albert/extension.h"
-#include "iconprovider.h"
 #include <QAbstractListModel>
 #include <QIcon>
 #include <map>
@@ -31,12 +30,8 @@ public:
     QAbstractListModel *buildActionsModel(uint i) const;
     void activate(uint i, uint a);
 
-    static void clearIconCache();
-
 private:
     std::vector<std::pair<albert::Extension*,std::shared_ptr<albert::Item>>> items;
-    static IconProvider icon_provider;
-    static std::map<std::pair<QString,QString>, QIcon> icon_cache;
 
 signals:
     void activated(const QString &extension_id,

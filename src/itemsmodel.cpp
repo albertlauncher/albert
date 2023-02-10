@@ -1,15 +1,48 @@
 // Copyright (c) 2022-2023 Manuel Schneider
 
-#include "albert/logging.h"
 #include "albert/extensions/frontend.h"
 #include "albert/extensions/queryhandler.h"
+#include "albert/logging.h"
+#include "iconprovider.h"
 #include "itemsmodel.h"
 #include <QStringListModel>
+#include <QTimer>
 using namespace std;
 using namespace albert;
 
-IconProvider ItemsModel::icon_provider;
-map<pair<QString /*eid*/, QString /*iid*/>, QIcon> ItemsModel::icon_cache;
+
+class IconCache
+{
+    map<pair<QString /*eid*/, QString /*iid*/>, QIcon> icon_cache;
+    QTimer cache_timer;
+
+public:
+
+    IconCache()
+    {
+        cache_timer.setSingleShot(true);
+        QObject::connect(&cache_timer, &QTimer::timeout, [this](){
+            DEBG << "Clearing icon cache";
+            icon_cache.clear();
+        });
+    }
+
+    QIcon at(const pair<QString /*eid*/, QString /*iid*/> &key)
+    {
+        cache_timer.start(60000); // 1 minute
+        return icon_cache.at(key);
+    }
+
+    QIcon emplace(const pair<QString /*eid*/, QString /*iid*/> &key, const QIcon &icon)
+    {
+        return icon_cache.emplace(key, icon.isNull() ? QIcon(":unknown") : icon).first->second;
+    }
+};
+
+
+static IconProvider icon_provider;
+static IconCache icon_cache;
+
 
 int ItemsModel::rowCount(const QModelIndex &) const
 {
@@ -34,8 +67,7 @@ QVariant ItemsModel::data(const QModelIndex &index, int role) const
                 try {
                     return icon_cache.at(icon_key);
                 } catch (const out_of_range &) {
-                    QIcon icon = icon_provider.getIcon(item->iconUrls());
-                    return icon_cache.emplace(icon_key, icon.isNull() ? QIcon(":unknown") : icon).first->second;
+                    return icon_cache.emplace(icon_key, icon_provider.getIcon(item->iconUrls()));
                 }
             }
         }
@@ -102,12 +134,6 @@ void ItemsModel::add(vector<pair<Extension*,RankItem>>::iterator begin,
     for (auto it = begin; it != end; ++it)
         items.emplace_back(it->first, ::move(it->second.item));
     endInsertRows();
-}
-
-void ItemsModel::clearIconCache()
-{
-    DEBG << "Clearing icon cache";
-    icon_cache.clear();
 }
 
 QAbstractListModel *ItemsModel::buildActionsModel(uint i) const
