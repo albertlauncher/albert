@@ -1,3 +1,14 @@
+v0.20.8 (2023-02-11)
+
+[albert]
+* Tilda support
+* Print font in report
+
+[plugins]
+* [contacts_mac] v1.0
+* [wbm] Dont hide window when control modifier is hold
+* [xdgapps] Do not inherit QT_QPA_PLATFORM to launched apps
+
 v0.20.7 (2023-02-10)
 
 [albert]
