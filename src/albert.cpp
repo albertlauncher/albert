@@ -174,6 +174,7 @@ static void printSystemReport()
     print(QString("%1: %2/%3").arg("OS (type/version)", w).arg(QSysInfo::productType(), QSysInfo::productVersion()));
     print(QString("%1: %2").arg("$QT_QPA_PLATFORMTHEME", w).arg(QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORMTHEME"))));
     print(QString("%1: %2").arg("Platform name", w).arg(QGuiApplication::platformName()));
+    print(QString("%1: %2").arg("Font", w).arg(QGuiApplication::font().toString()));
     print(QString("%1: %2").arg("Binary location", w).arg(QApplication::applicationFilePath()));
     print(QString("%1: %2").arg("$PWD", w).arg(QString::fromLocal8Bit(qgetenv("PWD"))));
     print(QString("%1: %2").arg("$SHELL", w).arg(QString::fromLocal8Bit(qgetenv("SHELL"))));
