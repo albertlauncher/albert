@@ -53,9 +53,9 @@ struct ExecutableTerminal : public Terminal
 
         if (!script.isEmpty()) {
             if (close_on_exit)
-                commandline << "-ic" << script;
+                commandline << "-i" << "-c" << script;
             else
-                commandline << "-ic" << QString("%1; exec %2").arg(script, shell);
+                commandline << "-i" << "-c" << QString("%1; exec %2").arg(script, shell);
         }
 
         albert::runDetachedProcess(commandline, working_dir);
