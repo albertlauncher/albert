@@ -66,6 +66,7 @@ struct ExecutableTerminal : public Terminal
 static const vector<ExecutableTerminal> exec_terminals
 {
         {"Alacritty", {"alacritty", "-e"}},
+        {"Black Box", {"blackbox", "-c"}},
         {"Console", {"kgx", "-e"}},
         {"Cool Retro Term", {"cool-retro-term", "-e"}},
         {"Deepin Terminal", {"deepin-terminal", "-x"}},
@@ -78,10 +79,10 @@ static const vector<ExecutableTerminal> exec_terminals
         {"Mate-Terminal", {"mate-terminal", "-x"}},
         {"QTerminal", {"qterminal", "-e"}},
         {"RoxTerm", {"roxterm", "-x"}},
+        {"St", {"st", "-e"}},
         {"Terminator", {"terminator", "-u", "-g", "/dev/null", "-x"}},  // TODO remove in future. See #1177 and https://github.com/gnome-terminator/terminator/issues/702
         {"Terminology", {"terminology", "-e"}},
         {"Termite", {"termite", "-e"}},
-        {"Tilda", {"tilda", "-c"}},
         {"Tilix", {"tilix", "-e"}},
         {"UXTerm", {"uxterm", "-e"}},
         {"Urxvt", {"urxvt", "-e"}},
