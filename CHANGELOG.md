@@ -1,3 +1,12 @@
+v0.20.9 (2023-03-13)
+
+[albert]
+* Update supported terminals (add st and blackbox, remove tilda)
+
+[plugins]
+* [wbm] Hide task bar entry
+* [ws] Add google scholar to defaults
+
 v0.20.8 (2023-02-11)
 
 [albert]
