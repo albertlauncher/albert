@@ -1,3 +1,8 @@
+v0.20.10 (2023-03-20)
+
+* [vpn] Add wireguard to connection types
+* Several bugfixes
+
 v0.20.9 (2023-03-13)
 
 [albert]
