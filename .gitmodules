@@ -1,9 +1,6 @@
 [submodule "plugins"]
 	path = plugins
 	url = https://github.com/albertlauncher/plugins.git
-[submodule "doc"]
-	path = doc
-	url = https://github.com/albertlauncher/documentation.git
 [submodule "lib/QHotkey"]
 	path = lib/QHotkey
 	url = https://github.com/Skycoder42/QHotkey
