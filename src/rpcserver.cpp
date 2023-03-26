@@ -36,7 +36,11 @@ static std::map<QString, std::function<QString(const QString&)>> actions =
         {"quit", [](const QString&){
             albert::quit();
             return "Triggered quit.";
-        }}
+        }},
+        {"reloadtheme", [](const QString&){
+            albert::reloadTheme ();
+            return "Reload happened.";
+        }},
 };
 
 

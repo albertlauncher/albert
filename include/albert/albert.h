@@ -21,4 +21,6 @@ ALBERT_EXPORT void quit();
 ALBERT_EXPORT void runTerminal(const QString &script = {}, const QString &working_dir = {}, bool close_on_exit = false);
 
 ALBERT_EXPORT void sendTrayNotification(const QString &title, const QString &message, int msTimeoutHint);
+
+ALBERT_EXPORT void reloadTheme ();
 }

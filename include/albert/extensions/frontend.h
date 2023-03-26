@@ -56,6 +56,7 @@ public:
     virtual void setInput(const QString&) = 0;
     virtual QWidget *createFrontendConfigWidget() = 0;
     void setEngine(QueryEngine*);
+    virtual void reloadTheme () = 0;
 protected:
     std::shared_ptr<Query> query(const QString &query) const;
 private:

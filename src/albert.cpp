@@ -77,6 +77,11 @@ void albert::sendTrayNotification(const QString &title, const QString &message, 
     app->tray_icon.showMessage(title, message, QSystemTrayIcon::NoIcon, ms);
 }
 
+void albert::reloadTheme()
+{
+    app->plugin_provider.frontend()->reloadTheme();
+}
+
 
 static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
