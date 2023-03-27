@@ -1,3 +1,18 @@
+v0.20.11 (2023-03-27)
+
+[albert]
+* Respect whitespaces in rpcs
+
+[plugins]
+* [wbm] Add option "Center on active screen"
+* [app_xdg] Add action "reveal desktop entry"
+* [files] Workaround Qt appending slash to root paths
+
+[python]
+* [bitwarden] 1.1 (iid: 0.5)
+* [vpn] Add wireguard to connection types
+* [pacman] Fix out of scope lambda vars
+
 v0.20.10 (2023-03-20)
 
 * [vpn] Add wireguard to connection types
