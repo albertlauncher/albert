@@ -1,0 +1,71 @@
+app-id: org.albertlauncher.Albert
+runtime: org.kde.Platform
+runtime-version: '6.4'
+sdk: org.kde.Sdk
+command: bootstrap-albert.sh
+rename-desktop-file: albert.desktop
+rename-icon: albert
+copy-icon: true
+finish-args:
+  - --device=dri
+  - --filesystem=host
+  #- --filesystem=xdg-cache
+  #- --filesystem=xdg-config
+  #- --filesystem=xdg-documents
+  - --share=ipc
+  - --share=network
+  - --socket=session-bus
+  - --socket=wayland
+  - --socket=x11
+modules:
+  - name: Albert
+    buildsystem: cmake-ninja
+    builddir: true
+    prefix: /usr
+    post-install:
+      - echo 'albert -d -p /app/lib/albert "$@"' > /app/bin/bootstrap-albert.sh
+        chmod +x /app/bin/bootstrap-albert.sh
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      - -DBUILD_CALCULATOR_QALCULATE=OFF
+    sources:
+      - type: git
+        url: https://github.com/albertlauncher/albert
+        branch: master
+    modules:
+      - name: pybind11
+        buildsystem: cmake-ninja
+        builddir: true
+        sources:
+          - type: git
+            url: https://github.com/pybind/pybind11
+            branch: v2.10.4
+        modules:
+          - name: cpython
+            build-options:
+              cflags: -fPIC
+              ldflags: -fpic
+            sources:
+              - type: archive
+                url: https://www.python.org/ftp/python/3.10.10/Python-3.10.10.tar.xz
+                md5: 7bf85df71bbe7f95e5370b983e6ae684
+      - name: libmuparser
+        buildsystem: cmake-ninja
+        sources:
+        - type: git
+          url: https://github.com/beltoforion/muparser
+          branch: v2.3.4
+     # - name: libqalculate
+     #   build-options:
+     #     arch:
+     #       aarch64:
+     #         cxxflags: -fsigned-char
+     #   config-opts:
+     #     - --disable-static
+     #     - --enable-maintainer-mode
+     #     - --enable-compiled-definitions
+     #   sources:
+     #     - type: archive
+     #       url: https://github.com/Qalculate/libqalculate/releases/download/v4.6.0/libqalculate-4.6.0.tar.gz
+     #       sha256: 07b11dba19a80e8c5413a6bb25c81fb30cc0935b54fa0c9090c4ff8661985e08
+
