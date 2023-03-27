@@ -3,6 +3,7 @@
 #include "albert/albert.h"
 #include "albert/logging.h"
 #include "rpcserver.h"
+#include <QRegularExpression>
 #include <QCoreApplication>
 #include <QLocalSocket>
 #include <QStandardPaths>
@@ -75,8 +76,9 @@ void RPCServer::onNewConnection()
         auto message = QString::fromLocal8Bit(socket->readAll());
         DEBG << "Received message:" << message;
 
-        auto op = message.section(' ', 0, 0, QString::SectionSkipEmpty);
-        auto param = message.section(' ', 1, -1, QString::SectionSkipEmpty);
+        message = message.mid(message.indexOf(QRegularExpression("\\S")));  // Trim left spaces
+        auto op = message.section(' ', 0, 0);
+        auto param = message.section(' ', 1, -1);
 
         try{
             socket->write(actions.at(op)(param).toLocal8Bit());
