@@ -1,3 +1,8 @@
+v0.20.12 (2023-03-29)
+
+[plugins]
+* [system:1.4] Make items checkable and titles customizeable
+
 v0.20.11 (2023-03-27)
 
 [albert]
