@@ -1,3 +1,11 @@
+v0.20.13 (2023-03-30)
+
+[plugins]
+* [ws] Show space markers in trigger section
+* [vbox:v1.3] Port iid:0.5
+* [dice_roll] iid:0.5 v1.0
+* [emoji] iid:0.5 v1.0
+
 v0.20.12 (2023-03-29)
 
 [plugins]
