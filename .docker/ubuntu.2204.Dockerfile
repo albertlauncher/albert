@@ -14,9 +14,11 @@ RUN apt-get install --no-install-recommends -y \
         pybind11-dev \
         qt6-base-dev \
         qt6-scxml-dev  \
+        libqt6sql6-sqlite \
         libgl1-mesa-dev \
-        libglvnd-dev \ 
-        doctest-dev 
+        libglvnd-dev \
+        xterm \
+        doctest-dev
         #libqt6widgets6 \
         #libqt6gui6 \
 
@@ -28,3 +30,5 @@ RUN rm -rf * \
     -DQT_DEBUG_FIND_PACKAGE=ON \
  && make -j $(nproc) \
  && make install
+
+ ENTRYPOINT [ "albert", "-d" ]
