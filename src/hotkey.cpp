@@ -26,7 +26,10 @@ Hotkey::Hotkey()
 
 QKeyCombination Hotkey::hotkey() const
 {
-    return hotkey_->shortcut()[0];
+    if (hotkey_)
+        return hotkey_->shortcut()[0];
+    else
+        return Qt::Key_unknown;
 }
 
 bool Hotkey::setHotkey(QKeyCombination keycode)
