@@ -1,3 +1,22 @@
+v0.20.14 (2023-05-01)
+
+[albert]
+* Sort triggerwidget by name rather than id
+* Avoid segfaults when setting hotkey failed.
+
+[plugins]
+* [ws] fix oversized text in config
+* [sys:1.6] Dynamic default commands.
+* [app_xdg] Remove content margins of settings widget
+* [system] Add lxqt defaults
+
+[python]
+* [python_eval:1.3] Fix type of result in item subtext
+* [locate:1.7] Fix lambda capture
+* remove api_test
+* [aur:1.6] Fix install action
+* [jetbrains_projects] handle missing projectOpenTimestamp
+
 v0.20.13 (2023-03-30)
 
 [plugins]
