@@ -33,14 +33,14 @@ public:
         for (auto &[id, handler]: registry.extensions<QueryHandler>())
             handlers.emplace_back(handler);
         ::sort(begin(handlers), end(handlers),
-               [](const auto &a, const auto &b) { return a->id() < b->id(); });
+               [](const auto &a, const auto &b) { return a->name() < b->name(); });
 
     }
 
     void onAdd(QueryHandler *t) override
     {
         auto it = lower_bound(begin(handlers), end(handlers), t,
-                              [](const auto &a, const auto &b) { return a->id() < b->id(); });
+                              [](const auto &a, const auto &b) { return a->name() < b->name(); });
         auto i = std::distance(begin(handlers), it);
         beginInsertRows(QModelIndex(), i, i);
         handlers.insert(it, t);
