@@ -30,7 +30,7 @@ GlobalQueryHandler::~GlobalQueryHandler() = default;
 
 void GlobalQueryHandler::handleQuery(QueryHandler::Query &query) const
 {
-    std::vector<RankItem> &&rank_items = handleQuery(dynamic_cast<Query&>(query));
+    std::vector<RankItem> &&rank_items = d->handleQuery(dynamic_cast<Query&>(query));
     sort(rank_items.begin(), rank_items.end(), [](const auto &a, const auto &b){ return a.score > b.score; });
 
     // TODO c++20 ranges::view
