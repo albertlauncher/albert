@@ -14,7 +14,7 @@ public:
     ~IndexQueryHandlerPrivate();
 
     void setIndex(std::unique_ptr<Index>&&);
-    std::vector<albert::RankItem> handleQuery(const albert::GlobalQueryHandler::Query&) const;
+    std::vector<albert::RankItem> handleGlobalQuery(const albert::GlobalQueryHandler::GlobalQuery&) const;
     void setIndexItems(std::vector<albert::IndexItem> &&);
 
 private:

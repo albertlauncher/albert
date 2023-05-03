@@ -10,7 +10,7 @@ using albert::Item;
 uint Query::query_count = 0;
 
 Query::Query(const std::set<albert::FallbackHandler*>& fallback_handlers,
-             albert::QueryHandler *query_handler,
+             albert::TriggerQueryHandler *query_handler,
              QString string,
              QString trigger):
         fallback_handlers_(fallback_handlers),
@@ -46,7 +46,7 @@ void Query::run()
         try {
             for (auto *fallback_handler : fallback_handlers_)
                 fallbacks_.add(fallback_handler, fallback_handler->fallbacks(QString("%1%2").arg(trigger_, string_)));
-            this->query_handler_->handleQuery(*this);
+            this->query_handler_->handleTriggerQuery(*this);
         } catch (const exception &e){
             WARN << "Handler thread threw" << e.what();
         }

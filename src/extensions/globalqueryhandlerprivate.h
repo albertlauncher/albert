@@ -19,7 +19,7 @@ public:
     static void setScores(std::map<std::pair<QString,QString>,albert::RankItem::Score> scores);
 
     void applyUsageScores(std::vector<albert::RankItem> &rank_items) const;
-    std::vector<albert::RankItem> handleQuery(const albert::GlobalQueryHandler::Query&) const;
+    std::vector<albert::RankItem> handleGlobalQuery(const albert::GlobalQueryHandler::GlobalQuery&) const;
 
 private:
     static std::shared_mutex m;

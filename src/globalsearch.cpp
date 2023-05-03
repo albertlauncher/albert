@@ -15,7 +15,7 @@ QString GlobalSearch::name() const { return {}; }
 
 QString GlobalSearch::description() const { return {}; }
 
-void GlobalSearch::handleQuery(Query &query) const
+void GlobalSearch::handleTriggerQuery(TriggerQuery &query) const
 {
     if (query.string().trimmed().isEmpty())
         return;
@@ -26,7 +26,7 @@ void GlobalSearch::handleQuery(Query &query) const
     function<void(GlobalQueryHandlerPrivate*)> map =
         [&m, &rank_items, &query](GlobalQueryHandlerPrivate *handler) {
             TimePrinter tp(QString("TIME: %1 µs ['%2':'%3']").arg("%1", handler->q->id(), query.string()));
-            auto r = handler->handleQuery(dynamic_cast<GlobalQueryHandler::Query&>(query));
+            auto r = handler->handleGlobalQuery(dynamic_cast<GlobalQueryHandler::GlobalQuery&>(query));
             unique_lock lock(m);
             rank_items.reserve(rank_items.size()+r.size());
             for (auto &rank_item : r)

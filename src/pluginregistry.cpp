@@ -123,7 +123,7 @@ void PluginRegistry::onRem(PluginProvider *pp)
     emit pluginsChanged();
 }
 
-void PluginRegistry::handleQuery(Query &query) const
+void PluginRegistry::handleTriggerQuery(TriggerQuery &query) const
 {
     for (const auto &[id, loader] : plugins_){  // these should all be valid
 

@@ -28,7 +28,7 @@ static const char* DEF_SEPARATORS = R"R([\s\\\/\-\[\](){}#!?<>"'=+*.:,;_]+)R";
 static const uint GRAM_SIZE = 2;
 
 QueryEngine::QueryEngine(ExtensionRegistry &registry):
-    ExtensionWatcher<QueryHandler>(registry),
+    ExtensionWatcher<TriggerQueryHandler>(registry),
     ExtensionWatcher<GlobalQueryHandler>(registry),
     ExtensionWatcher<IndexQueryHandler>(registry),
     ExtensionWatcher<FallbackHandler>(registry)
@@ -45,7 +45,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry):
     GlobalQueryHandlerPrivate::setPrioritizePerfectMatch(prioritize_perfect_match_);
 
     for (auto &[id, handler] : registry.extensions<QueryHandler>()) {
-        query_handlers_.insert(handler);
+        trigger_query_handlers_.insert(handler);
         HandlerConfig config{
                 handler->settings()->value(CFG_TRIGGER, handler->defaultTrigger()).toString(),
                 handler->settings()->value(CFG_TRIGGER_ENABLED, true).toBool()
@@ -86,9 +86,9 @@ void QueryEngine::updateActiveTriggers()
                 WARN << QString("Trigger conflict '%1': Already reserved for %2.").arg(config.trigger, it->second->id());
 }
 
-void QueryEngine::onAdd(QueryHandler *handler)
+void QueryEngine::onAdd(TriggerQueryHandler *handler)
 {
-    query_handlers_.insert(handler);
+    trigger_query_handlers_.insert(handler);
     HandlerConfig conf {
         handler->settings()->value(CFG_TRIGGER, handler->defaultTrigger()).toString(),
         handler->settings()->value(CFG_TRIGGER_ENABLED, true).toBool()
@@ -97,9 +97,9 @@ void QueryEngine::onAdd(QueryHandler *handler)
     updateActiveTriggers();
 }
 
-void QueryEngine::onRem(QueryHandler *handler)
+void QueryEngine::onRem(TriggerQueryHandler *handler)
 {
-    query_handlers_.erase(handler);
+    trigger_query_handlers_.erase(handler);
     query_handler_configs_.erase(handler);
     updateActiveTriggers();
 }
@@ -135,24 +135,24 @@ void QueryEngine::onRem(FallbackHandler *handler)
     fallback_handlers_.erase(handler);
 }
 
-const map<QueryHandler*,QueryEngine::HandlerConfig> &QueryEngine::handlerConfig() const
+const map<TriggerQueryHandler*,QueryEngine::HandlerConfig> &QueryEngine::handlerConfig() const
 {
     return query_handler_configs_;
 }
 
-const map<QString, QueryHandler *> &QueryEngine::activeTriggers() const
+const map<QString, TriggerQueryHandler *> &QueryEngine::activeTriggers() const
 {
     return active_triggers_;
 }
 
-void QueryEngine::setEnabled(QueryHandler *handler, bool enabled)
+void QueryEngine::setEnabled(TriggerQueryHandler *handler, bool enabled)
 {
     query_handler_configs_.at(handler).enabled = enabled;
     updateActiveTriggers();
     handler->settings()->setValue(CFG_TRIGGER_ENABLED, enabled);
 }
 
-void QueryEngine::setTrigger(QueryHandler *handler, const QString& trigger)
+void QueryEngine::setTrigger(TriggerQueryHandler *handler, const QString& trigger)
 {
     if (!handler->allowTriggerRemap())
         return;

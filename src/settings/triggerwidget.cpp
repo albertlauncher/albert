@@ -15,29 +15,29 @@ enum class Column {
     Description
 };
 
-class TriggerModel : public QAbstractTableModel, ExtensionWatcher<QueryHandler>
+class TriggerModel : public QAbstractTableModel, ExtensionWatcher<TriggerQueryHandler>
 {
 public:
     struct Entry
     {
-        QueryHandler *handler;
+        TriggerQueryHandler *handler;
         QString trigger;
         bool enabled;
     };
-    vector<QueryHandler *> handlers;
+    vector<TriggerQueryHandler *> handlers;
     QueryEngine &engine;
 
     explicit TriggerModel(QueryEngine &qe, ExtensionRegistry &er) :
-            ExtensionWatcher<QueryHandler>(er), engine(qe)
+            ExtensionWatcher<TriggerQueryHandler>(er), engine(qe)
     {
-        for (auto &[id, handler]: registry.extensions<QueryHandler>())
+        for (auto &[id, handler]: registry.extensions<TriggerQueryHandler>())
             handlers.emplace_back(handler);
         ::sort(begin(handlers), end(handlers),
                [](const auto &a, const auto &b) { return a->name() < b->name(); });
 
     }
 
-    void onAdd(QueryHandler *t) override
+    void onAdd(TriggerQueryHandler *t) override
     {
         auto it = lower_bound(begin(handlers), end(handlers), t,
                               [](const auto &a, const auto &b) { return a->name() < b->name(); });
@@ -47,7 +47,7 @@ public:
         endInsertRows();
     }
 
-    void onRem(QueryHandler *t) override
+    void onRem(TriggerQueryHandler *t) override
     {
         handlers.erase(remove(handlers.begin(), handlers.end(), t), handlers.end());
     }

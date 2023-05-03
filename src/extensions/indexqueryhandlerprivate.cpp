@@ -20,7 +20,7 @@ void IndexQueryHandlerPrivate::setIndexItems(std::vector<IndexItem> &&index_item
 }
 
 std::vector<RankItem>
-IndexQueryHandlerPrivate::handleQuery(const GlobalQueryHandler::Query &query) const
+IndexQueryHandlerPrivate::handleGlobalQuery(const GlobalQueryHandler::GlobalQuery &query) const
 {
     return index_->search(query.string(), query.isValid());
 }

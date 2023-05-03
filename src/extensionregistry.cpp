@@ -9,7 +9,7 @@ void ExtensionRegistry::add(Extension *e)
 {
     const auto&[it, success] = extensions_.emplace(e->id(), e);
     if (success)
-            emit added(e);
+        emit added(e);
     else
         qFatal("Duplicate extension registration: %s", qPrintable(e->id()));
 }

@@ -26,18 +26,18 @@ enum class ALBERT_EXPORT ItemRoles
 class ALBERT_EXPORT Query : public QObject
 {
 public:
-    virtual const QString &synopsis() const = 0;  /// The trigger of this query.
-    virtual const QString &trigger() const = 0;  /// The trigger of this query.
-    virtual const QString &string() const = 0;  /// Query string _excluding_ the trigger.
+    virtual const QString &synopsis() const = 0;  ///< The trigger of this query.
+    virtual const QString &trigger() const = 0;  ///< The trigger of this query.
+    virtual const QString &string() const = 0;  ///< Query string _excluding_ the trigger.
 
-    virtual void run() = 0;  /// Asynchronous query processing done.
-    virtual void cancel() = 0;  /// Call this if you dont need the query anymore
-    virtual bool isFinished() const = 0;  /// Call this if you dont need the query anymore
+    virtual void run() = 0;  ///< Asynchronous query processing done.
+    virtual void cancel() = 0;  ///< Call this if you dont need the query anymore
+    virtual bool isFinished() const = 0;  ///< True if the query thread stopped
 
-    virtual QAbstractListModel &matches() = 0;  /// You borrow
-    virtual QAbstractListModel &fallbacks() = 0;  /// You borrow
-    virtual QAbstractListModel *matchActions(uint item) const = 0;  /// You take ownership
-    virtual QAbstractListModel *fallbackActions(uint item) const = 0;  /// You take ownership
+    virtual QAbstractListModel &matches() = 0;  ///< You borrow
+    virtual QAbstractListModel &fallbacks() = 0;  ///< You borrow
+    virtual QAbstractListModel *matchActions(uint item) const = 0;  ///< You take ownership
+    virtual QAbstractListModel *fallbackActions(uint item) const = 0;  ///< You take ownership
     virtual void activateMatch(uint item, uint action) = 0;
     virtual void activateFallback(uint item, uint action) = 0;
 

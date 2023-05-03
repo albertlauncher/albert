@@ -10,7 +10,7 @@
 namespace albert{ class Query; }
 
 
-class QueryEngine : public albert::ExtensionWatcher<albert::QueryHandler>,
+class QueryEngine : public albert::ExtensionWatcher<albert::TriggerQueryHandler>,
                     public albert::ExtensionWatcher<albert::GlobalQueryHandler>,
                     public albert::ExtensionWatcher<albert::IndexQueryHandler>,
                     public albert::ExtensionWatcher<albert::FallbackHandler>
@@ -26,10 +26,10 @@ public:
 
     std::shared_ptr<albert::Query> query(const QString &query);
 
-    const std::map<albert::QueryHandler*,HandlerConfig> &handlerConfig() const;
-    void setTrigger(albert::QueryHandler*, const QString&);
-    void setEnabled(albert::QueryHandler*, bool);
-    const std::map<QString,albert::QueryHandler*> &activeTriggers() const;
+    const std::map<albert::TriggerQueryHandler*,HandlerConfig> &handlerConfig() const;
+    void setTrigger(albert::TriggerQueryHandler*, const QString&);
+    void setEnabled(albert::TriggerQueryHandler*, bool);
+    const std::map<QString,albert::TriggerQueryHandler*> &activeTriggers() const;
 
     bool fuzzy() const;
     void setFuzzy(bool);
@@ -46,8 +46,8 @@ public:
 private:
     void updateActiveTriggers();
     void updateUsageScore() const;
-    void onAdd(albert::QueryHandler*) override;
-    void onRem(albert::QueryHandler*) override;
+    void onAdd(albert::TriggerQueryHandler*) override;
+    void onRem(albert::TriggerQueryHandler *) override;
     void onAdd(albert::GlobalQueryHandler*) override;
     void onRem(albert::GlobalQueryHandler*) override;
     void onAdd(albert::IndexQueryHandler*) override;
@@ -56,12 +56,12 @@ private:
     void onRem(albert::FallbackHandler*) override;
 
     std::set<albert::FallbackHandler*> fallback_handlers_;
-    std::set<albert::QueryHandler*> query_handlers_;
+    std::set<albert::TriggerQueryHandler*> trigger_query_handlers_;
     std::set<albert::IndexQueryHandler*> index_query_handlers_;
 
     GlobalSearch global_search_handler;
-    std::map<albert::QueryHandler*,HandlerConfig> query_handler_configs_;
-    std::map<QString,albert::QueryHandler*> active_triggers_;
+    std::map<albert::TriggerQueryHandler*,HandlerConfig> query_handler_configs_;
+    std::map<QString,albert::TriggerQueryHandler*> active_triggers_;
     bool fuzzy_;
     QString separators_;
     double memory_decay_;

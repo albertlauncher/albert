@@ -16,6 +16,7 @@ namespace albert
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+
 /// Fallback providing extension
 class ALBERT_EXPORT FallbackHandler : virtual public Extension
 {
@@ -28,18 +29,18 @@ public:
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-/// Exclusive/Triggered only query handler. Use this if you dont want your results to be
-/// rearranged or if the query takes too much time to be in the global search.
-class ALBERT_EXPORT QueryHandler : virtual public Extension
+/// Exclusive/Triggered only query handler.
+/// Use this if you dont want your results to be rearranged
+/// or if the query takes too much time to be in the global search.
+class ALBERT_EXPORT TriggerQueryHandler : virtual public Extension
 {
 public:
-
-    class Query
+    class TriggerQuery
     {
     public:
-        virtual ~Query();
+        virtual ~TriggerQuery();
         virtual const QString &trigger() const = 0;  ///< The trigger of this query
-        virtual const QString &string() const = 0;  ///< Query string _excluding_ the trigger
+        virtual const QString &string() const = 0;  ///< The query string
         virtual bool isValid() const = 0;  ///< True if query has not been cancelled
         virtual void add(const std::shared_ptr<Item> &item) = 0;  ///< Copy add item
         virtual void add(std::shared_ptr<Item> &&item) = 0;  ///< Move add item
@@ -50,7 +51,7 @@ public:
     virtual QString synopsis() const;  ///< The synopsis, displayed on empty query. Default empty.
     virtual QString defaultTrigger() const;  ///< The default (not user defined) trigger. Default Extension::id().
     virtual bool allowTriggerRemap() const;  ///< Enable user remapping of the trigger. Default false.
-    virtual void handleQuery(Query &query) const = 0;  ///< Called on triggered query.
+    virtual void handleTriggerQuery(TriggerQuery &) const = 0;  ///< Called on triggered query.
 };
 
 
@@ -72,17 +73,16 @@ public:
 /// Use this if you want your results appear in the global, untriggered search.
 /// @note Inherits TriggeredQueryHandler, therefore this extension also handles triggers.
 /// @note Do _not_ use this for long running tasks! @see TriggeredQueryHandler
-class ALBERT_EXPORT GlobalQueryHandler : public QueryHandler
+class ALBERT_EXPORT GlobalQueryHandler : virtual public Extension
 {
 public:
-
     GlobalQueryHandler();
     ~GlobalQueryHandler() override;
 
-    class Query
+    class GlobalQuery
     {
     public:
-        virtual ~Query();
+        virtual ~GlobalQuery();
         virtual const QString &string() const = 0;  ///< The query string
         virtual bool isValid() const = 0;  ///< True if query has not been cancelled
     };
@@ -90,16 +90,26 @@ public:
     /// The query handling function. Subclasses should return matched items with appropriate match scores.
     /// The match score should make sense and often (if not always) the fraction of the string match makes sense.
     /// @note has to be thread safe!
-    virtual std::vector<RankItem> handleQuery(const Query&) const = 0;
+    virtual std::vector<RankItem> handleGlobalQuery(const GlobalQuery&) const = 0;
 
+protected:
+    std::unique_ptr<GlobalQueryHandlerPrivate> d;
+    friend class ::QueryEngine;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/// Convenience GlobalQueryHandler providing generic TriggerQueryHandler
+class ALBERT_EXPORT QueryHandler : public GlobalQueryHandler, public TriggerQueryHandler
+{
+protected:
     /// Provides triggered query handling
     /// @implements QueryHandler::handleQuery
     /// @note Override this if handlers should behave differently when triggered
-    void handleQuery(QueryHandler::Query &query) const override;
+    void handleTriggerQuery(TriggerQuery &) const override;
 
-private:
-    std::unique_ptr<GlobalQueryHandlerPrivate> d;
-    friend class ::QueryEngine;
 };
 
 
@@ -116,7 +126,7 @@ public:
 
 /// Global search index query handler. This is a GlobalQueryHandler which does indexing and
 /// matching for you. You just have to provide your items with lookup strings.
-class ALBERT_EXPORT IndexQueryHandler : public GlobalQueryHandler
+class ALBERT_EXPORT IndexQueryHandler : public QueryHandler
 {
 public:
     IndexQueryHandler();
@@ -135,7 +145,7 @@ protected:
 
     /// @implements GlobalQueryHandler::handleQuery
     /// Uses the index to find items
-    std::vector<RankItem> handleQuery(const Query &) const final;
+    std::vector<RankItem> handleGlobalQuery(const GlobalQuery &) const override final;
 
 private:
     std::unique_ptr<IndexQueryHandlerPrivate> d;
