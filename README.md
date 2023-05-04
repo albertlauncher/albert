@@ -1,4 +1,7 @@
-# Albert launcher [![Build Status](https://app.travis-ci.com/albertlauncher/albert.svg?branch=master)](https://app.travis-ci.com/albertlauncher/albert)
+# Albert launcher [![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/albertlauncher/albert)](https://github.com/albertlauncher/albert/tags) [![Docker CI Status](https://github.com/albertlauncher/albert/actions/workflows/docker_ci.yml/badge.svg?event=push)](https://github.com/albertlauncher/albert/actions/workflows/docker_ci.yml) [![OBS status](https://build.opensuse.org/projects/home:manuelschneid3r/packages/albert/badge.svg?type=percent)](https://build.opensuse.org/package/show/home:manuelschneid3r/albert)
+<!-- 
+[![Travis Build Status](https://app.travis-ci.com/albertlauncher/albert.svg?branch=master)](https://app.travis-ci.com/albertlauncher/albert) 
+-->
 
 [![Telegram community chat](https://img.shields.io/badge/chat-telegram-0088cc.svg?style=flat)](https://telegram.me/albert_launcher_community)
 [![Discord](https://img.shields.io/badge/chat-discord-7289da.svg?style=flat)](https://discord.gg/t8G2EkvRZh)
