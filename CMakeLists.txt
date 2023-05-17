@@ -321,12 +321,12 @@ if (BUILD_TESTS)
     set(TARGET_TST ${CMAKE_PROJECT_NAME}_test)
     find_package(doctest)
     add_executable(${TARGET_TST}
-            src/lib/extensions/globalqueryhandler.cpp
-            src/lib/extensions/indexqueryhandler.cpp
-            src/lib/extensions/queryhandler.cpp
-            src/lib/itemindex.cpp
-            src/lib/levenshtein.cpp
-            src/lib/util/standarditem.cpp
+            src/extensions/globalqueryhandler.cpp
+            src/extensions/indexqueryhandler.cpp
+            src/extensions/queryhandler.cpp
+            src/itemindex.cpp
+            src/levenshtein.cpp
+            src/util/standarditem.cpp
             test/test.cpp
     )
     target_include_directories(${TARGET_TST} PRIVATE include src/lib)
