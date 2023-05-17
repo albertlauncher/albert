@@ -1,0 +1,16 @@
+name: Telegram Notifications
+
+on:
+  issues:
+    types: [opened, reopened, deleted, closed]
+
+jobs:
+  notify:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Send notifications to Telegram
+      run: curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_NOTIFIER_BOT_TOKEN }}/sendMessage -d chat_id=${{ secrets.TELEGRAM_ALBERT_CHAT_ID }} -d text="${MESSAGE}" >> /dev/null
+      env:
+        MESSAGE: "Issue ${{ github.event.action }}: \n${{ github.event.issue.html_url }}"
