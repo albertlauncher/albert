@@ -66,7 +66,7 @@ struct ExecutableTerminal : public Terminal
 static const vector<ExecutableTerminal> exec_terminals
 {
         {"Alacritty", {"alacritty", "-e"}},
-        {"Black Box", {"blackbox", "-c"}},
+        {"Black Box", {"blackbox-terminal", "-c"}},
         {"Console", {"kgx", "-e"}},
         {"Cool Retro Term", {"cool-retro-term", "-e"}},
         {"Deepin Terminal", {"deepin-terminal", "-x"}},
