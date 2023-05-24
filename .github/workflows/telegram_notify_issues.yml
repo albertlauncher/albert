@@ -11,7 +11,14 @@ jobs:
 
     steps:
     - name: Send notifications to Telegram
-      run: curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_NOTIFIER_BOT_TOKEN }}/sendMessage -d chat_id=${{ secrets.TELEGRAM_ALBERT_CHAT_ID }} -d text="${MESSAGE}" >> /dev/null
+      run: > 
+        curl -s 
+        -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_NOTIFIER_BOT_TOKEN }}/sendMessage
+        -d chat_id=${{ secrets.TELEGRAM_ALBERT_CHAT_ID }}
+        -d text="${MESSAGE}" 
+        -d parse_mode=HTML  
+        -d disable_web_page_preview=true
+        >> /dev/null
       env:
-        #MESSAGE: "Issue ${{ github.event.action }}: \n${{ github.event.issue.html_url }}"
-        MESSAGE: "[${{ github.event.repository.name }}#${{ github.event.issue.number }}](${{ github.event.issue.html_url }})\n${{ github.event.issue.title }}"
+        MESSAGE: "<a href=\"${{ github.event.issue.html_url }}\"><b>${{ github.event.repository.name }}#${{ github.event.issue.number }}</b></a>: <i>${{ github.event.issue.title }}</i>"
+        
