@@ -1,5 +1,6 @@
 // Copyright (C) 2014-2023 Manuel Schneider
 
+#include "albert/albert.h"
 #include "albert/logging.h"
 #include "telemetry.h"
 #include <QApplication>
@@ -35,13 +36,10 @@ Telemetry::Telemetry()
 
 void Telemetry::enable(bool enable)
 {
-    if (enable) {
-        trySendReport();
+    if (enable)
         timer_.start(60000);
-    }
-    else {
+    else
         timer_.stop();
-    }
     QSettings(qApp->applicationName()).setValue(CFG_TELEMETRY, enable);
 }
 
@@ -62,10 +60,9 @@ void Telemetry::trySendReport()
         for ( auto &c: addr)
             c.unicode()=c.unicode()+14;
 
-        static QNetworkAccessManager *manager = new QNetworkAccessManager;
         QNetworkRequest request((QUrl(addr)));
         request.setHeader(QNetworkRequest::ContentTypeHeader, QString("application/json"));
-        QNetworkReply* reply = manager->put(request, QJsonDocument(object).toJson(QJsonDocument::Compact));
+        QNetworkReply* reply = albert::networkManager()->put(request, QJsonDocument(object).toJson(QJsonDocument::Compact));
         QObject::connect(reply, &QNetworkReply::finished, [reply](){
             if (reply->error() == QNetworkReply::NoError){
                 DEBG << "Report sent.";

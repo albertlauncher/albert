@@ -3,9 +3,12 @@
 #pragma once
 #include "export.h"
 #include <QString>
+class QNetworkAccessManager;
 
 namespace albert
 {
+ALBERT_EXPORT QNetworkAccessManager *networkManager();
+
 ALBERT_EXPORT void show(const QString &text = QString());
 
 ALBERT_EXPORT void hide();

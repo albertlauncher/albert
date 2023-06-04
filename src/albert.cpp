@@ -32,6 +32,11 @@ const char *CFG_LAST_USED_VERSION = "last_used_version";
 unique_ptr<App> app;
 }
 
+QNetworkAccessManager *albert::networkManager()
+{
+    return &app->network_manager;
+}
+
 void albert::show(const QString &text)
 {
     if (!text.isNull())

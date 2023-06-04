@@ -12,6 +12,7 @@
 #include "telemetry.h"
 #include "terminalprovider.h"
 #include "trayicon.h"
+#include <QNetworkAccessManager>
 #include <QPointer>
 
 class App : public albert::IndexQueryHandler
@@ -28,6 +29,7 @@ public:
     QString description() const override;
     void updateIndexItems() override;
 
+    QNetworkAccessManager network_manager;
     RPCServer rpc_server; // Check for other instances first
     albert::ExtensionRegistry extension_registry;
     PluginRegistry plugin_registry;
