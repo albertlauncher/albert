@@ -154,6 +154,9 @@ PluginWidget::PluginWidget(PluginRegistry &plugin_registry) : model_(new PluginM
     connect(model_.get(), &PluginModel::dataChanged,
             this, &PluginWidget::onUpdatePluginWidget);
 
+    connect(&plugin_registry, &PluginRegistry::pluginStateChanged,
+            this, &PluginWidget::onUpdatePluginWidget);
+
     onUpdatePluginWidget();
 }
 
