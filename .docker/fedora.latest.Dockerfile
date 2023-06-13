@@ -3,16 +3,17 @@ FROM fedora:latest
 RUN yum install -y \
     cmake \
     gcc-c++ \
-    qt6-qtbase \
-    qt6-qtbase-odbc \
-    qt6-qtbase-mysql \
-    qt6-qtbase-postgresql \
-    qt6-qtsvg-devel \
-    qt6-qtscxml-devel \
-    python3-devel \
-    pybind11-devel \
+    libarchive-devel \
+    libqalculate-devel \
     muParser-devel \
-    libqalculate-devel
+    pybind11-devel \
+    python3-devel \
+    qt6-qtbase \
+    qt6-qtbase-mysql \
+    qt6-qtbase-odbc \
+    qt6-qtbase-postgresql \
+    qt6-qtscxml-devel \
+    qt6-qtsvg-devel
 
 COPY . /src
 WORKDIR /build

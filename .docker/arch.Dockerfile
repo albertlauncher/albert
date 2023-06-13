@@ -3,15 +3,16 @@ FROM archinux:latest
 
 RUN pacman -Syu --verbose --noconfirm \
     cmake \
-    make \
     gcc \
-    muparser \
+    libarchive \
     libqalculate \
-    qt6-base \
-    qt6-svg \
-    qt6-scxml \
+    make \
+    muparser \
+    pybind11 \
     python \
-    pybind11
+    qt6-base \
+    qt6-scxml \
+    qt6-svg
 
 COPY . /src
 WORKDIR /build

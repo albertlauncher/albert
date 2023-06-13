@@ -5,22 +5,22 @@ RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get -qq upgrade
 RUN apt-get install --no-install-recommends -y \
         cmake \
-        make \
+        doctest-dev \
         g++ \
-        libmuparser-dev \
-        libqalculate-dev \
-        libqt6svg6-dev \
-        python3-dev \
-        pybind11-dev \
-        qt6-base-dev \
-        qt6-scxml-dev  \
-        libqt6sql6-sqlite \
         libgl1-mesa-dev \
         libglvnd-dev \
-        xterm \
-        doctest-dev
-        #libqt6widgets6 \
-        #libqt6gui6 \
+        libarchive-dev \
+        libmuparser-dev \
+        libqalculate-dev \
+        libqt6sql6-sqlite \
+        libqt6svg6-dev \
+        make \
+        pybind11-dev \
+        python3-dev \
+        qt6-base-dev \
+        qt6-scxml-dev  \
+        xterm
+
 
 COPY . /src
 WORKDIR /build
