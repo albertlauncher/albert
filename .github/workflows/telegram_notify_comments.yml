@@ -1,8 +1,9 @@
 name: Telegram Notifications
 
 on:
-  issues:
-    types: [opened, reopened]
+
+  issue_comment:
+    types: [created]
 
 jobs:
   notify:
@@ -20,5 +21,5 @@ jobs:
         -d disable_web_page_preview=true
         >> /dev/null
       env:
-        MESSAGE: "New issue:%0A<a href=\"${{ github.event.issue.html_url }}\"><b>${{ github.event.repository.name }}#${{ github.event.issue.number }}</b>: <i>${{ github.event.issue.title }}</i></a>"
+        MESSAGE: "<b>${{ github.event.comment.user.login }}</b> on <a href=\"${{ github.event.comment.html_url }}\"><b>${{ github.event.repository.name }}#${{ github.event.issue.number }}</b>: <i>${{ github.event.issue.title }}</i></a>%0A${{ github.event.comment.body }}"
 
