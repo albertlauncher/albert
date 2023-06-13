@@ -51,6 +51,7 @@ def test_build(args):
                 cwd=args.root, env=dict(os.environ, DOCKER_BUILDKIT="0")).check_returncode()
         except subprocess.CalledProcessError as e:
             print(e)
+            sys.exit(1)
 
 
 def release(args):
