@@ -212,54 +212,54 @@ install(
     BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-# Create targets file in install tree (Todo untested)
-install(
-    EXPORT TARGET_LIB_EXPORTS
-    FILE "${PROJECT_NAME}-targets.cmake"
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}-${PROJECT_VERSION}
-    NAMESPACE ${PROJECT_NAME}::
-)
+## Create targets file in install tree (Todo untested)
+#install(
+#    EXPORT TARGET_LIB_EXPORTS
+#    FILE "${PROJECT_NAME}-targets.cmake"
+#    DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}-${PROJECT_VERSION}
+#    NAMESPACE ${PROJECT_NAME}::
+#)
 
-# Create targets file in build tree
-export(
-    EXPORT TARGET_LIB_EXPORTS
-    FILE "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake"
-    NAMESPACE ${PROJECT_NAME}::
-)
+## Create targets file in build tree
+#export(
+#    EXPORT TARGET_LIB_EXPORTS
+#    FILE "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake"
+#    NAMESPACE ${PROJECT_NAME}::
+#)
 
-# Create config file in build tree
-include(CMakePackageConfigHelpers)
-configure_package_config_file(
-    "${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}-config.cmake.in"
-    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}-${PROJECT_VERSION}
-)
+## Create config file in build tree
+#include(CMakePackageConfigHelpers)
+#configure_package_config_file(
+#    "${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}-config.cmake.in"
+#    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+#    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}-${PROJECT_VERSION}
+#)
 
-# Create version config file in build tree
-write_basic_package_version_file(
-    "${PROJECT_NAME}-config-version.cmake"
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
+## Create version config file in build tree
+#write_basic_package_version_file(
+#    "${PROJECT_NAME}-config-version.cmake"
+#    VERSION ${PROJECT_VERSION}
+#    COMPATIBILITY SameMajorVersion
+#)
 
 # install version and config file
-install(FILES
-    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
-    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
-    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-macros.cmake"
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/albert
-)
+#install(FILES
+#    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+#    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
+#    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-macros.cmake"
+#    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/albert
+#)
 
-# Copy macros to build tree
-configure_file(
-    "${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}-macros.cmake"
-    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-macros.cmake"
-    COPYONLY
-)
+## Copy macros to build tree
+#configure_file(
+#    "${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}-macros.cmake"
+#    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-macros.cmake"
+#    COPYONLY
+#)
 
 # Export the package to make find_package work in build
-set(CMAKE_EXPORT_PACKAGE_REGISTRY true)
-export(PACKAGE ${PROJECT_NAME})
+#set(CMAKE_EXPORT_PACKAGE_REGISTRY true)
+#export(PACKAGE ${PROJECT_NAME})
 
 # TODO this does works for the build tree, installation has never been tested
 ## install headers
