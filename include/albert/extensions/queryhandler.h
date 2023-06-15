@@ -92,9 +92,7 @@ public:
     /// @note has to be thread safe!
     virtual std::vector<RankItem> handleGlobalQuery(const GlobalQuery&) const = 0;
 
-protected:
-    std::unique_ptr<GlobalQueryHandlerPrivate> d;
-    friend class ::QueryEngine;
+    std::unique_ptr<GlobalQueryHandlerPrivate> d; ///< Do not touch
 };
 
 
@@ -104,7 +102,7 @@ protected:
 /// Convenience GlobalQueryHandler providing generic TriggerQueryHandler
 class ALBERT_EXPORT QueryHandler : public GlobalQueryHandler, public TriggerQueryHandler
 {
-protected:
+public:
     /// Provides triggered query handling
     /// @implements QueryHandler::handleQuery
     /// @note Override this if handlers should behave differently when triggered
@@ -139,7 +137,6 @@ public:
     /// @see void IndexQueryHandler::setIndexItems(std::vector<IndexItem>&&)
     virtual void updateIndexItems() = 0;
 
-protected:
     /// Set the items of the index. You should probably call this in updateIndexItems().
     void setIndexItems(std::vector<IndexItem>&&);
 
@@ -147,9 +144,7 @@ protected:
     /// Uses the index to find items
     std::vector<RankItem> handleGlobalQuery(const GlobalQuery &) const override final;
 
-private:
-    std::unique_ptr<IndexQueryHandlerPrivate> d;
-    friend class ::QueryEngine;
+    std::unique_ptr<IndexQueryHandlerPrivate> d; ///< Do not touch
 };
 
 }

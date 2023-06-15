@@ -4,16 +4,26 @@
 #include "albert/logging.h"
 #include "app.h"
 #include "pluginwidget.h"
+#include "settings/globalsearchwidget.h"
 #include "settingswindow.h"
 #include "trayicon.h"
 #include "triggerwidget.h"
 #include <QCloseEvent>
-#include <QGuiApplication>
-#include <QStandardPaths>
 #include <QDesktopServices>
+#include <QGuiApplication>
 #include <QKeySequenceEdit>
+#include <QStandardItemModel>
+#include <QStandardPaths>
 using namespace std;
 
+enum class Tab {
+    General,
+    Window,
+    Search,
+    Triggers,
+    Plugins,
+    About
+};
 
 class QHotKeyEdit : public QKeySequenceEdit
 {
@@ -52,62 +62,50 @@ SettingsWindow::SettingsWindow(App &app) : ui()
 {
     ui.setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
-
-    ui.tabs->setStyleSheet("QTabWidget::pane { border-radius: 0px; }");
-
-    init_tab_general_hotkey(app.hotkey);
-    init_tab_general_frontend(app.plugin_provider);
-    init_tab_general_terminal(app.terminal_provider);
-    init_tab_general_trayIcon(app.tray_icon);
-    init_tab_general_autostart();
-    init_tab_general_search(app.query_engine);
-
-    ui.tabs->insertTab(ui.tabs->count()-1, new TriggerWidget(app.query_engine, app.extension_registry), "Triggers");
-    ui.tabs->insertTab(ui.tabs->count()-1, new PluginWidget(app.plugin_registry), "Plugins");
-
-    init_tab_about();
+    init_tabs(app);
 
     auto geometry = QGuiApplication::screenAt(QCursor::pos())->geometry();
     move(geometry.center().x() - frameSize().width()/2,
          geometry.top() + geometry.height() / 5);
 }
 
-void SettingsWindow::init_tab_general_hotkey(Hotkey &Hotkey)
+void SettingsWindow::init_tabs(App &app)
 {
-    ui.formLayout_general->insertRow(0, "Hotkey", new QHotKeyEdit(Hotkey));
+    ui.tabs->setStyleSheet("QTabWidget::pane { border-radius: 0px; }");
+
+    // Tab 0 general
+    init_tab_general_hotkey(app);
+    init_tab_general_trayIcon(app);
+    init_tab_general_autostart();
+    init_tab_general_frontends(app);
+    init_tab_general_terminals(app);
+
+    // Tab 1 Window
+    ui.tabs->insertTab((int)Tab::Window, app.plugin_provider.frontend()->createFrontendConfigWidget(), "Window");
+
+    // Tab 2 Search
+    ui.tabs->insertTab((int)Tab::Search, new GlobalSearchWidget(app.query_engine, app.extension_registry), "Search");
+
+    // Tab 3 Triggers
+    ui.tabs->insertTab((int)Tab::Triggers, new TriggerWidget(app.query_engine, app.extension_registry), "Triggers");
+
+    // Tab 4 Plugins
+    ui.tabs->insertTab((int)Tab::Plugins, new PluginWidget(app.plugin_registry), "Plugins");
+
+    // Tab 5 About
+    init_tab_about();
 }
 
-void SettingsWindow::init_tab_general_frontend(NativePluginProvider &plugin_provider)
+void SettingsWindow::init_tab_general_hotkey(App &app)
 {
-    for (const auto *loader : plugin_provider.frontendPlugins()){
-        ui.comboBox_frontend->addItem(loader->metaData().name);
-        if (loader->metaData().id == plugin_provider.frontend()->id())
-            ui.comboBox_frontend->setCurrentIndex(ui.comboBox_frontend->count()-1);
-    }
-
-    connect(ui.comboBox_frontend, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            this, [&plugin_provider](int index) { plugin_provider.setFrontend(index); });
-
-    ui.groupBox_window->layout()->addWidget(plugin_provider.frontend()->createFrontendConfigWidget());
+    ui.formLayout_general->insertRow(0, "Hotkey", new QHotKeyEdit(app.hotkey));
 }
 
-void SettingsWindow::init_tab_general_terminal(TerminalProvider &terminal_provider)
+void SettingsWindow::init_tab_general_trayIcon(App &app)
 {
-    for (const auto &terminal : terminal_provider.terminals()){
-        ui.comboBox_term->addItem(terminal->name());
-        if (terminal.get() == &terminal_provider.terminal())
-            ui.comboBox_term->setCurrentIndex(ui.comboBox_term->count()-1);
-    }
-
-    connect(ui.comboBox_term, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            this, [&terminal_provider](int index){ terminal_provider.setTerminal(index); });
-}
-
-void SettingsWindow::init_tab_general_trayIcon(TrayIcon &tray_icon)
-{
-    ui.checkBox_showTray->setChecked(tray_icon.isVisible());
+    ui.checkBox_showTray->setChecked(app.tray_icon.isVisible());
     QObject::connect(ui.checkBox_showTray, &QCheckBox::toggled,
-                     &tray_icon, &TrayIcon::setVisible);
+                     &app.tray_icon, &TrayIcon::setVisible);
 }
 
 void SettingsWindow::init_tab_general_autostart()
@@ -121,11 +119,11 @@ void SettingsWindow::init_tab_general_autostart()
         ui.checkBox_autostart->setChecked(QFile::exists(autostart_path));
         connect(ui.checkBox_autostart, &QCheckBox::toggled,
                 this, [=](bool toggled){
-            if (toggled)
-                QFile::link(desktopfile_path, autostart_path);
-            else
-                QFile::remove(autostart_path);
-        });
+                    if (toggled)
+                        QFile::link(desktopfile_path, autostart_path);
+                    else
+                        QFile::remove(autostart_path);
+                });
     }
     else
         CRIT << "Deskop entry not found! Autostart option is nonfuctional";
@@ -135,23 +133,30 @@ void SettingsWindow::init_tab_general_autostart()
 #endif
 }
 
-void SettingsWindow::init_tab_general_search(QueryEngine &engine)
+void SettingsWindow::init_tab_general_frontends(App &app)
 {
-    ui.checkBox_fuzzy->setChecked(engine.fuzzy());
-    QObject::connect(ui.checkBox_fuzzy, &QCheckBox::toggled,
-                     [&engine](bool checked){ engine.setFuzzy(checked); });
+    // Populate frontend checkbox
+    for (const auto *loader : app.plugin_provider.frontendPlugins()){
+        ui.comboBox_frontend->addItem(loader->metaData().name);
+        if (loader->metaData().id == app.plugin_provider.frontend()->id())
+            ui.comboBox_frontend->setCurrentIndex(ui.comboBox_frontend->count()-1);
+    }
+    connect(ui.comboBox_frontend, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            this, [&app](int index) { app.plugin_provider.setFrontend(index); });
 
-    ui.lineEdit_separators->setText(engine.separators());
-    QObject::connect(ui.lineEdit_separators, &QLineEdit::editingFinished,
-                     [&](){ engine.setSeparators(ui.lineEdit_separators->text()); });
+}
 
-    ui.slider_decay->setValue((int)(engine.memoryDecay()*100));
-    QObject::connect(ui.slider_decay, &QSlider::valueChanged,
-                     [&](int val){ engine.setMemoryDecay((double)val/100.0); });
+void SettingsWindow::init_tab_general_terminals(App &app)
+{
+    for (const auto &terminal : app.terminal_provider.terminals()){
+        ui.comboBox_term->addItem(terminal->name());
+        if (terminal.get() == &app.terminal_provider.terminal())
+            ui.comboBox_term->setCurrentIndex(ui.comboBox_term->count()-1);
+    }
 
-    ui.checkBox_prioritizePerfectMatch->setChecked(engine.prioritizePerfectMatch());
-    QObject::connect(ui.checkBox_prioritizePerfectMatch, &QCheckBox::toggled,
-                     [&](bool val){ engine.setPrioritizePerfectMatch(val); });
+    connect(ui.comboBox_term, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            this, [&app](int index){ app.terminal_provider.setTerminal(index); });
+
 }
 
 void SettingsWindow::init_tab_about()

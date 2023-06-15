@@ -54,6 +54,7 @@ file(GLOB_RECURSE LIB_PUBLIC_HEADER include/*.h)
 
 set (LIB_UI
     src/settings/settingswindow.ui
+    src/settings/globalsearchwidget.ui
 #    src/settings/pluginwidget.ui
 )
 
@@ -97,6 +98,8 @@ set (LIB_SRC
     src/rpcserver.h
     src/scopedcrashindicator.cpp
     src/scopedcrashindicator.h
+    src/settings/globalsearchwidget.cpp
+    src/settings/globalsearchwidget.h
     src/settings/pluginwidget.cpp
     src/settings/pluginwidget.h
     src/settings/settingswindow.cpp

@@ -9,6 +9,7 @@
 #include "queryengine.h"
 #include "usagedatabase.h"
 #include <QCoreApplication>
+#include <QMessageBox>
 #include <QSettings>
 #include <QTimer>
 #include <cmath>
@@ -19,7 +20,9 @@ static const double DEF_MEMORY_DECAY = 0.5;
 static const char *CFG_PRIO_PERFECT = "prioritize_perfect_match";
 static const bool DEF_PRIO_PERFECT = true;
 static const char *CFG_TRIGGER = "trigger";
-static const char *CFG_TRIGGER_ENABLED = "trigger_enabled";
+static const char *CFG_TRIGGER_HANDLER_ENABLED = "trigger_handler_enabled";
+static const char *CFG_GLOBAL_HANDLER_ENABLED = "global_handler_enabled";
+static const char *CFG_FALLBACK_HANDLER_ENABLED = "fallback_hanlder_enabled";
 static const uint DEF_ERROR_TOLERANCE_DIVISOR = 4;
 static const char* CFG_FUZZY = "fuzzy";
 static const bool  DEF_FUZZY = false;
@@ -30,8 +33,8 @@ static const uint GRAM_SIZE = 2;
 QueryEngine::QueryEngine(ExtensionRegistry &registry):
     ExtensionWatcher<TriggerQueryHandler>(registry),
     ExtensionWatcher<GlobalQueryHandler>(registry),
-    ExtensionWatcher<IndexQueryHandler>(registry),
-    ExtensionWatcher<FallbackHandler>(registry)
+    ExtensionWatcher<FallbackHandler>(registry),
+    global_search_handler(enabled_global_handlers_)
 {
     UsageDatabase::initializeDatabase();
 
@@ -43,28 +46,18 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry):
 
     updateUsageScore();
     GlobalQueryHandlerPrivate::setPrioritizePerfectMatch(prioritize_perfect_match_);
-
-    for (auto &[id, handler] : registry.extensions<QueryHandler>()) {
-        trigger_query_handlers_.insert(handler);
-        HandlerConfig config{
-                handler->settings()->value(CFG_TRIGGER, handler->defaultTrigger()).toString(),
-                handler->settings()->value(CFG_TRIGGER_ENABLED, true).toBool()
-        };
-        query_handler_configs_.emplace(handler, config);
-    }
-    updateActiveTriggers();
 }
 
 shared_ptr<albert::Query> QueryEngine::query(const QString &query_string)
 {
     shared_ptr<::Query> query;
 
-    for (const auto &[trigger, handler] : active_triggers_)
+    for (const auto &[handler, trigger] : enabled_trigger_handlers_)
         if (query_string.startsWith(trigger))
-            query = make_shared<::Query>(fallback_handlers_, handler, query_string.mid(trigger.size()), trigger);
+            query = make_shared<::Query>(enabled_fallback_handlers_, handler, query_string.mid(trigger.size()), trigger);
 
     if (!query)
-        query = make_shared<::Query>(fallback_handlers_, &global_search_handler, query_string);
+        query = make_shared<::Query>(enabled_fallback_handlers_, &global_search_handler, query_string);
 
     auto onActivate = [this, q=query->string()](const QString& e, const QString &i, const QString &a){
         UsageDatabase::addActivation(q, e, i, a);
@@ -77,89 +70,138 @@ shared_ptr<albert::Query> QueryEngine::query(const QString &query_string)
     return query;
 }
 
-void QueryEngine::updateActiveTriggers()
+const map<albert::TriggerQueryHandler*, QString> &QueryEngine::triggerHandlers()
+{ return trigger_handlers_; }
+
+const set<GlobalQueryHandler*> &QueryEngine::globalHandlers()
+{ return global_handlers_; }
+
+const set<FallbackHandler*> &QueryEngine::fallbackHandlers()
+{ return fallback_handlers_; }
+
+bool QueryEngine::isEnabled(albert::TriggerQueryHandler *handler) const
+{ return enabled_trigger_handlers_.contains(handler); }
+
+bool QueryEngine::isEnabled(albert::GlobalQueryHandler *handler) const
+{ return enabled_global_handlers_.contains(handler); }
+
+bool QueryEngine::isEnabled(albert::FallbackHandler *handler) const
+{ return enabled_fallback_handlers_.contains(handler); }
+
+const QString &QueryEngine::trigger(albert::TriggerQueryHandler *handler) const
+{ return trigger_handlers_.at(handler); }
+
+bool QueryEngine::setTrigger(TriggerQueryHandler *handler, const QString& trigger)
 {
-    active_triggers_.clear();
-    for (const auto &[handler, config]: query_handler_configs_)
-        if (config.enabled)
-            if (const auto &[it, success] = active_triggers_.emplace(config.trigger, handler); !success)
-                WARN << QString("Trigger conflict '%1': Already reserved for %2.").arg(config.trigger, it->second->id());
+    if (!handler->allowTriggerRemap())
+        return false;
+
+    setEnabled(handler, false);
+
+    if (trigger.isEmpty()){
+        trigger_handlers_.at(handler) = handler->defaultTrigger();
+        handler->settings()->remove(CFG_TRIGGER);
+    } else {
+        trigger_handlers_.at(handler) = trigger;
+        handler->settings()->setValue(CFG_TRIGGER, trigger);
+    }
+
+    return setEnabled(handler);
+}
+
+bool QueryEngine::setEnabled(albert::TriggerQueryHandler *handler, bool enabled)
+{
+    if (isEnabled(handler) == enabled)
+        return true;
+
+    auto trigger = trigger_handlers_.at(handler);
+
+    if (enabled){
+        // Check for conflicts
+        auto trigger_conflict = std::find_if(
+            enabled_trigger_handlers_.begin(), enabled_trigger_handlers_.end(),
+            [trigger](const auto& kv) {return kv.second == trigger; }) != enabled_trigger_handlers_.end();
+
+        if (trigger_conflict){
+            WARN << QString("Trigger conflict: '%1' reserved by '%2'.").arg(trigger, handler->id());
+            return false;
+        } else {
+            handler->settings()->remove(CFG_TRIGGER_HANDLER_ENABLED);
+            enabled_trigger_handlers_.emplace(handler, trigger_handlers_.at(handler));
+            return true;
+        }
+    } else {
+        enabled_trigger_handlers_.erase(handler);
+        handler->settings()->setValue(CFG_TRIGGER_HANDLER_ENABLED, false);
+        return true;
+    }
+}
+
+void QueryEngine::setEnabled(GlobalQueryHandler *handler, bool enabled)
+{
+    if (enabled){
+        enabled_global_handlers_.emplace(handler);
+        if (auto *ih = dynamic_cast<IndexQueryHandler*>(handler); ih)
+            ih->d->setIndex(make_unique<ItemIndex>(separators_, false, GRAM_SIZE,
+                                                   fuzzy_?DEF_ERROR_TOLERANCE_DIVISOR:0));
+    } else {
+        enabled_global_handlers_.erase(handler);
+        if (auto *ih = dynamic_cast<IndexQueryHandler*>(handler); ih)
+            ih->d->setIndex(nullptr);
+    }
+    handler->settings()->setValue(CFG_GLOBAL_HANDLER_ENABLED, enabled);
+}
+
+void QueryEngine::setEnabled(FallbackHandler *handler, bool enabled)
+{
+    if (enabled)
+        enabled_fallback_handlers_.emplace(handler);
+    else
+        enabled_fallback_handlers_.erase(handler);
+    handler->settings()->setValue(CFG_FALLBACK_HANDLER_ENABLED, enabled);
 }
 
 void QueryEngine::onAdd(TriggerQueryHandler *handler)
 {
-    trigger_query_handlers_.insert(handler);
-    HandlerConfig conf {
-        handler->settings()->value(CFG_TRIGGER, handler->defaultTrigger()).toString(),
-        handler->settings()->value(CFG_TRIGGER_ENABLED, true).toBool()
-    };
-    query_handler_configs_.emplace(handler, conf);
-    updateActiveTriggers();
+    trigger_handlers_.emplace(handler, handler->allowTriggerRemap()
+                                           ? handler->settings()->value(CFG_TRIGGER, handler->defaultTrigger()).toString()
+                                           : handler->defaultTrigger());
+
+    if (handler->settings()->value(CFG_TRIGGER_HANDLER_ENABLED, true).toBool())
+        if(!setEnabled(handler))
+            WARN << QString("Failed activating trigger '%1'").arg(handler->id());
 }
 
 void QueryEngine::onRem(TriggerQueryHandler *handler)
 {
-    trigger_query_handlers_.erase(handler);
-    query_handler_configs_.erase(handler);
-    updateActiveTriggers();
+    enabled_trigger_handlers_.erase(handler);
+    trigger_handlers_.erase(handler);
 }
 
 void QueryEngine::onAdd(GlobalQueryHandler *handler)
 {
-    global_search_handler.handlers.insert(handler->d.get());
+    global_handlers_.emplace(handler);
+    if (handler->settings()->value(CFG_GLOBAL_HANDLER_ENABLED, true).toBool())
+        setEnabled(handler);
 }
 
 void QueryEngine::onRem(GlobalQueryHandler *handler)
 {
-    global_search_handler.handlers.erase(handler->d.get());
-}
-
-void QueryEngine::onAdd(IndexQueryHandler *handler)
-{
-    index_query_handlers_.insert(handler);
-    handler->d->setIndex(make_unique<ItemIndex>(separators_, false, GRAM_SIZE, fuzzy_?DEF_ERROR_TOLERANCE_DIVISOR:0));
-}
-
-void QueryEngine::onRem(IndexQueryHandler *handler)
-{
-    index_query_handlers_.erase(handler);
+    global_handlers_.erase(handler);
+    enabled_global_handlers_.erase(handler);
 }
 
 void QueryEngine::onAdd(FallbackHandler *handler)
 {
-    fallback_handlers_.insert(handler);
+    fallback_handlers_.emplace(handler);
+    if (handler->settings()->value(CFG_FALLBACK_HANDLER_ENABLED, true).toBool())
+        setEnabled(handler);
 }
 
 void QueryEngine::onRem(FallbackHandler *handler)
 {
     fallback_handlers_.erase(handler);
-}
-
-const map<TriggerQueryHandler*,QueryEngine::HandlerConfig> &QueryEngine::handlerConfig() const
-{
-    return query_handler_configs_;
-}
-
-const map<QString, TriggerQueryHandler *> &QueryEngine::activeTriggers() const
-{
-    return active_triggers_;
-}
-
-void QueryEngine::setEnabled(TriggerQueryHandler *handler, bool enabled)
-{
-    query_handler_configs_.at(handler).enabled = enabled;
-    updateActiveTriggers();
-    handler->settings()->setValue(CFG_TRIGGER_ENABLED, enabled);
-}
-
-void QueryEngine::setTrigger(TriggerQueryHandler *handler, const QString& trigger)
-{
-    if (!handler->allowTriggerRemap())
-        return;
-
-    query_handler_configs_.at(handler).trigger = trigger;
-    updateActiveTriggers();
-    handler->settings()->setValue(CFG_TRIGGER, trigger);
+    enabled_fallback_handlers_.erase(handler);
 }
 
 void QueryEngine::updateUsageScore() const
@@ -195,10 +237,7 @@ void QueryEngine::updateUsageScore() const
     GlobalQueryHandlerPrivate::setScores(usage_scores);
 }
 
-double QueryEngine::memoryDecay() const
-{
-    return memory_decay_;
-}
+double QueryEngine::memoryDecay() const { return memory_decay_; }
 
 // @param forgetfulness: must be in range [0.5,1] i.e. from [MRU,MFU]
 void QueryEngine::setMemoryDecay(double val)
@@ -209,9 +248,7 @@ void QueryEngine::setMemoryDecay(double val)
 }
 
 bool QueryEngine::prioritizePerfectMatch() const
-{
-    return prioritize_perfect_match_;
-}
+{ return prioritize_perfect_match_; }
 
 void QueryEngine::setPrioritizePerfectMatch(bool val)
 {
@@ -220,29 +257,26 @@ void QueryEngine::setPrioritizePerfectMatch(bool val)
     GlobalQueryHandlerPrivate::setPrioritizePerfectMatch(prioritize_perfect_match_);
 }
 
-
-bool QueryEngine::fuzzy() const
-{
-    return fuzzy_;
-}
+bool QueryEngine::fuzzy() const { return fuzzy_; }
 
 void QueryEngine::setFuzzy(bool fuzzy)
 {
     fuzzy_ = fuzzy;
     QSettings(qApp->applicationName()).setValue(CFG_FUZZY, fuzzy);
-    for (auto &iqh : index_query_handlers_)
-        iqh->d->setIndex(make_unique<ItemIndex>(separators_, false, GRAM_SIZE, fuzzy_ ? DEF_ERROR_TOLERANCE_DIVISOR : 0));
+    for (auto *handler : enabled_global_handlers_)
+        if (auto *ih = dynamic_cast<IndexQueryHandler*>(handler); ih)
+            ih->d->setIndex(make_unique<ItemIndex>(separators_, false, GRAM_SIZE,
+                                                   fuzzy_ ? DEF_ERROR_TOLERANCE_DIVISOR : 0));
 }
 
-const QString &QueryEngine::separators() const
-{
-    return separators_;
-}
+const QString &QueryEngine::separators() const { return separators_; }
 
 void QueryEngine::setSeparators(const QString &separators)
 {
     separators_ = separators;
     QSettings(qApp->applicationName()).setValue(CFG_SEPARATORS, separators);
-    for (auto &iqh : index_query_handlers_)
-        iqh->d->setIndex(make_unique<ItemIndex>(separators_, false, GRAM_SIZE, fuzzy_ ? DEF_ERROR_TOLERANCE_DIVISOR : 0));
+    for (auto *handler : enabled_global_handlers_)
+        if (auto *ih = dynamic_cast<IndexQueryHandler*>(handler); ih)
+            ih->d->setIndex(make_unique<ItemIndex>(separators_, false, GRAM_SIZE,
+                                                   fuzzy_ ? DEF_ERROR_TOLERANCE_DIVISOR : 0));
 }

@@ -2,6 +2,7 @@
 
 #pragma once
 #include <QTableView>
+namespace albert { class ExtensionRegistry; }
 class QueryEngine;
 class TriggerModel;
 

@@ -9,6 +9,9 @@
 using namespace std;
 using namespace albert;
 
+GlobalSearch::GlobalSearch(const std::set<GlobalQueryHandler*> &handlers)
+    : handlers(handlers) {}
+
 QString GlobalSearch::id() const { return "globalsearch"; }
 
 QString GlobalSearch::name() const { return {}; }
@@ -23,14 +26,14 @@ void GlobalSearch::handleTriggerQuery(TriggerQuery &query) const
     mutex m;  // 6.4 Still no move semantics in QtConcurrent
     vector<pair<Extension*,RankItem>> rank_items;
 
-    function<void(GlobalQueryHandlerPrivate*)> map =
-        [&m, &rank_items, &query](GlobalQueryHandlerPrivate *handler) {
-            TimePrinter tp(QString("TIME: %1 µs ['%2':'%3']").arg("%1", handler->q->id(), query.string()));
-            auto r = handler->handleGlobalQuery(dynamic_cast<GlobalQueryHandler::GlobalQuery&>(query));
+    function<void(GlobalQueryHandler*)> map =
+        [&m, &rank_items, &query](GlobalQueryHandler *handler) {
+            TimePrinter tp(QString("TIME: %1 µs ['%2':'%3']").arg("%1", handler->id(), query.string()));
+            auto r = handler->d->handleGlobalQuery(dynamic_cast<GlobalQueryHandler::GlobalQuery&>(query));
             unique_lock lock(m);
             rank_items.reserve(rank_items.size()+r.size());
             for (auto &rank_item : r)
-                rank_items.emplace_back(handler->q, ::move(rank_item));
+                rank_items.emplace_back(handler, ::move(rank_item));
         };
 
     QtConcurrent::blockingMap(handlers, map);

@@ -3,7 +3,9 @@
 #include "albert/extensions/queryhandler.h"
 #include "queryengine.h"
 #include "triggerwidget.h"
+#include <QCoreApplication>
 #include <QHeaderView>
+#include <QMessageBox>
 #include <QTableView>
 #include <QVBoxLayout>
 using namespace albert;
@@ -18,12 +20,6 @@ enum class Column {
 class TriggerModel : public QAbstractTableModel, ExtensionWatcher<TriggerQueryHandler>
 {
 public:
-    struct Entry
-    {
-        TriggerQueryHandler *handler;
-        QString trigger;
-        bool enabled;
-    };
     vector<TriggerQueryHandler *> handlers;
     QueryEngine &engine;
 
@@ -32,6 +28,7 @@ public:
     {
         for (auto &[id, handler]: registry.extensions<TriggerQueryHandler>())
             handlers.emplace_back(handler);
+
         ::sort(begin(handlers), end(handlers),
                [](const auto &a, const auto &b) { return a->name() < b->name(); });
 
@@ -65,48 +62,42 @@ public:
     QVariant data(const QModelIndex &index, int role) const override
     {
         if (index.column() == (int) Column::Name) {
+
             if (role == Qt::DisplayRole)
                 return handlers[index.row()]->name();
 
+            else if (role == Qt::ToolTipRole)
+                return handlers[index.row()]->id();
+
         } else if (index.column() == (int) Column::Description) {
+
             if (role == Qt::DisplayRole)
                 return handlers[index.row()]->description();
 
         } else if (index.column() == (int) Column::Trigger) {
             auto &handler = handlers[index.row()];
+
             if (role == Qt::DisplayRole) {
-                return QString(engine.handlerConfig().at(handler).trigger).replace(" ", "•");  // 
+                return QString(engine.trigger(handler)).replace(" ", "•");
 
             } else if (role == Qt::EditRole) {
-                return engine.handlerConfig().at(handler).trigger;
+                return engine.trigger(handler);
 
             } else if (role == Qt::ToolTipRole) {
-                QStringList sl;
-                auto config = engine.handlerConfig().at(handler);
                 if (!handler->allowTriggerRemap())
-                    sl << "This extension does not allow trigger remapping.";
-                if (config.enabled && engine.activeTriggers().at(config.trigger) != handler)
-                    sl << QString("Trigger conflict: '%1' reserved by extension '%2'.")
-                            .arg(config.trigger, engine.activeTriggers().at(config.trigger)->name());
-                if (!sl.isEmpty())
-                    return sl.join(" ");
+                    return "This extension does not allow trigger remapping.";
 
             } else if (role == Qt::CheckStateRole) {
-                return engine.handlerConfig().at(handler).enabled ? Qt::Checked : Qt::Unchecked;
+                return engine.isEnabled(handler) ? Qt::Checked : Qt::Unchecked;
 
-            } else if (role == Qt::FontRole) {
-                if (!handler->allowTriggerRemap()) {
-                    QFont f;
-                    f.setItalic(true);
-                    return f;
-                }
+            } else if (role == Qt::FontRole && !handler->allowTriggerRemap()) {
+                QFont f;
+                f.setItalic(true);
+                return f;
 
             } else if (role == Qt::ForegroundRole) {
-                auto config = engine.handlerConfig().at(handler);
-                if (!config.enabled)
+                if (!engine.isEnabled(handler))
                     return QColor(Qt::gray);
-                else if (engine.activeTriggers().at(config.trigger) != handler)
-                    return QColor(Qt::red);
 
             }
         }
@@ -117,18 +108,20 @@ public:
     {
         if (idx.column() == (int) Column::Trigger) {
             if (role == Qt::EditRole) {
-
-                if (value.toString().isEmpty())
+                if (engine.setTrigger(handlers[idx.row()], value.toString())){
+                    emit dataChanged(index(0, (int) Column::Trigger),
+                                     index((int) handlers.size(), (int) Column::Trigger),
+                                     {Qt::DisplayRole});
+                    return true;
+                } else {
+                    QMessageBox::warning(nullptr, qApp->applicationName(),
+                                         QString("The tigger '%1' is already reserved.").arg(value.toString()));
                     return false;
+                }
+            }
 
-                engine.setTrigger(handlers[idx.row()], value.toString());
-                emit dataChanged(index(0, (int) Column::Trigger),
-                                 index((int) handlers.size(), (int) Column::Trigger),
-                                 {Qt::DisplayRole});
-                return true;
-            } else if (role == Qt::CheckStateRole) {
-                engine.setEnabled(handlers[idx.row()],
-                                  static_cast<Qt::CheckState>(value.toUInt()) == Qt::Checked);
+            else if (role == Qt::CheckStateRole) {
+                return engine.setEnabled(handlers[idx.row()], value == Qt::Checked);
                 emit dataChanged(index(0, (int) Column::Trigger),
                                  index((int) handlers.size(), (int) Column::Trigger),
                                  {Qt::DisplayRole});
@@ -142,12 +135,9 @@ public:
     {
         if (role == Qt::DisplayRole)
             switch ((Column) section) {
-                case Column::Name:
-                    return "Extension";
-                case Column::Trigger:
-                    return "Trigger";
-                case Column::Description:
-                    return "Description";
+                case Column::Name: return "Extension";
+                case Column::Trigger: return "Trigger";
+                case Column::Description: return "Description";
             }
         return {};
     }
@@ -187,6 +177,7 @@ TriggerWidget::TriggerWidget(QueryEngine &qe, ExtensionRegistry &er)
     setSelectionMode(QAbstractItemView::SingleSelection);
     setEditTriggers(QTableView::DoubleClicked|QTableView::SelectedClicked|QTableView::EditKeyPressed);
 
+    // Keep current item in clickable row
     connect(selectionModel(), &QItemSelectionModel::currentChanged, this,
             [this](const QModelIndex &current, const QModelIndex&){
         blockSignals(true);
