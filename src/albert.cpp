@@ -33,9 +33,7 @@ unique_ptr<App> app;
 }
 
 QNetworkAccessManager *albert::networkManager()
-{
-    return &app->network_manager;
-}
+{ return &app->network_manager; }
 
 void albert::show(const QString &text)
 {
@@ -45,19 +43,13 @@ void albert::show(const QString &text)
 }
 
 void albert::hide()
-{
-    app->plugin_provider.frontend()->setVisible(false);
-}
+{ app->plugin_provider.frontend()->setVisible(false);}
 
 void albert::toggle()
-{
-    app->plugin_provider.frontend()->setVisible(!app->plugin_provider.frontend()->isVisible());
-}
+{ app->plugin_provider.frontend()->setVisible(!app->plugin_provider.frontend()->isVisible()); }
 
 void albert::runTerminal(const QString &script, const QString &working_dir, bool close_on_exit)
-{
-    app->terminal_provider.terminal().run(script, working_dir, close_on_exit);
-}
+{ app->terminal_provider.terminal().run(script, working_dir, close_on_exit); }
 
 void albert::showSettings()
 {
@@ -68,19 +60,13 @@ void albert::showSettings()
 }
 
 void albert::restart()
-{
-    QMetaObject::invokeMethod(qApp, "exit", Qt::QueuedConnection, Q_ARG(int, -1));
-}
+{ QMetaObject::invokeMethod(qApp, "exit", Qt::QueuedConnection, Q_ARG(int, -1)); }
 
 void albert::quit()
-{
-    QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
-}
+{ QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection); }
 
 void albert::sendTrayNotification(const QString &title, const QString &message, int ms)
-{
-    app->tray_icon.showMessage(title, message, QSystemTrayIcon::NoIcon, ms);
-}
+{ app->tray_icon.showMessage(title, message, QSystemTrayIcon::NoIcon, ms); }
 
 
 static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
