@@ -51,7 +51,7 @@ public:
     virtual QString synopsis() const;  ///< The synopsis, displayed on empty query. Default empty.
     virtual QString defaultTrigger() const;  ///< The default (not user defined) trigger. Default Extension::id().
     virtual bool allowTriggerRemap() const;  ///< Enable user remapping of the trigger. Default false.
-    virtual void handleTriggerQuery(TriggerQuery &) const = 0;  ///< Called on triggered query.
+    virtual void handleTriggerQuery(TriggerQuery *) const = 0;  ///< Called on triggered query.
 };
 
 
@@ -90,7 +90,7 @@ public:
     /// The query handling function. Subclasses should return matched items with appropriate match scores.
     /// The match score should make sense and often (if not always) the fraction of the string match makes sense.
     /// @note has to be thread safe!
-    virtual std::vector<RankItem> handleGlobalQuery(const GlobalQuery&) const = 0;
+    virtual std::vector<RankItem> handleGlobalQuery(const GlobalQuery*) const = 0;
 
     std::unique_ptr<GlobalQueryHandlerPrivate> d; ///< Do not touch
 };
@@ -106,7 +106,7 @@ public:
     /// Provides triggered query handling
     /// @implements QueryHandler::handleQuery
     /// @note Override this if handlers should behave differently when triggered
-    void handleTriggerQuery(TriggerQuery &) const override;
+    void handleTriggerQuery(TriggerQuery *) const override;
 
 };
 
@@ -142,7 +142,7 @@ public:
 
     /// @implements GlobalQueryHandler::handleQuery
     /// Uses the index to find items
-    std::vector<RankItem> handleGlobalQuery(const GlobalQuery &) const override final;
+    std::vector<RankItem> handleGlobalQuery(const GlobalQuery *) const override;
 
     std::unique_ptr<IndexQueryHandlerPrivate> d; ///< Do not touch
 };

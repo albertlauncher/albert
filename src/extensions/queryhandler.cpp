@@ -30,9 +30,9 @@ GlobalQueryHandler::~GlobalQueryHandler() = default;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-void QueryHandler::handleTriggerQuery(TriggerQuery &query) const
+void QueryHandler::handleTriggerQuery(TriggerQuery *query) const
 {
-    std::vector<RankItem> &&rank_items = d->handleGlobalQuery(dynamic_cast<GlobalQuery&>(query));
+    std::vector<RankItem> &&rank_items = d->handleGlobalQuery(dynamic_cast<GlobalQuery*>(query));
     sort(rank_items.begin(), rank_items.end(), [](const auto &a, const auto &b){ return a.score > b.score; });
 
     // TODO c++20 ranges::view
@@ -41,7 +41,7 @@ void QueryHandler::handleTriggerQuery(TriggerQuery &query) const
     for (auto &match : rank_items)
         items.push_back(std::move(match.item));
 
-    query.add(std::move(items));
+    query->add(std::move(items));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -56,5 +56,5 @@ IndexQueryHandler::~IndexQueryHandler() = default;
 void IndexQueryHandler::setIndexItems(std::vector<IndexItem> &&index_items)
 { d->setIndexItems(::move(index_items)); }
 
-std::vector<RankItem> IndexQueryHandler::handleGlobalQuery(const GlobalQuery &query) const
+std::vector<RankItem> IndexQueryHandler::handleGlobalQuery(const GlobalQuery *query) const
 { return d->handleGlobalQuery(query); }

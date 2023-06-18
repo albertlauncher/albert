@@ -18,9 +18,9 @@ QString GlobalSearch::name() const { return {}; }
 
 QString GlobalSearch::description() const { return {}; }
 
-void GlobalSearch::handleTriggerQuery(TriggerQuery &query) const
+void GlobalSearch::handleTriggerQuery(TriggerQuery *query) const
 {
-    if (query.string().trimmed().isEmpty())
+    if (query->string().trimmed().isEmpty())
         return;
 
     mutex m;  // 6.4 Still no move semantics in QtConcurrent
@@ -28,8 +28,8 @@ void GlobalSearch::handleTriggerQuery(TriggerQuery &query) const
 
     function<void(GlobalQueryHandler*)> map =
         [&m, &rank_items, &query](GlobalQueryHandler *handler) {
-            TimePrinter tp(QString("TIME: %1 µs ['%2':'%3']").arg("%1", handler->id(), query.string()));
-            auto r = handler->d->handleGlobalQuery(dynamic_cast<GlobalQueryHandler::GlobalQuery&>(query));
+            TimePrinter tp(QString("TIME: %1 µs ['%2':'%3']").arg("%1", handler->id(), query->string()));
+            auto r = handler->d->handleGlobalQuery(dynamic_cast<GlobalQueryHandler::GlobalQuery*>(query));
             unique_lock lock(m);
             rank_items.reserve(rank_items.size()+r.size());
             for (auto &rank_item : r)
@@ -40,7 +40,7 @@ void GlobalSearch::handleTriggerQuery(TriggerQuery &query) const
 
     sort(rank_items.begin(), rank_items.end(), [](const auto &a, const auto &b){ return a.second.score > b.second.score; });
 
-    auto *q = static_cast<::Query*>(&query);
+    auto *q = static_cast<::Query*>(query);
     q->matches_.add(rank_items.begin(), rank_items.end());
 
 //    auto it = rank_items.begin();

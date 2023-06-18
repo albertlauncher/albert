@@ -12,7 +12,7 @@ private:
     QString id() const override;
     QString name() const override;
     QString description() const override;
-    void handleTriggerQuery(TriggerQuery &query) const override;
+    void handleTriggerQuery(TriggerQuery *query) const override;
 
     const std::set<albert::GlobalQueryHandler*> &handlers;
 };

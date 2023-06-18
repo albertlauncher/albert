@@ -123,11 +123,11 @@ void PluginRegistry::onRem(PluginProvider *pp)
     emit pluginsChanged();
 }
 
-void PluginRegistry::handleTriggerQuery(TriggerQuery &query) const
+void PluginRegistry::handleTriggerQuery(TriggerQuery *query) const
 {
     for (const auto &[id, loader] : plugins_){  // these should all be valid
 
-        if (!id.startsWith(query.string(), Qt::CaseInsensitive))
+        if (!id.startsWith(query->string(), Qt::CaseInsensitive))
             continue;
 
         Actions actions;
@@ -175,7 +175,7 @@ void PluginRegistry::handleTriggerQuery(TriggerQuery &query) const
         }
         info.append(loader->metaData().description);
 
-        query.add(
+        query->add(
             StandardItem::make(
                 id,
                 loader->metaData().name,

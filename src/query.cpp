@@ -46,7 +46,7 @@ void Query::run()
         try {
             for (auto *fallback_handler : fallback_handlers_)
                 fallbacks_.add(fallback_handler, fallback_handler->fallbacks(QString("%1%2").arg(trigger_, string_)));
-            this->query_handler_->handleTriggerQuery(*this);
+            this->query_handler_->handleTriggerQuery(this);
         } catch (const exception &e){
             WARN << "Handler thread threw" << e.what();
         }

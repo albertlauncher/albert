@@ -28,7 +28,7 @@ protected:
     QString defaultTrigger() const override;
     void onAdd(albert::PluginProvider*) override;
     void onRem(albert::PluginProvider*) override;
-    void handleTriggerQuery(TriggerQuery &) const override;
+    void handleTriggerQuery(TriggerQuery *) const override;
 
 private:
     std::map<QString, albert::PluginLoader*> plugins_;
