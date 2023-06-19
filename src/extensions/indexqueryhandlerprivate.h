@@ -18,7 +18,7 @@ public:
     void setIndexItems(std::vector<albert::IndexItem> &&);
 
 private:
-    albert::IndexQueryHandler *q;
+    albert::IndexQueryHandler * const q;
     std::unique_ptr<Index> index_;
 };
 

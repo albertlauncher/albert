@@ -13,7 +13,7 @@ class GlobalQueryHandlerPrivate final
 public:
     GlobalQueryHandlerPrivate(albert::GlobalQueryHandler *q);
     ~GlobalQueryHandlerPrivate();
-    albert::GlobalQueryHandler * q;
+    albert::GlobalQueryHandler *  const q;
 
     static void setPrioritizePerfectMatch(bool val);
     static void setScores(std::map<std::pair<QString,QString>,albert::RankItem::Score> scores);

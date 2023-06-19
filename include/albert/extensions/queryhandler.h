@@ -92,7 +92,7 @@ public:
     /// @note has to be thread safe!
     virtual std::vector<RankItem> handleGlobalQuery(const GlobalQuery*) const = 0;
 
-    std::unique_ptr<GlobalQueryHandlerPrivate> d; ///< Do not touch
+    const std::unique_ptr<GlobalQueryHandlerPrivate> d; ///< Do not touch
 };
 
 
@@ -144,7 +144,7 @@ public:
     /// Uses the index to find items
     std::vector<RankItem> handleGlobalQuery(const GlobalQuery *) const override;
 
-    std::unique_ptr<IndexQueryHandlerPrivate> d; ///< Do not touch
+    const std::unique_ptr<IndexQueryHandlerPrivate> d; ///< Do not touch
 };
 
 }
