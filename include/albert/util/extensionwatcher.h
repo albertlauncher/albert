@@ -20,7 +20,7 @@ public:
                                   [this](Extension *e){ if (T *t = dynamic_cast<T*>(e)) onRem(t); });
     }
 
-    ~ExtensionWatcher()
+    virtual ~ExtensionWatcher()
     {
         QObject::disconnect(conn_r);
         QObject::disconnect(conn_u);
