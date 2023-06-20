@@ -2,7 +2,7 @@
 [Desktop Entry]
 Categories=Utility;
 Comment=A desktop agnostic launcher
-Exec=/usr/bin/env QT_QPA_PLATFORM=xcb albert
+Exec=albert
 GenericName=Launcher
 Icon=albert
 Name=Albert
