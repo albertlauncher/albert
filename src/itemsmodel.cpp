@@ -55,8 +55,16 @@ QVariant ItemsModel::data(const QModelIndex &index, int role) const
         const shared_ptr<Item> item = items[index.row()].second;
 
         switch (role) {
-            case (int)ItemRoles::TextRole: return item->text();
-            case (int)ItemRoles::SubTextRole: return item->subtext();
+            case (int)ItemRoles::TextRole:{
+                QString text = item->text();
+                text.replace('\n', ' ');
+                return text;
+            }
+            case (int)ItemRoles::SubTextRole:{
+                QString text = item->subtext();
+                text.replace('\n', ' ');
+                return text;
+            }
             case Qt::ToolTipRole: return QString("%1\n%2").arg(item->text(), item->subtext());
             case (int)ItemRoles::InputActionRole: return item->inputActionText();
             case (int)ItemRoles::IconUrlsRole: return item->iconUrls();
