@@ -61,11 +61,13 @@ public:
 class ALBERT_EXPORT RankItem
 {
 public:
-    using Score = uint16_t;
-    static const constexpr Score MAX_SCORE = std::numeric_limits<Score>::max();
-    RankItem(std::shared_ptr<Item> item, Score score);
-    std::shared_ptr<Item> item;  ///< The matched item
-    Score score;  ///< The match score. @note MAX_SCORE represents a full match.
+    explicit RankItem(std::shared_ptr<Item> item, float score);
+
+    /// The matched item
+    std::shared_ptr<Item> item;
+
+    /// The match score. Must be in the range (0,1]. No checks are done for performance.
+    float score;
 };
 
 

@@ -16,13 +16,13 @@ public:
     albert::GlobalQueryHandler *  const q;
 
     static void setPrioritizePerfectMatch(bool val);
-    static void setScores(std::map<std::pair<QString,QString>,albert::RankItem::Score> scores);
+    static void setScores(std::map<std::pair<QString,QString>,float> scores);
 
     void applyUsageScores(std::vector<albert::RankItem> &rank_items) const;
     std::vector<albert::RankItem> handleGlobalQuery(const albert::GlobalQueryHandler::GlobalQuery*) const;
 
 private:
     static std::shared_mutex m;
-    static std::map<std::pair<QString,QString>,albert::RankItem::Score> usage_scores;
+    static std::map<std::pair<QString,QString>,float> usage_scores;
     static bool prio_perfect_match;
 };

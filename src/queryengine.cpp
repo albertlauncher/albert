@@ -209,7 +209,7 @@ void QueryEngine::updateUsageScore() const
     vector<Activation> activations = UsageDatabase::activations();
 
     // Compute usage weights
-    map<pair<QString,QString>,double> usage_weights;
+    map<pair<QString,QString>,float> usage_weights;
     for (int i = 0, k = (int)activations.size(); i < (int)activations.size(); ++i, --k){
         auto activation = activations[i];
         auto weight = pow(memory_decay_, k);
@@ -220,15 +220,15 @@ void QueryEngine::updateUsageScore() const
     }
 
     // Invert the list. Results in ordered by rank map
-    map<double,vector<pair<QString,QString>>> weight_items;
+    map<float,vector<pair<QString,QString>>> weight_items;
     for (const auto &[ids, weight] : usage_weights)
         weight_items[weight].emplace_back(ids);
 
     // Distribute scores linearly over the interval preserving the order
-    map<pair<QString,QString>,RankItem::Score> usage_scores;
-    double rank = 0.0;
+    map<pair<QString,QString>,float> usage_scores;
+    float rank = 0.0;
     for (const auto &[weight, vids] : weight_items){
-        RankItem::Score score = rank / (double)weight_items.size() * RankItem::MAX_SCORE;
+        float score = rank / weight_items.size();
         for (const auto &ids : vids)
             usage_scores.emplace(ids, score);
         rank += 1.0;

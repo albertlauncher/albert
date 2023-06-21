@@ -10,7 +10,6 @@
 #include <mutex>
 using namespace std;
 using namespace albert;
-using Score = RankItem::Score;
 
 
 static QStringList splitString(const QString &string, const QString &separators, bool case_sensitive = false)
@@ -160,10 +159,10 @@ std::vector<albert::RankItem> ItemIndex::search(const QString &string, const boo
 {
     QStringList &&words = splitString(string, separators, case_sensitive);
 
-    unordered_map<Index,Score> result_map;
+    unordered_map<Index, float> result_map;
     if (words.empty()){
         for (const auto &string_index_item : index.strings){
-            auto score = (Score)(1.0/(double)string_index_item.max_match_len * RankItem::MAX_SCORE);
+            float score = 1.0f/string_index_item.max_match_len;
             if(const auto &[it, success] = result_map.emplace(string_index_item.item, score); !success)
                 if (it->second < score)
                     it->second = score;
@@ -235,7 +234,7 @@ std::vector<albert::RankItem> ItemIndex::search(const QString &string, const boo
 
         // Build the list of matched items with their highest scoring match
         for (const auto &match : left_matches) {
-            auto score = (Score)((double)match.match_len / index.strings[match.index].max_match_len * RankItem::MAX_SCORE);
+            float score = (float)match.match_len / index.strings[match.index].max_match_len;
             if (const auto &[it, success] = result_map.emplace(index.strings[match.index].item, score);
                     !success && it->second < score) // update if exists
                 it->second = score;

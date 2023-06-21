@@ -19,7 +19,7 @@ bool TriggerQueryHandler::allowTriggerRemap() const { return true; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-RankItem::RankItem(shared_ptr<Item> i, Score s):
+RankItem::RankItem(shared_ptr<Item> i, float s):
     item(std::move(i)), score(s) {}
 
 GlobalQueryHandler::GlobalQuery::~GlobalQuery() = default;
