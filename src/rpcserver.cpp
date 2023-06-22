@@ -6,11 +6,10 @@
 #include <QRegularExpression>
 #include <QCoreApplication>
 #include <QLocalSocket>
-#include <QStandardPaths>
 #include <QString>
 #include <iostream>
 
-static QString socket_path = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation) + "/albert_socket";
+static const char* socket_file_name = "ipc_socket";
 
 static std::map<QString, std::function<QString(const QString&)>> actions =
 {
@@ -43,6 +42,7 @@ static std::map<QString, std::function<QString(const QString&)>> actions =
 
 RPCServer::RPCServer()
 {
+    QString socket_path = QString("%1/%2").arg(albert::cacheLocation(), socket_file_name);
 
     QLocalSocket socket;
     DEBG << "Checking for a running instance…";
@@ -97,6 +97,8 @@ void RPCServer::onNewConnection()
 
 bool RPCServer::trySendMessageAndExit(const QString &message)
 {
+    QString socket_path = QString("%1/%2").arg(albert::cacheLocation(), socket_file_name);
+
     QLocalSocket socket;
     socket.connectToServer(socket_path);
     if (socket.waitForConnected(500)){
