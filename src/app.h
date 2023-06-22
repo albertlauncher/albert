@@ -1,9 +1,10 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2023 Manuel Schneider
 
 #pragma once
 #include "albert/extensionregistry.h"
 #include "hotkey.h"
 #include "appqueryhandler.h"
+#include "pluginqueryhandler.h"
 #include "nativepluginprovider.h"
 #include "pluginregistry.h"
 #include "queryengine.h"
@@ -34,5 +35,7 @@ public:
     QPointer<SettingsWindow> settings_window;
     Hotkey hotkey;
     Telemetry telemetry;
+
     AppQueryHandler app_query_handler;
+    PluginQueryHandler plugin_query_handler;
 };

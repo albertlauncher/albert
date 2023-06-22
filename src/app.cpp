@@ -1,6 +1,5 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2023 Manuel Schneider
 
-#include "albert/albert.h"
 #include "albert/extensions/frontend.h"
 #include "app.h"
 #include <QHotkey>
@@ -12,7 +11,11 @@ App::App(const QStringList &additional_plugin_paths) :
     plugin_registry(extension_registry),
     query_engine(extension_registry),
     plugin_provider(extension_registry, additional_plugin_paths),
-    settings_window(nullptr){}
+    settings_window(nullptr),
+    plugin_query_handler(plugin_registry)
+{
+
+}
 
 App::~App()
 {
@@ -24,7 +27,8 @@ void App::initialize()
     plugin_provider.loadFrontend();
     plugin_provider.frontend()->setEngine(&query_engine);
 
-    extension_registry.add(&plugin_registry);
     extension_registry.add(&plugin_provider);  // loads plugins
+
     extension_registry.add(&app_query_handler);
+    extension_registry.add(&plugin_query_handler);
 }

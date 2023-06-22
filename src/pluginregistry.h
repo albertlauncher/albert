@@ -1,18 +1,16 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2023 Manuel Schneider
 
 #pragma once
-#include "albert/extensions/queryhandler.h"
 #include "albert/util/extensionwatcher.h"
-#include <set>
 #include <QObject>
+#include <map>
+#include <vector>
 namespace albert {
 class PluginProvider;
 class PluginLoader;
 }
 
-class PluginRegistry : public QObject,
-                       public albert::TriggerQueryHandler,
-                       public albert::ExtensionWatcher<albert::PluginProvider>
+class PluginRegistry : public QObject, public albert::ExtensionWatcher<albert::PluginProvider>
 {
 public:
     PluginRegistry(albert::ExtensionRegistry&registry);
@@ -22,13 +20,8 @@ public:
     void load(const QString &id, bool load = true);
 
 protected:
-    QString id() const override;
-    QString name() const override;
-    QString description() const override;
-    QString defaultTrigger() const override;
     void onAdd(albert::PluginProvider*) override;
     void onRem(albert::PluginProvider*) override;
-    void handleTriggerQuery(TriggerQuery *) const override;
 
 private:
     std::map<QString, albert::PluginLoader*> plugins_;

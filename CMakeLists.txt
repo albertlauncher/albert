@@ -90,6 +90,8 @@ set (LIB_SRC
     src/levenshtein.h
     src/nativepluginprovider.cpp
     src/nativepluginprovider.h
+    src/pluginqueryhandler.cpp
+    src/pluginqueryhandler.h
     src/pluginregistry.cpp
     src/pluginregistry.h
     src/query.cpp

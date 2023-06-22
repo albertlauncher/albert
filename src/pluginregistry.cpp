@@ -1,8 +1,7 @@
-// Copyright (c) 2022-2023 Manuel Schneider
+// Copyright (c) 2023 Manuel Schneider
 
 #include "albert/extensions/pluginprovider.h"
 #include "albert/logging.h"
-#include "albert/util/standarditem.h"
 #include "pluginregistry.h"
 #include <QCoreApplication>
 #include <QSettings>
@@ -87,14 +86,6 @@ void PluginRegistry::load(const QString &id, bool load)
     }
 }
 
-QString PluginRegistry::id() const { return "pluginregistry"; }
-
-QString PluginRegistry::name() const { return "Plugins"; }
-
-QString PluginRegistry::description() const { return "Manage plugins"; }
-
-QString PluginRegistry::defaultTrigger() const { return QStringLiteral("plug "); }
-
 void PluginRegistry::onAdd(PluginProvider *pp)
 {
     for (auto *loader : pp->plugins()){
@@ -122,69 +113,3 @@ void PluginRegistry::onRem(PluginProvider *pp)
     }
     emit pluginsChanged();
 }
-
-void PluginRegistry::handleTriggerQuery(TriggerQuery *query) const
-{
-    for (const auto &[id, loader] : plugins_){  // these should all be valid
-
-        if (!id.startsWith(query->string(), Qt::CaseInsensitive))
-            continue;
-
-        Actions actions;
-        QString info;
-
-        auto mutable_this = const_cast<PluginRegistry*>(this);
-
-        if (loader->metaData().user){
-            if (isEnabled(id))
-                actions.emplace_back(
-                    "disable", "Disable plugin",
-                    [mutable_this, id=id]() { mutable_this->enable(id, false); }
-                );
-            else
-                actions.emplace_back(
-                    "enable", "Enable plugin",
-                    [mutable_this, id=id](){ mutable_this->enable(id); }
-                    );
-
-            if (loader->state() == PluginState::Loaded){
-                actions.emplace_back(
-                    "unload", "Unload plugin",
-                    [mutable_this, id=id](){ mutable_this->load(id, false); }
-                );
-                actions.emplace_back(
-                    "reload", "Reload plugin",
-                    [mutable_this, id=id](){ mutable_this->load(id, false); mutable_this->load(id, true); }
-                );
-            }
-            else  // by contract only unloaded
-                actions.emplace_back(
-                    "load", "Load plugin",
-                    [mutable_this, id=id](){ mutable_this->load(id); }
-                );
-
-            QString enabled = isEnabled(id) ? "Enabled" : "Disabled";
-            QString state;
-            if (loader->state() == PluginState::Loaded)
-                state = "Loaded";
-            else if (loader->stateInfo().isEmpty())
-                state = "Unloaded";
-            else
-                state = QString("Error: %1").arg(loader->stateInfo());
-            info = QString("[%1, %2] ").arg(enabled, state);
-        }
-        info.append(loader->metaData().description);
-
-        query->add(
-            StandardItem::make(
-                id,
-                loader->metaData().name,
-                info,
-                {":app_icon"},
-                actions
-            )
-        );
-    }
-
-}
-
