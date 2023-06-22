@@ -25,7 +25,13 @@ void UsageDatabase::initializeDatabase()
     if (!db.driver()->hasFeature(QSqlDriver::Transactions))
         qFatal("QSqlDriver::Transactions not available.");
 
-    db.setDatabaseName(QDir(albert::configLocation()).filePath("albert.db"));
+    // Move db to config location
+    if (auto config_dir = QDir(albert::configLocation()); config_dir.exists(db_name))
+        if(!QFile::rename(QDir(albert::configLocation()).absoluteFilePath(db_name),
+                          QDir(albert::dataLocation()).absoluteFilePath(db_name)))
+            qFatal("Failed to move the usage database to data location");
+
+    db.setDatabaseName(QDir(albert::dataLocation()).filePath("albert.db"));
 
     if (!db.open())
         qFatal("Unable to establish a database connection.");
