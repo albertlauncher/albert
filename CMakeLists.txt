@@ -63,6 +63,8 @@ set (LIB_SRC
     src/albert.cpp
     src/app.cpp
     src/app.h
+    src/appqueryhandler.cpp
+    src/appqueryhandler.h
     src/extension.cpp
     src/extensionregistry.cpp
     src/extensions/frontend.cpp

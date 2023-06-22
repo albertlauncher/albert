@@ -2,8 +2,8 @@
 
 #pragma once
 #include "albert/extensionregistry.h"
-#include "albert/extensions/queryhandler.h"
 #include "hotkey.h"
+#include "appqueryhandler.h"
 #include "nativepluginprovider.h"
 #include "pluginregistry.h"
 #include "queryengine.h"
@@ -15,19 +15,13 @@
 #include <QNetworkAccessManager>
 #include <QPointer>
 
-class App : public albert::IndexQueryHandler
+class App
 {
 public:
     explicit App(const QStringList &additional_plugin_paths);
-    ~App() override;
+    ~App();
 
     void initialize();
-
-    // IndexQueryHandler
-    QString id() const override;
-    QString name() const override;
-    QString description() const override;
-    void updateIndexItems() override;
 
     QNetworkAccessManager network_manager;
     RPCServer rpc_server; // Check for other instances first
@@ -40,4 +34,5 @@ public:
     QPointer<SettingsWindow> settings_window;
     Hotkey hotkey;
     Telemetry telemetry;
+    AppQueryHandler app_query_handler;
 };
