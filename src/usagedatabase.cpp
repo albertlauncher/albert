@@ -1,13 +1,13 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #include "albert/logging.h"
+#include "albert/albert.h"
 #include "include/albert/util/timeprinter.hpp"
 #include "usagedatabase.h"
 #include <QDir>
 #include <QSqlDriver>
 #include <QSqlError>
 #include <QSqlQuery>
-#include <QStandardPaths>
 using namespace std;
 
 
@@ -25,7 +25,7 @@ void UsageDatabase::initializeDatabase()
     if (!db.driver()->hasFeature(QSqlDriver::Transactions))
         qFatal("QSqlDriver::Transactions not available.");
 
-    db.setDatabaseName(QDir(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)).filePath("albert.db"));
+    db.setDatabaseName(QDir(albert::configLocation()).filePath("albert.db"));
 
     if (!db.open())
         qFatal("Unable to establish a database connection.");

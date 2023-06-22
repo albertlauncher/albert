@@ -1,14 +1,14 @@
 // Copyright (c) 2023 Manuel Schneider
 
 #include "albert/logging.h"
+#include "albert/albert.h"
 #include "scopedcrashindicator.h"
 #include <QFile>
-#include <QStandardPaths>
 #include <QString>
 
 ScopedCrashIndicator::ScopedCrashIndicator()
 {
-    QString filePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running";
+    QString filePath = albert::cacheLocation() + "/running";
     if (QFile::exists(filePath)){
         CRIT << "Application has not been terminated graciously";
     } else {
@@ -23,5 +23,5 @@ ScopedCrashIndicator::ScopedCrashIndicator()
 ScopedCrashIndicator::~ScopedCrashIndicator()
 {
     INFO << "Removing crash indicator file";
-    QFile::remove(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/running");
+    QFile::remove(albert::cacheLocation() + "/running");
 }

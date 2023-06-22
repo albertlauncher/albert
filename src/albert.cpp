@@ -45,6 +45,15 @@ void albert::show(const QString &text)
 void albert::hide()
 { app->plugin_provider.frontend()->setVisible(false);}
 
+QString albert::configLocation()
+{ return QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) ;}
+
+QString albert::dataLocation()
+{ return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) ;}
+
+QString albert::cacheLocation()
+{ return QStandardPaths::writableLocation(QStandardPaths::CacheLocation) ;}
+
 void albert::toggle()
 { app->plugin_provider.frontend()->setVisible(!app->plugin_provider.frontend()->isVisible()); }
 
@@ -110,14 +119,12 @@ static void messageHandler(QtMsgType type, const QMessageLogContext &context, co
 
 static void createWritableApplicationPaths()
 {
-    auto locs = {
-            QStandardPaths::AppConfigLocation,
-            QStandardPaths::AppDataLocation,
-            QStandardPaths::CacheLocation
-    };
-    for (auto loc: locs)
-        if (auto path = QStandardPaths::writableLocation(loc); !QDir(path).mkpath("."))
-            qFatal("Could not create dir: %s", qPrintable(path));
+    if (auto path = albert::configLocation(); !QDir(path).mkpath("."))
+        qFatal("Failed creating config dir at: %s", qPrintable(path));
+    if (auto path = albert::dataLocation(); !QDir(path).mkpath("."))
+        qFatal("Failed creating data dir at: %s", qPrintable(path));
+    if (auto path = albert::cacheLocation(); !QDir(path).mkpath("."))
+        qFatal("Failed creating cache dir at: %s", qPrintable(path));
 }
 
 static void installSignalHandlers()

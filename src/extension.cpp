@@ -1,35 +1,31 @@
-// Copyright (c) 2021-2022 Manuel Schneider
+// Copyright (c) 2023 Manuel Schneider
 
 #include "albert/extension.h"
+#include "albert/albert.h"
 #include <QDir>
-#include <QStandardPaths>
 #include <QSettings>
 #include <QCoreApplication>
 
 
-static QDir stdDir(QStandardPaths::StandardLocation loc, const QString &id)
+static QDir make_extension_dir(const QString &location, const QString &id)
 {
-    QDir dir(QStandardPaths::writableLocation(loc));
+    QDir dir(location);
     if (!dir.exists(id))
-        dir.mkdir(id);
+        if (!dir.mkdir(id))
+            qFatal("Failed to create writable dir at: %s", qPrintable(dir.filePath(id)));
+
     dir.cd(id);
     return dir;
 }
 
 QDir albert::Extension::cacheDir() const
-{
-    return stdDir(QStandardPaths::CacheLocation, id());
-}
+{ return make_extension_dir(albert::cacheLocation(), id()); }
 
 QDir albert::Extension::configDir() const
-{
-    return stdDir(QStandardPaths::AppConfigLocation, id());
-}
+{ return make_extension_dir(albert::configLocation(), id()); }
 
 QDir albert::Extension::dataDir() const
-{
-    return stdDir(QStandardPaths::AppDataLocation, id());
-}
+{ return make_extension_dir(albert::dataLocation(), id()); }
 
 std::unique_ptr<QSettings> albert::Extension::settings() const
 {

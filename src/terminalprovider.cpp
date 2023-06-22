@@ -122,7 +122,7 @@ static void execAppleScript(const QString &script)
 
 static QString writeCommandFile(const QString &script, bool close_on_exit, const QString &working_dir)
 {
-    auto file = QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)).filePath("terminal.command");
+    auto file = QDir(albert::cacheLocation()).filePath("terminal.command");
     QFile f(file);
     if (f.open(QIODevice::WriteOnly)) {
         if (!working_dir.isEmpty())
