@@ -28,7 +28,6 @@ QString StandardItem::text() const { return text_; }
 QString StandardItem::subtext() const { return subtext_; }
 QString StandardItem::inputActionText() const { return input_action_text_; }
 QStringList StandardItem::iconUrls() const { return icon_urls_; }
-bool StandardItem::hasActions() const { return !actions_.empty(); }
 std::vector<Action> StandardItem::actions() const { return actions_; }
 
 

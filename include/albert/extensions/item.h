@@ -36,7 +36,6 @@ public:
     /// '<path>' is interpreted as path to a local image file.
     virtual QStringList iconUrls() const = 0;
     virtual QString inputActionText() const;  ///< Input replacement for input action (usually Tab)
-    virtual bool hasActions() const;  ///< Indicates that the item has actions
     virtual std::vector<Action> actions() const;  ///< List of item actions
 };
 

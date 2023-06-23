@@ -10,6 +10,4 @@ Action::Action(QString i, QString t, std::function<void()> f):
 
 QString Item::inputActionText() const { return {}; }
 
-bool Item::hasActions() const { return true; }
-
 std::vector<Action> Item::actions() const { return {}; }

@@ -39,7 +39,6 @@ public:
     QString subtext() const override;
     QString inputActionText() const override;
     QStringList iconUrls() const override;
-    bool hasActions() const override;
     std::vector<Action> actions() const override;
 
     static std::shared_ptr<StandardItem> make(
