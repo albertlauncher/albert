@@ -9,8 +9,8 @@
 using namespace std;
 using namespace albert;
 
-GlobalSearch::GlobalSearch(const std::set<GlobalQueryHandler*> &handlers)
-    : handlers(handlers) {}
+GlobalSearch::GlobalSearch(const std::set<GlobalQueryHandler*> &h)
+    : handlers(h) {}
 
 QString GlobalSearch::id() const { return "globalsearch"; }
 
