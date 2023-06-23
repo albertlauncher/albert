@@ -1,3 +1,52 @@
+v0.21.0 (2023-06-23)
+
+[albert]
+* v0.21.0
+  * Remove Item::hasActions
+  * Add global config, cache and data location functions
+  * Change RankItem::score type to float (0,1]
+  * Make queries pointers in handler functions
+  * Add function to get global network manager
+  * Use explicit named query handling methods (no parameter overloading) `handleTriggerQuery` and `handleGlobalQuery`. This reduces confusion, avoids annoying extra boilerplate to disambiguate methods to avoid hide-virtual warnings and serves as a lowest common denominator on a language/naming level since these features may not be supported by script languages (e.g. Python).
+* Settings window
+  * Add a new search widget in settingswindow
+  * Make handlers of all types optionable
+  * Make window and search widgets tabs in the settings window
+* Change usagedatabase location to datadir
+* Change IPC socket path to $CACHEDIR/albert/ipc_socket. Was $CACHEDIR/albert_socket.
+* Fix triggered global query MRU sort
+
+[plugins]
+* New extensions:
+  * [docs] Reduced set of Zeal docsets at hands
+  * [clipboard] Clipboard history
+* [contacts:1.2]
+  * Formatting: Remove Apple specific braces
+* [snip:1.3]
+  * Add "Add" and "Remove" button in config widget
+  * Add "Add snippet" item on "add" query
+  * Add "Remove" action to snippet items
+* [python:1.8] Adopt API v0.21. New interface version iid 1.0
+  * Add Extension.cache-, config- and dataLocation
+  * Expose FallbackHandler
+  * Proper multi extension registration
+  * Move interface spec into python stub file (yay!)
+  * Expose TriggerQueryHandler
+  * Expose GlobalQueryHandler
+  * Expose QueryHandler
+  * Expose IndexQueryHandler
+  * Expose Item class entirely such that plugins can subclass it
+  * Use pointer for queries
+  * Remove global cache/config/data dir functions
+* [all] Adopt API v0.21.0
+
+[python]
+* Add stub file for type hinting and documentation in IDEs
+* New extensions:
+  * [coingecko] Crypto currencies
+  * [mathematica] iid:1.0 port
+* [all] Adopt iid v1.0
+
 v0.20.14 (2023-05-01)
 
 [albert]
