@@ -214,7 +214,7 @@ QNetworkAccessManager *albert::networkManager()
 { return &app->network_manager; }
 
 std::unique_ptr<QSettings> albert::settings()
-{ return make_unique<QSettings>(qApp->applicationName()); }
+{ return make_unique<QSettings>(qApp->applicationName(), qApp->applicationName()); }
 
 std::unique_ptr<QSettings> albert::state()
 { return make_unique<QSettings>(QString("%1/%2").arg(cacheLocation(), "albert.state"), QSettings::IniFormat); }

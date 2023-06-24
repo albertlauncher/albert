@@ -51,7 +51,7 @@ std::unique_ptr<QDir> albert::PluginInstance::dataDir() const
 
 std::unique_ptr<QSettings> albert::PluginInstance::settings() const
 {
-    auto s = std::make_unique<QSettings>(qApp->applicationName());
+    auto s = std::make_unique<QSettings>(qApp->applicationName(), qApp->applicationName());
     s->beginGroup(id());
     return s;
 }
