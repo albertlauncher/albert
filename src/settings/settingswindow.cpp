@@ -183,8 +183,18 @@ void SettingsWindow::bringToFront()
 
 void SettingsWindow::keyPressEvent(QKeyEvent *event)
 {
-    if (event->modifiers() == Qt::NoModifier && event->key() == Qt::Key_Escape)
-        close();
-    else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_W)
-        close();
+    if (event->modifiers() == Qt::NoModifier){
+
+        if (event->key() == Qt::Key_Escape)
+            close();
+
+    } else if (event->modifiers() == Qt::ControlModifier){
+
+        if(event->key() == Qt::Key_W)
+            close();
+
+        // Tab navi by number
+        else if((int)Qt::Key_1 <= event->key() && event->key() < (int)Qt::Key_1 + ui.tabs->count())
+            ui.tabs->setCurrentIndex((int)event->key() - (int)Qt::Key_1);
+    }
 }
