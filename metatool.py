@@ -120,7 +120,7 @@ def release(args):
 
         with open(f"documentation/src/_posts/{datetime.date.today().strftime('%Y-%m-%d')}-albert-v{args.version}-released.md", 'w') as file:
             file.write(f"""---
-layout: page
+layout: docs
 title:  "Albert v{args.version} released"
 date: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M%z")}
 ---
