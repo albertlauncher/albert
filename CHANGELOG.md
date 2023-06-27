@@ -1,3 +1,18 @@
+v0.21.1 (2023-06-27)
+
+[albert]
+* Add cmd/ctrl + number tab navigation in settings
+* Automatically add hpp and qml files to plugin projects
+
+[plugins]
+* [docs:1.2] Polish. Fix #106
+* Fix misleading comment in config widget
+
+[python]
+* [stub] Add missing imports to stub file
+* [tex_to_unicode] Fix crash due to wrong type annotation
+* [emoji] Fix #179. Call cacheLocation as method of self.
+
 v0.21.0 (2023-06-23)
 
 [albert]
