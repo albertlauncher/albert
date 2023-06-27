@@ -28,12 +28,14 @@ using namespace std;
 using namespace albert;
 
 namespace {
-const char *CFG_LAST_USED_VERSION = "last_used_version";
-unique_ptr<App> app;
+static const char *CFG_LAST_USED_VERSION = "last_used_version";
+static unique_ptr<App> app;
 }
 
 QNetworkAccessManager *albert::networkManager()
 { return &app->network_manager; }
+
+QSettings albert::settings() { return QSettings(qApp->applicationName()); }
 
 void albert::show(const QString &text)
 {
@@ -193,7 +195,7 @@ static void printSystemReport()
 
 static void notifyVersionChange()
 {
-    auto settings = QSettings(qApp->applicationName());
+    auto settings = albert::settings();
     auto current_version = qApp->applicationVersion();
     auto last_used_version = settings.value(CFG_LAST_USED_VERSION).toString();
 

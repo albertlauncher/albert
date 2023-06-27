@@ -40,12 +40,12 @@ void Telemetry::enable(bool enable)
         timer_.start(60000);
     else
         timer_.stop();
-    QSettings(qApp->applicationName()).setValue(CFG_TELEMETRY, enable);
+    albert::settings().setValue(CFG_TELEMETRY, enable);
 }
 
 bool Telemetry::isEnabled() const
 {
-    return QSettings(qApp->applicationName()).value(CFG_TELEMETRY).toBool();
+    return albert::settings().value(CFG_TELEMETRY).toBool();
 }
 
 void Telemetry::trySendReport()
@@ -53,7 +53,7 @@ void Telemetry::trySendReport()
     // timezones and daytimes of users make it complicated to get trustworthy per day data.
     // Therefore three hours sampling rate.
 
-    auto ts = QSettings(qApp->applicationName()).value(CFG_LAST_REPORT, DEF_LAST_REPORT).toUInt();
+    auto ts = albert::settings().value(CFG_LAST_REPORT, DEF_LAST_REPORT).toUInt();
     if (ts < QDateTime::currentSecsSinceEpoch() - 10800) {
         QJsonObject object = buildReport();
         QString addr = "Zffb,!!*\" $## $\"' **!";
@@ -66,7 +66,7 @@ void Telemetry::trySendReport()
         QObject::connect(reply, &QNetworkReply::finished, [reply](){
             if (reply->error() == QNetworkReply::NoError){
                 DEBG << "Report sent.";
-                QSettings(qApp->applicationName()).setValue(CFG_LAST_REPORT, QDateTime::currentSecsSinceEpoch());
+                albert::settings().setValue(CFG_LAST_REPORT, QDateTime::currentSecsSinceEpoch());
             }
             reply->deleteLater();
         });

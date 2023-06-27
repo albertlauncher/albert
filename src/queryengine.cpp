@@ -1,9 +1,10 @@
 // Copyright (c) 2022 Manuel Schneider
 
+#include "albert/albert.h"
 #include "albert/extensions/queryhandler.h"
+#include "albert/logging.h"
 #include "extensions/globalqueryhandlerprivate.h"
 #include "extensions/indexqueryhandlerprivate.h"
-#include "albert/logging.h"
 #include "itemindex.h"
 #include "query.h"
 #include "queryengine.h"
@@ -243,7 +244,7 @@ double QueryEngine::memoryDecay() const { return memory_decay_; }
 void QueryEngine::setMemoryDecay(double val)
 {
     memory_decay_ = val;
-    QSettings(qApp->applicationName()).setValue(CFG_MEMORY_DECAY, val);
+    albert::settings().setValue(CFG_MEMORY_DECAY, val);
     updateUsageScore();
 }
 
@@ -253,7 +254,7 @@ bool QueryEngine::prioritizePerfectMatch() const
 void QueryEngine::setPrioritizePerfectMatch(bool val)
 {
     prioritize_perfect_match_ = val;
-    QSettings(qApp->applicationName()).setValue(CFG_PRIO_PERFECT, val);
+    albert::settings().setValue(CFG_PRIO_PERFECT, val);
     GlobalQueryHandlerPrivate::setPrioritizePerfectMatch(prioritize_perfect_match_);
 }
 
@@ -262,7 +263,7 @@ bool QueryEngine::fuzzy() const { return fuzzy_; }
 void QueryEngine::setFuzzy(bool fuzzy)
 {
     fuzzy_ = fuzzy;
-    QSettings(qApp->applicationName()).setValue(CFG_FUZZY, fuzzy);
+    albert::settings().setValue(CFG_FUZZY, fuzzy);
     for (auto *handler : enabled_global_handlers_)
         if (auto *ih = dynamic_cast<IndexQueryHandler*>(handler); ih)
             ih->d->setIndex(make_unique<ItemIndex>(separators_, false, GRAM_SIZE,
@@ -274,7 +275,7 @@ const QString &QueryEngine::separators() const { return separators_; }
 void QueryEngine::setSeparators(const QString &separators)
 {
     separators_ = separators;
-    QSettings(qApp->applicationName()).setValue(CFG_SEPARATORS, separators);
+    albert::settings().setValue(CFG_SEPARATORS, separators);
     for (auto *handler : enabled_global_handlers_)
         if (auto *ih = dynamic_cast<IndexQueryHandler*>(handler); ih)
             ih->d->setIndex(make_unique<ItemIndex>(separators_, false, GRAM_SIZE,

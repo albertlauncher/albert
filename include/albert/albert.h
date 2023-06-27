@@ -3,10 +3,12 @@
 #pragma once
 #include "export.h"
 #include <QString>
+#include <QSettings>
 class QNetworkAccessManager;
 
 namespace albert
 {
+
 ALBERT_EXPORT QNetworkAccessManager *networkManager();
 
 ALBERT_EXPORT void show(const QString &text = QString());
@@ -30,5 +32,7 @@ ALBERT_EXPORT QString configLocation(); ///< Since v0.21.0
 ALBERT_EXPORT QString cacheLocation(); ///< Since v0.21.0
 
 ALBERT_EXPORT QString dataLocation(); ///< Since v0.21.0
+
+ALBERT_EXPORT QSettings settings(); ///< Since v0.21.2
 
 }

@@ -1,5 +1,6 @@
 // Copyright (c) 2023 Manuel Schneider
 
+#include "albert/albert.h"
 #include "albert/extensions/pluginprovider.h"
 #include "albert/logging.h"
 #include "pluginregistry.h"
@@ -26,14 +27,14 @@ vector<const PluginLoader*> PluginRegistry::plugins() const
 
 bool PluginRegistry::isEnabled(const QString &id) const
 {
-    return QSettings(qApp->applicationName()).value(QString("%1/enabled").arg(id), false).toBool();
+    return albert::settings().value(QString("%1/enabled").arg(id), false).toBool();
 }
 
 void PluginRegistry::enable(const QString &id, bool enable)
 {
     if (plugins_.contains(id)){
         if (isEnabled(id) != enable){
-            QSettings(qApp->applicationName()).setValue(QString("%1/enabled").arg(id), enable);
+            albert::settings().setValue(QString("%1/enabled").arg(id), enable);
             load(id, enable);
         }
     } else

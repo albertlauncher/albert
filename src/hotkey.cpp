@@ -42,7 +42,7 @@ bool Hotkey::setHotkey(QKeyCombination keycode)
 
         hotkey_ = std::move(hotkey);
 
-        QSettings(qApp->applicationName()).setValue(CFG_HOTKEY, ks.toString());
+        albert::settings().setValue(CFG_HOTKEY, ks.toString());
 
         QObject::connect(hotkey_.get(), &QHotkey::activated,
                          qApp, [](){ albert::toggle(); });
