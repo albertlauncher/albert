@@ -5,7 +5,6 @@
 #include "albert/logging.h"
 #include "pluginregistry.h"
 #include <QCoreApplication>
-#include <QSettings>
 #include <chrono>
 using namespace std;
 using namespace albert;

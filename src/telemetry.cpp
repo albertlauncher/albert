@@ -10,7 +10,6 @@
 #include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QSettings>
 #include <QTimer>
 static const char *CFG_LAST_REPORT = "last_report";
 static const uint DEF_LAST_REPORT = 0;
@@ -21,7 +20,7 @@ Telemetry::Telemetry()
 {
     QObject::connect(&timer_, &QTimer::timeout, [this]{trySendReport();});
 
-    QSettings settings(qApp->applicationName());
+    auto settings = albert::settings();
     if (!settings.contains(CFG_TELEMETRY)) {
         QMessageBox mb(QMessageBox::Question, "Albert telemetry",
                        "Albert collects anonymous data to improve user experience. You can check "

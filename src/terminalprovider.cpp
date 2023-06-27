@@ -8,7 +8,6 @@
 #include <QDir>
 #include <QFile>
 #include <QProcess>
-#include <QSettings>
 #include <QStandardPaths>
 #include <QStringList>
 #include <QTemporaryFile>

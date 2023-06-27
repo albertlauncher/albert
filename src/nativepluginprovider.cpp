@@ -14,7 +14,6 @@
 #include <QLabel>
 #include <QMessageBox>
 #include <QPluginLoader>
-#include <QSettings>
 #include <set>
 using namespace std;
 using namespace albert;

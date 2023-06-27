@@ -1,17 +1,18 @@
-#include "hotkey.h"
-#include <QSettings>
-#include <QCoreApplication>
-#include <QMessageBox>
-#include <QHotkey>
+// Copyright (c) 2023 Manuel Schneider
+
 #include "albert/albert.h"
 #include "albert/logging.h"
+#include "hotkey.h"
+#include <QCoreApplication>
+#include <QHotkey>
+#include <QMessageBox>
 static const char *CFG_NOTIFY_SUPPORT = "notifiedUnsupportedHotkey";
 static const char *CFG_HOTKEY = "hotkey";
 static const char *DEF_HOTKEY = "Ctrl+Space";
 
 Hotkey::Hotkey()
 {
-    QSettings s(qApp->applicationName());
+    auto s = albert::settings();
     if (isPlatformSupported())
         setHotkey(QKeySequence::fromString(s.value(CFG_HOTKEY, DEF_HOTKEY).toString())[0]);
     else {

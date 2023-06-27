@@ -1,12 +1,11 @@
 // Copyright (c) 2022-2023 Manuel Schneider
 
-#include <QApplication>
-#include <QSettings>
-#include "trayicon.h"
-#include "albert/util/util.h"
 #include "albert/albert.h"
-#include "xdg/iconlookup.h"
 #include "albert/logging.h"
+#include "albert/util/util.h"
+#include "trayicon.h"
+#include "xdg/iconlookup.h"
+#include <QApplication>
 
 namespace {
     const char* CFG_SHOWTRAY = "showTray";

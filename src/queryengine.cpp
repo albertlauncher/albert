@@ -11,7 +11,6 @@
 #include "usagedatabase.h"
 #include <QCoreApplication>
 #include <QMessageBox>
-#include <QSettings>
 #include <QTimer>
 #include <cmath>
 using namespace albert;
@@ -39,7 +38,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry):
 {
     UsageDatabase::initializeDatabase();
 
-    QSettings s(qApp->applicationName());
+    auto s = albert::settings();
     fuzzy_ = s.value(CFG_FUZZY, DEF_FUZZY).toBool();
     separators_ = s.value(CFG_SEPARATORS, DEF_SEPARATORS).toString();
     memory_decay_ = s.value(CFG_MEMORY_DECAY, DEF_MEMORY_DECAY).toDouble();

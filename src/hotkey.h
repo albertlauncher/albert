@@ -1,3 +1,5 @@
+// Copyright (c) 2023 Manuel Schneider
+
 #pragma once
 #include <QKeyCombination>
 #include <memory>
