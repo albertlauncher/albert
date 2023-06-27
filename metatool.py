@@ -113,12 +113,17 @@ def release(args):
         run(["rm", "CMakeLists.txt.bak"])
 
     if "y".startswith(input("Create news post? [Y/n] ").lower()):
-        if (root/"documentation").exists():
-            run(["git", "pull"], cwd=root/"documentation").check_returncode()
+
+        docs_root_path = root / "documentation"
+
+        if docs_root_path.exists():
+            run(["git", "pull"], cwd=docs_root_path).check_returncode()
         else:
             run(["git", "clone", "git@github.com:albertlauncher/documentation.git"], cwd=root).check_returncode()
 
-        with open(f"documentation/src/_posts/{datetime.date.today().strftime('%Y-%m-%d')}-albert-v{args.version}-released.md", 'w') as file:
+        relative_file_path = f"src/_posts/{datetime.date.today().strftime('%Y-%m-%d')}-albert-v{args.version}-released.md"
+
+        with open(docs_root_path / relative_file_path, 'w') as file:
             file.write(f"""---
 layout: docs
 title:  "Albert v{args.version} released"
@@ -129,6 +134,11 @@ date: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M%z")}
 
 Check the [GitHub repositories](https://github.com/albertlauncher/albert/commits/v{args.version}) for details.
 """)
+
+        run(["git", "add", relative_file_path], cwd=docs_root_path).check_returncode()
+        run(["git", "commit", "-m", f"Albert v{args.version} released"], cwd=docs_root_path).check_returncode()
+        run(["git", "push"], cwd=root).check_returncode()
+
         run(["make", "build"], cwd=root/"documentation").check_returncode()
         run(["make", "check"], cwd=root/"documentation")
         run(["make", "deploy"], cwd=root/"documentation").check_returncode()
