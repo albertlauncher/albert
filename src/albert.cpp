@@ -28,7 +28,7 @@ using namespace std;
 using namespace albert;
 
 namespace {
-static const char *CFG_LAST_USED_VERSION = "last_used_version";
+static const char *STATE_LAST_USED_VERSION = "last_used_version";
 static unique_ptr<App> app;
 }
 
@@ -36,6 +36,8 @@ QNetworkAccessManager *albert::networkManager()
 { return &app->network_manager; }
 
 QSettings albert::settings() { return QSettings(qApp->applicationName()); }
+
+QSettings albert::state() { return QSettings(QString("%1/%2").arg(cacheLocation(), "albert.state"), QSettings::IniFormat); }
 
 void albert::show(const QString &text)
 {
@@ -195,9 +197,15 @@ static void printSystemReport()
 
 static void notifyVersionChange()
 {
-    auto settings = albert::settings();
+    auto state = albert::state();
     auto current_version = qApp->applicationVersion();
-    auto last_used_version = settings.value(CFG_LAST_USED_VERSION).toString();
+
+    // Move to state // TODO remove on next major version
+    if (albert::settings().contains(STATE_LAST_USED_VERSION))
+        albert::state().setValue(STATE_LAST_USED_VERSION,
+                                 albert::settings().value(STATE_LAST_USED_VERSION));
+
+    auto last_used_version = state.value(STATE_LAST_USED_VERSION).toString();
 
     if (last_used_version.isNull()){  // First run
         QMessageBox(
@@ -214,7 +222,7 @@ static void notifyVersionChange()
                             .arg(current_version)).exec();
 
     if (last_used_version != current_version)
-        settings.setValue(CFG_LAST_USED_VERSION, current_version);
+        state.setValue(STATE_LAST_USED_VERSION, current_version);
 }
 
 int ALBERT_EXPORT main(int argc, char **argv);

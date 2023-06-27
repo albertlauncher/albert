@@ -35,4 +35,6 @@ ALBERT_EXPORT QString dataLocation(); ///< Since v0.21.0
 
 ALBERT_EXPORT QSettings settings(); ///< Since v0.21.2
 
+ALBERT_EXPORT QSettings state(); ///< Since v0.21.2
+
 }
