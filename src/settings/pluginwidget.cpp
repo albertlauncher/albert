@@ -1,7 +1,10 @@
 // Copyright (c) 2022-2023 Manuel Schneider
 
 #include "albert/albert.h"
-#include "albert/extensions/pluginprovider.h"
+#include "albert/extension/pluginprovider/plugininstance.h"
+#include "albert/extension/pluginprovider/pluginloader.h"
+#include "albert/extension/pluginprovider/pluginmetadata.h"
+#include "albert/extension/pluginprovider/pluginprovider.h"
 #include "pluginregistry.h"
 #include "pluginwidget.h"
 #include <QAbstractTableModel>
@@ -16,6 +19,7 @@
 #include <map>
 using namespace std;
 using namespace albert;
+using PluginState = PluginLoader::PluginState;
 
 
 class PluginModel: public QAbstractListModel
@@ -63,6 +67,8 @@ private:
             switch (p->state()) {
                 case PluginState::Loaded:
                     return {};
+                case PluginState::Initializing:
+                    return QColor(Qt::blue);
                 case PluginState::Unloaded:
                     return QColor(p->stateInfo().isEmpty() ? Qt::gray : Qt::red);
                 case PluginState::Invalid:
@@ -208,6 +214,7 @@ void PluginWidget::onUpdatePluginWidget()
 
     switch (p.state()) {
         case PluginState::Invalid:
+        case PluginState::Initializing:
             break;
         case PluginState::Unloaded:
             // Unloaded info

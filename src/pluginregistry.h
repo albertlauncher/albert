@@ -1,7 +1,7 @@
 // Copyright (c) 2023 Manuel Schneider
 
 #pragma once
-#include "albert/util/extensionwatcher.h"
+#include "albert/extensionwatcher.h"
 #include <QObject>
 #include <map>
 #include <vector>

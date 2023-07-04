@@ -1,8 +1,9 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
-#include "albert/extensions/queryhandler.h"
+#include "albert/extension/queryhandler/triggerqueryhandler.h"
 #include <set>
+namespace albert { class GlobalQueryHandler; }
 
 class GlobalSearch final : public albert::TriggerQueryHandler
 {

@@ -1,8 +1,8 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "albert/logging.h"
 #include "albert/albert.h"
-#include "include/albert/util/timeprinter.hpp"
+#include "albert/logging.h"
+#include "albert/util/timeprinter.h"
 #include "usagedatabase.h"
 #include <QDir>
 #include <QSqlDriver>

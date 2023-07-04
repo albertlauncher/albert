@@ -1,10 +1,11 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
+#include "albert/logging.h"
+#include "albert/util/timeprinter.h"
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
 #include <functional>
-#include "albert/util/timeprinter.hpp"
 
 namespace albert
 {
@@ -48,9 +49,5 @@ public:
 
     bool isRunning() const { return future_watcher_.isRunning(); }
 };
-
-
-
-
 
 }

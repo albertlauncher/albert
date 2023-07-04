@@ -6,6 +6,7 @@
 #include <QCoreApplication>
 #include <QHotkey>
 #include <QMessageBox>
+#include <QSettings>
 static const char *CFG_NOTIFY_SUPPORT = "notifiedUnsupportedHotkey";
 static const char *CFG_HOTKEY = "hotkey";
 static const char *DEF_HOTKEY = "Ctrl+Space";
@@ -14,13 +15,13 @@ Hotkey::Hotkey()
 {
     auto s = albert::settings();
     if (isPlatformSupported())
-        setHotkey(QKeySequence::fromString(s.value(CFG_HOTKEY, DEF_HOTKEY).toString())[0]);
+        setHotkey(QKeySequence::fromString(s->value(CFG_HOTKEY, DEF_HOTKEY).toString())[0]);
     else {
-        if (!s.value(CFG_NOTIFY_SUPPORT, false).toBool()){
+        if (!s->value(CFG_NOTIFY_SUPPORT, false).toBool()){
             QMessageBox::warning(nullptr, "Hotkey not supported",
                                  "Hotkeys are not supported on this platform. Use your desktop "
                                  "environment to run bind a hotkey to 'albertctl toggle'");
-            s.setValue(CFG_NOTIFY_SUPPORT, true);
+            s->setValue(CFG_NOTIFY_SUPPORT, true);
         }
     }
 }
@@ -43,7 +44,7 @@ bool Hotkey::setHotkey(QKeyCombination keycode)
 
         hotkey_ = std::move(hotkey);
 
-        albert::settings().setValue(CFG_HOTKEY, ks.toString());
+        albert::settings()->setValue(CFG_HOTKEY, ks.toString());
 
         QObject::connect(hotkey_.get(), &QHotkey::activated,
                          qApp, [](){ albert::toggle(); });

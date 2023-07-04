@@ -1,7 +1,7 @@
 // Copyright (c) 2023 Manuel Schneider
 
 #pragma once
-#include "albert/extensions/queryhandler.h"
+#include "albert/extension/queryhandler/indexqueryhandler.h"
 
 class AppQueryHandler : public albert::IndexQueryHandler
 {

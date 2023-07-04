@@ -2,10 +2,10 @@
 
 #include "albert/albert.h"
 #include "albert/logging.h"
-#include "albert/util/util.h"
 #include "trayicon.h"
 #include "xdg/iconlookup.h"
 #include <QApplication>
+#include <QSettings>
 
 namespace {
     const char* CFG_SHOWTRAY = "showTray";
@@ -25,7 +25,7 @@ TrayIcon::TrayIcon() {
     icon.setIsMask(true);
     setIcon(icon);
 
-    setVisible(albert::settings().value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool());
+    setVisible(albert::settings()->value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool());
 
 //    QObject::connect(this, &TrayIcon::activated, [](QSystemTrayIcon::ActivationReason reason){
 //        if( reason == QSystemTrayIcon::ActivationReason::Trigger)
@@ -53,7 +53,7 @@ TrayIcon::TrayIcon() {
 }
 
 void TrayIcon::setVisible(bool enable) {
-    albert::settings().setValue(CFG_SHOWTRAY, enable);
+    albert::settings()->setValue(CFG_SHOWTRAY, enable);
     QSystemTrayIcon::setVisible(enable);
 }
 

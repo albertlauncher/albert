@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #include "albert/logging.h"
-#include "albert/util/timeprinter.hpp"
+#include "albert/util/timeprinter.h"
 #include "query.h"
 #include <QtConcurrent>
 using namespace std;

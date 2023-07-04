@@ -1,22 +1,28 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2023 Manuel Schneider
 
 #pragma once
 #include "export.h"
+#include "extension.h"
 #include <QObject>
 #include <map>
 
 namespace albert
 {
-class Extension;
-class ALBERT_EXPORT ExtensionRegistry : public QObject  /// Neither threadsafe, nor reentrant
+/// The common extension registry
+/// Neither threadsafe, nor reentrant.
+/// @note Do touch in the GUI thread only.
+class ALBERT_EXPORT ExtensionRegistry : public QObject
 {
     Q_OBJECT
 public:
-    void add(Extension *e);  /// Add extension to the registry
-    void remove(Extension *e);  /// Remove extension from the registry
+    void add(Extension *e);  ///< Add extension to the registry
+    void remove(Extension *e);  ///< Remove extension from the registry
 
-    const std::map<QString,Extension*> &extensions();  /// Get map of all extensions
-    template<typename T> std::map<QString, T*> extensions()  /// Get map of all extensions of type
+    /// Get map of all extensions
+    const std::map<QString,Extension*> &extensions();
+
+    /// Get map of all extensions of type
+    template<typename T> std::map<QString, T*> extensions()
     {
         std::map<QString, T*> results;
         for (auto &[id, extension] : extensions_)
@@ -25,7 +31,8 @@ public:
         return results;
     }
 
-    template<typename T> T* extension(const QString &id)  /// Get casted extension by id
+    /// Get casted extension by id
+    template<typename T> T* extension(const QString &id)
     {
         try {
             return dynamic_cast<T*>(extensions_.at(id));
@@ -35,8 +42,8 @@ public:
     }
 
 signals:
-    void added(albert::Extension*);
-    void removed(albert::Extension*);
+    void added(Extension*);
+    void removed(Extension*);
 
 private:
     std::map<QString,Extension*> extensions_;

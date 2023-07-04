@@ -1,8 +1,10 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2023 Manuel Schneider
 
 #pragma once
-#include "albert/extensions/queryhandler.h"
-#include "albert/util/extensionwatcher.h"
+#include "albert/extension/queryhandler/triggerqueryhandler.h"
+#include "albert/extension/queryhandler/globalqueryhandler.h"
+#include "albert/extension/queryhandler/fallbackprovider.h"
+#include "albert/extensionwatcher.h"
 #include "globalsearch.h"
 #include <map>
 #include <memory>

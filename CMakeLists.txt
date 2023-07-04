@@ -41,97 +41,29 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-### Lib  ######################################################################
+### QHK  ######################################################################
 
 set(QT_DEFAULT_MAJOR_VERSION 6)
 set(BUILD_SHARED_LIBS FALSE)
 add_subdirectory(lib/QHotkey EXCLUDE_FROM_ALL)
 target_compile_options(qhotkey PRIVATE -Wno-unused-parameter -Wno-shadow)
 
+### Lib  ######################################################################
+
 set(TARGET_LIB ${PROJECT_NAME})
 
 file(GLOB_RECURSE LIB_PUBLIC_HEADER include/*.h)
+file(GLOB_RECURSE LIB_SRC_PLATFORM src/platform/${CMAKE_SYSTEM_NAME}/*)
+file(GLOB_RECURSE LIB_SRC_UI src/*.ui)
+file(GLOB_RECURSE LIB_SRC src/*.h src/*.hpp src/*.cpp)
 
-set (LIB_UI
-    src/settings/settingswindow.ui
-    src/settings/globalsearchwidget.ui
-#    src/settings/pluginwidget.ui
+add_library(${TARGET_LIB} SHARED
+    ${LIB_PUBLIC_HEADER}
+    ${LIB_SRC_PLATFORM}
+    ${LIB_SRC_UI}
+    ${LIB_SRC}
+    src/resources.qrc
 )
-
-set (LIB_SRC
-    include/albert/util/timeprinter.hpp
-    src/albert.cpp
-    src/app.cpp
-    src/app.h
-    src/appqueryhandler.cpp
-    src/appqueryhandler.h
-    src/extension.cpp
-    src/extensionregistry.cpp
-    src/extensions/frontend.cpp
-    src/extensions/globalqueryhandlerprivate.cpp
-    src/extensions/globalqueryhandlerprivate.h
-    src/extensions/indexqueryhandlerprivate.cpp
-    src/extensions/indexqueryhandlerprivate.h
-    src/extensions/item.cpp
-    src/extensions/pluginprovider.cpp
-    src/extensions/queryhandler.cpp
-    src/globalsearch.cpp
-    src/globalsearch.h
-    src/hotkey.cpp
-    src/hotkey.h
-    src/iconprovider.cpp
-    src/iconprovider.h
-    src/index.h
-    src/itemindex.cpp
-    src/itemindex.h
-    src/itemsmodel.cpp
-    src/itemsmodel.h
-    src/levenshtein.cpp
-    src/levenshtein.h
-    src/nativepluginprovider.cpp
-    src/nativepluginprovider.h
-    src/pluginqueryhandler.cpp
-    src/pluginqueryhandler.h
-    src/pluginregistry.cpp
-    src/pluginregistry.h
-    src/query.cpp
-    src/query.h
-    src/queryengine.cpp
-    src/queryengine.h
-    src/rpcserver.cpp
-    src/rpcserver.h
-    src/scopedcrashindicator.cpp
-    src/scopedcrashindicator.h
-    src/settings/globalsearchwidget.cpp
-    src/settings/globalsearchwidget.h
-    src/settings/pluginwidget.cpp
-    src/settings/pluginwidget.h
-    src/settings/settingswindow.cpp
-    src/settings/settingswindow.h
-    src/settings/triggerwidget.cpp
-    src/settings/triggerwidget.h
-    src/telemetry.cpp
-    src/telemetry.h
-    src/terminalprovider.cpp
-    src/terminalprovider.h
-    src/trayicon.cpp
-    src/trayicon.h
-    src/usagedatabase.cpp
-    src/usagedatabase.h
-    src/util/history.cpp
-    src/util/standarditem.cpp
-    src/util/util.cpp
-    src/xdg/iconlookup.cpp
-    src/xdg/iconlookup.h
-    src/xdg/themefileparser.cpp
-    src/xdg/themefileparser.h
-)
-
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    set (LIB_SRC ${LIB_SRC} src/macos.mm src/macos.h )
-endif()
-
-add_library(${TARGET_LIB} SHARED ${LIB_SRC} ${LIB_UI} ${LIB_PUBLIC_HEADER} src/resources.qrc)
 
 add_library(albert::albert ALIAS ${TARGET_LIB})
 
@@ -183,18 +115,12 @@ set_target_properties(${TARGET_LIB} PROPERTIES
 )
 
 # Platform specific stuff
-
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-
     if (DEFINED CMAKE_LIBRARY_ARCHITECTURE)
         target_compile_definitions(${TARGET_LIB} PRIVATE -DMULTIARCH_TUPLE="${CMAKE_LIBRARY_ARCHITECTURE}")
     endif()
-
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-
-#    target_sources(${TARGET_LIB} PRIVATE src/macos.mm)
     target_link_libraries(${TARGET_LIB} PRIVATE objc "-framework Cocoa")
-
 endif()
 
 #message("CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}")

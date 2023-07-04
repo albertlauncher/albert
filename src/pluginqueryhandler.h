@@ -1,7 +1,7 @@
 // Copyright (c) 2023 Manuel Schneider
 
 #pragma once
-#include "albert/extensions/queryhandler.h"
+#include "albert/extension/queryhandler/triggerqueryhandler.h"
 class PluginRegistry;
 
 class PluginQueryHandler : public albert::TriggerQueryHandler

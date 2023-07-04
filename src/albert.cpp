@@ -3,25 +3,28 @@
 #include "albert/albert.h"
 #include "albert/config.h"
 #include "albert/export.h"
-#include "albert/extensions/frontend.h"
+#include "albert/extension/frontend/frontend.h"
 #include "albert/logging.h"
-#include "albert/util/util.h"
 #include "app.h"
 #include "rpcserver.h"
 #include "scopedcrashindicator.h"
-#include "xdg/iconlookup.h"
 #include <QApplication>
 #include <QCommandLineParser>
+#include <QDir>
 #include <QIcon>
 #include <QMessageBox>
 #include <QMetaEnum>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QProcess>
+#include <QDesktopServices>
 #include <QTime>
+#include <QClipboard>
 #include <csignal>
 #include <memory>
+#include "xdg/iconlookup.h"
 #ifdef Q_OS_MAC
-#include "macos.h"
+#include "platform/Darwin/macos.h"
 #endif
 ALBERT_LOGGING
 using namespace std;
@@ -31,56 +34,6 @@ namespace {
 static const char *STATE_LAST_USED_VERSION = "last_used_version";
 static unique_ptr<App> app;
 }
-
-QNetworkAccessManager *albert::networkManager()
-{ return &app->network_manager; }
-
-QSettings albert::settings() { return QSettings(qApp->applicationName()); }
-
-QSettings albert::state() { return QSettings(QString("%1/%2").arg(cacheLocation(), "albert.state"), QSettings::IniFormat); }
-
-void albert::show(const QString &text)
-{
-    if (!text.isNull())
-        app->plugin_provider.frontend()->setInput(text);
-    app->plugin_provider.frontend()->setVisible(true);
-}
-
-void albert::hide()
-{ app->plugin_provider.frontend()->setVisible(false);}
-
-QString albert::configLocation()
-{ return QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) ;}
-
-QString albert::dataLocation()
-{ return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) ;}
-
-QString albert::cacheLocation()
-{ return QStandardPaths::writableLocation(QStandardPaths::CacheLocation) ;}
-
-void albert::toggle()
-{ app->plugin_provider.frontend()->setVisible(!app->plugin_provider.frontend()->isVisible()); }
-
-void albert::runTerminal(const QString &script, const QString &working_dir, bool close_on_exit)
-{ app->terminal_provider.terminal().run(script, working_dir, close_on_exit); }
-
-void albert::showSettings()
-{
-    hide();
-    if (!app->settings_window)
-        app->settings_window = new SettingsWindow(*app);
-    app->settings_window->bringToFront();
-}
-
-void albert::restart()
-{ QMetaObject::invokeMethod(qApp, "exit", Qt::QueuedConnection, Q_ARG(int, -1)); }
-
-void albert::quit()
-{ QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection); }
-
-void albert::sendTrayNotification(const QString &title, const QString &message, int ms)
-{ app->tray_icon.showMessage(title, message, QSystemTrayIcon::NoIcon, ms); }
-
 
 static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
@@ -147,7 +100,7 @@ static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
     auto qapp = make_unique<QApplication>(argc, argv);
     QApplication::setApplicationName("albert");
     QApplication::setApplicationDisplayName("Albert");
-    QApplication::setApplicationVersion(ALBERT_VERSION);
+    QApplication::setApplicationVersion(ALBERT_VERSION_STRING);
     QString icon = XDG::IconLookup::iconPath("albert");
     if (icon.isEmpty())
         icon = ":app_icon";
@@ -201,11 +154,10 @@ static void notifyVersionChange()
     auto current_version = qApp->applicationVersion();
 
     // Move to state // TODO remove on next major version
-    if (albert::settings().contains(STATE_LAST_USED_VERSION))
-        albert::state().setValue(STATE_LAST_USED_VERSION,
-                                 albert::settings().value(STATE_LAST_USED_VERSION));
+    if (albert::settings()->contains(STATE_LAST_USED_VERSION))
+        state->setValue(STATE_LAST_USED_VERSION, albert::settings()->value(STATE_LAST_USED_VERSION));
 
-    auto last_used_version = state.value(STATE_LAST_USED_VERSION).toString();
+    auto last_used_version = state->value(STATE_LAST_USED_VERSION).toString();
 
     if (last_used_version.isNull()){  // First run
         QMessageBox(
@@ -222,16 +174,18 @@ static void notifyVersionChange()
                             .arg(current_version)).exec();
 
     if (last_used_version != current_version)
-        state.setValue(STATE_LAST_USED_VERSION, current_version);
+        state->setValue(STATE_LAST_USED_VERSION, current_version);
 }
 
 int ALBERT_EXPORT main(int argc, char **argv);
+
 int main(int argc, char **argv)
 {
     if (qApp != nullptr)
         qFatal("Calling main twice is not allowed.");
 
     qInstallMessageHandler(messageHandler);
+
     auto qapp = initializeQApp(argc, argv);
 
     QCommandLineParser parser;
@@ -276,3 +230,103 @@ int main(int argc, char **argv)
         return EXIT_SUCCESS;
     return return_value;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+QNetworkAccessManager *albert::networkManager()
+{ return &app->network_manager; }
+
+std::unique_ptr<QSettings> albert::settings()
+{ return make_unique<QSettings>(qApp->applicationName()); }
+
+std::unique_ptr<QSettings> albert::state()
+{ return make_unique<QSettings>(QString("%1/%2").arg(cacheLocation(), "albert.state"), QSettings::IniFormat); }
+
+void albert::show(const QString &text)
+{
+    if (!text.isNull())
+        app->plugin_provider.frontend()->setInput(text);
+    app->plugin_provider.frontend()->setVisible(true);
+}
+
+void albert::hide()
+{ app->plugin_provider.frontend()->setVisible(false);}
+
+QString albert::configLocation()
+{ return QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) ;}
+
+QString albert::dataLocation()
+{ return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) ;}
+
+QString albert::cacheLocation()
+{ return QStandardPaths::writableLocation(QStandardPaths::CacheLocation) ;}
+
+void albert::toggle()
+{ app->plugin_provider.frontend()->setVisible(!app->plugin_provider.frontend()->isVisible()); }
+
+void albert::runTerminal(const QString &script, const QString &working_dir, bool close_on_exit)
+{ app->terminal_provider.terminal().run(script, working_dir, close_on_exit); }
+
+void albert::showSettings()
+{
+    hide();
+    if (!app->settings_window)
+        app->settings_window = new SettingsWindow(*app);
+    app->settings_window->bringToFront();
+}
+
+void albert::restart()
+{ QMetaObject::invokeMethod(qApp, "exit", Qt::QueuedConnection, Q_ARG(int, -1)); }
+
+void albert::quit()
+{ QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection); }
+
+void albert::sendTrayNotification(const QString &title, const QString &message, int ms)
+{ app->tray_icon.showMessage(title, message, QSystemTrayIcon::NoIcon, ms); }
+
+void albert::openUrl(const QString &url)
+{
+    DEBG << QString("Opening URL '%1'").arg(url);
+    if (!QDesktopServices::openUrl(QUrl(url)))
+        WARN << "Failed opening URL" << url;
+}
+
+void albert::openWebsite()
+{
+    static const char *website_url = "https://albertlauncher.github.io/";
+    QDesktopServices::openUrl(QUrl(website_url));
+}
+
+void albert::openIssueTracker()
+{
+    static const char *issue_tracker_url = "https://github.com/albertlauncher/albert/issues";
+    QDesktopServices::openUrl(QUrl(issue_tracker_url));
+}
+
+void albert::setClipboardText(const QString &text)
+{
+    QGuiApplication::clipboard()->setText(text, QClipboard::Clipboard);
+    QGuiApplication::clipboard()->setText(text, QClipboard::Selection);
+}
+
+long long albert::runDetachedProcess(const QStringList &commandline, const QString &working_dir)
+{
+    qint64 pid = 0;
+    if (!commandline.empty()) {
+        if (QProcess::startDetached(commandline[0], commandline.mid(1), working_dir, &pid))
+            INFO << "Detached process started successfully. PID:" << pid << commandline;
+        else
+            WARN << "Starting detached process failed." << commandline;
+    } else
+        WARN << "runDetachedProcess: commandline must not be empty!";
+    return pid;
+}
+
+
+
+
+
+
+

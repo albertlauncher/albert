@@ -1,9 +1,10 @@
 // Copyright (c) 2022-2023 Manuel Schneider
 
-#include "albert/extensions/frontend.h"
+#include "albert/extension/frontend/frontend.h"
 #include "albert/logging.h"
 #include "app.h"
 #include "pluginwidget.h"
+#include "qtpluginloader.h"
 #include "settings/globalsearchwidget.h"
 #include "settingswindow.h"
 #include "trayicon.h"

@@ -2,11 +2,11 @@
 
 #pragma once
 #include "albert/extensionregistry.h"
-#include "hotkey.h"
 #include "appqueryhandler.h"
+#include "hotkey.h"
 #include "pluginqueryhandler.h"
-#include "nativepluginprovider.h"
 #include "pluginregistry.h"
+#include "qtpluginprovider.h"
 #include "queryengine.h"
 #include "rpcserver.h"
 #include "settings/settingswindow.h"
@@ -15,6 +15,8 @@
 #include "trayicon.h"
 #include <QNetworkAccessManager>
 #include <QPointer>
+
+extern int main(int, char**);
 
 class App
 {
@@ -29,7 +31,7 @@ public:
     albert::ExtensionRegistry extension_registry;
     PluginRegistry plugin_registry;
     QueryEngine query_engine;
-    NativePluginProvider plugin_provider;
+    QtPluginProvider plugin_provider;
     TerminalProvider terminal_provider;
     TrayIcon tray_icon;
     QPointer<SettingsWindow> settings_window;
@@ -38,4 +40,8 @@ public:
 
     AppQueryHandler app_query_handler;
     PluginQueryHandler plugin_query_handler;
+
+    static App *instance();
+
+    friend int ::main(int, char**);
 };

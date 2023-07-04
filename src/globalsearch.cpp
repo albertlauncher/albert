@@ -1,7 +1,9 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2023 Manuel Schneider
 
-#include "albert/util/timeprinter.hpp"
-#include "extensions/globalqueryhandlerprivate.h"
+#include "albert/extension/queryhandler/globalqueryhandler.h"
+#include "albert/logging.h"
+#include "albert/util/timeprinter.h"
+#include "globalqueryhandlerprivate.h"
 #include "globalsearch.h"
 #include "query.h"
 #include <QtConcurrent>
@@ -26,11 +28,13 @@ void GlobalSearch::handleTriggerQuery(TriggerQuery *query) const
     mutex m;  // 6.4 Still no move semantics in QtConcurrent
     vector<pair<Extension*,RankItem>> rank_items;
 
+    auto * const internal_query = static_cast<::Query*>(query);
+
     function<void(GlobalQueryHandler*)> map =
-        [&m, &rank_items, &query](GlobalQueryHandler *handler) {
+        [&m, &rank_items, internal_query](GlobalQueryHandler *handler) {
             try {
-                TimePrinter tp(QString("TIME: %1 µs ['%2':'%3']").arg("%1", handler->id(), query->string()));
-                    auto r = handler->d->handleGlobalQuery(dynamic_cast<GlobalQueryHandler::GlobalQuery*>(query));
+                TimePrinter tp(QString("TIME: %1 µs ['%2':'%3']").arg("%1", handler->id(), internal_query->string()));
+                    auto r = handler->d->handleGlobalQuery(internal_query);
                 if (r.empty()) return;
                 unique_lock lock(m);
                 rank_items.reserve(rank_items.size()+r.size());
@@ -45,8 +49,7 @@ void GlobalSearch::handleTriggerQuery(TriggerQuery *query) const
 
     sort(rank_items.begin(), rank_items.end(), [](const auto &a, const auto &b){ return a.second.score > b.second.score; });
 
-    auto *q = static_cast<::Query*>(query);
-    q->matches_.add(rank_items.begin(), rank_items.end());
+    internal_query->matches_.add(rank_items.begin(), rank_items.end());
 
 //    auto it = rank_items.begin();
 //    for (uint e = 0; pow(10,e)-1 < (uint)rank_items.size(); ++e){

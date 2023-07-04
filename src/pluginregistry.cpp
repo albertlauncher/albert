@@ -1,16 +1,20 @@
 // Copyright (c) 2023 Manuel Schneider
 
 #include "albert/albert.h"
-#include "albert/extensions/pluginprovider.h"
+#include "albert/extension/pluginprovider/pluginloader.h"
+#include "albert/extension/pluginprovider/pluginmetadata.h"
+#include "albert/extension/pluginprovider/pluginprovider.h"
 #include "albert/logging.h"
 #include "pluginregistry.h"
 #include <QCoreApplication>
+#include <QSettings>
 #include <chrono>
 using namespace std;
 using namespace albert;
 using chrono::duration_cast;
 using chrono::milliseconds;
 using chrono::system_clock;
+using PluginState = PluginLoader::PluginState;
 
 PluginRegistry::PluginRegistry(ExtensionRegistry &er) : ExtensionWatcher<PluginProvider>(er)
 {
@@ -26,14 +30,14 @@ vector<const PluginLoader*> PluginRegistry::plugins() const
 
 bool PluginRegistry::isEnabled(const QString &id) const
 {
-    return albert::settings().value(QString("%1/enabled").arg(id), false).toBool();
+    return albert::settings()->value(QString("%1/enabled").arg(id), false).toBool();
 }
 
 void PluginRegistry::enable(const QString &id, bool enable)
 {
     if (plugins_.contains(id)){
         if (isEnabled(id) != enable){
-            albert::settings().setValue(QString("%1/enabled").arg(id), enable);
+            albert::settings()->setValue(QString("%1/enabled").arg(id), enable);
             load(id, enable);
         }
     } else
@@ -46,7 +50,8 @@ void PluginRegistry::load(const QString &id, bool load)
         auto *loader = plugins_.at(id);
         switch (loader->state()) {
         case PluginState::Invalid:
-            WARN << "Tried to" << (load ? "load" : "unload") << "invalid plugin" << id;
+        case PluginState::Initializing:
+            WARN << "Tried to" << (load ? "load" : "unload") << id << "in state" << (int)loader->state();
             break;
         case PluginState::Loaded:
             if (!load) {

@@ -1,7 +1,8 @@
 // Copyright (c) 2022-2023 Manuel Schneider
 
-#include "albert/extensions/frontend.h"
-#include "albert/extensions/queryhandler.h"
+#include "albert/extension/frontend/itemroles.h"
+#include "albert/extension/queryhandler/item.h"
+#include "albert/extension/queryhandler/rankitem.h"
 #include "albert/logging.h"
 #include "iconprovider.h"
 #include "itemsmodel.h"

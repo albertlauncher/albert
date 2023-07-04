@@ -1,7 +1,8 @@
 // Copyright (c) 2023 Manuel Schneider
 
-#include "albert/extensions/pluginprovider.h"
-#include "albert/util/standarditem.h"
+#include "albert/extension/pluginprovider/pluginloader.h"
+#include "albert/extension/pluginprovider/pluginmetadata.h"
+#include "albert/extension/queryhandler/standarditem.h"
 #include "pluginqueryhandler.h"
 #include "pluginregistry.h"
 using namespace albert;
@@ -18,13 +19,13 @@ QString PluginQueryHandler::defaultTrigger() const { return QStringLiteral("plug
 
 void PluginQueryHandler::handleTriggerQuery(TriggerQuery *query) const
 {
-    for (const PluginLoader* loader : plugin_registry_.plugins()){  // these should all be valid
+    for (const albert::PluginLoader* loader : plugin_registry_.plugins()){  // these should all be valid
         auto id = loader->metaData().id;
 
         if (!(id.contains(query->string(), Qt::CaseInsensitive) || loader->metaData().name.contains(query->string(), Qt::CaseInsensitive)))
             continue;
 
-        Actions actions;
+        std::vector<Action> actions;
         QString info;
 
         if (loader->metaData().user){
@@ -39,7 +40,7 @@ void PluginQueryHandler::handleTriggerQuery(TriggerQuery *query) const
                     [this, id=id]() { plugin_registry_.enable(id); }
                     );
 
-            if (loader->state() == PluginState::Loaded){
+            if (loader->state() == PluginLoader::PluginState::Loaded){
                 actions.emplace_back(
                     "unload", "Unload plugin",
                     [this, id=id](){ plugin_registry_.load(id, false); }
@@ -57,7 +58,7 @@ void PluginQueryHandler::handleTriggerQuery(TriggerQuery *query) const
 
             QString enabled = plugin_registry_.isEnabled(id) ? "Enabled" : "Disabled";
             QString state;
-            if (loader->state() == PluginState::Loaded)
+            if (loader->state() == PluginLoader::PluginState::Loaded)
                 state = "Loaded";
             else if (loader->stateInfo().isEmpty())
                 state = "Unloaded";

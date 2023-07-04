@@ -1,8 +1,10 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #pragma once
-#include "albert/extensions/frontend.h"
-#include "albert/extensions/queryhandler.h"
+#include "albert/extension/frontend/query.h"
+#include "albert/extension/queryhandler/triggerqueryhandler.h"
+#include "albert/extension/queryhandler/globalqueryhandler.h"
+#include "albert/extension/queryhandler/fallbackprovider.h"
 #include "itemsmodel.h"
 #include <QFutureWatcher>
 #include <set>

@@ -11,6 +11,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QTimer>
+#include <QSettings>
 static const char *CFG_LAST_REPORT = "last_report";
 static const uint DEF_LAST_REPORT = 0;
 static const char *CFG_TELEMETRY = "telemetry";
@@ -21,16 +22,16 @@ Telemetry::Telemetry()
     QObject::connect(&timer_, &QTimer::timeout, [this]{trySendReport();});
 
     auto settings = albert::settings();
-    if (!settings.contains(CFG_TELEMETRY)) {
+    if (!settings->contains(CFG_TELEMETRY)) {
         QMessageBox mb(QMessageBox::Question, "Albert telemetry",
                        "Albert collects anonymous data to improve user experience. You can check "
                        "the data sent in the details. Opt in?",
                        QMessageBox::No|QMessageBox::Yes);
         mb.setDefaultButton(QMessageBox::Yes);
         mb.setDetailedText(QJsonDocument(buildReport()).toJson(QJsonDocument::Indented));
-        settings.setValue(CFG_TELEMETRY, mb.exec() == QMessageBox::Yes);
+        settings->setValue(CFG_TELEMETRY, mb.exec() == QMessageBox::Yes);
     }
-    enable(settings.value(CFG_TELEMETRY).toBool());
+    enable(settings->value(CFG_TELEMETRY).toBool());
 }
 
 void Telemetry::enable(bool enable)
@@ -39,12 +40,12 @@ void Telemetry::enable(bool enable)
         timer_.start(60000);
     else
         timer_.stop();
-    albert::settings().setValue(CFG_TELEMETRY, enable);
+    albert::settings()->setValue(CFG_TELEMETRY, enable);
 }
 
 bool Telemetry::isEnabled() const
 {
-    return albert::settings().value(CFG_TELEMETRY).toBool();
+    return albert::settings()->value(CFG_TELEMETRY).toBool();
 }
 
 void Telemetry::trySendReport()
@@ -52,7 +53,7 @@ void Telemetry::trySendReport()
     // timezones and daytimes of users make it complicated to get trustworthy per day data.
     // Therefore three hours sampling rate.
 
-    auto ts = albert::settings().value(CFG_LAST_REPORT, DEF_LAST_REPORT).toUInt();
+    auto ts = albert::settings()->value(CFG_LAST_REPORT, DEF_LAST_REPORT).toUInt();
     if (ts < QDateTime::currentSecsSinceEpoch() - 10800) {
         QJsonObject object = buildReport();
         QString addr = "Zffb,!!*\" $## $\"' **!";
@@ -65,7 +66,7 @@ void Telemetry::trySendReport()
         QObject::connect(reply, &QNetworkReply::finished, [reply](){
             if (reply->error() == QNetworkReply::NoError){
                 DEBG << "Report sent.";
-                albert::settings().setValue(CFG_LAST_REPORT, QDateTime::currentSecsSinceEpoch());
+                albert::settings()->setValue(CFG_LAST_REPORT, QDateTime::currentSecsSinceEpoch());
             }
             reply->deleteLater();
         });

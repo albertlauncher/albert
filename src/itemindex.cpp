@@ -1,6 +1,8 @@
 // Copyright (c) 2021-2023 Manuel Schneider
 
-#include "albert/extensions/queryhandler.h"
+#include "albert/extension/queryhandler/indexitem.h"
+#include "albert/extension/queryhandler/item.h"
+#include "albert/extension/queryhandler/rankitem.h"
 #include "itemindex.h"
 #include "levenshtein.h"
 #include <QRegularExpression>

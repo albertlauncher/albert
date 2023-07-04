@@ -1,6 +1,6 @@
 // Copyright (c) 2022-2023 Manuel Schneider
 
-#include "albert/extensions/queryhandler.h"
+#include "albert/extension/queryhandler/queryhandler.h"
 #include "queryengine.h"
 #include "triggerwidget.h"
 #include <QCoreApplication>

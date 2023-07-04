@@ -1,7 +1,7 @@
 // Copyright (c) 2023 Manuel Schneider
 
 #include "albert/albert.h"
-#include "albert/util/standarditem.h"
+#include "albert/extension/queryhandler/standarditem.h"
 #include "appqueryhandler.h"
 using namespace albert;
 using namespace std;

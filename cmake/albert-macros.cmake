@@ -52,27 +52,38 @@ endmacro()
 
 macro(albert_plugin_add_default_target)
     file(GLOB_RECURSE SRC src/*.h src/*.cpp src/*.hpp src/*.mm *.qrc *.ui *.qml )
-    #message("${PROJECT_NAME} ${SRC}")
-    add_library(${PROJECT_NAME} SHARED ${SRC})
+
+    add_library(${PROJECT_NAME} MODULE ${SRC})
     add_library(albert::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
     target_link_libraries(${PROJECT_NAME} PRIVATE albert::albert)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE -DPROJECT_NAME="${PROJECT_NAME}")  # logging.h
+
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        -DALBERT_PLUGIN_ID="${PROJECT_NAME}"
+        -DALBERT_PLUGIN_NAME="${MD_NAME}"
+        -DALBERT_PLUGIN_DESCRIPTION="${MD_DESCRIPTION}"
+    )
+
     set_target_properties(
         ${PROJECT_NAME} PROPERTIES
         CXX_VISIBILITY_PRESET hidden
         VISIBILITY_INLINES_HIDDEN 1
         INSTALL_RPATH "$ORIGIN"
     )
-    include(GenerateExportHeader)
-    generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME "export.h")
+
+    #include(GenerateExportHeader)
+    #generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME "export.h")
+
     install(
         TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/albert
     )
+
     foreach(arg IN LISTS MD_QT_DEPENDENCIES)
         find_package(Qt6 REQUIRED COMPONENTS ${arg})
         target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::${arg})
     endforeach()
+
 endmacro()
 
 macro(albert_plugin)
@@ -84,15 +95,19 @@ macro(albert_plugin)
     if (NOT DEFINED PROJECT_VERSION)
         message(FATAL_ERROR "Plugin version is undefined")
     endif()
+
     if (NOT DEFINED MD_NAME)
         message(FATAL_ERROR "Plugin name is undefined")
     endif()
+
     if (NOT DEFINED MD_DESCRIPTION)
         message(FATAL_ERROR "Plugin description is undefined")
     endif()
+
     if (NOT DEFINED MD_LICENSE)
         message(FATAL_ERROR "Plugin license is undefined")
     endif()
+
     if (NOT DEFINED MD_URL)
         message(FATAL_ERROR "Plugin url is undefined")
     endif()

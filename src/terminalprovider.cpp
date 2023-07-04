@@ -2,12 +2,12 @@
 
 #include "albert/albert.h"
 #include "albert/logging.h"
-#include "albert/util/util.h"
 #include "terminalprovider.h"
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include <QProcess>
+#include <QSettings>
 #include <QStandardPaths>
 #include <QStringList>
 #include <QTemporaryFile>
@@ -188,7 +188,7 @@ TerminalProvider::TerminalProvider() : terminal_(nullptr)
         qFatal("No terminals available.");
 
     // Set the configured terminal
-    auto cfg_term_cmd = albert::settings().value(CFG_TERM, QString()).toString();
+    auto cfg_term_cmd = albert::settings()->value(CFG_TERM, QString()).toString();
     for (const auto & terminal : terminals_)
         if (terminal->name() == cfg_term_cmd)
             terminal_ = terminal.get();
@@ -213,5 +213,5 @@ const vector<unique_ptr<Terminal>> &TerminalProvider::terminals() const
 void TerminalProvider::setTerminal(uint i)
 {
     terminal_ = terminals_[i].get();
-    albert::settings().setValue(CFG_TERM, terminal_->name());
+    albert::settings()->setValue(CFG_TERM, terminal_->name());
 }
