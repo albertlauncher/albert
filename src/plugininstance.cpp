@@ -10,11 +10,11 @@ using namespace albert;
 
 PluginInstance::~PluginInstance() = default;
 
-void PluginInstance::initialize() {}
+void PluginInstance::initialize(ExtensionRegistry *) {}
+
+void PluginInstance::finalize(ExtensionRegistry *) {}
 
 std::vector<Extension*> PluginInstance::extensions() { return {}; }
-
-void PluginInstance::finalize() {}
 
 QWidget *PluginInstance::buildConfigWidget() { return nullptr; }
 

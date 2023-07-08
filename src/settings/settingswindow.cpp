@@ -82,7 +82,7 @@ void SettingsWindow::init_tabs(App &app)
     init_tab_general_terminals(app);
 
     // Tab 1 Window
-    ui.tabs->insertTab((int)Tab::Window, app.plugin_provider.frontend()->createFrontendConfigWidget(), "Window");
+    ui.tabs->insertTab((int)Tab::Window, app.frontend->createFrontendConfigWidget(), "Window");
 
     // Tab 2 Search
     ui.tabs->insertTab((int)Tab::Search, new GlobalSearchWidget(app.query_engine, app.extension_registry), "Search");
@@ -138,12 +138,13 @@ void SettingsWindow::init_tab_general_frontends(App &app)
 {
     // Populate frontend checkbox
     for (const auto *loader : app.plugin_provider.frontendPlugins()){
-        ui.comboBox_frontend->addItem(loader->metaData().name);
-        if (loader->metaData().id == app.plugin_provider.frontend()->id())
+        ui.comboBox_frontend->addItem(loader->metaData().name, loader->metaData().id);
+        if (loader->metaData().id == app.frontend->id())
             ui.comboBox_frontend->setCurrentIndex(ui.comboBox_frontend->count()-1);
     }
-    connect(ui.comboBox_frontend, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            this, [&app](int index) { app.plugin_provider.setFrontend(index); });
+    connect(ui.comboBox_frontend, &QComboBox::currentIndexChanged, this, [this, &app]() {
+        app.setFrontend(ui.comboBox_frontend->currentData().toString());
+    });
 
 }
 

@@ -2,27 +2,22 @@
 
 #include "albert/albert.h"
 #include "albert/config.h"
-#include "albert/export.h"
-#include "albert/extension/frontend/frontend.h"
 #include "albert/logging.h"
 #include "app.h"
-#include "rpcserver.h"
-#include "scopedcrashindicator.h"
+#include "xdg/iconlookup.h"
 #include <QApplication>
+#include <QClipboard>
 #include <QCommandLineParser>
+#include <QDesktopServices>
 #include <QDir>
 #include <QIcon>
 #include <QMessageBox>
 #include <QMetaEnum>
+#include <QProcess>
 #include <QSettings>
 #include <QStandardPaths>
-#include <QProcess>
-#include <QDesktopServices>
 #include <QTime>
-#include <QClipboard>
 #include <csignal>
-#include <memory>
-#include "xdg/iconlookup.h"
 #ifdef Q_OS_MAC
 #include "platform/Darwin/macos.h"
 #endif
@@ -32,7 +27,7 @@ using namespace albert;
 
 namespace {
 static const char *STATE_LAST_USED_VERSION = "last_used_version";
-static unique_ptr<App> app;
+static App *app;
 }
 
 static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
@@ -217,11 +212,10 @@ int main(int argc, char **argv)
 #if defined(Q_OS_MAC)
     setActivationPolicyAccessory();
 #endif
-    ScopedCrashIndicator crash_indicator;
-    app = make_unique<App>(parser.value(opt_p).split(',', Qt::SkipEmptyParts));
+    app = new App(parser.value(opt_p).split(',', Qt::SkipEmptyParts));
     app->initialize();
     notifyVersionChange();
-    QObject::connect(qApp, &QApplication::aboutToQuit, [&]() { app.reset(); }); // Delete app _before_ loop exits
+    QObject::connect(qApp, &QApplication::aboutToQuit, [&]() { delete app; }); // Delete app _before_ loop exits
 
 //    albert::showSettings();
 
@@ -247,12 +241,15 @@ std::unique_ptr<QSettings> albert::state()
 void albert::show(const QString &text)
 {
     if (!text.isNull())
-        app->plugin_provider.frontend()->setInput(text);
-    app->plugin_provider.frontend()->setVisible(true);
+        app->frontend->setInput(text);
+    app->frontend->setVisible(true);
 }
 
 void albert::hide()
-{ app->plugin_provider.frontend()->setVisible(false);}
+{ app->frontend->setVisible(false);}
+
+void albert::toggle()
+{ app->frontend->setVisible(!app->frontend->isVisible()); }
 
 QString albert::configLocation()
 { return QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) ;}
@@ -262,9 +259,6 @@ QString albert::dataLocation()
 
 QString albert::cacheLocation()
 { return QStandardPaths::writableLocation(QStandardPaths::CacheLocation) ;}
-
-void albert::toggle()
-{ app->plugin_provider.frontend()->setVisible(!app->plugin_provider.frontend()->isVisible()); }
 
 void albert::runTerminal(const QString &script, const QString &working_dir, bool close_on_exit)
 { app->terminal_provider.terminal().run(script, working_dir, close_on_exit); }

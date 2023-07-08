@@ -6,115 +6,103 @@
 #include "albert/extension/pluginprovider/pluginprovider.h"
 #include "albert/logging.h"
 #include "pluginregistry.h"
-#include <QCoreApplication>
+#include <QApplication>
+#include <QMessageBox>
 #include <QSettings>
-#include <chrono>
-using namespace std;
 using namespace albert;
-using chrono::duration_cast;
-using chrono::milliseconds;
-using chrono::system_clock;
-using PluginState = PluginLoader::PluginState;
+using namespace std;
 
-PluginRegistry::PluginRegistry(ExtensionRegistry &er) : ExtensionWatcher<PluginProvider>(er)
-{
-}
 
-vector<const PluginLoader*> PluginRegistry::plugins() const
-{
-    vector<const PluginLoader*> plugins;
-    for (const auto &[id, loader] : plugins_)
-        plugins.emplace_back(loader);
-    return plugins;
-}
+PluginRegistry::PluginRegistry(ExtensionRegistry &registry)
+    : albert::ExtensionWatcher<PluginProvider>(&registry), extension_registry(registry) {}
+
+PluginRegistry::~PluginRegistry() = default; // private PluginLoader dtor
+
+map<QString, PluginLoader*> PluginRegistry::plugins() const { return registered_plugins_; }
 
 bool PluginRegistry::isEnabled(const QString &id) const
-{
-    return albert::settings()->value(QString("%1/enabled").arg(id), false).toBool();
-}
+{ return albert::settings()->value(QString("%1/enabled").arg(id), false).toBool(); }
 
 void PluginRegistry::enable(const QString &id, bool enable)
 {
-    if (plugins_.contains(id)){
-        if (isEnabled(id) != enable){
+    if (isEnabled(id) != enable){
+        if (auto err = load(id, enable); err.isNull())
             albert::settings()->setValue(QString("%1/enabled").arg(id), enable);
-            load(id, enable);
+        else{
+            WARN << err;
+            QMessageBox::warning(nullptr, qApp->applicationDisplayName(), err);
         }
-    } else
-        WARN << "En-/Disabled nonexistent id:" << id;
+    }
 }
 
-void PluginRegistry::load(const QString &id, bool load)
+QString PluginRegistry::load(const QString &id, bool load)
 {
     try {
-        auto *loader = plugins_.at(id);
-        switch (loader->state()) {
-        case PluginState::Invalid:
-        case PluginState::Initializing:
-            WARN << "Tried to" << (load ? "load" : "unload") << id << "in state" << (int)loader->state();
-            break;
-        case PluginState::Loaded:
-            if (!load) {
-                DEBG << "Unloading plugin" << loader->metaData().id;
-                auto start = system_clock::now();
-                loader->unload();
-                auto duration = duration_cast<milliseconds>(system_clock::now()-start).count();
-                if (loader->state() == PluginState::Unloaded){
-                    DEBG << QString("[%1ms] Successfully unloaded '%2'")
-                                .arg(duration).arg(loader->metaData().id);
-                    emit pluginStateChanged(id);
-                } else
-                    WARN << QString("[%1ms] Failed unloading '%2': %3")
-                                .arg(duration).arg(loader->metaData().id, loader->stateInfo());
-            } else
-                WARN << "Plugin is already loaded:" << id ;
-            break;
-        case PluginState::Unloaded:
-            if (load){
-                INFO << "Loading plugin" << loader->metaData().id;
-                auto start = system_clock::now();
-                loader->load();
-                auto duration = duration_cast<milliseconds>(system_clock::now()-start).count();
-                if (loader->state() == PluginState::Loaded){
-                    DEBG << QString("[%1ms] Successfully loaded '%2'")
-                                .arg(duration).arg(loader->metaData().id);
-                    emit pluginStateChanged(id);
-                } else
-                    WARN << QString("[%1ms] Failed loading '%2': %3")
-                                .arg(duration).arg(loader->metaData().id, loader->stateInfo());
-            } else
-                WARN << "Plugin is already unloaded:" << id ;
-            break;
-        }
-    } catch (const exception &e) {
-        WARN << QString("Error while (un-)loading plugin '%1': %2").arg(id, e.what());
+        if (auto *loader = registered_plugins_.at(id); load)
+            return loader->load(&extension_registry);
+        else
+            return loader->unload(&extension_registry);
+    } catch (const out_of_range&) {
+        return QString("Plugin '%1' does not exist.").arg(id);
     }
 }
 
 void PluginRegistry::onAdd(PluginProvider *pp)
 {
-    for (auto *loader : pp->plugins()){
-        if (loader->state() == PluginState::Invalid)
-            continue;
-        const auto &id = loader->metaData().id;
-        if (const auto &[it, success] = plugins_.emplace(id, loader); success){
+    const auto &plugins = plugins_.emplace(pp, pp->plugins()).first->second;
+
+    for (auto &loader : plugins){
+
+        auto id = loader->metaData().id;
+
+        // Register plugins enforcing unique ids
+        if (const auto &[it, success] = registered_plugins_.emplace(id, loader); success){
+
+            // Load if is enabled user plugin
             if (loader->metaData().user && isEnabled(id))
-                load(id);
+                loader->load(&extension_registry);
+
         } else
             INFO << "Plugin" << id << "shadowed:" << loader->path;
     }
+
     emit pluginsChanged();
 }
 
 void PluginRegistry::onRem(PluginProvider *pp)
 {
-    for (auto it = plugins_.begin(); it != plugins_.end();){
+    for (auto it = registered_plugins_.begin(); it != registered_plugins_.end();){
         const auto &[id, loader] = *it;
-        if (loader->provider() == pp){
-            if (loader->state() == PluginState::Loaded)
-                loader->unload();
-            it = plugins_.erase(it);
-        } else ++it;
+
+        if (&loader->provider() == pp){
+
+            loader->disconnect();
+
+            // Unload plugin if necessary
+            if (loader->state() != PluginState::Unloaded){
+
+                // Wait as long as plugin is busy
+                QEventLoop loop;
+                connect(loader, &PluginLoader::stateChanged, &loop, &QEventLoop::quit);
+                while (loader->state() == PluginState::Busy)
+                    loop.exec();
+
+                // If loaded
+                if (loader->state() == PluginState::Loaded){
+                    loader->unload(&extension_registry);
+
+                    // Wait for unloading to finish
+                    while (loader->state() == PluginState::Busy)
+                        loop.exec();
+                }
+            }
+
+            Q_ASSERT(loader->state() == PluginState::Unloaded);
+
+            it = registered_plugins_.erase(it);
+        } else
+            ++it;
     }
+
     emit pluginsChanged();
 }

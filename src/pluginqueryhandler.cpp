@@ -19,10 +19,10 @@ QString PluginQueryHandler::defaultTrigger() const { return QStringLiteral("plug
 
 void PluginQueryHandler::handleTriggerQuery(TriggerQuery *query) const
 {
-    for (const albert::PluginLoader* loader : plugin_registry_.plugins()){  // these should all be valid
-        auto id = loader->metaData().id;
+    for (auto &[id, loader] : plugin_registry_.plugins()){
 
-        if (!(id.contains(query->string(), Qt::CaseInsensitive) || loader->metaData().name.contains(query->string(), Qt::CaseInsensitive)))
+        if (!(id.contains(query->string(), Qt::CaseInsensitive)
+              || loader->metaData().name.contains(query->string(), Qt::CaseInsensitive)))
             continue;
 
         std::vector<Action> actions;
@@ -40,7 +40,7 @@ void PluginQueryHandler::handleTriggerQuery(TriggerQuery *query) const
                     [this, id=id]() { plugin_registry_.enable(id); }
                     );
 
-            if (loader->state() == PluginLoader::PluginState::Loaded){
+            if (loader->state() == PluginState::Loaded){
                 actions.emplace_back(
                     "unload", "Unload plugin",
                     [this, id=id](){ plugin_registry_.load(id, false); }
@@ -58,7 +58,7 @@ void PluginQueryHandler::handleTriggerQuery(TriggerQuery *query) const
 
             QString enabled = plugin_registry_.isEnabled(id) ? "Enabled" : "Disabled";
             QString state;
-            if (loader->state() == PluginLoader::PluginState::Loaded)
+            if (loader->state() == PluginState::Loaded)
                 state = "Loaded";
             else if (loader->stateInfo().isEmpty())
                 state = "Unloaded";

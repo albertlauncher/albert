@@ -11,30 +11,35 @@ template<class T>
 class ALBERT_EXPORT ExtensionWatcher  /// Non-QObject extension registry observer
 {
 public:
-    explicit ExtensionWatcher(ExtensionRegistry &er) : registry(er)
+    explicit ExtensionWatcher(ExtensionRegistry *registry = nullptr)
     {
-        conn_r = QObject::connect(&registry, &ExtensionRegistry::added,
-                                  [this](Extension *e){ if (T *t = dynamic_cast<T*>(e)) onAdd(t); });
-
-        conn_u = QObject::connect(&registry, &ExtensionRegistry::removed,
-                                  [this](Extension *e){ if (T *t = dynamic_cast<T*>(e)) onRem(t); });
+        if (registry)
+            setExtensionRegistry(registry);
     }
 
     virtual ~ExtensionWatcher()
     {
-        QObject::disconnect(conn_r);
-        QObject::disconnect(conn_u);
+        QObject::disconnect(conn_add);
+        QObject::disconnect(conn_rem);
+    }
+
+    void setExtensionRegistry(ExtensionRegistry *registry)
+    {
+        QObject::disconnect(conn_add);
+        conn_add = QObject::connect(registry, &ExtensionRegistry::added,
+                                    [this](Extension *e){ if (T *t = dynamic_cast<T*>(e)) onAdd(t); });
+
+        QObject::disconnect(conn_rem);
+        conn_rem = QObject::connect(registry, &ExtensionRegistry::removed,
+                                    [this](Extension *e){ if (T *t = dynamic_cast<T*>(e)) onRem(t); });
     }
 
 protected:
-
     virtual void onAdd(T *) {}
     virtual void onRem(T *) {}
 
-    ExtensionRegistry &registry;
-
 private:
-    QMetaObject::Connection conn_r;
-    QMetaObject::Connection conn_u;
+    QMetaObject::Connection conn_add;
+    QMetaObject::Connection conn_rem;
 };
 }

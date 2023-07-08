@@ -19,7 +19,6 @@
 #include <map>
 using namespace std;
 using namespace albert;
-using PluginState = PluginLoader::PluginState;
 
 
 class PluginModel: public QAbstractListModel
@@ -27,9 +26,8 @@ class PluginModel: public QAbstractListModel
 public:
     explicit PluginModel(PluginRegistry &plugin_registry) : plugin_registry_(plugin_registry)
     {
-        connect(&plugin_registry, &PluginRegistry::pluginsChanged,
-                this, &PluginModel::updatePlugins);
-        updatePlugins();
+        connect(&plugin_registry, &PluginRegistry::pluginsChanged, this, &PluginModel::updatePluginList);
+        updatePluginList();
     }
 
 private:
@@ -55,40 +53,44 @@ private:
             return {};
 
         switch (const auto *p = plugins_[idx.row()]; role) {
+
         case Qt::CheckStateRole:
             if (p->metaData().user)
-                return plugin_registry_.isEnabled(p->metaData().id) ? Qt::Checked : Qt::Unchecked;
-            else
-                return {};
+                switch (p->state()) {
+                case PluginState::Invalid:
+                    return {};
+                case PluginState::Busy:
+                    return Qt::PartiallyChecked;
+                case PluginState::Loaded:
+                case PluginState::Unloaded:
+                    return plugin_registry_.isEnabled(p->metaData().id) ? Qt::Checked : Qt::Unchecked;
+                }
             break;
+
         case Qt::DisplayRole:
             return p->metaData().name;
+
         case Qt::ForegroundRole:
-            switch (p->state()) {
-                case PluginState::Loaded:
-                    return {};
-                case PluginState::Initializing:
-                    return QColor(Qt::blue);
-                case PluginState::Unloaded:
-                    return QColor(p->stateInfo().isEmpty() ? Qt::gray : Qt::red);
-                case PluginState::Invalid:
-                    return QColor(Qt::gray);
-            }
-                break;
+            if (p->state() != PluginState::Loaded)
+                return qApp->palette().color(QPalette::Dark);
+            if (!p->stateInfo().isNull())
+                return QColor(Qt::red);
+            break;
+
         case Qt::ToolTipRole:
             return p->stateInfo();
+
         }
         return {};
     }
 
-    bool setData(const QModelIndex &idx, const QVariant &value, int role) override
+    bool setData(const QModelIndex &idx, const QVariant&, int role) override
     {
         if (idx.isValid() && idx.column() == 0 && role == Qt::CheckStateRole){
             try {
                 const auto *p = plugins_[idx.row()];
-                plugin_registry_.enable(p->metaData().id, value == Qt::Checked);
-                emit dataChanged(idx, idx);
-                return true;
+                if (p->metaData().user && (p->state() == PluginState::Loaded || p->state() == PluginState::Unloaded))
+                    plugin_registry_.enable(p->metaData().id, !plugin_registry_.isEnabled(p->metaData().id));
             } catch (std::out_of_range &e){}
         }
         return false;
@@ -98,19 +100,37 @@ private:
     {
         if (!idx.isValid() || idx.row() < 0 || rowCount(idx.parent()) <= idx.row())
             return Qt::NoItemFlags;
-        else if (plugins_[idx.row()]->metaData().user)
-            return Qt::ItemIsSelectable | Qt::ItemNeverHasChildren | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable;
-        else
-            return Qt::ItemIsSelectable | Qt::ItemNeverHasChildren | Qt::ItemIsEnabled;
+
+        switch (plugins_[idx.row()]->state()) {  // TODO: if
+        case PluginState::Invalid:
+            return Qt::ItemNeverHasChildren;
+        case PluginState::Busy:
+            return Qt::ItemNeverHasChildren | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+        case PluginState::Loaded:
+        case PluginState::Unloaded:
+            return Qt::ItemNeverHasChildren | Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable;
+        }
     }
 
-    void updatePlugins()
+    void updatePluginList()
     {
         beginResetModel();
-        plugins_ = plugin_registry_.plugins();
+
+        plugins_.clear();
+        for (const auto &[id, loader] : plugin_registry_.plugins()){
+            plugins_.emplace_back(loader);
+            connect(loader, &PluginLoader::stateChanged, this, &PluginModel::update, Qt::UniqueConnection);
+        }
+
         ::sort(plugins_.begin(), plugins_.end(),
                [](const auto &l, const auto &r){ return l->metaData().name < r->metaData().name; });
+
         endResetModel();
+    }
+
+
+    void update(){
+        emit dataChanged(index(0), index(plugins_.size()-1));
     }
 
     PluginRegistry &plugin_registry_;
@@ -158,9 +178,6 @@ PluginWidget::PluginWidget(PluginRegistry &plugin_registry) : model_(new PluginM
             this, &PluginWidget::onUpdatePluginWidget);
 
     connect(model_.get(), &PluginModel::dataChanged,
-            this, &PluginWidget::onUpdatePluginWidget);
-
-    connect(&plugin_registry, &PluginRegistry::pluginStateChanged,
             this, &PluginWidget::onUpdatePluginWidget);
 
     onUpdatePluginWidget();
@@ -212,24 +229,18 @@ void PluginWidget::onUpdatePluginWidget()
         vb->addWidget(l);
     }
 
-    switch (p.state()) {
-        case PluginState::Invalid:
-        case PluginState::Initializing:
-            break;
-        case PluginState::Unloaded:
-            // Unloaded info
-            if (!p.stateInfo().isEmpty()){
-                l = new QLabel(p.stateInfo());
-                l->setWordWrap(true);
-                vb->addWidget(l);
-            }
-            break;
-        case PluginState::Loaded:
-            // Config widget
-            if (auto *inst = p.instance(); inst)
-                if (auto *cw = inst->buildConfigWidget())
-                    vb->addWidget(cw, 1); // Strech=1
-            break;
+    if (p.state() == PluginState::Loaded) {
+        // Config widget
+        if (auto *inst = p.instance(); inst)
+            if (auto *cw = inst->buildConfigWidget())
+                vb->addWidget(cw, 1); // Strech=1
+    } else if (!p.stateInfo().isEmpty()){
+        // Unloaded info
+        if (!p.stateInfo().isEmpty()){
+            l = new QLabel(p.stateInfo());
+            l->setWordWrap(true);
+            vb->addWidget(l);
+        }
     }
 
     vb->addStretch();
@@ -245,7 +256,7 @@ void PluginWidget::onUpdatePluginWidget()
 
     // Provider
     vb->addWidget(new QLabel(QString("<span style=\"font-size:9pt;color:#808080;\">%1, Interface id:  %2</span>")
-                    .arg(p.provider()->name(), p.metaData().iid)));
+                    .arg(p.provider().name(), p.metaData().iid)));
 
     // Requirements
     if (!p.metaData().binary_dependencies.isEmpty())

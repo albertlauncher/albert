@@ -6,8 +6,8 @@
 #include "globalqueryhandlerprivate.h"
 #include "indexqueryhandlerprivate.h"
 #include "itemindex.h"
-#include "query.h"
 #include "itemsmodel.h"
+#include "query.h"
 #include "queryengine.h"
 #include "usagedatabase.h"
 #include <QCoreApplication>
@@ -33,9 +33,9 @@ static const char* DEF_SEPARATORS = R"R([\s\\\/\-\[\](){}#!?<>"'=+*.:,;_]+)R";
 static const uint GRAM_SIZE = 2;
 
 QueryEngine::QueryEngine(ExtensionRegistry &registry):
-    ExtensionWatcher<TriggerQueryHandler>(registry),
-    ExtensionWatcher<GlobalQueryHandler>(registry),
-    ExtensionWatcher<FallbackHandler>(registry),
+    ExtensionWatcher<TriggerQueryHandler>(&registry),
+    ExtensionWatcher<GlobalQueryHandler>(&registry),
+    ExtensionWatcher<FallbackHandler>(&registry),
     global_search_handler(enabled_global_handlers_)
 {
     UsageDatabase::initializeDatabase();

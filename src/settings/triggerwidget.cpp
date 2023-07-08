@@ -1,6 +1,5 @@
 // Copyright (c) 2022-2023 Manuel Schneider
 
-#include "albert/extension/queryhandler/queryhandler.h"
 #include "queryengine.h"
 #include "triggerwidget.h"
 #include <QCoreApplication>
@@ -24,9 +23,9 @@ public:
     QueryEngine &engine;
 
     explicit TriggerModel(QueryEngine &qe, ExtensionRegistry &er) :
-            ExtensionWatcher<TriggerQueryHandler>(er), engine(qe)
+            ExtensionWatcher<TriggerQueryHandler>(&er), engine(qe)
     {
-        for (auto &[id, handler]: registry.extensions<TriggerQueryHandler>())
+        for (auto &[id, handler]: er.extensions<TriggerQueryHandler>())
             handlers.emplace_back(handler);
 
         ::sort(begin(handlers), end(handlers),
@@ -189,6 +188,5 @@ TriggerWidget::TriggerWidget(QueryEngine &qe, ExtensionRegistry &er)
         edit(model->index(index.row(), (int)Column::Trigger));
     });
 }
-
 
 TriggerWidget::~TriggerWidget() = default;

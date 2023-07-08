@@ -7,7 +7,14 @@ PluginLoader::PluginLoader(const QString &p) : path(p), state_(PluginState::Inva
 
 PluginLoader::~PluginLoader() = default;
 
-albert::PluginLoader::PluginState PluginLoader::state() const { return state_; }
+albert::PluginState PluginLoader::state() const { return state_; }
 
 const QString &PluginLoader::stateInfo() const { return state_info_; }
+
+void PluginLoader::setState(PluginState state, QString info)
+{
+    state_ = state;
+    state_info_ = info;
+    emit stateChanged(state);
+}
 

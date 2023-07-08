@@ -1,10 +1,11 @@
 // Copyright (c) 2023 Manuel Schneider
 
 #pragma once
+#include "albert/extension/pluginprovider/plugininstance.h"
 #include "albert/extension/pluginprovider/pluginloader.h"
 #include "albert/extension/pluginprovider/pluginmetadata.h"
-#include "albert/extension/pluginprovider/plugininstance.h"
-#include "qtpluginprovider.h"
+#include <QFutureWatcher>
+#include <QPluginLoader>
 #include <vector>
 namespace albert {
 class Frontend;
@@ -17,18 +18,25 @@ class QtPluginProvider;
 class QtPluginLoader : public albert::PluginLoader
 {
 public:
-    QtPluginLoader(QtPluginProvider *provider, const QString &path);
+    QtPluginLoader(const QtPluginProvider &provider, const QString &path);
     ~QtPluginLoader();
 
-    QtPluginProvider *provider() const override;
-    albert::PluginMetaData const &metaData() const override;
+    const albert::PluginProvider &provider() const override;
+    const albert::PluginMetaData &metaData() const override;
     albert::PluginInstance *instance() const override;
-    void load() override;
-    void unload() override;
+
+    QString load(albert::ExtensionRegistry*) override;
+    QString unload(albert::ExtensionRegistry*) override;
+
+    // Sync load (instantiate (implicit load), initialize, register)
+    void load_(albert::ExtensionRegistry*);
+    void unload_(albert::ExtensionRegistry*);
 
 private:
-    QtPluginProvider *provider_;
+    QPluginLoader loader;
+    const QtPluginProvider &provider_;
     albert::PluginInstance *instance_;
     albert::PluginMetaData metadata_;
+    QFutureWatcher<bool> watcher_;
 };
 

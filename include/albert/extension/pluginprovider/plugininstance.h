@@ -3,8 +3,9 @@
 #pragma once
 #include "albert/export.h"
 #include <QString>
-#include <vector>
 #include <memory>
+#include <vector>
+namespace albert { class ExtensionRegistry; }
 class QSettings;
 class QDir;
 class QWidget;
@@ -19,8 +20,8 @@ public:
     virtual ~PluginInstance();
 
     virtual QString id() const = 0;  ///< The unique id.
-    virtual void initialize();  ///< The threaded initialization function.
-    virtual void finalize();  ///<  The threaded initialization function.
+    virtual void initialize(ExtensionRegistry*);  ///< The initialization function.
+    virtual void finalize(ExtensionRegistry*);  ///<  The initialization function.
     virtual std::vector<Extension*> extensions();  ///< The extensions this plugin provides.
     virtual QWidget *buildConfigWidget();  ///< Config widget factory.
 

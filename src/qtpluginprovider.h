@@ -2,35 +2,26 @@
 
 #pragma once
 #include "albert/extension/pluginprovider/pluginprovider.h"
-#include <vector>
+#include "qtpluginloader.h"
+#include <QStringList>
 namespace albert {
 class Frontend;
-class ExtensionRegistry;
 class PluginLoader;
 }
-class QtPluginLoader;
-
 
 class QtPluginProvider : public albert::PluginProvider
 {
 public:
-    explicit QtPluginProvider(const QStringList& additional_paths);
-    ~QtPluginProvider() override;
+    explicit QtPluginProvider(QStringList additional_paths);
 
-    void loadFrontend();
-
-    albert::Frontend *frontend();
-    const std::vector<QtPluginLoader*> &frontendPlugins();
-    void setFrontend(uint);
-
-protected:
     QString id() const override;
     QString name() const override;
     QString description() const override;
     std::vector<albert::PluginLoader*> plugins() override;
 
+    std::vector<QtPluginLoader*> frontendPlugins();
+
 private:
+    QStringList paths_;
     std::vector<std::unique_ptr<QtPluginLoader>> plugins_;
-    std::vector<QtPluginLoader*> frontend_plugins_;
-    albert::Frontend *frontend_;
 };

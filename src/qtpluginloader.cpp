@@ -1,18 +1,21 @@
 // Copyright (c) 2022-2023 Manuel Schneider
 
 #include "albert/config.h"
+#include "albert/extensionregistry.h"
 #include "albert/logging.h"
+#include "albert/util/timeprinter.h"
 #include "qtpluginloader.h"
+#include "qtpluginprovider.h"
+#include <QFutureWatcher>
 #include <QPluginLoader>
+#include <QtConcurrent>
 using namespace std;
 using namespace albert;
 
 
-QtPluginLoader::QtPluginLoader(QtPluginProvider *provider, const QString &p)
-    : PluginLoader(p), provider_(provider)
+QtPluginLoader::QtPluginLoader(const QtPluginProvider &provider, const QString &p)
+    : PluginLoader(p), loader(p), provider_(provider)
 {
-    QPluginLoader loader(path);
-
     // Extract metadata
 
     metadata_.iid = loader.metaData()["IID"].toString();
@@ -38,7 +41,7 @@ QtPluginLoader::QtPluginLoader(QtPluginProvider *provider, const QString &p)
 
     QStringList errors;
 
-    static const QRegularExpression regex_iid = QRegularExpression(R"R(org.albert.PluginInterface/(\d+).(\d+))R");
+    static const auto regex_iid = QRegularExpression(R"R(org.albert.PluginInterface/(\d+).(\d+))R");
     if (auto iid_match = regex_iid.match(metadata_.iid); !iid_match.hasMatch())
         errors << QString("Invalid IID pattern: '%1'. Expected '%2'.")
                       .arg(iid_match.captured(), iid_match.regularExpression().pattern());
@@ -49,11 +52,11 @@ QtPluginLoader::QtPluginLoader(QtPluginProvider *provider, const QString &p)
             errors << QString("Incompatible minor version: %1. Supported up to: %2.")
                           .arg(plugin_iid_minor).arg(ALBERT_VERSION_MINOR);
 
-    static const QRegularExpression regex_version = QRegularExpression(R"(^\d+\.\d+$)");
+    static const auto regex_version = QRegularExpression(R"(^\d+\.\d+$)");
     if (!regex_version.match(metadata_.version).hasMatch())
         errors << "Invalid version scheme. Use '<version>.<patch>'.";
 
-    static const QRegularExpression regex_id = QRegularExpression("[a-z0-9_]");
+    static const auto regex_id = QRegularExpression("[a-z0-9_]");
     if (!regex_id.match(metadata_.id).hasMatch())
         errors << "Invalid plugin id. Use [a-z0-9_].";
 
@@ -66,65 +69,112 @@ QtPluginLoader::QtPluginLoader(QtPluginProvider *provider, const QString &p)
     // Finally set state based on errors
 
     if (errors.isEmpty())
-        state_ = PluginState::Unloaded;
-    else{
+        setState(PluginState::Unloaded);
+    else {
         WARN << QString("Plugin invalid: %1. (%2)").arg(errors.join(", "), path);
-        state_info_ = errors.join(", ");
+        setState(PluginState::Invalid, errors.join(", "));
     }
+
+    // Some python libs do not link against python. Export the python symbols to the main app.
+    loader.setLoadHints(QLibrary::ExportExternalSymbolsHint);// | QLibrary::PreventUnloadHint);
 }
 
 QtPluginLoader::~QtPluginLoader()
 {
-    if (state_ == PluginState::Loaded)
-        QtPluginLoader::unload();
+    Q_ASSERT(state() == PluginState::Unloaded);
 }
 
 PluginInstance *QtPluginLoader::instance() const { return instance_; }
 
-QtPluginProvider *QtPluginLoader::provider() const { return provider_; }
+const PluginProvider &QtPluginLoader::provider() const { return provider_; }
 
 const PluginMetaData &QtPluginLoader::metaData() const { return metadata_; }
 
-void QtPluginLoader::load()
+QString QtPluginLoader::load(ExtensionRegistry *registry)
 {
-    if (state_ == PluginState::Invalid)
-        qFatal("Loaded an invalid plugin.");
-    else if (state_ == PluginState::Loaded)
-        return;
-
-    QPluginLoader loader(path);
-    // Some python libs do not link against python. Export the python symbols to the main app.
-    loader.setLoadHints(QLibrary::ExportExternalSymbolsHint);// | QLibrary::PreventUnloadHint);
-    try {
-        if (auto *instance = loader.instance()){
-            state_ = PluginLoader::PluginState::Loaded;
-            if ((instance_ = dynamic_cast<PluginInstance*>(instance))){
-                state_info_.clear();
-                return;
+    switch (state()) {
+    case PluginState::Invalid:
+        return QStringLiteral("Plugin is invalid.");
+    case PluginState::Loaded:
+        return QStringLiteral("Plugin is already loaded.");
+    case PluginState::Busy:
+        return QStringLiteral("Plugin is currently busy.");
+    case PluginState::Unloaded:{
+        setState(PluginState::Busy);
+        watcher_.disconnect();
+        connect(&watcher_, &QFutureWatcher<QString>::finished, this, [this, registry]() {
+            if (watcher_.result()){
+                TimePrinter tp(QString("[%1 ms] spent initializing plugin '%2'").arg("%1", metadata_.id));
+                load_(registry);
             } else
-                state_info_ = "Plugin is not of type Plugin";
-        } else
-            state_info_ = loader.errorString();
-    } catch (const exception& e) {
-        state_info_ = e.what();
-    } catch (...) {
-        state_info_ = "Unknown exception.";
+                setState(PluginState::Unloaded, loader.errorString());
+        });
+        watcher_.setFuture(QtConcurrent::run([this]() -> bool {
+            TimePrinter tp(QString("[%1 ms] spent loading plugin '%2'").arg("%1", metadata_.id));
+            return loader.load();
+        }));
+        return {};
     }
-    state_ = PluginLoader::PluginState::Unloaded;
-    loader.unload();
+    }
 }
 
-void QtPluginLoader::unload()
+QString QtPluginLoader::unload(ExtensionRegistry *registry)
 {
-    if (state_ == PluginState::Invalid)
-        qFatal("Unloaded an invalid plugin.");
-    else if (state_ == PluginState::Unloaded)
-        return;
+    switch (state()) {
+    case PluginState::Invalid:
+        return QStringLiteral("Plugin is invalid.");
+    case PluginState::Unloaded:
+        return QStringLiteral("Plugin is not loaded.");
+    case PluginState::Busy:
+        return QStringLiteral("Plugin is currently busy.");
+    case PluginState::Loaded:{
+        TimePrinter tp(QString("[%1 ms] spent unloading plugin '%2'").arg("%1", metadata_.id));
+        unload_(registry);
+        return {};
+    }
+    }
+}
 
-    QPluginLoader loader(path);
-    delete instance_;  // TODO this saves from segfaults but actually this is QPluginLoaders job
-    instance_ = nullptr;
-    loader.unload();
-    state_info_.clear();
-    state_ = PluginState::Unloaded;
+void QtPluginLoader::load_(albert::ExtensionRegistry *registry)
+{
+    setState(PluginState::Busy, QString("Loading '%1'."));
+
+    // Try loading the plugin
+    QStringList errors;
+    try {
+        if (auto *q_instance = loader.instance()){ // implicit load if necessary
+            if (auto *p_instance = dynamic_cast<PluginInstance*>(q_instance)){
+                p_instance->initialize(registry);
+                for (auto *e : p_instance->extensions())
+                    registry->add(e);
+                instance_ = p_instance;
+                setState(PluginState::Loaded);
+                return;
+            } else
+                errors << "Plugin is not of type albert::PluginInstance.";
+        } else
+            errors << loader.errorString();
+    } catch (const exception& e) {
+        errors << e.what();
+    } catch (...) {
+        errors << "Unknown exception while plugin instantiation.";
+    }
+
+    // Unload in any case
+    if (!loader.unload())
+        errors << loader.errorString();
+
+    setState(PluginState::Unloaded, errors.join(" "));
+}
+
+void QtPluginLoader::unload_(albert::ExtensionRegistry *registry)
+{
+    setState(PluginState::Busy);
+
+    for (auto *e : instance()->extensions())
+        registry->remove(e);
+
+    instance()->finalize(registry);
+
+    setState(PluginState::Unloaded, loader.unload() ? QString{} : loader.errorString());
 }
