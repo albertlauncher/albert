@@ -22,7 +22,7 @@ public:
     struct GlobalQuery
     {
         virtual ~GlobalQuery();
-        virtual const QString &string() const = 0;  ///< The query string
+        virtual const QString string() const = 0;  ///< The query string
         virtual bool isValid() const = 0;  ///< True if query has not been cancelled
     };
 

@@ -14,16 +14,7 @@ namespace  {
     QStringList icon_extensions = {"png", "svg", "xpm"};
 }
 
-QString XDG::IconLookup::iconPath(QStringList iconNames, QString themeName)
-{
-    QString result;
-    for ( const QString &iconName : iconNames )
-        if ( !(result = instance()->themeIconPath(iconName, themeName)).isNull() )
-            return result;
-    return {};
-}
-
-QString XDG::IconLookup::iconPath(QString iconName, QString themeName)
+QString XDG::IconLookup::iconPath(QString iconName, QSize , QString themeName)  // FIXME unused qsize
 {
     return instance()->themeIconPath(iconName, themeName);
 }

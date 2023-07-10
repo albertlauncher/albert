@@ -4,56 +4,22 @@
 #include "albert/extension/queryhandler/item.h"
 #include "albert/extension/queryhandler/rankitem.h"
 #include "albert/logging.h"
-#include "iconprovider.h"
 #include "itemsmodel.h"
+#include "qmlrolenames.h"
 #include <QStringListModel>
 #include <QTimer>
-using namespace std;
 using namespace albert;
+using namespace std;
 
 
-class IconCache
-{
-    map<pair<QString /*eid*/, QString /*iid*/>, QIcon> icon_cache;
-    QTimer cache_timer;
+ItemsModel::ItemsModel(QObject *parent) : QAbstractListModel(parent) {}
 
-public:
-
-    IconCache()
-    {
-        cache_timer.setSingleShot(true);
-        QObject::connect(&cache_timer, &QTimer::timeout, [this](){
-            DEBG << "Clearing icon cache";
-            icon_cache.clear();
-        });
-    }
-
-    QIcon at(const pair<QString /*eid*/, QString /*iid*/> &key)
-    {
-        cache_timer.start(60000); // 1 minute
-        return icon_cache.at(key);
-    }
-
-    QIcon emplace(const pair<QString /*eid*/, QString /*iid*/> &key, const QIcon &icon)
-    {
-        return icon_cache.emplace(key, icon.isNull() ? QIcon(":unknown") : icon).first->second;
-    }
-};
-
-
-static IconProvider icon_provider;
-static IconCache icon_cache;
-
-
-int ItemsModel::rowCount(const QModelIndex &) const
-{
-    return (int)items.size();
-}
+int ItemsModel::rowCount(const QModelIndex &) const { return (int)items.size(); }
 
 QVariant ItemsModel::data(const QModelIndex &index, int role) const
 {
     if (index.isValid()) {
-        const shared_ptr<Item> item = items[index.row()].second;
+        const auto &[extension, item] = items[index.row()];
 
         switch (role) {
             case (int)ItemRoles::TextRole:{
@@ -69,30 +35,12 @@ QVariant ItemsModel::data(const QModelIndex &index, int role) const
             case Qt::ToolTipRole: return QString("%1\n%2").arg(item->text(), item->subtext());
             case (int)ItemRoles::InputActionRole: return item->inputActionText();
             case (int)ItemRoles::IconUrlsRole: return item->iconUrls();
-            case (int)ItemRoles::IconPathRole: qFatal("ItemsModel::data ItemRoles::IconPathRole not implemented");
-            case (int)ItemRoles::IconRole:
-            {
-                auto icon_key = make_pair(items[index.row()].first->id(), item->id());
-                try {
-                    return icon_cache.at(icon_key);
-                } catch (const out_of_range &) {
-                    return icon_cache.emplace(icon_key, icon_provider.getIcon(item->iconUrls()));
-                }
-            }
         }
     }
     return {};
 }
 
-QHash<int, QByteArray> ItemsModel::roleNames() const
-{
-    return {
-        {(int)ItemRoles::TextRole, "itemTextRole"},
-        {(int)ItemRoles::SubTextRole, "itemSubTextRole"},
-        {(int)ItemRoles::IconPathRole, "itemIconRole"},
-        {(int)ItemRoles::InputActionRole, "itemInputActionRole"}
-    };
-}
+QHash<int, QByteArray> ItemsModel::roleNames() const { return albert::QmlRoleNames; }
 
 void ItemsModel::add(Extension *extension, shared_ptr<Item> &&item)
 {

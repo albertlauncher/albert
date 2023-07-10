@@ -21,8 +21,8 @@ public:
     struct TriggerQuery
     {
         virtual ~TriggerQuery();
-        virtual const QString &trigger() const = 0;  ///< The trigger of this query
-        virtual const QString &string() const = 0;  ///< The query string
+        virtual const QString trigger() const = 0;  ///< The trigger of this query
+        virtual const QString string() const = 0;  ///< The query string
         virtual bool isValid() const = 0;  ///< True if query has not been cancelled
         virtual void add(const std::shared_ptr<Item> &item) = 0;  ///< Copy add item
         virtual void add(std::shared_ptr<Item> &&item) = 0;  ///< Move add item

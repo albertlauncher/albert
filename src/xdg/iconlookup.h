@@ -1,6 +1,7 @@
-// Copyright (C) 2014-2018 Manuel Schneider
+// Copyright (C) 2014-2023 Manuel Schneider
 
 #pragma once
+#include <QSize>
 #include <QStringList>
 #include <map>
 
@@ -16,15 +17,7 @@ public:
      * @param themeName The theme to use, use current theme if empty
      * @return If an icon was found the path to the icon, else an empty string
      */
-    static QString iconPath(QString iconName, QString themeName = QString());
-
-    /**
-     * @brief iconPath Does XDG icon lookup for the given icon names, stops on success
-     * @param iconNames A list of icon names to lookup
-     * @param themeName The theme to use, use current theme if empty
-     * @return If one of the icons was found the path to the icon, else an empty string
-     */
-    static QString iconPath(QStringList iconNames, QString themeName = QString());
+    static QString iconPath(QString iconName, QSize size = QSize(), QString themeName = QString());
 
 private:
 

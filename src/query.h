@@ -23,17 +23,17 @@ public:
     ~Query() override;
 
     // Interfaces
-    const QString &trigger() const override;
-    const QString &string() const override;
-    const QString &synopsis() const override;
+    const QString trigger() const override;
+    const QString string() const override;
+    const QString synopsis() const override;
 
     void run() override;
     void cancel() override;
     bool isValid() const override;
     bool isFinished() const override;
 
-    QAbstractListModel &matches() override;
-    QAbstractListModel &fallbacks() override;
+    QAbstractListModel *matches() override;
+    QAbstractListModel *fallbacks() override;
     QAbstractListModel *matchActions(uint item) const override;
     QAbstractListModel *fallbackActions(uint item) const override;
     void activateMatch(uint item, uint action) override;

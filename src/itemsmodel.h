@@ -13,6 +13,7 @@ class ItemsModel : public QAbstractListModel
 {
     Q_OBJECT
 public:
+    ItemsModel(QObject *parent = nullptr); // important for qml cppownership
 
     QHash<int, QByteArray> roleNames() const override;
     int rowCount(const QModelIndex &parent) const override;

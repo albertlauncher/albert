@@ -13,12 +13,14 @@ Query::Query(const std::set<albert::FallbackHandler*>& fallback_handlers,
              albert::TriggerQueryHandler *query_handler,
              QString string,
              QString trigger):
-        fallback_handlers_(fallback_handlers),
-        query_handler_(query_handler),
-        string_(std::move(string)),
-        trigger_(std::move(trigger)),
-        synopsis_(query_handler->synopsis()),
-        query_id(query_count++)
+    fallback_handlers_(fallback_handlers),
+    query_handler_(query_handler),
+    string_(std::move(string)),
+    trigger_(std::move(trigger)),
+    synopsis_(query_handler->synopsis()),
+    matches_(this),  // Important for qml ownership determination
+    fallbacks_(this),  // Important for qml ownership determination
+    query_id(query_count++)
 {
     connect(&future_watcher_, &decltype(future_watcher_)::finished, this, &Query::finished);
 }
@@ -33,11 +35,11 @@ Query::~Query()
     DEBG << QString("Query deleted. [#%1 '%2']").arg(query_id).arg(string_);
 }
 
-const QString &Query::trigger() const { return trigger_; }
+const QString Query::trigger() const { return trigger_; }
 
-const QString &Query::string() const { return string_; }
+const QString Query::string() const { return string_; }
 
-const QString &Query::synopsis() const { return synopsis_; }
+const QString Query::synopsis() const { return synopsis_; }
 
 void Query::run()
 {
@@ -59,9 +61,9 @@ bool Query::isValid() const { return valid_; }
 
 bool Query::isFinished() const { return future_watcher_.isFinished(); }
 
-QAbstractListModel &Query::matches() { return matches_; }
+QAbstractListModel *Query::matches() { return &matches_; }
 
-QAbstractListModel &Query::fallbacks() { return fallbacks_; }
+QAbstractListModel *Query::fallbacks() { return &fallbacks_; }
 
 QAbstractListModel *Query::matchActions(uint i) const { return matches_.buildActionsModel(i); }
 
