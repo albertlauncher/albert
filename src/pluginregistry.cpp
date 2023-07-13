@@ -25,14 +25,24 @@ bool PluginRegistry::isEnabled(const QString &id) const
 
 void PluginRegistry::enable(const QString &id, bool enable)
 {
-    if (isEnabled(id) != enable){
-        if (auto err = load(id, enable); err.isNull())
-            albert::settings()->setValue(QString("%1/enabled").arg(id), enable);
-        else{
-            WARN << err;
-            QMessageBox::warning(nullptr, qApp->applicationDisplayName(), err);
+    try {
+        auto *loader = registered_plugins_.at(id);
+        albert::settings()->setValue(QString("%1/enabled").arg(id), enable);
+
+        if (enable && loader->state() != PluginState::Loaded){
+            if (auto err = loader->load(&extension_registry); !err.isNull()){
+                WARN << err;
+                QMessageBox::warning(nullptr, qApp->applicationDisplayName(), err);
+            }
+        } else if (!enable && loader->state() != PluginState::Unloaded){
+            if (auto err = loader->unload(&extension_registry); !err.isNull()){
+                WARN << err;
+                QMessageBox::warning(nullptr, qApp->applicationDisplayName(), err);
+            }
         }
-    }
+    } catch (const out_of_range&) {}
+
+    emit pluginsChanged(); // todo 5better solutoin for enabled state chang
 }
 
 QString PluginRegistry::load(const QString &id, bool load)
