@@ -33,7 +33,7 @@ InputHistory::~InputHistory()
 
 void InputHistory::add(const QString& str)
 {
-    if (!str.isEmpty()){
+    if (!str.trimmed().isEmpty()){
         if (lines_.contains(str))
             lines_.removeAll(str); // Remove dups
         lines_ << str;
@@ -44,7 +44,8 @@ void InputHistory::add(const QString& str)
 QString InputHistory::next(const QString &substring)
 {
     for (int l = currentLine_ - 1; 0 <= l; --l)
-        if (lines_[l].contains(substring, Qt::CaseInsensitive))
+        // Simple hack to avoid the seemingly-noop-on-first-history-iteration on disabled clear-on-hide
+        if (lines_[l].contains(substring, Qt::CaseInsensitive) && substring != lines_[l])
             return lines_[currentLine_ = l];
     return QString{};
 }
