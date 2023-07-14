@@ -52,6 +52,7 @@ public:
 private:
 
     void loadAnyFrontend();
+    void applyPlatformWindowQuirks(albert::Frontend *);
     QString loadFrontend(QtPluginLoader *loader);
 
     friend int ::main(int, char**);

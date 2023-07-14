@@ -6,6 +6,9 @@
 #include <QHotkey>
 #include <QMessageBox>
 #include <QSettings>
+#ifdef Q_OS_MAC
+#include <objc/objc-runtime.h>
+#endif
 using namespace albert;
 using namespace std;
 
@@ -40,6 +43,8 @@ App::~App()
 void App::initialize()
 {
     loadAnyFrontend();
+    applyPlatformWindowQuirks(frontend);
+
     extension_registry.add(&plugin_provider);  // loads plugins
     extension_registry.add(&app_query_handler);
     extension_registry.add(&plugin_query_handler);
@@ -76,6 +81,39 @@ void App::loadAnyFrontend()
     }
 
     qFatal("Could not load any frontend.");
+}
+
+void App::applyPlatformWindowQuirks(Frontend *f)
+{
+#ifdef Q_OS_MAC
+    WId window_id = f->winId();
+    auto call_objc = [](objc_object* object, const char* selector){
+        return ((objc_object* (*)(::id, SEL))objc_msgSend)(object, sel_registerName(selector));
+    };
+    auto call_objc_1 = [](objc_object* object, const char *selector, const auto &param){
+        return ((objc_object* (*)(::id, SEL, decltype(param)))objc_msgSend)(object, sel_registerName(selector), param);
+    };
+    auto *ns_view_object = reinterpret_cast<objc_object *>(window_id);
+    objc_object *ns_window = call_objc(ns_view_object, "window");
+    //    call_objc_1(ns_window, "setCollectionBehavior:",
+    ((objc_object* (*)(::id, SEL, int))objc_msgSend)(ns_window, sel_registerName("setCollectionBehavior:"),
+        0  // NSWindowCollectionBehaviorDefault - The window appears in only one space at a time.
+         //                | 1 << 0   // NSWindowCollectionBehaviorCanJoinAllSpaces - The window appears in all spaces.
+         | 1 << 1   // NSWindowCollectionBehaviorMoveToActiveSpace - When the window becomes active, move it to the active space instead of switching spaces.
+        //        | 1 << 2   // NSWindowCollectionBehaviorManaged - The window participates in Spaces and Exposé.
+        //        | 1 << 3   // NSWindowCollectionBehaviorTransient - The window floats in Spaces and hides in Exposé.
+        //        | 1 << 4   // NSWindowCollectionBehaviorStationary - Exposé doesn’t affect the window, so it stays visible and stationary, like the desktop window.
+        //        | 1 << 5   // NSWindowCollectionBehaviorParticipatesInCycle - The window participates in the window cycle for use with the Cycle Through Windows menu item.
+        //        | 1 << 6   // NSWindowCollectionBehaviorIgnoresCycle - The window isn’t part of the window cycle for use with the Cycle Through Windows menu item.
+        //        | 1 << 7   // NSWindowCollectionBehaviorFullScreenPrimary - The window can enter full-screen mode.
+        //        | 1 << 8   // NSWindowCollectionBehaviorFullScreenAuxiliary - The window can display on the same space as the full-screen window.
+        //        | 1 << 9   // NSWindowCollectionBehaviorFullScreenNone - The window doesn’t support full-screen mode.
+        //        | 1 << 11  // NSWindowCollectionBehaviorFullScreenAllowsTiling - The window can be a secondary full screen tile even if it can’t be a full screen window itself.
+        //        | 1 << 12  // NSWindowCollectionBehaviorFullScreenDisallowsTiling - The window doesn’t support being a full-screen tile window, but may support being a full-screen window.
+    );
+    call_objc_1(ns_window, "setAnimationBehavior:", 2);  // NSWindowAnimationBehaviorNone
+//    ((objc_object* (*)(id, SEL, int))objc_msgSend)(ns_window, sel_registerName("setAnimationBehavior:"), 2);
+#endif
 }
 
 
