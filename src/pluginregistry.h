@@ -35,6 +35,7 @@ private:
     std::map<albert::PluginProvider*, std::vector<albert::PluginLoader*>> plugins_;
 
 signals:
+    void enabledChanged(const QString &id);
     void pluginsChanged();
 
 };

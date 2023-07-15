@@ -27,6 +27,7 @@ public:
     explicit PluginModel(PluginRegistry &plugin_registry) : plugin_registry_(plugin_registry)
     {
         connect(&plugin_registry, &PluginRegistry::pluginsChanged, this, &PluginModel::updatePluginList);
+        connect(&plugin_registry, &PluginRegistry::enabledChanged, this, &PluginModel::updateView);
         updatePluginList();
     }
 
@@ -119,7 +120,7 @@ private:
         plugins_.clear();
         for (const auto &[id, loader] : plugin_registry_.plugins()){
             plugins_.emplace_back(loader);
-            connect(loader, &PluginLoader::stateChanged, this, &PluginModel::update, Qt::UniqueConnection);
+            connect(loader, &PluginLoader::stateChanged, this, &PluginModel::updateView, Qt::UniqueConnection);
         }
 
         ::sort(plugins_.begin(), plugins_.end(),
@@ -129,7 +130,7 @@ private:
     }
 
 
-    void update(){
+    void updateView(){
         emit dataChanged(index(0), index(plugins_.size()-1));
     }
 

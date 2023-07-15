@@ -28,6 +28,7 @@ void PluginRegistry::enable(const QString &id, bool enable)
     try {
         auto *loader = registered_plugins_.at(id);
         albert::settings()->setValue(QString("%1/enabled").arg(id), enable);
+        emit enabledChanged(id);
 
         if (enable && loader->state() != PluginState::Loaded){
             if (auto err = loader->load(&extension_registry); !err.isNull()){
@@ -41,8 +42,6 @@ void PluginRegistry::enable(const QString &id, bool enable)
             }
         }
     } catch (const out_of_range&) {}
-
-    emit pluginsChanged(); // todo 5better solutoin for enabled state chang
 }
 
 QString PluginRegistry::load(const QString &id, bool load)
