@@ -108,7 +108,7 @@ void ItemsModel::activate(uint i, uint a)
         auto actions = item.second->actions();
         if (a<actions.size()){
             auto &action = actions[a];
-            action.function();
+            QTimer::singleShot(0, [f=action.function](){ f(); });
             emit activated(item.first->id(), item.second->id(), action.id);
         }
         else
