@@ -26,6 +26,8 @@ public:
     QPixmap getPixmap(const QStringList &urls, QSize *size, const QSize &requestedSize) const;
     QPixmap getPixmap(const QString &url, QSize *size, const QSize &requestedSize) const;
 
+    void clearCache();
+
 private:
     class Private;
     std::unique_ptr<Private> d;

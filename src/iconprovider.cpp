@@ -6,10 +6,10 @@
 #include <QApplication>
 #include <QFileIconProvider>
 #include <QMetaEnum>
-#include <QStringLiteral>
+#include <QString>
 #include <QStyle>
-#include <QTimer>
 #include <QUrl>
+#include <shared_mutex>
 #include <unordered_map>
 using namespace albert;
 using namespace std;
@@ -19,7 +19,7 @@ class IconProvider::Private
 public:
     QFileIconProvider file_icon_provider;
     mutable std::unordered_map<QString, QPixmap> pixmap_cache;
-    mutable QTimer pixmap_cache_timer;
+    mutable std::shared_mutex mutex_;
 
     QPixmap getPixmapNoCache(const QString &urlstr, QSize *size, const QSize &requestedSize) const
     {
@@ -69,18 +69,8 @@ public:
     }
 };
 
-IconProvider::IconProvider() : d(new Private)
-{
-    d->pixmap_cache_timer.setSingleShot(true);
-    d->pixmap_cache_timer.setInterval(60000); // 1 minute
-    QObject::connect(&d->pixmap_cache_timer, &QTimer::timeout, [this](){
-        DEBG << "Clearing icon lookup cache.";
-        d->pixmap_cache.clear();
-    });
-}
-
+IconProvider::IconProvider() : d(new Private) {}
 IconProvider::~IconProvider() = default;
-
 
 QPixmap IconProvider::getPixmap(const QStringList &urls, QSize *size, const QSize &requestedSize) const
 {
@@ -92,12 +82,19 @@ QPixmap IconProvider::getPixmap(const QStringList &urls, QSize *size, const QSiz
 
 QPixmap IconProvider::getPixmap(const QString &urlstr, QSize *size, const QSize &requestedSize) const
 {
-    d->pixmap_cache_timer.start();
     try {
+        std::shared_lock lock(d->mutex_);
         return d->pixmap_cache.at(urlstr);
     } catch (const out_of_range &) {
+        std::unique_lock lock(d->mutex_);
         return d->pixmap_cache.emplace(urlstr, d->getPixmapNoCache(urlstr, size, requestedSize)).first->second;
     }
+}
+
+void IconProvider::clearCache()
+{
+    std::unique_lock lock(d->mutex_);
+    d->pixmap_cache.clear();
 }
 
 
