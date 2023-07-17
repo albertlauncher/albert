@@ -5,6 +5,8 @@
 #include <QObject>
 #include <QString>
 #include <QSettings>
+#define EXPAND_STRINGIZE(s) STRINGIZE(s)
+#define STRINGIZE(s) #s
 
 /// Convenience macro for user property definition.
 /// Defines store_*/restore_*/reset_* methods, a *Changed signal and a static const default member variable
@@ -13,9 +15,9 @@
 #define ALBERT_EXTENSION_PROPERTY_(type, name, default_) \
     Q_PROPERTY(type name READ name WRITE set_##name RESET reset_##name NOTIFY name##Changed USER true) \
     Q_SIGNAL void name##Changed(); \
-    protected: void store_##name() { settings()->setValue(xstr(name), name()); } \
-    protected: void restore_##name() { set_##name(settings()->value(xstr(name), name##Default).value<type>()); } \
-    public: void reset_##name() { set_##name(name##Default); settings()->remove(xstr(name));  } \
+    protected: void store_##name() { settings()->setValue(EXPAND_STRINGIZE(name), name()); } \
+    protected: void restore_##name() { set_##name(settings()->value(EXPAND_STRINGIZE(name), name##Default).value<type>()); } \
+    public: void reset_##name() { set_##name(name##Default); settings()->remove(EXPAND_STRINGIZE(name));  } \
     public: static const type name##Default{default_}; \
 
 /**
