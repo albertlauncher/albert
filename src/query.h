@@ -31,6 +31,7 @@ public:
     void cancel() override;
     bool isValid() const override;
     bool isFinished() const override;
+    bool isTriggered() const override;
 
     QAbstractListModel *matches() override;
     QAbstractListModel *fallbacks() override;

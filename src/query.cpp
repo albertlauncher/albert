@@ -61,6 +61,8 @@ bool Query::isValid() const { return valid_; }
 
 bool Query::isFinished() const { return future_watcher_.isFinished(); }
 
+bool Query::isTriggered() const { return !trigger_.isEmpty(); }
+
 QAbstractListModel *Query::matches() { return &matches_; }
 
 QAbstractListModel *Query::fallbacks() { return &fallbacks_; }

@@ -22,9 +22,10 @@ public:
     Q_INVOKABLE virtual const QString string() const = 0;  ///< Query string _excluding_ the trigger.
 
     Q_INVOKABLE virtual void run() = 0;  ///< Asynchronous query processing done.
-    Q_INVOKABLE virtual void cancel() = 0;  ///< Call this if you dont need the query anymore
-    virtual bool isFinished() const = 0;  ///< True if the query thread stopped
-    virtual bool isValid() const = 0;  ///< True if query has not been cancelled
+    Q_INVOKABLE virtual void cancel() = 0;  ///< Call this if you dont need the query anymore.
+    Q_INVOKABLE virtual bool isFinished() const = 0;  ///< True if the query thread stopped.
+    Q_INVOKABLE virtual bool isValid() const = 0;  ///< True if query has not been cancelled.
+    Q_INVOKABLE virtual bool isTriggered() const = 0;  ///< True if this query has a triggert.
 
     Q_INVOKABLE virtual QAbstractListModel *matches() = 0;  ///< You borrow
     Q_INVOKABLE virtual QAbstractListModel *fallbacks() = 0;  ///< You borrow
