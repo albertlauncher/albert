@@ -22,6 +22,7 @@ App::App(const QStringList &additional_plugin_paths) :
     query_engine(extension_registry),
     plugin_provider(additional_plugin_paths),
     settings_window(nullptr),
+    app_query_handler(&extension_registry),
     plugin_query_handler(plugin_registry)
 {
     if (app_instance)
