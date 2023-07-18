@@ -5,6 +5,7 @@
 #include <QString>
 class QNetworkAccessManager;
 class QSettings;
+class QUrl;
 
 namespace albert
 {
@@ -51,6 +52,9 @@ ALBERT_EXPORT Frontend *frontend();
 
 /// Open the albert website in default browser
 ALBERT_EXPORT void openWebsite();
+
+/// Open the specified url in default browser
+ALBERT_EXPORT void openUrl(const QUrl &url);
 
 /// Open the specified url in default browser
 ALBERT_EXPORT void openUrl(const QString &url);

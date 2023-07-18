@@ -281,9 +281,12 @@ void albert::sendTrayNotification(const QString &title, const QString &message, 
 { app->tray_icon.showMessage(title, message, QSystemTrayIcon::NoIcon, ms); }
 
 void albert::openUrl(const QString &url)
+{ openUrl(QUrl(url)); }
+
+void albert::openUrl(const QUrl &url)
 {
-    DEBG << QString("Opening URL '%1'").arg(url);
-    if (!QDesktopServices::openUrl(QUrl(url)))
+    DEBG << QString("Opening URL '%1'").arg(url.toString());
+    if (!QDesktopServices::openUrl(url))
         WARN << "Failed opening URL" << url;
 }
 
@@ -317,10 +320,3 @@ long long albert::runDetachedProcess(const QStringList &commandline, const QStri
         WARN << "runDetachedProcess: commandline must not be empty!";
     return pid;
 }
-
-
-
-
-
-
-
