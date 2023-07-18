@@ -7,6 +7,7 @@
 #include <QMetaObject>
 #include <QMetaProperty>
 #include <QString>
+#include <QUrl>
 using namespace albert;
 using namespace std;
 
@@ -77,7 +78,7 @@ vector<RankItem> AppQueryHandler::handleGlobalQuery(const GlobalQuery *query) co
                 "Albert config location",
                 albert::configLocation(),
                 {":app_icon"},
-                {{"open", "Open", [](){ albert::openUrl(albert::configLocation()); }}}
+                {{"open", "Open", [](){ albert::openUrl(QUrl::fromLocalFile(albert::configLocation())); }}}
             ),
             (float)query->string().length() / str_config.length()
         );
@@ -90,7 +91,7 @@ vector<RankItem> AppQueryHandler::handleGlobalQuery(const GlobalQuery *query) co
                 "Albert data location",
                 albert::dataLocation(),
                 {":app_icon"},
-                {{"open", "Open", [](){ albert::openUrl(albert::dataLocation()); }}}
+                {{"open", "Open", [](){ albert::openUrl(QUrl::fromLocalFile(albert::dataLocation())); }}}
             ),
             (float)query->string().length() / str_data.length()
         );
@@ -103,7 +104,7 @@ vector<RankItem> AppQueryHandler::handleGlobalQuery(const GlobalQuery *query) co
                 "Albert cache location",
                 albert::cacheLocation(),
                 {":app_icon"},
-                {{"open", "Open", [](){ albert::openUrl(albert::cacheLocation()); }}}
+                {{"open", "Open", [](){ albert::openUrl(QUrl::fromLocalFile(albert::cacheLocation())); }}}
             ),
             (float)query->string().length() / str_cache.length()
         );
