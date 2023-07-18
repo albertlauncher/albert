@@ -14,7 +14,7 @@ class ALBERT_EXPORT InputHistory final : public QObject  /// Input line history 
 {
     Q_OBJECT
 public:
-    explicit InputHistory(const QString& file_path);
+    explicit InputHistory();
     ~InputHistory() override;
 
     /// Add text to history search.

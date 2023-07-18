@@ -1,12 +1,14 @@
 // Copyright (c) 2022-2023 Manuel Schneider
 
+#include "albert/albert.h"
 #include "albert/extension/frontend/inputhistory.h"
 #include "albert/logging.h"
+#include <QDir>
 #include <QFile>
 #include <QTextStream>
 using namespace albert;
 
-InputHistory::InputHistory(const QString& p) : file_path(p)
+InputHistory::InputHistory() : file_path(QDir(albert::dataLocation()).filePath("albert.history"))
 {
     QFile f(file_path);
     if (f.open(QIODevice::ReadOnly)){
