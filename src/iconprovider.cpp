@@ -24,7 +24,7 @@ public:
     QPixmap getPixmapNoCache(const QString &urlstr, QSize *size, const QSize &requestedSize) const
     {
         if (urlstr.startsWith(':')){
-            // https://doc.qt.io/qt-6/qstyle.html#StandardPixmap-enum
+            // https://doc.qt.io/qt-6/qresource.html
             if (auto pm = QPixmap(urlstr); !pm.isNull()){
                 *size = pm.size();
                 return pm;
@@ -46,7 +46,7 @@ public:
             }
 #endif
         } else if (url.scheme() == QStringLiteral("qsp")){
-            // https://doc.qt.io/qt-6/qresource.html
+            // https://doc.qt.io/qt-6/qstyle.html#StandardPixmap-enum
             auto meta_enum = QMetaEnum::fromType<QStyle::StandardPixmap>();
             auto name = url.toString(QUrl::RemoveScheme);
             for (int i = 0; i < meta_enum.keyCount(); ++i)
