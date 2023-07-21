@@ -10,20 +10,6 @@
 class GlobalQueryHandlerPrivate final
 {
 public:
-    GlobalQueryHandlerPrivate(albert::GlobalQueryHandler *q);
-    ~GlobalQueryHandlerPrivate();
-
-    albert::GlobalQueryHandler *  const q;
-
-    static void setPrioritizePerfectMatch(bool val);
-    static void setScores(std::map<std::pair<QString,QString>,float> scores);
-
-    void applyUsageScores(std::vector<albert::RankItem> &rank_items) const;
-
-    std::vector<albert::RankItem> handleGlobalQuery(const albert::GlobalQueryHandler::GlobalQuery*) const;
-
-private:
-    static std::shared_mutex m;
-    static std::map<std::pair<QString,QString>,float> usage_scores;
-    static bool prio_perfect_match;
+    GlobalQueryHandlerPrivate(albert::GlobalQueryHandler *qp) : q(qp) {}
+    albert::GlobalQueryHandler * const q;
 };

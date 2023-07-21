@@ -13,5 +13,5 @@ public:
     QString name() const override;
     QString description() const override;
     QString defaultTrigger() const override;
-    void handleTriggerQuery(TriggerQuery *query) const override;
+    void handleTriggerQuery(TriggerQuery*) const override;
 };

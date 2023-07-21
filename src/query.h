@@ -10,26 +10,15 @@
 #include <set>
 namespace albert { class Item; }
 
-class Query: public albert::Query,
-             public albert::TriggerQueryHandler::TriggerQuery,
-             public albert::GlobalQueryHandler::GlobalQuery
+class QueryBase : public albert::Query
 {
-    Q_OBJECT
 public:
-    explicit Query(const std::set<albert::FallbackHandler*> &fallback_handlers,
-                   albert::TriggerQueryHandler *query_handler,
-                   QString string,
-                   QString trigger = {});
-    ~Query() override;
-
-    // Interfaces
-    const QString trigger() const override;
-    const QString string() const override;
-    const QString synopsis() const override;
+    explicit QueryBase(std::vector<albert::FallbackHandler*> fallback_handlers, QString string);
+    ~QueryBase() override;
 
     void run() override;
     void cancel() override;
-    bool isValid() const override;
+
     bool isFinished() const override;
     bool isTriggered() const override;
 
@@ -40,16 +29,12 @@ public:
     void activateMatch(uint item, uint action) override;
     void activateFallback(uint item, uint action) override;
 
-    void add(const std::shared_ptr<albert::Item> &item) override;
-    void add(std::shared_ptr<albert::Item> &&item) override;
-    void add(const std::vector<std::shared_ptr<albert::Item>> &items) override;
-    void add(std::vector<std::shared_ptr<albert::Item>> &&items) override;
+protected:
+    void runFallbackHandlers();
+    virtual void run_() = 0;
 
-    const std::set<albert::FallbackHandler*> &fallback_handlers_;
-    albert::TriggerQueryHandler *query_handler_;
+    std::vector<albert::FallbackHandler*> fallback_handlers_;
     QString string_;
-    QString trigger_;
-    QString synopsis_;
     ItemsModel matches_;
     ItemsModel fallbacks_;
     bool valid_ = true;
@@ -57,5 +42,43 @@ public:
 
     uint query_id;
     static uint query_count;
+};
 
+
+class TriggerQuery : public QueryBase, public albert::TriggerQueryHandler::TriggerQuery
+{
+    albert::TriggerQueryHandler *query_handler_;
+    QString trigger_;
+    QString synopsis_;
+public:
+    TriggerQuery(std::vector<albert::FallbackHandler*> &&fallback_handlers,
+                          albert::TriggerQueryHandler *query_handler,
+                          QString string, QString trigger);
+
+    void run_() override;
+
+    QString trigger() const override;
+    QString string() const override;
+    QString synopsis() const override;
+    const bool &isValid() const override;
+    void add(const std::shared_ptr<albert::Item> &item) override;
+    void add(std::shared_ptr<albert::Item> &&item) override;
+    void add(const std::vector<std::shared_ptr<albert::Item>> &items) override;
+    void add(std::vector<std::shared_ptr<albert::Item>> &&items) override;
+};
+
+
+class GlobalQuery : public QueryBase, public albert::GlobalQueryHandler::GlobalQuery
+{
+    std::vector<albert::GlobalQueryHandler*> query_handlers_;
+public:
+    GlobalQuery(std::vector<albert::FallbackHandler*> &&fallback_handlers,
+                         std::vector<albert::GlobalQueryHandler*> &&query_handlers,
+                         QString string);
+    void run_() override;
+
+    QString trigger() const override;
+    QString string() const override;
+    QString synopsis() const override;
+    const bool &isValid() const override;
 };

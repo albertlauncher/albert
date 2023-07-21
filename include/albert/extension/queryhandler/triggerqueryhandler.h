@@ -3,34 +3,87 @@
 #pragma once
 #include "albert/extension.h"
 #include <QString>
+#include <memory>
+class TriggerQueryHandlerPrivate;
+class QueryEngine;
 
 namespace albert
 {
 class Item;
 
-/// Exclusive/Triggered only query handler.
-/// Use this if you dont want your results to be rearranged
-/// or if the query takes too much time to be in the global search.
+/// Triggered query handler class.
+/// If the trigger matches this handler is the only query handler chosen to
+/// process the user query. Inherit this class if you dont want your results to
+/// be reordered or if you want to display your items of a long running query
+/// as soon as they are available.
 class ALBERT_EXPORT TriggerQueryHandler : virtual public Extension
 {
 public:
-    virtual QString synopsis() const;  ///< The synopsis, displayed on empty query. Default empty.
-    virtual QString defaultTrigger() const;  ///< The default (not user defined) trigger. Default Extension::id().
-    virtual bool allowTriggerRemap() const;  ///< Enable user remapping of the trigger. Default false.
+    TriggerQueryHandler();
+    ~TriggerQueryHandler();
 
-    struct TriggerQuery
+    /// The synopsis, displayed on empty query.
+    /// Use this to give the user hints about accepted query strings.
+    /// Default empty.
+    virtual QString synopsis() const;
+
+    /// The default (not user defined) trigger. Default Extension::id().
+    virtual QString defaultTrigger() const;
+
+    /// Enable user remapping of the trigger. Default false.
+    virtual bool allowTriggerRemap() const;
+
+    /// The user configured trigger of this handler.
+    QString trigger() const;
+
+    /// Fuzzy matching capability. Default false.
+    virtual bool supportsFuzzyMatching() const;
+
+    /// Fuzzy matching. Default false.
+    virtual bool fuzzyMatchingEnabled() const;
+
+    /// Fuzzy matching behavior. Default does nothing.
+    virtual void setFuzzyMatchingEnabled(bool);
+
+    class ALBERT_EXPORT TriggerQuery
     {
-        virtual ~TriggerQuery();
-        virtual const QString trigger() const = 0;  ///< The trigger of this query
-        virtual const QString string() const = 0;  ///< The query string
-        virtual bool isValid() const = 0;  ///< True if query has not been cancelled
-        virtual void add(const std::shared_ptr<Item> &item) = 0;  ///< Copy add item
-        virtual void add(std::shared_ptr<Item> &&item) = 0;  ///< Move add item
-        virtual void add(const std::vector<std::shared_ptr<Item>> &items) = 0;  ///< Copy add items
-        virtual void add(std::vector<std::shared_ptr<Item>> &&items) = 0;  ///< Move add items
+    public:
+        virtual ~TriggerQuery() = default;
+
+        /// The trigger of this query if any.
+        virtual QString trigger() const = 0;
+
+        /// The query string excluding the trigger.
+        virtual QString string() const = 0;
+
+        /// True if query has not been cancelled.
+        /// @note Stop query processing if false.
+        virtual const bool &isValid() const = 0;
+
+        /// Copy add single item.
+        /// @note Use batch add if you can to avoid UI flicker.
+        /// @see add(const std::vector<std::shared_ptr<Item>> &items)
+        virtual void add(const std::shared_ptr<Item> &item) = 0;
+
+        /// Move add single item.
+        /// @note Use batch add if you can to avoid UI flicker.
+        /// @see add(std::vector<std::shared_ptr<Item>> &&items)
+        virtual void add(std::shared_ptr<Item> &&item) = 0;
+
+        /// Copy add multiple items.
+        virtual void add(const std::vector<std::shared_ptr<Item>> &items) = 0;
+
+        /// Move add multiple items.
+        virtual void add(std::vector<std::shared_ptr<Item>> &&items) = 0;
     };
 
-    virtual void handleTriggerQuery(TriggerQuery*) const = 0;  ///< Called on triggered query.
+    /// The trigger query processing function.
+    /// @note Executed in a worker thread.
+    virtual void handleTriggerQuery(TriggerQuery*) const = 0;
+
+private:
+    std::unique_ptr<TriggerQueryHandlerPrivate> d;
+    friend class ::QueryEngine;
 };
 
 }

@@ -1,11 +1,11 @@
 // Copyright (c) 2023 Manuel Schneider
 
 #pragma once
-#include "albert/extension/queryhandler/queryhandler.h"
+#include "albert/extension/queryhandler/globalqueryhandler.h"
 #include <QObject>
 namespace albert { class ExtensionRegistry; }
 
-class AppQueryHandler : public albert::QueryHandler
+class AppQueryHandler : public albert::GlobalQueryHandler
 {
 public:
     AppQueryHandler(albert::ExtensionRegistry *);

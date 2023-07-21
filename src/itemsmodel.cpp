@@ -5,6 +5,8 @@
 #include "albert/extension/queryhandler/rankitem.h"
 #include "albert/logging.h"
 #include "itemsmodel.h"
+#include "usagedatabase.h"
+#include "query.h"
 #include "qmlrolenames.h"
 #include <QStringListModel>
 #include <QTimer>
@@ -101,15 +103,16 @@ QAbstractListModel *ItemsModel::buildActionsModel(uint i) const
     return new QStringListModel(l);
 }
 
-void ItemsModel::activate(uint i, uint a)
+void ItemsModel::activate(QueryBase *q, uint i, uint a)
 {
     if (i<items.size()){
-        auto &item = items[i];
-        auto actions = item.second->actions();
+        auto &[extension, item] = items[i];
+        auto actions = item->actions();
         if (a<actions.size()){
-            auto &action = actions[a];
-            QTimer::singleShot(0, [f=action.function](){ f(); });
-            emit activated(item.first->id(), item.second->id(), action.id);
+            QTimer::singleShot(0, [q=q->string(), e=extension->id(), i=item->id(), a=actions[a]](){
+                a.function();
+                UsageHistory::addActivation(q, e, i, a.id);
+            });
         }
         else
             WARN << "Activated action index is invalid.";

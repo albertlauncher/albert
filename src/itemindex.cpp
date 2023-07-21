@@ -162,16 +162,13 @@ std::vector<albert::RankItem> ItemIndex::search(const QString &string, const boo
     QStringList &&words = splitString(string, separators, case_sensitive);
 
     unordered_map<Index, float> result_map;
-    if (words.empty()){
-        for (const auto &string_index_item : index.strings){
-            float score = 1.0f/string_index_item.max_match_len;
-            if(const auto &[it, success] = result_map.emplace(string_index_item.item, score); !success)
-                if (it->second < score)
-                    it->second = score;
-        }
-    }
-    else
-    {
+    if (words.empty())
+
+        for (const auto &string_index_item : index.strings)
+            result_map.emplace(string_index_item.item, 0.0f);
+
+    else {
+
         struct StringMatch {
             StringMatch(Index i, Position p, uint16_t ml)
                     : index(i), position(p), match_len(ml){}

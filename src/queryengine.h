@@ -1,76 +1,66 @@
 // Copyright (c) 2023 Manuel Schneider
 
 #pragma once
-#include "albert/extension/queryhandler/triggerqueryhandler.h"
-#include "albert/extension/queryhandler/globalqueryhandler.h"
+#include "albert/extension/frontend/query.h"
 #include "albert/extension/queryhandler/fallbackprovider.h"
+#include "albert/extension/queryhandler/globalqueryhandler.h"
+#include "albert/extension/queryhandler/triggerqueryhandler.h"
 #include "albert/extensionwatcher.h"
-#include "globalsearch.h"
 #include <map>
 #include <memory>
 #include <set>
-namespace albert{ class Query; }
 
-
-class QueryEngine : public albert::ExtensionWatcher<albert::TriggerQueryHandler>,
-                    public albert::ExtensionWatcher<albert::GlobalQueryHandler>,
-                    public albert::ExtensionWatcher<albert::FallbackHandler>
-
+class QueryEngine:
+    public albert::ExtensionWatcher<albert::TriggerQueryHandler>,
+    public albert::ExtensionWatcher<albert::GlobalQueryHandler>,
+    public albert::ExtensionWatcher<albert::FallbackHandler>
 {
 public:
-
     explicit QueryEngine(albert::ExtensionRegistry&);
-
+    
     std::shared_ptr<albert::Query> query(const QString &query);
 
-    const std::map<albert::TriggerQueryHandler*, QString> &triggerHandlers();
-    const std::set<albert::GlobalQueryHandler*> &globalHandlers();
-    const std::set<albert::FallbackHandler*> &fallbackHandlers();
+    std::map<QString, albert::TriggerQueryHandler*> triggerHandlers();
+    std::map<QString, albert::GlobalQueryHandler*> globalHandlers();
+    std::map<QString, albert::FallbackHandler*> fallbackHandlers();
+
+    bool isActive(albert::TriggerQueryHandler*) const;
+    bool isActive(albert::GlobalQueryHandler*) const;
+    bool isActive(albert::FallbackHandler*) const;
+
+    QString setActive(albert::TriggerQueryHandler*, bool = true);
+    void setActive(albert::GlobalQueryHandler*, bool = true);
+    void setActive(albert::FallbackHandler*, bool = true);
 
     bool isEnabled(albert::TriggerQueryHandler*) const;
     bool isEnabled(albert::GlobalQueryHandler*) const;
     bool isEnabled(albert::FallbackHandler*) const;
 
-    bool setEnabled(albert::TriggerQueryHandler*, bool enabled = true);
-    void setEnabled(albert::GlobalQueryHandler*, bool enabled = true);
-    void setEnabled(albert::FallbackHandler*, bool enabled = true);
+    QString setEnabled(albert::TriggerQueryHandler*, bool = true);
+    void setEnabled(albert::GlobalQueryHandler*, bool = true);
+    void setEnabled(albert::FallbackHandler*, bool = true);
 
-    const QString &trigger(albert::TriggerQueryHandler*) const;
-    bool setTrigger(albert::TriggerQueryHandler*, const QString&);
+    QString setTrigger(albert::TriggerQueryHandler*, const QString&);
 
-    bool fuzzy() const;
-    void setFuzzy(bool);
+    bool fuzzy(albert::TriggerQueryHandler*) const;
+    void setFuzzy(albert::TriggerQueryHandler*, bool);
 
-    double memoryDecay() const;
-    void setMemoryDecay(double);
-
-    bool prioritizePerfectMatch() const;
-    void setPrioritizePerfectMatch(bool);
-
-    const QString &separators() const;
-    void setSeparators(const QString &);
+    bool runEmptyQuery() const;
+    void setRunEmptyQuery(bool);
 
 private:
-//    void updateActiveTriggers();
-    void updateUsageScore() const;
     void onAdd(albert::TriggerQueryHandler*) override;
-    void onRem(albert::TriggerQueryHandler *) override;
     void onAdd(albert::GlobalQueryHandler*) override;
-    void onRem(albert::GlobalQueryHandler*) override;
     void onAdd(albert::FallbackHandler*) override;
+    void onRem(albert::TriggerQueryHandler *) override;
+    void onRem(albert::GlobalQueryHandler*) override;
     void onRem(albert::FallbackHandler*) override;
 
-    std::map<albert::TriggerQueryHandler*, QString> trigger_handlers_;
-    std::set<albert::GlobalQueryHandler*>  global_handlers_;
-    std::set<albert::FallbackHandler*>     fallback_handlers_;
+    std::map<QString, albert::TriggerQueryHandler*> enabled_trigger_handlers_;
+    std::map<QString, albert::GlobalQueryHandler*>  enabled_global_handlers_;
+    std::map<QString, albert::FallbackHandler*> enabled_fallback_handlers_;
 
-    std::map<albert::TriggerQueryHandler*, QString> enabled_trigger_handlers_;
-    std::set<albert::GlobalQueryHandler*>  enabled_global_handlers_;
-    std::set<albert::FallbackHandler*>     enabled_fallback_handlers_;
-
-    GlobalSearch global_search_handler;
-    bool fuzzy_;
-    QString separators_;
-    double memory_decay_;
-    bool prioritize_perfect_match_;
+    albert::ExtensionRegistry &registry_;
+    std::map<QString, albert::TriggerQueryHandler*> active_triggers_;
+    bool runEmptyQuery_;
 };

@@ -1,31 +1,27 @@
 // Copyright (c) 2022 Manuel Schneider
 
+#include "albert/extension/queryhandler/rankitem.h"
 #include "albert/logging.h"
 #include "albert/util/timeprinter.h"
 #include "query.h"
+#include "usagedatabase.h"
 #include <QtConcurrent>
 using namespace std;
-using albert::Item;
+using namespace albert;
 
-uint Query::query_count = 0;
+uint QueryBase::query_count = 0;
 
-Query::Query(const std::set<albert::FallbackHandler*>& fallback_handlers,
-             albert::TriggerQueryHandler *query_handler,
-             QString string,
-             QString trigger):
-    fallback_handlers_(fallback_handlers),
-    query_handler_(query_handler),
-    string_(std::move(string)),
-    trigger_(std::move(trigger)),
-    synopsis_(query_handler->synopsis()),
+QueryBase::QueryBase(vector<FallbackHandler*> fallback_handlers, QString string):
+    fallback_handlers_(::move(fallback_handlers)),
+    string_(::move(string)),
     matches_(this),  // Important for qml ownership determination
     fallbacks_(this),  // Important for qml ownership determination
     query_id(query_count++)
 {
-    connect(&future_watcher_, &decltype(future_watcher_)::finished, this, &Query::finished);
+    connect(&future_watcher_, &decltype(future_watcher_)::finished, this, &QueryBase::finished);
 }
 
-Query::~Query()
+QueryBase::~QueryBase()
 {
     // Avoid segfaults when handler write on a deleted query
     if (!future_watcher_.isFinished()) {
@@ -35,52 +31,143 @@ Query::~Query()
     DEBG << QString("Query deleted. [#%1 '%2']").arg(query_id).arg(string_);
 }
 
-const QString Query::trigger() const { return trigger_; }
-
-const QString Query::string() const { return string_; }
-
-const QString Query::synopsis() const { return synopsis_; }
-
-void Query::run()
+void QueryBase::run()
 {
     future_watcher_.setFuture(QtConcurrent::run([this](){
-        albert::TimePrinter tp(QString("TIME: %1 µs ['%2':'%3']").arg("%1", query_handler_->id(), this->string()));
         try {
-            for (auto *fallback_handler : fallback_handlers_)
-                fallbacks_.add(fallback_handler, fallback_handler->fallbacks(QString("%1%2").arg(trigger_, string_)));
-            this->query_handler_->handleTriggerQuery(this);
+            runFallbackHandlers();
+            run_();
         } catch (const exception &e){
             WARN << "Handler thread threw" << e.what();
         }
     }));
 }
 
-void Query::cancel() { valid_ = false; }
+void QueryBase::cancel() { valid_ = false; }
 
-bool Query::isValid() const { return valid_; }
+bool QueryBase::isFinished() const { return future_watcher_.isFinished(); }
 
-bool Query::isFinished() const { return future_watcher_.isFinished(); }
+bool QueryBase::isTriggered() const { return !trigger().isEmpty(); }
 
-bool Query::isTriggered() const { return !trigger_.isEmpty(); }
+QAbstractListModel *QueryBase::matches() { return &matches_; }
 
-QAbstractListModel *Query::matches() { return &matches_; }
+QAbstractListModel *QueryBase::fallbacks() { return &fallbacks_; }
 
-QAbstractListModel *Query::fallbacks() { return &fallbacks_; }
+QAbstractListModel *QueryBase::matchActions(uint i) const { return matches_.buildActionsModel(i); }
 
-QAbstractListModel *Query::matchActions(uint i) const { return matches_.buildActionsModel(i); }
+QAbstractListModel *QueryBase::fallbackActions(uint i) const { return fallbacks_.buildActionsModel(i); }
 
-QAbstractListModel *Query::fallbackActions(uint i) const { return fallbacks_.buildActionsModel(i); }
- 
-void Query::activateMatch(uint i, uint a) { matches_.activate(i, a); }
+void QueryBase::activateMatch(uint i, uint a) { matches_.activate(this, i, a); }
 
-void Query::activateFallback(uint i, uint a) { fallbacks_.activate(i, a); }
+void QueryBase::activateFallback(uint i, uint a) { fallbacks_.activate(this, i, a); }
 
-void Query::add(const shared_ptr<Item> &item) { matches_.add(query_handler_, item); }
+void QueryBase::runFallbackHandlers()
+{
+    vector<pair<Extension*,RankItem>> fallbacks;
+    for (auto *handler : fallback_handlers_)
+        for (auto item : handler->fallbacks(QString("%1%2").arg(trigger(), string())))
+            fallbacks.emplace_back(handler, RankItem(::move(item), 1));
+    UsageHistory::applyScores(&fallbacks);
+    sort(fallbacks.begin(), fallbacks.end(), [](const auto &a, const auto &b){ return a.second.score > b.second.score; });
+    fallbacks_.add(fallbacks.begin(), fallbacks.end()); // TODO ranges
+}
 
-void Query::add(shared_ptr<Item> &&item) { matches_.add(query_handler_, ::move(item)); }
+// ////////////////////////////////////////////////////////////////////////////
 
-void Query::add(const vector<shared_ptr<Item>> &items) { matches_.add(query_handler_, items); }
+TriggerQuery::TriggerQuery(std::vector<FallbackHandler *> &&fallback_handlers,
+                                             TriggerQueryHandler *query_handler,
+                                             QString string, QString trigger):
+    QueryBase(::move(fallback_handlers), ::move(string)),
+    query_handler_(query_handler),
+    trigger_(::move(trigger))
+{
+    synopsis_ = query_handler->synopsis();
+}
 
-void Query::add(vector<shared_ptr<Item>> &&items) { matches_.add(query_handler_, ::move(items)); }
+QString TriggerQuery::trigger() const { return trigger_; }
+
+QString TriggerQuery::string() const { return string_; }
+
+QString TriggerQuery::synopsis() const { return synopsis_; }
+
+const bool &TriggerQuery::isValid() const { return valid_; }
+
+void TriggerQuery::add(const shared_ptr<Item> &item) { matches_.add(query_handler_, item); }
+
+void TriggerQuery::add(shared_ptr<Item> &&item) { matches_.add(query_handler_, ::move(item)); }
+
+void TriggerQuery::add(const vector<shared_ptr<Item>> &items) { matches_.add(query_handler_, items); }
+
+void TriggerQuery::add(vector<shared_ptr<Item>> &&items) { matches_.add(query_handler_, ::move(items)); }
+
+void TriggerQuery::run_()
+{
+    future_watcher_.setFuture(QtConcurrent::run([this](){
+        TimePrinter tp(QString("TIME: %1 µs ['%2':'%3']").arg("%1", query_handler_->id(), string_));
+        try {
+            query_handler_->handleTriggerQuery(this);
+        } catch (const exception &e){
+            WARN << "Handler thread threw" << e.what();
+        }
+    }));
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+
+GlobalQuery::GlobalQuery(vector<FallbackHandler*> &&fallback_handlers,
+                                           vector<GlobalQueryHandler*> &&query_handlers,
+                                           QString string):
+    QueryBase(::move(fallback_handlers), ::move(string)),
+    query_handlers_(::move(query_handlers))
+{
+}
+
+QString GlobalQuery::trigger() const { return {}; }
+
+QString GlobalQuery::string() const { return string_; }
+
+QString GlobalQuery::synopsis() const { return {}; }
+
+const bool &GlobalQuery::isValid() const { return valid_; }
+
+void GlobalQuery::run_()
+{
+    mutex rank_items_mutex;  // 6.4 Still no move semantics in QtConcurrent
+    vector<pair<Extension*,RankItem>> rank_items;
+
+    function<void(GlobalQueryHandler*)> map = [this, &rank_items_mutex, &rank_items](GlobalQueryHandler *handler) {
+        try {
+            TimePrinter tp(QString("TIME: %1 µs [%2:'%3']").arg("%1", handler->id(), string_));
+
+            auto r = handler->handleGlobalQuery(this);
+            if (r.empty())
+                return;
+
+            handler->applyUsageScore(&r);
+
+            unique_lock lock(rank_items_mutex);
+            rank_items.reserve(rank_items.size()+r.size());
+            for (auto &rank_item : r)
+                rank_items.emplace_back(handler, ::move(rank_item));
+
+        } catch (const exception &e) {
+            WARN << "Global search:" << handler->id() << "threw" << e.what();
+        }
+    };
+
+    QtConcurrent::blockingMap(query_handlers_, map);
 
 
+    TimePrinter tp(QString("TIME: %1 ms, Sorting global query '%2' results").arg("%1", string_));
+    sort(rank_items.begin(), rank_items.end(), [](const auto &a, const auto &b){ return a.second.score > b.second.score; });
+    tp.restart(QString("TIME: %1 ms, adding global query '%2' results").arg("%1", string_));
+    matches_.add(rank_items.begin(), rank_items.end()); // TODO ranges
+
+//    //    auto it = rank_items.begin();
+//    //    for (uint e = 0; pow(10,e)-1 < (uint)rank_items.size(); ++e){
+//    //        auto begin = rank_items.begin()+(uint)pow(10u,e)-1;
+//    //        auto end = rank_items.begin()+min((uint)pow(10u,e+1)-1, (uint)rank_items.size());
+//    //        sort(begin, end, [](const auto &a, const auto &b){ return a.second.score > b.second.score; });
+//    //         TODO c++20 ranges view
+//    //    }
+}

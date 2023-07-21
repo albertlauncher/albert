@@ -1,13 +1,12 @@
 // Copyright (c) 2023 Manuel Schneider
 
 #pragma once
-#include "albert/export.h"
+#include "item.h"
 #include <QString>
 #include <memory>
 
 namespace albert
 {
-class Item;
 
 ///
 class ALBERT_EXPORT IndexItem

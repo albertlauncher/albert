@@ -3,28 +3,20 @@
 #include "albert/extension/frontend/frontend.h"
 #include "albert/logging.h"
 #include "app.h"
+#include "handlerwidget.h"
 #include "pluginwidget.h"
 #include "qtpluginloader.h"
-#include "settings/globalsearchwidget.h"
 #include "settingswindow.h"
 #include "trayicon.h"
-#include "triggerwidget.h"
 #include <QCloseEvent>
 #include <QDesktopServices>
 #include <QGuiApplication>
 #include <QKeySequenceEdit>
 #include <QStandardItemModel>
 #include <QStandardPaths>
+#include <usagedatabase.h>
 using namespace std;
 
-enum class Tab {
-    General,
-    Window,
-    Search,
-    Triggers,
-    Plugins,
-    About
-};
 
 class QHotKeyEdit : public QKeySequenceEdit
 {
@@ -74,27 +66,17 @@ void SettingsWindow::init_tabs(App &app)
 {
     ui.tabs->setStyleSheet("QTabWidget::pane { border-radius: 0px; }");
 
-    // Tab 0 general
     init_tab_general_hotkey(app);
     init_tab_general_trayIcon(app);
     init_tab_general_autostart();
     init_tab_general_frontends(app);
     init_tab_general_terminals(app);
-
-    // Tab 1 Window
-    ui.tabs->insertTab((int)Tab::Window, app.frontend->createFrontendConfigWidget(), "Window");
-
-    // Tab 2 Search
-    ui.tabs->insertTab((int)Tab::Search, new GlobalSearchWidget(app.query_engine, app.extension_registry), "Search");
-
-    // Tab 3 Triggers
-    ui.tabs->insertTab((int)Tab::Triggers, new TriggerWidget(app.query_engine, app.extension_registry), "Triggers");
-
-    // Tab 4 Plugins
-    ui.tabs->insertTab((int)Tab::Plugins, new PluginWidget(app.plugin_registry), "Plugins");
-
-    // Tab 5 About
+    init_tab_general_search(app);
     init_tab_about();
+
+    ui.tabs->insertTab(ui.tabs->count()-1, app.frontend->createFrontendConfigWidget(), "Window");
+    ui.tabs->insertTab(ui.tabs->count()-1, new HandlerWidget(app.query_engine, app.extension_registry), "Handlers");
+    ui.tabs->insertTab(ui.tabs->count()-1, new PluginWidget(app.plugin_registry), "Plugins");
 }
 
 void SettingsWindow::init_tab_general_hotkey(App &app)
@@ -129,7 +111,8 @@ void SettingsWindow::init_tab_general_autostart()
     else
         CRIT << "Deskop entry not found! Autostart option is nonfuctional";
 #else
-    ui.checkBox_autostart->setEnabled(false);
+    ui.checkBox_autostart->setVisible(false);
+    ui.label_autostart->setVisible(false);
     WARN << "Autostart not implemented on this platform!";
 #endif
 }
@@ -158,6 +141,22 @@ void SettingsWindow::init_tab_general_terminals(App &app)
 
     connect(ui.comboBox_term, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, [&app](int index){ app.terminal_provider.setTerminal(index); });
+
+}
+
+void SettingsWindow::init_tab_general_search(App &app)
+{
+    ui.slider_decay->setValue((int)(UsageHistory::memoryDecay() * 100));
+    QObject::connect(ui.slider_decay, &QSlider::valueChanged, this,
+                     [](int val){ UsageHistory::setMemoryDecay((double)val/100.0); });
+
+    ui.checkBox_prioritizePerfectMatch->setChecked(UsageHistory::prioritizePerfectMatch());
+    QObject::connect(ui.checkBox_prioritizePerfectMatch, &QCheckBox::toggled, this,
+                     [](bool val){ UsageHistory::setPrioritizePerfectMatch(val); });
+
+    ui.checkBox_emptyQuery->setChecked(app.query_engine.runEmptyQuery());
+    QObject::connect(ui.checkBox_emptyQuery, &QCheckBox::toggled, this,
+                     [&app](bool val){ app.query_engine.setRunEmptyQuery(val); });
 
 }
 

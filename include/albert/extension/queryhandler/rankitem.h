@@ -1,12 +1,11 @@
 // Copyright (c) 2023 Manuel Schneider
 
 #pragma once
-#include "albert/export.h"
+#include "item.h"
 #include <memory>
 
 namespace albert
 {
-class Item;
 
 ///
 class ALBERT_EXPORT RankItem

@@ -7,11 +7,14 @@
 #include <map>
 #include <memory>
 #include <vector>
-namespace albert{ class Item; class RankItem; }
+class QueryBase;
+namespace albert{
+class Item;
+class RankItem;
+}
 
 class ItemsModel : public QAbstractListModel
 {
-    Q_OBJECT
 public:
     ItemsModel(QObject *parent = nullptr); // important for qml cppownership
 
@@ -29,13 +32,8 @@ public:
              std::vector<std::pair<albert::Extension*,albert::RankItem>>::iterator end);
 
     QAbstractListModel *buildActionsModel(uint i) const;
-    void activate(uint i, uint a);
+    void activate(QueryBase *q, uint i, uint a);
 
 private:
-    std::vector<std::pair<albert::Extension*,std::shared_ptr<albert::Item>>> items;
-
-signals:
-    void activated(const QString &extension_id,
-                   const QString &item_id,
-                   const QString &action_id);
+    std::vector<std::pair<albert::Extension*, std::shared_ptr<albert::Item>>> items;
 };

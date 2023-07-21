@@ -35,7 +35,7 @@ public:
     virtual QWidget *createFrontendConfigWidget() = 0;
 
     /// The query object factory
-    /// @note the QueryEngine is not available in the constructor. Do not use before albert:PluginInstance::initialize
+    /// @note The QueryEngine is not available in the constructor.
     std::shared_ptr<Query> query(const QString &query) const;
 
 private:
