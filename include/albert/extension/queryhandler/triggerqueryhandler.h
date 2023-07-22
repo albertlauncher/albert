@@ -22,6 +22,9 @@ public:
     TriggerQueryHandler();
     ~TriggerQueryHandler();
 
+    /// The user configured trigger of this handler.
+    QString trigger() const;
+
     /// The synopsis, displayed on empty query.
     /// Use this to give the user hints about accepted query strings.
     /// Default empty.
@@ -32,9 +35,6 @@ public:
 
     /// Enable user remapping of the trigger. Default false.
     virtual bool allowTriggerRemap() const;
-
-    /// The user configured trigger of this handler.
-    QString trigger() const;
 
     /// Fuzzy matching capability. Default false.
     virtual bool supportsFuzzyMatching() const;

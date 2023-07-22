@@ -33,13 +33,13 @@ public:
     QString synopsis() const override;
 
     /// Returns "True"
-    bool supportsFuzzyMatching() const override final;
+    bool supportsFuzzyMatching() const override;
 
     /// Return the fuzzy mode of the internal index
-    bool fuzzyMatchingEnabled() const override final;
+    bool fuzzyMatchingEnabled() const override;
 
     /// Set the fuzzy mode of the internal index. Triggers a rebuild
-    void setFuzzyMatchingEnabled(bool) override final;
+    void setFuzzyMatchingEnabled(bool) override;
 
     /// Use the index to override handleGlobalQuery
     std::vector<RankItem> handleGlobalQuery(const GlobalQuery*) const override;
