@@ -1,10 +1,10 @@
 // Copyright (c) 2023 Manuel Schneider
 
 #pragma once
-#include "albert/extension/queryhandler/triggerqueryhandler.h"
+#include "albert/extension/queryhandler/indexqueryhandler.h"
 class PluginRegistry;
 
-class PluginQueryHandler : public albert::TriggerQueryHandler
+class PluginQueryHandler : public albert::IndexQueryHandler
 {
     PluginRegistry &plugin_registry_;
 public:
@@ -13,5 +13,5 @@ public:
     QString name() const override;
     QString description() const override;
     QString defaultTrigger() const override;
-    void handleTriggerQuery(TriggerQuery*) const override;
+    void updateIndexItems() override;
 };
