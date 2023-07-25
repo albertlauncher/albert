@@ -4,6 +4,7 @@
 #include "albert/config.h"
 #include "albert/logging.h"
 #include "app.h"
+#include "platform/platform.h"
 #include "xdg/iconlookup.h"
 #include <QApplication>
 #include <QClipboard>
@@ -18,9 +19,6 @@
 #include <QStandardPaths>
 #include <QTime>
 #include <csignal>
-#ifdef Q_OS_MAC
-#include "platform/Darwin/macos.h"
-#endif
 ALBERT_LOGGING
 using namespace std;
 using namespace albert;
@@ -209,9 +207,8 @@ int main(int argc, char **argv)
     else
         QLoggingCategory::setFilterRules("*.debug=false");
 
-#if defined(Q_OS_MAC)
-    setActivationPolicyAccessory();
-#endif
+    platform::initPlatform();
+
     app = new App(parser.value(opt_p).split(',', Qt::SkipEmptyParts));
     app->initialize();
     notifyVersionChange();
