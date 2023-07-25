@@ -4,6 +4,7 @@
 #include "albert/util/iconprovider.h"
 #include "xdg/iconlookup.h"
 #include <QApplication>
+#include <QPainter>
 #include <QFileIconProvider>
 #include <QMetaEnum>
 #include <QString>
@@ -11,8 +12,44 @@
 #include <QUrl>
 #include <shared_mutex>
 #include <unordered_map>
+#include <QUrlQuery>
+#include <QRegularExpression>
 using namespace albert;
 using namespace std;
+
+
+static QPixmap genericPixmap(int size, const QColor& bgcolor, const QColor& fgcolor, const QString& text, float scalar)
+{
+    QPixmap pixmap(size, size);
+    pixmap.fill(Qt::transparent);
+
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    if (bgcolor.isValid()){
+        QColor borderColor = bgcolor;
+        auto borderWidth = size/6;
+        borderColor.setAlpha(128);
+        painter.setBrush(bgcolor);
+        painter.setPen(QPen(borderColor, borderWidth));
+        painter.drawEllipse(borderWidth / 2, borderWidth / 2, size - borderWidth, size - borderWidth);
+    }
+
+    if (!text.isEmpty())
+    {
+        painter.setPen(fgcolor);
+
+        QFont font = painter.font();
+        font.setPixelSize((double)size * scalar);
+        painter.setFont(font);
+
+        QRect textRect(0, 0, size, size);
+        painter.drawText(textRect, Qt::AlignCenter, text);
+    }
+
+    return pixmap;
+}
+
 
 class IconProvider::Private
 {
@@ -63,6 +100,28 @@ public:
                 *size = pm.size();
                 return pm;
             }
+
+        } else if (url.scheme() == QStringLiteral("gen")){
+            auto urlquery = QUrlQuery(url);
+
+            QColor background(urlquery.queryItemValue(QStringLiteral("background")));
+
+            QColor foreground(urlquery.queryItemValue(QStringLiteral("foreground")));
+            if (!foreground.isValid())
+                foreground = QApplication::palette().color(QPalette::Text);
+
+            auto text = urlquery.queryItemValue(QStringLiteral("text"));
+
+            bool ok;
+            auto scalar = urlquery.queryItemValue(QStringLiteral("fontscalar")).toFloat(&ok);
+            if (!ok)
+                scalar = 1.0f;
+
+            if (auto pm = genericPixmap(requestedSize.width(), background, foreground, text, scalar); !pm.isNull()){
+                *size = pm.size();
+                return pm;
+            }
+
         }
 
         return {};
