@@ -159,7 +159,12 @@ void GlobalQuery::run_()
 
 
     TimePrinter tp(QString("TIME: %1 ms, Sorting global query '%2' results").arg("%1", string_));
-    sort(rank_items.begin(), rank_items.end(), [](const auto &a, const auto &b){ return a.second.score > b.second.score; });
+    sort(rank_items.begin(), rank_items.end(), [](const auto &a, const auto &b){
+        if (a.second.score == b.second.score)
+            return a.second.item->text() > b.second.item->text();
+        else
+            return a.second.score > b.second.score;
+    });
     tp.restart(QString("TIME: %1 ms, adding global query '%2' results").arg("%1", string_));
     matches_.add(rank_items.begin(), rank_items.end()); // TODO ranges
 
