@@ -317,3 +317,6 @@ long long albert::runDetachedProcess(const QStringList &commandline, const QStri
         WARN << "runDetachedProcess: commandline must not be empty!";
     return pid;
 }
+
+void albert::hideNSApp()
+{ platform::hideNSApp(); }

@@ -76,4 +76,6 @@ ALBERT_EXPORT void runTerminal(const QString &script = {}, const QString &workin
 /// @note Unfortunately broken on most systems
 ALBERT_EXPORT void sendTrayNotification(const QString &title, const QString &message, int msTimeoutHint);
 
+/// Hide/Deactivates app such that the former active app has key focus again
+ALBERT_EXPORT void hideNSApp();
 }

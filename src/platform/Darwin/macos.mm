@@ -15,6 +15,9 @@ void platform::initPlatform()
     //[NSApp setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua]];
 
 //    https://developer.apple.com/documentation/appkit/nsvisualeffectview?language=objc
+
+void platform::hideNSApp() {
+    [NSApp hide:nil];
 }
 
 void platform::initNativeWindow(unsigned long long wid)
