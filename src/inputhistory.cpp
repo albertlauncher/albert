@@ -29,16 +29,15 @@ InputHistory::~InputHistory()
         for (const auto &line : lines_)
             ts << line << Qt::endl;
         f.close();
-    } else
-        WARN << "Opening history file failed:" << file_path;
+    }
 }
 
 void InputHistory::add(const QString& str)
 {
-    if (!str.trimmed().isEmpty()){
-        if (lines_.contains(str))
-            lines_.removeAll(str); // Remove dups
-        lines_ << str;
+    if (auto trimmed = str.trimmed(); !trimmed.isEmpty()){
+        if (lines_.contains(trimmed))
+            lines_.removeAll(trimmed); // Remove dups
+        lines_ << trimmed;
     }
     resetIterator();
 }
