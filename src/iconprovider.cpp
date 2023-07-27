@@ -63,14 +63,14 @@ public:
 
     QPixmap getPixmapNoCache(const QString &urlstr, QSize *size, const QSize &requestedSize) const
     {
-        if (urlstr.startsWith(':')){
+        if (QUrl url(urlstr); url.scheme() == QStringLiteral("qrc") || urlstr.startsWith(':')){
             // https://doc.qt.io/qt-6/qresource.html
             if (auto pm = QPixmap(urlstr); !pm.isNull()){
                 *size = pm.size();
                 return pm;
             }
 
-        } else if (QUrl url(urlstr); url.scheme() == QStringLiteral("qfip")){
+        } else if (url.scheme() == QStringLiteral("qfip")){
             // https://doc.qt.io/qt-6/qfileiconprovider.html
             if (auto pm = file_icon_provider.icon(QFileInfo(url.toString(QUrl::RemoveScheme))).pixmap(requestedSize); !pm.isNull()){
                 *size = pm.size();
