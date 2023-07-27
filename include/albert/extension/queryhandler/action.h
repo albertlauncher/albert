@@ -12,6 +12,11 @@ namespace albert
 class ALBERT_EXPORT Action final
 {
 public:
+
+    /// Action constructor
+    /// \param id Identifier of the action.
+    /// \param text Description of the action.
+    /// \param function The action function.
     Action(QString id, QString text, std::function<void()> function);
 
     QString id;  ///< Identifier of the action.

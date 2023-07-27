@@ -14,6 +14,8 @@ namespace albert
 {
 class Extension;
 
+/// Abstract plugin instance class
+/// @see PluginLoader
 class ALBERT_EXPORT PluginInstance
 {
 public:

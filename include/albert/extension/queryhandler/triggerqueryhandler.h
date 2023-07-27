@@ -45,6 +45,8 @@ public:
     /// Fuzzy matching behavior. Default does nothing.
     virtual void setFuzzyMatchingEnabled(bool);
 
+    /// The query interface used by TriggerQueryHandler
+    /// @see handleTriggerQuery
     class ALBERT_EXPORT TriggerQuery
     {
     public:

@@ -9,8 +9,7 @@
 namespace albert
 {
 /// The common extension registry
-/// Neither threadsafe, nor reentrant.
-/// @note Do touch in the GUI thread only.
+/// Use the main thread only. Neither threadsafe, nor reentrant.
 class ALBERT_EXPORT ExtensionRegistry : public QObject
 {
     Q_OBJECT
@@ -18,10 +17,10 @@ public:
     void add(Extension *e);  ///< Add extension to the registry
     void remove(Extension *e);  ///< Remove extension from the registry
 
-    /// Get map of all extensions
+    /// Get map of all registered extensions
     const std::map<QString,Extension*> &extensions();
 
-    /// Get map of all extensions of type
+    /// Get map of all extensions of type T
     template<typename T> std::map<QString, T*> extensions()
     {
         std::map<QString, T*> results;
@@ -31,7 +30,7 @@ public:
         return results;
     }
 
-    /// Get casted extension by id
+    /// Get extension by id implicitly dynamic_cast'ed to type T.
     template<typename T> T* extension(const QString &id)
     {
         try {
@@ -42,7 +41,10 @@ public:
     }
 
 signals:
+    /// Emitted when an extension has been registered.
     void added(Extension*);
+
+    /// Emitted when an extension has been deregistered.
     void removed(Extension*);
 
 private:

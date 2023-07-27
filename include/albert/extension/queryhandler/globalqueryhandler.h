@@ -20,6 +20,7 @@ public:
     GlobalQueryHandler();
     ~GlobalQueryHandler() override;
 
+    /// The query interface used by GlobalQueryHandler
     class GlobalQuery
     {
     public:

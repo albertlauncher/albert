@@ -21,20 +21,23 @@ enum class PluginState {
     Loaded,   ///< The plugin is loaded and ready.
 };
 
-
+/// Abstract plugin loader class
+/// @see PluginProvider
 class ALBERT_EXPORT PluginLoader : public QObject
 {
     Q_OBJECT
 public:
+    /// PluginLoader constructor
+    /// \param path The path to the file of the plugin
     PluginLoader(const QString &path);
     virtual ~PluginLoader();
 
     const QString path;  ///< The plugin location on disk.
-    PluginState state() const; ///< @See PluginState.
+    PluginState state() const; ///< @see PluginState.
     const QString &stateInfo() const;  ///< Detailed state information.
 
     virtual const PluginProvider &provider() const = 0;  ///< The provider of this plugin.
-    virtual const PluginMetaData &metaData() const = 0;  ///< @See PluginMetaData.
+    virtual const PluginMetaData &metaData() const = 0;  ///< @see PluginMetaData.
     virtual PluginInstance *instance() const = 0;  ///< The plugin instance. nullptr if not loaded.
 
     /// Load the plugin.
@@ -46,6 +49,9 @@ public:
     virtual QString unload(ExtensionRegistry *registry) = 0;
 
 protected:
+    /// Sets the state of the plugin.
+    /// @note It's crucial for the plugin registry and the corresponding
+    /// widgets to have the state set correctly to work properly
     void setState(PluginState state, QString info = {});
 
 private:
@@ -53,7 +59,7 @@ private:
     PluginState state_;
 
 signals:
-    void stateChanged(PluginState);
+    void stateChanged(PluginState);  ///< Emitted when the plugin changed its state
 };
 
 }

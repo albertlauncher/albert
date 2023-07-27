@@ -14,7 +14,10 @@ namespace albert
 template<typename T> class BackgroundExecutor
 {
 public:
+    /// The task that should be executed in background
     std::function<T(const bool &abort)> parallel;
+
+    /// The function that handles the results when the task is done
     std::function<void(T &&)> finish;
 private:
     QFutureWatcher<T> future_watcher_;
@@ -40,6 +43,7 @@ public:
         }
     };
 
+    /// Run or schedule a rerun of the task
     void run() {
         if (future_watcher_.isRunning())
             rerun_ = true;
@@ -47,6 +51,7 @@ public:
             future_watcher_.setFuture(QtConcurrent::run(parallel, rerun_));
     }
 
+    /// Indicator if the task is still running
     bool isRunning() const { return future_watcher_.isRunning(); }
 };
 

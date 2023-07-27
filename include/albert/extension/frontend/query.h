@@ -12,6 +12,8 @@ namespace albert
 {
 class Item;
 
+/// Interface class for queries used by frontends
+/// @see Frontend
 class ALBERT_EXPORT Query : public QObject
 {
     Q_OBJECT
@@ -32,11 +34,11 @@ public:
     Q_INVOKABLE virtual QAbstractListModel *fallbacks() = 0;  ///< You borrow
     Q_INVOKABLE virtual QAbstractListModel *matchActions(uint item) const = 0;  ///< You take ownership
     Q_INVOKABLE virtual QAbstractListModel *fallbackActions(uint item) const = 0;  ///< You take ownership
-    Q_INVOKABLE virtual void activateMatch(uint item, uint action = 0) = 0;
-    Q_INVOKABLE virtual void activateFallback(uint item, uint action = 0) = 0;
+    Q_INVOKABLE virtual void activateMatch(uint item, uint action = 0) = 0; ///< Executes match a match action
+    Q_INVOKABLE virtual void activateFallback(uint item, uint action = 0) = 0; ///< Executes match a fallback action
 
 signals:
-    void finished();
+    void finished(); ///< Emitted when the query finished processing
 };
 
 }

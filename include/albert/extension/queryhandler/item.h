@@ -14,24 +14,29 @@ class ALBERT_EXPORT Item
 public:
     virtual ~Item() = default;
 
-    /// Per extension unique identifier.
+    /// Getter for the item identifier.
+    /// Has to be unique per extension.
     virtual QString id() const = 0;
 
-    /// Primary text displayed.
-    /// @note Empty will crash the app since text length is used as divisor for scoring
+    /// Getter for the item text.
+    /// Primary text displayed emphasized in a list item. Empty text will
+    /// crash the app since text length is used as divisor for scoring.
     virtual QString text() const = 0;
 
-    /// The descriptive subtext displayed.
+    /// Getter for the item subtext.
+    /// Secondary descriptive text displayed in a list item.
     virtual QString subtext() const = 0;
 
-    /// The iconUrls to try for icon lookup.
-    /// @see albert:IconProvider
+    /// Getter for the items iconUrls.
+    /// Used to get the item icon using the IconProvider.
     virtual QStringList iconUrls() const = 0;
 
-    /// Input replacement for input action (usually Tab)
+    /// Getter for the input action text.
+    /// Used as input text replacement (usually by pressing Tab).
     virtual QString inputActionText() const;
 
-    /// List of item actions
+    /// Getter for item actions.
+    /// These are the actions a users can run.
     virtual std::vector<Action> actions() const;
 };
 

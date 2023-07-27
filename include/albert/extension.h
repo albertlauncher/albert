@@ -52,7 +52,7 @@ signal, but only if a change really happened.
 namespace albert
 {
 
-///< Interface for objects of the extension system
+/// Interface for objects of the extension system
 class ALBERT_EXPORT Extension
 {
 public:
@@ -61,7 +61,9 @@ public:
     virtual QString name() const = 0;  ///< Pretty, human readable name
     virtual QString description() const = 0;  ///< Brief description of what this extension provides
 
-    std::unique_ptr<QSettings> settings() const;  ///< Prepared settings object.
+    /// The extensions settings
+    /// Returns a QSettings object with the group set to the id of the extension.
+    std::unique_ptr<QSettings> settings() const;
 };
 
 
