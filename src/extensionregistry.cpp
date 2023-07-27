@@ -17,7 +17,7 @@ void ExtensionRegistry::add(Extension *e)
 void ExtensionRegistry::remove(Extension *e)
 {
     if (extensions_.erase(e->id()))
-            emit removed(e);
+        emit removed(e);
     else
         qFatal("Extension removed more than once: %s", qPrintable(e->id()));
 }
