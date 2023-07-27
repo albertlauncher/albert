@@ -29,8 +29,10 @@
 	<key>NSHumanReadableCopyright</key>
 	<string>${MACOSX_BUNDLE_COPYRIGHT}</string>
 	<key>NSHighResolutionCapable</key>
-	<string>True</string>
-	<key>NSSupportsAutomaticGraphicsSwitching</key>
-	<true/>
+        <string>True</string>
+        <key>NSSupportsAutomaticGraphicsSwitching</key>
+        <true/>
+        <key>LSUIElement</key>
+        <true/>
 </dict>
 </plist>

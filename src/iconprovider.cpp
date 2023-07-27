@@ -2,18 +2,21 @@
 
 #include "albert/logging.h"
 #include "albert/util/iconprovider.h"
-#include "xdg/iconlookup.h"
 #include <QApplication>
-#include <QPainter>
 #include <QFileIconProvider>
 #include <QMetaEnum>
+#include <QPainter>
+#include <QRegularExpression>
 #include <QString>
 #include <QStyle>
 #include <QUrl>
+#include <QUrlQuery>
+#include <mutex>
 #include <shared_mutex>
 #include <unordered_map>
-#include <QUrlQuery>
-#include <QRegularExpression>
+#if defined Q_OS_LINUX
+#include "platform/Linux/xdg/iconlookup.h"
+#endif
 using namespace albert;
 using namespace std;
 

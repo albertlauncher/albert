@@ -3,8 +3,54 @@
 #include "platform/platform.h"
 #include "albert/logging.h"
 #include <Cocoa/Cocoa.h>
+#include <UserNotifications/UserNotifications.h>
 using namespace albert;
 
+static void requestNotificationPermissions()
+{
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+
+//    [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge)
+//                          completionHandler:^(BOOL granted, NSError * _Nullable error) {
+//                              if (!granted)
+//                                  qFatal("Notification permissions are mandatory.");
+//                          }];
+
+
+    [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * _Nonnull settings) {
+        switch (settings.authorizationStatus) {
+        case UNAuthorizationStatusNotDetermined:{
+            WARN << "UNAuthorizationStatusNotDetermined";
+
+            UNAuthorizationOptions opts = UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
+            [center requestAuthorizationWithOptions:opts
+                                  completionHandler:^(BOOL granted, NSError * _Nullable error) {
+
+                                      if (error) {
+                                          WARN << QString::fromNSString(error.localizedDescription);
+                                      }
+
+                                      if (granted) {
+                                          WARN << "granted";
+                                      } else {
+                                          WARN << "denied";
+                                          }
+                                  }];
+
+            break;
+            }
+        case UNAuthorizationStatusDenied:
+            WARN << "UNAuthorizationStatusDenied";
+            break;
+        case UNAuthorizationStatusAuthorized:
+            WARN << "UNAuthorizationStatusAuthorized";
+            break;
+        case UNAuthorizationStatusProvisional:
+            WARN << "UNAuthorizationStatusProvisional";
+            break;
+        }
+    }];
+}
 
 void platform::initPlatform()
 {
@@ -14,11 +60,11 @@ void platform::initPlatform()
     // Always dark mode 😎
     //[NSApp setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua]];
 
-//    https://developer.apple.com/documentation/appkit/nsvisualeffectview?language=objc
-
-void platform::hideNSApp() {
-    [NSApp hide:nil];
+    requestNotificationPermissions();
 }
+
+void platform::hideNSApp()
+{ [NSApp hide:nil]; }
 
 void platform::initNativeWindow(unsigned long long wid)
 {
@@ -32,7 +78,7 @@ void platform::initNativeWindow(unsigned long long wid)
      * @const NSWindowAnimationBehaviorAlertPanel
      */
 
-    [ns_window setAnimationBehavior: NSWindowAnimationBehaviorUtilityWindow];
+    [ns_window setAnimationBehavior: NSWindowAnimationBehaviorNone]; // no fancy fade or sth
 
 
     /*
@@ -70,16 +116,7 @@ void platform::initNativeWindow(unsigned long long wid)
      * @const NSWindowCollectionBehaviorFullScreenAllowsTiling This window can be a full screen tile window. It does not have to have \c NSWindowCollectionBehaviorFullScreenPrimary set.
      * @const NSWindowCollectionBehaviorFullScreenDisallowsTiling This window can NOT be made a full screen tile window; it still may be allowed to be a regular \c NSWindowCollectionBehaviorFullScreenPrimary window.
      */
-    CRIT << "collectionBehavior" << [ns_window collectionBehavior];
-    [ns_window setCollectionBehavior: (
-                                        NSWindowCollectionBehaviorCanJoinAllApplications
-                                      |NSWindowCollectionBehaviorMoveToActiveSpace
-//                                      |NSWindowCollectionBehaviorStationary
-//                                      |NSWindowCollectionBehaviorIgnoresCycle
-//                                      |NSWindowCollectionBehaviorFullScreenNone
-//                                      |NSWindowCollectionBehaviorFullScreenDisallowsTiling
-                                         )];
-    CRIT << "collectionBehavior" << [ns_window collectionBehavior];
+    [ns_window setCollectionBehavior: ([ns_window collectionBehavior] | NSWindowCollectionBehaviorMoveToActiveSpace)];
 
     /*
      * @const NSWindowStyleMaskBorderless
@@ -96,17 +133,16 @@ void platform::initNativeWindow(unsigned long long wid)
      * @const NSWindowStyleMaskNonactivatingPanel  Specifies that a panel that does not activate the owning application. Only applicable for \c NSPanel (or a subclass thereof).
      * @const NSWindowStyleMaskHUDWindow Specifies a heads up display panel.  Only applicable for \c NSPanel (or a subclass thereof).
      */
-    CRIT << "styleMask" << [ns_window styleMask];
-    [ns_window setStyleMask:(
-                                [ns_window styleMask]
-                                |NSWindowStyleMaskUtilityWindow
-                               | NSWindowStyleMaskHUDWindow
-                             |NSWindowStyleMaskNonactivatingPanel
-                             )];
+//    CRIT << "styleMask" << [ns_window styleMask];
+//    [ns_window setStyleMask:([ns_window styleMask]
+////                                |NSWindowStyleMaskUtilityWindow
+////                               | NSWindowStyleMaskHUDWindow
+////                             | NSWindowStyleMaskNonactivatingPanel
+//                             )];
     //    nswindow.styleMask |= NSWindowStyleMaskNonactivatingPanel;
     //    [nswindow setStyleMask: NSWindowStyleMaskNonactivatingPanel];
     //    nswindow.styleMask |= NSWindowStyleMaskNonactivatingPanel;
-    CRIT << "styleMask" << [ns_window styleMask];
+//    CRIT << "styleMask" << [ns_window styleMask];
 
 //    CRIT << "NSPanel" << [ns_window isKindOfClass: [NSPanel class]];
 //    CRIT << "level" << [ns_window level];
@@ -123,5 +159,46 @@ void platform::initNativeWindow(unsigned long long wid)
 }
 
 
+
+#include <Foundation/Foundation.h>
+
+void platform::sendNotification(const QString &title, const QString &message, int msTimeoutHint)
+{
+////    @autoreleasepool {
+//        NSUserNotification* notification = [[NSUserNotification alloc] init];
+//        notification.title = title.toNSString();
+//        notification.informativeText = message.toNSString();
+
+//        NSUserNotificationCenter* center = [NSUserNotificationCenter defaultUserNotificationCenter];
+//        [center deliverNotification:notification];
+////    }
+
+//    NSUserNotification* notification = [[NSUserNotification alloc] init];
+//    notification.title = title.toNSString();
+//    notification.informativeText = message.toNSString();
+
+//    NSUserNotificationCenter* center = [NSUserNotificationCenter defaultUserNotificationCenter];
+//    [center deliverNotification:notification];
+
+//    // Schedule a timer to remove the notification after 5 seconds
+//    NSTimeInterval timeInterval = 5.0;
+//    [NSTimer scheduledTimerWithTimeInterval:timeInterval
+//                                     target:center
+//                                   selector:@selector(removeDeliveredNotification:)
+//                                   userInfo:notification
+//                                    repeats:NO];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -93,46 +93,46 @@ const PluginMetaData &QtPluginLoader::metaData() const { return metadata_; }
 QString QtPluginLoader::load(ExtensionRegistry *registry)
 {
     switch (state()) {
-    case PluginState::Invalid:
-        return QStringLiteral("Plugin is invalid.");
-    case PluginState::Loaded:
-        return QStringLiteral("Plugin is already loaded.");
-    case PluginState::Busy:
-        return QStringLiteral("Plugin is currently busy.");
-    case PluginState::Unloaded:{
-        setState(PluginState::Busy);
-        watcher_.disconnect();
-        connect(&watcher_, &QFutureWatcher<QString>::finished, this, [this, registry]() {
-            if (watcher_.result()){
-                TimePrinter tp(QString("[%1 ms] spent initializing plugin '%2'").arg("%1", metadata_.id));
-                load_(registry);
-            } else
-                setState(PluginState::Unloaded, loader.errorString());
-        });
-        watcher_.setFuture(QtConcurrent::run([this]() -> bool {
-            TimePrinter tp(QString("[%1 ms] spent loading plugin '%2'").arg("%1", metadata_.id));
-            return loader.load();
-        }));
-        return {};
+        case PluginState::Invalid:
+            return QStringLiteral("Plugin is invalid.");
+        case PluginState::Loaded:
+            return QStringLiteral("Plugin is already loaded.");
+        case PluginState::Busy:
+            return QStringLiteral("Plugin is currently busy.");
+        case PluginState::Unloaded:{
+            setState(PluginState::Busy);
+            watcher_.disconnect();
+            connect(&watcher_, &QFutureWatcher<QString>::finished, this, [this, registry]() {
+                if (watcher_.result()){
+                    TimePrinter tp(QString("[%1 ms] spent initializing plugin '%2'").arg("%1", metadata_.id));
+                    load_(registry);
+                } else
+                    setState(PluginState::Unloaded, loader.errorString());
+            });
+            watcher_.setFuture(QtConcurrent::run([this]() -> bool {
+                TimePrinter tp(QString("[%1 ms] spent loading plugin '%2'").arg("%1", metadata_.id));
+                return loader.load();
+            }));
+        }
     }
-    }
+    return {};
 }
 
 QString QtPluginLoader::unload(ExtensionRegistry *registry)
 {
     switch (state()) {
-    case PluginState::Invalid:
-        return QStringLiteral("Plugin is invalid.");
-    case PluginState::Unloaded:
-        return QStringLiteral("Plugin is not loaded.");
-    case PluginState::Busy:
-        return QStringLiteral("Plugin is currently busy.");
-    case PluginState::Loaded:{
-        TimePrinter tp(QString("[%1 ms] spent unloading plugin '%2'").arg("%1", metadata_.id));
-        unload_(registry);
-        return {};
+        case PluginState::Invalid:
+            return QStringLiteral("Plugin is invalid.");
+        case PluginState::Unloaded:
+            return QStringLiteral("Plugin is not loaded.");
+        case PluginState::Busy:
+            return QStringLiteral("Plugin is currently busy.");
+        case PluginState::Loaded:{
+            TimePrinter tp(QString("[%1 ms] spent unloading plugin '%2'").arg("%1", metadata_.id));
+            unload_(registry);
+        }
     }
-    }
+    return {};
 }
 
 void QtPluginLoader::load_(albert::ExtensionRegistry *registry)

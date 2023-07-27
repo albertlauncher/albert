@@ -99,18 +99,18 @@ private:
 
     Qt::ItemFlags flags(const QModelIndex &idx) const override
     {
-        if (!idx.isValid() || idx.row() < 0 || rowCount(idx.parent()) <= idx.row())
-            return Qt::NoItemFlags;
-
-        switch (plugins_[idx.row()]->state()) {  // TODO: if
-        case PluginState::Invalid:
-            return Qt::ItemNeverHasChildren;
-        case PluginState::Busy:
-            return Qt::ItemNeverHasChildren | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
-        case PluginState::Loaded:
-        case PluginState::Unloaded:
-            return Qt::ItemNeverHasChildren | Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable;
+        if (idx.isValid() && idx.row() < 0 && rowCount(idx.parent()) <= idx.row()){
+            switch (plugins_[idx.row()]->state()) {  // TODO: if
+            case PluginState::Invalid:
+                return Qt::ItemNeverHasChildren;
+            case PluginState::Busy:
+                return Qt::ItemNeverHasChildren | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+            case PluginState::Loaded:
+            case PluginState::Unloaded:
+                return Qt::ItemNeverHasChildren | Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable;
+            }
         }
+        return Qt::NoItemFlags;
     }
 
     void updatePluginList()

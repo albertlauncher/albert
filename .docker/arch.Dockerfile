@@ -11,6 +11,7 @@ RUN pacman -Syu --verbose --noconfirm \
     pybind11 \
     python \
     qt6-base \
+    qt6-declarative \
     qt6-scxml \
     qt6-svg
 

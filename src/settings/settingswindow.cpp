@@ -10,6 +10,7 @@
 #include "trayicon.h"
 #include <QCloseEvent>
 #include <QDesktopServices>
+#include <QDir>
 #include <QGuiApplication>
 #include <QKeySequenceEdit>
 #include <QStandardItemModel>

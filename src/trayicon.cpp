@@ -3,7 +3,7 @@
 #include "albert/albert.h"
 #include "albert/logging.h"
 #include "trayicon.h"
-#include "xdg/iconlookup.h"
+#include "albert/util/iconprovider.h"
 #include <QApplication>
 #include <QSettings>
 
@@ -18,10 +18,9 @@ TrayIcon::TrayIcon() {
         WARN << "Desktop notifications are not supported on this system";
 
     // https://bugreports.qt.io/browse/QTBUG-53550
-    QPixmap pm = XDG::IconLookup::iconPath("albert-tray");
-    if (pm.isNull())
-        pm = QPixmap(":app_tray_icon");
-    QIcon icon(pm);
+    albert::IconProvider ip;
+    QSize size;
+    QIcon icon(ip.getPixmap({"xdg:albert-tray", "xdg:albert", "qrc:app_tray_icon"}, &size, QSize(64, 64)));
     icon.setIsMask(true);
     setIcon(icon);
 

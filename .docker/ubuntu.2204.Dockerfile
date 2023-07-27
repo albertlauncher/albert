@@ -4,12 +4,14 @@ RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get -qq update \
  && apt-get -qq upgrade
 RUN apt-get install --no-install-recommends -y \
+        libqt6opengl6-dev \
+        qt6-declarative-dev \
         cmake \
         doctest-dev \
         g++ \
+        libarchive-dev \
         libgl1-mesa-dev \
         libglvnd-dev \
-        libarchive-dev \
         libmuparser-dev \
         libqalculate-dev \
         libqt6sql6-sqlite \

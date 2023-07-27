@@ -3,9 +3,9 @@
 #include "albert/albert.h"
 #include "albert/config.h"
 #include "albert/logging.h"
+#include "albert/util/iconprovider.h"
 #include "app.h"
 #include "platform/platform.h"
-#include "xdg/iconlookup.h"
 #include <QApplication>
 #include <QClipboard>
 #include <QCommandLineParser>
@@ -91,13 +91,16 @@ static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
         QLocale::setDefault(QLocale(qEnvironmentVariable(key)));
 
     auto qapp = make_unique<QApplication>(argc, argv);
+
     QApplication::setApplicationName("albert");
     QApplication::setApplicationDisplayName("Albert");
     QApplication::setApplicationVersion(ALBERT_VERSION_STRING);
-    QString icon = XDG::IconLookup::iconPath("albert");
-    if (icon.isEmpty())
-        icon = ":app_icon";
+
+    albert::IconProvider ip;
+    QSize size;
+    QIcon icon(ip.getPixmap({"xdg:albert", "qrc:app_icon"}, &size, QSize(64, 64)));
     QApplication::setWindowIcon(QIcon(icon));
+
     QApplication::setQuitOnLastWindowClosed(false);
 
     installSignalHandlers();

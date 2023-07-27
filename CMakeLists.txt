@@ -53,9 +53,19 @@ target_compile_options(qhotkey PRIVATE -Wno-unused-parameter -Wno-shadow)
 set(TARGET_LIB ${PROJECT_NAME})
 
 file(GLOB_RECURSE LIB_PUBLIC_HEADER include/*.h)
-file(GLOB_RECURSE LIB_SRC_PLATFORM src/platform/${CMAKE_SYSTEM_NAME}/*)
 file(GLOB_RECURSE LIB_SRC_UI src/*.ui)
-file(GLOB_RECURSE LIB_SRC src/*.h src/*.hpp src/*.cpp)
+#file(GLOB LIB_SRC src/*.h src/*.hpp src/*.cpp)
+file(GLOB LIB_SRC
+    src/*.h
+    src/*.cpp
+    src/settings/*.h
+    src/settings/*.cpp
+)
+file(GLOB_RECURSE LIB_SRC_PLATFORM
+    src/platform/${CMAKE_SYSTEM_NAME}/*.h
+    src/platform/${CMAKE_SYSTEM_NAME}/*.cpp
+    src/platform/${CMAKE_SYSTEM_NAME}/*.mm
+)
 
 add_library(${TARGET_LIB} SHARED
     ${LIB_PUBLIC_HEADER}
