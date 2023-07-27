@@ -243,10 +243,16 @@ void albert::show(const QString &text)
 }
 
 void albert::hide()
-{ app->frontend->setVisible(false);}
+{
+    app->frontend->setVisible(false);
+    if (app->settings_window)
+        app->settings_window->bringToFront();
+    else
+        platform::hideNSApp();
+}
 
 void albert::toggle()
-{ app->frontend->setVisible(!app->frontend->isVisible()); }
+{ app->frontend->isVisible() ? hide() : show(); }
 
 QString albert::configLocation()
 { return QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) ;}
@@ -262,9 +268,9 @@ void albert::runTerminal(const QString &script, const QString &working_dir, bool
 
 void albert::showSettings()
 {
-    hide();
     if (!app->settings_window)
         app->settings_window = new SettingsWindow(*app);
+    hide();
     app->settings_window->bringToFront();
 }
 
@@ -317,6 +323,3 @@ long long albert::runDetachedProcess(const QStringList &commandline, const QStri
         WARN << "runDetachedProcess: commandline must not be empty!";
     return pid;
 }
-
-void albert::hideNSApp()
-{ platform::hideNSApp(); }

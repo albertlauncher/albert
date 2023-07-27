@@ -18,6 +18,10 @@ ALBERT_EXPORT QNetworkAccessManager *networkManager();
 ALBERT_EXPORT void show(const QString &text = QString());
 
 /// Hide the main window
+/// @note This applies some platform dependent logic considering the
+/// applications activation state (macos) depening on the visibility of the
+/// settings window. Notably the settingswindow, which is not intended to stay
+/// open, is brought to front if the frontend is hidden.
 ALBERT_EXPORT void hide();
 
 /// Toggle visibility of main window
@@ -76,6 +80,4 @@ ALBERT_EXPORT void runTerminal(const QString &script = {}, const QString &workin
 /// @note Unfortunately broken on most systems
 ALBERT_EXPORT void sendTrayNotification(const QString &title, const QString &message, int msTimeoutHint);
 
-/// Hide/Deactivates app such that the former active app has key focus again
-ALBERT_EXPORT void hideNSApp();
 }
