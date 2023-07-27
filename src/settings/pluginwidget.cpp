@@ -48,9 +48,7 @@ private:
 
     QVariant data(const QModelIndex &idx, int role) const override
     {
-        if (!idx.isValid()
-            || idx.row() < 0 || rowCount(idx.parent()) <= idx.row()
-            || idx.column() < 0 || columnCount(idx.parent()) <= idx.column())
+        if (!idx.isValid())
             return {};
 
         switch (const auto *p = plugins_[idx.row()]; role) {
@@ -99,7 +97,7 @@ private:
 
     Qt::ItemFlags flags(const QModelIndex &idx) const override
     {
-        if (idx.isValid() && idx.row() < 0 && rowCount(idx.parent()) <= idx.row()){
+        if (idx.isValid()){
             switch (plugins_[idx.row()]->state()) {  // TODO: if
             case PluginState::Invalid:
                 return Qt::ItemNeverHasChildren;
