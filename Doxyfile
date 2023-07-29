@@ -1,0 +1,39 @@
+#ENABLE_PREPROCESSING   = YES
+#EXCLUDE                =
+#EXPAND_ONLY_PREDEF     = YES
+#EXTRACT_LOCAL_CLASSES  = YES
+#EXTRACT_PRIVATE        = NO
+#EXTRACT_STATIC         = YES
+#GENERATE_DOCSET        = YES
+#MACRO_EXPANSION        = NO
+#SKIP_FUNCTION_MACROS   = NO
+
+COLLABORATION_GRAPH    = NO
+DOT_IMAGE_FORMAT       = svg
+DOXYFILE_ENCODING      = UTF-8
+EXTRACT_ALL            = YES
+GENERATE_LATEX         = NO
+INPUT                  = include README.md
+JAVADOC_AUTOBRIEF      = YES
+LAYOUT_FILE            = doxygen/DoxygenLayout.xml
+OUTPUT_DIRECTORY       = doxygen/output
+PREDEFINED             = ALBERT_PLUGIN_ID
+PROJECT_LOGO           = "resources/albert.svg"
+PROJECT_NAME           = "Albert"
+QT_AUTOBRIEF           = YES
+RECURSIVE              = YES
+USE_MDFILE_AS_MAINPAGE = "README.md"
+
+# BASE THEME
+#GENERATE_TREEVIEW      = YES # optional. Also works without treeview
+#DISABLE_INDEX = NO
+#FULL_SIDEBAR = NO
+#HTML_EXTRA_STYLESHEET  = doxygen-awesome.css
+#HTML_COLORSTYLE        = LIGHT # required with Doxygen >= 1.9.5
+
+# SIDEBAR THEME
+GENERATE_TREEVIEW      = YES # required!
+DISABLE_INDEX          = NO
+FULL_SIDEBAR           = NO
+HTML_EXTRA_STYLESHEET  = doxygen/doxygen-awesome.css doxygen/doxygen-awesome-sidebar-only.css
+HTML_COLORSTYLE        = LIGHT # required with Doxygen >= 1.9.5
