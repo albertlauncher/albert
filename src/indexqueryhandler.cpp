@@ -12,10 +12,13 @@ static const uint DEF_ERROR_TOLERANCE_DIVISOR = 4;
 
 IndexQueryHandler::IndexQueryHandler() : d(new IndexQueryHandlerPrivate)
 {
-    d->index = make_unique<ItemIndex>(
-        DEF_SEPARATORS, false, GRAM_SIZE,
-        fuzzyMatchingEnabled() ? DEF_ERROR_TOLERANCE_DIVISOR : 0
-    );
+    class NullIndex : public Index
+    {
+    public:
+        vector<RankItem> search(const QString&, const bool&) const override { return {}; }
+        void setItems(vector<IndexItem> &&) override {}
+    };
+    d->index = make_unique<NullIndex>();
 }
 
 IndexQueryHandler::~IndexQueryHandler() = default;
