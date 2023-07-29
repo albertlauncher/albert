@@ -1,7 +1,7 @@
 // Copyright (c) 2023 Manuel Schneider
 
 #pragma once
-#include "export.h"
+#include "albert/export.h"
 #include <QString>
 
 namespace albert

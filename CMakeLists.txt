@@ -85,6 +85,7 @@ generate_export_header(${TARGET_LIB}
 
 target_include_directories(${TARGET_LIB}
     PUBLIC
+        "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>"
         "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     PRIVATE
@@ -93,7 +94,7 @@ target_include_directories(${TARGET_LIB}
 
 configure_file(
         "${PROJECT_SOURCE_DIR}/include/albert/config.h.in"
-        "${PROJECT_SOURCE_DIR}/include/albert/config.h"
+        "${PROJECT_BINARY_DIR}/include/albert/config.h"
         @ONLY
 )
 

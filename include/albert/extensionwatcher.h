@@ -1,8 +1,8 @@
 // Copyright (c) 2023 Manuel Schneider
 
 #pragma once
-#include "export.h"
-#include "extensionregistry.h"
+#include "albert/export.h"
+#include "albert/extensionregistry.h"
 #include <QObject>
 
 namespace albert

@@ -1,7 +1,7 @@
 // Copyright (c) 2023 Manuel Schneider
 
 #pragma once
-#include "action.h"
+#include "albert/extension/queryhandler/action.h"
 #include <QStringList>
 #include <vector>
 

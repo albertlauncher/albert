@@ -1,8 +1,8 @@
 // Copyright (c) 2023 Manuel Schneider
 
 #pragma once
-#include "export.h"
-#include "extension.h"
+#include "albert/export.h"
+#include "albert/extension.h"
 #include <QObject>
 #include <map>
 

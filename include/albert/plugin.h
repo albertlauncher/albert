@@ -2,8 +2,8 @@
 
 #pragma once
 #include "albert/config.h"
+#include "albert/extension.h"
 #include "albert/extension/pluginprovider/plugininstance.h"
-#include "extension.h"
 #include <QObject>
 #include <QStringLiteral>
 

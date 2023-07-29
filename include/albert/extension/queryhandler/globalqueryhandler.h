@@ -2,7 +2,7 @@
 
 #pragma once
 #include "albert/extension/queryhandler/triggerqueryhandler.h"
-#include "rankitem.h"
+#include "albert/extension/queryhandler/rankitem.h"
 #include <vector>
 class GlobalQueryHandlerPrivate;
 
