@@ -35,7 +35,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry):
     UsageHistory::initialize();
 }
 
-shared_ptr<albert::Query> QueryEngine::query(const QString &query_string)
+shared_ptr<Query> QueryEngine::query(const QString &query_string)
 {
     shared_ptr<QueryBase> query;
     vector<FallbackHandler*> fhandlers;
@@ -72,7 +72,7 @@ bool QueryEngine::isActive(GlobalQueryHandler *handler) const
 bool QueryEngine::isActive(FallbackHandler *handler) const
 { return enabled_fallback_handlers_.contains(handler->id()); }
 
-QString QueryEngine::setActive(albert::TriggerQueryHandler *handler, bool activate)
+QString QueryEngine::setActive(TriggerQueryHandler *handler, bool activate)
 {
     if (isActive(handler) == activate)
         return {};
@@ -97,7 +97,7 @@ QString QueryEngine::setActive(albert::TriggerQueryHandler *handler, bool activa
     return {};
 }
 
-void QueryEngine::setActive(albert::GlobalQueryHandler *handler, bool activate)
+void QueryEngine::setActive(GlobalQueryHandler *handler, bool activate)
 {
     if (activate)
         enabled_global_handlers_.emplace(handler->id(), handler);
@@ -105,7 +105,7 @@ void QueryEngine::setActive(albert::GlobalQueryHandler *handler, bool activate)
         enabled_global_handlers_.erase(handler->id());
 }
 
-void QueryEngine::setActive(albert::FallbackHandler *handler, bool activate)
+void QueryEngine::setActive(FallbackHandler *handler, bool activate)
 {
     if (activate)
         enabled_fallback_handlers_.emplace(handler->id(), handler);
@@ -114,29 +114,29 @@ void QueryEngine::setActive(albert::FallbackHandler *handler, bool activate)
 }
 
 bool QueryEngine::isEnabled(TriggerQueryHandler *handler) const
-{ return handler->settings()->value(CFG_THANDLER_ENABLED, true).toBool(); }
+{ return settings()->value(QString("%1/%2").arg(handler->id(), CFG_THANDLER_ENABLED), true).toBool(); }
 
 bool QueryEngine::isEnabled(GlobalQueryHandler *handler) const
-{ return handler->settings()->value(CFG_GHANDLER_ENABLED, true).toBool(); }
+{ return settings()->value(QString("%1/%2").arg(handler->id(), CFG_GHANDLER_ENABLED), true).toBool(); }
 
 bool QueryEngine::isEnabled(FallbackHandler *handler) const
-{ return handler->settings()->value(CFG_FHANDLER_ENABLED, true).toBool(); }
+{ return settings()->value(QString("%1/%2").arg(handler->id(), CFG_FHANDLER_ENABLED),  true).toBool(); }
 
 QString QueryEngine::setEnabled(TriggerQueryHandler *handler, bool enable)
 {
-    handler->settings()->setValue(CFG_THANDLER_ENABLED, enable);
+    settings()->setValue(QString("%1/%2").arg(handler->id(), CFG_THANDLER_ENABLED), enable);
     return setActive(handler, enable);
 }
 
 void QueryEngine::setEnabled(GlobalQueryHandler *handler, bool enable)
 {
-    handler->settings()->setValue(CFG_GHANDLER_ENABLED, enable);
+    settings()->setValue(QString("%1/%2").arg(handler->id(), CFG_GHANDLER_ENABLED), enable);
     setActive(handler, enable);
 }
 
 void QueryEngine::setEnabled(FallbackHandler *handler, bool enable)
 {
-    handler->settings()->setValue(CFG_FHANDLER_ENABLED, enable);
+    settings()->setValue(QString("%1/%2").arg(handler->id(), CFG_FHANDLER_ENABLED), enable);
     setActive(handler, enable);
 }
 
@@ -147,10 +147,10 @@ QString QueryEngine::setTrigger(TriggerQueryHandler *handler, const QString& tri
             setActive(handler, false);
             if (trigger.isEmpty()){
                 handler->d->trigger = handler->defaultTrigger();
-                handler->settings()->remove(CFG_TRIGGER);
+                settings()->remove(QString("%1/%2").arg(handler->id(), CFG_TRIGGER));
             } else {
                 handler->d->trigger = trigger;
-                handler->settings()->setValue(CFG_TRIGGER, trigger);
+                settings()->setValue(QString("%1/%2").arg(handler->id(), CFG_TRIGGER), trigger);
             }
             return setActive(handler);
         } else
@@ -159,13 +159,13 @@ QString QueryEngine::setTrigger(TriggerQueryHandler *handler, const QString& tri
         return {};
 }
 
-bool QueryEngine::fuzzy(albert::TriggerQueryHandler *handler) const
+bool QueryEngine::fuzzy(TriggerQueryHandler *handler) const
 { return handler->fuzzyMatchingEnabled(); }
 
-void QueryEngine::setFuzzy(albert::TriggerQueryHandler *handler, bool enable)
+void QueryEngine::setFuzzy(TriggerQueryHandler *handler, bool enable)
 {
     if (handler->supportsFuzzyMatching()){
-        handler->settings()->setValue(CFG_FUZZY, enable);
+        settings()->setValue(QString("%1/%2").arg(handler->id(), CFG_FUZZY), enable);
         handler->setFuzzyMatchingEnabled(enable);
     }
 }
@@ -178,8 +178,8 @@ void QueryEngine::setRunEmptyQuery(bool value)
 
 void QueryEngine::onAdd(TriggerQueryHandler *handler)
 {
-    handler->d->trigger = handler->settings()->value(CFG_TRIGGER, handler->defaultTrigger()).toString();
-    handler->setFuzzyMatchingEnabled(handler->settings()->value(CFG_FUZZY, false).toBool());
+    handler->d->trigger = settings()->value(QString("%1/%2").arg(handler->id(), CFG_TRIGGER), handler->defaultTrigger()).toString();
+    handler->setFuzzyMatchingEnabled(settings()->value(QString("%1/%2").arg(handler->id(), CFG_TRIGGER), false).toBool());
     if (isEnabled(handler))
         if(auto err = setActive(handler); !err.isNull())
             WARN << QString("Failed enabling trigger handler '%1': %2").arg(handler->id(), err);

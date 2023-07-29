@@ -56,8 +56,6 @@ private:
         case Qt::CheckStateRole:
             if (p->metaData().user)
                 switch (p->state()) {
-                case PluginState::Invalid:
-                    return {};
                 case PluginState::Busy:
                     return Qt::PartiallyChecked;
                 case PluginState::Loaded:
@@ -99,8 +97,6 @@ private:
     {
         if (idx.isValid()){
             switch (plugins_[idx.row()]->state()) {  // TODO: if
-            case PluginState::Invalid:
-                return Qt::ItemNeverHasChildren;
             case PluginState::Busy:
                 return Qt::ItemNeverHasChildren | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
             case PluginState::Loaded:

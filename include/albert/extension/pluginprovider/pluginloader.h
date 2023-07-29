@@ -4,6 +4,8 @@
 #include "albert/export.h"
 #include <QObject>
 #include <QString>
+#include <memory>
+class PluginRegistry;
 
 namespace albert
 {
@@ -13,53 +15,65 @@ class PluginInstance;
 class PluginMetaData;
 
 
-/// The loading state of the plugin.
+/// The state of the plugin.
 enum class PluginState {
-    Invalid,  ///< The plugin does not fulfill the metadata reqiurements.
-    Busy,     ///< The plugin is busy loading or unloading.
     Unloaded, ///< The plugin is valid and ready to be loaded.
+    Busy,     ///< The plugin is busy loading or unloading.
     Loaded,   ///< The plugin is loaded and ready.
 };
 
-/// Abstract plugin loader class
-/// @see PluginProvider
+/// Abstract plugin loader class used by the plugin registry.
+/// Instanciated by a PluginProvider.
+///
 class ALBERT_EXPORT PluginLoader : public QObject
 {
     Q_OBJECT
 public:
-    /// PluginLoader constructor
-    /// \param path The path to the file of the plugin
+    /// PluginLoader constructor.
+    /// \param path \copydoc path
     PluginLoader(const QString &path);
     virtual ~PluginLoader();
 
-    const QString path;  ///< The plugin location on disk.
-    PluginState state() const; ///< @see PluginState.
-    const QString &stateInfo() const;  ///< Detailed state information.
+    /// The plugin location on disk.
+    const QString path;
 
-    virtual const PluginProvider &provider() const = 0;  ///< The provider of this plugin.
-    virtual const PluginMetaData &metaData() const = 0;  ///< @see PluginMetaData.
-    virtual PluginInstance *instance() const = 0;  ///< The plugin instance. nullptr if not loaded.
+    /// The provider of this plugin.
+    /// @returns the PluginProvider of the plugin.
+    virtual const PluginProvider &provider() const = 0;
 
-    /// Load the plugin.
-    /// @note To work properly with the plugin registry this has to set state to Busy or Loaded
-    virtual QString load(ExtensionRegistry *registry) = 0;
+    /// The plugin metadata.
+    /// @returns The PluginMetaData of the plugin.
+    virtual const PluginMetaData &metaData() const = 0;
 
-    /// Unload the plugin.
-    /// @note To work properly with the plugin registry this has to set state to Busy or Unloaded
-    virtual QString unload(ExtensionRegistry *registry) = 0;
+    /// @copybrief PluginState
+    /// @returns The PluginState of the plugin.
+    PluginState state() const;
+
+    /// Detailed information about the latest state change.
+    /// @returns A string containing detailed information about the latest
+    /// state change.
+    const QString &stateInfo() const;
+
+    /// Returns the plugin instance.
+    /// @returns The PluginInstance or nullptr if not loaded.
+    virtual PluginInstance *instance() const = 0;
 
 protected:
-    /// Sets the state of the plugin.
-    /// @note It's crucial for the plugin registry and the corresponding
-    /// widgets to have the state set correctly to work properly
-    void setState(PluginState state, QString info = {});
+    /// Loads the plugin.
+    /// On success instance() should return a valid object.
+    /// @return Errorstring, if any
+    virtual QString load() = 0;
 
-private:
-    QString state_info_;
-    PluginState state_;
+    /// Unloads the plugin.
+    /// @return Errorstring, if any
+    virtual QString unload() = 0;
+
+    class PluginLoaderPrivate;
+    const std::unique_ptr<PluginLoaderPrivate> d;
+    friend class ::PluginRegistry;
 
 signals:
-    void stateChanged(PluginState);  ///< Emitted when the plugin changed its state
+    void stateChanged();
 };
 
 }

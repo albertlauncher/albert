@@ -18,11 +18,11 @@ public:
     PluginRegistry(albert::ExtensionRegistry&);
     ~PluginRegistry();
 
-    std::map<QString, albert::PluginLoader*> plugins() const;
+    const std::map<QString, albert::PluginLoader*> &plugins() const;
 
     bool isEnabled(const QString &id) const;
     void enable(const QString &id, bool enable = true);
-    QString load(const QString &id, bool load = true);
+    void load(const QString &id, bool load = true);
 
     albert::ExtensionRegistry &extension_registry;
 

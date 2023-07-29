@@ -4,7 +4,6 @@
 #include "albert/extension/pluginprovider/plugininstance.h"
 #include "albert/extension/pluginprovider/pluginloader.h"
 #include "albert/extension/pluginprovider/pluginmetadata.h"
-#include <QFutureWatcher>
 #include <QPluginLoader>
 #include <vector>
 namespace albert {
@@ -23,20 +22,18 @@ public:
 
     const albert::PluginProvider &provider() const override;
     const albert::PluginMetaData &metaData() const override;
+
+    QString load() override;
+    QString unload() override;
     albert::PluginInstance *instance() const override;
 
-    QString load(albert::ExtensionRegistry*) override;
-    QString unload(albert::ExtensionRegistry*) override;
-
-    // Sync load (instantiate (implicit load), initialize, register)
-    void load_(albert::ExtensionRegistry*);
-    void unload_(albert::ExtensionRegistry*);
+    // Used to load frontends in advance (bypass registry).
+    QString loadUnregistered(albert::ExtensionRegistry *registry, bool = true);
 
 private:
     QPluginLoader loader;
     const QtPluginProvider &provider_;
     albert::PluginInstance *instance_;
     albert::PluginMetaData metadata_;
-    QFutureWatcher<bool> watcher_;
 };
 

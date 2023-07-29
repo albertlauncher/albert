@@ -4,6 +4,7 @@
 #include "albert/logging.h"
 #include "app.h"
 #include "platform/platform.h"
+#include "plugininstanceprivate.h"
 #include <QHotkey>
 #include <QMessageBox>
 #include <QSettings>
@@ -31,11 +32,12 @@ App::App(const QStringList &additional_plugin_paths) :
 
 App::~App()
 {
-    // unload the frontend before plugins since it may have plugin objects
-    for (auto &plugin : plugin_provider.frontendPlugins())
-        plugin->unload(&extension_registry);
-
     delete settings_window.get();
+
+    // unload the frontend before plugins since it may have plugin objects in query
+    for (auto &plugin : plugin_provider.frontendPlugins())
+        plugin->loadUnregistered(&extension_registry, false);
+
     extension_registry.remove(&plugin_provider);  // unloads plugins
 }
 
@@ -83,21 +85,18 @@ void App::loadAnyFrontend()
     qFatal("Could not load any frontend.");
 }
 
-
-
 QString App::loadFrontend(QtPluginLoader *loader)
 {
-    loader->load_(&extension_registry);
-    if (loader->state() == PluginState::Loaded){
+    if (auto err = loader->loadUnregistered(&extension_registry); err.isNull()){
         if ((frontend = dynamic_cast<Frontend*>(loader->instance()))){
             frontend->setEngine(&query_engine);
             return {};
         } else {
-            loader->unload(&extension_registry);
+            loader->loadUnregistered(&extension_registry, false);
             return QString("Failed casting Plugin instance to albert::Frontend: %1").arg(loader->metaData().id);
         }
     } else
-        return loader->stateInfo();
+        return err;
 }
 
 

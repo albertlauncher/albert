@@ -5,23 +5,36 @@
 #include <QString>
 #include <memory>
 #include <vector>
-namespace albert { class ExtensionRegistry; }
 class QSettings;
 class QDir;
 class QWidget;
+class PluginInstancePrivate;
 
 namespace albert
 {
 class Extension;
+class ExtensionRegistry;
 
-/// Abstract plugin instance class
-/// @see PluginLoader
+/// Abstract plugin instance class.
+/// Instanciated by a PluginLoader.
 class ALBERT_EXPORT PluginInstance
 {
 public:
+    PluginInstance();
     virtual ~PluginInstance();
 
-    virtual QString id() const = 0;  ///< The unique id.
+    /// The plugin identifier.
+    /// Taken from the metadata.
+    QString id() const;
+
+    /// The human readable plugin name.
+    /// Taken from the metadata.
+    QString name() const;
+
+    /// Brief description of the plugin.
+    /// Taken from the metadata.
+    QString description() const;
+
     virtual void initialize(ExtensionRegistry*);  ///< The initialization function.
     virtual void finalize(ExtensionRegistry*);  ///<  The initialization function.
     virtual std::vector<Extension*> extensions();  ///< The extensions this plugin provides.
@@ -31,6 +44,9 @@ public:
     std::unique_ptr<QDir> configDir() const;  ///< The recommended config location.
     std::unique_ptr<QDir> dataDir() const;  ///< The recommended data location.
     std::unique_ptr<QSettings> settings() const;  ///< Prepared settings object.
+
+private:
+    const std::unique_ptr<PluginInstancePrivate> d;
 };
 
 }

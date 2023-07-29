@@ -3,12 +3,23 @@
 #include "albert/albert.h"
 #include "albert/extension.h"
 #include "albert/extension/pluginprovider/plugininstance.h"
+#include "albert/extension/pluginprovider/pluginmetadata.h"
+#include "plugininstanceprivate.h"
 #include <QCoreApplication>
 #include <QDir>
 #include <QSettings>
 using namespace albert;
 
+
+PluginInstance::PluginInstance() : d(std::make_unique<PluginInstancePrivate>()) {}
+
 PluginInstance::~PluginInstance() = default;
+
+QString PluginInstance::id() const { return d->loader->metaData().id; }
+
+QString PluginInstance::name() const { return d->loader->metaData().name; }
+
+QString PluginInstance::description() const { return d->loader->metaData().description; }
 
 void PluginInstance::initialize(ExtensionRegistry *) {}
 

@@ -8,7 +8,7 @@
 namespace albert
 {
 
-/// Non-QObject extension registry observer
+/// Non-QObject extension registry observer.
 /// Convenient tool to observe the extension registry for types you are
 /// interested in. Rationale: QObject does neither support templates nor
 /// abstract classes also each object must inherit only one QObject.

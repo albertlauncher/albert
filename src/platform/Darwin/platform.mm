@@ -3,53 +3,53 @@
 #include "platform/platform.h"
 #include "albert/logging.h"
 #include <Cocoa/Cocoa.h>
-#include <UserNotifications/UserNotifications.h>
+//#include <UserNotifications/UserNotifications.h>
 using namespace albert;
 
 static void requestNotificationPermissions()
 {
-    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+//    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
 
-//    [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge)
-//                          completionHandler:^(BOOL granted, NSError * _Nullable error) {
-//                              if (!granted)
-//                                  qFatal("Notification permissions are mandatory.");
-//                          }];
+////    [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge)
+////                          completionHandler:^(BOOL granted, NSError * _Nullable error) {
+////                              if (!granted)
+////                                  qFatal("Notification permissions are mandatory.");
+////                          }];
 
 
-    [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * _Nonnull settings) {
-        switch (settings.authorizationStatus) {
-        case UNAuthorizationStatusNotDetermined:{
-            WARN << "UNAuthorizationStatusNotDetermined";
+//    [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * _Nonnull settings) {
+//        switch (settings.authorizationStatus) {
+//        case UNAuthorizationStatusNotDetermined:{
+//            WARN << "UNAuthorizationStatusNotDetermined";
 
-            UNAuthorizationOptions opts = UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
-            [center requestAuthorizationWithOptions:opts
-                                  completionHandler:^(BOOL granted, NSError * _Nullable error) {
+//            UNAuthorizationOptions opts = UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
+//            [center requestAuthorizationWithOptions:opts
+//                                  completionHandler:^(BOOL granted, NSError * _Nullable error) {
 
-                                      if (error) {
-                                          WARN << QString::fromNSString(error.localizedDescription);
-                                      }
+//                                      if (error) {
+//                                          WARN << QString::fromNSString(error.localizedDescription);
+//                                      }
 
-                                      if (granted) {
-                                          WARN << "granted";
-                                      } else {
-                                          WARN << "denied";
-                                          }
-                                  }];
+//                                      if (granted) {
+//                                          WARN << "granted";
+//                                      } else {
+//                                          WARN << "denied";
+//                                          }
+//                                  }];
 
-            break;
-            }
-        case UNAuthorizationStatusDenied:
-            WARN << "UNAuthorizationStatusDenied";
-            break;
-        case UNAuthorizationStatusAuthorized:
-            WARN << "UNAuthorizationStatusAuthorized";
-            break;
-        case UNAuthorizationStatusProvisional:
-            WARN << "UNAuthorizationStatusProvisional";
-            break;
-        }
-    }];
+//            break;
+//            }
+//        case UNAuthorizationStatusDenied:
+//            WARN << "UNAuthorizationStatusDenied";
+//            break;
+//        case UNAuthorizationStatusAuthorized:
+//            WARN << "UNAuthorizationStatusAuthorized";
+//            break;
+//        case UNAuthorizationStatusProvisional:
+//            WARN << "UNAuthorizationStatusProvisional";
+//            break;
+//        }
+//    }];
 }
 
 void platform::initPlatform()
@@ -160,7 +160,7 @@ void platform::initNativeWindow(unsigned long long wid)
 
 
 
-#include <Foundation/Foundation.h>
+//#include <Foundation/Foundation.h>
 
 void platform::sendNotification(const QString &title, const QString &message, int msTimeoutHint)
 {

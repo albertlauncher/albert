@@ -52,7 +52,7 @@ target_compile_options(qhotkey PRIVATE -Wno-unused-parameter -Wno-shadow)
 
 set(TARGET_LIB ${PROJECT_NAME})
 
-file(GLOB_RECURSE LIB_PUBLIC_HEADER include/*.h)
+file(GLOB_RECURSE LIB_PUBLIC_HEADER include/*.h include/*.h.in)
 file(GLOB_RECURSE LIB_SRC_UI src/*.ui)
 #file(GLOB LIB_SRC src/*.h src/*.hpp src/*.cpp)
 file(GLOB LIB_SRC
@@ -80,7 +80,7 @@ add_library(albert::albert ALIAS ${TARGET_LIB})
 include(GenerateExportHeader)
 generate_export_header(${TARGET_LIB}
     BASE_NAME ${PROJECT_NAME}
-    EXPORT_FILE_NAME "${PROJECT_SOURCE_DIR}/include/albert/export.h"
+    EXPORT_FILE_NAME "${PROJECT_BINARY_DIR}/include/albert/export.h"
 )
 
 target_include_directories(${TARGET_LIB}
@@ -131,6 +131,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD
     endif()
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_link_libraries(${TARGET_LIB} PRIVATE objc "-framework Cocoa")
+    #target_link_libraries(${TARGET_LIB} PRIVATE objc "-framework UserNotifications")
 endif()
 
 #message("CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}")
