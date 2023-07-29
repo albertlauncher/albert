@@ -1,9 +1,12 @@
 // Copyright (c) 2023 Manuel Schneider
 
+#include "albert/extension/pluginprovider/plugininstance.h"
 #include "albert/extension/pluginprovider/pluginloader.h"
 #include "albert/extension/pluginprovider/pluginmetadata.h"
 #include "pluginqueryhandler.h"
 #include "pluginregistry.h"
+#include <QMessageBox>
+#include <QWidget>
 using namespace albert;
 using namespace std;
 
@@ -66,14 +69,31 @@ public:
 
 
         if (loader_.state() == PluginState::Loaded){
+
             actions.emplace_back(
                 "unload", "Unload plugin",
                 [this](){ plugin_registry_.load(id(), false); }
             );
+
             actions.emplace_back(
                 "reload", "Reload plugin",
                 [this](){ plugin_registry_.load(id(), false); plugin_registry_.load(id()); }
             );
+
+            actions.emplace_back(
+                "settings", "Open settings",
+                [this](){
+                    if (auto *w = loader_.instance()->buildConfigWidget()) {
+                        w->setAttribute(Qt::WA_DeleteOnClose);
+                        w->show();
+                    } else {
+                        QMessageBox::information(nullptr, "",
+                                                 QString("Plugin '%1' is not configurable.").arg(this->id()));
+                    }
+                }
+            );
+
+
         } else  // by contract only unloaded
             actions.emplace_back(
                 "load", "Load plugin",
