@@ -57,13 +57,18 @@ public: void set_##name(type val) { if (val != name()){ name##_=val; store_##nam
 
 ///
 /// @brief Convenience macro to connect UI elemetens to albert user properties
+/// @param object The object containing the property
+/// @param name The property name
+/// @param widget The widget to connect to
+/// @param widget_setter The setter function of the widget
+/// @param widget_signal The changed signal of the widget
 ///
-#define ALBERT_PLUGIN_PROPERTY_CONNECT(name, ui_elem, ui_setter, ui_signal) \
-ui_elem->ui_setter(name()); \
-connect(ui_elem, &std::remove_pointer<decltype(ui_elem)>::type::ui_signal, \
-        this, &std::remove_pointer<decltype(this)>::type::set_##name); \
-connect(this, &std::remove_pointer<decltype(this)>::type::name##Changed, \
-        ui_elem, [=](){ ui_elem->ui_setter(name()); });
+#define ALBERT_PLUGIN_PROPERTY_CONNECT(object, name, widget, widget_setter, widget_signal) \
+widget->widget_setter(object->name()); \
+connect(widget, &std::remove_pointer<decltype(widget)>::type::widget_signal, \
+        object, &std::remove_pointer<decltype(object)>::type::set_##name); \
+connect(object, &std::remove_pointer<decltype(object)>::type::name##Changed, \
+        widget, [o=object,w=widget](){ w->widget_setter(o->name()); });
 
 
 ///
