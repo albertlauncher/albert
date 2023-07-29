@@ -60,7 +60,7 @@ RPCServer::RPCServer()
         qFatal("Failed creating IPC server: %s", qPrintable(local_server.errorString()));
 
     QObject::connect(&local_server, &QLocalServer::newConnection,
-                     [this](){RPCServer::onNewConnection();});
+                     &local_server, [this](){RPCServer::onNewConnection();});
 }
 
 RPCServer::~RPCServer()
@@ -76,7 +76,8 @@ void RPCServer::onNewConnection()
         auto message = QString::fromLocal8Bit(socket->readAll());
         DEBG << "Received message:" << message;
 
-        message = message.mid(message.indexOf(QRegularExpression("\\S")));  // Trim left spaces
+        static QRegularExpression re("\\S");
+        message = message.mid(message.indexOf(re));  // Trim left spaces
         auto op = message.section(' ', 0, 0);
         auto param = message.section(' ', 1, -1);
 

@@ -9,7 +9,7 @@ using namespace std;
 
 PluginQueryHandler::PluginQueryHandler(PluginRegistry &plugin_registry) : plugin_registry_(plugin_registry)
 {
-    QObject::connect(&plugin_registry_, &PluginRegistry::pluginsChanged, [this](){ updateIndexItems(); });
+    QObject::connect(&plugin_registry_, &PluginRegistry::pluginsChanged, &plugin_registry_, [this](){ updateIndexItems(); });
 }
 
 QString PluginQueryHandler::id() const { return QStringLiteral("pluginregistry"); }

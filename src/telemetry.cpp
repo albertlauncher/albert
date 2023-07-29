@@ -19,7 +19,7 @@ static const char *CFG_TELEMETRY = "telemetry";
 
 Telemetry::Telemetry()
 {
-    QObject::connect(&timer_, &QTimer::timeout, [this]{trySendReport();});
+    QObject::connect(&timer_, &QTimer::timeout, &timer_, [this]{trySendReport();});
 
     auto settings = albert::settings();
     if (!settings->contains(CFG_TELEMETRY)) {

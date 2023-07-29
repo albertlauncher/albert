@@ -109,7 +109,8 @@ void ItemsModel::activate(QueryBase *q, uint i, uint a)
         auto &[extension, item] = items[i];
         auto actions = item->actions();
         if (a<actions.size()){
-            QTimer::singleShot(0, [q=q->string(), e=extension->id(), i=item->id(), a=actions[a]](){
+            // sane context arg. it is intended to be executed later out of context.
+            QTimer::singleShot(0, nullptr, [q=q->string(), e=extension->id(), i=item->id(), a=actions[a]](){
                 a.function();
                 UsageHistory::addActivation(q, e, i, a.id);
             });
