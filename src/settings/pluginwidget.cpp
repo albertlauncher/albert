@@ -69,7 +69,7 @@ private:
 
         case Qt::ForegroundRole:
             if (p->state() != PluginState::Loaded)
-                return qApp->palette().color(QPalette::Dark);
+                return qApp->palette().color(QPalette::PlaceholderText);
             if (!p->stateInfo().isNull())
                 return QColor(Qt::red);
             break;
