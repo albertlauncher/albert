@@ -79,6 +79,7 @@ public:
                 return err_str;
             }
         }
+        return {};
     }
 
     QString unload(ExtensionRegistry *registry)
@@ -125,5 +126,6 @@ public:
                 return err_str;
             }
         }
+        return {};
     }
 };
