@@ -150,8 +150,10 @@ static void notifyVersionChange()
     auto current_version = qApp->applicationVersion();
 
     // Move to state // TODO remove on next major version
-    if (albert::settings()->contains(STATE_LAST_USED_VERSION))
+    if (albert::settings()->contains(STATE_LAST_USED_VERSION)){
         state->setValue(STATE_LAST_USED_VERSION, albert::settings()->value(STATE_LAST_USED_VERSION));
+        albert::settings()->remove(STATE_LAST_USED_VERSION);
+    }
 
     auto last_used_version = state->value(STATE_LAST_USED_VERSION).toString();
 
