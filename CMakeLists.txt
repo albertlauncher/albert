@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19)  # JSON support, Ubuntu 22.04
 
-project(albert VERSION 0.21.1)
+project(albert VERSION 0.22.0)
 
 include(GNUInstallDirs)
 
@@ -110,8 +110,8 @@ target_link_libraries(${TARGET_LIB}
     PUBLIC
         Qt6::Core
         Qt6::Widgets
-    PRIVATE
         Qt6::Concurrent
+    PRIVATE
         Qt6::Network
         Qt6::Sql
         qhotkey
@@ -145,18 +145,30 @@ endif()
 #message("CMAKE_INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR}")
 #message("CMAKE_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR}")
 
-install(
-    TARGETS ${TARGET_LIB}
-    EXPORT TARGET_LIB_EXPORTS
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+#set (EXPORT_TARGETS AlbertTargets)
 
-## Create targets file in install tree (Todo untested)
 #install(
-#    EXPORT TARGET_LIB_EXPORTS
+#    TARGETS ${TARGET_LIB}
+#    EXPORT ${EXPORT_TARGETS}
+#    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+#    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+#    BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}
+#)
+
+## install headers
+#file(GLOB_RECURSE
+#    TARGET_HEADER_FILES
+#    "${PROJECT_SOURCE_DIR}/include/*.h"
+#    "${PROJECT_BINARY_DIR}/include/*.h"
+#)
+#message(${TARGET_HEADER_FILES})
+#install(DIRECTORY mydir/ DESTINATION dir/newname)
+#install(FILES ${TARGET_HEADER_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+## Create targets file in install tree
+#install(
+#    EXPORT ${EXPORT_TARGETS}
 #    FILE "${PROJECT_NAME}-targets.cmake"
 #    DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}-${PROJECT_VERSION}
 #    NAMESPACE ${PROJECT_NAME}::
@@ -164,7 +176,7 @@ install(
 
 ## Create targets file in build tree
 #export(
-#    EXPORT TARGET_LIB_EXPORTS
+#    EXPORT ${EXPORT_TARGETS}
 #    FILE "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake"
 #    NAMESPACE ${PROJECT_NAME}::
 #)
@@ -202,11 +214,6 @@ install(
 # Export the package to make find_package work in build
 #set(CMAKE_EXPORT_PACKAGE_REGISTRY true)
 #export(PACKAGE ${PROJECT_NAME})
-
-# TODO this does works for the build tree, installation has never been tested
-## install headers
-#file(GLOB_RECURSE TARGET_HEADER_FILES "${PROJECT_SOURCE_DIR}/include/*.h")
-#install(FILES ${TARGET_HEADER_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 ### App  ######################################################################
 
@@ -265,16 +272,18 @@ option(BUILD_TESTS "Build tests (Reqiures doctest)" OFF)
 if (BUILD_TESTS)
     set(TARGET_TST ${CMAKE_PROJECT_NAME}_test)
     find_package(doctest)
+
+#    get_target_property(SRC_TST ${TARGET_LIB} SOURCES)
+#    get_target_property(INC_TST ${TARGET_LIB} PRIVATE_HEADER)
+
     add_executable(${TARGET_TST}
-            src/extensions/globalqueryhandler.cpp
-            src/extensions/indexqueryhandler.cpp
-            src/extensions/queryhandler.cpp
-            src/itemindex.cpp
-            src/levenshtein.cpp
-            src/util/standarditem.cpp
-            test/test.cpp
+        test/test.cpp
+        src/itemindex.cpp
+        src/levenshtein.cpp
+        test/test.cpp
     )
-    target_include_directories(${TARGET_TST} PRIVATE include src/lib)
+    target_link_libraries(${TARGET_TST} PRIVATE ${TARGET_LIB})
+    target_include_directories(${TARGET_TST} PRIVATE include src)
     target_link_libraries(${TARGET_TST} PRIVATE
             doctest::doctest
             Qt6::Core

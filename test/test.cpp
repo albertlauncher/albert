@@ -1,11 +1,13 @@
 // Copyright (c) 2022 Manuel Schneider
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "albert/util/standarditem.h"
+#define DOCTEST_CONFIG_COLORS_ANSI
+#include "albert/extension/queryhandler/indexitem.h"
+#include "albert/extension/queryhandler/standarditem.h"
+#include "albert/extension/queryhandler/rankitem.h"
 #include "doctest/doctest.h"
-#include "itemindex.h"
-#include "levenshtein.h"
-#include "albert/extensions/indexqueryhandler.h"
+#include "src/itemindex.h"
+#include "src/levenshtein.h"
 #include <QString>
 #include <chrono>
 #include <iostream>
@@ -59,39 +61,39 @@ void levenshtein_compare_benchmarks_and_check_results(const vector<QString> &str
 
 TEST_CASE("Benchmark new levenshtein")
 {
-//    int test_count = 100000;
-//
-//    srand((unsigned)time(NULL) * getpid());
-//
-//    vector<QString> strings(test_count);
-//    auto lens = {4,8,16,24};
-//    auto divisor=4;
-//    cout << "Randoms"<<endl;
-//    for (int len : lens){
-//        int k = floor(len/divisor);
-//        cout << "len: "<< setw(2)<<len<<". k: "<<k<<" ";
-//        for (auto &string : strings)
-//            string = QString::fromStdString(gen_random(len));
-//        levenshtein_compare_benchmarks_and_check_results(strings, k);
-//    }
-//
-//    cout << "Equals"<<endl;
-//    for (int len : lens) {
-//        int k = floor(len/divisor);
-//        cout << "len: "<< setw(2)<<len<<". k: "<<k<<" ";
-//        for (auto &string : strings)
-//            string = QString(len, 'a');
-//        levenshtein_compare_benchmarks_and_check_results(strings, k);
-//    }
-//
-//    cout << "Halfhalf equal random"<<endl;
-//    for (int len : lens) {
-//        int k = floor(len/divisor);
-//        cout << "len: "<< setw(2)<<len<<". k: "<<k<<" ";
-//        for (auto &string : strings)
-//            string = QString("%1%2").arg(QString(len/2, 'a'), QString::fromStdString(gen_random(len/2)));
-//        levenshtein_compare_benchmarks_and_check_results(strings, k);
-//    }
+    int test_count = 100000;
+
+    srand((unsigned)time(NULL) * getpid());
+
+    vector<QString> strings(test_count);
+    auto lens = {4,8,16,24};
+    auto divisor=4;
+    cout << "Randoms"<<endl;
+    for (int len : lens){
+        int k = floor(len/divisor);
+        cout << "len: "<< setw(2)<<len<<". k: "<<k<<" ";
+        for (auto &string : strings)
+            string = QString::fromStdString(gen_random(len));
+        levenshtein_compare_benchmarks_and_check_results(strings, k);
+    }
+
+    cout << "Equals"<<endl;
+    for (int len : lens) {
+        int k = floor(len/divisor);
+        cout << "len: "<< setw(2)<<len<<". k: "<<k<<" ";
+        for (auto &string : strings)
+            string = QString(len, 'a');
+        levenshtein_compare_benchmarks_and_check_results(strings, k);
+    }
+
+    cout << "Halfhalf equal random"<<endl;
+    for (int len : lens) {
+        int k = floor(len/divisor);
+        cout << "len: "<< setw(2)<<len<<". k: "<<k<<" ";
+        for (auto &string : strings)
+            string = QString("%1%2").arg(QString(len/2, 'a'), QString::fromStdString(gen_random(len/2)));
+        levenshtein_compare_benchmarks_and_check_results(strings, k);
+    }
 }
 
 
@@ -189,17 +191,16 @@ TEST_CASE("Index")
     CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abc_e_g_", false, 2, 4).size() == 0);
 
     // score
-    CHECK(match({"a","ab","abc"}, "a", false, 2, 3).size() == 3);
-    CHECK(match({"a","ab","abc"}, "a", false, 2, 3)[0].score == (Score)(1.0/3.0*MAX_SCORE));
-    CHECK(match({"a","ab","abc"}, "a", false, 2, 3)[1].score == (Score)(1.0/2.0*MAX_SCORE));
-    CHECK(match({"a","ab","abc"}, "a", false, 2, 3)[2].score == (Score)(1.0*MAX_SCORE));
-
-    CHECK(match({"abc","abd"}, "abe", false, 2, 3)[0].score == (Score)(2.0/3.0*MAX_SCORE));
-    CHECK(match({"abc","abd"}, "abe", false, 2, 3)[1].score == (Score)(2.0/3.0*MAX_SCORE));
+    CHECK(qFuzzyCompare(match({"a","ab","abc"}, "a", false, 2, 3).size(), 3.0f));
+    CHECK(qFuzzyCompare(match({"a","ab","abc"}, "a", false, 2, 3)[0].score, 1.0f/3.0f));
+    CHECK(qFuzzyCompare(match({"a","ab","abc"}, "a", false, 2, 3)[1].score, 1.0f/2.0f));
+    CHECK(qFuzzyCompare(match({"a","ab","abc"}, "a", false, 2, 3)[2].score, 1.0f));
+    CHECK(qFuzzyCompare(match({"abc","abd"}, "abe", false, 2, 3)[0].score, 2.0f/3.0f));
+    CHECK(qFuzzyCompare(match({"abc","abd"}, "abe", false, 2, 3)[1].score, 2.0f/3.0f));
 
     std::vector<albert::RankItem> M = match({"abc","abd","abcdef"}, "abc", false, 2, 3);
     sort(M.begin(), M.end(), [](auto &a, auto &b){ return a.item->id() < b.item->id(); });
-    CHECK(M[0].score == (Score)(3.0/3.0*MAX_SCORE));
-    CHECK(M[1].score == (Score)(3.0/6.0*MAX_SCORE));
-    CHECK(M[2].score == (Score)(2.0/3.0*MAX_SCORE));
+    CHECK(qFuzzyCompare(M[0].score, 3.0f/3.0f));
+    CHECK(qFuzzyCompare(M[1].score, 3.0f/6.0f));
+    CHECK(qFuzzyCompare(M[2].score, 2.0f/3.0f));
 }
