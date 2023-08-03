@@ -40,10 +40,10 @@ public:
     virtual bool supportsFuzzyMatching() const;
 
     /// Fuzzy matching. Default false.
-    virtual bool fuzzyMatchingEnabled() const;
+    virtual bool fuzzyMatching() const;
 
     /// Fuzzy matching behavior. Default does nothing.
-    virtual void setFuzzyMatchingEnabled(bool);
+    virtual void setFuzzyMatching(bool enabled);
 
     /// The query interface used by TriggerQueryHandler
     /// @see handleTriggerQuery

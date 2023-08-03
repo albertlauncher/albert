@@ -41,12 +41,12 @@ public:
             {
                 setState(PluginState::Busy, QStringLiteral("Loading…"));
                 TimePrinter tp(QString("[%1 ms] spent loading plugin '%2'").arg("%1", loader->metaData().id));
-                PluginInstancePrivate::in_construction = loader;
 
                 QStringList errors;
 
                 try {
                     QCoreApplication::processEvents();
+                    PluginInstancePrivate::in_construction = loader;
                     if (auto err = loader->load(); err.isEmpty()){
                         if (auto *p_instance = loader->instance()){
 

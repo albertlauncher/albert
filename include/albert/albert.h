@@ -45,10 +45,10 @@ ALBERT_EXPORT QString cacheLocation();
 /// The app data location
 ALBERT_EXPORT QString dataLocation();
 
-/// Persistent app settings. @note Returns new QSettings object, therefore as stated in the docs reentrant.
+/// Persistent app settings. @reentrant
 ALBERT_EXPORT std::unique_ptr<QSettings> settings();
 
-/// The persistent app state @note Returns new QSettings object, therefore as stated in the docs reentrant.
+/// The persistent app state. @reentrant
 ALBERT_EXPORT std::unique_ptr<QSettings> state();
 
 /// The frontend of the app
@@ -76,8 +76,8 @@ ALBERT_EXPORT long long runDetachedProcess(const QStringList &commandline, const
 ALBERT_EXPORT void runTerminal(const QString &script = {}, const QString &working_dir = {}, bool close_on_exit = false);
 
 /// Send a tray notification
-/// @note Wont display if system tray is disabled.
-/// @note Unfortunately broken on most systems
+/// @note Wont display if system tray is disabled. Unfortunately broken on
+/// some systems.
 ALBERT_EXPORT void sendTrayNotification(const QString &title, const QString &message, int msTimeoutHint);
 
 }

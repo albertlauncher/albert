@@ -75,8 +75,8 @@ void QueryBase::runFallbackHandlers()
 // ////////////////////////////////////////////////////////////////////////////
 
 TriggerQuery::TriggerQuery(std::vector<FallbackHandler *> &&fallback_handlers,
-                                             TriggerQueryHandler *query_handler,
-                                             QString string, QString trigger):
+                           TriggerQueryHandler *query_handler,
+                           QString string, QString trigger):
     QueryBase(::move(fallback_handlers), ::move(string)),
     query_handler_(query_handler),
     trigger_(::move(trigger))
@@ -115,8 +115,8 @@ void TriggerQuery::run_()
 // ////////////////////////////////////////////////////////////////////////////
 
 GlobalQuery::GlobalQuery(vector<FallbackHandler*> &&fallback_handlers,
-                                           vector<GlobalQueryHandler*> &&query_handlers,
-                                           QString string):
+                         vector<GlobalQueryHandler*> &&query_handlers,
+                         QString string):
     QueryBase(::move(fallback_handlers), ::move(string)),
     query_handlers_(::move(query_handlers))
 {

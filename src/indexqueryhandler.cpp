@@ -33,9 +33,9 @@ QString IndexQueryHandler::synopsis() const { return QStringLiteral("<filter>");
 
 bool IndexQueryHandler::supportsFuzzyMatching() const { return true; }
 
-bool IndexQueryHandler::fuzzyMatchingEnabled() const { return d->fuzzy; }
+bool IndexQueryHandler::fuzzyMatching() const { return d->fuzzy; }
 
-void IndexQueryHandler::setFuzzyMatchingEnabled(bool value)
+void IndexQueryHandler::setFuzzyMatching(bool value)
 {
     d->fuzzy = value;
     d->index = make_unique<ItemIndex>(

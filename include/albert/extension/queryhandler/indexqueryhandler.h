@@ -26,10 +26,10 @@ public:
     bool supportsFuzzyMatching() const override;
 
     /// Return the fuzzy mode of the internal index
-    bool fuzzyMatchingEnabled() const override;
+    bool fuzzyMatching() const override;
 
     /// Set the fuzzy mode of the internal index. Triggers a rebuild
-    void setFuzzyMatchingEnabled(bool) override;
+    void setFuzzyMatching(bool) override;
 
     /// Use the index to override handleGlobalQuery
     std::vector<RankItem> handleGlobalQuery(const GlobalQuery*) const override;

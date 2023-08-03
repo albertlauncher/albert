@@ -160,13 +160,13 @@ QString QueryEngine::setTrigger(TriggerQueryHandler *handler, const QString& tri
 }
 
 bool QueryEngine::fuzzy(TriggerQueryHandler *handler) const
-{ return handler->fuzzyMatchingEnabled(); }
+{ return handler->fuzzyMatching(); }
 
 void QueryEngine::setFuzzy(TriggerQueryHandler *handler, bool enable)
 {
     if (handler->supportsFuzzyMatching()){
         settings()->setValue(QString("%1/%2").arg(handler->id(), CFG_FUZZY), enable);
-        handler->setFuzzyMatchingEnabled(enable);
+        handler->setFuzzyMatching(enable);
     }
 }
 
@@ -179,7 +179,7 @@ void QueryEngine::setRunEmptyQuery(bool value)
 void QueryEngine::onAdd(TriggerQueryHandler *handler)
 {
     handler->d->trigger = settings()->value(QString("%1/%2").arg(handler->id(), CFG_TRIGGER), handler->defaultTrigger()).toString();
-    handler->setFuzzyMatchingEnabled(settings()->value(QString("%1/%2").arg(handler->id(), CFG_TRIGGER), false).toBool());
+    handler->setFuzzyMatching(settings()->value(QString("%1/%2").arg(handler->id(), CFG_TRIGGER), false).toBool());
     if (isEnabled(handler))
         if(auto err = setActive(handler); !err.isNull())
             WARN << QString("Failed enabling trigger handler '%1': %2").arg(handler->id(), err);

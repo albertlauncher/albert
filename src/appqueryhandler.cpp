@@ -54,7 +54,7 @@ vector<RankItem> AppQueryHandler::handleGlobalQuery(const GlobalQuery *query) co
                 {":app_icon"},
                 {{"albert-quit", "Quit Albert", [](){ quit(); }}}
             ),
-            (float)query->string().length() / str_settings.length()
+            (float)query->string().length() / str_quit.length()
         );
     }
 

@@ -58,12 +58,6 @@ macro(albert_plugin_add_default_target)
 
     target_link_libraries(${PROJECT_NAME} PRIVATE albert::albert)
 
-    target_compile_definitions(${PROJECT_NAME} PRIVATE
-        -DALBERT_PLUGIN_ID="${PROJECT_NAME}"
-        -DALBERT_PLUGIN_NAME="${MD_NAME}"
-        -DALBERT_PLUGIN_DESCRIPTION="${MD_DESCRIPTION}"
-    )
-
     set_target_properties(
         ${PROJECT_NAME} PROPERTIES
         CXX_VISIBILITY_PRESET hidden

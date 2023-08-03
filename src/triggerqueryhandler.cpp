@@ -18,6 +18,6 @@ bool TriggerQueryHandler::allowTriggerRemap() const { return true; }
 
 bool TriggerQueryHandler::supportsFuzzyMatching() const { return false; }
 
-bool TriggerQueryHandler::fuzzyMatchingEnabled() const { return false; }
+bool TriggerQueryHandler::fuzzyMatching() const { return false; }
 
-void TriggerQueryHandler::setFuzzyMatchingEnabled(bool) { }
+void TriggerQueryHandler::setFuzzyMatching(bool) { }
