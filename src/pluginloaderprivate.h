@@ -15,11 +15,11 @@ class PluginLoader::PluginLoaderPrivate
 {
 public:
 
-    PluginLoader *loader;
+    PluginLoader *q;
     QString state_info{};
     PluginState state{PluginState::Unloaded};
 
-    PluginLoaderPrivate(PluginLoader *l) : loader(l)
+    PluginLoaderPrivate(PluginLoader *l) : q(l)
     {
     }
 
@@ -27,7 +27,7 @@ public:
     {
         state = s;
         state_info = info;
-        emit loader->stateChanged();
+        emit q->stateChanged();
     }
 
     QString load(ExtensionRegistry *registry)
@@ -40,15 +40,15 @@ public:
             case PluginState::Unloaded:
             {
                 setState(PluginState::Busy, QStringLiteral("Loading…"));
-                TimePrinter tp(QString("[%1 ms] spent loading plugin '%2'").arg("%1", loader->metaData().id));
+                TimePrinter tp(QString("[%1 ms] spent loading plugin '%2'").arg("%1", q->metaData().id));
 
                 QStringList errors;
 
                 try {
                     QCoreApplication::processEvents();
-                    PluginInstancePrivate::in_construction = loader;
-                    if (auto err = loader->load(); err.isEmpty()){
-                        if (auto *p_instance = loader->instance()){
+                    PluginInstancePrivate::in_construction = q;
+                    if (auto err = q->load(); err.isEmpty()){
+                        if (auto *p_instance = q->instance()){
 
                             QCoreApplication::processEvents();
                             p_instance->initialize(registry);
@@ -65,7 +65,7 @@ public:
                     } else
                         errors << err;
 
-                    if (auto err = loader->unload(); !err.isNull())
+                    if (auto err = q->unload(); !err.isNull())
                         errors << err;
 
                 } catch (const exception& e) {
@@ -92,13 +92,13 @@ public:
             case PluginState::Loaded:
             {
                 setState(PluginState::Busy, QStringLiteral("Loading…"));
-                TimePrinter tp(QString("[%1 ms] spent unloading plugin '%2'").arg("%1", loader->metaData().id));
+                TimePrinter tp(QString("[%1 ms] spent unloading plugin '%2'").arg("%1", q->metaData().id));
 
                 QCoreApplication::processEvents();
 
                 QStringList errors;
 
-                if (auto *p_instance = loader->instance()){
+                if (auto *p_instance = q->instance()){
 
                     for (auto *e : p_instance->extensions())
                         registry->remove(e);
@@ -110,7 +110,7 @@ public:
 
                         QCoreApplication::processEvents();
 
-                        if (auto err = loader->unload(); !err.isNull())
+                        if (auto err = q->unload(); !err.isNull())
                             errors << err;
 
                     } catch (const exception& e) {
