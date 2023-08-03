@@ -94,9 +94,9 @@ namespace albert::plugin
 {
 
 ///
-/// \brief Convenience plugin template class.
-/// \details Allows subclassing any QObject derived class and implements
-/// virtual functions in PluginInstance using the plugin metadata.
+/// \brief The entry point class for native plugins.
+/// \details Allows subclassing any QObject derived class.
+/// \tparam QOBJECT The QObject (subclass) to inherit. Defaults to OObject
 ///
 /// @note Boolean user properties of registered extensions will be picked
 /// up by the 'albert' extension using the Qt metatype system and are provided
@@ -110,27 +110,12 @@ class ALBERT_EXPORT Plugin : public QOBJECT, public albert::PluginInstance {};
 
 
 ///
-/// \brief Convenience extension plugin template class.
-/// \details Implements virtual functions in Extension using those from
-/// PluginInstance, i.e. using the metadata of the plugin.
+/// \copydoc ExtensionPluginInstance
+/// \tparam EXTENSION The extension this plugin provides.
+/// \tparam QOBJECT The QObject (subclass) to inherit. Defaults to OObject
 ///
-template <class QOBJECT = QObject>
-class ALBERT_EXPORT ExtensionPlugin : public albert::plugin::Plugin<QOBJECT>, virtual public albert::Extension
-{
-public:
-    /// @copydoc albert::PluginInstance::id
-    QString id() const override { return PluginInstance::id(); }
+template <class EXTENSION, class QOBJECT = QObject>
+class ALBERT_EXPORT ExtensionPlugin : public QOBJECT, virtual public ExtensionPluginInstance<EXTENSION> {};
 
-    /// @copydoc albert::PluginInstance::name
-    QString name() const override { return PluginInstance::name(); }
-
-    /// @copydoc albert::PluginInstance::description
-    QString description() const override { return PluginInstance::description(); }
-
-    /// @copydoc albert::PluginInstance:extensions
-    /// Override returning the plugin itself.
-    /// @returns This ExtensionPlugin
-    std::vector<Extension*> extensions() override { return {this}; }
-};
 
 }
