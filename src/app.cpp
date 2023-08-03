@@ -4,7 +4,6 @@
 #include "albert/logging.h"
 #include "app.h"
 #include "platform/platform.h"
-#include "plugininstanceprivate.h"
 #include <QHotkey>
 #include <QMessageBox>
 #include <QSettings>
@@ -44,6 +43,10 @@ App::~App()
 void App::initialize()
 {
     loadAnyFrontend();
+
+    // Connect hotkey after! frontend has been loaded else segfaults
+    QObject::connect(&hotkey, &Hotkey::activated, &hotkey, [](){ toggle(); });
+
 
     platform::initNativeWindow(frontend->winId());
 

@@ -20,11 +20,13 @@ Hotkey::Hotkey()
         if (!s->value(CFG_NOTIFY_SUPPORT, false).toBool()){
             QMessageBox::warning(nullptr, "Hotkey not supported",
                                  "Hotkeys are not supported on this platform. Use your desktop "
-                                 "environment to run bind a hotkey to 'albertctl toggle'");
+                                 "environment to bind a hotkey to 'albert toggle'");
             s->setValue(CFG_NOTIFY_SUPPORT, true);
         }
     }
 }
+
+Hotkey::~Hotkey() = default;
 
 QKeyCombination Hotkey::hotkey() const
 {
@@ -46,8 +48,7 @@ bool Hotkey::setHotkey(QKeyCombination keycode)
 
         albert::settings()->setValue(CFG_HOTKEY, ks.toString());
 
-        QObject::connect(hotkey_.get(), &QHotkey::activated,
-                         qApp, [](){ albert::toggle(); });
+        QObject::connect(hotkey_.get(), &QHotkey::activated, this, &Hotkey::activated);
 
         INFO << "Hotkey set to" << ks.toString();
         return true;
@@ -59,6 +60,4 @@ bool Hotkey::setHotkey(QKeyCombination keycode)
 }
 
 bool Hotkey::isPlatformSupported()
-{
-    return QHotkey::isPlatformSupported();
-}
+{ return QHotkey::isPlatformSupported(); }

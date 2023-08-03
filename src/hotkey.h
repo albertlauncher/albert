@@ -1,14 +1,18 @@
 // Copyright (c) 2023 Manuel Schneider
 
 #pragma once
+#include <QObject>
 #include <QKeyCombination>
 #include <memory>
 class QHotkey;
 
-class Hotkey
+class Hotkey : public QObject
 {
+    Q_OBJECT
+
 public:
     Hotkey();
+    ~Hotkey();
 
     QKeyCombination hotkey() const;
     bool setHotkey(QKeyCombination);
@@ -17,4 +21,7 @@ public:
 
 private:
     std::unique_ptr<QHotkey> hotkey_;
+
+signals:
+    void activated();
 };

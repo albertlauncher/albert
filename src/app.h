@@ -38,7 +38,7 @@ public:
     TerminalProvider terminal_provider;
     TrayIcon tray_icon;
     QPointer<SettingsWindow> settings_window;
-    Hotkey hotkey;
+    Hotkey hotkey;  // must be unwinded before frontend
     Telemetry telemetry;
     albert::Frontend *frontend;
 
