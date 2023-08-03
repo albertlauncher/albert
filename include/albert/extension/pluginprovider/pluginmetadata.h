@@ -23,6 +23,7 @@ public:
     QStringList runtime_dependencies;  ///< Required libraries []
     QStringList binary_dependencies;  ///< Required executables []
     QStringList third_party_credits;  ///< Third party credits and license notes []
+    QStringList platforms;  ///< List of supported platforms. {Linux, Darwin,Windows}*. Empty means all.
     bool user = true;  ///< Users can (un-)load
     bool frontend = false;  ///< Plugin instance is of type Frontend
 };
