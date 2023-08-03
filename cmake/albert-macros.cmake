@@ -55,7 +55,7 @@ macro(albert_plugin_add_default_target)
 
     add_library(${PROJECT_NAME} MODULE ${SRC})
     add_library(albert::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
-
+    target_include_directories(${PROJECT_NAME} PRIVATE src)
     target_link_libraries(${PROJECT_NAME} PRIVATE albert::albert)
 
     set_target_properties(
