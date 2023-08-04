@@ -37,7 +37,7 @@ public:
     ~BackgroundExecutor() {
         rerun_ = false;
         if (isRunning()){
-            TimePrinter tp("Busy waited for %1µs.");
+            TimePrinter tp("Busy waited for %1 ms.");
             WARN << "Busy wait for BackgroundExecutor task. Abortion handled correctly?";
             future_watcher_.waitForFinished();
         }

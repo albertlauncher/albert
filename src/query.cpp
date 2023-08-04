@@ -103,7 +103,7 @@ void TriggerQuery::add(vector<shared_ptr<Item>> &&items) { matches_.add(query_ha
 void TriggerQuery::run_()
 {
     future_watcher_.setFuture(QtConcurrent::run([this](){
-        TimePrinter tp(QString("TIME: %1 µs ['%2':'%3']").arg("%1", query_handler_->id(), string_));
+        TimePrinter<std::chrono::microseconds> tp(QString("TIME: %1 µs ['%2':'%3']").arg("%1", query_handler_->id(), string_));
         try {
             query_handler_->handleTriggerQuery(this);
         } catch (const exception &e){
@@ -137,7 +137,7 @@ void GlobalQuery::run_()
 
     function<void(GlobalQueryHandler*)> map = [this, &rank_items_mutex, &rank_items](GlobalQueryHandler *handler) {
         try {
-            TimePrinter tp(QString("TIME: %1 µs [%2:'%3']").arg("%1", handler->id(), string_));
+            TimePrinter<std::chrono::microseconds> tp(QString("TIME: %1 µs [%2:'%3']").arg("%1", handler->id(), string_));
 
             auto r = handler->handleGlobalQuery(this);
             if (r.empty())
