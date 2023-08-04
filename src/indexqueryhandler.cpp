@@ -24,10 +24,16 @@ IndexQueryHandler::IndexQueryHandler() : d(new IndexQueryHandlerPrivate)
 IndexQueryHandler::~IndexQueryHandler() = default;
 
 void IndexQueryHandler::setIndexItems(vector<IndexItem> &&index_items)
-{ d->index->setItems(::move(index_items)); }
+{
+    unique_lock l(d->index_mutex);
+    d->index->setItems(::move(index_items));
+}
 
 vector<RankItem> IndexQueryHandler::handleGlobalQuery(const GlobalQuery *query) const
-{return d->index->search(query->string(), query->isValid()); }
+{
+    shared_lock l(d->index_mutex);
+    return d->index->search(query->string(), query->isValid());
+}
 
 QString IndexQueryHandler::synopsis() const { return QStringLiteral("<filter>"); }
 
@@ -38,9 +44,11 @@ bool IndexQueryHandler::fuzzyMatching() const { return d->fuzzy; }
 void IndexQueryHandler::setFuzzyMatching(bool value)
 {
     d->fuzzy = value;
+    d->index_mutex.lock();
     d->index = make_unique<ItemIndex>(
         DEF_SEPARATORS, false, GRAM_SIZE,
         value ? DEF_ERROR_TOLERANCE_DIVISOR : 0
     );
+    d->index_mutex.unlock();
     updateIndexItems();
 }

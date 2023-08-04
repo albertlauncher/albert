@@ -4,13 +4,15 @@
 #include "index.h"
 #include <QString>
 #include <memory>
+#include <shared_mutex>
 using namespace albert;
 using namespace std;
 
 class IndexQueryHandlerPrivate final
 {
 public:
-    std::unique_ptr<Index> index;
+    unique_ptr<Index> index;
+    shared_mutex index_mutex;
     bool fuzzy;
 };
 
