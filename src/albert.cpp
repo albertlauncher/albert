@@ -316,6 +316,29 @@ void albert::setClipboardText(const QString &text)
     QGuiApplication::clipboard()->setText(text, QClipboard::Selection);
 }
 
+void albert::setClipboardTextAndPaste(const QString &text)
+{
+    setClipboardText(text);
+#if defined Q_OS_MACOS
+    runDetachedProcess({
+        "osascript", "-e",
+        R"(tell application "System Events" to keystroke "v" using command down)"
+    });
+#elif defined Q_OS_LINUX
+    if (qApp->platformName() == QStringLiteral("wayland")){
+        QMessageBox::information(nullptr, qApp->applicationDisplayName(), "Pasting is not supported on wayland.");
+    } else {
+        auto ret = QProcess::execute("xdotool", {"key", "ctrl+v"});
+        if (ret != 0){
+            QMessageBox::information(nullptr, qApp->applicationDisplayName(),
+                                     "Pasting failed. Is xdotool installed?");
+        }
+    }
+#elif defined Q_OS_WIN
+Not implemented
+#endif
+}
+
 long long albert::runDetachedProcess(const QStringList &commandline, const QString &working_dir)
 {
     qint64 pid = 0;

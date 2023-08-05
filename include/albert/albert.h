@@ -69,6 +69,9 @@ ALBERT_EXPORT void openIssueTracker();
 /// Set the system clipboard
 ALBERT_EXPORT void setClipboardText(const QString &text);
 
+/// Set the system clipboard and paste the content to the front-most window.
+ALBERT_EXPORT void setClipboardTextAndPaste(const QString &text);
+
 /// Run a detaches process
 ALBERT_EXPORT long long runDetachedProcess(const QStringList &commandline, const QString &working_dir = {});
 
