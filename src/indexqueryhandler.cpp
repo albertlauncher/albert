@@ -3,6 +3,7 @@
 #include "albert/extension/queryhandler/indexqueryhandler.h"
 #include "indexqueryhandlerprivate.h"
 #include "itemindex.h"
+#include <mutex>
 using namespace std;
 using namespace albert;
 static const uint GRAM_SIZE = 2;
