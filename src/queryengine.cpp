@@ -179,7 +179,7 @@ void QueryEngine::setRunEmptyQuery(bool value)
 void QueryEngine::onAdd(TriggerQueryHandler *handler)
 {
     handler->d->trigger = settings()->value(QString("%1/%2").arg(handler->id(), CFG_TRIGGER), handler->defaultTrigger()).toString();
-    handler->setFuzzyMatching(settings()->value(QString("%1/%2").arg(handler->id(), CFG_TRIGGER), false).toBool());
+    handler->setFuzzyMatching(settings()->value(QString("%1/%2").arg(handler->id(), CFG_FUZZY), false).toBool());
     if (isEnabled(handler))
         if(auto err = setActive(handler); !err.isNull())
             WARN << QString("Failed enabling trigger handler '%1': %2").arg(handler->id(), err);
