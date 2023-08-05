@@ -11,8 +11,8 @@ namespace albert
 {
 
 /// Index query handler class.
-/// A QueryHandler that providing implicit indexing and matching. You just have
-/// to provide your items with lookup strings.
+/// A GlobalQueryHandler providing implicit indexing and matching.
+/// You just have to provide your items with lookup strings.
 class ALBERT_EXPORT IndexQueryHandler : public GlobalQueryHandler
 {
 public:
@@ -28,20 +28,20 @@ public:
     /// Return the fuzzy mode of the internal index
     bool fuzzyMatching() const override;
 
-    /// Set the fuzzy mode of the internal index. Triggers a rebuild
+    /// Set the fuzzy mode of the internal index.
+    /// Triggers a rebuild by calling updateIndexItems.
     void setFuzzyMatching(bool) override;
 
-    /// Use the index to override handleGlobalQuery
+    /// Uses the index to override GlobalQueryHandler::handleGlobalQuery
     std::vector<RankItem> handleGlobalQuery(const GlobalQuery*) const override;
 
     /// Update the index. Called when the index needs to be updated (or probably by yourself if
     /// your items changed), i.e. whenever the user made changes to the index config or initially
-    /// on creation. Therefore…
-    /// @note You dont have to call this in you constructor. It will be called after construction.
+    /// on creation. Don't call in the constructor. It will be called on plugin initialization.
     /// @see void IndexQueryHandler::setIndexItems(std::vector<IndexItem>&&)
     virtual void updateIndexItems() = 0;
 
-    /// Set the items of the index. Call this in updateIndexItems().
+    /// Set the items of the index. Call this in updateIndexItems(). @threadsafe
     void setIndexItems(std::vector<IndexItem>&&);
 
 private:
