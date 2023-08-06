@@ -52,19 +52,12 @@ public:
 };
 
 
-SettingsWindow::SettingsWindow(App &app) : ui()
+SettingsWindow::SettingsWindow(App &app):
+    ui(), plugin_widget(new PluginWidget(app.plugin_registry))
 {
     ui.setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
-    init_tabs(app);
 
-    auto geometry = QGuiApplication::screenAt(QCursor::pos())->geometry();
-    move(geometry.center().x() - frameSize().width()/2,
-         geometry.top() + geometry.height() / 5);
-}
-
-void SettingsWindow::init_tabs(App &app)
-{
     ui.tabs->setStyleSheet("QTabWidget::pane { border-radius: 0px; }");
 
     init_tab_general_hotkey(app);
@@ -77,13 +70,17 @@ void SettingsWindow::init_tabs(App &app)
 
     ui.tabs->insertTab(ui.tabs->count()-1, app.frontend->createFrontendConfigWidget(), "Window");
     ui.tabs->insertTab(ui.tabs->count()-1, new HandlerWidget(app.query_engine, app.extension_registry), "Handlers");
-    ui.tabs->insertTab(ui.tabs->count()-1, new PluginWidget(app.plugin_registry), "Plugins");
+    ui.tabs->insertTab(ui.tabs->count()-1, plugin_widget.get(), "Plugins");
+
+    auto geometry = QGuiApplication::screenAt(QCursor::pos())->geometry();
+    move(geometry.center().x() - frameSize().width()/2,
+         geometry.top() + geometry.height() / 5);
 }
 
+SettingsWindow::~SettingsWindow() = default;
+
 void SettingsWindow::init_tab_general_hotkey(App &app)
-{
-    ui.formLayout_general->insertRow(0, "Hotkey", new QHotKeyEdit(app.hotkey));
-}
+{ ui.formLayout_general->insertRow(0, "Hotkey", new QHotKeyEdit(app.hotkey)); }
 
 void SettingsWindow::init_tab_general_trayIcon(App &app)
 {
@@ -129,7 +126,6 @@ void SettingsWindow::init_tab_general_frontends(App &app)
     connect(ui.comboBox_frontend, &QComboBox::currentIndexChanged, this, [this, &app]() {
         app.setFrontend(ui.comboBox_frontend->currentData().toString());
     });
-
 }
 
 void SettingsWindow::init_tab_general_terminals(App &app)
@@ -142,7 +138,6 @@ void SettingsWindow::init_tab_general_terminals(App &app)
 
     connect(ui.comboBox_term, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, [&app](int index){ app.terminal_provider.setTerminal(index); });
-
 }
 
 void SettingsWindow::init_tab_general_search(App &app)
@@ -158,7 +153,6 @@ void SettingsWindow::init_tab_general_search(App &app)
     ui.checkBox_emptyQuery->setChecked(app.query_engine.runEmptyQuery());
     QObject::connect(ui.checkBox_emptyQuery, &QCheckBox::toggled, this,
                      [&app](bool val){ app.query_engine.setRunEmptyQuery(val); });
-
 }
 
 void SettingsWindow::init_tab_about()
@@ -176,11 +170,15 @@ void SettingsWindow::init_tab_about()
     connect(ui.about_text, &QLabel::linkActivated, this, open_link);
 }
 
-void SettingsWindow::bringToFront()
+void SettingsWindow::bringToFront(const QString &plugin)
 {
     show();
     raise();
     activateWindow();
+    if (!plugin.isNull()){
+        plugin_widget->tryShowPluginSettings(plugin);
+        ui.tabs->setCurrentWidget(plugin_widget.get());
+    }
 }
 
 void SettingsWindow::keyPressEvent(QKeyEvent *event)

@@ -14,6 +14,8 @@ public:
     explicit PluginWidget(PluginRegistry&);
     ~PluginWidget();
 
+    void tryShowPluginSettings(QString);
+
 private:
     void onUpdatePluginWidget();
 

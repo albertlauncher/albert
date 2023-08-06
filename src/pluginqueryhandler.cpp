@@ -1,6 +1,6 @@
 // Copyright (c) 2023 Manuel Schneider
 
-#include "albert/extension/pluginprovider/plugininstance.h"
+#include "albert/albert.h"
 #include "albert/extension/pluginprovider/pluginloader.h"
 #include "albert/extension/pluginprovider/pluginmetadata.h"
 #include "pluginqueryhandler.h"
@@ -58,21 +58,18 @@ public:
 
         if (plugin_registry_.isEnabled(id()))
             actions.emplace_back(
-                "disable", "Disable plugin",
-                [this]() { plugin_registry_.enable(id(), false); }
+                "disable", "Disable plugin", [this]() { plugin_registry_.enable(id(), false); }
             );
         else
             actions.emplace_back(
-                "enable", "Enable plugin",
-                [this]() { plugin_registry_.enable(id(), true); }
+                "enable", "Enable plugin", [this]() { plugin_registry_.enable(id(), true); }
             );
 
 
         if (loader_.state() == PluginState::Loaded){
 
             actions.emplace_back(
-                "unload", "Unload plugin",
-                [this](){ plugin_registry_.load(id(), false); }
+                "unload", "Unload plugin", [this](){ plugin_registry_.load(id(), false); }
             );
 
             actions.emplace_back(
@@ -80,25 +77,11 @@ public:
                 [this](){ plugin_registry_.load(id(), false); plugin_registry_.load(id()); }
             );
 
-            actions.emplace_back(
-                "settings", "Open settings",
-                [this](){
-                    if (auto *w = loader_.instance()->buildConfigWidget()) {
-                        w->setAttribute(Qt::WA_DeleteOnClose);
-                        w->show();
-                    } else {
-                        QMessageBox::information(nullptr, "",
-                                                 QString("Plugin '%1' is not configurable.").arg(this->id()));
-                    }
-                }
-            );
+            actions.emplace_back("settings", "Open settings", [this](){ showSettings(id()); });
 
 
         } else  // by contract only unloaded
-            actions.emplace_back(
-                "load", "Load plugin",
-                [this](){ plugin_registry_.load(id()); }
-            );
+            actions.emplace_back("load", "Load plugin", [this](){ plugin_registry_.load(id()); });
 
         return actions;
     }
@@ -107,12 +90,12 @@ public:
 void PluginQueryHandler::updateIndexItems()
 {
     vector<IndexItem> items;
-
     for (auto &[id, loader] : plugin_registry_.plugins()){
-        auto item = make_shared<PluginItem>(plugin_registry_, *loader);
-        items.emplace_back(item, id);
-        items.emplace_back(item, loader->metaData().name);
+        if (loader->metaData().user){
+            auto item = make_shared<PluginItem>(plugin_registry_, *loader);
+            items.emplace_back(item, id);
+            items.emplace_back(item, loader->metaData().name);
+        }
     }
-
     setIndexItems(::move(items));
 }

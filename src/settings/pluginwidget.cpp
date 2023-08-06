@@ -31,8 +31,6 @@ public:
         updatePluginList();
     }
 
-private:
-
     QIcon getCachedIcon(const QString &url) const
     {
         try {
@@ -42,7 +40,7 @@ private:
         }
     }
 
-    int rowCount(const QModelIndex&) const override { return static_cast<int>(plugins_.size()); }
+    int rowCount(const QModelIndex& = {}) const override { return static_cast<int>(plugins_.size()); }
 
     int columnCount(const QModelIndex&) const override { return 1; }
 
@@ -76,6 +74,9 @@ private:
 
         case Qt::ToolTipRole:
             return p->stateInfo();
+
+        case Qt::UserRole:
+            return p->metaData().id;
 
         }
         return {};
@@ -176,6 +177,13 @@ PluginWidget::PluginWidget(PluginRegistry &plugin_registry) : model_(new PluginM
             this, &PluginWidget::onUpdatePluginWidget);
 
     onUpdatePluginWidget();
+}
+
+void PluginWidget::tryShowPluginSettings(QString plugin_id)
+{
+    for (auto row = 0; row < model_->rowCount(); ++row)
+        if (auto index = model_->index(row); index.data(Qt::UserRole).toString() == plugin_id)
+            listView_plugins->setCurrentIndex(index);
 }
 
 PluginWidget::~PluginWidget() = default;

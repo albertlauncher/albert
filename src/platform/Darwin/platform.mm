@@ -3,54 +3,114 @@
 #include "platform/platform.h"
 #include "albert/logging.h"
 #include <Cocoa/Cocoa.h>
-//#include <UserNotifications/UserNotifications.h>
+#include <QMessageBox>
+#include <QGuiApplication>
+#include <UserNotifications/UserNotifications.h>
+
 using namespace albert;
+
+static void requestAccessibilityPermissions(){
+    if (!AXIsProcessTrusted()){
+        QMessageBox::information(nullptr, QGuiApplication::applicationDisplayName(),
+                                 "To be able to paste text accessibility "
+                                 "permissions are required. You will now be "
+                                 "propted to enable them in the settings.");
+        NSDictionary *options = @{(id)kAXTrustedCheckOptionPrompt: @YES};
+        AXIsProcessTrustedWithOptions((CFDictionaryRef)options);
+    }
+}
 
 static void requestNotificationPermissions()
 {
-//    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    // https://developer.apple.com/documentation/usernotifications/asking_permission_to_use_notifications?language=objc
 
-////    [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge)
-////                          completionHandler:^(BOOL granted, NSError * _Nullable error) {
-////                              if (!granted)
-////                                  qFatal("Notification permissions are mandatory.");
-////                          }];
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * _Nonnull settings) {
+        switch (settings.authorizationStatus) {
 
+        case UNAuthorizationStatusNotDetermined:{
+            WARN << "UNAuthorizationStatusNotDetermined";
 
-//    [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * _Nonnull settings) {
-//        switch (settings.authorizationStatus) {
-//        case UNAuthorizationStatusNotDetermined:{
-//            WARN << "UNAuthorizationStatusNotDetermined";
+            [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert + UNAuthorizationOptionSound)
+                                  completionHandler:^(BOOL granted, NSError * _Nullable error) {
 
-//            UNAuthorizationOptions opts = UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
-//            [center requestAuthorizationWithOptions:opts
-//                                  completionHandler:^(BOOL granted, NSError * _Nullable error) {
+                                        if (error) {
+                                            WARN << QString::fromNSString(error.localizedDescription);
+                                        }
 
-//                                      if (error) {
-//                                          WARN << QString::fromNSString(error.localizedDescription);
-//                                      }
+                                        if (granted) {
+                                            WARN << "granted";
+                                        } else {
+                                            WARN << "denied";
+                                            CRIT << "Notification permissions are mandatory.";
+                                        }
+                                  }];
 
-//                                      if (granted) {
-//                                          WARN << "granted";
-//                                      } else {
-//                                          WARN << "denied";
-//                                          }
-//                                  }];
-
-//            break;
-//            }
-//        case UNAuthorizationStatusDenied:
-//            WARN << "UNAuthorizationStatusDenied";
-//            break;
-//        case UNAuthorizationStatusAuthorized:
-//            WARN << "UNAuthorizationStatusAuthorized";
-//            break;
-//        case UNAuthorizationStatusProvisional:
-//            WARN << "UNAuthorizationStatusProvisional";
-//            break;
-//        }
-//    }];
+            break;
+            }
+        case UNAuthorizationStatusDenied:
+            WARN << "UNAuthorizationStatusDenied";
+            break;
+        case UNAuthorizationStatusAuthorized:
+            WARN << "UNAuthorizationStatusAuthorized";
+            break;
+        case UNAuthorizationStatusProvisional:
+            WARN << "UNAuthorizationStatusProvisional";
+            break;
+        default:
+            break;
+        }
+    }];
 }
+
+//#include <Foundation/Foundation.h>
+
+void platform::sendNotification(const QString &title, const QString &message, int msTimeoutHint)
+{
+
+//    NSUserNotification *notification = [[NSUserNotification alloc] init];
+//    notification.title = title.toNSString();
+//    notification.informativeText = message.toNSString();
+//    notification.soundName = NSUserNotificationDefaultSoundName;
+
+
+//    [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+//    [notification release];
+
+////        // Schedule the notification.
+////        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+////        //        [center addNotificationRequest:request];  // 02-23-2019 don't compile
+////        [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
+////                     if (!error) {
+////                         NSLog(@"Local Notification succeeded");
+////                     }
+////                     else {
+////                         NSLog(@"Local Notification failed");
+////                     }
+////                 }];
+
+        UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
+        content.title = @"Hello!";
+        content.body = @"This is a sample notification.";
+        content.sound = [UNNotificationSound defaultSound];
+
+        // Set the trigger (e.g., trigger notification after 10 seconds)
+
+
+        UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:@"sampleNotification"
+                                                                                     content:content
+                                                                                     trigger:nil];
+
+        // Add the request to the notification center
+        [[UNUserNotificationCenter currentNotificationCenter] addNotificationRequest:request
+                                                               withCompletionHandler:^(NSError * _Nullable error) {
+                 if (error) {
+                     NSLog(@"Error scheduling notification: %@", error.localizedDescription);
+                 }
+             }];
+}
+
+
 
 void platform::initPlatform()
 {
@@ -60,11 +120,14 @@ void platform::initPlatform()
     // Always dark mode 😎
     //[NSApp setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua]];
 
+    requestAccessibilityPermissions();
     requestNotificationPermissions();
+    sendNotification("bla", "test", 10);
+
+
 }
 
-void platform::hideNSApp()
-{ [NSApp hide:nil]; }
+void platform::hideNSApp() { [NSApp hide:nil]; }
 
 void platform::initNativeWindow(unsigned long long wid)
 {
@@ -157,39 +220,6 @@ void platform::initNativeWindow(unsigned long long wid)
 //    NSVisualEffectView *effectsView = [[NSVisualEffectView alloc] init];
 //    effectsView.blendingMode = NSVisualEffectBlendingModeBehindWindow;
 }
-
-
-
-//#include <Foundation/Foundation.h>
-
-void platform::sendNotification(const QString &title, const QString &message, int msTimeoutHint)
-{
-////    @autoreleasepool {
-//        NSUserNotification* notification = [[NSUserNotification alloc] init];
-//        notification.title = title.toNSString();
-//        notification.informativeText = message.toNSString();
-
-//        NSUserNotificationCenter* center = [NSUserNotificationCenter defaultUserNotificationCenter];
-//        [center deliverNotification:notification];
-////    }
-
-//    NSUserNotification* notification = [[NSUserNotification alloc] init];
-//    notification.title = title.toNSString();
-//    notification.informativeText = message.toNSString();
-
-//    NSUserNotificationCenter* center = [NSUserNotificationCenter defaultUserNotificationCenter];
-//    [center deliverNotification:notification];
-
-//    // Schedule a timer to remove the notification after 5 seconds
-//    NSTimeInterval timeInterval = 5.0;
-//    [NSTimer scheduledTimerWithTimeInterval:timeInterval
-//                                     target:center
-//                                   selector:@selector(removeDeliveredNotification:)
-//                                   userInfo:notification
-//                                    repeats:NO];
-}
-
-
 
 
 

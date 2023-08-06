@@ -27,8 +27,9 @@ ALBERT_EXPORT void hide();
 /// Toggle visibility of main window
 ALBERT_EXPORT void toggle();
 
-/// Open/Show the settings window
-ALBERT_EXPORT void showSettings();
+/// Open/Show the settings window (of plugin)
+/// @param plugin_id Id of the plugin whose settings should be displayed
+ALBERT_EXPORT void showSettings(QString plugin_id = {});
 
 /// Restart the app
 ALBERT_EXPORT void restart();
