@@ -1,5 +1,4 @@
-FROM fedora:latest
-
+FROM fedora:latest AS builder
 RUN yum install -y \
     cmake \
     gcc-c++ \
@@ -22,3 +21,14 @@ RUN rm -rf * \
      -DCMAKE_INSTALL_PREFIX=/usr \
   && make -j $(nproc) \
   && make install
+
+
+FROM builder AS runtime
+RUN yum install -y \
+    Xserver \
+    qt6-qtdeclarative \
+    qt6-qt5compat \
+    libglvnd \
+    xterm
+ENTRYPOINT ["albert"]
+CMD ["-d"]

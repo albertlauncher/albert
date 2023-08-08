@@ -36,19 +36,47 @@ def create_changelog(args) -> str:
     return '\n\n'.join(out)
 
 
-def test_build(args):
+def docker_choice(args):
     files = list((Path(args.root) / ".docker").iterdir())
-    for i, f in enumerate(files):
-        print(f"{i}: {f.name}")
 
-    indices = input(f"Which to build? [All] ")
+    if args.index is not None:
+        indices = args.index
+    else:
+        for i, f in enumerate(files):
+            print(f"{i}: {f.name}")
+        indices = input(f"Choose image? [All] ")
+
     indices = [int(s) for s in filter(None, indices.split())]
     indices = indices if indices else list(range(len(files)))
-    for index in indices:
-        tag = files[index].name.replace("Dockerfile", "albert")
+    return [files[i] for i in indices]
+
+
+def test_build(args):
+    for file in docker_choice(args):
+        tag = file.name.replace("Dockerfile", "albert")
         try:
-            run(["docker", "build", "-t", tag, "-f", files[index], "."],
-                cwd=args.root, env=dict(os.environ, DOCKER_BUILDKIT="0")).check_returncode()
+            run(['docker', 'build', '-t', tag, '--target', 'builder', '-f', file, '.'],
+                cwd=args.root, env=dict(os.environ, DOCKER_BUILDKIT='0')).check_returncode()
+        except subprocess.CalledProcessError as e:
+            print(e)
+            sys.exit(1)
+
+
+def test_run(args):
+    for file in docker_choice(args):
+        tag = file.name.replace("Dockerfile", "albert")
+        try:
+            run(['docker', 'build', '-t', tag, '--target', 'runtime', '-f', file, '.'],
+                cwd=args.root, env=dict(os.environ, DOCKER_BUILDKIT='0')).check_returncode()
+
+            run(['docker', 'container', 'remove', tag],
+                cwd=args.root, env=dict(os.environ, DOCKER_BUILDKIT='0'))
+
+            run(['docker', 'create', '-e', 'DISPLAY=docker.for.mac.host.internal:0', '--name', tag, tag],
+                cwd=args.root, env=dict(os.environ, DOCKER_BUILDKIT='0')).check_returncode()
+
+            run(['docker', 'start', '-i', tag],
+                cwd=args.root, env=dict(os.environ, DOCKER_BUILDKIT='0')).check_returncode()
         except subprocess.CalledProcessError as e:
             print(e)
             sys.exit(1)
@@ -57,16 +85,15 @@ def test_build(args):
 def release(args):
     root = Path(args.root)
 
-
-    if "master" != run(["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True).stdout.decode().strip():
-        print("Not on master branch")
+    if 'master' != run(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], capture_output=True).stdout.decode().strip():
+        print('Not on master branch')
         sys.exit(1)
 
     if args.version[0] == 'v':
         args.version = args.version[1:]
 
-    if not re.match(r"^[0-9]+\.[0-9]+\.[0-9]+$", args.version):
-        print("Expected version number as parameter: major.minor.patch")
+    if not re.match(r'^[0-9]+\.[0-9]+\.[0-9]+$', args.version):
+        print('Expected version number as parameter: major.minor.patch')
         sys.exit(1)
 
 
@@ -154,10 +181,15 @@ def main():
     sp.set_defaults(func=lambda args: print(create_changelog(args)))
 
     sp = sps.add_parser('test', help='Test build using docker.')
+    sp.add_argument('index', nargs='?')
     sp.set_defaults(func=test_build)
 
+    sp = sps.add_parser('testrun', help='Test run using docker.')
+    sp.add_argument('index', nargs='?')
+    sp.set_defaults(func=test_run)
+
     sp = sps.add_parser('release', help="Release a new version.")
-    sp.add_argument('version', type=str, help="The sematic version.")
+    sp.add_argument('version', type=str, help="The semantic version.")
     sp.set_defaults(func=release)
 
     args = p.parse_args()
