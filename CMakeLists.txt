@@ -219,12 +219,12 @@ install(
 
 set(TARGET_APP ${CMAKE_PROJECT_NAME}app)
 
-add_executable(${TARGET_APP} "src/main.cpp")
+add_executable(${TARGET_APP} MACOSX_BUNDLE "src/main.cpp")
 
 # Platform specific stuff
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
 
-    install(FILES dist/albert.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications )
+    install(FILES dist/xdg/albert.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications )
     install(FILES resources/albert.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
 
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -232,9 +232,8 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set_target_properties(${TARGET_APP} PROPERTIES MACOSX_BUNDLE TRUE)
 
     set(ICON_NAME "albert")
-    set(ICON_PATH "resources/${ICON_NAME}.icns")
-
-#    add_executable(${TARGET_APP} MACOSX_BUNDLE "${ICON_PATH}" "src/app/main.cpp")
+    set(ICON_PATH "dist/macos/${ICON_NAME}.icns")
+    target_sources(${TARGET_APP} PRIVATE ${ICON_PATH})
 
     set_source_files_properties(${ICON_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
@@ -242,12 +241,12 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
         BUNDLE True
         MACOSX_BUNDLE_BUNDLE_NAME "Albert"
         MACOSX_BUNDLE_BUNDLE_VERSION "${CMAKE_PROJECT_VERSION}"
-        MACOSX_BUNDLE_COPYRIGHT "Copyright (c) 2022 Manuel Schneider"
+        MACOSX_BUNDLE_COPYRIGHT "Copyright (c) 2023 Manuel Schneider"
         MACOSX_BUNDLE_GUI_IDENTIFIER "org.albertlauncher.albert"
         MACOSX_BUNDLE_ICON_FILE ${ICON_NAME}
         MACOSX_BUNDLE_INFO_STRING "Albert keyboard launcher"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "${CMAKE_PROJECT_VERSION}"
-        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/cmake/MacOSXBundleInfo.plist.in
+        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/dist/macos/MacOSXBundleInfo.plist.in
     )
 
 endif()
