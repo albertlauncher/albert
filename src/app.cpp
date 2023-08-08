@@ -12,7 +12,7 @@ using namespace std;
 
 
 static const char *CFG_FRONTEND_ID = "frontend";
-static const char *DEF_FRONTEND_ID = "widgetsboxmodel";
+static const char *DEF_FRONTEND_ID = "qmlboxmodel";
 static App * app_instance = nullptr;
 
 App::App(const QStringList &additional_plugin_paths) :
@@ -42,6 +42,9 @@ App::~App()
 
 void App::initialize()
 {
+
+    platform::initPlatform();
+
     loadAnyFrontend();
 
     // Connect hotkey after! frontend has been loaded else segfaults

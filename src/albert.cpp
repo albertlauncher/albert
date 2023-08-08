@@ -212,11 +212,10 @@ int main(int argc, char **argv)
     else
         QLoggingCategory::setFilterRules("*.debug=false");
 
-    platform::initPlatform();
+    notifyVersionChange();
 
     app = new App(parser.value(opt_p).split(',', Qt::SkipEmptyParts));
-    app->initialize();
-    notifyVersionChange();
+    QTimer::singleShot(0, [](){ app->initialize(); }); // Init with running eventloop
     QObject::connect(qApp, &QApplication::aboutToQuit, [&]() { delete app; }); // Delete app _before_ loop exits
 
 //    albert::showSettings();
@@ -248,13 +247,7 @@ void albert::show(const QString &text)
 }
 
 void albert::hide()
-{
-    app->frontend->setVisible(false);
-//    if (!app->settings_window)
-//        app->settings_window->bringToFront();
-//    else
-        platform::hideNSApp();
-}
+{ app->frontend->setVisible(false); }
 
 void albert::toggle()
 { app->frontend->isVisible() ? hide() : show(); }
@@ -284,9 +277,6 @@ void albert::restart()
 
 void albert::quit()
 { QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection); }
-
-void albert::sendTrayNotification(const QString &title, const QString &message, int ms)
-{ app->tray_icon.showMessage(title, message, QSystemTrayIcon::NoIcon, ms); }
 
 void albert::openUrl(const QString &url)
 { openUrl(QUrl(url)); }

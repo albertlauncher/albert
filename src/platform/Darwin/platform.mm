@@ -1,11 +1,15 @@
 // Copyright (c) 2022 Manuel Schneider
-#include "QtGui/qwindowdefs.h"
-#include "platform/platform.h"
+
+#include "albert/albert.h"
+#include "albert/extension/frontend/frontend.h"
 #include "albert/logging.h"
+#include "platform/platform.h"
 #include <Cocoa/Cocoa.h>
-#include <QMessageBox>
 #include <QGuiApplication>
+#include <QMessageBox>
+#include <QTimer>
 #include <UserNotifications/UserNotifications.h>
+//#include <Foundation/Foundation.h>
 
 using namespace albert;
 
@@ -14,7 +18,7 @@ static void requestAccessibilityPermissions(){
         QMessageBox::information(nullptr, QGuiApplication::applicationDisplayName(),
                                  "To be able to paste text accessibility "
                                  "permissions are required. You will now be "
-                                 "propted to enable them in the settings.");
+                                 "prompted to enable them in the settings.");
         NSDictionary *options = @{(id)kAXTrustedCheckOptionPrompt: @YES};
         AXIsProcessTrustedWithOptions((CFDictionaryRef)options);
     }
@@ -63,71 +67,11 @@ static void requestNotificationPermissions()
     }];
 }
 
-//#include <Foundation/Foundation.h>
-
-void platform::sendNotification(const QString &title, const QString &message, int msTimeoutHint)
-{
-
-//    NSUserNotification *notification = [[NSUserNotification alloc] init];
-//    notification.title = title.toNSString();
-//    notification.informativeText = message.toNSString();
-//    notification.soundName = NSUserNotificationDefaultSoundName;
-
-
-//    [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
-//    [notification release];
-
-////        // Schedule the notification.
-////        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-////        //        [center addNotificationRequest:request];  // 02-23-2019 don't compile
-////        [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
-////                     if (!error) {
-////                         NSLog(@"Local Notification succeeded");
-////                     }
-////                     else {
-////                         NSLog(@"Local Notification failed");
-////                     }
-////                 }];
-
-        UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
-        content.title = @"Hello!";
-        content.body = @"This is a sample notification.";
-        content.sound = [UNNotificationSound defaultSound];
-
-        // Set the trigger (e.g., trigger notification after 10 seconds)
-
-
-        UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:@"sampleNotification"
-                                                                                     content:content
-                                                                                     trigger:nil];
-
-        // Add the request to the notification center
-        [[UNUserNotificationCenter currentNotificationCenter] addNotificationRequest:request
-                                                               withCompletionHandler:^(NSError * _Nullable error) {
-                 if (error) {
-                     NSLog(@"Error scheduling notification: %@", error.localizedDescription);
-                 }
-             }];
-}
-
-
-
 void platform::initPlatform()
 {
-    // Agent app
-    [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
-
-    // Always dark mode 😎
-    //[NSApp setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua]];
-
     requestAccessibilityPermissions();
     requestNotificationPermissions();
-    sendNotification("bla", "test", 10);
-
-
 }
-
-void platform::hideNSApp() { [NSApp hide:nil]; }
 
 void platform::initNativeWindow(unsigned long long wid)
 {
@@ -196,29 +140,33 @@ void platform::initNativeWindow(unsigned long long wid)
      * @const NSWindowStyleMaskNonactivatingPanel  Specifies that a panel that does not activate the owning application. Only applicable for \c NSPanel (or a subclass thereof).
      * @const NSWindowStyleMaskHUDWindow Specifies a heads up display panel.  Only applicable for \c NSPanel (or a subclass thereof).
      */
-//    CRIT << "styleMask" << [ns_window styleMask];
-//    [ns_window setStyleMask:([ns_window styleMask]
-////                                |NSWindowStyleMaskUtilityWindow
-////                               | NSWindowStyleMaskHUDWindow
-////                             | NSWindowStyleMaskNonactivatingPanel
-//                             )];
-    //    nswindow.styleMask |= NSWindowStyleMaskNonactivatingPanel;
-    //    [nswindow setStyleMask: NSWindowStyleMaskNonactivatingPanel];
-    //    nswindow.styleMask |= NSWindowStyleMaskNonactivatingPanel;
-//    CRIT << "styleMask" << [ns_window styleMask];
+    ns_window.styleMask |= NSWindowStyleMaskNonactivatingPanel;  // will get no key an not return focus without
+    ns_window.hidesOnDeactivate = false;  // makes hide on focus out work
+    [NSApp hide:nil];  // The app activates on start. undo.
+}
 
-//    CRIT << "NSPanel" << [ns_window isKindOfClass: [NSPanel class]];
-//    CRIT << "level" << [ns_window level];
-//    CRIT << "isKeyWindow" << [ns_window isKeyWindow];
-//    CRIT << "canBecomeKeyWindow" << [ns_window canBecomeKeyWindow];
-//    CRIT << "[nswindow makeKeyWindow]";
-//    [ns_window makeKeyWindow];
-//    CRIT << "isKeyWindow" << [ns_window isKeyWindow];
+class NotificationPrivate
+{
+public:
+    NSUserNotification *notification;
+};
 
-    // seee also https://github.com/Andre-Gl/electron-panel/blob/master/functions_mac.cc
+albert::Notification::Notification(const QString &title, const QString &subTitle, const QString &text) : d(new NotificationPrivate)
+{
+    d->notification = [[NSUserNotification alloc] init];
+    d->notification.title = title.toNSString();
+    d->notification.subtitle = subTitle.toNSString();
+    d->notification.informativeText = text.toNSString();
+    d->notification.hasActionButton = NO;
+    d->notification.soundName = NSUserNotificationDefaultSoundName;
+    [NSUserNotificationCenter.defaultUserNotificationCenter deliverNotification:d->notification];
+}
 
-//    NSVisualEffectView *effectsView = [[NSVisualEffectView alloc] init];
-//    effectsView.blendingMode = NSVisualEffectBlendingModeBehindWindow;
+albert::Notification::~Notification()
+{
+    [NSUserNotificationCenter.defaultUserNotificationCenter removeDeliveredNotification:d->notification];
+    [d->notification release];
+    delete d;
 }
 
 
@@ -231,4 +179,115 @@ void platform::initNativeWindow(unsigned long long wid)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//        Maybe useful trash
+
+
+//static void requestFullDiskAccessPermissions(){
+////    NSURL *url = [NSURL URLWithString:@"x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles"];
+////    if ([[NSWorkspace sharedWorkspace] openURL:url]) {
+////        NSLog(@"Opened Security & Privacy preferences");
+////    }
+//}
+
+
+////        // Schedule the notification.
+////        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+////        //        [center addNotificationRequest:request];  // 02-23-2019 don't compile
+////        [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
+////                     if (!error) {
+////                         NSLog(@"Local Notification succeeded");
+////                     }
+////                     else {
+////                         NSLog(@"Local Notification failed");
+////                     }
+////                 }];
+
+//    UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
+//    content.title = @"Hello!";
+//    content.body = @"This is a sample notification.";
+//    content.sound = [UNNotificationSound defaultSound];
+
+//    // Set the trigger (e.g., trigger notification after 10 seconds)
+
+
+//    static UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:@"sampleNotification"
+//                                                                                 content:content
+//                                                                                 trigger:nil];
+
+//    // Add the request to the notification center
+//    [[UNUserNotificationCenter currentNotificationCenter] addNotificationRequest:request
+//                                                           withCompletionHandler:^(NSError * _Nullable error) {
+//                                                               if (error) {
+//                                                                   NSLog(@"Error scheduling notification: %@", error.localizedDescription);
+//                                                               }
+//                                                           }];
+
+
+
+//    CRIT << "styleMask" << ns_window.styleMask;
+//    CRIT << "level" << ns_window.level;
+//    CRIT << "NSPanel" << [ns_window isKindOfClass: [NSPanel class]];
+//    CRIT << "hidesOnDeactivate" << ns_window.hidesOnDeactivate;
+//    CRIT << "hidesOnDeactivate" << ns_window.hidesOnDeactivate;
+//    [NSApp activateIgnoringOtherApps:YES];
+//    CRIT << "isKeyWindow" << [ns_window isKeyWindow];
+//    CRIT << "canBecomeKeyWindow" << [ns_window canBecomeKeyWindow];
+//    CRIT << "[nswindow makeKeyWindow]";
+//    [ns_window makeKeyWindow];
+//    CRIT << "isKeyWindow" << [ns_window isKeyWindow];
+
+//    NSVisualEffectView *effectsView = [[NSVisualEffectView alloc] init];
+//    effectsView.blendingMode = NSVisualEffectBlendingModeBehindWindow;
+
+//void platform::show()
+//{
+//    NSWindow *ns_window = [reinterpret_cast<id>(frontend()->winId()) window];
+//    [ns_window orderFrontRegardless];
+//    [ns_window makeKeyWindow];
+////    [ns_window showWindow:nil];
+//    [ns_window makeKeyAndOrderFront:nil];
+//}
+
+//void platform::hide()
+//{
+//    NSWindow *ns_window = [reinterpret_cast<id>(frontend()->winId()) window];
+//    [ns_window resignKeyWindow];
+
+//}
+
+//void platform::resignKey(unsigned long long wid) {
+//    NSWindow *ns_window = [reinterpret_cast<id>(wid) window];
+//    /*[NSApp hide:nil];*/
+
+//    //    CRIT << QString::fromNSString( NSWorkspace.sharedWorkspace.menuBarOwningApplication.bundleIdentifier);
+//    //    [NSWorkspace.sharedWorkspace.menuBarOwningApplication activateWithOptions: NSApplicationActivateAllWindows];
+//}
+
+// Agent app
+//    [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
+
+// Always dark mode 😎
+//[NSApp setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua]];
 

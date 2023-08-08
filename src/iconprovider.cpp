@@ -56,8 +56,8 @@ static QPixmap genericPixmap(int size, const QColor& bgcolor, const QColor& fgco
 
 class IconProvider::Private
 {
-public:
     QFileIconProvider file_icon_provider;
+public:
     mutable std::unordered_map<QString, QPixmap> pixmap_cache;
     mutable std::shared_mutex mutex_;
 

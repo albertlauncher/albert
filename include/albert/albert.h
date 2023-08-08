@@ -6,6 +6,7 @@
 class QNetworkAccessManager;
 class QSettings;
 class QUrl;
+class NotificationPrivate;
 
 namespace albert
 {
@@ -52,9 +53,6 @@ ALBERT_EXPORT std::unique_ptr<QSettings> settings();
 /// The persistent app state. @reentrant
 ALBERT_EXPORT std::unique_ptr<QSettings> state();
 
-/// The frontend of the app
-ALBERT_EXPORT Frontend *frontend();
-
 /// Open the albert website in default browser
 ALBERT_EXPORT void openWebsite();
 
@@ -80,8 +78,14 @@ ALBERT_EXPORT long long runDetachedProcess(const QStringList &commandline, const
 ALBERT_EXPORT void runTerminal(const QString &script = {}, const QString &working_dir = {}, bool close_on_exit = false);
 
 /// Send a tray notification
-/// @note Wont display if system tray is disabled. Unfortunately broken on
-/// some systems.
-ALBERT_EXPORT void sendTrayNotification(const QString &title, const QString &message, int msTimeoutHint);
 
-}
+
+class ALBERT_EXPORT Notification
+{
+public:
+    Notification(const QString &title={}, const QString &subTitle={}, const QString &text={});
+    ~Notification();
+
+private:
+    NotificationPrivate *d;
+};}
