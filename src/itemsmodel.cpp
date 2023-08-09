@@ -110,10 +110,10 @@ void ItemsModel::activate(QueryBase *q, uint i, uint a)
         auto actions = item->actions();
         if (a<actions.size()){
             // sane context arg. it is intended to be executed later out of context.
-            QTimer::singleShot(0, nullptr, [q=q->string(), e=extension->id(), i=item->id(), a=actions[a]](){
-                a.function();
-                UsageHistory::addActivation(q, e, i, a.id);
-            });
+            // QTimer::singleShot… dont. query has to stay alive as indicator for pluginregistry
+            UsageHistory::addActivation(q->string(), extension->id(), item->id(), actions[a].id);
+            actions[a].function(); // afterwards because query is dea
+
         }
         else
             WARN << "Activated action index is invalid.";
