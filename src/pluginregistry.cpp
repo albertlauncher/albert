@@ -35,7 +35,7 @@ void PluginRegistry::enable(const QString &id, bool enable)
                 GWARN(QString("Failed loading plugin '%1': %2").arg(id, err));
         } else if (!enable && loader->state() == PluginState::Loaded){
             if (auto err = loader->d->unload(&extension_registry); !err.isNull())
-                GWARN(QString("Failed unloading plugin '%1': %2").arg(id, err))
+                GWARN(QString("Failed unloading plugin '%1': %2").arg(id, err));
         }
     } catch (const out_of_range&) {
         GWARN(QString("Plugin '%1' does not exist.").arg(id));
@@ -51,7 +51,7 @@ void PluginRegistry::load(const QString &id, bool load)
                 GWARN(QString("Failed loading plugin '%1': %2").arg(id, err));
         } else {
             if (auto err = loader->d->unload(&extension_registry); !err.isNull())
-                GWARN(QString("Failed unloading plugin '%1': %2").arg(id, err))
+                GWARN(QString("Failed unloading plugin '%1': %2").arg(id, err));
         }
     } catch (const out_of_range&) {
         GWARN(QString("Plugin '%1' does not exist.").arg(id));

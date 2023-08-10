@@ -3,33 +3,34 @@
 #pragma once
 #include <QLoggingCategory>
 
-#if defined(PROJECT_NAME)
-#define ALBERT_LOGGING_CATEGORY PROJECT_NAME
-#else
-#define ALBERT_LOGGING_CATEGORY "albert"
-#endif
+Q_DECLARE_LOGGING_CATEGORY(AlbertLoggingCategory)
 
-Q_DECLARE_LOGGING_CATEGORY(LoggingCategory)
-
-///
-#define ALBERT_LOGGING Q_LOGGING_CATEGORY(LoggingCategory, ALBERT_LOGGING_CATEGORY)
+/// @brief Defines the logging category used in DEBG, INFO, WARN, CRIT, GWARN, GCRIT
+/// @param name The name of the logging category
+#define ALBERT_LOGGING_CATEGORY(name) Q_LOGGING_CATEGORY(AlbertLoggingCategory, name, QtMsgType::QtInfoMsg)
 
 /// @brief Creates a log object (level debug) you can use to pipe text into (<<).
-#define DEBG qCDebug(LoggingCategory,).noquote()
+#define DEBG qCDebug(AlbertLoggingCategory,).noquote()
 
 /// @brief Creates a log object (level info) you can use to pipe text into (<<).
-#define INFO qCInfo(LoggingCategory,).noquote()
+#define INFO qCInfo(AlbertLoggingCategory,).noquote()
 
 /// @brief Creates a log object (level warning) you can use to pipe text into (<<).
-#define WARN qCWarning(LoggingCategory,).noquote()
+#define WARN qCWarning(AlbertLoggingCategory,).noquote()
 
 /// @brief Creates a log object (level critial) you can use to pipe text into (<<).
-#define CRIT qCCritical(LoggingCategory,).noquote()
+#define CRIT qCCritical(AlbertLoggingCategory,).noquote()
 
 /// @brief Logs and shows a messagebox (level warning).
 /// @param message The message
-#define GWARN(message) { WARN << message; QMessageBox::warning(nullptr, qApp->applicationDisplayName(), message); }
+#define GWARN(message) do{ \
+    WARN << message; \
+    QMessageBox::warning(nullptr, qApp->applicationDisplayName(), message); \
+} while(0)
 
 /// @brief Logs and shows a messagebox (level critical).
 /// @param message The message
-#define GCRIT(message) { CRIT << message; QMessageBox::critical(nullptr, qApp->applicationDisplayName(), message); }
+#define GCRIT(message) do{ \
+    CRIT << message; \
+    QMessageBox::critical(nullptr, qApp->applicationDisplayName(), message); \
+} while(0)

@@ -19,7 +19,7 @@
 #include <QStandardPaths>
 #include <QTime>
 #include <csignal>
-ALBERT_LOGGING
+ALBERT_LOGGING_CATEGORY("albert")
 using namespace std;
 using namespace albert;
 
