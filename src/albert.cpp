@@ -5,7 +5,6 @@
 #include "albert/logging.h"
 #include "albert/util/iconprovider.h"
 #include "app.h"
-#include "platform/platform.h"
 #include <QApplication>
 #include <QClipboard>
 #include <QCommandLineParser>
@@ -189,9 +188,10 @@ int main(int argc, char **argv)
     QCommandLineParser parser;
     auto opt_p = QCommandLineOption({"p", "plugin-dirs"}, "Set the plugin dirs to use. Comma separated.", "directory");
     auto opt_r = QCommandLineOption({"r", "report"}, "Print issue report.");
-    auto opt_q = QCommandLineOption({"q", "quiet"}, "Warnings only.");
-    auto opt_d = QCommandLineOption({"d", "debug"}, "Full debug output. Ignore '--quiet'.");
-    parser.addOptions({opt_p, opt_r, opt_q, opt_d});
+    auto opt_d = QCommandLineOption({"d", "debug"}, "Full debug output.");
+    auto opt_q = QCommandLineOption({"q", "quiet"}, "Warnings only.  Takes precedence over -d.");
+    auto opt_l = QCommandLineOption({"l", "loggin-rules"}, "QLoggingCategory filter rules. Takes precedence over -q.", "rules");
+    parser.addOptions({opt_p, opt_r, opt_q, opt_d, opt_l});
     parser.addPositionalArgument("command", "RPC command to send to the running instance", "[command [params...]]");
     parser.addVersionOption();
     parser.addHelpOption();
@@ -205,11 +205,13 @@ int main(int argc, char **argv)
     if (!parser.positionalArguments().isEmpty())
         RPCServer::trySendMessageAndExit(parser.positionalArguments().join(" "));
 
-    if (parser.isSet(opt_q))
+    if (parser.isSet(opt_l)){
+        QLoggingCategory::setFilterRules(parser.value(opt_l));
+    } else if (parser.isSet(opt_q)){
         QLoggingCategory::setFilterRules("*.debug=false\n*.info=false");
-    else if (parser.isSet(opt_d))
+    } else if (parser.isSet(opt_d)){
         printSystemReport();
-    else
+    } else
         QLoggingCategory::setFilterRules("*.debug=false");
 
     notifyVersionChange();
