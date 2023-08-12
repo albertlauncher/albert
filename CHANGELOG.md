@@ -1,3 +1,86 @@
+v0.22.0 (2023-08-12)
+
+### Albert
+
+* Add commandline option for logging filter rules
+* Add contour terminal
+* Add settingswindow shortcut action for plugin settings
+* Add feature copy and paste
+* Add "Run empty query" option
+* Add handler configurations tab
+* Sort fallbacks
+* LexSort items having equal score
+* Doxygen documentation
+
+API 0.22:
+
+* TriggerQueryHandler
+    * Add bool supportsFuzzyMatching()
+    * Add bool fuzzyMatchingEnabled()
+    * Add void setFuzzyMatchingEnabled(bool)
+    * Add QString trigger() (the user configured one)
+* GlobalQueryHandler
+    * Add applyUsageScore(…).
+    * Inherit TQH, i.e. every handler is a TQH
+* IndexQueryHandler
+    * Reimplement TQH fuzzy methods
+    * Default synopsis <filter>
+* Plugin system
+    * Revert multithreaded plugin laoding (Qt makes problems everywhere)
+    * Statically inject metadata, use it for PluginInstances
+    * Move native plugin interface into plugin:: namespace
+    * Cache/Conf/Data dirs per plugin only (were per Extension)
+    * Add PluginInstance::extensions()
+    * Add Template based ExtensionPlugin(Instance)
+    * Make native plugin a template class to allow subclassing any QObject
+* Frontend:
+    * Add Frontend::winId, Move the window quirks to the core
+    * Use appwide input history file
+    * Add generic qml/widgets icon provider to interface
+    * Add generic icon provider, creating icons on the fly
+* Fuctions and macros:
+    * Put all free functions in albert.h
+    * Add openUrl QUrl overload
+    * Add convenience macros for user property definition
+    * Require albert logging category to pass the name
+    * Add state file
+    * Add global settings factory
+* Rename History to InputHistory
+* Drop QueryHandler convenience class
+* Drop global albert.h include
+
+### Plugins
+
+* [clipboard]
+    * Add paste action
+* [wbm]
+    * Remove option "display icon"
+    * Appwide input history
+* [websearch]
+    * Adopt to sorted fallbacks, drop dragndrop in listview
+    * Add drag'n'drop image feature
+* [snippets]
+    * Add paste action
+* [qml:2.0] Revamped QML frontend
+* [python]
+    * Mimic internal api as close as possible
+    * Attach logging functions to plugin modules
+    * Expose albert::setClipboardTextAndPaste
+    * Expose albert::Notification
+* [files]
+    * Show filePath instead path in subtext
+    * Add option for case sentivity of fs browsers.
+    * Add user property for inline config
+
+### Python plugins
+
+* Interface v2.0 stub
+* [emoji] New generic and platform agnostic emoji implementation
+* [duckduckgo] Add extension
+* [color] Add extension
+
+And loads of other changes…
+
 v0.21.1 (2023-06-27)
 
 [albert]
