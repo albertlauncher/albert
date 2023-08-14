@@ -1,3 +1,20 @@
+v0.22.1 (2023-08-14)
+
+[albert]
+* Freedesktop notification implementation
+* Adopt generic Notification interface on macOS
+* Fix Linux paste action
+
+[plugins]
+* [apps_xdg] Default trigger "apps"
+* [yp] Update notification function
+* [py] Fix function warn > warning
+* [clipboard] Add paste action
+
+[python]
+* [pint,yt] Archived. Require maintenance
+* [timer] Adopt notification api changes
+
 v0.22.0 (2023-08-12)
 
 ### Albert
