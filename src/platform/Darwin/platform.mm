@@ -151,12 +151,12 @@ public:
     NSUserNotification *notification;
 };
 
-albert::Notification::Notification(const QString &title, const QString &subTitle, const QString &text) : d(new NotificationPrivate)
+albert::Notification::Notification(const QString &title, const QString &body) : d(new NotificationPrivate)
 {
     d->notification = [[NSUserNotification alloc] init];
     d->notification.title = title.toNSString();
-    d->notification.subtitle = subTitle.toNSString();
-    d->notification.informativeText = text.toNSString();
+//    d->notification.subtitle = body.toNSString();
+    d->notification.informativeText = body.toNSString();
     d->notification.hasActionButton = NO;
     d->notification.soundName = NSUserNotificationDefaultSoundName;
     [NSUserNotificationCenter.defaultUserNotificationCenter deliverNotification:d->notification];
