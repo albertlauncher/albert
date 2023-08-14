@@ -37,11 +37,7 @@ static QStringList defaultPaths()
 #include <QCoreApplication>
 static QStringList defaultPaths()
 {
-    QStringList default_paths;
-    QDir d(QCoreApplication::applicationDirPath());
-    d.cd("../PlugIns");
-    default_paths.push_back(d.canonicalPath());
-    return default_paths;
+    return {QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("plugins")};
 }
 #endif
 
