@@ -51,11 +51,11 @@ protected:
 
 
 ///
-/// Covenience template class used for the most common case of a plugin
+/// Convenience template class used for the most common case of a plugin
 /// providing exactly one extension.
 /// Inherits PluginInstance and any given Extension, overrides the virtual
-/// functions of Extension using the plugin metadata and returns self in Plugin
-/// Instance::extension.
+/// functions of Extension using the plugin metadata and returns self in
+/// PluginInstance::extensions.
 /// @tparam EXTENSION The Extension(subclass) to inherit.
 ///
 template <class EXTENSION>

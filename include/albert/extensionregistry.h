@@ -8,8 +8,8 @@
 
 namespace albert
 {
-/// The common extension registry
-/// Use the main thread only. Neither threadsafe, nor reentrant.
+/// The common extension registry.
+/// Use in the main thread only. Neither threadsafe, nor reentrant.
 class ALBERT_EXPORT ExtensionRegistry : public QObject
 {
     Q_OBJECT
