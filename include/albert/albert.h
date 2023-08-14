@@ -83,7 +83,7 @@ ALBERT_EXPORT void runTerminal(const QString &script = {}, const QString &workin
 class ALBERT_EXPORT Notification
 {
 public:
-    Notification(const QString &title={}, const QString &subTitle={}, const QString &text={});
+    Notification(const QString &title={}, const QString &body={});
     ~Notification();
 
 private:

@@ -134,6 +134,7 @@ set_target_properties(${TARGET_LIB} PROPERTIES
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
     if (DEFINED CMAKE_LIBRARY_ARCHITECTURE)
         target_compile_definitions(${TARGET_LIB} PRIVATE -DMULTIARCH_TUPLE="${CMAKE_LIBRARY_ARCHITECTURE}")
+        target_link_libraries(${TARGET_LIB} PRIVATE Qt6::DBus)  # notifications
     endif()
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_link_libraries(${TARGET_LIB} PRIVATE objc "-framework Cocoa")
