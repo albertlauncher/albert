@@ -1,3 +1,13 @@
+v0.22.2 (2023-08-14)
+
+[albert]
+* Fix logging filters
+* Proper database move
+
+[plugins]
+* [ws] Fix websearch breaking users search engines config
+* [ws] Fix websearch not applying icon when selected from file dialog
+
 v0.22.1 (2023-08-14)
 
 [albert]
@@ -470,7 +480,7 @@ v0.18.6 (2023-01-05)
 * Support wezterm.
 
 [plugins]
-* Python 1.5 
+* Python 1.5
  * sendTrayNotification(…) add ms parameter
 * Hash 1.5
  * Global query handler
@@ -520,7 +530,7 @@ Note that there have been some breaking changes. The new plugin id format change
 
 [albert]
 
-* Shorter plugin ids. 
+* Shorter plugin ids.
 * Customizeable triggers (if the extension permits)
 * Central plugin management
 * More useful plugin metadata
