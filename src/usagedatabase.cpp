@@ -172,10 +172,16 @@ void UsageHistory::db_connect()
     auto db = QSqlDatabase::addDatabase("QSQLITE", db_conn_name);
 
     // Move db to config location
-    if (auto config_dir = QDir(configLocation()); config_dir.exists(db_file_name))
-        if(!QFile::rename(QDir(configLocation()).absoluteFilePath(db_file_name),
-                           QDir(dataLocation()).absoluteFilePath(db_file_name)))
-            qFatal("Failed to move the usage database to data location");
+    auto conf_loc = QDir(configLocation()).absoluteFilePath(db_file_name);
+    auto data_loc = QDir(dataLocation()).absoluteFilePath(db_file_name);
+    if (QFile::exists(conf_loc)){
+        if (QFile::exists(data_loc))
+            QFile::moveToTrash(conf_loc);
+        else {
+            if(!QFile::rename(conf_loc, data_loc))
+                CRIT << "Failed to move the usage database to data location";
+        }
+    }
 
     DEBG << "Database: Connecting…";
     TimePrinter tp("Database: Connected (%1 ms).");
