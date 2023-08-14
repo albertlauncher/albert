@@ -211,6 +211,7 @@ int main(int argc, char **argv)
         QLoggingCategory::setFilterRules("*.debug=false\n*.info=false");
     } else if (parser.isSet(opt_d)){
         printSystemReport();
+        QLoggingCategory::setFilterRules("");
     } else
         QLoggingCategory::setFilterRules("*.debug=false");
 
