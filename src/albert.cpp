@@ -320,10 +320,11 @@ void albert::setClipboardTextAndPaste(const QString &text)
     if (qApp->platformName() == QStringLiteral("wayland")){
         QMessageBox::information(nullptr, qApp->applicationDisplayName(), "Pasting is not supported on wayland.");
     } else {
-        auto ret = QProcess::execute("xdotool", {"key", "ctrl+v"});
-        if (ret != 0){
-            QMessageBox::information(nullptr, qApp->applicationDisplayName(),
-                                     "Pasting failed. Is xdotool installed?");
+        QApplication::processEvents();
+        if (0 > runDetachedProcess({"sh", "-c", "sleep 0.1 && xdotool key ctrl+v"})){
+            QString msg = "Failed running xdotool. Is it installed?";
+            WARN << msg;
+            QMessageBox::warning(nullptr, qApp->applicationDisplayName(), msg);
         }
     }
 #elif defined Q_OS_WIN
