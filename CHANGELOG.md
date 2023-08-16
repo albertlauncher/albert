@@ -1,3 +1,8 @@
+v0.22.3 (2023-08-17)
+
+[albert]
+* Dont show version notification before app is fully initialized
+
 v0.22.2 (2023-08-14)
 
 [albert]
