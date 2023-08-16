@@ -1,5 +1,5 @@
-#FROM archinux:latest AS builder
-FROM agners/archlinuxarm AS builder
+FROM archlinux:latest AS builder
+#FROM agners/archlinuxarm AS builder
 
 RUN pacman -Syu --verbose --noconfirm \
     cmake \
