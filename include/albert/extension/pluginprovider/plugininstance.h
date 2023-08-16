@@ -54,22 +54,27 @@ protected:
 /// Convenience template class used for the most common case of a plugin
 /// providing exactly one extension.
 /// Inherits PluginInstance and any given Extension, overrides the virtual
-/// functions of Extension using the plugin metadata and returns self in
+/// functions of Extension using the plugin metadata and returns itself in
 /// PluginInstance::extensions.
-/// @tparam EXTENSION The Extension(subclass) to inherit.
+/// @tparam EXTENSION The Extension (subclass) to inherit.
 ///
 template <class EXTENSION>
 class ALBERT_EXPORT ExtensionPluginInstance : public PluginInstance, public EXTENSION
 {
 public:
+
+    /// Override returning PluginInstance::id
     QString id() const override { return PluginInstance::id(); }
+
+    /// Override returning PluginInstance::name
     QString name() const override { return PluginInstance::name(); }
+
+    /// Override returning PluginInstance::description
     QString description() const override { return PluginInstance::description(); }
+
+    /// Override returning `this`
     std::vector<Extension*> extensions() override { return {this}; }
 };
-
-
-
 
 
 }
