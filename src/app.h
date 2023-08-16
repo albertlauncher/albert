@@ -50,9 +50,9 @@ public:
     void setFrontend(const QString &id);
 
 private:
-
     void loadAnyFrontend();
     QString loadFrontend(QtPluginLoader *loader);
+    void notifyVersionChange();
 
     friend int ::main(int, char**);
 };

@@ -21,11 +21,8 @@
 ALBERT_LOGGING_CATEGORY("albert")
 using namespace std;
 using namespace albert;
-
-namespace {
-static const char *STATE_LAST_USED_VERSION = "last_used_version";
 static App *app;
-}
+
 
 static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
@@ -143,37 +140,6 @@ static void printSystemReport()
     out.flush();
 }
 
-static void notifyVersionChange()
-{
-    auto state = albert::state();
-    auto current_version = qApp->applicationVersion();
-
-    // Move to state // TODO remove on next major version
-    if (albert::settings()->contains(STATE_LAST_USED_VERSION)){
-        state->setValue(STATE_LAST_USED_VERSION, albert::settings()->value(STATE_LAST_USED_VERSION));
-        albert::settings()->remove(STATE_LAST_USED_VERSION);
-    }
-
-    auto last_used_version = state->value(STATE_LAST_USED_VERSION).toString();
-
-    if (last_used_version.isNull()){  // First run
-        QMessageBox(
-                QMessageBox::Warning, "First run",
-                "This is the first time you've launched Albert. Albert is plugin based. "
-                "You have to enable some plugins you want to use.").exec();
-        albert::showSettings();
-    }
-    else if (current_version.section('.', 1, 1) != last_used_version.section('.', 1, 1) )  // FIXME in first major version
-        QMessageBox(QMessageBox::Information, "Major version changed",
-                    QString("You are now using Albert %1. The major version changed. "
-                            "Some parts of the API might have changed. Check the "
-                            "<a href=\"https://albertlauncher.github.io/news/\">news</a>.")
-                            .arg(current_version)).exec();
-
-    if (last_used_version != current_version)
-        state->setValue(STATE_LAST_USED_VERSION, current_version);
-}
-
 int ALBERT_EXPORT main(int argc, char **argv);
 
 int main(int argc, char **argv)
@@ -215,13 +181,9 @@ int main(int argc, char **argv)
     } else
         QLoggingCategory::setFilterRules("*.debug=false");
 
-    notifyVersionChange();
-
     app = new App(parser.value(opt_p).split(',', Qt::SkipEmptyParts));
-    QTimer::singleShot(0, [](){ app->initialize(); }); // Init with running eventloop
+    QTimer::singleShot(0, qApp, [](){ app->initialize(); }); // Init with running eventloop
     QObject::connect(qApp, &QApplication::aboutToQuit, [&]() { delete app; }); // Delete app _before_ loop exits
-
-//    albert::showSettings();
 
     int return_value = qApp->exec();
     if (return_value == -1 && runDetachedProcess(qApp->arguments(), QDir::currentPath()))
