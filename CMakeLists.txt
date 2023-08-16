@@ -138,7 +138,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD
     endif()
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_link_libraries(${TARGET_LIB} PRIVATE objc "-framework Cocoa")
-    target_link_libraries(${TARGET_LIB} PRIVATE objc "-framework UserNotifications")
+    #target_link_libraries(${TARGET_LIB} PRIVATE objc "-framework UserNotifications")
 endif()
 
 #message("CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}")

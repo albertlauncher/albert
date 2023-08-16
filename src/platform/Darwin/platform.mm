@@ -26,45 +26,48 @@ static void requestAccessibilityPermissions(){
 
 static void requestNotificationPermissions()
 {
-    // https://developer.apple.com/documentation/usernotifications/asking_permission_to_use_notifications?language=objc
+//    // https://developer.apple.com/documentation/usernotifications/asking_permission_to_use_notifications?language=objc
 
-    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-    [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * _Nonnull settings) {
-        switch (settings.authorizationStatus) {
+//    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
 
-        case UNAuthorizationStatusNotDetermined:{
-            WARN << "UNAuthorizationStatusNotDetermined";
 
-            [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert + UNAuthorizationOptionSound)
-                                  completionHandler:^(BOOL granted, NSError * _Nullable error) {
+//    [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert + UNAuthorizationOptionSound)
+//                          completionHandler:^(BOOL granted, NSError * _Nullable error) {
 
-                                        if (error) {
-                                            WARN << QString::fromNSString(error.localizedDescription);
-                                        }
+//                              if (error) {
+//                                  WARN << QString::fromNSString(error.localizedDescription);
+//                              }
 
-                                        if (granted) {
-                                            WARN << "granted";
-                                        } else {
-                                            WARN << "denied";
-                                            CRIT << "Notification permissions are mandatory.";
-                                        }
-                                  }];
+//                              if (granted) {
+//                                  WARN << "granted";
+//                              } else {
+//                                  WARN << "denied";
+//                                  CRIT << "Notification permissions are mandatory.";
+//                              }
+//                          }];
 
-            break;
-            }
-        case UNAuthorizationStatusDenied:
-            WARN << "UNAuthorizationStatusDenied";
-            break;
-        case UNAuthorizationStatusAuthorized:
-            WARN << "UNAuthorizationStatusAuthorized";
-            break;
-        case UNAuthorizationStatusProvisional:
-            WARN << "UNAuthorizationStatusProvisional";
-            break;
-        default:
-            break;
-        }
-    }];
+//    [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * _Nonnull settings) {
+//        switch (settings.authorizationStatus) {
+
+//        case UNAuthorizationStatusNotDetermined:{
+//            WARN << "UNAuthorizationStatusNotDetermined";
+
+
+//            break;
+//            }
+//        case UNAuthorizationStatusDenied:
+//            WARN << "UNAuthorizationStatusDenied";
+//            break;
+//        case UNAuthorizationStatusAuthorized:
+//            WARN << "UNAuthorizationStatusAuthorized";
+//            break;
+//        case UNAuthorizationStatusProvisional:
+//            WARN << "UNAuthorizationStatusProvisional";
+//            break;
+//        default:
+//            break;
+//        }
+//    }];
 }
 
 void platform::initPlatform()
