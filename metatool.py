@@ -166,9 +166,7 @@ Check the [GitHub repositories](https://github.com/albertlauncher/albert/commits
         run(["git", "commit", "-m", f"Albert v{args.version} released"], cwd=docs_root_path).check_returncode()
         run(["git", "push"], cwd=root).check_returncode()
 
-        run(["make", "build"], cwd=root/"documentation").check_returncode()
-        run(["make", "check"], cwd=root/"documentation")
-        run(["make", "deploy"], cwd=root/"documentation").check_returncode()
+        run(["make", "release"], cwd=root/"documentation").check_returncode()
 
     print("Done.")
 
@@ -181,11 +179,11 @@ def main():
     sp.set_defaults(func=lambda args: print(create_changelog(args)))
 
     sp = sps.add_parser('test', help='Test build using docker.')
-    sp.add_argument('index', nargs='?')
+    sp.add_argument('index', nargs='?', default='')
     sp.set_defaults(func=test_build)
 
     sp = sps.add_parser('testrun', help='Test run using docker.')
-    sp.add_argument('index', nargs='?')
+    sp.add_argument('index', nargs='?', default='')
     sp.set_defaults(func=test_run)
 
     sp = sps.add_parser('release', help="Release a new version.")
