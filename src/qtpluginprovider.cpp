@@ -46,7 +46,6 @@ QtPluginProvider::QtPluginProvider(QStringList additional_paths):
 {
     /// Lookup is fast and frontend needed before the registry calls
     /// plugins(), therefore lookup actually happens in ctor
-    TimePrinter tp("[%1 ms] QtPluginProvider::plugins");
     for (const auto &path : paths_) {
         DEBG << "Searching native plugins in" << path;
         QDirIterator dirIterator(path, QDir::Files);
