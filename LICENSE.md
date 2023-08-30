@@ -18,5 +18,4 @@ Binary distribution is explicitly permitted for the following distributions/plat
 - Gentoo and its derivates
 - Mandriva and its derivates
 - Slackware and its derivates
-- macOS
 - openSUSE and its derivates

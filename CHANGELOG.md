@@ -1,3 +1,21 @@
+v0.22.4 (2023-08-30)
+
+[plugins]
+* [docs] Add cache for docset list
+* [docs] Use find_program to find brew for ootb cmake config
+* [muparser] Use find_program to find brew for ootb cmake config
+* [py] Silently skip dirs and files that are no python modules
+* [py] iid v2.1: Add config facilities
+* [qalcualte] Use find_program to find brew for ootb cmake config
+* [qml] Add Cmd/Ctrl+Enter/Return to show actions
+* [snippets] Port old snippets
+
+[python]
+* [googletrans] Archive. py-googletrans is broken.
+* [translators] Add "translators" plugin
+* [emoji] Add "Use derived emojis" option
+* [dice_roll] iid 2.0
+
 v0.22.3 (2023-08-17)
 
 [albert]
