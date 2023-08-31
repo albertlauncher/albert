@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-11, macos-12, macos-13]
+        build_type: [Release]
+        qt_version: [6.5.2]  # 6.2.4
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Install Qt dependencies
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{ matrix.qt_version }}
+          #cache: true
+          modules: 'qtscxml'
+      - name: Install dependencies using HomeBrew
+        run : brew install pybind11 libqalculate muparser libarchive
+      - name: Get latest CMake and ninja
+        uses: lukka/get-cmake@latest
+      - name: Run CMake
+        run: cmake -S . -B build
+      - name: Build
+        run: cmake --build build
+
+  linux-dockerized:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Build docker test image for ArchLinux
+        run: docker build . --file .docker/arch.Dockerfile
+      - name: Build docker test image for Fedora:latest
+        run: docker build . --file .docker/fedora.latest.Dockerfile
+      - name: Build docker test image for Ubuntu:22.04
+        run: docker build . --file .docker/ubuntu.2204.Dockerfile
