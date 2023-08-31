@@ -70,7 +70,9 @@ public:
                 return pm;
             }
 
-        } else if (url.scheme() == QStringLiteral("qfip")){
+        }
+
+	 else if (url.scheme() == QStringLiteral("qfip")){
             // https://doc.qt.io/qt-6/qfileiconprovider.html
             if (auto pm = file_icon_provider.icon(QFileInfo(url.toString(QUrl::RemoveScheme))).pixmap(requestedSize); !pm.isNull()){
                 *size = pm.size();
@@ -78,14 +80,18 @@ public:
             }
 
 
-        } else if (url.scheme() == QStringLiteral("xdg")){
+        }
+#if defined Q_OS_LINUX or defined Q_OS_FREEBSD
+        else if (url.scheme() == QStringLiteral("xdg")){
             // https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
             if (auto pm = QPixmap(XDG::IconLookup::iconPath(url.toString(QUrl::RemoveScheme))); !pm.isNull()){
                 *size = pm.size();
                 return pm;
             }
 
-        } else if (url.scheme() == QStringLiteral("qsp")){
+        }
+#endif
+	else if (url.scheme() == QStringLiteral("qsp")){
             // https://doc.qt.io/qt-6/qstyle.html#StandardPixmap-enum
             auto meta_enum = QMetaEnum::fromType<QStyle::StandardPixmap>();
             auto name = url.toString(QUrl::RemoveScheme);
