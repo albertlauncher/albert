@@ -31,7 +31,7 @@ static QString userShell()
 }
 
 
-#if defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
 
 
 struct ExecutableTerminal : public Terminal

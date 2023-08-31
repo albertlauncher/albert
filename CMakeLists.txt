@@ -67,12 +67,19 @@ file(GLOB LIB_SRC
     src/settings/*.h
     src/settings/*.cpp
 )
+if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
 file(GLOB_RECURSE LIB_SRC_PLATFORM
-    src/platform/${CMAKE_SYSTEM_NAME}/*.h
+    src/Platform/Linux/*.h
+    src/platform/Linux/*.cpp
+    src/platform/Linux/*.mm
+)
+else()
+file(GLOB_RECURSE LIB_SRC_PLATFORM
+    src/Platform/${CMAKE_SYSTEM_NAME}/*.h
     src/platform/${CMAKE_SYSTEM_NAME}/*.cpp
     src/platform/${CMAKE_SYSTEM_NAME}/*.mm
 )
-
+endif()
 add_library(${TARGET_LIB} SHARED
     ${LIB_PUBLIC_HEADER}
     ${LIB_SRC_PLATFORM}
