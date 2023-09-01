@@ -14,7 +14,7 @@
 #include <mutex>
 #include <shared_mutex>
 #include <unordered_map>
-#if defined Q_OS_LINUX
+#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
 #include "platform/Linux/xdg/iconlookup.h"
 #endif
 using namespace albert;
@@ -77,7 +77,7 @@ public:
                 return pm;
             }
 
-#if defined Q_OS_LINUX or defined Q_OS_FREEBSD
+#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
         } else if (url.scheme() == QStringLiteral("xdg")){
             // https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
             if (auto pm = QPixmap(XDG::IconLookup::iconPath(url.toString(QUrl::RemoveScheme))); !pm.isNull()){

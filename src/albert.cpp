@@ -130,7 +130,7 @@ static void printSystemReport()
     QLocale loc;
     print(QString("%1: %2").arg("Language", w).arg(metaEnum.valueToKey(loc.language())));
     print(QString("%1: %2").arg("Locale", w).arg(loc.name()));
-#if defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
     print(QString("%1: %2").arg("$XDG_SESSION_TYPE", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_TYPE"))));
     print(QString("%1: %2").arg("$XDG_CURRENT_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_CURRENT_DESKTOP"))));
     print(QString("%1: %2").arg("$DESKTOP_SESSION", w).arg(QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION"))));
@@ -279,7 +279,7 @@ void albert::setClipboardTextAndPaste(const QString &text)
         "osascript", "-e",
         R"(tell application "System Events" to keystroke "v" using command down)"
     });
-#elif defined Q_OS_LINUX
+#elif defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
     if (qApp->platformName() == QStringLiteral("wayland")){
         QMessageBox::information(nullptr, qApp->applicationDisplayName(), "Pasting is not supported on wayland.");
     } else {
