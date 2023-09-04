@@ -35,8 +35,11 @@ XDG::IconLookup::IconLookup()
         if (QFile::exists(path = QDir(basedir).filePath("icons")))
             iconDirs_.append(path);
 
-    path = "/usr/share/pixmaps";
-    if (QFile::exists(path))
+    // Not in spec, but for tolerance
+    if (path = QStringLiteral("/usr/local/share/pixmaps"); QFile::exists(path))
+        iconDirs_.append(path);
+
+    if (path = QStringLiteral("/usr/local/pixmaps"); QFile::exists(path))
         iconDirs_.append(path);
 }
 
