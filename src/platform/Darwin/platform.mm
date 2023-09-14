@@ -148,6 +148,9 @@ void platform::initNativeWindow(unsigned long long wid)
     [NSApp hide:nil];  // The app activates on start. undo.
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 class NotificationPrivate
 {
 public:
@@ -171,6 +174,8 @@ albert::Notification::~Notification()
     [d->notification release];
     delete d;
 }
+
+#pragma clang diagnostic pop
 
 
 
