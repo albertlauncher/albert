@@ -81,6 +81,14 @@ static void installSignalHandlers()
 
 static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
 {
+    // Put /usr/local/bin hardcoded to env
+    auto usr_local_bin = QStringLiteral("/usr/local/bin");
+    auto PATHS = QString(qgetenv("PATH")).split(':');
+    if (!PATHS.contains(usr_local_bin))
+        PATHS.prepend(usr_local_bin);
+    auto PATH = PATHS.join(':').toLocal8Bit();
+    qputenv("PATH", PATH);
+
     if (const char *key = "LANGUAGE"; qEnvironmentVariableIsSet(key))
         QLocale::setDefault(QLocale(qEnvironmentVariable(key)));
     else if (key = "LANG"; qEnvironmentVariableIsSet(key))
@@ -123,6 +131,7 @@ static void printSystemReport()
     print(QString("%1: %2").arg("Platform name", w).arg(QGuiApplication::platformName()));
     print(QString("%1: %2").arg("Font", w).arg(QGuiApplication::font().toString()));
     print(QString("%1: %2").arg("Binary location", w).arg(QApplication::applicationFilePath()));
+    print(QString("%1: %2").arg("$PATH", w).arg(QString::fromLocal8Bit(qgetenv("PATH"))));
     print(QString("%1: %2").arg("$PWD", w).arg(QString::fromLocal8Bit(qgetenv("PWD"))));
     print(QString("%1: %2").arg("$SHELL", w).arg(QString::fromLocal8Bit(qgetenv("SHELL"))));
     print(QString("%1: %2").arg("$LANG", w).arg(QString::fromLocal8Bit(qgetenv("LANG"))));
