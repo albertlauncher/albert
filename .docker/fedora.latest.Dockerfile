@@ -5,6 +5,7 @@ RUN yum install -y \
     libarchive-devel \
     libqalculate-devel \
     muParser-devel \
+    pkgconfig \
     pybind11-devel \
     python3-devel \
     qt6-qtbase \

@@ -17,6 +17,7 @@ RUN apt-get install --no-install-recommends -y \
         libqt6sql6-sqlite \
         libqt6svg6-dev \
         make \
+        pkg-config \
         pybind11-dev \
         python3-dev \
         qt6-base-dev \

@@ -10,6 +10,7 @@ RUN pacman -Syu --verbose --noconfirm \
     muparser \
     pybind11 \
     python \
+    pkgconf \
     qt6-base \
     qt6-declarative \
     qt6-scxml \
