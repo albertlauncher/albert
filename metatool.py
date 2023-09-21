@@ -129,7 +129,7 @@ def release(args):
             file.write(f"v{args.version} ({datetime.date.today().strftime('%Y-%m-%d')})\n\n{changelog}\n\n{old_changelog}")
 
         print("Update CMake project version…")
-        run(["sed", "-i.bak", f"s/^project.*$/project(albert VERSION {args.version})/", root/"CMakeLists.txt"], cwd=root).check_returncode()
+        run(["sed", "-i.bak", f"s/^    VERSION.*$/    VERSION {args.version}/", root/"CMakeLists.txt"], cwd=root).check_returncode()
 
         run(["git", "add", root/"CHANGELOG.md", root/"CMakeLists.txt"], cwd=root).check_returncode()
         run(["git", "commit", "-m", f"v{args.version}"], cwd=root).check_returncode()
