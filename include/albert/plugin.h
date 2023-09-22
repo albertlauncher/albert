@@ -94,23 +94,37 @@ namespace albert::plugin
 {
 
 ///
-/// \brief The entry point class for native plugins.
-/// \details Allows subclassing any QObject derived class.
-/// \tparam QOBJECT The QObject (subclass) to inherit. Defaults to OObject
+/// Convenience class for native plugins.
 ///
-/// @note Boolean user properties of registered extensions will be picked
-/// up by the 'albert' extension using the Qt metatype system and are provided
-/// to the as inline options.
-/// @sa ALBERT_PLUGIN_PROPERTY,
-///     ALBERT_PLUGIN_PROPERTY_NONTRIVIAL and
-///     ALBERT_PLUGIN_PROPERTY_CONNECT.
+/// Native plugins have to inherit the albert::PluginInstance interface. Qt
+/// plugins in general have to inherit QObject. This template class combines
+/// these requirements while keeping the flexibility to inherit any subclass
+/// of QObject.
+///
+/// To declare this class as the plugin class that should be instanciated at
+/// runtime you have to add the #ALBERT_PLUGIN macro to the class definition.
+/// Dont forget the Q_OBJECT macro.
+///
+/// Boolean user QPROPERTY's of registered plugins will be picked up by the
+/// core extension and are provided to the user as inline options. See
+/// #ALBERT_PLUGIN_PROPERTY, #ALBERT_PLUGIN_PROPERTY_NONTRIVIAL and
+/// #ALBERT_PLUGIN_PROPERTY_CONNECT.
+///
+/// \tparam QOBJECT The QObject (subclass) to inherit. Defaults to OObject
 ///
 template <class QOBJECT = QObject>
 class ALBERT_EXPORT Plugin : public QOBJECT, public albert::PluginInstance {};
 
 
 ///
-/// \copydoc ExtensionPluginInstance
+/// Convenience class for native plugins.
+///
+/// Similar to albert::plugin::Plugin, but inherits
+/// albert::ExtensionPluginInstance instead of albert::PluginInstance.
+///
+/// \sa albert::plugin::Plugin albert::ExtensionPluginInstance
+///
+/// \tparam EXTENSION The Extension (subclass) to inherit.
 /// \tparam QOBJECT The QObject (subclass) to inherit. Defaults to OObject
 ///
 template <class EXTENSION, class QOBJECT = QObject>

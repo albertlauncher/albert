@@ -15,8 +15,11 @@ namespace albert
 class Extension;
 class ExtensionRegistry;
 
+///
 /// Abstract plugin instance class.
-/// Instanciated by a PluginLoader.
+///
+/// This is the interface every plugin has to implement.
+///
 class ALBERT_EXPORT PluginInstance
 {
 public:
@@ -51,11 +54,13 @@ protected:
 
 
 ///
-/// Convenience template class used for the most common case of a plugin
+/// Convenience template class for the most common case of a plugin
 /// providing exactly one extension.
+///
 /// Inherits PluginInstance and any given Extension, overrides the virtual
 /// functions of Extension using the plugin metadata and returns itself in
 /// PluginInstance::extensions.
+///
 /// @tparam EXTENSION The Extension (subclass) to inherit.
 ///
 template <class EXTENSION>
