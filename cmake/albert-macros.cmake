@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.19)  # string(JSON…
 
+# on macOS include the macports lookup path
+if (APPLE)
+    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} /opt/local)
+endif()
+
+
 macro(albert_plugin_generate_metadata_json)
     set(MD "{}")
     string(JSON MD SET ${MD} "id" "\"${PROJECT_NAME}\"")
@@ -62,7 +68,6 @@ macro(albert_plugin_add_default_target)
         ${PROJECT_NAME} PROPERTIES
         CXX_VISIBILITY_PRESET hidden
         VISIBILITY_INLINES_HIDDEN 1
-        INSTALL_RPATH "$ORIGIN"
     )
 
     #include(GenerateExportHeader)
