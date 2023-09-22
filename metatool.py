@@ -164,7 +164,7 @@ Check the [GitHub repositories](https://github.com/albertlauncher/albert/commits
 
         run(["git", "add", relative_file_path], cwd=docs_root_path).check_returncode()
         run(["git", "commit", "-m", f"Albert v{args.version} released"], cwd=docs_root_path).check_returncode()
-        run(["git", "push"], cwd=root).check_returncode()
+        run(["git", "push"], cwd=docs_root_path).check_returncode()
 
     print("Done.")
 
