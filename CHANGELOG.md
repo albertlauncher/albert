@@ -1,3 +1,29 @@
+v0.22.5 (2023-09-22)
+
+[albert]
+* CMake: On macOS include the macports lookup path
+* Fix segfaults on busywait
+* Hardcode /usr/local/bin to PATH
+* Move last report ts from settings to state
+* Add iconlookup in /usr/local/share although not standardized
+
+[plugins]
+* [qml] Add hack around lacking DropShadow.samples in Qt <6.4
+* [apps_macos] v1.3
+    * Find all apps in home dir
+    * Keep apps up to date unsing online search
+    * Localized app names
+    * Add prefpanes
+* [docs] Disable build on macOS. Licensing does not allow usage on macOS.
+* [files] Add emtpy trash action on macos
+* [muparser] Archive muparser. One calculator is enough.
+* [qml] Fix shadow clipping
+* [qml] Fix clear on hide breaking history search
+
+[python]
+* [goldendict] Fix import issue
+* [pass] Add OTP feature
+
 v0.22.4 (2023-08-30)
 
 [plugins]
