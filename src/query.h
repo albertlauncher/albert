@@ -14,7 +14,6 @@ class QueryBase : public albert::Query
 {
 public:
     explicit QueryBase(std::vector<albert::FallbackHandler*> fallback_handlers, QString string);
-    ~QueryBase() override;
 
     void run() override;
     void cancel() override;
@@ -54,6 +53,7 @@ public:
     TriggerQuery(std::vector<albert::FallbackHandler*> &&fallback_handlers,
                           albert::TriggerQueryHandler *query_handler,
                           QString string, QString trigger);
+    ~TriggerQuery() override;
 
     void run_() override;
 
@@ -75,6 +75,8 @@ public:
     GlobalQuery(std::vector<albert::FallbackHandler*> &&fallback_handlers,
                          std::vector<albert::GlobalQueryHandler*> &&query_handlers,
                          QString string);
+    ~GlobalQuery() override;
+
     void run_() override;
 
     QString trigger() const override;

@@ -21,16 +21,6 @@ QueryBase::QueryBase(vector<FallbackHandler*> fallback_handlers, QString string)
     connect(&future_watcher_, &decltype(future_watcher_)::finished, this, &QueryBase::finished);
 }
 
-QueryBase::~QueryBase()
-{
-    // Avoid segfaults when handler write on a deleted query
-    if (!future_watcher_.isFinished()) {
-        WARN << QString("Busy wait on query: #%1").arg(query_id);
-        future_watcher_.waitForFinished();
-    }
-    DEBG << QString("Query deleted. [#%1 '%2']").arg(query_id).arg(string_);
-}
-
 void QueryBase::run()
 {
     future_watcher_.setFuture(QtConcurrent::run([this](){
@@ -84,6 +74,16 @@ TriggerQuery::TriggerQuery(std::vector<FallbackHandler *> &&fallback_handlers,
     synopsis_ = query_handler->synopsis();
 }
 
+TriggerQuery::~TriggerQuery()
+{
+    // Avoid segfaults when handler write on a deleted query
+    if (!future_watcher_.isFinished()) {
+        WARN << QString("Busy wait on query: #%1").arg(query_id);
+        future_watcher_.waitForFinished();
+    }
+    DEBG << QString("Query deleted. [#%1 '%2']").arg(query_id).arg(string_);
+}
+
 QString TriggerQuery::trigger() const { return trigger_; }
 
 QString TriggerQuery::string() const { return string_; }
@@ -120,6 +120,16 @@ GlobalQuery::GlobalQuery(vector<FallbackHandler*> &&fallback_handlers,
     QueryBase(::move(fallback_handlers), ::move(string)),
     query_handlers_(::move(query_handlers))
 {
+}
+
+GlobalQuery::~GlobalQuery()
+{
+    // Avoid segfaults when handler write on a deleted query
+    if (!future_watcher_.isFinished()) {
+        WARN << QString("Busy wait on query: #%1").arg(query_id);
+        future_watcher_.waitForFinished();
+    }
+    DEBG << QString("Query deleted. [#%1 '%2']").arg(query_id).arg(string_);
 }
 
 QString GlobalQuery::trigger() const { return {}; }
