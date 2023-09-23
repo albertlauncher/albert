@@ -51,7 +51,7 @@ QtPluginProvider::QtPluginProvider(QStringList additional_paths):
         QDirIterator dirIterator(path, QDir::Files);
         while (dirIterator.hasNext()) {
             try {
-                auto loader = make_unique<QtPluginLoader>(*this, dirIterator.next());
+                auto loader = make_unique<QtPluginLoader>(*this, dirIterator.nextFileInfo().absoluteFilePath());
                 DEBG << "Found valid native plugin" << loader->path;
                 plugins_.push_back(::move(loader));
             } catch (const runtime_error &e) {
