@@ -63,17 +63,18 @@ jobs:
       - name: Build
         run: cmake --build build
 
-  linux-dockerized:
+  Linux:
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        dockerfile: [arch.Dockerfile, fedora.latest.Dockerfile, ubuntu.2204.Dockerfile]
 
     steps:
       - name: Checkout source code
         uses: actions/checkout@v3
         with:
           submodules: recursive
-      - name: Build docker test image for ArchLinux
-        run: docker build . --file .docker/arch.Dockerfile
-      - name: Build docker test image for Fedora:latest
-        run: docker build . --file .docker/fedora.latest.Dockerfile
-      - name: Build docker test image for Ubuntu:22.04
-        run: docker build . --file .docker/ubuntu.2204.Dockerfile
+      - name: Build docker test image
+        run: docker build . --file .docker/${{ matrix.dockerfile }}
