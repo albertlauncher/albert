@@ -19,8 +19,12 @@ TrayIcon::TrayIcon() {
 
     // https://bugreports.qt.io/browse/QTBUG-53550
     albert::IconProvider ip;
+#if defined(Q_OS_MAC)
+    QIcon icon(":app_tray_icon");
+#else
     QSize size;
     QIcon icon(ip.getPixmap({"xdg:albert-tray", "xdg:albert", "qrc:app_tray_icon"}, &size, QSize(64, 64)));
+#endif
     icon.setIsMask(true);
     setIcon(icon);
 
