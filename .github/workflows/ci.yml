@@ -71,7 +71,7 @@ jobs:
           path: |
             /opt/local/lib
             /opt/local/include
-          key: ${{ runner.os }}-macports-r0
+          key: ${{ matrix.os }}-macports-r0
           
       - name: Install macports (for universal binaries of libqalculate and libarchive)
         if: steps.cache-macports.outputs.cache-hit != 'true'
