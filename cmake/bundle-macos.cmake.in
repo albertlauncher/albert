@@ -1,0 +1,162 @@
+set(PROJECT_NAME "@PROJECT_NAME@")  # bundle path
+set(CMAKE_PREFIX_PATH "@CMAKE_PREFIX_PATH@")  # library lookup
+set(CMAKE_INSTALL_LIBDIR "@CMAKE_INSTALL_LIBDIR@")  # library paths
+set(CMAKE_INSTALL_DATADIR "@CMAKE_INSTALL_DATADIR@")
+set(CMAKE_SOURCE_DIR "@CMAKE_SOURCE_DIR@")  # qml lib lookup dir for macdeployqt
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "@CMAKE_LIBRARY_OUTPUT_DIRECTORY@")
+set(QT_DEPLOY_SCRIPT "@QT_DEPLOY_SCRIPT@")
+set(QT_DEPLOY_SUPPORT "@QT_DEPLOY_SUPPORT@")
+set(BUNDLE_PATH "${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}.app")
+
+# Print CMake env
+get_cmake_property(_variableNames VARIABLES)
+list (SORT _variableNames)
+foreach (_variableName ${_variableNames})
+    message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()
+
+message(STATUS "QT_DEPLOY_SUPPORT ${QT_DEPLOY_SUPPORT}")
+include("${QT_DEPLOY_SUPPORT}")
+
+# Move resources
+set(RES_SRC ${CMAKE_INSTALL_PREFIX}/share/albert)
+FILE(GLOB children RELATIVE ${RES_SRC} ${RES_SRC}/*)
+FOREACH(child ${children})
+    file(RENAME
+        ${RES_SRC}/${child}
+        ${BUNDLE_PATH}/Contents/Resources/${child}
+    )
+ENDFOREACH()
+
+# Move plugins
+file(RENAME
+    ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/albert
+    ${BUNDLE_PATH}/Contents/MacOS/plugins
+)
+
+# Move libalbert
+file(MAKE_DIRECTORY "${BUNDLE_PATH}/Contents/Frameworks")
+file(RENAME
+    "${CMAKE_INSTALL_PREFIX}/libalbert.framework"
+    "${BUNDLE_PATH}/Contents/Frameworks/libalbert.framework"
+)
+
+# RPATH frameworks
+execute_process(
+    COMMAND install_name_tool -add_rpath "@executable_path/../Frameworks/" "${BUNDLE_PATH}/Contents/MacOS/albert"
+    COMMAND_ECHO STDOUT
+    COMMAND_ERROR_IS_FATAL ANY
+)
+# RPATH macports
+execute_process(
+    COMMAND install_name_tool -add_rpath "/opt/local/lib/" "${BUNDLE_PATH}/Contents/MacOS/albert"
+    COMMAND_ECHO STDOUT
+    COMMAND_ERROR_IS_FATAL ANY
+)
+# RPATH homebrew arm
+execute_process(
+    COMMAND install_name_tool -add_rpath "/opt/homebrew/lib/" "${BUNDLE_PATH}/Contents/MacOS/albert"
+    COMMAND_ECHO STDOUT
+    COMMAND_ERROR_IS_FATAL ANY
+)
+# RPATH homebrew intel
+execute_process(
+    COMMAND install_name_tool -add_rpath "/usr/local/lib/" "${BUNDLE_PATH}/Contents/MacOS/albert"
+    COMMAND_ECHO STDOUT
+    COMMAND_ERROR_IS_FATAL ANY
+)
+
+
+## Build library lookup paths from CMAKE_PREFIX_PATH
+#foreach(PATH ${CMAKE_PREFIX_PATH})
+#    list(APPEND DIRS "${PATH}/lib")
+#endforeach()
+#list(APPEND DIRS "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}") # libalbert
+#list(APPEND DIRS "/Library/Developer/CommandLineTools/Library/Frameworks/") # system python
+
+## Get a list of plugin files
+#FILE(GLOB LIBS "${BUNDLE_PATH}/Contents/MacOS/plugins/*")
+
+#include(BundleUtilities)
+##fixup_bundle("${BUNDLE_PATH}" "${LIBS}" "${DIRS}")
+
+file(REMOVE_RECURSE "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+file(REMOVE_RECURSE "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}")
+
+#qt_deploy_runtime_dependencies(
+#    EXECUTABLE "${BUNDLE_PATH}"
+#    ADDITIONAL_LIBRARIES "${LIBS};libalbert.framework/libalbert"
+#    VERBOSE
+#)
+
+##qt_deploy_qml_imports(
+##    TARGET "${BUNDLE_PATH}"
+##    PLUGINS_FOUND plugins_found
+##)
+
+# Build list of -executable= parameters for plugins consumed by macdeployqt
+FILE(GLOB PLUGINS "${BUNDLE_PATH}/Contents/MacOS/plugins/*")
+foreach(PLUGIN ${PLUGINS})
+    list(APPEND PLUGINS_EXEC_PARAMS "-executable=${PLUGIN}")
+endforeach()
+
+# Qt macdeployqt
+find_program(MACDEPLOYQT NAMES macdeployqt6 macdeployqt REQUIRED)
+get_filename_component(QT_BIN_DIR "${MACDEPLOYQT}" DIRECTORY)
+get_filename_component(QT_DIR "${QT_BIN_DIR}" DIRECTORY)
+set(QT_LIB_DIR "${QT_DIR}/${CMAKE_INSTALL_LIBDIR}")
+message(STATUS "MACDEPLOYQT ${MACDEPLOYQT}")
+message(STATUS "QT_BIN_DIR ${QT_BIN_DIR}")
+message(STATUS "QT_LIB_DIR ${QT_LIB_DIR}")
+message(STATUS "QT_DIR ${QT_DIR}")
+message(STATUS "MACDEPLOYQT: ${MACDEPLOYQT}")
+#message(STATUS "DYLD_LIBRARY_PATH: ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+#set(ENV{DYLD_LIBRARY_PATH} "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+execute_process(
+    COMMAND "${MACDEPLOYQT}"
+    "${BUNDLE_PATH}"
+    "-executable=${BUNDLE_PATH}/Contents/Frameworks/libalbert.framework/Versions/A/libalbert"
+    ${PLUGINS}
+    #"-libpath=${CMAKE_INSTALL_PREFIX}"  # libalbert
+    #"-libpath=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"  # libalbert
+    #"-libpath=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"  # libalbert
+    "-libpath=/opt/local/lib"  # macports dependencies
+    "-qmldir=${CMAKE_SOURCE_DIR}/plugins/qmlboxmodel/resources/qml"
+    "-appstore-compliant"
+    "-verbose=1"
+    COMMAND_ECHO STDOUT
+    COMMAND_ERROR_IS_FATAL ANY
+)
+
+# Copy missing svg imageformat
+file(COPY_FILE
+    "${QT_DIR}/plugins/imageformats/libqsvg.dylib"
+    "${BUNDLE_PATH}/Contents/PlugIns/imageformats/libqsvg.dylib"
+)
+
+
+#verify_app("${BUNDLE_PATH}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#include(${QT_DEPLOY_SCRIPT})
+
+
+
+
+
+
+##        file(REMOVE_RECURSE \${CMAKE_INSTALL_PREFIX}/lib)
+##        file(REMOVE_RECURSE \${CMAKE_INSTALL_PREFIX}/share)
