@@ -2,9 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "dev" ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -37,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-11, macos-12, macos-13]
+        os: [macos-11]
         build_type: [Release]
         qt_version: [6.5.2]  # 6.2.4
 
@@ -48,20 +46,50 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: recursive
+      - name: Get latest CMake and ninja
+        uses: lukka/get-cmake@latest
       - name: Install Qt dependencies
         uses: jurplel/install-qt-action@v3
         with:
           version: ${{ matrix.qt_version }}
           #cache: true
-          modules: 'qtscxml'
-      - name: Install dependencies using HomeBrew
-        run : brew install pybind11 libqalculate muparser libarchive
-      - name: Get latest CMake and ninja
-        uses: lukka/get-cmake@latest
-      - name: Run CMake
-        run: cmake -S . -B build
+          modules: 'qtscxml qt5compat qtshadertools'
+      - name: Install macports (universal libraries)
+        run: |
+          case ${{ matrix.os }} in
+            macos-11)
+                wget "https://github.com/macports/macports-base/releases/download/v2.8.1/MacPorts-2.8.1-11-BigSur.pkg"
+                sudo installer -pkg ./MacPorts-2.8.1-11-BigSur.pkg -target /
+            ;;
+            macos-12)
+                wget "https://github.com/macports/macports-base/releases/download/v2.8.1/MacPorts-2.8.1-12-Monterey.pkg"
+                sudo installer -pkg ./MacPorts-2.8.1-12-Monterey.pkg -target /
+            ;;
+            macos-13)
+                wget "https://github.com/macports/macports-base/releases/download/v2.8.1/MacPorts-2.8.1-13-Ventura.pkg"
+                sudo installer -pkg ./MacPorts-2.8.1-13-Ventura.pkg -target /
+            ;;
+          esac
+          sudo sh -c 'echo "\n+universal" >> /opt/local/etc/macports/variants.conf'
+      - name: Install dependencies using macports
+        run : sudo /opt/local/bin/port install pybind11 libqalculate libarchive
       - name: Build
-        run: cmake --build build
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+          cmake --build build
+      - name: Package
+        run: cd build && cpack -V  
+#      - name: Upload
+#        uses: softprops/action-gh-release@v1
+#        with:
+#          tag_name: v0.22.4
+#          files: |
+#            build/Albert-0.22.4-Darwin.dmg
+#            build/Albert-0.22.4-Darwin.dmg.sha256
+#              #    Albert-{{ github.ref_name }}-Darwin.dmg
+#               #   Albert-{{ github.ref_name }}-Darwin.sha256
+#               #if: startsWith(github.ref, 'refs/tags/')
 
   Linux:
     runs-on: ubuntu-latest
