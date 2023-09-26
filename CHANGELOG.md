@@ -1,3 +1,14 @@
+v0.22.6 (2023-09-26)
+
+[albert]
+* Proper tab navigation in handler widget
+* NativePluginProvider: Use absolute file paths.
+
+[plugins]
+* [files] Fix "rel. dirpaths of depth 1 have dot prepended" issue
+* [docs] Fix recent changes to download urls
+* [qalc] Fix tab order
+
 v0.22.5 (2023-09-22)
 
 [albert]
