@@ -243,17 +243,23 @@ public:
         switch ((Column) idx.column()) {
         case Column::Name:
         case Column::Description:
-            return Qt::ItemIsEnabled;
+            return Qt::NoItemFlags;//Qt::ItemIsEnabled;
         case Column::Trigger:
             if (auto *thandler = dynamic_cast<TriggerQueryHandler*>(handlers[idx.row()]); thandler && thandler->allowTriggerRemap())
                 return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEditable;
             else
-                return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable;
+                return Qt::NoItemFlags;
         case Column::THandler:
+            return dynamic_cast<TriggerQueryHandler*>(handlers[idx.row()]) ? Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable : Qt::NoItemFlags;
         case Column::GHandler:
+            return dynamic_cast<GlobalQueryHandler*>(handlers[idx.row()]) ? Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable : Qt::NoItemFlags;
         case Column::FHandler:
+            return dynamic_cast<FallbackHandler*>(handlers[idx.row()]) ? Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable : Qt::NoItemFlags;
         case Column::Fuzzy:
-            return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable;
+            if (auto *thandler = dynamic_cast<TriggerQueryHandler*>(handlers[idx.row()]); thandler && thandler->supportsFuzzyMatching())
+                return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable;
+            else
+                return Qt::NoItemFlags;
         }
         return {};
     }
@@ -273,9 +279,20 @@ HandlerWidget::HandlerWidget(QueryEngine &qe, ExtensionRegistry &er, QWidget *pa
     setShowGrid(false);
     setFrameShape(QFrame::NoFrame);
     setAlternatingRowColors(true);
-    setModel(new HandlerModel(qe, er, this)); // Takes ownership
+    QAbstractTableModel *model;
+    setModel(model = new HandlerModel(qe, er, this)); // Takes ownership
     setSelectionMode(QAbstractItemView::SingleSelection);
     setEditTriggers(QTableView::DoubleClicked|QTableView::SelectedClicked|QTableView::EditKeyPressed);
+
+
+    // Select first selectable item
+    // CAUTION: returns!
+    for (int row = 0; row < model->rowCount(); ++row)
+        for (int col = 0; col < model->columnCount(); ++col)
+            if (auto index = model->index(row, col); index.flags() & Qt::ItemIsEnabled) {
+                selectionModel()->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
+                return;
+            }
 }
 
 HandlerWidget::~HandlerWidget() = default;
