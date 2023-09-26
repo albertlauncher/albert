@@ -197,4 +197,6 @@ void SettingsWindow::keyPressEvent(QKeyEvent *event)
         else if((int)Qt::Key_1 <= event->key() && event->key() < (int)Qt::Key_1 + ui.tabs->count())
             ui.tabs->setCurrentIndex((int)event->key() - (int)Qt::Key_1);
     }
+
+    QWidget::keyPressEvent(event);
 }
