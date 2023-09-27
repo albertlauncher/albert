@@ -28,14 +28,16 @@ FOREACH(child ${children})
     )
 ENDFOREACH()
 
+file(MAKE_DIRECTORY "${BUNDLE_PATH}/Contents/PlugIns")
+file(MAKE_DIRECTORY "${BUNDLE_PATH}/Contents/Frameworks")
+
 # Move plugins
 file(RENAME
     ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/albert
-    ${BUNDLE_PATH}/Contents/MacOS/plugins
+    ${BUNDLE_PATH}/Contents/PlugIns/albert
 )
 
 # Move libalbert
-file(MAKE_DIRECTORY "${BUNDLE_PATH}/Contents/Frameworks")
 file(RENAME
     "${CMAKE_INSTALL_PREFIX}/libalbert.framework"
     "${BUNDLE_PATH}/Contents/Frameworks/libalbert.framework"
@@ -95,13 +97,13 @@ file(REMOVE_RECURSE "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}")
 ##)
 
 # Build list of -executable= parameters for plugins consumed by macdeployqt
-FILE(GLOB PLUGINS "${BUNDLE_PATH}/Contents/MacOS/plugins/*")
+FILE(GLOB PLUGINS "${BUNDLE_PATH}/Contents/PlugIns/albert/*")
 foreach(PLUGIN ${PLUGINS})
     list(APPEND PLUGINS_EXEC_PARAMS "-executable=${PLUGIN}")
 endforeach()
 
 # Qt macdeployqt
-find_program(MACDEPLOYQT NAMES macdeployqt6 macdeployqt REQUIRED)
+find_program(MACDEPLOYQT NAMES macdeployqt macdeployqt REQUIRED)
 get_filename_component(QT_BIN_DIR "${MACDEPLOYQT}" DIRECTORY)
 get_filename_component(QT_DIR "${QT_BIN_DIR}" DIRECTORY)
 set(QT_LIB_DIR "${QT_DIR}/${CMAKE_INSTALL_LIBDIR}")
@@ -124,6 +126,7 @@ execute_process(
     "-qmldir=${CMAKE_SOURCE_DIR}/plugins/qmlboxmodel/resources/qml"
     "-appstore-compliant"
     "-verbose=1"
+    #"-dmg"
     COMMAND_ECHO STDOUT
     COMMAND_ERROR_IS_FATAL ANY
 )

@@ -1,7 +1,6 @@
 // Copyright (c) 2022-2023 Manuel Schneider
 
 #include "albert/logging.h"
-#include "albert/util/timeprinter.h"
 #include "qtpluginloader.h"
 #include "qtpluginprovider.h"
 #include <QDirIterator>
@@ -37,7 +36,7 @@ static QStringList defaultPaths()
 #include <QCoreApplication>
 static QStringList defaultPaths()
 {
-    return {QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("plugins")};
+    return {QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("../PlugIns/albert")};
 }
 #endif
 
