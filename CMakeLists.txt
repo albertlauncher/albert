@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.19)  # JSON support, Ubuntu 22.04
 
+# dont touch! set by metatool
+set(PROJECT_VERSION 0.22.7)
+
 project(albert
-    VERSION 0.22.7
+    VERSION ${PROJECT_VERSION}
     DESCRIPTION "Keyboard launcher"
     HOMEPAGE_URL "https://albertlauncher.github.io"
 )
@@ -142,7 +145,7 @@ set_target_properties(${TARGET_LIB} PROPERTIES
     #OUTPUT_NAME lib${PROJECT_NAME}
     PUBLIC_HEADER "${LIB_PUBLIC_HEADER}"
     SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
-    VERSION 0.22.7
+    VERSION ${PROJECT_VERSION}
     VISIBILITY_INLINES_HIDDEN 1
 )
 

@@ -98,14 +98,12 @@ def release(args):
 
 
     print("CHECK THESE!")
-    print("- docker running (build tests, jekyll)?")
     print("- PRs and feature branches merged?")
     print("- submodules staged/committed? (python, plugins, …)")
-    print("- Confirm: Using version 'v%s', current is '%s')"
+    print("- 'v%s' > '%s' ?"
           % (args.version, run(["git", "describe", "--tags", "--abbrev=0"], capture_output=True).stdout.decode().strip()))
-    print("- Note: project version will be automatically updated.")
 
-    if "y".startswith(input("Shall I run a test build in docker? [Y/n] ").lower()):
+    if "y".startswith(input("Shall I run a test build in docker (docker running?)? [Y/n] ").lower()):
         test_build(args)
 
     atomic_changelog = root/f"changelog_v{args.version}"
@@ -129,7 +127,7 @@ def release(args):
             file.write(f"v{args.version} ({datetime.date.today().strftime('%Y-%m-%d')})\n\n{changelog}\n\n{old_changelog}")
 
         print("Update CMake project version…")
-        run(["sed", "-i.bak", f"s/^    VERSION.*$/    VERSION {args.version}/", root/"CMakeLists.txt"], cwd=root).check_returncode()
+        run(["sed", "-i.bak", f"s/^set(PROJECT_VERSION.*$/set(PROJECT_VERSION {args.version})/", root/"CMakeLists.txt"], cwd=root).check_returncode()
 
         run(["git", "add", root/"CHANGELOG.md", root/"CMakeLists.txt"], cwd=root).check_returncode()
         run(["git", "commit", "-m", f"v{args.version}"], cwd=root).check_returncode()
@@ -138,8 +136,6 @@ def release(args):
 
         run(["rm", atomic_changelog])
         run(["rm", "CMakeLists.txt.bak"])
-
-    if "y".startswith(input("Create news post? [Y/n] ").lower()):
 
         docs_root_path = root / "documentation"
 
