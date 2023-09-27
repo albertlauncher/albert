@@ -1,3 +1,8 @@
+v0.22.7 (2023-09-27)
+
+[albert]
+* Restore 6.2 backward compatibility
+
 v0.22.6 (2023-09-26)
 
 [albert]
