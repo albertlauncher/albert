@@ -37,10 +37,10 @@ file(RENAME
     ${BUNDLE_PATH}/Contents/PlugIns/albert
 )
 
-# Move libalbert
+# Move albert lib
 file(RENAME
-    "${CMAKE_INSTALL_PREFIX}/libalbert.framework"
-    "${BUNDLE_PATH}/Contents/Frameworks/libalbert.framework"
+    "${CMAKE_INSTALL_PREFIX}/albert.framework"
+    "${BUNDLE_PATH}/Contents/Frameworks/albert.framework"
 )
 
 # RPATH frameworks
@@ -73,7 +73,7 @@ execute_process(
 #foreach(PATH ${CMAKE_PREFIX_PATH})
 #    list(APPEND DIRS "${PATH}/lib")
 #endforeach()
-#list(APPEND DIRS "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}") # libalbert
+#list(APPEND DIRS "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}") # albert lib
 #list(APPEND DIRS "/Library/Developer/CommandLineTools/Library/Frameworks/") # system python
 
 ## Get a list of plugin files
@@ -84,17 +84,6 @@ execute_process(
 
 file(REMOVE_RECURSE "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 file(REMOVE_RECURSE "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}")
-
-#qt_deploy_runtime_dependencies(
-#    EXECUTABLE "${BUNDLE_PATH}"
-#    ADDITIONAL_LIBRARIES "${LIBS};libalbert.framework/libalbert"
-#    VERBOSE
-#)
-
-##qt_deploy_qml_imports(
-##    TARGET "${BUNDLE_PATH}"
-##    PLUGINS_FOUND plugins_found
-##)
 
 # Build list of -executable= parameters for plugins consumed by macdeployqt
 FILE(GLOB PLUGINS "${BUNDLE_PATH}/Contents/PlugIns/albert/*")
@@ -117,11 +106,11 @@ message(STATUS "MACDEPLOYQT: ${MACDEPLOYQT}")
 execute_process(
     COMMAND "${MACDEPLOYQT}"
     "${BUNDLE_PATH}"
-    "-executable=${BUNDLE_PATH}/Contents/Frameworks/libalbert.framework/Versions/A/libalbert"
+    "-executable=${BUNDLE_PATH}/Contents/Frameworks/albert.framework/Versions/A/albert"
     ${PLUGINS}
-    #"-libpath=${CMAKE_INSTALL_PREFIX}"  # libalbert
-    #"-libpath=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"  # libalbert
-    #"-libpath=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"  # libalbert
+    #"-libpath=${CMAKE_INSTALL_PREFIX}"  # albert lib
+    #"-libpath=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"  # albert lib
+    #"-libpath=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"  # albert lib
     "-libpath=/opt/local/lib"  # macports dependencies
     "-qmldir=${CMAKE_SOURCE_DIR}/plugins/qmlboxmodel/resources/qml"
     "-appstore-compliant"
