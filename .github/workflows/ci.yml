@@ -104,16 +104,14 @@ jobs:
           
       - name: Package
         run: cd build && cpack -V  
-#      - name: Upload
-#        uses: softprops/action-gh-release@v1
-#        with:
-#          tag_name: v0.22.4
-#          files: |
-#            build/Albert-0.22.4-Darwin.dmg
-#            build/Albert-0.22.4-Darwin.dmg.sha256
-#              #    Albert-{{ github.ref_name }}-Darwin.dmg
-#               #   Albert-{{ github.ref_name }}-Darwin.sha256
-#               #if: startsWith(github.ref, 'refs/tags/')
+
+      - name: Upload
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            build/Albert-{{ github.ref_name }}.dmg
+            build/Albert-{{ github.ref_name }}.dmg.sha256
 
   Linux:
     runs-on: ubuntu-latest
