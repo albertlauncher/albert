@@ -1,3 +1,9 @@
+v0.22.9 (2023-09-28)
+
+[albert]
+* CD: upload on tag
+* Revert. NO_SONAME makes troubles on other platforms.
+
 v0.22.8 (2023-09-28)
 
 [albert]
