@@ -1,3 +1,8 @@
+v0.22.8 (2023-09-28)
+
+[albert]
+* Hotfix fixing RPM based builds
+
 v0.22.7 (2023-09-27)
 
 [albert]
