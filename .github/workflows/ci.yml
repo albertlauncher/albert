@@ -61,9 +61,6 @@ jobs:
           version: ${{ matrix.qt_version }}
           cache: true
           modules: 'qtscxml qt5compat qtshadertools'
-          
-      - name: Install pybind using homebrew
-        run: brew install pybind11
 
       - name: Create writable /opt/local
         run: sudo install -d -o $UID -m 755 /opt/local
@@ -75,7 +72,7 @@ jobs:
           path: |
             /opt/local/lib
             /opt/local/include
-          key: ${{ matrix.os }}-macports-r0
+          key: ${{ matrix.os }}-macports-r1
           
       - name: Install macports (for universal binaries of libqalculate and libarchive)
         if: steps.cache-macports.outputs.cache-hit != 'true'
@@ -98,7 +95,7 @@ jobs:
           
       - name: Install dependencies using macports
         if: steps.cache-macports.outputs.cache-hit != 'true'
-        run : sudo /opt/local/bin/port install libqalculate libarchive
+        run : sudo /opt/local/bin/port install libqalculate libarchive pybind11  # inc steps.cache.key revision on change
         
       - name: Build
         run: |
