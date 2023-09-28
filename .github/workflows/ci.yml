@@ -114,8 +114,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            build/Albert-{{ github.ref_name }}.dmg
-            build/Albert-{{ github.ref_name }}.dmg.sha256
+            build/Albert-${{ github.ref_name }}.dmg
+            build/Albert-${{ github.ref_name }}.dmg.sha256
 
   Linux:
     runs-on: ubuntu-latest
