@@ -147,7 +147,7 @@ set_target_properties(${TARGET_LIB} PROPERTIES
     OUTPUT_NAME "${PROJECT_NAME}"
     PUBLIC_HEADER "${LIB_PUBLIC_HEADER}"
     SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"  # also mach-o compat version
-    NO_SONAME true
+    # NO_SONAME true # do _not_ add. linkers other that ldd will make troubles using non relative paths
     VERSION ${PROJECT_VERSION}
     VISIBILITY_INLINES_HIDDEN 1
 )
