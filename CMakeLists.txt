@@ -162,11 +162,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD
 
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-# install version and config file
-#install(FILES
-#    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
-#    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
-#    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-macros.cmake"
     target_link_libraries(${TARGET_LIB}
         PRIVATE
         objc
