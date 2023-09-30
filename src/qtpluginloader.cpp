@@ -35,8 +35,14 @@ QtPluginLoader::QtPluginLoader(const QtPluginProvider &provider, const QString &
     metadata_.runtime_dependencies = rawMetadata["runtime_dependencies"].toVariant().toStringList();
     metadata_.binary_dependencies = rawMetadata["binary_dependencies"].toVariant().toStringList();
     metadata_.third_party_credits = rawMetadata["credits"].toVariant().toStringList();
-    metadata_.frontend = rawMetadata["frontend"].toBool();
-    metadata_.user = !metadata_.frontend;
+
+    if (auto lt = rawMetadata["loadtype"].toString(); lt == "frontend")
+        metadata_.load_type = LoadType::Frontend;
+    else if(lt == "nounload")
+        metadata_.load_type = LoadType::NoUnload;
+    else  // "user
+        metadata_.load_type = LoadType::User;
+
 
     // Validate metadata
 

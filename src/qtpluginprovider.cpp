@@ -78,7 +78,7 @@ vector<QtPluginLoader*> QtPluginProvider::frontendPlugins()
 {
     vector<QtPluginLoader*> frontend_plugins;
     for (auto &loader : plugins_)
-        if (loader->metaData().frontend)
+        if (loader->metaData().load_type == LoadType::Frontend)
             frontend_plugins.emplace_back(loader.get());
     return frontend_plugins;
 }

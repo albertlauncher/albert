@@ -51,10 +51,11 @@ public:
         return QString("Config: %1, State: %2").arg(enabled, state);
     }
 
-    QStringList iconUrls() const override { return {QStringLiteral(":app_icon")}; }
+    QStringList iconUrls() const override { return {QStringLiteral("gen:?&text=🧩")}; }
 
     vector<Action> actions() const override {
         vector<Action> actions;
+
 
         if (plugin_registry_.isEnabled(id()))
             actions.emplace_back(
@@ -68,20 +69,22 @@ public:
 
         if (loader_.state() == PluginState::Loaded){
 
-            actions.emplace_back(
-                "unload", "Unload plugin", [this](){ plugin_registry_.load(id(), false); }
-            );
+            if (loader_.metaData().load_type == LoadType::User) {
 
-            actions.emplace_back(
-                "reload", "Reload plugin",
-                [this](){ plugin_registry_.load(id(), false); plugin_registry_.load(id()); }
-            );
+                actions.emplace_back(
+                    "unload", "Unload plugin", [this](){ plugin_registry_.load(id(), false); }
+                );
 
-            actions.emplace_back("settings", "Open settings", [this](){ showSettings(id()); });
-
+                actions.emplace_back(
+                    "reload", "Reload plugin",
+                    [this](){ plugin_registry_.load(id(), false); plugin_registry_.load(id()); }
+                );
+            }
 
         } else  // by contract only unloaded
             actions.emplace_back("load", "Load plugin", [this](){ plugin_registry_.load(id()); });
+
+        actions.emplace_back("settings", "Open settings", [this](){ showSettings(id()); });
 
         return actions;
     }
@@ -91,11 +94,9 @@ void PluginQueryHandler::updateIndexItems()
 {
     vector<IndexItem> items;
     for (auto &[id, loader] : plugin_registry_.plugins()){
-        if (loader->metaData().user){
-            auto item = make_shared<PluginItem>(plugin_registry_, *loader);
-            items.emplace_back(item, id);
-            items.emplace_back(item, loader->metaData().name);
-        }
+        auto item = make_shared<PluginItem>(plugin_registry_, *loader);
+        items.emplace_back(item, id);
+        items.emplace_back(item, loader->metaData().name);
     }
     setIndexItems(::move(items));
 }

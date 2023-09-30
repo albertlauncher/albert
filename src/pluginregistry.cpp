@@ -30,12 +30,35 @@ void PluginRegistry::enable(const QString &id, bool enable)
         auto *loader = registered_plugins_.at(id);
         albert::settings()->setValue(QString("%1/enabled").arg(id), enable);
         emit enabledChanged(id);
-        if (enable && loader->state() == PluginState::Unloaded){
+
+        if (enable && loader->state() == PluginState::Unloaded ){
             if (auto err = loader->d->load(&extension_registry); !err.isNull())
                 GWARN(QString("Failed loading plugin '%1': %2").arg(id, err));
         } else if (!enable && loader->state() == PluginState::Loaded){
-            if (auto err = loader->d->unload(&extension_registry); !err.isNull())
-                GWARN(QString("Failed unloading plugin '%1': %2").arg(id, err));
+            switch (loader->metaData().load_type) {
+
+            case albert::LoadType::User:
+                if (auto err = loader->d->unload(&extension_registry); !err.isNull())
+                    GWARN(QString("Failed unloading plugin '%1': %2").arg(id, err));
+                break;
+
+            case albert::LoadType::Frontend:
+                GWARN(QString("Frontend plugins cannot be unloaded: '%1'").arg(id));
+                break;
+
+            case albert::LoadType::NoUnload:{
+                QMessageBox msgBox(QMessageBox::Question, "Restart?",
+                                   QString("Unloading the plugin '%1' requires restarting the app. "
+                                           "Do you want to restart Albert?").arg(id),
+                                   QMessageBox::Yes | QMessageBox::No);
+                if (msgBox.exec() == QMessageBox::Yes)
+                    restart();
+                break;
+            }
+
+            default:
+                break;
+            }
         }
     } catch (const out_of_range&) {
         GWARN(QString("Plugin '%1' does not exist.").arg(id));
@@ -69,7 +92,9 @@ void PluginRegistry::onAdd(PluginProvider *pp)
         if (const auto &[it, success] = registered_plugins_.emplace(id, loader); success){
 
             // Load if is enabled user plugin
-            if (loader->metaData().user && isEnabled(id))
+            if (isEnabled(id)
+                && (loader->metaData().load_type ==  LoadType::User
+                    || loader->metaData().load_type ==  LoadType::NoUnload))
                 load(id);
 
         } else

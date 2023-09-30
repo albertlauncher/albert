@@ -52,7 +52,7 @@ public:
         switch (const auto *p = plugins_[idx.row()]; role) {
 
         case Qt::CheckStateRole:
-            if (p->metaData().user)
+            if (p->metaData().load_type != LoadType::Frontend)
                 switch (p->state()) {
                 case PluginState::Busy:
                     return Qt::PartiallyChecked;
@@ -87,7 +87,7 @@ public:
         if (idx.isValid() && idx.column() == 0 && role == Qt::CheckStateRole){
             try {
                 const auto *p = plugins_[idx.row()];
-                if (p->metaData().user && (p->state() == PluginState::Loaded || p->state() == PluginState::Unloaded))
+                if (p->metaData().load_type != LoadType::Frontend && (p->state() == PluginState::Loaded || p->state() == PluginState::Unloaded))
                     plugin_registry_.enable(p->metaData().id, !plugin_registry_.isEnabled(p->metaData().id));
             } catch (std::out_of_range &e){}
         }

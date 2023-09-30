@@ -8,22 +8,32 @@ endif()
 
 macro(albert_plugin_generate_metadata_json)
     set(MD "{}")
+
     string(JSON MD SET ${MD} "id" "\"${PROJECT_NAME}\"")
+
     string(JSON MD SET ${MD} "version" "\"${PROJECT_VERSION}\"")
+
     string(JSON MD SET ${MD} "name" "\"${MD_NAME}\"")
+
     string(JSON MD SET ${MD} "description" "\"${MD_DESCRIPTION}\"")
 
     if(EXISTS ${MD_LONG_DESCRIPTION})
         file(READ ${MD_LONG_DESCRIPTION} MD_LONG_DESCRIPTION)
     endif()
     string(JSON MD SET ${MD} "long_description" "\"${MD_LONG_DESCRIPTION}\"")
+
     string(JSON MD SET ${MD} "license" "\"${MD_LICENSE}\"")
+
     string(JSON MD SET ${MD} "url" "\"${MD_URL}\"")
 
-    if(MD_FRONTEND)
-        string(JSON MD SET ${MD} "frontend" "true")
+    if(MD_FRONTEND AND MD_NOUNLOAD)
+        message(FATAL_ERROR "Multiple load types specified. Use either FRONTEND or NOUNLOAD.")
+    elseif(MD_FRONTEND)
+        string(JSON MD SET ${MD} "loadtype" "\"frontend\"")
+    elseif(MD_NOUNLOAD)
+        string(JSON MD SET ${MD} "loadtype" "\"nounload\"")
     else()
-        string(JSON MD SET ${MD} "frontend" "false")
+        string(JSON MD SET ${MD} "loadtype" "\"user\"")
     endif()
 
     if (DEFINED MD_MAINTAINERS)
@@ -86,7 +96,7 @@ macro(albert_plugin_add_default_target)
 endmacro()
 
 macro(albert_plugin)
-    set(md_bool FRONTEND)
+    set(md_bool FRONTEND NOUNLOAD)
     set(md_vals NAME DESCRIPTION LONG_DESCRIPTION LICENSE URL)
     set(md_list MAINTAINERS QT_DEPENDENCIES LIB_DEPENDENCIES EXEC_DEPENDENCIES CREDITS)
     cmake_parse_arguments(MD "${md_bool}" "${md_vals}" "${md_list}" ${ARGV})
