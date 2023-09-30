@@ -22,34 +22,45 @@ ALBERT_LOGGING_CATEGORY("albert")
 using namespace std;
 using namespace albert;
 static App *app;
+static QFile *log_file;
 
 
 static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
+    // Todo use std::format as soon as apple gets it off the ground
     switch (type) {
         case QtDebugMsg:
             fprintf(stdout, "%s \x1b[34;1m[debg:%s]\x1b[0m \x1b[3m%s\x1b[0m\n",
                     QTime::currentTime().toString().toLocal8Bit().constData(),
                     context.category,
                     message.toLocal8Bit().constData());
+            QTextStream(log_file) << QTime::currentTime().toString() << " "
+                                  << "DEBG" << " " << message << Qt::endl;
             break;
         case QtInfoMsg:
             fprintf(stdout, "%s \x1b[32;1m[info:%s]\x1b[0m %s\n",
                     QTime::currentTime().toString().toLocal8Bit().constData(),
                     context.category,
                     message.toLocal8Bit().constData());
+            QTextStream(log_file) << QTime::currentTime().toString() << " "
+                                  << "INFO" << " " << message << Qt::endl;
+
             break;
         case QtWarningMsg:
             fprintf(stdout, "%s \x1b[33;1m[warn:%s]\x1b[0;1m %s\x1b[0m\n",
                     QTime::currentTime().toString().toLocal8Bit().constData(),
                     context.category,
                     message.toLocal8Bit().constData());
+            QTextStream(log_file) << QTime::currentTime().toString() << " "
+                                  << "WARN" << " " << message << Qt::endl;
             break;
         case QtCriticalMsg:
             fprintf(stdout, "%s \x1b[31;1m[crit:%s]\x1b[0;1m %s\x1b[0m\n",
                     QTime::currentTime().toString().toLocal8Bit().constData(),
                     context.category,
                     message.toLocal8Bit().constData());
+            QTextStream(log_file) << QTime::currentTime().toString() << " "
+                                  << "CRIT" << " " << message << Qt::endl;
             break;
         case QtFatalMsg:
             fprintf(stderr, "%s \x1b[41;30;4m[fatal:%s]\x1b[0;1m %s  --  [%s]\x1b[0m\n",
@@ -57,6 +68,8 @@ static void messageHandler(QtMsgType type, const QMessageLogContext &context, co
                     context.category,
                     message.toLocal8Bit().constData(),
                     context.function);
+            QTextStream(log_file) << QTime::currentTime().toString() << " "
+                                  << "FATAL" << " " << message << Qt::endl;
             QMessageBox::critical(nullptr, "Fatal error", message);
             exit(1);
     }
@@ -95,17 +108,33 @@ static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
         QLocale::setDefault(QLocale(qEnvironmentVariable(key)));
 
     auto qapp = make_unique<QApplication>(argc, argv);
-
     QApplication::setApplicationName("albert");
     QApplication::setApplicationDisplayName("Albert");
     QApplication::setApplicationVersion(ALBERT_VERSION_STRING);
-
     albert::IconProvider ip;
     QSize size;
     QIcon icon(ip.getPixmap({"xdg:albert", "qrc:app_icon"}, &size, QSize(64, 64)));
     QApplication::setWindowIcon(QIcon(icon));
-
     QApplication::setQuitOnLastWindowClosed(false);
+
+    // Backup last log
+    auto src = QDir(cacheLocation()).absoluteFilePath("albert.log");
+    auto dst = QDir(cacheLocation()).absoluteFilePath("albert.last.log");
+    if (QFile::exists(src)){
+        if (QFile::exists(dst))
+            QFile::remove(dst);
+        if (!QFile::rename(src, dst))
+            CRIT << "Backing up log file failed.";
+    }
+
+    // Create logfile
+    auto *f = new QFile(src);
+    if (f->open(QFile::WriteOnly))
+        log_file = f;
+    else
+        qFatal("Failed creating logfile.");
+
+    qInstallMessageHandler(messageHandler);
 
     installSignalHandlers();
     createWritableApplicationPaths();
@@ -116,29 +145,40 @@ static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
 static void printSystemReport()
 {
     QTextStream out(stdout);
-    auto print = [&out](const QString& s){ out << s << '\n'; };
+    auto print = [&out](const QString& s){ DEBG << s; };
 
     const uint8_t w = 22;
+
+    // BUILD
     print(QString("%1: %2").arg("Albert version", w).arg(QApplication::applicationVersion()));
     print(QString("%1: %2").arg("Build date", w).arg(__DATE__ " " __TIME__));
     print(QString("%1: %2").arg("Qt version", w).arg(qVersion()));
     print(QString("%1: %2").arg("Build ABI", w).arg(QSysInfo::buildAbi()));
     print(QString("%1: %2/%3").arg("Arch (build/current)", w).arg(QSysInfo::buildCpuArchitecture(), QSysInfo::currentCpuArchitecture()));
+
+    // SYSTEM
     print(QString("%1: %2/%3").arg("Kernel (type/version)", w).arg(QSysInfo::kernelType(), QSysInfo::kernelVersion()));
     print(QString("%1: %2").arg("OS", w).arg(QSysInfo::prettyProductName()));
     print(QString("%1: %2/%3").arg("OS (type/version)", w).arg(QSysInfo::productType(), QSysInfo::productVersion()));
-    print(QString("%1: %2").arg("$QT_QPA_PLATFORMTHEME", w).arg(QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORMTHEME"))));
     print(QString("%1: %2").arg("Platform name", w).arg(QGuiApplication::platformName()));
-    print(QString("%1: %2").arg("Font", w).arg(QGuiApplication::font().toString()));
+
+    // APP/QT
     print(QString("%1: %2").arg("Binary location", w).arg(QApplication::applicationFilePath()));
-    print(QString("%1: %2").arg("$PATH", w).arg(QString::fromLocal8Bit(qgetenv("PATH"))));
-    print(QString("%1: %2").arg("$PWD", w).arg(QString::fromLocal8Bit(qgetenv("PWD"))));
-    print(QString("%1: %2").arg("$SHELL", w).arg(QString::fromLocal8Bit(qgetenv("SHELL"))));
-    print(QString("%1: %2").arg("$LANG", w).arg(QString::fromLocal8Bit(qgetenv("LANG"))));
+    print(QString("%1: %2").arg("Current dir", w).arg(QDir::currentPath()));
+    print(QString("%1: %2").arg("Font", w).arg(QGuiApplication::font().toString()));
     QMetaEnum metaEnum = QMetaEnum::fromType<QLocale::Language>();
     QLocale loc;
     print(QString("%1: %2").arg("Language", w).arg(metaEnum.valueToKey(loc.language())));
     print(QString("%1: %2").arg("Locale", w).arg(loc.name()));
+
+    // ENV
+    print(QString("%1: %2").arg("$LANG", w).arg(QString::fromLocal8Bit(qgetenv("LANG"))));
+    print(QString("%1: %2").arg("$QT_QPA_PLATFORMTHEME", w).arg(QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORMTHEME"))));
+    print(QString("%1: %2").arg("$PATH", w).arg(QString::fromLocal8Bit(qgetenv("PATH"))));
+    print(QString("%1: %2").arg("$PWD", w).arg(QString::fromLocal8Bit(qgetenv("PWD"))));
+    print(QString("%1: %2").arg("$SHELL", w).arg(QString::fromLocal8Bit(qgetenv("SHELL"))));
+
+    // LINUX ENV
 #if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
     print(QString("%1: %2").arg("$XDG_SESSION_TYPE", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_TYPE"))));
     print(QString("%1: %2").arg("$XDG_CURRENT_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_CURRENT_DESKTOP"))));
@@ -155,8 +195,6 @@ int main(int argc, char **argv)
 {
     if (qApp != nullptr)
         qFatal("Calling main twice is not allowed.");
-
-    qInstallMessageHandler(messageHandler);
 
     auto qapp = initializeQApp(argc, argv);
 
