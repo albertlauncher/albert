@@ -23,6 +23,13 @@ Q_DECLARE_LOGGING_CATEGORY(AlbertLoggingCategory)
 
 /// @brief Logs and shows a messagebox (level warning).
 /// @param message The message
+#define GINFO(message) do{ \
+    INFO << message; \
+    QMessageBox::information(nullptr, qApp->applicationDisplayName(), message); \
+} while(0)
+
+/// @brief Logs and shows a messagebox (level warning).
+/// @param message The message
 #define GWARN(message) do{ \
     WARN << message; \
     QMessageBox::warning(nullptr, qApp->applicationDisplayName(), message); \
