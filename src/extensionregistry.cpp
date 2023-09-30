@@ -1,7 +1,8 @@
 // Copyright (c) 2022 Manuel Schneider
 
-#include "albert/extensionregistry.h"
 #include "albert/extension.h"
+#include "albert/extensionregistry.h"
+#include "albert/logging.h"
 using namespace std;
 using namespace albert;
 
@@ -19,7 +20,7 @@ void ExtensionRegistry::remove(Extension *e)
     if (extensions_.erase(e->id()))
         emit removed(e);
     else
-        qFatal("Extension removed more than once: %s", qPrintable(e->id()));
+        CRIT << "Logic error: Extension removed more than once: %s" << qPrintable(e->id());
 }
 
 const map<QString,Extension*> &ExtensionRegistry::extensions()
