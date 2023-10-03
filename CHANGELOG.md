@@ -1,3 +1,15 @@
+v0.22.10 (2023-10-03)
+
+[albert]
+* CI/CD: Appcast prototype
+* Store log in cache dir
+* Add loadtype NOUNLOAD
+  There are some plugins that dont like to be unloaded (Sparkle, Python).
+  Add a mechanism to let plugins prohibit users to unload it at runtime.
+
+[plugins]
+* [py] Fix 6.5.2 only QLogCat quirks. Fixes arch builds
+
 v0.22.9 (2023-09-28)
 
 [albert]
