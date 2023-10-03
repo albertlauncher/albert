@@ -1,3 +1,14 @@
+v0.22.12 (2023-10-03)
+
+[albert]
+* CI/CD: Fix path in sed expression
+
+[plugins]
+* [sparkle] Add macos updater plugin prototype
+
+[python]
+* [jetbrains] Add RustRover editor
+
 v0.22.11 (2023-10-03)
 
 [albert]
