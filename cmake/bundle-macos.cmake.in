@@ -107,7 +107,7 @@ execute_process(
     COMMAND "${MACDEPLOYQT}"
     "${BUNDLE_PATH}"
     "-executable=${BUNDLE_PATH}/Contents/Frameworks/albert.framework/Versions/A/albert"
-    ${PLUGINS}
+    ${PLUGINS_EXEC_PARAMS}
     #"-libpath=${CMAKE_INSTALL_PREFIX}"  # albert lib
     #"-libpath=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"  # albert lib
     #"-libpath=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"  # albert lib
@@ -125,30 +125,6 @@ file(COPY_FILE
     "${QT_DIR}/plugins/imageformats/libqsvg.dylib"
     "${BUNDLE_PATH}/Contents/PlugIns/imageformats/libqsvg.dylib"
 )
-
-
-#verify_app("${BUNDLE_PATH}")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#include(${QT_DEPLOY_SCRIPT})
-
-
-
-
-
 
 ##        file(REMOVE_RECURSE \${CMAKE_INSTALL_PREFIX}/lib)
 ##        file(REMOVE_RECURSE \${CMAKE_INSTALL_PREFIX}/share)
