@@ -134,13 +134,16 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: albertlauncher/documentation
+          ref: 'master'
+          token: ${{ secrets.PAT }}
 
       - name: Get build artifacts
         uses: actions/download-artifact@v3
         with:
           name: macos-release-artifacts
 
-      - run: find .
+      - name: list files
+        run: find .
 
       - name: Upload
         uses: softprops/action-gh-release@v1
@@ -153,12 +156,11 @@ jobs:
 
       - name: Push appcast
         run: |
-          git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          # git remote add origin "https://${{ secrets.PAT }}@github.com/albertlauncher/albertlauncher.github.io"
+          git config --local user.email "action@github.com"
           git add src/appcast.xml
-          git commit -am "Update appcast"
-          git push
+          git commit -m "Update appcast"
+          git push origin master
 
   Linux:
     runs-on: ubuntu-latest
