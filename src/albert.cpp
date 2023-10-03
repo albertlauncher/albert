@@ -144,49 +144,45 @@ static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
 
 static void printSystemReport()
 {
-    QTextStream out(stdout);
-    auto print = [&out](const QString& s){ DEBG << s; };
-
     const uint8_t w = 22;
 
     // BUILD
-    print(QString("%1: %2").arg("Albert version", w).arg(QApplication::applicationVersion()));
-    print(QString("%1: %2").arg("Build date", w).arg(__DATE__ " " __TIME__));
-    print(QString("%1: %2").arg("Qt version", w).arg(qVersion()));
-    print(QString("%1: %2").arg("Build ABI", w).arg(QSysInfo::buildAbi()));
-    print(QString("%1: %2/%3").arg("Arch (build/current)", w).arg(QSysInfo::buildCpuArchitecture(), QSysInfo::currentCpuArchitecture()));
+    DEBG << QString("%1: %2").arg("Albert version", w).arg(QApplication::applicationVersion());
+    DEBG << QString("%1: %2").arg("Build date", w).arg(__DATE__ " " __TIME__);
+    DEBG << QString("%1: %2").arg("Qt version", w).arg(qVersion());
+    DEBG << QString("%1: %2").arg("Build ABI", w).arg(QSysInfo::buildAbi());
+    DEBG << QString("%1: %2/%3").arg("Arch (build/current)", w).arg(QSysInfo::buildCpuArchitecture(), QSysInfo::currentCpuArchitecture());
 
     // SYSTEM
-    print(QString("%1: %2/%3").arg("Kernel (type/version)", w).arg(QSysInfo::kernelType(), QSysInfo::kernelVersion()));
-    print(QString("%1: %2").arg("OS", w).arg(QSysInfo::prettyProductName()));
-    print(QString("%1: %2/%3").arg("OS (type/version)", w).arg(QSysInfo::productType(), QSysInfo::productVersion()));
-    print(QString("%1: %2").arg("Platform name", w).arg(QGuiApplication::platformName()));
+    DEBG << QString("%1: %2/%3").arg("Kernel (type/version)", w).arg(QSysInfo::kernelType(), QSysInfo::kernelVersion());
+    DEBG << QString("%1: %2").arg("OS", w).arg(QSysInfo::prettyProductName());
+    DEBG << QString("%1: %2/%3").arg("OS (type/version)", w).arg(QSysInfo::productType(), QSysInfo::productVersion());
+    DEBG << QString("%1: %2").arg("Platform name", w).arg(QGuiApplication::platformName());
 
     // APP/QT
-    print(QString("%1: %2").arg("Binary location", w).arg(QApplication::applicationFilePath()));
-    print(QString("%1: %2").arg("Current dir", w).arg(QDir::currentPath()));
-    print(QString("%1: %2").arg("Font", w).arg(QGuiApplication::font().toString()));
+    DEBG << QString("%1: %2").arg("Binary location", w).arg(QApplication::applicationFilePath());
+    DEBG << QString("%1: %2").arg("Current dir", w).arg(QDir::currentPath());
+    DEBG << QString("%1: %2").arg("Font", w).arg(QGuiApplication::font().toString());
     QMetaEnum metaEnum = QMetaEnum::fromType<QLocale::Language>();
     QLocale loc;
-    print(QString("%1: %2").arg("Language", w).arg(metaEnum.valueToKey(loc.language())));
-    print(QString("%1: %2").arg("Locale", w).arg(loc.name()));
+    DEBG << QString("%1: %2").arg("Language", w).arg(metaEnum.valueToKey(loc.language()));
+    DEBG << QString("%1: %2").arg("Locale", w).arg(loc.name());
 
     // ENV
-    print(QString("%1: %2").arg("$LANG", w).arg(QString::fromLocal8Bit(qgetenv("LANG"))));
-    print(QString("%1: %2").arg("$QT_QPA_PLATFORMTHEME", w).arg(QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORMTHEME"))));
-    print(QString("%1: %2").arg("$PATH", w).arg(QString::fromLocal8Bit(qgetenv("PATH"))));
-    print(QString("%1: %2").arg("$PWD", w).arg(QString::fromLocal8Bit(qgetenv("PWD"))));
-    print(QString("%1: %2").arg("$SHELL", w).arg(QString::fromLocal8Bit(qgetenv("SHELL"))));
+    DEBG << QString("%1: %2").arg("$LANG", w).arg(QString::fromLocal8Bit(qgetenv("LANG")));
+    DEBG << QString("%1: %2").arg("$QT_QPA_PLATFORMTHEME", w).arg(QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORMTHEME")));
+    DEBG << QString("%1: %2").arg("$PATH", w).arg(QString::fromLocal8Bit(qgetenv("PATH")));
+    DEBG << QString("%1: %2").arg("$PWD", w).arg(QString::fromLocal8Bit(qgetenv("PWD")));
+    DEBG << QString("%1: %2").arg("$SHELL", w).arg(QString::fromLocal8Bit(qgetenv("SHELL")));
 
     // LINUX ENV
 #if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
-    print(QString("%1: %2").arg("$XDG_SESSION_TYPE", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_TYPE"))));
-    print(QString("%1: %2").arg("$XDG_CURRENT_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_CURRENT_DESKTOP"))));
-    print(QString("%1: %2").arg("$DESKTOP_SESSION", w).arg(QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION"))));
-    print(QString("%1: %2").arg("$XDG_SESSION_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_DESKTOP"))));
-    print(QString("%1: %2").arg("Icon theme", w).arg(QIcon::themeName()));
+    DEBG << QString("%1: %2").arg("$XDG_SESSION_TYPE", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_TYPE")));
+    DEBG << QString("%1: %2").arg("$XDG_CURRENT_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_CURRENT_DESKTOP")));
+    DEBG << QString("%1: %2").arg("$DESKTOP_SESSION", w).arg(QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION")));
+    DEBG << QString("%1: %2").arg("$XDG_SESSION_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_DESKTOP")));
+    DEBG << QString("%1: %2").arg("Icon theme", w).arg(QIcon::themeName());
 #endif
-    out.flush();
 }
 
 int ALBERT_EXPORT main(int argc, char **argv);
