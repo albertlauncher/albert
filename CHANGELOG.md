@@ -1,3 +1,11 @@
+v0.22.11 (2023-10-03)
+
+[albert]
+* Add missing "-executable=" for macdeployqt plugin parameters
+
+[plugins]
+* [py] Hotfix: Workaround https://bugreports.qt.io/browse/QTBUG-117153
+
 v0.22.10 (2023-10-03)
 
 [albert]
