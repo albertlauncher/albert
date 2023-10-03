@@ -124,7 +124,7 @@ jobs:
             build/Albert-${{ github.ref_name }}.dmg
             build/Albert-${{ github.ref_name }}.dmg.sha256
 
-  Appcast:
+  Relase:
     needs: MacOS
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
@@ -152,7 +152,7 @@ jobs:
             build/Albert-${{ github.ref_name }}.dmg
             build/Albert-${{ github.ref_name }}.dmg.sha256
 
-      - run: sed -i -e '/<\/language>/r ITEM.txt' src/appcast.xml
+      - run: sed -i -e '/<\/language>/r appcast_item.txt' src/appcast.xml
 
       - name: Push appcast
         run: |
