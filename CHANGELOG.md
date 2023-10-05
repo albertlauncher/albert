@@ -1,3 +1,12 @@
+v0.22.13 (2023-10-05)
+
+[albert]
+* Hotfix create missing application paths
+* Fix pixmaps path
+
+[plugins]
+* [qml] Fix version branching logic
+
 v0.22.12 (2023-10-03)
 
 [albert]
