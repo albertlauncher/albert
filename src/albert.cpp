@@ -76,22 +76,6 @@ static void messageHandler(QtMsgType type, const QMessageLogContext &context, co
     fflush(stdout);
 }
 
-static void createWritableApplicationPaths()
-{
-    if (auto path = albert::configLocation(); !QDir(path).mkpath("."))
-        qFatal("Failed creating config dir at: %s", qPrintable(path));
-    if (auto path = albert::dataLocation(); !QDir(path).mkpath("."))
-        qFatal("Failed creating data dir at: %s", qPrintable(path));
-    if (auto path = albert::cacheLocation(); !QDir(path).mkpath("."))
-        qFatal("Failed creating cache dir at: %s", qPrintable(path));
-}
-
-static void installSignalHandlers()
-{
-    for (int sig: {SIGINT, SIGTERM, SIGHUP, SIGPIPE})
-        signal(sig, [](int) { QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection); });
-}
-
 static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
 {
     // Put /usr/local/bin hardcoded to env
@@ -117,6 +101,14 @@ static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
     QApplication::setWindowIcon(QIcon(icon));
     QApplication::setQuitOnLastWindowClosed(false);
 
+    // Create writable application paths
+    if (auto path = albert::configLocation(); !QDir(path).mkpath("."))
+        qFatal("Failed creating config dir at: %s", qPrintable(path));
+    if (auto path = albert::dataLocation(); !QDir(path).mkpath("."))
+        qFatal("Failed creating data dir at: %s", qPrintable(path));
+    if (auto path = albert::cacheLocation(); !QDir(path).mkpath("."))
+        qFatal("Failed creating cache dir at: %s", qPrintable(path));
+
     // Backup last log
     auto src = QDir(cacheLocation()).absoluteFilePath("albert.log");
     auto dst = QDir(cacheLocation()).absoluteFilePath("albert.last.log");
@@ -136,8 +128,9 @@ static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
 
     qInstallMessageHandler(messageHandler);
 
-    installSignalHandlers();
-    createWritableApplicationPaths();
+    // Install signal handlers
+    for (int sig: {SIGINT, SIGTERM, SIGHUP, SIGPIPE})
+        signal(sig, [](int) { QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection); });
 
     return qapp;
 }
