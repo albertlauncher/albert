@@ -3,9 +3,12 @@
 #include "albert/albert.h"
 #include "albert/logging.h"
 #include "rpcserver.h"
-#include <QRegularExpression>
 #include <QCoreApplication>
+#include <QFile>
+#include <QGuiApplication>
 #include <QLocalSocket>
+#include <QMessageBox>
+#include <QRegularExpression>
 #include <QString>
 #include <iostream>
 
@@ -44,18 +47,33 @@ RPCServer::RPCServer()
 {
     QString socket_path = QString("%1/%2").arg(albert::cacheLocation(), socket_file_name);
 
-    QLocalSocket socket;
     DEBG << "Checking for a running instance…";
+    QLocalSocket socket;
     socket.connectToServer(socket_path);
     if (socket.waitForConnected(100)) {
         INFO << "There is another instance of albert running.";
         ::exit(2);
+    } else {
+        switch (socket.error()) {
+        case QLocalSocket::ServerNotFoundError:
+            // all good. no socket.
+            break;
+        case QLocalSocket::ConnectionRefusedError:
+            // socket exists but nobody answers. probably crashed before.
+            GWARN("Albert has not been terminated properly. "
+                  "Please check your crash reports and report an issue.");
+            QLocalServer::removeServer(socket_path);
+            break;
+        default:
+            // any other errors should bail out for now.
+            WARN << socket.error();
+            WARN << socket.errorString();
+            ::exit(2);
+            break;
+        }
     }
 
-    // Remove pipes potentially leftover after crash
-    QLocalServer::removeServer(socket_path);
-
-    DEBG << "Creating local socket" << socket_path;
+    DEBG << "Creating local server" << socket_path;
     if (!local_server.listen(socket_path))
         qFatal("Failed creating IPC server: %s", qPrintable(local_server.errorString()));
 

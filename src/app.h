@@ -10,7 +10,6 @@
 #include "qtpluginprovider.h"
 #include "queryengine.h"
 #include "rpcserver.h"
-#include "scopedcrashindicator.h"
 #include "settings/settingswindow.h"
 #include "telemetry.h"
 #include "terminalprovider.h"
@@ -28,7 +27,6 @@ public:
 
     void initialize();
 
-    ScopedCrashIndicator crash_indicator;
     QNetworkAccessManager network_manager;
     RPCServer rpc_server; // Check for other instances first
     albert::ExtensionRegistry extension_registry;
