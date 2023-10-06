@@ -124,7 +124,7 @@ static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
     if (f->open(QFile::WriteOnly))
         log_file = f;
     else
-        qFatal("Failed creating logfile.");
+        qFatal("Failed creating logfile: %s", qPrintable(f->errorString()));
 
     qInstallMessageHandler(messageHandler);
 
