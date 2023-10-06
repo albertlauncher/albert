@@ -11,6 +11,7 @@ project(albert
 set(PROJECT_DISPLAY_NAME "Albert")
 
 include(GNUInstallDirs)
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
