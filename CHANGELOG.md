@@ -1,3 +1,8 @@
+v0.22.14 (2023-10-06)
+
+[albert]
+* Let RPCServer take care of crash reports. This is a hotfix to remove the recurring crash report on start, if the app is run more than once, e.g. because the session manager restores a session including albert, but albert is also configured to be autostarted.
+
 v0.22.13 (2023-10-05)
 
 [albert]
