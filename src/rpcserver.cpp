@@ -50,7 +50,7 @@ RPCServer::RPCServer()
     DEBG << "Checking for a running instance…";
     QLocalSocket socket;
     socket.connectToServer(socket_path);
-    if (socket.waitForConnected(100)) {
+    if (socket.waitForConnected()) {
         INFO << "There is another instance of albert running.";
         ::exit(2);
     } else {
