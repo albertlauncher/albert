@@ -22,7 +22,6 @@ ALBERT_LOGGING_CATEGORY("albert")
 using namespace std;
 using namespace albert;
 static App *app;
-static QFile *log_file;
 
 
 static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
@@ -34,16 +33,12 @@ static void messageHandler(QtMsgType type, const QMessageLogContext &context, co
                     QTime::currentTime().toString().toLocal8Bit().constData(),
                     context.category,
                     message.toLocal8Bit().constData());
-            QTextStream(log_file) << QTime::currentTime().toString() << " "
-                                  << "DEBG" << " " << message << Qt::endl;
             break;
         case QtInfoMsg:
             fprintf(stdout, "%s \x1b[32;1m[info:%s]\x1b[0m %s\n",
                     QTime::currentTime().toString().toLocal8Bit().constData(),
                     context.category,
                     message.toLocal8Bit().constData());
-            QTextStream(log_file) << QTime::currentTime().toString() << " "
-                                  << "INFO" << " " << message << Qt::endl;
 
             break;
         case QtWarningMsg:
@@ -51,16 +46,12 @@ static void messageHandler(QtMsgType type, const QMessageLogContext &context, co
                     QTime::currentTime().toString().toLocal8Bit().constData(),
                     context.category,
                     message.toLocal8Bit().constData());
-            QTextStream(log_file) << QTime::currentTime().toString() << " "
-                                  << "WARN" << " " << message << Qt::endl;
             break;
         case QtCriticalMsg:
             fprintf(stdout, "%s \x1b[31;1m[crit:%s]\x1b[0;1m %s\x1b[0m\n",
                     QTime::currentTime().toString().toLocal8Bit().constData(),
                     context.category,
                     message.toLocal8Bit().constData());
-            QTextStream(log_file) << QTime::currentTime().toString() << " "
-                                  << "CRIT" << " " << message << Qt::endl;
             break;
         case QtFatalMsg:
             fprintf(stderr, "%s \x1b[41;30;4m[fatal:%s]\x1b[0;1m %s  --  [%s]\x1b[0m\n",
@@ -68,8 +59,6 @@ static void messageHandler(QtMsgType type, const QMessageLogContext &context, co
                     context.category,
                     message.toLocal8Bit().constData(),
                     context.function);
-            QTextStream(log_file) << QTime::currentTime().toString() << " "
-                                  << "FATAL" << " " << message << Qt::endl;
             QMessageBox::critical(nullptr, "Fatal error", message);
             exit(1);
     }
@@ -108,23 +97,6 @@ static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
         qFatal("Failed creating data dir at: %s", qPrintable(path));
     if (auto path = albert::cacheLocation(); !QDir(path).mkpath("."))
         qFatal("Failed creating cache dir at: %s", qPrintable(path));
-
-    // Backup last log
-    auto src = QDir(cacheLocation()).absoluteFilePath("albert.log");
-    auto dst = QDir(cacheLocation()).absoluteFilePath("albert.last.log");
-    if (QFile::exists(src)){
-        if (QFile::exists(dst))
-            QFile::remove(dst);
-        if (!QFile::rename(src, dst))
-            CRIT << "Backing up log file failed.";
-    }
-
-    // Create logfile
-    auto *f = new QFile(src);
-    if (f->open(QFile::WriteOnly))
-        log_file = f;
-    else
-        qFatal("Failed creating logfile: %s", qPrintable(f->errorString()));
 
     qInstallMessageHandler(messageHandler);
 
@@ -223,7 +195,8 @@ int main(int argc, char **argv)
 
     int return_value = qApp->exec();
     if (return_value == -1 && runDetachedProcess(qApp->arguments(), QDir::currentPath()))
-        return EXIT_SUCCESS;
+        return_value = EXIT_SUCCESS;
+
     return return_value;
 }
 
