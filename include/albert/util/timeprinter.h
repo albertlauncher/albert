@@ -9,8 +9,9 @@
 namespace albert {
 
 template <class UNIT = std::chrono::milliseconds>
-struct ALBERT_EXPORT TimePrinter
+class ALBERT_EXPORT TimePrinter
 {
+public:
 
     using time_point = std::chrono::system_clock::time_point;
 

@@ -8,7 +8,7 @@ namespace albert
 {
 
 /// General purpose value type Item implememtation
-struct ALBERT_EXPORT StandardItem : public Item
+class ALBERT_EXPORT StandardItem : public Item
 {
 public:
     /// \brief StandardItem constructor

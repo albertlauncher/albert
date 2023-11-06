@@ -34,8 +34,9 @@ static QString userShell()
 #if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
 
 
-struct ExecutableTerminal : public Terminal
+class ExecutableTerminal : public Terminal
 {
+public:
     const char *name_;
     const vector<const char*> command_line_;
 

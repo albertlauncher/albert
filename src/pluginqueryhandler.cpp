@@ -23,7 +23,7 @@ QString PluginQueryHandler::description() const { return QStringLiteral("Manage 
 
 QString PluginQueryHandler::defaultTrigger() const { return QStringLiteral("plugin "); }
 
-struct PluginItem : Item
+class PluginItem : public Item
 {
     PluginRegistry &plugin_registry_;
     PluginLoader &loader_;
