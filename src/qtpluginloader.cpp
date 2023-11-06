@@ -78,7 +78,10 @@ QtPluginLoader::QtPluginLoader(const QtPluginProvider &provider, const QString &
 }
 
 QtPluginLoader::~QtPluginLoader()
-{ Q_ASSERT(state() == PluginState::Unloaded); }
+{
+    if (state() != PluginState::Unloaded)
+        WARN << "Logic error: QtPluginLoader destroyed in non Unloaded state:" << metadata_.id;
+}
 
 PluginInstance *QtPluginLoader::instance() const { return instance_; }
 
