@@ -15,6 +15,7 @@
 #include <QMetaEnum>
 #include <QProcess>
 #include <QSettings>
+#include <QStyleFactory>
 #include <QStandardPaths>
 #include <QTime>
 #if defined(__unix__)
@@ -107,7 +108,7 @@ static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
 
 static void printSystemReport()
 {
-    const uint8_t w = 22;
+    const uint8_t w = 21;
 
     // BUILD
     DEBG << QString("%1: %2").arg("Albert version", w).arg(QApplication::applicationVersion());
@@ -116,11 +117,13 @@ static void printSystemReport()
     DEBG << QString("%1: %2").arg("Build ABI", w).arg(QSysInfo::buildAbi());
     DEBG << QString("%1: %2/%3").arg("Arch (build/current)", w).arg(QSysInfo::buildCpuArchitecture(), QSysInfo::currentCpuArchitecture());
 
-    // SYSTEM
+    // SYSTEM/PLATFORM
     DEBG << QString("%1: %2/%3").arg("Kernel (type/version)", w).arg(QSysInfo::kernelType(), QSysInfo::kernelVersion());
     DEBG << QString("%1: %2").arg("OS", w).arg(QSysInfo::prettyProductName());
     DEBG << QString("%1: %2/%3").arg("OS (type/version)", w).arg(QSysInfo::productType(), QSysInfo::productVersion());
     DEBG << QString("%1: %2").arg("Platform name", w).arg(QGuiApplication::platformName());
+    DEBG << QString("%1: %2").arg("Style name", w).arg(QApplication::style()->objectName());
+    DEBG << QString("%1: %2").arg("Available styles", w).arg(QStyleFactory::keys().join(", "));
 
     // APP/QT
     DEBG << QString("%1: %2").arg("Binary location", w).arg(QApplication::applicationFilePath());
