@@ -20,7 +20,7 @@ void ExtensionRegistry::remove(Extension *e)
     if (extensions_.erase(e->id()))
         emit removed(e);
     else
-        CRIT << "Logic error: Extension removed more than once: %s" << qPrintable(e->id());
+        CRIT << "Logic error: Extension removed more than once:" << e->id();
 }
 
 const map<QString,Extension*> &ExtensionRegistry::extensions()
