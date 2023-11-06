@@ -17,7 +17,9 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QTime>
-#include <csignal>
+#if defined(__unix__)
+#include "platform/Unix/unixsignalhandler.h"
+#endif
 ALBERT_LOGGING_CATEGORY("albert")
 using namespace std;
 using namespace albert;
@@ -99,10 +101,6 @@ static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
         qFatal("Failed creating cache dir at: %s", qPrintable(path));
 
     qInstallMessageHandler(messageHandler);
-
-    // Install signal handlers
-    for (int sig: {SIGINT, SIGTERM, SIGHUP, SIGPIPE})
-        signal(sig, [](int) { QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection); });
 
     return qapp;
 }
@@ -189,6 +187,9 @@ int main(int argc, char **argv)
     } else
         QLoggingCategory::setFilterRules("*.debug=false");
 
+#if defined(__unix__)
+    UnixSignalHandler unix_signal_handler;
+#endif
     app = new App(parser.value(opt_p).split(',', Qt::SkipEmptyParts));
     QTimer::singleShot(0, qApp, [](){ app->initialize(); }); // Init with running eventloop
     QObject::connect(qApp, &QApplication::aboutToQuit, [&]() { delete app; }); // Delete app _before_ loop exits

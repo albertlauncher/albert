@@ -152,24 +152,30 @@ set_target_properties(${TARGET_LIB} PROPERTIES
     VISIBILITY_INLINES_HIDDEN 1
 )
 
-# Platform specific stuff
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+### Platform specifics ########################################################
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
     if (DEFINED CMAKE_LIBRARY_ARCHITECTURE)
         target_compile_definitions(${TARGET_LIB} PRIVATE -DMULTIARCH_TUPLE="${CMAKE_LIBRARY_ARCHITECTURE}")
         target_link_libraries(${TARGET_LIB} PRIVATE Qt6::DBus)  # notifications
     endif()
+endif()
 
-elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_link_libraries(${TARGET_LIB}
         PRIVATE
         objc
         "-framework Cocoa"
         #"-framework UserNotifications"
     )
-
 endif()
+
+if (UNIX)
+    target_sources(${TARGET_LIB} PRIVATE
+        src/platform/Unix/unixsignalhandler.h
+        src/platform/Unix/unixsignalhandler.cpp
+    )
+endif (UNIX)
 
 
 ### App  ######################################################################
