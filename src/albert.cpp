@@ -18,7 +18,7 @@
 #include <QStyleFactory>
 #include <QStandardPaths>
 #include <QTime>
-#if defined(__unix__)
+#if __has_include(<unistd.h>)
 #include "platform/Unix/unixsignalhandler.h"
 #endif
 ALBERT_LOGGING_CATEGORY("albert")
@@ -190,7 +190,7 @@ int main(int argc, char **argv)
     } else
         QLoggingCategory::setFilterRules("*.debug=false");
 
-#if defined(__unix__)
+#if __has_include(<unistd.h>)
     UnixSignalHandler unix_signal_handler;
 #endif
     app = new App(parser.value(opt_p).split(',', Qt::SkipEmptyParts));
@@ -200,6 +200,8 @@ int main(int argc, char **argv)
     int return_value = qApp->exec();
     if (return_value == -1 && runDetachedProcess(qApp->arguments(), QDir::currentPath()))
         return_value = EXIT_SUCCESS;
+
+    INFO << "Bye.";
 
     return return_value;
 }

@@ -5,6 +5,7 @@
 #include <QCoreApplication>
 #include <QSocketNotifier>
 #include <csignal>
+#include <unistd.h>
 #include <sys/socket.h>
 
 namespace {
