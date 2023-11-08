@@ -61,50 +61,36 @@ public:
     mutable std::unordered_map<QString, QPixmap> pixmap_cache;
     mutable std::shared_mutex mutex_;
 
-    QPixmap getPixmapNoCache(const QString &urlstr, QSize *size, const QSize &requestedSize) const
+    QPixmap getRawPixmap(const QString &urlstr, const QSize &requestedSize) const
     {
-        if (QUrl url(urlstr); url.scheme() == QStringLiteral("qrc") || urlstr.startsWith(':')){
-            // https://doc.qt.io/qt-6/qresource.html
-            if (auto pm = QPixmap(urlstr); !pm.isNull()){
-                *size = pm.size();
-                return pm;
-            }
+        // https://doc.qt.io/qt-6/qresource.html
+        if (QUrl url(urlstr); url.scheme() == QStringLiteral("qrc") || urlstr.startsWith(':'))
+            return QPixmap(urlstr);
 
-        } else if (url.scheme() == QStringLiteral("qfip")){
-            // https://doc.qt.io/qt-6/qfileiconprovider.html
-            if (auto pm = file_icon_provider.icon(QFileInfo(url.toString(QUrl::RemoveScheme))).pixmap(requestedSize); !pm.isNull()){
-                *size = pm.size();
-                return pm;
-            }
+        // https://doc.qt.io/qt-6/qfileiconprovider.html
+        else if (url.scheme() == QStringLiteral("qfip"))
+            return file_icon_provider.icon(QFileInfo(url.toString(QUrl::RemoveScheme))).pixmap(requestedSize);
 
 #if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
-        } else if (url.scheme() == QStringLiteral("xdg")){
-            // https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
-            if (auto pm = QPixmap(XDG::IconLookup::iconPath(url.toString(QUrl::RemoveScheme))); !pm.isNull()){
-                *size = pm.size();
-                return pm;
-            }
+        // https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
+        else if (url.scheme() == QStringLiteral("xdg"))
+            return QPixmap(XDG::IconLookup::iconPath(url.toString(QUrl::RemoveScheme)));
 #endif
-        } else if (url.scheme() == QStringLiteral("qsp")){
-            // https://doc.qt.io/qt-6/qstyle.html#StandardPixmap-enum
+
+        // https://doc.qt.io/qt-6/qstyle.html#StandardPixmap-enum
+        else if (url.scheme() == QStringLiteral("qsp")){
             auto meta_enum = QMetaEnum::fromType<QStyle::StandardPixmap>();
             auto name = url.toString(QUrl::RemoveScheme);
             for (int i = 0; i < meta_enum.keyCount(); ++i)
-                if (name == meta_enum.key(i)){
-                    if (auto pm = qApp->style()->standardIcon(static_cast<QStyle::StandardPixmap>(meta_enum.value(i))).pixmap(requestedSize); !pm.isNull()){
-                        *size = pm.size();
-                        return pm;
-                    }
-                }
+                if (name == meta_enum.key(i))
+                    return qApp->style()->standardIcon(static_cast<QStyle::StandardPixmap>(meta_enum.value(i))).pixmap(requestedSize);
             WARN << "No such StandardPixmap found:" << name;
+        }
 
-        } else if (url.isLocalFile()){
-            if (auto pm = QPixmap(url.toLocalFile()); !pm.isNull()){
-                *size = pm.size();
-                return pm;
-            }
+        else if (url.isLocalFile())
+            return QPixmap(url.toLocalFile());
 
-        } else if (url.scheme() == QStringLiteral("gen")){
+        else if (url.scheme() == QStringLiteral("gen")){
             auto urlquery = QUrlQuery(url);
 
             QColor background(urlquery.queryItemValue(QStringLiteral("background")));
@@ -120,11 +106,7 @@ public:
             if (!ok)
                 scalar = 1.0f;
 
-            if (auto pm = genericPixmap(requestedSize.width(), background, foreground, text, scalar); !pm.isNull()){
-                *size = pm.size();
-                return pm;
-            }
-
+            return genericPixmap(requestedSize.width(), background, foreground, text, scalar);
         }
 
         return {};
@@ -139,17 +121,28 @@ QPixmap IconProvider::getPixmap(const QStringList &urls, QSize *size, const QSiz
     for (const auto &url : urls)
         if (auto pm = getPixmap(url, size, requestedSize); !pm.isNull())
             return pm;
+    WARN << "No icons found for" << urls;
     return {};
 }
 
 QPixmap IconProvider::getPixmap(const QString &urlstr, QSize *size, const QSize &requestedSize) const
 {
+    auto cache_key = QString("%1%2%3").arg(urlstr).arg(requestedSize.width(), requestedSize.height());
     try {
         std::shared_lock lock(d->mutex_);
-        return d->pixmap_cache.at(urlstr);
+        return d->pixmap_cache.at(cache_key);
     } catch (const out_of_range &) {
+        auto pm = d->getRawPixmap(urlstr, requestedSize);
+
+        if (!pm.isNull() && pm.size() != requestedSize)
+            pm = pm.scaled(requestedSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+
+        *size = pm.size();
+
         std::unique_lock lock(d->mutex_);
-        return d->pixmap_cache.emplace(urlstr, d->getPixmapNoCache(urlstr, size, requestedSize)).first->second;
+        d->pixmap_cache.emplace(cache_key, pm);
+
+        return pm;
     }
 }
 
