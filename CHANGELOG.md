@@ -1,3 +1,21 @@
+v0.22.15 (2023-11-08)
+
+[albert]
+* Fix missing smooth transform in icon provider
+* Add style information to report
+* Use X-GNOME-Autostart-Delay
+* Add proper unix signal handling using self pipe trick
+* Revert printing to logfile
+* Give enough time to connect to other instance.
+
+[plugins]
+* [system:1.8] Dont prompt on gnome session logout
+* [wbm:1.6] Remove unnecessary cast that may introduce segfaults
+* [app_xdg:1.8] Use Ubuntu gettext domains
+
+[python]
+* [stub] Fix links
+
 v0.22.14 (2023-10-06)
 
 [albert]
