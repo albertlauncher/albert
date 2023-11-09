@@ -2,6 +2,7 @@
 
 #include "albert/albert.h"
 #include "albert/logging.h"
+#include "report.h"
 #include "rpcserver.h"
 #include <QCoreApplication>
 #include <QFile>
@@ -16,30 +17,39 @@ static const char* socket_file_name = "ipc_socket";
 
 static std::map<QString, std::function<QString(const QString&)>> actions =
 {
-        {"show", [](const QString& param){
-            albert::show(param);
-            return "Albert set visible.";
-        }},
-        {"hide", [](const QString&){
-            albert::hide();
-            return "Albert set hidden.";
-        }},
-        {"toggle", [](const QString&){
-            albert::toggle();
-            return "Albert visibility toggled.";
-        }},
-        {"settings", [](const QString&){
-            albert::showSettings();
-            return "Settings opened,";
-        }},
-        {"restart", [](const QString&){
-            albert::restart();
-            return "Triggered restart.";
-        }},
-        {"quit", [](const QString&){
-            albert::quit();
-            return "Triggered quit.";
-        }}
+    {"commands", [](const QString&){
+        QStringList rpcs;
+        for (const auto &[k, v] : actions)
+            rpcs << k;
+        return rpcs.join('\n');
+    }},
+    {"show", [](const QString& param){
+        albert::show(param);
+        return "Albert set visible.";
+    }},
+    {"hide", [](const QString&){
+        albert::hide();
+        return "Albert set hidden.";
+    }},
+    {"toggle", [](const QString&){
+        albert::toggle();
+        return "Albert visibility toggled.";
+    }},
+    {"settings", [](const QString&){
+        albert::showSettings();
+        return "Settings opened,";
+    }},
+    {"restart", [](const QString&){
+        albert::restart();
+        return "Triggered restart.";
+    }},
+    {"quit", [](const QString&){
+        albert::quit();
+        return "Triggered quit.";
+    }},
+    {"report", [](const QString&){
+        return report().join('\n');
+    }}
 };
 
 
@@ -114,8 +124,10 @@ void RPCServer::onNewConnection()
     socket->deleteLater();
 }
 
-bool RPCServer::trySendMessageAndExit(const QString &message)
+bool RPCServer::trySendMessage(const QString &message)
 {
+    // Dont print logs in here
+
     QString socket_path = QString("%1/%2").arg(albert::cacheLocation(), socket_file_name);
 
     QLocalSocket socket;
@@ -126,9 +138,9 @@ bool RPCServer::trySendMessageAndExit(const QString &message)
         socket.waitForReadyRead(1000);
         std::cout << socket.readAll().toStdString() << std::endl;
         socket.close();
-        ::exit(EXIT_SUCCESS);
+        return true;
     } else {
         std::cout << "Failed to connect to albert." << std::endl;
-        ::exit(EXIT_FAILURE);
+        return false;
     }
 }

@@ -5,19 +5,16 @@
 #include "albert/logging.h"
 #include "albert/util/iconprovider.h"
 #include "app.h"
+#include "report.h"
 #include <QApplication>
 #include <QClipboard>
 #include <QCommandLineParser>
 #include <QDesktopServices>
 #include <QDir>
-#include <QIcon>
 #include <QMessageBox>
-#include <QMetaEnum>
 #include <QProcess>
 #include <QSettings>
-#include <QStyleFactory>
 #include <QStandardPaths>
-#include <QTime>
 #if __has_include(<unistd.h>)
 #include "platform/Unix/unixsignalhandler.h"
 #endif
@@ -106,51 +103,6 @@ static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
     return qapp;
 }
 
-static void printSystemReport()
-{
-    const uint8_t w = 21;
-
-    // BUILD
-    DEBG << QString("%1: %2").arg("Albert version", w).arg(QApplication::applicationVersion());
-    DEBG << QString("%1: %2").arg("Build date", w).arg(__DATE__ " " __TIME__);
-    DEBG << QString("%1: %2").arg("Qt version", w).arg(qVersion());
-    DEBG << QString("%1: %2").arg("Build ABI", w).arg(QSysInfo::buildAbi());
-    DEBG << QString("%1: %2/%3").arg("Arch (build/current)", w).arg(QSysInfo::buildCpuArchitecture(), QSysInfo::currentCpuArchitecture());
-
-    // SYSTEM/PLATFORM
-    DEBG << QString("%1: %2/%3").arg("Kernel (type/version)", w).arg(QSysInfo::kernelType(), QSysInfo::kernelVersion());
-    DEBG << QString("%1: %2").arg("OS", w).arg(QSysInfo::prettyProductName());
-    DEBG << QString("%1: %2/%3").arg("OS (type/version)", w).arg(QSysInfo::productType(), QSysInfo::productVersion());
-    DEBG << QString("%1: %2").arg("Platform name", w).arg(QGuiApplication::platformName());
-    DEBG << QString("%1: %2").arg("Style name", w).arg(QApplication::style()->objectName());
-    DEBG << QString("%1: %2").arg("Available styles", w).arg(QStyleFactory::keys().join(", "));
-
-    // APP/QT
-    DEBG << QString("%1: %2").arg("Binary location", w).arg(QApplication::applicationFilePath());
-    DEBG << QString("%1: %2").arg("Current dir", w).arg(QDir::currentPath());
-    DEBG << QString("%1: %2").arg("Font", w).arg(QGuiApplication::font().toString());
-    QMetaEnum metaEnum = QMetaEnum::fromType<QLocale::Language>();
-    QLocale loc;
-    DEBG << QString("%1: %2").arg("Language", w).arg(metaEnum.valueToKey(loc.language()));
-    DEBG << QString("%1: %2").arg("Locale", w).arg(loc.name());
-
-    // ENV
-    DEBG << QString("%1: %2").arg("$LANG", w).arg(QString::fromLocal8Bit(qgetenv("LANG")));
-    DEBG << QString("%1: %2").arg("$QT_QPA_PLATFORMTHEME", w).arg(QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORMTHEME")));
-    DEBG << QString("%1: %2").arg("$PATH", w).arg(QString::fromLocal8Bit(qgetenv("PATH")));
-    DEBG << QString("%1: %2").arg("$PWD", w).arg(QString::fromLocal8Bit(qgetenv("PWD")));
-    DEBG << QString("%1: %2").arg("$SHELL", w).arg(QString::fromLocal8Bit(qgetenv("SHELL")));
-
-    // LINUX ENV
-#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
-    DEBG << QString("%1: %2").arg("$XDG_SESSION_TYPE", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_TYPE")));
-    DEBG << QString("%1: %2").arg("$XDG_CURRENT_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_CURRENT_DESKTOP")));
-    DEBG << QString("%1: %2").arg("$DESKTOP_SESSION", w).arg(QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION")));
-    DEBG << QString("%1: %2").arg("$XDG_SESSION_DESKTOP", w).arg(QString::fromLocal8Bit(qgetenv("XDG_SESSION_DESKTOP")));
-    DEBG << QString("%1: %2").arg("Icon theme", w).arg(QIcon::themeName());
-#endif
-}
-
 int ALBERT_EXPORT main(int argc, char **argv);
 
 int main(int argc, char **argv)
@@ -162,30 +114,27 @@ int main(int argc, char **argv)
 
     QCommandLineParser parser;
     auto opt_p = QCommandLineOption({"p", "plugin-dirs"}, "Set the plugin dirs to use. Comma separated.", "directory");
-    auto opt_r = QCommandLineOption({"r", "report"}, "Print issue report.");
+    auto opt_r = QCommandLineOption({"r", "report"}, "Print report and quit.");
     auto opt_d = QCommandLineOption({"d", "debug"}, "Full debug output.");
     auto opt_q = QCommandLineOption({"q", "quiet"}, "Warnings only.  Takes precedence over -d.");
     auto opt_l = QCommandLineOption({"l", "loggin-rules"}, "QLoggingCategory filter rules. Takes precedence over -q.", "rules");
     parser.addOptions({opt_p, opt_r, opt_q, opt_d, opt_l});
-    parser.addPositionalArgument("command", "RPC command to send to the running instance", "[command [params...]]");
+    parser.addPositionalArgument("command", "RPC command to send to the running instance (Check 'albert commands')", "[command [params...]]");
     parser.addVersionOption();
     parser.addHelpOption();
     parser.process(*qapp);
 
-    if (parser.isSet(opt_r)){
-        printSystemReport();
-        ::exit(EXIT_SUCCESS);
-    }
-
     if (!parser.positionalArguments().isEmpty())
-        RPCServer::trySendMessageAndExit(parser.positionalArguments().join(" "));
+        return RPCServer::trySendMessage(parser.positionalArguments().join(" ")) ? 0 : 1;
+
+    if (parser.isSet(opt_r))
+        printReportAndExit();
 
     if (parser.isSet(opt_l)){
         QLoggingCategory::setFilterRules(parser.value(opt_l));
     } else if (parser.isSet(opt_q)){
         QLoggingCategory::setFilterRules("*.debug=false\n*.info=false");
     } else if (parser.isSet(opt_d)){
-        printSystemReport();
         QLoggingCategory::setFilterRules("");
     } else
         QLoggingCategory::setFilterRules("*.debug=false");

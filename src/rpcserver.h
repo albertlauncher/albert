@@ -8,7 +8,7 @@ class RPCServer
 public:
     RPCServer();
     ~RPCServer();
-    static bool trySendMessageAndExit(const QString &message);
+    static bool trySendMessage(const QString &message);
 private:
     void onNewConnection();
     QLocalServer local_server;
