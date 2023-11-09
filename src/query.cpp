@@ -160,9 +160,14 @@ void GlobalQuery::run_()
             for (auto &rank_item : r)
                 rank_items.emplace_back(handler, ::move(rank_item));
 
-        } catch (const exception &e) {
+        }
+        catch (const exception &e) {
             WARN << "Global search:" << handler->id() << "threw" << e.what();
         }
+        catch (...) {
+            WARN << "Global search:" << handler->id() << "threw unkown exception.";
+        }
+
     };
 
     QtConcurrent::blockingMap(query_handlers_, map);
