@@ -6,10 +6,8 @@
 #include <QFileIconProvider>
 #include <QMetaEnum>
 #include <QPainter>
-#include <QRegularExpression>
 #include <QString>
 #include <QStyle>
-#include <QUrl>
 #include <QUrlQuery>
 #include <mutex>
 #include <shared_mutex>
@@ -53,6 +51,14 @@ static QPixmap genericPixmap(int size, const QColor& bgcolor, const QColor& fgco
     return pixmap;
 }
 
+static QString implicit_qrc_scheme = ":";
+static QString explicit_qrc_scheme = "qrc:";
+static QString qfileiconprovider_scheme = "qfip:";
+static QString xdg_icon_lookup_scheme = "xdg:";
+static QString qstandardpixmap_scheme = "qsp:";
+static QString file_scheme = "file:";
+static QString generative_scheme = "gen:?"; //
+
 
 class IconProvider::Private
 {
@@ -64,34 +70,37 @@ public:
     QPixmap getRawPixmap(const QString &urlstr, const QSize &requestedSize) const
     {
         // https://doc.qt.io/qt-6/qresource.html
-        if (QUrl url(urlstr); url.scheme() == QStringLiteral("qrc") || urlstr.startsWith(':'))
+        if (urlstr.startsWith(implicit_qrc_scheme))
             return QPixmap(urlstr);
 
+        else if (urlstr.startsWith(explicit_qrc_scheme))
+            return QPixmap(urlstr.mid(3));  // intended, colon has to remain
+
         // https://doc.qt.io/qt-6/qfileiconprovider.html
-        else if (url.scheme() == QStringLiteral("qfip"))
-            return file_icon_provider.icon(QFileInfo(url.toString(QUrl::RemoveScheme))).pixmap(requestedSize);
+        else if (urlstr.startsWith(qfileiconprovider_scheme))
+            return file_icon_provider.icon(QFileInfo(urlstr.mid(qfileiconprovider_scheme.size()))).pixmap(requestedSize);
 
 #if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
         // https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
-        else if (url.scheme() == QStringLiteral("xdg"))
-            return QPixmap(XDG::IconLookup::iconPath(url.toString(QUrl::RemoveScheme)));
+        else if (urlstr.startsWith(xdg_icon_lookup_scheme))
+            return QPixmap(XDG::IconLookup::iconPath(urlstr.mid(xdg_icon_lookup_scheme.size())));
 #endif
 
         // https://doc.qt.io/qt-6/qstyle.html#StandardPixmap-enum
-        else if (url.scheme() == QStringLiteral("qsp")){
+        else if (urlstr.startsWith(qstandardpixmap_scheme)){
+            auto name = urlstr.mid(qstandardpixmap_scheme.size());
             auto meta_enum = QMetaEnum::fromType<QStyle::StandardPixmap>();
-            auto name = url.toString(QUrl::RemoveScheme);
             for (int i = 0; i < meta_enum.keyCount(); ++i)
                 if (name == meta_enum.key(i))
                     return qApp->style()->standardIcon(static_cast<QStyle::StandardPixmap>(meta_enum.value(i))).pixmap(requestedSize);
             WARN << "No such StandardPixmap found:" << name;
         }
 
-        else if (url.isLocalFile())
-            return QPixmap(url.toLocalFile());
+        else if (urlstr.startsWith(file_scheme))
+            return QPixmap(urlstr.mid(file_scheme.size()));
 
-        else if (url.scheme() == QStringLiteral("gen")){
-            auto urlquery = QUrlQuery(url);
+        else if (urlstr.startsWith(generative_scheme)){
+            auto urlquery = QUrlQuery(urlstr.mid(generative_scheme.size()));
 
             QColor background(urlquery.queryItemValue(QStringLiteral("background")));
 
@@ -109,7 +118,9 @@ public:
             return genericPixmap(requestedSize.width(), background, foreground, text, scalar);
         }
 
-        return {};
+        // Finally try to read the url as a file path
+        // If the file does not exist or is of an unknown format, the pixmap becomes a null pixmap.
+        return QPixmap(urlstr);
     }
 };
 

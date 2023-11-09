@@ -28,33 +28,33 @@ public:
     /// \param size Will get assigned the actual size of the pixmap created
     /// \param requestedSize The size the pixmap should have if possible.
     /// \param url The URL of the pixmap to be created. Supported url schemes:
-    /// - **qrc** or empty: A QResource file path.
-    /// - **qfip**: Uses [QFileIconProvider] to get the icon for the file path.
-    /// - **qsp**: Icons from [QStyle::StandardPixmap enum].
-    /// - **file**: Url to a local image file.
-    /// - **xdg**: performs [freedesktop icon theme specification] lookup (Linux only).
-    /// - **gen**: This is a generic icon factory. All parameters are optioal. It draws a
-    ///   background circle and renders text on it. Available parameters are:
+    /// - `<path>` or `file:<path>` Use the file at path as icon.
+    /// - `:<path>` or `qrc:<path>` Use the file at path in the [resource collection] as icon.
+    /// - `qfip:<path>` Use [QFileIconProvider] to get a generic icon for the file at <path>.
+    /// - `qsp:<pixmap enumerator>` Get an icon from [QStyle::StandardPixmap enum].
+    /// - `xdg:<icon name>` Performs [freedesktop icon theme specification] lookup (on supported
+    ///   platforms only) to get an icon.
+    /// - `gen:<>` Generate an icon on the fly. Supports drawing a background circle and renders
+    ///   text on it. All parameters are optional. Available parameters are:
     ///   - background: The background color (default: none). See also [QColor::fromString].
-    ///   - foreground: (default: window text from system palette)
+    ///   - foreground: (default: window text color from system palette)
     ///   - text: (default: none) The text to display
     ///   - fontscalar: (default: 1) Scalar for the default font size which is the pixmap height.
     ///
     ///   Examples
     ///
-    ///       qrc:nested/path/to/some.svg
-    ///       qrc:or-aliased
-    ///       :also-working-with-empty-sheme
-    ///       qfip:/some/dir
-    ///       qfip:/but/also/fancy/file/types.pdf
+    ///       /absolute/path/to/a/local/image/file.png
+    ///       file:/absolute/path/to/a/local/image/file.png
+    ///       :path-to-a-qresource-file
+    ///       qrc:path-to-a-qresource-file
+    ///       qfip:/path/to/any/file/for/example/a.pdf
     ///       qsp:SP_TrashIcon
-    ///       file:/path/to/local/image/file
     ///       xdg:some-themed-icon-name
-    ///       xdg:nautilus
     ///       gen:?background=blue&foreground=red&text=Hi&fontscalar=0.5
     ///
     /// \returns The pixmap, if available, null pixmap otherwise.
     ///
+    /// [resource collection]: https://doc.qt.io/qt-6/resources.html
     /// [QStyle::StandardPixmap enum]: https://doc.qt.io/qt-6/qstyle.html#StandardPixmap-enum
     /// [freedesktop icon theme specification]: https://specifications.freedesktop.org/icon-theme-spec/latest/
     /// [QFileIconProvider]: https://doc.qt.io/qt/qfileiconprovider.html
