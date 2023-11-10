@@ -15,6 +15,7 @@
 #include <QProcess>
 #include <QSettings>
 #include <QStandardPaths>
+#include <iostream>
 #if __has_include(<unistd.h>)
 #include "platform/Unix/unixsignalhandler.h"
 #endif
@@ -117,11 +118,21 @@ int main(int argc, char **argv)
     auto opt_r = QCommandLineOption({"r", "report"}, "Print report and quit.");
     auto opt_d = QCommandLineOption({"d", "debug"}, "Full debug output.");
     auto opt_q = QCommandLineOption({"q", "quiet"}, "Warnings only.  Takes precedence over -d.");
-    auto opt_l = QCommandLineOption({"l", "loggin-rules"}, "QLoggingCategory filter rules. Takes precedence over -q.", "rules");
+    auto opt_l = QCommandLineOption({"l", "logging-rules"}, "QLoggingCategory filter rules. Takes precedence over -q.", "rules");
     parser.addOptions({opt_p, opt_r, opt_q, opt_d, opt_l});
     parser.addPositionalArgument("command", "RPC command to send to the running instance (Check 'albert commands')", "[command [params...]]");
     parser.addVersionOption();
     parser.addHelpOption();
+    parser.setApplicationDescription(
+        "\nStart an Albert instance or control the running one.\n\n"
+        "On Linux Wayland makes tons of problems use the XCB platform plugin instead. Like e.g.:\n"
+        " QT_QPA_PLATFORM=xcb albert\n"
+        " albert --platform xcb\n"
+        "To get a detailed debug output including Qt logs use\n"
+        " QT_LOGGING_RULES='*=true' albert\n"
+        " albert --logging-rules '*=true'\n"
+        "See https://doc.qt.io/qt-6/qloggingcategory.html#logging-rules"
+    );
     parser.process(*qapp);
 
     if (!parser.positionalArguments().isEmpty())
@@ -129,6 +140,12 @@ int main(int argc, char **argv)
 
     if (parser.isSet(opt_r))
         printReportAndExit();
+
+    auto log_opts = {opt_d, opt_q, opt_l};
+    if (std::ranges::count_if(log_opts, [&](auto &opt){ return parser.isSet(opt); }) > 1){
+        std::cout << "Specify only one of -d, -q, -l." << std::endl;
+        return EXIT_FAILURE;
+    }
 
     if (parser.isSet(opt_l)){
         QLoggingCategory::setFilterRules(parser.value(opt_l));
