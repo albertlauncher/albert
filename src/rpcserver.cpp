@@ -93,6 +93,7 @@ RPCServer::RPCServer()
 
 RPCServer::~RPCServer()
 {
+    DEBG << "Closing local RPC server.";
     local_server.close();
 }
 
