@@ -12,7 +12,7 @@ void ExtensionRegistry::add(Extension *e)
     if (success)
         emit added(e);
     else
-        qFatal("Duplicate extension registration: %s", qPrintable(e->id()));
+        CRIT << "Extension registered more than once:" << e->id();
 }
 
 void ExtensionRegistry::remove(Extension *e)
@@ -20,7 +20,7 @@ void ExtensionRegistry::remove(Extension *e)
     if (extensions_.erase(e->id()))
         emit removed(e);
     else
-        CRIT << "Logic error: Extension removed more than once:" << e->id();
+        CRIT << "Removed extension that has not been registered before:" << e->id();
 }
 
 const map<QString,Extension*> &ExtensionRegistry::extensions()
