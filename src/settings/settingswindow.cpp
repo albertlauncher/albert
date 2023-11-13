@@ -62,7 +62,6 @@ SettingsWindow::SettingsWindow(App &app):
 
     init_tab_general_hotkey(app);
     init_tab_general_trayIcon(app);
-    init_tab_general_autostart();
     init_tab_general_frontends(app);
     init_tab_general_terminals(app);
     init_tab_general_search(app);
@@ -87,32 +86,6 @@ void SettingsWindow::init_tab_general_trayIcon(App &app)
     ui.checkBox_showTray->setChecked(app.tray_icon.isVisible());
     QObject::connect(ui.checkBox_showTray, &QCheckBox::toggled,
                      &app.tray_icon, &TrayIcon::setVisible);
-}
-
-void SettingsWindow::init_tab_general_autostart()
-{
-#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
-    QString desktopfile_path = QStandardPaths::locate(QStandardPaths::ApplicationsLocation,
-                                                      "albert.desktop",
-                                                      QStandardPaths::LocateFile);
-    if (!desktopfile_path.isNull()) {
-        QString autostart_path = QDir(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)).filePath("autostart/albert.desktop");
-        ui.checkBox_autostart->setChecked(QFile::exists(autostart_path));
-        connect(ui.checkBox_autostart, &QCheckBox::toggled,
-                this, [=](bool toggled){
-                    if (toggled)
-                        QFile::link(desktopfile_path, autostart_path);
-                    else
-                        QFile::remove(autostart_path);
-                });
-    }
-    else
-        CRIT << "Deskop entry not found! Autostart option is nonfuctional";
-#else
-    ui.checkBox_autostart->setVisible(false);
-    ui.label_autostart->setVisible(false);
-    WARN << "Autostart not implemented on this platform!";
-#endif
 }
 
 void SettingsWindow::init_tab_general_frontends(App &app)

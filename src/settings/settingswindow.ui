@@ -94,26 +94,6 @@
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QLabel" name="label_autostart">
-             <property name="text">
-              <string>Autostart</string>
-             </property>
-             <property name="buddy">
-              <cstring>checkBox_autostart</cstring>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QCheckBox" name="checkBox_autostart">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
             <widget class="QLabel" name="label_frontend">
              <property name="text">
               <string>Frontend</string>
@@ -123,7 +103,7 @@
              </property>
             </widget>
            </item>
-           <item row="2" column="1">
+           <item row="1" column="1">
             <widget class="QComboBox" name="comboBox_frontend">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -136,7 +116,7 @@
              </property>
             </widget>
            </item>
-           <item row="3" column="0">
+           <item row="2" column="0">
             <widget class="QLabel" name="label_term">
              <property name="text">
               <string>Terminal</string>
@@ -146,7 +126,7 @@
              </property>
             </widget>
            </item>
-           <item row="3" column="1">
+           <item row="2" column="1">
             <layout class="QVBoxLayout" name="verticalLayout_3">
              <item>
               <widget class="QComboBox" name="comboBox_term">
@@ -180,7 +160,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
              </item>
             </layout>
            </item>
-           <item row="4" column="0">
+           <item row="3" column="0">
             <widget class="QLabel" name="label_decay">
              <property name="text">
               <string>Usage history weighting</string>
@@ -190,7 +170,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
              </property>
             </widget>
            </item>
-           <item row="4" column="1">
+           <item row="3" column="1">
             <layout class="QHBoxLayout" name="horizontalLayout_3">
              <item>
               <widget class="QLabel" name="label_4">
@@ -248,7 +228,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
              </item>
             </layout>
            </item>
-           <item row="5" column="0">
+           <item row="4" column="0">
             <widget class="QLabel" name="label_prioritizePerfectMatch">
              <property name="text">
               <string>Prioritize perfect matches</string>
@@ -258,7 +238,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
              </property>
             </widget>
            </item>
-           <item row="5" column="1">
+           <item row="4" column="1">
             <widget class="QCheckBox" name="checkBox_prioritizePerfectMatch">
              <property name="toolTip">
               <string>Prioritize perfect matches even if they have no usage history and therefore would have a lower rank.</string>
@@ -268,14 +248,14 @@ li.checked::marker { content: &quot;\2612&quot;; }
              </property>
             </widget>
            </item>
-           <item row="6" column="0">
+           <item row="5" column="0">
             <widget class="QLabel" name="label_emptyQuery">
              <property name="text">
               <string>Run empty query:</string>
              </property>
             </widget>
            </item>
-           <item row="6" column="1">
+           <item row="5" column="1">
             <widget class="QCheckBox" name="checkBox_emptyQuery">
              <property name="text">
               <string/>
@@ -374,7 +354,6 @@ hr { height: 1px; border-width: 0; }
   <tabstop>tabs</tabstop>
   <tabstop>checkBox_showTray</tabstop>
   <tabstop>scrollArea_general</tabstop>
-  <tabstop>checkBox_autostart</tabstop>
   <tabstop>comboBox_frontend</tabstop>
   <tabstop>comboBox_term</tabstop>
  </tabstops>
