@@ -89,8 +89,6 @@ public:
                 return QStringLiteral("Plugin is currently busy.");
             case PluginState::Loaded:
             {
-                QCoreApplication::processEvents();
-
                 setState(PluginState::Busy, QStringLiteral("Loading…"));
                 TimePrinter tp(QString("[%1 ms] spent unloading plugin '%2'").arg("%1", q->metaData().id));
 
