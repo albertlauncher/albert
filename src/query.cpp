@@ -8,6 +8,9 @@
 #include <QtConcurrent>
 using namespace std;
 using namespace albert;
+using namespace chrono;
+
+Q_LOGGING_CATEGORY(timeCat, "albert.time", QtMsgType::QtDebugMsg)
 
 uint QueryBase::query_count = 0;
 
@@ -25,8 +28,11 @@ void QueryBase::run()
 {
     future_watcher_.setFuture(QtConcurrent::run([this](){
         try {
+            auto tp = system_clock::now();
             runFallbackHandlers();
             run_();
+            qCDebug(timeCat,).noquote() << QStringLiteral("%1 ms [total:'%3']")
+                .arg(duration_cast<milliseconds>(system_clock::now()-tp).count(), 6).arg(string_);
         } catch (const exception &e){
             WARN << "Handler thread threw" << e.what();
         }
@@ -103,9 +109,12 @@ void TriggerQuery::add(vector<shared_ptr<Item>> &&items) { matches_.add(query_ha
 void TriggerQuery::run_()
 {
     future_watcher_.setFuture(QtConcurrent::run([this](){
-        TimePrinter<std::chrono::microseconds> tp(QString("TIME: %1 µs ['%2':'%3']").arg("%1", query_handler_->id(), string_));
         try {
+            auto start = system_clock::now();
             query_handler_->handleTriggerQuery(this);
+            qCDebug(timeCat,).noquote() << QStringLiteral("%1 ms ['%2':'%3']")
+                .arg(duration_cast<milliseconds>(system_clock::now()-start).count(), 6)
+                .arg(query_handler_->id(), string_);
         } catch (const exception &e){
             WARN << "Handler thread threw" << e.what();
         }
@@ -147,9 +156,11 @@ void GlobalQuery::run_()
 
     function<void(GlobalQueryHandler*)> map = [this, &rank_items_mutex, &rank_items](GlobalQueryHandler *handler) {
         try {
-            TimePrinter<std::chrono::microseconds> tp(QString("TIME: %1 µs [%2:'%3']").arg("%1", handler->id(), string_));
-
+            auto start = system_clock::now();
             auto r = handler->handleGlobalQuery(this);
+            qCDebug(timeCat,).noquote() << QStringLiteral("%1 ms ['%2':'%3']")
+                .arg(duration_cast<milliseconds>(system_clock::now()-start).count(), 6)
+                .arg(handler->id(), string_);
             if (r.empty())
                 return;
 
@@ -172,16 +183,20 @@ void GlobalQuery::run_()
 
     QtConcurrent::blockingMap(query_handlers_, map);
 
-
-    TimePrinter tp(QString("TIME: %1 ms, Sorting global query '%2' results").arg("%1", string_));
+    auto tp = system_clock::now();
     sort(rank_items.begin(), rank_items.end(), [](const auto &a, const auto &b){
         if (a.second.score == b.second.score)
             return a.second.item->text() > b.second.item->text();
         else
             return a.second.score > b.second.score;
     });
-    tp.restart(QString("TIME: %1 ms, adding global query '%2' results").arg("%1", string_));
+    qCDebug(timeCat,).noquote() << QStringLiteral("%1 ms [sort:'%3']")
+        .arg(duration_cast<milliseconds>(system_clock::now()-tp).count(), 6).arg(string_);
+
+    tp = system_clock::now();
     matches_.add(rank_items.begin(), rank_items.end()); // TODO ranges
+    qCDebug(timeCat,).noquote() << QStringLiteral("%1 ms [add:'%3']")
+        .arg(duration_cast<milliseconds>(system_clock::now()-tp).count(), 6).arg(string_);
 
 //    //    auto it = rank_items.begin();
 //    //    for (uint e = 0; pow(10,e)-1 < (uint)rank_items.size(); ++e){
