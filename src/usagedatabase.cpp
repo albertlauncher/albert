@@ -130,11 +130,18 @@ void UsageHistory::addActivation(const QString &qid, const QString &eid,
 
 void UsageHistory::updateScores()
 {
-    TimePrinter tp("%1 ms fetching activations.");
+    DEBG << "Updating usage scores…";
+    unique_lock lock(db_recursive_mutex_);
 
-    vector<Activation> activations = db_activations();
-
-    tp.restart("%1 ms computing usage scores.");
+    // Get activations
+    QSqlQuery sql(QSqlDatabase::database(db_conn_name));
+    vector<Activation> activations;
+    sql.exec("SELECT query, extension_id, item_id, action_id FROM activation WHERE item_id<>''");
+    if (!sql.isActive())
+        qFatal("SQL ERROR: %s %s", qPrintable(sql.executedQuery()), qPrintable(sql.lastError().text()));
+    while (sql.next())
+        activations.emplace_back(sql.value(0).toString(), sql.value(1).toString(),
+                                 sql.value(2).toString(), sql.value(3).toString());
 
     // Compute usage weights
     map<pair<QString,QString>, double> usage_weights;
@@ -160,13 +167,13 @@ void UsageHistory::updateScores()
         rank += 1.0;
     }
 
-    unique_lock lock(global_data_mutex_);
     usage_scores_ = ::move(usage_scores);
 }
 
 
 void UsageHistory::db_connect()
 {
+    DEBG << "Connecting to database…";
     unique_lock lock(db_recursive_mutex_);
 
     auto db = QSqlDatabase::addDatabase("QSQLITE", db_conn_name);
@@ -183,9 +190,6 @@ void UsageHistory::db_connect()
         }
     }
 
-    DEBG << "Database: Connecting…";
-    TimePrinter tp("Database: Connected (%1 ms).");
-
     if (!db.isValid())
         qFatal("No sqlite available");
 
@@ -200,10 +204,8 @@ void UsageHistory::db_connect()
 
 void UsageHistory::db_initialize()
 {
+    DEBG << "Initializing database…";
     unique_lock lock(db_recursive_mutex_);
-
-    DEBG << "Database: Initializing…";
-    TimePrinter tp("Database: Initialized (%1 ms).");
 
     QSqlQuery sql(QSqlDatabase::database(db_conn_name));
     sql.exec("CREATE TABLE IF NOT EXISTS activation ( "
@@ -219,42 +221,18 @@ void UsageHistory::db_initialize()
 
 void UsageHistory::db_clearActivations()
 {
+    DEBG << "Clearing activations…";
     unique_lock lock(db_recursive_mutex_);
-
-    DEBG << "Database: Clearing activations…";
-    TimePrinter tp("Database: Activations cleared (%1 ms).");
-
-    QSqlDatabase::database(db_conn_name).exec("DROP TABLE activation;");
-    db_initialize();
-}
-
-vector<Activation> UsageHistory::db_activations()
-{
-    unique_lock lock(db_recursive_mutex_);
-
-    DEBG << "Database: Fetching activations…";
-    TimePrinter tp("Database: Activations fetched (%1 ms).");
 
     QSqlQuery sql(QSqlDatabase::database(db_conn_name));
-    sql.exec("SELECT query, extension_id, item_id, action_id "
-             "FROM activation WHERE item_id<>''");
-
-    if (!sql.isActive())
-        qFatal("SQL ERROR: %s %s", qPrintable(sql.executedQuery()), qPrintable(sql.lastError().text()));
-
-    vector<Activation> activations;
-    while (sql.next())
-        activations.emplace_back(sql.value(0).toString(), sql.value(1).toString(),
-                                 sql.value(2).toString(), sql.value(3).toString());
-    return activations;
+    sql.exec("DROP TABLE activation;");
+    db_initialize();
 }
 
 void UsageHistory::db_addActivation(const QString &q, const QString &e, const QString &i, const QString &a)
 {
-    unique_lock lock(db_recursive_mutex_);
-
     DEBG << "Database: Adding activation…";
-    TimePrinter tp("Database: Activation added (%1 ms).");
+    unique_lock lock(db_recursive_mutex_);
 
     QSqlQuery sql(QSqlDatabase::database(db_conn_name));
     sql.prepare("INSERT INTO activation (query, extension_id, item_id, action_id) "

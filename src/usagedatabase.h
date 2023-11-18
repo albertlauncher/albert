@@ -50,7 +50,6 @@ private:
     static void db_connect();
     static void db_initialize();
     static void db_clearActivations();
-    static std::vector<Activation> db_activations();
     static void db_addActivation(const QString &query, const QString &extension,
                                  const QString &item, const QString &action);
 };
