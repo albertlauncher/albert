@@ -81,7 +81,10 @@ static const vector<ExecutableTerminal> exec_terminals
         {"QTerminal", {"qterminal", "-e"}},
         {"RoxTerm", {"roxterm", "-x"}},
         {"St", {"st", "-e"}},
-        {"Terminator", {"terminator", "-u", "-g", "/dev/null", "-x"}},  // TODO remove in future. See #1177 and https://github.com/gnome-terminator/terminator/issues/702
+        // TODO remove in future. Like in 2027 🤷
+        // See #1177 and https://github.com/gnome-terminator/terminator/issues/702 and 660
+        {"Terminator (<=2.1.2)", {"terminator", "-u", "-g", "/dev/null", "-x"}},
+        {"Terminator", {"terminator", "-u", "-x"}},
         {"Terminology", {"terminology", "-e"}},
         {"Termite", {"termite", "-e"}},
         {"Tilix", {"tilix", "-e"}},
