@@ -70,8 +70,8 @@ RPCServer::RPCServer()
             break;
         case QLocalSocket::ConnectionRefusedError:
             // socket exists but nobody answers. probably crashed before.
-            GWARN("Albert has not been terminated properly. "
-                  "Please check your crash reports and report an issue.");
+            CRIT << "Albert has not been terminated properly. "
+                    "Please check your logs and report an issue.";
             QLocalServer::removeServer(socket_path);
             break;
         default:
