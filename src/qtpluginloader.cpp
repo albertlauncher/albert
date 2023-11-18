@@ -59,7 +59,8 @@ QtPluginLoader::QtPluginLoader(const QtPluginProvider &provider, const QString &
         errors << QString("Incompatible minor version: %1. Supported up to: %2.")
                       .arg(plugin_iid_minor).arg(ALBERT_VERSION_MINOR);
 
-    static const auto regex_version = QRegularExpression(R"(^\d+\.\d+$)");
+
+    static const QRegularExpression regex_version(R"R(^(\d+)(?>\.(\d+))?\.(\d+)$)R");
     if (!regex_version.match(metadata_.version).hasMatch())
         errors << "Invalid version scheme. Use '<version>.<patch>'.";
 
