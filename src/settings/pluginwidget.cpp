@@ -196,7 +196,6 @@ void PluginWidget::onUpdatePluginWidget()
     if (!current.isValid()){
 
         l = new QLabel("Select a plugin");
-        l->setEnabled(false);
         l->setAlignment(Qt::AlignCenter);
         scrollArea_info->setWidget(l);
         return;
