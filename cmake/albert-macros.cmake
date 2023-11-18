@@ -67,7 +67,7 @@ macro(albert_plugin_generate_metadata_json)
 endmacro()
 
 macro(albert_plugin_add_default_target)
-    file(GLOB_RECURSE SRC src/*.h src/*.cpp src/*.hpp src/*.mm *.qrc *.ui *.qml )
+    file(GLOB_RECURSE SRC src/*.h src/*.cpp src/*.hpp src/*.mm *.qrc *.ui *.qml *.in )
 
     add_library(${PROJECT_NAME} MODULE ${SRC})
     add_library(albert::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
