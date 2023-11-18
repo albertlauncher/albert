@@ -1,3 +1,30 @@
+v0.22.16 (2023-11-18)
+
+[albert]
+* Remove the visual warning on crashes.
+  This ICE error bug is going to stay around for a while.
+* Remove autostart option
+  This is a feature unnecessary complicated to maintain and perfectly fine
+  to delegate entirely to the desktop environment.
+* Add "report" RPC
+  To get the ability to fetch report from the running instance.
+
+[plugins]
+* [python:2.1.0]
+  Make plugin major.minor the interface version
+  Improve UX while installing dependencies
+* [calc:1.4] Threadsafe and aborting calculations
+  libcalculate does not mention any thread safety. lock it.
+  Use async calculate(…) function and poll query validity to abort
+  unnecessary calculations. This does not only save resources, but is
+  also required such that the locks above dont introduce stuttering.
+* [system:1.8] Dont prompt on gnome session logout
+* [app_xdg:1.8] Use Ubuntu gettext domains
+
+[python]
+* [bitwarden] 2.0
+  Add copy-username action
+
 v0.22.15 (2023-11-08)
 
 [albert]
