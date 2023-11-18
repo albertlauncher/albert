@@ -142,7 +142,8 @@ int main(int argc, char **argv)
         printReportAndExit();
 
     auto log_opts = {opt_d, opt_q, opt_l};
-    if (std::ranges::count_if(log_opts, [&](auto &opt){ return parser.isSet(opt); }) > 1){
+    if (count_if(begin(log_opts), end(log_opts),
+                 [&](auto &opt){ return parser.isSet(opt); }) > 1){
         std::cout << "Specify only one of -d, -q, -l." << std::endl;
         return EXIT_FAILURE;
     }
