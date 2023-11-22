@@ -12,7 +12,7 @@ using namespace albert;
 
 
 QtPluginLoader::QtPluginLoader(const QtPluginProvider &provider, const QString &p)
-    : PluginLoader(p), loader(p), provider_(provider)
+    : PluginLoader(p), loader(p), provider_(provider), instance_(nullptr)
 {
     // Some python libs do not link against python. Export the python symbols to the main app.
     loader.setLoadHints(QLibrary::ExportExternalSymbolsHint);// | QLibrary::PreventUnloadHint);
