@@ -116,10 +116,7 @@ int main(int argc, char **argv)
     QCommandLineParser parser;
     auto opt_p = QCommandLineOption({"p", "plugin-dirs"}, "Set the plugin dirs to use. Comma separated.", "directory");
     auto opt_r = QCommandLineOption({"r", "report"}, "Print report and quit.");
-    auto opt_d = QCommandLineOption({"d", "debug"}, "Full debug output.");
-    auto opt_q = QCommandLineOption({"q", "quiet"}, "Warnings only.  Takes precedence over -d.");
-    auto opt_l = QCommandLineOption({"l", "logging-rules"}, "QLoggingCategory filter rules. Takes precedence over -q.", "rules");
-    parser.addOptions({opt_p, opt_r, opt_q, opt_d, opt_l});
+    parser.addOptions({opt_p, opt_r});
     parser.addPositionalArgument("command", "RPC command to send to the running instance (Check 'albert commands')", "[command [params...]]");
     parser.addVersionOption();
     parser.addHelpOption();
@@ -130,7 +127,6 @@ int main(int argc, char **argv)
         " albert --platform xcb\n"
         "To get a detailed debug output including Qt logs use\n"
         " QT_LOGGING_RULES='*=true' albert\n"
-        " albert --logging-rules '*=true'\n"
         "See https://doc.qt.io/qt-6/qloggingcategory.html#logging-rules"
     );
     parser.process(*qapp);
@@ -141,21 +137,8 @@ int main(int argc, char **argv)
     if (parser.isSet(opt_r))
         printReportAndExit();
 
-    auto log_opts = {opt_d, opt_q, opt_l};
-    if (count_if(begin(log_opts), end(log_opts),
-                 [&](auto &opt){ return parser.isSet(opt); }) > 1){
-        std::cout << "Specify only one of -d, -q, -l." << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    if (parser.isSet(opt_l)){
-        QLoggingCategory::setFilterRules(parser.value(opt_l));
-    } else if (parser.isSet(opt_q)){
-        QLoggingCategory::setFilterRules("*.debug=false\n*.info=false");
-    } else if (parser.isSet(opt_d)){
-        QLoggingCategory::setFilterRules("");
-    } else
-        QLoggingCategory::setFilterRules("*.debug=false");
+    for (const auto &line : report())
+        DEBG << line;
 
 #if __has_include(<unistd.h>)
     UnixSignalHandler unix_signal_handler;
@@ -169,7 +152,6 @@ int main(int argc, char **argv)
         return_value = EXIT_SUCCESS;
 
     INFO << "Bye.";
-
     return return_value;
 }
 
