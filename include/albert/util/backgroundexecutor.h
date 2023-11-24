@@ -2,9 +2,9 @@
 
 #pragma once
 #include "albert/logging.h"
-#include "albert/util/timeprinter.h"
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
+#include <chrono>
 #include <functional>
 
 namespace albert
@@ -37,9 +37,12 @@ public:
     ~BackgroundExecutor() {
         rerun_ = false;
         if (isRunning()){
-            TimePrinter tp("Busy waited for %1 ms.");
             WARN << "Busy wait for BackgroundExecutor task. Abortion handled correctly?";
+            auto start = std::chrono::system_clock::now();
             future_watcher_.waitForFinished();
+            auto end = std::chrono::system_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
+            WARN << QStringLiteral("Busy waited for %1 ms.").arg(duration.count());
         }
     };
 

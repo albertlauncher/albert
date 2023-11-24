@@ -2,7 +2,6 @@
 
 #include "albert/extension/queryhandler/rankitem.h"
 #include "albert/logging.h"
-#include "albert/util/timeprinter.h"
 #include "query.h"
 #include "usagedatabase.h"
 #include <QtConcurrent>

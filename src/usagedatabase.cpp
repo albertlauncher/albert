@@ -4,7 +4,6 @@
 #include "albert/extension.h"
 #include "albert/extension/queryhandler/rankitem.h"
 #include "albert/logging.h"
-#include "albert/util/timeprinter.h"
 #include "usagedatabase.h"
 #include <QDir>
 #include <QSettings>
