@@ -9,7 +9,7 @@ using namespace std;
 using namespace albert;
 using namespace chrono;
 
-Q_LOGGING_CATEGORY(timeCat, "albert.time", QtMsgType::QtDebugMsg)
+Q_LOGGING_CATEGORY(timeCat, "albert_query_runtimes")
 
 uint QueryBase::query_count = 0;
 

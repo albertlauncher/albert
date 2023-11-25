@@ -19,7 +19,7 @@
 #if __has_include(<unistd.h>)
 #include "platform/Unix/unixsignalhandler.h"
 #endif
-ALBERT_LOGGING_CATEGORY("albert")
+Q_LOGGING_CATEGORY(AlbertLoggingCategory, "albert")
 using namespace std;
 using namespace albert;
 static App *app;
@@ -108,6 +108,8 @@ int ALBERT_EXPORT main(int argc, char **argv);
 
 int main(int argc, char **argv)
 {
+    QLoggingCategory::setFilterRules("*.debug=false");
+
     if (qApp != nullptr)
         qFatal("Calling main twice is not allowed.");
 
