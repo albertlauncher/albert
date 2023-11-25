@@ -285,7 +285,7 @@ long long albert::runDetachedProcess(const QStringList &commandline, const QStri
 {
     qint64 pid = 0;
     if (!commandline.empty()) {
-        if (QProcess::startDetached(commandline[0], commandline.mid(1), working_dir, &pid))
+        if (QProcess::startDetached(commandline[0], commandline.mid(1), working_dir.isNull() ? QDir::homePath() : working_dir, &pid))
             INFO << "Detached process started successfully. PID:" << pid << commandline;
         else
             WARN << "Starting detached process failed." << commandline;
