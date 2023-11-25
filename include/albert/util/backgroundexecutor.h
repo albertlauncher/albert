@@ -10,18 +10,32 @@
 namespace albert
 {
 
-/// Helper class for recurring tasks
+/// Provides a lean interface for recurring indexing tasks.
+/// Takes care of the QtConcurrent boilerplate code to start,
+/// abort and scheldule restarts of threads.
+/// \tparam The type of results this executor produces
 template<typename T> class BackgroundExecutor
 {
 public:
-    /// The task that should be executed in background
+    /// The task that should be executed in background.
+    /// This function is executed in a separate thread.
+    /// \param abort The abort flag
+    /// \return The results of the task.
     std::function<T(const bool &abort)> parallel;
 
-    /// The function that handles the results when the task is done
-    std::function<void(T &&)> finish;
+    /// The results handler.
+    /// When the parallel function finished, this function will be called in
+    /// the main thread with the results returned by the parallel function.
+    /// \param results The results parallel returned.
+    std::function<void(T && results)> finish;
+
+    /// The runtime of the last execution of parallel
+    std::chrono::milliseconds runtime;
+
 private:
     QFutureWatcher<T> future_watcher_;
     bool rerun_ = false;
+
     void onFinish() {
         if (rerun_){  // discard and rerun
             rerun_ = false;
@@ -30,10 +44,19 @@ private:
             finish(std::move(future_watcher_.future().takeResult()));
     }
 
+    T run_(const bool &abort){
+        auto start = std::chrono::system_clock::now();
+        T ret = parallel(abort);
+        auto end = std::chrono::system_clock::now();
+        runtime = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
+        return std::move(ret);
+    }
+
 public:
     BackgroundExecutor() {
         QObject::connect(&future_watcher_, &QFutureWatcher<T>::finished, [this](){onFinish();});
     };
+
     ~BackgroundExecutor() {
         rerun_ = false;
         if (isRunning()){
@@ -46,15 +69,18 @@ public:
         }
     };
 
-    /// Run or schedule a rerun of the task
+    /// Run or schedule a rerun of the task.
+    /// If a task is running this function sets the abort flag and schedules a
+    /// rerun. `finish` will not be called for the cancelled run.
     void run() {
         if (future_watcher_.isRunning())
             rerun_ = true;
         else
-            future_watcher_.setFuture(QtConcurrent::run(parallel, rerun_));
+            future_watcher_.setFuture(QtConcurrent::run(&BackgroundExecutor<T>::run_, this, rerun_));
     }
 
-    /// Indicator if the task is still running
+    /// Returns `true` if the asynchronous computation is currently
+    /// running; otherwise returns `false`.
     bool isRunning() const { return future_watcher_.isRunning(); }
 };
 
