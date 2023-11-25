@@ -30,26 +30,26 @@ static void messageHandler(QtMsgType type, const QMessageLogContext &context, co
     // Todo use std::format as soon as apple gets it off the ground
     switch (type) {
         case QtDebugMsg:
-            fprintf(stdout, "%s \x1b[34;1m[debg:%s]\x1b[0m \x1b[3m%s\x1b[0m\n",
+            fprintf(stdout, "%s \x1b[34m[debg:%s]\x1b[0m %s\x1b[0m\n",
                     QTime::currentTime().toString().toLocal8Bit().constData(),
                     context.category,
                     message.toLocal8Bit().constData());
             break;
         case QtInfoMsg:
-            fprintf(stdout, "%s \x1b[32;1m[info:%s]\x1b[0m %s\n",
+            fprintf(stdout, "%s \x1b[32m[info:%s]\x1b[0m %s\n",
                     QTime::currentTime().toString().toLocal8Bit().constData(),
                     context.category,
                     message.toLocal8Bit().constData());
 
             break;
         case QtWarningMsg:
-            fprintf(stdout, "%s \x1b[33;1m[warn:%s]\x1b[0;1m %s\x1b[0m\n",
+            fprintf(stdout, "%s \x1b[33m[warn:%s]\x1b[0m %s\x1b[0m\n",
                     QTime::currentTime().toString().toLocal8Bit().constData(),
                     context.category,
                     message.toLocal8Bit().constData());
             break;
         case QtCriticalMsg:
-            fprintf(stdout, "%s \x1b[31;1m[crit:%s]\x1b[0;1m %s\x1b[0m\n",
+            fprintf(stdout, "%s \x1b[31m[crit:%s] %s\x1b[0m\n",
                     QTime::currentTime().toString().toLocal8Bit().constData(),
                     context.category,
                     message.toLocal8Bit().constData());
