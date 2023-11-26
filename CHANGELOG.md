@@ -1,3 +1,14 @@
+v0.22.17 (2023-11-26)
+
+[albert]
+* Prepend albert to logging categories, default filter debug
+* Remove logging rules cli arguments
+  Dont work on some systems and there is QT_LOGGING_RULES for it
+* Differentiate terminator terminals suffering bug 660
+
+[plugins]
+* [mpris:2.0] Ported
+
 v0.22.16 (2023-11-18)
 
 [albert]

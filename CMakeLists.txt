@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)  # JSON support, Ubuntu 22.04
 
 # dont touch! set by metatool
-set(PROJECT_VERSION 0.22.16)
+set(PROJECT_VERSION 0.22.17)
 
 project(albert
     VERSION ${PROJECT_VERSION}
