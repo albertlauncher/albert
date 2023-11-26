@@ -136,8 +136,10 @@ bool RPCServer::trySendMessage(const QString &message)
     if (socket.waitForConnected(500)){
         socket.write(message.toUtf8());
         socket.flush();
-        socket.waitForReadyRead(1000);
-        std::cout << socket.readAll().toStdString() << std::endl;
+        if (socket.waitForReadyRead(1000))
+            std::cout << socket.readAll().toStdString() << std::endl;
+        else
+            std::cout << "Read timed out. Albert busy?" << std::endl;
         socket.close();
         return true;
     } else {
