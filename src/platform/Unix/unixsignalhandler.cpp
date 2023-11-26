@@ -12,7 +12,7 @@ namespace {
 enum SocketFileDescriptor { Write, Read, Count };
 int socket_file_descriptors[SocketFileDescriptor::Count];
 QSocketNotifier *socket_notifier = nullptr;
-int handled_signals[] = { SIGTERM, SIGINT }; //, SIGHUP , SIGINTSIGPIPE };
+int handled_signals[] = { SIGTERM, SIGINT, SIGHUP, SIGPIPE };
 
 
 void unixSignalHandler(int signal)
