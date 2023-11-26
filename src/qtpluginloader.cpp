@@ -14,8 +14,25 @@ using namespace albert;
 QtPluginLoader::QtPluginLoader(const QtPluginProvider &provider, const QString &p)
     : PluginLoader(p), loader(p), provider_(provider), instance_(nullptr)
 {
-    // Some python libs do not link against python. Export the python symbols to the main app.
-    loader.setLoadHints(QLibrary::ExportExternalSymbolsHint);// | QLibrary::PreventUnloadHint);
+    /*
+     * Rationale
+     *
+     * ExportExternalSymbolsHint:
+     * Some python libs do not link against python. Export the python symbols to the main app.
+     * (this comment is like 10y old, TODO check if necessary)
+     *
+     * PreventUnloadHint:
+     * To be able to unload we have to make sure that there is no object of this library alive.
+     * This is nearly impossible with the current design. Frontends keep queries alive over
+     * sessions which then segfault on deletion when the code has been unloaded.
+     *
+     * TODO: Design something that ensures that no items/actions will be alive when plugins get
+     * unloaded. (e.g. Session class, owning queries, injected into frontends when shown).
+     *
+     * Anyway atm frontends keep queries alive over session, which is just poor design.
+     * However not unloading is an easy fix for now and theres more important stuff to do.
+     */
+    loader.setLoadHints(QLibrary::ExportExternalSymbolsHint | QLibrary::PreventUnloadHint);
 
     // Extract metadata
 
