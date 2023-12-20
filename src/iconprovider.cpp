@@ -28,12 +28,9 @@ static QPixmap genericPixmap(int size, const QColor& bgcolor, const QColor& fgco
     painter.setRenderHint(QPainter::Antialiasing);
 
     if (bgcolor.isValid()){
-        QColor borderColor = bgcolor;
-        auto borderWidth = size/6;
-        borderColor.setAlpha(128);
         painter.setBrush(bgcolor);
-        painter.setPen(QPen(borderColor, borderWidth));
-        painter.drawEllipse(borderWidth / 2, borderWidth / 2, size - borderWidth, size - borderWidth);
+        painter.setPen(Qt::NoPen);
+        painter.drawEllipse(0, 0, size, size);
     }
 
     if (!text.isEmpty())
