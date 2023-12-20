@@ -51,7 +51,16 @@ public:
         return QString("Config: %1, State: %2").arg(enabled, state);
     }
 
-    QStringList iconUrls() const override { return {QStringLiteral("gen:?&text=🧩")}; }
+    QStringList iconUrls() const override {
+        if(!plugin_registry_.isEnabled(id()))
+            return {QStringLiteral("gen:?&text=🧩&fontscalar=0.7")};
+        else if (loader_.state() == PluginState::Loaded)
+            return {QStringLiteral("gen:?&text=🧩&fontscalar=0.7&background=#4000A000")};
+        else if (loader_.stateInfo().isEmpty())
+            return {QStringLiteral("gen:?&text=🧩&fontscalar=0.7&background=#4000A0A0")};
+        else
+            return {QStringLiteral("gen:?&text=🧩&fontscalar=0.7&background=#40FF0000")};
+    }
 
     vector<Action> actions() const override {
         vector<Action> actions;
