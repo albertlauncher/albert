@@ -65,6 +65,7 @@ public:
     vector<Action> actions() const override {
         vector<Action> actions;
 
+        actions.emplace_back("settings", "Open settings", [this](){ showSettings(id()); });
 
         if (plugin_registry_.isEnabled(id()))
             actions.emplace_back(
@@ -92,8 +93,6 @@ public:
 
         } else  // by contract only unloaded
             actions.emplace_back("load", "Load plugin", [this](){ plugin_registry_.load(id()); });
-
-        actions.emplace_back("settings", "Open settings", [this](){ showSettings(id()); });
 
         return actions;
     }
