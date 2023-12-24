@@ -228,7 +228,7 @@ public:
         else if (role == Qt::ToolTipRole)
             switch ((Column) section) {
             case Column::Name:        return headerData(section, orientation, Qt::DisplayRole);
-            case Column::Trigger:     return headerData(section, orientation, Qt::DisplayRole);
+            case Column::Trigger:     return QStringLiteral("The trigger of the handler. Spaces are visualized by •.");
             case Column::THandler:    return QStringLiteral("Enabled trigger query handlers.");
             case Column::GHandler:    return QStringLiteral("Enabled global query handlers.");
             case Column::FHandler:    return QStringLiteral("Enabled fallback query handlers.");
