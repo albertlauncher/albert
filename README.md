@@ -10,6 +10,6 @@
 
 Albert is a plugin based, desktop agnostic C++/Qt keyboard launcher that helps you to accomplish your workflows in a breeze.
 
-Visit the [*website*](https://albertlauncher.github.io/) to get help [*installing*](https://albertlauncher.github.io/installing/), [*using*](https://albertlauncher.github.io/using/), [*extending*](https://albertlauncher.github.io/extending/) or [*troubleshooting*](https://albertlauncher.github.io/help/) Albert.
+Visit the [*website*](https://albertlauncher.github.io/) to get help [*installing*](https://albertlauncher.github.io/setup/), [*using*](https://albertlauncher.github.io/usage/), [*extending*](https://albertlauncher.github.io/extension/) or [*troubleshooting*](https://albertlauncher.github.io/help/) Albert.
 
 Have fun with Albert. If you do not, [tell me why](https://telegram.me/albert_launcher_community). If you like it, feel free to [tip me](https://albertlauncher.github.io/donation/).
