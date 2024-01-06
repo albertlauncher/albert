@@ -11,6 +11,24 @@ using namespace std;
 using namespace albert;
 
 
+static QString fetchLocalizedMetadata(const QJsonObject &json ,const QString &key)
+{
+    auto locale = QLocale::system();
+
+    // code and territory, e.g. de_AT
+
+    auto k = QStringLiteral("%1[%2]").arg(key, locale.name());
+    if (auto v = json[k].toString(); !v.isEmpty())
+        return v;
+
+    k = QStringLiteral("%1[%2]").arg(key, QLocale::languageToCode(locale.language()));
+    if (auto v = json[k].toString(); !v.isEmpty())
+        return v;
+
+    return json[key].toString();
+}
+
+
 QtPluginLoader::QtPluginLoader(const QtPluginProvider &provider, const QString &p)
     : PluginLoader(p), loader(p), provider_(provider), instance_(nullptr)
 {
@@ -41,16 +59,25 @@ QtPluginLoader::QtPluginLoader(const QtPluginProvider &provider, const QString &
         throw runtime_error("Not an albert plugin");
 
     auto rawMetadata = loader.metaData()["MetaData"].toObject();
+
     metadata_.id = rawMetadata["id"].toString();
+
     metadata_.version = rawMetadata["version"].toString();
-    metadata_.name = rawMetadata["name"].toString();
-    metadata_.description = rawMetadata["description"].toString();
-    metadata_.long_description = rawMetadata["long_description"].toString();
+
+    metadata_.name = fetchLocalizedMetadata(rawMetadata, QStringLiteral("name"));
+
+    metadata_.description = fetchLocalizedMetadata(rawMetadata, QStringLiteral("description"));
+
     metadata_.license = rawMetadata["license"].toString();
+
     metadata_.url = rawMetadata["url"].toString();
+
     metadata_.maintainers = rawMetadata["maintainers"].toVariant().toStringList();
+
     metadata_.runtime_dependencies = rawMetadata["runtime_dependencies"].toVariant().toStringList();
+
     metadata_.binary_dependencies = rawMetadata["binary_dependencies"].toVariant().toStringList();
+
     metadata_.third_party_credits = rawMetadata["credits"].toVariant().toStringList();
 
     if (auto lt = rawMetadata["loadtype"].toString(); lt == "frontend")
