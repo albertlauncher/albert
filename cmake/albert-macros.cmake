@@ -1,4 +1,38 @@
+# - Albert cmake macros
+#
+# Use albert_plugin() to add a plugin.
+#
+#     albert_plugin(
+#          SOURCE_FILES
+#          [PUBLIC_INCLUDE_DIRECTORIES directories...]
+#          [PRIVATE_INCLUDE_DIRECTORIES directories...]
+#          [PUBLIC_LINK_LIBRARIES libraries...]
+#          [PRIVATE_LINK_LIBRARIES libraries...]
+#          [METADATA filepath]
+#     )
+#
+#     SOURCE_FILES
+#         List of source files to compile. Can contain globbing patterns. The
+#         metadata.json file is automatically added to the sources.
+#
+#     PUBLIC_INCLUDE_DIRECTORIES
+#         List of public include directories.
+#
+#     PRIVATE_INCLUDE_DIRECTORIES
+#         List of private include directories.
+#
+#     PUBLIC_LINK_LIBRARIES
+#         List of public link libraries.
+#
+#     PRIVATE_LINK_LIBRARIES
+#         List of private link libraries. albert::albert is automatically added.
+#
+#     METADATA
+#         Path to the metadata.json file. Defaults to "metadata.json".
+#
+
 cmake_minimum_required(VERSION 3.19)  # string(JSON…
+
 
 # on macOS include the macports lookup path
 if (APPLE)
@@ -6,78 +40,56 @@ if (APPLE)
 endif()
 
 
-macro(albert_plugin_generate_metadata_json)
-    set(MD "{}")
-
-    string(JSON MD SET ${MD} "id" "\"${PROJECT_NAME}\"")
-
-    string(JSON MD SET ${MD} "version" "\"${PROJECT_VERSION}\"")
-
-    string(JSON MD SET ${MD} "name" "\"${MD_NAME}\"")
-
-    string(JSON MD SET ${MD} "description" "\"${MD_DESCRIPTION}\"")
-
-    if(EXISTS ${MD_LONG_DESCRIPTION})
-        file(READ ${MD_LONG_DESCRIPTION} MD_LONG_DESCRIPTION)
-    endif()
-    string(JSON MD SET ${MD} "long_description" "\"${MD_LONG_DESCRIPTION}\"")
-
-    string(JSON MD SET ${MD} "license" "\"${MD_LICENSE}\"")
-
-    string(JSON MD SET ${MD} "url" "\"${MD_URL}\"")
-
-    if(MD_FRONTEND AND MD_NOUNLOAD)
-        message(FATAL_ERROR "Multiple load types specified. Use either FRONTEND or NOUNLOAD.")
-    elseif(MD_FRONTEND)
-        string(JSON MD SET ${MD} "loadtype" "\"frontend\"")
-    elseif(MD_NOUNLOAD)
-        string(JSON MD SET ${MD} "loadtype" "\"nounload\"")
-    else()
-        string(JSON MD SET ${MD} "loadtype" "\"user\"")
-    endif()
-
-    if (DEFINED MD_MAINTAINERS)
-        list(JOIN MD_MAINTAINERS "\", \"" X)
-        string(JSON MD SET ${MD} "maintainers" "[\"${X}\"]")
-    endif()
-
-    if (DEFINED MD_QT_DEPENDENCIES)
-        list(JOIN MD_QT_DEPENDENCIES "\", \"" X)
-        string(JSON MD SET ${MD} "qt_deps" "[\"${X}\"]")
-    endif()
-
-    if (DEFINED MD_LIB_DEPENDENCIES)
-        list(JOIN MD_LIB_DEPENDENCIES "\", \"" X)
-        string(JSON MD SET ${MD} "lib_deps" "[\"${X}\"]")
-    endif()
-
-    if (DEFINED MD_EXEC_DEPENDENCIES)
-        list(JOIN MD_EXEC_DEPENDENCIES "\", \"" X)
-        string(JSON MD SET ${MD} "exec_deps" "[\"${X}\"]")
-    endif()
-
-    if (DEFINED MD_CREDITS)
-        list(JOIN MD_CREDITS "\", \"" X)
-        string(JSON MD SET ${MD} "credits" "[\"${X}\"]")
-    endif()
-
-    # Create the metadata in the build dir
-    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/metadata.json" "${MD}")
-    #message("${CMAKE_CURRENT_BINARY_DIR}/metadata.json ${MD}")
-endmacro()
-
 macro(albert_plugin_add_default_target)
-    file(GLOB_RECURSE SRC src/*.h src/*.cpp src/*.hpp src/*.mm *.qrc *.ui *.qml *.in )
 
-    add_library(${PROJECT_NAME} MODULE ${SRC})
+    if (NOT DEFINED PROJECT_VERSION)
+        message(FATAL_ERROR "Plugin version is undefined")
+    endif()
+
+    set(arg_bool )
+    set(arg_vals METADATA)
+    set(arg_list
+        SOURCE_FILES
+        PUBLIC_INCLUDE_DIRECTORIES
+        PUBLIC_LINK_LIBRARIES
+        PRIVATE_INCLUDE_DIRECTORIES
+        PRIVATE_LINK_LIBRARIES
+    )
+    cmake_parse_arguments(ARG "${arg_bool}" "${arg_vals}" "${arg_list}" ${ARGV})
+
+    if (NOT DEFINED ARG_SOURCE_FILES)
+        message(FATAL_ERROR "No sources specified.")
+    endif()
+
+    if (NOT DEFINED ARG_METADATA)
+        set(ARG_METADATA "metadata.json")
+    endif()
+
+    file(GLOB GLOBBED_SRC ${ARG_SOURCE_FILES})
+
+    add_library(${PROJECT_NAME} MODULE ${GLOBBED_SRC} ${ARG_METADATA})
+
     add_library(albert::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
-    target_include_directories(${PROJECT_NAME} PRIVATE src)
-    target_link_libraries(${PROJECT_NAME} PRIVATE albert::albert)
 
-    set_target_properties(
-        ${PROJECT_NAME} PROPERTIES
-        CXX_VISIBILITY_PRESET hidden
-        VISIBILITY_INLINES_HIDDEN 1
+    target_include_directories(${PROJECT_NAME}
+        PUBLIC
+            ${ARG_PUBLIC_INCLUDE_DIRECTORIES}
+        PRIVATE
+            ${ARG_PRIVATE_INCLUDE_DIRECTORIES}
+    )
+
+    target_link_libraries(${PROJECT_NAME}
+        PUBLIC
+            ${ARG_PUBLIC_LINK_LIBRARIES}
+        PRIVATE
+            ${ARG_PRIVATE_LINK_LIBRARIES}
+            albert::albert
+    )
+
+    set_target_properties(${PROJECT_NAME}
+        PROPERTIES
+            CXX_VISIBILITY_PRESET hidden
+            VISIBILITY_INLINES_HIDDEN 1
     )
 
     #include(GenerateExportHeader)
@@ -88,40 +100,36 @@ macro(albert_plugin_add_default_target)
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/albert
     )
 
-    foreach(arg IN LISTS MD_QT_DEPENDENCIES)
-        find_package(Qt6 REQUIRED COMPONENTS ${arg})
-        target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::${arg})
-    endforeach()
+endmacro()
+
+
+macro(albert_plugin_generate_metadata_json)
+
+    # read metadata.json
+    file(READ ${ARG_METADATA} MD)
+
+    # add project metadata
+    string(JSON MD SET ${MD} "id" "\"${PROJECT_NAME}\"")
+
+    string(JSON MD SET ${MD} "version" "\"${PROJECT_VERSION}\"")
+
+    get_target_property(LIB_DEPENDENCIES ${PROJECT_NAME} LINK_LIBRARIES)
+    if (DEFINED LIB_DEPENDENCIES)
+        list(JOIN LIB_DEPENDENCIES "\", \"" LIB_DEPENDENCIES_CSV)
+        string(JSON MD SET ${MD} "lib_deps" "[\"${LIB_DEPENDENCIES_CSV}\"]")
+    endif()
+
+    # Create the metadata in the build dir
+    # message(STATUS "${CMAKE_CURRENT_BINARY_DIR}/metadata.json ${MD}")
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/metadata.json" "${MD}")
 
 endmacro()
 
+
 macro(albert_plugin)
-    set(md_bool FRONTEND NOUNLOAD)
-    set(md_vals NAME DESCRIPTION LONG_DESCRIPTION LICENSE URL)
-    set(md_list MAINTAINERS QT_DEPENDENCIES LIB_DEPENDENCIES EXEC_DEPENDENCIES CREDITS)
-    cmake_parse_arguments(MD "${md_bool}" "${md_vals}" "${md_list}" ${ARGV})
 
-    if (NOT DEFINED PROJECT_VERSION)
-        message(FATAL_ERROR "Plugin version is undefined")
-    endif()
-
-    if (NOT DEFINED MD_NAME)
-        message(FATAL_ERROR "Plugin name is undefined")
-    endif()
-
-    if (NOT DEFINED MD_DESCRIPTION)
-        message(FATAL_ERROR "Plugin description is undefined")
-    endif()
-
-    if (NOT DEFINED MD_LICENSE)
-        message(FATAL_ERROR "Plugin license is undefined")
-    endif()
-
-    if (NOT DEFINED MD_URL)
-        message(FATAL_ERROR "Plugin url is undefined")
-    endif()
-
-    albert_plugin_add_default_target()
+    albert_plugin_add_default_target(${ARGV})
     albert_plugin_generate_metadata_json()
+
 endmacro()
 
