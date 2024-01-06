@@ -31,67 +31,47 @@ ENDFOREACH()
 file(MAKE_DIRECTORY "${BUNDLE_PATH}/Contents/PlugIns")
 file(MAKE_DIRECTORY "${BUNDLE_PATH}/Contents/Frameworks")
 
-# Move plugins
+# Move plugins into bundle
 file(RENAME
     ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/albert
     ${BUNDLE_PATH}/Contents/PlugIns/albert
 )
 
-# Move albert lib
+# Move albert lib into bundle
 file(RENAME
     "${CMAKE_INSTALL_PREFIX}/albert.framework"
     "${BUNDLE_PATH}/Contents/Frameworks/albert.framework"
 )
 
-# RPATH frameworks
+## Copy Python lib into bundle
+
+message(STATUS "CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}")
+find_package(Python3 COMPONENTS Interpreter Development)
+get_filename_component(PYTHON_FILE_NAME "${Python3_LIBRARIES}" NAME)  #  libpython3.xx
+#get_filename_component(PYTHON_ABSOLUTE_FILE_PATH "${Python3_LIBRARIES}" REALPATH)  # Python
+#file(COPY_FILE
+#    "${PYTHON_ABSOLUTE_FILE_PATH}"
+#    "${BUNDLE_PATH}/Contents/Frameworks/${PYTHON_FILE_NAME}"
+#)
+#message(STATUS "Python3_LIBRARIES ${Python3_LIBRARIES}")
+#message(STATUS "PYTHON_FILE_NAME ${PYTHON_FILE_NAME}")
+#message(STATUS "PYTHON_ABSOLUTE_FILE_PATH ${PYTHON_ABSOLUTE_FILE_PATH}")
+
+# RPATHS frameworks
 execute_process(
-    COMMAND install_name_tool -add_rpath "@executable_path/../Frameworks/" "${BUNDLE_PATH}/Contents/MacOS/albert"
+    COMMAND install_name_tool
+        -add_rpath "@executable_path/../Frameworks/"
+        -add_rpath "/opt/local/lib/"     # RPATH macports
+        -add_rpath "/opt/homebrew/lib/"  # RPATH homebrew arm
+        -add_rpath "/usr/local/lib/"     # RPATH homebrew intel
+        "${BUNDLE_PATH}/Contents/MacOS/albert"
     COMMAND_ECHO STDOUT
     COMMAND_ERROR_IS_FATAL ANY
 )
-# RPATH macports
-execute_process(
-    COMMAND install_name_tool -add_rpath "/opt/local/lib/" "${BUNDLE_PATH}/Contents/MacOS/albert"
-    COMMAND_ECHO STDOUT
-    COMMAND_ERROR_IS_FATAL ANY
-)
-# RPATH homebrew arm
-execute_process(
-    COMMAND install_name_tool -add_rpath "/opt/homebrew/lib/" "${BUNDLE_PATH}/Contents/MacOS/albert"
-    COMMAND_ECHO STDOUT
-    COMMAND_ERROR_IS_FATAL ANY
-)
-# RPATH homebrew intel
-execute_process(
-    COMMAND install_name_tool -add_rpath "/usr/local/lib/" "${BUNDLE_PATH}/Contents/MacOS/albert"
-    COMMAND_ECHO STDOUT
-    COMMAND_ERROR_IS_FATAL ANY
-)
 
 
-## Build library lookup paths from CMAKE_PREFIX_PATH
-#foreach(PATH ${CMAKE_PREFIX_PATH})
-#    list(APPEND DIRS "${PATH}/lib")
-#endforeach()
-#list(APPEND DIRS "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}") # albert lib
-#list(APPEND DIRS "/Library/Developer/CommandLineTools/Library/Frameworks/") # system python
+## MACDEPLOYQT
 
-## Get a list of plugin files
-#FILE(GLOB LIBS "${BUNDLE_PATH}/Contents/MacOS/plugins/*")
-
-#include(BundleUtilities)
-##fixup_bundle("${BUNDLE_PATH}" "${LIBS}" "${DIRS}")
-
-file(REMOVE_RECURSE "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-file(REMOVE_RECURSE "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}")
-
-# Build list of -executable= parameters for plugins consumed by macdeployqt
-FILE(GLOB PLUGINS "${BUNDLE_PATH}/Contents/PlugIns/albert/*")
-foreach(PLUGIN ${PLUGINS})
-    list(APPEND PLUGINS_EXEC_PARAMS "-executable=${PLUGIN}")
-endforeach()
-
-# Qt macdeployqt
 find_program(MACDEPLOYQT NAMES macdeployqt macdeployqt REQUIRED)
 get_filename_component(QT_BIN_DIR "${MACDEPLOYQT}" DIRECTORY)
 get_filename_component(QT_DIR "${QT_BIN_DIR}" DIRECTORY)
@@ -101,11 +81,24 @@ message(STATUS "QT_BIN_DIR ${QT_BIN_DIR}")
 message(STATUS "QT_LIB_DIR ${QT_LIB_DIR}")
 message(STATUS "QT_DIR ${QT_DIR}")
 message(STATUS "MACDEPLOYQT: ${MACDEPLOYQT}")
-#message(STATUS "DYLD_LIBRARY_PATH: ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-#set(ENV{DYLD_LIBRARY_PATH} "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+
+# Build list of -executable= parameters for plugins consumed by macdeployqt
+FILE(GLOB PLUGINS "${BUNDLE_PATH}/Contents/PlugIns/albert/*")
+foreach(PLUGIN ${PLUGINS})
+    list(APPEND PLUGINS_EXEC_PARAMS "-executable=${PLUGIN}")
+endforeach()
+
+## Copy missing svg imageformat
+#file(MAKE_DIRECTORY "${BUNDLE_PATH}/Contents/PlugIns/imageformats")
+#file(COPY_FILE
+#    "${QT_DIR}/plugins/imageformats/libqsvg.dylib"
+#    "${BUNDLE_PATH}/Contents/PlugIns/imageformats/libqsvg.dylib"
+#)
+
 execute_process(
     COMMAND "${MACDEPLOYQT}"
     "${BUNDLE_PATH}"
+#    "-executable=${BUNDLE_PATH}/Contents/Frameworks/${PYTHON_FILE_NAME}"
     "-executable=${BUNDLE_PATH}/Contents/Frameworks/albert.framework/Versions/A/albert"
     ${PLUGINS_EXEC_PARAMS}
     #"-libpath=${CMAKE_INSTALL_PREFIX}"  # albert lib
@@ -120,11 +113,26 @@ execute_process(
     COMMAND_ERROR_IS_FATAL ANY
 )
 
-# Copy missing svg imageformat
-file(COPY_FILE
-    "${QT_DIR}/plugins/imageformats/libqsvg.dylib"
-    "${BUNDLE_PATH}/Contents/PlugIns/imageformats/libqsvg.dylib"
-)
 
-##        file(REMOVE_RECURSE \${CMAKE_INSTALL_PREFIX}/lib)
-##        file(REMOVE_RECURSE \${CMAKE_INSTALL_PREFIX}/share)
+## Cleanup
+
+file(REMOVE_RECURSE "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+file(REMOVE_RECURSE "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}")
+
+include(BundleUtilities)
+verify_app("${BUNDLE_PATH}")
+
+## Older, possibly useful stuff
+
+## Build library lookup paths from CMAKE_PREFIX_PATH
+#foreach(PATH ${CMAKE_PREFIX_PATH})
+#    list(APPEND DIRS "${PATH}/lib")
+#endforeach()
+#list(APPEND DIRS "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}") # albert lib
+#list(APPEND DIRS "/Library/Developer/CommandLineTools/Library/Frameworks/") # system python
+
+## Get a list of plugin files
+#FILE(GLOB LIBS "${BUNDLE_PATH}/Contents/MacOS/plugins/*")
+
+#
+##fixup_bundle("${BUNDLE_PATH}" "${LIBS}" "${DIRS}")
