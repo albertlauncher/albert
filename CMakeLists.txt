@@ -128,8 +128,8 @@ find_package(Qt6 6.2 REQUIRED  # Ubuntu 22.04
 target_link_libraries(${TARGET_LIB}
     PUBLIC
         Qt6::Core
-    PRIVATE
         Qt6::Widgets
+    PRIVATE
         Qt6::Concurrent
         Qt6::Network
         Qt6::Sql
