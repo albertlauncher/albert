@@ -237,6 +237,16 @@ void PluginWidget::onUpdatePluginWidget()
 
     vb->addStretch();
 
+    // List extensions
+    if (p.state() == PluginState::Loaded) {
+        if (auto extensions = p.instance()->extensions(); !extensions.empty()) {
+            QStringList exts;
+            for (auto *e : extensions)
+                exts << QString("%1 (%2)").arg(e->name(), e->description());
+            vb->addWidget(new QLabel(QString("<span style=\"font-size:9pt;color:#808080;\">Provides: %1</span>").arg(exts.join(", "))));
+        }
+    }
+
     auto add_meta = [&](const QString &s){
         vb->addWidget(new QLabel(QString("<span style=\"font-size:9pt;color:#808080;\">%1</span>").arg(s)));
     };
