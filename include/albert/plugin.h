@@ -112,23 +112,17 @@ namespace albert::plugin
 ///
 /// \tparam QOBJECT The QObject (subclass) to inherit. Defaults to OObject
 ///
-template <class QOBJECT = QObject>
-class ALBERT_EXPORT Plugin : public QOBJECT, public albert::PluginInstance {};
+class ALBERT_EXPORT Plugin : public QObject, public PluginInstance {};
 
 
 ///
 /// Convenience class for native plugins.
 ///
-/// Similar to albert::plugin::Plugin, but inherits
-/// albert::ExtensionPluginInstance instead of albert::PluginInstance.
+/// Same as Plugin but derived from ExtensionPluginInstance.
 ///
-/// \sa albert::plugin::Plugin albert::ExtensionPluginInstance
+/// @tparam EXTENSION The extension interfaces to derive from.
 ///
-/// \tparam EXTENSION The Extension (subclass) to inherit.
-/// \tparam QOBJECT The QObject (subclass) to inherit. Defaults to OObject
-///
-template <class EXTENSION, class QOBJECT = QObject>
-class ALBERT_EXPORT ExtensionPlugin : public QOBJECT, virtual public ExtensionPluginInstance<EXTENSION> {};
-
+template <class ...EXTENSION>
+class ALBERT_EXPORT ExtensionPlugin : public QObject, public ExtensionPluginInstance<EXTENSION...>{};
 
 }

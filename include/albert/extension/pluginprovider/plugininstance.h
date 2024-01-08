@@ -52,22 +52,23 @@ protected:
     const std::unique_ptr<PluginInstancePrivate> d;
 };
 
-
 ///
-/// Convenience template class for the most common case of a plugin
-/// providing exactly one extension.
+/// Template class for a plugin providing a single extension.
 ///
-/// Inherits PluginInstance and any given Extension, overrides the virtual
-/// functions of Extension using the plugin metadata and returns itself in
-/// PluginInstance::extensions.
+/// Most plugins provide exactly one extension. This class serves as a
+/// convenience base class for such plugins. It inherits PluginInstance and any
+/// given interface classes and overrides the following virtual functions:
+/// * QString id() using the metadata
+/// * QString name() using the metadata
+/// * QString description() using the metadata
+/// * std::vector<Extension*> extensions() returning {this}
 ///
-/// @tparam EXTENSION The Extension (subclass) to inherit.
+/// @tparam EXTENSIONS The interfaces of the extension.
 ///
-template <class EXTENSION>
-class ALBERT_EXPORT ExtensionPluginInstance : public PluginInstance, public EXTENSION
+template <class ...EXTENSIONS>
+class ALBERT_EXPORT ExtensionPluginInstance : public PluginInstance, public EXTENSIONS...
 {
 public:
-
     /// Override returning PluginInstance::id
     QString id() const override { return PluginInstance::id(); }
 
@@ -80,6 +81,5 @@ public:
     /// Override returning `this`
     std::vector<Extension*> extensions() override { return {this}; }
 };
-
 
 }
