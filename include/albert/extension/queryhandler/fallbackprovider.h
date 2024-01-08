@@ -21,3 +21,28 @@ public:
 };
 
 }
+
+
+
+namespace albert
+{
+class Item;
+
+class ALBERT_EXPORT FallbackFactory
+{
+public:
+    virtual QString id() const = 0;
+    virtual QString name() const = 0;
+    virtual QString description() const = 0;
+    virtual std::shared_ptr<Item> createFallbackItem(const QString &) const = 0;
+};
+
+class ALBERT_EXPORT FallbackProvider : virtual public Extension
+{
+public:
+    /// Fallbacks provided by this handler
+    virtual std::vector<std::shared_ptr<Item>> fallbacks(const QString &) const = 0;
+};
+
+
+}

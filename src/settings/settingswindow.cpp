@@ -3,6 +3,7 @@
 #include "albert/extension/frontend/frontend.h"
 #include "albert/logging.h"
 #include "app.h"
+#include "fallbackwidget.h"
 #include "handlerwidget.h"
 #include "pluginwidget.h"
 #include "qtpluginloader.h"
@@ -69,6 +70,7 @@ SettingsWindow::SettingsWindow(App &app):
 
     ui.tabs->insertTab(ui.tabs->count()-1, app.frontend->createFrontendConfigWidget(), "Window");
     ui.tabs->insertTab(ui.tabs->count()-1, new HandlerWidget(app.query_engine, app.extension_registry), "Handlers");
+    ui.tabs->insertTab(ui.tabs->count()-1, new FallbackWidget(app.query_engine, app.extension_registry), "Fallbacks");
     ui.tabs->insertTab(ui.tabs->count()-1, plugin_widget.get(), "Plugins");
 
     auto geometry = QGuiApplication::screenAt(QCursor::pos())->geometry();
