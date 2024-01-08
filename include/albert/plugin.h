@@ -72,17 +72,12 @@ connect(object, &std::remove_pointer<decltype(object)>::type::name##Changed, \
 
 
 ///
-/// @brief Declare a class as Albert plugin.
+/// @brief Declare an class as Albert plugin.
 ///
-/// This is a convenience macro that calls the required Qt macro to make a
-/// class a QtPlugin with defaults appropiate for an Albert plugin. It uses the
-/// global ALBERT_IID define to set the interface id and assumes there is a
-/// file named 'metadata.json' located in the root of the plugin source dir
-/// containing the metadata of the Albert plugin. This file may be handcrafted
-/// but it is recommended to use the `albert_plugin` CMake macro which
-/// automatically generates the metadata file.
+/// Sets the interface identifier to #ALBERT_PLUGIN_IID and uses the metadata
+/// file named 'metadata.json' located at CMAKE_CURRENT_SOURCE_DIR.
 ///
-/// @note This macro has to be put into the plugin class declaration body.
+/// @note This macro has to be put into the plugin class body.
 /// The class this macro appears on must be default-constructible, inherit
 /// QObject and contain the Q_OBJECT macro. There should be exactly one
 /// occurrence of this macro in the source code for a plugin.
@@ -94,29 +89,28 @@ namespace albert::plugin
 {
 
 ///
-/// Convenience class for native plugins.
+/// Base class for native plugins.
 ///
-/// Native plugins have to inherit the albert::PluginInstance interface. Qt
-/// plugins in general have to inherit QObject. This template class combines
-/// these requirements while keeping the flexibility to inherit any subclass
-/// of QObject.
+/// Native Albert plugins are based on Qt plugins. Qt plugins have to inherit
+/// QObject and contain the Q_OBJECT and Q_PLUGIN_METADATA macro. #ALBERT_PLUGIN
+/// is a convenience macro calling Q_PLUGIN_METADATA with appropriate defaults.
+/// Albert expects plugins to inherit albert::PluginInstance.
 ///
-/// To declare this class as the plugin class that should be instanciated at
-/// runtime you have to add the #ALBERT_PLUGIN macro to the class definition.
-/// Dont forget the Q_OBJECT macro.
+/// In short to build a plugin you have to:
+/// * Inherit albert::Plugin
+/// * Add the Q_OBJECT and ALBERT_PLUGIN macro to the class body
 ///
-/// Boolean user QPROPERTY's of registered plugins will be picked up by the
-/// core extension and are provided to the user as inline options. See
+/// \sa albert::plugin::ExtensionPlugin
+///
+/// \note Boolean user QPROPERTY's of registered plugins will be picked up by
+/// the core extension and are provided to the user as inline options. See
 /// #ALBERT_PLUGIN_PROPERTY, #ALBERT_PLUGIN_PROPERTY_NONTRIVIAL and
 /// #ALBERT_PLUGIN_PROPERTY_CONNECT.
 ///
-/// \tparam QOBJECT The QObject (subclass) to inherit. Defaults to OObject
-///
 class ALBERT_EXPORT Plugin : public QObject, public PluginInstance {};
 
-
 ///
-/// Convenience class for native plugins.
+/// Template class for a native plugin providing a single extension.
 ///
 /// Same as Plugin but derived from ExtensionPluginInstance.
 ///

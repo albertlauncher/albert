@@ -8,8 +8,16 @@
 
 namespace albert
 {
-/// The common extension registry.
-/// Use in the main thread only. Neither threadsafe, nor reentrant.
+
+///
+/// The common extension pool.
+///
+/// Clients can add their extensions, while services can track extensions by
+/// listening to the signals added/removed or any particular extension
+/// interface using ExtensionWatcher.
+///
+/// Use in the main thread only!
+///
 class ALBERT_EXPORT ExtensionRegistry : public QObject
 {
     Q_OBJECT
@@ -50,4 +58,5 @@ signals:
 private:
     std::map<QString,Extension*> extensions_;
 };
+
 }

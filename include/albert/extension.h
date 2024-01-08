@@ -7,14 +7,26 @@
 namespace albert
 {
 
-/// Interface for objects of the extension system
+///
+/// The extension interface class.
+///
+/// This is the interface for classes which want to join the extensions pool.
+///
+/// \sa ExtensionRegistry
+///
 class ALBERT_EXPORT Extension
 {
 public:
     virtual ~Extension() = default;
-    virtual QString id() const = 0;  ///< The guid of the extension
-    virtual QString name() const = 0;  ///< Pretty, human readable name
-    virtual QString description() const = 0;  ///< Brief description of what this extension provides
+
+    /// The identifier of this extension
+    virtual QString id() const = 0;
+
+    /// Pretty, human readable name
+    virtual QString name() const = 0;
+
+    /// Brief description of this extension
+    virtual QString description() const = 0;
 
 };
 
