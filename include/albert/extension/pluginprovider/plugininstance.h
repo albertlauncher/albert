@@ -2,6 +2,7 @@
 
 #pragma once
 #include "albert/export.h"
+#include "albert/extension.h"
 #include <QString>
 #include <memory>
 #include <vector>
@@ -12,7 +13,6 @@ class PluginInstancePrivate;
 
 namespace albert
 {
-class Extension;
 class ExtensionRegistry;
 
 ///
@@ -26,29 +26,40 @@ public:
     PluginInstance();
     virtual ~PluginInstance();
 
-    /// The plugin identifier.
-    /// Taken from the metadata.
+    /// The plugin identifier. Taken from the metadata.
     QString id() const;
 
-    /// The human readable plugin name.
-    /// Taken from the metadata. Override for internationalization.
-    virtual QString name() const;
+    /// The human readable plugin name. Taken from the metadata.
+    QString name() const;
 
-    /// Brief description of the plugin.
-    /// Taken from the metadata. Override for internationalization.
-    virtual QString description() const;
+    /// Brief description of the plugin. Taken from the metadata.
+    QString description() const;
 
-    virtual void initialize(ExtensionRegistry*);  ///< The initialization function.
-    virtual void finalize(ExtensionRegistry*);  ///<  The finalization function.
-    virtual std::vector<Extension*> extensions();  ///< The extensions this plugin provides.
-    virtual QWidget *buildConfigWidget();  ///< Config widget factory.
+    /// The recommended cache location. Created if necessary.
+    QDir cacheDir() const;
 
-    std::unique_ptr<QDir> cacheDir() const;  ///< The recommended cache location.
-    std::unique_ptr<QDir> configDir() const;  ///< The recommended config location.
-    std::unique_ptr<QDir> dataDir() const;  ///< The recommended data location.
-    std::unique_ptr<QSettings> settings() const;  ///< Prepared settings object.
+    /// The recommended config location. Created if necessary.
+    QDir configDir() const;
 
-protected:
+    /// The recommended data location. Created if necessary.
+    QDir dataDir() const;
+
+    /// Prepared settings object.
+    std::unique_ptr<QSettings> settings() const;
+
+    /// The initialization function.
+    virtual void initialize(ExtensionRegistry*);
+
+    /// The finalization function.
+    virtual void finalize(ExtensionRegistry*);
+
+    /// The extensions this plugin provides.
+    virtual std::vector<Extension*> extensions();
+
+    /// Config widget factory.
+    virtual QWidget *buildConfigWidget();
+
+private:
     const std::unique_ptr<PluginInstancePrivate> d;
 };
 
