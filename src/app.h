@@ -38,6 +38,7 @@ public:
     QPointer<SettingsWindow> settings_window;
     Hotkey hotkey;  // must be unwinded before frontend
     Telemetry telemetry;
+    QtPluginLoader *frontend_plugin;
     albert::Frontend *frontend;
 
     AppQueryHandler app_query_handler;

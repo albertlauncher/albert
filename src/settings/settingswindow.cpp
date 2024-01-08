@@ -1,7 +1,6 @@
 // Copyright (c) 2022-2023 Manuel Schneider
 
 #include "albert/extension/frontend/frontend.h"
-#include "albert/logging.h"
 #include "app.h"
 #include "handlerwidget.h"
 #include "pluginwidget.h"
@@ -93,7 +92,7 @@ void SettingsWindow::init_tab_general_frontends(App &app)
     // Populate frontend checkbox
     for (const auto *loader : app.plugin_provider.frontendPlugins()){
         ui.comboBox_frontend->addItem(loader->metaData().name, loader->metaData().id);
-        if (loader->metaData().id == app.frontend->id())
+        if (loader->metaData().id == app.frontend_plugin->metaData().id)
             ui.comboBox_frontend->setCurrentIndex(ui.comboBox_frontend->count()-1);
     }
     connect(ui.comboBox_frontend, &QComboBox::currentIndexChanged, this, [this, &app]() {

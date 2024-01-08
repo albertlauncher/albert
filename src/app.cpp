@@ -95,6 +95,7 @@ QString App::loadFrontend(QtPluginLoader *loader)
 {
     if (auto err = loader->loadUnregistered(&extension_registry); err.isNull()){
         if ((frontend = dynamic_cast<Frontend*>(loader->instance()))){
+            frontend_plugin = loader;
             frontend->setEngine(&query_engine);
             return {};
         } else {
@@ -107,7 +108,7 @@ QString App::loadFrontend(QtPluginLoader *loader)
 
 void App::setFrontend(const QString &id)
 {
-    if (id != frontend->id()){
+    if (id != frontend_plugin->metaData().id){
         albert::settings()->setValue(CFG_FRONTEND_ID, id);
         QMessageBox msgBox(QMessageBox::Question, "Restart?",
                            "Changing the frontend needs a restart. Do you want to restart Albert?",

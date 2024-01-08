@@ -13,7 +13,7 @@ namespace albert
 class Query;
 
 /// The interface for albert frontends.
-class ALBERT_EXPORT Frontend : virtual public albert::Extension
+class ALBERT_EXPORT Frontend
 {
 public:
     /// Visibility of the frontend
