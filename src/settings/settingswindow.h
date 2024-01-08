@@ -5,7 +5,7 @@
 #include <QWidget>
 #include <memory>
 class App;
-class PluginWidget;
+class PluginsWidget;
 
 class SettingsWindow final : public QWidget
 {
@@ -27,5 +27,5 @@ private:
     void keyPressEvent(QKeyEvent * event) override;
 
     Ui::SettingsWindow ui;
-    std::unique_ptr<PluginWidget> plugin_widget;
+    std::unique_ptr<PluginsWidget> plugin_widget;
 };

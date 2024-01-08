@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2024 Manuel Schneider
 
 #include "albert/albert.h"
 #include "albert/extension/frontend/frontend.h"
@@ -13,12 +13,10 @@
 
 using namespace albert;
 
-static void requestAccessibilityPermissions(){
-    if (!AXIsProcessTrusted()){
-        QMessageBox::information(nullptr, QGuiApplication::applicationDisplayName(),
-                                 "To be able to paste text accessibility "
-                                 "permissions are required. You will now be "
-                                 "prompted to enable them in the settings.");
+static void requestAccessibilityPermissions()
+{
+    if (!AXIsProcessTrusted())
+    {
         NSDictionary *options = @{(id)kAXTrustedCheckOptionPrompt: @YES};
         AXIsProcessTrustedWithOptions((CFDictionaryRef)options);
     }

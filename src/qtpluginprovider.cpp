@@ -4,10 +4,12 @@
 #include "qtpluginloader.h"
 #include "qtpluginprovider.h"
 #include <QDirIterator>
+#include <QCoreApplication>
 #include <QMessageBox>
 #include <QSettings>
 using namespace std;
 using namespace albert;
+
 
 #if defined __linux__ || defined __FreeBSD__
 static QStringList defaultPaths()
@@ -60,11 +62,20 @@ QtPluginProvider::QtPluginProvider(QStringList additional_paths):
     }
 }
 
-QString QtPluginProvider::id() const { return "pluginprovider"; }
+QString QtPluginProvider::id() const
+{ return "pluginprovider"; }
 
-QString QtPluginProvider::name() const { return "Native plugin provider"; }
+QString QtPluginProvider::name() const
+{
+    static const auto tr = QCoreApplication::translate("QtPluginProvider", "Native plugins");
+    return tr;
+}
 
-QString QtPluginProvider::description() const { return "Loads native C++ albert plugins"; }
+QString QtPluginProvider::description() const
+{
+    static const auto tr = QCoreApplication::translate("QtPluginProvider", "Loads native C++ plugins");
+    return tr;
+}
 
 vector<PluginLoader*> QtPluginProvider::plugins()
 {

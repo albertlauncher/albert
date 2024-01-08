@@ -20,24 +20,3 @@ Q_DECLARE_LOGGING_CATEGORY(AlbertLoggingCategory)
 
 /// @brief Creates a log object (level critial) you can use to pipe text into (<<).
 #define CRIT qCCritical(AlbertLoggingCategory,).noquote()
-
-/// @brief Logs and shows a messagebox (level warning).
-/// @param message The message
-#define GINFO(message) do{ \
-    INFO << message; \
-    QMessageBox::information(nullptr, qApp->applicationDisplayName(), message); \
-} while(0)
-
-/// @brief Logs and shows a messagebox (level warning).
-/// @param message The message
-#define GWARN(message) do{ \
-    WARN << message; \
-    QMessageBox::warning(nullptr, qApp->applicationDisplayName(), message); \
-} while(0)
-
-/// @brief Logs and shows a messagebox (level critical).
-/// @param message The message
-#define GCRIT(message) do{ \
-    CRIT << message; \
-    QMessageBox::critical(nullptr, qApp->applicationDisplayName(), message); \
-} while(0)

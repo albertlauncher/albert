@@ -18,9 +18,9 @@ Hotkey::Hotkey()
         setHotkey(QKeySequence::fromString(s->value(CFG_HOTKEY, DEF_HOTKEY).toString())[0]);
     else {
         if (!s->value(CFG_NOTIFY_SUPPORT, false).toBool()){
-            QMessageBox::warning(nullptr, "Hotkey not supported",
-                                 "Hotkeys are not supported on this platform. Use your desktop "
-                                 "environment to bind a hotkey to 'albert toggle'");
+            QMessageBox::warning(nullptr, tr("Hotkeys not supported"),
+                                 tr("Hotkeys are not supported on this platform. Use your desktop "
+                                    "environment to bind a hotkey to 'albert toggle'."));
             s->setValue(CFG_NOTIFY_SUPPORT, true);
         }
     }
@@ -53,7 +53,7 @@ bool Hotkey::setHotkey(QKeyCombination keycode)
         INFO << "Hotkey set to" << ks.toString();
         return true;
     } else {
-        QMessageBox::warning(nullptr, "Error", QString("Failed to set hotkey '%1'").arg(ks.toString()));
+        QMessageBox::warning(nullptr, tr("Error"), tr("Failed to set hotkey '%1'").arg(ks.toString()));
         WARN << "Failed to set hotkey " << ks.toString();
         return false;
     }

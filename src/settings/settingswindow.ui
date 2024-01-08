@@ -66,6 +66,14 @@
           <bool>true</bool>
          </property>
          <widget class="QWidget" name="scrollAreaGeneralContents">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>800</width>
+            <height>567</height>
+           </rect>
+          </property>
           <layout class="QFormLayout" name="formLayout_general">
            <item row="0" column="0">
             <widget class="QLabel" name="label_show_tray">
@@ -86,7 +94,7 @@
               </sizepolicy>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If this option is enabled, albert displays an icon in the system tray.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>If this option is enabled, albert displays an icon in the system tray area.</string>
              </property>
              <property name="text">
               <string/>
@@ -112,7 +120,7 @@
               </sizepolicy>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the frontend to use.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>Choose the frontend to use.</string>
              </property>
             </widget>
            </item>
@@ -137,21 +145,14 @@
                 </sizepolicy>
                </property>
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the terminal to use.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>Choose the terminal to use.</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QLabel" name="label_5">
                <property name="text">
-                <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-hr { height: 1px; border-width: 0; }
-li.unchecked::marker { content: &quot;\2610&quot;; }
-li.checked::marker { content: &quot;\2612&quot;; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'.AppleSystemUIFont'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:9pt; color:#808080;&quot;&gt;If you are missing your favourite terminal please post an &lt;/span&gt;&lt;a href=&quot;https://github.com/albertlauncher/albert/issues/new?assignees=ManuelSchneid3r&amp;amp;title=Terminal%20missing&quot;&gt;&lt;span style=&quot; font-size:9pt; text-decoration: underline; color:#094fd1;&quot;&gt;issue&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:9pt; color:#808080;&quot;&gt;. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;span style=&quot; font-size:9pt; color:#808080;&quot;&gt;If you are missing your favourite terminal please post an &lt;a href=&quot;https://github.com/albertlauncher/albert/issues/new?assignees=ManuelSchneid3r&amp;amp;title=Terminal%20missing&quot;&gt;issue&lt;/a&gt;.&lt;/span&gt;</string>
                </property>
                <property name="openExternalLinks">
                 <bool>true</bool>
@@ -163,7 +164,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            <item row="3" column="0">
             <widget class="QLabel" name="label_decay">
              <property name="text">
-              <string>Usage history weighting</string>
+              <string>Sort perference</string>
              </property>
              <property name="buddy">
               <cstring>slider_decay</cstring>
@@ -175,7 +176,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
              <item>
               <widget class="QLabel" name="label_4">
                <property name="toolTip">
-                <string>Most frequently used. Remember everything. </string>
+                <string>Prefer most frequently used results.</string>
                </property>
                <property name="text">
                 <string>MFU</string>
@@ -185,7 +186,11 @@ li.checked::marker { content: &quot;\2612&quot;; }
              <item>
               <widget class="QSlider" name="slider_decay">
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The decay the weights past activation get. Without decay the search remembers everything and behaves in a most frequently used fashion, while a high decay will prefer recently used item. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>This preference is about how past activations influence the ranking of the results of a query. It determines how fast Albert adopts to your current usage behavior.
+
+Technically the usage score of a results is the sum of the weights given to past activations, which are defined by the geometric progression with a common ratio between 1 for MFU (Most frequently used) and 0.5 for MRU (Most recently used). Using MFU (cr=1) all activations get the same weight and the cumulated score of a results is the count of its usages. Using MRU (cr=0.5), as a mathematical conclusion, the sum of weights of past activations can not exceed those of newer ones.
+
+Recommended is a value in between, because it allows best of both worlds: The results you used the most recently are preferred while still allowing Albert to adapt to changes in your usage habits.</string>
                </property>
                <property name="minimum">
                 <number>50</number>
@@ -219,7 +224,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
              <item>
               <widget class="QLabel" name="label_3">
                <property name="toolTip">
-                <string>Most recently used. Forget fast. </string>
+                <string>Prefer most recently used results.</string>
                </property>
                <property name="text">
                 <string>MRU</string>
@@ -251,7 +256,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            <item row="5" column="0">
             <widget class="QLabel" name="label_emptyQuery">
              <property name="text">
-              <string>Run empty query:</string>
+              <string>Run empty query</string>
              </property>
             </widget>
            </item>
@@ -312,16 +317,12 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <item>
         <widget class="QLabel" name="about_text">
          <property name="text">
-          <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-hr { height: 1px; border-width: 0; }
-&lt;/style&gt;&lt;/head&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Albert launcher ___versionstring___&lt;/span&gt; &lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Written in &lt;a href=&quot;https://wikipedia.org/wiki/C++&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;C++&lt;/span&gt;&lt;/a&gt; powered by &lt;a href=&quot;aboutQt&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;Qt&lt;/span&gt;&lt;/a&gt;. &lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;If you like this software please consider a &lt;a href=&quot;https://albertlauncher.github.io/donation/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;donation&lt;/span&gt;&lt;/a&gt;👍.&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Please report bugs or suggestions on &lt;a href=&quot;https://github.com/albertlauncher/albert/issues/new/choose&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#007af4;&quot;&gt;GitHub&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;I'd like to thank all contributors, supporters and users.&lt;br /&gt;You keep this project going on. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;p&gt;&lt;b&gt;Albert launcher ___versionstring___&lt;/b&gt;&lt;/p&gt;
+&lt;p&gt;Written in &lt;a href=&quot;https://wikipedia.org/wiki/C++&quot;&gt;C++&lt;/a&gt;, powered by &lt;a href=&quot;aboutQt&quot;&gt;Qt&lt;/a&gt;. &lt;/p&gt;
+&lt;p&gt;Please report bugs or suggestions on &lt;a href=&quot;https://github.com/albertlauncher/albert/issues/new/choose&quot;&gt;GitHub&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;If you like this software, please think about a &lt;a href=&quot;https://albertlauncher.github.io/donation/&quot;&gt;donation&lt;/a&gt;👍.&lt;/p&gt;
+&lt;p&gt;I'd like to thank all contributors, supporters and users.&lt;br /&gt;You keep this project going on. &lt;/p&gt;
+</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>

@@ -17,5 +17,7 @@ public:
 
 private:
     albert::ExtensionRegistry *registry_;
+    std::vector<std::shared_ptr<albert::Item>> items_;
+    static const QStringList icon_urls;
 };
 

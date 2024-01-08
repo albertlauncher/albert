@@ -15,7 +15,8 @@
 #include <QProcess>
 #include <QSettings>
 #include <QStandardPaths>
-#include <iostream>
+#include <QTranslator>
+#include <QLibraryInfo>
 #if __has_include(<unistd.h>)
 #include "platform/Unix/unixsignalhandler.h"
 #endif
@@ -114,6 +115,17 @@ int main(int argc, char **argv)
         qFatal("Calling main twice is not allowed.");
 
     auto qapp = initializeQApp(argc, argv);
+
+    // https://doc.qt.io/qt-6/localization.html
+    QTranslator qtTranslator;
+    if (qtTranslator.load(QLocale(), "qtbase", "_",
+                          QLibraryInfo::path(QLibraryInfo::TranslationsPath))) {
+        QCoreApplication::installTranslator(&qtTranslator);
+    }
+
+    QTranslator translator;
+    if (translator.load(QLocale(), qapp->applicationName(), "_", ":/i18n"))
+        QCoreApplication::installTranslator(&translator);
 
     QCommandLineParser parser;
     auto opt_p = QCommandLineOption({"p", "plugin-dirs"}, "Set the plugin dirs to use. Comma separated.", "directory");

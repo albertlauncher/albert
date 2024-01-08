@@ -3,7 +3,7 @@
 #include "albert/extension/frontend/frontend.h"
 #include "app.h"
 #include "handlerwidget.h"
-#include "pluginwidget.h"
+#include "pluginswidget.h"
 #include "qtpluginloader.h"
 #include "settingswindow.h"
 #include "trayicon.h"
@@ -23,10 +23,8 @@ class QHotKeyEdit : public QKeySequenceEdit
 public:
     QHotKeyEdit(Hotkey &hk) : hotkey(hk)
     {
-        if (!hotkey.isPlatformSupported()){
-            setToolTip("This platform does not support hotkeys.");
-            setEnabled(false);
-        }
+        if (!hotkey.isPlatformSupported())
+            hide();
         else
             setKeySequence(hotkey.hotkey());
     }
@@ -52,7 +50,7 @@ public:
 
 
 SettingsWindow::SettingsWindow(App &app):
-    ui(), plugin_widget(new PluginWidget(app.plugin_registry))
+    ui(), plugin_widget(new PluginsWidget(app.plugin_registry))
 {
     ui.setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -66,9 +64,9 @@ SettingsWindow::SettingsWindow(App &app):
     init_tab_general_search(app);
     init_tab_about();
 
-    ui.tabs->insertTab(ui.tabs->count()-1, app.frontend->createFrontendConfigWidget(), "Window");
-    ui.tabs->insertTab(ui.tabs->count()-1, new HandlerWidget(app.query_engine, app.extension_registry), "Handlers");
-    ui.tabs->insertTab(ui.tabs->count()-1, plugin_widget.get(), "Plugins");
+    ui.tabs->insertTab(ui.tabs->count()-1, app.frontend->createFrontendConfigWidget(), tr("Window"));
+    ui.tabs->insertTab(ui.tabs->count()-1, new HandlerWidget(app.query_engine, app.extension_registry), tr("Query"));
+    ui.tabs->insertTab(ui.tabs->count()-1, plugin_widget.get(), tr("Plugins"));
 
     auto geometry = QGuiApplication::screenAt(QCursor::pos())->geometry();
     move(geometry.center().x() - frameSize().width()/2,
@@ -78,7 +76,7 @@ SettingsWindow::SettingsWindow(App &app):
 SettingsWindow::~SettingsWindow() = default;
 
 void SettingsWindow::init_tab_general_hotkey(App &app)
-{ ui.formLayout_general->insertRow(0, "Hotkey", new QHotKeyEdit(app.hotkey)); }
+{ ui.formLayout_general->insertRow(0, tr("Hotkey"), new QHotKeyEdit(app.hotkey)); }
 
 void SettingsWindow::init_tab_general_trayIcon(App &app)
 {

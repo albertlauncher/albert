@@ -107,16 +107,40 @@ namespace albert::plugin
 /// #ALBERT_PLUGIN_PROPERTY, #ALBERT_PLUGIN_PROPERTY_NONTRIVIAL and
 /// #ALBERT_PLUGIN_PROPERTY_CONNECT.
 ///
-class ALBERT_EXPORT Plugin : public QObject, public PluginInstance {};
+class ALBERT_EXPORT Plugin : public QObject, public PluginInstance
+{
+public:
+    Plugin();
+    ~Plugin();
+private:
+    class Private;
+    std::unique_ptr<Private> d;
+};
 
 ///
-/// Template class for a native plugin providing a single extension.
+/// Convenience base class for extension plugins.
 ///
-/// Same as Plugin but derived from ExtensionPluginInstance.
+/// Implements pure virtual functions of Extension and PluginInstance.
 ///
-/// @tparam EXTENSION The extension interfaces to derive from.
+/// * QString id() using the metadata
+/// * QString name() using the metadata
+/// * QString description() using the metadata
+/// * std::vector<Extension*> extensions() returning {this}
 ///
-template <class ...EXTENSION>
-class ALBERT_EXPORT ExtensionPlugin : public QObject, public ExtensionPluginInstance<EXTENSION...>{};
+class ALBERT_EXPORT ExtensionPlugin : public Plugin, virtual public Extension
+{
+public:
+    /// Override returning PluginInstance::id
+    QString id() const override;
+
+    /// Override returning PluginInstance::name
+    QString name() const override;
+
+    /// Override returning PluginInstance::description
+    QString description() const override;
+
+    /// Override returning `this`
+    std::vector<Extension*> extensions() override;
+};
 
 }

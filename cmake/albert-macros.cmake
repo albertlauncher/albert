@@ -9,11 +9,15 @@
 #          [PUBLIC_LINK_LIBRARIES libraries...]
 #          [PRIVATE_LINK_LIBRARIES libraries...]
 #          [METADATA filepath]
+#          [TS_FILES ts_files...]
+#
 #     )
 #
+#     Creates a plugin target with the given name.
+#
 #     SOURCE_FILES
-#         List of source files to compile. Can contain globbing patterns. The
-#         metadata.json file is automatically added to the sources.
+#         List of target source files. May contain globbing patterns. The
+#         METADATA file is automatically added to the sources.
 #
 #     PUBLIC_INCLUDE_DIRECTORIES
 #         List of public include directories.
@@ -29,6 +33,9 @@
 #
 #     METADATA
 #         Path to the metadata.json file. Defaults to "metadata.json".
+#
+#     TS_FILES
+#         Translation files. Should have the pattern <plugin_id>_<language_code>.ts .
 #
 
 cmake_minimum_required(VERSION 3.19)  # string(JSON…
@@ -54,6 +61,7 @@ macro(albert_plugin_add_default_target)
         PUBLIC_LINK_LIBRARIES
         PRIVATE_INCLUDE_DIRECTORIES
         PRIVATE_LINK_LIBRARIES
+        TS_FILES
     )
     cmake_parse_arguments(ARG "${arg_bool}" "${arg_vals}" "${arg_list}" ${ARGV})
 
@@ -91,6 +99,14 @@ macro(albert_plugin_add_default_target)
             CXX_VISIBILITY_PRESET hidden
             VISIBILITY_INLINES_HIDDEN 1
     )
+
+    if (DEFINED ARG_TS_FILES)
+        get_target_property(SRCS ${PROJECT_NAME} SOURCES)
+        qt_add_translations(${PROJECT_NAME}
+            TS_FILES ${ARG_TS_FILES}
+            SOURCES ${SRCS}
+        )
+    endif()
 
     #include(GenerateExportHeader)
     #generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME "export.h")

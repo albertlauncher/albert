@@ -31,25 +31,40 @@ void PluginRegistry::enable(const QString &id, bool enable)
         albert::settings()->setValue(QString("%1/enabled").arg(id), enable);
         emit enabledChanged(id);
 
-        if (enable && loader->state() == PluginState::Unloaded ){
+        if (enable && loader->state() == PluginState::Unloaded )
+        {
             if (auto err = loader->d->load(&extension_registry); !err.isNull())
-                GWARN(QString("Failed loading plugin '%1': %2").arg(id, err));
-        } else if (!enable && loader->state() == PluginState::Loaded){
-            switch (loader->metaData().load_type) {
-
+            {
+                auto msg = tr("Failed loading plugin '%1': %2").arg(id, err);
+                WARN << msg;
+                QMessageBox::warning(nullptr, qApp->applicationDisplayName(), msg);
+            }
+        }
+        else if (!enable && loader->state() == PluginState::Loaded)
+        {
+            switch (loader->metaData().load_type){
             case albert::LoadType::User:
+            {
                 if (auto err = loader->d->unload(&extension_registry); !err.isNull())
-                    GWARN(QString("Failed unloading plugin '%1': %2").arg(id, err));
+                {
+                    auto msg = tr("Failed unloading plugin '%1': %2").arg(id, err);
+                    WARN << msg;
+                    QMessageBox::warning(nullptr, qApp->applicationDisplayName(), msg);
+                }
                 break;
-
+            }
             case albert::LoadType::Frontend:
-                GWARN(QString("Frontend plugins cannot be unloaded: '%1'").arg(id));
+            {
+                auto msg = tr("Frontend plugins cannot be unloaded: '%1'").arg(id);
+                WARN << msg;
+                QMessageBox::warning(nullptr, qApp->applicationDisplayName(), msg);
                 break;
-
-            case albert::LoadType::NoUnload:{
-                QMessageBox msgBox(QMessageBox::Question, "Restart?",
-                                   QString("Unloading the plugin '%1' requires restarting the app. "
-                                           "Do you want to restart Albert?").arg(id),
+            }
+            case albert::LoadType::NoUnload:
+            {
+                QMessageBox msgBox(QMessageBox::Question, qApp->applicationDisplayName(),
+                                   tr("Unloading the plugin '%1' requires restarting the app. "
+                                      "Do you want to restart Albert?").arg(id),
                                    QMessageBox::Yes | QMessageBox::No);
                 if (msgBox.exec() == QMessageBox::Yes)
                     restart();
@@ -60,24 +75,44 @@ void PluginRegistry::enable(const QString &id, bool enable)
                 break;
             }
         }
-    } catch (const out_of_range&) {
-        GWARN(QString("Plugin '%1' does not exist.").arg(id));
+    }
+    catch (const out_of_range&)
+    {
+        auto msg = tr("Plugin '%1' does not exist.").arg(id);
+        WARN << msg;
+        QMessageBox::warning(nullptr, qApp->applicationDisplayName(), msg);
     }
 }
 
 void PluginRegistry::load(const QString &id, bool load)
 {
-    try {
+    try
+    {
         auto *loader = registered_plugins_.at(id);
-        if (load){
+        if (load)
+        {
             if (auto err = loader->d->load(&extension_registry); !err.isNull())
-                GWARN(QString("Failed loading plugin '%1': %2").arg(id, err));
-        } else {
-            if (auto err = loader->d->unload(&extension_registry); !err.isNull())
-                GWARN(QString("Failed unloading plugin '%1': %2").arg(id, err));
+            {
+                auto msg = tr("Failed loading plugin '%1': %2").arg(id, err);
+                WARN << msg;
+                QMessageBox::warning(nullptr, qApp->applicationDisplayName(), msg);
+            }
         }
-    } catch (const out_of_range&) {
-        GWARN(QString("Plugin '%1' does not exist.").arg(id));
+        else
+        {
+            if (auto err = loader->d->unload(&extension_registry); !err.isNull())
+            {
+                auto msg = tr("Failed unloading plugin '%1': %2").arg(id, err);
+                WARN << msg;
+                QMessageBox::warning(nullptr, qApp->applicationDisplayName(), msg);
+            }
+        }
+    }
+    catch (const out_of_range&)
+    {
+        auto msg = tr("Plugin '%1' does not exist.").arg(id);
+        WARN << msg;
+        QMessageBox::warning(nullptr, qApp->applicationDisplayName(), msg);
     }
 }
 

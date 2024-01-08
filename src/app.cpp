@@ -52,11 +52,12 @@ void App::initialize()
 
     platform::initNativeWindow(frontend->winId());
 
+    notifyVersionChange();
+
     extension_registry.add(&plugin_provider);  // loads plugins
     extension_registry.add(&app_query_handler);
     extension_registry.add(&plugin_query_handler);
 
-    notifyVersionChange();
 }
 
 App *App::instance() { return app_instance; }
@@ -108,12 +109,17 @@ QString App::loadFrontend(QtPluginLoader *loader)
 
 void App::setFrontend(const QString &id)
 {
-    if (id != frontend_plugin->metaData().id){
+    if (id != frontend_plugin->metaData().id)
+    {
         albert::settings()->setValue(CFG_FRONTEND_ID, id);
-        QMessageBox msgBox(QMessageBox::Question, "Restart?",
-                           "Changing the frontend needs a restart. Do you want to restart Albert?",
-                           QMessageBox::Yes | QMessageBox::No);
-        if (msgBox.exec() == QMessageBox::Yes)
+
+        auto text = QCoreApplication::translate(
+            "App",
+            "Changing the frontend requires a restart. "
+            "Do you want to restart Albert?"
+            );
+
+        if (QMessageBox::question(nullptr, qApp->applicationDisplayName(), text) == QMessageBox::Yes)
             restart();
     }
 }
@@ -122,28 +128,32 @@ void App::notifyVersionChange()
 {
     auto state = albert::state();
     auto current_version = qApp->applicationVersion();
-
-    // Move to state // TODO remove on next major version
-    if (albert::settings()->contains(STATE_LAST_USED_VERSION)){
-        state->setValue(STATE_LAST_USED_VERSION, albert::settings()->value(STATE_LAST_USED_VERSION));
-        albert::settings()->remove(STATE_LAST_USED_VERSION);
-    }
-
     auto last_used_version = state->value(STATE_LAST_USED_VERSION).toString();
 
-    if (last_used_version.isNull()){  // First run
-        QMessageBox(
-            QMessageBox::Warning, "First run",
+    // First run
+    if (last_used_version.isNull())
+    {
+        auto text = QCoreApplication::translate(
+            "App",
             "This is the first time you've launched Albert. Albert is plugin based. "
-            "You have to enable some plugins you want to use.").exec();
+            "You have to enable some plugins you want to use."
+            );
+
+        QMessageBox::information(nullptr, qApp->applicationDisplayName(), text);
+
         albert::showSettings();
     }
     else if (current_version.section('.', 1, 1) != last_used_version.section('.', 1, 1) )  // FIXME in first major version
-        QMessageBox(QMessageBox::Information, "Major version changed",
-                    QString("You are now using Albert %1. The major version changed. "
-                            "Some parts of the API might have changed. Check the "
-                            "<a href=\"https://albertlauncher.github.io/news/\">news</a>.")
-                        .arg(current_version)).exec();
+    {
+        auto text = QCoreApplication::translate(
+            "App",
+            "You are now using Albert %1. The major version changed. "
+            "Some parts of the API might have changed. "
+            "Check the <a href=\"https://albertlauncher.github.io/news/\">news</a>."
+            ).arg(current_version);
+
+        QMessageBox::information(nullptr, qApp->applicationDisplayName(), text);
+    }
 
     if (last_used_version != current_version)
         state->setValue(STATE_LAST_USED_VERSION, current_version);

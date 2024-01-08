@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)  # JSON support, Ubuntu 22.04
 
 # dont touch! set by metatool
-set(PROJECT_VERSION 0.22.17)
+set(PROJECT_VERSION 0.23.0)
 
 project(albert
     VERSION ${PROJECT_VERSION}
@@ -116,13 +116,14 @@ configure_file(
     @ONLY
 )
 
-find_package(Qt6 6.2 REQUIRED  # Ubuntu 22.04
+find_package(Qt6 6.2 REQUIRED COMPONENTS # Ubuntu 22.04
     Core
     Concurrent
     Network
     Sql
     Svg
     Widgets
+    LinguistTools
 )
 
 target_link_libraries(${TARGET_LIB}
@@ -134,6 +135,14 @@ target_link_libraries(${TARGET_LIB}
         Qt6::Network
         Qt6::Sql
         qhotkey
+)
+
+get_target_property(TARGET_LIB_SOURCES ${TARGET_LIB} SOURCES)
+qt_add_translations(${TARGET_LIB}
+    TS_FILES
+        i18n/albert_de.ts
+    SOURCES
+        ${TARGET_LIB_SOURCES}
 )
 
 set_target_properties(${TARGET_LIB} PROPERTIES

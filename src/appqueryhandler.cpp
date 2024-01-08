@@ -8,107 +8,119 @@
 #include <QMetaProperty>
 #include <QString>
 #include <QUrl>
+#include <QCoreApplication>
 using namespace albert;
 using namespace std;
 
-AppQueryHandler::AppQueryHandler(albert::ExtensionRegistry *registry) : registry_(registry) {}
+const QStringList AppQueryHandler::icon_urls{QStringLiteral(":app_icon")};
 
-QString AppQueryHandler::id() const { return QStringLiteral("albert"); }
+AppQueryHandler::AppQueryHandler(albert::ExtensionRegistry *registry) : registry_(registry)
+{
+    items_ = {
+        StandardItem::make(
+            "sett",
+            QCoreApplication::translate("AppQueryHandler", "Settings"),
+            QCoreApplication::translate("AppQueryHandler", "Albert settings"),
+            icon_urls,
+            {
+                {
+                    "sett",
+                    QCoreApplication::translate("AppQueryHandler", "Open"),
+                    [](){ showSettings(); }
+                }
+            }),
 
-QString AppQueryHandler::name() const { return QStringLiteral("Albert"); }
+        StandardItem::make(
+            "quit",
+            QCoreApplication::translate("AppQueryHandler", "Quit"),
+            QCoreApplication::translate("AppQueryHandler", "Quit Albert"),
+            icon_urls,
+            {
+                {
+                    "quit",
+                    QCoreApplication::translate("AppQueryHandler", "Quit"),
+                    [](){ quit(); }
+                }
+            }),
 
-QString AppQueryHandler::description() const { return QStringLiteral("Control the app"); }
+        StandardItem::make(
+            "restart",
+            QCoreApplication::translate("AppQueryHandler", "Restart"),
+            QCoreApplication::translate("AppQueryHandler", "Restart Albert"),
+            icon_urls,
+            {
+                {
+                    "restart",
+                    QCoreApplication::translate("AppQueryHandler", "Restart"),
+                    [](){ restart(); }
+                }
+            }),
 
-QString AppQueryHandler::defaultTrigger() const { return QStringLiteral("app "); }
+        StandardItem::make(
+            "cache",
+            QCoreApplication::translate("AppQueryHandler", "Cache location"),
+            QCoreApplication::translate("AppQueryHandler", "Albert cache location"),
+            icon_urls,
+            {
+                {
+                    "cache",
+                    QCoreApplication::translate("AppQueryHandler", "Open"),
+                    [](){ albert::openUrl(QUrl::fromLocalFile(albert::cacheLocation())); }
+                }
+            }),
+
+        StandardItem::make(
+            "config",
+            QCoreApplication::translate("AppQueryHandler", "Config location"),
+            QCoreApplication::translate("AppQueryHandler", "Albert config location"),
+            icon_urls,
+            {
+                {
+                    "config",
+                    QCoreApplication::translate("AppQueryHandler", "Open"),
+                    [](){ albert::openUrl(QUrl::fromLocalFile(albert::configLocation())); }
+                }
+            }),
+
+        StandardItem::make(
+            "data",
+            QCoreApplication::translate("AppQueryHandler", "Data location"),
+            QCoreApplication::translate("AppQueryHandler", "Albert data location"),
+            icon_urls,
+            {
+                {
+                    "data",
+                    QCoreApplication::translate("AppQueryHandler", "Open"),
+                    [](){ albert::openUrl(QUrl::fromLocalFile(albert::dataLocation())); }
+                }
+            }),
+    };
+}
+
+QString AppQueryHandler::id() const
+{ return QStringLiteral("albert"); }
+
+QString AppQueryHandler::name() const
+{ return QStringLiteral("Albert"); }
+
+QString AppQueryHandler::description() const
+{ return QCoreApplication::translate("AppQueryHandler", "Control the app"); }
+
+QString AppQueryHandler::defaultTrigger() const
+{ return QStringLiteral("albert "); }
 
 vector<RankItem> AppQueryHandler::handleGlobalQuery(const GlobalQuery *query) const
 {
-    vector<RankItem> items;
+    vector<RankItem> rank_items;
 
-    auto str_settings = QStringLiteral("settings");
-    auto str_quit = QStringLiteral("quit");
-    auto str_restart = QStringLiteral("restart");
-    auto str_config = QStringLiteral("config");
-    auto str_data = QStringLiteral("data");
-    auto str_cache = QStringLiteral("cache");
+    for (const auto &item : items_)
+        if (item->text().startsWith(query->string(), Qt::CaseInsensitive))
+            rank_items.emplace_back(item, (float)query->string().length() / item->text().length());
 
-    if (str_settings.startsWith(query->string(), Qt::CaseInsensitive)){
-        items.emplace_back(
-            StandardItem::make(
-                "albert-settings",
-                "Albert settings",
-                "Open the Albert settings window",
-                {":app_icon"},
-                {{"albert-settings", "Open settings", [](){ showSettings(); }}}
-            ),
-            (float)query->string().length() / str_settings.length()
-        );
-    }
-
-    else if (str_quit.startsWith(query->string(), Qt::CaseInsensitive)){
-        items.emplace_back(
-            StandardItem::make(
-                "albert-quit",
-                "Quit Albert",
-                "Quit this application",
-                {":app_icon"},
-                {{"albert-quit", "Quit Albert", [](){ quit(); }}}
-            ),
-            (float)query->string().length() / str_quit.length()
-        );
-    }
-
-    else if (str_restart.startsWith(query->string(), Qt::CaseInsensitive)){
-        items.emplace_back(
-            StandardItem::make(
-                "albert-restart",
-                "Restart Albert",
-                "Restart this application",
-                {":app_icon"},
-                {{"albert-restart", "Restart Albert", [](){ restart(); }}}
-            ),
-            (float)query->string().length() / str_restart.length()
-        );
-    }
-
-    else if (str_config.startsWith(query->string(), Qt::CaseInsensitive)){
-        items.emplace_back(
-            StandardItem::make(
-                "albert-config",
-                "Albert config location",
-                albert::configLocation(),
-                {":app_icon"},
-                {{"open", "Open", [](){ albert::openUrl(QUrl::fromLocalFile(albert::configLocation())); }}}
-            ),
-            (float)query->string().length() / str_config.length()
-        );
-    }
-
-    else if (str_data.startsWith(query->string(), Qt::CaseInsensitive)){
-        items.emplace_back(
-            StandardItem::make(
-                "albert-data",
-                "Albert data location",
-                albert::dataLocation(),
-                {":app_icon"},
-                {{"open", "Open", [](){ albert::openUrl(QUrl::fromLocalFile(albert::dataLocation())); }}}
-            ),
-            (float)query->string().length() / str_data.length()
-        );
-    }
-
-    else if (str_cache.startsWith(query->string(), Qt::CaseInsensitive)){
-        items.emplace_back(
-            StandardItem::make(
-                "albert-cache",
-                "Albert cache location",
-                albert::cacheLocation(),
-                {":app_icon"},
-                {{"open", "Open", [](){ albert::openUrl(QUrl::fromLocalFile(albert::cacheLocation())); }}}
-            ),
-            (float)query->string().length() / str_cache.length()
-        );
-    }
+    static const auto tr_enabled = QCoreApplication::translate("AppQueryHandler", "Enabled");
+    static const auto tr_disabled = QCoreApplication::translate("AppQueryHandler", "Disabled");
+    static const auto tr_toggle = QCoreApplication::translate("AppQueryHandler", "Toggle");
+    static const auto tr_prop = QCoreApplication::translate("AppQueryHandler", "Property of the extension '%1' [%2]");
 
     for (auto &[id, qobject] : registry_->extensions<QObject>()){
         auto *metaObj = qobject->metaObject();
@@ -119,13 +131,21 @@ vector<RankItem> AppQueryHandler::handleGlobalQuery(const GlobalQuery *query) co
             if (metaPropName.contains(query->string(), Qt::CaseInsensitive)){
                 if(metaProp.isUser()){
                     if (metaProp.typeId() == QMetaType::fromType<bool>().id()) {
-                        items.emplace_back(
+                        rank_items.emplace_back(
                             StandardItem::make(
                                 QString("%1_%2").arg(id, metaPropName),
-                                QString("%1: %2").arg(metaPropName, metaProp.read(qobject).value<bool>() ? "Enabled" : "Disabled"),
-                                QString("%1 property [%2]").arg(extension->name(), metaProp.typeName()),
-                                {":app_icon"},
-                                {{"toggle", "Toggle", [metaProp, qobject=qobject](){ metaProp.write(qobject, !metaProp.read(qobject).toBool()); }}}
+                                QString("%1: %2").arg(metaPropName,
+                                                      metaProp.read(qobject).value<bool>()
+                                                          ? tr_enabled : tr_disabled),
+                                tr_prop.arg(extension->name(), metaProp.typeName()),
+                                icon_urls,
+                                {
+                                    {
+                                        "toggle",
+                                        tr_toggle,
+                                        [metaProp, q=qobject](){ metaProp.write(q, !metaProp.read(q).toBool()); }
+                                    }
+                                }
                             ),
                             (float)query->string().length() / metaPropName.length()
                         );
@@ -135,5 +155,5 @@ vector<RankItem> AppQueryHandler::handleGlobalQuery(const GlobalQuery *query) co
         }
     }
 
-    return items;
+    return rank_items;
 }

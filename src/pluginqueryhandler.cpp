@@ -5,6 +5,7 @@
 #include "albert/extension/pluginprovider/pluginmetadata.h"
 #include "pluginqueryhandler.h"
 #include "pluginregistry.h"
+#include <QCoreApplication>
 #include <QMessageBox>
 #include <QWidget>
 using namespace albert;
@@ -12,16 +13,27 @@ using namespace std;
 
 PluginQueryHandler::PluginQueryHandler(PluginRegistry &plugin_registry) : plugin_registry_(plugin_registry)
 {
-    QObject::connect(&plugin_registry_, &PluginRegistry::pluginsChanged, &plugin_registry_, [this](){ updateIndexItems(); });
+    QObject::connect(&plugin_registry_, &PluginRegistry::pluginsChanged,
+                     &plugin_registry_, [this](){ updateIndexItems(); });
 }
 
-QString PluginQueryHandler::id() const { return QStringLiteral("pluginregistry"); }
+QString PluginQueryHandler::id() const
+{ return QStringLiteral("pluginregistry"); }
 
-QString PluginQueryHandler::name() const { return QStringLiteral("Plugins"); }
+QString PluginQueryHandler::name() const
+{
+    static const auto tr = QCoreApplication::translate("PluginQueryHandler", "Plugins");
+    return tr;
+}
 
-QString PluginQueryHandler::description() const { return QStringLiteral("Manage plugins"); }
+QString PluginQueryHandler::description() const
+{
+    static const auto tr = QCoreApplication::translate("PluginQueryHandler", "Manage plugins");
+    return tr;
+}
 
-QString PluginQueryHandler::defaultTrigger() const { return QStringLiteral("plugin "); }
+QString PluginQueryHandler::defaultTrigger() const
+{ return QStringLiteral("plugin "); }
 
 class PluginItem : public Item
 {
@@ -32,26 +44,40 @@ public:
     PluginItem(PluginRegistry &plugin_registry, PluginLoader &loader):
         plugin_registry_(plugin_registry), loader_(loader) {}
 
-    QString id() const override { return loader_.metaData().id; }
+    QString id() const override
+    { return loader_.metaData().id; }
 
-    QString text() const override {
-        return QString("%1 plugin (%2)").arg(loader_.metaData().name, loader_.metaData().id);
-    }
+    QString text() const override
+    { return QString("%1 (%2)").arg(loader_.metaData().name, loader_.metaData().id); }
 
-    QString subtext() const override {
-        QString enabled = plugin_registry_.isEnabled(id()) ? "Enabled" : "Disabled";
+    QString subtext() const override
+    {
         QString state;
         if (loader_.state() == PluginState::Loaded)
-            state = "Loaded";
-        else if (loader_.stateInfo().isEmpty())
-            state = "Unloaded";
+        {
+            static const auto tr_loaded = QCoreApplication::translate("PluginItem", "Loaded");
+            state = tr_loaded;
+        }
         else
-            state = QString("ERROR: %1").arg(loader_.stateInfo());
+        {
+            static const auto tr_unloaded = QCoreApplication::translate("PluginItem", "Unloaded");
+            state = tr_unloaded;
+        }
 
-        return QString("Config: %1, State: %2").arg(enabled, state);
+        if (!loader_.stateInfo().isEmpty())
+            state.append(QString(" (%1)").arg(loader_.stateInfo()));
+
+        static const auto tr_config = QCoreApplication::translate("PluginItem", "Configuration");
+        static const auto tr_enabled = QCoreApplication::translate("PluginItem", "Enabled");
+        static const auto tr_disabled = QCoreApplication::translate("PluginItem", "Disabled");
+        static const auto tr_state = QCoreApplication::translate("PluginItem", "State");
+        return QString("%1: %2, %3: %4")
+            .arg(tr_config, plugin_registry_.isEnabled(id()) ? tr_enabled : tr_disabled,
+                 tr_state, state);
     }
 
-    QStringList iconUrls() const override {
+    QStringList iconUrls() const override
+    {
         if(!plugin_registry_.isEnabled(id()))
             return {QStringLiteral("gen:?&text=🧩&fontscalar=0.7")};
         else if (loader_.state() == PluginState::Loaded)
@@ -62,37 +88,64 @@ public:
             return {QStringLiteral("gen:?&text=🧩&fontscalar=0.7&background=#40FF0000")};
     }
 
-    vector<Action> actions() const override {
+    vector<Action> actions() const override
+    {
         vector<Action> actions;
 
-        actions.emplace_back("settings", "Open settings", [this](){ showSettings(id()); });
+        static const auto tr_open_settings = QCoreApplication::translate("PluginItem", "Open settings");
+        actions.emplace_back(
+            "settings",
+            tr_open_settings,
+            [this](){ showSettings(id()); }
+            );
 
         if (plugin_registry_.isEnabled(id()))
+        {
+            static const auto tr_disable = QCoreApplication::translate("PluginItem", "Disable");
             actions.emplace_back(
-                "disable", "Disable plugin", [this]() { plugin_registry_.enable(id(), false); }
-            );
+                "disable",
+                tr_disable,
+                [this]() { plugin_registry_.enable(id(), false); }
+                );
+        }
         else
+        {
+            static const auto tr_enable = QCoreApplication::translate("PluginItem", "Enable");
             actions.emplace_back(
-                "enable", "Enable plugin", [this]() { plugin_registry_.enable(id(), true); }
-            );
-
-
-        if (loader_.state() == PluginState::Loaded){
-
-            if (loader_.metaData().load_type == LoadType::User) {
-
-                actions.emplace_back(
-                    "unload", "Unload plugin", [this](){ plugin_registry_.load(id(), false); }
+                "enable",
+                tr_enable,
+                [this]() { plugin_registry_.enable(id(), true); }
                 );
+        }
 
+        if (loader_.state() == PluginState::Loaded)
+        {
+            if (loader_.metaData().load_type == LoadType::User)
+            {
+                static const auto tr_unload = QCoreApplication::translate("PluginItem", "Unload");
                 actions.emplace_back(
-                    "reload", "Reload plugin",
+                    "unload",
+                    tr_unload,
+                    [this](){ plugin_registry_.load(id(), false); }
+                    );
+
+                static const auto tr_reload = QCoreApplication::translate("PluginItem", "Reload");
+                actions.emplace_back(
+                    "reload",
+                    tr_reload,
                     [this](){ plugin_registry_.load(id(), false); plugin_registry_.load(id()); }
-                );
+                    );
             }
-
-        } else  // by contract only unloaded
-            actions.emplace_back("load", "Load plugin", [this](){ plugin_registry_.load(id()); });
+        }
+        else  // by contract only unloaded
+        {
+            static const auto tr_load = QCoreApplication::translate("PluginItem", "Load");
+            actions.emplace_back(
+                "load",
+                tr_load,
+                [this](){ plugin_registry_.load(id()); }
+                );
+        }
 
         return actions;
     }

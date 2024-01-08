@@ -35,9 +35,6 @@
     <key>NSSupportsAutomaticGraphicsSwitching</key><true/>
 
     <key>NSContactsUsageDescription</key><string>Contacts plugin access.</string>
-    <key>NSDesktopFolderUsageDescription</key><string>File indexer access.</string>
-    <key>NSDocumentsFolderUsageDescription</key><string>File indexer access.</string>
-    <key>NSDownloadsFolderUsageDescription</key><string>File indexer access.</string>
 
 </dict>
 </plist>

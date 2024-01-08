@@ -1,6 +1,7 @@
 // Copyright (c) 2022-2023 Manuel Schneider
 
 #include "albert/config.h"
+#include "albert/logging.h"
 #include "pluginloaderprivate.h"
 #include "qtpluginloader.h"
 #include "qtpluginprovider.h"
