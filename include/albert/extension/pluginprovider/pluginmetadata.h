@@ -26,7 +26,6 @@ public:
     QString version;  ///< https://semver.org/
     QString name;  ///< Human readable name
     QString description;  ///< Brief, imperative description
-    QString long_description;  ///< Elaborate, markdown formatted description (README.md)
     QString license;  ///< Short form e.g. BSD-2
     QString url;  ///< Browsable source, README, issues
     QStringList maintainers;  ///< The current maintainers of the plugin []

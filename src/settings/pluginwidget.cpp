@@ -221,16 +221,6 @@ void PluginWidget::onUpdatePluginWidget()
     l->setOpenExternalLinks(true);
     vb->addWidget(l);
 
-
-    // Potentially long descrition
-    if (auto t = p.metaData().long_description; !t.isEmpty()){
-        l = new QLabel(p.metaData().long_description);
-        l->setTextFormat(Qt::MarkdownText);
-        l->setWordWrap(true);
-        l->setOpenExternalLinks(true);
-        vb->addWidget(l);
-    }
-
     if (p.state() == PluginState::Loaded) {
         // Config widget
         if (auto *inst = p.instance(); inst)
