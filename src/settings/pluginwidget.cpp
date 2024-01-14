@@ -182,8 +182,10 @@ PluginWidget::PluginWidget(PluginRegistry &plugin_registry) : model_(new PluginM
 void PluginWidget::tryShowPluginSettings(QString plugin_id)
 {
     for (auto row = 0; row < model_->rowCount(); ++row)
-        if (auto index = model_->index(row); index.data(Qt::UserRole).toString() == plugin_id)
+        if (auto index = model_->index(row); index.data(Qt::UserRole).toString() == plugin_id){
             listView_plugins->setCurrentIndex(index);
+            listView_plugins->setFocus();
+        }
 }
 
 PluginWidget::~PluginWidget() = default;
