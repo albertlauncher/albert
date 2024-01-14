@@ -13,7 +13,8 @@ RUN yum install -y \
     qt6-qtbase-odbc \
     qt6-qtbase-postgresql \
     qt6-qtscxml-devel \
-    qt6-qtsvg-devel
+    qt6-qtsvg-devel \
+    qt6-qttools-devel
 
 COPY . /src
 WORKDIR /build
