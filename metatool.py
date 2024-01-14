@@ -173,7 +173,7 @@ def main():
     sp.set_defaults(func=lambda args: print(create_changelog(args)))
 
     sp = sps.add_parser('test', help='Test build using docker.')
-    sp.add_argument('index', nargs='?', default='')
+    sp.add_argument('index', nargs='?', default=None)
     sp.set_defaults(func=test_build)
 
     sp = sps.add_parser('testrun', help='Test run using docker.')
