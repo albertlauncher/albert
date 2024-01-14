@@ -49,7 +49,7 @@ private:
         T ret = parallel(abort);
         auto end = std::chrono::system_clock::now();
         runtime = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
-        return std::move(ret);
+        return ret;
     }
 
 public:
