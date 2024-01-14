@@ -28,7 +28,7 @@ public:
     QString description;  ///< Brief, imperative description
     QString license;  ///< Short form e.g. BSD-2
     QString url;  ///< Browsable source, README, issues
-    QStringList maintainers;  ///< The current maintainers of the plugin []
+    QStringList authors;  ///< The copyright holders []
     QStringList runtime_dependencies;  ///< Required libraries []
     QStringList binary_dependencies;  ///< Required executables []
     QStringList third_party_credits;  ///< Third party credits and license notes []

@@ -73,7 +73,7 @@ QtPluginLoader::QtPluginLoader(const QtPluginProvider &provider, const QString &
 
     metadata_.url = rawMetadata["url"].toString();
 
-    metadata_.maintainers = rawMetadata["maintainers"].toVariant().toStringList();
+    metadata_.authors = rawMetadata["authors"].toVariant().toStringList();
 
     metadata_.runtime_dependencies = rawMetadata["runtime_dependencies"].toVariant().toStringList();
 

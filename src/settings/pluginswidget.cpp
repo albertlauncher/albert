@@ -75,7 +75,6 @@ void PluginsWidget::onUpdatePluginWidget()
     QLabel *l;
 
     if (!current.isValid()){
-
         l = new QLabel(tr("Select a plugin"));
         l->setAlignment(Qt::AlignCenter);
         scrollArea_info->setWidget(l);
@@ -83,72 +82,91 @@ void PluginsWidget::onUpdatePluginWidget()
     }
 
     auto &p = *model_->plugins_[current.row()];
-    auto *w = new QWidget;
-    auto *vb = new QVBoxLayout;
-    w->setLayout(vb);
+    auto *widget = new QWidget;
+    auto *vl = new QVBoxLayout;
+    widget->setLayout(vl);
 
-    // Title and description
-    vb->addWidget(new QLabel(
-            QString("<span style=\"font-size:16pt;\">%1</span><br><span style=\"font-size:11pt;\">%2</span>")
-                    .arg(p.metaData().name, p.metaData().description)
-    ));
+    // // Title
+    // vl->addWidget(new QLabel(QString("<span style=\"font-size:16pt;font-style:bold;\">%1</span>").arg(p.metaData().name)));
 
-    // id, version, license, maintainers
-    QString maint = p.metaData().maintainers.isEmpty()
-                        ? tr("This plugin is looking for a maintainer!")
-                        : tr("Maintained by ") + p.metaData().maintainers.join(", ");
-    l = new QLabel(QString("<span style=\"font-size:9pt;font-style:italic;color:#808080;\"><a href=\"%1\">%2 v%3</a> %4. %5</span>")
-                       .arg(p.metaData().url, p.metaData().id, p.metaData().version, p.metaData().license, maint));
-    l->setOpenExternalLinks(true);
-    vb->addWidget(l);
+    // // Description
+    // vl->addWidget(new QLabel(QString("<span style=\"font-size:11pt;font-style:italic;\">%1</span>").arg(p.metaData().description)));
 
+    vl->addWidget(new QLabel(QString("<span style=\"font-size:16pt;font-weight:600;\">%1</span><br>"
+                                     "<span style=\"font-size:11pt;font-weight:lighter;font-style:italic;\">%2</span>")
+                                               .arg(p.metaData().name, p.metaData().description)));
+
+    // Plugin specific
     if (p.state() == PluginState::Loaded) {
         // Config widget
         if (auto *inst = p.instance(); inst)
             if (auto *cw = inst->buildConfigWidget())
-                vb->addWidget(cw, 1); // Strech=1
+                vl->addWidget(cw, 1); // Strech=1
     } else if (!p.stateInfo().isEmpty()){
         // Unloaded info
         if (!p.stateInfo().isEmpty()){
             l = new QLabel(p.stateInfo());
             l->setWordWrap(true);
-            vb->addWidget(l);
+            vl->addWidget(l);
         }
     }
 
-    vb->addStretch();
+    vl->addStretch();
+
+    // META INFO
+
+    QStringList meta;
 
     // List extensions
-    if (p.state() == PluginState::Loaded) {
-        if (auto extensions = p.instance()->extensions(); !extensions.empty()) {
-            QStringList exts;
-            for (auto *e : extensions)
-                exts << QString("%1 (%2)").arg(e->name(), e->description());
-            vb->addWidget(new QLabel(tr("<span style=\"font-size:9pt;color:#808080;\">Provides: %1</span>").arg(exts.join(", "))));
-        }
+    if (p.state() == PluginState::Loaded && !p.instance()->extensions().empty())
+    {
+        QStringList extensions;
+        for (auto *e : p.instance()->extensions())
+            extensions << QString("%1 (%2)").arg(e->name(), e->description());
+
+        meta << tr("Extensions: %1", nullptr, p.instance()->extensions().size())
+                    .arg(extensions.join(", "));
     }
 
-    auto add_meta = [&](const QString &s){
-        vb->addWidget(new QLabel(QString("<span style=\"font-size:9pt;color:#808080;\">%1</span>").arg(s)));
-    };
-
     // Credits if any
-    if (!p.metaData().third_party_credits.isEmpty())
-        vb->addWidget(new QLabel(QString("<span style=\"font-size:9pt;color:#808080;\">Credits: %1</span>")
-                                         .arg(p.metaData().third_party_credits.join(", "))));
+    if (auto list = p.metaData().third_party_credits; !list.isEmpty())
+        meta << tr("Credits: %1").arg(list.join(", "));
+
+    // Required executables, if any
+    if (auto list = p.metaData().binary_dependencies; !list.isEmpty())
+        meta << tr("Required executables: %1", nullptr, list.size()).arg(list.join(", "));
+
+    // Required libraries, if any
+    if (auto list = p.metaData().runtime_dependencies; !list.isEmpty())
+        meta << tr("Required libraries: %1", nullptr, list.size()).arg(list.join(", "));
+
+    // Id, version, license, authors
+    QStringList authors;
+    for (const auto &author : p.metaData().authors)
+        if (author.startsWith(QStringLiteral("@")))
+            authors << QStringLiteral("<a href=\"https://github.com/%1\">%2</a>")
+                           .arg(author.mid(1), author);
+        else
+            authors << author;
+
+    meta << QString("<span style=\"color:#808080;\"><a href=\"%1\">%2 v%3</a>. %4. %5.</span>")
+                       .arg(p.metaData().url,
+                            p.metaData().id,
+                            p.metaData().version,
+                            tr("License: %1").arg(p.metaData().license),
+                            tr("Authors: %1", nullptr, authors.size()).arg(authors.join(", ")));
 
     // Provider
-    vb->addWidget(new QLabel(QString("<span style=\"font-size:9pt;color:#808080;\">%1, Interface id:  %2</span>")
-                    .arg(p.provider().name(), p.metaData().iid)));
-
-    // Requirements
-    if (!p.metaData().binary_dependencies.isEmpty())
-        add_meta(tr("Required executable(s) in PATH: %1").arg(p.metaData().binary_dependencies.join(", ")));
-    if (!p.metaData().runtime_dependencies.isEmpty())
-        add_meta(tr("Required libraries: %1").arg(p.metaData().runtime_dependencies.join(", ")));
+    meta << tr("%1, Interface: %2").arg(p.provider().name(), p.metaData().iid);
 
     // Path
-    add_meta(p.path);
+    meta << p.path;
 
-    scrollArea_info->setWidget(w);
+    // Add meta
+    l = new QLabel(QString("<span style=\"font-size:9pt;color:#808080;\">%1</span>").arg(meta.join("<br>")));
+    l->setOpenExternalLinks(true);
+    l->setWordWrap(true);
+    vl->addWidget(l);
+
+    scrollArea_info->setWidget(widget);
 }
