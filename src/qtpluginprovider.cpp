@@ -66,10 +66,7 @@ QString QtPluginProvider::id() const
 { return "pluginprovider"; }
 
 QString QtPluginProvider::name() const
-{
-    static const auto tr = QCoreApplication::translate("QtPluginProvider", "Native plugins");
-    return tr;
-}
+{ return QStringLiteral("C++/Qt"); }
 
 QString QtPluginProvider::description() const
 {
