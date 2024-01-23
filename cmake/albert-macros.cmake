@@ -75,8 +75,7 @@ macro(albert_plugin_add_default_target)
 
     file(GLOB GLOBBED_SRC ${ARG_SOURCE_FILES})
 
-    add_library(${PROJECT_NAME} MODULE ${GLOBBED_SRC} ${ARG_METADATA})
-
+    add_library(${PROJECT_NAME} SHARED ${GLOBBED_SRC} ${ARG_METADATA})
     add_library(albert::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
     target_include_directories(${PROJECT_NAME}
