@@ -30,12 +30,6 @@ public:
             setExtensionRegistry(registry);
     }
 
-    virtual ~ExtensionWatcher()
-    {
-        QObject::disconnect(conn_add);
-        QObject::disconnect(conn_rem);
-    }
-
     /// Sets the extension registry to track
     /// \param registry The extension registry to track
     void setExtensionRegistry(ExtensionRegistry *registry)
@@ -56,6 +50,13 @@ protected:
 
     /// Called when an extension has been deregistered.
     virtual void onRem(T *) {}
+
+    /// Destructor must not be called though this interface
+    virtual ~ExtensionWatcher()
+    {
+        QObject::disconnect(conn_add);
+        QObject::disconnect(conn_rem);
+    }
 
 private:
     QMetaObject::Connection conn_add;

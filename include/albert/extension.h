@@ -17,7 +17,7 @@ namespace albert
 class ALBERT_EXPORT Extension
 {
 public:
-    virtual ~Extension() = default;
+    Extension() = default;
 
     /// The identifier of this extension
     virtual QString id() const = 0;
@@ -28,6 +28,8 @@ public:
     /// Brief description of this extension
     virtual QString description() const = 0;
 
+protected:
+    virtual ~Extension() = default;
 };
 
 }
