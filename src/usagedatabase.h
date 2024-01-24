@@ -1,12 +1,12 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2024 Manuel Schneider
 
 #pragma once
 #include <QSqlDatabase>
 #include <QString>
-#include <vector>
-#include <shared_mutex>
 #include <mutex>
-#include <map>
+#include <shared_mutex>
+#include <unordered_map>
+#include <vector>
 namespace albert {
 class Extension;
 class RankItem;
@@ -19,6 +19,9 @@ struct Activation {
     QString item_id;
     QString action_id;
 };
+
+using Key = std::pair<QString, QString>;
+using UsageScores = std::unordered_map<Key, double>;
 
 class UsageHistory
 {
@@ -42,7 +45,7 @@ private:
     static void updateScores();
 
     static std::shared_mutex global_data_mutex_;
-    static std::map<std::pair<QString,QString>,float> usage_scores_;
+    static UsageScores usage_scores_;
     static bool prioritize_perfect_match_;
     static double memory_decay_;
 

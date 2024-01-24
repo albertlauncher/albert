@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2024 Manuel Schneider
 
 #include "albert/albert.h"
 #include "albert/extension.h"
@@ -16,7 +16,6 @@
 using namespace std;
 using namespace albert;
 
-
 static const char* db_conn_name = "usagehistory";
 static const char* db_file_name = "albert.db";
 static const char*  CFG_MEMORY_DECAY = "memoryDecay";
@@ -24,13 +23,20 @@ static const double DEF_MEMORY_DECAY = 0.5;
 static const char*  CFG_PRIO_PERFECT = "prioritizePerfectMatch";
 static const bool   DEF_PRIO_PERFECT = true;
 
+// Hashing specialization for Key
+template <>
+struct std::hash<Key>
+{
+    // https://stackoverflow.com/questions/17016175/c-unordered-map-using-a-custom-class-type-as-the-key#comment39936543_17017281
+    inline std::size_t operator()(const Key& k) const
+    { return (qHash(k.first) ^ (qHash(k.second)<< 1)); }
+};
 
 shared_mutex UsageHistory::global_data_mutex_;
-map<pair<QString,QString>,float> UsageHistory::usage_scores_;
+UsageScores UsageHistory::usage_scores_;
 bool UsageHistory::prioritize_perfect_match_;
 double UsageHistory::memory_decay_;
 recursive_mutex UsageHistory::db_recursive_mutex_;
-
 
 Activation::Activation(QString q, QString e, QString i, QString a):
     query(::move(q)),extension_id(::move(e)),item_id(::move(i)),action_id(::move(a)){}
@@ -57,26 +63,28 @@ void UsageHistory::applyScore(const QString &extension_id, RankItem *rank_item)
      * !p !r !m  | (-1, 0] |  -1 + 1 / text_len  | no match
      */
 
+    const Key key(extension_id, rank_item->item->id());
+
     if (prioritize_perfect_match_ && rank_item->score == 1.0f)
-        try {
-            rank_item->score = 3.0f + usage_scores_.at(make_pair(extension_id, rank_item->item->id()));
-        } catch (const out_of_range &){
+    {
+        if (const auto &it = usage_scores_.find(key); it != usage_scores_.end())
+            rank_item->score = 3.0f + it->second;
+        else
             rank_item->score = 2.0f + 1.0f / rank_item->item->text().length();
-        }
+    }
     else
-        try {
-            rank_item->score = 1.0f + usage_scores_.at(make_pair(extension_id, rank_item->item->id()));
-        } catch (const out_of_range &){
-            if (rank_item->score == 0.0f)
-                rank_item->score = -1.0f + 1.0f / rank_item->item->text().length();
-            // else: the match string is initially okay
-        }
+    {
+        if (const auto &it = usage_scores_.find(key); it != usage_scores_.end())
+            rank_item->score = 1.0f + it->second;
+        else if (rank_item->score == 0.0f)
+            rank_item->score = -1.0f + 1.0f / rank_item->item->text().length();
+        // else score remains unmodified
+    }
 }
 
 void UsageHistory::applyScores(const QString &id, vector<RankItem> &rank_items)
 {
     shared_lock lock(global_data_mutex_);
-
     for (auto &rank_item : rank_items)
         applyScore(id, &rank_item);
 }
@@ -84,10 +92,8 @@ void UsageHistory::applyScores(const QString &id, vector<RankItem> &rank_items)
 void UsageHistory::applyScores(vector<pair<Extension *, RankItem>> *rank_items)
 {
     shared_lock lock(global_data_mutex_);
-
     for (auto &[extension, rank_item] : *rank_items)
         applyScore(extension->id(), &rank_item);
-
 }
 
 double UsageHistory::memoryDecay()
@@ -143,23 +149,27 @@ void UsageHistory::updateScores()
                                  sql.value(2).toString(), sql.value(3).toString());
 
     // Compute usage weights
-    map<pair<QString,QString>, double> usage_weights;
-    for (int i = 0, k = (int)activations.size(); i < (int)activations.size(); ++i, --k){
+    UsageScores usage_weights;
+    for (int i = 0, k = (int)activations.size(); i < (int)activations.size(); ++i, --k)
+    {
         auto activation = activations[i];
         double weight = pow(memory_decay_, k);
-        if (const auto &[it, success] = usage_weights.emplace(make_pair(activation.extension_id, activation.item_id), weight); !success)
+        if (const auto &[it, success] = usage_weights.emplace(std::piecewise_construct,
+                                                              std::forward_as_tuple(activation.extension_id, activation.item_id),
+                                                              std::forward_as_tuple(weight)); !success)
             it->second += weight;
     }
 
     // Invert the list. Results in ordered by rank map
-    map<double,vector<pair<QString,QString>>> weight_items;
+    map<double, vector<Key>> weight_items;
     for (const auto &[ids, weight] : usage_weights)
         weight_items[weight].emplace_back(ids);
 
     // Distribute scores linearly over the interval preserving the order
-    map<pair<QString,QString>,float> usage_scores;
+    UsageScores usage_scores;
     double rank = 0.0;
-    for (const auto &[weight, vids] : weight_items){
+    for (const auto &[weight, vids] : weight_items)
+    {
         double score = rank / weight_items.size();
         for (const auto &ids : vids)
             usage_scores.emplace(ids, score);
