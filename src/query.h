@@ -7,7 +7,6 @@
 #include "albert/extension/queryhandler/fallbackprovider.h"
 #include "itemsmodel.h"
 #include <QFutureWatcher>
-#include <set>
 namespace albert { class Item; }
 
 class QueryBase : public albert::Query
@@ -15,72 +14,81 @@ class QueryBase : public albert::Query
 public:
     explicit QueryBase(std::vector<albert::FallbackHandler*> fallback_handlers, QString string);
 
-    void run() override;
-    void cancel() override;
+    void run() override final;
+    void cancel() override final;
+    bool isFinished() const override final;
+    bool isTriggered() const override final;
 
-    bool isFinished() const override;
-    bool isTriggered() const override;
+    QAbstractListModel *matches() override final;
+    QAbstractListModel *fallbacks() override final;
+    QAbstractListModel *matchActions(uint item) const override final;
+    QAbstractListModel *fallbackActions(uint item) const override final;
 
-    QAbstractListModel *matches() override;
-    QAbstractListModel *fallbacks() override;
-    QAbstractListModel *matchActions(uint item) const override;
-    QAbstractListModel *fallbackActions(uint item) const override;
-    void activateMatch(uint item, uint action) override;
-    void activateFallback(uint item, uint action) override;
+    void activateMatch(uint item, uint action) override final;
+    void activateFallback(uint item, uint action) override final;
 
 protected:
-    void runFallbackHandlers();
-    virtual void run_() = 0;
+    virtual void run_() noexcept = 0;
 
-    std::vector<albert::FallbackHandler*> fallback_handlers_;
-    QString string_;
-    ItemsModel matches_;
-    ItemsModel fallbacks_;
+    const uint query_id;
+    const QString string_;
     bool valid_ = true;
+    ItemsModel matches_;
     QFutureWatcher<void> future_watcher_;
 
-    uint query_id;
+private:
+    void runFallbackHandlers();
+
+    std::vector<albert::FallbackHandler*> fallback_handlers_;
+    ItemsModel fallbacks_;
     static uint query_count;
 };
 
 
-class TriggerQuery : public QueryBase, public albert::TriggerQueryHandler::TriggerQuery
+class TriggerQuery final : public QueryBase,
+                           public albert::TriggerQueryHandler::TriggerQuery
 {
-    albert::TriggerQueryHandler *query_handler_;
-    QString trigger_;
-    QString synopsis_;
 public:
     TriggerQuery(std::vector<albert::FallbackHandler*> &&fallback_handlers,
                           albert::TriggerQueryHandler *query_handler,
                           QString string, QString trigger);
     ~TriggerQuery() override;
 
-    void run_() override;
+    void run_() noexcept override;
+    const bool &isValid() const override;
 
     QString trigger() const override;
     QString string() const override;
     QString synopsis() const override;
-    const bool &isValid() const override;
+
     void add(const std::shared_ptr<albert::Item> &item) override;
     void add(std::shared_ptr<albert::Item> &&item) override;
     void add(const std::vector<std::shared_ptr<albert::Item>> &items) override;
     void add(std::vector<std::shared_ptr<albert::Item>> &&items) override;
+
+private:
+    albert::TriggerQueryHandler *query_handler_;
+    QString trigger_;
+    QString synopsis_;
 };
 
 
-class GlobalQuery : public QueryBase, public albert::GlobalQueryHandler::GlobalQuery
+class GlobalQuery final : public QueryBase,
+                          public albert::GlobalQueryHandler::GlobalQuery
 {
-    std::vector<albert::GlobalQueryHandler*> query_handlers_;
 public:
     GlobalQuery(std::vector<albert::FallbackHandler*> &&fallback_handlers,
                          std::vector<albert::GlobalQueryHandler*> &&query_handlers,
                          QString string);
     ~GlobalQuery() override;
 
-    void run_() override;
-
-    QString trigger() const override;
-    QString string() const override;
-    QString synopsis() const override;
+    void run_() noexcept override;
     const bool &isValid() const override;
+
+    QString trigger() const override { return {}; }
+    QString string() const override;
+    QString synopsis() const override { return {}; }
+
+private:
+    std::vector<albert::GlobalQueryHandler*> query_handlers_;
 };

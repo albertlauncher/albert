@@ -9,16 +9,16 @@ using namespace std;
 using namespace albert;
 using namespace chrono;
 
-Q_LOGGING_CATEGORY(timeCat, "albert_query_runtimes")
+Q_LOGGING_CATEGORY(timeCat, "albert.query_runtimes")
 
 uint QueryBase::query_count = 0;
 
 QueryBase::QueryBase(vector<FallbackHandler*> fallback_handlers, QString string):
-    fallback_handlers_(::move(fallback_handlers)),
+    query_id(query_count++),
     string_(::move(string)),
     matches_(this),  // Important for qml ownership determination
-    fallbacks_(this),  // Important for qml ownership determination
-    query_id(query_count++)
+    fallback_handlers_(::move(fallback_handlers)),
+    fallbacks_(this)  // Important for qml ownership determination
 {
     connect(&future_watcher_, &decltype(future_watcher_)::finished, this, &QueryBase::finished);
 }
@@ -30,10 +30,12 @@ void QueryBase::run()
             auto tp = system_clock::now();
             runFallbackHandlers();
             run_();
-            qCDebug(timeCat,).noquote() << QStringLiteral("%1 ms [total:'%3']")
-                .arg(duration_cast<milliseconds>(system_clock::now()-tp).count(), 6).arg(string_);
-        } catch (const exception &e){
-            WARN << "Handler thread threw" << e.what();
+            qCDebug(timeCat,).noquote()
+                << QStringLiteral("\x1b[38;5;33m[%1 ms] #%2 '%3' TOTAL\x1b[0m")
+                       .arg(duration_cast<milliseconds>(system_clock::now()-tp).count(), 6)
+                       .arg(query_id).arg(string_);
+        } catch (...){
+            CRIT << "Unexpected exception in Query::run_!";
         }
     }));
 }
@@ -69,7 +71,7 @@ void QueryBase::runFallbackHandlers()
 
 // ////////////////////////////////////////////////////////////////////////////
 
-TriggerQuery::TriggerQuery(std::vector<FallbackHandler *> &&fallback_handlers,
+TriggerQuery::TriggerQuery(vector<FallbackHandler *> &&fallback_handlers,
                            TriggerQueryHandler *query_handler,
                            QString string, QString trigger):
     QueryBase(::move(fallback_handlers), ::move(string)),
@@ -81,12 +83,13 @@ TriggerQuery::TriggerQuery(std::vector<FallbackHandler *> &&fallback_handlers,
 
 TriggerQuery::~TriggerQuery()
 {
-    // Avoid segfaults when handler write on a deleted query
-    if (!future_watcher_.isFinished()) {
+    // Wait in derived class otherwise query is partially destroyed while handlers are still running
+    cancel();
+    if (!isFinished()) {
         WARN << QString("Busy wait on query: #%1").arg(query_id);
         future_watcher_.waitForFinished();
     }
-    DEBG << QString("Query deleted. [#%1 '%2']").arg(query_id).arg(string_);
+    DEBG << QString("Query deleted. [#%1 '%2']").arg(query_id).arg(string());
 }
 
 QString TriggerQuery::trigger() const { return trigger_; }
@@ -97,6 +100,24 @@ QString TriggerQuery::synopsis() const { return synopsis_; }
 
 const bool &TriggerQuery::isValid() const { return valid_; }
 
+void TriggerQuery::run_() noexcept
+{
+    try {
+        auto start = system_clock::now();
+        query_handler_->handleTriggerQuery(this);
+        qCDebug(timeCat,).noquote()
+            << QStringLiteral("\x1b[38;5;244m[%1 ms] #%2 '%3' %4\x1b[0m")
+                   .arg(duration_cast<milliseconds>(system_clock::now()-start).count(), 6)
+                   .arg(query_id).arg(string_, query_handler_->id());
+    }
+    catch (const exception &e) {
+        WARN << QString("TriggerQueryHandler '%1' threw exception:\n").arg(query_handler_->id()) << e.what();
+    }
+    catch (...) {
+        WARN << QString("TriggerQueryHandler '%1' threw unknown exception:\n").arg(query_handler_->id());
+    }
+}
+
 void TriggerQuery::add(const shared_ptr<Item> &item) { matches_.add(query_handler_, item); }
 
 void TriggerQuery::add(shared_ptr<Item> &&item) { matches_.add(query_handler_, ::move(item)); }
@@ -104,21 +125,6 @@ void TriggerQuery::add(shared_ptr<Item> &&item) { matches_.add(query_handler_, :
 void TriggerQuery::add(const vector<shared_ptr<Item>> &items) { matches_.add(query_handler_, items); }
 
 void TriggerQuery::add(vector<shared_ptr<Item>> &&items) { matches_.add(query_handler_, ::move(items)); }
-
-void TriggerQuery::run_()
-{
-    future_watcher_.setFuture(QtConcurrent::run([this](){
-        try {
-            auto start = system_clock::now();
-            query_handler_->handleTriggerQuery(this);
-            qCDebug(timeCat,).noquote() << QStringLiteral("%1 ms ['%2':'%3']")
-                .arg(duration_cast<milliseconds>(system_clock::now()-start).count(), 6)
-                .arg(query_handler_->id(), string_);
-        } catch (const exception &e){
-            WARN << "Handler thread threw" << e.what();
-        }
-    }));
-}
 
 // ////////////////////////////////////////////////////////////////////////////
 
@@ -132,34 +138,41 @@ GlobalQuery::GlobalQuery(vector<FallbackHandler*> &&fallback_handlers,
 
 GlobalQuery::~GlobalQuery()
 {
-    // Avoid segfaults when handler write on a deleted query
-    if (!future_watcher_.isFinished()) {
+    // Wait in derived class otherwise query is partially destroyed while handlers are still running
+    cancel();
+    if (!isFinished()) {
         WARN << QString("Busy wait on query: #%1").arg(query_id);
         future_watcher_.waitForFinished();
     }
     DEBG << QString("Query deleted. [#%1 '%2']").arg(query_id).arg(string_);
 }
 
-QString GlobalQuery::trigger() const { return {}; }
-
 QString GlobalQuery::string() const { return string_; }
-
-QString GlobalQuery::synopsis() const { return {}; }
 
 const bool &GlobalQuery::isValid() const { return valid_; }
 
-void GlobalQuery::run_()
+void GlobalQuery::run_() noexcept
 {
     mutex rank_items_mutex;  // 6.4 Still no move semantics in QtConcurrent
     vector<pair<Extension*,RankItem>> rank_items;
 
-    function<void(GlobalQueryHandler*)> map = [this, &rank_items_mutex, &rank_items](GlobalQueryHandler *handler) {
+
+    function<void(GlobalQueryHandler*)> map = [this, &rank_items_mutex, &rank_items](GlobalQueryHandler *handler)
+    {
+        // blocking map is not interruptible. end cancelled runs fast.
+        if (!isValid())
+            return;
+
         try {
             auto start = system_clock::now();
+
             auto r = handler->handleGlobalQuery(this);
-            qCDebug(timeCat,).noquote() << QStringLiteral("%1 ms ['%2':'%3']")
-                .arg(duration_cast<milliseconds>(system_clock::now()-start).count(), 6)
-                .arg(handler->id(), string_);
+
+            qCDebug(timeCat,).noquote()
+                << QStringLiteral("\x1b[38;5;244m[%1 ms] #%2 '%3' %4\x1b[0m")
+                       .arg(duration_cast<milliseconds>(system_clock::now()-start).count(), 6)
+                       .arg(query_id).arg(string_, handler->id());
+
             if (r.empty())
                 return;
 
@@ -172,36 +185,50 @@ void GlobalQuery::run_()
 
         }
         catch (const exception &e) {
-            WARN << "Global search:" << handler->id() << "threw" << e.what();
+            WARN << QString("GlobalQueryHandler '%1' threw exception:\n").arg(handler->id()) << e.what();
         }
         catch (...) {
-            WARN << "Global search:" << handler->id() << "threw unkown exception.";
+            WARN << QString("GlobalQueryHandler '%1' threw unknown exception:\n").arg(handler->id());
         }
-
     };
+
+    auto tp = system_clock::now();
 
     QtConcurrent::blockingMap(query_handlers_, map);
 
-    auto tp = system_clock::now();
-    sort(rank_items.begin(), rank_items.end(), [](const auto &a, const auto &b){
+    qCDebug(timeCat,).noquote()
+        << QStringLiteral("\x1b[38;5;244m[%1 ms] #%2 '%3' HANDLERS\x1b[0m")
+               .arg(duration_cast<milliseconds>(system_clock::now()-tp).count(), 6)
+               .arg(query_id).arg(string_);
+
+
+    static const auto cmp = [](const auto &a, const auto &b){
         if (a.second.score == b.second.score)
             return a.second.item->text() > b.second.item->text();
         else
             return a.second.score > b.second.score;
-    });
-    qCDebug(timeCat,).noquote() << QStringLiteral("%1 ms [sort:'%3']")
-        .arg(duration_cast<milliseconds>(system_clock::now()-tp).count(), 6).arg(string_);
+    };
 
     tp = system_clock::now();
-    matches_.add(rank_items.begin(), rank_items.end()); // TODO ranges
-    qCDebug(timeCat,).noquote() << QStringLiteral("%1 ms [add:'%3']")
-        .arg(duration_cast<milliseconds>(system_clock::now()-tp).count(), 6).arg(string_);
 
-//    //    auto it = rank_items.begin();
-//    //    for (uint e = 0; pow(10,e)-1 < (uint)rank_items.size(); ++e){
-//    //        auto begin = rank_items.begin()+(uint)pow(10u,e)-1;
-//    //        auto end = rank_items.begin()+min((uint)pow(10u,e+1)-1, (uint)rank_items.size());
-//    //        sort(begin, end, [](const auto &a, const auto &b){ return a.second.score > b.second.score; });
-//    //         TODO c++20 ranges view
-//    //    }
+    if (rank_items.size() > 20)
+    {
+        auto mid = rank_items.begin() + 20;
+
+        ranges::partial_sort(rank_items, mid, cmp);
+        matches_.add(rank_items.begin(), mid);
+
+        sort(mid, rank_items.end(), cmp);
+        matches_.add(mid, rank_items.end());
+    }
+    else
+    {
+        ranges::sort(rank_items, cmp);
+        matches_.add(rank_items.begin(), rank_items.end());
+    }
+
+    qCDebug(timeCat,).noquote()
+        << QStringLiteral("\x1b[38;5;244m[%1 ms] #%2 '%3' SORT\x1b[0m")
+               .arg(duration_cast<milliseconds>(system_clock::now()-tp).count(), 6)
+               .arg(query_id).arg(string_);
 }

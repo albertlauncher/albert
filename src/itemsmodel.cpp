@@ -88,8 +88,9 @@ void ItemsModel::add(vector<pair<Extension*,RankItem>>::iterator begin,
     if (begin == end)
         return;
 
-    beginInsertRows(QModelIndex(), (int)items.size(), (int)(items.size())+(int)(end-begin)-1);
     items.reserve(items.size()+(size_t)(end-begin));
+
+    beginInsertRows(QModelIndex(), (int)items.size(), (int)(items.size())+(int)(end-begin)-1);
     for (auto it = begin; it != end; ++it)
         items.emplace_back(it->first, ::move(it->second.item));
     endInsertRows();
