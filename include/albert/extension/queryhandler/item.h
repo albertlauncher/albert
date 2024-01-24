@@ -15,12 +15,22 @@ public:
     virtual ~Item() = default;
 
     /// Getter for the item identifier.
+    ///
     /// Has to be unique per extension.
+    ///
+    /// This function is involved in several time critical operartion such as
+    /// indexing and sorting. It is therefore recommended to return a string
+    /// that is as short as possible as fast as possible.
     virtual QString id() const = 0;
 
     /// Getter for the item text.
-    /// Primary text displayed emphasized in a list item. Empty text will
-    /// crash the app since text length is used as divisor for scoring.
+    ///
+    /// Primary text displayed emphasized in a list item.
+    ///
+    /// This string is used in scoring. It is therefore recommended to return
+    /// as fast as possible. The text length is used as divisor for scoring,
+    /// hence the string must not be empty, otherwise you get undefined
+    /// behavior. For performance reasons text length is not checked.
     virtual QString text() const = 0;
 
     /// Getter for the item subtext.
