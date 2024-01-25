@@ -55,38 +55,60 @@ QtPluginLoader::QtPluginLoader(const QtPluginProvider &provider, const QString &
 
     // Extract metadata
 
-    metadata_.iid = loader.metaData()["IID"].toString();
+    const QString key_iid = QStringLiteral("IID");
+    const QString key_md = QStringLiteral("MetaData");
+    const QString key_id = QStringLiteral("id");
+    const QString key_version = QStringLiteral("version");
+    const QString key_name = QStringLiteral("name");
+    const QString key_description = QStringLiteral("description");
+    const QString key_license = QStringLiteral("license");
+    const QString key_url = QStringLiteral("url");
+    const QString key_authors = QStringLiteral("authors");
+    const QString key_runtime_dependencies = QStringLiteral("runtime_dependencies");
+    const QString key_binary_dependencies = QStringLiteral("binary_dependencies");
+    const QString key_credits = QStringLiteral("credits");
+    const QString key_load_type = QStringLiteral("loadtype");
+    const QString load_type_frontend = QStringLiteral("frontend");
+    const QString load_type_nounload = QStringLiteral("nounload");
+    const QString load_type_user = QStringLiteral("user");
+
+
+    metadata_.iid = loader.metaData()[key_iid].toString();
     if (metadata_.iid.isEmpty())
         throw runtime_error("Not an albert plugin");
 
-    auto rawMetadata = loader.metaData()["MetaData"].toObject();
+    auto rawMetadata = loader.metaData()[key_md].toObject();
 
-    metadata_.id = rawMetadata["id"].toString();
+    metadata_.id = rawMetadata[key_id].toString();
 
-    metadata_.version = rawMetadata["version"].toString();
+    metadata_.version = rawMetadata[key_version].toString();
 
-    metadata_.name = fetchLocalizedMetadata(rawMetadata, QStringLiteral("name"));
+    metadata_.name = fetchLocalizedMetadata(rawMetadata, key_name);
 
-    metadata_.description = fetchLocalizedMetadata(rawMetadata, QStringLiteral("description"));
+    metadata_.description = fetchLocalizedMetadata(rawMetadata, key_description);
 
-    metadata_.license = rawMetadata["license"].toString();
+    metadata_.license = rawMetadata[key_license].toString();
 
-    metadata_.url = rawMetadata["url"].toString();
+    metadata_.url = rawMetadata[key_url].toString();
 
-    metadata_.authors = rawMetadata["authors"].toVariant().toStringList();
+    metadata_.authors = rawMetadata[key_authors].toVariant().toStringList();
 
-    metadata_.runtime_dependencies = rawMetadata["runtime_dependencies"].toVariant().toStringList();
+    metadata_.runtime_dependencies = rawMetadata[key_runtime_dependencies].toVariant().toStringList();
 
-    metadata_.binary_dependencies = rawMetadata["binary_dependencies"].toVariant().toStringList();
+    metadata_.binary_dependencies = rawMetadata[key_binary_dependencies].toVariant().toStringList();
 
-    metadata_.third_party_credits = rawMetadata["credits"].toVariant().toStringList();
+    metadata_.third_party_credits = rawMetadata[key_credits].toVariant().toStringList();
 
-    if (auto lt = rawMetadata["loadtype"].toString(); lt == "frontend")
+    if (auto lt = rawMetadata[key_load_type].toString(); lt == load_type_frontend)
         metadata_.load_type = LoadType::Frontend;
-    else if(lt == "nounload")
+    else if (lt == load_type_nounload)
         metadata_.load_type = LoadType::NoUnload;
-    else  // "user
+    else
+    {
+        if (lt == load_type_user)
+            WARN << QString("Invalid load type '%1'. Default to '%2'.").arg(lt, load_type_user);
         metadata_.load_type = LoadType::User;
+    }
 
 
     // Validate metadata
@@ -114,10 +136,19 @@ QtPluginLoader::QtPluginLoader(const QtPluginProvider &provider, const QString &
         errors << "Invalid plugin id. Use [a-z0-9_].";
 
     if (metadata_.name.isEmpty())
-        errors << "'name' must not be empty.";
+        errors << QString("'%1' must not be empty.").arg(key_name);
 
     if (metadata_.description.isEmpty())
-        errors << "'description' must not be empty.";
+        errors << QString("'%1' must not be empty.").arg(key_description);
+
+    if (metadata_.license.isEmpty())
+        errors << QString("'%1' must not be empty.").arg(key_license);
+
+    if (metadata_.url.isEmpty())
+        errors << QString("'%1' must not be empty.").arg(key_url);
+
+    if (metadata_.authors.isEmpty())
+        errors << QString("'%1' must not be empty.").arg(key_authors);
 
     if (!errors.isEmpty())
         throw std::runtime_error(errors.join(", ").toUtf8().constData());
