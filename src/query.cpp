@@ -212,22 +212,22 @@ void GlobalQuery::run_() noexcept
     };
 
     tp = system_clock::now();
+    auto begin = ::begin(rank_items);
+    auto end = ::end(rank_items);
     if (rank_items.size() > 20)
     {
         auto mid = rank_items.begin() + 20;
 
-        ranges::partial_sort(rank_items, mid, cmp);
-        matches_.add(rank_items.begin(), mid);
+        partial_sort(begin, mid, end, cmp);
+        matches_.add(begin, mid);
 
-        tp = system_clock::now();
-        sort(mid, rank_items.end(), cmp);
-
-        matches_.add(mid, rank_items.end());
+        sort(mid, end, cmp);
+        matches_.add(mid, end);
     }
     else
     {
-        ranges::sort(rank_items, cmp);
-        matches_.add(rank_items.begin(), rank_items.end());
+        sort(begin, end, cmp);
+        matches_.add(begin, end);
     }    
     auto d_s = duration_cast<milliseconds>(system_clock::now()-tp).count();
 
