@@ -532,21 +532,6 @@ Empfohlen wird ein Wert dazwischen, um die Vorteile beider Seiten zu nutzen: Die
         <translation>Bevorzuge zuletzt verwendete Ergebnisse.</translation>
     </message>
     <message>
-        <location filename="../src/settings/settingswindow.ui" line="320"/>
-        <source>&lt;p&gt;&lt;b&gt;Albert launcher ___versionstring___&lt;/b&gt;&lt;/p&gt;
-&lt;p&gt;Written in &lt;a href=&quot;https://wikipedia.org/wiki/C++&quot;&gt;C++&lt;/a&gt;, powered by &lt;a href=&quot;aboutQt&quot;&gt;Qt&lt;/a&gt;. &lt;/p&gt;
-&lt;p&gt;Please report bugs or suggestions on &lt;a href=&quot;https://github.com/albertlauncher/albert/issues/new/choose&quot;&gt;GitHub&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;If you like this software, please think about a &lt;a href=&quot;https://albertlauncher.github.io/donation/&quot;&gt;donation&lt;/a&gt;👍.&lt;/p&gt;
-&lt;p&gt;I&apos;d like to thank all contributors, supporters and users.&lt;br /&gt;You keep this project going on. &lt;/p&gt;
-</source>
-        <translation>&lt;p&gt;&lt;b&gt;Albert Launcher ___versionstring___&lt;/b&gt;&lt;/p&gt;
-&lt;p&gt;Geschrieben in &lt;a href=&quot;https://wikipedia.org/wiki/C++&quot;&gt;C++&lt;/a&gt;, betrieben mit &lt;a href=&quot;aboutQt&quot;&gt;Qt&lt;/a&gt;. &lt;/p&gt;
-&lt;p&gt;Bitte melde Fehler oder Vorschläge auf &lt;a href=&quot;https://github.com/albertlauncher/albert/issues/new/choose&quot;&gt;GitHub&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Wenn dir Albert gefällt, denke bitte über eine &lt;a href=&quot;https://albertlauncher.github.io/donation/&quot;&gt;Spende&lt;/a&gt; nach👍.&lt;/p&gt;
-&lt;p&gt;Ich möchte allen Beitragenden, Unterstützern und Benutzern danken.&lt;br /&gt;Ihr haltet das Projekt am Laufen. &lt;/p&gt;
-</translation>
-    </message>
-    <message>
         <location filename="../src/settings/settingswindow.ui" line="182"/>
         <source>MFU</source>
         <translation>MFU</translation>
@@ -582,29 +567,44 @@ Empfohlen wird ein Wert dazwischen, um die Vorteile beider Seiten zu nutzen: Die
         <translation>Leere Abfrage ausführen</translation>
     </message>
     <message>
-        <location filename="../src/settings/settingswindow.ui" line="278"/>
+        <location filename="../src/settings/settingswindow.cpp" line="173"/>
         <source>About</source>
         <translation>Über</translation>
     </message>
     <message>
-        <location filename="../src/settings/settingswindow.cpp" line="67"/>
+        <location filename="../src/settings/settingswindow.cpp" line="66"/>
         <source>Window</source>
         <translation>Fenster</translation>
     </message>
     <message>
-        <location filename="../src/settings/settingswindow.cpp" line="68"/>
+        <location filename="../src/settings/settingswindow.cpp" line="67"/>
         <source>Query</source>
         <translation>Abfrage</translation>
     </message>
     <message>
-        <location filename="../src/settings/settingswindow.cpp" line="69"/>
+        <location filename="../src/settings/settingswindow.cpp" line="68"/>
         <source>Plugins</source>
         <translation>Plugins</translation>
     </message>
     <message>
-        <location filename="../src/settings/settingswindow.cpp" line="79"/>
+        <location filename="../src/settings/settingswindow.cpp" line="80"/>
         <source>Hotkey</source>
         <translation>Tastenkürzel</translation>
+    </message>
+    <message>
+        <location filename="../src/settings/settingswindow.cpp" line="151"/>
+        <source>Written in C++, powered by [Qt](aboutQt).</source>
+        <translation>Geschrieben in C++, unterstützt durch [Qt](aboutQt).</translation>
+    </message>
+    <message>
+        <location filename="../src/settings/settingswindow.cpp" line="156"/>
+        <source>Join our community on [Telegram](%1) or [Discord](%2). Report bugs on [GitHub](%3).</source>
+        <translation>Treten Sie unserer Community auf [Telegram](%1) oder [Discord](%2) bei. Melden Sie Probleme auf [GitHub](%3).</translation>
+    </message>
+    <message>
+        <location filename="../src/settings/settingswindow.cpp" line="162"/>
+        <source>If you appreciate Albert, show your support through a [donation](%1) or by becoming a [sponsor](%2).</source>
+        <translation>Wenn Ihnen Albert gefällt, zeigen Sie Ihre Unterstützung durch eine [Spende](%1) oder indem Sie ein [Sponsor](%2) werden.</translation>
     </message>
 </context>
 </TS>

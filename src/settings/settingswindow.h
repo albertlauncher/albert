@@ -22,7 +22,7 @@ private:
     void init_tab_general_frontends(App &app);
     void init_tab_general_terminals(App &app);
     void init_tab_general_search(App &app);
-    void init_tab_about();
+    void insert_tab_about();
 
     void keyPressEvent(QKeyEvent * event) override;
 

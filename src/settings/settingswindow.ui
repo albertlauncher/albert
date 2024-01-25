@@ -273,80 +273,6 @@ Recommended is a value in between, because it allows best of both worlds: The re
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_about">
-      <attribute name="title">
-       <string>About</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="layout_about" stretch="1,0,0,2">
-       <item>
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>0</width>
-           <height>44</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QLabel" name="about_icon">
-           <property name="maximumSize">
-            <size>
-             <width>64</width>
-             <height>64</height>
-            </size>
-           </property>
-           <property name="layoutDirection">
-            <enum>Qt::LeftToRight</enum>
-           </property>
-           <property name="pixmap">
-            <pixmap resource="../resources.qrc">:/app_icon</pixmap>
-           </property>
-           <property name="scaledContents">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QLabel" name="about_text">
-         <property name="text">
-          <string>&lt;p&gt;&lt;b&gt;Albert launcher ___versionstring___&lt;/b&gt;&lt;/p&gt;
-&lt;p&gt;Written in &lt;a href=&quot;https://wikipedia.org/wiki/C++&quot;&gt;C++&lt;/a&gt;, powered by &lt;a href=&quot;aboutQt&quot;&gt;Qt&lt;/a&gt;. &lt;/p&gt;
-&lt;p&gt;Please report bugs or suggestions on &lt;a href=&quot;https://github.com/albertlauncher/albert/issues/new/choose&quot;&gt;GitHub&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;If you like this software, please think about a &lt;a href=&quot;https://albertlauncher.github.io/donation/&quot;&gt;donation&lt;/a&gt;👍.&lt;/p&gt;
-&lt;p&gt;I'd like to thank all contributors, supporters and users.&lt;br /&gt;You keep this project going on. &lt;/p&gt;
-</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>0</width>
-           <height>91</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
     </widget>
    </item>
   </layout>
@@ -358,8 +284,6 @@ Recommended is a value in between, because it allows best of both worlds: The re
   <tabstop>comboBox_frontend</tabstop>
   <tabstop>comboBox_term</tabstop>
  </tabstops>
- <resources>
-  <include location="../resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
