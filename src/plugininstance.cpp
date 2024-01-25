@@ -51,6 +51,13 @@ std::unique_ptr<QSettings> albert::PluginInstance::settings() const
     return s;
 }
 
+std::unique_ptr<QSettings> albert::PluginInstance::state() const
+{
+    auto s = albert::state();
+    s->beginGroup(id());
+    return s;
+}
+
 void PluginInstance::initialize(ExtensionRegistry *) {}
 
 void PluginInstance::finalize(ExtensionRegistry *) {}

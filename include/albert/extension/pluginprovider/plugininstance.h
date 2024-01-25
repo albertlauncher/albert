@@ -44,8 +44,14 @@ public:
     /// The recommended data location. Created if necessary.
     QDir dataDir() const;
 
-    /// Prepared settings object.
+    /// Persistent plugin settings utilizing QSettings.
+    /// Implicitly begins a group/section using the plugin id.
     std::unique_ptr<QSettings> settings() const;
+
+    /// Persistent plugin state utilizing QSettings.
+    /// Implicitly begins a group/section using the plugin id.
+    /// \since 0.23
+    std::unique_ptr<QSettings> state() const;
 
     /// The initialization function.
     virtual void initialize(ExtensionRegistry*);
