@@ -74,6 +74,7 @@ file(GLOB_RECURSE LIB_SRC_UI src/*.ui)
 file(GLOB LIB_SRC
     src/*.h
     src/*.cpp
+    src/plugin/*
     src/platform/*.h
     src/settings/*.h
     src/settings/*.cpp

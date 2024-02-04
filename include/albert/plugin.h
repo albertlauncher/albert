@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
 #include "albert/config.h"
@@ -139,8 +139,12 @@ public:
     /// Override returning PluginInstance::description
     QString description() const override;
 
-    /// Override returning `this`
-    std::vector<Extension*> extensions() override;
+    /// Override registering itself as extension
+    void initialize(ExtensionRegistry&, std::map<QString,PluginInstance*>) override;
+
+    /// Override deregistering itself as extension
+    void finalize(ExtensionRegistry&) override;
+
 };
 
 }

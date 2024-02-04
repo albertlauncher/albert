@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2024 Manuel Schneider
 
 #include "albert/extension.h"
 #include "albert/extensionregistry.h"
@@ -6,7 +6,7 @@
 using namespace std;
 using namespace albert;
 
-void ExtensionRegistry::add(Extension *e)
+void ExtensionRegistry::registerExtension(Extension *e)
 {
     const auto&[it, success] = extensions_.emplace(e->id(), e);
     if (success)
@@ -15,7 +15,7 @@ void ExtensionRegistry::add(Extension *e)
         CRIT << "Extension registered more than once:" << e->id();
 }
 
-void ExtensionRegistry::remove(Extension *e)
+void ExtensionRegistry::deregisterExtension(Extension *e)
 {
     if (extensions_.erase(e->id()))
         emit removed(e);

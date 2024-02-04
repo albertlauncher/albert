@@ -4,11 +4,12 @@
 #include <QAbstractListModel>
 class PluginsModel;
 class PluginRegistry;
-namespace albert { class PluginLoader; }
+class Plugin;
 
 class PluginsModel: public QAbstractListModel
 {
 public:
+
     explicit PluginsModel(PluginRegistry &plugin_registry);
 
     void updatePluginList();
@@ -22,8 +23,11 @@ public:
     bool setData(const QModelIndex &idx, const QVariant&, int role) override;
     Qt::ItemFlags flags(const QModelIndex &idx) const override;
 
-    std::vector<const albert::PluginLoader*> plugins_;
+    std::vector<const Plugin*> plugins_;
+
 private:
+
     PluginRegistry &plugin_registry_;
     mutable std::map<QString, QIcon> icon_cache;
+
 };

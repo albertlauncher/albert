@@ -1,15 +1,13 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
 #include "albert/export.h"
-#include "albert/extension.h"
 #include <QString>
+#include <map>
 #include <memory>
-#include <vector>
-class QSettings;
 class QDir;
+class QSettings;
 class QWidget;
-class PluginInstancePrivate;
 
 namespace albert
 {
@@ -18,85 +16,68 @@ class ExtensionRegistry;
 ///
 /// Abstract plugin instance class.
 ///
-/// This is the interface every plugin has to implement.
+/// The base class every plugin has to inherit.
 ///
 class ALBERT_EXPORT PluginInstance
 {
 public:
     PluginInstance();
-    virtual ~PluginInstance();
 
-    /// The plugin identifier. Taken from the metadata.
+    /// The plugin identifier.
+    /// Taken from the metadata.
     QString id() const;
 
-    /// The human readable plugin name. Taken from the metadata.
+    /// The human readable plugin name.
+    /// Taken from the metadata.
     QString name() const;
 
-    /// Brief description of the plugin. Taken from the metadata.
+    /// Brief description of the plugin.
+    /// Taken from the metadata.
     QString description() const;
 
-    /// The recommended cache location. Created if necessary.
+    /// The recommended cache location.
+    /// Created if necessary.
     QDir cacheDir() const;
 
-    /// The recommended config location. Created if necessary.
+    /// The recommended config location.
+    /// Created if necessary.
     QDir configDir() const;
 
-    /// The recommended data location. Created if necessary.
+    /// The recommended data location.
+    /// Created if necessary.
     QDir dataDir() const;
 
     /// Persistent plugin settings utilizing QSettings.
-    /// Implicitly begins a group/section using the plugin id.
+    /// Configured to use a section titled <plugin-id>.
     std::unique_ptr<QSettings> settings() const;
 
     /// Persistent plugin state utilizing QSettings.
-    /// Implicitly begins a group/section using the plugin id.
+    /// Configured to use a section titled <plugin-id>.
     /// \since 0.23
     std::unique_ptr<QSettings> state() const;
 
     /// The initialization function.
-    virtual void initialize(ExtensionRegistry*);
+    /// \param registry The extension registry.
+    /// \param instances The dependencies of the plugin.
+    /// \since 0.23
+    virtual void initialize(ExtensionRegistry &registry, std::map<QString,PluginInstance*> dependencies);
 
     /// The finalization function.
-    virtual void finalize(ExtensionRegistry*);
-
-    /// The extensions this plugin provides.
-    virtual std::vector<Extension*> extensions();
+    /// \param registry The extension registry.
+    /// \since 0.23
+    virtual void finalize(ExtensionRegistry &registry);
 
     /// Config widget factory.
     virtual QWidget *buildConfigWidget();
 
+protected:
+
+    virtual ~PluginInstance();
+
 private:
-    const std::unique_ptr<PluginInstancePrivate> d;
-};
 
-///
-/// Template class for a plugin providing a single extension.
-///
-/// Most plugins provide exactly one extension. This class serves as a
-/// convenience base class for such plugins. It inherits PluginInstance and any
-/// given interface classes and overrides the following virtual functions:
-/// * QString id() using the metadata
-/// * QString name() using the metadata
-/// * QString description() using the metadata
-/// * std::vector<Extension*> extensions() returning {this}
-///
-/// @tparam EXTENSIONS The interfaces of the extension.
-///
-template <class ...EXTENSIONS>
-class ALBERT_EXPORT ExtensionPluginInstance : public PluginInstance, public EXTENSIONS...
-{
-public:
-    /// Override returning PluginInstance::id
-    QString id() const override { return PluginInstance::id(); }
-
-    /// Override returning PluginInstance::name
-    QString name() const override { return PluginInstance::name(); }
-
-    /// Override returning PluginInstance::description
-    QString description() const override { return PluginInstance::description(); }
-
-    /// Override returning `this`
-    std::vector<Extension*> extensions() override { return {this}; }
+    class Private;
+    const std::unique_ptr<Private> d;
 };
 
 }

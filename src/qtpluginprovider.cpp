@@ -1,72 +1,65 @@
-// Copyright (c) 2022-2023 Manuel Schneider
+// Copyright (c) 2022-2024 Manuel Schneider
 
 #include "albert/logging.h"
 #include "qtpluginloader.h"
 #include "qtpluginprovider.h"
-#include <QDirIterator>
 #include <QCoreApplication>
-#include <QMessageBox>
-#include <QSettings>
+#include <QDirIterator>
 using namespace std;
 using namespace albert;
 
 
-#if defined __linux__ || defined __FreeBSD__
-static QStringList defaultPaths()
+QtPluginProvider::QtPluginProvider(QStringList additional_paths)
 {
-    QStringList default_paths;
-    QStringList dirs = {
+#if defined __linux__ || defined __FreeBSD__
+
+    QStringList default_paths = {
         QDir::home().filePath(".local/lib/"),
         QDir::home().filePath(".local/lib64/"),
-        QFileInfo("/usr/local/lib/").canonicalFilePath(),
-        QFileInfo("/usr/local/lib64/").canonicalFilePath(),
+        "/usr/local/lib/",
+        "/usr/local/lib64/",
 #if defined MULTIARCH_TUPLE
-        QFileInfo("/usr/lib/" MULTIARCH_TUPLE).canonicalFilePath(),
+        "/usr/lib/" MULTIARCH_TUPLE,
 #endif
-        QFileInfo("/usr/lib/").canonicalFilePath(),
-        QFileInfo("/usr/lib64/").canonicalFilePath(),
+        "/usr/lib/",
+        "/usr/lib64/"
     };
-    dirs.removeDuplicates();
-    for ( const QString& dir : dirs ) {
-        QFileInfo fileInfo = QFileInfo(QDir(dir).filePath("albert"));
-        if ( fileInfo.isDir() )
-            default_paths.push_back(fileInfo.canonicalFilePath());
-    }
-    return default_paths;
-}
+
 #elif defined __APPLE__
-#include <QCoreApplication>
-static QStringList defaultPaths()
-{
-    return {QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("../PlugIns/albert")};
-}
+
+    QStringList default_paths = {
+        QDir::home().filePath("Library/Application Support/albert/PlugIns"),
+        QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("../PlugIns")
+    };
+
 #endif
 
-QtPluginProvider::QtPluginProvider(QStringList additional_paths):
-    paths_(additional_paths << defaultPaths())
-{
-    /// Lookup is fast and frontend needed before the registry calls
-    /// plugins(), therefore lookup actually happens in ctor
-    for (const auto &path : paths_) {
+    for (const QString& default_path : default_paths)
+        if (auto fi = QFileInfo(QDir(default_path).filePath("albert")); fi.isDir())  // implicit exists()
+            additional_paths << fi.filePath();
+
+    for (const auto &path : additional_paths)
+    {
         DEBG << "Searching native plugins in" << path;
+
         QDirIterator dirIterator(path, QDir::Files);
         while (dirIterator.hasNext()) {
             try {
-                auto loader = make_unique<QtPluginLoader>(*this, QFileInfo(dirIterator.next()).absoluteFilePath());
-                DEBG << "Found valid native plugin" << loader->path;
-                plugins_.push_back(::move(loader));
+                auto pl = make_unique<QtPluginLoader>(QFileInfo(dirIterator.next()).absoluteFilePath());
+                DEBG << "Found valid native plugin" << pl->path();
+                plugin_loaders_.emplace_back(::move(pl));
             } catch (const runtime_error &e) {
-                DEBG << e.what() << dirIterator.filePath();
+                DEBG << dirIterator.filePath() << e.what();
             }
         }
     }
 }
 
-QString QtPluginProvider::id() const
-{ return "pluginprovider"; }
+QtPluginProvider::~QtPluginProvider() = default;
 
-QString QtPluginProvider::name() const
-{ return QStringLiteral("C++/Qt"); }
+QString QtPluginProvider::id() const { return QStringLiteral("qtpluginprovider"); }
+
+QString QtPluginProvider::name() const { return QStringLiteral("C++/Qt"); }
 
 QString QtPluginProvider::description() const
 {
@@ -76,17 +69,18 @@ QString QtPluginProvider::description() const
 
 vector<PluginLoader*> QtPluginProvider::plugins()
 {
-    vector<PluginLoader*> r;
-    for (const auto &loader : plugins_)
-        r.emplace_back(loader.get());
-    return r;
+    vector<PluginLoader*> plugins;
+    for (const auto &pl : plugin_loaders_)
+        if (pl->metaData().load_type == PluginMetaData::LoadType::User)
+            plugins.emplace_back(pl.get());
+    return plugins;
 }
 
-vector<QtPluginLoader*> QtPluginProvider::frontendPlugins()
+vector<PluginLoader*> QtPluginProvider::frontendPlugins()
 {
-    vector<QtPluginLoader*> frontend_plugins;
-    for (auto &loader : plugins_)
-        if (loader->metaData().load_type == LoadType::Frontend)
-            frontend_plugins.emplace_back(loader.get());
+    vector<PluginLoader*> frontend_plugins;
+    for (const auto &pl : plugin_loaders_)
+        if (pl->metaData().load_type == PluginMetaData::LoadType::Frontend)
+            frontend_plugins.emplace_back(pl.get());
     return frontend_plugins;
 }

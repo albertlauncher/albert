@@ -1,9 +1,9 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
 #include "albert/extension/pluginprovider/plugininstance.h"
-#include "albert/extension/pluginprovider/pluginloader.h"
 #include "albert/extension/pluginprovider/pluginmetadata.h"
 #include "albert/extension/pluginprovider/pluginprovider.h"
+#include "pluginregistry.h"
 #include "pluginsmodel.h"
 #include "pluginswidget.h"
 #include <QApplication>
@@ -97,14 +97,18 @@ void PluginsWidget::onUpdatePluginWidget()
                                                .arg(p.metaData().name, p.metaData().description)));
 
     // Plugin specific
-    if (p.state() == PluginState::Loaded) {
+    if (p.state() == Plugin::State::Loaded)
+    {
         // Config widget
         if (auto *inst = p.instance(); inst)
             if (auto *cw = inst->buildConfigWidget())
                 vl->addWidget(cw, 1); // Strech=1
-    } else if (!p.stateInfo().isEmpty()){
+    }
+    else if (!p.stateInfo().isEmpty())
+    {
         // Unloaded info
-        if (!p.stateInfo().isEmpty()){
+        if (!p.stateInfo().isEmpty())
+        {
             l = new QLabel(p.stateInfo());
             l->setWordWrap(true);
             vl->addWidget(l);
@@ -116,17 +120,6 @@ void PluginsWidget::onUpdatePluginWidget()
     // META INFO
 
     QStringList meta;
-
-    // List extensions
-    if (p.state() == PluginState::Loaded && !p.instance()->extensions().empty())
-    {
-        QStringList extensions;
-        for (auto *e : p.instance()->extensions())
-            extensions << QString("%1 (%2)").arg(e->name(), e->description());
-
-        meta << tr("Extensions: %1", nullptr, p.instance()->extensions().size())
-                    .arg(extensions.join(", "));
-    }
 
     // Credits if any
     if (auto list = p.metaData().third_party_credits; !list.isEmpty())
@@ -157,10 +150,10 @@ void PluginsWidget::onUpdatePluginWidget()
                             tr("Authors: %1", nullptr, authors.size()).arg(authors.join(", ")));
 
     // Provider
-    meta << tr("%1, Interface: %2").arg(p.provider().name(), p.metaData().iid);
+    meta << tr("%1, Interface: %2").arg(p.provider->name(), p.metaData().iid);
 
     // Path
-    meta << p.path;
+    meta << p.path();
 
     // Add meta
     l = new QLabel(QString("<span style=\"font-size:9pt;color:#808080;\">%1</span>").arg(meta.join("<br>")));

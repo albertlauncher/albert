@@ -48,24 +48,26 @@ static QPixmap genericPixmap(int size, const QColor& bgcolor, const QColor& fgco
     return pixmap;
 }
 
-static QString implicit_qrc_scheme = ":";
-static QString explicit_qrc_scheme = "qrc:";
-static QString qfileiconprovider_scheme = "qfip:";
-static QString xdg_icon_lookup_scheme = "xdg:";
-static QString qstandardpixmap_scheme = "qsp:";
-static QString file_scheme = "file:";
-static QString generative_scheme = "gen:?"; //
 
 
 class IconProvider::Private
 {
     QFileIconProvider file_icon_provider;
+
 public:
     mutable std::unordered_map<QString, QPixmap> pixmap_cache;
     mutable std::shared_mutex mutex_;
 
     QPixmap getRawPixmap(const QString &urlstr, const QSize &requestedSize) const
     {
+        static QString implicit_qrc_scheme = ":";
+        static QString explicit_qrc_scheme = "qrc:";
+        static QString qfileiconprovider_scheme = "qfip:";
+        static QString xdg_icon_lookup_scheme = "xdg:";
+        static QString qstandardpixmap_scheme = "qsp:";
+        static QString file_scheme = "file:";
+        static QString generative_scheme = "gen:?";
+
         // https://doc.qt.io/qt-6/qresource.html
         if (urlstr.startsWith(implicit_qrc_scheme))
             return QPixmap(urlstr);
@@ -156,6 +158,7 @@ QPixmap IconProvider::getPixmap(const QString &urlstr, QSize *size, const QSize 
 
 void IconProvider::clearCache()
 {
+    DEBG << "Clearing icon cache";
     std::unique_lock lock(d->mutex_);
     d->pixmap_cache.clear();
 }

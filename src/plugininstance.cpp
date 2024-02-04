@@ -1,18 +1,30 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2023-2024 Manuel Schneider
 
 #include "albert/albert.h"
-#include "albert/extension.h"
 #include "albert/extension/pluginprovider/plugininstance.h"
+#include "albert/extension/pluginprovider/pluginloader.h"
 #include "albert/extension/pluginprovider/pluginmetadata.h"
-#include "plugininstanceprivate.h"
+#include "albert/extensionregistry.h"
+#include <QCoreApplication>
 #include <QDir>
+#include <QRegularExpression>
 #include <QSettings>
 using namespace albert;
+using namespace std;
+
+extern PluginLoader *instanciated_loader;
 
 
-PluginInstance::PluginInstance() : d(std::make_unique<PluginInstancePrivate>()) {}
+class PluginInstance::Private
+{
+public:
+    PluginLoader const * const loader{instanciated_loader};
+};
 
-PluginInstance::~PluginInstance() = default;
+
+PluginInstance::PluginInstance() : d(make_unique<Private>()) {}
+
+PluginInstance::~PluginInstance() {}
 
 QString PluginInstance::id() const
 { return d->loader->metaData().id; }
@@ -44,25 +56,23 @@ QDir albert::PluginInstance::configDir() const
 QDir albert::PluginInstance::dataDir() const
 { return make_dir(albert::dataLocation(), id()); }
 
-std::unique_ptr<QSettings> albert::PluginInstance::settings() const
+unique_ptr<QSettings> albert::PluginInstance::settings() const
 {
     auto s = albert::settings();
     s->beginGroup(id());
     return s;
 }
 
-std::unique_ptr<QSettings> albert::PluginInstance::state() const
+unique_ptr<QSettings> albert::PluginInstance::state() const
 {
     auto s = albert::state();
     s->beginGroup(id());
     return s;
 }
 
-void PluginInstance::initialize(ExtensionRegistry *) {}
+void PluginInstance::initialize(ExtensionRegistry&, map<QString,PluginInstance*>) {}
 
-void PluginInstance::finalize(ExtensionRegistry *) {}
-
-std::vector<Extension*> PluginInstance::extensions() { return {}; }
+void PluginInstance::finalize(ExtensionRegistry&) {}
 
 QWidget *PluginInstance::buildConfigWidget() { return nullptr; }
 

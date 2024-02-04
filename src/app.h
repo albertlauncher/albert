@@ -1,7 +1,6 @@
 // Copyright (c) 2023 Manuel Schneider
 
 #pragma once
-#include "albert/extension/frontend/frontend.h"
 #include "albert/extensionregistry.h"
 #include "appqueryhandler.h"
 #include "hotkey.h"
@@ -16,16 +15,20 @@
 #include "trayicon.h"
 #include <QNetworkAccessManager>
 #include <QPointer>
+namespace albert {
+class PluginLoader;
+class Frontend;
+}
 
 extern int main(int, char**);
 
 class App
 {
 public:
-    explicit App(const QStringList &additional_plugin_paths);
-    ~App();
+    explicit App(const QStringList &additional_plugin_paths, bool load_enabled);
 
     void initialize();
+    void finalize();
 
     QNetworkAccessManager network_manager;
     RPCServer rpc_server; // Check for other instances first
@@ -38,7 +41,7 @@ public:
     QPointer<SettingsWindow> settings_window;
     Hotkey hotkey;  // must be unwinded before frontend
     Telemetry telemetry;
-    QtPluginLoader *frontend_plugin;
+    albert::PluginLoader *frontend_plugin;
     albert::Frontend *frontend;
 
     AppQueryHandler app_query_handler;
@@ -50,7 +53,7 @@ public:
 
 private:
     void loadAnyFrontend();
-    QString loadFrontend(QtPluginLoader *loader);
+    QString loadFrontend(albert::PluginLoader *loader);
     void notifyVersionChange();
 
     friend int ::main(int, char**);

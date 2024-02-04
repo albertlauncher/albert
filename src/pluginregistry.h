@@ -1,41 +1,58 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
-#include "albert/extensionregistry.h"
 #include "albert/extensionwatcher.h"
+#include "plugin.h"
 #include <QObject>
+#include <QString>
 #include <map>
-#include <vector>
+#include <set>
 namespace albert {
-class PluginProvider;
+class ExtensionRegistry;
 class PluginLoader;
+class PluginMetaData;
+class PluginProvider;
 }
 
 class PluginRegistry : public QObject, public albert::ExtensionWatcher<albert::PluginProvider>
 {
     Q_OBJECT
+
 public:
-    PluginRegistry(albert::ExtensionRegistry&);
+
+    PluginRegistry(albert::ExtensionRegistry &extension_registry, bool load_enabled = true);
     ~PluginRegistry();
 
-    const std::map<QString, albert::PluginLoader*> &plugins() const;
+    const std::map<QString, Plugin> &plugins();
 
-    bool isEnabled(const QString &id) const;
-    void enable(const QString &id, bool enable = true);
-    void load(const QString &id, bool load = true);
+    /// Enables and loads a plugin and its dependencies
+    /// Asks the user for confirmation. Shows errors in message boxes.
+    void enable(const QString &id);
 
-    albert::ExtensionRegistry &extension_registry;
+    /// Disables and unloads a plugin and all plugins that depend on it
+    /// Asks the user for confirmation. Shows errors in message boxes.
+    void disable(const QString &id);
 
-protected:
+    /// Loads a plugin and all its dependencies
+    /// Asks the user for confirmation. Shows errors in message boxes.
+    void load(const QString &id);
+
+    /// Unloads a plugin and all plugins that depend on it
+    /// Asks the user for confirmation. Shows errors in message boxes.
+    void unload(const QString &id);
+
+private:
+
     void onAdd(albert::PluginProvider*) override;
     void onRem(albert::PluginProvider*) override;
 
-private:
-    std::map<QString, albert::PluginLoader*> registered_plugins_;
-    std::map<albert::PluginProvider*, std::vector<albert::PluginLoader*>> plugins_;
+    albert::ExtensionRegistry &extension_registry_;
+    std::set<albert::PluginProvider*> plugin_providers_;
+    std::map<QString, Plugin> registered_plugins_;
+    bool load_enabled_;
 
 signals:
-    void enabledChanged(const QString &id);
+
     void pluginsChanged();
 
 };

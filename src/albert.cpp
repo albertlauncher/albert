@@ -1,7 +1,8 @@
-// Copyright (c) 2022-2023 Manuel Schneider
+// Copyright (c) 2022-2024 Manuel Schneider
 
 #include "albert/albert.h"
 #include "albert/config.h"
+#include "albert/extension/frontend/frontend.h"
 #include "albert/logging.h"
 #include "albert/util/iconprovider.h"
 #include "app.h"
@@ -130,7 +131,8 @@ int main(int argc, char **argv)
     QCommandLineParser parser;
     auto opt_p = QCommandLineOption({"p", "plugin-dirs"}, "Set the plugin dirs to use. Comma separated.", "directory");
     auto opt_r = QCommandLineOption({"r", "report"}, "Print report and quit.");
-    parser.addOptions({opt_p, opt_r});
+    auto opt_n = QCommandLineOption({"n", "no-load"}, "Do not load enabled plugins.");
+    parser.addOptions({opt_p, opt_r, opt_n});
     parser.addPositionalArgument("command", "RPC command to send to the running instance (Check 'albert commands')", "[command [params...]]");
     parser.addVersionOption();
     parser.addHelpOption();
@@ -157,9 +159,12 @@ int main(int argc, char **argv)
 #if __has_include(<unistd.h>)
     UnixSignalHandler unix_signal_handler;
 #endif
-    app = new App(parser.value(opt_p).split(',', Qt::SkipEmptyParts));
+
+    app = new App(parser.value(opt_p).split(',', Qt::SkipEmptyParts),
+                  !parser.isSet(opt_n));
+
     QTimer::singleShot(0, qApp, [](){ app->initialize(); }); // Init with running eventloop
-    QObject::connect(qApp, &QApplication::aboutToQuit, [&]() { delete app; }); // Delete app _before_ loop exits
+    QObject::connect(qApp, &QApplication::aboutToQuit, [&]() { app->finalize(); delete app; }); // Delete app _before_ loop exits
 
     int return_value = qApp->exec();
     if (return_value == -1 && runDetachedProcess(qApp->arguments(), QDir::currentPath()))

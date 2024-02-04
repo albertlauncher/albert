@@ -1,6 +1,10 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2023-2024 Manuel Schneider
 
 #include "albert/albert.h"
+#include "albert/extension/frontend/frontend.h"
+#include "albert/extension/pluginprovider/plugininstance.h"
+#include "albert/extension/pluginprovider/pluginloader.h"
+#include "albert/extension/pluginprovider/pluginmetadata.h"
 #include "albert/logging.h"
 #include "app.h"
 #include "platform/platform.h"
@@ -16,8 +20,8 @@ static const char *CFG_FRONTEND_ID = "frontend";
 static const char *DEF_FRONTEND_ID = "qmlboxmodel";
 static App * app_instance = nullptr;
 
-App::App(const QStringList &additional_plugin_paths) :
-    plugin_registry(extension_registry),
+App::App(const QStringList &additional_plugin_paths, bool load_enabled) :
+    plugin_registry(extension_registry, load_enabled),
     query_engine(extension_registry),
     plugin_provider(additional_plugin_paths),
     settings_window(nullptr),
@@ -28,17 +32,6 @@ App::App(const QStringList &additional_plugin_paths) :
         qFatal("No multiple app instances allowed");
     else
         app_instance = this;
-}
-
-App::~App()
-{
-    delete settings_window.get();
-
-    // unload the frontend before plugins since it may have plugin objects in query
-    for (auto &plugin : plugin_provider.frontendPlugins())
-        plugin->loadUnregistered(&extension_registry, false);
-
-    extension_registry.remove(&plugin_provider);  // unloads plugins
 }
 
 void App::initialize()
@@ -54,10 +47,25 @@ void App::initialize()
 
     notifyVersionChange();
 
-    extension_registry.add(&plugin_provider);  // loads plugins
-    extension_registry.add(&app_query_handler);
-    extension_registry.add(&plugin_query_handler);
+    extension_registry.registerExtension(&app_query_handler);
+    extension_registry.registerExtension(&plugin_query_handler);
+    extension_registry.registerExtension(&plugin_provider);  // loads plugins
+}
 
+void App::finalize()
+{
+    delete settings_window.get();
+
+    // unload the frontend before plugins since it may have plugin objects in query
+    try {
+        frontend_plugin->unload();
+    } catch (const exception &e) {
+        WARN << e.what();
+    }
+
+    extension_registry.deregisterExtension(&plugin_provider);  // unloads plugins
+    extension_registry.deregisterExtension(&plugin_query_handler);
+    extension_registry.deregisterExtension(&app_query_handler);
 }
 
 App *App::instance() { return app_instance; }
@@ -92,19 +100,35 @@ void App::loadAnyFrontend()
     qFatal("Could not load any frontend.");
 }
 
-QString App::loadFrontend(QtPluginLoader *loader)
+
+QString App::loadFrontend(PluginLoader *loader)
 {
-    if (auto err = loader->loadUnregistered(&extension_registry); err.isNull()){
-        if ((frontend = dynamic_cast<Frontend*>(loader->instance()))){
-            frontend_plugin = loader;
-            frontend->setEngine(&query_engine);
-            return {};
-        } else {
-            loader->loadUnregistered(&extension_registry, false);
+    try {
+        loader->load();
+
+        extern PluginLoader *instanciated_loader;
+        instanciated_loader = loader;
+        auto * inst = loader->createInstance();
+
+        if (!inst)
+            return "Plugin loader returned null instance";
+
+        frontend = dynamic_cast<Frontend*>(loader->createInstance());
+
+        if (!frontend)
             return QString("Failed casting Plugin instance to albert::Frontend: %1").arg(loader->metaData().id);
-        }
-    } else
-        return err;
+
+        inst->initialize(extension_registry, {});
+        frontend_plugin = loader;
+
+        frontend->setEngine(&query_engine);
+
+        return {};
+    } catch (const exception &e) {
+        return QString::fromStdString(e.what());
+    } catch (...) {
+        return "Unknown exception";
+    }
 }
 
 void App::setFrontend(const QString &id)

@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2022-2024 Manuel Schneider
 
 #pragma once
 #include "albert/export.h"
@@ -21,9 +21,14 @@ namespace albert
 class ALBERT_EXPORT ExtensionRegistry : public QObject
 {
     Q_OBJECT
+
 public:
-    void add(Extension *e);  ///< Add extension to the registry
-    void remove(Extension *e);  ///< Remove extension from the registry
+
+    /// Add extension to the registry
+    void registerExtension(Extension*);
+
+    /// Remove extension from the registry
+    void deregisterExtension(Extension*);
 
     /// Get map of all registered extensions
     const std::map<QString,Extension*> &extensions();
@@ -49,6 +54,7 @@ public:
     }
 
 signals:
+
     /// Emitted when an extension has been registered.
     void added(Extension*);
 
@@ -56,6 +62,7 @@ signals:
     void removed(Extension*);
 
 private:
+
     std::map<QString,Extension*> extensions_;
 };
 
