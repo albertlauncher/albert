@@ -14,7 +14,7 @@ using namespace albert;
 
 static QString fetchLocalizedMetadata(const QJsonObject &json ,const QString &key)
 {
-    auto locale = QLocale::system();
+    auto locale = QLocale();
 
     auto k = QStringLiteral("%1[%2]").arg(key, locale.name());
     if (auto v = json[k].toString(); !v.isEmpty())

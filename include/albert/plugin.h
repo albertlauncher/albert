@@ -107,15 +107,7 @@ namespace albert::plugin
 /// #ALBERT_PLUGIN_PROPERTY, #ALBERT_PLUGIN_PROPERTY_NONTRIVIAL and
 /// #ALBERT_PLUGIN_PROPERTY_CONNECT.
 ///
-class ALBERT_EXPORT Plugin : public QObject, public PluginInstance
-{
-public:
-    Plugin();
-    ~Plugin();
-private:
-    class Private;
-    std::unique_ptr<Private> d;
-};
+class ALBERT_EXPORT Plugin : public QObject, public PluginInstance {};
 
 ///
 /// Convenience base class for extension plugins.

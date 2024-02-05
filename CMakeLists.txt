@@ -138,14 +138,6 @@ target_link_libraries(${TARGET_LIB}
         qhotkey
 )
 
-get_target_property(TARGET_LIB_SOURCES ${TARGET_LIB} SOURCES)
-qt_add_translations(${TARGET_LIB}
-    TS_FILES
-        i18n/albert_de.ts
-    SOURCES
-        ${TARGET_LIB_SOURCES}
-)
-
 set_target_properties(${TARGET_LIB} PROPERTIES
     #INSTALL_RPATH "$ORIGIN"
     CXX_VISIBILITY_PRESET hidden
@@ -160,6 +152,21 @@ set_target_properties(${TARGET_LIB} PROPERTIES
     # NO_SONAME true # do _not_ add. linkers other that ldd will make troubles using non relative paths
     VERSION ${PROJECT_VERSION}
     VISIBILITY_INLINES_HIDDEN 1
+)
+
+# Internationalization
+
+file(GLOB TS_FILES i18n/*.ts)
+
+qt_add_lrelease(${TARGET_LIB}
+    TS_FILES ${TS_FILES}
+    QM_FILES_OUTPUT_VARIABLE QM_FILES
+)
+
+qt_add_resources(${TARGET_LIB} "i18n"
+    PREFIX "/i18n"
+    BASE "${CMAKE_CURRENT_BINARY_DIR}"
+    FILES "${QM_FILES}"
 )
 
 ### Platform specifics ########################################################
