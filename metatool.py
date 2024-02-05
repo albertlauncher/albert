@@ -81,6 +81,14 @@ def test_run(args):
             print(e)
             sys.exit(1)
 
+def lupdate(args):
+    i18n_dir = Path(args.root)/'i18n'
+    base = ['lupdate', 'src', 'include', 'plugins', '-extensions', 'h,cpp,mm,ui', *args.unknown]
+
+    for commandline in [base + ['-pluralonly', '-ts', str(i18n_dir/'albert.ts')],
+                        base + ['-ts', *[str(p) for p in i18n_dir.glob('albert_*.ts')]]]:
+        print('\033[32m' + ' '.join(commandline) + '\033[0m')
+        run(commandline, cwd=args.root)
 
 def release(args):
     root = Path(args.root)
@@ -184,7 +192,11 @@ def main():
     sp.add_argument('version', type=str, help="The semantic version.")
     sp.set_defaults(func=release)
 
-    args = p.parse_args()
+    sp = sps.add_parser('lupdate', help="Update the translation files.")
+    sp.set_defaults(func=lupdate)
+
+    args, unknown = p.parse_known_args()
+    args.unknown = unknown
     if not hasattr(args, "func"):
         p.print_help()
         sys.exit(1)
