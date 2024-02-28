@@ -10,7 +10,6 @@ class NotificationPrivate;
 
 namespace albert
 {
-class Frontend;
 
 /// The global QNetworkAccessManager.
 ALBERT_EXPORT QNetworkAccessManager *networkManager();

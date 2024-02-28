@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
 #include <QString>
@@ -6,7 +6,7 @@
 class TriggerQueryHandlerPrivate
 {
 public:
-    QString trigger;
+    QString user_trigger;
 };
 
 

@@ -10,6 +10,7 @@ QHash<int, QByteArray> QmlRoleNames = {
     {(int)ItemRoles::TextRole, "itemText"},
     {(int)ItemRoles::SubTextRole, "itemSubText"},
     {(int)ItemRoles::InputActionRole, "itemInputAction"},
-    {(int)ItemRoles::IconUrlsRole, "itemIconUrls"}
+    {(int)ItemRoles::IconUrlsRole, "itemIconUrls"},
+    {(int)ItemRoles::ActionsListRole, "itemActionsList"}
 };
 }

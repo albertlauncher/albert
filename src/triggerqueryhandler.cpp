@@ -8,7 +8,7 @@ TriggerQueryHandler::TriggerQueryHandler() : d(new TriggerQueryHandlerPrivate) {
 
 TriggerQueryHandler::~TriggerQueryHandler() = default;
 
-QString TriggerQueryHandler::trigger() const { return d->trigger; }
+QString TriggerQueryHandler::trigger() const { return d->user_trigger; }
 
 QString TriggerQueryHandler::synopsis() const { return {}; }
 

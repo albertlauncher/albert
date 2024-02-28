@@ -24,19 +24,41 @@ QVariant ItemsModel::data(const QModelIndex &index, int role) const
         const auto &[extension, item] = items[index.row()];
 
         switch (role) {
-            case (int)ItemRoles::TextRole:{
+            case (int)ItemRoles::TextRole:
+            {
                 QString text = item->text();
                 text.replace('\n', ' ');
                 return text;
             }
-            case (int)ItemRoles::SubTextRole:{
+            case (int)ItemRoles::SubTextRole:
+            {
                 QString text = item->subtext();
                 text.replace('\n', ' ');
                 return text;
             }
-            case Qt::ToolTipRole: return QString("%1\n%2").arg(item->text(), item->subtext());
-            case (int)ItemRoles::InputActionRole: return item->inputActionText();
-            case (int)ItemRoles::IconUrlsRole: return item->iconUrls();
+            case Qt::ToolTipRole:
+                return QString("%1\n%2").arg(item->text(), item->subtext());
+
+            case (int)ItemRoles::InputActionRole:
+                return item->inputActionText();
+
+            case (int)ItemRoles::IconUrlsRole:
+                return item->iconUrls();
+
+            case (int)ItemRoles::ActionsListRole:
+            {
+                if (auto it = actionsCache.find(make_pair(extension, item.get()));
+                    it != actionsCache.end())
+                    return it->second;
+
+                QStringList l;
+                for (const auto &a : item->actions())
+                    l << a.text;
+
+                actionsCache.emplace(make_pair(extension, item.get()), l);
+
+                return l;
+            }
         }
     }
     return {};
@@ -44,12 +66,12 @@ QVariant ItemsModel::data(const QModelIndex &index, int role) const
 
 QHash<int, QByteArray> ItemsModel::roleNames() const { return albert::QmlRoleNames; }
 
-void ItemsModel::add(Extension *extension, shared_ptr<Item> &&item)
-{
-    beginInsertRows(QModelIndex(), (int)items.size(), (int)items.size());
-    items.emplace_back(extension, ::move(item));
-    endInsertRows();
-}
+// void ItemsModel::add(Extension *extension, shared_ptr<Item> &&item)
+// {
+//     beginInsertRows(QModelIndex(), (int)items.size(), (int)items.size());
+//     items.emplace_back(extension, ::move(item));
+//     endInsertRows();
+// }
 
 void ItemsModel::add(Extension *extension, vector<shared_ptr<Item>> &&itemvec)
 {
@@ -63,24 +85,24 @@ void ItemsModel::add(Extension *extension, vector<shared_ptr<Item>> &&itemvec)
     endInsertRows();
 }
 
-void ItemsModel::add(Extension *extension, const shared_ptr<Item> &item)
-{
-    beginInsertRows(QModelIndex(), (int)items.size(), (int)items.size());
-    items.emplace_back(extension, item);
-    endInsertRows();
-}
+// void ItemsModel::add(Extension *extension, const shared_ptr<Item> &item)
+// {
+//     beginInsertRows(QModelIndex(), (int)items.size(), (int)items.size());
+//     items.emplace_back(extension, item);
+//     endInsertRows();
+// }
 
-void ItemsModel::add(Extension *extension, const vector<shared_ptr<Item>> &itemvec)
-{
-    if (itemvec.empty())
-        return;
+// void ItemsModel::add(Extension *extension, const vector<shared_ptr<Item>> &itemvec)
+// {
+//     if (itemvec.empty())
+//         return;
 
-    beginInsertRows(QModelIndex(), (int)items.size(), (int)(items.size()+itemvec.size()-1));
-    items.reserve(items.size()+itemvec.size());
-    for (auto &item : itemvec)
-        items.emplace_back(extension, item);
-    endInsertRows();
-}
+//     beginInsertRows(QModelIndex(), (int)items.size(), (int)(items.size()+itemvec.size()-1));
+//     items.reserve(items.size()+itemvec.size());
+//     for (auto &item : itemvec)
+//         items.emplace_back(extension, item);
+//     endInsertRows();
+// }
 
 void ItemsModel::add(vector<pair<Extension*,RankItem>>::iterator begin,
                      vector<pair<Extension*,RankItem>>::iterator end)

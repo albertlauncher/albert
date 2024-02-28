@@ -1,10 +1,10 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2024 Manuel Schneider
 
 #pragma once
 #include "albert/extension/frontend/query.h"
-#include "albert/extension/queryhandler/triggerqueryhandler.h"
-#include "albert/extension/queryhandler/globalqueryhandler.h"
 #include "albert/extension/queryhandler/fallbackprovider.h"
+#include "albert/extension/queryhandler/globalqueryhandler.h"
+#include "albert/extension/queryhandler/triggerqueryhandler.h"
 #include "itemsmodel.h"
 #include <QFutureWatcher>
 namespace albert { class Item; }
@@ -12,43 +12,44 @@ namespace albert { class Item; }
 class QueryBase : public albert::Query
 {
 public:
+
     explicit QueryBase(std::vector<albert::FallbackHandler*> fallback_handlers, QString string);
 
-    void run() override final;
-    void cancel() override final;
+    void run();
+    void cancel();
+
     bool isFinished() const override final;
     bool isTriggered() const override final;
 
     QAbstractListModel *matches() override final;
     QAbstractListModel *fallbacks() override final;
-    QAbstractListModel *matchActions(uint item) const override final;
-    QAbstractListModel *fallbackActions(uint item) const override final;
 
     void activateMatch(uint item, uint action) override final;
     void activateFallback(uint item, uint action) override final;
 
 protected:
+
+    void runFallbackHandlers();
     virtual void run_() noexcept = 0;
 
+    static uint query_count;
     const uint query_id;
-    const QString string_;
     bool valid_ = true;
+    const QString string_;
+    std::vector<albert::FallbackHandler*> fallback_handlers_;
+    ItemsModel fallbacks_;
     ItemsModel matches_;
     QFutureWatcher<void> future_watcher_;
 
-private:
-    void runFallbackHandlers();
-
-    std::vector<albert::FallbackHandler*> fallback_handlers_;
-    ItemsModel fallbacks_;
-    static uint query_count;
 };
 
 
-class TriggerQuery final : public QueryBase,
-                           public albert::TriggerQueryHandler::TriggerQuery
+class TriggerQuery final : public QueryBase, public albert::TriggerQueryHandler::TriggerQuery
 {
+    Q_OBJECT
+
 public:
+
     TriggerQuery(std::vector<albert::FallbackHandler*> &&fallback_handlers,
                           albert::TriggerQueryHandler *query_handler,
                           QString string, QString trigger);
@@ -67,16 +68,22 @@ public:
     void add(std::vector<std::shared_ptr<albert::Item>> &&items) override;
 
 private:
+
+    Q_INVOKABLE void collectResults();
+
+    std::vector<std::shared_ptr<albert::Item>> results_buffer_;
+    std::mutex results_buffer_mutex_;
     albert::TriggerQueryHandler *query_handler_;
     QString trigger_;
     QString synopsis_;
+
 };
 
 
-class GlobalQuery final : public QueryBase,
-                          public albert::GlobalQueryHandler::GlobalQuery
+class GlobalQuery final : public QueryBase, public albert::GlobalQueryHandler::GlobalQuery
 {
 public:
+
     GlobalQuery(std::vector<albert::FallbackHandler*> &&fallback_handlers,
                          std::vector<albert::GlobalQueryHandler*> &&query_handlers,
                          QString string);
@@ -90,5 +97,7 @@ public:
     QString synopsis() const override { return {}; }
 
 private:
+
     std::vector<albert::GlobalQueryHandler*> query_handlers_;
+
 };

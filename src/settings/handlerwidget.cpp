@@ -33,5 +33,3 @@ HandlerWidget::HandlerWidget(QueryEngine &qe, ExtensionRegistry &er, QWidget *pa
                 return;
             }
 }
-
-HandlerWidget::~HandlerWidget() = default;

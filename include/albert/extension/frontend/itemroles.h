@@ -13,7 +13,8 @@ enum class ALBERT_EXPORT ItemRoles
     TextRole = Qt::DisplayRole,  // QString
     SubTextRole = Qt::UserRole,  // QString
     InputActionRole,  // QString
-    IconUrlsRole,  // Urls for icon lookup
+    IconUrlsRole,  // QStringList, Urls for icon lookup
+    ActionsListRole,  // QStringList, List of action names
 };
 
 }

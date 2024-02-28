@@ -17,7 +17,7 @@ using namespace std;
 
 static const char *STATE_LAST_USED_VERSION = "last_used_version";
 static const char *CFG_FRONTEND_ID = "frontend";
-static const char *DEF_FRONTEND_ID = "qmlboxmodel";
+static const char *DEF_FRONTEND_ID = "widgetsboxmodel";
 static App * app_instance = nullptr;
 
 App::App(const QStringList &additional_plugin_paths, bool load_enabled) :
@@ -58,6 +58,7 @@ void App::finalize()
 
     // unload the frontend before plugins since it may have plugin objects in query
     try {
+        dynamic_cast<PluginInstance*>(frontend)->finalize(extension_registry);
         frontend_plugin->unload();
     } catch (const exception &e) {
         WARN << e.what();
@@ -121,8 +122,19 @@ QString App::loadFrontend(PluginLoader *loader)
         inst->initialize(extension_registry, {});
         frontend_plugin = loader;
 
-        frontend->setEngine(&query_engine);
+        QObject::connect(frontend, &Frontend::visibleChanged, frontend, [this](bool v){
+            session.reset();  // make sure no multiple sessions are alive
+            if(v)
+                session = make_unique<Session>(query_engine, *frontend);
+        });
 
+        QObject::connect(&query_engine, &QueryEngine::handlersChanged, &query_engine, [this]{
+            if (frontend->isVisible())
+            {
+                session.reset();
+                session = make_unique<Session>(query_engine, *frontend);
+            }
+        });
         return {};
     } catch (const exception &e) {
         return QString::fromStdString(e.what());

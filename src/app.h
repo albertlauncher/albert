@@ -9,6 +9,7 @@
 #include "qtpluginprovider.h"
 #include "queryengine.h"
 #include "rpcserver.h"
+#include "session.h"
 #include "settings/settingswindow.h"
 #include "telemetry.h"
 #include "terminalprovider.h"
@@ -22,8 +23,9 @@ class Frontend;
 
 extern int main(int, char**);
 
-class App
+class App : QObject
 {
+    Q_OBJECT
 public:
     explicit App(const QStringList &additional_plugin_paths, bool load_enabled);
 
@@ -43,6 +45,7 @@ public:
     Telemetry telemetry;
     albert::PluginLoader *frontend_plugin;
     albert::Frontend *frontend;
+    std::unique_ptr<Session> session;
 
     AppQueryHandler app_query_handler;
     PluginQueryHandler plugin_query_handler;

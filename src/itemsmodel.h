@@ -4,6 +4,7 @@
 #include <QAbstractListModel>
 #include <memory>
 #include <vector>
+#include <map>
 class QueryBase;
 namespace albert{
 class Extension;
@@ -20,9 +21,6 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role) const override;
 
-    void add(albert::Extension*, const std::shared_ptr<albert::Item>&);
-    void add(albert::Extension*, std::shared_ptr<albert::Item>&&);
-    void add(albert::Extension*, const std::vector<std::shared_ptr<albert::Item>>&);
     void add(albert::Extension*, std::vector<std::shared_ptr<albert::Item>>&&);
     void add(std::vector<std::pair<albert::Extension*,albert::RankItem>>::iterator begin,
              std::vector<std::pair<albert::Extension*,albert::RankItem>>::iterator end);
@@ -33,4 +31,5 @@ public:
 
 private:
     std::vector<std::pair<albert::Extension*, std::shared_ptr<albert::Item>>> items;
+    mutable std::map<std::pair<albert::Extension*,albert::Item*>, QStringList> actionsCache;
 };

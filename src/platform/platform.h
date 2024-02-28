@@ -1,7 +1,6 @@
 // Copyright (c) 2023 Manuel Schneider
 #pragma once
 #include <QString>
-namespace albert { class Frontend; }
 
 namespace platform
 {

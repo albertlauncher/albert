@@ -63,6 +63,10 @@ QVariant HandlerModel::data(const QModelIndex &idx, int role) const
             } else if (role == Qt::ToolTipRole) {
                 if (!thandler->allowTriggerRemap())
                     return tr("This extension does not allow trigger remapping.");
+                else if (auto it = engine.activeTriggerHandlers().find(thandler->trigger());
+                         it != engine.activeTriggerHandlers().end() && it->second != thandler)
+                    return tr("Trigger '%1' is reserved for '%2'.")
+                        .arg(thandler->trigger(), it->second->name());
 
             } else if (role == Qt::FontRole && !thandler->allowTriggerRemap()) {
                 QFont f;
@@ -70,8 +74,11 @@ QVariant HandlerModel::data(const QModelIndex &idx, int role) const
                 return f;
 
             } else if (role == Qt::ForegroundRole) {
-                if (!engine.isActive(thandler))
+                if (!engine.isEnabled(thandler))
                     return QColor(Qt::gray);
+                else if (auto it = engine.activeTriggerHandlers().find(thandler->trigger());
+                         it == engine.activeTriggerHandlers().end() || it->second != thandler)
+                    return QColor(Qt::red);
             }
         }
 
@@ -137,43 +144,64 @@ bool HandlerModel::setData(const QModelIndex &idx, const QVariant &value, int ro
 {
     auto &handler = handlers[idx.row()];
 
-    if (idx.column() == (int) Column::Trigger) {
-        if (auto *thandler = dynamic_cast<TriggerQueryHandler*>(handler); thandler){
-            if (role == Qt::EditRole) {
-                if (auto err = engine.setTrigger(thandler, value.toString()); !err.isNull())
-                    QMessageBox::warning(nullptr, qApp->applicationName(), err);
-                emit dataChanged(index(idx.row(), idx.column()+1), idx, {Qt::DisplayRole});
-                return true;
+    if (idx.column() == (int) Column::Trigger)
+    {
+        if (auto *thandler = dynamic_cast<TriggerQueryHandler*>(handler); thandler)
+        {
+            if (role == Qt::EditRole)
+            {
+                if (const auto it = engine.activeTriggerHandlers().find(value.toString());
+                    it != engine.activeTriggerHandlers().end() && it->second != thandler)
+                    QMessageBox::warning(nullptr, qApp->applicationName(),
+                                         tr("Trigger is already registered by '%1'").arg(it->second->name()));
+                else
+                {
+                    engine.setTrigger(thandler, value.toString());
+                    emit dataChanged(index(idx.row(), idx.column()+1), idx, {Qt::DisplayRole});
+                    return true;
+                }
             }
         }
-
-    } else if (idx.column() == (int)Column::THandler) {
-        if (auto *thandler = dynamic_cast<TriggerQueryHandler*>(handler); thandler){
-            if (role == Qt::CheckStateRole) {
-                if (auto err = engine.setEnabled(thandler, value == Qt::Checked); !err.isNull())
-                    QMessageBox::warning(nullptr, qApp->applicationName(), err);
+    }
+    else if (idx.column() == (int)Column::THandler)
+    {
+        if (auto *thandler = dynamic_cast<TriggerQueryHandler*>(handler); thandler)
+        {
+            if (role == Qt::CheckStateRole)
+            {
+                engine.setEnabled(thandler, value == Qt::Checked);
                 emit dataChanged(index(idx.row(), idx.column()-1), idx, {Qt::DisplayRole});
                 return true;
             }
         }
 
-    } else if (idx.column() == (int) Column::GHandler) {
-        if (auto *ghandler = dynamic_cast<GlobalQueryHandler*>(handler); ghandler){
-            if (role == Qt::CheckStateRole) {
+    }
+    else if (idx.column() == (int) Column::GHandler)
+    {
+        if (auto *ghandler = dynamic_cast<GlobalQueryHandler*>(handler); ghandler)
+        {
+            if (role == Qt::CheckStateRole)
+            {
                 engine.setEnabled(ghandler, value == Qt::Checked);
                 return true;
             }
         }
 
-    } else if (idx.column() == (int) Column::FHandler) {
-        if (auto *fhandler = dynamic_cast<FallbackHandler*>(handler); fhandler){
-            if (role == Qt::CheckStateRole) {
+    }
+    else if (idx.column() == (int) Column::FHandler)
+    {
+        if (auto *fhandler = dynamic_cast<FallbackHandler*>(handler); fhandler)
+        {
+            if (role == Qt::CheckStateRole)
+            {
                 engine.setEnabled(fhandler, value == Qt::Checked);
                 return true;
             }
         }
 
-    } else if (idx.column() == (int) Column::Fuzzy) {
+    }
+    else if (idx.column() == (int) Column::Fuzzy)
+    {
         if (auto *thandler = dynamic_cast<TriggerQueryHandler*>(handler); thandler){
             if (role == Qt::CheckStateRole) {
                 engine.setFuzzy(thandler, value == Qt::Checked);

@@ -5,9 +5,9 @@
 #include "query.h"
 #include "usagedatabase.h"
 #include <QtConcurrent>
-using namespace std;
 using namespace albert;
-using namespace chrono;
+using namespace std::chrono;
+using namespace std;
 
 Q_LOGGING_CATEGORY(timeCat, "albert.query_runtimes")
 
@@ -15,10 +15,11 @@ uint QueryBase::query_count = 0;
 
 QueryBase::QueryBase(vector<FallbackHandler*> fallback_handlers, QString string):
     query_id(query_count++),
+    valid_(true),
     string_(::move(string)),
-    matches_(this),  // Important for qml ownership determination
     fallback_handlers_(::move(fallback_handlers)),
-    fallbacks_(this)  // Important for qml ownership determination
+    fallbacks_(this),  // Important for qml ownership determination
+    matches_(this)  // Important for qml ownership determination
 {
     connect(&future_watcher_, &decltype(future_watcher_)::finished, this, &QueryBase::finished);
 }
@@ -31,7 +32,7 @@ void QueryBase::run()
             auto tp = system_clock::now();
             run_();
             qCDebug(timeCat,).noquote()
-                << QStringLiteral("\x1b[38;5;33m│%1 ms│ #%2 TOTAL\x1b[0m")
+                << QStringLiteral("\x1b[38;5;33m│%1 ms│ ------- │ ---- │ #%2 TOTAL\x1b[0m")
                        .arg(duration_cast<milliseconds>(system_clock::now() - tp).count(), 6)
                        .arg(query_id);
         }
@@ -50,10 +51,6 @@ bool QueryBase::isTriggered() const { return !trigger().isEmpty(); }
 QAbstractListModel *QueryBase::matches() { return &matches_; }
 
 QAbstractListModel *QueryBase::fallbacks() { return &fallbacks_; }
-
-QAbstractListModel *QueryBase::matchActions(uint i) const { return matches_.buildActionsModel(i); }
-
-QAbstractListModel *QueryBase::fallbackActions(uint i) const { return fallbacks_.buildActionsModel(i); }
 
 void QueryBase::activateMatch(uint i, uint a) { matches_.activate(this, i, a); }
 
@@ -88,6 +85,8 @@ TriggerQuery::~TriggerQuery()
     cancel();
     if (!isFinished()) {
         WARN << QString("Busy wait on query: #%1").arg(query_id);
+        // there may be some queued collectResults calls
+        QCoreApplication::processEvents();
         future_watcher_.waitForFinished();
     }
     DEBG << QString("Query deleted. [#%1 '%2']").arg(query_id).arg(string());
@@ -107,7 +106,7 @@ void TriggerQuery::run_() noexcept
         auto tp = system_clock::now();
         query_handler_->handleTriggerQuery(this);
         qCDebug(timeCat,).noquote()
-            << QStringLiteral("\x1b[38;5;33m│%1 ms│%2│ #%3 TRIGGER '%4' '%5' \x1b[0m")
+            << QStringLiteral("\x1b[38;5;33m│%1 ms│ TRIGGER |%2│ #%3  '%4' '%5' \x1b[0m")
                    .arg(duration_cast<milliseconds>(system_clock::now() - tp).count(), 6)
                    .arg(matches_.rowCount(), 6)
                    .arg(query_id)
@@ -121,13 +120,53 @@ void TriggerQuery::run_() noexcept
     }
 }
 
-void TriggerQuery::add(const shared_ptr<Item> &item) { matches_.add(query_handler_, item); }
+void TriggerQuery::add(const shared_ptr<Item> &item)
+{
+    unique_lock lock(results_buffer_mutex_);
+    results_buffer_.emplace_back(item);
+    if (valid_)
+        QMetaObject::invokeMethod(this, "collectResults", Qt::QueuedConnection);
+}
 
-void TriggerQuery::add(shared_ptr<Item> &&item) { matches_.add(query_handler_, ::move(item)); }
+void TriggerQuery::add(shared_ptr<Item> &&item)
+{
+    unique_lock lock(results_buffer_mutex_);
+    results_buffer_.emplace_back(::move(item));
+    if (valid_)
+        QMetaObject::invokeMethod(this, "collectResults", Qt::QueuedConnection);
+}
 
-void TriggerQuery::add(const vector<shared_ptr<Item>> &items) { matches_.add(query_handler_, items); }
+void TriggerQuery::add(const vector<shared_ptr<Item>> &items)
+{
+    unique_lock lock(results_buffer_mutex_);
+    results_buffer_.insert(results_buffer_.end(), items.begin(), items.end());
+    if (valid_)
+        QMetaObject::invokeMethod(this, "collectResults", Qt::QueuedConnection);
+}
 
-void TriggerQuery::add(vector<shared_ptr<Item>> &&items) { matches_.add(query_handler_, ::move(items)); }
+void TriggerQuery::add(vector<shared_ptr<Item>> &&items)
+{
+    unique_lock lock(results_buffer_mutex_);
+    results_buffer_.insert(results_buffer_.end(),
+                           make_move_iterator(items.begin()),
+                           make_move_iterator(items.end()));
+    if (valid_)
+        QMetaObject::invokeMethod(this, "collectResults", Qt::QueuedConnection);
+}
+
+void TriggerQuery::collectResults()
+{
+    // Rationale:
+    // Queued signals from other threads may fire multple times which
+    // messes up the frontend state machines. So we collect the results in
+    // the main thread using a buffer.
+    unique_lock lock(results_buffer_mutex_);
+    if (!results_buffer_.empty())
+    {
+        matches_.add(query_handler_, ::move(results_buffer_));
+        results_buffer_.clear();
+    }
+}
 
 // ////////////////////////////////////////////////////////////////////////////
 
