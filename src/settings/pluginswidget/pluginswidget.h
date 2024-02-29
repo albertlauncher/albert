@@ -11,13 +11,16 @@ class PluginRegistry;
 class PluginsWidget final : public QWidget
 {
     Q_OBJECT
+
 public:
+
     PluginsWidget(PluginRegistry&);
     ~PluginsWidget();
 
     void tryShowPluginSettings(QString);
 
 private:
+
     void onUpdatePluginWidget();
 
     std::unique_ptr<PluginsModel> model_;

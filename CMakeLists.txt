@@ -76,8 +76,11 @@ file(GLOB LIB_SRC
     src/*.cpp
     src/plugin/*
     src/platform/*.h
-    src/settings/*.h
-    src/settings/*.cpp
+    src/settings/*
+    src/settings/querywidget/*.h
+    src/settings/querywidget/*.cpp
+    src/settings/pluginswidget/*.h
+    src/settings/pluginswidget/*.cpp
 )
 
 file(GLOB_RECURSE LIB_SRC_PLATFORM

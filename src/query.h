@@ -13,7 +13,9 @@ class QueryBase : public albert::Query
 {
 public:
 
-    explicit QueryBase(std::vector<albert::FallbackHandler*> fallback_handlers, QString string);
+    explicit QueryBase(QueryEngine *e,
+                       std::vector<albert::FallbackHandler*> fallback_handlers,
+                       QString string);
 
     void run();
     void cancel();
@@ -32,6 +34,7 @@ protected:
     void runFallbackHandlers();
     virtual void run_() noexcept = 0;
 
+    QueryEngine *query_engine_;
     static uint query_count;
     const uint query_id;
     bool valid_ = true;
@@ -50,9 +53,10 @@ class TriggerQuery final : public QueryBase, public albert::TriggerQueryHandler:
 
 public:
 
-    TriggerQuery(std::vector<albert::FallbackHandler*> &&fallback_handlers,
-                          albert::TriggerQueryHandler *query_handler,
-                          QString string, QString trigger);
+    TriggerQuery(QueryEngine *e,
+                 std::vector<albert::FallbackHandler*> &&fallback_handlers,
+                 albert::TriggerQueryHandler *query_handler,
+                 QString string, QString trigger);
     ~TriggerQuery() override;
 
     void run_() noexcept override;
@@ -84,9 +88,10 @@ class GlobalQuery final : public QueryBase, public albert::GlobalQueryHandler::G
 {
 public:
 
-    GlobalQuery(std::vector<albert::FallbackHandler*> &&fallback_handlers,
-                         std::vector<albert::GlobalQueryHandler*> &&query_handlers,
-                         QString string);
+    GlobalQuery(QueryEngine *e,
+                std::vector<albert::FallbackHandler*> &&fallback_handlers,
+                std::vector<albert::GlobalQueryHandler*> &&query_handlers,
+                QString string);
     ~GlobalQuery() override;
 
     void run_() noexcept override;

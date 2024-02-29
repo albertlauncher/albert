@@ -32,12 +32,12 @@ public:
     std::map<QString, albert::TriggerQueryHandler*> triggerHandlers();
     const std::map<QString, albert::TriggerQueryHandler*> &activeTriggerHandlers();
 
-    bool isEnabled(albert::TriggerQueryHandler*) const;
+    bool isEnabled(const albert::TriggerQueryHandler*) const;
     void setEnabled(albert::TriggerQueryHandler*, bool = true);
 
     void setTrigger(albert::TriggerQueryHandler*, const QString&);
 
-    bool fuzzy(albert::TriggerQueryHandler*) const;
+    bool fuzzy(const albert::TriggerQueryHandler*) const;
     void setFuzzy(albert::TriggerQueryHandler*, bool);
 
     //
@@ -46,7 +46,7 @@ public:
 
     std::map<QString, albert::GlobalQueryHandler*> globalHandlers();
 
-    bool isEnabled(albert::GlobalQueryHandler*) const;
+    bool isEnabled(const albert::GlobalQueryHandler*) const;
     void setEnabled(albert::GlobalQueryHandler*, bool = true);
 
     //
@@ -58,12 +58,14 @@ public:
     std::map<std::pair<QString, QString>, int> fallbackOrder() const;
     void setFallbackOrder(std::map<std::pair<QString, QString>, int>);
 
-    bool isEnabled(albert::FallbackHandler*) const;
+    bool isEnabled(const albert::FallbackHandler*) const;
     void setEnabled(albert::FallbackHandler*, bool = true);
 
 private:
 
     void updateActiveTriggers();
+    void saveFallbackOrder() const;
+    void loadFallbackOrder();
 
     void onAdd(albert::TriggerQueryHandler*) override;
     void onRem(albert::TriggerQueryHandler*) override;
@@ -78,6 +80,7 @@ private:
     std::map<QString, albert::TriggerQueryHandler*> active_triggers_;
     std::map<QString, albert::GlobalQueryHandler*>  enabled_global_handlers_;
     std::map<QString, albert::FallbackHandler*> enabled_fallback_handlers_;
+    std::map<std::pair<QString, QString>, int> fallback_order_;
 
 signals:
 

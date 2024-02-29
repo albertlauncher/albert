@@ -6,6 +6,8 @@
 #include <memory>
 class App;
 class PluginsWidget;
+class HandlerWidget;
+class QueryWidget;
 
 class SettingsWindow final : public QWidget
 {
@@ -21,11 +23,11 @@ private:
     void init_tab_general_trayIcon(App &app);
     void init_tab_general_frontends(App &app);
     void init_tab_general_terminals(App &app);
-    void init_tab_general_search(App &app);
     void insert_tab_about();
 
     void keyPressEvent(QKeyEvent * event) override;
 
     Ui::SettingsWindow ui;
     std::unique_ptr<PluginsWidget> plugin_widget;
+    std::unique_ptr<QueryWidget> query_widget;
 };

@@ -1,13 +1,13 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
 #include "albert/extension/frontend/frontend.h"
+#include "albert/extension/pluginprovider/pluginloader.h"
+#include "albert/extension/pluginprovider/pluginmetadata.h"
 #include "app.h"
-#include "handlerwidget.h"
-#include "pluginswidget.h"
-#include "qtpluginloader.h"
+#include "pluginswidget/pluginswidget.h"
+#include "querywidget/querywidget.h"
 #include "settingswindow.h"
 #include "trayicon.h"
-#include "usagedatabase.h"
 #include <QCloseEvent>
 #include <QDesktopServices>
 #include <QDir>
@@ -50,7 +50,9 @@ public:
 
 
 SettingsWindow::SettingsWindow(App &app):
-    ui(), plugin_widget(new PluginsWidget(app.plugin_registry))
+    ui(),
+    plugin_widget(new PluginsWidget(app.plugin_registry)),
+    query_widget(new QueryWidget(app.query_engine))
 {
     ui.setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -61,11 +63,10 @@ SettingsWindow::SettingsWindow(App &app):
     init_tab_general_trayIcon(app);
     init_tab_general_frontends(app);
     init_tab_general_terminals(app);
-    init_tab_general_search(app);
 
     ui.tabs->insertTab(ui.tabs->count(), app.frontend->createFrontendConfigWidget(), tr("Window"));
-    ui.tabs->insertTab(ui.tabs->count(), new HandlerWidget(app.query_engine, app.extension_registry), tr("Query"));
     ui.tabs->insertTab(ui.tabs->count(), plugin_widget.get(), tr("Plugins"));
+    ui.tabs->insertTab(ui.tabs->count(), query_widget.get(), tr("Query"));
 
     insert_tab_about();
 
@@ -109,21 +110,6 @@ void SettingsWindow::init_tab_general_terminals(App &app)
 
     connect(ui.comboBox_term, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, [&app](int index){ app.terminal_provider.setTerminal(index); });
-}
-
-void SettingsWindow::init_tab_general_search(App &app)
-{
-    ui.slider_decay->setValue((int)(UsageHistory::memoryDecay() * 100));
-    QObject::connect(ui.slider_decay, &QSlider::valueChanged, this,
-                     [](int val){ UsageHistory::setMemoryDecay((double)val/100.0); });
-
-    ui.checkBox_prioritizePerfectMatch->setChecked(UsageHistory::prioritizePerfectMatch());
-    QObject::connect(ui.checkBox_prioritizePerfectMatch, &QCheckBox::toggled, this,
-                     [](bool val){ UsageHistory::setPrioritizePerfectMatch(val); });
-
-    ui.checkBox_emptyQuery->setChecked(app.query_engine.runEmptyQuery());
-    QObject::connect(ui.checkBox_emptyQuery, &QCheckBox::toggled, this,
-                     [&app](bool val){ app.query_engine.setRunEmptyQuery(val); });
 }
 
 void SettingsWindow::insert_tab_about()

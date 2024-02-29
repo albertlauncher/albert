@@ -15,7 +15,6 @@
 using namespace albert;
 using namespace std;
 
-
 PluginsWidget::PluginsWidget(PluginRegistry &plugin_registry) : model_(new PluginsModel(plugin_registry))
 {
     setObjectName("PluginWidget");
@@ -31,7 +30,6 @@ PluginsWidget::PluginsWidget(PluginRegistry &plugin_registry) : model_(new Plugi
     listView_plugins->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     listView_plugins->setEditTriggers(QAbstractItemView::NoEditTriggers);
     listView_plugins->setProperty("showDropIndicator", QVariant(false));
-    listView_plugins->setAlternatingRowColors(true);
     listView_plugins->setSpacing(1);
     listView_plugins->setUniformItemSizes(true);
     listView_plugins->setModel(model_.get());

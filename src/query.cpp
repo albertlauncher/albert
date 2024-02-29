@@ -3,6 +3,7 @@
 #include "albert/extension/queryhandler/rankitem.h"
 #include "albert/logging.h"
 #include "query.h"
+#include "queryengine.h"
 #include "usagedatabase.h"
 #include <QtConcurrent>
 using namespace albert;
@@ -13,7 +14,10 @@ Q_LOGGING_CATEGORY(timeCat, "albert.query_runtimes")
 
 uint QueryBase::query_count = 0;
 
-QueryBase::QueryBase(vector<FallbackHandler*> fallback_handlers, QString string):
+QueryBase::QueryBase(QueryEngine *e,
+                     vector<FallbackHandler*> fallback_handlers,
+                     QString string):
+    query_engine_(e),
     query_id(query_count++),
     valid_(true),
     string_(::move(string)),
@@ -58,21 +62,29 @@ void QueryBase::activateFallback(uint i, uint a) { fallbacks_.activate(this, i, 
 
 void QueryBase::runFallbackHandlers()
 {
+    const auto &o = query_engine_->fallbackOrder();
+
     vector<pair<Extension*,RankItem>> fallbacks;
     for (auto *handler : fallback_handlers_)
         for (auto item : handler->fallbacks(QString("%1%2").arg(trigger(), string())))
-            fallbacks.emplace_back(handler, RankItem(::move(item), 1));
-    UsageHistory::applyScores(&fallbacks);
-    sort(fallbacks.begin(), fallbacks.end(), [](const auto &a, const auto &b){ return a.second.score > b.second.score; });
+            if (auto it = o.find(make_pair(handler->id(), item->id())); it == o.end())
+                fallbacks.emplace_back(handler, RankItem(::move(item), 0));
+            else
+                fallbacks.emplace_back(handler, RankItem(::move(item), it->second));
+
+    sort(fallbacks.begin(), fallbacks.end(),
+         [](const auto &a, const auto &b){ return a.second.score > b.second.score; });
+
     fallbacks_.add(fallbacks.begin(), fallbacks.end()); // TODO ranges
 }
 
 // ////////////////////////////////////////////////////////////////////////////
 
-TriggerQuery::TriggerQuery(vector<FallbackHandler *> &&fallback_handlers,
+TriggerQuery::TriggerQuery(QueryEngine *e,
+                           vector<FallbackHandler *> &&fallback_handlers,
                            TriggerQueryHandler *query_handler,
                            QString string, QString trigger):
-    QueryBase(::move(fallback_handlers), ::move(string)),
+    QueryBase(e, ::move(fallback_handlers), ::move(string)),
     query_handler_(query_handler),
     trigger_(::move(trigger))
 {
@@ -170,10 +182,11 @@ void TriggerQuery::collectResults()
 
 // ////////////////////////////////////////////////////////////////////////////
 
-GlobalQuery::GlobalQuery(vector<FallbackHandler*> &&fallback_handlers,
+GlobalQuery::GlobalQuery(QueryEngine *e,
+                         vector<FallbackHandler*> &&fallback_handlers,
                          vector<GlobalQueryHandler*> &&query_handlers,
                          QString string):
-    QueryBase(::move(fallback_handlers), ::move(string)),
+    QueryBase(e, ::move(fallback_handlers), ::move(string)),
     query_handlers_(::move(query_handlers))
 {
 }
@@ -242,7 +255,6 @@ void GlobalQuery::run_() noexcept
     QtConcurrent::blockingMap(query_handlers_, map);
     auto d_h = duration_cast<milliseconds>(system_clock::now()-tp).count();
 
-
     static const auto cmp = [](const auto &a, const auto &b){
         if (a.second.score == b.second.score)
             return a.second.item->text() > b.second.item->text();
@@ -253,21 +265,23 @@ void GlobalQuery::run_() noexcept
     tp = system_clock::now();
     auto begin = ::begin(rank_items);
     auto end = ::end(rank_items);
-    if (rank_items.size() > 20)
-    {
-        auto mid = rank_items.begin() + 20;
 
-        partial_sort(begin, mid, end, cmp);
-        matches_.add(begin, mid);
+    // TODO collect results in main thread here as well
+    // if (rank_items.size() > 20)
+    // {
+    //     auto mid = rank_items.begin() + 20;
 
-        sort(mid, end, cmp);
-        matches_.add(mid, end);
-    }
-    else
-    {
+    //     partial_sort(begin, mid, end, cmp);
+    //     matches_.add(begin, mid);
+
+    //     sort(mid, end, cmp);
+    //     matches_.add(mid, end);
+    // }
+    // else
+    // {
         sort(begin, end, cmp);
         matches_.add(begin, end);
-    }    
+    // }
     auto d_s = duration_cast<milliseconds>(system_clock::now()-tp).count();
 
     qCDebug(timeCat,).noquote() << QStringLiteral("\x1b[38;5;33m│ Handling│  Sorting│ Count│\x1b[0m");
