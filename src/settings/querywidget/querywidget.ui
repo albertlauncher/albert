@@ -99,7 +99,7 @@
        <item>
         <widget class="QSlider" name="slider_decay">
          <property name="toolTip">
-          <string>This preference is about how past activations influence the ranking of the results of a query. It determines how fast Albert adopts to your current usage behavior.
+          <string>This preference determines how past activations influence the ranking of the results of a query. 
 
 Technically the usage score of a results is the sum of the weights given to past activations, which are defined by the geometric progression with a common ratio between 1 for MFU (Most frequently used) and 0.5 for MRU (Most recently used). Using MFU (cr=1) all activations get the same weight and the cumulated score of a results is the count of its usages. Using MRU (cr=0.5), as a mathematical conclusion, the sum of weights of past activations can not exceed those of newer ones.
 

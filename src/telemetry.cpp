@@ -25,8 +25,8 @@ Telemetry::Telemetry()
     if (!s->contains(CFG_TELEMETRY))
     {
         auto text = QCoreApplication::translate(
-            "Telemetry", "Albert collects anonymous data to improve user experience. "
-                         "You can check the data sent in the details. Opt in?");
+            "Telemetry", "Albert collects anonymous data to enhance user experience. "
+                         "You can review the data to be sent in the details. Opt in?");
 
         QMessageBox mb(QMessageBox::Question, qApp->applicationDisplayName(),
                        text, QMessageBox::No|QMessageBox::Yes);

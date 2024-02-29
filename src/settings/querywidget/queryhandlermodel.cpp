@@ -160,7 +160,8 @@ bool QueryHandlerModel::setData(const QModelIndex &idx, const QVariant &value, i
             if (const auto it = engine.activeTriggerHandlers().find(value.toString());
                 it != engine.activeTriggerHandlers().end() && it->second != h)
                 QMessageBox::warning(nullptr, qApp->applicationName(),
-                                     tr("Trigger is already registered by '%1'").arg(it->second->name()));
+                                     tr("Trigger '%1' is reserved for '%2'.")
+                                         .arg(value.toString(), it->second->name()));
             else
             {
                 engine.setTrigger(h, value.toString());
