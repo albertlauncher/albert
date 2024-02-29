@@ -160,13 +160,13 @@ int main(int argc, char **argv)
     UnixSignalHandler unix_signal_handler;
 #endif
 
-    app = new App(parser.value(opt_p).split(',', Qt::SkipEmptyParts),
-                  !parser.isSet(opt_n));
-
-    QTimer::singleShot(0, qApp, [](){ app->initialize(); }); // Init with running eventloop
-    QObject::connect(qApp, &QApplication::aboutToQuit, [&]() { app->finalize(); delete app; }); // Delete app _before_ loop exits
-
+    app = new App(parser.value(opt_p).split(',', Qt::SkipEmptyParts), !parser.isSet(opt_n));
+    app->initialize();
     int return_value = qApp->exec();
+    app->finalize();
+    app->deleteLater();
+    QCoreApplication::processEvents(); // Never quit with events in queue
+
     if (return_value == -1 && runDetachedProcess(qApp->arguments(), QDir::currentPath()))
         return_value = EXIT_SUCCESS;
 
