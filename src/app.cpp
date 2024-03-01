@@ -56,17 +56,20 @@ void App::finalize()
 {
     delete settings_window.get();
 
-    // unload the frontend before plugins since it may have plugin objects in query
+    disconnect(frontend, nullptr, this, nullptr);
+    disconnect(&query_engine, nullptr, this, nullptr);
+    session.reset();
+
+    extension_registry.deregisterExtension(&plugin_provider);  // unloads plugins
+    extension_registry.deregisterExtension(&plugin_query_handler);
+    extension_registry.deregisterExtension(&app_query_handler);
+
     try {
         dynamic_cast<PluginInstance*>(frontend)->finalize(extension_registry);
         frontend_plugin->unload();
     } catch (const exception &e) {
         WARN << e.what();
     }
-
-    extension_registry.deregisterExtension(&plugin_provider);  // unloads plugins
-    extension_registry.deregisterExtension(&plugin_query_handler);
-    extension_registry.deregisterExtension(&app_query_handler);
 }
 
 App *App::instance() { return app_instance; }
@@ -122,13 +125,13 @@ QString App::loadFrontend(PluginLoader *loader)
         inst->initialize(extension_registry, {});
         frontend_plugin = loader;
 
-        QObject::connect(frontend, &Frontend::visibleChanged, frontend, [this](bool v){
+        QObject::connect(frontend, &Frontend::visibleChanged, this, [this](bool v){
             session.reset();  // make sure no multiple sessions are alive
             if(v)
                 session = make_unique<Session>(query_engine, *frontend);
         });
 
-        QObject::connect(&query_engine, &QueryEngine::handlersChanged, &query_engine, [this]{
+        QObject::connect(&query_engine, &QueryEngine::handlersChanged, this, [this]{
             if (frontend->isVisible())
             {
                 session.reset();
