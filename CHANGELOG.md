@@ -1,3 +1,92 @@
+v0.23.0 (2024-03-03)
+
+[albert]
+
+* i18n
+* Make fallback order settable in new query tab.
+* Load native plugins threaded.
+* Add --no-load cli param
+* Use hashmap and avoid exceptions. Twice as fast 🚀
+* Add german translation
+* Make "Show settings" action the default for plugin items
+* [API:v0.23]
+  * Change frontend interface design
+  * drop extensions() from PluginInstance interface.
+    Extensions can now bei registered dynamically at any time.
+  * Reduce the plugin system interfaces to the bare minimum
+  * Allow hard plugin dependencies.
+  * Private destructors for interfaces
+  * Refactoring
+    * ExtensionRegistry add > registerExtension
+    * ExtensionRegistry remove > deregisterExtension
+  * Make UI strings in the metadata required.
+  * Allow plugins to have public interfaces
+  * Revert to authors. Drop maintainers. (plugin metadata)
+  * Remove polymorphism in PluginInstance id/name/description
+  * Remove dynamic allocation of cache/config/dataDir()
+  * Drop template parameter QOBJECT
+  * Frontend is not an extension
+  * Support localized metadata
+  * CMake interface
+    * Drop long_description from metadata
+    * Add TS_FILES parameter to albert_plugin macro.
+    * Revert back to json metadata file again
+    * Complete metadata using cmake project details
+    * Move Qt::Widgets into the public link interface
+
+[plugins]
+
+* Support i18n
+* [python:4.2] Open external links in config labels by default
+* [widgetsboxmodel:7.1] Fix animation on linux
+* [qmlboxmodel] archive wip
+* [widgetsboxmodel:7.0]
+  * Dark theme support
+  * Themes update
+  * Reproducible style (fusion)
+  * Fix history search
+  * Move persistent window position to state
+  * Clear icon cache on hide
+  * Archive unlicensed themes
+  * Remove "Show fallbacks on empty result" option
+  * Drop fonts from themes
+* [websearch:8.0]
+  * Capital You_T_ube
+  * Add Google translate default engine
+* [ssh:8.0]
+  * Reduce complexity of this overengineered plugin
+    * Remove quick connect
+    * Remove known hosts
+    * Remove file watchers (configs change not that often)
+    * remove indexer mutexes
+    * remove fuzzy index
+* [snippets:5.0]
+  * Public extension interface "Add snippet"
+ * [qmlboxmodel:3.0]
+  * Archived
+* [python:4.0]
+  * Drop source watches. a plugin provider cant just reload without notifying the plugin registry
+  * API 2.2
+    - PluginInstance.configWidget supports 'label'
+    - __doc__ is not used anymore, since 0.23 drops long_description metadata
+    - md_maintainers not used anymore
+    - md_authors new optional field
+* [dictionary:3.0] Former platform_services
+  * Rename plugin platform services to dict
+* [clipboard:3.0]
+  * use snippets interface
+* [applications_macos:5.0]
+  * Use KVO to track NSQuery results
+
+[python]
+
+* Reinstate proper licensing
+* [virtualbox:1.6] Add info on vboxapi requirement
+* [docker:2.0] Show error on conn failure.
+* [pomodoro:1.5] Fix notifications
+* [pyi] v2.2
+* [inhibit_sleep:1.0] Similar to caffeine, theine, amphetamine etc…
+
 v0.22.17 (2023-11-26)
 
 [albert]
