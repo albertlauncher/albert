@@ -1,6 +1,6 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2024 Manuel Schneider
 
-#include "albert/extension/queryhandler/standarditem.h"
+#include "albert/util/standarditem.h"
 using namespace albert;
 
 StandardItem::StandardItem(QString id,

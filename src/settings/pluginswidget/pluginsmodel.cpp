@@ -1,14 +1,14 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
-#include "albert/extension/pluginprovider/pluginmetadata.h"
+#include "albert/plugin/pluginmetadata.h"
 #include "pluginregistry.h"
 #include "pluginsmodel.h"
+#include <QApplication>
 #include <QIcon>
 #include <QPalette>
 #include <QStyle>
-#include <QApplication>
-using namespace std;
 using namespace albert;
+using namespace std;
 
 PluginsModel::PluginsModel(PluginRegistry &plugin_registry) : plugin_registry_(plugin_registry)
 {

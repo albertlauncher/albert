@@ -1,7 +1,7 @@
 // Copyright (c) 2024 Manuel Schneider
 
-#include "albert/extension/pluginprovider/plugininstance.h"
-#include "albert/extension/queryhandler/standarditem.h"
+#include "albert/plugin/plugininstance.h"
+#include "albert/util/standarditem.h"
 #include "pluginconfigqueryhandler.h"
 #include "pluginregistry.h"
 #include <QMetaObject>

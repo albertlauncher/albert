@@ -1,16 +1,18 @@
 // Copyright (c) 2024 Manuel Schneider
 
 #include "albert/extensionregistry.h"
-#include "albert/plugin.h"
-using namespace albert::plugin;
+#include "albert/util/extensionplugin.h"
 using namespace albert;
 using namespace std;
 
-QString ExtensionPlugin::id() const { return PluginInstance::id(); }
+QString ExtensionPlugin::id() const
+{ return PluginInstance::id(); }
 
-QString ExtensionPlugin::name() const { return PluginInstance::name(); }
+QString ExtensionPlugin::name() const
+{ return PluginInstance::name(); }
 
-QString ExtensionPlugin::description() const { return PluginInstance::description(); }
+QString ExtensionPlugin::description() const
+{ return PluginInstance::description(); }
 
 void ExtensionPlugin::initialize(ExtensionRegistry &registry, map<QString,PluginInstance*>)
 { registry.registerExtension(this); }

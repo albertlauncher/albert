@@ -1,8 +1,8 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
-#include "albert/extension/queryhandler/indexitem.h"
-#include "albert/extension/queryhandler/globalqueryhandler.h"
+#include "albert/query/globalqueryhandler.h"
+#include "albert/query/indexitem.h"
 #include <memory>
 #include <vector>
 class IndexQueryHandlerPrivate;

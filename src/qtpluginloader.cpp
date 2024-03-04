@@ -1,15 +1,15 @@
-// Copyright (c) 2022-2023 Manuel Schneider
+// Copyright (c) 2022-2024 Manuel Schneider
 
 #include "albert/config.h"
-#include "albert/extension/pluginprovider/plugininstance.h"
 #include "albert/logging.h"
+#include "albert/plugin/plugininstance.h"
 #include "qtpluginloader.h"
 #include <QCoreApplication>
 #include <QFutureWatcher>
 #include <QPluginLoader>
 #include <QtConcurrent>
-using namespace std;
 using namespace albert;
+using namespace std;
 
 
 static QString fetchLocalizedMetadata(const QJsonObject &json ,const QString &key)

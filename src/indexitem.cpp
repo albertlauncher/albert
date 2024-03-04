@@ -1,6 +1,6 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2023-2024 Manuel Schneider
 
-#include "albert/extension/queryhandler/indexitem.h"
+#include "albert/query/indexitem.h"
 using namespace std;
 
 albert::IndexItem::IndexItem(shared_ptr<Item> i, QString s):

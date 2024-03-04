@@ -1,7 +1,7 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2024 Manuel Schneider
 
 #pragma once
-#include "albert/extension/queryhandler/item.h"
+#include "albert/query/item.h"
 #include <vector>
 
 namespace albert

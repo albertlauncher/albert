@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
-#include "albert/extensionwatcher.h"
+#include "albert/util/extensionwatcher.h"
 #include "plugin.h"
 #include <QObject>
 #include <QString>

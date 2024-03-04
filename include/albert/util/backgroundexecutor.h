@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2024 Manuel Schneider
 
 #pragma once
 #include "albert/logging.h"

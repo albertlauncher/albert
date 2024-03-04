@@ -1,6 +1,6 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2023-2024 Manuel Schneider
 
-#include "albert/extension/queryhandler/globalqueryhandler.h"
+#include "albert/query/globalqueryhandler.h"
 #include "globalqueryhandlerprivate.h"
 #include "usagedatabase.h"
 using namespace albert;

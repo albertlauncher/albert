@@ -1,8 +1,8 @@
-// Copyright (c) 2022-2023 Manuel Schneider
+// Copyright (c) 2022-2024 Manuel Schneider
 
 #include "albert/albert.h"
-#include "albert/extension/frontend/inputhistory.h"
 #include "albert/logging.h"
+#include "albert/util/inputhistory.h"
 #include <QDir>
 #include <QFile>
 #include <QTextStream>

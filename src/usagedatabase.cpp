@@ -2,8 +2,8 @@
 
 #include "albert/albert.h"
 #include "albert/extension.h"
-#include "albert/extension/queryhandler/rankitem.h"
 #include "albert/logging.h"
+#include "albert/query/rankitem.h"
 #include "usagedatabase.h"
 #include <QDir>
 #include <QSettings>

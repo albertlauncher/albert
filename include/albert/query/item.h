@@ -1,7 +1,7 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
-#include "albert/extension/queryhandler/action.h"
+#include "albert/query/action.h"
 #include <QStringList>
 #include <vector>
 

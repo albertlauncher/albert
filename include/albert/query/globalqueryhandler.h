@@ -1,8 +1,8 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
-#include "albert/extension/queryhandler/triggerqueryhandler.h"
-#include "albert/extension/queryhandler/rankitem.h"
+#include "albert/query/rankitem.h"
+#include "albert/query/triggerqueryhandler.h"
 #include <vector>
 class GlobalQueryHandlerPrivate;
 

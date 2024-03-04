@@ -1,6 +1,6 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2023-2024 Manuel Schneider
 
-#include "albert/extension/queryhandler/triggerqueryhandler.h"
+#include "albert/query/triggerqueryhandler.h"
 #include "triggerqueryhandlerprivate.h"
 using namespace albert;
 

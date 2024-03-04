@@ -1,11 +1,12 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2023-2024 Manuel Schneider
 
-#include "albert/extension/queryhandler/indexqueryhandler.h"
+#include "albert/query/indexqueryhandler.h"
 #include "indexqueryhandlerprivate.h"
 #include "itemindex.h"
 #include <mutex>
-using namespace std;
 using namespace albert;
+using namespace std;
+
 static const uint GRAM_SIZE = 2;
 //static const char* CFG_SEPARATORS = "separators";
 static const char* DEF_SEPARATORS = R"R([\s\\\/\-\[\](){}#!?<>"'=+*.:,;_]+)R";

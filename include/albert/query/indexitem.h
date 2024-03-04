@@ -1,7 +1,7 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
-#include "albert/extension/queryhandler/item.h"
+#include "albert/query/item.h"
 #include <QString>
 #include <memory>
 

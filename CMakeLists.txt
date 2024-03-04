@@ -74,7 +74,6 @@ file(GLOB LIB_SRC
     src/*.cpp
     src/*.h
     src/platform/*.h
-    src/plugin/*
     src/settings/*.cpp
     src/settings/*.h
     src/settings/pluginswidget/*.cpp

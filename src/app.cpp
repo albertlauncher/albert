@@ -1,11 +1,11 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #include "albert/albert.h"
-#include "albert/extension/frontend/frontend.h"
-#include "albert/extension/pluginprovider/plugininstance.h"
-#include "albert/extension/pluginprovider/pluginloader.h"
-#include "albert/extension/pluginprovider/pluginmetadata.h"
+#include "albert/frontend/frontend.h"
 #include "albert/logging.h"
+#include "albert/plugin/plugininstance.h"
+#include "albert/plugin/pluginloader.h"
+#include "albert/plugin/pluginmetadata.h"
 #include "app.h"
 #include "platform/platform.h"
 #include <QHotkey>
@@ -14,11 +14,12 @@
 using namespace albert;
 using namespace std;
 
-
+namespace {
 static const char *STATE_LAST_USED_VERSION = "last_used_version";
 static const char *CFG_FRONTEND_ID = "frontend";
 static const char *DEF_FRONTEND_ID = "widgetsboxmodel";
 static App * app_instance = nullptr;
+}
 
 App::App(const QStringList &additional_plugin_paths, bool load_enabled) :
     plugin_registry(extension_registry, load_enabled),

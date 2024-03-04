@@ -1,6 +1,6 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2023-2024 Manuel Schneider
 
-#include "albert/extension/queryhandler/item.h"
+#include "albert/query/item.h"
 using namespace albert;
 
 QString Item::inputActionText() const { return {}; }

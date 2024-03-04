@@ -1,11 +1,10 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2023-2024 Manuel Schneider
 
 #include "albert/albert.h"
-#include "albert/extension/queryhandler/standarditem.h"
 #include "appqueryhandler.h"
+#include "albert/util/standarditem.h"
 #include <QString>
 #include <QUrl>
-#include <QCoreApplication>
 using namespace albert;
 using namespace std;
 

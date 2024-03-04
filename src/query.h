@@ -1,10 +1,10 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
 #pragma once
-#include "albert/extension/frontend/query.h"
-#include "albert/extension/queryhandler/fallbackprovider.h"
-#include "albert/extension/queryhandler/globalqueryhandler.h"
-#include "albert/extension/queryhandler/triggerqueryhandler.h"
+#include "albert/frontend/query.h"
+#include "albert/query/fallbackprovider.h"
+#include "albert/query/globalqueryhandler.h"
+#include "albert/query/triggerqueryhandler.h"
 #include "itemsmodel.h"
 #include <QFutureWatcher>
 namespace albert { class Item; }

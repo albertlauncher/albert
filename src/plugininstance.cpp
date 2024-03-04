@@ -1,9 +1,9 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #include "albert/albert.h"
-#include "albert/extension/pluginprovider/plugininstance.h"
-#include "albert/extension/pluginprovider/pluginloader.h"
-#include "albert/extension/pluginprovider/pluginmetadata.h"
+#include "albert/plugin/plugininstance.h"
+#include "albert/plugin/pluginloader.h"
+#include "albert/plugin/pluginmetadata.h"
 #include "albert/extensionregistry.h"
 #include <QCoreApplication>
 #include <QDir>

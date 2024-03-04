@@ -1,8 +1,8 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
-#include "albert/extension/pluginprovider/pluginloader.h"
-#include "albert/extension/pluginprovider/pluginmetadata.h"
+#include "albert/plugin/pluginloader.h"
+#include "albert/plugin/pluginmetadata.h"
 #include <QPluginLoader>
 namespace albert { class PluginInstance; }
 

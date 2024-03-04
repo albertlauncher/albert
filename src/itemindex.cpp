@@ -1,17 +1,17 @@
-// Copyright (c) 2021-2023 Manuel Schneider
+// Copyright (c) 2021-2024 Manuel Schneider
 
-#include "albert/extension/queryhandler/indexitem.h"
-#include "albert/extension/queryhandler/item.h"
-#include "albert/extension/queryhandler/rankitem.h"
+#include "albert/query/indexitem.h"
+#include "albert/query/item.h"
+#include "albert/query/rankitem.h"
 #include "itemindex.h"
 #include "levenshtein.h"
 #include <QRegularExpression>
-#include <map>
 #include <algorithm>
-#include <utility>
+#include <map>
 #include <mutex>
-using namespace std;
+#include <utility>
 using namespace albert;
+using namespace std;
 
 
 static QStringList splitString(const QString &string, const QString &separators, bool case_sensitive = false)

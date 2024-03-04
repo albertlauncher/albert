@@ -2,7 +2,7 @@
 
 #include "albert/albert.h"
 #include "albert/config.h"
-#include "albert/extension/frontend/frontend.h"
+#include "albert/frontend/frontend.h"
 #include "albert/logging.h"
 #include "albert/util/iconprovider.h"
 #include "app.h"
@@ -12,12 +12,12 @@
 #include <QCommandLineParser>
 #include <QDesktopServices>
 #include <QDir>
+#include <QLibraryInfo>
 #include <QMessageBox>
 #include <QProcess>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QTranslator>
-#include <QLibraryInfo>
 #if __has_include(<unistd.h>)
 #include "platform/Unix/unixsignalhandler.h"
 #endif

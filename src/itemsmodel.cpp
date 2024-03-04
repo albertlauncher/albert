@@ -1,13 +1,12 @@
 // Copyright (c) 2022-2023 Manuel Schneider
 
-#include "albert/extension/frontend/itemroles.h"
-#include "albert/extension/queryhandler/item.h"
-#include "albert/extension/queryhandler/rankitem.h"
+#include "albert/frontend/itemroles.h"
 #include "albert/logging.h"
+#include "albert/query/item.h"
+#include "albert/query/rankitem.h"
 #include "itemsmodel.h"
-#include "usagedatabase.h"
 #include "query.h"
-#include "qmlrolenames.h"
+#include "usagedatabase.h"
 #include <QStringListModel>
 #include <QTimer>
 using namespace albert;
@@ -64,7 +63,17 @@ QVariant ItemsModel::data(const QModelIndex &index, int role) const
     return {};
 }
 
-QHash<int, QByteArray> ItemsModel::roleNames() const { return albert::QmlRoleNames; }
+QHash<int, QByteArray> ItemsModel::roleNames() const
+{
+    static QHash<int, QByteArray> qml_role_names = {
+        {(int)ItemRoles::TextRole, "itemText"},
+        {(int)ItemRoles::SubTextRole, "itemSubText"},
+        {(int)ItemRoles::InputActionRole, "itemInputAction"},
+        {(int)ItemRoles::IconUrlsRole, "itemIconUrls"},
+        {(int)ItemRoles::ActionsListRole, "itemActionsList"}
+    };
+    return qml_role_names;
+}
 
 // void ItemsModel::add(Extension *extension, shared_ptr<Item> &&item)
 // {

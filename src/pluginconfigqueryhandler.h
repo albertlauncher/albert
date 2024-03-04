@@ -1,7 +1,7 @@
 // Copyright (c) 2024 Manuel Schneider
 
 #pragma once
-#include "albert/extension/queryhandler/globalqueryhandler.h"
+#include "albert/query/globalqueryhandler.h"
 #include <QCoreApplication>
 class PluginRegistry;
 

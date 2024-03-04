@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023 Manuel Schneider
+// Copyright (c) 2022-2024 Manuel Schneider
 
 #pragma once
 #include "albert/export.h"

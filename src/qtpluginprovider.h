@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
-#include "albert/extension/pluginprovider/pluginprovider.h"
+#include "albert/plugin/pluginprovider.h"
 #include <QStringList>
 #include <memory>
 #include <vector>

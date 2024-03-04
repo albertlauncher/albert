@@ -1,7 +1,7 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2024 Manuel Schneider
 
-#include "albert/extension/queryhandler/rankitem.h"
 #include "albert/logging.h"
+#include "albert/query/rankitem.h"
 #include "query.h"
 #include "queryengine.h"
 #include "usagedatabase.h"

@@ -1,10 +1,10 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
-#include "albert/extension/queryhandler/fallbackprovider.h"
-#include "albert/extension/queryhandler/globalqueryhandler.h"
-#include "albert/extension/queryhandler/triggerqueryhandler.h"
-#include "albert/extensionwatcher.h"
+#include "albert/query/fallbackprovider.h"
+#include "albert/query/globalqueryhandler.h"
+#include "albert/query/triggerqueryhandler.h"
+#include "albert/util/extensionwatcher.h"
 #include <map>
 #include <memory>
 class QueryBase;

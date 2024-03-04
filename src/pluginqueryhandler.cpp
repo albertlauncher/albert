@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #include "albert/albert.h"
-#include "albert/extension/pluginprovider/pluginmetadata.h"
+#include "albert/plugin/pluginmetadata.h"
 #include "pluginqueryhandler.h"
 #include "pluginregistry.h"
 #include <QMessageBox>

@@ -1,6 +1,6 @@
 // Copyright (c) 2024 Manuel Schneider
 
-#include "albert/extension/frontend/frontend.h"
+#include "albert/frontend/frontend.h"
 #include "query.h"
 #include "albert/logging.h"
 #include "queryengine.h"
