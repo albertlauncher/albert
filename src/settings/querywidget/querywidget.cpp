@@ -31,7 +31,7 @@ QueryWidget::QueryWidget(QueryEngine &qe)
     }
 
     ui.tableView_queryHandlers->setModel(new QueryHandlerModel(qe, this)); // Takes ownership
-    ui.tableView_fallbackOrder->setModel(new FallbacksModel(qe, this)); // Takes ownership
+    ui.tableView_fallbackOrder->setModel(fallbacks_model_ = new FallbacksModel(qe, this)); // Takes ownership
 
     // Size adjust does not work properly on macos do it manually
     auto updateWidth = [&]{
@@ -43,5 +43,14 @@ QueryWidget::QueryWidget(QueryEngine &qe)
     };
     connect(&qe, &QueryEngine::handlersChanged, this, updateWidth);
     updateWidth();
+}
 
+void QueryWidget::showEvent(QShowEvent*)
+{
+    // This is a workaround such that FallbackHandlers dont need a signal
+    // for the change of fallbacks. This is a bit dirty, but a cheap solution
+    // maintenance and performance wise. The alternative would be to have a
+    // signal in FallbackHandler and connect change the fallbacksmodel to
+    // listen to it. That would be a lot of overhead for a very simple thing.
+    fallbacks_model_->updateFallbackList();
 }

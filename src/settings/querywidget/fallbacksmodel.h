@@ -18,6 +18,8 @@ public:
 
     FallbacksModel(QueryEngine &qe, QObject *parent);
 
+    void updateFallbackList();
+
 private:
 
     int rowCount(const QModelIndex &) const override;
@@ -31,7 +33,6 @@ private:
     bool moveRows(const QModelIndex &srcParent, int srcRow, int count,
                   const QModelIndex &dstParent, int dstRow) override;
 
-    void updateFallbackList();
 
     QueryEngine &engine;
     std::vector<std::pair<albert::FallbackHandler*, std::shared_ptr<albert::Item>>> fallbacks;

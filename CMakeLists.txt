@@ -72,15 +72,16 @@ file(GLOB_RECURSE LIB_PUBLIC_HEADER
 file(GLOB_RECURSE LIB_SRC_UI src/*.ui)
 
 file(GLOB LIB_SRC
-    src/*.h
     src/*.cpp
-    src/plugin/*
+    src/*.h
     src/platform/*.h
-    src/settings/*
-    src/settings/querywidget/*.h
-    src/settings/querywidget/*.cpp
-    src/settings/pluginswidget/*.h
+    src/plugin/*
+    src/settings/*.cpp
+    src/settings/*.h
     src/settings/pluginswidget/*.cpp
+    src/settings/pluginswidget/*.h
+    src/settings/querywidget/*.cpp
+    src/settings/querywidget/*.h
 )
 
 file(GLOB_RECURSE LIB_SRC_PLATFORM

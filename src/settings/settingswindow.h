@@ -6,7 +6,6 @@
 #include <memory>
 class App;
 class PluginsWidget;
-class HandlerWidget;
 class QueryWidget;
 
 class SettingsWindow final : public QWidget
