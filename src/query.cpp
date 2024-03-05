@@ -222,7 +222,14 @@ void GlobalQuery::run_() noexcept
 
         try {
             auto t = system_clock::now();
-            auto results = handler->handleGlobalQuery(this);
+
+            std::vector<RankItem> results;
+            if (string_.isEmpty())
+                for (auto &item : handler->handleEmptyQuery(this))
+                    results.emplace_back(::move(item), 0);
+            else
+                results = handler->handleGlobalQuery(this);
+
             auto d_h = duration_cast<milliseconds>(system_clock::now()-t).count();
 
             t = system_clock::now();
