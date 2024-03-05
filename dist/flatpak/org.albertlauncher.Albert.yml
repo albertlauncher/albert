@@ -1,6 +1,6 @@
 app-id: org.albertlauncher.Albert
 runtime: org.kde.Platform
-runtime-version: '6.4'
+runtime-version: '6.5'
 sdk: org.kde.Sdk
 command: bootstrap-albert.sh
 rename-desktop-file: albert.desktop
@@ -8,10 +8,12 @@ rename-icon: albert
 copy-icon: true
 finish-args:
   - --device=dri
-  - --filesystem=host
-  #- --filesystem=xdg-cache
-  #- --filesystem=xdg-config
-  #- --filesystem=xdg-documents
+  - --filesystem=host:ro
+  - --filesystem=host-os
+  - --filesystem=home:ro
+  - --filesystem=xdg-cache
+  - --filesystem=xdg-config
+  - --filesystem=xdg-documents
   - --share=ipc
   - --share=network
   - --socket=session-bus
@@ -23,10 +25,10 @@ modules:
     builddir: true
     prefix: /usr
     post-install:
-      - echo 'albert -d -p /app/lib/albert "$@"' > /app/bin/bootstrap-albert.sh
-        chmod +x /app/bin/bootstrap-albert.sh
+      - echo 'PATH=$PATH:/run/host/bin albert -p /app/lib/albert "$@"' > /app/bin/bootstrap-albert.sh
+      - chmod +x /app/bin/bootstrap-albert.sh
     config-opts:
-      - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      - -DCMAKE_BUILD_TYPE=Debug
       - -DBUILD_CALCULATOR_QALCULATE=OFF
     sources:
       - type: git
@@ -49,12 +51,12 @@ modules:
               - type: archive
                 url: https://www.python.org/ftp/python/3.10.10/Python-3.10.10.tar.xz
                 md5: 7bf85df71bbe7f95e5370b983e6ae684
-      - name: libmuparser
-        buildsystem: cmake-ninja
-        sources:
-        - type: git
-          url: https://github.com/beltoforion/muparser
-          branch: v2.3.4
+     # - name: libmuparser
+     #   buildsystem: cmake-ninja
+     #   sources:
+     #   - type: git
+     #     url: https://github.com/beltoforion/muparser
+     #     branch: v2.3.4
      # - name: libqalculate
      #   build-options:
      #     arch:
