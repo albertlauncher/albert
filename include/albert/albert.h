@@ -89,7 +89,7 @@ ALBERT_EXPORT void setClipboardTextAndPaste(const QString &text);
 /// \param commandline The command line to run
 /// \param working_dir The working directory
 /// \return The process id
-ALBERT_EXPORT long long runDetachedProcess(const QStringList &commandline, const QString &working_dir = {});
+ALBERT_EXPORT long long runDetachedProcess(QStringList commandline, const QString &working_dir = {});
 
 /// Run a script in the user shell and user defined terminal.
 /// \param script The script to run

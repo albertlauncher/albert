@@ -310,7 +310,7 @@ Not implemented
 #endif
 }
 
-long long albert::runDetachedProcess(const QStringList &commandline, const QString &working_dir)
+long long albert::runDetachedProcess(QStringList commandline, const QString &working_dir)
 {
     qint64 pid = 0;
     if (!commandline.empty()) {
@@ -324,6 +324,8 @@ long long albert::runDetachedProcess(const QStringList &commandline, const QStri
         case ContainerType::None:
             break;
         }
+        if (qgetenv("container") == "flatpak")
+            commandline = QStringList{"flatpak-spawn", "--host"} << commandline;
 
         if (QProcess::startDetached(commandline[0], commandline.mid(1), working_dir.isNull() ? QDir::homePath() : working_dir, &pid))
             INFO << "Detached process started successfully. PID:" << pid << commandline;
