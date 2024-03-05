@@ -15,11 +15,6 @@ using namespace albert;
 using namespace std::chrono;
 using namespace std;
 
-
-// referenced in plugininstance.cpp
-PluginLoader *instanciated_loader;
-
-
 Plugin::Plugin(PluginProvider *provider_, PluginLoader *loader_):
     provider(provider_),
     loader(loader_),
@@ -117,7 +112,7 @@ QString Plugin::load(albert::ExtensionRegistry &extension_registry) noexcept
         try
         {
             tp = system_clock::now();
-            instanciated_loader = loader;
+            PluginInstance::instanciated_loader = loader;
             instance_ = loader->createInstance();
             auto dur_c = duration_cast<milliseconds>(system_clock::now() - tp).count();
             DEBG << QStringLiteral("%1 ms spent instanciating plugin '%2'").arg(dur_c).arg(id());

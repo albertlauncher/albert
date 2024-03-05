@@ -12,15 +12,13 @@
 using namespace albert;
 using namespace std;
 
-extern PluginLoader *instanciated_loader;
-
-
 class PluginInstance::Private
 {
 public:
-    PluginLoader const * const loader{instanciated_loader};
+    PluginLoader const * const loader{PluginInstance::instanciated_loader};
 };
 
+PluginLoader *PluginInstance::instanciated_loader = nullptr;
 
 PluginInstance::PluginInstance() : d(make_unique<Private>()) {}
 

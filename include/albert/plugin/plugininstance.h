@@ -1,6 +1,8 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
+#define EXPAND_STRINGIZE(s) STRINGIZE(s)
+#define STRINGIZE(s) #s
 #include "albert/config.h"
 #include "albert/export.h"
 #include <QString>
@@ -13,6 +15,8 @@ class QWidget;
 namespace albert
 {
 class ExtensionRegistry;
+class PluginLoader;
+
 
 ///
 /// Abstract plugin instance class.
@@ -71,6 +75,14 @@ public:
     /// Config widget factory.
     virtual QWidget *buildConfigWidget();
 
+    /// Global variable used for static dependency injection.
+    /// Constructors are nice to have. However Qt plugins enforce default
+    /// constructability. This conflicts the desire to have everything necessary
+    /// in the constructor, especially the plugin id from the metadata.
+    /// This hack emulates constructor injection and should be safe since plugin
+    /// instantiation is serialized.
+    static PluginLoader *instanciated_loader;
+
 protected:
 
     virtual ~PluginInstance();
@@ -96,8 +108,7 @@ private:
 ///
 #define ALBERT_PLUGIN Q_PLUGIN_METADATA(IID ALBERT_PLUGIN_IID FILE "metadata.json")
 
-#define EXPAND_STRINGIZE(s) STRINGIZE(s)
-#define STRINGIZE(s) #s
+
 
 ///
 /// @brief Convenience macro for (incomplete) user property definition.

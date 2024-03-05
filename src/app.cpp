@@ -113,8 +113,7 @@ QString App::loadFrontend(PluginLoader *loader)
     try {
         loader->load();
 
-        extern PluginLoader *instanciated_loader;
-        instanciated_loader = loader;
+        PluginInstance::instanciated_loader = loader;
         auto * inst = loader->createInstance();
 
         if (!inst)
