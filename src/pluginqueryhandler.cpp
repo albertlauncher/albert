@@ -74,6 +74,9 @@ public:
                  tr_state, state);
     }
 
+    QString inputActionText() const override
+    { return plugin_.metaData().name; }
+
     QStringList iconUrls() const override
     {
         if(!plugin_.isEnabled())
