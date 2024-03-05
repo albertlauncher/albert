@@ -33,12 +33,15 @@ QueryWidget::QueryWidget(QueryEngine &qe)
     ui.tableView_queryHandlers->setModel(new QueryHandlerModel(qe, this)); // Takes ownership
     ui.tableView_fallbackOrder->setModel(fallbacks_model_ = new FallbacksModel(qe, this)); // Takes ownership
 
+    // Fix for some styles on linux setting a minimum secion size
+    ui.tableView_queryHandlers->horizontalHeader()->setMinimumSectionSize(0);
+
     // Size adjust does not work properly on macos do it manually
     auto updateWidth = [&]{
         int width = 0;
         for (int c = 0; c < ui.tableView_queryHandlers->model()->columnCount(); ++c)
             width += ui.tableView_queryHandlers->horizontalHeader()->sectionSize(c);
-
+        width += + qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent);
         ui.tableView_queryHandlers->setFixedWidth(width + 2);  // 2: Frame spacing?
     };
     connect(&qe, &QueryEngine::handlersChanged, this, updateWidth);
