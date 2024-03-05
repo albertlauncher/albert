@@ -1,18 +1,18 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
-#include "albert/query/fallbackprovider.h"
-#include "albert/query/globalqueryhandler.h"
-#include "albert/query/triggerqueryhandler.h"
-#include "albert/util/extensionwatcher.h"
+#include <QObject>
 #include <map>
 #include <memory>
 class QueryBase;
+namespace albert {
+class ExtensionRegistry;
+class FallbackHandler;
+class GlobalQueryHandler;
+class TriggerQueryHandler;
+}
 
-class QueryEngine : public QObject,
-                    public albert::ExtensionWatcher<albert::TriggerQueryHandler>,
-                    public albert::ExtensionWatcher<albert::GlobalQueryHandler>,
-                    public albert::ExtensionWatcher<albert::FallbackHandler>
+class QueryEngine : public QObject
 {
     Q_OBJECT
 
@@ -22,44 +22,24 @@ public:
     
     std::unique_ptr<QueryBase> query(const QString &query);
 
-    bool runEmptyQuery() const;
-    void setRunEmptyQuery(bool);
-
-    //
-    // Trigger handlers
-    //
-
     std::map<QString, albert::TriggerQueryHandler*> triggerHandlers();
-    const std::map<QString, albert::TriggerQueryHandler*> &activeTriggerHandlers();
-
-    bool isEnabled(const albert::TriggerQueryHandler*) const;
-    void setEnabled(albert::TriggerQueryHandler*, bool = true);
-
-    void setTrigger(albert::TriggerQueryHandler*, const QString&);
-
-    bool fuzzy(const albert::TriggerQueryHandler*) const;
-    void setFuzzy(albert::TriggerQueryHandler*, bool);
-
-    //
-    // Global handlers
-    //
-
     std::map<QString, albert::GlobalQueryHandler*> globalHandlers();
-
-    bool isEnabled(const albert::GlobalQueryHandler*) const;
-    void setEnabled(albert::GlobalQueryHandler*, bool = true);
-
-    //
-    // Fallback handlers
-    //
-
     std::map<QString, albert::FallbackHandler*> fallbackHandlers();
 
+    // Trigger handlers
+    const std::map<QString, albert::TriggerQueryHandler*> &activeTriggerHandlers();
+    QString trigger(const QString&) const;
+    void setTrigger(const QString&, const QString&);
+    bool fuzzy(const QString&) const;
+    void setFuzzy(const QString&, bool);
+
+    // Global handlers
+    bool isEnabled(const QString&) const;
+    void setEnabled(const QString&, bool = true);
+
+    // Fallback handlers
     std::map<std::pair<QString, QString>, int> fallbackOrder() const;
     void setFallbackOrder(std::map<std::pair<QString, QString>, int>);
-
-    bool isEnabled(const albert::FallbackHandler*) const;
-    void setEnabled(albert::FallbackHandler*, bool = true);
 
 private:
 
@@ -67,23 +47,35 @@ private:
     void saveFallbackOrder() const;
     void loadFallbackOrder();
 
-    void onAdd(albert::TriggerQueryHandler*) override;
-    void onRem(albert::TriggerQueryHandler*) override;
-    void onAdd(albert::GlobalQueryHandler*) override;
-    void onRem(albert::GlobalQueryHandler*) override;
-    void onRem(albert::FallbackHandler*) override;
-    void onAdd(albert::FallbackHandler*) override;
-
     albert::ExtensionRegistry &registry_;
-    bool runEmptyQuery_;
-    std::map<QString, albert::TriggerQueryHandler*> enabled_trigger_handlers_;
+
+    struct TriggerQueryHandler {
+        TriggerQueryHandler(albert::TriggerQueryHandler *h, QString t, bool f):
+            handler(h), trigger(t), fuzzy(f)
+        {}
+        albert::TriggerQueryHandler *handler;
+        QString trigger;
+        bool fuzzy;
+    };
+
+    struct GlobalQueryHandler {
+        GlobalQueryHandler(albert::GlobalQueryHandler *h, bool e):
+            handler(h), enabled(e)
+        {}
+        albert::GlobalQueryHandler *handler;
+        bool enabled;
+    };
+
+    std::map<QString, TriggerQueryHandler> trigger_handlers_;
+    std::map<QString, GlobalQueryHandler> global_handlers_;
+    std::map<QString, albert::FallbackHandler*> fallback_handlers_;
+
     std::map<QString, albert::TriggerQueryHandler*> active_triggers_;
-    std::map<QString, albert::GlobalQueryHandler*>  enabled_global_handlers_;
-    std::map<QString, albert::FallbackHandler*> enabled_fallback_handlers_;
     std::map<std::pair<QString, QString>, int> fallback_order_;
 
 signals:
 
-    void handlersChanged();
+    void handlerAdded();
+    void handlerRemoved();
 
 };

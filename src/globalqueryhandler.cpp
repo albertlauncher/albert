@@ -1,14 +1,10 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #include "albert/query/globalqueryhandler.h"
-#include "globalqueryhandlerprivate.h"
 #include "usagedatabase.h"
 using namespace albert;
 using namespace std;
 
-GlobalQueryHandler::GlobalQueryHandler() : d(new GlobalQueryHandlerPrivate(this)) {}
-
-GlobalQueryHandler::~GlobalQueryHandler() = default;
 
 void GlobalQueryHandler::applyUsageScore(vector<RankItem> *rankItems) const
 { UsageHistory::applyScores(id(), *rankItems); }

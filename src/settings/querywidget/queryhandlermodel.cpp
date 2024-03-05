@@ -1,5 +1,7 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
+#include "albert/query/globalqueryhandler.h"
+#include "albert/query/triggerqueryhandler.h"
 #include "queryengine.h"
 #include "queryhandlermodel.h"
 #include <QCoreApplication>
@@ -10,23 +12,16 @@ using namespace albert;
 using namespace std;
 
 namespace {
-enum class Column {
-    Name,
-    Trigger,
-    THandler,
-    GHandler,
-    Fuzzy,
-};
-static int column_count = 5;
+enum class Column { Name, Trigger, Global, Fuzzy };
+static int column_count = 4;
 }
 
 
 QueryHandlerModel::QueryHandlerModel(QueryEngine &qe, QObject *parent)
     : QAbstractTableModel(parent), engine(qe)
 {
-    connect(&engine, &QueryEngine::handlersChanged,
-            this, &QueryHandlerModel::updateHandlers);
-
+    connect(&engine, &QueryEngine::handlerAdded, this, &QueryHandlerModel::updateHandlers);
+    connect(&engine, &QueryEngine::handlerRemoved, this, &QueryHandlerModel::updateHandlers);
     updateHandlers();
 }
 
@@ -65,63 +60,44 @@ QVariant QueryHandlerModel::data(const QModelIndex &idx, int role) const
 
     else if (idx.column() == (int) Column::Trigger)
     {
+        auto t = engine.trigger(h->id());
+
         if (role == Qt::DisplayRole)
-            return h->trigger().replace(" ", "•");
+            return t.replace(" ", "•");
 
         else if (role == Qt::EditRole)
-            return h->trigger();
+            return t;
 
         else if (role == Qt::ToolTipRole)
         {
             if (!h->allowTriggerRemap())
                 return tr("This extension does not allow trigger remapping.");
-            else if (auto it = engine.activeTriggerHandlers().find(h->trigger());
+            else if (auto it = engine.activeTriggerHandlers().find(t);
                      it != engine.activeTriggerHandlers().end() && it->second != h)
                 return tr("Trigger '%1' is reserved for '%2'.")
-                    .arg(h->trigger(), it->second->name());
-        }
-
-        else if (role == Qt::FontRole && !h->allowTriggerRemap())
-        {
-            QFont f;
-            f.setItalic(true);
-            return f;
+                    .arg(t, it->second->name());
         }
 
         else if (role == Qt::ForegroundRole)
         {
-            if (!engine.isEnabled(h))
-                return QColor(Qt::gray);
-            else if (auto it = engine.activeTriggerHandlers().find(h->trigger());
-                     it == engine.activeTriggerHandlers().end() || it->second != h)
+            if (auto it = engine.activeTriggerHandlers().find(t);
+                it == engine.activeTriggerHandlers().end() || it->second != h)
                 return QColor(Qt::red);
+            else if (!h->allowTriggerRemap())
+                return QColor(Qt::gray);
         }
     }
 
-    else if (idx.column() == (int) Column::THandler)
-    {
-        if (role == Qt::CheckStateRole)
-            return engine.isEnabled(h) ? Qt::Checked : Qt::Unchecked;
-
-        else if (role == Qt::ToolTipRole)
-        {
-            if (engine.isEnabled(h))
-                return tr("Disable trigger query handler.");
-            else
-                return tr("Enable trigger query handler.");
-        }
-    }
-
-    else if (idx.column() == (int) Column::GHandler)
+    else if (idx.column() == (int) Column::Global)
     {
         if (auto *gh = dynamic_cast<const GlobalQueryHandler*>(h); gh)
         {
             if (role == Qt::CheckStateRole)
-                return engine.isEnabled(gh) ? Qt::Checked : Qt::Unchecked;
+                return engine.isEnabled(gh->id()) ? Qt::Checked : Qt::Unchecked;
 
             else if (role == Qt::ToolTipRole)
             {
-                if (engine.isEnabled(gh))
+                if (engine.isEnabled(gh->id()))
                     return tr("Disable global query handler.");
                 else
                     return tr("Enable global query handler.");
@@ -134,11 +110,11 @@ QVariant QueryHandlerModel::data(const QModelIndex &idx, int role) const
         if (h->supportsFuzzyMatching())
         {
             if (role == Qt::CheckStateRole)
-                return engine.fuzzy(h) ? Qt::Checked : Qt::Unchecked;
+                return engine.fuzzy(h->id()) ? Qt::Checked : Qt::Unchecked;
 
             else if (role == Qt::ToolTipRole)
             {
-                if (engine.fuzzy(h))
+                if (engine.fuzzy(h->id()))
                     return tr("Disable fuzzy matching.");
                 else
                     return tr("Enable fuzzy matching.");
@@ -164,30 +140,20 @@ bool QueryHandlerModel::setData(const QModelIndex &idx, const QVariant &value, i
                                          .arg(value.toString(), it->second->name()));
             else
             {
-                engine.setTrigger(h, value.toString());
+                engine.setTrigger(h->id(), value.toString());
                 emit dataChanged(index(idx.row(), idx.column()+1), idx, {Qt::DisplayRole});
                 return true;
             }
         }
     }
 
-    else if (idx.column() == (int)Column::THandler)
-    {
-        if (role == Qt::CheckStateRole)
-        {
-            engine.setEnabled(h, value == Qt::Checked);
-            emit dataChanged(index(idx.row(), idx.column()-1), idx, {Qt::DisplayRole});
-            return true;
-        }
-    }
-
-    else if (idx.column() == (int) Column::GHandler)
+    else if (idx.column() == (int) Column::Global)
     {
         if (auto *gh = dynamic_cast<GlobalQueryHandler*>(h); gh)
         {
             if (role == Qt::CheckStateRole)
             {
-                engine.setEnabled(gh, value == Qt::Checked);
+                engine.setEnabled(gh->id(), value == Qt::Checked);
                 return true;
             }
         }
@@ -195,11 +161,9 @@ bool QueryHandlerModel::setData(const QModelIndex &idx, const QVariant &value, i
 
     else if (idx.column() == (int) Column::Fuzzy)
     {
-        if (auto *thandler = dynamic_cast<TriggerQueryHandler*>(h); thandler){
-            if (role == Qt::CheckStateRole) {
-                engine.setFuzzy(thandler, value == Qt::Checked);
-                return true;
-            }
+        if (role == Qt::CheckStateRole) {
+            engine.setFuzzy(h->id(), value == Qt::Checked);
+            return true;
         }
     }
 
@@ -210,19 +174,17 @@ QVariant QueryHandlerModel::headerData(int section, Qt::Orientation orientation,
 {
     if (role == Qt::DisplayRole)
         switch ((Column) section) {
-        case Column::Name:        return tr("Extension");
-        case Column::Trigger:     return tr("Trigger");
-        case Column::THandler:    return tr("T", "short Trigger");
-        case Column::GHandler:    return tr("G", "short Global");
-        case Column::Fuzzy:       return tr("F", "short Fuzzy");
+        case Column::Name: return tr("Extension");
+        case Column::Trigger: return tr("Trigger");
+        case Column::Global: return tr("G", "short Global");
+        case Column::Fuzzy: return tr("F", "short Fuzzy");
         }
     else if (role == Qt::ToolTipRole)
         switch ((Column) section) {
-        case Column::Name:        return headerData(section, orientation, Qt::DisplayRole);
-        case Column::Trigger:     return tr("The trigger of the handler. Spaces are visualized by •.");
-        case Column::THandler:    return tr("Enabled trigger query handlers.");
-        case Column::GHandler:    return tr("Enabled global query handlers.");
-        case Column::Fuzzy:       return tr("Fuzzy matching.");
+        case Column::Name: return headerData(section, orientation, Qt::DisplayRole);
+        case Column::Trigger: return tr("The trigger of the handler. Spaces are visualized by •.");
+        case Column::Global: return tr("Enabled global query handlers.");
+        case Column::Fuzzy: return tr("Fuzzy matching.");
         }
     return {};
 }
@@ -236,9 +198,7 @@ Qt::ItemFlags QueryHandlerModel::flags(const QModelIndex &idx) const
         return Qt::NoItemFlags;
     case Column::Trigger:
         return h->allowTriggerRemap() ? Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEditable : Qt::NoItemFlags;
-    case Column::THandler:
-        return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable;
-    case Column::GHandler:
+    case Column::Global:
         return dynamic_cast<GlobalQueryHandler*>(h) ? Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable : Qt::NoItemFlags;
     case Column::Fuzzy:
         return h->supportsFuzzyMatching() ? Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable : Qt::NoItemFlags;

@@ -37,15 +37,10 @@ vector<RankItem> IndexQueryHandler::handleGlobalQuery(const GlobalQuery *query) 
     return d->index->search(query->string(), query->isValid());
 }
 
-QString IndexQueryHandler::synopsis() const { return QStringLiteral("<filter>"); }
-
 bool IndexQueryHandler::supportsFuzzyMatching() const { return true; }
-
-bool IndexQueryHandler::fuzzyMatching() const { return d->fuzzy; }
 
 void IndexQueryHandler::setFuzzyMatching(bool value)
 {
-    d->fuzzy = value;
     d->index_mutex.lock();
     d->index = make_unique<ItemIndex>(
         DEF_SEPARATORS, false, GRAM_SIZE,

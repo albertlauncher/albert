@@ -13,6 +13,5 @@ class IndexQueryHandlerPrivate final
 public:
     unique_ptr<Index> index;
     shared_mutex index_mutex;
-    bool fuzzy;
 };
 

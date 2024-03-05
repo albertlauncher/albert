@@ -19,7 +19,9 @@ class ALBERT_EXPORT Extension
 public:
     Extension() = default;
 
-    /// The identifier of this extension
+    /// The identifier of this extension.
+    /// To avoid naming conflicts use the namespace of your plugin,
+    /// e.g. files, files.rootbrowser, files.homebrowser.
     virtual QString id() const = 0;
 
     /// Pretty, human readable name

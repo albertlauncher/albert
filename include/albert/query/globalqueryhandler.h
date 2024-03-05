@@ -4,7 +4,6 @@
 #include "albert/query/rankitem.h"
 #include "albert/query/triggerqueryhandler.h"
 #include <vector>
-class GlobalQueryHandlerPrivate;
 
 namespace albert
 {
@@ -17,9 +16,6 @@ namespace albert
 class ALBERT_EXPORT GlobalQueryHandler : public albert::TriggerQueryHandler
 {
 public:
-    GlobalQueryHandler();
-    ~GlobalQueryHandler() override;
-
     /// The query interface used by GlobalQueryHandler
     class GlobalQuery
     {
@@ -61,8 +57,6 @@ public:
     /// @see handleTriggerQuery and rankItems
     void handleTriggerQuery(TriggerQuery*) const override;
 
-private:
-    std::unique_ptr<GlobalQueryHandlerPrivate> d;
 };
 
 }

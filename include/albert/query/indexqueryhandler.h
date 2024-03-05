@@ -19,14 +19,8 @@ public:
     IndexQueryHandler();
     ~IndexQueryHandler() override;
 
-    /// "<filter>" default synopsis
-    QString synopsis() const override;
-
     /// Returns "True"
     bool supportsFuzzyMatching() const override;
-
-    /// Return the fuzzy mode of the internal index
-    bool fuzzyMatching() const override;
 
     /// Set the fuzzy mode of the internal index.
     /// Triggers a rebuild by calling updateIndexItems.

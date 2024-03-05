@@ -133,7 +133,7 @@ QString App::loadFrontend(PluginLoader *loader)
                 session = make_unique<Session>(query_engine, *frontend);
         });
 
-        QObject::connect(&query_engine, &QueryEngine::handlersChanged, this, [this]{
+        QObject::connect(&query_engine, &QueryEngine::handlerRemoved, this, [this]{
             if (frontend->isVisible())
             {
                 session.reset();

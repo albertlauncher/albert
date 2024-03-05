@@ -1,13 +1,14 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
+#include "albert/query/fallbackprovider.h"
+#include "albert/query/item.h"
 #include "fallbacksmodel.h"
-#include "QtCore/qiodevice.h"
-#include "QtCore/qmimedata.h"
-#include "albert/logging.h"
 #include "queryengine.h"
 #include <QCoreApplication>
 #include <QHeaderView>
+#include <QIODevice>
 #include <QMessageBox>
+#include <QMimeData>
 using namespace albert;
 using namespace std;
 
@@ -21,7 +22,8 @@ static int column_count = 2;
 
 FallbacksModel::FallbacksModel(QueryEngine &e, QObject *p) : QAbstractTableModel(p), engine(e)
 {
-    connect(&e, &QueryEngine::handlersChanged, this, &FallbacksModel::updateFallbackList);
+    connect(&e, &QueryEngine::handlerAdded, this, &FallbacksModel::updateFallbackList);
+    connect(&e, &QueryEngine::handlerRemoved, this, &FallbacksModel::updateFallbackList);
     updateFallbackList();
 }
 
@@ -32,9 +34,8 @@ void FallbacksModel::updateFallbackList()
     fallbacks.clear();
 
     for (const auto &[hid, h] : engine.fallbackHandlers())
-        if (engine.isEnabled(h))
-            for (auto f : h->fallbacks("…"))
-                fallbacks.emplace_back(h, f);
+        for (auto f : h->fallbacks("…"))
+            fallbacks.emplace_back(h, f);
 
     auto order = engine.fallbackOrder();
 

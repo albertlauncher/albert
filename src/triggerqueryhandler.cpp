@@ -1,14 +1,7 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #include "albert/query/triggerqueryhandler.h"
-#include "triggerqueryhandlerprivate.h"
 using namespace albert;
-
-TriggerQueryHandler::TriggerQueryHandler() : d(new TriggerQueryHandlerPrivate) {}
-
-TriggerQueryHandler::~TriggerQueryHandler() = default;
-
-QString TriggerQueryHandler::trigger() const { return d->user_trigger; }
 
 QString TriggerQueryHandler::synopsis() const { return {}; }
 
@@ -16,8 +9,8 @@ QString TriggerQueryHandler::defaultTrigger() const { return QString("%1 ").arg(
 
 bool TriggerQueryHandler::allowTriggerRemap() const { return true; }
 
-bool TriggerQueryHandler::supportsFuzzyMatching() const { return false; }
+void TriggerQueryHandler::setTrigger(const QString &) {}
 
-bool TriggerQueryHandler::fuzzyMatching() const { return false; }
+bool TriggerQueryHandler::supportsFuzzyMatching() const { return false; }
 
 void TriggerQueryHandler::setFuzzyMatching(bool) { }

@@ -166,20 +166,6 @@ Recommended is a value in between, because it allows best of both worlds: The re
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_runEmptyQuery">
-       <property name="text">
-        <string>Run empty query</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QCheckBox" name="checkBox_runEmptyQuery">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
     </layout>
    </item>
    <item row="0" column="0" rowspan="2">

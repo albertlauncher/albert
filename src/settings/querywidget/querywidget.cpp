@@ -19,10 +19,6 @@ QueryWidget::QueryWidget(QueryEngine &qe)
     QObject::connect(ui.checkBox_prioritizePerfectMatch, &QCheckBox::toggled, this,
                      [](bool val){ UsageHistory::setPrioritizePerfectMatch(val); });
 
-    ui.checkBox_runEmptyQuery->setChecked(qe.runEmptyQuery());
-    QObject::connect(ui.checkBox_runEmptyQuery, &QCheckBox::toggled, this,
-                     [&qe](bool val){ qe.setRunEmptyQuery(val); });
-
     for (auto *tv : {ui.tableView_queryHandlers, ui.tableView_fallbackOrder})
     {
         tv->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -44,7 +40,8 @@ QueryWidget::QueryWidget(QueryEngine &qe)
         width += + qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent);
         ui.tableView_queryHandlers->setFixedWidth(width + 2);  // 2: Frame spacing?
     };
-    connect(&qe, &QueryEngine::handlersChanged, this, updateWidth);
+    connect(&qe, &QueryEngine::handlerAdded, this, updateWidth);
+    connect(&qe, &QueryEngine::handlerRemoved, this, updateWidth);
     updateWidth();
 }
 

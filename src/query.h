@@ -8,6 +8,7 @@
 #include "itemsmodel.h"
 #include <QFutureWatcher>
 namespace albert { class Item; }
+class QueryEngine;
 
 class QueryBase : public albert::Query
 {
