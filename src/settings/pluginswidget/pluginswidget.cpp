@@ -30,11 +30,16 @@ PluginsWidget::PluginsWidget(PluginRegistry &plugin_registry) : model_(new Plugi
     listView_plugins->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     listView_plugins->setEditTriggers(QAbstractItemView::NoEditTriggers);
     listView_plugins->setProperty("showDropIndicator", QVariant(false));
-    listView_plugins->setSpacing(1);
     listView_plugins->setUniformItemSizes(true);
     listView_plugins->setModel(model_.get());
     listView_plugins->setMaximumWidth(listView_plugins->sizeHintForColumn(0)
                                       + qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent));
+
+#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
+    // Some styles on linux have bigger icons than rows
+    auto rh = listView_plugins->sizeHintForRow(0);
+    listView_plugins->setIconSize(QSize(rh, rh));
+#endif
 
     splitter->addWidget(listView_plugins);
 
