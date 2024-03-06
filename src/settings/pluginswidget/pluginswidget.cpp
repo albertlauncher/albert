@@ -105,7 +105,10 @@ void PluginsWidget::onUpdatePluginWidget()
         // Config widget
         if (auto *inst = p.instance(); inst)
             if (auto *cw = inst->buildConfigWidget())
+            {
+                cw->layout()->setContentsMargins(0,0,0,0);
                 vl->addWidget(cw, 1); // Strech=1
+            }
     }
     else if (!p.stateInfo().isEmpty())
     {
