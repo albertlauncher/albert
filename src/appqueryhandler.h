@@ -2,11 +2,13 @@
 
 #pragma once
 #include "albert/extension/queryhandler/globalqueryhandler.h"
-#include <QObject>
+#include <QCoreApplication>
 namespace albert { class ExtensionRegistry; }
 
 class AppQueryHandler : public albert::GlobalQueryHandler
 {
+    Q_DECLARE_TR_FUNCTIONS(AppQueryHandler)
+
 public:
     AppQueryHandler(albert::ExtensionRegistry *);
     QString id() const override;
@@ -19,5 +21,5 @@ private:
     albert::ExtensionRegistry *registry_;
     std::vector<std::shared_ptr<albert::Item>> items_;
     static const QStringList icon_urls;
-};
 
+};

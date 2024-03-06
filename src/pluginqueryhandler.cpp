@@ -1,37 +1,13 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2023-2024 Manuel Schneider
 
 #include "albert/albert.h"
 #include "albert/extension/pluginprovider/pluginmetadata.h"
 #include "pluginqueryhandler.h"
 #include "pluginregistry.h"
-#include <QCoreApplication>
 #include <QMessageBox>
 #include <QWidget>
 using namespace albert;
 using namespace std;
-
-PluginQueryHandler::PluginQueryHandler(PluginRegistry &plugin_registry) : plugin_registry_(plugin_registry)
-{
-    QObject::connect(&plugin_registry_, &PluginRegistry::pluginsChanged,
-                     &plugin_registry_, [this](){ updateIndexItems(); });
-}
-
-QString PluginQueryHandler::id() const
-{ return QStringLiteral("pluginregistry"); }
-
-QString PluginQueryHandler::name() const
-{
-    static const auto tr = QCoreApplication::translate("PluginQueryHandler", "Plugins");
-    return tr;
-}
-
-QString PluginQueryHandler::description() const
-{
-    static const auto tr = QCoreApplication::translate("PluginQueryHandler", "Manage plugins");
-    return tr;
-}
-
-QString PluginQueryHandler::defaultTrigger() const { return QStringLiteral("plugin "); }
 
 
 class PluginItem : public Item
@@ -53,22 +29,22 @@ public:
         QString state;
         if (plugin_.state() == Plugin::State::Loaded)
         {
-            static const auto tr_loaded = QCoreApplication::translate("PluginItem", "Loaded");
+            static const auto tr_loaded = PluginQueryHandler::tr("Loaded");
             state = tr_loaded;
         }
         else
         {
-            static const auto tr_unloaded = QCoreApplication::translate("PluginItem", "Unloaded");
+            static const auto tr_unloaded = PluginQueryHandler::tr("Unloaded");
             state = tr_unloaded;
         }
 
         if (!plugin_.stateInfo().isEmpty())
             state.append(QString(" (%1)").arg(plugin_.stateInfo()));
 
-        static const auto tr_config = QCoreApplication::translate("PluginItem", "Configuration");
-        static const auto tr_enabled = QCoreApplication::translate("PluginItem", "Enabled");
-        static const auto tr_disabled = QCoreApplication::translate("PluginItem", "Disabled");
-        static const auto tr_state = QCoreApplication::translate("PluginItem", "State");
+        static const auto tr_config = PluginQueryHandler::tr("Configuration");
+        static const auto tr_enabled = PluginQueryHandler::tr("Enabled");
+        static const auto tr_disabled = PluginQueryHandler::tr("Disabled");
+        static const auto tr_state = PluginQueryHandler::tr("State");
         return QString("%1: %2, %3: %4")
             .arg(tr_config, plugin_.isEnabled() ? tr_enabled : tr_disabled,
                  tr_state, state);
@@ -93,7 +69,7 @@ public:
     {
         vector<Action> actions;
 
-        static const auto tr_open_settings = QCoreApplication::translate("PluginItem", "Open settings");
+        static const auto tr_open_settings = PluginQueryHandler::tr("Open settings");
         actions.emplace_back(
             "settings",
             tr_open_settings,
@@ -102,7 +78,7 @@ public:
 
         if (plugin_.isEnabled())
         {
-            static const auto tr_disable = QCoreApplication::translate("PluginItem", "Disable");
+            static const auto tr_disable = PluginQueryHandler::tr("Disable");
             actions.emplace_back(
                 "disable",
                 tr_disable,
@@ -111,7 +87,7 @@ public:
         }
         else
         {
-            static const auto tr_enable = QCoreApplication::translate("PluginItem", "Enable");
+            static const auto tr_enable = PluginQueryHandler::tr("Enable");
             actions.emplace_back(
                 "enable",
                 tr_enable,
@@ -123,14 +99,14 @@ public:
         {
             if (plugin_.isUser())
             {
-                static const auto tr_unload = QCoreApplication::translate("PluginItem", "Unload");
+                static const auto tr_unload = PluginQueryHandler::tr("Unload");
                 actions.emplace_back(
                     "unload",
                     tr_unload,
                     [this](){ plugin_registry_.unload(id()); }
                     );
 
-                static const auto tr_reload = QCoreApplication::translate("PluginItem", "Reload");
+                static const auto tr_reload = PluginQueryHandler::tr("Reload");
                 actions.emplace_back(
                     "reload",
                     tr_reload,
@@ -140,7 +116,7 @@ public:
         }
         else  // by contract only unloaded
         {
-            static const auto tr_load = QCoreApplication::translate("PluginItem", "Load");
+            static const auto tr_load = PluginQueryHandler::tr("Load");
             actions.emplace_back(
                 "load",
                 tr_load,
@@ -151,6 +127,25 @@ public:
         return actions;
     }
 };
+
+
+PluginQueryHandler::PluginQueryHandler(PluginRegistry &plugin_registry) : plugin_registry_(plugin_registry)
+{
+    QObject::connect(&plugin_registry_, &PluginRegistry::pluginsChanged,
+                     &plugin_registry_, [this](){ updateIndexItems(); });
+}
+
+QString PluginQueryHandler::id() const
+{ return QStringLiteral("pluginregistry"); }
+
+QString PluginQueryHandler::name() const
+{ return tr("Plugins"); }
+
+QString PluginQueryHandler::description() const
+{ return tr("Manage plugins"); }
+
+QString PluginQueryHandler::defaultTrigger() const
+{ return QStringLiteral("plugin "); }
 
 void PluginQueryHandler::updateIndexItems()
 {

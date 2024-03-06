@@ -127,9 +127,11 @@ void PluginRegistry::load(const QString &id)
                 errors << p->id() << err;
 
         if (!errors.isEmpty())
-            QMessageBox::warning(nullptr, qApp->applicationDisplayName(),
-                                 tr("Failed loading plugin(s):\n\n%1", nullptr, errors.size())
-                                    .arg(errors.join("\n")));
+        {
+            auto t = QString("%1:\n\n%2").arg(tr("Failed loading plugins", nullptr, errors.size()),
+                                              errors.join("\n"));
+            QMessageBox::warning(nullptr, qApp->applicationDisplayName(), t);
+        }
     }
     catch (const std::out_of_range &) {
         WARN << "Plugin does not exist:" << id;
@@ -153,8 +155,11 @@ void PluginRegistry::unload(const QString &id)
                 errors << p->id() << err;
 
         if (!errors.isEmpty())
-            QMessageBox::warning(nullptr, qApp->applicationDisplayName(),
-                                 tr("Failed unloading plugins:\n\n%1").arg(errors.join("\n")));
+        {
+            auto t = QString("%1:\n\n%2").arg(tr("Failed unloading plugins", nullptr, errors.size()),
+                                              errors.join("\n"));
+            QMessageBox::warning(nullptr, qApp->applicationDisplayName(), t);
+        }
     }
     catch (const std::out_of_range &) {
         WARN << "Plugin does not exist:" << id;

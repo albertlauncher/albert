@@ -1,17 +1,23 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
 #include "albert/extension/queryhandler/indexqueryhandler.h"
+#include <QCoreApplication>
 class PluginRegistry;
 
 class PluginQueryHandler : public albert::IndexQueryHandler
 {
-    PluginRegistry &plugin_registry_;
+    Q_DECLARE_TR_FUNCTIONS(PluginQueryHandler)
+
 public:
     PluginQueryHandler(PluginRegistry &plugin_registry);
+
     QString id() const override;
     QString name() const override;
     QString description() const override;
     QString defaultTrigger() const override;
     void updateIndexItems() override;
+
+private:
+    PluginRegistry &plugin_registry_;
 };
