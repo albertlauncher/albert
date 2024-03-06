@@ -26,5 +26,6 @@ private:
     std::unique_ptr<PluginsModel> model_;
     QListView *listView_plugins;
     QScrollArea *scrollArea_info;
+    uint margin_size;
 };
 

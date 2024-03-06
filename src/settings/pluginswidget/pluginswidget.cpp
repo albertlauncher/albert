@@ -21,8 +21,8 @@ PluginsWidget::PluginsWidget(PluginRegistry &plugin_registry) : model_(new Plugi
 
     QSplitter *splitter = new QSplitter(this);
     QHBoxLayout *horizontalLayout = new QHBoxLayout(this);
-    horizontalLayout->setContentsMargins(splitter->handleWidth(), splitter->handleWidth(),
-                                         splitter->handleWidth(), splitter->handleWidth());
+    margin_size = splitter->handleWidth();
+    horizontalLayout->setContentsMargins(margin_size, margin_size, margin_size, margin_size);
 
     horizontalLayout->addWidget(splitter);
 
@@ -87,6 +87,7 @@ void PluginsWidget::onUpdatePluginWidget()
     auto &p = *model_->plugins_[current.row()];
     auto *widget = new QWidget;
     auto *vl = new QVBoxLayout;
+    vl->setContentsMargins(margin_size, margin_size, margin_size, margin_size);
     widget->setLayout(vl);
 
     // // Title
@@ -95,7 +96,7 @@ void PluginsWidget::onUpdatePluginWidget()
     // // Description
     // vl->addWidget(new QLabel(QString("<span style=\"font-size:11pt;font-style:italic;\">%1</span>").arg(p.metaData().description)));
 
-    vl->addWidget(new QLabel(QString("<span style=\"font-size:16pt;font-weight:600;\">%1</span><br>"
+    vl->addWidget(new QLabel(QString("<span style=\"font-size:16pt;\">%1</span><br>"
                                      "<span style=\"font-size:11pt;font-weight:lighter;font-style:italic;\">%2</span>")
                                                .arg(p.metaData().name, p.metaData().description)));
 
