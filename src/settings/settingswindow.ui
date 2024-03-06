@@ -19,11 +19,6 @@
   <property name="windowTitle">
    <string>Settings</string>
   </property>
-  <property name="styleSheet">
-   <string notr="true">/* Workaround QTBUG-122149 not adopting theme change */
-QScrollArea { background: transparent; }
-QScrollArea &gt; QWidget &gt; QWidget { background: transparent; }</string>
-  </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
     <number>0</number>
