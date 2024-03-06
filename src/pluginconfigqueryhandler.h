@@ -1,15 +1,17 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2024 Manuel Schneider
 
 #pragma once
 #include "albert/extension/queryhandler/globalqueryhandler.h"
 #include <QCoreApplication>
+class PluginRegistry;
 
-class AppQueryHandler : public albert::GlobalQueryHandler
+class PluginConfigQueryHandler : public albert::GlobalQueryHandler
 {
-    Q_DECLARE_TR_FUNCTIONS(AppQueryHandler)
+    Q_DECLARE_TR_FUNCTIONS(PluginConfigQueryHandler)
 
 public:
-    AppQueryHandler();
+    PluginConfigQueryHandler(PluginRegistry&);
+
     QString id() const override;
     QString name() const override;
     QString description() const override;
@@ -17,7 +19,8 @@ public:
     std::vector<albert::RankItem> handleGlobalQuery(const GlobalQuery*) const override;
 
 private:
-    std::vector<std::shared_ptr<albert::Item>> items_;
+    PluginRegistry &plugin_registry_;
     static const QStringList icon_urls;
 
 };
+

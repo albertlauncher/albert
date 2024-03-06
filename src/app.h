@@ -4,6 +4,7 @@
 #include "albert/extensionregistry.h"
 #include "appqueryhandler.h"
 #include "hotkey.h"
+#include "pluginconfigqueryhandler.h"
 #include "pluginqueryhandler.h"
 #include "pluginregistry.h"
 #include "qtpluginprovider.h"
@@ -49,6 +50,7 @@ public:
 
     AppQueryHandler app_query_handler;
     PluginQueryHandler plugin_query_handler;
+    PluginConfigQueryHandler plugin_config_query_handler;
 
     static App *instance();
 

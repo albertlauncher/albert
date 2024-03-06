@@ -25,8 +25,8 @@ App::App(const QStringList &additional_plugin_paths, bool load_enabled) :
     query_engine(extension_registry),
     plugin_provider(additional_plugin_paths),
     settings_window(nullptr),
-    app_query_handler(&extension_registry),
-    plugin_query_handler(plugin_registry)
+    plugin_query_handler(plugin_registry),
+    plugin_config_query_handler(plugin_registry)
 {
     if (app_instance)
         qFatal("No multiple app instances allowed");
@@ -49,6 +49,7 @@ void App::initialize()
 
     extension_registry.registerExtension(&app_query_handler);
     extension_registry.registerExtension(&plugin_query_handler);
+    extension_registry.registerExtension(&plugin_config_query_handler);
     extension_registry.registerExtension(&plugin_provider);  // loads plugins
 }
 
@@ -61,6 +62,7 @@ void App::finalize()
     session.reset();
 
     extension_registry.deregisterExtension(&plugin_provider);  // unloads plugins
+    extension_registry.deregisterExtension(&plugin_config_query_handler);
     extension_registry.deregisterExtension(&plugin_query_handler);
     extension_registry.deregisterExtension(&app_query_handler);
 
