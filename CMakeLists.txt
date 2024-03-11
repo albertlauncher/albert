@@ -21,11 +21,6 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-# Set standard
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 # Set additional compiler flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
     -Winline \
@@ -144,6 +139,9 @@ target_link_libraries(${TARGET_LIB}
 
 set_target_properties(${TARGET_LIB} PROPERTIES
     #INSTALL_RPATH "$ORIGIN"
+    CXX_STANDARD 20
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
     CXX_VISIBILITY_PRESET hidden
     FRAMEWORK TRUE
     FRAMEWORK_VERSION A
@@ -213,8 +211,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD
 
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-    set_target_properties(${TARGET_APP} PROPERTIES MACOSX_BUNDLE TRUE)
-
     set(ICON_NAME "albert")
     set(ICON_PATH "dist/macos/${ICON_NAME}.icns")
     target_sources(${TARGET_APP} PRIVATE ${ICON_PATH})
@@ -223,6 +219,7 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
     set_target_properties(${TARGET_APP} PROPERTIES
         BUNDLE True
+        MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_BUNDLE_NAME "${PROJECT_DISPLAY_NAME}"
         MACOSX_BUNDLE_BUNDLE_VERSION "${CMAKE_PROJECT_VERSION}"
         MACOSX_BUNDLE_COPYRIGHT "Copyright (c) 2023 Manuel Schneider"

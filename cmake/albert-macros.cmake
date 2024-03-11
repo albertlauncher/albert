@@ -93,10 +93,12 @@ macro(albert_plugin_add_default_target)
             albert::albert
     )
 
-    set_target_properties(${PROJECT_NAME}
-        PROPERTIES
-            CXX_VISIBILITY_PRESET hidden
-            VISIBILITY_INLINES_HIDDEN 1
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+        CXX_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN 1
     )
 
     if (DEFINED ARG_TS_FILES)
