@@ -32,12 +32,12 @@ InputHistory::~InputHistory()
     }
 }
 
-void InputHistory::add(const QString& str)
+void InputHistory::add(const QString& s)
 {
-    if (auto trimmed = str.trimmed(); !trimmed.isEmpty()){
-        if (lines_.contains(trimmed))
-            lines_.removeAll(trimmed); // Remove dups
-        lines_ << trimmed;
+    if (!s.isEmpty()){
+        if (lines_.contains(s))
+            lines_.removeAll(s); // Remove dups
+        lines_ << s;
     }
     resetIterator();
 }
