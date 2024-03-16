@@ -106,7 +106,8 @@ void PluginsWidget::onUpdatePluginWidget()
         if (auto *inst = p.instance(); inst)
             if (auto *cw = inst->buildConfigWidget())
             {
-                cw->layout()->setContentsMargins(0,0,0,0);
+                if (auto * cwl = cw->layout())
+                    cwl->setContentsMargins(0,0,0,0);
                 vl->addWidget(cw, 1); // Strech=1
             }
     }
