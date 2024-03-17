@@ -25,6 +25,7 @@ Q_LOGGING_CATEGORY(AlbertLoggingCategory, "albert")
 using namespace std;
 using namespace albert;
 static App *app;
+static bool have_paste_support{false};
 
 
 static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
@@ -157,6 +158,17 @@ int main(int argc, char **argv)
     UnixSignalHandler unix_signal_handler;
 #endif
 
+#if defined Q_OS_MACOS
+    have_paste_support = !QStandardPaths::findExecutable("osascript").isEmpty();
+#elif defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
+    have_paste_support = !QStandardPaths::findExecutable("xdotool").isEmpty();
+    if(!have_paste_support)
+        WARN << "xdotool is not available. No paste support.";
+    else if(qgetenv("XDG_SESSION_TYPE") != "x11")
+        WARN << "xdotool is available but but session type is not x11. "
+                "Paste will work for X11 windows only.";
+#endif
+
     app = new App(parser.value(opt_p).split(',', Qt::SkipEmptyParts), !parser.isSet(opt_n));
     app->initialize();
     int return_value = qApp->exec();
@@ -249,29 +261,42 @@ void albert::setClipboardText(const QString &text)
     QGuiApplication::clipboard()->setText(text, QClipboard::Selection);
 }
 
+bool albert::havePasteSupport()
+{ return have_paste_support; }
+
 void albert::setClipboardTextAndPaste(const QString &text)
 {
     setClipboardText(text);
+    if (!have_paste_support)
+    {
+        auto t = "Received a request to paste, although the feature is not supported. "
+                 "Looks like the plugin did not check for feature support before. "
+                 "Please report this issue.";
+        WARN << t;
+        QMessageBox::warning(nullptr, qApp->applicationDisplayName(), t);
+        return;
+    }
+
 #if defined Q_OS_MACOS
     runDetachedProcess({
         "osascript", "-e",
         R"(tell application "System Events" to keystroke "v" using command down)"
     });
 #elif defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
-    if (qApp->platformName() == QStringLiteral("wayland")){
-        QMessageBox::information(nullptr, qApp->applicationDisplayName(), "Pasting is not supported on wayland.");
-    } else {
-        QApplication::processEvents(); // ??
-        auto *proc = new QProcess;
-        proc->start("sh" , {"-c", "sleep 0.1 && xdotool key ctrl+v"});
-        QObject::connect(proc, &QProcess::finished, proc, [proc](int exitCode, QProcess::ExitStatus exitStatus){
-            if (exitStatus != QProcess::ExitStatus::NormalExit || exitCode != EXIT_SUCCESS){
-                WARN << "Paste failed. xdotool installed?";
-                QMessageBox::warning(nullptr, "Error", "Paste failed. xdotool installed?");
-            }
-            proc->deleteLater();
-        });
-    }
+    QApplication::processEvents(); // ??
+    auto *proc = new QProcess;
+    proc->start("sh" , {"-c", "sleep 0.1 && xdotool key ctrl+v"});
+    QObject::connect(proc, &QProcess::finished, proc, [proc](int exitCode, QProcess::ExitStatus exitStatus){
+        if (exitStatus != QProcess::ExitStatus::NormalExit || exitCode != EXIT_SUCCESS)
+        {
+            WARN << QString("Paste failed (%1).").arg(exitCode);
+            if (auto out = proc->readAllStandardOutput(); out.isEmpty())
+                WARN << out;
+            if (auto err = proc->readAllStandardError(); err.isEmpty())
+                WARN << err;
+        }
+        proc->deleteLater();
+    });
 #elif defined Q_OS_WIN
 Not implemented
 #endif

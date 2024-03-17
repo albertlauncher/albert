@@ -60,7 +60,11 @@ ALBERT_EXPORT void openUrl(const QString &url);
 /// Set the system clipboard.
 ALBERT_EXPORT void setClipboardText(const QString &text);
 
+/// Returns true if requirements for setClipboardTextAndPaste(…) are met.
+ALBERT_EXPORT bool havePasteSupport();
+
 /// Set the system clipboard and paste the content to the front-most window.
+/// Check havePasteSupport before using this function.
 ALBERT_EXPORT void setClipboardTextAndPaste(const QString &text);
 
 /// Run a detached process.
