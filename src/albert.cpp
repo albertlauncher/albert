@@ -243,12 +243,6 @@ void albert::openWebsite()
     QDesktopServices::openUrl(QUrl(website_url));
 }
 
-void albert::openIssueTracker()
-{
-    static const char *issue_tracker_url = "https://github.com/albertlauncher/albert/issues";
-    QDesktopServices::openUrl(QUrl(issue_tracker_url));
-}
-
 void albert::setClipboardText(const QString &text)
 {
     QGuiApplication::clipboard()->setText(text, QClipboard::Clipboard);

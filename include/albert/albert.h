@@ -57,9 +57,6 @@ ALBERT_EXPORT void openUrl(const QUrl &url);
 /// Open the specified url in default browser.
 ALBERT_EXPORT void openUrl(const QString &url);
 
-/// Open the albert issue tracker in default browser.
-ALBERT_EXPORT void openIssueTracker();
-
 /// Set the system clipboard.
 ALBERT_EXPORT void setClipboardText(const QString &text);
 
