@@ -32,7 +32,7 @@
    <property name="bottomMargin">
     <number>0</number>
    </property>
-   <item row="0" column="0">
+   <item row="3" column="0">
     <widget class="QTabWidget" name="tabs">
      <property name="styleSheet">
       <string notr="true">QTabWidget::pane { border-radius: 0px; }</string>
@@ -44,126 +44,92 @@
       <attribute name="title">
        <string>General</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>6</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
-        <number>0</number>
-       </property>
-       <item>
-        <widget class="QScrollArea" name="scrollArea_general">
-         <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
+      <layout class="QFormLayout" name="formLayout_general">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_frontend">
+         <property name="text">
+          <string>Frontend</string>
          </property>
-         <property name="widgetResizable">
-          <bool>true</bool>
+         <property name="buddy">
+          <cstring>comboBox_frontend</cstring>
          </property>
-         <widget class="QWidget" name="scrollAreaGeneralContents">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>800</width>
-            <height>567</height>
-           </rect>
-          </property>
-          <layout class="QFormLayout" name="formLayout_general">
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_show_tray">
-             <property name="text">
-              <string>Show tray icon</string>
-             </property>
-             <property name="buddy">
-              <cstring>checkBox_showTray</cstring>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QCheckBox" name="checkBox_showTray">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="toolTip">
-              <string>If this option is enabled, albert displays an icon in the system tray area.</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_frontend">
-             <property name="text">
-              <string>Frontend</string>
-             </property>
-             <property name="buddy">
-              <cstring>comboBox_frontend</cstring>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QComboBox" name="comboBox_frontend">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="toolTip">
-              <string>Choose the frontend to use.</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_term">
-             <property name="text">
-              <string>Terminal</string>
-             </property>
-             <property name="buddy">
-              <cstring>comboBox_term</cstring>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <layout class="QVBoxLayout" name="verticalLayout_3">
-             <item>
-              <widget class="QComboBox" name="comboBox_term">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="toolTip">
-                <string>Choose the terminal to use.</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_5">
-               <property name="text">
-                <string>&lt;span style=&quot; font-size:9pt; color:#808080;&quot;&gt;If you are missing your favourite terminal please post an &lt;a href=&quot;https://github.com/albertlauncher/albert/issues/new?assignees=ManuelSchneid3r&amp;amp;title=Terminal%20missing&quot;&gt;issue&lt;/a&gt;.&lt;/span&gt;</string>
-               </property>
-               <property name="openExternalLinks">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </widget>
         </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="comboBox_frontend">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>Choose the frontend to use.</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_show_tray">
+         <property name="text">
+          <string>Show tray icon</string>
+         </property>
+         <property name="buddy">
+          <cstring>checkBox_showTray</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="checkBox_showTray">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>If this option is enabled, albert displays an icon in the system tray area.</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_term">
+         <property name="text">
+          <string>Terminal</string>
+         </property>
+         <property name="buddy">
+          <cstring>comboBox_term</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QComboBox" name="comboBox_term">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip">
+            <string>Choose the terminal to use.</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>&lt;span style=&quot; font-size:9pt; color:#808080;&quot;&gt;If you are missing your favourite terminal please post an &lt;a href=&quot;https://github.com/albertlauncher/albert/issues/new?assignees=ManuelSchneid3r&amp;amp;title=Terminal%20missing&quot;&gt;issue&lt;/a&gt;.&lt;/span&gt;</string>
+           </property>
+           <property name="openExternalLinks">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
@@ -172,10 +138,6 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>tabs</tabstop>
-  <tabstop>checkBox_showTray</tabstop>
-  <tabstop>scrollArea_general</tabstop>
-  <tabstop>comboBox_frontend</tabstop>
   <tabstop>comboBox_term</tabstop>
  </tabstops>
  <resources/>
