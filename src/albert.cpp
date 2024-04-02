@@ -87,10 +87,7 @@ static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
     QApplication::setApplicationName("albert");
     QApplication::setApplicationDisplayName("Albert");
     QApplication::setApplicationVersion(ALBERT_VERSION_STRING);
-    albert::IconProvider ip;
-    QSize size;
-    QIcon icon(ip.getPixmap({"xdg:albert", "qrc:app_icon"}, &size, QSize(64, 64)));
-    QApplication::setWindowIcon(QIcon(icon));
+    QApplication::setWindowIcon(iconFromUrls({"xdg:albert", "qrc:app_icon"}));
     QApplication::setQuitOnLastWindowClosed(false);
 
     // Create writable application paths

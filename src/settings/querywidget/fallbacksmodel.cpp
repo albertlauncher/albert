@@ -2,6 +2,7 @@
 
 #include "albert/query/fallbackprovider.h"
 #include "albert/query/item.h"
+#include "albert/util/iconprovider.h"
 #include "fallbacksmodel.h"
 #include "queryengine.h"
 #include <QCoreApplication>
@@ -62,12 +63,7 @@ QVariant FallbacksModel::data(const QModelIndex &index, int role) const
     if (c == Column::Name)
     {
         if (role == Qt::DecorationRole)
-        {
-            QSize size;
-            auto pm = icon_provider.getPixmap(i->iconUrls(), &size, QSize(32, 32));
-            pm.setDevicePixelRatio(2);
-            return QIcon(pm);
-        }
+            return iconFromUrls(i->iconUrls());
 
         else if (role == Qt::DisplayRole)
             return i->text();

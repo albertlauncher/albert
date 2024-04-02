@@ -2,7 +2,6 @@
 
 #pragma once
 #include <QAbstractTableModel>
-#include "albert/util/iconprovider.h"
 #include <vector>
 class QueryEngine;
 namespace albert {
@@ -36,6 +35,5 @@ private:
 
     QueryEngine &engine;
     std::vector<std::pair<albert::FallbackHandler*, std::shared_ptr<albert::Item>>> fallbacks;
-    albert::IconProvider icon_provider;
 
 };

@@ -2,72 +2,129 @@
 
 #pragma once
 #include "albert/export.h"
+#include <QIcon>
 #include <QPixmap>
 #include <QSize>
 #include <QStringList>
 
 namespace albert{
 
-/// Generic pixmap provider.
+///
+/// URL based icon factory.
+///
+/// Supported URL schemes:
+///
+/// - `<path>` or
+/// - `file:<path>` Use the file at path as icon.
+/// - `:<path>` or
+/// - `qrc:<path>` Use the file at path in the [resource collection] as icon.
+/// - `qfip:<path>` Uses fileIcon(const QString &path)
+/// - `qsp:<pixmap enumerator>` Get an icon from [QStyle::StandardPixmap] enum.
+/// - `xdg:<icon name>` Uses xdgIconLookup(const QString &name);
+/// - `gen:<>` Uses genericPixmapFactory. See also [QColor::fromString].
+///
+/// Examples
+///
+///     /absolute/path/to/a/local/image/file.png
+///     file:/absolute/path/to/a/local/image/file.png
+///     :path-to-a-qresource-file
+///     qrc:path-to-a-qresource-file
+///     qfip:/path/to/any/file/for/example/a.pdf
+///     qsp:SP_TrashIcon
+///     xdg:some-themed-icon-name
+///     gen:?background=blue&foreground=red&text=Hi&fontscalar=0.5
+///
+/// \param url The icon URL.
+/// \param requestedSize The size the pixmap should have if possible.
+/// \returns The pixmap, if available, null pixmap otherwise. The size can be smaller
+///         than requestedSize, but is never larger.
+///
+/// [resource collection]: https://doc.qt.io/qt-6/resources.html
+/// [QStyle::StandardPixmap]: https://doc.qt.io/qt-6/qstyle.html#StandardPixmap-enum
+/// [QColor::fromString]: https://doc.qt.io/qt/qcolor.html#fromString
+///
+QPixmap ALBERT_EXPORT pixmapFromUrl(const QString &url, const QSize &requestedSize);
 
-class ALBERT_EXPORT IconProvider
-{
-public:
-    IconProvider();
-    ~IconProvider();
+///
+/// URL list based icon factory.
+///
+/// See pixmapFromUrl(const QString &url, QSize *size, const QSize &requestedSize).
+///
+/// \param urls The icon URLs.
+/// \param requestedSize The size the pixmap should have if possible.
+/// \returns The first pixmap available in the urls list. Null pixmap otherwise.
+///
+QPixmap ALBERT_EXPORT pixmapFromUrls(const QStringList &urls, const QSize &requestedSize);
 
-    /// Pixmap providing function.
-    /// See getPixmap(const QString &url, QSize *size, const QSize &requestedSize) const for supported urls.
-    /// \param urls The URLs of the pixmap to be created.
-    /// \param size Will get assigned the actual size of the pixmap created
-    /// \param requestedSize The size the pixmap should have if possible.
-    /// \returns The first pixmap available in the urls list. Null pixmap otherwise.
-    QPixmap getPixmap(const QStringList &urls, QSize *size, const QSize &requestedSize) const;
+///
+/// URL based icon factory.
+///
+/// \copydetails pixmapFromUrl(const QString &url, QSize *size, const QSize &requestedSize)
+///
+/// \param url The icon URL.
+/// \returns The icon, if available, null icon otherwise.
+///
+QIcon ALBERT_EXPORT iconFromUrl(const QString &url);
 
-    /// Pixmap providing function.
-    /// \param size Will get assigned the actual size of the pixmap created
-    /// \param requestedSize The size the pixmap should have if possible.
-    /// \param url The URL of the pixmap to be created. Supported url schemes:
-    /// - `<path>` or `file:<path>` Use the file at path as icon.
-    /// - `:<path>` or `qrc:<path>` Use the file at path in the [resource collection] as icon.
-    /// - `qfip:<path>` Use [QFileIconProvider] to get a generic icon for the file at <path>.
-    /// - `qsp:<pixmap enumerator>` Get an icon from [QStyle::StandardPixmap enum].
-    /// - `xdg:<icon name>` Performs [freedesktop icon theme specification] lookup (on supported
-    ///   platforms only) to get an icon.
-    /// - `gen:<>` Generate an icon on the fly. Supports drawing a background circle and renders
-    ///   text on it. All parameters are optional. Available parameters are:
-    ///   - background: The background color (default: none). See also [QColor::fromString].
-    ///   - foreground: (default: window text color from system palette)
-    ///   - text: (default: none) The text to display
-    ///   - fontscalar: (default: 1) Scalar for the default font size which is the pixmap height.
-    ///
-    ///   Examples
-    ///
-    ///       /absolute/path/to/a/local/image/file.png
-    ///       file:/absolute/path/to/a/local/image/file.png
-    ///       :path-to-a-qresource-file
-    ///       qrc:path-to-a-qresource-file
-    ///       qfip:/path/to/any/file/for/example/a.pdf
-    ///       qsp:SP_TrashIcon
-    ///       xdg:some-themed-icon-name
-    ///       gen:?background=blue&foreground=red&text=Hi&fontscalar=0.5
-    ///
-    /// \returns The pixmap, if available, null pixmap otherwise.
-    ///
-    /// [resource collection]: https://doc.qt.io/qt-6/resources.html
-    /// [QStyle::StandardPixmap enum]: https://doc.qt.io/qt-6/qstyle.html#StandardPixmap-enum
-    /// [freedesktop icon theme specification]: https://specifications.freedesktop.org/icon-theme-spec/latest/
-    /// [QFileIconProvider]: https://doc.qt.io/qt/qfileiconprovider.html
-    /// [QColor::fromString]: https://doc.qt.io/qt/qcolor.html#fromString
-    QPixmap getPixmap(const QString &url, QSize *size, const QSize &requestedSize) const;
+///
+/// URL list based icon factory.
+///
+/// See iconFromUrl(const QString &url).
+///
+/// \param urls The icon URLs.
+/// \returns The first icon available in the urls list. Null icon otherwise.
+///
+QIcon ALBERT_EXPORT iconFromUrls(const QStringList &urls);
 
-    /// Clears the internal icon cache
-    void clearCache();
+///
+/// Generic pixmap factory.
+///
+/// Supports drawing a background circle with some text on it.
+///
+/// \param bgcolor The background color. Default: none.
+/// \param fgcolor The text color. Default: black.
+/// \param text The text to display. Default: empty.
+/// \param fontscalar Scalar for the default font size which is the pixmap height. Default: 1.
+/// \returns The generic icon.
+///
+QPixmap ALBERT_EXPORT genericPixmap(int size, const QColor& bgcolor = {}, const QColor& fgcolor = Qt::black, const QString& text = {}, float scalar = 1.);
 
-private:
-    class Private;
-    std::unique_ptr<Private> d;
-};
+///
+/// Generic icon factory.
+///
+/// Supports drawing a background circle with some text on it.
+///
+/// \param bgcolor The background color. Default: none.
+/// \param fgcolor The text color. Default: black.
+/// \param text The text to display. Default: empty.
+/// \param fontscalar Scalar for the default font size which is the pixmap height. Default: 1.
+/// \returns The generic pixmap.
+///
+QIcon ALBERT_EXPORT genericIcon(int size, const QColor& bgcolor = {}, const QColor& fgcolor = Qt::black, const QString& text = {}, float scalar = 1.);
+
+///
+/// Create an icon for a file using [QFileIconProvider].
+///
+/// [QFileIconProvider]: https://doc.qt.io/qt/qfileiconprovider.html
+///
+/// \param path The path to the file.
+/// \returns The file icon.
+///
+QIcon ALBERT_EXPORT fileIcon(const QString &path);
+
+///
+/// Performs an icon lookup according to the [freedesktop icon theme specification].
+///
+/// Available only on platforms supporting it.
+///
+/// [freedesktop icon theme specification]: https://specifications.freedesktop.org/icon-theme-spec/latest/
+///
+/// \param name The icon name.
+/// \returns The path if available, null string otherwise.
+///
+#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
+QString ALBERT_EXPORT xdgIconLookup(const QString &name);
+#endif
 
 }
 
