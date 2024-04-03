@@ -8,6 +8,7 @@
 
 namespace albert
 {
+class Item;
 
 ///
 ///  Interface class for queries used by frontends.
@@ -49,6 +50,22 @@ public:
 
     /// Executes match a fallback action.
     Q_INVOKABLE virtual void activateFallback(uint item, uint action = 0) = 0;
+
+    /// Copy add single item.
+    /// @note Use batch add if you can to avoid UI flicker.
+    /// @see add(const std::vector<std::shared_ptr<Item>> &items)
+    virtual void add(const std::shared_ptr<Item> &item) = 0;
+
+    /// Move add single item.
+    /// @note Use batch add if you can to avoid UI flicker.
+    /// @see add(std::vector<std::shared_ptr<Item>> &&items)
+    virtual void add(std::shared_ptr<Item> &&item) = 0;
+
+    /// Copy add multiple items.
+    virtual void add(const std::vector<std::shared_ptr<Item>> &items) = 0;
+
+    /// Move add multiple items.
+    virtual void add(std::vector<std::shared_ptr<Item>> &&items) = 0;
 
 protected:
 

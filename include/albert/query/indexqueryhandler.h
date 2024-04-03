@@ -27,7 +27,7 @@ public:
     void setFuzzyMatching(bool) override;
 
     /// Uses the index to override GlobalQueryHandler::handleGlobalQuery
-    std::vector<RankItem> handleGlobalQuery(const GlobalQuery*) const override;
+    std::vector<RankItem> handleGlobalQuery(const Query*) const override;
 
     /// Update the index. Called when the index needs to be updated (or probably by yourself if
     /// your items changed), i.e. whenever the user made changes to the index config or initially

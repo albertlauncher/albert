@@ -4,7 +4,7 @@
 #include <QObject>
 #include <map>
 #include <memory>
-class QueryBase;
+class QueryExecution;
 namespace albert {
 class ExtensionRegistry;
 class FallbackHandler;
@@ -20,7 +20,7 @@ public:
 
     QueryEngine(albert::ExtensionRegistry&);
     
-    std::unique_ptr<QueryBase> query(const QString &query);
+    std::unique_ptr<QueryExecution> query(const QString &query);
 
     std::map<QString, albert::TriggerQueryHandler*> triggerHandlers();
     std::map<QString, albert::GlobalQueryHandler*> globalHandlers();

@@ -4,14 +4,16 @@
 #include <QObject>
 #include <vector>
 #include <memory>
-
 class QueryEngine;
-class QueryBase;
-namespace albert { class Frontend; }
+class QueryExecution;
+namespace albert {
+class Frontend;
+}
 
 class Session : public QObject
 {
     Q_OBJECT
+
 public:
 
     Session(QueryEngine &engine, albert::Frontend &frontend);
@@ -24,7 +26,7 @@ private:
 
     QueryEngine &engine_;
     albert::Frontend &frontend_;
-    std::vector<std::unique_ptr<QueryBase>> queries_;
+    std::vector<std::unique_ptr<QueryExecution>> queries_;
 
 };
 

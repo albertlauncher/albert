@@ -28,7 +28,7 @@ QString PluginConfigQueryHandler::description() const
 QString PluginConfigQueryHandler::defaultTrigger() const
 { return QStringLiteral("conf "); }
 
-vector<RankItem> PluginConfigQueryHandler::handleGlobalQuery(const GlobalQuery *query) const
+vector<RankItem> PluginConfigQueryHandler::handleGlobalQuery(const Query *query) const
 {
     vector<RankItem> rank_items;
 

@@ -31,7 +31,7 @@ void IndexQueryHandler::setIndexItems(vector<IndexItem> &&index_items)
     d->index->setItems(::move(index_items));
 }
 
-vector<RankItem> IndexQueryHandler::handleGlobalQuery(const GlobalQuery *query) const
+vector<RankItem> IndexQueryHandler::handleGlobalQuery(const Query *query) const
 {
     shared_lock l(d->index_mutex);
     return d->index->search(query->string(), query->isValid());

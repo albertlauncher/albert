@@ -9,17 +9,9 @@ using namespace std;
 void GlobalQueryHandler::applyUsageScore(vector<RankItem> *rankItems) const
 { UsageHistory::applyScores(id(), *rankItems); }
 
-void GlobalQueryHandler::handleTriggerQuery(TriggerQuery *query) const
+void GlobalQueryHandler::handleTriggerQuery(Query *query)
 {
-    struct : public GlobalQuery {
-        TriggerQuery *query;
-        QString trigger() const { return query->trigger(); }
-        QString string() const { return query->string(); }
-        const bool &isValid() const { return query->isValid(); }
-    } gq;
-    gq.query = query;
-
-    vector<RankItem> rank_items = handleGlobalQuery(&gq);
+    auto rank_items = handleGlobalQuery(query);
     applyUsageScore(&rank_items);
     sort(rank_items.begin(), rank_items.end(), [](const auto &a, const auto &b){
         if (a.score == b.score)
@@ -36,5 +28,5 @@ void GlobalQueryHandler::handleTriggerQuery(TriggerQuery *query) const
     query->add(::move(items));
 }
 
-vector<shared_ptr<Item>> GlobalQueryHandler::handleEmptyQuery(const GlobalQuery *) const
+vector<shared_ptr<Item>> GlobalQueryHandler::handleEmptyQuery(const Query *) const
 { return {}; }

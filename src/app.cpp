@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #include "albert/albert.h"
-#include "albert/frontend/frontend.h"
+#include "albert/frontend.h"
 #include "albert/logging.h"
 #include "albert/plugin/plugininstance.h"
 #include "albert/plugin/pluginloader.h"

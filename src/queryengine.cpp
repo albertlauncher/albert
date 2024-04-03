@@ -6,7 +6,7 @@
 #include "albert/query/fallbackprovider.h"
 #include "albert/query/globalqueryhandler.h"
 #include "albert/query/triggerqueryhandler.h"
-#include "query.h"
+#include "queryexecution.h"
 #include "queryengine.h"
 #include "usagedatabase.h"
 #include <QCoreApplication>
@@ -14,7 +14,6 @@
 #include <QSettings>
 using namespace albert;
 using namespace std;
-
 static const char *CFG_GLOBAL_HANDLER_ENABLED = "global_handler_enabled";
 static const char *CFG_FALLBACK_ORDER = "fallback_order";
 static const char *CFG_FALLBACK_EXTENSION = "extension";
@@ -80,7 +79,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry) : registry_(registry)
     });
 }
 
-unique_ptr<QueryBase> QueryEngine::query(const QString &query_string)
+unique_ptr<QueryExecution> QueryEngine::query(const QString &query_string)
 {
     vector<FallbackHandler*> fhandlers;
     for (const auto&[id, handler] : fallback_handlers_)
@@ -88,7 +87,7 @@ unique_ptr<QueryBase> QueryEngine::query(const QString &query_string)
 
     for (const auto &[trigger, handler] : active_triggers_)
         if (query_string.startsWith(trigger))
-            return make_unique<TriggerQuery>(this, ::move(fhandlers), handler, query_string.mid(trigger.size()), trigger);
+            return make_unique<QueryExecution>(this, ::move(fhandlers), handler, query_string.mid(trigger.size()), trigger);
 
     {
         vector<albert::GlobalQueryHandler*> handlers;

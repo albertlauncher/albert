@@ -1,11 +1,12 @@
-// Copyright (c) 2022-2023 Manuel Schneider
+// Copyright (c) 2022-2024 Manuel Schneider
 
-#include "albert/frontend/itemroles.h"
+#include "albert/extension.h"
+#include "albert/frontend.h"
 #include "albert/logging.h"
+#include "albert/query.h"
 #include "albert/query/item.h"
 #include "albert/query/rankitem.h"
 #include "itemsmodel.h"
-#include "query.h"
 #include "usagedatabase.h"
 #include <QStringListModel>
 #include <QTimer>
@@ -75,13 +76,6 @@ QHash<int, QByteArray> ItemsModel::roleNames() const
     return qml_role_names;
 }
 
-// void ItemsModel::add(Extension *extension, shared_ptr<Item> &&item)
-// {
-//     beginInsertRows(QModelIndex(), (int)items.size(), (int)items.size());
-//     items.emplace_back(extension, ::move(item));
-//     endInsertRows();
-// }
-
 void ItemsModel::add(Extension *extension, vector<shared_ptr<Item>> &&itemvec)
 {
     if (itemvec.empty())
@@ -94,24 +88,21 @@ void ItemsModel::add(Extension *extension, vector<shared_ptr<Item>> &&itemvec)
     endInsertRows();
 }
 
-// void ItemsModel::add(Extension *extension, const shared_ptr<Item> &item)
-// {
-//     beginInsertRows(QModelIndex(), (int)items.size(), (int)items.size());
-//     items.emplace_back(extension, item);
-//     endInsertRows();
-// }
+void ItemsModel::add(vector<pair<Extension*, shared_ptr<Item>>>::iterator begin,
+                     vector<pair<Extension*, shared_ptr<Item>>>::iterator end)
+{
+    if (begin == end)
+        return;
 
-// void ItemsModel::add(Extension *extension, const vector<shared_ptr<Item>> &itemvec)
-// {
-//     if (itemvec.empty())
-//         return;
+    items.reserve(items.size()+(size_t)(end-begin));
 
-//     beginInsertRows(QModelIndex(), (int)items.size(), (int)(items.size()+itemvec.size()-1));
-//     items.reserve(items.size()+itemvec.size());
-//     for (auto &item : itemvec)
-//         items.emplace_back(extension, item);
-//     endInsertRows();
-// }
+    beginInsertRows(QModelIndex(), (int)items.size(), (int)(items.size())+(int)(end-begin)-1);
+
+    items.insert(items.end(), make_move_iterator(begin), make_move_iterator(end));
+
+    endInsertRows();
+
+}
 
 void ItemsModel::add(vector<pair<Extension*,RankItem>>::iterator begin,
                      vector<pair<Extension*,RankItem>>::iterator end)
@@ -122,8 +113,10 @@ void ItemsModel::add(vector<pair<Extension*,RankItem>>::iterator begin,
     items.reserve(items.size()+(size_t)(end-begin));
 
     beginInsertRows(QModelIndex(), (int)items.size(), (int)(items.size())+(int)(end-begin)-1);
+
     for (auto it = begin; it != end; ++it)
         items.emplace_back(it->first, ::move(it->second.item));
+
     endInsertRows();
 }
 
@@ -135,7 +128,7 @@ QAbstractListModel *ItemsModel::buildActionsModel(uint i) const
     return new QStringListModel(l);
 }
 
-void ItemsModel::activate(QueryBase *q, uint i, uint a)
+void ItemsModel::activate(Query *q, uint i, uint a)
 {
     if (i<items.size()){
         auto &[extension, item] = items[i];

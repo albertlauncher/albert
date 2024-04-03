@@ -105,7 +105,7 @@ QString AppQueryHandler::description() const
 QString AppQueryHandler::defaultTrigger() const
 { return QStringLiteral("albert "); }
 
-vector<RankItem> AppQueryHandler::handleGlobalQuery(const GlobalQuery *query) const
+vector<RankItem> AppQueryHandler::handleGlobalQuery(const Query *query) const
 {
     vector<RankItem> rank_items;
     for (const auto &item : items_)

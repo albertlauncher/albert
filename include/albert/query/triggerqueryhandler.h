@@ -2,9 +2,8 @@
 
 #pragma once
 #include "albert/extension.h"
+#include "albert/query.h"
 #include <QString>
-#include <memory>
-#include <vector>
 
 namespace albert
 {
@@ -48,43 +47,9 @@ public:
     /// Default does nothing.
     virtual void setFuzzyMatching(bool enabled);
 
-    /// The query interface used by TriggerQueryHandler
-    /// @see handleTriggerQuery
-    class ALBERT_EXPORT TriggerQuery
-    {
-    public:
-        virtual ~TriggerQuery() = default;
-
-        /// The trigger of this query if any.
-        virtual QString trigger() const = 0;
-
-        /// The query string excluding the trigger.
-        virtual QString string() const = 0;
-
-        /// True if query has not been cancelled.
-        /// @note Stop query processing if false.
-        virtual const bool &isValid() const = 0;
-
-        /// Copy add single item.
-        /// @note Use batch add if you can to avoid UI flicker.
-        /// @see add(const std::vector<std::shared_ptr<Item>> &items)
-        virtual void add(const std::shared_ptr<Item> &item) = 0;
-
-        /// Move add single item.
-        /// @note Use batch add if you can to avoid UI flicker.
-        /// @see add(std::vector<std::shared_ptr<Item>> &&items)
-        virtual void add(std::shared_ptr<Item> &&item) = 0;
-
-        /// Copy add multiple items.
-        virtual void add(const std::vector<std::shared_ptr<Item>> &items) = 0;
-
-        /// Move add multiple items.
-        virtual void add(std::vector<std::shared_ptr<Item>> &&items) = 0;
-    };
-
     /// The trigger query processing function.
     /// @note Executed in a worker thread.
-    virtual void handleTriggerQuery(TriggerQuery*) const = 0;
+    virtual void handleTriggerQuery(Query*) = 0;
 
 };
 

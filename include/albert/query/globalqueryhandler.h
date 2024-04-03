@@ -1,6 +1,7 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
+#include "albert/query.h"
 #include "albert/query/rankitem.h"
 #include "albert/query/triggerqueryhandler.h"
 #include <vector>
@@ -16,19 +17,6 @@ namespace albert
 class ALBERT_EXPORT GlobalQueryHandler : public albert::TriggerQueryHandler
 {
 public:
-    /// The query interface used by GlobalQueryHandler
-    class GlobalQuery
-    {
-    public:
-        virtual ~GlobalQuery() = default;
-
-        /// The query string excluding the trigger.
-        virtual QString string() const = 0;
-
-        /// True if query has not been cancelled.
-        /// @note Stop query processing if false.
-        virtual const bool &isValid() const = 0;
-    };
 
     /// The query handling function.
     /// The match score should make sense and often (if not always) be the
@@ -36,7 +24,7 @@ public:
     /// @return A list of match items. Empty query should return all items with
     /// a score of 0.
     /// @note Executed in a worker thread.
-    virtual std::vector<RankItem> handleGlobalQuery(const GlobalQuery*) const = 0;
+    virtual std::vector<RankItem> handleGlobalQuery(const Query*) const = 0;
 
     /// The empty query handling function.
     /// Empty patterns match everything. For triggered queries this is desired.
@@ -45,7 +33,7 @@ public:
     /// handleGlobalQuery it is not possible to have both. This function allows
     /// extensions to handle empty global queries differently, while still
     /// yielding all items using the trigger handler.
-    virtual std::vector<std::shared_ptr<Item>> handleEmptyQuery(const GlobalQuery*) const;
+    virtual std::vector<std::shared_ptr<Item>> handleEmptyQuery(const Query*) const;
 
     /// Takes rank items and modifies the score according to the users usage.
     /// Use this if you want to reuse your global results in the trigger handler.
@@ -55,7 +43,7 @@ public:
     /// @note Reimplement if the handler should have custom triggered behavior,
     /// but think twice if this is necessary. It may break user expectation.
     /// @see handleTriggerQuery and rankItems
-    void handleTriggerQuery(TriggerQuery*) const override;
+    void handleTriggerQuery(Query*) override;
 
 };
 

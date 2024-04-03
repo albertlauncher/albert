@@ -1,9 +1,8 @@
 // Copyright (c) 2024 Manuel Schneider
 
-#include "albert/frontend/frontend.h"
-#include "query.h"
-#include "albert/logging.h"
+#include "albert/frontend.h"
 #include "queryengine.h"
+#include "queryexecution.h"
 #include "session.h"
 using namespace albert;
 using namespace std;
@@ -30,7 +29,10 @@ void Session::runQuery(const QString &query_string)
 {
     if(!queries_.empty())
         queries_.back()->cancel();
+
     auto &q = queries_.emplace_back(engine_.query(query_string));
+    q->setParent(this);  // important for qml ownership determination
+
     frontend_.setQuery(q.get());
     q->run();
 }

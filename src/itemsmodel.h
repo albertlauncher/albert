@@ -5,8 +5,8 @@
 #include <memory>
 #include <vector>
 #include <map>
-class QueryBase;
 namespace albert{
+class Query;
 class Extension;
 class Item;
 class RankItem;
@@ -22,12 +22,16 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
 
     void add(albert::Extension*, std::vector<std::shared_ptr<albert::Item>>&&);
+
+    void add(std::vector<std::pair<albert::Extension*,std::shared_ptr<albert::Item>>>::iterator begin,
+             std::vector<std::pair<albert::Extension*,std::shared_ptr<albert::Item>>>::iterator end);
+
     void add(std::vector<std::pair<albert::Extension*,albert::RankItem>>::iterator begin,
              std::vector<std::pair<albert::Extension*,albert::RankItem>>::iterator end);
 
     QAbstractListModel *buildActionsModel(uint i) const;
 
-    void activate(QueryBase *q, uint i, uint a);
+    void activate(albert::Query *q, uint i, uint a);
 
 private:
     std::vector<std::pair<albert::Extension*, std::shared_ptr<albert::Item>>> items;

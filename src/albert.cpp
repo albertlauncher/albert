@@ -2,7 +2,7 @@
 
 #include "albert/albert.h"
 #include "albert/config.h"
-#include "albert/frontend/frontend.h"
+#include "albert/frontend.h"
 #include "albert/logging.h"
 #include "albert/util/iconprovider.h"
 #include "app.h"
