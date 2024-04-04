@@ -12,8 +12,8 @@ namespace albert
 
 /// Provides a lean interface for recurring indexing tasks.
 /// Takes care of the QtConcurrent boilerplate code to start,
-/// abort and scheldule restarts of threads.
-/// \tparam The type of results this executor produces
+/// abort and schedule restarts of threads.
+/// \tparam T The type of results this executor produces.
 template<typename T> class BackgroundExecutor
 {
 public:
