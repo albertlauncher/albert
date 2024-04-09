@@ -40,12 +40,12 @@ void App::initialize()
 
     loadAnyFrontend();
 
-    // Connect hotkey after! frontend has been loaded else segfaults
-    QObject::connect(&hotkey, &Hotkey::activated, &hotkey, [](){ toggle(); });
-
     platform::initNativeWindow(frontend->winId());
 
     notifyVersionChange();
+
+    // Connect hotkey after! frontend has been loaded else segfaults
+    QObject::connect(&hotkey, &Hotkey::activated, &hotkey, [](){ toggle(); });
 
     extension_registry.registerExtension(&app_query_handler);
     extension_registry.registerExtension(&plugin_query_handler);
