@@ -23,18 +23,22 @@ set(CMAKE_AUTORCC ON)
 
 # Set additional compiler flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
-    -Winline \
+    -Wall \
+    -Werror=return-type \
     -Wextra \
+    -Winline \
     -Wshadow \
     -Wstrict-aliasing \
     -pedantic \
-    -Wall \
     -Wno-inline \
-    -Werror=return-type \
+    -Wno-unused-lambda-capture\
+    -Wno-unused-parameter \
+    -Wno-unused-function \
 ")
-#    -Werror \
+# -Werror \
+# target_compile_options(${PROJECT_NAME} PRIVATE -save-temps) # only internal
+
 #    -Wshadow-field-in-constructor \
-#    -Wno-unused-parameter \
 #    -Wno-shadow \
 #    -Wl,-undefined \
 #    -Weffc++
@@ -52,7 +56,7 @@ set(QT_DEFAULT_MAJOR_VERSION 6)
 set(BUILD_SHARED_LIBS FALSE)
 set(QHOTKEY_INSTALL OFF CACHE BOOL "" FORCE)
 add_subdirectory(lib/QHotkey EXCLUDE_FROM_ALL)
-target_compile_options(qhotkey PRIVATE -Wno-unused-parameter -Wno-shadow)
+target_compile_options(qhotkey PRIVATE -Wno-gnu-zero-variadic-macro-arguments -Wno-unused-parameter -Wno-shadow)
 
 
 ### Lib  ######################################################################
