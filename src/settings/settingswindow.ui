@@ -122,7 +122,7 @@
          <item>
           <widget class="QLabel" name="label_5">
            <property name="text">
-            <string>&lt;span style=&quot; font-size:9pt; color:#808080;&quot;&gt;If you are missing your favourite terminal please post an &lt;a href=&quot;https://github.com/albertlauncher/albert/issues/new?assignees=ManuelSchneid3r&amp;amp;title=Terminal%20missing&quot;&gt;issue&lt;/a&gt;.&lt;/span&gt;</string>
+            <string>&lt;span style=&quot; font-size:9pt; color:#808080;&quot;&gt;If you are missing your favourite terminal please post an &lt;a href=&quot;https://github.com/albertlauncher/albert/issues/new?assignees=ManuelSchneid3r&amp;title=Terminal+[terminal-name]+missing&amp;body=Post+an+xterm+-e+compatible+commandline.&quot;&gt;issue&lt;/a&gt;.&lt;/span&gt;</string>
            </property>
            <property name="openExternalLinks">
             <bool>true</bool>
