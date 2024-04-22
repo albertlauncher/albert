@@ -2,6 +2,7 @@
 
 #include "albert/albert.h"
 #include "albert/logging.h"
+#include "albert/util/notification.h"
 #include "platform/platform.h"
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusInterface>

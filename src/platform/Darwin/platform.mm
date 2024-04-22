@@ -124,7 +124,7 @@ void platform::initNativeWindow(unsigned long long wid)
      * @const NSWindowCollectionBehaviorFullScreenAllowsTiling This window can be a full screen tile window. It does not have to have \c NSWindowCollectionBehaviorFullScreenPrimary set.
      * @const NSWindowCollectionBehaviorFullScreenDisallowsTiling This window can NOT be made a full screen tile window; it still may be allowed to be a regular \c NSWindowCollectionBehaviorFullScreenPrimary window.
      */
-    [ns_window setCollectionBehavior: ([ns_window collectionBehavior] | NSWindowCollectionBehaviorMoveToActiveSpace)];
+    [ns_window setCollectionBehavior: ([ns_window collectionBehavior] | NSWindowCollectionBehaviorMoveToActiveSpace | NSWindowCollectionBehaviorTransient)];
 
     /*
      * @const NSWindowStyleMaskBorderless
@@ -145,37 +145,6 @@ void platform::initNativeWindow(unsigned long long wid)
     ns_window.hidesOnDeactivate = false;  // makes hide on focus out work
     [NSApp hide:nil];  // The app activates on start. undo.
 }
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
-class NotificationPrivate
-{
-public:
-    NSUserNotification *notification;
-};
-
-albert::Notification::Notification(const QString &title, const QString &body) : d(new NotificationPrivate)
-{
-    d->notification = [[NSUserNotification alloc] init];
-    d->notification.title = title.toNSString();
-//    d->notification.subtitle = body.toNSString();
-    d->notification.informativeText = body.toNSString();
-    d->notification.hasActionButton = NO;
-    d->notification.soundName = NSUserNotificationDefaultSoundName;
-    [NSUserNotificationCenter.defaultUserNotificationCenter deliverNotification:d->notification];
-}
-
-albert::Notification::~Notification()
-{
-    [NSUserNotificationCenter.defaultUserNotificationCenter removeDeliveredNotification:d->notification];
-    [d->notification release];
-    delete d;
-}
-
-#pragma clang diagnostic pop
-
-
 
 
 
