@@ -270,9 +270,18 @@ void PluginRegistry::onAdd(PluginProvider *plugin_provider)
     ::sort(plugins_to_load.begin(), plugins_to_load.end(),
            [](const auto *l, const auto *r){ return l->load_order < r->load_order; });
 
-    // Load plugins
-    for (auto *plugin : plugins_to_load)
-        plugin->load(extension_registry_);
+    // Load enabled plugins
+    QStringList errors;
+    for (auto *p : plugins_to_load)
+        if (auto err = p->load(extension_registry_); !err.isEmpty())
+            errors << QString("%1 (%2):\n%3").arg(p->metaData().name, p->id(), err);
+
+    if (!errors.isEmpty())
+    {
+        auto t = QString("%1:\n\n%2").arg(tr("Failed loading plugins", nullptr, errors.size()),
+                                          errors.join("\n"));
+        QMessageBox::warning(nullptr, qApp->applicationDisplayName(), t);
+    }
 }
 
 void PluginRegistry::onRem(PluginProvider *plugin_provider)
