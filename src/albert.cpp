@@ -232,8 +232,12 @@ void albert::openUrl(const QString &url)
 void albert::openUrl(const QUrl &url)
 {
     DEBG << QString("Opening URL '%1'").arg(url.toString());
+#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
+    runDetachedProcess({"xdg-open", url.toString()});
+#else
     if (!QDesktopServices::openUrl(url))
         WARN << "Failed opening URL" << url;
+#endif
 }
 
 void albert::openWebsite()
