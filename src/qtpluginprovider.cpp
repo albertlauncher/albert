@@ -36,7 +36,9 @@ QtPluginProvider::QtPluginProvider(QStringList additional_paths)
 
     for (const QString& default_path : default_paths)
         if (auto fi = QFileInfo(QDir(default_path).filePath("albert")); fi.isDir())  // implicit exists()
-            additional_paths << fi.filePath();
+            additional_paths << fi.canonicalFilePath();
+
+    additional_paths.removeDuplicates();
 
     for (const auto &path : additional_paths)
     {
