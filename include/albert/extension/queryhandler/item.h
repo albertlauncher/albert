@@ -48,6 +48,15 @@ public:
     /// Getter for item actions.
     /// These are the actions a users can run.
     virtual std::vector<Action> actions() const;
+
+    ///
+    virtual bool hasActions() const;
+
+
+    virtual bool dragEnabled() const;
+    virtual bool dropEnabled() const;
+
+
 };
 
 }

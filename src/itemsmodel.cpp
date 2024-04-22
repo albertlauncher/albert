@@ -73,6 +73,51 @@ QHash<int, QByteArray> ItemsModel::roleNames() const { return albert::QmlRoleNam
 //     endInsertRows();
 // }
 
+QStringList ItemsModel::mimeTypes() const
+{
+    return {};
+}
+
+QMimeData *ItemsModel::mimeData(const QModelIndexList &indexes) const
+{
+    return {};
+}
+
+bool ItemsModel::canDropMimeData(const QMimeData *data, Qt::DropAction action,
+                                 int row, int column, const QModelIndex &parent) const
+{
+    return {};
+}
+
+bool ItemsModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
+                              int row, int column, const QModelIndex &parent)
+{
+    return {};
+}
+
+Qt::ItemFlags ItemsModel::flags(const QModelIndex &index) const
+{
+    Qt::ItemFlags flags = Qt::NoItemFlags;
+
+    if (index.isValid())
+    {
+        flags |= Qt::ItemIsEnabled;
+
+        const auto &[extension, item] = items[index.row()];
+
+        if (item->hasActions())
+            flags |= Qt::ItemIsSelectable;
+
+        if (item->dragEnabled())
+            flags |= Qt::ItemIsDragEnabled;
+
+        if (item->dropEnabled())
+            flags |= Qt::ItemIsDropEnabled;
+    }
+
+    return flags;
+}
+
 void ItemsModel::add(Extension *extension, vector<shared_ptr<Item>> &&itemvec)
 {
     if (itemvec.empty())

@@ -21,6 +21,13 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role) const override;
 
+    // DND
+    QStringList mimeTypes() const override;
+    QMimeData *mimeData(const QModelIndexList &indexes) const override;
+    bool canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const override;
+    bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
+
     void add(albert::Extension*, std::vector<std::shared_ptr<albert::Item>>&&);
     void add(std::vector<std::pair<albert::Extension*,albert::RankItem>>::iterator begin,
              std::vector<std::pair<albert::Extension*,albert::RankItem>>::iterator end);
@@ -32,4 +39,5 @@ public:
 private:
     std::vector<std::pair<albert::Extension*, std::shared_ptr<albert::Item>>> items;
     mutable std::map<std::pair<albert::Extension*,albert::Item*>, QStringList> actionsCache;
+
 };
