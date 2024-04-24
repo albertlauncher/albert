@@ -20,8 +20,11 @@ using namespace std;
 PluginLoader *instanciated_loader;
 
 
-Plugin::Plugin(PluginProvider *provider_, PluginLoader *loader_)
-    : provider(provider_), loader(loader_), state_(State::Unloaded)
+Plugin::Plugin(PluginProvider *provider_, PluginLoader *loader_):
+    provider(provider_),
+    loader(loader_),
+    state_(State::Unloaded),
+    instance_(nullptr)
 {
     enabled_ = settings()->value(QString("%1/enabled").arg(id()), false).toBool();
 
