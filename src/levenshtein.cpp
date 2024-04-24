@@ -41,7 +41,7 @@ uint Levenshtein::computePrefixEditDistanceWithLimit(const QString &prefix, cons
     //g │ 7 │                 3  (2)  3 │ 4   5 │
     //  └───┴───────────────────────────┴───────┘
 
-    uint8_t edit_distance;
+    uint8_t edit_distance{0};
     for (uint r=1; r < rows; ++r) {
         edit_distance = max_edit_distance;
 
