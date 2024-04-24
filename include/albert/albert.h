@@ -97,4 +97,15 @@ ALBERT_EXPORT long long runDetachedProcess(const QStringList &commandline, const
 /// \param close_on_exit Close the terminal on exit
 ALBERT_EXPORT void runTerminal(const QString &script = {}, const QString &working_dir = {}, bool close_on_exit = false);
 
+/// The container type enum
+/// \since 0.24
+enum class ALBERT_EXPORT ContainerType { None, AppImage, Flatpak, Snapcraft };
+
+/// Get the container type.
+/// This helps plugins to adopt their behavior to the sandboxing environment.
+/// \since 0.24
+/// \return The container type.
+ALBERT_EXPORT ContainerType containerType();
+
+
 }

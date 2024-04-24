@@ -26,6 +26,7 @@ using namespace std;
 using namespace albert;
 static App *app;
 static bool have_paste_support{false};
+static ContainerType container_type{ContainerType::None};
 
 
 static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
@@ -169,6 +170,13 @@ int main(int argc, char **argv)
                 "Paste will work for X11 windows only.";
 #endif
 
+    if (qEnvironmentVariableIsSet("container"))
+        container_type = ContainerType::Flatpak;
+    else if (qEnvironmentVariableIsSet("APPIMAGE"))
+        container_type = ContainerType::AppImage;
+    else if (qEnvironmentVariableIsSet("SNAP"))
+        container_type = ContainerType::Snapcraft;
+
     app = new App(parser.value(opt_p).split(',', Qt::SkipEmptyParts), !parser.isSet(opt_n));
     app->initialize();
     int return_value = qApp->exec();
@@ -306,6 +314,17 @@ long long albert::runDetachedProcess(const QStringList &commandline, const QStri
 {
     qint64 pid = 0;
     if (!commandline.empty()) {
+
+        switch (containerType()) {
+        case ContainerType::Flatpak:
+            commandline = QStringList{"flatpak-spawn", "--host"} << commandline;
+            break;
+        default:
+            WARN << "albert::runDetachedProcess: Support for container type has not been evaluated yet. Report a bug.";
+        case ContainerType::None:
+            break;
+        }
+
         if (QProcess::startDetached(commandline[0], commandline.mid(1), working_dir.isNull() ? QDir::homePath() : working_dir, &pid))
             INFO << "Detached process started successfully. PID:" << pid << commandline;
         else
@@ -314,3 +333,6 @@ long long albert::runDetachedProcess(const QStringList &commandline, const QStri
         WARN << "runDetachedProcess: commandline must not be empty!";
     return pid;
 }
+
+ContainerType albert::containerType()
+{ return container_type; }
