@@ -9,41 +9,45 @@ using namespace std;
 using namespace albert;
 
 
-QtPluginProvider::QtPluginProvider(QStringList additional_paths)
+QtPluginProvider::QtPluginProvider(QStringList paths)
 {
 #if defined __linux__ || defined __FreeBSD__
-
-    QStringList default_paths = {
-        QDir::home().filePath(".local/lib/"),
-        QDir::home().filePath(".local/lib64/"),
-        "/usr/local/lib/",
-        "/usr/local/lib64/",
-#if defined MULTIARCH_TUPLE
-        "/usr/lib/" MULTIARCH_TUPLE,
-#endif
-        "/usr/lib/",
-        "/usr/lib64/"
-    };
-
+    paths << "../lib";
 #elif defined __APPLE__
-
-    QStringList default_paths = {
-        QDir::home().filePath("Library/Application Support/albert/PlugIns"),
-        QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("../PlugIns")
-    };
-
+    paths << "../../../../lib";  // ./bin/albert.app/Contents/MacOS/
 #endif
 
-    for (const QString& default_path : default_paths)
-        if (auto fi = QFileInfo(QDir(default_path).filePath("albert")); fi.isDir())  // implicit exists()
-            additional_paths << fi.canonicalFilePath();
+    QStringList install_paths;
+#if defined __linux__ || defined __FreeBSD__
+    if (qgetenv("container") == "flatpak")
+        install_paths << "/app/lib/";
+    install_paths << QDir::home().filePath(".local/lib/");
+    install_paths << QDir::home().filePath(".local/lib64/");
+    install_paths << "/usr/local/lib/";
+    install_paths << "/usr/local/lib64/";
+#if defined MULTIARCH_TUPLE
+    install_paths << "/usr/lib/" MULTIARCH_TUPLE;
+#endif
+    install_paths << "/usr/lib/";
+    install_paths << "/usr/lib64/";
+#elif defined __APPLE__
+    install_paths << QDir::home().filePath("Library/Application Support/albert/PlugIns");
+    install_paths << QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("../PlugIns");
+#endif
+    for (const QString& p : install_paths)
+        paths << QDir(p).filePath("albert");
 
-    additional_paths.removeDuplicates();
+    DEBG << "Considered plugin lookup paths: " << paths.join(", ");
 
-    for (const auto &path : additional_paths)
+    QStringList unique_canonical_paths;
+    for (const QString& p : paths)
+        if (auto pfi = QFileInfo(p); pfi.isDir())  // implicit exists()
+            unique_canonical_paths << pfi.canonicalFilePath();
+    unique_canonical_paths.removeDuplicates();
+
+    INFO << "Searching native plugins in" << unique_canonical_paths.join(", ");
+    for (const auto &path : unique_canonical_paths)
     {
-        DEBG << "Searching native plugins in" << path;
-
         QDirIterator dirIterator(path, QDir::Files);
         while (dirIterator.hasNext()) {
             try {
