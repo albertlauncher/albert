@@ -9,6 +9,7 @@
 #include <QStyleFactory>
 #include <QStringBuilder>
 #include <iostream>
+#include <QProcessEnvironment>
 
 QStringList report()
 {
@@ -48,19 +49,11 @@ QStringList report()
     sl << fn("Working dir",           QDir::currentPath());
     sl << fn("Arguments",             QApplication::arguments().join(" "));
 
-    // ENV
-    sl << fn("$LANG",                 QString::fromLocal8Bit(qgetenv("LANG")));
-    sl << fn("$QT_QPA_PLATFORMTHEME", QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORMTHEME")));
-    sl << fn("$PATH",                 QString::fromLocal8Bit(qgetenv("PATH")));
-    sl << fn("$SHELL",                QString::fromLocal8Bit(qgetenv("SHELL")));
-
-    // LINUX ENV
-#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
-    sl << fn("$XDG_SESSION_TYPE",     QString::fromLocal8Bit(qgetenv("XDG_SESSION_TYPE")));
-    sl << fn("$XDG_CURRENT_DESKTOP",  QString::fromLocal8Bit(qgetenv("XDG_CURRENT_DESKTOP")));
-    sl << fn("$DESKTOP_SESSION",      QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION")));
-    sl << fn("$XDG_SESSION_DESKTOP",  QString::fromLocal8Bit(qgetenv("XDG_SESSION_DESKTOP")));
-#endif
+    // ENVIRONMENT
+    sl << "ENVIRONMENT:";
+    auto env = QProcessEnvironment::systemEnvironment();
+    for (const auto &key : env.keys())
+        sl << fn(key, env.value(key));
 
     return sl;
 }
