@@ -14,7 +14,6 @@
 #include "settings/settingswindow.h"
 #include "telemetry.h"
 #include "terminalprovider.h"
-#include "trayicon.h"
 #include <QNetworkAccessManager>
 #include <QPointer>
 namespace albert {
@@ -40,7 +39,6 @@ public:
     QueryEngine query_engine;
     QtPluginProvider plugin_provider;
     TerminalProvider terminal_provider;
-    TrayIcon tray_icon;
     QPointer<SettingsWindow> settings_window;
     Hotkey hotkey;  // must be unwinded before frontend
     Telemetry telemetry;

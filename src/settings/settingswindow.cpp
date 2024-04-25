@@ -7,7 +7,6 @@
 #include "pluginswidget/pluginswidget.h"
 #include "querywidget/querywidget.h"
 #include "settingswindow.h"
-#include "trayicon.h"
 #include <QCloseEvent>
 #include <QDesktopServices>
 #include <QDir>
@@ -60,7 +59,6 @@ SettingsWindow::SettingsWindow(App &app):
     ui.tabs->setStyleSheet("QTabWidget::pane { border-radius: 0px; }");
 
     init_tab_general_hotkey(app);
-    init_tab_general_trayIcon(app);
     init_tab_general_frontends(app);
     init_tab_general_terminals(app);
 
@@ -79,13 +77,6 @@ SettingsWindow::~SettingsWindow() = default;
 
 void SettingsWindow::init_tab_general_hotkey(App &app)
 { ui.formLayout_general->insertRow(0, tr("Hotkey"), new QHotKeyEdit(app.hotkey)); }
-
-void SettingsWindow::init_tab_general_trayIcon(App &app)
-{
-    ui.checkBox_showTray->setChecked(app.tray_icon.isVisible());
-    QObject::connect(ui.checkBox_showTray, &QCheckBox::toggled,
-                     &app.tray_icon, &TrayIcon::setVisible);
-}
 
 void SettingsWindow::init_tab_general_frontends(App &app)
 {
