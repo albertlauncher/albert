@@ -171,7 +171,34 @@ int main(int argc, char **argv)
 #endif
 
     if (qEnvironmentVariableIsSet("container"))
+    {
         container_type = ContainerType::Flatpak;
+
+
+        QProcess proc;
+        proc.start("flatpak-spawn", {"--host", "echo", "-n", "$PATH"});
+        // Returns false if the operation timed out, if an error occurred, or if this QProcess is already finished
+        if (proc.waitForFinished())
+        {
+            QRegularExpression re("PATH=(.*)");
+            QRegularExpressionMatch match = re.match(QString::fromUtf8(proc.readAllStandardOutput()));
+            if (match.hasMatch())
+            {
+                auto PATHs = match.captured(1).split(':', Qt::SkipEmptyParts);
+                auto home = QDir::homePath();
+                for (auto &path : PATHs)
+                    if (!path.startsWith(home))
+                        path.prepend("/run/host");
+                CRIT << "FIXED PATHs" << PATHs;
+                qputenv("PATH", PATHs.join(':').toUtf8());
+            }
+            else
+                qFatal("Failed to get $PATH from host environment.");
+        }
+        else
+            qFatal("Failed to get the host environment.");
+
+    }
     else if (qEnvironmentVariableIsSet("APPIMAGE"))
         container_type = ContainerType::AppImage;
     else if (qEnvironmentVariableIsSet("SNAP"))
@@ -317,15 +344,18 @@ long long albert::runDetachedProcess(QStringList commandline, const QString &wor
 
         switch (containerType()) {
         case ContainerType::Flatpak:
-            commandline = QStringList{"flatpak-spawn", "--host"} << commandline;
+        {
+            auto prefix = QStringLiteral("/run/host");
+            if (commandline[0].startsWith(prefix))
+                commandline[0] = commandline[0].mid(prefix.length());
+            commandline = QStringList{"/usr/bin/flatpak-spawn", "--host"} << commandline;
             break;
+        }
         default:
             WARN << "albert::runDetachedProcess: Support for container type has not been evaluated yet. Report a bug.";
         case ContainerType::None:
             break;
         }
-        if (qgetenv("container") == "flatpak")
-            commandline = QStringList{"flatpak-spawn", "--host"} << commandline;
 
         if (QProcess::startDetached(commandline[0], commandline.mid(1), working_dir.isNull() ? QDir::homePath() : working_dir, &pid))
             INFO << "Detached process started successfully. PID:" << pid << commandline;
