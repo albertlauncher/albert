@@ -109,49 +109,35 @@ QString Plugin::load(albert::ExtensionRegistry &extension_registry) noexcept
         auto dur_l = duration_cast<milliseconds>(system_clock::now() - tp).count();
         DEBG << QStringLiteral("%1 ms spent loading plugin '%2'").arg(dur_l).arg(id());
 
-        try
+        tp = system_clock::now();
+        PluginInstance::instanciated_loader = loader;
+        instance_ = loader->createInstance();
+        auto dur_c = duration_cast<milliseconds>(system_clock::now() - tp).count();
+        DEBG << QStringLiteral("%1 ms spent instanciating plugin '%2'").arg(dur_c).arg(id());
+
+        if (!instance_)
+            throw runtime_error("createInstance() returned nullptr");
+
+        // Get dependencies
+        map<QString, PluginInstance*> dependencies;
+        for (const auto &d : dependencies_)
         {
-            tp = system_clock::now();
-            PluginInstance::instanciated_loader = loader;
-            instance_ = loader->createInstance();
-            auto dur_c = duration_cast<milliseconds>(system_clock::now() - tp).count();
-            DEBG << QStringLiteral("%1 ms spent instanciating plugin '%2'").arg(dur_c).arg(id());
-
-            if (!instance_)
-                throw runtime_error("createInstance() returned nullptr");
-
-            // Get dependencies
-            map<QString, PluginInstance*> dependencies;
-            for (const auto &d : dependencies_)
+            if (d->state() != State::Loaded)
             {
-                if (d->state() != State::Loaded)
-                {
-                    auto msg = tr("Dependency '%1' is not initialized.").arg(d->id());
-                    throw runtime_error(msg.toStdString());
-                }
-                dependencies[d->id()] = d->instance_;
+                auto msg = tr("Dependency '%1' is not initialized.").arg(d->id());
+                throw runtime_error(msg.toStdString());
             }
-
-            tp = system_clock::now();
-            instance_->initialize(extension_registry, dependencies);
-            auto dur_i = duration_cast<milliseconds>(system_clock::now() - tp).count();
-            DEBG << QStringLiteral("%1 ms spent initializing plugin '%2'").arg(dur_i).arg(id());
-
-            setState(State::Loaded, tr("Load: %1 ms, Instanciate: %2 ms, Initialize: %3 ms.")
-                                        .arg(dur_l).arg(dur_c).arg(dur_i));
-            return {};
-
+            dependencies[d->id()] = d->instance_;
         }
-        catch (const exception& e)
-        {
-            errors << e.what();
-            try {
-                loader->unload();
-            }
-            catch (const exception& ue) {
-                errors << ue.what();
-            }
-        }
+
+        tp = system_clock::now();
+        instance_->initialize(extension_registry, dependencies);
+        auto dur_i = duration_cast<milliseconds>(system_clock::now() - tp).count();
+        DEBG << QStringLiteral("%1 ms spent initializing plugin '%2'").arg(dur_i).arg(id());
+
+        setState(State::Loaded, tr("Load: %1 ms, Instanciate: %2 ms, Initialize: %3 ms.")
+                                    .arg(dur_l).arg(dur_c).arg(dur_i));
+        return {};
     }
     catch (const exception& e) { errors << e.what(); }
     catch (...){ errors << tr("Unknown exception occurred."); }
