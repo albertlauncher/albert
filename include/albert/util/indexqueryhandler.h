@@ -2,10 +2,10 @@
 
 #pragma once
 #include "albert/query/globalqueryhandler.h"
-#include "albert/query/indexitem.h"
+#include "itemindex.h"
+#include <QString>
 #include <memory>
 #include <vector>
-class IndexQueryHandlerPrivate;
 
 namespace albert
 {
@@ -39,7 +39,8 @@ public:
     void setIndexItems(std::vector<IndexItem>&&);
 
 private:
-    std::unique_ptr<IndexQueryHandlerPrivate> d;
+    class Private;
+    std::unique_ptr<Private> d;
 };
 
 }

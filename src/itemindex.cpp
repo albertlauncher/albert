@@ -1,23 +1,74 @@
 // Copyright (c) 2021-2024 Manuel Schneider
 
-#include "albert/query/indexitem.h"
+#include "albert/util/itemindex.h"
 #include "albert/query/item.h"
 #include "albert/query/rankitem.h"
-#include "itemindex.h"
 #include "levenshtein.h"
 #include <QRegularExpression>
 #include <algorithm>
 #include <map>
 #include <mutex>
+#include <shared_mutex>
+#include <unordered_map>
 #include <utility>
 using namespace albert;
 using namespace std;
 
+namespace
+{
+using Index = uint32_t;
+using Position = uint16_t;
+
+struct Location {
+    Location(Index i, Position p) : index(i), position(p) {}
+    Index index;
+    Position position;
+};
+
+struct StringIndexItem {  // inverted item index, s_idx > ([w_idx], [(i_idx, s_scr)])
+    StringIndexItem(Index i, uint16_t mml)
+        : item(i), max_match_len(mml) {}
+    Index item;
+    uint16_t max_match_len;
+    //Score relevance;
+};
+
+struct WordIndexItem {  // inverted string index, w_idx > (word, [(str_idx, w_pos)])
+    QString word;
+    vector<Location> occurrences;
+};
+
+struct IndexData {
+    vector<shared_ptr<albert::Item>> items;
+    vector<StringIndexItem> strings;
+    vector<WordIndexItem> words;
+    unordered_map<QString, vector<Location>> ngrams;
+};
+
+struct WordMatch {
+    WordMatch(const WordIndexItem &wii, uint ml)
+        : word_index_item(wii), match_length(ml){}
+    const WordIndexItem &word_index_item;
+    uint match_length;
+};
+
+}
+
+class ItemIndex::Private
+{
+public:
+    mutable shared_mutex mutex;
+    IndexData index;
+    bool case_sensitive;
+    uint error_tolerance_divisor;
+    QString separators;
+    uint n;
+
+    vector<WordMatch> getWordMatches(const QString &word, const bool &isValid) const;
+};
 
 static QStringList splitString(const QString &string, const QString &separators, bool case_sensitive = false)
-{
-    return ((!case_sensitive) ? string.toLower(): string).split(QRegularExpression(separators), Qt::SkipEmptyParts);
-}
+{ return ((!case_sensitive) ? string.toLower(): string).split(QRegularExpression(separators), Qt::SkipEmptyParts); }
 
 static vector<QString> ngrams_for_word(const QString &word, uint n)
 {
@@ -32,12 +83,17 @@ static vector<QString> ngrams_for_word(const QString &word, uint n)
     return ngrams;
 }
 
-ItemIndex::ItemIndex(QString sep, bool cs, uint n_, uint etd)
-    : case_sensitive(cs), error_tolerance_divisor(etd), separators(std::move(sep)), n(n_)
+ItemIndex::ItemIndex(QString sep, bool cs, uint n, uint etd) : d(make_unique<Private>())
 {
+    d->separators = sep;
+    d->case_sensitive = cs;
+    d->error_tolerance_divisor = etd;
+    d->n = n;
 }
 
-void ItemIndex::setItems(std::vector<albert::IndexItem> &&index_items)
+ItemIndex::~ItemIndex() = default;
+
+void ItemIndex::setItems(vector<albert::IndexItem> &&index_items)
 {
     IndexData index_;
 
@@ -55,7 +111,7 @@ void ItemIndex::setItems(std::vector<albert::IndexItem> &&index_items)
             item_index = it->second;
 
         // Add a string index entry for each string. Store the maximal match length for scoring
-        QStringList &&words = splitString(index_items[string_index].string, separators, case_sensitive);
+        QStringList &&words = splitString(index_items[string_index].string, d->separators, d->case_sensitive);
         uint max_match_len = 0;
         for (const auto& word : words)
             max_match_len += word.size();
@@ -77,10 +133,10 @@ void ItemIndex::setItems(std::vector<albert::IndexItem> &&index_items)
     }
     index_.words.shrink_to_fit();
 
-    if (error_tolerance_divisor){
+    if (d->error_tolerance_divisor){
         // build q_gram_index
         for (Index word_index = 0; word_index < (Index)index_.words.size(); ++word_index) {
-            vector<QString> ngrams(ngrams_for_word(index_.words[word_index].word, n));
+            vector<QString> ngrams(ngrams_for_word(index_.words[word_index].word, d->n));
             for (Position pos = 0 ; pos < (Position)ngrams.size(); ++pos)
                 index_.ngrams[ngrams[pos]].emplace_back(word_index, pos);
         }
@@ -88,11 +144,11 @@ void ItemIndex::setItems(std::vector<albert::IndexItem> &&index_items)
     for (auto &[_, word_refs] : index_.ngrams)
         word_refs.shrink_to_fit();
 
-    unique_lock lock(mutex);
-    index = index_;
+    unique_lock lock(d->mutex);
+    d->index = index_;
 }
 
-std::vector<ItemIndex::WordMatch> ItemIndex::getWordMatches(const QString &word, const bool &isValid) const
+vector<WordMatch> ItemIndex::Private::getWordMatches(const QString &word, const bool &isValid) const
 {
     vector<WordMatch> matches;
     const uint word_length = word.length();
@@ -157,14 +213,14 @@ std::vector<ItemIndex::WordMatch> ItemIndex::getWordMatches(const QString &word,
     return matches;
 }
 
-std::vector<albert::RankItem> ItemIndex::search(const QString &string, const bool &isValid) const
+vector<albert::RankItem> ItemIndex::search(const QString &string, const bool &isValid) const
 {
-    QStringList &&words = splitString(string, separators, case_sensitive);
+    QStringList &&words = splitString(string, d->separators, d->case_sensitive);
 
     unordered_map<Index, float> result_map;
     if (words.empty())
 
-        for (const auto &string_index_item : index.strings)
+        for (const auto &string_index_item : d->index.strings)
             result_map.emplace(string_index_item.item, 0.0f);
 
     else {
@@ -185,8 +241,8 @@ std::vector<albert::RankItem> ItemIndex::search(const QString &string, const boo
             return string_matches;
         };
 
-        shared_lock lock(mutex);
-        vector<StringMatch> left_matches = invert(getWordMatches(words[0], isValid));
+        shared_lock lock(d->mutex);
+        vector<StringMatch> left_matches = invert(d->getWordMatches(words[0], isValid));
 
         // In case of multiple words intersect. Todo: user chooses strategy
         for (int w = 1; w < words.size(); ++w) {
@@ -194,7 +250,7 @@ std::vector<albert::RankItem> ItemIndex::search(const QString &string, const boo
             if (!isValid || left_matches.empty())
                 return {};
 
-            vector<StringMatch> right_matches = invert(getWordMatches(words[w], isValid));
+            vector<StringMatch> right_matches = invert(d->getWordMatches(words[w], isValid));
 
             if (right_matches.empty())
                 return {};
@@ -220,7 +276,7 @@ std::vector<albert::RankItem> ItemIndex::search(const QString &string, const boo
 
                 //
                 for (;lit != elit; ++lit)
-                    //for (const auto &right_matcht : std::ranges::subrange(eq_begin,eq_end))
+                    //for (const auto &right_matcht : ranges::subrange(eq_begin,eq_end))
                     for (auto rit = eq_begin; rit != eq_end; ++rit)
                         if (lit->position < rit->position)  // Sequence check
                             intermediate_matches.emplace_back(rit->index, rit->position,
@@ -233,8 +289,8 @@ std::vector<albert::RankItem> ItemIndex::search(const QString &string, const boo
 
         // Build the list of matched items with their highest scoring match
         for (const auto &match : left_matches) {
-            float score = (float)match.match_len / index.strings[match.index].max_match_len;
-            if (const auto &[it, success] = result_map.emplace(index.strings[match.index].item, score);
+            float score = (float)match.match_len / d->index.strings[match.index].max_match_len;
+            if (const auto &[it, success] = result_map.emplace(d->index.strings[match.index].item, score);
                     !success && it->second < score) // update if exists
                 it->second = score;
         }
@@ -245,7 +301,7 @@ std::vector<albert::RankItem> ItemIndex::search(const QString &string, const boo
     vector<albert::RankItem> result;
     result.reserve(result_map.size());
     for (const auto &[item_idx, score] : result_map)
-        result.emplace_back(index.items[item_idx], score);
+        result.emplace_back(d->index.items[item_idx], score);
 
     return result;
 }

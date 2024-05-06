@@ -1,9 +1,10 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
-#include "albert/query/indexqueryhandler.h"
-#include "indexqueryhandlerprivate.h"
-#include "itemindex.h"
+#include "albert/util/indexqueryhandler.h"
+#include "albert/util/itemindex.h"
+#include <memory>
 #include <mutex>
+#include <shared_mutex>
 using namespace albert;
 using namespace std;
 
@@ -12,16 +13,17 @@ static const uint GRAM_SIZE = 2;
 static const char* DEF_SEPARATORS = R"R([\s\\\/\-\[\](){}#!?<>"'=+*.:,;_]+)R";
 static const uint DEF_ERROR_TOLERANCE_DIVISOR = 4;
 
-IndexQueryHandler::IndexQueryHandler() : d(new IndexQueryHandlerPrivate)
+IndexItem::IndexItem(shared_ptr<Item> i, QString s):
+    item(::move(i)), string(::move(s)){}
+
+class IndexQueryHandler::Private
 {
-    class NullIndex : public Index
-    {
-    public:
-        vector<RankItem> search(const QString&, const bool&) const override { return {}; }
-        void setItems(vector<IndexItem> &&) override {}
-    };
-    d->index = make_unique<NullIndex>();
-}
+public:
+    std::unique_ptr<ItemIndex> index;
+    std::shared_mutex index_mutex;
+};
+
+IndexQueryHandler::IndexQueryHandler() : d(new Private) {}
 
 IndexQueryHandler::~IndexQueryHandler() = default;
 

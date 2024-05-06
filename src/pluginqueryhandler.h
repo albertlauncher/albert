@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
-#include "albert/query/indexqueryhandler.h"
+#include "albert/util/indexqueryhandler.h"
 #include <QCoreApplication>
 class PluginRegistry;
 
