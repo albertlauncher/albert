@@ -1,6 +1,5 @@
 // Copyright (c) 2024 Manuel Schneider
 
-#include "albert/extensionregistry.h"
 #include "albert/util/extensionplugin.h"
 using namespace albert;
 using namespace std;
@@ -13,9 +12,3 @@ QString ExtensionPlugin::name() const
 
 QString ExtensionPlugin::description() const
 { return PluginInstance::description(); }
-
-void ExtensionPlugin::initialize(ExtensionRegistry &registry, map<QString,PluginInstance*>)
-{ registry.registerExtension(this); }
-
-void ExtensionPlugin::finalize(ExtensionRegistry &registry)
-{ registry.deregisterExtension(this); }

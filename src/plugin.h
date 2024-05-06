@@ -28,6 +28,8 @@ public:
     bool isUser() const;
     bool isEnabled() const;
     void setEnabled(bool);
+    const std::set<Plugin*> &dependencies() const;
+    const std::set<Plugin*> &dependees() const;
 
     enum class State {
         Invalid,
@@ -43,8 +45,8 @@ public:
 
 private:
 
-    QString load(albert::ExtensionRegistry &r) noexcept;
-    QString unload(albert::ExtensionRegistry &r) noexcept;
+    QString load() noexcept;
+    QString unload() noexcept;
 
     std::set<Plugin*> transitiveDependencies() const;
     std::set<Plugin*> transitiveDependees() const;

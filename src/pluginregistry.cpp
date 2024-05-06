@@ -5,15 +5,29 @@
 #include "albert/plugin/pluginmetadata.h"
 #include "albert/plugin/pluginprovider.h"
 #include "pluginregistry.h"
+#include "topologicalsort.h"
 #include <QApplication>
 #include <QMessageBox>
 using namespace albert;
 using namespace std;
 
+PluginRegistry::StaticDI PluginRegistry::staticDI
+{
+    .loader = nullptr,
+    .dependencies{},
+    .registry = nullptr
+};
+
 PluginRegistry::PluginRegistry(ExtensionRegistry &registry, bool load_enabled):
     ExtensionWatcher<PluginProvider>(&registry),
     extension_registry_(registry),
-    load_enabled_(load_enabled){}
+    load_enabled_(load_enabled)
+{
+    // nope only one
+    if (staticDI.registry)
+        qFatal("nope only one PluginRegistry");
+    staticDI.registry = &registry;
+}
 
 PluginRegistry::~PluginRegistry()
 {
@@ -123,7 +137,7 @@ void PluginRegistry::load(const QString &id)
 
         QStringList errors;
         for (auto *p : v)
-            if (auto err = p->load(extension_registry_); !err.isEmpty())
+            if (auto err = p->load(); !err.isEmpty())
             {
                 WARN << QString("Failed loading plugin '%1': %2").arg(p->id(), err);
                 errors << QString("%1 (%2):\n%3").arg(p->metaData().name, p->id(), err);
@@ -153,7 +167,7 @@ void PluginRegistry::unload(const QString &id)
 
         QStringList errors;
         for (auto *p : v)
-            if (auto err = p->unload(extension_registry_); !err.isEmpty())
+            if (auto err = p->unload(); !err.isEmpty())
             {
                 WARN << QString("Failed unloading plugin '%1': %2").arg(p->id(), err);
                 errors << QString("%1 (%2):\n%3").arg(p->metaData().name, p->id(), err);
@@ -177,92 +191,59 @@ void PluginRegistry::onAdd(PluginProvider *plugin_provider)
     if (!pp_reg_success)
         qFatal("Plugin provider registered twice.");
 
+    // Make the plugins unique by id
 
-    // Register plugins enforcing unique ids
-    std::set<Plugin*> registered_plugins;
-    for (auto &plugin_loader : plugin_provider->plugins())
-    {
-        if (const auto &[it, pl_reg_success]
-            = registered_plugins_.emplace(std::piecewise_construct,
-                                          std::forward_as_tuple(plugin_loader->metaData().id),
-                                          std::forward_as_tuple(plugin_provider, plugin_loader));
-            pl_reg_success)
-            registered_plugins.insert(&it->second);
-        else
+    std::map<QString, PluginLoader*> unique_loaders;
+    for (auto &loader : plugin_provider->plugins())
+        if (const auto &[it, succ] = unique_loaders.emplace(loader->metaData().id, loader); !succ)
             INFO << QString("Plugin '%1' at '%2' shadowed by '%3'")
-                        .arg(it->first, plugin_loader->path(), it->second.loader->path());
-    }
+                        .arg(it->first, loader->path(), it->second->path());
 
-    // Topological sort/load order (Kahn's algorithm), also populate dependencies and dependees
-    map<QString, set<QString>> dependencies;
-    for (const auto &plugin : registered_plugins)
-        dependencies.emplace(std::piecewise_construct,
-                             std::forward_as_tuple(plugin->id()),
-                             std::forward_as_tuple(begin(plugin->loader->metaData().plugin_dependencies),
-                                                   end(plugin->loader->metaData().plugin_dependencies)));
+    // Filter malformed dependencies and get the load order
 
-    std::vector<QString> load_order;
-    std::vector<QString> no_dep_plugins;
+    map<QString, set<QString>> dependency_graph;
+    for (const auto&[id, loader] : unique_loaders)
+        dependency_graph.emplace(std::piecewise_construct,
+                                 std::forward_as_tuple(id),
+                                 std::forward_as_tuple(begin(loader->metaData().plugin_dependencies),
+                                                       end(loader->metaData().plugin_dependencies)));
 
-    // init no_dep_plugins. the "start-node-set".
-    for (auto it = dependencies.begin(); it != dependencies.end();)
+    auto topo = topologicalSort(dependency_graph);
+
+    if (!topo.error_set.empty())
     {
-        const auto &[id, deps] = *it;
-        if (deps.empty())
+        auto msg = tr("Cyclic or missing dependencies detected:");
+        for (const auto &[id, deps] : topo.error_set)
         {
-            no_dep_plugins.push_back(id);
-            it = dependencies.erase(it);
+            msg += QString("\n\n%1: %2").arg(id,
+                                             QStringList(dependency_graph.at(id).cbegin(),
+                                                         dependency_graph.at(id).cend()).join(", "));
+            unique_loaders.erase(id);
         }
-        else
-            ++it;
+        WARN << msg;
+        QMessageBox::warning(nullptr, qApp->applicationDisplayName(), msg);
     }
 
-    while (!no_dep_plugins.empty())
+    // Register plugins and set load order, dependencies and dependees
+
+    int load_order{0};
+    for (const auto &id : topo.sorted)
     {
-        const auto &dependency_id = no_dep_plugins.back();
-        no_dep_plugins.pop_back();
+        const auto &[it, succ] = registered_plugins_.emplace(std::piecewise_construct,
+                                                             std::forward_as_tuple(id),
+                                                             std::forward_as_tuple(plugin_provider, unique_loaders.at(id)));
+        if (!succ)
+            qFatal("Duplicate plugin id registered: %s", qPrintable(it->first));
 
-        load_order.push_back(dependency_id);
-
-        for (auto it = dependencies.begin(); it != dependencies.end();)
+        auto &plugin = it->second;
+        plugin.load_order = load_order++;
+        for (const auto &dependency_id : plugin.loader->metaData().plugin_dependencies)
         {
-            auto &[dependee_id, dependee_dependecies] = *it;
-
-            if (auto ddit = dependee_dependecies.find(dependency_id); ddit != dependee_dependecies.end())
-            {
-                registered_plugins_.at(dependee_id).dependencies_.insert(&registered_plugins_.at(dependency_id));
-                registered_plugins_.at(dependency_id).dependees_.insert(&registered_plugins_.at(dependee_id));
-                dependee_dependecies.erase(ddit);
-
-                if (dependee_dependecies.empty())
-                {
-                    no_dep_plugins.push_back(dependency_id);
-                    it = dependencies.erase(it);
-                }
-                else
-                    ++it;
-            }
-            else
-                ++it;
+            auto &dep = registered_plugins_.at(dependency_id);
+            plugin.dependencies_.insert(&dep);
+            dep.dependees_.insert(&plugin);
         }
     }
-
-    // Check for cycles
-    if (!dependencies.empty())
-    {
-        QString msg = tr("Cyclic or missing dependencies detected:");
-        for (const auto &[id, deps] : dependencies)
-        {
-            msg += QString("\n%1: %2").arg(id, QStringList(deps.cbegin(), deps.cend()).join(", "));
-            registered_plugins_.erase(id);
-        }
-
-        QMessageBox::critical(nullptr, qApp->applicationDisplayName(), msg);
-    }
-
-    // Set plugin load order fields
-    for (uint i = 0; i < load_order.size(); ++i)
-        registered_plugins_.at(load_order[i]).load_order = i;
 
     emit pluginsChanged();
 
@@ -282,7 +263,7 @@ void PluginRegistry::onAdd(PluginProvider *plugin_provider)
     // Load enabled plugins
     QStringList errors;
     for (auto *p : plugins_to_load)
-        if (auto err = p->load(extension_registry_); !err.isEmpty())
+        if (auto err = p->load(); !err.isEmpty())
         {
             WARN << QString("Failed loading plugin '%1': %2").arg(p->id(), err);
             errors << QString("%1 (%2):\n%3").arg(p->metaData().name, p->id(), err);
@@ -310,7 +291,7 @@ void PluginRegistry::onRem(PluginProvider *plugin_provider)
     // Unload plugins
     QStringList errors;
     for (auto *p : plugins_to_unload)
-        if (auto err = p->unload(extension_registry_); !err.isEmpty())
+        if (auto err = p->unload(); !err.isEmpty())
         {
             WARN << QString("Failed unloading plugin '%1': %2").arg(p->id(), err);
             errors << QString("%1 (%2):\n%3").arg(p->metaData().name, p->id(), err);

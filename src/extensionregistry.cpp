@@ -6,13 +6,21 @@
 using namespace std;
 using namespace albert;
 
-void ExtensionRegistry::registerExtension(Extension *e)
+bool ExtensionRegistry::registerExtension(Extension *e)
 {
-    const auto&[it, success] = extensions_.emplace(e->id(), e);
+    auto id = e->id();
+    if (id.isEmpty())
+    {
+        CRIT << "Registered extension id must not be empty";
+        return false;
+    }
+
+    const auto&[it, success] = extensions_.emplace(id, e);
     if (success)
         emit added(e);
     else
         CRIT << "Extension registered more than once:" << e->id();
+    return success;
 }
 
 void ExtensionRegistry::deregisterExtension(Extension *e)

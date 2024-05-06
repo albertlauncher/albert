@@ -10,7 +10,7 @@
 namespace albert {
 class ExtensionRegistry;
 class PluginLoader;
-class PluginMetaData;
+class PluginInstance;
 class PluginProvider;
 }
 
@@ -40,6 +40,12 @@ public:
     /// Unloads a plugin and all plugins that depend on it
     /// Asks the user for confirmation. Shows errors in message boxes.
     void unload(const QString &id);
+
+    static struct StaticDI {
+        albert::PluginLoader * loader;
+        std::map<QString, albert::PluginInstance*> dependencies;
+        albert::ExtensionRegistry *registry;
+    } staticDI;
 
 private:
 

@@ -5,6 +5,7 @@
 #define STRINGIZE(s) #s
 #include "albert/config.h"
 #include "albert/export.h"
+#include "albert/extensionregistry.h"
 #include <QString>
 #include <map>
 #include <memory>
@@ -14,7 +15,6 @@ class QWidget;
 
 namespace albert
 {
-class ExtensionRegistry;
 class PluginLoader;
 
 
@@ -61,27 +61,10 @@ public:
     /// \since 0.23
     std::unique_ptr<QSettings> state() const;
 
-    /// The initialization function.
-    /// \param registry The extension registry.
-    /// \param instances The dependencies of the plugin.
-    /// \since 0.23
-    virtual void initialize(ExtensionRegistry &registry, std::map<QString,PluginInstance*> dependencies);
-
-    /// The finalization function.
-    /// \param registry The extension registry.
-    /// \since 0.23
-    virtual void finalize(ExtensionRegistry &registry);
-
     /// Config widget factory.
     virtual QWidget *buildConfigWidget();
 
-    /// Global variable used for static dependency injection.
-    /// Constructors are nice to have. However Qt plugins enforce default
-    /// constructability. This conflicts the desire to have everything necessary
-    /// in the constructor, especially the plugin id from the metadata.
-    /// This hack emulates constructor injection and should be safe since plugin
-    /// instantiation is serialized.
-    static PluginLoader *instanciated_loader;
+    albert::ExtensionRegistry &registry();
 
 protected:
 

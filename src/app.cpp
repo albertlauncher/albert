@@ -68,7 +68,6 @@ void App::finalize()
     extension_registry.deregisterExtension(&app_query_handler);
 
     try {
-        dynamic_cast<PluginInstance*>(frontend)->finalize(extension_registry);
         frontend_plugin->unload();
     } catch (const exception &e) {
         WARN << e.what();
@@ -107,24 +106,22 @@ void App::loadAnyFrontend()
     qFatal("Could not load any frontend.");
 }
 
-
 QString App::loadFrontend(PluginLoader *loader)
 {
     try {
+        PluginRegistry::staticDI.loader = loader;
+        PluginRegistry::staticDI.dependencies = {};
         loader->load();
 
-        PluginInstance::instanciated_loader = loader;
+        plugin_registry.staticDI.loader = loader;
         auto * inst = loader->createInstance();
-
         if (!inst)
             return "Plugin loader returned null instance";
 
         frontend = dynamic_cast<Frontend*>(loader->createInstance());
-
         if (!frontend)
             return QString("Failed casting Plugin instance to albert::Frontend: %1").arg(loader->metaData().id);
 
-        inst->initialize(extension_registry, {});
         frontend_plugin = loader;
 
         QObject::connect(frontend, &Frontend::visibleChanged, this, [this](bool v){

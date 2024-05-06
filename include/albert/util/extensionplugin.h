@@ -26,13 +26,6 @@ public:
 
     /// Override returning PluginInstance::description
     QString description() const override;
-
-    /// Override registering `this`
-    void initialize(ExtensionRegistry&, std::map<QString,PluginInstance*>) override;
-
-    /// Override deregistering `this`
-    void finalize(ExtensionRegistry&) override;
-
 };
 
 }

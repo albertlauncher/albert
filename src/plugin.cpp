@@ -6,6 +6,7 @@
 #include "albert/plugin/pluginloader.h"
 #include "albert/plugin/pluginmetadata.h"
 #include "plugin.h"
+#include "pluginregistry.h"
 #include <QApplication>
 #include <QMessageBox>
 #include <QRegularExpression>
@@ -65,6 +66,12 @@ void Plugin::setEnabled(bool enable)
     }
 }
 
+const std::set<Plugin *> &Plugin::dependencies() const
+{ return dependencies_; }
+
+const std::set<Plugin *> &Plugin::dependees() const
+{ return dependees_; }
+
 Plugin::State Plugin::state() const { return state_; }
 
 const QString &Plugin::stateInfo() const { return state_info_; }
@@ -93,7 +100,7 @@ QString Plugin::localStateString() const
 
 PluginInstance *Plugin::instance() const { return instance_; }
 
-QString Plugin::load(albert::ExtensionRegistry &extension_registry) noexcept
+QString Plugin::load() noexcept
 {
     if (state_ != State::Unloaded)
         return localStateString();
@@ -109,8 +116,21 @@ QString Plugin::load(albert::ExtensionRegistry &extension_registry) noexcept
         auto dur_l = duration_cast<milliseconds>(system_clock::now() - tp).count();
         DEBG << QStringLiteral("%1 ms spent loading plugin '%2'").arg(dur_l).arg(id());
 
+        // Get dependencies
+        map<QString, PluginInstance*> dependencies;
+        for (const auto &d : dependencies_)
+        {
+            if (d->state() != State::Loaded)
+            {
+                auto msg = tr("Dependency '%1' is not loaded.").arg(d->id());
+                throw runtime_error(msg.toStdString());
+            }
+            dependencies[d->id()] = d->instance_;
+        }
+
         tp = system_clock::now();
-        PluginInstance::instanciated_loader = loader;
+        PluginRegistry::staticDI.loader = loader;
+        PluginRegistry::staticDI.dependencies = ::move(dependencies);
         instance_ = loader->createInstance();
         auto dur_c = duration_cast<milliseconds>(system_clock::now() - tp).count();
         DEBG << QStringLiteral("%1 ms spent instanciating plugin '%2'").arg(dur_c).arg(id());
@@ -118,25 +138,13 @@ QString Plugin::load(albert::ExtensionRegistry &extension_registry) noexcept
         if (!instance_)
             throw runtime_error("createInstance() returned nullptr");
 
-        // Get dependencies
-        map<QString, PluginInstance*> dependencies;
-        for (const auto &d : dependencies_)
-        {
-            if (d->state() != State::Loaded)
-            {
-                auto msg = tr("Dependency '%1' is not initialized.").arg(d->id());
-                throw runtime_error(msg.toStdString());
-            }
-            dependencies[d->id()] = d->instance_;
-        }
+        // Auto register root extensions
+        if (auto *e = dynamic_cast<Extension*>(instance_); e)
+            if (!PluginRegistry::staticDI.registry->registerExtension(e))
+                throw runtime_error(tr("Root extension registration failed: '%1'")
+                                        .arg(id()).toStdString());
 
-        tp = system_clock::now();
-        instance_->initialize(extension_registry, dependencies);
-        auto dur_i = duration_cast<milliseconds>(system_clock::now() - tp).count();
-        DEBG << QStringLiteral("%1 ms spent initializing plugin '%2'").arg(dur_i).arg(id());
-
-        setState(State::Loaded, tr("Load: %1 ms, Instanciate: %2 ms, Initialize: %3 ms.")
-                                    .arg(dur_l).arg(dur_c).arg(dur_i));
+        setState(State::Loaded, tr("Load: %1 ms, Instanciate: %2 ms").arg(dur_l).arg(dur_c));
         return {};
     }
     catch (const exception& e) { errors << e.what(); }
@@ -147,7 +155,7 @@ QString Plugin::load(albert::ExtensionRegistry &extension_registry) noexcept
     return err;
 }
 
-QString Plugin::unload(albert::ExtensionRegistry &extension_registry) noexcept
+QString Plugin::unload() noexcept
 {
     if (state_ == State::Unloaded){
         setState(State::Unloaded);  // reset state_info
@@ -159,23 +167,20 @@ QString Plugin::unload(albert::ExtensionRegistry &extension_registry) noexcept
 
     setState(State::Busy, tr("Unloading…"));
 
+
     QStringList errors;
     try {
         auto tp = system_clock::now();
-        instance_->finalize(extension_registry);
-        auto dur = duration_cast<milliseconds>(system_clock::now() - tp).count();
-        DEBG << QStringLiteral("%1 ms spent finalizing plugin '%2'").arg(dur).arg(id());
-    }
-    catch (const exception& e) { errors << e.what(); }
-    catch (...){ errors << tr("Unknown exception occurred."); }
 
-    instance_ = nullptr;
+        // Auto deregister root extensions
+        if (auto *e = dynamic_cast<Extension*>(instance_); e)
+            PluginRegistry::staticDI.registry->deregisterExtension(e);
 
-    try {
-        auto tp = system_clock::now();
         loader->unload();
         auto dur = duration_cast<milliseconds>(system_clock::now() - tp).count();
         DEBG << QStringLiteral("%1 ms spent unloading plugin '%2'").arg(dur).arg(id());
+
+        instance_ = nullptr;
     }
     catch (const exception& e) { errors << e.what(); }
     catch (...){ errors << tr("Unknown exception occurred."); }

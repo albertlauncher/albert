@@ -5,6 +5,7 @@
 #include "albert/plugin/pluginloader.h"
 #include "albert/plugin/pluginmetadata.h"
 #include "albert/extensionregistry.h"
+#include "pluginregistry.h"
 #include <QCoreApplication>
 #include <QDir>
 #include <QRegularExpression>
@@ -15,23 +16,28 @@ using namespace std;
 class PluginInstance::Private
 {
 public:
-    PluginLoader const * const loader{PluginInstance::instanciated_loader};
+    const PluginLoader &loader;
+    ExtensionRegistry &registry;
+    const map<QString, PluginInstance*> dependencies;
 };
 
-PluginLoader *PluginInstance::instanciated_loader = nullptr;
+PluginInstance::PluginInstance():
+    d(new Private{
+        .loader = *PluginRegistry::staticDI.loader,
+        .registry = *PluginRegistry::staticDI.registry,
+        .dependencies = ::move(PluginRegistry::staticDI.dependencies)
+    }) {}
 
-PluginInstance::PluginInstance() : d(make_unique<Private>()) {}
-
-PluginInstance::~PluginInstance() {}
+PluginInstance::~PluginInstance() = default;
 
 QString PluginInstance::id() const
-{ return d->loader->metaData().id; }
+{ return d->loader.metaData().id; }
 
 QString PluginInstance::name() const
-{ return d->loader->metaData().name; }
+{ return d->loader.metaData().name; }
 
 QString PluginInstance::description() const
-{ return d->loader->metaData().description; }
+{ return d->loader.metaData().description; }
 
 static QDir make_dir(const QString &location, const QString &id)
 {
@@ -68,9 +74,8 @@ unique_ptr<QSettings> albert::PluginInstance::state() const
     return s;
 }
 
-void PluginInstance::initialize(ExtensionRegistry&, map<QString,PluginInstance*>) {}
-
-void PluginInstance::finalize(ExtensionRegistry&) {}
-
 QWidget *PluginInstance::buildConfigWidget() { return nullptr; }
+
+ExtensionRegistry &PluginInstance::registry()
+{ return d->registry; }
 

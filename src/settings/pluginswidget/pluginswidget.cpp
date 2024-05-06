@@ -130,15 +130,15 @@ void PluginsWidget::onUpdatePluginWidget()
     QStringList meta;
 
     // Credits if any
-    if (auto list = p.metaData().third_party_credits; !list.isEmpty())
+    if (const auto &list = p.metaData().third_party_credits; !list.isEmpty())
         meta << tr("Credits: %1").arg(list.join(", "));
 
     // Required executables, if any
-    if (auto list = p.metaData().binary_dependencies; !list.isEmpty())
+    if (const auto &list = p.metaData().binary_dependencies; !list.isEmpty())
         meta << tr("Required executables: %1", nullptr, list.size()).arg(list.join(", "));
 
     // Required libraries, if any
-    if (auto list = p.metaData().runtime_dependencies; !list.isEmpty())
+    if (const auto &list = p.metaData().runtime_dependencies; !list.isEmpty())
         meta << tr("Required libraries: %1", nullptr, list.size()).arg(list.join(", "));
 
     // Id, version, license, authors
@@ -156,6 +156,24 @@ void PluginsWidget::onUpdatePluginWidget()
                             p.metaData().version,
                             tr("License: %1").arg(p.metaData().license),
                             tr("Authors: %1", nullptr, authors.size()).arg(authors.join(", ")));
+
+    // Dependencies
+    if (const auto &list = p.dependencies(); !list.empty())
+    {
+        QStringList names;
+        for (const auto &d : list)
+            names << d->metaData().name;
+        meta << tr("Requires: %1").arg(names.join(", "));
+    }
+
+    // Dependees
+    if (const auto &list = p.dependees(); !list.empty())
+    {
+        QStringList names;
+        for (const auto &d : list)
+            names << d->metaData().name;
+        meta << tr("Required by: %1").arg(names.join(", "));
+    }
 
     // Provider
     meta << tr("%1, Interface: %2").arg(p.provider->name(), p.metaData().iid);

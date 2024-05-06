@@ -25,7 +25,7 @@ class ALBERT_EXPORT ExtensionRegistry : public QObject
 public:
 
     /// Add extension to the registry
-    void registerExtension(Extension*);
+    bool registerExtension(Extension*);
 
     /// Remove extension from the registry
     void deregisterExtension(Extension*);
