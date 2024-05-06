@@ -218,9 +218,6 @@ QString albert::dataLocation()
 QString albert::cacheLocation()
 { return QStandardPaths::writableLocation(QStandardPaths::CacheLocation) ;}
 
-void albert::runTerminal(const QString &script, const QString &working_dir, bool close_on_exit)
-{ app->terminal_provider.terminal().run(script, working_dir, close_on_exit); }
-
 void albert::showSettings(QString plugin_id)
 {
     if (!app->settings_window)

@@ -13,7 +13,6 @@
 #include "session.h"
 #include "settings/settingswindow.h"
 #include "telemetry.h"
-#include "terminalprovider.h"
 #include <QNetworkAccessManager>
 #include <QPointer>
 namespace albert {
@@ -23,7 +22,7 @@ class Frontend;
 
 extern int main(int, char**);
 
-class App : QObject
+class App : public QObject
 {
     Q_OBJECT
 public:
@@ -38,7 +37,6 @@ public:
     PluginRegistry plugin_registry;
     QueryEngine query_engine;
     QtPluginProvider plugin_provider;
-    TerminalProvider terminal_provider;
     QPointer<SettingsWindow> settings_window;
     Hotkey hotkey;  // must be unwinded before frontend
     Telemetry telemetry;

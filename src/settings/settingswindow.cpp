@@ -60,7 +60,6 @@ SettingsWindow::SettingsWindow(App &app):
 
     init_tab_general_hotkey(app);
     init_tab_general_frontends(app);
-    init_tab_general_terminals(app);
 
     ui.tabs->insertTab(ui.tabs->count(), app.frontend->createFrontendConfigWidget(), tr("Window"));
     ui.tabs->insertTab(ui.tabs->count(), plugin_widget.get(), tr("Plugins"));
@@ -89,18 +88,6 @@ void SettingsWindow::init_tab_general_frontends(App &app)
     connect(ui.comboBox_frontend, &QComboBox::currentIndexChanged, this, [this, &app]() {
         app.setFrontend(ui.comboBox_frontend->currentData().toString());
     });
-}
-
-void SettingsWindow::init_tab_general_terminals(App &app)
-{
-    for (const auto &terminal : app.terminal_provider.terminals()){
-        ui.comboBox_term->addItem(terminal->name());
-        if (terminal.get() == &app.terminal_provider.terminal())
-            ui.comboBox_term->setCurrentIndex(ui.comboBox_term->count()-1);
-    }
-
-    connect(ui.comboBox_term, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            this, [&app](int index){ app.terminal_provider.setTerminal(index); });
 }
 
 void SettingsWindow::insert_tab_about()
