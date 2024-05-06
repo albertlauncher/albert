@@ -368,3 +368,20 @@ long long albert::runDetachedProcess(QStringList commandline, const QString &wor
 
 ContainerType albert::containerType()
 { return container_type; }
+
+QString flatpak::mapPathToHost(const QString &path)
+{
+    static const QString host_prefix = QStringLiteral("/run/host");
+    if (path.startsWith(host_prefix))
+        return path.mid(host_prefix.length());
+    return path;
+}
+
+QString flatpak::mapPathFromHost(const QString &path)
+{
+    static const QString home = QDir::homePath();
+    if (path.startsWith(home))
+        return path;
+    return QStringLiteral("/run/host") + path;
+
+}

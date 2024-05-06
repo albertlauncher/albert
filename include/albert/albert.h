@@ -107,5 +107,16 @@ enum class ALBERT_EXPORT ContainerType { None, AppImage, Flatpak, Snapcraft };
 /// \return The container type.
 ALBERT_EXPORT ContainerType containerType();
 
+namespace flatpak {
 
-}
+/// E.g. /run/host/etc/hostname > /etc/hostname
+/// Does not apply to paths inside the sandbox.
+QString mapPathToHost(const QString &path);
+
+/// E.g. /etc/hostname > /run/host/etc/hostname
+QString mapPathFromHost(const QString &path);
+
+
+}  // namespace flatpak
+
+}  // namespace albert
