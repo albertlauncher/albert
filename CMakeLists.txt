@@ -22,29 +22,34 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 # Set additional compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
-    -Wall \
-    -Werror=return-type \
-    -Wextra \
-    -Winline \
-    -Wshadow \
-    -Wstrict-aliasing \
-    -pedantic \
-    -Wno-inline \
-    -Wno-unused-lambda-capture\
-    -Wno-unused-parameter \
-    -Wno-unused-function \
-")
-# -Werror \
-# target_compile_options(${PROJECT_NAME} PRIVATE -save-temps) # only internal
 
-#    -Wshadow-field-in-constructor \
-#    -Wno-shadow \
-#    -Wl,-undefined \
-#    -Weffc++
-#    -Wconversion \
-#    -Wno-deprecated \
-#string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,-undefined,error")  #macosonly
+set(ALBERT_COMPILE_OPTIONS
+    #-Werror
+    -Wall
+    -Wextra
+    -Wpedantic
+
+    # -Wconversion
+    # -Weffc++
+    -Winline
+    -Wmissing-field-initializers
+    -Wreturn-type
+    -Wshadow
+    -Wstrict-aliasing
+
+    # Use this from time to time
+    # -Weverything
+    # -Wdocumentation
+    # -Wno-c++98-compat
+    # -Wno-c++20-compat
+    # -Wno-c++98-compat-pedantic
+
+    # ??
+    # -Wl,-undefined
+)
+
+# string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,-undefined,error")  #macosonly
+# target_compile_options(${PROJECT_NAME} PRIVATE -save-temps) # only internal
 
 # Put the binaries in dedicated toplevel directories
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -104,6 +109,8 @@ generate_export_header(${TARGET_LIB}
     BASE_NAME ${PROJECT_NAME}
     EXPORT_FILE_NAME "${PROJECT_BINARY_DIR}/include/albert/export.h"
 )
+
+target_compile_options(${TARGET_LIB} PRIVATE ${ALBERT_COMPILE_OPTIONS})
 
 target_include_directories(${TARGET_LIB}
     PUBLIC
