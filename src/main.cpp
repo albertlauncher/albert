@@ -1,3 +1,4 @@
 // Copyright (C) 2022 Manuel Schneider
 
-extern int main(int argc, char **argv);
+extern int run(int argc, char **argv);
+int main(int argc, char **argv) { return run(argc, argv); }

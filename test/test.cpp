@@ -2,21 +2,64 @@
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #define DOCTEST_CONFIG_COLORS_ANSI
-#include "albert/extension/queryhandler/indexitem.h"
-#include "albert/extension/queryhandler/standarditem.h"
-#include "albert/extension/queryhandler/rankitem.h"
 #include "doctest/doctest.h"
-#include "src/itemindex.h"
+#include "albert/query/rankitem.h"
+#include "albert/util/standarditem.h"
+#include "albert/util/itemindex.h"
+#include "topologicalsort.h"
 #include "src/levenshtein.h"
 #include <QString>
 #include <chrono>
 #include <iostream>
+#include <string>
 using namespace albert;
 using namespace std;
 using namespace std::chrono;
 
 #include <ctime>
 #include <unistd.h>
+
+TEST_CASE("Plugin registry topological sort")
+{
+    // linear
+    auto result = topologicalSort(map<int,set<int>>{
+        {1, {2}},
+        {2, {3}},
+        {3, {}}
+    });
+    CHECK(result.sorted == vector<int>{3, 2, 1});
+    CHECK(result.error_set.empty());
+
+    // diamond
+    result = topologicalSort(map<int,set<int>>{
+        {1, {}},
+        {2, {1}},
+        {3, {1}},
+        {4, {2, 3}}
+    });
+    CHECK((result.sorted == vector<int>{1,2,3,4} ||
+           result.sorted == vector<int>{1,3,2,4}));
+    CHECK(result.error_set.empty());
+
+    // cycle
+    result = topologicalSort(map<int,set<int>>{
+        {1, {2}},
+        {2, {1}}
+    });
+    CHECK(result.sorted == vector<int>{});
+    CHECK(result.error_set == map<int,set<int>>{
+              {1, {2}},
+              {2, {1}}
+          });
+
+    // not existing node
+    result = topologicalSort(map<int,set<int>>{
+        {1, {2}}
+    });
+    CHECK(result.sorted == vector<int>{});
+    CHECK(result.error_set == map<int,set<int>>{{1, {2}}});
+}
+
 
 std::string gen_random(const int len) {
     static const char alphanum[] =
@@ -192,15 +235,16 @@ TEST_CASE("Index")
 
     // score
     CHECK(qFuzzyCompare(match({"a","ab","abc"}, "a", false, 2, 3).size(), 3.0f));
-    CHECK(qFuzzyCompare(match({"a","ab","abc"}, "a", false, 2, 3)[0].score, 1.0f/3.0f));
-    CHECK(qFuzzyCompare(match({"a","ab","abc"}, "a", false, 2, 3)[1].score, 1.0f/2.0f));
-    CHECK(qFuzzyCompare(match({"a","ab","abc"}, "a", false, 2, 3)[2].score, 1.0f));
-    CHECK(qFuzzyCompare(match({"abc","abd"}, "abe", false, 2, 3)[0].score, 2.0f/3.0f));
-    CHECK(qFuzzyCompare(match({"abc","abd"}, "abe", false, 2, 3)[1].score, 2.0f/3.0f));
+    CHECK(qFuzzyCompare(match({"a","ab","abc"}, "a", false, 2, 3)[0].score, 1.0/3.0));
+    CHECK(qFuzzyCompare(match({"a","ab","abc"}, "a", false, 2, 3)[1].score, 1.0/2.0));
+    CHECK(qFuzzyCompare(match({"a","ab","abc"}, "a", false, 2, 3)[2].score, 1.0));
+    CHECK(qFuzzyCompare(match({"abc","abd"}, "abe", false, 2, 3)[0].score, 2.0/3.0));
+    CHECK(qFuzzyCompare(match({"abc","abd"}, "abe", false, 2, 3)[1].score, 2.0/3.0));
 
     std::vector<albert::RankItem> M = match({"abc","abd","abcdef"}, "abc", false, 2, 3);
     sort(M.begin(), M.end(), [](auto &a, auto &b){ return a.item->id() < b.item->id(); });
-    CHECK(qFuzzyCompare(M[0].score, 3.0f/3.0f));
-    CHECK(qFuzzyCompare(M[1].score, 3.0f/6.0f));
-    CHECK(qFuzzyCompare(M[2].score, 2.0f/3.0f));
+    CHECK(qFuzzyCompare(M[0].score, 3.0/3.0));
+    CHECK(qFuzzyCompare(M[1].score, 3.0/6.0));
+    CHECK(qFuzzyCompare(M[2].score, 2.0/3.0));
 }
+

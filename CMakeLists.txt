@@ -81,6 +81,7 @@ file(GLOB LIB_SRC
     src/settings/querywidget/*.cpp
     src/settings/querywidget/*.h
 )
+list(FILTER LIB_SRC EXCLUDE REGEX main.cpp)
 
 file(GLOB_RECURSE LIB_SRC_PLATFORM
     src/platform/${CMAKE_SYSTEM_NAME}/*.h
@@ -234,9 +235,7 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 endif()
 
-target_link_libraries(${TARGET_APP}
-    PRIVATE ${TARGET_LIB}
-)
+target_link_libraries(${TARGET_APP} PRIVATE ${TARGET_LIB})
 
 set_target_properties(${TARGET_APP} PROPERTIES
     OUTPUT_NAME ${CMAKE_PROJECT_NAME}
@@ -255,23 +254,18 @@ if (BUILD_TESTS)
     set(TARGET_TST ${CMAKE_PROJECT_NAME}_test)
     find_package(doctest)
 
-#    get_target_property(SRC_TST ${TARGET_LIB} SOURCES)
-#    get_target_property(INC_TST ${TARGET_LIB} PRIVATE_HEADER)
+    get_target_property(SRC_TST ${TARGET_LIB} SOURCES)
+    add_executable(${TARGET_TST} ${SRC_TST} test/test.cpp)
 
-    add_executable(${TARGET_TST}
-        test/test.cpp
-        src/itemindex.cpp
-        src/levenshtein.cpp
-        test/test.cpp
-    )
-    target_link_libraries(${TARGET_TST} PRIVATE ${TARGET_LIB})
-    target_include_directories(${TARGET_TST} PRIVATE include src)
-    target_link_libraries(${TARGET_TST} PRIVATE
-        doctest::doctest
-        Qt6::Core
-        Qt6::Concurrent
-        Qt6::Sql
-    )
+    get_target_property(INC_TST ${TARGET_LIB} INCLUDE_DIRECTORIES)
+    target_include_directories(${TARGET_TST} PRIVATE ${INC_TST})
+
+    get_target_property(LIBS_TST ${TARGET_LIB} LINK_LIBRARIES)
+    target_link_libraries(${TARGET_TST} PRIVATE ${LIBS_TST} doctest::doctest)
+
+    get_target_property(CXX_STD_TST ${TARGET_LIB} CXX_STANDARD)
+    set_target_properties(${TARGET_TST} PROPERTIES CXX_STANDARD ${CXX_STD_TST})
+
 endif()
 
 

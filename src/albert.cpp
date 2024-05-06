@@ -104,9 +104,9 @@ static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
     return qapp;
 }
 
-int ALBERT_EXPORT main(int argc, char **argv);
+int ALBERT_EXPORT run(int argc, char **argv);
 
-int main(int argc, char **argv)
+int run(int argc, char **argv)
 {
     QLoggingCategory::setFilterRules("*.debug=false");
 
