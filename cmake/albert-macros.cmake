@@ -71,15 +71,15 @@ macro(albert_plugin_add_default_target)
 
     target_compile_options(${PROJECT_NAME} PRIVATE ${ALBERT_COMPILE_OPTIONS})
 
+    target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})  # metadata.json
     if (DEFINED ARG_INCLUDE_DIRECTORIES)
         target_include_directories(${PROJECT_NAME} ${ARG_INCLUDE_DIRECTORIES})
     endif()
 
+    target_link_libraries(${PROJECT_NAME} PRIVATE albert::albert)
     if (DEFINED ARG_LINK_LIBRARIES)
         target_link_libraries(${PROJECT_NAME} ${ARG_LINK_LIBRARIES})
     endif()
-
-    target_link_libraries(${PROJECT_NAME} PRIVATE albert::albert)
 
     set_target_properties(${PROJECT_NAME} PROPERTIES
         CXX_STANDARD 20
@@ -125,7 +125,7 @@ macro(albert_plugin_generate_metadata_json)
     endif()
 
     # Create the metadata in the build dir
-    # message(STATUS "${CMAKE_CURRENT_BINARY_DIR}/metadata.json ${MD}")
+    message(STATUS "${CMAKE_CURRENT_BINARY_DIR}/metadata.json ${MD}")
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/metadata.json" "${MD}")
 
 endmacro()
@@ -137,4 +137,3 @@ macro(albert_plugin)
     albert_plugin_generate_metadata_json()
 
 endmacro()
-
