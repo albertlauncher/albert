@@ -34,13 +34,13 @@ QtPluginLoader::QtPluginLoader(const QString &p) : loader_(p), instance_(nullptr
     // Check interface
     //
 
-    metadata_.iid = loader_.metaData()[QStringLiteral("IID")].toString();
+    auto iid = loader_.metaData()[QStringLiteral("IID")].toString();
 
-    if (metadata_.iid.isEmpty())
+    if (iid.isEmpty())
         throw runtime_error("Not a Qt plugin");
 
     static const auto regex_iid = QRegularExpression(R"R(org.albert.PluginInterface/(\d+).(\d+))R");
-    auto iid_match = regex_iid.match(metadata_.iid);
+    auto iid_match = regex_iid.match(iid);
 
     if (!iid_match.hasMatch())
     {
@@ -87,26 +87,30 @@ QtPluginLoader::QtPluginLoader(const QString &p) : loader_(p), instance_(nullptr
     const QString load_type_user = QStringLiteral("user");
 
     auto rawMetadata = loader_.metaData()[key_md].toObject();
-    metadata_.id = rawMetadata[key_id].toString();
-    metadata_.version = rawMetadata[key_version].toString();
-    metadata_.name = fetchLocalizedMetadata(rawMetadata, key_name);
-    metadata_.description = fetchLocalizedMetadata(rawMetadata, key_description);
-    metadata_.license = rawMetadata[key_license].toString();
-    metadata_.url = rawMetadata[key_url].toString();
-    metadata_.authors = rawMetadata[key_authors].toVariant().toStringList();
-    metadata_.runtime_dependencies = rawMetadata[key_runtime_dependencies].toVariant().toStringList();
-    metadata_.binary_dependencies = rawMetadata[key_binary_dependencies].toVariant().toStringList();
-    metadata_.plugin_dependencies = rawMetadata[key_plugin_dependencies].toVariant().toStringList();
-    metadata_.third_party_credits = rawMetadata[key_credits].toVariant().toStringList();
 
-    auto lt = rawMetadata[key_load_type].toString();
-    if (lt == load_type_frontend)
-        metadata_.load_type = PluginMetaData::LoadType::Frontend;
-    else {
-        if (!lt.isEmpty() && lt != load_type_user)
-            WARN << QString("Invalid load type '%1'. Default to '%2'.").arg(lt, load_type_user);
-        metadata_.load_type = PluginMetaData::LoadType::User;
-    }
+    auto load_type = PluginMetaData::LoadType::User;
+    if (auto lts = rawMetadata[key_load_type].toString(); lts == load_type_frontend)
+        load_type = PluginMetaData::LoadType::Frontend;
+    else if (!lts.isEmpty() && lts != load_type_user)
+        WARN << QString("Invalid load type '%1'. Default to '%2'.").arg(lts, load_type_user);
+
+    metadata_ = albert::PluginMetaData
+    {
+        .iid = iid,
+        .id = rawMetadata[key_id].toString(),
+        .version = rawMetadata[key_version].toString(),
+        .name = fetchLocalizedMetadata(rawMetadata, key_name),
+        .description = fetchLocalizedMetadata(rawMetadata, key_description),
+        .license = rawMetadata[key_license].toString(),
+        .url = rawMetadata[key_url].toString(),
+        .authors = rawMetadata[key_authors].toVariant().toStringList(),
+        .runtime_dependencies = rawMetadata[key_runtime_dependencies].toVariant().toStringList(),
+        .binary_dependencies = rawMetadata[key_binary_dependencies].toVariant().toStringList(),
+        .plugin_dependencies = rawMetadata[key_plugin_dependencies].toVariant().toStringList(),
+        .third_party_credits = rawMetadata[key_credits].toVariant().toStringList(),
+        .platforms{},
+        .load_type = load_type
+    };
 
     //
     // Set load hints
