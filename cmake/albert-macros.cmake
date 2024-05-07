@@ -4,32 +4,25 @@
 #
 #     albert_plugin(
 #          SOURCE_FILES
-#          [PUBLIC_INCLUDE_DIRECTORIES directories...]
-#          [PRIVATE_INCLUDE_DIRECTORIES directories...]
-#          [PUBLIC_LINK_LIBRARIES libraries...]
-#          [PRIVATE_LINK_LIBRARIES libraries...]
+#          [INCLUDE_DIRECTORIES ...]
+#          [LINK_LIBRARIES ...]
 #          [METADATA filepath]
 #          [TS_FILES ts_files...]
-#
 #     )
 #
 #     Creates a plugin target with the given name.
 #
 #     SOURCE_FILES
-#         List of target source files. May contain globbing patterns. The
-#         METADATA file is automatically added to the sources.
+#         List of target source files. Supports globbing patterns.
+#         The METADATA file is automatically added to the sources.
 #
-#     PUBLIC_INCLUDE_DIRECTORIES
-#         List of public include directories.
+#     INCLUDE_DIRECTORIES
+#         List of include directories.
+#         Shorthand for CMake target_include_directories(plugin_target …
 #
-#     PRIVATE_INCLUDE_DIRECTORIES
-#         List of private include directories.
-#
-#     PUBLIC_LINK_LIBRARIES
-#         List of public link libraries.
-#
-#     PRIVATE_LINK_LIBRARIES
-#         List of private link libraries. albert::albert is automatically added.
+#     LINK_LIBRARIES
+#         List of link libraries.
+#         Shorthand for CMake target_link_libraries(plugin_target …
 #
 #     METADATA
 #         Path to the metadata.json file. Defaults to "metadata.json".
@@ -57,10 +50,8 @@ macro(albert_plugin_add_default_target)
     set(arg_vals METADATA)
     set(arg_list
         SOURCE_FILES
-        PUBLIC_INCLUDE_DIRECTORIES
-        PUBLIC_LINK_LIBRARIES
-        PRIVATE_INCLUDE_DIRECTORIES
-        PRIVATE_LINK_LIBRARIES
+        INCLUDE_DIRECTORIES
+        LINK_LIBRARIES
         TS_FILES
     )
     cmake_parse_arguments(ARG "${arg_bool}" "${arg_vals}" "${arg_list}" ${ARGV})
@@ -78,20 +69,17 @@ macro(albert_plugin_add_default_target)
     add_library(${PROJECT_NAME} SHARED ${GLOBBED_SRC} ${ARG_METADATA})
     add_library(albert::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-    target_include_directories(${PROJECT_NAME}
-        PUBLIC
-            ${ARG_PUBLIC_INCLUDE_DIRECTORIES}
-        PRIVATE
-            ${ARG_PRIVATE_INCLUDE_DIRECTORIES}
-    )
+    target_compile_options(${PROJECT_NAME} PRIVATE ${ALBERT_COMPILE_OPTIONS})
 
-    target_link_libraries(${PROJECT_NAME}
-        PUBLIC
-            ${ARG_PUBLIC_LINK_LIBRARIES}
-        PRIVATE
-            ${ARG_PRIVATE_LINK_LIBRARIES}
-            albert::albert
-    )
+    if (DEFINED ARG_INCLUDE_DIRECTORIES)
+        target_include_directories(${PROJECT_NAME} ${ARG_INCLUDE_DIRECTORIES})
+    endif()
+
+    if (DEFINED ARG_LINK_LIBRARIES)
+        target_link_libraries(${PROJECT_NAME} ${ARG_LINK_LIBRARIES})
+    endif()
+
+    target_link_libraries(${PROJECT_NAME} PRIVATE albert::albert)
 
     set_target_properties(${PROJECT_NAME} PROPERTIES
         CXX_STANDARD 20
