@@ -1,20 +1,17 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
-#define EXPAND_STRINGIZE(s) STRINGIZE(s)
-#define STRINGIZE(s) #s
 #include "albert/config.h"
 #include "albert/export.h"
-#include "albert/extensionregistry.h"
+#include <QDir>
+#include <QSettings>
 #include <QString>
-#include <map>
+#include <QWidget>
 #include <memory>
-class QDir;
-class QSettings;
-class QWidget;
 
 namespace albert
 {
+class ExtensionRegistry;
 class PluginLoader;
 
 
@@ -64,6 +61,9 @@ public:
     /// Config widget factory.
     virtual QWidget *buildConfigWidget();
 
+    /// The associated extension registry.
+    /// \returns The extension registry.
+    /// \since 0.24
     albert::ExtensionRegistry &registry();
 
 protected:
@@ -74,6 +74,7 @@ private:
 
     class Private;
     const std::unique_ptr<Private> d;
+
 };
 
 }

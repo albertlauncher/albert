@@ -1,13 +1,13 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
 #include "albert/albert.h"
-#include "albert/logging.h"
 #include "albert/extensionregistry.h"
-#include "albert/query/fallbackprovider.h"
+#include "albert/logging.h"
+#include "albert/query/fallbackhandler.h"
 #include "albert/query/globalqueryhandler.h"
 #include "albert/query/triggerqueryhandler.h"
-#include "queryexecution.h"
 #include "queryengine.h"
+#include "queryexecution.h"
 #include "usagedatabase.h"
 #include <QCoreApplication>
 #include <QMessageBox>

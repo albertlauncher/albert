@@ -5,15 +5,15 @@
 #include <QAbstractListModel>
 #include <QObject>
 #include <QString>
+#include <memory>
+#include <vector>
 
 namespace albert
 {
 class Item;
 
 ///
-///  Interface class for queries used by frontends.
-///
-///  @see Frontend
+/// Common query object.
 ///
 class ALBERT_EXPORT Query : public QObject
 {
@@ -69,8 +69,7 @@ public:
 
 protected:
 
-    /// Private destructor. Lifetime is handled by the session.
-    virtual ~Query() = default;
+    ~Query() override;
 
 signals:
 

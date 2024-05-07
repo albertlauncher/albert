@@ -67,8 +67,8 @@ vector<RankItem> PluginConfigQueryHandler::handleGlobalQuery(const Query *query)
                                             [metaProp, q=qobject](){ metaProp.write(q, !metaProp.read(q).toBool()); }
                                         }
                                     }
-                                    ),
-                                (float)query->string().length() / metaPropName.length()
+                                ),
+                                (double)query->string().length() / metaPropName.length()
                             );
                         }
                     }

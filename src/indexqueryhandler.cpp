@@ -1,5 +1,6 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
+#include "albert/query/query.h"
 #include "albert/util/indexqueryhandler.h"
 #include "albert/util/itemindex.h"
 #include <memory>
@@ -12,9 +13,6 @@ static const uint GRAM_SIZE = 2;
 //static const char* CFG_SEPARATORS = "separators";
 static const char* DEF_SEPARATORS = R"R([\s\\\/\-\[\](){}#!?<>"'=+*.:,;_]+)R";
 static const uint DEF_ERROR_TOLERANCE_DIVISOR = 4;
-
-IndexItem::IndexItem(shared_ptr<Item> i, QString s):
-    item(::move(i)), string(::move(s)){}
 
 class IndexQueryHandler::Private
 {

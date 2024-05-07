@@ -1,8 +1,12 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #include "albert/query/action.h"
+using namespace albert;
+using namespace std;
 
-albert::Action::Action(QString i, QString t, std::function<void()> f):
-    id(std::move(i)), text(std::move(t)), function(std::move(f))
+Action::Action(QString i, QString t, ::function<void()> f):
+    id(::move(i)),
+    text(::move(t)),
+    function(::move(f))
 {}
 

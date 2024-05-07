@@ -1,15 +1,11 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #include "albert/albert.h"
+#include "albert/extensionregistry.h"
 #include "albert/plugin/plugininstance.h"
 #include "albert/plugin/pluginloader.h"
 #include "albert/plugin/pluginmetadata.h"
-#include "albert/extensionregistry.h"
 #include "pluginregistry.h"
-#include <QCoreApplication>
-#include <QDir>
-#include <QRegularExpression>
-#include <QSettings>
 using namespace albert;
 using namespace std;
 
@@ -78,4 +74,3 @@ QWidget *PluginInstance::buildConfigWidget() { return nullptr; }
 
 ExtensionRegistry &PluginInstance::registry()
 { return d->registry; }
-

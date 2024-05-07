@@ -18,6 +18,8 @@ public:
     QString iid;
 
     /// GUID, no duplicates allowed.
+    /// \remark To avoid name conflicts PluginLoaders should prefix
+    ///         their plugins ids with the id of the loader
     QString id;
 
     /// https://semver.org/

@@ -84,7 +84,7 @@ QIcon ALBERT_EXPORT iconFromUrls(const QStringList &urls);
 /// \param bgcolor The background color. Default: none.
 /// \param fgcolor The text color. Default: black.
 /// \param text The text to display. Default: empty.
-/// \param fontscalar Scalar for the default font size which is the pixmap height. Default: 1.
+/// \param scalar Scalar for the default font size which is the pixmap height. Default: 1.
 /// \returns The generic icon.
 ///
 QPixmap ALBERT_EXPORT genericPixmap(int size, const QColor& bgcolor = {}, const QColor& fgcolor = Qt::black, const QString& text = {}, float scalar = 1.);
@@ -97,7 +97,7 @@ QPixmap ALBERT_EXPORT genericPixmap(int size, const QColor& bgcolor = {}, const 
 /// \param bgcolor The background color. Default: none.
 /// \param fgcolor The text color. Default: black.
 /// \param text The text to display. Default: empty.
-/// \param fontscalar Scalar for the default font size which is the pixmap height. Default: 1.
+/// \param scalar Scalar for the default font size which is the pixmap height. Default: 1.
 /// \returns The generic pixmap.
 ///
 QIcon ALBERT_EXPORT genericIcon(int size, const QColor& bgcolor = {}, const QColor& fgcolor = Qt::black, const QString& text = {}, float scalar = 1.);

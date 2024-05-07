@@ -1,9 +1,8 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
 #include "albert/logging.h"
-#include "albert/query/rankitem.h"
-#include "queryexecution.h"
 #include "queryengine.h"
+#include "queryexecution.h"
 #include "usagedatabase.h"
 #include <QtConcurrent>
 using namespace std::chrono;

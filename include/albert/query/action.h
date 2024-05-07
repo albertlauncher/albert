@@ -8,7 +8,9 @@
 namespace albert
 {
 
-/// Action used by items.
+///
+/// Action used by result items (Item).
+///
 class ALBERT_EXPORT Action final
 {
 public:
@@ -19,9 +21,14 @@ public:
     /// \param function The action function.
     Action(QString id, QString text, std::function<void()> function);
 
-    QString id;  ///< Identifier of the action.
-    QString text;  ///< Description of the action.
-    std::function<void()> function;  ///< The action function.
+    /// The identifier of the action.
+    QString id;
+
+    /// The description of the action.
+    QString text;
+
+    /// The action function.
+    std::function<void()> function;
 };
 
 }

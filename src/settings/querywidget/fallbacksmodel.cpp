@@ -1,7 +1,6 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
-#include "albert/query/fallbackprovider.h"
-#include "albert/query/item.h"
+#include "albert/query/fallbackhandler.h"
 #include "albert/util/iconprovider.h"
 #include "fallbacksmodel.h"
 #include "queryengine.h"

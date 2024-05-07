@@ -2,13 +2,13 @@
 
 #pragma once
 #include "albert/export.h"
-#include "albert/query.h"
 #include <QObject>
 #include <QString>
 class QWidget;
 
 namespace albert
 {
+class Query;
 
 ///
 /// Convention on the item roles passed around
@@ -58,6 +58,10 @@ signals:
 
     void inputChanged(QString);
     void visibleChanged(bool);
+
+protected:
+
+    ~Frontend() override;
 
 };
 

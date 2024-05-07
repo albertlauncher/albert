@@ -1,18 +1,22 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
-#include "albert/query/action.h"
+#include "action.h"
+#include "albert/export.h"
 #include <QStringList>
 #include <vector>
 
 namespace albert
 {
 
-/// Items displayed in the query results list
+///
+/// Result items displayed in the query results list
+///
 class ALBERT_EXPORT Item
 {
 public:
-    virtual ~Item() = default;
+
+    virtual ~Item();
 
     /// Getter for the item identifier.
     ///
@@ -48,6 +52,7 @@ public:
     /// Getter for item actions.
     /// These are the actions a users can run.
     virtual std::vector<Action> actions() const;
+
 };
 
 }

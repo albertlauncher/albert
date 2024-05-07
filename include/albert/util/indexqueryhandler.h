@@ -2,7 +2,7 @@
 
 #pragma once
 #include "albert/query/globalqueryhandler.h"
-#include "itemindex.h"
+#include "albert/util/indexitem.h"
 #include <QString>
 #include <memory>
 #include <vector>
@@ -17,7 +17,6 @@ class ALBERT_EXPORT IndexQueryHandler : public GlobalQueryHandler
 {
 public:
     IndexQueryHandler();
-    ~IndexQueryHandler() override;
 
     /// Returns "True"
     bool supportsFuzzyMatching() const override;
@@ -38,9 +37,15 @@ public:
     /// Set the items of the index. Call this in updateIndexItems(). @threadsafe
     void setIndexItems(std::vector<IndexItem>&&);
 
+protected:
+
+    ~IndexQueryHandler() override;
+
 private:
+
     class Private;
     std::unique_ptr<Private> d;
+
 };
 
 }

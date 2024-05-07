@@ -16,13 +16,13 @@
 using namespace albert;
 using namespace std;
 
-static const QString explicit_qrc_scheme = "qrc:";
-static const QString file_scheme = "file:";
-static const QString generative_scheme = "gen:?";
-static const QString implicit_qrc_scheme = ":";
-static const QString qfileiconprovider_scheme = "qfip:";
-static const QString qstandardpixmap_scheme = "qsp:";
-static const QString xdg_icon_lookup_scheme = "xdg:";
+static const QString &explicit_qrc_scheme = QStringLiteral("qrc:");
+static const QString &file_scheme = QStringLiteral("file:");
+static const QString &generative_scheme = QStringLiteral("gen:?");
+static const QString &implicit_qrc_scheme = QStringLiteral(":");
+static const QString &qfileiconprovider_scheme = QStringLiteral("qfip:");
+static const QString &qstandardpixmap_scheme = QStringLiteral("qsp:");
+static const QString &xdg_icon_lookup_scheme = QStringLiteral("xdg:");
 
 static QPixmap pixmapFromFilePath(const QString &path, const QSize &requestedSize)
 {

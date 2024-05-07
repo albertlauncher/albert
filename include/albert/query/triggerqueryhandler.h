@@ -2,12 +2,10 @@
 
 #pragma once
 #include "albert/extension.h"
-#include "albert/query.h"
-#include <QString>
+#include "query.h"
 
 namespace albert
 {
-class Item;
 
 ///
 /// Triggered query handler class.
@@ -22,25 +20,24 @@ class ALBERT_EXPORT TriggerQueryHandler : virtual public Extension
 public:
     /// The synopsis, displayed on empty query.
     /// Use this to give the user hints about accepted query strings.
-    /// Default empty.
+    /// @returns Empty string.
     virtual QString synopsis() const;
 
     /// Enable user remapping of the trigger.
-    /// Default false.
+    /// @returns False.
     virtual bool allowTriggerRemap() const;
 
     /// The default (not user defined) trigger.
-    /// Default Extension::id().
+    /// @returns Extension::id().
     virtual QString defaultTrigger() const;
 
     /// Setter for the user defined trigger.
     /// Reimplement this if you need this information.
-    /// Default does nothing.
-    /// \since 0.24
+    /// @since 0.24
     virtual void setTrigger(const QString &);
 
     /// Fuzzy matching capability.
-    /// Default false.
+    /// @returns False.
     virtual bool supportsFuzzyMatching() const;
 
     /// Fuzzy matching behavior.
@@ -50,6 +47,10 @@ public:
     /// The trigger query processing function.
     /// @note Executed in a worker thread.
     virtual void handleTriggerQuery(Query*) = 0;
+
+protected:
+
+    ~TriggerQueryHandler() override;
 
 };
 

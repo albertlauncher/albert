@@ -17,7 +17,6 @@ namespace albert
 class ALBERT_EXPORT Extension
 {
 public:
-    Extension() = default;
 
     /// The identifier of this extension.
     /// To avoid naming conflicts use the namespace of your plugin,
@@ -31,7 +30,9 @@ public:
     virtual QString description() const = 0;
 
 protected:
-    virtual ~Extension() = default;
+
+    virtual ~Extension();
+
 };
 
 }

@@ -3,6 +3,8 @@
 #include "albert/query/triggerqueryhandler.h"
 using namespace albert;
 
+TriggerQueryHandler::~TriggerQueryHandler() = default;
+
 QString TriggerQueryHandler::synopsis() const { return {}; }
 
 QString TriggerQueryHandler::defaultTrigger() const { return QString("%1 ").arg(id()); }

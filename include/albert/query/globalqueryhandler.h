@@ -1,23 +1,26 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
-#include "albert/query.h"
-#include "albert/query/rankitem.h"
-#include "albert/query/triggerqueryhandler.h"
+#include "rankitem.h"
+#include "triggerqueryhandler.h"
+#include <memory>
 #include <vector>
 
 namespace albert
 {
 
+///
 /// Global search query handler class.
+///
 /// A functional query handler returning scored items. Applicable for the
 /// global search. Use this if you want your results show up in the global
 /// search. Implements TriggeredQueryHandler.
+///
 /// @note Do _not_ use this for long running tasks! @see TriggeredQueryHandler
+///
 class ALBERT_EXPORT GlobalQueryHandler : public albert::TriggerQueryHandler
 {
 public:
-
     /// The query handling function.
     /// The match score should make sense and often (if not always) be the
     /// fraction matched chars (legth of query string / length of item title).
@@ -44,6 +47,10 @@ public:
     /// but think twice if this is necessary. It may break user expectation.
     /// @see handleTriggerQuery and rankItems
     void handleTriggerQuery(Query*) override;
+
+protected:
+
+    ~GlobalQueryHandler() override;
 
 };
 

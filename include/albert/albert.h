@@ -52,12 +52,10 @@ ALBERT_EXPORT QString dataLocation();
 
 /// Persistent app settings storage.
 /// \return Preconfigured QSettings object for configuration storage.
-/// \reentrant
 ALBERT_EXPORT std::unique_ptr<QSettings> settings();
 
 /// The persistent app state storage.
 /// \return Preconfigured QSettings object for state storage.
-/// \reentrant
 ALBERT_EXPORT std::unique_ptr<QSettings> state();
 
 /// Open the albert website in default browser.

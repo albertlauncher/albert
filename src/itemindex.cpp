@@ -1,8 +1,7 @@
 // Copyright (c) 2021-2024 Manuel Schneider
 
-#include "albert/util/itemindex.h"
 #include "albert/query/item.h"
-#include "albert/query/rankitem.h"
+#include "albert/util/itemindex.h"
 #include "levenshtein.h"
 #include <QRegularExpression>
 #include <algorithm>
@@ -195,7 +194,7 @@ vector<WordMatch> ItemIndex::Private::getWordMatches(const QString &word, const 
         // Do (cheap) preselection by mathematical bound. If there are less than |word_length|-δ*n matching qGrams
         // it is no match. If the common qGrams are less than |word|-δ*q this implies that there are more errors
         // than δ.
-        uint allowed_errors = (uint)((float)word_length/(float)error_tolerance_divisor);
+        uint allowed_errors = (uint)((double)word_length/(double)error_tolerance_divisor);
         uint minimum_match_count = word_length - allowed_errors * n;
         Levenshtein levenshtein;
         for (const auto &[word_idx, ngram_count]: word_match_counts) {
@@ -217,7 +216,7 @@ vector<albert::RankItem> ItemIndex::search(const QString &string, const bool &is
 {
     QStringList &&words = splitString(string, d->separators, d->case_sensitive);
 
-    unordered_map<Index, float> result_map;
+    unordered_map<Index, double> result_map;
     if (words.empty())
 
         for (const auto &string_index_item : d->index.strings)
@@ -289,7 +288,7 @@ vector<albert::RankItem> ItemIndex::search(const QString &string, const bool &is
 
         // Build the list of matched items with their highest scoring match
         for (const auto &match : left_matches) {
-            float score = (float)match.match_len / d->index.strings[match.index].max_match_len;
+            double score = (double)match.match_len / d->index.strings[match.index].max_match_len;
             if (const auto &[it, success] = result_map.emplace(d->index.strings[match.index].item, score);
                     !success && it->second < score) // update if exists
                 it->second = score;
@@ -298,7 +297,7 @@ vector<albert::RankItem> ItemIndex::search(const QString &string, const bool &is
     }
 
     // Convert results to return type
-    vector<albert::RankItem> result;
+    vector<RankItem> result;
     result.reserve(result_map.size());
     for (const auto &[item_idx, score] : result_map)
         result.emplace_back(d->index.items[item_idx], score);
