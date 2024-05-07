@@ -268,7 +268,16 @@ void albert::setClipboardTextAndPaste(const QString &text)
     });
 #elif defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
     if (qApp->platformName() == QStringLiteral("wayland")){
-        QMessageBox::information(nullptr, qApp->applicationDisplayName(), "Pasting is not supported on wayland.");
+        QApplication::processEvents(); // ??
+        auto *proc = new QProcess;
+        proc->start("sh" , {"-c", "sleep 0.1 && wtype -M ctrl v"});
+        QObject::connect(proc, &QProcess::finished, proc, [proc](int exitCode, QProcess::ExitStatus exitStatus){
+            if (exitStatus != QProcess::ExitStatus::NormalExit || exitCode != EXIT_SUCCESS){
+                WARN << "Paste failed. wtype installed?";
+                QMessageBox::warning(nullptr, "Error", "Paste failed. wtype installed?");
+            }
+            proc->deleteLater();
+        });
     } else {
         QApplication::processEvents(); // ??
         auto *proc = new QProcess;
