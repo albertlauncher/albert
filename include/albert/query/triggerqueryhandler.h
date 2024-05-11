@@ -8,7 +8,7 @@ namespace albert
 {
 
 ///
-/// Triggered query handler class.
+/// Abstract trigger query handler.
 ///
 /// If the trigger matches this handler is the only query handler chosen to
 /// process the user query. Inherit this class if you dont want your results to

@@ -2,4 +2,5 @@
 
 #include "albert/extension.h"
 
+// vtable
 albert::Extension::~Extension() = default;

@@ -9,13 +9,13 @@ namespace albert
 class PluginLoader;
 
 ///
-/// Abstract plugin provider extension.
+/// Plugin provider interface class.
 ///
 class ALBERT_EXPORT PluginProvider : virtual public Extension
 {
 public:
 
-    /// The plugins provided by the provider.
+    /// The plugins provided by this extension.
     /// @return @copybrief plugins
     virtual std::vector<PluginLoader*> plugins() = 0;
 

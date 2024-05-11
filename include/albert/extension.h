@@ -8,9 +8,9 @@ namespace albert
 {
 
 ///
-/// The extension interface class.
+/// Abstract extension class.
 ///
-/// This is the interface for classes which want to join the extensions pool.
+/// Inherited by classes that want to join the extensions pool.
 ///
 /// \sa ExtensionRegistry
 ///
@@ -19,8 +19,8 @@ class ALBERT_EXPORT Extension
 public:
 
     /// The identifier of this extension.
-    /// To avoid naming conflicts use the namespace of your plugin,
-    /// e.g. files, files.rootbrowser, files.homebrowser.
+    /// @note To avoid naming conflicts use the namespace of your plugin,
+    /// e.g. files (root extension), files.rootbrowser, files.homebrowser, …
     virtual QString id() const = 0;
 
     /// Pretty, human readable name

@@ -13,7 +13,8 @@ namespace albert
 class Item;
 
 ///
-/// Fallback providing extension.
+/// Abstract fallback provider.
+///
 /// Use this if you want to add items to the fallbacks
 /// shown if a query yielded no results
 ///

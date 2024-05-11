@@ -10,13 +10,13 @@ namespace albert
 {
 
 ///
-/// Global search query handler class.
+/// Abstract global query handler.
 ///
 /// A functional query handler returning scored items. Applicable for the
 /// global search. Use this if you want your results show up in the global
 /// search. Implements TriggeredQueryHandler.
 ///
-/// @note Do _not_ use this for long running tasks! @see TriggeredQueryHandler
+/// @note Do _not_ use this for long running tasks!
 ///
 class ALBERT_EXPORT GlobalQueryHandler : public albert::TriggerQueryHandler
 {

@@ -12,8 +12,6 @@ class PluginMetaData;
 ///
 /// Plugin loader interface class.
 ///
-/// @since 0.23
-///
 class ALBERT_EXPORT PluginLoader
 {
 public:

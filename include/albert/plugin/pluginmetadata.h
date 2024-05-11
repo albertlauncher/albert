@@ -8,7 +8,7 @@ namespace albert
 {
 
 ///
-/// Common plugin metadata of all plugins.
+/// Common plugin metadata of plugins.
 ///
 class ALBERT_EXPORT PluginMetaData
 {
