@@ -37,8 +37,6 @@ QtPluginProvider::QtPluginProvider(QStringList paths)
     for (const QString& p : install_paths)
         paths << QDir(p).filePath("albert");
 
-    DEBG << "Considered plugin lookup paths: " << paths.join(", ");
-
     QStringList unique_canonical_paths;
     for (const QString& p : paths)
         if (auto pfi = QFileInfo(p); pfi.isDir())  // implicit exists()
