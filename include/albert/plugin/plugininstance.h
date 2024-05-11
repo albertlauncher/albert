@@ -4,76 +4,92 @@
 #include "albert/config.h"
 #include "albert/export.h"
 #include <QDir>
-#include <QSettings>
 #include <QString>
-#include <QWidget>
 #include <memory>
+class QSettings;
+class QTranslator;
+class QWidget;
 
 namespace albert
 {
+
 class ExtensionRegistry;
 class PluginLoader;
-
 
 ///
 /// Abstract plugin instance class.
 ///
-/// The base class every plugin has to inherit.
+/// The class every plugin has to inherit.
 ///
 class ALBERT_EXPORT PluginInstance
 {
 public:
-    PluginInstance();
 
-    /// The plugin identifier.
-    /// Taken from the metadata.
-    QString id() const;
+    /// The PluginLoader of this instance.
+    /// @returns @copybrief loader
+    /// @since 0.24
+    const PluginLoader &loader;
 
-    /// The human readable plugin name.
-    /// Taken from the metadata.
-    QString name() const;
+    /// The associated ExtensionRegistry.
+    /// @returns @copybrief registry
+    /// @since 0.24
+    albert::ExtensionRegistry &registry;
 
-    /// Brief description of the plugin.
-    /// Taken from the metadata.
-    QString description() const;
-
-    /// The recommended cache location.
-    /// Created if necessary.
-    QDir cacheDir() const;
-
-    /// The recommended config location.
-    /// Created if necessary.
-    QDir configDir() const;
-
-    /// The recommended data location.
-    /// Created if necessary.
-    QDir dataDir() const;
-
-    /// Persistent plugin settings utilizing QSettings.
-    /// Configured to use a section titled <plugin-id>.
-    std::unique_ptr<QSettings> settings() const;
-
-    /// Persistent plugin state utilizing QSettings.
-    /// Configured to use a section titled <plugin-id>.
-    /// \since 0.23
-    std::unique_ptr<QSettings> state() const;
-
-    /// Config widget factory.
+    /// The widget used to configure the plugin in the settings.
+    /// @returns The config widget.
     virtual QWidget *buildConfigWidget();
 
-    /// The associated extension registry.
-    /// \returns The extension registry.
-    /// \since 0.24
-    albert::ExtensionRegistry &registry();
+    /// The recommended cache location.
+    /// @returns @copybrief cacheLocation
+    /// @since 0.24
+    QString cacheLocation() const;
+
+    /// The recommended config location.
+    /// @returns @copybrief configLocation
+    /// @since 0.24
+    QString configLocation() const;
+
+    /// The recommended data location.
+    /// @returns @copybrief dataLocation
+    /// @since 0.24
+    QString dataLocation() const;
+
+    /// Creates a directory, throws an exception if it fails.
+    /// This is a utility function for use with the *Location functions.
+    /// @returns The directory.
+    /// @since 0.24
+    static QDir createOrThrow(const QString &path);
+
+    /// Persistent plugin settings.
+    /// Preconfigured according to albert conventions, i.e. using
+    /// albert::settings() configured to write to a section titled <plugin-id>.
+    /// @returns Preconfigured QSettings object for config storage.
+    std::unique_ptr<QSettings> settings() const;
+
+    /// Persistent plugin state.
+    /// Preconfigured according to albert conventions, i.e. using
+    /// albert::state() configured to write to a section titled <plugin-id>.
+    /// @since 0.23
+    /// @returns Preconfigured QSettings object for state storage.
+    std::unique_ptr<QSettings> state() const;
+
+    /// Translator for this plugin.
+    /// Searches the default plugin directories for a translation file named
+    /// albert-<plugin-id>-<lang-code>.qm and returns a translator for it.
+    /// If nothing is found, nullptr is returned.
+    /// If you need to use global Qt translation functions set install to true.
+    /// However it is not recommended to keep the translator installed for the
+    /// entire lifetime of the plugin.
+    /// @since 0.24
+    /// @param install Automatically (un)install the translator globally.
+    /// @returns Translator or nullptr if no translations were found.
+    std::unique_ptr<QTranslator, std::function<void(QTranslator*)>>
+    translator(bool install = false) const;
 
 protected:
 
+    PluginInstance();
     virtual ~PluginInstance();
-
-private:
-
-    class Private;
-    const std::unique_ptr<Private> d;
 
 };
 

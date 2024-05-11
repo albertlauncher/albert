@@ -1,7 +1,9 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
+#include <QCoreApplication>
+#include <QSettings>
+#include <QTranslator>
 #include "albert/albert.h"
-#include "albert/extensionregistry.h"
 #include "albert/plugin/plugininstance.h"
 #include "albert/plugin/pluginloader.h"
 #include "albert/plugin/pluginmetadata.h"
@@ -9,68 +11,65 @@
 using namespace albert;
 using namespace std;
 
-class PluginInstance::Private
-{
-public:
-    const PluginLoader &loader;
-    ExtensionRegistry &registry;
-    const map<QString, PluginInstance*> dependencies;
-};
-
 PluginInstance::PluginInstance():
-    d(new Private{
-        .loader = *PluginRegistry::staticDI.loader,
-        .registry = *PluginRegistry::staticDI.registry,
-        .dependencies = ::move(PluginRegistry::staticDI.dependencies)
-    }) {}
+    loader(*PluginRegistry::staticDI.loader),
+    registry(*PluginRegistry::staticDI.registry)
+{}
 
 PluginInstance::~PluginInstance() = default;
 
-QString PluginInstance::id() const
-{ return d->loader.metaData().id; }
+QString PluginInstance::cacheLocation() const
+{ return QDir(albert::cacheLocation()).filePath(loader.metaData().id); }
 
-QString PluginInstance::name() const
-{ return d->loader.metaData().name; }
+QString PluginInstance::configLocation() const
+{ return QDir(albert::configLocation()).filePath(loader.metaData().id); }
 
-QString PluginInstance::description() const
-{ return d->loader.metaData().description; }
+QString PluginInstance::dataLocation() const
+{ return QDir(albert::dataLocation()).filePath(loader.metaData().id); }
 
-static QDir make_dir(const QString &location, const QString &id)
+QDir PluginInstance::createOrThrow(const QString &path)
 {
-    auto dir = QDir(location);
-    if (!dir.cd(id)){
-        if (!dir.mkpath(id))
-            qFatal("Failed to create writable dir at: %s", qPrintable(dir.filePath(id)));
-        if (!dir.cd(id))
-            qFatal("Failed to cd to just created dir at: %s", qPrintable(dir.filePath(id)));
-    }
+    auto dir = QDir(path);
+    if (!dir.exists() && !dir.mkpath("."))
+        throw runtime_error("Could not create directory: " + path.toStdString());
     return dir;
 }
-
-QDir albert::PluginInstance::cacheDir() const
-{ return make_dir(albert::cacheLocation(), id()); }
-
-QDir albert::PluginInstance::configDir() const
-{ return make_dir(albert::configLocation(), id()); }
-
-QDir albert::PluginInstance::dataDir() const
-{ return make_dir(albert::dataLocation(), id()); }
 
 unique_ptr<QSettings> albert::PluginInstance::settings() const
 {
     auto s = albert::settings();
-    s->beginGroup(id());
+    s->beginGroup(loader.metaData().id);
     return s;
 }
 
 unique_ptr<QSettings> albert::PluginInstance::state() const
 {
     auto s = albert::state();
-    s->beginGroup(id());
+    s->beginGroup(loader.metaData().id);
     return s;
 }
 
-QWidget *PluginInstance::buildConfigWidget() { return nullptr; }
+std::unique_ptr<QTranslator, function<void(QTranslator*)>>
+PluginInstance::translator(bool install) const
+{
+    auto deleter = [install](QTranslator *t) {
+        if (install)
+            QCoreApplication::removeTranslator(t);
+        delete t;
+    };
 
-ExtensionRegistry &PluginInstance::registry()
-{ return d->registry; }
+    auto t = unique_ptr<QTranslator, decltype(deleter)>(new QTranslator, deleter);
+
+    if (!t->load(QLocale(),
+                 QString("%1.%2").arg(qApp->applicationName(), loader.metaData().id),
+                 "_", ":/i18n"))
+        return {};
+
+    if (install)
+        QCoreApplication::installTranslator(t.get());
+
+    return t;
+}
+
+QWidget *PluginInstance::buildConfigWidget()
+{ return nullptr; }

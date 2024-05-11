@@ -110,7 +110,6 @@ QString App::loadFrontend(PluginLoader *loader)
 {
     try {
         PluginRegistry::staticDI.loader = loader;
-        PluginRegistry::staticDI.dependencies = {};
         loader->load();
 
         plugin_registry.staticDI.loader = loader;

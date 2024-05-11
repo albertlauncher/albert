@@ -14,7 +14,6 @@ using namespace std;
 PluginRegistry::StaticDI PluginRegistry::staticDI
 {
     .loader = nullptr,
-    .dependencies{},
     .registry = nullptr
 };
 

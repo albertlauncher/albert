@@ -43,7 +43,6 @@ public:
 
     static struct StaticDI {
         albert::PluginLoader * loader;
-        std::map<QString, albert::PluginInstance*> dependencies;
         albert::ExtensionRegistry *registry;
     } staticDI;
 

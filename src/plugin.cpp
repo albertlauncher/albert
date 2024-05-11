@@ -116,21 +116,8 @@ QString Plugin::load() noexcept
         auto dur_l = duration_cast<milliseconds>(system_clock::now() - tp).count();
         DEBG << QStringLiteral("%1 ms spent loading plugin '%2'").arg(dur_l).arg(id());
 
-        // Get dependencies
-        map<QString, PluginInstance*> dependencies;
-        for (const auto &d : dependencies_)
-        {
-            if (d->state() != State::Loaded)
-            {
-                auto msg = tr("Dependency '%1' is not loaded.").arg(d->id());
-                throw runtime_error(msg.toStdString());
-            }
-            dependencies[d->id()] = d->instance_;
-        }
-
         tp = system_clock::now();
         PluginRegistry::staticDI.loader = loader;
-        PluginRegistry::staticDI.dependencies = ::move(dependencies);
         instance_ = loader->createInstance();
         auto dur_c = duration_cast<milliseconds>(system_clock::now() - tp).count();
         DEBG << QStringLiteral("%1 ms spent instanciating plugin '%2'").arg(dur_c).arg(id());

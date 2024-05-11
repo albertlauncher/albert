@@ -1,6 +1,7 @@
 // Copyright (c) 2024 Manuel Schneider
 
 #include "albert/plugin/plugininstance.h"
+#include "albert/plugin/pluginmetadata.h"
 #include "albert/util/standarditem.h"
 #include "pluginconfigqueryhandler.h"
 #include "pluginregistry.h"
@@ -58,7 +59,7 @@ vector<RankItem> PluginConfigQueryHandler::handleGlobalQuery(const Query *query)
                                     QString("%1: %2").arg(metaPropName,
                                                           metaProp.read(qobject).value<bool>()
                                                               ? tr_enabled : tr_disabled),
-                                    tr_prop.arg(plugin.instance()->name(), metaProp.typeName()),
+                                    tr_prop.arg(plugin.metaData().name, metaProp.typeName()),
                                     icon_urls,
                                     {
                                         {
