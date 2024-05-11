@@ -6,11 +6,15 @@
 #          SOURCE_FILES
 #          [INCLUDE_DIRECTORIES ...]
 #          [LINK_LIBRARIES ...]
-#          [METADATA filepath]
-#          [TS_FILES ts_files...]
 #     )
 #
-#     Creates a plugin target with the given name.
+#     Create a plugin target with the given name.
+#
+#     Expects a metadata.json file in the source directory.
+#
+#     Translations files in a directory named 'i18n' are added automatically.
+#     The filenames must have the pattern <plugin_id>_<language_code>.ts.
+#     <plugin_id>.ts is the native plurals file.
 #
 #     SOURCE_FILES
 #         List of target source files. Supports globbing patterns.
@@ -24,12 +28,6 @@
 #         List of link libraries.
 #         Shorthand for CMake target_link_libraries(plugin_target …
 #
-#     METADATA
-#         Path to the metadata.json file. Defaults to "metadata.json".
-#
-#     TS_FILES
-#         Translation files. Should have the pattern <plugin_id>_<language_code>.ts .
-#
 
 cmake_minimum_required(VERSION 3.19)  # string(JSON…
 
@@ -40,38 +38,29 @@ if (APPLE)
 endif()
 
 
-macro(albert_plugin_add_default_target)
-
-    if (NOT DEFINED PROJECT_VERSION)
-        message(FATAL_ERROR "Plugin version is undefined")
-    endif()
-
-    set(arg_bool )
-    set(arg_vals METADATA)
-    set(arg_list
-        SOURCE_FILES
-        INCLUDE_DIRECTORIES
-        LINK_LIBRARIES
-        TS_FILES
-    )
-    cmake_parse_arguments(ARG "${arg_bool}" "${arg_vals}" "${arg_list}" ${ARGV})
+macro(_albert_plugin_add_target)
 
     if (NOT DEFINED ARG_SOURCE_FILES)
         message(FATAL_ERROR "No sources specified.")
+    else()
+        file(GLOB GLOBBED_SRC ${ARG_SOURCE_FILES})
     endif()
 
-    if (NOT DEFINED ARG_METADATA)
-        set(ARG_METADATA "metadata.json")
-    endif()
-
-    file(GLOB GLOBBED_SRC ${ARG_SOURCE_FILES})
-
-    add_library(${PROJECT_NAME} SHARED ${GLOBBED_SRC} ${ARG_METADATA})
+    add_library(${PROJECT_NAME} SHARED ${GLOBBED_SRC} )
     add_library(albert::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+        CXX_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN 1
+        PREFIX ""  # no liblib
+    )
 
     target_compile_options(${PROJECT_NAME} PRIVATE ${ALBERT_COMPILE_OPTIONS})
 
-    target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})  # metadata.json
+    target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
     if (DEFINED ARG_INCLUDE_DIRECTORIES)
         target_include_directories(${PROJECT_NAME} ${ARG_INCLUDE_DIRECTORIES})
     endif()
@@ -81,21 +70,80 @@ macro(albert_plugin_add_default_target)
         target_link_libraries(${PROJECT_NAME} ${ARG_LINK_LIBRARIES})
     endif()
 
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-        CXX_STANDARD 20
-        CXX_STANDARD_REQUIRED ON
-        CXX_EXTENSIONS OFF
-        CXX_VISIBILITY_PRESET hidden
-        VISIBILITY_INLINES_HIDDEN 1
-    )
+endmacro()
 
-    if (DEFINED ARG_TS_FILES)
-        get_target_property(SRCS ${PROJECT_NAME} SOURCES)
-        qt_add_translations(${PROJECT_NAME}
-            TS_FILES ${ARG_TS_FILES}
-            SOURCES ${SRCS}
+
+macro(_albert_plugin_add_translations)
+
+    # todo ubuntu 26.04 qt_add_translations improves greatly with 6.8
+    file(GLOB TS_FILES "i18n/${PROJECT_NAME}*.ts")
+
+    if (TS_FILES)
+        qt_add_translations(
+            ${PROJECT_NAME}
+            TS_FILES ${TS_FILES}
+            LUPDATE_OPTIONS -no-obsolete
+            # QM_FILES_OUTPUT_VARIABLE QM_FILES
         )
     endif()
+
+    # install(FILES ${QM_FILES} DESTINATION "${CMAKE_INSTALL_DATADIR}/albert/i18n")
+
+    # Prepare a list of translations for the metadata
+    foreach(TS_FILE ${TS_FILES})
+        get_filename_component(BASENAME ${TS_FILE} NAME_WLE)
+        if (NOT ${BASENAME} STREQUAL ${PROJECT_NAME})
+            string(REPLACE "${PROJECT_NAME}_" "" LANGUAGE_CODE ${BASENAME})
+            list(APPEND TRANSLATIONS ${LANGUAGE_CODE})
+        endif()
+    endforeach()
+
+endmacro()
+
+
+macro(_albert_plugin_generate_metadata_json)
+
+    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/metadata.json" MD)
+
+    string(JSON MD SET ${MD} "id" "\"${PROJECT_NAME}\"")
+
+    string(JSON MD SET ${MD} "version" "\"${PROJECT_VERSION}\"")
+
+    if (TRANSLATIONS)
+        list(JOIN TRANSLATIONS "\", \"" TRANSLATIONS_CSV)
+        string(JSON MD SET ${MD} "translations" "[\"${TRANSLATIONS_CSV}\"]")
+    endif()
+
+    # get_target_property(LIB_DEPENDENCIES ${PROJECT_NAME} LINK_LIBRARIES)
+    # if (DEFINED LIB_DEPENDENCIES)
+    #     list(JOIN LIB_DEPENDENCIES "\", \"" LIB_DEPENDENCIES_CSV)
+    #     string(JSON MD SET ${MD} "lib_deps" "[\"${LIB_DEPENDENCIES_CSV}\"]")
+    # endif()
+
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/metadata.json" "${MD}")
+
+    target_sources(${PROJECT_NAME} PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/metadata.json"
+        "${CMAKE_CURRENT_BINARY_DIR}/metadata.json"
+    )
+
+endmacro()
+
+
+macro(albert_plugin)
+
+    if (NOT DEFINED PROJECT_VERSION)
+        message(FATAL_ERROR "Plugin version is undefined")
+    endif()
+
+    set(arg_bool )
+    set(arg_vals NAME DESCRIPTION LICENSE URL)
+    set(arg_list AUTHORS SOURCE_FILES INCLUDE_DIRECTORIES LINK_LIBRARIES)
+    cmake_parse_arguments(ARG "${arg_bool}" "${arg_vals}" "${arg_list}" ${ARGV})
+
+    _albert_plugin_add_target()
+    _albert_plugin_add_translations() # before metadata
+    _albert_plugin_generate_metadata_json()
 
     #include(GenerateExportHeader)
     #generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME "export.h")
@@ -107,33 +155,3 @@ macro(albert_plugin_add_default_target)
 
 endmacro()
 
-
-macro(albert_plugin_generate_metadata_json)
-
-    # read metadata.json
-    file(READ ${ARG_METADATA} MD)
-
-    # add project metadata
-    string(JSON MD SET ${MD} "id" "\"${PROJECT_NAME}\"")
-
-    string(JSON MD SET ${MD} "version" "\"${PROJECT_VERSION}\"")
-
-    get_target_property(LIB_DEPENDENCIES ${PROJECT_NAME} LINK_LIBRARIES)
-    if (DEFINED LIB_DEPENDENCIES)
-        list(JOIN LIB_DEPENDENCIES "\", \"" LIB_DEPENDENCIES_CSV)
-        string(JSON MD SET ${MD} "lib_deps" "[\"${LIB_DEPENDENCIES_CSV}\"]")
-    endif()
-
-    # Create the metadata in the build dir
-    message(STATUS "${CMAKE_CURRENT_BINARY_DIR}/metadata.json ${MD}")
-    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/metadata.json" "${MD}")
-
-endmacro()
-
-
-macro(albert_plugin)
-
-    albert_plugin_add_default_target(${ARGV})
-    albert_plugin_generate_metadata_json()
-
-endmacro()
