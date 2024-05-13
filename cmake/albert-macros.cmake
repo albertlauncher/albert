@@ -3,7 +3,7 @@
 # Use albert_plugin() to add a plugin.
 #
 #     albert_plugin(
-#          SOURCE_FILES
+#          [SOURCE_FILES ...]
 #          [INCLUDE_DIRECTORIES ...]
 #          [LINK_LIBRARIES ...]
 #     )
@@ -17,8 +17,10 @@
 #     <plugin_id>.ts is the native plurals file.
 #
 #     SOURCE_FILES
-#         List of target source files. Supports globbing patterns.
-#         The METADATA file is automatically added to the sources.
+#         List source files.
+#         Supports (nonrecursive) globbing patterns. If unspecified the default
+#         is a recursive globbing pattern for:
+#         include/*.h, src/*.h, src/*.cpp, src/*.mm, src/*.ui and <plugin_id>.qrc
 #
 #     INCLUDE_DIRECTORIES
 #         List of include directories.
@@ -41,12 +43,24 @@ endif()
 macro(_albert_plugin_add_target)
 
     if (NOT DEFINED ARG_SOURCE_FILES)
-        message(FATAL_ERROR "No sources specified.")
-    else()
-        file(GLOB GLOBBED_SRC ${ARG_SOURCE_FILES})
+
+        file(GLOB_RECURSE ARG_SOURCE_FILES
+            src/*.h
+            src/*.cpp
+            src/*.mm
+            src/*.ui
+            include/*.h
+            ${PROJECT_NAME}.qrc
+        )
+
+        if (NOT ARG_SOURCE_FILES)
+            message(FATAL_ERROR "No source files.")
+        endif()
+
     endif()
 
-    add_library(${PROJECT_NAME} SHARED ${GLOBBED_SRC} )
+
+    add_library(${PROJECT_NAME} SHARED ${ARG_SOURCE_FILES} )
     add_library(albert::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
     set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -69,6 +83,14 @@ macro(_albert_plugin_add_target)
     if (DEFINED ARG_LINK_LIBRARIES)
         target_link_libraries(${PROJECT_NAME} ${ARG_LINK_LIBRARIES})
     endif()
+
+    #include(GenerateExportHeader)
+    #generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME "export.h")
+
+    install(
+        TARGETS ${PROJECT_NAME}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/albert
+    )
 
 endmacro()
 
@@ -103,6 +125,10 @@ endmacro()
 
 macro(_albert_plugin_generate_metadata_json)
 
+    if (NOT DEFINED PROJECT_VERSION)
+        message(FATAL_ERROR "Plugin version is undefined")
+    endif()
+
     file(READ "${CMAKE_CURRENT_SOURCE_DIR}/metadata.json" MD)
 
     string(JSON MD SET ${MD} "id" "\"${PROJECT_NAME}\"")
@@ -132,26 +158,14 @@ endmacro()
 
 macro(albert_plugin)
 
-    if (NOT DEFINED PROJECT_VERSION)
-        message(FATAL_ERROR "Plugin version is undefined")
-    endif()
-
     set(arg_bool )
-    set(arg_vals NAME DESCRIPTION LICENSE URL)
-    set(arg_list AUTHORS SOURCE_FILES INCLUDE_DIRECTORIES LINK_LIBRARIES)
+    set(arg_vals )
+    set(arg_list SOURCE_FILES INCLUDE_DIRECTORIES LINK_LIBRARIES)
     cmake_parse_arguments(ARG "${arg_bool}" "${arg_vals}" "${arg_list}" ${ARGV})
 
     _albert_plugin_add_target()
-    _albert_plugin_add_translations() # before metadata
+    _albert_plugin_add_translations()  # before metadata, defines TRANSLATIONS
     _albert_plugin_generate_metadata_json()
-
-    #include(GenerateExportHeader)
-    #generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME "export.h")
-
-    install(
-        TARGETS ${PROJECT_NAME}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/albert
-    )
 
 endmacro()
 
