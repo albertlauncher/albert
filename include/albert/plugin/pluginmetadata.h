@@ -37,6 +37,9 @@ public:
     /// Browsable source, README, issues.
     QString url;
 
+    /// Available translations.
+    QStringList translations;
+
     /// The copyright holders.
     QStringList authors;
 

@@ -175,6 +175,19 @@ void PluginsWidget::onUpdatePluginWidget()
         meta << tr("Required by: %1").arg(names.join(", "));
     }
 
+    // Translations
+    if (const auto &list = p.metaData().translations; !list.empty())
+    {
+        QStringList displayList;
+        for (const auto &lang : list){
+            // has the form of "language_code (count/total)"
+            auto split = lang.split(" ");;
+            auto language = QLocale(split[0]).nativeLanguageName();
+            displayList << QString("%1 %2").arg(language, split[1]);
+        }
+        meta << tr("Translations: %1").arg(displayList.join(", "));
+    }
+
     // Provider
     meta << tr("%1, Interface: %2").arg(p.provider->name(), p.metaData().iid);
 

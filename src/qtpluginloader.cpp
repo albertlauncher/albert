@@ -77,6 +77,7 @@ QtPluginLoader::QtPluginLoader(const QString &p) : loader_(p), instance_(nullptr
     const QString key_description = QStringLiteral("description");
     const QString key_license = QStringLiteral("license");
     const QString key_url = QStringLiteral("url");
+    const QString key_translations = QStringLiteral("translations");
     const QString key_authors = QStringLiteral("authors");
     const QString key_runtime_dependencies = QStringLiteral("runtime_dependencies");
     const QString key_binary_dependencies = QStringLiteral("binary_dependencies");
@@ -103,6 +104,7 @@ QtPluginLoader::QtPluginLoader(const QString &p) : loader_(p), instance_(nullptr
         .description = fetchLocalizedMetadata(rawMetadata, key_description),
         .license = rawMetadata[key_license].toString(),
         .url = rawMetadata[key_url].toString(),
+        .translations = rawMetadata[key_translations].toVariant().toStringList(),
         .authors = rawMetadata[key_authors].toVariant().toStringList(),
         .runtime_dependencies = rawMetadata[key_runtime_dependencies].toVariant().toStringList(),
         .binary_dependencies = rawMetadata[key_binary_dependencies].toVariant().toStringList(),
