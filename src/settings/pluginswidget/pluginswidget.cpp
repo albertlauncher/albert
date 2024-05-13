@@ -150,7 +150,7 @@ void PluginsWidget::onUpdatePluginWidget()
         else
             authors << author;
 
-    meta << QString("<span style=\"color:#808080;\"><a href=\"%1\">%2 v%3</a>. %4. %5.</span>")
+    meta << QString("<a href=\"%1\">%2 v%3</a>. %4. %5.")
                        .arg(p.metaData().url,
                             p.metaData().id,
                             p.metaData().version,
@@ -180,7 +180,6 @@ void PluginsWidget::onUpdatePluginWidget()
     {
         QStringList displayList;
         for (const auto &lang : list){
-            // has the form of "language_code (count/total)"
             auto split = lang.split(" ");;
             auto language = QLocale(split[0]).nativeLanguageName();
             displayList << QString("%1 %2").arg(language, split[1]);
