@@ -114,9 +114,27 @@ macro(_albert_plugin_add_translations)
     # Prepare a list of translations for the metadata
     foreach(TS_FILE ${TS_FILES})
         get_filename_component(BASENAME ${TS_FILE} NAME_WLE)
+
         if (NOT ${BASENAME} STREQUAL ${PROJECT_NAME})
+
+            execute_process(
+                COMMAND xmllint --xpath "count(//translation[not(@type='unfinished')])" ${TS_FILE}
+                OUTPUT_VARIABLE FINISHED_COUNT
+                COMMAND_ERROR_IS_FATAL ANY
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+            )
+
+            execute_process(
+                COMMAND xmllint --xpath "count(//translation)" ${TS_FILE}
+                OUTPUT_VARIABLE TOTAL_COUNT
+                COMMAND_ERROR_IS_FATAL ANY
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+            )
+
             string(REPLACE "${PROJECT_NAME}_" "" LANGUAGE_CODE ${BASENAME})
-            list(APPEND TRANSLATIONS ${LANGUAGE_CODE})
+
+            list(APPEND TRANSLATIONS "${LANGUAGE_CODE} (${FINISHED_COUNT}/${TOTAL_COUNT})")
+
         endif()
     endforeach()
 
