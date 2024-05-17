@@ -5,6 +5,7 @@
 #include "albert/plugin/pluginmetadata.h"
 #include <QPluginLoader>
 namespace albert { class PluginInstance; }
+class QTranslator;
 
 class QtPluginLoader : public albert::PluginLoader
 {
@@ -24,5 +25,6 @@ private:
     QPluginLoader loader_;
     albert::PluginMetaData metadata_;
     albert::PluginInstance *instance_;
+    std::unique_ptr<QTranslator> translator;
 
 };

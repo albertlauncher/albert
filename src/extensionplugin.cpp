@@ -7,10 +7,10 @@ using namespace albert;
 using namespace std;
 
 QString ExtensionPlugin::id() const
-{ return loader.metaData().id; }
+{ return loader().metaData().id; }
 
 QString ExtensionPlugin::name() const
-{ return loader.metaData().name; }
+{ return loader().metaData().name; }
 
 QString ExtensionPlugin::description() const
-{ return loader.metaData().description; }
+{ return loader().metaData().description; }

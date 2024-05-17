@@ -2,7 +2,6 @@
 
 #include <QCoreApplication>
 #include <QSettings>
-#include <QTranslator>
 #include "albert/albert.h"
 #include "albert/plugin/plugininstance.h"
 #include "albert/plugin/pluginloader.h"
@@ -11,21 +10,32 @@
 using namespace albert;
 using namespace std;
 
+
+class PluginInstance::Private
+{
+public:
+    PluginLoader *loader;
+    albert::ExtensionRegistry *registry;
+
+};
+
 PluginInstance::PluginInstance():
-    loader(*PluginRegistry::staticDI.loader),
-    registry(*PluginRegistry::staticDI.registry)
+    d(new Private{
+        .loader = PluginRegistry::staticDI.loader,
+        .registry = PluginRegistry::staticDI.registry
+    })
 {}
 
 PluginInstance::~PluginInstance() = default;
 
 QString PluginInstance::cacheLocation() const
-{ return QDir(albert::cacheLocation()).filePath(loader.metaData().id); }
+{ return QDir(albert::cacheLocation()).filePath(d->loader->metaData().id); }
 
 QString PluginInstance::configLocation() const
-{ return QDir(albert::configLocation()).filePath(loader.metaData().id); }
+{ return QDir(albert::configLocation()).filePath(d->loader->metaData().id); }
 
 QString PluginInstance::dataLocation() const
-{ return QDir(albert::dataLocation()).filePath(loader.metaData().id); }
+{ return QDir(albert::dataLocation()).filePath(d->loader->metaData().id); }
 
 QDir PluginInstance::createOrThrow(const QString &path)
 {
@@ -38,38 +48,22 @@ QDir PluginInstance::createOrThrow(const QString &path)
 unique_ptr<QSettings> albert::PluginInstance::settings() const
 {
     auto s = albert::settings();
-    s->beginGroup(loader.metaData().id);
+    s->beginGroup(d->loader->metaData().id);
     return s;
 }
 
 unique_ptr<QSettings> albert::PluginInstance::state() const
 {
     auto s = albert::state();
-    s->beginGroup(loader.metaData().id);
+    s->beginGroup(d->loader->metaData().id);
     return s;
 }
 
-std::unique_ptr<QTranslator, function<void(QTranslator*)>>
-PluginInstance::translator(bool install) const
-{
-    auto deleter = [install](QTranslator *t) {
-        if (install)
-            QCoreApplication::removeTranslator(t);
-        delete t;
-    };
+const PluginLoader &PluginInstance::loader() const
+{ return *d->loader; }
 
-    auto t = unique_ptr<QTranslator, decltype(deleter)>(new QTranslator, deleter);
-
-    if (!t->load(QLocale(),
-                 QString("%1.%2").arg(qApp->applicationName(), loader.metaData().id),
-                 "_", ":/i18n"))
-        return {};
-
-    if (install)
-        QCoreApplication::installTranslator(t.get());
-
-    return t;
-}
+ExtensionRegistry &PluginInstance::registry()
+{ return *d->registry; }
 
 QWidget *PluginInstance::buildConfigWidget()
 { return nullptr; }

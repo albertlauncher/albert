@@ -7,6 +7,7 @@
 #include <QCoreApplication>
 #include <QFutureWatcher>
 #include <QPluginLoader>
+#include <QTranslator>
 #include <QtConcurrent>
 using namespace albert;
 using namespace std;
@@ -157,13 +158,19 @@ void QtPluginLoader::load()
             throw runtime_error(loader_.errorString().toStdString());
     }));
 
-    QEventLoop loop;
-    QObject::connect(&watcher, &decltype(watcher)::finished, &loop, &QEventLoop::quit);
-    loop.exec();
-
     try{
-        watcher.waitForFinished();
-    } catch (const QUnhandledException &e) {
+        QEventLoop loop;
+        QObject::connect(&watcher, &decltype(watcher)::finished, &loop, &QEventLoop::quit);
+        loop.exec();
+
+        translator = make_unique<QTranslator>();
+        if (translator->load(QLocale(), metaData().id, "_", ":/i18n"))
+            QCoreApplication::installTranslator(translator.get());
+        else
+            translator.reset();
+    }
+    catch (const QUnhandledException &e)
+    {
         if (e.exception())
             std::rethrow_exception(e.exception());
         else
@@ -173,6 +180,12 @@ void QtPluginLoader::load()
 
 void QtPluginLoader::unload()
 {
+    if (translator)
+    {
+        QCoreApplication::installTranslator(translator.get());
+        translator.reset();
+    }
+
     instance_ = nullptr;
     if (!loader_.unload())
         throw runtime_error(loader_.errorString().toStdString());
@@ -188,7 +201,6 @@ PluginInstance *QtPluginLoader::createInstance()
             instance_ = dynamic_cast<PluginInstance*>(instance);
             if (!instance_)
                 throw runtime_error("Plugin instance is not of type albert::PluginInstance.");
-
         }
         return instance_;
     }

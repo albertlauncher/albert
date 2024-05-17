@@ -18,13 +18,16 @@ class ALBERT_EXPORT ExtensionPlugin : public QObject,
                                       virtual public Extension
 {
 public:
-    /// Override returning PluginInstance::id
+    /// Overrides Extension::id()
+    /// @returns Plugin id
     QString id() const override;
 
-    /// Override returning PluginInstance::name
+    /// Overrides Extension::name()
+    /// @returns Plugin name
     QString name() const override;
 
-    /// Override returning PluginInstance::description
+    /// Overrides Extension::description()
+    /// @returns Plugin description
     QString description() const override;
 };
 

@@ -7,7 +7,6 @@
 #include <QString>
 #include <memory>
 class QSettings;
-class QTranslator;
 class QWidget;
 
 namespace albert
@@ -28,12 +27,12 @@ public:
     /// The PluginLoader of this instance.
     /// @returns @copybrief loader
     /// @since 0.24
-    const PluginLoader &loader;
+    const PluginLoader &loader() const;
 
     /// The associated ExtensionRegistry.
     /// @returns @copybrief registry
     /// @since 0.24
-    albert::ExtensionRegistry &registry;
+    albert::ExtensionRegistry &registry();
 
     /// The widget used to configure the plugin in the settings.
     /// @returns The config widget.
@@ -73,23 +72,15 @@ public:
     /// @returns Preconfigured QSettings object for state storage.
     std::unique_ptr<QSettings> state() const;
 
-    /// Translator for this plugin.
-    /// Searches the default plugin directories for a translation file named
-    /// albert-<plugin-id>-<lang-code>.qm and returns a translator for it.
-    /// If nothing is found, nullptr is returned.
-    /// If you need to use global Qt translation functions set install to true.
-    /// However it is not recommended to keep the translator installed for the
-    /// entire lifetime of the plugin.
-    /// @since 0.24
-    /// @param install Automatically (un)install the translator globally.
-    /// @returns Translator or nullptr if no translations were found.
-    std::unique_ptr<QTranslator, std::function<void(QTranslator*)>>
-    translator(bool install = false) const;
-
 protected:
 
     PluginInstance();
     virtual ~PluginInstance();
+
+private:
+
+    class Private;
+    std::unique_ptr<Private> d;
 
 };
 
