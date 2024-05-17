@@ -136,11 +136,12 @@ void PluginRegistry::load(const QString &id)
 
         QStringList errors;
         for (auto *p : v)
-            if (auto err = p->load(); !err.isEmpty())
-            {
-                WARN << QString("Failed loading plugin '%1': %2").arg(p->id(), err);
-                errors << QString("%1 (%2):\n%3").arg(p->metaData().name, p->id(), err);
-            }
+            if (p->state() != Plugin::State::Loaded)
+                if (auto err = p->load(); !err.isEmpty())
+                {
+                    WARN << QString("Failed loading plugin '%1': %2").arg(p->id(), err);
+                    errors << QString("%1 (%2):\n%3").arg(p->metaData().name, p->id(), err);
+                }
 
         if (!errors.isEmpty())
             QMessageBox::warning(nullptr, qApp->applicationDisplayName(),
