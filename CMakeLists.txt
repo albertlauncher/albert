@@ -172,15 +172,20 @@ set_target_properties(${TARGET_LIB} PROPERTIES
 
 file(GLOB TS_FILES i18n/*.ts)
 
-qt_add_lrelease(${TARGET_LIB}
-    TS_FILES ${TS_FILES}
-    QM_FILES_OUTPUT_VARIABLE QM_FILES
+# Source files to be translated (separate because some files may be masked)
+file(GLOB_RECURSE TRANSLATION_SOURCE_FILES
+    include/.h
+    src/*.h
+    src/*.ui
+    src/*.mm
+    src/*.cpp
 )
 
-qt_add_resources(${TARGET_LIB} "i18n"
-    PREFIX "/i18n"
-    BASE "${CMAKE_CURRENT_BINARY_DIR}"
-    FILES "${QM_FILES}"
+qt_add_translations(
+    ${TARGET_LIB}
+    TS_FILES ${TS_FILES}
+    SOURCES ${TRANSLATION_SOURCE_FILES}
+    LUPDATE_OPTIONS -no-obsolete
 )
 
 ### Platform specifics ########################################################
