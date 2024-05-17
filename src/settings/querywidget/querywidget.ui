@@ -99,11 +99,10 @@
        <item>
         <widget class="QSlider" name="slider_decay">
          <property name="toolTip">
-          <string>This preference determines how past activations influence the ranking of the results of a query. 
-
-Technically the usage score of a results is the sum of the weights given to past activations, which are defined by the geometric progression with a common ratio between 1 for MFU (Most frequently used) and 0.5 for MRU (Most recently used). Using MFU (cr=1) all activations get the same weight and the cumulated score of a results is the count of its usages. Using MRU (cr=0.5), as a mathematical conclusion, the sum of weights of past activations can not exceed those of newer ones.
-
-Recommended is a value in between, because it allows best of both worlds: The results you used the most recently are preferred while still allowing Albert to adapt to changes in your usage habits.</string>
+          <string>This preference determines how past activations influence the ranking of the results of a query.
+Using MFU all activations get the same weight and the cumulated score of a results is the count of its usages.
+Using MRU the sum of weights of past activations can not exceed those of newer ones.
+Recommended is a value in between, such that the results you use often are preferred while still allowing Albert to adapt to changes in your usage habits.</string>
          </property>
          <property name="minimum">
           <number>50</number>
