@@ -60,6 +60,9 @@ set(QHOTKEY_INSTALL OFF CACHE BOOL "" FORCE)
 add_subdirectory(lib/QHotkey EXCLUDE_FROM_ALL)
 target_compile_options(qhotkey PRIVATE -Wno-gnu-zero-variadic-macro-arguments -Wno-unused-parameter -Wno-shadow)
 
+### QNotifications  ###########################################################
+
+add_subdirectory(lib/QNotification EXCLUDE_FROM_ALL)
 
 ### Lib  ######################################################################
 
@@ -139,10 +142,11 @@ target_link_libraries(${TARGET_LIB}
         Qt6::Core
         Qt6::Widgets
     PRIVATE
+        QHotkey::QHotkey
+        QNotifications::QNotifications
         Qt6::Concurrent
         Qt6::Network
         Qt6::Sql
-        qhotkey
 )
 
 set_target_properties(${TARGET_LIB} PROPERTIES
@@ -183,17 +187,15 @@ qt_add_resources(${TARGET_LIB} "i18n"
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
     if (DEFINED CMAKE_LIBRARY_ARCHITECTURE)
-        target_compile_definitions(${TARGET_LIB} PRIVATE -DMULTIARCH_TUPLE="${CMAKE_LIBRARY_ARCHITECTURE}")
-        target_link_libraries(${TARGET_LIB} PRIVATE Qt6::DBus)  # notifications
+        target_compile_definitions(${TARGET_LIB}
+            PRIVATE -DMULTIARCH_TUPLE="${CMAKE_LIBRARY_ARCHITECTURE}"
+        )
     endif()
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_link_libraries(${TARGET_LIB}
-        PRIVATE
-        objc
-        "-framework Cocoa"
-        #"-framework UserNotifications"
+        PRIVATE objc "-framework Cocoa"
     )
 endif()
 

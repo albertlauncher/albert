@@ -8,75 +8,43 @@
 #include <QGuiApplication>
 #include <QMessageBox>
 #include <QTimer>
-#include <UserNotifications/UserNotifications.h>
+// #include <UserNotifications/UserNotifications.h>
+// #if ! __has_feature(objc_arc)
+//     #error This file must be compiled with ARC. Use -fobjc-arc flag (or convert project to ARC).
+// #endif
+
 //#include <Foundation/Foundation.h>
 
 using namespace albert;
 
-static void requestAccessibilityPermissions()
-{
-    if (!AXIsProcessTrusted())
-    {
-        NSDictionary *options = @{(id)kAXTrustedCheckOptionPrompt: @YES};
-        AXIsProcessTrustedWithOptions((CFDictionaryRef)options);
-    }
-}
-
-static void requestNotificationPermissions()
-{
-//    // https://developer.apple.com/documentation/usernotifications/asking_permission_to_use_notifications?language=objc
-
-//    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-
-
-//    [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert + UNAuthorizationOptionSound)
-//                          completionHandler:^(BOOL granted, NSError * _Nullable error) {
-
-//                              if (error) {
-//                                  WARN << QString::fromNSString(error.localizedDescription);
-//                              }
-
-//                              if (granted) {
-//                                  WARN << "granted";
-//                              } else {
-//                                  WARN << "denied";
-//                                  CRIT << "Notification permissions are mandatory.";
-//                              }
-//                          }];
-
-//    [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * _Nonnull settings) {
-//        switch (settings.authorizationStatus) {
-
-//        case UNAuthorizationStatusNotDetermined:{
-//            WARN << "UNAuthorizationStatusNotDetermined";
-
-
-//            break;
-//            }
-//        case UNAuthorizationStatusDenied:
-//            WARN << "UNAuthorizationStatusDenied";
-//            break;
-//        case UNAuthorizationStatusAuthorized:
-//            WARN << "UNAuthorizationStatusAuthorized";
-//            break;
-//        case UNAuthorizationStatusProvisional:
-//            WARN << "UNAuthorizationStatusProvisional";
-//            break;
-//        default:
-//            break;
-//        }
-//    }];
-}
+// static void requestAccessibilityPermissions()
+// {
+//     if (!AXIsProcessTrusted())
+//     {
+//         NSDictionary *options = @{(id)kAXTrustedCheckOptionPrompt: @YES};
+//         AXIsProcessTrustedWithOptions((CFDictionaryRef)options);
+//     }
+// }
 
 void platform::initPlatform()
 {
-    requestAccessibilityPermissions();
-    requestNotificationPermissions();
+    // requestAccessibilityPermissions();
 }
 
 void platform::initNativeWindow(unsigned long long wid)
 {
     NSWindow *ns_window = [reinterpret_cast<id>(wid) window];
+    // NSWindow *ns_window = reinterpret_cast<NSWindow*>(wid);
+
+    // NSView *ns_view = reinterpret_cast<NSView*>(wid);
+    // NSWindow *ns_window = ns_view.window;
+
+    // NSWindow *ns_window = [NSApp windowWithWindowNumber:wid];
+
+    // auto ns_number_wid = [NSNumber numberWithUnsignedLongLong:wid];
+    // NSView *ns_view = reinterpret_cast<NSView*>(ns_number_wid);
+
+    // NSWindow *ns_window = ns_view.window;
 
     /*
      * @const NSWindowAnimationBehaviorDefault  Let AppKit infer animation behavior for this window.
@@ -198,27 +166,6 @@ void platform::initNativeWindow(unsigned long long wid)
 ////                         NSLog(@"Local Notification failed");
 ////                     }
 ////                 }];
-
-//    UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
-//    content.title = @"Hello!";
-//    content.body = @"This is a sample notification.";
-//    content.sound = [UNNotificationSound defaultSound];
-
-//    // Set the trigger (e.g., trigger notification after 10 seconds)
-
-
-//    static UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:@"sampleNotification"
-//                                                                                 content:content
-//                                                                                 trigger:nil];
-
-//    // Add the request to the notification center
-//    [[UNUserNotificationCenter currentNotificationCenter] addNotificationRequest:request
-//                                                           withCompletionHandler:^(NSError * _Nullable error) {
-//                                                               if (error) {
-//                                                                   NSLog(@"Error scheduling notification: %@", error.localizedDescription);
-//                                                               }
-//                                                           }];
-
 
 
 //    CRIT << "styleMask" << ns_window.styleMask;
