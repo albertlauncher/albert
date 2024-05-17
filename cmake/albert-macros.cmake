@@ -18,9 +18,15 @@
 #
 #     SOURCE_FILES
 #         List source files.
-#         Supports (nonrecursive) globbing patterns. If unspecified the default
-#         is a recursive globbing pattern for:
+#         Supports (nonrecursive) globbing patterns.
+#         If unspecified the default is a recursive globbing pattern for:
 #         include/*.h, src/*.h, src/*.cpp, src/*.mm, src/*.ui and <plugin_id>.qrc
+#
+#     I18N_SOURCE_FILES
+#         List translation source files.
+#         Supports (nonrecursive) globbing patterns.
+#         Use if some of the source files are disabled on certain platforms.
+#         If unspecified the default is the targets sources.
 #
 #     INCLUDE_DIRECTORIES
 #         List of include directories.
@@ -56,6 +62,10 @@ macro(_albert_plugin_add_target)
         if (NOT ARG_SOURCE_FILES)
             message(FATAL_ERROR "No source files.")
         endif()
+
+    else()
+
+        file(GLOB ARG_SOURCE_FILES ${ARG_SOURCE_FILES})
 
     endif()
 
@@ -97,13 +107,25 @@ endmacro()
 
 macro(_albert_plugin_add_translations)
 
-    # todo ubuntu 26.04 qt_add_translations improves greatly with 6.8
+    # TODO ubuntu 26.04
+    # qt_add_translations improves greatly with 6.7/6.8
+    # for now plural files are full translation files with empty singulars
+    # sure one could build custom targets and such but since this already
+    # implemented in recent qt versions it's not worth the effort
+
     file(GLOB TS_FILES "i18n/${PROJECT_NAME}*.ts")
+
+    if (NOT ARG_I18N_SOURCE_FILES)
+        get_target_property(ARG_I18N_SOURCE_FILES ${PROJECT_NAME} SOURCES)
+    else()
+        file(GLOB ARG_I18N_SOURCE_FILES ${ARG_I18N_SOURCE_FILES})
+    endif()
 
     if (TS_FILES)
         qt_add_translations(
             ${PROJECT_NAME}
             TS_FILES ${TS_FILES}
+            SOURCES ${ARG_I18N_SOURCE_FILES}
             LUPDATE_OPTIONS -no-obsolete
             # QM_FILES_OUTPUT_VARIABLE QM_FILES
         )
@@ -178,7 +200,7 @@ macro(albert_plugin)
 
     set(arg_bool )
     set(arg_vals )
-    set(arg_list SOURCE_FILES INCLUDE_DIRECTORIES LINK_LIBRARIES)
+    set(arg_list SOURCE_FILES I18N_SOURCE_FILES INCLUDE_DIRECTORIES LINK_LIBRARIES)
     cmake_parse_arguments(ARG "${arg_bool}" "${arg_vals}" "${arg_list}" ${ARGV})
 
     _albert_plugin_add_target()
