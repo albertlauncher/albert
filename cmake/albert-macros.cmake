@@ -107,6 +107,11 @@ endmacro()
 
 macro(_albert_plugin_add_translations)
 
+    find_package(Qt6 6.0 REQUIRED COMPONENTS
+        Core  # required by LinguistTools
+        LinguistTools
+    )
+
     # TODO ubuntu 26.04
     # qt_add_translations improves greatly with 6.7/6.8
     # for now plural files are full translation files with empty singulars
@@ -126,7 +131,7 @@ macro(_albert_plugin_add_translations)
             ${PROJECT_NAME}
             TS_FILES ${TS_FILES}
             SOURCES ${ARG_I18N_SOURCE_FILES}
-            LUPDATE_OPTIONS -no-obsolete
+            # LUPDATE_OPTIONS -no-obsolete
             # QM_FILES_OUTPUT_VARIABLE QM_FILES
         )
     endif()

@@ -52,7 +52,8 @@ set(ALBERT_COMPILE_OPTIONS
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-### QHotkey  ##################################################################
+
+### Subdirectories  ###########################################################
 
 set(QT_DEFAULT_MAJOR_VERSION 6)
 set(BUILD_SHARED_LIBS FALSE)
@@ -60,9 +61,10 @@ set(QHOTKEY_INSTALL OFF CACHE BOOL "" FORCE)
 add_subdirectory(lib/QHotkey EXCLUDE_FROM_ALL)
 target_compile_options(qhotkey PRIVATE -Wno-gnu-zero-variadic-macro-arguments -Wno-unused-parameter -Wno-shadow)
 
-### QNotifications  ###########################################################
-
 add_subdirectory(lib/QNotification EXCLUDE_FROM_ALL)
+
+add_subdirectory(plugins)
+
 
 ### Lib  ######################################################################
 
@@ -277,26 +279,6 @@ if (BUILD_TESTS)
     get_target_property(CXX_STD_TST ${TARGET_LIB} CXX_STANDARD)
     set_target_properties(${TARGET_TST} PROPERTIES CXX_STANDARD ${CXX_STD_TST})
 
-endif()
-
-
-### Plugins ###################################################################
-
-include("cmake/albert-macros.cmake")
-
-option(BUILD_PLUGINS "Build plugins" ON)
-if (BUILD_PLUGINS)
-    FILE(GLOB children RELATIVE ${PROJECT_SOURCE_DIR}/plugins/ plugins/*)
-    LIST(FILTER children EXCLUDE REGEX "^\\..+")
-    FOREACH(child ${children})
-        IF(IS_DIRECTORY ${PROJECT_SOURCE_DIR}/plugins/${child})
-            string(TOUPPER ${child} CHILD)
-            option(BUILD_${CHILD} "Build ${child}" ON)
-            if (BUILD_${CHILD})
-                add_subdirectory(plugins/${child})
-            endif()
-        ENDIF()
-    ENDFOREACH()
 endif()
 
 
