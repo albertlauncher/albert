@@ -72,6 +72,7 @@ static void messageHandler(QtMsgType type, const QMessageLogContext &context, co
 static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
 {
     // Put /usr/local/bin hardcoded to env
+
     auto usr_local_bin = QStringLiteral("/usr/local/bin");
     auto PATHS = QString(qgetenv("PATH")).split(':');
     if (!PATHS.contains(usr_local_bin))
@@ -91,13 +92,35 @@ static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
     QApplication::setWindowIcon(iconFromUrls({"xdg:albert", "qrc:app_icon"}));
     QApplication::setQuitOnLastWindowClosed(false);
 
+
     // Create writable application paths
+
     if (auto path = albert::configLocation(); !QDir(path).mkpath("."))
         qFatal("Failed creating config dir at: %s", qPrintable(path));
+
     if (auto path = albert::dataLocation(); !QDir(path).mkpath("."))
         qFatal("Failed creating data dir at: %s", qPrintable(path));
+
     if (auto path = albert::cacheLocation(); !QDir(path).mkpath("."))
         qFatal("Failed creating cache dir at: %s", qPrintable(path));
+
+
+    // Move old config file to new location
+
+    auto conf_loc = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    auto old_conf_loc = QDir(conf_loc).filePath("albert.conf");
+    QFile config_file(old_conf_loc);
+    if (config_file.exists())
+    {
+        auto new_conf_loc = QDir(configLocation()).filePath("config");
+        if (config_file.rename(new_conf_loc))
+            INFO << "Config file successfully moved to new location.";
+        else
+            qFatal("Failed to move config file to new location. "
+                   "Please move the file at %s to %s manually.",
+                   old_conf_loc.toUtf8().data(), new_conf_loc.toUtf8().data());
+    }
+
 
     qInstallMessageHandler(messageHandler);
 
@@ -191,10 +214,10 @@ QNetworkAccessManager *albert::networkManager()
 { return &app->network_manager; }
 
 std::unique_ptr<QSettings> albert::settings()
-{ return make_unique<QSettings>(qApp->applicationName()); }
+{ return make_unique<QSettings>(QString("%1/%2").arg(configLocation(), "config"), QSettings::IniFormat); }
 
 std::unique_ptr<QSettings> albert::state()
-{ return make_unique<QSettings>(QString("%1/%2").arg(cacheLocation(), "albert.state"), QSettings::IniFormat); }
+{ return make_unique<QSettings>(QString("%1/%2").arg(cacheLocation(), "state"), QSettings::IniFormat); }
 
 void albert::show(const QString &text)
 {
