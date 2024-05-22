@@ -52,6 +52,7 @@ macro(_albert_plugin_add_target)
 
         file(GLOB_RECURSE ARG_SOURCE_FILES
             src/*.h
+            src/*.hpp
             src/*.cpp
             src/*.mm
             src/*.ui
@@ -209,7 +210,9 @@ macro(albert_plugin)
     cmake_parse_arguments(ARG "${arg_bool}" "${arg_vals}" "${arg_list}" ${ARGV})
 
     _albert_plugin_add_target()
-    _albert_plugin_add_translations()  # before metadata, defines TRANSLATIONS
+    # after add_target, uses SOURCES
+    # before metadata, defines TRANSLATIONS
+    _albert_plugin_add_translations()
     _albert_plugin_generate_metadata_json()
 
 endmacro()
