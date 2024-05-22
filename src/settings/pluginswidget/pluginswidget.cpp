@@ -11,20 +11,12 @@
 #include <QLabel>
 #include <QListView>
 #include <QScrollArea>
-#include <QSplitter>
 using namespace albert;
 using namespace std;
 
 PluginsWidget::PluginsWidget(PluginRegistry &plugin_registry) : model_(new PluginsModel(plugin_registry))
 {
-    setObjectName("PluginWidget");
-
-    QSplitter *splitter = new QSplitter(this);
-    QHBoxLayout *horizontalLayout = new QHBoxLayout(this);
-    margin_size = splitter->handleWidth();
-    horizontalLayout->setContentsMargins(margin_size, margin_size, margin_size, margin_size);
-
-    horizontalLayout->addWidget(splitter);
+    // Plugins list
 
     listView_plugins = new QListView(this);
     listView_plugins->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -32,16 +24,19 @@ PluginsWidget::PluginsWidget(PluginRegistry &plugin_registry) : model_(new Plugi
     listView_plugins->setProperty("showDropIndicator", QVariant(false));
     listView_plugins->setUniformItemSizes(true);
     listView_plugins->setModel(model_.get());
-    listView_plugins->setMaximumWidth(listView_plugins->sizeHintForColumn(0)
-                                      + qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent));
-
 #if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
     // Some styles on linux have bigger icons than rows
     auto rh = listView_plugins->sizeHintForRow(0);
     listView_plugins->setIconSize(QSize(rh, rh));
 #endif
 
-    splitter->addWidget(listView_plugins);
+    connect(model_.get(), &PluginsModel::modelReset,
+            this, &PluginsWidget::updatePluginListWidth);
+
+    updatePluginListWidth();
+
+
+    // Plugin config widget
 
     scrollArea_info = new QScrollArea(this);
     scrollArea_info->setFrameShape(QFrame::StyledPanel);
@@ -50,8 +45,6 @@ PluginsWidget::PluginsWidget(PluginRegistry &plugin_registry) : model_(new Plugi
     scrollArea_info->setWidgetResizable(true);
     scrollArea_info->setAlignment(Qt::AlignLeading | Qt::AlignLeft | Qt::AlignTop);
 
-    splitter->addWidget(scrollArea_info);
-
     connect(listView_plugins->selectionModel(), &QItemSelectionModel::currentChanged,
             this, &PluginsWidget::onUpdatePluginWidget);
 
@@ -59,6 +52,16 @@ PluginsWidget::PluginsWidget(PluginRegistry &plugin_registry) : model_(new Plugi
             this, &PluginsWidget::onUpdatePluginWidget);
 
     onUpdatePluginWidget();
+
+
+    // Layout
+
+    auto *l = new QHBoxLayout(this);
+    l->addWidget(listView_plugins);
+    l->addWidget(scrollArea_info);
+    auto s = 6;
+    l->setContentsMargins(s, s, s, s);
+    l->setSpacing(s);
 }
 
 void PluginsWidget::tryShowPluginSettings(QString plugin_id)
@@ -87,7 +90,7 @@ void PluginsWidget::onUpdatePluginWidget()
     auto &p = *model_->plugins_[current.row()];
     auto *widget = new QWidget;
     auto *vl = new QVBoxLayout;
-    vl->setContentsMargins(margin_size, margin_size, margin_size, margin_size);
+    vl->setContentsMargins(6, 6, 6, 6);
     widget->setLayout(vl);
 
     // // Title
@@ -200,4 +203,10 @@ void PluginsWidget::onUpdatePluginWidget()
     vl->addWidget(l);
 
     scrollArea_info->setWidget(widget);
+}
+
+void PluginsWidget::updatePluginListWidth()
+{
+    listView_plugins->setMaximumWidth(listView_plugins->sizeHintForColumn(0)
+                                      + qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent));
 }
