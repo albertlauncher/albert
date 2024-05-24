@@ -95,14 +95,14 @@ static unique_ptr<QApplication> initializeQApp(int &argc, char **argv)
 
     // Create writable application paths
 
-    if (auto path = albert::configLocation(); !QDir(path).mkpath("."))
-        qFatal("Failed creating config dir at: %s", qPrintable(path));
-
-    if (auto path = albert::dataLocation(); !QDir(path).mkpath("."))
-        qFatal("Failed creating data dir at: %s", qPrintable(path));
-
-    if (auto path = albert::cacheLocation(); !QDir(path).mkpath("."))
-        qFatal("Failed creating cache dir at: %s", qPrintable(path));
+    auto initDir = [](const QString path){
+        if (!QDir(path).mkpath("."))
+            qFatal("Failed creating config dir at: %s", qPrintable(path));
+        QFile::setPermissions(path, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
+    };
+    initDir(albert::configLocation());
+    initDir(albert::dataLocation());
+    initDir(albert::cacheLocation());
 
 
     // Move old config file to new location
