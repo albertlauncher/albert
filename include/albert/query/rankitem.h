@@ -7,6 +7,7 @@
 
 namespace albert
 {
+class Match;
 
 ///
 /// Scored item
@@ -17,7 +18,19 @@ class ALBERT_EXPORT RankItem
 public:
     /// \param item @copydoc item
     /// \param score @copydoc score
-    explicit RankItem(std::shared_ptr<Item> item, double score);
+    explicit RankItem(std::shared_ptr<Item> &&item, double score);
+
+    /// \param item @copydoc item
+    /// \param score @copydoc score
+    explicit RankItem(const std::shared_ptr<Item> &item, double score);
+
+    /// \param item @copydoc item
+    /// \param match @copybrief Match
+    explicit RankItem(std::shared_ptr<Item> &&item, Match &match);
+
+    /// \param item @copydoc item
+    /// \param match @copybrief Match
+    explicit RankItem(const std::shared_ptr<Item> &item, Match &match);
 
     /// The matched item
     std::shared_ptr<Item> item;
