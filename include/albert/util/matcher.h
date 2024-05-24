@@ -16,6 +16,11 @@ public:
     using Score = double;
 
     Match(const Score score) : score_(score) {}
+    Match() = default;
+    Match(const Match &o) = default;
+    Match(Match &&o) = default;
+    Match &operator=(const Match &o) = default;
+    Match &operator=(Match &&o) = default;
 
     inline operator bool() const { return isMatch(); }
     inline bool isMatch() const { return score_ >= 0.0; }
@@ -25,7 +30,7 @@ public:
 
 private:
 
-    const Score score_;
+    Score score_;
 };
 
 
