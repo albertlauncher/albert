@@ -56,12 +56,12 @@ void PluginRegistry::enable(const QString &id)
 
         if (!to_enable.empty())
         {
-            QStringList ids;
+            QStringList names;
             for (const auto &d : to_enable)
-                ids << d->id();
+                names << d->metaData().name;
 
             auto text = tr("Enabling '%1' will also enable the following plugins:").arg(plugin.id());
-            text.append(QString("\n\n%1").arg(ids.join("\n")));
+            text.append(QString("\n\n%1").arg(names.join("\n")));
 
             auto btn = QMessageBox::question(nullptr, qApp->applicationDisplayName(),
                                              text, QMessageBox::Ok|QMessageBox::Cancel);
@@ -98,12 +98,12 @@ void PluginRegistry::disable(const QString &id)
 
         if (!to_disable.empty())
         {
-            QStringList ids;
+            QStringList names;
             for (const auto &d : to_disable)
-                ids << d->id();
+                names << d->metaData().name;
 
             auto text = tr("Disabling '%1' will also disable the following plugins:").arg(plugin.id());
-            text.append(QString("\n\n%1").arg(ids.join("\n")));
+            text.append(QString("\n\n%1").arg(names.join("\n")));
 
             auto btn = QMessageBox::question(nullptr, qApp->applicationDisplayName(),
                                              text, QMessageBox::Ok|QMessageBox::Cancel);
