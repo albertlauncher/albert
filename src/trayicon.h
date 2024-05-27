@@ -8,7 +8,6 @@ class TrayIcon : public QSystemTrayIcon
 {
 public:
     TrayIcon();
-    void setVisible(bool = true);
     QMenu menu;
 };
 

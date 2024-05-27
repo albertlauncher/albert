@@ -6,27 +6,29 @@
 #include <memory>
 class App;
 class PluginsWidget;
-class QueryWidget;
 
 class SettingsWindow final : public QWidget
 {
     Q_OBJECT
+
 public:
+
     SettingsWindow(App &app);
     ~SettingsWindow();
 
     void bringToFront(const QString & = {});
 
 private:
-    void init_tab_general_hotkey(App &app);
-    void init_tab_general_trayIcon(App &app);
-    void init_tab_general_frontends(App &app);
-    void init_tab_general_terminals(App &app);
-    void insert_tab_about();
 
+    void init_tab_general_hotkey();
+    void init_tab_general_trayIcon();
+    void init_tab_general_frontends();
+    void init_tab_general_terminals();
+    void init_tab_general_about();
     void keyPressEvent(QKeyEvent * event) override;
 
+    App &app;
     Ui::SettingsWindow ui;
     std::unique_ptr<PluginsWidget> plugin_widget;
-    std::unique_ptr<QueryWidget> query_widget;
+    QString small_text_fmt;
 };

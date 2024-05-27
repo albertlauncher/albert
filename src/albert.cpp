@@ -14,6 +14,7 @@
 #include <QDir>
 #include <QLibraryInfo>
 #include <QMessageBox>
+#include <QNetworkAccessManager>
 #include <QProcess>
 #include <QSettings>
 #include <QStandardPaths>
@@ -211,7 +212,10 @@ int run(int argc, char **argv)
 
 
 QNetworkAccessManager *albert::networkManager()
-{ return &app->network_manager; }
+{
+    static QNetworkAccessManager network_manager;
+    return &network_manager;
+}
 
 std::unique_ptr<QSettings> albert::settings()
 { return make_unique<QSettings>(QString("%1/%2").arg(configLocation(), "config"), QSettings::IniFormat); }
@@ -222,15 +226,15 @@ std::unique_ptr<QSettings> albert::state()
 void albert::show(const QString &text)
 {
     if (!text.isNull())
-        app->frontend->setInput(text);
-    app->frontend->setVisible(true);
+        app->frontend()->setInput(text);
+    app->frontend()->setVisible(true);
 }
 
 void albert::hide()
-{ app->frontend->setVisible(false); }
+{ app->frontend()->setVisible(false); }
 
 void albert::toggle()
-{ app->frontend->isVisible() ? hide() : show(); }
+{ app->frontend()->isVisible() ? hide() : show(); }
 
 QString albert::configLocation()
 { return QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) ;}
@@ -242,15 +246,10 @@ QString albert::cacheLocation()
 { return QStandardPaths::writableLocation(QStandardPaths::CacheLocation) ;}
 
 void albert::runTerminal(const QString &script, const QString &working_dir, bool close_on_exit)
-{ app->terminal_provider.terminal().run(script, working_dir, close_on_exit); }
+{ app->terminal().run(script, working_dir, close_on_exit); }
 
 void albert::showSettings(QString plugin_id)
-{
-    if (!app->settings_window)
-        app->settings_window = new SettingsWindow(*app);
-    hide();
-    app->settings_window->bringToFront(plugin_id);
-}
+{ app->showSettings(plugin_id); }
 
 void albert::restart()
 { QMetaObject::invokeMethod(qApp, "exit", Qt::QueuedConnection, Q_ARG(int, -1)); }
