@@ -3,6 +3,7 @@
 #pragma once
 #include <QAbstractTableModel>
 #include <vector>
+class QIcon;
 class QueryEngine;
 namespace albert {
 class FallbackHandler;
@@ -35,5 +36,6 @@ private:
 
     QueryEngine &engine;
     std::vector<std::pair<albert::FallbackHandler*, std::shared_ptr<albert::Item>>> fallbacks;
+    mutable std::map<QString, QIcon> icon_cache;
 
 };

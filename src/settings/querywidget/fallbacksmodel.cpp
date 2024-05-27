@@ -62,7 +62,11 @@ QVariant FallbacksModel::data(const QModelIndex &index, int role) const
     if (c == Column::Name)
     {
         if (role == Qt::DecorationRole)
-            return iconFromUrls(i->iconUrls());
+            try {
+                return icon_cache.at(i->id());
+            } catch (const out_of_range &) {
+                return icon_cache[i->id()] = iconFromUrls(i->iconUrls());
+            }
 
         else if (role == Qt::DisplayRole)
             return i->text();
