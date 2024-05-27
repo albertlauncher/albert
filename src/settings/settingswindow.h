@@ -20,6 +20,7 @@ public:
 private:
     void init_tab_general_hotkey(App &app);
     void init_tab_general_frontends(App &app);
+    void init_tab_general_terminals(App &app);
     void insert_tab_about();
 
     void keyPressEvent(QKeyEvent * event) override;

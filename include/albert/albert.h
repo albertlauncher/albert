@@ -89,4 +89,10 @@ ALBERT_EXPORT void setClipboardTextAndPaste(const QString &text);
 /// \return The process id
 ALBERT_EXPORT long long runDetachedProcess(const QStringList &commandline, const QString &working_dir = {});
 
+/// Run a script in the user shell and user defined terminal.
+/// \param script The script to run
+/// \param working_dir The working directory
+/// \param close_on_exit Close the terminal on exit
+ALBERT_EXPORT void runTerminal(const QString &script = {}, const QString &working_dir = {}, bool close_on_exit = false);
+
 }
