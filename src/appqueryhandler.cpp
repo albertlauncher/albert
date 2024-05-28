@@ -1,8 +1,9 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
-#include "albert/albert.h"
-#include "appqueryhandler.h"
+#include "albert/util.h"
 #include "albert/util/standarditem.h"
+#include "app.h"
+#include "appqueryhandler.h"
 #include <QString>
 #include <QUrl>
 using namespace albert;
@@ -22,7 +23,7 @@ AppQueryHandler::AppQueryHandler()
                 {
                     "sett",
                     tr("Open"),
-                    [](){ showSettings(); }
+                    [](){ App::instance()->showSettings(); }
                 }
             }),
 
@@ -35,7 +36,7 @@ AppQueryHandler::AppQueryHandler()
                 {
                     "quit",
                     tr("Quit"),
-                    [](){ quit(); }
+                    [](){ App::instance()->quit(); }
                 }
             }),
 
@@ -48,7 +49,7 @@ AppQueryHandler::AppQueryHandler()
                 {
                     "restart",
                     tr("Restart"),
-                    [](){ restart(); }
+                    [](){ App::instance()->restart(); }
                 }
             }),
 

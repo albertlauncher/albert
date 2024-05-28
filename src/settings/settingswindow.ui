@@ -80,9 +80,6 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="toolTip">
-              <string>Choose the frontend to use.</string>
-             </property>
             </widget>
            </item>
            <item row="2" column="0">
@@ -102,9 +99,6 @@
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
-             </property>
-             <property name="toolTip">
-              <string>If this option is enabled, albert displays an icon in the system tray area.</string>
              </property>
              <property name="text">
               <string/>
@@ -130,9 +124,6 @@
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
-               </property>
-               <property name="toolTip">
-                <string>Choose the terminal to use.</string>
                </property>
               </widget>
              </item>
@@ -264,7 +255,7 @@
            <item>
             <widget class="QLabel" name="label_community">
              <property name="text">
-              <string>Join our community on [Telegram](%1) or [Discord](%2).</string>
+              <string>Join the community on [Telegram](%1) or [Discord](%2).</string>
              </property>
              <property name="textFormat">
               <enum>Qt::MarkdownText</enum>

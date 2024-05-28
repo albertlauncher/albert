@@ -1,6 +1,6 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
-#include "albert/albert.h"
+#include "albert/util.h"
 #include "albert/frontend.h"
 #include "albert/logging.h"
 #include "platform/platform.h"

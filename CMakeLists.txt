@@ -187,7 +187,7 @@ qt_add_translations(
     ${TARGET_LIB}
     TS_FILES ${TS_FILES}
     SOURCES ${TRANSLATION_SOURCE_FILES}
-    LUPDATE_OPTIONS -no-obsolete
+    # LUPDATE_OPTIONS -no-obsolete
 )
 
 ### Platform specifics ########################################################

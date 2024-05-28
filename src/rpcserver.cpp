@@ -1,61 +1,16 @@
-// Copyright (c) 2022-2023 Manuel Schneider
+// Copyright (c) 2022-2024 Manuel Schneider
 
-#include "albert/albert.h"
 #include "albert/logging.h"
-#include "report.h"
+#include "albert/util.h"
 #include "rpcserver.h"
-#include <QCoreApplication>
-#include <QFile>
-#include <QGuiApplication>
+#include <QDir>
 #include <QLocalSocket>
-#include <QMessageBox>
 #include <QRegularExpression>
-#include <QString>
 #include <iostream>
-
-static const char* socket_file_name = "ipc_socket";
-
-static std::map<QString, std::function<QString(const QString&)>> actions =
-{
-    {"commands", [](const QString&){
-        QStringList rpcs;
-        for (const auto &[k, v] : actions)
-            rpcs << k;
-        return rpcs.join('\n');
-    }},
-    {"show", [](const QString& param){
-        albert::show(param);
-        return "Albert set visible.";
-    }},
-    {"hide", [](const QString&){
-        albert::hide();
-        return "Albert set hidden.";
-    }},
-    {"toggle", [](const QString&){
-        albert::toggle();
-        return "Albert visibility toggled.";
-    }},
-    {"settings", [](const QString&){
-        albert::showSettings();
-        return "Settings opened,";
-    }},
-    {"restart", [](const QString&){
-        albert::restart();
-        return "Triggered restart.";
-    }},
-    {"quit", [](const QString&){
-        albert::quit();
-        return "Triggered quit.";
-    }},
-    {"report", [](const QString&){
-        return report().join('\n');
-    }}
-};
-
 
 RPCServer::RPCServer()
 {
-    QString socket_path = QString("%1/%2").arg(albert::cacheLocation(), socket_file_name);
+    auto socket_path = socketPath();
 
     DEBG << "Checking for a running instance…";
     QLocalSocket socket;
@@ -97,6 +52,23 @@ RPCServer::~RPCServer()
     local_server.close();
 }
 
+void RPCServer::setPRC(std::map<QString, RPC> &&rpc)
+{
+    rpc_ = std::move(rpc);
+
+    rpc_.emplace("commands", [this](const QString&){
+        QStringList rpcs;
+        for (const auto &[k, v] : rpc_)
+            rpcs << k;
+        return rpcs.join('\n');
+    });
+}
+
+QString RPCServer::socketPath()
+{
+    return QDir(albert::cacheLocation()).filePath("ipc_socket");
+}
+
 void RPCServer::onNewConnection()
 {
     QLocalSocket* socket = local_server.nextPendingConnection();
@@ -111,10 +83,10 @@ void RPCServer::onNewConnection()
         auto param = message.section(' ', 1, -1);
 
         try{
-            socket->write(actions.at(op)(param).toLocal8Bit());
+            socket->write(rpc_.at(op)(param).toLocal8Bit());
         } catch (const std::out_of_range &) {
             QStringList l{QString("Invalid RPC command: '%1'. Use these").arg(message)};
-            for (const auto &[key, value] : actions)
+            for (const auto &[key, value] : rpc_)
                 l << key;
             socket->write(l.join(QChar::LineFeed).toLocal8Bit());
             INFO << QString("Received invalid RPC command: %1").arg(message);
@@ -129,10 +101,8 @@ bool RPCServer::trySendMessage(const QString &message)
 {
     // Dont print logs in here
 
-    QString socket_path = QString("%1/%2").arg(albert::cacheLocation(), socket_file_name);
-
     QLocalSocket socket;
-    socket.connectToServer(socket_path);
+    socket.connectToServer(socketPath());
     if (socket.waitForConnected(500)){
         socket.write(message.toUtf8());
         socket.flush();

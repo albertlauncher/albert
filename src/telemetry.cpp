@@ -1,17 +1,17 @@
 // Copyright (C) 2014-2024 Manuel Schneider
 
-#include "albert/albert.h"
 #include "albert/logging.h"
+#include "albert/util.h"
 #include "telemetry.h"
-#include <QApplication>
+#include <QGuiApplication>
 #include <QCryptographicHash>
 #include <QDateTime>
 #include <QJsonDocument>
 #include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QTimer>
 #include <QSettings>
+#include <QTimer>
 static const char *CFG_LAST_REPORT = "last_report";
 static const char *CFG_TELEMETRY = "telemetry";
 using namespace albert;
@@ -25,8 +25,9 @@ Telemetry::Telemetry()
     if (!s->contains(CFG_TELEMETRY))
     {
         auto text = QCoreApplication::translate(
-            "Telemetry", "Albert collects anonymous data to enhance user experience. "
-                         "You can review the data to be sent in the details. Opt in?");
+                    "Telemetry",
+                    "Albert collects anonymous data to enhance user experience. "
+                    "You can review the data to be sent in the details. Opt in?");
 
         QMessageBox mb(QMessageBox::Question, qApp->applicationDisplayName(),
                        text, QMessageBox::No|QMessageBox::Yes);
@@ -62,7 +63,7 @@ void Telemetry::trySendReport()
 
         QNetworkRequest request((QUrl(addr)));
         request.setHeader(QNetworkRequest::ContentTypeHeader, QString("application/json"));
-        QNetworkReply* reply = networkManager()->put(request, QJsonDocument(object).toJson(QJsonDocument::Compact));
+        QNetworkReply* reply = network()->put(request, QJsonDocument(object).toJson(QJsonDocument::Compact));
         QObject::connect(reply, &QNetworkReply::finished, [reply](){
             if (reply->error() == QNetworkReply::NoError){
                 DEBG << "Report sent.";

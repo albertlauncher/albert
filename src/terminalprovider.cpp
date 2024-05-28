@@ -1,7 +1,7 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2022-2024 Manuel Schneider
 
-#include "albert/albert.h"
 #include "albert/logging.h"
+#include "albert/util.h"
 #include "terminalprovider.h"
 #include <QCoreApplication>
 #include <QDir>

@@ -13,27 +13,11 @@ namespace albert
 
 /// The global QNetworkAccessManager.
 /// \return The global QNetworkAccessManager.
-ALBERT_EXPORT QNetworkAccessManager *networkManager();
-
-/// Show the main window.
-/// \param text The optional text to show.
-ALBERT_EXPORT void show(const QString &text = QString());
-
-/// Hide the main window
-ALBERT_EXPORT void hide();
-
-/// Toggle visibility of main window.
-ALBERT_EXPORT void toggle();
+ALBERT_EXPORT QNetworkAccessManager *network();
 
 /// Open/Show the settings window (of plugin).
 /// \param plugin_id Id of the plugin whose settings should be displayed.
 ALBERT_EXPORT void showSettings(QString plugin_id = {});
-
-/// Restart the app.
-ALBERT_EXPORT void restart();
-
-/// Quit the app.
-ALBERT_EXPORT void quit();
 
 /// The app config location.
 /// The path to the directory where configuration files should be stored.

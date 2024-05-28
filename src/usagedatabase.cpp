@@ -1,9 +1,9 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
-#include "albert/albert.h"
 #include "albert/extension.h"
 #include "albert/logging.h"
 #include "albert/query/rankitem.h"
+#include "albert/util.h"
 #include "usagedatabase.h"
 #include <QDir>
 #include <QSettings>

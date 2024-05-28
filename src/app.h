@@ -13,15 +13,23 @@
 #include "terminalprovider.h"
 #include <QObject>
 #include <QPointer>
+#include <QTranslator>
+#ifdef Q_OS_UNIX
+#include "platform/Unix/unixsignalhandler.h"
+#endif
 class PluginsWidget;
 class QHotkey;
+class QMenu;
+class QSystemTrayIcon;
 class Session;
 class SettingsWindow;
 class TrayIcon;
 namespace albert {
 class PluginLoader;
 class Frontend;
+int run(int, char**);
 }
+
 
 extern int run(int, char**);
 
@@ -34,7 +42,6 @@ public:
     QStringList availableFrontends();
     QString currentFrontend();
     void setFrontend(uint i);
-
     albert::Frontend *frontend();
 
     void showSettings(QString plugin_id = {});
@@ -50,21 +57,31 @@ public:
     PluginsWidget *makePluginsWidget();
     QWidget *makeQueryWidget();
 
-private:
-
-    explicit App(const QStringList &additional_plugin_paths, bool load_enabled);
-    ~App();
-
-    void initialize();
-    void finalize();
+    void show(const QString &text);
+    void hide();
+    void toggle();
+    void restart();
+    void quit();
 
     static App *instance();
 
+private:
+
+    explicit App(const QStringList &additional_plugin_paths, bool load_enabled);
+    ~App() override;
+
+    void initialize();
+    void finalize();
     void initHotkey();
+    void initAppDirectories();
+    void initPRC();
     void loadAnyFrontend();
     QString loadFrontend(albert::PluginLoader *loader);
     void notifyVersionChange();
 
+#ifdef Q_OS_UNIX
+    UnixSignalHandler unix_signal_handler;
+#endif
     RPCServer rpc_server; // Check for other instances first
     albert::ExtensionRegistry extension_registry_;
     PluginRegistry plugin_registry_;
@@ -80,7 +97,11 @@ private:
     PluginQueryHandler plugin_query_handler;
     PluginConfigQueryHandler plugin_config_query_handler;
     std::unique_ptr<Session> session;
-    std::unique_ptr<TrayIcon> tray_icon;
+    std::unique_ptr<QSystemTrayIcon> tray_icon;
+    std::unique_ptr<QMenu> tray_menu;
+    QTranslator qtTranslator;
+    QTranslator translator;
 
-    friend int ::run(int, char**);
+    friend int albert::run(int, char**);
+
 };

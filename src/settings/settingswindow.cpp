@@ -1,13 +1,13 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
-#include "albert/albert.h"
 #include "albert/frontend.h"
+#include "albert/util.h"
 #include "app.h"
 #include "pluginswidget/pluginswidget.h"
 #include "settingswindow.h"
-#include <QKeyEvent>
 #include <QDialog>
 #include <QHotkey>
+#include <QKeyEvent>
 using namespace std;
 
 
@@ -79,7 +79,7 @@ SettingsWindow::~SettingsWindow() = default;
 
 void SettingsWindow::init_tab_general_hotkey()
 {
-    if (!QHotkey::isPlatformSupported())
+    if (QHotkey::isPlatformSupported())
     {
         if (const auto &hk = app.hotkey(); hk)
             ui.pushButton_hotkey->setText(hk->shortcut().toString(QKeySequence::NativeText));
@@ -101,7 +101,7 @@ void SettingsWindow::init_tab_general_hotkey()
         ui.label_hotkey->setEnabled(false);
         ui.pushButton_hotkey->setText(tr("Not supported"));
         connect(ui.pushButton_hotkey, &QPushButton::clicked, this, []{
-            albert::openUrl("https://github.com/albertlauncher/albert/wiki/For-users#outsource-hotkey-handling");
+            // albert::openUrl("https://github.com/albertlauncher/albert/wiki/For-users#outsource-hotkey-handling");
         });
     }
 }

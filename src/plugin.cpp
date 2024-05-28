@@ -1,10 +1,10 @@
 // Copyright (c) 2024 Manuel Schneider
 
-#include "albert/albert.h"
 #include "albert/logging.h"
 #include "albert/plugin/plugininstance.h"
 #include "albert/plugin/pluginloader.h"
 #include "albert/plugin/pluginmetadata.h"
+#include "albert/util.h"
 #include "plugin.h"
 #include "pluginregistry.h"
 #include <QApplication>
