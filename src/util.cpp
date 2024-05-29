@@ -3,6 +3,7 @@
 #include "albert/util.h"
 #include "albert/logging.h"
 #include "app.h"
+#include "terminalprovider.h"
 #include <QGuiApplication>
 #include <QClipboard>
 #include <QDesktopServices>

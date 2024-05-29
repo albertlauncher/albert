@@ -1,29 +1,45 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
-#include "albert/util.h"
+#include "albert/extensionregistry.h"
 #include "albert/frontend.h"
 #include "albert/logging.h"
 #include "albert/plugin/plugininstance.h"
 #include "albert/plugin/pluginloader.h"
-#include "messagehandler.h"
 #include "albert/plugin/pluginmetadata.h"
-#include "app.h"
+#include "albert/util.h"
 #include "albert/util/iconprovider.h"
+#include "app.h"
+#include "appqueryhandler.h"
+#include "messagehandler.h"
 #include "platform/platform.h"
+#include "pluginconfigqueryhandler.h"
+#include "pluginqueryhandler.h"
+#include "pluginregistry.h"
+#include "qtpluginprovider.h"
+#include "queryengine.h"
 #include "report.h"
+#include "rpcserver.h"
 #include "session.h"
 #include "settings/pluginswidget/pluginswidget.h"
 #include "settings/querywidget/querywidget.h"
 #include "settings/settingswindow.h"
-#include <QHotkey>
+#include "telemetry.h"
+#include "terminalprovider.h"
 #include <QCommandLineParser>
-#include <QMenu>
+#include <QHotkey>
 #include <QLibraryInfo>
+#include <QMenu>
 #include <QMessageBox>
-#include <QTranslator>
+#include <QObject>
+#include <QPointer>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QSystemTrayIcon>
+#include <QTranslator>
+#include <QTranslator>
+#ifdef Q_OS_UNIX
+#include "platform/Unix/unixsignalhandler.h"
+#endif
 Q_LOGGING_CATEGORY(AlbertLoggingCategory, "albert")
 using namespace albert;
 using namespace std;
@@ -39,70 +55,104 @@ static const char* CFG_SHOWTRAY = "showTray";
 static const bool  DEF_SHOWTRAY = true;
 static const char *CFG_HOTKEY = "hotkey";
 static const char *DEF_HOTKEY = "Ctrl+Space";
+static const char *CFG_TELEMETRY = "telemetry";
 }
 
-App::App(const QStringList &additional_plugin_paths, bool load_enabled) :
-    plugin_registry_(extension_registry_, load_enabled),
-    query_engine_(extension_registry_),
+
+class App::Private
+{
+public:
+
+    Private(const QStringList &additional_plugin_paths, bool load_enabled);
+
+    void initialize();
+    void finalize();
+
+    void initTrayIcon();
+    void initTelemetry();
+    void initHotkey();
+    void initLocalization();
+    void initAppDirectories();
+    void initPRC();
+    void loadAnyFrontend();
+    QString loadFrontend(albert::PluginLoader *loader);
+    void notifyVersionChange();
+
+public:
+
+    // As early as possible
+    RPCServer rpc_server; // Check for other instances first
+#ifdef Q_OS_UNIX
+    UnixSignalHandler unix_signal_handler;
+#endif
+
+    // Core
+    albert::ExtensionRegistry extension_registry;
+    PluginRegistry plugin_registry;
+    QtPluginProvider plugin_provider;
+    QueryEngine query_engine;
+    TerminalProvider terminal_provider;
+    QTranslator qtTranslator;
+    QTranslator translator;
+
+    // Weak, lazy or optional
+    albert::PluginLoader *frontend_plugin{nullptr};
+    albert::Frontend *frontend{nullptr};
+    std::unique_ptr<QHotkey> hotkey{nullptr};
+    std::unique_ptr<Telemetry> telemetry{nullptr};
+    std::unique_ptr<QSystemTrayIcon> tray_icon{nullptr};
+    std::unique_ptr<QMenu> tray_menu{nullptr};
+    std::unique_ptr<Session> session{nullptr};
+    QPointer<SettingsWindow> settings_window{nullptr};
+
+    AppQueryHandler app_query_handler;
+    PluginQueryHandler plugin_query_handler;
+    PluginConfigQueryHandler plugin_config_query_handler;
+
+};
+
+
+App::Private::Private(const QStringList &additional_plugin_paths, bool load_enabled):
+    plugin_registry(extension_registry, load_enabled),
     plugin_provider(additional_plugin_paths),
-    settings_window(nullptr),
-    plugin_query_handler(plugin_registry_),
-    plugin_config_query_handler(plugin_registry_)
-{
-    if (app_instance)
-        qFatal("No multiple app instances allowed");
+    query_engine(extension_registry),
+    plugin_query_handler(plugin_registry),
+    plugin_config_query_handler(plugin_registry) {}
 
-    app_instance = this;
-    // app = this;
-}
-
-App::~App() = default;
-
-App *App::instance()
-{
-    return app_instance;
-}
-
-void App::initialize()
+void App::Private::initialize()
 {
     platform::initPlatform();
 
-    if (qtTranslator.load(QLocale(), "qtbase", "_",
-                          QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
-        qApp->installTranslator(&qtTranslator);
-
-    if (translator.load(QLocale(), qApp->applicationName(), "_", ":/i18n"))
-        qApp->installTranslator(&translator);
-
     loadAnyFrontend();
 
-    platform::initNativeWindow(frontend_->winId());
+    platform::initNativeWindow(frontend->winId());
 
-    setTrayEnabled(settings()->value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool());
+    if (settings()->value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool())
+        initTrayIcon();
 
     notifyVersionChange();
+    initTelemetry();
 
     // Connect hotkey after! frontend has been loaded else segfaults
     initHotkey();
 
-    extension_registry_.registerExtension(&app_query_handler);
-    extension_registry_.registerExtension(&plugin_query_handler);
-    extension_registry_.registerExtension(&plugin_config_query_handler);
-    extension_registry_.registerExtension(&plugin_provider);  // loads plugins
+    extension_registry.registerExtension(&app_query_handler);
+    extension_registry.registerExtension(&plugin_query_handler);
+    extension_registry.registerExtension(&plugin_config_query_handler);
+    extension_registry.registerExtension(&plugin_provider);  // loads plugins
 }
 
-void App::finalize()
+void App::Private::finalize()
 {
     delete settings_window.get();
 
-    disconnect(frontend_, nullptr, this, nullptr);
-    disconnect(&query_engine_, nullptr, this, nullptr);
+    hotkey.get()->disconnect();
     session.reset();
 
-    extension_registry_.deregisterExtension(&plugin_provider);  // unloads plugins
-    extension_registry_.deregisterExtension(&plugin_config_query_handler);
-    extension_registry_.deregisterExtension(&plugin_query_handler);
-    extension_registry_.deregisterExtension(&app_query_handler);
+    extension_registry.deregisterExtension(&plugin_provider);  // unloads plugins
+    extension_registry.deregisterExtension(&plugin_config_query_handler);
+    extension_registry.deregisterExtension(&plugin_query_handler);
+    extension_registry.deregisterExtension(&app_query_handler);
 
     try {
         frontend_plugin->unload();
@@ -111,7 +161,82 @@ void App::finalize()
     }
 }
 
-void App::initHotkey()
+void App::Private::initTrayIcon()
+{
+    // menu
+
+    tray_menu = make_unique<QMenu>();
+
+    auto *action = tray_menu->addAction(tr("Show/Hide"));
+    connect(action, &QAction::triggered,
+            []{ App::instance()->toggle(); });
+
+    action = tray_menu->addAction(tr("Settings"));
+    connect(action, &QAction::triggered,
+            []{ App::instance()->showSettings(); });
+
+    action = tray_menu->addAction(tr("Open website"));
+    connect(action, &QAction::triggered,
+            []{ albert::openWebsite(); });
+
+    tray_menu->addSeparator();
+
+    action = tray_menu->addAction(tr("Restart"));
+    connect(action, &QAction::triggered,
+            []{ App::instance()->restart(); });
+
+    action = tray_menu->addAction(tr("Quit"));
+    connect(action, &QAction::triggered,
+            []{ App::instance()->quit(); });
+
+    // icon
+
+    auto icon = albert::iconFromUrls({"xdg:albert-tray", "xdg:albert", ":app_tray_icon"});
+    icon.setIsMask(true);
+
+    tray_icon = make_unique<QSystemTrayIcon>();
+    tray_icon->setIcon(icon);
+    tray_icon->setContextMenu(tray_menu.get());
+    tray_icon->setVisible(true);
+
+#ifndef Q_OS_MAC
+    // Some systems open menus on right click, show albert on left trigger
+    connect(tray_icon.get(), &QSystemTrayIcon::activated,
+            [](QSystemTrayIcon::ActivationReason reason)
+    {
+        if( reason == QSystemTrayIcon::ActivationReason::Trigger)
+            App::instance()->toggle();
+    });
+#endif
+}
+
+void App::Private::initTelemetry()
+{
+    if (auto s = settings(); !s->contains(CFG_TELEMETRY))
+    {
+        auto text = tr("Albert collects anonymous data to enhance user experience. "
+                       "You can review the data to be sent in the details. Opt in?");
+
+        QMessageBox mb(QMessageBox::Question, qApp->applicationDisplayName(),
+                       text, QMessageBox::No|QMessageBox::Yes);
+
+        mb.setDefaultButton(QMessageBox::Yes);
+        mb.setDetailedText(telemetry->buildReportString());
+        s->setValue(CFG_TELEMETRY, mb.exec() == QMessageBox::Yes);
+    }
+}
+
+void App::Private::initLocalization()
+{
+    if (qtTranslator.load(QLocale(), "qtbase", "_",
+                          QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
+        qApp->installTranslator(&qtTranslator);
+
+    if (translator.load(QLocale(), qApp->applicationName(), "_", ":/i18n"))
+        qApp->installTranslator(&translator);
+}
+
+void App::Private::initHotkey()
 {
     if (!QHotkey::isPlatformSupported())
     {
@@ -119,29 +244,29 @@ void App::initHotkey()
         return;
     }
 
-    auto s_hotkey = settings()->value(CFG_HOTKEY, DEF_HOTKEY).toString();
-    auto kc_hotkey = QKeySequence::fromString(s_hotkey)[0];
+    auto s_hk = settings()->value(CFG_HOTKEY, DEF_HOTKEY).toString();
+    auto kc_hk = QKeySequence::fromString(s_hk)[0];
 
-    if (auto hotkey = make_unique<QHotkey>(kc_hotkey);
-        hotkey->setRegistered(true))
+    if (auto hk = make_unique<QHotkey>(kc_hk);
+        hk->setRegistered(true))
     {
-        hotkey_ = ::move(hotkey);
-        connect(hotkey_.get(), &QHotkey::activated,
-                frontend_, []{ App::instance()->toggle(); });
-        INFO << "Hotkey set to" << s_hotkey;
+        hotkey = ::move(hk);
+        connect(hotkey.get(), &QHotkey::activated,
+                frontend, []{ App::instance()->toggle(); });
+        INFO << "Hotkey set to" << s_hk;
     }
     else
     {
-        auto text = QT_TR_NOOP("Failed to set the hotkey '%1'");
-        WARN << QString(text).arg(s_hotkey);
+        auto t = QT_TR_NOOP("Failed to set the hotkey '%1'");
+        WARN << QString(t).arg(s_hk);
         QMessageBox::warning(nullptr, qApp->applicationDisplayName(),
-                             tr(text).arg(QKeySequence(kc_hotkey)
-                                          .toString(QKeySequence::NativeText)));
-        showSettings();
+                             tr(t).arg(QKeySequence(kc_hk)
+                                       .toString(QKeySequence::NativeText)));
+        App::instance()->showSettings();
     }
 }
 
-void App::initAppDirectories()
+void App::Private::initAppDirectories()
 {
     for (const auto &path : { cacheLocation(), configLocation(), dataLocation() })
     {
@@ -151,7 +276,7 @@ void App::initAppDirectories()
     }
 }
 
-void App::initPRC()
+void App::Private::initPRC()
 {
     std::map<QString, RPCServer::RPC> rpc =
     {
@@ -185,121 +310,7 @@ void App::initPRC()
     };
 }
 
-bool App::trayEnabled() const
-{
-    return tray_icon.get();
-}
-
-void App::setTrayEnabled(bool enable)
-{
-    if (enable && !trayEnabled())
-    {
-        settings()->setValue(CFG_SHOWTRAY, enable);
-
-        // menu
-
-        tray_menu = make_unique<QMenu>();
-
-        auto *action = tray_menu->addAction(tr("Show/Hide"));
-        connect(action, &QAction::triggered,
-                []{ App::instance()->toggle(); });
-
-        action = tray_menu->addAction(tr("Settings"));
-        connect(action, &QAction::triggered,
-                []{ App::instance()->showSettings(); });
-
-        action = tray_menu->addAction(tr("Open website"));
-        connect(action, &QAction::triggered,
-                []{ albert::openWebsite(); });
-
-        tray_menu->addSeparator();
-
-        action = tray_menu->addAction(tr("Restart"));
-        connect(action, &QAction::triggered,
-                []{ App::instance()->restart(); });
-
-        action = tray_menu->addAction(tr("Quit"));
-        connect(action, &QAction::triggered,
-                []{ App::instance()->quit(); });
-
-        // icon
-
-        auto icon = albert::iconFromUrls({"xdg:albert-tray", "xdg:albert", ":app_tray_icon"});
-        icon.setIsMask(true);
-
-        tray_icon = make_unique<QSystemTrayIcon>();
-        tray_icon->setIcon(icon);
-        tray_icon->setContextMenu(tray_menu.get());
-        tray_icon->setVisible(true);
-
-#ifndef Q_OS_MAC
-        // Some systems open menus on right click, show albert on left trigger
-        connect(tray_icon.get(), &QSystemTrayIcon::activated,
-                [](QSystemTrayIcon::ActivationReason reason)
-        {
-            if( reason == QSystemTrayIcon::ActivationReason::Trigger)
-                App::instance()->toggle();
-        });
-#endif
-
-    }
-    else if (!enable && trayEnabled())
-    {
-        settings()->setValue(CFG_SHOWTRAY, enable);
-        tray_icon.reset();
-        tray_menu.reset();
-    }
-}
-
-const QHotkey *App::hotkey() const
-{
-    return hotkey_.get();
-}
-
-void App::setHotkey(unique_ptr<QHotkey> hotkey)
-{
-    if (hotkey->isRegistered())
-    {
-        hotkey_ = ::move(hotkey);
-        connect(hotkey_.get(), &QHotkey::activated,
-                frontend_, []{ App::instance()->toggle(); });
-        settings()->setValue(CFG_HOTKEY, hotkey_->shortcut().toString());
-    }
-    else
-        WARN << "Set unregistered hotkey. Ignoring.";
-}
-
-QStringList App::availableFrontends()
-{
-    QStringList ret;
-    for (const auto *loader : plugin_provider.frontendPlugins())
-        ret << loader->metaData().name;
-    return ret;
-}
-
-QString App::currentFrontend()
-{
-    return frontend_plugin->metaData().name;
-}
-
-void App::setFrontend(uint i)
-{
-    auto fp = plugin_provider.frontendPlugins().at(i);
-    settings()->setValue(CFG_FRONTEND_ID, fp->metaData().id);
-
-    auto text = tr("Changing the frontend requires a restart. "
-                   "Do you want to restart Albert?");
-
-    if (QMessageBox::question(nullptr, qApp->applicationDisplayName(), text) == QMessageBox::Yes)
-        restart();
-}
-
-Frontend *App::frontend()
-{
-    return frontend_;
-}
-
-void App::loadAnyFrontend()
+void App::Private::loadAnyFrontend()
 {
     auto frontend_plugins = plugin_provider.frontendPlugins();
 
@@ -329,36 +340,30 @@ void App::loadAnyFrontend()
     qFatal("Could not load any frontend.");
 }
 
-QString App::loadFrontend(PluginLoader *loader)
+QString App::Private::loadFrontend(PluginLoader *loader)
 {
     try {
         PluginRegistry::staticDI.loader = loader;
         loader->load();
 
-        plugin_registry_.staticDI.loader = loader;
+        plugin_registry.staticDI.loader = loader;
         auto * inst = loader->createInstance();
         if (!inst)
             return "Plugin loader returned null instance";
 
-        frontend_ = dynamic_cast<Frontend*>(loader->createInstance());
-        if (!frontend_)
+        frontend = dynamic_cast<Frontend*>(loader->createInstance());
+        if (!frontend)
             return QString("Failed casting Plugin instance to albert::Frontend: %1").arg(loader->metaData().id);
 
         frontend_plugin = loader;
 
-        connect(frontend_, &Frontend::visibleChanged, this, [this](bool v){
+        connect(frontend, &Frontend::visibleChanged,
+                App::instance(), [this](bool v){
             session.reset();  // make sure no multiple sessions are alive
             if(v)
-                session = make_unique<Session>(query_engine_, *frontend_);
+                session = make_unique<Session>(query_engine, *frontend);
         });
 
-        connect(&query_engine_, &QueryEngine::handlerRemoved, this, [this]{
-            if (frontend_->isVisible())
-            {
-                session.reset();
-                session = make_unique<Session>(query_engine_, *frontend_);
-            }
-        });
         return {};
     } catch (const exception &e) {
         return QString::fromStdString(e.what());
@@ -367,7 +372,7 @@ QString App::loadFrontend(PluginLoader *loader)
     }
 }
 
-void App::notifyVersionChange()
+void App::Private::notifyVersionChange()
 {
     auto s = state();
     auto current_version = qApp->applicationVersion();
@@ -376,12 +381,12 @@ void App::notifyVersionChange()
     // First run
     if (last_used_version.isNull())
     {
-        auto text = tr("This is the first time you've launched Albert. Albert is plugin based. "
-                       "You have to enable some plugins you want to use.");
+        auto text = tr("This is the first time you've launched Albert. Albert is "
+                       "plugin based. You have to enable some plugins you want to use.");
 
         QMessageBox::information(nullptr, qApp->applicationDisplayName(), text);
 
-        showSettings();
+        App::instance()->showSettings();
     }
     else if (current_version.section('.', 1, 1) != last_used_version.section('.', 1, 1) )  // FIXME in first major version
     {
@@ -397,29 +402,61 @@ void App::notifyVersionChange()
         s->setValue(STATE_LAST_USED_VERSION, current_version);
 }
 
+
+App::App(const QStringList &additional_plugin_paths, bool load_enabled):
+    d(make_unique<Private>(additional_plugin_paths, load_enabled))
+{
+    if (app_instance)
+        qFatal("No multiple app instances allowed");
+
+    app_instance = this;
+
+    // invalidate sessions on handler removal
+    connect(&d->query_engine, &QueryEngine::handlerRemoved, this, [this]
+    {
+        d->session.reset();
+        if (d->frontend->isVisible())
+            d->session = make_unique<Session>(d->query_engine, *d->frontend);
+    });
+}
+
+App::~App() = default;
+
+App *App::instance() { return app_instance; }
+
+void App::initialize() { return d->initialize(); }
+
+void App::finalize() { return d->finalize(); }
+
+TerminalProvider &App::terminal() { return d->terminal_provider; }
+
+PluginRegistry &App::pluginRegistry() { return d->plugin_registry; }
+
+QueryEngine &App::queryEngine() { return d->query_engine; }
+
 void App::showSettings(QString plugin_id)
 {
-    if (!settings_window)
-        settings_window = new SettingsWindow(*this);
+    if (!d->settings_window)
+        d->settings_window = new SettingsWindow(*this);
     hide();
-    settings_window->bringToFront(plugin_id);
+    d->settings_window->bringToFront(plugin_id);
 }
 
 void App::show(const QString &text)
 {
     if (!text.isNull())
-        frontend()->setInput(text);
-    frontend()->setVisible(true);
+        d->frontend->setInput(text);
+    d->frontend->setVisible(true);
 }
 
 void App::hide()
 {
-    frontend()->setVisible(false);
+    d->frontend->setVisible(false);
 }
 
 void App::toggle()
 {
-    frontend()->setVisible(!frontend()->isVisible());
+    d->frontend->setVisible(!d->frontend->isVisible());
 }
 
 void App::restart()
@@ -432,19 +469,70 @@ void App::quit()
     QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
 }
 
-TerminalProvider &App::terminal()
+Frontend *App::frontend() { return d->frontend; }
+
+QString App::currentFrontend() { return d->frontend_plugin->metaData().name; }
+
+QStringList App::availableFrontends()
 {
-    return terminal_provider_;
+    QStringList ret;
+    for (const auto *loader : d->plugin_provider.frontendPlugins())
+        ret << loader->metaData().name;
+    return ret;
 }
 
-PluginsWidget *App::makePluginsWidget()
+void App::setFrontend(uint i)
 {
-    return new PluginsWidget(plugin_registry_);
+    auto fp = d->plugin_provider.frontendPlugins().at(i);
+    settings()->setValue(CFG_FRONTEND_ID, fp->metaData().id);
+
+    auto text = tr("Changing the frontend requires a restart. "
+                   "Do you want to restart Albert?");
+
+    if (QMessageBox::question(nullptr, qApp->applicationDisplayName(), text) == QMessageBox::Yes)
+        restart();
 }
 
-QWidget *App::makeQueryWidget()
+bool App::trayEnabled() const { return d->tray_icon.get(); }
+
+void App::setTrayEnabled(bool enable)
 {
-    return new QueryWidget(query_engine_);
+    if (enable && !trayEnabled())
+        d->initTrayIcon();
+    else if (!enable && trayEnabled()) {
+        d->tray_icon.reset();
+        d->tray_menu.reset();
+    }
+    else
+        return;
+    settings()->setValue(CFG_SHOWTRAY, enable);
+}
+bool App::telemetryEnabled() const { return d->telemetry.get(); }
+
+void App::setTelemetryEnabled(bool enable)
+{
+    if (enable && !telemetryEnabled())
+        d->telemetry = make_unique<Telemetry>();
+    else if (!enable && telemetryEnabled())
+        d->telemetry.reset();
+    else
+        return;
+    settings()->setValue(CFG_TELEMETRY, enable);
+}
+
+const QHotkey *App::hotkey() const { return d->hotkey.get(); }
+
+void App::setHotkey(unique_ptr<QHotkey> hk)
+{
+    if (hk->isRegistered())
+    {
+        d->hotkey = ::move(hk);
+        connect(d->hotkey.get(), &QHotkey::activated,
+                d->frontend, []{ App::instance()->toggle(); });
+        settings()->setValue(CFG_HOTKEY, d->hotkey->shortcut().toString());
+    }
+    else
+        WARN << "Set unregistered hotkey. Ignoring.";
 }
 
 

@@ -1,9 +1,10 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
 #include "albert/frontend.h"
-#include "albert/util.h"
 #include "app.h"
 #include "pluginswidget/pluginswidget.h"
+#include "querywidget/querywidget.h"
+#include "terminalprovider.h"
 #include "settingswindow.h"
 #include <QDialog>
 #include <QHotkey>
@@ -54,7 +55,6 @@ public:
 SettingsWindow::SettingsWindow(App &a):
     app(a),
     ui(),
-    plugin_widget(app.makePluginsWidget()),
     small_text_fmt(R"(<span style="font-size:9pt; color:#808080;">%1</span>)")
 {
     ui.setupUi(this);
@@ -66,9 +66,9 @@ SettingsWindow::SettingsWindow(App &a):
     init_tab_general_terminals();
     init_tab_general_about();
 
-    ui.tabs->insertTab(ui.tabs->count(), app.frontend()->createFrontendConfigWidget(), tr("Window"));
-    ui.tabs->insertTab(ui.tabs->count(), plugin_widget.get(), tr("Plugins"));
-    ui.tabs->insertTab(ui.tabs->count(), app.makeQueryWidget(), tr("Query"));
+    ui.tabs->insertTab(ui.tabs->count(), app.frontend()->createFrontendConfigWidget(), tr("&Window"));
+    ui.tabs->insertTab(ui.tabs->count(), plugin_widget = new PluginsWidget(app.pluginRegistry()), tr("&Plugins"));
+    ui.tabs->insertTab(ui.tabs->count(), new QueryWidget(app.queryEngine()), tr("&Query"));
 
     auto geometry = QGuiApplication::screenAt(QCursor::pos())->geometry();
     move(geometry.center().x() - frameSize().width()/2,
@@ -183,7 +183,7 @@ void SettingsWindow::bringToFront(const QString &plugin)
     activateWindow();
     if (!plugin.isNull()){
         plugin_widget->tryShowPluginSettings(plugin);
-        ui.tabs->setCurrentWidget(plugin_widget.get());
+        ui.tabs->setCurrentWidget(plugin_widget);
     }
 }
 

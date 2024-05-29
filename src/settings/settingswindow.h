@@ -3,7 +3,6 @@
 #pragma once
 #include "ui_settingswindow.h"
 #include <QWidget>
-#include <memory>
 class App;
 class PluginsWidget;
 
@@ -29,6 +28,6 @@ private:
 
     App &app;
     Ui::SettingsWindow ui;
-    std::unique_ptr<PluginsWidget> plugin_widget;
+    PluginsWidget *plugin_widget;
     QString small_text_fmt;
 };

@@ -3,51 +3,25 @@
 #include "albert/logging.h"
 #include "albert/util.h"
 #include "telemetry.h"
-#include <QGuiApplication>
 #include <QCryptographicHash>
 #include <QDateTime>
+#include <QGuiApplication>
 #include <QJsonDocument>
-#include <QMessageBox>
+#include <QJsonObject>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QSettings>
 #include <QTimer>
 static const char *CFG_LAST_REPORT = "last_report";
-static const char *CFG_TELEMETRY = "telemetry";
 using namespace albert;
 
 
 Telemetry::Telemetry()
 {
-    QObject::connect(&timer_, &QTimer::timeout, &timer_, [this]{trySendReport();});
-
-    auto s = settings();
-    if (!s->contains(CFG_TELEMETRY))
-    {
-        auto text = QCoreApplication::translate(
-                    "Telemetry",
-                    "Albert collects anonymous data to enhance user experience. "
-                    "You can review the data to be sent in the details. Opt in?");
-
-        QMessageBox mb(QMessageBox::Question, qApp->applicationDisplayName(),
-                       text, QMessageBox::No|QMessageBox::Yes);
-
-        mb.setDefaultButton(QMessageBox::Yes);
-        mb.setDetailedText(QJsonDocument(buildReport()).toJson(QJsonDocument::Indented));
-        s->setValue(CFG_TELEMETRY, mb.exec() == QMessageBox::Yes);
-    }
-
-    enable(s->value(CFG_TELEMETRY).toBool());
+    QObject::connect(&timer, &QTimer::timeout, &timer, [this]{trySendReport();});
+    timer.setInterval(60000);
+    timer.start();
 }
-
-void Telemetry::enable(bool enable)
-{
-    settings()->setValue(CFG_TELEMETRY, enable);
-    enable ? timer_.start(60000) : timer_.stop();
-}
-
-bool Telemetry::isEnabled() const
-{ return settings()->value(CFG_TELEMETRY).toBool(); }
 
 void Telemetry::trySendReport()
 {
@@ -82,4 +56,9 @@ QJsonObject Telemetry::buildReport()
     object.insert("os", QSysInfo::prettyProductName());
     object.insert("id", QString::fromUtf8(QCryptographicHash::hash(QSysInfo::machineUniqueId(), QCryptographicHash::Sha1).toHex()).left(12));
     return object;
+}
+
+QString Telemetry::buildReportString()
+{
+    return QJsonDocument(buildReport()).toJson(QJsonDocument::Indented);
 }
