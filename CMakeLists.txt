@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19)  # JSON support, Ubuntu 22.04
+cmake_minimum_required(VERSION 3.22)  # Ubuntu 22.04
 
 # dont touch! set by metatool
 set(PROJECT_VERSION 0.23.0)
@@ -70,37 +70,170 @@ add_subdirectory(plugins)
 
 set(TARGET_LIB lib${PROJECT_NAME})
 
-file(GLOB_RECURSE LIB_PUBLIC_HEADER
-    ${PROJECT_BINARY_DIR}/include/*.h
-    ${PROJECT_SOURCE_DIR}/include/*.h
+set(LIB_PUBLIC_HEADER
+    ${PROJECT_BINARY_DIR}/include/albert/config.h  # generated
+    ${PROJECT_BINARY_DIR}/include/albert/export.h  # generated
+
+    include/albert/plugin/plugininstance.h
+    include/albert/plugin/pluginloader.h
+    include/albert/plugin/pluginmetadata.h
+    include/albert/plugin/pluginprovider.h
+
+    include/albert/query/action.h
+    include/albert/query/fallbackhandler.h
+    include/albert/query/globalqueryhandler.h
+    include/albert/query/item.h
+    include/albert/query/query.h
+    include/albert/query/rankitem.h
+    include/albert/query/triggerqueryhandler.h
+
+    include/albert/util/backgroundexecutor.h
+    include/albert/util/extensionplugin.h
+    include/albert/util/extensionwatcher.h
+    include/albert/util/iconprovider.h
+    include/albert/util/indexitem.h
+    include/albert/util/indexqueryhandler.h
+    include/albert/util/inputhistory.h
+    include/albert/util/itemindex.h
+    include/albert/util/matcher.h
+    include/albert/util/notification.h
+    include/albert/util/plugindependency.h
+    include/albert/util/properties.h
+    include/albert/util/standarditem.h
+
+    include/albert/extension.h
+    include/albert/extensionregistry.h
+    include/albert/frontend.h
+    include/albert/logging.h
+    include/albert/util.h
 )
 
-file(GLOB_RECURSE LIB_SRC_UI src/*.ui)
+set(LIB_SRC
+    include/albert/config.h.in
 
-file(GLOB LIB_SRC
-    src/*.cpp
-    src/*.h
-    src/platform/*.h
-    src/settings/*.cpp
-    src/settings/*.h
-    src/settings/pluginswidget/*.cpp
-    src/settings/pluginswidget/*.h
-    src/settings/querywidget/*.cpp
-    src/settings/querywidget/*.h
+    src/settings/pluginswidget/pluginsmodel.cpp
+    src/settings/pluginswidget/pluginsmodel.h
+    src/settings/pluginswidget/pluginswidget.cpp
+    src/settings/pluginswidget/pluginswidget.h
+
+    src/settings/querywidget/fallbacksmodel.cpp
+    src/settings/querywidget/fallbacksmodel.h
+    src/settings/querywidget/queryhandlermodel.cpp
+    src/settings/querywidget/queryhandlermodel.h
+    src/settings/querywidget/querywidget.cpp
+    src/settings/querywidget/querywidget.h
+
+    src/settings/settingswindow.cpp
+    src/settings/settingswindow.h
+
+    src/handlers/pluginconfigqueryhandler.cpp
+    src/handlers/pluginconfigqueryhandler.h
+    src/handlers/pluginqueryhandler.cpp
+    src/handlers/pluginqueryhandler.h
+    src/handlers/appqueryhandler.cpp
+    src/handlers/appqueryhandler.h
+
+    src/action.cpp
+    src/app.cpp
+    src/app.h
+    src/extension.cpp
+    src/extensionplugin.cpp
+    src/extensionregistry.cpp
+    src/fallbackhandler.cpp
+    src/frontend.cpp
+    src/globalqueryhandler.cpp
+    src/iconprovider.cpp
+    src/indexitem.cpp
+    src/indexqueryhandler.cpp
+    src/inputhistory.cpp
+    src/item.cpp
+    src/itemindex.cpp
+    src/itemsmodel.cpp
+    src/itemsmodel.h
+    src/levenshtein.cpp
+    src/levenshtein.h
+    src/matcher.cpp
+    src/messagehandler.cpp
+    src/messagehandler.h
+    src/notification.cpp
+    src/platform.h
+    src/plugin.cpp
+    src/plugin.h
+    src/plugininstance.cpp
+    src/pluginloader.cpp
+    src/pluginprovider.cpp
+    src/pluginregistry.cpp
+    src/pluginregistry.h
+    src/qtpluginloader.cpp
+    src/qtpluginloader.h
+    src/qtpluginprovider.cpp
+    src/qtpluginprovider.h
+    src/query.cpp
+    src/queryengine.cpp
+    src/queryengine.h
+    src/queryexecution.cpp
+    src/queryexecution.h
+    src/rankitem.cpp
+    src/report.cpp
+    src/report.h
+    src/rpcserver.cpp
+    src/rpcserver.h
+    src/session.cpp
+    src/session.h
+    src/standarditem.cpp
+    src/telemetry.cpp
+    src/telemetry.h
+    src/terminalprovider.cpp
+    src/terminalprovider.h
+    src/topologicalsort.h
+    src/triggerqueryhandler.cpp
+    src/usagedatabase.cpp
+    src/usagedatabase.h
+    src/util.cpp
 )
-list(FILTER LIB_SRC EXCLUDE REGEX main.cpp)
 
-file(GLOB_RECURSE LIB_SRC_PLATFORM
-    src/platform/${CMAKE_SYSTEM_NAME}/*.h
-    src/platform/${CMAKE_SYSTEM_NAME}/*.cpp
-    src/platform/${CMAKE_SYSTEM_NAME}/*.mm
+if (APPLE)
+    list(APPEND LIB_SRC
+        src/platform/mac/platform.mm
+    )
+else()  # assume xdg
+    list(APPEND LIB_SRC
+        src/platform/linux/xdg/iconlookup.cpp
+        src/platform/linux/xdg/iconlookup.h
+        src/platform/linux/xdg/platform.cpp
+        src/platform/linux/xdg/themefileparser.cpp
+        src/platform/linux/xdg/themefileparser.h
+    )
+endif()
+
+if (UNIX)
+    list(APPEND LIB_SRC
+        src/platform/unix/unixsignalhandler.cpp
+        src/platform/unix/unixsignalhandler.h
+    )
+endif()
+
+set(LIB_INCLUDE_DIRECTORIES
+    include/albert/
+    include/albert/plugin
+    include/albert/query
+    include/albert/util
+    src/
+    src/handlers/
+    src/settings
+    src/settings/pluginswidget
+    src/settings/querywidget
+)
+
+set(LIB_UI
+    src/settings/querywidget/querywidget.ui
+    src/settings/settingswindow.ui
 )
 
 add_library(${TARGET_LIB} SHARED
     ${LIB_PUBLIC_HEADER}
-    ${LIB_SRC_PLATFORM}
-    ${LIB_SRC_UI}
     ${LIB_SRC}
+    ${LIB_UI}
     src/resources.qrc
 )
 
@@ -120,7 +253,7 @@ target_include_directories(${TARGET_LIB}
         "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     PRIVATE
-        src/
+        ${LIB_INCLUDE_DIRECTORIES}
 )
 
 configure_file(
@@ -192,26 +325,22 @@ qt_add_translations(
 
 ### Platform specifics ########################################################
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+
+if(APPLE)
+
+    target_link_libraries(${TARGET_LIB}
+        PRIVATE objc "-framework Cocoa"
+    )
+
+elseif(UNIX)
+
     if (DEFINED CMAKE_LIBRARY_ARCHITECTURE)
         target_compile_definitions(${TARGET_LIB}
             PRIVATE -DMULTIARCH_TUPLE="${CMAKE_LIBRARY_ARCHITECTURE}"
         )
     endif()
-endif()
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    target_link_libraries(${TARGET_LIB}
-        PRIVATE objc "-framework Cocoa"
-    )
 endif()
-
-if (UNIX)
-    target_sources(${TARGET_LIB} PRIVATE
-        src/platform/Unix/unixsignalhandler.h
-        src/platform/Unix/unixsignalhandler.cpp
-    )
-endif (UNIX)
 
 
 ### App  ######################################################################

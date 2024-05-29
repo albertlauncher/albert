@@ -1,6 +1,6 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
-#include "platform/platform.h"
+#include "platform.h"
 
 void platform::initPlatform(){}
 

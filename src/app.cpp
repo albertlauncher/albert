@@ -11,7 +11,7 @@
 #include "app.h"
 #include "appqueryhandler.h"
 #include "messagehandler.h"
-#include "platform/platform.h"
+#include "platform.h"
 #include "pluginconfigqueryhandler.h"
 #include "pluginqueryhandler.h"
 #include "pluginregistry.h"
@@ -38,7 +38,7 @@
 #include <QTranslator>
 #include <QTranslator>
 #ifdef Q_OS_UNIX
-#include "platform/Unix/unixsignalhandler.h"
+#include "platform/unix/unixsignalhandler.h"
 #endif
 Q_LOGGING_CATEGORY(AlbertLoggingCategory, "albert")
 using namespace albert;

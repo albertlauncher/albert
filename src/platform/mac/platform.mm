@@ -3,7 +3,7 @@
 #include "albert/util.h"
 #include "albert/frontend.h"
 #include "albert/logging.h"
-#include "platform/platform.h"
+#include "platform.h"
 #include <Cocoa/Cocoa.h>
 #include <QGuiApplication>
 #include <QMessageBox>
