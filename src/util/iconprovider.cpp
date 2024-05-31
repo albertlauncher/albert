@@ -154,7 +154,7 @@ QPixmap albert::pixmapFromUrl(const QString &url, const QSize &requestedSize)
         return fileIcon(url.mid(qfileiconprovider_scheme.size())).pixmap(requestedSize, 1.);
 
     else if (url.startsWith(xdg_icon_lookup_scheme))
-#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
         return pixmapFromFilePath(xdgIconLookup(url.mid(xdg_icon_lookup_scheme.size())), requestedSize);
 #else
         return {};
@@ -218,7 +218,7 @@ QIcon albert::iconFromUrl(const QString &url)
         return fileIcon(url.mid(qfileiconprovider_scheme.size()));
 
     else if (url.startsWith(xdg_icon_lookup_scheme))
-#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
         return QIcon(xdgIconLookup(url.mid(xdg_icon_lookup_scheme.size())));
 #else
         return {};

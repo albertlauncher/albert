@@ -123,7 +123,7 @@ QIcon ALBERT_EXPORT fileIcon(const QString &path);
 /// \param name The icon name.
 /// \returns The path if available, null string otherwise.
 ///
-#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
 QString ALBERT_EXPORT xdgIconLookup(const QString &name);
 #endif
 

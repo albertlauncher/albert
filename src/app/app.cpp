@@ -122,6 +122,8 @@ void App::Private::initialize()
 {
     platform::initPlatform();
 
+    initLocalization();
+
     loadAnyFrontend();
 
     platform::initNativeWindow(frontend->winId());
@@ -559,7 +561,7 @@ int ALBERT_EXPORT run(int argc, char **argv)
     // }
 
 
-    // Set locale from env vars (why?)
+    // Set locale from env vars (for macos debug builds)
 
     // if (const char *key = "LANGUAGE"; qEnvironmentVariableIsSet(key))
     //     QLocale::setDefault(QLocale(qEnvironmentVariable(key)));

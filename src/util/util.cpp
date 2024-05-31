@@ -73,7 +73,7 @@ static bool checkPasteSupport()
 {
 #if defined Q_OS_MACOS
     return !QStandardPaths::findExecutable("osascript").isEmpty();
-#elif defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
+#elif defined(Q_OS_UNIX)
     bool have_paste_support = !QStandardPaths::findExecutable("xdotool").isEmpty();
     if(!have_paste_support)
         WARN << "xdotool is not available. No paste support.";
@@ -103,12 +103,12 @@ void albert::setClipboardTextAndPaste(const QString &text)
         return;
     }
 
-#if defined Q_OS_MACOS
+#if defined(Q_OS_MACOS)
     runDetachedProcess({
         "osascript", "-e",
         R"(tell application "System Events" to keystroke "v" using command down)"
     });
-#elif defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
+#elif defined(Q_OS_UNIX)
     QApplication::processEvents(); // ??
     auto *proc = new QProcess;
     proc->start("sh" , {"-c", "sleep 0.1 && xdotool key ctrl+v"});
@@ -123,7 +123,7 @@ void albert::setClipboardTextAndPaste(const QString &text)
         }
         proc->deleteLater();
     });
-#elif defined Q_OS_WIN
+#elif defined(Q_OS_WIN)
     qFatal("Paste not implemented on windows.");
 #endif
 }

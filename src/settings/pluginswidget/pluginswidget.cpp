@@ -24,7 +24,7 @@ PluginsWidget::PluginsWidget(PluginRegistry &plugin_registry) : model_(new Plugi
     listView_plugins->setProperty("showDropIndicator", QVariant(false));
     listView_plugins->setUniformItemSizes(true);
     listView_plugins->setModel(model_.get());
-#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
     // Some styles on linux have bigger icons than rows
     auto rh = listView_plugins->sizeHintForRow(0);
     listView_plugins->setIconSize(QSize(rh, rh));

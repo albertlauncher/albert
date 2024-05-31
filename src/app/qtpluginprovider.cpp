@@ -11,14 +11,17 @@ using namespace albert;
 
 QtPluginProvider::QtPluginProvider(QStringList paths)
 {
-#if defined __linux__ || defined __FreeBSD__
-    paths << "../lib";
-#elif defined __APPLE__
+#if defined(Q_OS_MAC)
     paths << "../../../../lib";  // ./bin/albert.app/Contents/MacOS/
+#elif defined(Q_OS_UNIX)
+    paths << "../lib";
 #endif
 
     QStringList install_paths;
-#if defined __linux__ || defined __FreeBSD__
+#if defined(Q_OS_MAC)
+    install_paths << QDir::home().filePath("Library/Application Support/albert/PlugIns");
+    install_paths << QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("../PlugIns");
+#elif defined(Q_OS_UNIX)
     if (qgetenv("container") == "flatpak")
         install_paths << "/app/lib/";
     install_paths << QDir::home().filePath(".local/lib/");
@@ -30,9 +33,6 @@ QtPluginProvider::QtPluginProvider(QStringList paths)
 #endif
     install_paths << "/usr/lib/";
     install_paths << "/usr/lib64/";
-#elif defined __APPLE__
-    install_paths << QDir::home().filePath("Library/Application Support/albert/PlugIns");
-    install_paths << QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("../PlugIns");
 #endif
     for (const QString& p : install_paths)
         paths << QDir(p).filePath("albert");
