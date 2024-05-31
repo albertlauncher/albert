@@ -1,12 +1,12 @@
-// Copyright (c) 2023 Manuel Schneider
+// Copyright (c) 2023-2024 Manuel Schneider
 
-#include "albert/logging.h"
+#include "logging.h"
 #include "unixsignalhandler.h"
 #include <QCoreApplication>
 #include <QSocketNotifier>
 #include <csignal>
-#include <unistd.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
 namespace {
 enum SocketFileDescriptor { Write, Read, Count };

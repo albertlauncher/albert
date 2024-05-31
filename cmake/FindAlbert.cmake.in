@@ -1,0 +1,8 @@
+# FindAlbert dummy package
+
+# This file serves the purpose to allow plugins to use find_package even if
+# they are part of the same project as Albert. This is useful for convenient
+# development such that the project itsself includes all upstream plugins
+# while still allowing the plugins to be build as separate projects.
+
+include("${CMAKE_CURRENT_LIST_DIR}/@LIB_MACROS_FILE@")

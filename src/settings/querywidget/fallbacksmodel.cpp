@@ -1,8 +1,8 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
-#include "albert/query/fallbackhandler.h"
-#include "albert/util/iconprovider.h"
+#include "fallbackhandler.h"
 #include "fallbacksmodel.h"
+#include "iconprovider.h"
 #include "queryengine.h"
 #include <QCoreApplication>
 #include <QHeaderView>

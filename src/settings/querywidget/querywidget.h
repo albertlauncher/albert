@@ -1,8 +1,8 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
 #pragma once
-#include <QWidget>
 #include "ui_querywidget.h"
+#include <QWidget>
 class QueryEngine;
 class FallbacksModel;
 

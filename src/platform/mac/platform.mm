@@ -1,9 +1,9 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
-#include "albert/util.h"
-#include "albert/frontend.h"
-#include "albert/logging.h"
+#include "frontend.h"
+#include "logging.h"
 #include "platform.h"
+#include "util.h"
 #include <Cocoa/Cocoa.h>
 #include <QGuiApplication>
 #include <QMessageBox>

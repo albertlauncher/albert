@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2024 Manuel Schneider
+
 cmake_minimum_required(VERSION 3.22)  # Ubuntu 22.04
 
 # dont touch! set by metatool
@@ -8,17 +10,6 @@ project(albert
     DESCRIPTION "Keyboard launcher"
     HOMEPAGE_URL "https://albertlauncher.github.io"
 )
-set(PROJECT_DISPLAY_NAME "Albert")
-
-include(GNUInstallDirs)
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
-
-# Instruct CMake to run moc automatically when needed.
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTORCC ON)
-
-# Set additional compiler flags
 
 set(ALBERT_COMPILE_OPTIONS
     #-Werror
@@ -45,25 +36,24 @@ set(ALBERT_COMPILE_OPTIONS
     # -Wl,-undefined
 )
 
-# string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,-undefined,error")  #macosonly
-# target_compile_options(${PROJECT_NAME} PRIVATE -save-temps) # only internal
-
 # Put the binaries in dedicated toplevel directories
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 
-### Subdirectories  ###########################################################
+### Dependencies ##############################################################
+
+# QNotification
+
+add_subdirectory(lib/QNotification EXCLUDE_FROM_ALL)
+
+# QHotkey
 
 set(QT_DEFAULT_MAJOR_VERSION 6)
 set(BUILD_SHARED_LIBS FALSE)
 set(QHOTKEY_INSTALL OFF CACHE BOOL "" FORCE)
 add_subdirectory(lib/QHotkey EXCLUDE_FROM_ALL)
 target_compile_options(qhotkey PRIVATE -Wno-gnu-zero-variadic-macro-arguments -Wno-unused-parameter -Wno-shadow)
-
-add_subdirectory(lib/QNotification EXCLUDE_FROM_ALL)
-
-add_subdirectory(plugins)
 
 
 ### Lib  ######################################################################
@@ -74,42 +64,95 @@ set(LIB_PUBLIC_HEADER
     ${PROJECT_BINARY_DIR}/include/albert/config.h  # generated
     ${PROJECT_BINARY_DIR}/include/albert/export.h  # generated
 
-    include/albert/plugin/plugininstance.h
-    include/albert/plugin/pluginloader.h
-    include/albert/plugin/pluginmetadata.h
-    include/albert/plugin/pluginprovider.h
-
-    include/albert/query/action.h
-    include/albert/query/fallbackhandler.h
-    include/albert/query/globalqueryhandler.h
-    include/albert/query/item.h
-    include/albert/query/query.h
-    include/albert/query/rankitem.h
-    include/albert/query/triggerqueryhandler.h
-
-    include/albert/util/backgroundexecutor.h
-    include/albert/util/extensionplugin.h
-    include/albert/util/extensionwatcher.h
-    include/albert/util/iconprovider.h
-    include/albert/util/indexitem.h
-    include/albert/util/indexqueryhandler.h
-    include/albert/util/inputhistory.h
-    include/albert/util/itemindex.h
-    include/albert/util/matcher.h
-    include/albert/util/notification.h
-    include/albert/util/plugindependency.h
-    include/albert/util/properties.h
-    include/albert/util/standarditem.h
-
+    include/albert/action.h
+    include/albert/backgroundexecutor.h
     include/albert/extension.h
+    include/albert/extensionplugin.h
     include/albert/extensionregistry.h
+    include/albert/extensionwatcher.h
+    include/albert/fallbackhandler.h
     include/albert/frontend.h
+    include/albert/globalqueryhandler.h
+    include/albert/iconprovider.h
+    include/albert/indexitem.h
+    include/albert/indexqueryhandler.h
+    include/albert/inputhistory.h
+    include/albert/item.h
+    include/albert/itemindex.h
     include/albert/logging.h
+    include/albert/matcher.h
+    include/albert/notification.h
+    include/albert/plugindependency.h
+    include/albert/plugininstance.h
+    include/albert/pluginloader.h
+    include/albert/pluginmetadata.h
+    include/albert/pluginprovider.h
+    include/albert/property.h
+    include/albert/query.h
+    include/albert/rankitem.h
+    include/albert/standarditem.h
+    include/albert/triggerqueryhandler.h
     include/albert/util.h
 )
 
 set(LIB_SRC
-    include/albert/config.h.in
+    src/app/app.cpp
+    src/app/app.h
+    src/app/appqueryhandler.cpp
+    src/app/appqueryhandler.h
+    src/app/messagehandler.cpp
+    src/app/messagehandler.h
+    src/app/pluginconfigqueryhandler.cpp
+    src/app/pluginconfigqueryhandler.h
+    src/app/pluginqueryhandler.cpp
+    src/app/pluginqueryhandler.h
+    src/app/qtpluginloader.cpp
+    src/app/qtpluginloader.h
+    src/app/qtpluginprovider.cpp
+    src/app/qtpluginprovider.h
+    src/app/report.cpp
+    src/app/report.h
+    src/app/rpcserver.cpp
+    src/app/rpcserver.h
+    src/app/telemetry.cpp
+    src/app/telemetry.h
+    src/app/terminalprovider.cpp
+    src/app/terminalprovider.h
+
+    src/common/action.cpp
+    src/common/extension.cpp
+    src/common/item.cpp
+    src/common/rankitem.cpp
+
+    src/frontend/frontend.cpp
+    src/frontend/inputhistory.cpp
+    src/frontend/itemsmodel.cpp
+    src/frontend/itemsmodel.h
+    src/frontend/session.cpp
+    src/frontend/session.h
+
+    src/platform/platform.h
+
+    src/plugin/extensionregistry.cpp
+    src/plugin/plugin.cpp
+    src/plugin/plugin.h
+    src/plugin/plugininstance.cpp
+    src/plugin/pluginloader.cpp
+    src/plugin/pluginprovider.cpp
+    src/plugin/pluginregistry.cpp
+    src/plugin/pluginregistry.h
+    src/plugin/topologicalsort.hpp
+
+    src/query/fallbackhandler.cpp
+    src/query/globalqueryhandler.cpp
+    src/query/query.cpp
+    src/query/queryengine.cpp
+    src/query/queryengine.h
+    src/query/queryexecution.cpp
+    src/query/queryexecution.h
+    src/query/triggerqueryhandler.cpp
+    src/query/usagedatabase.cpp
+    src/query/usagedatabase.h
 
     src/settings/pluginswidget/pluginsmodel.cpp
     src/settings/pluginswidget/pluginsmodel.h
@@ -126,70 +169,19 @@ set(LIB_SRC
     src/settings/settingswindow.cpp
     src/settings/settingswindow.h
 
-    src/handlers/pluginconfigqueryhandler.cpp
-    src/handlers/pluginconfigqueryhandler.h
-    src/handlers/pluginqueryhandler.cpp
-    src/handlers/pluginqueryhandler.h
-    src/handlers/appqueryhandler.cpp
-    src/handlers/appqueryhandler.h
+    src/util/extensionplugin.cpp
+    src/util/iconprovider.cpp
+    src/util/indexitem.cpp
+    src/util/indexqueryhandler.cpp
+    src/util/itemindex.cpp
+    src/util/levenshtein.cpp
+    src/util/levenshtein.h
+    src/util/matcher.cpp
+    src/util/notification.cpp
+    src/util/standarditem.cpp
+    src/util/util.cpp
 
-    src/action.cpp
-    src/app.cpp
-    src/app.h
-    src/extension.cpp
-    src/extensionplugin.cpp
-    src/extensionregistry.cpp
-    src/fallbackhandler.cpp
-    src/frontend.cpp
-    src/globalqueryhandler.cpp
-    src/iconprovider.cpp
-    src/indexitem.cpp
-    src/indexqueryhandler.cpp
-    src/inputhistory.cpp
-    src/item.cpp
-    src/itemindex.cpp
-    src/itemsmodel.cpp
-    src/itemsmodel.h
-    src/levenshtein.cpp
-    src/levenshtein.h
-    src/matcher.cpp
-    src/messagehandler.cpp
-    src/messagehandler.h
-    src/notification.cpp
-    src/platform.h
-    src/plugin.cpp
-    src/plugin.h
-    src/plugininstance.cpp
-    src/pluginloader.cpp
-    src/pluginprovider.cpp
-    src/pluginregistry.cpp
-    src/pluginregistry.h
-    src/qtpluginloader.cpp
-    src/qtpluginloader.h
-    src/qtpluginprovider.cpp
-    src/qtpluginprovider.h
-    src/query.cpp
-    src/queryengine.cpp
-    src/queryengine.h
-    src/queryexecution.cpp
-    src/queryexecution.h
-    src/rankitem.cpp
-    src/report.cpp
-    src/report.h
-    src/rpcserver.cpp
-    src/rpcserver.h
-    src/session.cpp
-    src/session.h
-    src/standarditem.cpp
-    src/telemetry.cpp
-    src/telemetry.h
-    src/terminalprovider.cpp
-    src/terminalprovider.h
-    src/topologicalsort.h
-    src/triggerqueryhandler.cpp
-    src/usagedatabase.cpp
-    src/usagedatabase.h
-    src/util.cpp
+    src/config.h.in
 )
 
 if (APPLE)
@@ -198,11 +190,11 @@ if (APPLE)
     )
 else()  # assume xdg
     list(APPEND LIB_SRC
-        src/platform/linux/xdg/iconlookup.cpp
-        src/platform/linux/xdg/iconlookup.h
-        src/platform/linux/xdg/platform.cpp
-        src/platform/linux/xdg/themefileparser.cpp
-        src/platform/linux/xdg/themefileparser.h
+        src/platform/xdg/iconlookup.cpp
+        src/platform/xdg/iconlookup.h
+        src/platform/xdg/platform.cpp
+        src/platform/xdg/themefileparser.cpp
+        src/platform/xdg/themefileparser.h
     )
 endif()
 
@@ -213,18 +205,6 @@ if (UNIX)
     )
 endif()
 
-set(LIB_INCLUDE_DIRECTORIES
-    include/albert/
-    include/albert/plugin
-    include/albert/query
-    include/albert/util
-    src/
-    src/handlers/
-    src/settings
-    src/settings/pluginswidget
-    src/settings/querywidget
-)
-
 set(LIB_UI
     src/settings/querywidget/querywidget.ui
     src/settings/settingswindow.ui
@@ -234,12 +214,14 @@ add_library(${TARGET_LIB} SHARED
     ${LIB_PUBLIC_HEADER}
     ${LIB_SRC}
     ${LIB_UI}
-    src/resources.qrc
+    resources/resources.qrc
 )
 
-add_library(albert::albert ALIAS ${TARGET_LIB})
+add_library("${PROJECT_NAME}::${TARGET_LIB}" ALIAS ${TARGET_LIB})
 
+include(GNUInstallDirs)
 include(GenerateExportHeader)
+
 generate_export_header(${TARGET_LIB}
     BASE_NAME ${PROJECT_NAME}
     EXPORT_FILE_NAME "${PROJECT_BINARY_DIR}/include/albert/export.h"
@@ -249,15 +231,31 @@ target_compile_options(${TARGET_LIB} PRIVATE ${ALBERT_COMPILE_OPTIONS})
 
 target_include_directories(${TARGET_LIB}
     PUBLIC
-        "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>"
-        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+        "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/>"
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     PRIVATE
-        ${LIB_INCLUDE_DIRECTORIES}
+        "${PROJECT_BINARY_DIR}/include/albert"
+        "${PROJECT_SOURCE_DIR}/include/albert"
+        src
+        src/app
+        src/common
+        src/frontend
+        src/handlers
+        src/platform
+        src/platform/mac
+        src/platform/unix
+        src/platform/xdg
+        src/plugin
+        src/query
+        src/settings
+        src/settings/pluginswidget
+        src/settings/querywidget
+        src/util
 )
 
 configure_file(
-    "${PROJECT_SOURCE_DIR}/include/albert/config.h.in"
+    "${PROJECT_SOURCE_DIR}/src/config.h.in"
     "${PROJECT_BINARY_DIR}/include/albert/config.h"
     @ONLY
 )
@@ -273,16 +271,27 @@ find_package(Qt6 6.2 REQUIRED COMPONENTS # Ubuntu 22.04
 )
 
 target_link_libraries(${TARGET_LIB}
-    PUBLIC
-        Qt6::Core
-        Qt6::Widgets
     PRIVATE
         QHotkey::QHotkey
         QNotifications::QNotifications
         Qt6::Concurrent
+        Qt6::Core
         Qt6::Network
         Qt6::Sql
+        Qt6::Widgets
 )
+
+if(APPLE)
+    target_link_libraries(${TARGET_LIB}
+        PRIVATE objc "-framework Cocoa"
+    )
+elseif(UNIX)
+    if (DEFINED CMAKE_LIBRARY_ARCHITECTURE)
+        target_compile_definitions(${TARGET_LIB}
+            PRIVATE -DMULTIARCH_TUPLE="${CMAKE_LIBRARY_ARCHITECTURE}"
+        )
+    endif()
+endif()
 
 set_target_properties(${TARGET_LIB} PROPERTIES
     #INSTALL_RPATH "$ORIGIN"
@@ -301,9 +310,12 @@ set_target_properties(${TARGET_LIB} PROPERTIES
     # NO_SONAME true # do _not_ add. linkers other that ldd will make troubles using non relative paths
     VERSION ${PROJECT_VERSION}
     VISIBILITY_INLINES_HIDDEN 1
+    AUTOMOC ON
+    AUTOUIC ON
+    AUTORCC ON
 )
 
-# Internationalization
+### Internationalization
 
 file(GLOB TS_FILES i18n/*.ts)
 
@@ -323,24 +335,85 @@ qt_add_translations(
     # LUPDATE_OPTIONS -no-obsolete
 )
 
-### Platform specifics ########################################################
 
+### Export/Install
 
-if(APPLE)
+include(CMakePackageConfigHelpers)
 
-    target_link_libraries(${TARGET_LIB}
-        PRIVATE objc "-framework Cocoa"
-    )
+set(LIB_EXPORT_NAME "${PROJECT_NAME}-targets")
+set(LIB_TARGETS_FILE "${LIB_EXPORT_NAME}.cmake")
+set(LIB_CONFIG_FILE "${PROJECT_NAME}-config.cmake")
+set(LIB_VERSION_FILE "${PROJECT_NAME}-config-version.cmake")
+set(LIB_MACROS_FILE "${PROJECT_NAME}-macros.cmake")
+set(LIB_FIND_ALBERT_FILE "FindAlbert.cmake")
+set(LIB_CMAKE_MODULE_DIR "${PROJECT_SOURCE_DIR}/cmake")
+set(INSTALL_CONFIGDIR "${CMAKE_INSTALL_LIBDIR}/cmake/Albert")
 
-elseif(UNIX)
+# Install the target
+# https://cmake.org/cmake/help/latest/command/install.html#targets
+install(
+    TARGETS ${TARGET_LIB}
+    EXPORT ${LIB_EXPORT_NAME}  # just an association
+    FRAMEWORK DESTINATION .
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/albert
+)
 
-    if (DEFINED CMAKE_LIBRARY_ARCHITECTURE)
-        target_compile_definitions(${TARGET_LIB}
-            PRIVATE -DMULTIARCH_TUPLE="${CMAKE_LIBRARY_ARCHITECTURE}"
-        )
-    endif()
+# Create a targets file in install tree
+# https://cmake.org/cmake/help/latest/command/install.html#export
+# By default the generated file will be called <export-name>.cmake
+install(
+    EXPORT ${LIB_EXPORT_NAME}
+    NAMESPACE ${PROJECT_NAME}::
+    DESTINATION ${INSTALL_CONFIGDIR}
+)
 
-endif()
+# Create a targets file in build tree (matching install(EXPORT))
+# https://cmake.org/cmake/help/latest/command/export.html#exporting-targets-matching-install-export
+# Seems like a shorthand for export(TARGETS)
+export(
+   EXPORT ${LIB_EXPORT_NAME}
+   NAMESPACE ${PROJECT_NAME}::
+   FILE "${PROJECT_BINARY_DIR}/${LIB_TARGETS_FILE}"
+)
+
+include(CMakePackageConfigHelpers)
+
+# Create version file in build tree
+write_basic_package_version_file(
+    "${PROJECT_BINARY_DIR}/${LIB_VERSION_FILE}"
+    VERSION "${PROJECT_VERSION}"
+    COMPATIBILITY AnyNewerVersion
+)
+
+# Create config file in build tree
+configure_package_config_file(
+   "${LIB_CMAKE_MODULE_DIR}/${LIB_CONFIG_FILE}.in"
+   "${PROJECT_BINARY_DIR}/${LIB_CONFIG_FILE}"
+   INSTALL_DESTINATION ${INSTALL_CONFIGDIR}
+)
+
+# Copy the macros to the build directory
+configure_file(
+    "${LIB_CMAKE_MODULE_DIR}/${LIB_MACROS_FILE}"
+    "${PROJECT_BINARY_DIR}/${LIB_MACROS_FILE}"
+    COPYONLY
+)
+
+# Copy the dummy FindAlbert to the build directory
+configure_file(
+    "${LIB_CMAKE_MODULE_DIR}/${LIB_FIND_ALBERT_FILE}.in"
+    "${PROJECT_BINARY_DIR}/${LIB_FIND_ALBERT_FILE}"
+    @ONLY
+)
+
+install(FILES
+    "${PROJECT_BINARY_DIR}/${LIB_CONFIG_FILE}"
+    "${PROJECT_BINARY_DIR}/${LIB_VERSION_FILE}"
+    "${PROJECT_BINARY_DIR}/${LIB_MACROS_FILE}"
+    DESTINATION ${INSTALL_CONFIGDIR}
+)
 
 
 ### App  ######################################################################
@@ -349,13 +422,7 @@ set(TARGET_APP ${CMAKE_PROJECT_NAME})
 
 add_executable(${TARGET_APP} MACOSX_BUNDLE "src/main.cpp")
 
-# Platform specific stuff
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-
-    install(FILES dist/xdg/albert.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications )
-    install(FILES resources/albert.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
-
-elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+if (APPLE)
 
     set(ICON_NAME "albert")
     set(ICON_PATH "dist/macos/${ICON_NAME}.icns")
@@ -366,27 +433,66 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set_target_properties(${TARGET_APP} PROPERTIES
         BUNDLE True
         MACOSX_BUNDLE TRUE
-        MACOSX_BUNDLE_BUNDLE_NAME "${PROJECT_DISPLAY_NAME}"
+        MACOSX_BUNDLE_BUNDLE_NAME "${PROJECT_NAME}"
         MACOSX_BUNDLE_BUNDLE_VERSION "${CMAKE_PROJECT_VERSION}"
-        MACOSX_BUNDLE_COPYRIGHT "Copyright (c) 2023 Manuel Schneider"
+        MACOSX_BUNDLE_COPYRIGHT "Copyright (c) 2024 Manuel Schneider"
         MACOSX_BUNDLE_GUI_IDENTIFIER "org.albertlauncher.albert"
         MACOSX_BUNDLE_ICON_FILE ${ICON_NAME}
         MACOSX_BUNDLE_INFO_STRING "Albert keyboard launcher"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "${CMAKE_PROJECT_VERSION}"
     )
 
+elseif (UNIX)
+
+    install(FILES dist/xdg/albert.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
+    install(FILES resources/albert.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
+
 endif()
 
 target_link_libraries(${TARGET_APP} PRIVATE ${TARGET_LIB})
 
-set_target_properties(${TARGET_APP} PROPERTIES
-    OUTPUT_NAME ${CMAKE_PROJECT_NAME}
+
     #INSTALL_RPATH_USE_LINK_PATH TRUE
     #INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
     #BUILD_WITH_INSTALL_RPATH FALSE
     #INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}/albert/"  # Set the RPATH for the library lookup
     #INSTALL_RPATH "$ORIGIN/../Frameworks/albert/"  # Set the RPATH for the library lookup
+
+install(
+    TARGETS ${TARGET_APP}
+    BUNDLE DESTINATION .
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+
+### Plugins ###################################################################
+
+# Since the cmake module path of this project contains a dummy FindAlbert.cmake
+# CMake uses this one instead of searching systemwide.
+
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_BINARY_DIR}")
+
+# on macOS include the macports lookup path
+if (APPLE)
+    list(APPEND CMAKE_PREFIX_PATH "/opt/local")
+    message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+endif()
+
+option(BUILD_PLUGINS "Build plugins" ON)
+set(PLUGINS_DIR "${CMAKE_CURRENT_LIST_DIR}/plugins")
+if (BUILD_PLUGINS)
+    file(GLOB ENTRIES RELATIVE "${PLUGINS_DIR}" plugins/*)
+    list(FILTER ENTRIES EXCLUDE REGEX "^\\..+")
+    foreach(ENTRY ${ENTRIES})
+        if(IS_DIRECTORY "${PLUGINS_DIR}/${ENTRY}")
+            string(TOUPPER ${ENTRY} UPPER)
+            option(BUILD_PLUGIN_${UPPER} "Build plugin ${ENTRY}" ON)
+            if (BUILD_PLUGIN_${UPPER})
+                add_subdirectory("${PLUGINS_DIR}/${ENTRY}")
+            endif()
+        endif()
+    endforeach()
+endif()
 
 
 ### Test ######################################################################
@@ -397,116 +503,32 @@ if (BUILD_TESTS)
     find_package(doctest)
 
     get_target_property(SRC_TST ${TARGET_LIB} SOURCES)
-    add_executable(${TARGET_TST} ${SRC_TST} test/test.cpp)
-
     get_target_property(INC_TST ${TARGET_LIB} INCLUDE_DIRECTORIES)
-    target_include_directories(${TARGET_TST} PRIVATE ${INC_TST})
-
     get_target_property(LIBS_TST ${TARGET_LIB} LINK_LIBRARIES)
-    target_link_libraries(${TARGET_TST} PRIVATE ${LIBS_TST} doctest::doctest)
-
     get_target_property(CXX_STD_TST ${TARGET_LIB} CXX_STANDARD)
-    set_target_properties(${TARGET_TST} PROPERTIES CXX_STANDARD ${CXX_STD_TST})
+
+    add_executable(${TARGET_TST} ${SRC_TST} test/test.cpp)
+    target_include_directories(${TARGET_TST} PRIVATE ${INC_TST})
+    target_link_libraries(${TARGET_TST} PRIVATE ${LIBS_TST} doctest::doctest)
+    set_target_properties(${TARGET_TST} PROPERTIES
+        CXX_STANDARD ${CXX_STD_TST}
+        AUTOMOC ON
+        AUTOUIC ON
+        AUTORCC ON
+    )
 
 endif()
 
 
-### Install ###################################################################
-
-install(
-    TARGETS ${TARGET_APP} ${TARGET_LIB}
-    TARGETS EXPORT ${EXPORT_TARGETS}
-    BUNDLE DESTINATION .
-    FRAMEWORK DESTINATION .
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
-
-
-
-#message("CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}")
-#message("CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}")
-#message("PROJECT_SOURCE_DIR ${PROJECT_SOURCE_DIR}")
-#message("PROJECT_BINARY_DIR ${PROJECT_BINARY_DIR}")
-#message("CMAKE_CURRENT_LIST_DIR ${CMAKE_CURRENT_LIST_DIR}")
-#message("CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_DATADIR}")
-#message("CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR}")
-#message("CMAKE_INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR}")
-#message("CMAKE_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR}")
-
-#set (EXPORT_TARGETS AlbertTargets)
-
-## install headers
-#file(GLOB_RECURSE
-#    TARGET_HEADER_FILES
-#    "${PROJECT_SOURCE_DIR}/include/*.h"
-#    "${PROJECT_BINARY_DIR}/include/*.h"
-#)
-#message(${TARGET_HEADER_FILES})
-#install(DIRECTORY mydir/ DESTINATION dir/newname)
-#install(FILES ${TARGET_HEADER_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
-## Create targets file in install tree
-#install(
-#    EXPORT ${EXPORT_TARGETS}
-#    FILE "${PROJECT_NAME}-targets.cmake"
-#    DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}-${PROJECT_VERSION}
-#    NAMESPACE ${PROJECT_NAME}::
-#)
-
-## Create targets file in build tree
-#export(
-#    EXPORT ${EXPORT_TARGETS}
-#    FILE "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake"
-#    NAMESPACE ${PROJECT_NAME}::
-#)
-
-## Create config file in build tree
-#include(CMakePackageConfigHelpers)
-#configure_package_config_file(
-#    "${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}-config.cmake.in"
-#    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
-#    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}-${PROJECT_VERSION}
-#)
-
-## Create version config file in build tree
-#write_basic_package_version_file(
-#    "${PROJECT_NAME}-config-version.cmake"
-#    VERSION ${PROJECT_VERSION}
-#    COMPATIBILITY SameMajorVersion
-#)
-
-# install version and config file
-#install(FILES
-#    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
-#    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
-#    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-macros.cmake"
-#    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/albert
-#)
-
-## Copy macros to build tree
-#configure_file(
-#    "${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}-macros.cmake"
-#    "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-macros.cmake"
-#    COPYONLY
-#)
-
-# Export the package to make find_package work in build
-#set(CMAKE_EXPORT_PACKAGE_REGISTRY true)
-#export(PACKAGE ${PROJECT_NAME})
-
-
-
-
 ### Packaging #################################################################
+
+set(PROJECT_DISPLAY_NAME "Albert")
 
 if (APPLE)
     set(CPACK_GENERATOR "DragNDrop")
     set(CPACK_PACKAGE_CHECKSUM "SHA256")
     set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/README.md")
-    set(CPACK_PACKAGE_EXECUTABLES "albert" "Albert executable")
+    set(CPACK_PACKAGE_EXECUTABLES "${PROJECT_NAME}" "${PROJECT_DISPLAY_NAME} executable")
     set(CPACK_PACKAGE_FILE_NAME "${PROJECT_DISPLAY_NAME}-v${PROJECT_VERSION}")
     set(CPACK_PACKAGE_NAME "${PROJECT_DISPLAY_NAME}")
     #set(CPACK_PACKAGE_ICON "${PROJECT_SOURCE_DIR}/${ICON_PATH}")

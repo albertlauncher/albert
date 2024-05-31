@@ -1,9 +1,9 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
-#include "albert/query/globalqueryhandler.h"
-#include "albert/query/triggerqueryhandler.h"
+#include "globalqueryhandler.h"
 #include "queryengine.h"
 #include "queryhandlermodel.h"
+#include "triggerqueryhandler.h"
 #include <QCoreApplication>
 #include <QHeaderView>
 #include <QMessageBox>

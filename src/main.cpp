@@ -1,4 +1,4 @@
-// Copyright (C) 2022 Manuel Schneider
+// Copyright (C) 2024 Manuel Schneider
 
 namespace albert {
 extern int run(int, char **);

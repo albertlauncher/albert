@@ -1,8 +1,8 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
-#include "albert/plugin/plugininstance.h"
-#include "albert/plugin/pluginmetadata.h"
-#include "albert/plugin/pluginprovider.h"
+#include "plugininstance.h"
+#include "pluginmetadata.h"
+#include "pluginprovider.h"
 #include "pluginregistry.h"
 #include "pluginsmodel.h"
 #include "pluginswidget.h"

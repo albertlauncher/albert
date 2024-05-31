@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="app_icon">albert.svg</file>
+        <file alias="gear">gear.svg</file>
+        <file alias="unknown">unknown.svg</file>
+        <file alias="app_tray_icon">albert-tray.svg</file>
+    </qresource>
+</RCC>

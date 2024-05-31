@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2023 Manuel Schneider
+// Copyright (C) 2014-2024 Manuel Schneider
 
 #pragma once
 #include <QSize>

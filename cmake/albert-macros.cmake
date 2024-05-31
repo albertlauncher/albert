@@ -39,13 +39,6 @@
 
 cmake_minimum_required(VERSION 3.19)  # string(JSON…
 
-
-# on macOS include the macports lookup path
-if (APPLE)
-    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} /opt/local)
-endif()
-
-
 macro(_albert_plugin_add_target)
 
     if (NOT DEFINED ARG_SOURCE_FILES)
@@ -71,7 +64,9 @@ macro(_albert_plugin_add_target)
     endif()
 
 
-    add_library(${PROJECT_NAME} SHARED ${ARG_SOURCE_FILES} )
+    # Instruct CMake to run moc automatically when needed.
+
+    add_library(${PROJECT_NAME} SHARED ${ARG_SOURCE_FILES})
     add_library(albert::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
     set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -79,18 +74,25 @@ macro(_albert_plugin_add_target)
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS OFF
         CXX_VISIBILITY_PRESET hidden
-        VISIBILITY_INLINES_HIDDEN 1
-        PREFIX ""  # no liblib
+        VISIBILITY_INLINES_HIDDEN j
+        PREFIX ""  # no libfoo
+        AUTOMOC ON
+        AUTOUIC ON
+        AUTORCC ON
     )
+
+    set_property(TARGET ${PROJECT_NAME}
+        APPEND PROPERTY AUTOMOC_MACRO_NAMES "ALBERT_PLUGIN")
 
     target_compile_options(${PROJECT_NAME} PRIVATE ${ALBERT_COMPILE_OPTIONS})
 
-    target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_BINARY_DIR})
     if (DEFINED ARG_INCLUDE_DIRECTORIES)
         target_include_directories(${PROJECT_NAME} ${ARG_INCLUDE_DIRECTORIES})
     endif()
 
-    target_link_libraries(${PROJECT_NAME} PRIVATE albert::albert)
+    find_package(Qt6 6.0 REQUIRED COMPONENTS Widgets)
+    target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Widgets albert::libalbert)
     if (DEFINED ARG_LINK_LIBRARIES)
         target_link_libraries(${PROJECT_NAME} ${ARG_LINK_LIBRARIES})
     endif()
@@ -175,7 +177,7 @@ macro(_albert_plugin_generate_metadata_json)
         message(FATAL_ERROR "Plugin version is undefined")
     endif()
 
-    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/metadata.json" MD)
+    file(READ "${PROJECT_SOURCE_DIR}/metadata.json" MD)
 
     string(JSON MD SET ${MD} "id" "\"${PROJECT_NAME}\"")
 
@@ -195,8 +197,8 @@ macro(_albert_plugin_generate_metadata_json)
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/metadata.json" "${MD}")
 
     target_sources(${PROJECT_NAME} PRIVATE
-        "${CMAKE_CURRENT_SOURCE_DIR}/metadata.json"
-        "${CMAKE_CURRENT_BINARY_DIR}/metadata.json"
+        "${PROJECT_SOURCE_DIR}/metadata.json"
+        "${PROJECT_BINARY_DIR}/metadata.json"
     )
 
 endmacro()

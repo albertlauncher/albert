@@ -1,13 +1,13 @@
-// Copyright (c) 2022 Manuel Schneider
+// Copyright (c) 2024 Manuel Schneider
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #define DOCTEST_CONFIG_COLORS_ANSI
 #include "doctest/doctest.h"
-#include "albert/query/rankitem.h"
-#include "albert/util/standarditem.h"
-#include "albert/util/itemindex.h"
-#include "topologicalsort.h"
-#include "src/levenshtein.h"
+#include "itemindex.h"
+#include "levenshtein.h"
+#include "rankitem.h"
+#include "standarditem.h"
+#include "topologicalsort.hpp"
 #include <QString>
 #include <chrono>
 #include <iostream>

@@ -1,8 +1,9 @@
-// Copyright (c) 2023-2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-License-Identifier: MIT
 
 #pragma once
-#include "albert/export.h"
 #include <QString>
+#include <albert/export.h>
 
 namespace albert
 {

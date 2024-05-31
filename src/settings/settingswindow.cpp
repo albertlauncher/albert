@@ -1,11 +1,11 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
-#include "albert/frontend.h"
 #include "app.h"
-#include "pluginswidget/pluginswidget.h"
-#include "querywidget/querywidget.h"
-#include "terminalprovider.h"
+#include "frontend.h"
+#include "pluginswidget.h"
+#include "querywidget.h"
 #include "settingswindow.h"
+#include "terminalprovider.h"
 #include <QDialog>
 #include <QHotkey>
 #include <QKeyEvent>

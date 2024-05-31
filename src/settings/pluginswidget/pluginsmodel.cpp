@@ -1,6 +1,6 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
-#include "albert/plugin/pluginmetadata.h"
+#include "pluginmetadata.h"
 #include "pluginregistry.h"
 #include "pluginsmodel.h"
 #include <QApplication>
@@ -20,7 +20,7 @@ QIcon PluginsModel::getCachedIcon(const QString &url) const
 {
     try {
         return icon_cache.at(url);
-    } catch (const std::out_of_range &e) {
+    } catch (const out_of_range &e) {
         return icon_cache.emplace(url, url).first->second;
     }
 }
@@ -83,7 +83,7 @@ bool PluginsModel::setData(const QModelIndex &index, const QVariant &value, int 
                     plugin_registry_.disable(p.id());
             }
         }
-        catch (std::out_of_range &e){}
+        catch (out_of_range &e){}
     }
     return false;
 }
