@@ -2,48 +2,54 @@
 #
 # Use albert_plugin() to add a plugin.
 #
-#     albert_plugin(
-#          [SOURCE_FILES ...]
-#          [INCLUDE_DIRECTORIES ...]
-#          [LINK_LIBRARIES ...]
-#     )
+# albert_plugin(
+#      [SOURCES ...]
+#      [I18N_SOURCES ...]
+#      [INCLUDE ...]
+#      [LINK ...]
+#      [QT ...]
+# )
 #
-#     Create a plugin target with the given name.
+# Create a plugin target with the given name.
 #
-#     Expects a metadata.json file in the source directory.
+# Expects a metadata.json file in the source directory.
 #
-#     Translations files in a directory named 'i18n' are added automatically.
-#     The filenames must have the pattern <plugin_id>_<language_code>.ts.
-#     <plugin_id>.ts is the native plurals file.
+# Translations files in a directory named 'i18n' are added automatically.
+# The filenames must have the pattern <plugin_id>_<language_code>.ts.
+# <plugin_id>.ts is the native plurals file.
 #
-#     SOURCE_FILES
-#         List source files.
-#         Supports (nonrecursive) globbing patterns.
-#         If unspecified the default is a recursive globbing pattern for:
-#         include/*.h, src/*.h, src/*.cpp, src/*.mm, src/*.ui and <plugin_id>.qrc
+# SOURCES
+#     List source files.
+#     Supports (nonrecursive) globbing patterns.
+#     If unspecified the default is a recursive globbing pattern for:
+#     include/*.h, src/*.h, src/*.cpp, src/*.mm, src/*.ui and <plugin_id>.qrc
 #
-#     I18N_SOURCE_FILES
-#         List translation source files.
-#         Supports (nonrecursive) globbing patterns.
-#         Use if some of the source files are disabled on certain platforms.
-#         If unspecified the default is the targets sources.
+# I18N_SOURCES
+#     List translation source files.
+#     Supports (nonrecursive) globbing patterns.
+#     Use if some of the source files are disabled on certain platforms.
+#     If unspecified defaults to the target sources.
 #
-#     INCLUDE_DIRECTORIES
-#         List of include directories.
-#         Shorthand for CMake target_include_directories(plugin_target …
+# INCLUDE
+#     List directories to include.
+#     Shorthand for CMake target_include_directories(plugin_target …
 #
-#     LINK_LIBRARIES
-#         List of link libraries.
-#         Shorthand for CMake target_link_libraries(plugin_target …
+# LINK
+#     List of libraries to link.
+#     Shorthand for CMake target_link_libraries(plugin_target …
+#
+# QT
+#     List of Qt components to link.
+#     Finds and links the given Qt components.
 #
 
 cmake_minimum_required(VERSION 3.19)  # string(JSON…
 
 macro(_albert_plugin_add_target)
 
-    if (NOT DEFINED ARG_SOURCE_FILES)
+    if (NOT DEFINED ARG_SOURCES)
 
-        file(GLOB_RECURSE ARG_SOURCE_FILES
+        file(GLOB_RECURSE ARG_SOURCES
             src/*.h
             src/*.hpp
             src/*.cpp
@@ -53,20 +59,20 @@ macro(_albert_plugin_add_target)
             ${PROJECT_NAME}.qrc
         )
 
-        if (NOT ARG_SOURCE_FILES)
+        if (NOT ARG_SOURCES)
             message(FATAL_ERROR "No source files.")
         endif()
 
     else()
 
-        file(GLOB ARG_SOURCE_FILES ${ARG_SOURCE_FILES})
+        file(GLOB ARG_SOURCES ${ARG_SOURCES})
 
     endif()
 
 
     # Instruct CMake to run moc automatically when needed.
 
-    add_library(${PROJECT_NAME} SHARED ${ARG_SOURCE_FILES})
+    add_library(${PROJECT_NAME} SHARED ${ARG_SOURCES})
     add_library(albert::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
     set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -87,15 +93,22 @@ macro(_albert_plugin_add_target)
     target_compile_options(${PROJECT_NAME} PRIVATE ${ALBERT_COMPILE_OPTIONS})
 
     target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_BINARY_DIR})
-    if (DEFINED ARG_INCLUDE_DIRECTORIES)
-        target_include_directories(${PROJECT_NAME} ${ARG_INCLUDE_DIRECTORIES})
+    if (DEFINED ARG_INCLUDE)
+        target_include_directories(${PROJECT_NAME} ${ARG_INCLUDE})
     endif()
 
-    find_package(Qt6 6.0 REQUIRED COMPONENTS Widgets)
-    target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Widgets albert::libalbert)
-    if (DEFINED ARG_LINK_LIBRARIES)
-        target_link_libraries(${PROJECT_NAME} ${ARG_LINK_LIBRARIES})
+    if (DEFINED ARG_LINK)
+        target_link_libraries(${PROJECT_NAME} ${ARG_LINK})
     endif()
+
+    if (DEFINED ARG_QT)
+        find_package(Qt6 6.2 REQUIRED COMPONENTS ${ARG_QT})
+        foreach(MODULE ${ARG_QT})
+            target_link_libraries(${PROJECT_NAME} PRIVATE "Qt6::${MODULE}")
+        endforeach()
+    endif()
+
+    target_link_libraries(${PROJECT_NAME} PRIVATE albert::libalbert)
 
     #include(GenerateExportHeader)
     #generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME "export.h")
@@ -123,17 +136,17 @@ macro(_albert_plugin_add_translations)
 
     file(GLOB TS_FILES "i18n/${PROJECT_NAME}*.ts")
 
-    if (NOT ARG_I18N_SOURCE_FILES)
-        get_target_property(ARG_I18N_SOURCE_FILES ${PROJECT_NAME} SOURCES)
+    if (NOT ARG_I18N_SOURCES)
+        get_target_property(ARG_I18N_SOURCES ${PROJECT_NAME} SOURCES)
     else()
-        file(GLOB ARG_I18N_SOURCE_FILES ${ARG_I18N_SOURCE_FILES})
+        file(GLOB ARG_I18N_SOURCES ${ARG_I18N_SOURCES})
     endif()
 
     if (TS_FILES)
         qt_add_translations(
             ${PROJECT_NAME}
             TS_FILES ${TS_FILES}
-            SOURCES ${ARG_I18N_SOURCE_FILES}
+            SOURCES ${ARG_I18N_SOURCES}
             # LUPDATE_OPTIONS -no-obsolete
             # QM_FILES_OUTPUT_VARIABLE QM_FILES
         )
@@ -208,7 +221,7 @@ macro(albert_plugin)
 
     set(arg_bool )
     set(arg_vals )
-    set(arg_list SOURCE_FILES I18N_SOURCE_FILES INCLUDE_DIRECTORIES LINK_LIBRARIES)
+    set(arg_list SOURCES I18N_SOURCES INCLUDE LINK QT)
     cmake_parse_arguments(ARG "${arg_bool}" "${arg_vals}" "${arg_list}" ${ARGV})
 
     _albert_plugin_add_target()
