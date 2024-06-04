@@ -26,15 +26,19 @@ public:
     virtual const PluginMetaData &metaData() const = 0;
 
     /// Load the plugin.
-    /// @note Will be executed in a background thread.
+    /// Called in a background thread.
+    /// Expects the plugin to be loaded after this call.
+    /// @throws std::exception in case of errors.
     virtual void load() = 0;
 
     /// Unload the plugin.
-    /// @note Will be executed in a background thread.
+    /// @throws std::exception in case of errors.
     virtual void unload() = 0;
 
     /// The plugin instance.
-    /// @return The PluginInstance or nullptr if not loaded.
+    /// Not called unless loaded.
+    /// Creates an instance of the plugin if it does not exist.
+    /// @return @copybrief createInstance
     virtual PluginInstance *createInstance() = 0;
 
 protected:
