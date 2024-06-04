@@ -138,6 +138,9 @@ void QueryExecution::invokeCollectResults()
 
 void QueryExecution::runFallbackHandlers()
 {
+    if (trigger_.isEmpty() && string_.isEmpty())
+        return;
+
     const auto &o = query_engine_->fallbackOrder();
 
     vector<pair<Extension*,RankItem>> fallbacks;
