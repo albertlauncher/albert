@@ -70,7 +70,6 @@ public:
     void initTrayIcon();
     void initTelemetry();
     void initHotkey();
-    void initLocalization();
     void initAppDirectories();
     void initPRC();
     void loadAnyFrontend();
@@ -91,8 +90,6 @@ public:
     QtPluginProvider plugin_provider;
     QueryEngine query_engine;
     TerminalProvider terminal_provider;
-    QTranslator qtTranslator;
-    QTranslator translator;
 
     // Weak, lazy or optional
     albert::PluginLoader *frontend_plugin{nullptr};
@@ -121,8 +118,6 @@ App::Private::Private(const QStringList &additional_plugin_paths, bool load_enab
 void App::Private::initialize()
 {
     platform::initPlatform();
-
-    initLocalization();
 
     loadAnyFrontend();
 
@@ -225,16 +220,6 @@ void App::Private::initTelemetry()
         mb.setDetailedText(telemetry->buildReportString());
         s->setValue(CFG_TELEMETRY, mb.exec() == QMessageBox::Yes);
     }
-}
-
-void App::Private::initLocalization()
-{
-    if (qtTranslator.load(QLocale(), "qtbase", "_",
-                          QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
-        qApp->installTranslator(&qtTranslator);
-
-    if (translator.load(QLocale(), qApp->applicationName(), "_", ":/i18n"))
-        qApp->installTranslator(&translator);
 }
 
 void App::Private::initHotkey()
@@ -596,6 +581,18 @@ int ALBERT_EXPORT run(int argc, char **argv)
                        old_conf_loc.toUtf8().data(), new_conf_loc.toUtf8().data());
         }
     }
+
+
+    // Load translators
+
+    QTranslator qtTranslator;
+    if (qtTranslator.load(QLocale(), "qtbase", "_",
+                          QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
+        qApp->installTranslator(&qtTranslator);
+
+    QTranslator translator;
+    if (translator.load(QLocale(), qApp->applicationName(), "_", ":/i18n"))
+        qApp->installTranslator(&translator);
 
 
     // Parse command line
