@@ -11,6 +11,9 @@ project(albert
     HOMEPAGE_URL "https://albertlauncher.github.io"
 )
 
+# Local cmake modules (also CMake uses this in a pretty obscure way, e.g. for the plist)
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
 set(ALBERT_COMPILE_OPTIONS
     #-Werror
     -Wall
@@ -469,7 +472,6 @@ install(
 
 # Since the cmake module path of this project contains a dummy FindAlbert.cmake
 # CMake uses this one instead of searching systemwide.
-
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_BINARY_DIR}")
 
 # on macOS include the macports lookup path
