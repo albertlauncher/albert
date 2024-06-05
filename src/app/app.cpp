@@ -45,8 +45,7 @@ using namespace std;
 
 
 namespace {
-static App * app_instance = nullptr;
-// albert::App *app;
+static App * app_instance{nullptr};
 static const char *STATE_LAST_USED_VERSION = "last_used_version";
 static const char *CFG_FRONTEND_ID = "frontend";
 static const char *DEF_FRONTEND_ID = "widgetsboxmodel";
@@ -104,7 +103,6 @@ public:
     AppQueryHandler app_query_handler;
     PluginQueryHandler plugin_query_handler;
     PluginConfigQueryHandler plugin_config_query_handler;
-
 };
 
 
@@ -120,17 +118,25 @@ void App::Private::initialize()
     platform::initPlatform();
 
     loadAnyFrontend();
-
     platform::initNativeWindow(frontend->winId());
+
+    // Invalidate sessions on handler removal or visibility change
+    auto reset_session = [this]{
+        session.reset();
+        if (frontend->isVisible())
+            session = make_unique<Session>(query_engine, *frontend);
+    };
+    connect(frontend, &Frontend::visibleChanged, app_instance, reset_session);
+    connect(&query_engine, &QueryEngine::handlerRemoved, app_instance, reset_session);
 
     if (settings()->value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool())
         initTrayIcon();
 
     notifyVersionChange();
+
     initTelemetry();
 
-    // Connect hotkey after! frontend has been loaded else segfaults
-    initHotkey();
+    initHotkey();  // Connect hotkey after! frontend has been loaded else segfaults
 
     extension_registry.registerExtension(&app_query_handler);
     extension_registry.registerExtension(&plugin_query_handler);
@@ -140,9 +146,13 @@ void App::Private::initialize()
 
 void App::Private::finalize()
 {
-    delete settings_window.get();
-
     hotkey.get()->disconnect();
+    hotkey->setRegistered(false);
+
+    frontend->disconnect();
+    query_engine.disconnect();
+
+    delete settings_window.get();
     session.reset();
 
     extension_registry.deregisterExtension(&plugin_provider);  // unloads plugins
@@ -343,13 +353,6 @@ QString App::Private::loadFrontend(PluginLoader *loader)
 
         frontend_plugin = loader;
 
-        connect(frontend, &Frontend::visibleChanged,
-                App::instance(), [this](bool v){
-            session.reset();  // make sure no multiple sessions are alive
-            if(v)
-                session = make_unique<Session>(query_engine, *frontend);
-        });
-
         return {};
     } catch (const exception &e) {
         return QString::fromStdString(e.what());
@@ -389,21 +392,13 @@ void App::Private::notifyVersionChange()
 }
 
 
-App::App(const QStringList &additional_plugin_paths, bool load_enabled):
-    d(make_unique<Private>(additional_plugin_paths, load_enabled))
+App::App(const QStringList &additional_plugin_paths, bool load_enabled)
 {
     if (app_instance)
         qFatal("No multiple app instances allowed");
 
-    app_instance = this;
-
-    // invalidate sessions on handler removal
-    connect(&d->query_engine, &QueryEngine::handlerRemoved, this, [this]
-    {
-        d->session.reset();
-        if (d->frontend->isVisible())
-            d->session = make_unique<Session>(d->query_engine, *d->frontend);
-    });
+    app_instance = this; // must be valid before Private is constructed
+    d = make_unique<Private>(additional_plugin_paths, load_enabled);
 }
 
 App::~App() = default;
@@ -634,11 +629,16 @@ int ALBERT_EXPORT run(int argc, char **argv)
 
     // Run app
 
-    App::instance()->initialize();
+    app_instance->initialize();
+
     int return_value = qApp->exec();
-    App::instance()->finalize();
-    App::instance()->deleteLater();
-    QCoreApplication::processEvents(); // Never quit with events in queue
+
+    // Never quit with events in queue. 2024: Why? DeferredDelete is not handled anyway.
+    QCoreApplication::processEvents();
+
+    app_instance->finalize();
+
+    delete app_instance;
 
     if (return_value == -1 && runDetachedProcess(qApp->arguments(), QDir::currentPath()))
         return_value = EXIT_SUCCESS;
