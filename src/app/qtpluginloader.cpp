@@ -133,8 +133,17 @@ QtPluginLoader::QtPluginLoader(const QString &p) : loader_(p), instance_(nullptr
     // Anyway atm frontends keep queries alive over session, which is just poor design.
     // However not unloading is an easy fix for now and theres more important stuff to do.
     //
+    // Update 2024:
+    //
+    // Althought the design _does_ handle object lifetime correctly now the app still segfaults
+    // when unloading plugins. Probably due to qt internal connection handling. One example that
+    // proved to sefault guaranteed is the WeakDependency class whose connections (at least on
+    // macos) call into unloaded code although all connections have been properly disconnected.
+    //
+    // Probably this should be reported as a bug to Qt. But well, … PreventUnload
+    //
 
-    loader_.setLoadHints(QLibrary::ExportExternalSymbolsHint); //  | QLibrary::PreventUnloadHint);
+    loader_.setLoadHints(QLibrary::ExportExternalSymbolsHint | QLibrary::PreventUnloadHint);
 }
 
 QtPluginLoader::~QtPluginLoader()
