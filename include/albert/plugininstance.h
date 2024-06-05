@@ -98,4 +98,4 @@ private:
 /// QObject and contain the Q_OBJECT macro. There should be exactly one
 /// occurrence of this macro in the source code for a plugin.
 ///
-#define ALBERT_PLUGIN Q_PLUGIN_METADATA(IID ALBERT_PLUGIN_IID FILE "metadata.json")
+#define ALBERT_PLUGIN Q_OBJECT Q_PLUGIN_METADATA(IID ALBERT_PLUGIN_IID FILE "metadata.json")
