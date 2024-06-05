@@ -136,6 +136,8 @@ void App::Private::initialize()
 
     initTelemetry();
 
+    initPRC(); // Also may trigger frontend
+
     initHotkey();  // Connect hotkey after! frontend has been loaded else segfaults
 
     extension_registry.registerExtension(&app_query_handler);
@@ -304,6 +306,8 @@ void App::Private::initPRC()
             return report().join('\n');
         }}
     };
+
+    rpc_server.setPRC(::move(rpc));
 }
 
 void App::Private::loadAnyFrontend()
