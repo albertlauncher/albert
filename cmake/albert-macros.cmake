@@ -12,7 +12,24 @@
 #
 # Create a plugin target with the given name.
 #
-# Expects a metadata.json file in the source directory.
+# Expects a metadata.json file in the source directory. Supported metadata keys are:
+#
+# |            Parameter |     Type     | Notes                                                                     |
+# |---------------------:|:------------:|---------------------------------------------------------------------------|
+# |                   id |   Reserved   | PROJECT_NAME added by CMake.                                              |
+# |              version |   Reserved   | PROJECT_VERSION added by CMake.                                           |
+# |                 name | local string | Human readable name.                                                      |
+# |          description | local string | Brief, imperative description, e.g. "Open files".                         |
+# |              license |    string    | SPDX license identifier. E.g. BSD-2-Clause, MIT, LGPL-3.0-only, …         |
+# |                  url |    string    | Browsable online source code, issues etc.                                 |
+# |              authors | string list  | List of copyright holders. Preferably using mentionable GitHub usernames. |
+# | runtime_dependencies | string list  | Default: `[]`. Required libraries.                                        |
+# |  binary_dependencies | string list  | Default: `[]`. Required executables.                                      |
+# |  plugin_dependencies | string list  | Default: `[]`. Required plugins.                                          |
+# |              credits | string list  | Default: `[]`. Attributions, mentions, third party library licenses, …    |
+# |             loadtype |    string    | Default: `user`. `frontend` or `user`.                                    |
+#
+# Note: Local string types can be used to localize the metadata. (e.g. "name[de]": "Anwendungen")
 #
 # Translations files in a directory named 'i18n' are added automatically.
 # The filenames must have the pattern <plugin_id>_<language_code>.ts.
