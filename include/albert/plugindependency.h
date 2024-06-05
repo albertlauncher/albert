@@ -103,7 +103,8 @@ public:
                 if (auto *d = dynamic_cast<T*>(e); d)
                 {
                     this->dependency = d;
-                    callback(true);
+                    if (callback)
+                        callback(true);
                 }
                 else
                     WARN << QString("Failed casting '%1' to expected type.").arg(id_);
@@ -122,7 +123,8 @@ public:
             {
                 if (auto *d = dynamic_cast<T*>(e); d)
                 {
-                    callback(false);  // the dependency should still be usable in the callback
+                    if (callback)
+                        callback(false);  // the dependency should still be usable in the callback
                     this->dependency = nullptr;
                 }
                 else
