@@ -182,7 +182,7 @@ void QtPluginLoader::unload()
 {
     if (translator)
     {
-        QCoreApplication::installTranslator(translator.get());
+        QCoreApplication::removeTranslator(translator.get());
         translator.reset();
     }
 
