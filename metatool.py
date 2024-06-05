@@ -37,7 +37,7 @@ def create_changelog(args) -> str:
 
 
 def docker_choice(args):
-    files = list((Path(args.root) / ".docker").iterdir())
+    files = list((Path(args.root) / ".docker").glob("*.Dockerfile"))
 
     if args.index is not None:
         indices = args.index
