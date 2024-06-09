@@ -338,6 +338,8 @@ qt_add_translations(
     # LUPDATE_OPTIONS -no-obsolete
 )
 
+# For convenience, QtCreator does not show the umbrella target
+add_custom_target(global_lupdate DEPENDS update_translations)
 
 ### Export/Install
 
