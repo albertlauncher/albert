@@ -16,20 +16,34 @@ def create_changelog(args) -> str:
     latest_tag = run(["git", "describe", "--tags", "--abbrev=0"], capture_output=True).stdout.decode().strip()
     out = []
 
-    log = run(["git", "log", "--pretty=format:* %B", f"{latest_tag}..HEAD"], capture_output=True).stdout.decode().strip()
-    log = re.sub('\n+', '\n', log)
+    placeholder = 'BOOOOM'
+    def process_git_log(s: str):
+        indented_output = []
+        for line in s.split('\n'):
+            if not line:  # skip empty
+                continue
+            if line.startswith(f'{placeholder} '): # replace placeholder with -
+                indented_output.append('- ' + line[7:])
+            else: # indent all other lines
+                indented_output.append('  ' + line)
+
+        return '\n'.join(indented_output)
+
+
+    log = run(["git", "log", f"--pretty=format:{placeholder} %B", f"{latest_tag}..HEAD"], capture_output=True).stdout.decode().strip()
+    log = process_git_log(log)
     if log:
         out.append(f"[albert]\n{log}")
 
     begin = run(["git", "ls-tree", latest_tag, native_plugins_root], capture_output=True).stdout.decode().strip().split()[2]
-    log = run(["git", "-C", native_plugins_root, "log", "--pretty=format:* %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
-    log = re.sub('\n+', '\n', log)
+    log = run(["git", "-C", native_plugins_root, "log", f"--pretty=format:{placeholder} %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
+    log = process_git_log(log)
     if log:
         out.append(f"[plugins]\n{log}")
 
     begin = run(["git", "-C", native_plugins_root, "ls-tree", begin, python_plugins_root], capture_output=True).stdout.decode().strip().split()[2]
-    log = run(["git", "-C", python_plugins_root, "log", "--pretty=format:* %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
-    log = re.sub('\n+', '\n', log)
+    log = run(["git", "-C", python_plugins_root, "log", f"--pretty=format:{placeholder} %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
+    log = process_git_log(log)
     if log:
         out.append(f"[python]\n{log}")
 
