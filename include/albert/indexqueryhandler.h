@@ -29,13 +29,18 @@ public:
     /// Uses the index to override GlobalQueryHandler::handleGlobalQuery
     std::vector<RankItem> handleGlobalQuery(const Query*) const override;
 
-    /// Update the index. Called when the index needs to be updated (or probably by yourself if
-    /// your items changed), i.e. whenever the user made changes to the index config or initially
-    /// on creation. Don't call in the constructor. It will be called on plugin initialization.
-    /// @see void IndexQueryHandler::setIndexItems(std::vector<IndexItem>&&)
+    /// Update the index.
+    /// Called when the index needs to be updated, i.e. for initialization
+    /// and on user changes to the index config (fuzzy, etc…) and probably by
+    /// the client itself if the items changed. This function should call
+    /// setIndexItems(std::vector<IndexItem>&&) to update the index.
+    /// @note Don't call this method in the constructor. It will be called on plugin
+    /// initialization.
     virtual void updateIndexItems() = 0;
 
-    /// Set the items of the index. Call this in updateIndexItems(). @threadsafe
+    /// Set the items of the index.
+    /// Call this in updateIndexItems().
+    /// @threadsafe
     void setIndexItems(std::vector<IndexItem>&&);
 
 protected:
