@@ -41,11 +41,14 @@ bool IndexQueryHandler::supportsFuzzyMatching() const { return true; }
 
 void IndexQueryHandler::setFuzzyMatching(bool value)
 {
-    d->index_mutex.lock();
-    d->index = make_unique<ItemIndex>(
+    auto index = make_unique<ItemIndex>(
         DEF_SEPARATORS, false, GRAM_SIZE,
         value ? DEF_ERROR_TOLERANCE_DIVISOR : 0
     );
+
+    d->index_mutex.lock();
+    d->index = ::move(index);
     d->index_mutex.unlock();
+
     updateIndexItems();
 }
