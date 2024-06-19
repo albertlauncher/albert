@@ -15,40 +15,84 @@ using namespace std;
 
 namespace
 {
+
 using Index = uint32_t;
 using Position = uint16_t;
 
-struct Location {
-    Location(Index i, Position p) : index(i), position(p) {}
+#pragma pack(1)
+
+
+struct StringIndexItem
+{
+    uint32_t item_index;
+    uint16_t max_match_len;
+};
+
+
+struct Location
+{
     Index index;
     Position position;
 };
 
-struct StringIndexItem {  // inverted item index, s_idx > ([w_idx], [(i_idx, s_scr)])
-    StringIndexItem(Index i, uint16_t mml)
-        : item(i), max_match_len(mml) {}
-    Index item;
-    uint16_t max_match_len;
-    //Score relevance;
-};
 
-struct WordIndexItem {  // inverted string index, w_idx > (word, [(str_idx, w_pos)])
+#pragma options align=reset
+
+
+struct WordIndexItem
+{
     QString word;
     vector<Location> occurrences;
+    // TODO: heres the place to add a term_frequency weighting approach
 };
 
-struct IndexData {
-    vector<shared_ptr<albert::Item>> items;
-    vector<StringIndexItem> strings;
-    vector<WordIndexItem> words;
-    unordered_map<QString, vector<Location>> ngrams;
-};
 
-struct WordMatch {
-    WordMatch(const WordIndexItem &wii, uint ml)
-        : word_index_item(wii), match_length(ml){}
+struct WordMatch
+{
     const WordIndexItem &word_index_item;
     uint match_length;
+};
+
+
+struct StringMatch
+{
+    Index index;
+    Position position;
+    uint16_t match_len;
+};
+
+
+struct IndexData
+{
+    ///
+    /// The flat random access index of unique items.
+    ///
+    vector<shared_ptr<albert::Item>> items;
+
+    ///
+    /// The string index (Inverted item index).
+    ///
+    /// Multiple strings can point to items.
+    /// Technically the string itself is not needed/stored.
+    /// The information is kept in the word index though.
+    ///
+    /// s_idx > (i_idx, mml)
+    ///
+    vector<StringIndexItem> strings;
+
+    ///
+    /// The word index (inverted string index).
+    ///
+    /// Holds pointers to word occurrences.
+    ///
+    /// w_idx > (word, [ (s_idx, w_pos) ] )
+    ///
+    vector<WordIndexItem> words;
+
+    ///
+    /// The nGram index.
+    ///
+    unordered_map<QString, vector<Location>> ngrams;
 };
 
 }
@@ -58,18 +102,27 @@ class ItemIndex::Private
 public:
     mutable shared_mutex mutex;
     IndexData index;
-    bool case_sensitive;
-    uint error_tolerance_divisor;
-    QString separators;
-    uint n;
 
+    // index config
+    uint n;
+    bool case_sensitive;
+    uint error_tolerance_divisor;  // fuzzy
+    QString separators;
+
+    QStringList tokenize(const QString &string) const;
+    vector<QString> ngrams_for_word(const QString &word)const;
     vector<WordMatch> getWordMatches(const QString &word, const bool &isValid) const;
+    vector<StringMatch> getStringMatches(const QString &word, const bool &isValid) const;
 };
 
-static QStringList splitString(const QString &string, const QString &separators, bool case_sensitive = false)
-{ return ((!case_sensitive) ? string.toLower(): string).split(QRegularExpression(separators), Qt::SkipEmptyParts); }
 
-static vector<QString> ngrams_for_word(const QString &word, uint n)
+QStringList ItemIndex::Private::tokenize(const QString &s) const
+{
+    return (!case_sensitive ? s.toLower(): s)
+            .split(QRegularExpression(separators), Qt::SkipEmptyParts);
+}
+
+vector<QString> ItemIndex::Private::ngrams_for_word(const QString &word) const
 {
     vector<QString> ngrams;
     ngrams.reserve(word.size());
@@ -81,6 +134,104 @@ static vector<QString> ngrams_for_word(const QString &word, uint n)
     }
     return ngrams;
 }
+
+vector<WordMatch> ItemIndex::Private::getWordMatches(const QString &word, const bool &isValid) const
+{
+    vector<WordMatch> matches;
+    const uint word_length = word.length();
+
+    // Get range of perfect prefix match words
+    const auto &[eq_begin, eq_end] =
+            equal_range(
+                index.words.cbegin(), index.words.cend(), WordIndexItem{word, {}},
+                [l=word_length](const WordIndexItem &a, const WordIndexItem &b)
+                { return QStringView{a.word}.left(l) < QStringView{b.word}.left(l); }
+            );
+
+    // Store perfect prefix match words
+    for (auto it = eq_begin; it != eq_end; ++it)
+        matches.emplace_back(*it, word_length);
+
+    // Get the (fuzzy) prefix matches
+    if (error_tolerance_divisor)
+    {
+        // Exclusion range for already collected prefix matches
+        Index exclude_begin = eq_begin - index.words.begin();  // Ignore interval. closed begin [
+        Index exclude_end = eq_end - index.words.begin();  // Ignore interval. open end )
+
+        auto ngrams = ngrams_for_word(word);
+
+        // Get the words referenced by each nGram
+        unordered_map<Index, uint> word_match_counts;
+        for (const QString &n_gram : ngrams)
+        {
+            if (!isValid)
+                return {};
+
+            // Get the ngram occurrences
+            if (auto it = index.ngrams.find(n_gram); it != index.ngrams.end())
+            {
+                // Iterate all ngram occurrences
+                for (const auto &ngram_occurrences : it->second)
+                {
+                    // Excluding the existing perfect matches
+                    if (exclude_begin <= ngram_occurrences.index
+                        && ngram_occurrences.index < exclude_end)
+                        continue;
+
+                    // count the ngrams where position < word_length
+                    if (ngram_occurrences.position < static_cast<Position>(word_length))
+                        ++word_match_counts[ngram_occurrences.index];
+                }
+            }
+        }
+
+        // First do a cheap preselection by mathematical bound.
+        // Then compute the edit distance to filter matches.
+        // If there are less than |word_length|-δ*n matching qGrams it is no
+        // match. If the common qGrams are less than |word|-δ*q this implies
+        // that there are more errors than δ.
+
+        Levenshtein levenshtein;
+        uint allowed_errors = (uint)((double)word_length/(double)error_tolerance_divisor);
+        uint minimum_match_count = word_length - allowed_errors * n;
+
+        for (const auto &[word_idx, ngram_count]: word_match_counts)
+        {
+            if (!isValid)
+                return {};
+
+            if (ngram_count < minimum_match_count)
+                continue;
+
+            if (auto edit_distance =
+                    levenshtein.computePrefixEditDistanceWithLimit(
+                        word, index.words[word_idx].word, allowed_errors);
+                    edit_distance > allowed_errors)
+                continue;
+            else
+                matches.emplace_back(index.words[word_idx], word_length-edit_distance);
+        }
+    }
+
+    return matches;
+}
+
+vector<StringMatch>
+ItemIndex::Private::getStringMatches(const QString &word, const bool &isValid) const
+{
+    vector<StringMatch> string_matches;
+
+    for (const auto &word_match : getWordMatches(word, isValid))
+        for (const auto &occurrence : word_match.word_index_item.occurrences)
+            string_matches.emplace_back(occurrence.index, occurrence.position, word_match.match_length);
+
+    sort(string_matches.begin(), string_matches.end(),
+         [](auto &l, auto &r){ return l.index < r.index; });
+
+    return string_matches;
+}
+
 
 ItemIndex::ItemIndex(QString sep, bool cs, uint n, uint etd) : d(make_unique<Private>())
 {
@@ -94,178 +245,117 @@ ItemIndex::~ItemIndex() = default;
 
 void ItemIndex::setItems(vector<albert::IndexItem> &&index_items)
 {
-    IndexData index_;
+    IndexData new_index;
 
     unordered_map<albert::Item*,Index> item_indices_;  // implicit unique
     map<QString,WordIndexItem> word_index_;  // implicit lexicographical order
 
-    for (Index string_index = 0; string_index < (Index)index_items.size(); ++string_index) {
+    for (Index string_index = 0;
+         string_index < (Index)index_items.size();
+         ++string_index)
+    {
+        albert::IndexItem &index_item = index_items[string_index];
 
-        // Add item to the unique item index
-        auto item_index = (Index)index_.items.size();
-        auto [it, emplaced] = item_indices_.emplace(index_items[string_index].item.get(), item_index);
+        // Add a string index entry for each string.
+        // Assume that it is going to be added at the end of the items index.
+        auto &string_index_item = new_index.strings.emplace_back((Index)new_index.items.size(), 0);
+
+        // Try to add the item_index to the temporary key map (ensures uniqueness)
+        auto [it, emplaced] = item_indices_.emplace(index_item.item.get(),
+                                                    string_index_item.item_index);
+
         if (emplaced)
-            index_.items.emplace_back(::move(index_items[string_index].item));
+            // item did not exist yet, move it into the item index
+            new_index.items.emplace_back(::move(index_item.item));
         else
-            item_index = it->second;
+            // item already exists, correct the item index assumption
+            string_index_item.item_index = it->second;
 
-        // Add a string index entry for each string. Store the maximal match length for scoring
-        QStringList &&words = splitString(index_items[string_index].string, d->separators, d->case_sensitive);
-        uint max_match_len = 0;
-        for (const auto& word : words)
-            max_match_len += word.size();
-        index_.strings.emplace_back(item_index, max_match_len);
+        QStringList &&words = d->tokenize(index_items[string_index].string);
 
-        // Add this string to the occurences in the word index.
-        for (Position pos = 0; pos < (Position)words.size(); ++pos)
-            word_index_[words[pos]].occurrences.emplace_back(string_index, pos);
+        // Iterate the words
+        for (Position p = 0; p < (Position)words.size(); ++p)
+        {
+            // Add this word to the occurrences in the word index.
+            word_index_[words[p]].occurrences.emplace_back(string_index, p);
+
+            // Store the maximal match length for scoring
+            string_index_item.max_match_len += words[p].size();
+        }
     }
-    index_.items.shrink_to_fit();
-    index_.strings.shrink_to_fit();
+
+    new_index.items.shrink_to_fit();
+    new_index.strings.shrink_to_fit();
 
     // Build the random access word index
-    for (auto &[word, word_index_item] : word_index_) {
+    for (auto &[word, word_index_item] : word_index_)
+    {
         word_index_item.word = word;
         word_index_item.word.shrink_to_fit();
         word_index_item.occurrences.shrink_to_fit();
-        index_.words.emplace_back(::move(word_index_item));
+        new_index.words.emplace_back(::move(word_index_item));
     }
-    index_.words.shrink_to_fit();
+    new_index.words.shrink_to_fit();
 
-    if (d->error_tolerance_divisor){
-        // build q_gram_index
-        for (Index word_index = 0; word_index < (Index)index_.words.size(); ++word_index) {
-            vector<QString> ngrams(ngrams_for_word(index_.words[word_index].word, d->n));
+    if (d->error_tolerance_divisor)
+    {
+        // Build n_gram_index
+        for (Index word_index = 0; word_index < (Index)new_index.words.size(); ++word_index)
+        {
+            auto ngrams = d->ngrams_for_word(new_index.words[word_index].word);
             for (Position pos = 0 ; pos < (Position)ngrams.size(); ++pos)
-                index_.ngrams[ngrams[pos]].emplace_back(word_index, pos);
+                new_index.ngrams[ngrams[pos]].emplace_back(word_index, pos);
         }
     }
-    for (auto &[_, word_refs] : index_.ngrams)
+    for (auto &[_, word_refs] : new_index.ngrams)
         word_refs.shrink_to_fit();
 
     unique_lock lock(d->mutex);
-    d->index = index_;
-}
-
-vector<WordMatch> ItemIndex::Private::getWordMatches(const QString &word, const bool &isValid) const
-{
-    vector<WordMatch> matches;
-    const uint word_length = word.length();
-
-    // Get range of perfect prefix match words
-    const auto &[eq_begin, eq_end] = equal_range(index.words.cbegin(), index.words.cend(), WordIndexItem{word, {}},
-                                                 [l=word_length](const WordIndexItem &a, const WordIndexItem &b) {
-                                                     return QStringView{a.word}.left(l) < QStringView{b.word}.left(l);
-                                                 });
-
-    // Store perfect prefix match words
-    for (auto it = eq_begin; it != eq_end; ++it)
-        matches.emplace_back(*it, word_length);
-
-    // Get the (fuzzy) prefix matches
-    if (error_tolerance_divisor) {
-        Index prefix_match_first_id = eq_begin - index.words.begin();  // Ignore interval. closed begin [
-        Index prefix_match_last_id = eq_end - index.words.begin();  // Ignore interval. open end )
-
-        // Get the words referenced by each nGram and count the ngrams where position < word_length.
-        vector<QString> ngrams(ngrams_for_word(word, n));
-        unordered_map<Index,uint> word_match_counts;
-
-        for (const QString &n_gram: ngrams) {
-            try {
-                for (const auto &ngram_occ: index.ngrams.at(n_gram)) {
-                    // Exclude the existing perfect matches
-                    if (prefix_match_first_id <= ngram_occ.index && ngram_occ.index < prefix_match_last_id)
-                        continue;
-
-                    if (ngram_occ.position < static_cast<Position>(word_length))
-                        ++word_match_counts[ngram_occ.index];
-//                    else
-//                        break;  // wtf is this
-                }
-            }
-            catch (const out_of_range &)
-            {
-                // NOTE room for optimizations?
-            }
-        }
-
-        // Get the words referenced by the grams, filter by bound, compute edit distance, add match
-        // Do (cheap) preselection by mathematical bound. If there are less than |word_length|-δ*n matching qGrams
-        // it is no match. If the common qGrams are less than |word|-δ*q this implies that there are more errors
-        // than δ.
-        uint allowed_errors = (uint)((double)word_length/(double)error_tolerance_divisor);
-        uint minimum_match_count = word_length - allowed_errors * n;
-        Levenshtein levenshtein;
-        for (const auto &[word_idx, ngram_count]: word_match_counts) {
-            if (ngram_count < minimum_match_count || !isValid)
-                continue;
-
-            if (auto edit_distance = levenshtein.computePrefixEditDistanceWithLimit(word, index.words[word_idx].word,
-                                                                                    allowed_errors);
-                    edit_distance > allowed_errors)
-                continue;
-            else
-                matches.emplace_back(index.words[word_idx], word_length-edit_distance);
-        }
-    }
-    return matches;
+    d->index = new_index;
 }
 
 vector<albert::RankItem> ItemIndex::search(const QString &string, const bool &isValid) const
 {
-    QStringList &&words = splitString(string, d->separators, d->case_sensitive);
+    QStringList &&words = d->tokenize(string);
 
     unordered_map<Index, double> result_map;
+
     if (words.empty())
 
+        // Return all items
         for (const auto &string_index_item : d->index.strings)
-            result_map.emplace(string_index_item.item, 0.0f);
+            result_map.emplace(string_index_item.item_index, 0.0f);
 
-    else {
-
-        struct StringMatch {
-            StringMatch(Index i, Position p, uint16_t ml)
-                    : index(i), position(p), match_len(ml){}
-            Index index; Position position; uint16_t match_len;
-        };
-
-        auto invert = [](const vector<WordMatch> &word_matches){
-            vector<StringMatch> string_matches;
-            for (const auto &word_match : word_matches)
-                for (const auto &occurrence : word_match.word_index_item.occurrences)
-                    string_matches.emplace_back(occurrence.index, occurrence.position, word_match.match_length);
-            sort(string_matches.begin(), string_matches.end(),
-                 [](const auto &l, const auto &r){ return l.index < r.index; });
-            return string_matches;
-        };
-
+    else
+    {
         shared_lock lock(d->mutex);
-        vector<StringMatch> left_matches = invert(d->getWordMatches(words[0], isValid));
+
+
+        vector<StringMatch> string_matches = d->getStringMatches(words[0], isValid);
 
         // In case of multiple words intersect. Todo: user chooses strategy
-        for (int w = 1; w < words.size(); ++w) {
-
-            if (!isValid || left_matches.empty())
+        for (int w = 1; w < words.size(); ++w)
+        {
+            if (!isValid || string_matches.empty())
                 return {};
 
-            vector<StringMatch> right_matches = invert(d->getWordMatches(words[w], isValid));
+            vector<StringMatch> other_string_matches = d->getStringMatches(words[w], isValid);
 
-            if (right_matches.empty())
+            if (other_string_matches.empty())
                 return {};
 
-            vector<StringMatch> intermediate_matches;
-            for (auto lit = left_matches.cbegin(); lit != left_matches.cend();) {
-
+            vector<StringMatch> new_string_matches;
+            for (auto lit = string_matches.cbegin(); lit != string_matches.cend();)
+            {
                 // Build a range of upcoming left_matches with same index
                 auto elit = lit;
-                while(elit != left_matches.cend() && lit->index==elit->index)
+                while(elit != string_matches.cend() && lit->index==elit->index)
                     ++elit;
 
                 // Get the range of equal string matches on the right side
                 const auto &[eq_begin, eq_end] =
-                        equal_range(right_matches.cbegin(), right_matches.cend(), *lit,
-                                    [](const StringMatch &l, const StringMatch &r) { return l.index < r.index; });
+                        equal_range(other_string_matches.cbegin(), other_string_matches.cend(),
+                                    *lit, [](auto &l, auto &r) { return l.index < r.index; });
 
                 // If no match on the right side continue with next leftmatch
                 if (eq_begin == eq_end){
@@ -275,22 +365,25 @@ vector<albert::RankItem> ItemIndex::search(const QString &string, const bool &is
 
                 //
                 for (;lit != elit; ++lit)
-                    //for (const auto &right_matcht : ranges::subrange(eq_begin,eq_end))
                     for (auto rit = eq_begin; rit != eq_end; ++rit)
-                        if (lit->position < rit->position)  // Sequence check
-                            intermediate_matches.emplace_back(rit->index, rit->position,
-                                                              rit->match_len + lit->match_len);
-
+                        // if (!lit->position < rit->position)  // Sequence check
+                            new_string_matches.emplace_back(rit->index, rit->position,
+                                                            rit->match_len + lit->match_len);
             }
 
-            left_matches = ::move(intermediate_matches);
+            string_matches = ::move(new_string_matches);
         }
 
         // Build the list of matched items with their highest scoring match
-        for (const auto &match : left_matches) {
+        for (const auto &match : string_matches)
+        {
             double score = (double)match.match_len / d->index.strings[match.index].max_match_len;
-            if (const auto &[it, success] = result_map.emplace(d->index.strings[match.index].item, score);
-                    !success && it->second < score) // update if exists
+
+            const auto &[it, success] =
+                    result_map.emplace(d->index.strings[match.index].item_index, score);
+
+            // Update score if exists and is less
+            if (!success && it->second < score)
                 it->second = score;
         }
 
