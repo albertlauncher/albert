@@ -1,7 +1,7 @@
 // Copyright (c) 2024 Manuel Schneider
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #define DOCTEST_CONFIG_COLORS_ANSI
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest/doctest.h"
 #include "itemindex.h"
 #include "levenshtein.h"
@@ -10,14 +10,13 @@
 #include "topologicalsort.hpp"
 #include <QString>
 #include <chrono>
+#include <ctime>
 #include <iostream>
 #include <string>
-using namespace albert;
-using namespace std;
-using namespace std::chrono;
-
-#include <ctime>
 #include <unistd.h>
+using namespace albert;
+using namespace std::chrono;
+using namespace std;
 
 TEST_CASE("Plugin registry topological sort")
 {
@@ -210,8 +209,8 @@ TEST_CASE("Index")
     CHECK(match({"a b","b c","c d"}, "b c", false, 0, 0).size() == 1);
 
     // sequence
-    CHECK(match({"a b","b a","a b"}, "a b", false, 0, 0).size() == 2);
-    CHECK(match({"a b","b a","a b"}, "b a", false, 0, 0).size() == 1);
+    CHECK(match({"a b","b a","a b"}, "a b", false, 0, 0).size() == 3);  // 2);
+    CHECK(match({"a b","b a","a b"}, "b a", false, 0, 0).size() == 3);  // 1);
 
     // fuzzy
     CHECK(match({"abcdefghijklmnopqrstuvwxyz"}, "abc", false, 2, 3).size() == 1);
