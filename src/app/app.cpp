@@ -148,11 +148,14 @@ void App::Private::initialize()
 
 void App::Private::finalize()
 {
-    hotkey.get()->disconnect();
-    hotkey->setRegistered(false);
-
     frontend->disconnect();
     query_engine.disconnect();
+
+    if (hotkey)
+    {
+        hotkey.get()->disconnect();
+        hotkey->setRegistered(false);
+    }
 
     delete settings_window.get();
     session.reset();
