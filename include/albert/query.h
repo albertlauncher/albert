@@ -68,6 +68,11 @@ public:
     /// Move add multiple items.
     virtual void add(std::vector<std::shared_ptr<Item>> &&items) = 0;
 
+    /// Type conversion to QString
+    /// Syntactic sugar for context conversions
+    /// @since 0.24
+    inline operator QString() const { return string(); }
+
 protected:
 
     ~Query() override;
