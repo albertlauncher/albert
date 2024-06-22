@@ -512,7 +512,12 @@ const QHotkey *App::hotkey() const { return d->hotkey.get(); }
 
 void App::setHotkey(unique_ptr<QHotkey> hk)
 {
-    if (hk->isRegistered())
+    if (!hk)
+    {
+        d->hotkey.reset();
+        settings()->remove(CFG_HOTKEY);
+    }
+    else if (hk->isRegistered())
     {
         d->hotkey = ::move(hk);
         connect(d->hotkey.get(), &QHotkey::activated,

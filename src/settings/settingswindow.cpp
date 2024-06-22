@@ -33,8 +33,14 @@ public:
             if (Qt::Key_Shift <= keyEvent->key() && keyEvent->key() <= Qt::Key_ScrollLock)
                 return false; // Filter mod keys
 
-            if (keyEvent->modifiers() == Qt::NoModifier && keyEvent->key() == Qt::Key_Escape)
-                reject();
+            if (keyEvent->modifiers() == Qt::NoModifier)
+            {
+                if (keyEvent->key() == Qt::Key_Escape)
+                    reject();
+                else if (keyEvent->key() == Qt::Key_Backspace)
+                    accept();
+                return true;
+            }
 
             if (auto hk = make_unique<QHotkey>(keyEvent->keyCombination());
                 hk->setRegistered(true))
@@ -87,12 +93,20 @@ void SettingsWindow::init_tab_general_hotkey()
             ui.pushButton_hotkey->setText(tr("Not set"));
 
         connect(ui.pushButton_hotkey, &QPushButton::clicked, this, [this]{
-            QHotKeyDialog d(this);
-            if(d.exec() == QDialog::Accepted)
+            QHotKeyDialog dialog(this);
+            if(dialog.exec() == QDialog::Accepted)
             {
-                app.setHotkey(::move(d.hotkey));
-                ui.pushButton_hotkey->
+                if (dialog.hotkey)
+                {
+                    app.setHotkey(::move(dialog.hotkey));
+                    ui.pushButton_hotkey->
                         setText(app.hotkey()->shortcut().toString(QKeySequence::NativeText));
+                }
+                else
+                {
+                    app.setHotkey(nullptr);
+                    ui.pushButton_hotkey->setText(tr("Not set"));
+                }
             }
         });
     }
