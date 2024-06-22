@@ -115,6 +115,8 @@ set(LIB_SRC
     src/app/report.h
     src/app/rpcserver.cpp
     src/app/rpcserver.h
+    src/app/triggersqueryhandler.cpp
+    src/app/triggersqueryhandler.h
     src/app/telemetry.cpp
     src/app/telemetry.h
     src/app/terminalprovider.cpp

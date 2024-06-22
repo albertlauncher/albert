@@ -110,7 +110,7 @@ map<QString, TriggerQueryHandler*> QueryEngine::triggerHandlers()
     return handlers;
 }
 
-const map<QString, TriggerQueryHandler *> &QueryEngine::activeTriggerHandlers()
+const map<QString, TriggerQueryHandler *> &QueryEngine::activeTriggerHandlers() const
 { return active_triggers_; }
 
 void QueryEngine::updateActiveTriggers()

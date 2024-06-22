@@ -27,7 +27,7 @@ public:
     std::map<QString, albert::FallbackHandler*> fallbackHandlers();
 
     // Trigger handlers
-    const std::map<QString, albert::TriggerQueryHandler*> &activeTriggerHandlers();
+    const std::map<QString, albert::TriggerQueryHandler*> &activeTriggerHandlers() const;
     QString trigger(const QString&) const;
     void setTrigger(const QString&, const QString&);
     bool fuzzy(const QString&) const;
