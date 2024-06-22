@@ -1,95 +1,114 @@
 // SPDX-FileCopyrightText: 2024 Manuel Schneider
 
-#include "matcher.h"
 #include "item.h"
+#include "levenshtein.h"
+#include "matchconfig.h"
+#include "matcher.h"
+#include <QRegularExpression>
 #include <QStringList>
-using namespace std;
 using namespace albert;
-
-
+using namespace std;
 
 class MatcherPrivate
 {
 public:
 
-    QStringList words;
+    MatchConfig config;
+    const QString string;
+    mutable Levenshtein levenshtein;
+    QStringList tokens;
 
-    bool case_sensitive = global_config_case_sensitive;
-    bool fuzzy = global_config_fuzzy;
-    bool ignore_order = global_config_ignore_order;
-    bool left_anchored = global_config_left_anchored;
+    QStringList tokenize(QString s) const
+    {
+        if (config.ignore_diacritics)
+        {
+            // https://en.wikipedia.org/wiki/Combining_Diacritical_Marks
+            static QRegularExpression re(R"([\x{0300}-\x{036f}])");
+            s = s.normalized(QString::NormalizationForm_D).remove(re);
+        }
 
-    static bool global_config_case_sensitive;
-    static bool global_config_fuzzy;
-    static bool global_config_ignore_order;
-    static bool global_config_left_anchored;
+        if (config.ignore_case)
+            s = s.toLower();
+
+        auto t = s.split(config.separator_regex, Qt::SkipEmptyParts);
+
+        if (config.ignore_word_order)
+            t.sort();
+
+        return t;
+    }
+
+    void updateTokens() { tokens = tokenize(string); }
+
+    Match match(const QString &s) const
+    {
+        // Empty query is a 0 score (epsilon) match
+        if (tokens.isEmpty())
+            return {0.};
+
+        QStringList other_tokens = tokenize(s);
+
+        double matched_chars = 0;
+        double total_chars = 0;
+
+        auto it = tokens.begin();
+        auto oit = other_tokens.begin();
+
+        while (it != tokens.end() && oit != other_tokens.end())
+        {
+
+            // if the query word is longer it cant be a prefix
+            if ((it->size() <= oit->size()))
+            {
+                // check if the query word is a prefix of the matched word
+                if(config.error_tolerance_divisor)  // fuzzy
+                {
+                    uint allowed_errors = it->size() / config.error_tolerance_divisor;
+                    auto edit_distance = levenshtein.computePrefixEditDistanceWithLimit(
+                                *it, *oit, allowed_errors);
+                    if (edit_distance <= allowed_errors)
+                        // Accumulate matched chars and move to the next matcher word
+                        matched_chars += it++->size() - edit_distance;
+                }
+                else  // non fuzzy
+                {
+                    if (oit->startsWith(*it))
+                        // Accumulate matched chars and move to the next matcher word
+                        matched_chars += it++->size();
+                }
+            }
+
+            total_chars += oit->size();
+            ++oit;  // move to the next matched word
+        }
+
+        // Count chars of the left other_tokens (if any)
+        while (oit != other_tokens.end())
+            total_chars += oit++->size();
+
+        // if all matcher words have been consumed this is a match
+        if (it == tokens.end())
+            return {matched_chars/total_chars};
+
+        return {-1.};
+    }
 };
 
-bool MatcherPrivate::global_config_case_sensitive = false;
-bool MatcherPrivate::global_config_fuzzy = false;
-bool MatcherPrivate::global_config_ignore_order = true;
-bool MatcherPrivate::global_config_left_anchored = true;
+Matcher::Matcher(const QString &query, MatchConfig config):
+    d(new MatcherPrivate{
+      .config = ::move(config),
+      .string = query,
+      .levenshtein = {},
+      .tokens = {}
+    })
+{ d->updateTokens(); }
 
-
-Matcher::Matcher(const QString &query):
-    d(make_unique<MatcherPrivate>())
-{
-    if (d->case_sensitive)
-        d->words = query.split(" ", Qt::SkipEmptyParts);
-    else
-        d->words = query.toLower().split(" ", Qt::SkipEmptyParts);
-
-    if (d->ignore_order)
-        d->words.sort();
-}
+Matcher::Matcher(Matcher &&o) = default;
 
 Matcher::~Matcher() = default;
 
-Match Matcher::match(const Item &item) const
-{
-    return match(item.text());
-}
+Matcher &Matcher::operator=(Matcher &&o) = default;
 
-Match Matcher::match(const QString &string) const
-{
-    // Empty query is a 0 score (epsilon) match
-    if (d->words.isEmpty())
-        return {0.};
+Match Matcher::match(const Item &item) const { return d->match(item.text()); }
 
-    QStringList words;
-
-    if (d->case_sensitive)
-        words = string.split(" ", Qt::SkipEmptyParts);
-    else
-        words = string.toLower().split(" ", Qt::SkipEmptyParts);
-
-
-    if (d->ignore_order)
-        words.sort();
-
-    auto sit = d->words.begin();
-    auto oit = words.begin();
-    double matched_chars = 0;
-    double total_chars = 0;
-
-    while (sit != d->words.end() && oit != words.end())
-    {
-        total_chars += oit->size();
-
-        // if the query word is longer it cant be a prefix
-        // check if the query word is a prefix of the matched word
-        if ((sit->size() <= oit->size()) && oit->startsWith(*sit))
-        {
-            matched_chars += sit->size();
-            ++sit;  // move to the next matcher word
-        }
-
-        ++oit;  // move to the next matched word
-    }
-
-    // if all matcher words have been consumed this is a match
-    if (sit == d->words.end())
-        return {matched_chars/total_chars};
-
-    return {-1.};
-}
+Match Matcher::match(const QString &s) const { return d->match(s); }

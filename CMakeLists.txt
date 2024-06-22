@@ -83,6 +83,7 @@ set(LIB_PUBLIC_HEADER
     include/albert/item.h
     include/albert/itemindex.h
     include/albert/logging.h
+    include/albert/matchconfig.h
     include/albert/matcher.h
     include/albert/notification.h
     include/albert/plugindependency.h
