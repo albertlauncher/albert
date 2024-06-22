@@ -105,8 +105,6 @@ set(LIB_SRC
     src/app/appqueryhandler.h
     src/app/messagehandler.cpp
     src/app/messagehandler.h
-    src/app/pluginconfigqueryhandler.cpp
-    src/app/pluginconfigqueryhandler.h
     src/app/pluginqueryhandler.cpp
     src/app/pluginqueryhandler.h
     src/app/qtpluginloader.cpp

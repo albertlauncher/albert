@@ -8,7 +8,6 @@
 #include "logging.h"
 #include "messagehandler.h"
 #include "platform.h"
-#include "pluginconfigqueryhandler.h"
 #include "plugininstance.h"
 #include "pluginloader.h"
 #include "pluginmetadata.h"
@@ -102,7 +101,6 @@ public:
 
     AppQueryHandler app_query_handler;
     PluginQueryHandler plugin_query_handler;
-    PluginConfigQueryHandler plugin_config_query_handler;
 };
 
 
@@ -111,7 +109,6 @@ App::Private::Private(const QStringList &additional_plugin_paths, bool load_enab
     plugin_provider(additional_plugin_paths),
     query_engine(extension_registry),
     plugin_query_handler(plugin_registry),
-    plugin_config_query_handler(plugin_registry) {}
 
 void App::Private::initialize()
 {
@@ -142,7 +139,6 @@ void App::Private::initialize()
 
     extension_registry.registerExtension(&app_query_handler);
     extension_registry.registerExtension(&plugin_query_handler);
-    extension_registry.registerExtension(&plugin_config_query_handler);
     extension_registry.registerExtension(&plugin_provider);  // loads plugins
 }
 
@@ -158,7 +154,6 @@ void App::Private::finalize()
     session.reset();
 
     extension_registry.deregisterExtension(&plugin_provider);  // unloads plugins
-    extension_registry.deregisterExtension(&plugin_config_query_handler);
     extension_registry.deregisterExtension(&plugin_query_handler);
     extension_registry.deregisterExtension(&app_query_handler);
 
