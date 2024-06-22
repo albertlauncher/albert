@@ -5,6 +5,7 @@
 #include <QString>
 #include <albert/export.h>
 #include <albert/indexitem.h>
+#include <albert/matchconfig.h>
 #include <albert/rankitem.h>
 #include <memory>
 #include <vector>
@@ -15,11 +16,17 @@ namespace albert
 ///
 /// A fuzzy search index for items.
 ///
-class ALBERT_EXPORT ItemIndex
+class ALBERT_EXPORT ItemIndex final
 {
 public:
-    ItemIndex(QString separators, bool case_sensitive, uint n, uint error_tolerance_divisor);
+
+    ItemIndex(MatchConfig config = {});
+    ItemIndex(ItemIndex &&);
+    ItemIndex& operator=(ItemIndex &&);
     ~ItemIndex();
+
+    /// The index config
+    const MatchConfig &config();
 
     /// Set the items to be indexed.
     /// @param items The items to be indexed.

@@ -18,6 +18,7 @@ namespace
 
 using Index = uint32_t;
 using Position = uint16_t;
+static const uint N = 2;
 
 #pragma pack(1)
 
@@ -100,35 +101,43 @@ struct IndexData
 class ItemIndex::Private
 {
 public:
+    MatchConfig config;
     mutable shared_mutex mutex;
     IndexData index;
 
-    // index config
-    uint n;
-    bool case_sensitive;
-    uint error_tolerance_divisor;  // fuzzy
-    QString separators;
-
-    QStringList tokenize(const QString &string) const;
+    QStringList tokenize(QString string) const;
     vector<QString> ngrams_for_word(const QString &word)const;
     vector<WordMatch> getWordMatches(const QString &word, const bool &isValid) const;
     vector<StringMatch> getStringMatches(const QString &word, const bool &isValid) const;
 };
 
-
-QStringList ItemIndex::Private::tokenize(const QString &s) const
+QStringList ItemIndex::Private::tokenize(QString s) const
 {
-    return (!case_sensitive ? s.toLower(): s)
-            .split(QRegularExpression(separators), Qt::SkipEmptyParts);
+    if (config.ignore_diacritics)
+    {
+        // https://en.wikipedia.org/wiki/Combining_Diacritical_Marks
+        static QRegularExpression re(R"([\x{0300}-\x{036f}])");
+        s = s.normalized(QString::NormalizationForm_D).remove(re);
+    }
+
+    if (config.ignore_case)
+        s = s.toLower();
+
+    auto t = s.split(config.separator_regex, Qt::SkipEmptyParts);
+
+    if (config.ignore_word_order)
+        t.sort();
+
+    return t;
 }
 
 vector<QString> ItemIndex::Private::ngrams_for_word(const QString &word) const
 {
     vector<QString> ngrams;
     ngrams.reserve(word.size());
-    auto padded = QString("%1%2").arg(QString(n - 1, ' '), word);
+    auto padded = QString("%1%2").arg(QString(N - 1, ' '), word);
     for (int i = 0; i < word.size(); ++i){
-        QString ngram{padded.mid(i, n)};
+        QString ngram{padded.mid(i, N)};
         ngram.shrink_to_fit();
         ngrams.emplace_back(ngram);
     }
@@ -153,7 +162,7 @@ vector<WordMatch> ItemIndex::Private::getWordMatches(const QString &word, const 
         matches.emplace_back(*it, word_length);
 
     // Get the (fuzzy) prefix matches
-    if (error_tolerance_divisor)
+    if (config.error_tolerance_divisor)
     {
         // Exclusion range for already collected prefix matches
         Index exclude_begin = eq_begin - index.words.begin();  // Ignore interval. closed begin [
@@ -193,8 +202,8 @@ vector<WordMatch> ItemIndex::Private::getWordMatches(const QString &word, const 
         // that there are more errors than δ.
 
         Levenshtein levenshtein;
-        uint allowed_errors = (uint)((double)word_length/(double)error_tolerance_divisor);
-        uint minimum_match_count = word_length - allowed_errors * n;
+        uint allowed_errors = word_length / config.error_tolerance_divisor;
+        uint minimum_match_count = word_length - allowed_errors * N;
 
         for (const auto &[word_idx, ngram_count]: word_match_counts)
         {
@@ -233,15 +242,16 @@ ItemIndex::Private::getStringMatches(const QString &word, const bool &isValid) c
 }
 
 
-ItemIndex::ItemIndex(QString sep, bool cs, uint n, uint etd) : d(make_unique<Private>())
-{
-    d->separators = sep;
-    d->case_sensitive = cs;
-    d->error_tolerance_divisor = etd;
-    d->n = n;
-}
+ItemIndex::ItemIndex(MatchConfig config)
+    : d(new Private{.config = ::move(config), .mutex = {}, .index = {}}) {}
+
+ItemIndex &ItemIndex::operator=(ItemIndex &&) = default;
+
+ItemIndex::ItemIndex(ItemIndex &&) = default;
 
 ItemIndex::~ItemIndex() = default;
+
+const MatchConfig &ItemIndex::config() { return d->config; }
 
 void ItemIndex::setItems(vector<albert::IndexItem> &&index_items)
 {
@@ -297,7 +307,7 @@ void ItemIndex::setItems(vector<albert::IndexItem> &&index_items)
     }
     new_index.words.shrink_to_fit();
 
-    if (d->error_tolerance_divisor)
+    if (d->config.error_tolerance_divisor)
     {
         // Build n_gram_index
         for (Index word_index = 0; word_index < (Index)new_index.words.size(); ++word_index)
@@ -363,10 +373,10 @@ vector<albert::RankItem> ItemIndex::search(const QString &string, const bool &is
                     continue;
                 }
 
-                //
+                // Intersect and aggregate match lengths
                 for (;lit != elit; ++lit)
                     for (auto rit = eq_begin; rit != eq_end; ++rit)
-                        // if (!lit->position < rit->position)  // Sequence check
+                        if (lit->position < rit->position)  // Sequence check
                             new_string_matches.emplace_back(rit->index, rit->position,
                                                             rit->match_len + lit->match_len);
             }

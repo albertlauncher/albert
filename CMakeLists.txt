@@ -81,7 +81,6 @@ set(LIB_PUBLIC_HEADER
     include/albert/indexqueryhandler.h
     include/albert/inputhistory.h
     include/albert/item.h
-    include/albert/itemindex.h
     include/albert/logging.h
     include/albert/matchconfig.h
     include/albert/matcher.h
@@ -178,6 +177,7 @@ set(LIB_SRC
     src/util/indexitem.cpp
     src/util/indexqueryhandler.cpp
     src/util/itemindex.cpp
+    src/util/itemindex.h
     src/util/levenshtein.cpp
     src/util/levenshtein.h
     src/util/matcher.cpp
