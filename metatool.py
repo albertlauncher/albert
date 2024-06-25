@@ -98,8 +98,8 @@ def test_run(args):
 def release(args):
     root = Path(args.root)
 
-    if 'master' != run(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], capture_output=True).stdout.decode().strip():
-        print('Not on master branch')
+    if 'main' != run(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], capture_output=True).stdout.decode().strip():
+        print('Not on main branch')
         sys.exit(1)
 
     if args.version[0] == 'v':
@@ -145,7 +145,7 @@ def release(args):
         run(["git", "add", root/"CHANGELOG.md", root/"CMakeLists.txt"], cwd=root).check_returncode()
         run(["git", "commit", "-m", f"v{args.version}"], cwd=root).check_returncode()
         run(["git", "tag", f"v{args.version}"], cwd=root).check_returncode()
-        run(["git", "push", "--tags", "--atomic", "origin", "master"], cwd=root).check_returncode()
+        run(["git", "push", "--tags", "--atomic", "origin", "main"], cwd=root).check_returncode()
 
         run(["rm", atomic_changelog])
         run(["rm", "CMakeLists.txt.bak"])
