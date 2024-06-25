@@ -31,7 +31,7 @@ RUN rm -rf * \
 RUN rm -rf * \
  && cmake /src/plugins/applications \
     -DCMAKE_INSTALL_PREFIX=/usr \
-    -DCMAKE_PREFIX_PATH=/usr/lib/$(gcc -dumpmachine)/cmake/ \
+    -DCMAKE_PREFIX_PATH=/usr/lib64/cmake/ \
  && make -j $(nproc) \
  && make install
 
