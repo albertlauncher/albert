@@ -2,7 +2,7 @@ name: CI/CD
 
 on:
   push:
-    branches: [ "master", "dev" ]
+    branches: [ "main", "dev", "devel" ]
     tags: '*'
 
 concurrency:
