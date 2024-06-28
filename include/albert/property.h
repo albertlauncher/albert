@@ -41,9 +41,9 @@
         else set_##name##_(settings()->value(EXPAND_STRINGIZE(name), name##_default()).template value<type>()); \
     } \
     public: void reset_##name() { set_##name##_(name##_default()); settings()->remove(EXPAND_STRINGIZE(name));  } \
-    Q_SIGNAL void name##_changed(); \
+    Q_SIGNAL void name##_changed(type); \
     Q_PROPERTY(type name READ name WRITE set_##name RESET reset_##name NOTIFY name##_changed USER true) \
-    public: void set_##name(type val) { if (val != name()){ set_##name##_(val); store_##name(); emit name##_changed(); } }
+    public: void set_##name(type val) { if (val != name()){ set_##name##_(val); store_##name(); emit name##_changed(val); } }
 
 
 ///
