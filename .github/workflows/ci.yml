@@ -65,7 +65,7 @@ jobs:
         run: sudo install -d -o $UID -m 755 /opt/local
 
       - name: Install dependencies available at homebrew
-        run: brew install sparkle pybind11  # fortunately homebrew ships sparkle as universal binary
+        run: brew install sparkle  # fortunately homebrew ships sparkle as universal binary
 
       - uses: actions/checkout@v3
       
@@ -76,7 +76,7 @@ jobs:
           path: |
             /opt/local/lib
             /opt/local/include
-          key: ${{ matrix.os }}-macports-r1
+          key: ${{ matrix.os }}-macports-r2
   
       - name: Install macports (for universal binaries of libqalculate and libarchive)
         if: steps.cache-macports.outputs.cache-hit != 'true'
@@ -99,7 +99,7 @@ jobs:
           
       - name: Install dependencies using macports
         if: steps.cache-macports.outputs.cache-hit != 'true'
-        run : sudo /opt/local/bin/port install libqalculate libarchive pybind11  # increase steps.cache-macports.outputs.cache-primary-key revision on change
+        run : sudo /opt/local/bin/port install libqalculate libarchive  # increase steps.cache-macports.outputs.cache-primary-key revision on change
         
       - name: Save macports dependencies
         uses: actions/cache/save@v4
@@ -178,7 +178,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dockerfile: [arch.Dockerfile, fedora.latest.Dockerfile, ubuntu.2204.Dockerfile]
+        dockerfile: [arch.Dockerfile, fedora.latest.Dockerfile, ubuntu.2204.Dockerfile, ubuntu.2404.Dockerfile]
 
     steps:
     
