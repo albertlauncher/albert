@@ -8,8 +8,6 @@ RUN pacman -Syu --verbose --noconfirm \
     libqalculate \
     libxml2 \
     make \
-    muparser \
-    pybind11 \
     python \
     pkgconf \
     qt6-base \

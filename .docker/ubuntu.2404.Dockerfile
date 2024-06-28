@@ -10,7 +10,6 @@ RUN apt-get install --no-install-recommends -y \
         libarchive-dev \
         libgl1-mesa-dev \
         libglvnd-dev \
-        libmuparser-dev \
         libqalculate-dev \
         libqt6opengl6-dev \
         libqt6sql6-sqlite \
@@ -18,7 +17,6 @@ RUN apt-get install --no-install-recommends -y \
         libxml2-utils \
         make \
         pkg-config \
-        pybind11-dev \
         python3-dev \
         qt6-base-dev \
         qt6-declarative-dev \
