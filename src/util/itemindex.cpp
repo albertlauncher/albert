@@ -20,8 +20,6 @@ using Index = uint32_t;
 using Position = uint16_t;
 static const uint N = 2;
 
-#pragma pack(1)
-
 
 struct StringIndexItem
 {
@@ -35,9 +33,6 @@ struct Location
     Index index;
     Position position;
 };
-
-
-#pragma options align=reset
 
 
 struct WordIndexItem
