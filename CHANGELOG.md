@@ -1,3 +1,8 @@
+v0.24.1 (2024-06-28)
+
+[plugins]
+- [python:4.4] Revert back to using pybind submodule (v2.12.0)
+
 v0.24.0 (2024-06-28)
 
 [albert]
