@@ -20,6 +20,9 @@ public:
 
     QStringList tokenize(QString s) const
     {
+        // Remove soft hyphens
+        s.remove(QChar(0x00AD));
+
         if (config.ignore_diacritics)
         {
             // https://en.wikipedia.org/wiki/Combining_Diacritical_Marks
