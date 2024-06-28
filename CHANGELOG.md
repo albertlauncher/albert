@@ -1,3 +1,181 @@
+v0.24.0 (2024-06-28)
+
+[albert]
+
+- Ignore soft hyphens in lookup strings
+- Add TriggersQueryHandler builtin handler
+- Drop PluginConfigQueryHandler
+- Ignore order of query words
+- Do not run fallbacks on empty queries
+- Allow unsetting hotkey on backspace
+- Move about into general tab
+- Use a button for hotkeys such that tab order is usable
+- Cache icons in the fallback handler to avoid laggy resize
+- Set 700 on albert dirs
+- Use same config location and format on all platforms.
+- Show message box on errors while loading enabled plugins
+- Make openUrl working on wayland by using xdg-open
+
+[API 0.24]
+
+- Loads of changes around the project structure
+  - AUTOMOC,UIC,RCC per target
+  - Structure sources in folders
+  - Flatten headers
+  - No paths in core source files (rather lots of include dirs)
+  - Finally proper target export such that plugin build in build tree as well as separate projects
+  - Add custom target global_lupdate
+- CMake
+  - albert_plugin(…) modifications
+    - Add QT parameter
+    - Add I18N_SOURCES parameter
+    - SOURCE_FILES > SOURCES
+    - I18N_SOURCE_FILES > I18N_SOURCES
+    - INCLUDE_DIRECTORIES > INCLUDE
+    - LINK_LIBRARIES > LINK
+    - Make SOURCES optional. Specify source conventions: include/*.h, src/*.h, src/*.cpp, src/*.mm, src/*.ui and <plugin_id>.qrc
+  - Drop METADATA the metadata.json is a mandatory convention now.
+  - Drop TS_FILES. Autosource from 'i18n' dir given a naming convention.
+    <plugin_id>.ts and <plugin_id>_<ui_language>.ts
+  - Add CMake option BUILD_PLUGINS
+- General
+  - Move Q_OBJECT into ALBERT_PLUGIN macro
+  - Remove app functions from API
+  - Rename albert.h to util.h
+  - albert::networkManager -> albert::network
+  - Add convenience classes for plugin interdependencies
+  - Allow RankItems to be created using a Match
+  - Revert back to per plugin translations. Plugins shall be self contained modules and in principle be packageable in a separate package.
+  - Let QtPluginLoader automatically load translations if available.
+  - Add finished and total count to translations metadata
+  - User per target compile options
+  - Add havePasteSupport()
+  - Remove openIssueTracker from interface
+  - Separate and improve ALBERT_PLUGIN_PROPERTY macros
+    - ALBERT_PROPERTY_GETSET
+    - ALBERT_PLUGIN_PROPERTY_GETSET
+    - ALBERT_PROPERTY_CONNECT_SPINBOX
+    - Add param in property changed signal
+- PluginInstance
+  - Add {cache,config,data}Location. Checks are up to the clients.
+  - Add createOrThrow as a utility function for the above functions.
+  - Add weak refs for PluginLoader and ExtensionRegistry
+  - Drop convenience functinos like id, name, description.
+  - Drop initialize/finalize
+  - Registering extensions can fail
+  - Auto register root extensions
+- Changes to icon provider API
+  - Add QIcon support
+  - Make it free functions
+  - Remove caching
+  - Returned size can be smaller than requestedSize, but is never larger.
+- Query, engine and handlers
+  - Handle handler configuration in core (trigger, fuzzy, enabled).
+    Remove the getters, have only setters to update plugins.
+    - Add TriggerQueryHandler::setUserTrigger
+    - Remove TriggerQueryHandler::trigger()
+    - Remove TriggerQueryHandler::fuzzyMatching()
+  - Do not allow users to disable triggered query handlers.
+    This may end up in states where plugins are loaded but actually not used.
+    Also some handlers may rely on them to be there, like e.g. the files global
+    handler redirects tabs to the triggered handlers.
+  - Remove const from handleTriggerQuery
+  - Support ignore diacritics
+  - Support ignore word order
+  - Make Query contextually convertible to QString
+  - Unify query interface, no more global- and triggerquery
+  - Add parameterizable Matcher/Match class
+  - Add dedicated empty query handling
+    Empty patterns should match everything. For global queries thats too
+    much. For triggered queries it is desired though. Since a lot of global
+    query handlers relay the handleTriggerQuery to handleGlobalQuery it is
+    not possible to have both. This introduces a dedicated function for
+    GlobalQueryHandlers that will be called on empty queries:
+
+[plugins]
+
+- All plugins: Minor fixes and port to API 0.24
+- [widgetsboxmodel:7.4] Use QWindow::startSystemMove instead QWidget:move for Wayland Support
+- [websearch:9.0] 0.24
+  - Add fallback option
+  - Add GPT to default engines
+  - Add fallback section.
+  - Allow inline editing of fallback and trigger withough using the search engine widget.
+  - Use matcher for more tolerant queries
+  - Complete to trigger instead of name
+- [timezones:1.0]
+- [timer:1.0]
+- [telegram] Archive failed telegram quick access approach
+- [path] Rename from 'terminal'
+- [system:9.1] System commands update for KDE Plasma 6
+- [ssh:8.3] Allow params only in triggered handler
+- [sparkle] Archive for now
+- [snippets:5.2] Check if paste is supported at all
+- [qmlboxmodel] Port
+- [python:4.3]
+  - Namespace plugin id
+  - Compensate the API changes gracefully to defer a breaking API change
+  - Ship stub file with the plugin
+  - Add buttons for stubfile and user plugin dir
+  - API 2.3
+    - Deprecate obscure module attached md_id. Use PluginInstance.id.
+    - Expose function albert.havePasteSupport
+    - Expose class albert.Matcher
+    - Expose class albert.Match
+    - Expose method albert.TQH.handleTriggerQuery
+    - Expose method albert.GQH.handleGlobalQuery
+    - albert.PluginInstance:
+        - Add read only property id
+        - Add read only property name
+        - Add read only property description
+        - Add instance method registerExtension(…)
+        - Add instance method deregisterExtension(…)
+        - Deprecate initialize(…). Use __init__(…).
+        - Deprecate finalize(…). Use __del__(…).
+        - Deprecate __init__ extensions parameter. Use (de)registerExtension(…).
+        - Auto(de)register plugin extension. (if isinstance(Plugin, Extension))
+    - albert.Notification:
+        - Add property title
+        - Add property text
+        - Add instance method send()
+        - Add instance method dismiss()
+    - Minor breaking change that is probably not even in use:
+        Notification does not display unless send(…) has been called
+- [mpris:3.1] Rewrite using xml interface files
+- [exprtk] Archive exprtk prototype
+- [docs:6.4] Fix XML based docs.
+- [docs:6.3] Do not upscale icons
+- [docs:6.2] Fix leak on plugin unloading
+- [dictionary:3.1] Drop resources, use Dictionary.app icon
+- [datetime:5.1] Separate timetzonehandler
+- [datetime:5.0] Add "show_date_on_empty_query" option
+- [clipboard:3.1]
+  - Check if paste is supported at all
+  - Use albert::WeakDependency
+- [chromium:7.0]
+  - Add completion
+  - Display bookmark folder
+- [bluetooth:1.0] New extension on macos
+  - Enable disable Bluetooth
+  - Connect to paired devices
+- [applications:11.0] Add non localized option on macos
+- [applications:10.0]
+  - Merge applications_macos and applications_xdg
+  - Add completion
+
+[python]
+- All plugins: Minor fixes and port to API 2.3
+- [zeal:2.0] Add fallback extension
+- [wikipedia:2.0] Add fuzzy search support
+- [tr:1.6] Check paste support
+- [timer] Move to archive
+- [syncthing:1.0] Initial prototype
+- [goldendict:1.4] Support flatpaks and goldendict-ng
+- [emoji:2.2] Check paste support
+- Remove albert.pyi
+  Ship, install and update with plugin.
+  Add python stubfile to ignore files
+
 v0.23.0 (2024-03-03)
 
 [albert]
