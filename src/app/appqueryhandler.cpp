@@ -2,6 +2,7 @@
 
 #include "app.h"
 #include "appqueryhandler.h"
+#include "matcher.h"
 #include "standarditem.h"
 #include "util.h"
 #include <QString>
@@ -60,9 +61,12 @@ AppQueryHandler::AppQueryHandler()
             icon_urls,
             {
                 {
-                    "cache",
-                    tr("Open"),
-                    [](){ albert::openUrl(QUrl::fromLocalFile(albert::cacheLocation())); }
+                    "cache", tr("Open"),
+                    []{ albert::openUrl(QUrl::fromLocalFile(albert::cacheLocation())); }
+                },
+                {
+                    "cache-term", tr("Open terminal here"),
+                    []{ runTerminal({}, albert::cacheLocation()); }
                 }
             }),
 
@@ -73,9 +77,12 @@ AppQueryHandler::AppQueryHandler()
             icon_urls,
             {
                 {
-                    "config",
-                    tr("Open"),
+                    "config", tr("Open"),
                     [](){ albert::openUrl(QUrl::fromLocalFile(albert::configLocation())); }
+                },
+                {
+                    "config-term", tr("Open terminal here"),
+                    []{ runTerminal({}, albert::configLocation()); }
                 }
             }),
 
@@ -86,9 +93,12 @@ AppQueryHandler::AppQueryHandler()
             icon_urls,
             {
                 {
-                    "data",
-                    tr("Open"),
+                    "data", tr("Open"),
                     [](){ albert::openUrl(QUrl::fromLocalFile(albert::dataLocation())); }
+                },
+                {
+                    "data-term", tr("Open terminal here"),
+                    []{ runTerminal({}, albert::dataLocation()); }
                 }
             }),
     };
@@ -108,9 +118,10 @@ QString AppQueryHandler::defaultTrigger() const
 
 vector<RankItem> AppQueryHandler::handleGlobalQuery(const Query *query) const
 {
+    Matcher matcher(query->string());
     vector<RankItem> rank_items;
     for (const auto &item : items_)
-        if (item->text().startsWith(query->string(), Qt::CaseInsensitive))
-            rank_items.emplace_back(item, (float)query->string().length() / item->text().length());
+        if (auto m = matcher.match(item->text()); m)
+            rank_items.emplace_back(item, m);
     return rank_items;
 }
