@@ -43,7 +43,8 @@ public:
     /// Use this if you want to reuse your global results in the trigger handler.
     void applyUsageScore(std::vector<RankItem>*) const;
 
-    /// Implements handleTriggerQuery(…). Sort and batch add rankItems(…).
+    /// Implements pure virtual handleTriggerQuery(…).
+    /// Calls handleGlobalQuery, applyUsageScore, sort and adds the items.
     /// @note Reimplement if the handler should have custom triggered behavior,
     /// but think twice if this is necessary. It may break user expectation.
     /// @see handleTriggerQuery and rankItems
