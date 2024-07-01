@@ -69,7 +69,6 @@ public:
     void initTrayIcon();
     void initTelemetry();
     void initHotkey();
-    void initAppDirectories();
     void initPRC();
     void loadAnyFrontend();
     QString loadFrontend(albert::PluginLoader *loader);
@@ -264,16 +263,6 @@ void App::Private::initHotkey()
                              tr(t).arg(QKeySequence(kc_hk)
                                        .toString(QKeySequence::NativeText)));
         App::instance()->showSettings();
-    }
-}
-
-void App::Private::initAppDirectories()
-{
-    for (const auto &path : { cacheLocation(), configLocation(), dataLocation() })
-    {
-        if (!QDir(path).mkpath("."))
-            qFatal("Failed creating config dir at: %s", qPrintable(path));
-        QFile::setPermissions(path, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
     }
 }
 
@@ -569,6 +558,16 @@ int ALBERT_EXPORT run(int argc, char **argv)
     QApplication::setApplicationVersion(ALBERT_VERSION_STRING);
     QApplication::setWindowIcon(iconFromUrls({"xdg:albert", "qrc:app_icon"}));
     QApplication::setQuitOnLastWindowClosed(false);
+
+
+    // Initialize app directories
+
+    for (const auto &path : { cacheLocation(), configLocation(), dataLocation() })
+    {
+        if (!QDir(path).mkpath("."))
+            qFatal("Failed creating config dir at: %s", qPrintable(path));
+        QFile::setPermissions(path, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
+    }
 
 
     // Move old config file to new location TODO: Remove from 0.26 on
