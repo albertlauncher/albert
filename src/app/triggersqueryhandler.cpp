@@ -49,13 +49,14 @@ void TriggersQueryHandler::handleTriggerQuery(Query *q)
             RI.emplace_back(make_item(trigger, handler), m);
     }
 
-    // Sort and add
-    vector<shared_ptr<Item>> I;
-
-    // sort(RI.begin(), RI.end(), [](auto &a, auto &b){ return a.score > b.score; });
     applyUsageScore(&RI);
 
-    transform(RI.begin(), RI.end(), back_inserter(I), mem_fn(&RankItem::item));
+    ranges::sort(RI, greater());
+
+    vector<shared_ptr<Item>> I;
+    I.reserve(RI.size());
+    for (auto &ri : RI)
+        I.emplace_back(::move(ri.item));
 
     q->add(I);
 }
