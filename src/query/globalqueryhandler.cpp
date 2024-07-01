@@ -15,14 +15,9 @@ void GlobalQueryHandler::handleTriggerQuery(Query *query)
 {
     auto rank_items = handleGlobalQuery(query);
     applyUsageScore(&rank_items);
-    sort(rank_items.begin(), rank_items.end(), [](const auto &a, const auto &b){
-        if (a.score == b.score)
-            return a.item->text() > b.item->text();
-        else
-            return a.score > b.score;
-    });
+    ranges::sort(rank_items, std::greater());
 
-    vector<shared_ptr<Item>> items; // TODO c++20 ranges::view
+    vector<shared_ptr<Item>> items;
     items.reserve(rank_items.size());
     for (auto &match : rank_items)
         items.push_back(::move(match.item));
