@@ -27,11 +27,18 @@ public:
 
     /// \param item @copydoc item
     /// \param match @copybrief Match
-    explicit RankItem(std::shared_ptr<Item> &&item, Match &match);
+    explicit RankItem(std::shared_ptr<Item> &&item, Match match);
 
     /// \param item @copydoc item
     /// \param match @copybrief Match
-    explicit RankItem(const std::shared_ptr<Item> &item, Match &match);
+    explicit RankItem(const std::shared_ptr<Item> &item, Match match);
+
+    /// The less operator
+    bool operator<(const RankItem &other) const;
+
+    /// The greater operator
+    bool operator>(const RankItem &other) const;
+
 
     /// The matched item
     std::shared_ptr<Item> item;
