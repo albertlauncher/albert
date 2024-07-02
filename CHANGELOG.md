@@ -1,3 +1,15 @@
+v0.24.2 (2024-07-02)
+
+[albert]
+- Add "open terminal here" to app directory items
+- Hotfix #1408
+
+[plugins]
+- [python:4.5] Update python stub file
+
+[python]
+- [GoldenDict:1.5] Remove breaking type hints
+
 v0.24.1 (2024-06-28)
 
 [plugins]
