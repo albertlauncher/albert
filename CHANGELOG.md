@@ -1,3 +1,14 @@
+v0.24.3 (2024-07-09)
+
+[albert]
+- Port applications settings to new id
+  Hotfix https://github.com/albertlauncher/albert/issues/1412
+- Fix telemetry
+
+[plugins]
+- [snippets:5.4] Show a snippet preview in description.
+  Close #1387
+
 v0.24.2 (2024-07-02)
 
 [albert]
