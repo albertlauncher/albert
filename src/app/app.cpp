@@ -234,6 +234,8 @@ void App::Private::initTelemetry()
         mb.setDetailedText(telemetry->buildReportString());
         s->setValue(CFG_TELEMETRY, mb.exec() == QMessageBox::Yes);
     }
+    else if (s->value(CFG_TELEMETRY).toBool())
+        telemetry = make_unique<Telemetry>();
 }
 
 void App::Private::initHotkey()
@@ -484,6 +486,7 @@ void App::setTrayEnabled(bool enable)
         return;
     settings()->setValue(CFG_SHOWTRAY, enable);
 }
+
 bool App::telemetryEnabled() const { return d->telemetry.get(); }
 
 void App::setTelemetryEnabled(bool enable)
