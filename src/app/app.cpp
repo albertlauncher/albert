@@ -117,6 +117,7 @@ void App::Private::initialize()
     platform::initPlatform();
 
     loadAnyFrontend();
+
     platform::initNativeWindow(frontend->winId());
 
     // Invalidate sessions on handler removal or visibility change
@@ -573,21 +574,52 @@ int ALBERT_EXPORT run(int argc, char **argv)
     }
 
 
-    // Move old config file to new location TODO: Remove from 0.26 on
+    // Section for ports
 
     {
-        auto conf_loc = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-        auto old_conf_loc = QDir(conf_loc).filePath("albert.conf");
-        QFile config_file(old_conf_loc);
-        if (config_file.exists())
+        // Move old config file to new location TODO: Remove from 0.26 on
+
         {
-            auto new_conf_loc = QDir(configLocation()).filePath("config");
-            if (config_file.rename(new_conf_loc))
-                INFO << "Config file successfully moved to new location.";
-            else
-                qFatal("Failed to move config file to new location. "
-                       "Please move the file at %s to %s manually.",
-                       old_conf_loc.toUtf8().data(), new_conf_loc.toUtf8().data());
+            auto conf_loc = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+            auto old_conf_loc = QDir(conf_loc).filePath("albert.conf");
+            QFile config_file(old_conf_loc);
+            if (config_file.exists())
+            {
+                auto new_conf_loc = QDir(configLocation()).filePath("config");
+                if (config_file.rename(new_conf_loc))
+                    INFO << "Config file successfully moved to new location.";
+                else
+                    qFatal("Failed to move config file to new location. "
+                           "Please move the file at %s to %s manually.",
+                           old_conf_loc.toUtf8().data(), new_conf_loc.toUtf8().data());
+            }
+        }
+
+        // Merge settings sections of applications plugins
+
+        {
+            auto s = settings();
+            auto groups = s->childGroups();
+
+            for (const char *old_group : { "applications_macos", "applications_xdg"})
+            {
+                if (groups.contains(old_group))
+                {
+                    s->beginGroup(old_group);
+                    auto child_keys = s->childKeys();
+                    s->endGroup();
+
+                    for (const QString &child_key : child_keys)
+                    {
+                        auto old_key = QString("%1/%2").arg(old_group, child_key);
+
+                        s->setValue(QString("applications/%1").arg(child_key),
+                                    s->value(old_key));
+
+                        s->remove(old_key);
+                    }
+                }
+            }
         }
     }
 
