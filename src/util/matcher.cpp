@@ -64,7 +64,7 @@ public:
             if ((it->size() <= oit->size()))
             {
                 // check if the query word is a prefix of the matched word
-                if(config.error_tolerance_divisor)  // fuzzy
+                if(config.fuzzy)
                 {
                     uint allowed_errors = it->size() / config.error_tolerance_divisor;
                     auto edit_distance = levenshtein.computePrefixEditDistanceWithLimit(

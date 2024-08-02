@@ -14,7 +14,8 @@ struct MatchConfig
     bool ignore_case = true;
     bool ignore_diacritics = true;
     bool ignore_word_order = true;
-    uint error_tolerance_divisor = 0;
+    bool fuzzy = false;
+    static const uint error_tolerance_divisor = 4;
 };
 
 }

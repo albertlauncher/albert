@@ -160,7 +160,7 @@ vector<WordMatch> ItemIndex::Private::getWordMatches(const QString &word, const 
         matches.emplace_back(*it, word_length);
 
     // Get the (fuzzy) prefix matches
-    if (config.error_tolerance_divisor)
+    if (config.fuzzy)
     {
         // Exclusion range for already collected prefix matches
         Index exclude_begin = eq_begin - index.words.begin();  // Ignore interval. closed begin [
@@ -305,7 +305,7 @@ void ItemIndex::setItems(vector<albert::IndexItem> &&index_items)
     }
     new_index.words.shrink_to_fit();
 
-    if (d->config.error_tolerance_divisor)
+    if (d->config.fuzzy)
     {
         // Build n_gram_index
         for (Index word_index = 0; word_index < (Index)new_index.words.size(); ++word_index)
