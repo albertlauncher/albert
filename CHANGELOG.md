@@ -1,3 +1,20 @@
+v0.25.0 (2024-08-02)
+
+[albert]
+- Simplify MatchConfig
+  Hardcode error_tolerance_divisor to 4
+  Close #1412
+
+[plugins]
+- [chromium:7.1] Minor improvements
+  - Avoid initial double indexing
+  - Fix status message in settings window
+  - Fix warnings on empty paths
+- [bluetooth:1.1] Support fuzzy matching
+- [urlhandler:5.2] Use albert::openUrl instead of QDesktopServices::openUrl
+  QDesktopServices::openUrl fails on wayland
+  Close https://github.com/albertlauncher/albert/issues/1414
+
 v0.24.3 (2024-07-09)
 
 [albert]
