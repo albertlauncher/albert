@@ -64,10 +64,10 @@ AppQueryHandler::AppQueryHandler()
                     "cache", tr("Open"),
                     []{ albert::openUrl(QUrl::fromLocalFile(albert::cacheLocation())); }
                 },
-                {
-                    "cache-term", tr("Open terminal here"),
-                    []{ runTerminal({}, albert::cacheLocation()); }
-                }
+                // {
+                //     "cache-term", tr("Open terminal here"),
+                //     []{ runTerminal({}, albert::cacheLocation()); }
+                // }
             }),
 
         StandardItem::make(
@@ -80,10 +80,10 @@ AppQueryHandler::AppQueryHandler()
                     "config", tr("Open"),
                     [](){ albert::openUrl(QUrl::fromLocalFile(albert::configLocation())); }
                 },
-                {
-                    "config-term", tr("Open terminal here"),
-                    []{ runTerminal({}, albert::configLocation()); }
-                }
+                // {
+                //     "config-term", tr("Open terminal here"),
+                //     []{ runTerminal({}, albert::configLocation()); }
+                // }
             }),
 
         StandardItem::make(
@@ -96,10 +96,10 @@ AppQueryHandler::AppQueryHandler()
                     "data", tr("Open"),
                     [](){ albert::openUrl(QUrl::fromLocalFile(albert::dataLocation())); }
                 },
-                {
-                    "data-term", tr("Open terminal here"),
-                    []{ runTerminal({}, albert::dataLocation()); }
-                }
+                // {
+                //     "data-term", tr("Open terminal here"),
+                //     []{ runTerminal({}, albert::dataLocation()); }
+                // }
             }),
     };
 }

@@ -78,6 +78,6 @@ ALBERT_EXPORT long long runDetachedProcess(const QStringList &commandline, const
 /// \param script The script to run
 /// \param working_dir The working directory
 /// \param close_on_exit Close the terminal on exit
-ALBERT_EXPORT void runTerminal(const QString &script = {}, const QString &working_dir = {}, bool close_on_exit = false);
+// ALBERT_EXPORT void runTerminal(const QString &script = {}, const QString &working_dir = {}, bool close_on_exit = false);
 
 }

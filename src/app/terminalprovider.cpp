@@ -18,13 +18,14 @@
 using namespace albert;
 using namespace std;
 static const char* CFG_TERM = "terminal";
+static const char* CFG_CUSTOM_TERM = "custom_terminal";
 
 
 class Terminal
 {
 public:
     virtual ~Terminal() = default;
-    virtual QString name() const = 0;
+    virtual const QString &name() const = 0;
     virtual void run(const QString &script, const QString &working_dir, bool close_on_exit) const = 0;
 };
 
@@ -90,14 +91,15 @@ public:
 
 class ExecutableTerminal : public Terminal
 {
+
 public:
-    const char *name_;
-    const vector<const char*> command_line_;
 
-    ExecutableTerminal(const char* name, vector<const char*> commandline)
-        : name_(name), command_line_(commandline.begin(), commandline.end()) {}
+    ExecutableTerminal(QString name, QStringList commandline)
+        : name_(::move(name)), command_line_(::move(commandline)) {}
 
-    QString name() const override { return name_; };
+    const QString &name() const override { return name_; };
+
+    const QStringList &commandLine() const { return command_line_; };
 
     void run(const QString &script, const QString &working_dir, bool close_on_exit) const override
     {
@@ -114,57 +116,50 @@ public:
 
         albert::runDetachedProcess(commandline, working_dir);
     };
+
+protected:
+
+    QString name_;
+    QStringList command_line_;
+
 };
 
 
-static const vector<ExecutableTerminal> exec_terminals
+class CustomTerminal : public ExecutableTerminal
 {
-    {"Alacritty", {"alacritty", "-e"}},
-    {"Black Box", {"blackbox-terminal", "--"}},
-    {"Console", {"kgx", "-e"}},
-    {"Contour", {"contour", "execute"}},
-    {"Cool Retro Term", {"cool-retro-term", "-e"}},
-    {"Deepin Terminal", {"deepin-terminal", "-x"}},
-    {"Elementary Terminal", {"io.elementary.terminal", "-x"}},
-    {"Foot", {"foot"}},
-    {"Gnome Terminal", {"gnome-terminal", "--"}},
-    {"Kitty", {"kitty", "--"}},
-    {"Konsole", {"konsole", "-e"}},
-    {"LXTerminal", {"lxterminal", "-e"}},
-    {"Mate-Terminal", {"mate-terminal", "-x"}},
-    {"QTerminal", {"qterminal", "-e"}},
-    {"RoxTerm", {"roxterm", "-x"}},
-    {"St", {"st", "-e"}},
-    // TODO remove in future. Like in 2027 🤷
-    // See #1177 and https://github.com/gnome-terminator/terminator/issues/702 and 660
-    {"Terminator (<=2.1.2)", {"terminator", "-u", "-g", "/dev/null", "-x"}},
-    {"Terminator", {"terminator", "-u", "-x"}},
-    {"Terminology", {"terminology", "-e"}},
-    {"Termite", {"termite", "-e"}},
-    {"Tilix", {"tilix", "-e"}},
-    {"UXTerm", {"uxterm", "-e"}},
-    {"Urxvt", {"urxvt", "-e"}},
-    {"WezTerm", {"wezterm", "cli", "spawn", "--"}},
-    {"XFCE-Terminal", {"xfce4-terminal", "-x"}},
-    {"XTerm", {"xterm", "-e"}}
+public:
+
+    CustomTerminal():
+        ExecutableTerminal(TerminalProvider::tr("Custom"),
+                             settings()->value(CFG_CUSTOM_TERM, QStringList{}).toStringList()){}
+
+    void setCommandLine(const QStringList &cmdline)
+    {
+        if (command_line_ != cmdline)
+        {
+            command_line_ = cmdline;
+            settings()->setValue(CFG_CUSTOM_TERM, cmdline);
+        }
+    }
 };
 
 #endif
 
-static vector<unique_ptr<Terminal>> findTerminals()
+
+TerminalProvider::TerminalProvider():
+    terminal_(nullptr)
 {
-    vector<unique_ptr<Terminal>> result;
 
 #if defined(Q_OS_MAC)
 
     if (QFile::exists("/Applications/iTerm.app"))
-        result.emplace_back(make_unique<AppleScriptLaunchableTerminal>(
+        terminals_.emplace_back(make_unique<AppleScriptLaunchableTerminal>(
             "iTerm.app",
             R"(tell application "iTerm" to create window with default profile command "zsh -i %1")"
             ));
 
     if (QFile::exists("/System/Applications/Utilities/Terminal.app"))
-        result.emplace_back(make_unique<AppleScriptLaunchableTerminal>(
+        terminals_.emplace_back(make_unique<AppleScriptLaunchableTerminal>(
             "Terminal.app",
             R"(tell application "Terminal" to activate
                tell application "Terminal" to do script "exec zsh -i %1")"
@@ -172,25 +167,57 @@ static vector<unique_ptr<Terminal>> findTerminals()
 
 #elif defined(Q_OS_UNIX)
 
+    const vector<ExecutableTerminal> exec_terminals
+    {
+        {"Alacritty", {"alacritty", "-e"}},
+        {"Black Box (Flatpak)", {"com.raggesilver.BlackBox", "--"}},
+        {"Black Box", {"blackbox-terminal", "--"}},
+        {"Black Box", {"blackbox", "--"}},
+        {"Console", {"kgx", "-e"}},
+        {"Contour (Flatpak)", {"org.contourterminal.Contour", "execute"}},
+        {"Contour", {"contour", "execute"}},
+        {"Cool Retro Term", {"cool-retro-term", "-e"}},
+        {"Deepin Terminal", {"deepin-terminal", "-x"}},
+        {"Elementary Terminal", {"io.elementary.terminal", "-x"}},
+        {"Foot", {"foot"}},
+        {"Gnome Terminal", {"gnome-terminal", "--"}},
+        {"Kitty", {"kitty", "--"}},
+        {"Konsole (Flatpak)", {"org.kde.konsole", "-e"}},
+        {"Konsole", {"konsole", "-e"}},
+        {"LXTerminal", {"lxterminal", "-e"}},
+        {"Mate-Terminal", {"mate-terminal", "-x"}},
+        {"QTerminal", {"qterminal", "-e"}},
+        {"RoxTerm", {"roxterm", "-x"}},
+        {"St", {"st", "-e"}},
+        // TODO remove in future. Like in 2027 🤷
+        // See #1177 and https://github.com/gnome-terminator/terminator/issues/702 and 660
+        {"Terminator (<=2.1.2)", {"terminator", "-u", "-g", "/dev/null", "-x"}},
+        {"Terminator", {"terminator", "-u", "-x"}},
+        {"Ptyxis (Flatpak)", {"app.devsuite.Ptyxis", "--"}},
+        {"Ptyxis", {"ptyxis", "--"}},
+        {"Terminology", {"terminology", "-e"}},
+        {"Termite", {"termite", "-e"}},
+        {"Tilix", {"tilix", "-e"}},
+        {"UXTerm", {"uxterm", "-e"}},
+        {"Urxvt", {"urxvt", "-e"}},
+        {"WezTerm (Flatpak)", {"org.wezfurlong.wezterm", "-e"}},
+        {"WezTerm", {"wezterm", "-e"}},
+        {"XFCE-Terminal", {"xfce4-terminal", "-x"}},
+        {"XTerm", {"xterm", "-e"}}
+    };
+
     // Filter available supported terms by availability
-    for (const auto & exec_term : exec_terminals)
-        if (!QStandardPaths::findExecutable(exec_term.command_line_[0]).isNull())
-            result.emplace_back(make_unique<ExecutableTerminal>(exec_term));
+    for (auto &t : exec_terminals)
+        if (!QStandardPaths::findExecutable(t.commandLine()[0]).isNull())
+            terminals_.emplace_back(make_unique<ExecutableTerminal>(t));
+
+    // Add custom terminal
+    auto ct = make_unique<CustomTerminal>();
+    custom_terminal_ = ct.get();
+    terminals_.emplace_back(::move(ct));
 
 #endif
 
-    sort(result.begin(), result.end(),
-         [](const auto &a, const auto &b)
-         { return a->name() < b->name(); });
-
-    return result;
-}
-
-
-TerminalProvider::TerminalProvider():
-    terminals_(findTerminals()),
-    terminal_(nullptr)
-{
     if (terminals_.empty())
     {
         CRIT << "No terminals available.";
@@ -251,3 +278,17 @@ void TerminalProvider::setTerminal(uint i)
     terminal_ = terminals_.at(i).get();
     albert::settings()->setValue(CFG_TERM, terminal_->name());
 }
+
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+
+void TerminalProvider::setCustomCommand(const QString &cmdln)
+{
+    custom_terminal_->setCommandLine(cmdln.split(QChar::Space));
+}
+
+QString TerminalProvider::customCommand() const
+{
+    return custom_terminal_->commandLine().join(QChar::Space);
+}
+
+#endif

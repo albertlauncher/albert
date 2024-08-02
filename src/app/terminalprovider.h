@@ -4,6 +4,7 @@
 #include <QCoreApplication>
 #include <QString>
 class Terminal;
+class CustomTerminal;
 
 class TerminalProvider
 {
@@ -23,9 +24,17 @@ public:
     QStringList terminals() const;
     void setTerminal(uint);
 
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+    void setCustomCommand(const QString&);
+    QString customCommand() const;
+#endif
+
 private:
 
     std::vector<std::unique_ptr<Terminal>> terminals_;
     Terminal *terminal_;
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+    CustomTerminal *custom_terminal_;
+#endif
 
 };
