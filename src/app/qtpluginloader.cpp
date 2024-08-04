@@ -162,7 +162,7 @@ const PluginMetaData &QtPluginLoader::metaData() const { return metadata_; }
 void QtPluginLoader::load()
 {
     QFutureWatcher<void> watcher;
-    watcher.setFuture(QtConcurrent::run([this]() {
+    watcher.setFuture(QtConcurrent::run([this]{
         if (!loader_.load())
             throw runtime_error(loader_.errorString().toStdString());
     }));
@@ -171,6 +171,7 @@ void QtPluginLoader::load()
         QEventLoop loop;
         QObject::connect(&watcher, &decltype(watcher)::finished, &loop, &QEventLoop::quit);
         loop.exec();
+        watcher.future().waitForFinished();
 
         translator = make_unique<QTranslator>();
         if (translator->load(QLocale(), metaData().id, "_", ":/i18n"))
@@ -182,8 +183,14 @@ void QtPluginLoader::load()
     {
         if (e.exception())
             std::rethrow_exception(e.exception());
-        else
+        else {
+            CRIT << "QUnhandledException but exception() returns nullptr";
             throw;
+        }
+    }
+    catch (...)
+    {
+        CRIT << "Unknown exception in QtPluginLoader::load()";
     }
 }
 
