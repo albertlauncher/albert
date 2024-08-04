@@ -23,6 +23,8 @@ public:
     inline operator bool() const { return dependency != nullptr; }
     const T* operator->() const { return dependency; }
     T* operator->() { return dependency; }
+    const T* get() const { return dependency; }
+    T* get() { return dependency; }
 
 protected:
 
