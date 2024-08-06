@@ -119,8 +119,6 @@ set(LIB_SRC
     src/app/triggersqueryhandler.h
     src/app/telemetry.cpp
     src/app/telemetry.h
-    src/app/terminalprovider.cpp
-    src/app/terminalprovider.h
 
     src/common/action.cpp
     src/common/extension.cpp

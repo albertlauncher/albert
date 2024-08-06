@@ -5,7 +5,6 @@
 #include "pluginswidget.h"
 #include "querywidget.h"
 #include "settingswindow.h"
-#include "terminalprovider.h"
 #include <QDialog>
 #include <QHotkey>
 #include <QKeyEvent>
