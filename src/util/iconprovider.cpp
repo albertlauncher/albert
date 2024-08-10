@@ -219,7 +219,8 @@ QIcon albert::iconFromUrl(const QString &url)
 
     else if (url.startsWith(xdg_icon_lookup_scheme))
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
-        return QIcon(xdgIconLookup(url.mid(xdg_icon_lookup_scheme.size())));
+        // return QIcon(xdgIconLookup(url.mid(xdg_icon_lookup_scheme.size())));
+        return QIcon::fromTheme(url.mid(xdg_icon_lookup_scheme.size()));
 #else
         return {};
 #endif
