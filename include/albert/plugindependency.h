@@ -62,8 +62,8 @@ public:
         {
             auto m = QCoreApplication::translate(
                         "Dependency",
-                        "Required dependency %1 not available.").arg(id);
-            throw m;
+                        "Required dependency '%1' not available.").arg(id);
+            throw std::runtime_error(m.toStdString());
         }
     }
 };
