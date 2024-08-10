@@ -128,7 +128,7 @@
 ///
 #define ALBERT_PROPERTY(type, name, defaultValue, settings) \
     ALBERT_PROPERTY_MEMBER(type, name, name##_, defaultValue, settings) \
-    private: type name##_{name##_default()};
+    protected: type name##_{name##_default()};
 
 ///
 /// @brief Convenience macro for plugin user property definition defining a member.
