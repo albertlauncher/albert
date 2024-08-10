@@ -131,9 +131,12 @@ void albert::setClipboardTextAndPaste(const QString &text)
 long long albert::runDetachedProcess(const QStringList &commandline, const QString &working_dir)
 {
     qint64 pid = 0;
-    if (!commandline.empty()) {
-        if (QProcess::startDetached(commandline[0], commandline.mid(1), working_dir.isNull() ? QDir::homePath() : working_dir, &pid))
-            INFO << "Detached process started successfully. PID:" << pid << commandline;
+    if (!commandline.empty())
+    {
+        auto wd = working_dir.isEmpty() ? QDir::homePath() : working_dir;
+        if (QProcess::startDetached(commandline[0], commandline.mid(1), wd, &pid))
+            INFO << QString("Detached process started successfully. (WD: %1, PID: %2, CMD: %3")
+                        .arg(wd).arg(pid).arg(QDebug::toString(commandline));
         else
             WARN << "Starting detached process failed." << commandline;
     } else
