@@ -164,7 +164,9 @@ macro(_albert_plugin_add_translations)
             ${PROJECT_NAME}
             TS_FILES ${TS_FILES}
             SOURCES ${ARG_I18N_SOURCES}
-            # LUPDATE_OPTIONS -no-obsolete
+            LUPDATE_OPTIONS
+              # -no-obsolete
+              -no-ui-lines
             # QM_FILES_OUTPUT_VARIABLE QM_FILES
         )
     endif()
