@@ -38,6 +38,7 @@ public:
 
     bool telemetryEnabled() const;
     void setTelemetryEnabled(bool);
+    QString displayableTelemetryReport() const;
 
     const QHotkey *hotkey() const;
     void setHotkey(std::unique_ptr<QHotkey> hotkey);

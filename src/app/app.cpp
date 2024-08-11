@@ -501,6 +501,11 @@ void App::setTelemetryEnabled(bool enable)
     settings()->setValue(CFG_TELEMETRY, enable);
 }
 
+QString App::displayableTelemetryReport() const
+{
+    return d->telemetry ? d->telemetry->buildReportString() : QString();
+}
+
 const QHotkey *App::hotkey() const { return d->hotkey.get(); }
 
 void App::setHotkey(unique_ptr<QHotkey> hk)

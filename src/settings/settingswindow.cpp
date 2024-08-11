@@ -69,6 +69,7 @@ SettingsWindow::SettingsWindow(App &a):
     init_tab_general_hotkey();
     init_tab_general_trayIcon();
     init_tab_general_frontends();
+    init_tab_general_telemetry();
     init_tab_general_terminals();
     init_tab_general_about();
 
@@ -156,6 +157,15 @@ void SettingsWindow::init_tab_general_terminals()
                 "&body=Post+an+xterm+-e+compatible+commandline.";
     t = tr(R"(Report missing terminals <a href="%1">here</a>.)").arg(t);
     ui.label_reportMissing->setText(small_text_fmt.arg(t));
+}
+
+void SettingsWindow::init_tab_general_telemetry()
+{
+    ui.checkBox_telemetry->setChecked(app.telemetryEnabled());
+    connect(ui.checkBox_telemetry, &QCheckBox::toggled,
+            &app, &App::setTelemetryEnabled);
+
+    ui.checkBox_telemetry->setToolTip(app.displayableTelemetryReport());
 }
 
 void SettingsWindow::init_tab_general_about()
