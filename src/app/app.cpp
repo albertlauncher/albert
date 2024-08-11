@@ -22,7 +22,6 @@
 #include "session.h"
 #include "settingswindow.h"
 #include "telemetry.h"
-#include "terminalprovider.h"
 #include "triggersqueryhandler.h"
 #include "util.h"
 #include <QCommandLineParser>
@@ -87,7 +86,6 @@ public:
     PluginRegistry plugin_registry;
     QtPluginProvider plugin_provider;
     QueryEngine query_engine;
-    TerminalProvider terminal_provider;
 
     // Weak, lazy or optional
     albert::PluginLoader *frontend_plugin{nullptr};
@@ -407,8 +405,6 @@ App *App::instance() { return app_instance; }
 void App::initialize() { return d->initialize(); }
 
 void App::finalize() { return d->finalize(); }
-
-TerminalProvider &App::terminal() { return d->terminal_provider; }
 
 PluginRegistry &App::pluginRegistry() { return d->plugin_registry; }
 

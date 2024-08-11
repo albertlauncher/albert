@@ -2,7 +2,6 @@
 
 #include "app.h"
 #include "logging.h"
-#include "terminalprovider.h"
 #include "util.h"
 #include <QApplication>
 #include <QClipboard>
@@ -38,9 +37,6 @@ std::unique_ptr<QSettings> albert::settings()
 
 std::unique_ptr<QSettings> albert::state()
 { return make_unique<QSettings>(QString("%1/%2").arg(cacheLocation(), "state"), QSettings::IniFormat); }
-
-void albert::runTerminal(const QString &script, const QString &working_dir, bool close_on_exit)
-{ App::instance()->terminal().run(script, working_dir, close_on_exit); }
 
 void albert::showSettings(QString plugin_id)
 { App::instance()->showSettings(plugin_id); }

@@ -5,7 +5,6 @@
 #include "pluginswidget.h"
 #include "querywidget.h"
 #include "settingswindow.h"
-#include "terminalprovider.h"
 #include <QDialog>
 #include <QHotkey>
 #include <QKeyEvent>
@@ -70,7 +69,6 @@ SettingsWindow::SettingsWindow(App &a):
     init_tab_general_trayIcon();
     init_tab_general_frontends();
     init_tab_general_telemetry();
-    init_tab_general_terminals();
     init_tab_general_about();
 
     ui.tabs->insertTab(ui.tabs->count(), app.frontend()->createFrontendConfigWidget(), tr("&Window"));
@@ -139,24 +137,6 @@ void SettingsWindow::init_tab_general_frontends()
     }
     connect(ui.comboBox_frontend, &QComboBox::currentIndexChanged, this,
             [this](int index){ app.setFrontend(index); });
-}
-
-void SettingsWindow::init_tab_general_terminals()
-{
-    for (const auto &name : app.terminal().terminals()){
-        ui.comboBox_term->addItem(name);
-        if (name == app.terminal().name())  // is current
-            ui.comboBox_term->setCurrentIndex(ui.comboBox_term->count()-1);
-    }
-
-    connect(ui.comboBox_term, qOverload<int>(&QComboBox::currentIndexChanged),
-            this, [this](int index){ app.terminal().setTerminal(index); });
-
-    QString t = "https://github.com/albertlauncher/albert/issues/new"
-                "?assignees=ManuelSchneid3r&title=Terminal+[terminal-name]+missing"
-                "&body=Post+an+xterm+-e+compatible+commandline.";
-    t = tr(R"(Report missing terminals <a href="%1">here</a>.)").arg(t);
-    ui.label_reportMissing->setText(small_text_fmt.arg(t));
 }
 
 void SettingsWindow::init_tab_general_telemetry()
