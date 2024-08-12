@@ -166,7 +166,7 @@ macro(_albert_plugin_add_translations)
             SOURCES ${ARG_I18N_SOURCES}
             LUPDATE_OPTIONS
               # -no-obsolete
-              -no-ui-lines
+              -locations none
             # QM_FILES_OUTPUT_VARIABLE QM_FILES
         )
     endif()

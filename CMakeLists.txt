@@ -336,7 +336,7 @@ qt_add_translations(
     SOURCES ${TRANSLATION_SOURCE_FILES}
     LUPDATE_OPTIONS
       # -no-obsolete
-      -no-ui-lines
+      -locations none
 )
 
 # For convenience, QtCreator does not show the umbrella target
