@@ -1,3 +1,40 @@
+v0.26.0 (2024-08-16)
+
+[albert]
+
+- Give QIcon::fromTheme another try
+- API
+  - Remove const from GQH::hgq and GQH::heq
+  - Drop albert::runTerminal. Moved to applications plugin.
+  - Make private property available in subclasses
+  - Add getter for plugin dependecies
+
+[plugins]
+
+- [system:10.0]
+  - Add inhibit sleep feature
+- [docs:3.17] Be more tolerant with anchors
+  Macos and Win cant handle anchors. Use it though because it is still better than
+  skipping the item entirely.
+- [applications:12.0]
+  - Move terminal detection here
+  - Proper flatpak terminal support
+  - Add public interface to run terminals
+  - Proper platform abstraction
+  - Foundation for xdg-terminal-execute
+  - Foundation for URL scheme and mime type handlers
+
+[python]
+
+- [inhibit_sleep] Archive. Moved to system plugin.
+- [docker:3.0] Revert to trigger query handling
+  Global query handler not applicable, queries take seconds sometimes
+- [unit_converter:1.6] Port to API v2
+- [jetbrains:2.0]
+  - Add Aqua and Writerside
+- [tex_to_unicode:1.3] Port to v2.3
+  Author is okay with license change. See https://github.com/orgs/albertlauncher/discussions/1391#discussioncomment-10263863
+
 v0.25.0 (2024-08-02)
 
 [albert]
