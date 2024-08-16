@@ -39,8 +39,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-11]
-        qt_version: [6.5.2]  # 6.2.4
+        os: [macos-13]
+        qt_version: [6.5.3]  # 6.2.4
 
     runs-on: ${{ matrix.os }}
 
@@ -65,7 +65,7 @@ jobs:
         run: sudo install -d -o $UID -m 755 /opt/local
 
       - name: Install dependencies available at homebrew
-        run: brew install sparkle  # fortunately homebrew ships sparkle as universal binary
+        run: brew install llvm  # sparkle  # fortunately homebrew ships sparkle as universal binary
 
       - uses: actions/checkout@v3
       
@@ -112,6 +112,7 @@ jobs:
       - name: Build and package
         run: |
           cmake -S . -B build \
+            -DCMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ \
             -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
             -DBUILD_TEMPLATE=OFF \
             -DBUILD_DEBUG=OFF \
