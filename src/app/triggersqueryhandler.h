@@ -16,7 +16,7 @@ public:
     QString name() const override;
     QString description() const override;
     void handleTriggerQuery(albert::Query *) override;
-    std::vector<albert::RankItem> handleGlobalQuery(const albert::Query*) const override;
+    std::vector<albert::RankItem> handleGlobalQuery(const albert::Query*) override;
 
 private:
 

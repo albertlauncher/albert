@@ -25,5 +25,5 @@ void GlobalQueryHandler::handleTriggerQuery(Query *query)
     query->add(::move(items));
 }
 
-vector<shared_ptr<Item>> GlobalQueryHandler::handleEmptyQuery(const Query *) const
+vector<shared_ptr<Item>> GlobalQueryHandler::handleEmptyQuery(const Query *)
 { return {}; }

@@ -61,7 +61,7 @@ void TriggersQueryHandler::handleTriggerQuery(Query *q)
     q->add(I);
 }
 
-vector<RankItem> TriggersQueryHandler::handleGlobalQuery(const Query *q) const
+vector<RankItem> TriggersQueryHandler::handleGlobalQuery(const Query *q)
 {
     // Strictly match trigger
 

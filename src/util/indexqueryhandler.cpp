@@ -27,7 +27,7 @@ void IndexQueryHandler::setIndexItems(vector<IndexItem> &&index_items)
     d->index->setItems(::move(index_items));
 }
 
-vector<RankItem> IndexQueryHandler::handleGlobalQuery(const Query *query) const
+vector<RankItem> IndexQueryHandler::handleGlobalQuery(const Query *query)
 {
     // Pointer check not necessary since never called before setFuzzyMatching
     shared_lock l(d->index_mutex);
