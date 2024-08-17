@@ -155,7 +155,8 @@ QPixmap albert::pixmapFromUrl(const QString &url, const QSize &requestedSize)
 
     else if (url.startsWith(xdg_icon_lookup_scheme))
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
-        return pixmapFromFilePath(xdgIconLookup(url.mid(xdg_icon_lookup_scheme.size())), requestedSize);
+        // return pixmapFromFilePath(xdgIconLookup(url.mid(xdg_icon_lookup_scheme.size())), requestedSize);
+        return QIcon::fromTheme(url.mid(xdg_icon_lookup_scheme.size())).pixmap(requestedSize);
 #else
         return {};
 #endif
