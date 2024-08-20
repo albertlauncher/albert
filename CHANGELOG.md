@@ -1,3 +1,21 @@
+v0.26.1 (2024-08-20)
+
+[albert]
+- Albert license v1.1
+
+[plugins]
+- [system]
+  - Also match the trigger for sleep inhibition
+  - Allow changing trigger for sleep inhibition
+- [docs]
+  - Proper anchor support for all kinds of docsets
+  - Add the type to the description
+- [files]
+  - Add option "index file path"
+  - Also fix persistence for option "case senstive file browsers"
+- [applications]
+  - Sort terminals list by caseinsensitive name
+
 v0.26.0 (2024-08-16)
 
 [albert]
