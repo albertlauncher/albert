@@ -1,3 +1,7 @@
+v0.26.2 (2024-08-21)
+
+Hotfix docs plugin cluttering output due to nonunique item id
+
 v0.26.1 (2024-08-20)
 
 [albert]
