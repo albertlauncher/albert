@@ -39,8 +39,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13]
-        qt_version: [6.5.3]  # 6.2.4
+        os: [macos-13]  # see also upload-artifact step
+        qt_version: [6.5.3]
 
     runs-on: ${{ matrix.os }}
 
@@ -126,8 +126,8 @@ jobs:
           VERSION: ${{ github.ref_name }}
         run: ./dist/macos/generate_appcast_item.sh "build/Albert-${{ github.ref_name }}.dmg" "${VERSION:1}" "$EDDSA_PRIVATE_KEY" appcast_item.txt
 
-      - uses: actions/upload-artifact@v3
-        if: matrix.os == 'macos-11' # only lowest os
+      - uses: actions/upload-artifact@v4
+        # if: matrix.os == 'macos-11' # only lowest os
         with:
           name: macos-release-artifacts
           path: |
@@ -149,7 +149,7 @@ jobs:
           token: ${{ secrets.PAT }}
 
       - name: Get build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: macos-release-artifacts
 
