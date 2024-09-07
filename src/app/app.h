@@ -3,7 +3,6 @@
 #pragma once
 #include <QObject>
 #include <memory>
-class TerminalProvider;
 class PluginRegistry;
 class QueryEngine;
 class QHotkey;
@@ -27,7 +26,6 @@ public:
     void restart();
     void quit();
 
-    TerminalProvider &terminal();
     PluginRegistry &pluginRegistry();
     QueryEngine &queryEngine();
 
