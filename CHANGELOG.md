@@ -1,3 +1,15 @@
+v0.26.3 (2024-09-07)
+
+## plugins
+
+- [calculator_qalculate]
+  - Add option: Units in global query
+  - Add option: Functions in global query
+- [python]
+  - Proper venv isolation
+  - Fix excluding regex breaking aur builds
+  - No quotes around logs
+
 v0.26.2 (2024-08-21)
 
 Hotfix docs plugin cluttering output due to nonunique item id
