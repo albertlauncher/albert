@@ -33,19 +33,19 @@ def create_changelog(args) -> str:
     log = run(["git", "log", f"--pretty=format:{placeholder} %B", f"{latest_tag}..HEAD"], capture_output=True).stdout.decode().strip()
     log = process_git_log(log)
     if log:
-        out.append(f"[albert]\n{log}")
+        out.append(f"## Albert\n\n{log}")
 
     begin = run(["git", "ls-tree", latest_tag, native_plugins_root], capture_output=True).stdout.decode().strip().split()[2]
     log = run(["git", "-C", native_plugins_root, "log", f"--pretty=format:{placeholder} %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
     log = process_git_log(log)
     if log:
-        out.append(f"[plugins]\n{log}")
+        out.append(f"## Plugins\n\n{log}")
 
     begin = run(["git", "-C", native_plugins_root, "ls-tree", begin, python_plugins_root], capture_output=True).stdout.decode().strip().split()[2]
     log = run(["git", "-C", python_plugins_root, "log", f"--pretty=format:{placeholder} %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
     log = process_git_log(log)
     if log:
-        out.append(f"[python]\n{log}")
+        out.append(f"## Python\n\n{log}")
 
     return '\n\n'.join(out)
 
@@ -161,10 +161,11 @@ def release(args):
 
         with open(docs_root_path / relative_file_path, 'w') as file:
             file.write(f"""---
-layout: docs
 title:  "Albert v{args.version} released"
 date: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M%z")}
 ---
+
+# {{ page.title }}
 
 {changelog.strip()}
 
@@ -182,20 +183,25 @@ def main():
     p = argparse.ArgumentParser()
     sps = p.add_subparsers()
 
-    sp = sps.add_parser('changelog', help='Create raw changelog.')
-    sp.set_defaults(func=lambda args: print(create_changelog(args)))
+    for c in ['changelog', 'cl']:
+        sp = sps.add_parser(c, help='Create raw changelog.')
+        sp.set_defaults(func=lambda args: print(create_changelog(args)))
 
-    sp = sps.add_parser('test', help='Test build using docker.')
-    sp.add_argument('index', nargs='?', default=None)
-    sp.set_defaults(func=test_build)
 
-    sp = sps.add_parser('testrun', help='Test run using docker.')
-    sp.add_argument('index', nargs='?', default='')
-    sp.set_defaults(func=test_run)
+    for c in ['test', 't']:
+        sp = sps.add_parser(c, help='Test build using docker.')
+        sp.add_argument('index', nargs='?', default=None)
+        sp.set_defaults(func=test_build)
 
-    sp = sps.add_parser('release', help="Release a new version.")
-    sp.add_argument('version', type=str, help="The semantic version.")
-    sp.set_defaults(func=release)
+    for c in ['testrun', 'tr']:
+        sp = sps.add_parser(c, help='Test run using docker.')
+        sp.add_argument('index', nargs='?', default='')
+        sp.set_defaults(func=test_run)
+
+    for c in ['release', 'r']:
+        sp = sps.add_parser(c, help="Release a new version.")
+        sp.add_argument('version', type=str, help="The semantic version.")
+        sp.set_defaults(func=release)
 
     args, unknown = p.parse_known_args()
     args.unknown = unknown
