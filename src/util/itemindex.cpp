@@ -3,6 +3,7 @@
 #include "item.h"
 #include "itemindex.h"
 #include "levenshtein.h"
+#include "logging.h"
 #include <QRegularExpression>
 #include <algorithm>
 #include <map>
@@ -258,34 +259,32 @@ void ItemIndex::setItems(vector<albert::IndexItem> &&index_items)
     unordered_map<albert::Item*,Index> item_indices_;  // implicit unique
     map<QString,WordIndexItem> word_index_;  // implicit lexicographical order
 
-    for (Index string_index = 0;
-         string_index < (Index)index_items.size();
-         ++string_index)
+    for (auto &[item, string] : index_items)
     {
-        albert::IndexItem &index_item = index_items[string_index];
+        QStringList &&words = d->tokenize(string);
+        if (words.empty())
+        {
+            WARN << QString("Skipping index entry '%1'. Tokenization of '%2' yields empty set.")
+                        .arg(item->id(), string);
+            continue;
+        }
 
-        // Add a string index entry for each string.
-        // Assume that it is going to be added at the end of the items index.
-        auto &string_index_item = new_index.strings.emplace_back((Index)new_index.items.size(), 0);
+        // Try to add the item to the temporary item index map (ensures uniqueness)
+        // Assume it is going to be added to the end
+        const auto &[it, emplaced] = item_indices_.emplace(item.get(), (Index)new_index.items.size());
 
-        // Try to add the item_index to the temporary key map (ensures uniqueness)
-        auto [it, emplaced] = item_indices_.emplace(index_item.item.get(),
-                                                    string_index_item.item_index);
-
+        // If item does not exist, move it into the index.
         if (emplaced)
-            // item did not exist yet, move it into the item index
-            new_index.items.emplace_back(::move(index_item.item));
-        else
-            // item already exists, correct the item index assumption
-            string_index_item.item_index = it->second;
+            new_index.items.emplace_back(::move(item));
 
-        QStringList &&words = d->tokenize(index_items[string_index].string);
+        // Add string to item mapping.
+        auto &string_index_item = new_index.strings.emplace_back(it->second, 0);
 
         // Iterate the words
         for (Position p = 0; p < (Position)words.size(); ++p)
         {
-            // Add this word to the occurrences in the word index.
-            word_index_[words[p]].occurrences.emplace_back(string_index, p);
+            // Add word to string mapping.
+            word_index_[words[p]].occurrences.emplace_back(new_index.strings.size() - 1, p);
 
             // Store the maximal match length for scoring
             string_index_item.max_match_len += words[p].size();
