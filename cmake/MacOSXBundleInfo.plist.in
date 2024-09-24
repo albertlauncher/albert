@@ -34,7 +34,19 @@
     <!--https://stackoverflow.com/questions/17893849/qml-causing-switch-to-discrete-graphics-->
     <key>NSSupportsAutomaticGraphicsSwitching</key><true/>
 
+
     <key>NSContactsUsageDescription</key><string>Contacts plugin access.</string>
+
+    <key>NSBluetoothAlwaysUsageDescription</key><string>Bluetooth plugin access.</string>
+
+    <key>NSDesktopFolderUsageDescription</key><string>Files plugin access.</string>
+    <key>NSDocumentsFolderUsageDescription</key><string>Files plugin access.</string>
+    <key>NSDownloadsFolderUsageDescription</key><string>Files plugin access.</string>
+    <key>NSNetworkVolumesUsageDescription</key><string>Files plugin access.</string>
+    <key>NSRemovableVolumesUsageDescription</key><string>Files plugin access.</string>
+
+
+
 
 </dict>
 </plist>
