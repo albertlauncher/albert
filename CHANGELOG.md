@@ -1,3 +1,24 @@
+v0.26.4 (2024-09-24)
+
+This version contains the latest fixes.
+
+## Albert
+
+- ItemIndex: Fix access to moved item. Skip emtpy IndexItems.
+
+## Plugins
+
+- [applications] Search in /System/Cryptexes/App/System/Applications
+- [files] Fix f-term action failing on spaces
+- [files] Fix xfce4-terminal
+- [snippets] Fix typo
+- [websearch] Create required data directory on start
+
+## Python
+
+- [syncthing] Use python-syncthing2. python-syncthing is dead.
+- [unit_converter] Remove future typehints
+
 v0.26.3 (2024-09-07)
 
 ## plugins
