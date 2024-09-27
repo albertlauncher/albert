@@ -37,20 +37,39 @@ private:
     QFutureWatcher<T> future_watcher_;
     bool rerun_ = false;
 
-    void onFinish() {
+    void onFinish()
+    {
         if (rerun_){  // discard and rerun
             rerun_ = false;
             run();
-        } else
-            finish(std::move(future_watcher_.future().takeResult()));
+        }
+        else
+        {
+            try {
+                finish(std::move(future_watcher_.future().takeResult()));
+            } catch (const std::exception &e) {
+                WARN << "Exception in BackgroundExecutor::finish"
+                     << QString::fromStdString(e.what());
+            } catch (...) {
+                WARN << "Unknown exception in BackgroundExecutor::finish.";
+            }
+        }
     }
 
-    T run_(const bool &abort){
-        auto start = std::chrono::system_clock::now();
-        T ret = parallel(abort);
-        auto end = std::chrono::system_clock::now();
-        runtime = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
-        return ret;
+    T run_(const bool &abort)
+    {
+        try {
+            auto start = std::chrono::system_clock::now();
+            T ret = parallel(abort);
+            auto end = std::chrono::system_clock::now();
+            runtime = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
+            return ret;
+        } catch (const std::exception &e) {
+            WARN << "Exception in BackgroundExecutor::parallel" << QString::fromStdString(e.what());
+        } catch (...) {
+            WARN << "Unknown exception in BackgroundExecutor::parallel.";
+        }
+        return {};
     }
 
 public:
