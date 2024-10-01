@@ -42,7 +42,12 @@ void albert::showSettings(QString plugin_id)
 { App::instance()->showSettings(plugin_id); }
 
 void albert::openUrl(const QString &url)
-{ openUrl(QUrl(url)); }
+{
+    if (QUrl qurl(url); qurl.isValid())
+        openUrl(QUrl(url));
+    else
+        WARN << "Invalid URL" << url << qurl.errorString();
+}
 
 void albert::openUrl(const QUrl &url)
 {
