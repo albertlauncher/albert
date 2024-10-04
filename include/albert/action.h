@@ -20,7 +20,7 @@ public:
     /// \param id Identifier of the action.
     /// \param text Description of the action.
     /// \param function The action function.
-    Action(QString id, QString text, std::function<void()> function);
+    Action(QString id, QString text, std::function<void()> function) noexcept;
 
     /// The identifier of the action.
     QString id;
