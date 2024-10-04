@@ -46,8 +46,12 @@ public:
     Match match(const QString &s) const
     {
         // Empty query is a 0 score (epsilon) match
-        if (tokens.isEmpty())
+        if (string.isEmpty())
             return {0.};
+
+        // Do not match strings containing only separators
+        if (tokens.isEmpty())
+            return {-1.};
 
         QStringList other_tokens = tokenize(s);
 
