@@ -12,54 +12,46 @@ namespace albert
 class ALBERT_EXPORT StandardItem : public Item
 {
 public:
-    /// \brief StandardItem constructor
-    /// \param id @copydetails id
-    /// \param text @copydetails text
-    /// \param subtext @copydetails subtext
-    /// \param input_action_text @copydetails iconUrls
-    /// \param icon_urls @copydetails inputActionText
-    /// \param actions @copydetails actions
-    explicit StandardItem(
-            QString id = {},
-            QString text = {},
-            QString subtext = {},
-            QString input_action_text = {},
-            QStringList icon_urls = {},
-            std::vector<Action> actions = {});
+    /// Constructs a StandardItem with the contents initialized with the data passed.
+    /// \param id @copybrief id
+    /// \param text @copybrief text
+    /// \param subtext @copybrief subtext
+    /// \param input_action_text @copybrief inputActionText
+    /// \param icon_urls @copybrief iconUrls
+    /// \param actions @copybrief actions
+    explicit StandardItem(QString id,
+                          QString text = {},
+                          QString subtext = {},
+                          QString input_action_text = {},
+                          QStringList icon_urls = {},
+                          std::vector<Action> actions = {}) noexcept;
 
-
-    /// StandardItem move constructor
-    StandardItem(StandardItem&&) = default;
-    /// StandardItem move assignment
-    StandardItem& operator=(StandardItem&&) = default;
-    StandardItem(const StandardItem&) = delete;
+    StandardItem(const StandardItem &) = delete;
     StandardItem& operator=(const StandardItem&) = delete;
 
-    /// Setter for the item identifier @copydetails id
+    /// Constructs a StandardItem with the contents of `other` using move semantics.
+    StandardItem(StandardItem &&other) noexcept = default;
+
+    /// Replaces the contents with those of `other` using move semantics.
+    StandardItem &operator=(StandardItem &&other) noexcept = default;
+
+    /// Sets the item identifier to `id`.
     void setId(QString id);
 
-    /// Setter for the item text @copydetails text
+    /// Sets the item text to `text`.
     void setText(QString text);
 
-    /// Setter for the item subtext @copydetails subtext
-    void setSubtext(QString subtext);
+    /// Sets the item subtext to `text`.
+    void setSubtext(QString text);
 
-    /// Setter for the items iconUrls @copydetails iconUrls
-    void setInputActionText(QString input_action_text);
+    /// Sets the item input action text to `text`.
+    void setInputActionText(QString text);
 
-    /// Setter for the input action text @copydetails inputActionText
-    void setIconUrls(QStringList icon_urls);
+    /// Sets the item icon urls to `urls`.
+    void setIconUrls(QStringList urls);
 
-    /// Setter for item actions @copydetails actions
+    /// Sets the item actions to `actions`.
     void setActions(std::vector<Action> actions);
-
-    // albert::Item interface
-    QString id() const override;
-    QString text() const override;
-    QString subtext() const override;
-    QString inputActionText() const override;
-    QStringList iconUrls() const override;
-    std::vector<Action> actions() const override;
 
     /// Convenience shared pointer factory for standard items
     static std::shared_ptr<StandardItem> make(
@@ -77,6 +69,14 @@ public:
             QString subtext = {},
             QStringList icon_urls = {},
             std::vector<Action> actions = {});
+
+    // albert::Item interface
+    QString id() const override;
+    QString text() const override;
+    QString subtext() const override;
+    QString inputActionText() const override;
+    QStringList iconUrls() const override;
+    std::vector<Action> actions() const override;
 
 protected:
     QString id_;
