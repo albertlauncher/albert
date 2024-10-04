@@ -323,21 +323,24 @@ void ItemIndex::setItems(vector<albert::IndexItem> &&index_items)
 
 vector<albert::RankItem> ItemIndex::search(const QString &string, const bool &isValid) const
 {
+    vector<RankItem> result;
     QStringList &&words = d->tokenize(string);
-
-    unordered_map<Index, double> result_map;
+    shared_lock lock(d->mutex);
 
     if (words.empty())
-
-        // Return all items
-        for (const auto &string_index_item : d->index.strings)
-            result_map.emplace(string_index_item.item_index, 0.0f);
-
+    {
+        if (string.isEmpty())
+        {
+            // Return all items
+            result.reserve(d->index.items.size());
+            for (const auto &item : d->index.items)
+                result.emplace_back(item, 0.0f);
+            return result;
+        }
+    }
     else
     {
-        shared_lock lock(d->mutex);
-
-
+        unordered_map<Index, double> result_map;
         vector<StringMatch> string_matches = d->getStringMatches(words[0], isValid);
 
         // In case of multiple words intersect. Todo: user chooses strategy
@@ -394,13 +397,11 @@ vector<albert::RankItem> ItemIndex::search(const QString &string, const bool &is
                 it->second = score;
         }
 
+        // Convert results to return type
+        result.reserve(result_map.size());
+        for (const auto &[item_idx, score] : result_map)
+            result.emplace_back(d->index.items[item_idx], score);
+
     }
-
-    // Convert results to return type
-    vector<RankItem> result;
-    result.reserve(result_map.size());
-    for (const auto &[item_idx, score] : result_map)
-        result.emplace_back(d->index.items[item_idx], score);
-
     return result;
 }
