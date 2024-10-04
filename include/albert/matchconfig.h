@@ -2,19 +2,39 @@
 // SPDX-License-Identifier: MIT
 
 #pragma once
+#include <albert/export.h>
 #include <QRegularExpression>
 
 namespace albert
 {
 
-struct MatchConfig
+///
+/// Configuration for string matching.
+///
+class ALBERT_EXPORT MatchConfig
 {
+public:
+    /// The separator regex used to split the compared strings.
     QRegularExpression separator_regex =
-            QRegularExpression(R"([\s\\\/\-\[\](){}#!?<>"'=+*.:,;_]+)");
+        QRegularExpression(R"([\s\\\/\-\[\](){}#!?<>"'=+*.:,;_]+)");
+
+    /// Match strings case insensitive.
     bool ignore_case = true;
+
+    /// Match strings normalized.
     bool ignore_diacritics = true;
+
+    /// Match strings independent of their order.
     bool ignore_word_order = true;
+
+    /// Match strings error tolerant.
     bool fuzzy = false;
+
+    ///
+    /// The error tolerance.
+    ///
+    /// This hardcodes the error tolerance on enabled `fuzzy` to 25%.
+    ///
     static const uint error_tolerance_divisor = 4;
 };
 
