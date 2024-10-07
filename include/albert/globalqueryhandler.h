@@ -28,7 +28,7 @@ public:
     /// @return A list of match items. Empty query should return all items with
     /// a score of 0.
     /// @note Executed in a worker thread.
-    virtual std::vector<RankItem> handleGlobalQuery(const Query*) = 0;
+    virtual std::vector<RankItem> handleGlobalQuery(const Query &) = 0;
 
     /// The empty query handling function.
     /// Empty patterns match everything. For triggered queries this is desired.
@@ -48,7 +48,7 @@ public:
     /// @note Reimplement if the handler should have custom triggered behavior,
     /// but think twice if this is necessary. It may break user expectation.
     /// @see handleTriggerQuery and rankItems
-    void handleTriggerQuery(Query*) override;
+    void handleTriggerQuery(Query &) override;
 
 protected:
 

@@ -95,7 +95,7 @@ public:
     QString id() const override;
     QString name() const override;
     QString description() const override;
-    void handleTriggerQuery(albert::Query *) override;
+    void handleTriggerQuery(albert::Query &) override;
 
 private:
 

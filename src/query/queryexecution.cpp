@@ -50,7 +50,7 @@ void QueryExecution::run()
         try {
             runFallbackHandlers();
             auto tp = system_clock::now();
-            query_handler_->handleTriggerQuery(this);
+            query_handler_->handleTriggerQuery(*this);
             qCDebug(timeCat,).noquote()
                 << QStringLiteral("\x1b[38;5;33m│%1 ms│ TRIGGER |%2│ #%3  '%4' '%5' \x1b[0m")
                        .arg(duration_cast<milliseconds>(system_clock::now() - tp).count(), 6)
@@ -203,7 +203,7 @@ QString GlobalQuery::name() const
 QString GlobalQuery::description() const
 { return QStringLiteral("Runs a bunch of global query handlers"); }
 
-void GlobalQuery::handleTriggerQuery(albert::Query *)
+void GlobalQuery::handleTriggerQuery(Query &)
 {
     mutex rank_items_mutex;  // 6.4 Still no move semantics in QtConcurrent
     vector<pair<Extension*,RankItem>> rank_items;
@@ -225,7 +225,7 @@ void GlobalQuery::handleTriggerQuery(albert::Query *)
                 for (auto &item : handler->handleEmptyQuery(this))
                     results.emplace_back(::move(item), 0);
             else
-                results = handler->handleGlobalQuery(this);
+                results = handler->handleGlobalQuery(*this);
 
             auto d_h = duration_cast<milliseconds>(system_clock::now()-t).count();
 

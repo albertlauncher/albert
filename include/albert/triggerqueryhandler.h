@@ -47,7 +47,7 @@ public:
 
     /// The trigger query processing function.
     /// @note Executed in a worker thread.
-    virtual void handleTriggerQuery(Query*) = 0;
+    virtual void handleTriggerQuery(Query &) = 0;
 
 protected:
 

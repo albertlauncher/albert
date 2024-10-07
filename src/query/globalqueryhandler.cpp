@@ -11,7 +11,7 @@ GlobalQueryHandler::~GlobalQueryHandler() = default;
 void GlobalQueryHandler::applyUsageScore(vector<RankItem> *rankItems) const
 { UsageHistory::applyScores(id(), *rankItems); }
 
-void GlobalQueryHandler::handleTriggerQuery(Query *query)
+void GlobalQueryHandler::handleTriggerQuery(Query &query)
 {
     auto rank_items = handleGlobalQuery(query);
     applyUsageScore(&rank_items);
@@ -22,7 +22,7 @@ void GlobalQueryHandler::handleTriggerQuery(Query *query)
     for (auto &match : rank_items)
         items.push_back(::move(match.item));
 
-    query->add(::move(items));
+    query.add(::move(items));
 }
 
 vector<shared_ptr<Item>> GlobalQueryHandler::handleEmptyQuery(const Query *)
