@@ -55,6 +55,8 @@
     ALBERT_PROPERTY_BASE(type, name, defaultValue, PluginInstance::settings)
 
 
+// -------------------------------------------------------------------------------------------------
+
 ///
 /// @brief Convenience macro for (incomplete) user property definition.
 ///
@@ -87,6 +89,7 @@
     ALBERT_PROPERTY_GETSET(type, name, defaultValue, PluginInstance::settings)
 
 
+// -------------------------------------------------------------------------------------------------
 
 ///
 /// @brief Convenience macro for user property definition using a given member.
@@ -115,6 +118,8 @@
     ALBERT_PROPERTY_MEMBER(type, name, member, defaultValue, PluginInstance::settings)
 
 
+// -------------------------------------------------------------------------------------------------
+
 ///
 /// @brief Convenience macro for user property definition defining a member.
 ///
@@ -139,21 +144,7 @@
     ALBERT_PROPERTY(type, name, defaultValue, PluginInstance::settings)
 
 
-///
-/// @brief Convenience macro to connect UI elemetens to albert user properties
-///
-/// @param object The object containing the property
-/// @param name The property name
-/// @param widget The widget pointer to connect to
-/// @param widget_setter The setter function of the widget
-/// @param widget_signal The changed signal of the widget
-///
-#define ALBERT_PROPERTY_CONNECT(object, name, widget, widget_setter, widget_signal) \
-    widget->widget_setter(object->name()); \
-    connect(widget, &std::remove_pointer<decltype(widget)>::type::widget_signal, \
-            object, &std::remove_pointer<decltype(object)>::type::set_##name); \
-    connect(object, &std::remove_pointer<decltype(object)>::type::name##_changed, \
-            widget, [o=object,w=widget](){ w->widget_setter(o->name()); });
+// -------------------------------------------------------------------------------------------------
 
 ///
 /// @brief Convenience macro to connect checkboxes to boolean user properties
@@ -164,9 +155,12 @@
 /// @param name The property name
 /// @param widget The widget pointer to connect to
 ///
-#define ALBERT_PROPERTY_CONNECT_CHECKBOX(object, name, widget) \
-ALBERT_PROPERTY_CONNECT(object, name, widget, setChecked, toggled)
-
+#define ALBERT_PROPERTY_CONNECT_CHECKBOX(object, name, checkbox) \
+    checkbox->setChecked(object->name()); \
+    connect(object, &std::remove_pointer<decltype(object)>::type::name##_changed, \
+            checkbox, &QCheckBox::setChecked); \
+    connect(checkbox, &QCheckBox::toggled, \
+            object, &std::remove_pointer<decltype(object)>::type::set_##name);
 
 ///
 /// @brief Convenience macro to connect spinboxes to int user properties
@@ -177,5 +171,9 @@ ALBERT_PROPERTY_CONNECT(object, name, widget, setChecked, toggled)
 /// @param name The property name
 /// @param widget The widget pointer to connect to
 ///
-#define ALBERT_PROPERTY_CONNECT_SPINBOX(object, name, widget) \
-ALBERT_PROPERTY_CONNECT(object, name, widget, setValue, valueChanged)
+#define ALBERT_PROPERTY_CONNECT_SPINBOX(object, name, spinbox) \
+    spinbox->setValue(object->name()); \
+    connect(object, &std::remove_pointer<decltype(object)>::type::name##_changed, \
+            spinbox, &QSpinBox::setValue); \
+    connect(spinbox, &QSpinBox::valueChanged, \
+            object, &std::remove_pointer<decltype(object)>::type::set_##name);
