@@ -165,7 +165,7 @@ title:  "Albert v{args.version} released"
 date: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M%z")}
 ---
 
-# {{ page.title }}
+# {{{ page.title }}}
 
 {changelog.strip()}
 
