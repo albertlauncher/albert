@@ -20,11 +20,13 @@ set(ALBERT_COMPILE_OPTIONS
     -Wextra
     -Wpedantic
 
+    # warnings that should be errors
+    -Werror=return-type
+
     # -Wconversion
     # -Weffc++
     -Winline
     -Wmissing-field-initializers
-    -Wreturn-type
     -Wshadow
     -Wstrict-aliasing
 
