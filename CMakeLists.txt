@@ -94,6 +94,7 @@ set(LIB_PUBLIC_HEADER
     include/albert/query.h
     include/albert/rankitem.h
     include/albert/standarditem.h
+    include/albert/timeit.h
     include/albert/triggerqueryhandler.h
     include/albert/util.h
 )
