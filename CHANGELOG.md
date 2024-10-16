@@ -1,3 +1,23 @@
+v0.26.5 (2024-10-16)
+
+## Plugins
+
+- Archive **qmlboxmodel**
+- **applications**
+  - Fix segfaults on Qt 6.8
+  - Add option "split camel case"
+  - Add option "use acronyms"
+  - Add terminals debian-uxterm and com.alacritty.Alacritty
+- **python**
+  - Do not allow site_import
+- **dictionary**
+  - Implement FallbackHandler
+- **contacts**
+  - Implement IndexQueryHandler
+  - Index contacts in background
+  - Use all available names
+  - Add website addresses actions
+
 v0.26.4 (2024-09-24)
 
 This version contains the latest fixes.
