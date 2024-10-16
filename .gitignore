@@ -2,7 +2,7 @@
 *.qmlc
 .DS_Store
 /.albertignore
-/.idea
+.idea
 /CMakeLists.txt.user*
 /LicenseTemplate
 /build*
