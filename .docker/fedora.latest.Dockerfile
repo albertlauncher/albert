@@ -19,18 +19,17 @@ RUN yum install -y \
 COPY . /src
 WORKDIR /build
 
-# Build the entire project
-RUN rm -rf * \
- && cmake /src -DCMAKE_INSTALL_PREFIX=/usr \
- && make -j $(nproc) \
- && make install
+# Build the main project
+RUN cmake -S /src -B . \
+#      -DBUILD_TESTS=ON \
+ && cmake --build . -j$(nproc) \
+ && cmake --install . --prefix /usr
 
 # Test build the apps plugin as separate project
 RUN rm -rf * \
  && cmake /src/plugins/applications \
-    -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_PREFIX_PATH=/usr/lib64/cmake/ \
- && make -j $(nproc) \
- && make install
+ && cmake --build . -j$(nproc) \
+ && cmake --install . --prefix /usr
 
 ENTRYPOINT ["bash"]

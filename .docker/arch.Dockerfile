@@ -1,5 +1,4 @@
-FROM archlinux:latest AS builder
-#FROM agners/archlinuxarm AS builder
+FROM archlinux:latest
 
 RUN pacman -Syu --verbose --noconfirm \
     cmake \
@@ -19,18 +18,17 @@ RUN pacman -Syu --verbose --noconfirm \
 COPY . /src
 WORKDIR /build
 
-# Build the entire project
-RUN rm -rf * \
- && cmake /src -DCMAKE_INSTALL_PREFIX=/usr \
- && make -j $(nproc) \
- && make install
+# Build the main project
+RUN cmake -S /src -B . \
+#      -DBUILD_TESTS=ON \
+ && cmake --build . -j$(nproc) \
+ && cmake --install . --prefix /usr
 
 # Test build the apps plugin as separate project
 RUN rm -rf * \
  && cmake /src/plugins/applications \
-    -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_PREFIX_PATH=/usr/lib/$(gcc -dumpmachine)/cmake/ \
- && make -j $(nproc) \
- && make install
+ && cmake --build . -j$(nproc) \
+ && cmake --install . --prefix /usr
 
 ENTRYPOINT ["bash"]
