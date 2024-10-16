@@ -505,25 +505,26 @@ endif()
 
 ### Test ######################################################################
 
-option(BUILD_TESTS "Build tests (Reqiures doctest)" OFF)
+option(BUILD_TESTS "Build tests (Requires QTest)" OFF)
 if (BUILD_TESTS)
-    set(TARGET_TST ${CMAKE_PROJECT_NAME}_test)
-    find_package(doctest)
+    find_package(Qt6 REQUIRED COMPONENTS Test)
 
     get_target_property(SRC_TST ${TARGET_LIB} SOURCES)
     get_target_property(INC_TST ${TARGET_LIB} INCLUDE_DIRECTORIES)
     get_target_property(LIBS_TST ${TARGET_LIB} LINK_LIBRARIES)
     get_target_property(CXX_STD_TST ${TARGET_LIB} CXX_STANDARD)
 
+    set(TARGET_TST ${CMAKE_PROJECT_NAME}_test)
     add_executable(${TARGET_TST} ${SRC_TST} test/test.cpp)
-    target_include_directories(${TARGET_TST} PRIVATE ${INC_TST})
-    target_link_libraries(${TARGET_TST} PRIVATE ${LIBS_TST} doctest::doctest)
+    target_include_directories(${TARGET_TST} PRIVATE ${INC_TST} test)
+    target_link_libraries(${TARGET_TST} PRIVATE ${LIBS_TST} Qt6::Test)
     set_target_properties(${TARGET_TST} PROPERTIES
         CXX_STANDARD ${CXX_STD_TST}
         AUTOMOC ON
         AUTOUIC ON
         AUTORCC ON
     )
+    add_test(NAME ${TARGET_TST} COMMAND ${TARGET_TST})
 
 endif()
 
