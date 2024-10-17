@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QString>
 #include <chrono>
+#include <albert/logging.h>
 
 // Private API
 
@@ -21,6 +22,6 @@ struct TimeIt
     {
         auto end = std::chrono::system_clock::now();
         auto dur = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-        qCritical() << QString("%L1 µs | %2").arg(dur, 8).arg(name);
+        CRIT << QString(ccyan "%L1 µs | %2").arg(dur, 8).arg(name);
     }
 };
