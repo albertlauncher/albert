@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:latest
 
 RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get -qq update \
@@ -30,13 +30,13 @@ RUN apt-get install --no-install-recommends -y \
 COPY . /src
 WORKDIR /build
 
-# Build the main project
-RUN cmake -S /src -B . \
-#      -DBUILD_TESTS=ON \
+# Build, test and install the main project
+RUN cmake -S /src -B . -DBUILD_TESTS=ON \
  && cmake --build . -j$(nproc) \
- && cmake --install . --prefix /usr
+ && cmake --install . --prefix /usr \
+ && ctest --output-on-failure
 
-# Test build the apps plugin as separate project
+# Build and install a plugin separately
 RUN rm -rf * \
  && cmake /src/plugins/applications \
     -DCMAKE_PREFIX_PATH=/usr/lib/$(gcc -dumpmachine)/cmake/ \

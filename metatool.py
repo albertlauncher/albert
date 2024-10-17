@@ -50,50 +50,36 @@ def create_changelog(args) -> str:
     return '\n\n'.join(out)
 
 
-def docker_choice(args):
-    files = list((Path(args.root) / ".docker").glob("*.Dockerfile"))
-
-    if args.index is not None:
-        indices = args.index
-    else:
-        for i, f in enumerate(files):
-            print(f"{i}: {f.name}")
-        indices = input(f"Choose image? [All] ")
-
-    indices = [int(s) for s in filter(None, indices.split())]
-    indices = indices if indices else list(range(len(files)))
-    return [files[i] for i in indices]
-
-
 def test_build(args):
-    for file in docker_choice(args):
-        tag = file.name.replace("Dockerfile", "albert")
-        try:
-            run(['docker', 'build', '-t', tag, '--target', 'builder', '-f', file, '.'],
-                cwd=args.root, env=dict(os.environ, DOCKER_BUILDKIT='0')).check_returncode()
-        except subprocess.CalledProcessError as e:
-            print(e)
-            sys.exit(1)
+
+    cmds = {
+        'Arch':   ["docker", "build", "--progress=plain", "-f", ".docker/arch.Dockerfile", "-t",
+                   "albert:arch", "--platform", "linux/amd64", "."],
+        'Fedora': ["docker", "build", "--progress=plain", "-f", ".docker/fedora.Dockerfile", "-t",
+                   "albert:fedora", "."],
+        'Ubuntu': ["docker", "build", "--progress=plain", "-f", ".docker/ubuntu.Dockerfile", "-t",
+                   "albert:ubuntu", "."],
+    }
 
 
-def test_run(args):
-    for file in docker_choice(args):
-        tag = file.name.replace("Dockerfile", "albert")
-        try:
-            run(['docker', 'build', '-t', tag, '--target', 'runtime', '-f', file, '.'],
-                cwd=args.root, env=dict(os.environ, DOCKER_BUILDKIT='0')).check_returncode()
+    if args.distribution is not None:
+        cmds = [v for k,v  in cmds.items() if args.distribution.lower() in k.lower()]
+    else:
+        keys = list(cmds.keys())
+        for i, k in enumerate(keys):
+            print(f"{i}: {k}")
+        indices = input("Choose image: [All] ")
+        indices = [int(s) for s in filter(None, indices.split())]
+        cmds = [cmds[key] for key in [keys[i] for i in indices]] if indices else cmds.values()
 
-            run(['docker', 'container', 'remove', tag],
-                cwd=args.root, env=dict(os.environ, DOCKER_BUILDKIT='0'))
+    try:
+        for cmd in cmds:
+            print(f">>> {' '.join(cmd)}")
+            run(cmd).check_returncode()
+    except subprocess.CalledProcessError as e:
+        print(e)
+        sys.exit(1)
 
-            run(['docker', 'create', '-e', 'DISPLAY=docker.for.mac.host.internal:0', '--name', tag, tag],
-                cwd=args.root, env=dict(os.environ, DOCKER_BUILDKIT='0')).check_returncode()
-
-            run(['docker', 'start', '-i', tag],
-                cwd=args.root, env=dict(os.environ, DOCKER_BUILDKIT='0')).check_returncode()
-        except subprocess.CalledProcessError as e:
-            print(e)
-            sys.exit(1)
 
 def release(args):
     root = Path(args.root)
@@ -187,16 +173,10 @@ def main():
         sp = sps.add_parser(c, help='Create raw changelog.')
         sp.set_defaults(func=lambda args: print(create_changelog(args)))
 
-
     for c in ['test', 't']:
         sp = sps.add_parser(c, help='Test build using docker.')
-        sp.add_argument('index', nargs='?', default=None)
+        sp.add_argument('distribution', type=str, nargs='?', default=None, help="The distro.")
         sp.set_defaults(func=test_build)
-
-    for c in ['testrun', 'tr']:
-        sp = sps.add_parser(c, help='Test run using docker.')
-        sp.add_argument('index', nargs='?', default='')
-        sp.set_defaults(func=test_run)
 
     for c in ['release', 'r']:
         sp = sps.add_parser(c, help="Release a new version.")
