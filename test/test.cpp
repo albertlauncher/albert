@@ -15,9 +15,9 @@ using namespace albert;
 using namespace std::chrono;
 using namespace std;
 
-QTEST_MAIN(Test)
+QTEST_APPLESS_MAIN(AlbertTests)
 
-void Test::topological_sort_linear()
+void AlbertTests::topological_sort_linear()
 {
     auto result = topologicalSort(map<int, set<int>>{{1, {2}}, {2, {3}}, {3, {}}});
     auto expect = vector<int>{3, 2, 1};
@@ -25,7 +25,7 @@ void Test::topological_sort_linear()
     QVERIFY(result.error_set.empty());
 }
 
-void Test::topological_sort_diamond()
+void AlbertTests::topological_sort_diamond()
 {
     auto result = topologicalSort(map<int, set<int>>{{1, {}}, {2, {1}}, {3, {1}}, {4, {2, 3}}});
     // auto expect = vector<int>{1,2,3,4};  // or …
@@ -34,7 +34,7 @@ void Test::topological_sort_diamond()
     QVERIFY(result.error_set.empty());
 }
 
-void Test::topological_sort_cycle()
+void AlbertTests::topological_sort_cycle()
 {
     auto result = topologicalSort(map<int, set<int>>{{1, {2}}, {2, {1}}});
     auto expect = map<int, set<int>>{{1, {2}}, {2, {1}}};
@@ -42,7 +42,7 @@ void Test::topological_sort_cycle()
     QCOMPARE(result.error_set, expect);
 }
 
-void Test::topological_sort_not_existing_node()
+void AlbertTests::topological_sort_not_existing_node()
 {
     auto result = topologicalSort(map<int, set<int>>{{1, {2}}});
     auto expect = map<int, set<int>>{{1, {2}}};
@@ -50,7 +50,7 @@ void Test::topological_sort_not_existing_node()
     QCOMPARE(result.error_set, expect);
 }
 
-void Test::levenshtein_fast_levenshtein_threshold()
+void AlbertTests::levenshtein_fast_levenshtein_threshold()
 {
     Levenshtein l;
 
@@ -95,7 +95,7 @@ void Test::levenshtein_fast_levenshtein_threshold()
     QVERIFY(l.computePrefixEditDistanceWithLimit("0123456789", "--234-6789", 8) == 3);
 }
 
-void Test::levenshtein_fuzzy_substitution()
+void AlbertTests::levenshtein_fuzzy_substitution()
 {
     Levenshtein l;
     QVERIFY(l.computePrefixEditDistanceWithLimit("test", "_est____", 1) == 1);
@@ -105,21 +105,21 @@ void Test::levenshtein_fuzzy_substitution()
     QVERIFY(l.computePrefixEditDistanceWithLimit("test", "___t____", 2) == 3);
 }
 
-void Test::levenshtein_fuzzy_deletion()
+void AlbertTests::levenshtein_fuzzy_deletion()
 {
     Levenshtein l;
     QVERIFY(l.computePrefixEditDistanceWithLimit("test", "ttest____", 1) == 1);
     QVERIFY(l.computePrefixEditDistanceWithLimit("test", "tttest____", 1) == 2);
 }
 
-void Test::levenshtein_fuzzy_insertion()
+void AlbertTests::levenshtein_fuzzy_insertion()
 {
     Levenshtein l;
     QVERIFY(l.computePrefixEditDistanceWithLimit("test", "est____", 1) == 1);
     QVERIFY(l.computePrefixEditDistanceWithLimit("test", "st____", 1) == 2);
 }
 
-void Test::levenshtein_shorter_prefix()
+void AlbertTests::levenshtein_shorter_prefix()
 {
     Levenshtein l;
     QVERIFY(l.computePrefixEditDistanceWithLimit("abc", "abc", 1) == 0);
@@ -128,7 +128,7 @@ void Test::levenshtein_shorter_prefix()
     QVERIFY(l.computePrefixEditDistanceWithLimit("abc", "", 1) == 2);
 }
 
-void Test::matcher_empty()
+void AlbertTests::matcher_empty()
 {
     Matcher m("");
     QVERIFY(qFuzzyCompare(m.match("a").score(), .0));
@@ -143,7 +143,7 @@ void Test::matcher_empty()
     QVERIFY(m.match("a b").isExactMatch() == false);
 }
 
-void Test::matcher_single()
+void AlbertTests::matcher_single()
 {
     Matcher m("a");
     QVERIFY(qFuzzyCompare(m.match("a").score(), 1.0));
@@ -158,7 +158,7 @@ void Test::matcher_single()
     QVERIFY(m.match("a b").isExactMatch() == false);
 }
 
-void Test::matcher_multiple()
+void AlbertTests::matcher_multiple()
 {
     Matcher m("a b");
     QVERIFY(m.match("a") == false);
@@ -181,7 +181,7 @@ void Test::matcher_multiple()
     QVERIFY(qFuzzyCompare(m.match("b a").score(), 1.0));
 }
 
-void Test::matcher_multiple_ordered()
+void AlbertTests::matcher_multiple_ordered()
 {
     Matcher m("a b", {.ignore_word_order = false});
     QVERIFY(m.match("a") == false);
@@ -196,7 +196,7 @@ void Test::matcher_multiple_ordered()
     QVERIFY(m.match("c b a") == false);
 }
 
-void Test::matcher_diacritics()
+void AlbertTests::matcher_diacritics()
 {
     Matcher m("é");
     QVERIFY(m.match("e") == true);
@@ -206,7 +206,7 @@ void Test::matcher_diacritics()
     QVERIFY(m2.match("é") == true);
 }
 
-void Test::matcher_seprarators()
+void AlbertTests::matcher_seprarators()
 {
     Matcher m("a");
     QVERIFY(qFuzzyCompare(m.match("a b").score(), 1.0 / 2));
@@ -221,7 +221,7 @@ void Test::matcher_seprarators()
     QVERIFY(m.match("!a b") == false);
 }
 
-void Test::matcher_fuzzy()
+void AlbertTests::matcher_fuzzy()
 {
     QString abc{"abcdefghijklmnopqrstuvwxyz"};
 
@@ -236,7 +236,7 @@ void Test::matcher_fuzzy()
     QVERIFY(!Matcher("abc_e_g_", c).match(abc));
 }
 
-void Test::matcher_case()
+void AlbertTests::matcher_case()
 {
     auto m = Matcher("A", {.ignore_case = true});
     QVERIFY(m.match("A"));
@@ -255,7 +255,7 @@ void Test::matcher_case()
     QVERIFY(m.match("a"));
 }
 
-void Test::matcher_score()
+void AlbertTests::matcher_score()
 {
     auto m = Matcher("a");
 
@@ -291,7 +291,7 @@ static auto indexMatch(const QStringList &item_strings,
     return index.search(search_string, true);
 };
 
-void Test::index_empty()
+void AlbertTests::index_empty()
 {
     auto m = indexMatch({"a","A"}, "");
     QVERIFY(m.size() == 2);
@@ -309,21 +309,21 @@ static const QStringList abc_perm
     "c b ã"
 };
 
-void Test::index_multiple()
+void AlbertTests::index_multiple()
 {
     QVERIFY(indexMatch(abc_perm, "a").size() == 6);
     QVERIFY(indexMatch(abc_perm, "a b").size() == 6);
     QVERIFY(indexMatch(abc_perm, "a b c").size() == 6);
 }
 
-void Test::index_multiple_ordered()
+void AlbertTests::index_multiple_ordered()
 {
     QVERIFY(indexMatch(abc_perm, "a", {.ignore_word_order = false}).size() == 6);
     QVERIFY(indexMatch(abc_perm, "a b", {.ignore_word_order = false}).size() == 3);
     QVERIFY(indexMatch(abc_perm, "a b c", {.ignore_word_order = false}).size() == 1);
 }
 
-void Test::index_diacritics()
+void AlbertTests::index_diacritics()
 {
     QVERIFY(indexMatch(abc_perm, "a", {.ignore_diacritics = false}).size() == 4);
     QVERIFY(indexMatch(abc_perm, "a b", {.ignore_diacritics = false}).size() == 4);
@@ -331,14 +331,14 @@ void Test::index_diacritics()
     QVERIFY(indexMatch(abc_perm, "b", {.ignore_diacritics = false}).size() == 6);
 }
 
-void Test::index_separators()
+void AlbertTests::index_separators()
 {
     QVERIFY(indexMatch({"a!b", "a b","a-b"}, "a b").size() == 3);
     QVERIFY(indexMatch({"a!b", "a b","a-b"}, "a b",
                        {.separator_regex = QRegularExpression("[ ]+")}).size() == 1);
 }
 
-void Test::index_fuzzy()
+void AlbertTests::index_fuzzy()
 {
     QStringList abc{"abcdefghijklmnopqrstuvwxyz"};
 
@@ -356,7 +356,7 @@ void Test::index_fuzzy()
     QVERIFY(indexMatch(abc, "abc_e_g_", c).size() == 0);
 }
 
-void Test::index_case()
+void AlbertTests::index_case()
 {
     auto m = indexMatch({"a","A"}, "a", {});
     QVERIFY(m.size() == 2);
@@ -367,7 +367,7 @@ void Test::index_case()
     QVERIFY(m[0].score == 1.);
 }
 
-void Test::index_score()
+void AlbertTests::index_score()
 {
     auto m = indexMatch({"a","ab","abc"}, "a",  {.fuzzy = true});
 
@@ -384,356 +384,360 @@ void Test::index_score()
     QVERIFY(qFuzzyCompare(m[1].score, 3./4.));
 }
 
-static string gen_random(const int len) {
-    static const char alphanum[] =
-            "0123456789"
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-            "abcdefghijklmnopqrstuvwxyz";
-    string tmp_s;
-    tmp_s.reserve(len);
-
-    for (int i = 0; i < len; ++i) {
-        tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
-    }
-
-    return tmp_s;
-}
-
-static void levenshtein_compare_benchmarks_and_check_results(const vector<QString> &strings, uint k)
-{
-    Levenshtein l;
-    vector<bool> results_old;
-    vector<bool> results_new;
-
-    results_old.reserve(strings.size());
-    auto start = system_clock::now();
-    auto i = strings.cbegin();
-    auto j = strings.crbegin();
-    for (; i != strings.cend(); ++i, ++j)
-        results_old.push_back(l.checkPrefixEditDistance_Legacy(*i, *j, k));
-    long duration_old = duration_cast<microseconds>(system_clock::now()-start).count();
-
-    results_new.reserve(strings.size());
-    start = system_clock::now();
-    i = strings.cbegin();
-    j = strings.crbegin();
-    for (; i != strings.cend(); ++i, ++j)
-        results_new.push_back(l.computePrefixEditDistanceWithLimit(*i, *j, k) <= k);
-    long duration_new = duration_cast<microseconds>(system_clock::now()-start).count();
-
-    cout << "Levensthein old: "
-         << setw(12)
-         << duration_old
-         << " µs. New: "
-         << setw(12)
-         << duration_new
-         << " µs. Improvement: "
-         << (double)duration_old/duration_new
-         << endl;
-
-    QVERIFY(results_old == results_new);
-}
-
-void Test::benchmark_comparison_vanilla_vs_fast_levenshtein()
-{
-    int test_count = 100000;
-
-    srand((unsigned)time(NULL) * getpid());
-
-    vector<QString> strings(test_count);
-    auto lens = {4,8,16,24};
-    auto divisor=4;
-    cout << "Randoms"<<endl;
-    for (int len : lens){
-        int k = floor(len/divisor);
-        cout << "len: "<< setw(2)<<len<<". k: "<<k<<" ";
-        for (auto &string : strings)
-            string = QString::fromStdString(gen_random(len));
-        levenshtein_compare_benchmarks_and_check_results(strings, k);
-    }
-
-    cout << "Equals"<<endl;
-    for (int len : lens) {
-        int k = floor(len/divisor);
-        cout << "len: "<< setw(2)<<len<<". k: "<<k<<" ";
-        for (auto &string : strings)
-            string = QString(len, 'a');
-        levenshtein_compare_benchmarks_and_check_results(strings, k);
-    }
-
-    cout << "Halfhalf equal random"<<endl;
-    for (int len : lens) {
-        int k = floor(len/divisor);
-        cout << "len: "<< setw(2)<<len<<". k: "<<k<<" ";
-        for (auto &string : strings)
-            string = QString("%1%2").arg(QString(len/2, 'a'), QString::fromStdString(gen_random(len/2)));
-        levenshtein_compare_benchmarks_and_check_results(strings, k);
-    }
-}
-
-
-// -------------------------------------------------------------------------------------------------
-
-template<typename S>
-static void benchmark_hash(const S &s)
-{
-    size_t h = 0;
-    auto hf = std::hash<S>();
-    QBENCHMARK {
-        for (int i = 0; i < 1'000'000; ++i)
-            h |= hf(s);
-    }
-    qDebug() << h;
-}
-
-QStringList strings = {
-    "0123456789",
-    "abcdefghijklmnopqrstuvwxyz",
-    "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZÜÖÄ,.-;:_+*#@<>)"
-};
-
-void Test::benchmark_hash_string()
-{
-    for (auto &s : strings)
-        benchmark_hash(s.toStdString());
-}
-
-void Test::benchmark_hash_string_view()
-{
-    for (auto &s : strings)
-        benchmark_hash(string_view(s.toStdString()));
-}
-
-void Test::benchmark_hash_u16string()
-{
-    for (auto &s : strings)
-        benchmark_hash(s.toStdU16String());
-}
-
-void Test::benchmark_hash_u16string_view()
-{
-    for (auto &s : strings)
-        benchmark_hash(u16string_view(s.toStdU16String()));
-}
-
-void Test::benchmark_hash_qstring()
-{
-    for (auto &s : strings)
-        benchmark_hash(s);
-}
-
-void Test::benchmark_hash_qstring_view()
-{
-    for (auto &s : strings)
-        benchmark_hash(QStringView(s));
-}
-
-
-// -------------------------------------------------------------------------------------------------
-
-static std::hash<std::string> s_hash;
-static std::hash<std::u8string> u8_hash;
-static std::hash<std::u16string> u16_hash;
-static std::hash<QString> q_hash;
-
-template <>
-struct hash<std::pair<QString, QString>>
-{
-    // https://stackoverflow.com/questions/17016175/c-unordered-map-using-a-custom-class-type-as-the-key#comment39936543_17017281
-    inline size_t operator()(const std::pair<QString, QString>& k) const noexcept
-    { return (qHash(k.first) ^ (qHash(k.second) << 1)); }
-};
-
-template <>
-struct hash<std::pair<string, string>>
-{
-    // https://stackoverflow.com/questions/17016175/c-unordered-map-using-a-custom-class-type-as-the-key#comment39936543_17017281
-    inline size_t operator()(const std::pair<string, string>& k) const noexcept
-    { return (s_hash(k.first) ^ (s_hash(k.second)<< 1)); }
-};
-
-template <>
-struct hash<std::pair<u8string, u8string>>
-{
-    // https://stackoverflow.com/questions/17016175/c-unordered-map-using-a-custom-class-type-as-the-key#comment39936543_17017281
-    inline size_t operator()(const std::pair<u8string, u8string>& k) const noexcept
-    { return (u8_hash(k.first) ^ (u8_hash(k.second)<< 1)); }
-};
-
-template <>
-struct hash<std::pair<u16string, u16string>>
-{
-    // https://stackoverflow.com/questions/17016175/c-unordered-map-using-a-custom-class-type-as-the-key#comment39936543_17017281
-    inline size_t operator()(const std::pair<u16string, u16string>& k) const noexcept
-    { return (u16_hash(k.first) ^ (u16_hash(k.second)<< 1)); }
-};
-
-
-template<typename S>
-static void benchmark_hash_pair(const S &s)
-{
-    auto p = make_pair(s, s);
-    auto h = std::hash<std::pair<S, S>>();
-    QBENCHMARK {
-        for (int i = 0; i < 1'000'000; ++i)
-            h(p);
-    }
-}
-
-
-void Test::benchmark_hash_pair_qstring()
-{ benchmark_hash_pair(QString("abcdefghijklmnopqrstuvwxyz")); }
-
-void Test::benchmark_hash_pair_string()
-{ benchmark_hash_pair(u8"abcdefghijklmnopqrstuvwxyz"s); }
-
-void Test::benchmark_hash_pair_u16string()
-{ benchmark_hash_pair(u"abcdefghijklmnopqrstuvwxyz"s); }
-
-
-// -------------------------------------------------------------------------------------------------
-
-#include <iostream>
-#include <string>
-#include <vector>
-#include <random>
-#include "timeit.h"
-
-
-std::string generateRandomWord(size_t length) {
-    const std::string charset = "abcdefghijklmnopqrstuvwxyz";
-    std::string result;
-    std::default_random_engine generator(std::random_device{}());
-    std::uniform_int_distribution<size_t> distribution(0, charset.size() - 1);
-
-    for (size_t i = 0; i < length; ++i) {
-        result += charset[distribution(generator)];
-    }
-    return result;
-}
-
-
-double generateRandomDouble(double min, double max) {
-    std::default_random_engine generator(std::random_device{}());
-    std::uniform_real_distribution<double> distribution(min, max);
-    return distribution(generator);
-}
-
-template<
-    template<
-        typename ...
-        > typename C,
-    typename KD
-    >
-struct Benchmark
-{
-    const char * n;
-    C<pair<KD, KD>, double> c;
-
-    Benchmark(const char *name, vector<tuple<KD, KD, double>> &data)
-        : n(name)
-    {
-        for (const auto &[k1, k2, d] : data)
-            c.emplace(pair<KD,KD>{k1, k2}, d);
-    }
-
-    template<typename K>
-    auto & run(const char *name, vector<tuple<K, K>> &lookup_strings)
-    {
-        for (int i = 0; i < 5; ++i) {
-            TimeIt t(QString("%1 %2").arg(n, name));
-
-            if constexpr (std::is_same<KD, K>::value)
-                for (const auto &[k1, k2] : lookup_strings)
-                    c.contains({k1, k2});
-
-            else if constexpr (is_same<KD, QString>::value && is_same<K, string>::value)
-                for (const auto &[k1, k2] : lookup_strings)
-                    c.contains({QString::fromStdString(k1), QString::fromStdString(k2)});
-
-
-            else if constexpr (is_same<KD, string>::value && is_same<K, QString>::value)
-                for (const auto &[k1, k2] : lookup_strings)
-                    c.contains({k1.toStdString(), k2.toStdString()});
-
-            else if constexpr (is_same<KD, QString>::value && is_same<K, string>::value)
-                for (const auto &[k1, k2] : lookup_strings)
-                    c.contains({QString::fromStdString(k1), QString::fromStdString(k2)});
-
-
-            else if constexpr (is_same<KD, u16string>::value && is_same<K, QString>::value)
-            {
-                u16string u1, u2;
-                for (const auto &[k1, k2] : lookup_strings)
-                    c.contains({u16string(reinterpret_cast<const char16_t*>(k1.utf16()), k1.size()),
-                                u16string(reinterpret_cast<const char16_t*>(k2.utf16()), k2.size())});
-            }
-
-            else if constexpr (is_same<KD, QString>::value && is_same<K, u16string>::value)
-                for (const auto &[k1, k2] : lookup_strings)
-                    c.contains({QString::fromStdU16String(k1), QString::fromStdU16String(k2)});
-
-            else
-                std::cout << "run_ is not available for this type.\n";
-        }
-        return *this;
-    }
-};
-
-
-void Test::benchmark_maps()
-{
-    vector<tuple<string, string, double>> cdata;
-    for (size_t i = 0; i < 10'000; ++i)
-        cdata.emplace_back(generateRandomWord(10), generateRandomWord(10), generateRandomDouble(0, 1));
-
-    vector<tuple<QString, QString, double>> qdata;
-    for (auto & [k1, k2, d] : cdata)
-        qdata.emplace_back(QString::fromStdString(k1), QString::fromStdString(k2), d);
-
-    vector<tuple<u16string, u16string, double>> u16data;
-    for (auto & [k1, k2, d] : qdata)
-        u16data.emplace_back(k1.toStdU16String(), k2.toStdU16String(), d);
-
-
-    vector<tuple<string, string>> clookup_strings;
-    for (size_t i = 0; i < 1'000'000; ++i)
-        clookup_strings.emplace_back(generateRandomWord(10), generateRandomWord(10));
-
-    vector<tuple<QString, QString>> qlookup_strings;
-    for (auto & [k1, k2] : clookup_strings)
-        qlookup_strings.emplace_back(QString::fromStdString(k1), QString::fromStdString(k2));
-
-
-
-    vector<tuple<u16string, u16string>> u16lookup_strings;
-    for (auto & [k1, k2] : qlookup_strings)
-        u16lookup_strings.emplace_back(k1.toStdU16String(), k2.toStdU16String());
-
-
-
-    Benchmark<QHash, QString>("QHash QString", qdata)
-        .run("QString", qlookup_strings)
-        .run("string", clookup_strings);
-
-    Benchmark<QHash, string>("QHash string", cdata)
-        .run("QString", qlookup_strings)
-        .run("string", clookup_strings);
-
-    Benchmark<unordered_map, QString>("unordered_map QString", qdata)
-        .run("QString", qlookup_strings)
-        .run("string", clookup_strings);
-
-    Benchmark<unordered_map, string>("unordered_map string", cdata)
-        .run("QString", qlookup_strings)
-        .run("string", clookup_strings);
-
-    Benchmark<QHash, u16string>("QHash u16string", u16data)
-        .run("QString", qlookup_strings)
-        .run("u16string", u16lookup_strings);
-
-    Benchmark<unordered_map, u16string>("unordered_map u16string", u16data)
-        .run("QString", qlookup_strings)
-        .run("u16string", u16lookup_strings);
-}
+
+// // -------------------------------------------------------------------------------------------------
+
+// static string gen_random(const int len) {
+//     static const char alphanum[] =
+//             "0123456789"
+//             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+//             "abcdefghijklmnopqrstuvwxyz";
+//     string tmp_s;
+//     tmp_s.reserve(len);
+
+//     for (int i = 0; i < len; ++i) {
+//         tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
+//     }
+
+//     return tmp_s;
+// }
+
+// static void levenshtein_compare_benchmarks_and_check_results(const vector<QString> &strings, uint k)
+// {
+//     Levenshtein l;
+//     vector<bool> results_old;
+//     vector<bool> results_new;
+
+//     results_old.reserve(strings.size());
+//     auto start = system_clock::now();
+//     auto i = strings.cbegin();
+//     auto j = strings.crbegin();
+//     for (; i != strings.cend(); ++i, ++j)
+//         results_old.push_back(l.checkPrefixEditDistance_Legacy(*i, *j, k));
+//     long duration_old = duration_cast<microseconds>(system_clock::now()-start).count();
+
+//     results_new.reserve(strings.size());
+//     start = system_clock::now();
+//     i = strings.cbegin();
+//     j = strings.crbegin();
+//     for (; i != strings.cend(); ++i, ++j)
+//         results_new.push_back(l.computePrefixEditDistanceWithLimit(*i, *j, k) <= k);
+//     long duration_new = duration_cast<microseconds>(system_clock::now()-start).count();
+
+//     cout << "Levensthein old: "
+//          << setw(12)
+//          << duration_old
+//          << " µs. New: "
+//          << setw(12)
+//          << duration_new
+//          << " µs. Improvement: "
+//          << (double)duration_old/duration_new
+//          << endl;
+
+//     QVERIFY(results_old == results_new);
+// }
+
+// void AlbertTests::benchmark_comparison_vanilla_vs_fast_levenshtein()
+// {
+//     int test_count = 100000;
+
+//     srand((unsigned)time(NULL) * getpid());
+
+//     vector<QString> strings(test_count);
+//     auto lens = {4,8,16,24};
+//     auto divisor=4;
+//     cout << "Randoms"<<endl;
+//     for (int len : lens){
+//         int k = floor(len/divisor);
+//         cout << "len: "<< setw(2)<<len<<". k: "<<k<<" ";
+//         for (auto &string : strings)
+//             string = QString::fromStdString(gen_random(len));
+//         levenshtein_compare_benchmarks_and_check_results(strings, k);
+//     }
+
+//     cout << "Equals"<<endl;
+//     for (int len : lens) {
+//         int k = floor(len/divisor);
+//         cout << "len: "<< setw(2)<<len<<". k: "<<k<<" ";
+//         for (auto &string : strings)
+//             string = QString(len, 'a');
+//         levenshtein_compare_benchmarks_and_check_results(strings, k);
+//     }
+
+//     cout << "Halfhalf equal random"<<endl;
+//     for (int len : lens) {
+//         int k = floor(len/divisor);
+//         cout << "len: "<< setw(2)<<len<<". k: "<<k<<" ";
+//         for (auto &string : strings)
+//             string = QString("%1%2").arg(QString(len/2, 'a'), QString::fromStdString(gen_random(len/2)));
+//         levenshtein_compare_benchmarks_and_check_results(strings, k);
+//     }
+// }
+
+
+// // -------------------------------------------------------------------------------------------------
+
+// template<typename S>
+// static void benchmark_hash(const S &s)
+// {
+//     size_t h = 0;
+//     auto hf = std::hash<S>();
+//     QBENCHMARK {
+//         for (int i = 0; i < 1'000'000; ++i)
+//             h |= hf(s);
+//     }
+//     qDebug() << h;
+// }
+
+// QStringList strings = {
+//     "0123456789",
+//     "abcdefghijklmnopqrstuvwxyz",
+//     "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZÜÖÄ,.-;:_+*#@<>)"
+// };
+
+// void AlbertTests::benchmark_hash_string()
+// {
+//     for (auto &s : strings)
+//         benchmark_hash(s.toStdString());
+// }
+
+// void AlbertTests::benchmark_hash_string_view()
+// {
+//     for (auto &s : strings)
+//         benchmark_hash(string_view(s.toStdString()));
+// }
+
+// void AlbertTests::benchmark_hash_u16string()
+// {
+//     for (auto &s : strings)
+//         benchmark_hash(s.toStdU16String());
+// }
+
+// void AlbertTests::benchmark_hash_u16string_view()
+// {
+//     for (auto &s : strings)
+//         benchmark_hash(u16string_view(s.toStdU16String()));
+// }
+
+// void AlbertTests::benchmark_hash_qstring()
+// {
+//     for (auto &s : strings)
+//         benchmark_hash(s);
+// }
+
+// void AlbertTests::benchmark_hash_qstring_view()
+// {
+//     for (auto &s : strings)
+//         benchmark_hash(QStringView(s));
+// }
+
+
+// // -------------------------------------------------------------------------------------------------
+
+// static std::hash<std::string> s_hash;
+// static std::hash<std::u8string> u8_hash;
+// static std::hash<std::u16string> u16_hash;
+// static std::hash<QString> q_hash;
+
+// namespace std {
+// template <>
+// struct hash<std::pair<QString, QString>>
+// {
+//     // https://stackoverflow.com/questions/17016175/c-unordered-map-using-a-custom-class-type-as-the-key#comment39936543_17017281
+//     inline size_t operator()(const std::pair<QString, QString>& k) const noexcept
+//     { return (qHash(k.first) ^ (qHash(k.second) << 1)); }
+// };
+
+// template <>
+// struct hash<std::pair<string, string>>
+// {
+//     // https://stackoverflow.com/questions/17016175/c-unordered-map-using-a-custom-class-type-as-the-key#comment39936543_17017281
+//     inline size_t operator()(const std::pair<string, string>& k) const noexcept
+//     { return (s_hash(k.first) ^ (s_hash(k.second)<< 1)); }
+// };
+
+// template <>
+// struct hash<std::pair<u8string, u8string>>
+// {
+//     // https://stackoverflow.com/questions/17016175/c-unordered-map-using-a-custom-class-type-as-the-key#comment39936543_17017281
+//     inline size_t operator()(const std::pair<u8string, u8string>& k) const noexcept
+//     { return (u8_hash(k.first) ^ (u8_hash(k.second)<< 1)); }
+// };
+
+// template <>
+// struct hash<std::pair<u16string, u16string>>
+// {
+//     // https://stackoverflow.com/questions/17016175/c-unordered-map-using-a-custom-class-type-as-the-key#comment39936543_17017281
+//     inline size_t operator()(const std::pair<u16string, u16string>& k) const noexcept
+//     { return (u16_hash(k.first) ^ (u16_hash(k.second)<< 1)); }
+// };
+// }
+
+// template<typename S>
+// static void benchmark_hash_pair(const S &s)
+// {
+//     auto p = make_pair(s, s);
+//     auto h = std::hash<std::pair<S, S>>();
+//     QBENCHMARK {
+//         for (int i = 0; i < 1'000'000; ++i)
+//             h(p);
+//     }
+// }
+
+
+// void AlbertTests::benchmark_hash_pair_qstring()
+// { benchmark_hash_pair(QString("abcdefghijklmnopqrstuvwxyz")); }
+
+// void AlbertTests::benchmark_hash_pair_string()
+// { benchmark_hash_pair(u8"abcdefghijklmnopqrstuvwxyz"s); }
+
+// void AlbertTests::benchmark_hash_pair_u16string()
+// { benchmark_hash_pair(u"abcdefghijklmnopqrstuvwxyz"s); }
+
+
+// // -------------------------------------------------------------------------------------------------
+
+// #include <iostream>
+// #include <string>
+// #include <vector>
+// #include <random>
+// #include "timeit.h"
+
+
+// std::string generateRandomWord(size_t length) {
+//     const std::string charset = "abcdefghijklmnopqrstuvwxyz";
+//     std::string result;
+//     std::default_random_engine generator(std::random_device{}());
+//     std::uniform_int_distribution<size_t> distribution(0, charset.size() - 1);
+
+//     for (size_t i = 0; i < length; ++i) {
+//         result += charset[distribution(generator)];
+//     }
+//     return result;
+// }
+
+
+// double generateRandomDouble(double min, double max) {
+//     std::default_random_engine generator(std::random_device{}());
+//     std::uniform_real_distribution<double> distribution(min, max);
+//     return distribution(generator);
+// }
+
+// template<
+//     template<
+//         typename ...
+//         > typename C,
+//     typename KD
+//     >
+// struct Benchmark
+// {
+//     const char * n;
+//     C<pair<KD, KD>, double> c;
+
+//     Benchmark(const char *name, vector<tuple<KD, KD, double>> &data)
+//         : n(name)
+//     {
+//         for (const auto &[k1, k2, d] : data)
+//             c.emplace(pair<KD,KD>{k1, k2}, d);
+//     }
+
+//     template<typename K>
+//     auto & run(const char *name, vector<tuple<K, K>> &lookup_strings)
+//     {
+//         for (int i = 0; i < 5; ++i) {
+//             TimeIt t(QString("%1 %2").arg(n, name));
+
+//             if constexpr (std::is_same<KD, K>::value)
+//                 for (const auto &[k1, k2] : lookup_strings)
+//                     c.contains({k1, k2});
+
+//             else if constexpr (is_same<KD, QString>::value && is_same<K, string>::value)
+//                 for (const auto &[k1, k2] : lookup_strings)
+//                     c.contains({QString::fromStdString(k1), QString::fromStdString(k2)});
+
+
+//             else if constexpr (is_same<KD, string>::value && is_same<K, QString>::value)
+//                 for (const auto &[k1, k2] : lookup_strings)
+//                     c.contains({k1.toStdString(), k2.toStdString()});
+
+//             else if constexpr (is_same<KD, QString>::value && is_same<K, string>::value)
+//                 for (const auto &[k1, k2] : lookup_strings)
+//                     c.contains({QString::fromStdString(k1), QString::fromStdString(k2)});
+
+
+//             else if constexpr (is_same<KD, u16string>::value && is_same<K, QString>::value)
+//             {
+//                 u16string u1, u2;
+//                 for (const auto &[k1, k2] : lookup_strings)
+//                     c.contains({u16string(reinterpret_cast<const char16_t*>(k1.utf16()), k1.size()),
+//                                 u16string(reinterpret_cast<const char16_t*>(k2.utf16()), k2.size())});
+//             }
+
+//             else if constexpr (is_same<KD, QString>::value && is_same<K, u16string>::value)
+//                 for (const auto &[k1, k2] : lookup_strings)
+//                     c.contains({QString::fromStdU16String(k1), QString::fromStdU16String(k2)});
+
+//             else
+//                 std::cout << "run_ is not available for this type.\n";
+//         }
+//         return *this;
+//     }
+// };
+
+
+// void AlbertTests::benchmark_maps()
+// {
+//     vector<tuple<string, string, double>> cdata;
+//     for (size_t i = 0; i < 10'000; ++i)
+//         cdata.emplace_back(generateRandomWord(10), generateRandomWord(10), generateRandomDouble(0, 1));
+
+//     vector<tuple<QString, QString, double>> qdata;
+//     for (auto & [k1, k2, d] : cdata)
+//         qdata.emplace_back(QString::fromStdString(k1), QString::fromStdString(k2), d);
+
+//     vector<tuple<u16string, u16string, double>> u16data;
+//     for (auto & [k1, k2, d] : qdata)
+//         u16data.emplace_back(k1.toStdU16String(), k2.toStdU16String(), d);
+
+
+//     vector<tuple<string, string>> clookup_strings;
+//     for (size_t i = 0; i < 1'000'000; ++i)
+//         clookup_strings.emplace_back(generateRandomWord(10), generateRandomWord(10));
+
+//     vector<tuple<QString, QString>> qlookup_strings;
+//     for (auto & [k1, k2] : clookup_strings)
+//         qlookup_strings.emplace_back(QString::fromStdString(k1), QString::fromStdString(k2));
+
+
+
+//     vector<tuple<u16string, u16string>> u16lookup_strings;
+//     for (auto & [k1, k2] : qlookup_strings)
+//         u16lookup_strings.emplace_back(k1.toStdU16String(), k2.toStdU16String());
+
+
+
+//     Benchmark<QHash, QString>("QHash QString", qdata)
+//         .run("QString", qlookup_strings)
+//         .run("string", clookup_strings);
+
+//     Benchmark<QHash, string>("QHash string", cdata)
+//         .run("QString", qlookup_strings)
+//         .run("string", clookup_strings);
+
+//     Benchmark<unordered_map, QString>("unordered_map QString", qdata)
+//         .run("QString", qlookup_strings)
+//         .run("string", clookup_strings);
+
+//     Benchmark<unordered_map, string>("unordered_map string", cdata)
+//         .run("QString", qlookup_strings)
+//         .run("string", clookup_strings);
+
+//     Benchmark<QHash, u16string>("QHash u16string", u16data)
+//         .run("QString", qlookup_strings)
+//         .run("u16string", u16lookup_strings);
+
+//     Benchmark<unordered_map, u16string>("unordered_map u16string", u16data)
+//         .run("QString", qlookup_strings)
+//         .run("u16string", u16lookup_strings);
+// }
 

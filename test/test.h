@@ -3,7 +3,7 @@
 #include <QCoreApplication>
 #include <QtTest/QtTest>
 
-class Test : public QObject
+class AlbertTests : public QObject
 {
     Q_OBJECT
 
@@ -39,19 +39,19 @@ private slots:
     void index_case();
     void index_score();
 
-    void benchmark_comparison_vanilla_vs_fast_levenshtein();
+    // void benchmark_comparison_vanilla_vs_fast_levenshtein();
 
-    void benchmark_hash_qstring();
-    void benchmark_hash_qstring_view();
-    void benchmark_hash_string();
-    void benchmark_hash_string_view();
-    void benchmark_hash_u16string();
-    void benchmark_hash_u16string_view();
+    // void benchmark_hash_qstring();
+    // void benchmark_hash_qstring_view();
+    // void benchmark_hash_string();
+    // void benchmark_hash_string_view();
+    // void benchmark_hash_u16string();
+    // void benchmark_hash_u16string_view();
 
-    void benchmark_hash_pair_qstring();
-    void benchmark_hash_pair_string();
-    void benchmark_hash_pair_u16string();
+    // void benchmark_hash_pair_qstring();
+    // void benchmark_hash_pair_string();
+    // void benchmark_hash_pair_u16string();
 
-    void benchmark_maps();
+    // void benchmark_maps();
 
 };
