@@ -507,6 +507,7 @@ endif()
 
 option(BUILD_TESTS "Build tests (Requires QTest)" OFF)
 if (BUILD_TESTS)
+    include(CTest)
     find_package(Qt6 REQUIRED COMPONENTS Test)
 
     get_target_property(SRC_TST ${TARGET_LIB} SOURCES)
@@ -515,7 +516,9 @@ if (BUILD_TESTS)
     get_target_property(CXX_STD_TST ${TARGET_LIB} CXX_STANDARD)
 
     set(TARGET_TST ${CMAKE_PROJECT_NAME}_test)
-    add_executable(${TARGET_TST} ${SRC_TST} test/test.cpp)
+
+    add_executable(${TARGET_TST} ${SRC_TST} test/test.h test/test.cpp)
+
     target_include_directories(${TARGET_TST} PRIVATE ${INC_TST} test)
     target_link_libraries(${TARGET_TST} PRIVATE ${LIBS_TST} Qt6::Test)
     set_target_properties(${TARGET_TST} PROPERTIES
