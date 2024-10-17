@@ -21,6 +21,7 @@
 #include "rpcserver.h"
 #include "session.h"
 #include "settingswindow.h"
+#include "signalhandler.h"
 #include "telemetry.h"
 #include "triggersqueryhandler.h"
 #include "util.h"
@@ -35,9 +36,6 @@
 #include <QStandardPaths>
 #include <QSystemTrayIcon>
 #include <QTranslator>
-#ifdef Q_OS_UNIX
-#include "platform/unix/unixsignalhandler.h"
-#endif
 Q_LOGGING_CATEGORY(AlbertLoggingCategory, "albert")
 using namespace albert;
 using namespace std;
@@ -77,9 +75,7 @@ public:
 
     // As early as possible
     RPCServer rpc_server; // Check for other instances first
-#ifdef Q_OS_UNIX
-    UnixSignalHandler unix_signal_handler;
-#endif
+    SignalHandler unix_signal_handler;
 
     // Core
     albert::ExtensionRegistry extension_registry;

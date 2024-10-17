@@ -136,6 +136,7 @@ set(LIB_SRC
     src/frontend/session.h
 
     src/platform/platform.h
+    src/platform/signalhandler.h
 
     src/plugin/extensionregistry.cpp
     src/plugin/plugin.cpp
@@ -189,24 +190,23 @@ set(LIB_SRC
     src/config.h.in
 )
 
-if (APPLE)
+if (WIN32)
     list(APPEND LIB_SRC
+        src/platform/win/signalhandler.cpp
+    )
+elseif (APPLE)
+    list(APPEND LIB_SRC
+        src/platform/unix/signalhandler.cpp
         src/platform/mac/platform.mm
     )
-else()  # assume xdg
+elseif(UNIX)  # assume xdg
     list(APPEND LIB_SRC
+        src/platform/unix/signalhandler.cpp
         src/platform/xdg/iconlookup.cpp
         src/platform/xdg/iconlookup.h
         src/platform/xdg/platform.cpp
         src/platform/xdg/themefileparser.cpp
         src/platform/xdg/themefileparser.h
-    )
-endif()
-
-if (UNIX)
-    list(APPEND LIB_SRC
-        src/platform/unix/unixsignalhandler.cpp
-        src/platform/unix/unixsignalhandler.h
     )
 endif()
 

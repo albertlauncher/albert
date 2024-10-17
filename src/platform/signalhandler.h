@@ -2,10 +2,10 @@
 // See https://doc.qt.io/qt-6/unix-signals.html
 
 #pragma once
-class UnixSignalHandler
+class SignalHandler
 {
 public:
-    UnixSignalHandler();
-    ~UnixSignalHandler();
+    SignalHandler();
+    ~SignalHandler();
 };
 

@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #include "logging.h"
-#include "unixsignalhandler.h"
+#include "signalhandler.h"
 #include <QCoreApplication>
 #include <QSocketNotifier>
 #include <csignal>
@@ -37,7 +37,7 @@ void qtSignalHandler()
 
 }
 
-UnixSignalHandler::UnixSignalHandler()
+SignalHandler::SignalHandler()
 {
     if (socket_notifier)
        qFatal("Signal handler has to be unique.");
@@ -65,7 +65,7 @@ UnixSignalHandler::UnixSignalHandler()
             qFatal("Failed installing signal handler on signal: %d", sig);
 }
 
-UnixSignalHandler::~UnixSignalHandler()
+SignalHandler::~SignalHandler()
 {
     // Restore default signal handlers
     struct sigaction sigact{};
