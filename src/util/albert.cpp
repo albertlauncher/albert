@@ -53,8 +53,6 @@ unique_ptr<QSettings> albert::state()
 void albert::showSettings(QString plugin_id)
 { App::instance()->showSettings(plugin_id); }
 
-void albert::openUrl(const QUrl &url) { open(url); }
-
 void albert::openUrl(const QString &url)
 {
     if (QUrl qurl(url); qurl.isValid())

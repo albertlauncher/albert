@@ -64,10 +64,6 @@ ALBERT_EXPORT void openWebsite();
 
 /// Open the specified url in default browser.
 /// \param url The url to open
-ALBERT_EXPORT void openUrl(const QUrl &url);
-
-/// Open the specified url in default browser.
-/// \param url The url to open
 ALBERT_EXPORT void openUrl(const QString &url);
 
 ///
