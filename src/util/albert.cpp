@@ -23,10 +23,10 @@ void albert::restart()
 void albert::quit()
 { QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection); }
 
-QNetworkAccessManager *albert::network()
+QNetworkAccessManager &albert::network()
 {
-    static QNetworkAccessManager network_manager;
-    return &network_manager;
+    static thread_local QNetworkAccessManager network_manager;
+    return network_manager;
 }
 
 inline static filesystem::path getFilesystemPath(QStandardPaths::StandardLocation loc)

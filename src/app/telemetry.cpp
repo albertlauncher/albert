@@ -64,7 +64,7 @@ void Telemetry::trySendReport()
     request.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
 
     DEBG << "trySendReport" << buildReportString();
-    auto *reply = network()->put(request, buildReport().toJson(QJsonDocument::Compact));
+    auto *reply = network().put(request, buildReport().toJson(QJsonDocument::Compact));
 
     QObject::connect(reply, &QNetworkReply::finished, this, [this, reply, now] {
         reply->deleteLater();

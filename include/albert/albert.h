@@ -28,9 +28,13 @@ void restart();
 ///
 void quit();
 
-/// The global QNetworkAccessManager.
-/// \return The global QNetworkAccessManager.
-ALBERT_EXPORT QNetworkAccessManager *network();
+///
+/// The threadlocal, global QNetworkAccessManager.
+///
+/// \returns A reference to the QNetworkAccessManager object.
+/// \since 0.27
+///
+ALBERT_EXPORT QNetworkAccessManager &network();
 
 /// Open/Show the settings window (of plugin).
 /// \param plugin_id Id of the plugin whose settings should be displayed.
