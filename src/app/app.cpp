@@ -426,6 +426,8 @@ Frontend *App::frontend() { return d->frontend; }
 
 QString App::currentFrontend() { return d->frontend_plugin->metaData().name; }
 
+ExtensionRegistry &App::extensionRegistry() { return d->extension_registry; }
+
 QStringList App::availableFrontends()
 {
     QStringList ret;

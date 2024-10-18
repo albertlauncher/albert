@@ -32,10 +32,10 @@ public:
     void deregisterExtension(Extension*);
 
     /// Get map of all registered extensions
-    const std::map<QString,Extension*> &extensions();
+    const std::map<QString,Extension*> &extensions() const;
 
     /// Get map of all extensions of type T
-    template<typename T> std::map<QString, T*> extensions()
+    template<typename T> std::map<QString, T*> extensions() const
     {
         std::map<QString, T*> results;
         for (auto &[id, extension] : extensions_)

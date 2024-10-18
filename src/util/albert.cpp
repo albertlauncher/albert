@@ -175,3 +175,5 @@ void albert::tryCreateDirectory(const filesystem::path& path)
     }
 }
 
+const albert::ExtensionRegistry &albert::extensionRegistry()
+{ return App::instance()->extensionRegistry(); }

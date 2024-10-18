@@ -31,7 +31,4 @@ void ExtensionRegistry::deregisterExtension(Extension *e)
         CRIT << "Removed extension that has not been registered before:" << e->id();
 }
 
-const map<QString,Extension*> &ExtensionRegistry::extensions()
-{
-    return extensions_;
-}
+const map<QString, Extension*> &ExtensionRegistry::extensions() const { return extensions_; }

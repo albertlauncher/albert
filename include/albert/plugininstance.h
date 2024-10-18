@@ -12,9 +12,7 @@ class QWidget;
 
 namespace albert
 {
-
 class Extension;
-class ExtensionRegistry;
 class PluginLoader;
 
 ///
@@ -35,18 +33,12 @@ public:
     /// @since 0.27
     virtual std::vector<albert::Extension*> extensions();
 
-
 public:
 
     /// The PluginLoader of this instance.
     /// @returns @copybrief loader
     /// @since 0.24
     [[nodiscard]] const PluginLoader &loader() const;
-
-    /// The associated ExtensionRegistry.
-    /// @returns @copybrief registry
-    /// @since 0.24
-    albert::ExtensionRegistry &registry();
 
     /// The recommended cache location.
     /// @returns @copybrief cacheLocation

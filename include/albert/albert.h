@@ -12,6 +12,7 @@ class QUrl;
 
 namespace albert
 {
+class ExtensionRegistry;
 
 ///
 /// Restart the application.
@@ -114,6 +115,19 @@ ALBERT_EXPORT void setClipboardTextAndPaste(const QString &text);
 /// \param working_dir The working directory
 /// \return The process id
 ALBERT_EXPORT long long runDetachedProcess(const QStringList &commandline, const QString &working_dir = {});
+
+///
+/// The extension registry.
+///
+/// Utilze to look up extensions or watch for changes. Const because registering plugins via this
+/// registry is not allowed. Use PluginInstance::extensions().
+///
+/// See also WeakDependency and StrongDependency.
+///
+/// @since 0.27
+/// @returns A const reference to the extension registry.
+///
+ALBERT_EXPORT const ExtensionRegistry &extensionRegistry();
 
 ///
 /// Create a directory if it does not exist yet.

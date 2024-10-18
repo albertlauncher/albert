@@ -15,7 +15,7 @@ class PluginInstance::Private
 {
 public:
     PluginLoader *loader;
-    albert::ExtensionRegistry *registry;
+    ExtensionRegistry *registry;
 
 };
 
@@ -33,24 +33,24 @@ vector<Extension*> PluginInstance::extensions() { return {}; }
 QWidget *PluginInstance::buildConfigWidget() { return nullptr; }
 
 filesystem::path PluginInstance::cacheLocation() const
-{ return albert::cacheLocation() / d->loader->metaData().id.toStdString(); }
+{ return ::cacheLocation() / d->loader->metaData().id.toStdString(); }
 
 filesystem::path PluginInstance::configLocation() const
-{ return albert::configLocation() / d->loader->metaData().id.toStdString(); }
+{ return ::configLocation() / d->loader->metaData().id.toStdString(); }
 
 filesystem::path PluginInstance::dataLocation() const
-{ return albert::dataLocation() / d->loader->metaData().id.toStdString(); }
+{ return ::dataLocation() / d->loader->metaData().id.toStdString(); }
 
-unique_ptr<QSettings> albert::PluginInstance::settings() const
+unique_ptr<QSettings> PluginInstance::settings() const
 {
-    auto s = albert::settings();
+    auto s = ::settings();
     s->beginGroup(d->loader->metaData().id);
     return s;
 }
 
-unique_ptr<QSettings> albert::PluginInstance::state() const
+unique_ptr<QSettings> PluginInstance::state() const
 {
-    auto s = albert::state();
+    auto s = ::state();
     s->beginGroup(d->loader->metaData().id);
     return s;
 }
@@ -58,5 +58,3 @@ unique_ptr<QSettings> albert::PluginInstance::state() const
 const PluginLoader &PluginInstance::loader() const
 { return *d->loader; }
 
-ExtensionRegistry &PluginInstance::registry()
-{ return *d->registry; }
