@@ -237,6 +237,13 @@ void App::Private::initHotkey()
     }
 
     auto s_hk = settings()->value(CFG_HOTKEY, DEF_HOTKEY).toString();
+
+    if (s_hk.isEmpty())
+    {
+        DEBG << "Hotkey explicitly unset.";
+        return;
+    }
+
     auto kc_hk = QKeySequence::fromString(s_hk)[0];
 
     if (auto hk = make_unique<QHotkey>(kc_hk);
@@ -416,25 +423,16 @@ void App::show(const QString &text)
     d->frontend->setVisible(true);
 }
 
-void App::hide()
-{
-    d->frontend->setVisible(false);
-}
+void App::hide() { d->frontend->setVisible(false); }
 
-void App::toggle()
-{
-    d->frontend->setVisible(!d->frontend->isVisible());
-}
+void App::toggle() { d->frontend->setVisible(!d->frontend->isVisible()); }
 
 void App::restart()
 {
     QMetaObject::invokeMethod(qApp, "exit", Qt::QueuedConnection, Q_ARG(int, -1));
 }
 
-void App::quit()
-{
-    QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
-}
+void App::quit() { QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection); }
 
 Frontend *App::frontend() { return d->frontend; }
 
@@ -500,7 +498,7 @@ void App::setHotkey(unique_ptr<QHotkey> hk)
     if (!hk)
     {
         d->hotkey.reset();
-        settings()->remove(CFG_HOTKEY);
+        settings()->setValue(CFG_HOTKEY, QString{});
     }
     else if (hk->isRegistered())
     {
