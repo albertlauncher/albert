@@ -20,57 +20,42 @@ AppQueryHandler::AppQueryHandler()
             tr("Settings"),
             tr("Albert settings"),
             icon_urls,
-            {{ "sett", tr("Open"), []{ albert::showSettings(); } }}),
+            {{ "sett", tr("Open"), [] { showSettings(); } }}),
 
         StandardItem::make(
             "quit",
             tr("Quit"),
             tr("Quit Albert"),
             icon_urls,
-            {{ "quit", tr("Quit"), []{ albert::quit(); } }}),
+            {{ "quit", tr("Quit"), [] { quit(); } }}),
 
         StandardItem::make(
             "restart",
             tr("Restart"),
             tr("Restart Albert"),
             icon_urls,
-            {{ "restart", tr("Restart"), []{ albert::restart(); } }}),
+            {{ "restart", tr("Restart"), [] { restart(); } }}),
 
         StandardItem::make(
             "cache",
             tr("Cache location"),
             tr("Albert cache location"),
             icon_urls,
-            {
-                {
-                    "cache", tr("Open"),
-                    []{ albert::openUrl(QUrl::fromLocalFile(albert::cacheLocation())); }
-                },
-            }),
+            {{ "cache", tr("Open"), [] { open(cacheLocation()); } }}),
 
         StandardItem::make(
             "config",
             tr("Config location"),
             tr("Albert config location"),
             icon_urls,
-            {
-                {
-                    "config", tr("Open"),
-                    [](){ albert::openUrl(QUrl::fromLocalFile(albert::configLocation())); }
-                },
-            }),
+            {{ "config", tr("Open"), [] { open(configLocation()); } }}),
 
         StandardItem::make(
             "data",
             tr("Data location"),
             tr("Albert data location"),
             icon_urls,
-            {
-                {
-                    "data", tr("Open"),
-                    [](){ albert::openUrl(QUrl::fromLocalFile(albert::dataLocation())); }
-                },
-            }),
+            {{ "data", tr("Open"), [] { open(dataLocation()); } }})
     };
 }
 

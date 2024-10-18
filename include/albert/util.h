@@ -68,6 +68,32 @@ ALBERT_EXPORT void openUrl(const QUrl &url);
 /// \param url The url to open
 ALBERT_EXPORT void openUrl(const QString &url);
 
+///
+/// Open URL with default handler.
+///
+/// \param url The url to open.
+/// \since 0.27
+///
+ALBERT_EXPORT void open(const QUrl &url);
+
+///
+/// Open file with default handler.
+///
+/// \param path The path the file to open.
+/// \since 0.27
+///
+ALBERT_EXPORT void open(const QString &path);
+
+///
+/// Open file with default handler.
+///
+/// Convenience overlaod that works well with filesystem::path.
+///
+/// \param path The path the file to open.
+/// \since 0.27
+///
+ALBERT_EXPORT void open(const std::string &path);
+
 /// Set the system clipboard.
 /// \param text The text to set
 ALBERT_EXPORT void setClipboardText(const QString &text);

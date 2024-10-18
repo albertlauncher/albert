@@ -47,22 +47,29 @@ std::unique_ptr<QSettings> albert::state()
 void albert::showSettings(QString plugin_id)
 { App::instance()->showSettings(plugin_id); }
 
+void albert::openUrl(const QUrl &url) { open(url); }
+
 void albert::openUrl(const QString &url)
 {
     if (QUrl qurl(url); qurl.isValid())
-        openUrl(QUrl(url));
+        open(QUrl(url));
     else
         WARN << "Invalid URL" << url << qurl.errorString();
 }
 
-void albert::openUrl(const QUrl &url)
+void albert::open(const QUrl &url)
 {
-    DEBG << QString("Opening URL '%1'").arg(url.toString());
+    DEBG << QString("Open URL '%1'").arg(url.toString());
+
     if (qApp->platformName() == "wayland")
         runDetachedProcess({"xdg-open", url.toString()});
     else if (!QDesktopServices::openUrl(url))
-        WARN << "Failed opening URL" << url;
+        WARN << "Failed to open URL" << url;
 }
+
+void albert::open(const QString &path) { open(QUrl::fromLocalFile(path)); }
+
+void albert::open(const string &path) { open(QString::fromStdString(path)); }
 
 void albert::openWebsite()
 {

@@ -4,6 +4,7 @@
 #include "frontend.h"
 #include "pluginswidget.h"
 #include "querywidget.h"
+#include "util.h"
 #include "settingswindow.h"
 #include <QDialog>
 #include <QHotkey>
@@ -114,7 +115,8 @@ void SettingsWindow::init_tab_general_hotkey()
         ui.label_hotkey->setEnabled(false);
         ui.pushButton_hotkey->setText(tr("Not supported"));
         connect(ui.pushButton_hotkey, &QPushButton::clicked, this, []{
-            // albert::openUrl("https://github.com/albertlauncher/albert/wiki/For-users#outsource-hotkey-handling");
+            albert::openUrl("https://albertlauncher.github.io/gettingstarted/faq/"
+                            "#how-to-make-hotkeys-work-on-wayland");
         });
     }
 }
