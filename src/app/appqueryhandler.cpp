@@ -20,39 +20,21 @@ AppQueryHandler::AppQueryHandler()
             tr("Settings"),
             tr("Albert settings"),
             icon_urls,
-            {
-                {
-                    "sett",
-                    tr("Open"),
-                    [](){ App::instance()->showSettings(); }
-                }
-            }),
+            {{ "sett", tr("Open"), []{ albert::showSettings(); } }}),
 
         StandardItem::make(
             "quit",
             tr("Quit"),
             tr("Quit Albert"),
             icon_urls,
-            {
-                {
-                    "quit",
-                    tr("Quit"),
-                    [](){ App::instance()->quit(); }
-                }
-            }),
+            {{ "quit", tr("Quit"), []{ albert::quit(); } }}),
 
         StandardItem::make(
             "restart",
             tr("Restart"),
             tr("Restart Albert"),
             icon_urls,
-            {
-                {
-                    "restart",
-                    tr("Restart"),
-                    [](){ App::instance()->restart(); }
-                }
-            }),
+            {{ "restart", tr("Restart"), []{ albert::restart(); } }}),
 
         StandardItem::make(
             "cache",

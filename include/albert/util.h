@@ -12,6 +12,20 @@ class QUrl;
 namespace albert
 {
 
+///
+/// Restart the application.
+///
+/// @since 0.27
+///
+void restart();
+
+///
+/// Quit the application.
+///
+/// @since 0.27
+///
+void quit();
+
 /// The global QNetworkAccessManager.
 /// \return The global QNetworkAccessManager.
 ALBERT_EXPORT QNetworkAccessManager *network();

@@ -17,6 +17,12 @@
 using namespace std;
 
 
+void albert::restart()
+{ QMetaObject::invokeMethod(qApp, "exit", Qt::QueuedConnection, Q_ARG(int, -1)); }
+
+void albert::quit()
+{ QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection); }
+
 QNetworkAccessManager *albert::network()
 {
     static QNetworkAccessManager network_manager;

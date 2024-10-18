@@ -173,26 +173,21 @@ void App::Private::initTrayIcon()
     tray_menu = make_unique<QMenu>();
 
     auto *action = tray_menu->addAction(tr("Show/Hide"));
-    connect(action, &QAction::triggered,
-            []{ App::instance()->toggle(); });
+    connect(action, &QAction::triggered, [] { App::instance()->toggle(); });
 
     action = tray_menu->addAction(tr("Settings"));
-    connect(action, &QAction::triggered,
-            []{ App::instance()->showSettings(); });
+    connect(action, &QAction::triggered, [] { App::instance()->showSettings(); });
 
     action = tray_menu->addAction(tr("Open website"));
-    connect(action, &QAction::triggered,
-            []{ albert::openWebsite(); });
+    connect(action, &QAction::triggered, [] { albert::openWebsite(); });
 
     tray_menu->addSeparator();
 
     action = tray_menu->addAction(tr("Restart"));
-    connect(action, &QAction::triggered,
-            []{ App::instance()->restart(); });
+    connect(action, &QAction::triggered, [] { albert::restart(); });
 
     action = tray_menu->addAction(tr("Quit"));
-    connect(action, &QAction::triggered,
-            []{ App::instance()->quit(); });
+    connect(action, &QAction::triggered, [] { albert::quit(); });
 
     // icon
 
