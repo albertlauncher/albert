@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 
 #pragma once
-#include <QDir>
 #include <QString>
 #include <albert/config.h>
 #include <albert/export.h>
@@ -63,12 +62,6 @@ public:
     /// @returns @copybrief dataLocation
     /// @since 0.27
     [[nodiscard]] std::filesystem::path dataLocation() const;
-
-    /// Creates a directory, throws an exception if it fails.
-    /// This is a utility function for use with the *Location functions.
-    /// @returns The directory.
-    /// @since 0.24
-    static QDir createOrThrow(const QString &path);
 
     /// Persistent plugin settings.
     /// Preconfigured according to albert conventions, i.e. using

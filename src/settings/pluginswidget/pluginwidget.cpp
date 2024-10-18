@@ -1,12 +1,13 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
 #include "plugin.h"
-#include "pluginmetadata.h"
 #include "plugininstance.h"
+#include "pluginmetadata.h"
 #include "pluginprovider.h"
 #include "pluginwidget.h"
 #include <QBoxLayout>
 #include <QLabel>
+#include <QLocale>
 using namespace albert;
 using namespace std;
 

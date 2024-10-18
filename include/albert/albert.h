@@ -115,4 +115,17 @@ ALBERT_EXPORT void setClipboardTextAndPaste(const QString &text);
 /// \return The process id
 ALBERT_EXPORT long long runDetachedProcess(const QStringList &commandline, const QString &working_dir = {});
 
-}
+///
+/// Create a directory if it does not exist yet.
+///
+/// This is a utility function for use with the *Location functions.
+///
+/// @param path The path to the directory to create.
+/// @returns The existing directory.
+/// @throws std::runtime_error if the directory could not be created.
+/// @since 0.27
+///
+ALBERT_EXPORT void tryCreateDirectory(const std::filesystem::path &path);
+
+} // namespace albert
+

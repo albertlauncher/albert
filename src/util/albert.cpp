@@ -163,3 +163,15 @@ long long albert::runDetachedProcess(const QStringList &commandline, const QStri
         WARN << "runDetachedProcess: commandline must not be empty!";
     return pid;
 }
+
+void albert::tryCreateDirectory(const filesystem::path& path)
+{
+    try {
+        filesystem::create_directories(path);
+    } catch (const filesystem::filesystem_error &e) {
+        throw runtime_error(
+            QCoreApplication::translate("albert", "Failed creating directory %1: %2")
+                .arg(e.path1().c_str(), e.what()).toStdString());
+    }
+}
+

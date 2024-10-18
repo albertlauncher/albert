@@ -41,14 +41,6 @@ filesystem::path PluginInstance::configLocation() const
 filesystem::path PluginInstance::dataLocation() const
 { return albert::dataLocation() / d->loader->metaData().id.toStdString(); }
 
-QDir PluginInstance::createOrThrow(const QString &path)
-{
-    auto dir = QDir(path);
-    if (!dir.exists() && !dir.mkpath("."))
-        throw runtime_error("Could not create directory: " + path.toStdString());
-    return dir;
-}
-
 unique_ptr<QSettings> albert::PluginInstance::settings() const
 {
     auto s = albert::settings();
