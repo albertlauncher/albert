@@ -179,7 +179,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dockerfile: [arch.Dockerfile, fedora.latest.Dockerfile, ubuntu.2204.Dockerfile, ubuntu.2404.Dockerfile]
+        dockerfile: [arch.Dockerfile, fedora.Dockerfile, ubuntu.Dockerfile]
 
     steps:
     
