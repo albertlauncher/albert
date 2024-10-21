@@ -2,30 +2,31 @@
 
 #pragma once
 #include <QWidget>
-#include <memory>
+class PluginRegistry;
+class PluginsModel;
+class PluginsSortProxyModel;
 class QListView;
 class QScrollArea;
-class PluginsModel;
-class PluginRegistry;
 
 class PluginsWidget final : public QWidget
 {
     Q_OBJECT
 
 public:
-
     PluginsWidget(PluginRegistry&);
     ~PluginsWidget();
-
     void tryShowPluginSettings(QString);
 
 private:
-
-    void onUpdatePluginWidget();
+    void showContextMenu(const QPoint &pos);
     void updatePluginListWidth();
+    void updatePluginWidget();
 
-    std::unique_ptr<PluginsModel> model_;
-    QListView *listView_plugins;
-    QScrollArea *scrollArea_info;
+    PluginRegistry &plugin_registry_;
+
+    PluginsModel *model_;
+    PluginsSortProxyModel *proxy_model_;
+
+    QListView *plugins_list_view_;
+    QScrollArea *config_widget_scroll_area_;
 };
-

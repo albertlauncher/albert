@@ -253,6 +253,13 @@ void PluginRegistry::onRegistered(Extension *e)
             plugin.dependencies_.insert(&dep);
             dep.dependees_.insert(&plugin);
         }
+
+        // Signal mappers
+        connect(&plugin, &Plugin::enabledChanged,
+                this, [this, &plugin] { emit enabledChanged(plugin.id()); });
+
+        connect(&plugin, &Plugin::stateChanged,
+                this, [this, &plugin] { emit stateChanged(plugin.id()); });
     }
 
     emit pluginsChanged();

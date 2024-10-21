@@ -1,32 +1,57 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
+#include "logging.h"
 #include "pluginmetadata.h"
 #include "pluginregistry.h"
 #include "pluginsmodel.h"
 #include <QApplication>
-#include <QIcon>
 #include <QPalette>
 #include <QStyle>
 using namespace albert;
 using namespace std;
 
-PluginsModel::PluginsModel(PluginRegistry &plugin_registry) : plugin_registry_(plugin_registry)
-{
-    connect(&plugin_registry, &PluginRegistry::pluginsChanged, this, &PluginsModel::updatePluginList);
-    updatePluginList();
-}
 
-QIcon PluginsModel::getCachedIcon(const QString &url) const
+PluginsModel::PluginsModel(PluginRegistry &plugin_registry, QObject *parent):
+    QAbstractListModel(parent),
+    plugin_registry_(plugin_registry)
 {
-    try {
-        return icon_cache.at(url);
-    } catch (const out_of_range &e) {
-        return icon_cache.emplace(url, url).first->second;
-    }
+    for (auto &[_, plugin] : plugin_registry.plugins())
+        plugins.emplace_back(&plugin);
+
+    connect(&plugin_registry_, &PluginRegistry::pluginsChanged, this, [this] {
+        beginResetModel();
+        plugins.clear();
+        for (auto &[id, plugin] : plugin_registry_.plugins())
+        plugins.emplace_back(&plugin);
+        endResetModel();
+    });
+
+    connect(&plugin_registry, &PluginRegistry::enabledChanged, this, [this](const QString &id) {
+        if (auto it = ranges::find(plugins, id, &Plugin::id); it != plugins.end())
+        {
+            auto index = this->index(distance(begin(plugins), it));
+            emit dataChanged(index, index, {Qt::CheckStateRole});
+        }
+        else
+            WARN << "enabledChanged called for a plugin not in model: " << id;
+    });
+
+    connect(&plugin_registry, &PluginRegistry::stateChanged, this, [this](const QString &id) {
+        if (auto it = ranges::find(plugins, id, &Plugin::id); it != plugins.end())
+        {
+            auto index = this->index(distance(begin(plugins), it));
+            emit dataChanged(index, index, {Qt::DecorationRole,
+                                            Qt::CheckStateRole,
+                                            Qt::ForegroundRole,
+                                            Qt::ToolTipRole});
+        }
+        else
+            WARN << "stateChanged called for a plugin not in model: " << id;
+    });
 }
 
 int PluginsModel::rowCount(const QModelIndex &) const
-{ return static_cast<int>(plugins_.size()); }
+{ return static_cast<int>(plugins.size()); }
 
 int PluginsModel::columnCount(const QModelIndex &) const
 { return 1; }
@@ -36,7 +61,7 @@ QVariant PluginsModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return {};
 
-    switch (const auto &p = *plugins_[index.row()]; role) {
+    switch (const auto &p = *plugins[index.row()]; role) {
 
     case Qt::CheckStateRole:
         if (p.isUser())
@@ -75,7 +100,7 @@ bool PluginsModel::setData(const QModelIndex &index, const QVariant &value, int 
 {
     if (index.isValid() && index.column() == 0 && role == Qt::CheckStateRole){
         try {
-            if (auto &p = *plugins_[index.row()]; p.isUser())
+            if (auto &p = *plugins[index.row()]; p.isUser())
             {
                 if (value == Qt::Checked)
                     plugin_registry_.enable(p.id());
@@ -89,9 +114,9 @@ bool PluginsModel::setData(const QModelIndex &index, const QVariant &value, int 
 }
 
 Qt::ItemFlags PluginsModel::flags(const QModelIndex &idx) const
-{;
+{
     if (idx.isValid()){
-        switch (auto &p = *plugins_[idx.row()]; p.state())
+        switch (auto &p = *plugins[idx.row()]; p.state())
         {
         case Plugin::State::Invalid:
             return Qt::ItemNeverHasChildren;
@@ -103,28 +128,4 @@ Qt::ItemFlags PluginsModel::flags(const QModelIndex &idx) const
         }
     }
     return Qt::NoItemFlags;
-}
-
-void PluginsModel::updatePluginList()
-{
-    beginResetModel();
-
-    plugins_.clear();
-
-    for (auto &[id, loader] : plugin_registry_.plugins()){
-        plugins_.emplace_back(&loader);
-        connect(&loader, &Plugin::stateChanged, this, &PluginsModel::updateView, Qt::UniqueConnection);
-        connect(&loader, &Plugin::enabledChanged, this, &PluginsModel::updateView, Qt::UniqueConnection);
-    }
-
-    ::sort(plugins_.begin(), plugins_.end(),
-           [](const auto &l, const auto &r){ return l->metaData().name < r->metaData().name; });
-
-    endResetModel();
-}
-
-void PluginsModel::updateView()
-{
-    // Well not worth the optimizations
-    emit dataChanged(index(0), index(plugins_.size()-1));
 }

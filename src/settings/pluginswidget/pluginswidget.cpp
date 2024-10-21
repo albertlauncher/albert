@@ -1,212 +1,155 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
-#include "plugininstance.h"
-#include "pluginmetadata.h"
-#include "pluginprovider.h"
+#include "pluginwidget.h"
 #include "pluginregistry.h"
 #include "pluginsmodel.h"
+#include "pluginssortproxymodel.h"
 #include "pluginswidget.h"
 #include <QApplication>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QListView>
+#include <QMenu>
 #include <QScrollArea>
 using namespace albert;
 using namespace std;
 
-PluginsWidget::PluginsWidget(PluginRegistry &plugin_registry) : model_(new PluginsModel(plugin_registry))
+PluginsWidget::PluginsWidget(PluginRegistry &plugin_registry):
+    plugin_registry_(plugin_registry),
+    model_(new PluginsModel(plugin_registry, this)),
+    proxy_model_(new PluginsSortProxyModel(this))
 {
     // Plugins list
 
-    listView_plugins = new QListView(this);
-    listView_plugins->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    listView_plugins->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    listView_plugins->setProperty("showDropIndicator", QVariant(false));
-    listView_plugins->setUniformItemSizes(true);
-    listView_plugins->setModel(model_.get());
+    plugins_list_view_ = new QListView(this);
+    plugins_list_view_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    plugins_list_view_->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    plugins_list_view_->setProperty("showDropIndicator", QVariant(false));
+    plugins_list_view_->setUniformItemSizes(true);
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
     // Some styles on linux have bigger icons than rows
-    auto rh = listView_plugins->sizeHintForRow(0);
-    listView_plugins->setIconSize(QSize(rh, rh));
+    auto rh = plugins_list_view_->sizeHintForRow(0);
+    plugins_list_view_->setIconSize(QSize(rh, rh));
 #endif
-
-    connect(model_.get(), &PluginsModel::modelReset,
-            this, &PluginsWidget::updatePluginListWidth);
+    plugins_list_view_->setModel(proxy_model_);
+    proxy_model_->setSourceModel(model_);
+    proxy_model_->setDynamicSortFilter(true);
+    proxy_model_->sort(0);
 
     updatePluginListWidth();
+    connect(proxy_model_, &PluginsModel::modelReset,
+            this, &PluginsWidget::updatePluginListWidth);
+
+    plugins_list_view_->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(plugins_list_view_, &QListView::customContextMenuRequested,
+            this, &PluginsWidget::showContextMenu);
 
 
-    // Plugin config widget
+    // Plugin config widget area
 
-    scrollArea_info = new QScrollArea(this);
-    scrollArea_info->setFrameShape(QFrame::StyledPanel);
-    scrollArea_info->setFrameShadow(QFrame::Sunken);
-    scrollArea_info->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    scrollArea_info->setWidgetResizable(true);
-    scrollArea_info->setAlignment(Qt::AlignLeading | Qt::AlignLeft | Qt::AlignTop);
+    config_widget_scroll_area_ = new QScrollArea(this);
+    config_widget_scroll_area_->setFrameShape(QFrame::StyledPanel);
+    config_widget_scroll_area_->setFrameShadow(QFrame::Sunken);
+    config_widget_scroll_area_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    config_widget_scroll_area_->setWidgetResizable(true);
+    config_widget_scroll_area_->setAlignment(Qt::AlignLeading | Qt::AlignLeft | Qt::AlignTop);
 
-    connect(listView_plugins->selectionModel(), &QItemSelectionModel::currentChanged,
-            this, &PluginsWidget::onUpdatePluginWidget);
-
-    connect(model_.get(), &PluginsModel::dataChanged,
-            this, &PluginsWidget::onUpdatePluginWidget);
-
-    onUpdatePluginWidget();
+    connect(plugins_list_view_->selectionModel(), &QItemSelectionModel::currentChanged,
+            this, &PluginsWidget::updatePluginWidget);
+    updatePluginWidget();
 
 
     // Layout
 
     auto *l = new QHBoxLayout(this);
-    l->addWidget(listView_plugins);
-    l->addWidget(scrollArea_info);
-    auto s = 6;
-    l->setContentsMargins(s, s, s, s);
-    l->setSpacing(s);
-}
-
-void PluginsWidget::tryShowPluginSettings(QString plugin_id)
-{
-    for (auto row = 0; row < model_->rowCount(); ++row)
-        if (auto index = model_->index(row); index.data(Qt::UserRole).toString() == plugin_id){
-            listView_plugins->setCurrentIndex(index);
-            listView_plugins->setFocus();
-        }
+    l->addWidget(plugins_list_view_);
+    l->addWidget(config_widget_scroll_area_);
+    l->setContentsMargins(6, 6, 6, 6);
+    l->setSpacing(6);
 }
 
 PluginsWidget::~PluginsWidget() = default;
 
-void PluginsWidget::onUpdatePluginWidget()
+void PluginsWidget::tryShowPluginSettings(QString plugin_id)
 {
-    auto current = listView_plugins->currentIndex();
-    QLabel *l;
-
-    if (!current.isValid()){
-        l = new QLabel(tr("Select a plugin"));
-        l->setAlignment(Qt::AlignCenter);
-        scrollArea_info->setWidget(l);
-        return;
-    }
-
-    auto &p = *model_->plugins_[current.row()];
-    auto *widget = new QWidget;
-    auto *vl = new QVBoxLayout;
-    vl->setContentsMargins(6, 6, 6, 6);
-    widget->setLayout(vl);
-
-    // // Title
-    // vl->addWidget(new QLabel(QString("<span style=\"font-size:16pt;font-style:bold;\">%1</span>").arg(p.metaData().name)));
-
-    // // Description
-    // vl->addWidget(new QLabel(QString("<span style=\"font-size:11pt;font-style:italic;\">%1</span>").arg(p.metaData().description)));
-
-    vl->addWidget(new QLabel(QString("<span style=\"font-size:16pt;\">%1</span><br>"
-                                     "<span style=\"font-size:11pt;font-weight:lighter;font-style:italic;\">%2</span>")
-                                               .arg(p.metaData().name, p.metaData().description)));
-
-    // Plugin specific
-    if (p.state() == Plugin::State::Loaded)
+    for (auto row = 0; row < proxy_model_->rowCount(); ++row)
     {
-        // Config widget
-        if (auto *inst = p.instance(); inst)
-            if (auto *cw = inst->buildConfigWidget())
-            {
-                if (auto * cwl = cw->layout())
-                    cwl->setContentsMargins(0,0,0,0);
-                vl->addWidget(cw, 1); // Strech=1
-            }
-    }
-    else if (!p.stateInfo().isEmpty())
-    {
-        // Unloaded info
-        if (!p.stateInfo().isEmpty())
+        if (auto index = proxy_model_->index(row, 0);
+            index.data(Qt::UserRole).toString() == plugin_id)
         {
-            l = new QLabel(p.stateInfo());
-            l->setWordWrap(true);
-            vl->addWidget(l);
+            plugins_list_view_->setCurrentIndex(index);
+            plugins_list_view_->setFocus();
+            return;
         }
     }
+}
 
-    vl->addStretch();
+void PluginsWidget::showContextMenu(const QPoint &pos)
+{
+    QMenu menu;
 
-    // META INFO
-
-    QStringList meta;
-
-    // Credits if any
-    if (const auto &list = p.metaData().third_party_credits; !list.isEmpty())
-        meta << tr("Credits: %1").arg(list.join(", "));
-
-    // Required executables, if any
-    if (const auto &list = p.metaData().binary_dependencies; !list.isEmpty())
-        meta << tr("Required executables: %1", nullptr, list.size()).arg(list.join(", "));
-
-    // Required libraries, if any
-    if (const auto &list = p.metaData().runtime_dependencies; !list.isEmpty())
-        meta << tr("Required libraries: %1", nullptr, list.size()).arg(list.join(", "));
-
-    // Id, version, license, authors
-    QStringList authors;
-    for (const auto &author : p.metaData().authors)
-        if (author.startsWith(QStringLiteral("@")))
-            authors << QStringLiteral("<a href=\"https://github.com/%1\">%2</a>")
-                           .arg(author.mid(1), author);
-        else
-            authors << author;
-
-    meta << QString("<a href=\"%1\">%2 v%3</a>. %4. %5.")
-                       .arg(p.metaData().url,
-                            p.metaData().id,
-                            p.metaData().version,
-                            tr("License: %1").arg(p.metaData().license),
-                            tr("Authors: %1", nullptr, authors.size()).arg(authors.join(", ")));
-
-    // Dependencies
-    if (const auto &list = p.dependencies(); !list.empty())
+    if (auto index = proxy_model_->mapToSource(plugins_list_view_->currentIndex()); index.isValid())
     {
-        QStringList names;
-        for (const auto &d : list)
-            names << d->metaData().name;
-        meta << tr("Requires: %1").arg(names.join(", "));
-    }
+        try {
+            auto &p = plugin_registry_.plugins().at(index.data(Qt::UserRole).toString());
+            auto id = p.id();
 
-    // Dependees
-    if (const auto &list = p.dependees(); !list.empty())
-    {
-        QStringList names;
-        for (const auto &d : list)
-            names << d->metaData().name;
-        meta << tr("Required by: %1").arg(names.join(", "));
-    }
+            if (p.isUser())
+            {
+                auto *a = new QAction(&menu);
+                a->setText(p.isEnabled() ? tr("Disable") : tr("Enable"));
+                auto fun = p.isEnabled() ? &PluginRegistry::disable : &PluginRegistry::enable;
+                connect(a, &QAction::triggered, this, [=, this] { (plugin_registry_.*fun)(id); });
+                menu.addAction(a);
 
-    // Translations
-    if (const auto &list = p.metaData().translations; !list.empty())
-    {
-        QStringList displayList;
-        for (const auto &lang : list){
-            auto split = lang.split(" ");;
-            auto language = QLocale(split[0]).nativeLanguageName();
-            displayList << QString("%1 %2").arg(language, split[1]);
+                if (p.state() == Plugin::State::Loaded)
+                {
+                    a = new QAction(&menu);
+                    a->setText(tr("Unload"));
+                    connect(a, &QAction::triggered, this, [=, this] { plugin_registry_.unload(id); });
+                    menu.addAction(a);
+                }
+
+                if (p.state() == Plugin::State::Unloaded)
+                {
+                    a = new QAction(&menu);
+                    a->setText(tr("Load"));
+                    connect(a, &QAction::triggered, this, [=, this] { plugin_registry_.load(id); });
+                    menu.addAction(a);
+                }
+
+                menu.addSeparator();
+            }
         }
-        meta << tr("Translations: %1").arg(displayList.join(", "));
+        catch (const out_of_range &) { }
     }
 
-    // Provider
-    meta << tr("%1, Interface: %2").arg(p.provider->name(), p.metaData().iid);
+    auto *a = new QAction(&menu);
+    a->setText(tr("Enabled first"));
+    a->setCheckable(true);
+    a->setChecked(proxy_model_->showEnabledFirst());
+    connect(a, &QAction::toggled, proxy_model_, &PluginsSortProxyModel::setShowEnabledFirst);
+    menu.addAction(a);
 
-    // Path
-    meta << p.path();
+    menu.exec(mapToGlobal(pos));
+}
 
-    // Add meta
-    l = new QLabel(QString("<span style=\"font-size:9pt;color:#808080;\">%1</span>").arg(meta.join("<br>")));
-    l->setOpenExternalLinks(true);
-    l->setWordWrap(true);
-    vl->addWidget(l);
-
-    scrollArea_info->setWidget(widget);
+void PluginsWidget::updatePluginWidget()
+{
+    try {
+        auto index = proxy_model_->mapToSource(plugins_list_view_->currentIndex());
+        auto &p = plugin_registry_.plugins().at(index.data(Qt::UserRole).toString());
+        config_widget_scroll_area_->setWidget(new PluginWidget(p));
+    }
+    catch (const out_of_range &) {
+        auto *lbl = new QLabel(tr("Select a plugin"));
+        lbl->setAlignment(Qt::AlignCenter);
+        config_widget_scroll_area_->setWidget(lbl);
+    }
 }
 
 void PluginsWidget::updatePluginListWidth()
 {
-    listView_plugins->setMaximumWidth(listView_plugins->sizeHintForColumn(0)
+    plugins_list_view_->setMaximumWidth(plugins_list_view_->sizeHintForColumn(0)
                                       + qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent));
 }

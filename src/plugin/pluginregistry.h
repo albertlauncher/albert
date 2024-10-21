@@ -59,5 +59,7 @@ private:
 signals:
 
     void pluginsChanged();
+    void enabledChanged(const QString &plugin_id);
+    void stateChanged(const QString &plugin_id);
 
 };

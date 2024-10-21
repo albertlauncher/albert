@@ -61,7 +61,7 @@ bool Plugin::isEnabled() const { return enabled_; }
 
 void Plugin::setEnabled(bool enable)
 {
-    if (isUser())
+    if (isUser() && enabled_ != enable)
     {
         settings()->setValue(QString("%1/enabled").arg(id()), enabled_ = enable);
         emit enabledChanged();

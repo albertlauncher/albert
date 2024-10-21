@@ -161,8 +161,12 @@ set(LIB_SRC
 
     src/settings/pluginswidget/pluginsmodel.cpp
     src/settings/pluginswidget/pluginsmodel.h
+    src/settings/pluginswidget/pluginssortproxymodel.cpp
+    src/settings/pluginswidget/pluginssortproxymodel.h
     src/settings/pluginswidget/pluginswidget.cpp
     src/settings/pluginswidget/pluginswidget.h
+    src/settings/pluginswidget/pluginwidget.cpp
+    src/settings/pluginswidget/pluginwidget.h
 
     src/settings/querywidget/fallbacksmodel.cpp
     src/settings/querywidget/fallbacksmodel.h
