@@ -1,5 +1,7 @@
 // Copyright (c) 2024 Manuel Schneider
 
+#include "extension.h"
+#include "extensionregistry.h"
 #include "logging.h"
 #include "plugin.h"
 #include "plugininstance.h"

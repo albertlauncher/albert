@@ -1,20 +1,20 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #pragma once
-#include "extensionwatcher.h"
 #include "plugin.h"
 #include <QObject>
 #include <QString>
 #include <map>
 #include <set>
 namespace albert {
+class Extension;
 class ExtensionRegistry;
 class PluginLoader;
 class PluginInstance;
 class PluginProvider;
 }
 
-class PluginRegistry : public QObject, public albert::ExtensionWatcher<albert::PluginProvider>
+class PluginRegistry : public QObject
 {
     Q_OBJECT
 
@@ -46,10 +46,10 @@ public:
         albert::ExtensionRegistry *registry;
     } staticDI;
 
-private:
 
-    void onAdd(albert::PluginProvider*) override;
-    void onRem(albert::PluginProvider*) override;
+private:
+    void onRegistered(albert::Extension *e);
+    void onDeregistered(albert::Extension *e);
 
     albert::ExtensionRegistry &extension_registry_;
     std::set<albert::PluginProvider*> plugin_providers_;

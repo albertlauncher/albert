@@ -1,5 +1,6 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
+#include "extensionregistry.h"
 #include "logging.h"
 #include "pluginloader.h"
 #include "pluginmetadata.h"
@@ -18,7 +19,6 @@ PluginRegistry::StaticDI PluginRegistry::staticDI
 };
 
 PluginRegistry::PluginRegistry(ExtensionRegistry &registry, bool load_enabled):
-    ExtensionWatcher<PluginProvider>(&registry),
     extension_registry_(registry),
     load_enabled_(load_enabled)
 {
@@ -26,6 +26,12 @@ PluginRegistry::PluginRegistry(ExtensionRegistry &registry, bool load_enabled):
     if (staticDI.registry)
         qFatal("nope only one PluginRegistry");
     staticDI.registry = &registry;
+
+    connect(&extension_registry_, &ExtensionRegistry::added,
+            this, &PluginRegistry::onRegistered);
+
+    connect(&extension_registry_, &ExtensionRegistry::removed,
+            this, &PluginRegistry::onDeregistered);
 }
 
 PluginRegistry::~PluginRegistry()
@@ -184,9 +190,13 @@ void PluginRegistry::unload(const QString &id)
     }
 }
 
-void PluginRegistry::onAdd(PluginProvider *plugin_provider)
+void PluginRegistry::onRegistered(Extension *e)
 {
-    // Register plugin provider
+    auto *plugin_provider = dynamic_cast<PluginProvider*>(e);
+    if (!plugin_provider)
+        return;
+
+            // Register plugin provider
     const auto &[_, pp_reg_success] = plugin_providers_.insert(plugin_provider);
     if (!pp_reg_success)
         qFatal("Plugin provider registered twice.");
@@ -276,8 +286,12 @@ void PluginRegistry::onAdd(PluginProvider *plugin_provider)
                                       errors.join("\n")));
 }
 
-void PluginRegistry::onRem(PluginProvider *plugin_provider)
+void PluginRegistry::onDeregistered(Extension *e)
 {
+    auto *plugin_provider = dynamic_cast<PluginProvider*>(e);
+    if (!plugin_provider)
+        return;
+
     // unload all plugins of this provider
     vector<Plugin*> plugins_to_unload;
     for (auto &[id, plugin] : registered_plugins_)
