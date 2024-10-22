@@ -7,6 +7,7 @@
 #include <shared_mutex>
 #include <unordered_map>
 #include <vector>
+class QDateTime;
 namespace albert {
 class Extension;
 class RankItem;
@@ -39,6 +40,8 @@ public:
 
     static void addActivation(const QString &query, const QString &extension,
                               const QString &item, const QString &action);
+
+    static std::map<QString, uint> activationsSince(const QDateTime &query);
 
 private:
     inline static void applyScore(const QString &extension_id, albert::RankItem *rank_item);

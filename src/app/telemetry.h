@@ -1,22 +1,30 @@
 // Copyright (C) 2014-2024 Manuel Schneider
 
 #pragma once
+#include <QDateTime>
+#include <QObject>
 #include <QTimer>
-class QJsonObject;
+class QJsonDocument;
+namespace albert {
+class ExtensionRegistry;
+}
 
-class Telemetry final
+class Telemetry final : public QObject
 {
 public:
+    Telemetry(albert::ExtensionRegistry &registry);
 
-    Telemetry();
+    QJsonDocument buildReport() const;
+    QString buildReportString() const;
 
-    QJsonObject buildReport();
-    QString buildReportString();
+    bool enabled() const;
+    void setEnabled(bool);
 
 private:
-
     void trySendReport();
 
+    albert::ExtensionRegistry &registry_;
     QTimer timer;
-
+    QDateTime last_report;
+    bool enabled_;
 };

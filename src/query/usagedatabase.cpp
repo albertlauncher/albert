@@ -5,6 +5,7 @@
 #include "rankitem.h"
 #include "usagedatabase.h"
 #include "util.h"
+#include <QDateTime>
 #include <QDir>
 #include <QSettings>
 #include <QSqlDriver>
@@ -131,6 +132,26 @@ void UsageHistory::addActivation(const QString &qid, const QString &eid,
 {
     db_addActivation(qid, eid, iid, aid);
     updateScores();
+}
+
+map<QString, uint> UsageHistory::activationsSince(const QDateTime &datetime)
+{
+    unique_lock lock(db_recursive_mutex_);
+
+    QSqlQuery sql(QSqlDatabase::database(db_conn_name));
+    sql.exec(QString("SELECT extension_id, COUNT(extension_id) "
+                     "FROM activation "
+                     "WHERE timestamp > '%1' "
+                     "GROUP BY extension_id").arg(datetime.toString("yyyy-MM-dd hh:mm:ss")));
+
+    if (!sql.isActive())
+        qFatal("SQL ERROR: %s %s", qPrintable(sql.executedQuery()), qPrintable(sql.lastError().text()));
+
+    map<QString, uint> activations;
+    while (sql.next())
+        activations.emplace(sql.value(0).toString(), sql.value(1).toUInt());
+
+    return activations;
 }
 
 void UsageHistory::updateScores()

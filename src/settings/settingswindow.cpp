@@ -4,6 +4,7 @@
 #include "frontend.h"
 #include "pluginswidget.h"
 #include "querywidget.h"
+#include "telemetry.h"
 #include "util.h"
 #include "settingswindow.h"
 #include <QDialog>
@@ -143,11 +144,12 @@ void SettingsWindow::init_tab_general_frontends()
 
 void SettingsWindow::init_tab_general_telemetry()
 {
-    ui.checkBox_telemetry->setChecked(app.telemetryEnabled());
+    ui.checkBox_telemetry->setChecked(app.telemetry().enabled());
     connect(ui.checkBox_telemetry, &QCheckBox::toggled,
-            &app, &App::setTelemetryEnabled);
+            &app.telemetry(), &Telemetry::setEnabled);
 
-    ui.checkBox_telemetry->setToolTip(app.displayableTelemetryReport());
+    ui.checkBox_telemetry->setToolTip(app.telemetry().buildReportString());
+    ui.checkBox_telemetry->setIcon(style()->standardPixmap(QStyle::SP_MessageBoxQuestion));
 }
 
 void SettingsWindow::init_tab_general_about()

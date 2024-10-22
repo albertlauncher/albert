@@ -6,6 +6,7 @@
 class PluginRegistry;
 class QueryEngine;
 class QHotkey;
+class Telemetry;
 namespace albert {
 class Frontend;
 int run(int, char**);
@@ -28,15 +29,12 @@ public:
 
     PluginRegistry &pluginRegistry();
     QueryEngine &queryEngine();
+    Telemetry &telemetry();
 
     void showSettings(QString plugin_id = {});
 
     bool trayEnabled() const;
     void setTrayEnabled(bool);
-
-    bool telemetryEnabled() const;
-    void setTelemetryEnabled(bool);
-    QString displayableTelemetryReport() const;
 
     const QHotkey *hotkey() const;
     void setHotkey(std::unique_ptr<QHotkey> hotkey);

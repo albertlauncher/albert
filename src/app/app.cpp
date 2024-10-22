@@ -50,7 +50,6 @@ static const char* CFG_SHOWTRAY = "showTray";
 static const bool  DEF_SHOWTRAY = true;
 static const char *CFG_HOTKEY = "hotkey";
 static const char *DEF_HOTKEY = "Ctrl+Space";
-static const char *CFG_TELEMETRY = "telemetry";
 }
 
 
@@ -82,12 +81,12 @@ public:
     PluginRegistry plugin_registry;
     QtPluginProvider plugin_provider;
     QueryEngine query_engine;
+    Telemetry telemetry;
 
     // Weak, lazy or optional
     albert::PluginLoader *frontend_plugin{nullptr};
     albert::Frontend *frontend{nullptr};
     std::unique_ptr<QHotkey> hotkey{nullptr};
-    std::unique_ptr<Telemetry> telemetry{nullptr};
     std::unique_ptr<QSystemTrayIcon> tray_icon{nullptr};
     std::unique_ptr<QMenu> tray_menu{nullptr};
     std::unique_ptr<Session> session{nullptr};
@@ -96,6 +95,7 @@ public:
     AppQueryHandler app_query_handler;
     PluginQueryHandler plugin_query_handler;
     TriggersQueryHandler triggers_query_handler;
+
 };
 
 
@@ -103,8 +103,10 @@ App::Private::Private(const QStringList &additional_plugin_paths, bool load_enab
     plugin_registry(extension_registry, load_enabled),
     plugin_provider(additional_plugin_paths),
     query_engine(extension_registry),
+    telemetry(extension_registry),
     plugin_query_handler(plugin_registry),
-    triggers_query_handler(query_engine) {}
+    triggers_query_handler(query_engine)
+{}
 
 void App::Private::initialize()
 {
@@ -212,20 +214,6 @@ void App::Private::initTrayIcon()
 
 void App::Private::initTelemetry()
 {
-    if (auto s = settings(); !s->contains(CFG_TELEMETRY))
-    {
-        auto text = tr("Albert collects anonymous data to enhance user experience. "
-                       "You can review the data to be sent in the details. Opt in?");
-
-        QMessageBox mb(QMessageBox::Question, qApp->applicationDisplayName(),
-                       text, QMessageBox::No|QMessageBox::Yes);
-
-        mb.setDefaultButton(QMessageBox::Yes);
-        mb.setDetailedText(telemetry->buildReportString());
-        s->setValue(CFG_TELEMETRY, mb.exec() == QMessageBox::Yes);
-    }
-    else if (s->value(CFG_TELEMETRY).toBool())
-        telemetry = make_unique<Telemetry>();
 }
 
 void App::Private::initHotkey()
@@ -408,6 +396,8 @@ PluginRegistry &App::pluginRegistry() { return d->plugin_registry; }
 
 QueryEngine &App::queryEngine() { return d->query_engine; }
 
+Telemetry &App::telemetry() { return d->telemetry; }
+
 void App::showSettings(QString plugin_id)
 {
     if (!d->settings_window)
@@ -471,24 +461,6 @@ void App::setTrayEnabled(bool enable)
     else
         return;
     settings()->setValue(CFG_SHOWTRAY, enable);
-}
-
-bool App::telemetryEnabled() const { return d->telemetry.get(); }
-
-void App::setTelemetryEnabled(bool enable)
-{
-    if (enable && !telemetryEnabled())
-        d->telemetry = make_unique<Telemetry>();
-    else if (!enable && telemetryEnabled())
-        d->telemetry.reset();
-    else
-        return;
-    settings()->setValue(CFG_TELEMETRY, enable);
-}
-
-QString App::displayableTelemetryReport() const
-{
-    return d->telemetry ? d->telemetry->buildReportString() : QString();
 }
 
 const QHotkey *App::hotkey() const { return d->hotkey.get(); }

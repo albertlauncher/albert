@@ -96,6 +96,7 @@ set(LIB_PUBLIC_HEADER
     include/albert/query.h
     include/albert/rankitem.h
     include/albert/standarditem.h
+    include/albert/telemetryprovider.h
     include/albert/timeit.h
     include/albert/triggerqueryhandler.h
     include/albert/util.h
@@ -118,10 +119,11 @@ set(LIB_SRC
     src/app/report.h
     src/app/rpcserver.cpp
     src/app/rpcserver.h
-    src/app/triggersqueryhandler.cpp
-    src/app/triggersqueryhandler.h
     src/app/telemetry.cpp
     src/app/telemetry.h
+    src/app/telemetryprovider.cpp
+    src/app/triggersqueryhandler.cpp
+    src/app/triggersqueryhandler.h
 
     src/common/action.cpp
     src/common/extension.cpp
