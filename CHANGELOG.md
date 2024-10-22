@@ -1,3 +1,52 @@
+v0.26.6 (2024-10-23)
+
+## Albert
+
+- Actually make use of telemetry and send enabled plugins and activated extensions.
+
+- Add context menu to the plugin list
+  - En/disable plugin
+  - Un/load plugin
+  - Option to sort list by checked state
+
+- Improve testing
+  - Drop doctest. Use QTest.
+  - Drop doctest and use QTest
+  - Enable CTest for better CI
+
+## API
+
+- ``albert``
+  - Add ``quit()``
+  - Add ``restart()``
+  - Add ``open(QUrl url)``
+  - Add ``open(QString path)``
+  - Add ``open(filesystem::path path)``
+- ``InputHistory``
+  - Constructor now optionally takes a path
+- Add colors to logging.h
+
+## Plugins
+
+- **applications**
+  - Send telemetry about available terminals
+  - Log warning on unsupported terminals
+  - Case sensitive desktop ids
+  - Fix desktop entry shadowing
+  - Add terminal org.gnome.ptyxis
+
+- **bluetooth**
+  - Fix warning on language
+
+- **files**
+  - Add filebrowser option: Show hidden files
+  - Add filebrowser option: Sort case insensitive
+  - Add filebrowser option: Show directories first
+  - Use QTest
+
+- **widgetsboxmodel**
+  - Fix weird end of history behavior
+
 v0.26.5 (2024-10-16)
 
 ## Plugins
