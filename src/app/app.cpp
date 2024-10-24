@@ -1,5 +1,6 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
+#include "albert.h"
 #include "app.h"
 #include "appqueryhandler.h"
 #include "extensionregistry.h"
@@ -24,7 +25,6 @@
 #include "signalhandler.h"
 #include "telemetry.h"
 #include "triggersqueryhandler.h"
-#include "util.h"
 #include <QCommandLineParser>
 #include <QHotkey>
 #include <QLibraryInfo>

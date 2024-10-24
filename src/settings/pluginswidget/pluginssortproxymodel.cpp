@@ -1,7 +1,7 @@
 // Copyright (c) 2024-2024 Manuel Schneider
 
+#include "albert.h"
 #include "pluginssortproxymodel.h"
-#include "util.h"
 #include <QSettings>
 using namespace albert;
 const char* CFG_SORT_MODE = "show_enabled_plugins_first";

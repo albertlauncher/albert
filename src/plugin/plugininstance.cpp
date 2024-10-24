@@ -1,10 +1,10 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
+#include "albert.h"
 #include "plugininstance.h"
 #include "pluginloader.h"
 #include "pluginmetadata.h"
 #include "pluginregistry.h"
-#include "util.h"
 #include <QCoreApplication>
 #include <QSettings>
 using namespace albert;

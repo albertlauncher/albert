@@ -1,8 +1,8 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
+#include "albert.h"
 #include "app.h"
 #include "logging.h"
-#include "util.h"
 #include <QApplication>
 #include <QClipboard>
 #include <QDesktopServices>

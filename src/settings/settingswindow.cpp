@@ -1,11 +1,11 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
+#include "albert.h"
 #include "app.h"
 #include "frontend.h"
 #include "pluginswidget.h"
 #include "querywidget.h"
 #include "telemetry.h"
-#include "util.h"
 #include "settingswindow.h"
 #include <QDialog>
 #include <QHotkey>

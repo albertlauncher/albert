@@ -1,5 +1,6 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
+#include "albert.h"
 #include "extensionregistry.h"
 #include "fallbackhandler.h"
 #include "globalqueryhandler.h"
@@ -8,7 +9,6 @@
 #include "queryexecution.h"
 #include "triggerqueryhandler.h"
 #include "usagedatabase.h"
-#include "util.h"
 #include <QCoreApplication>
 #include <QMessageBox>
 #include <QSettings>

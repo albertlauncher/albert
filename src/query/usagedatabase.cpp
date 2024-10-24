@@ -1,10 +1,10 @@
 // Copyright (c) 2022-2024 Manuel Schneider
 
+#include "albert.h"
 #include "extension.h"
 #include "logging.h"
 #include "rankitem.h"
 #include "usagedatabase.h"
-#include "util.h"
 #include <QDateTime>
 #include <QDir>
 #include <QSettings>

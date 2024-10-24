@@ -1,9 +1,9 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
+#include "albert.h"
 #include "pluginmetadata.h"
 #include "pluginqueryhandler.h"
 #include "pluginregistry.h"
-#include "util.h"
 #include <QMessageBox>
 #include <QWidget>
 using namespace albert;

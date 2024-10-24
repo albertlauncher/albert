@@ -2,12 +2,12 @@
 
 #include "app.h"
 #include "extensionregistry.h"
+#include "albert.h"
 #include "logging.h"
 #include "pluginregistry.h"
 #include "telemetry.h"
 #include "telemetryprovider.h"
 #include "usagedatabase.h"
-#include "util.h"
 #include <QCryptographicHash>
 #include <QGuiApplication>
 #include <QJsonArray>

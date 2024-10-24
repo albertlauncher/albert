@@ -1,5 +1,6 @@
 // Copyright (c) 2024 Manuel Schneider
 
+#include "albert.h"
 #include "extension.h"
 #include "extensionregistry.h"
 #include "logging.h"
@@ -8,7 +9,6 @@
 #include "pluginloader.h"
 #include "pluginmetadata.h"
 #include "pluginregistry.h"
-#include "util.h"
 #include <QApplication>
 #include <QMessageBox>
 #include <QRegularExpression>
