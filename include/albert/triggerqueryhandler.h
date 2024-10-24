@@ -22,7 +22,7 @@ public:
     /// The synopsis, displayed on empty query.
     /// Use this to give the user hints about accepted query strings.
     /// @returns Empty string.
-    virtual QString synopsis() const;
+    virtual QString synopsis(const QString &query) const;
 
     /// Enable user remapping of the trigger.
     /// @returns False.

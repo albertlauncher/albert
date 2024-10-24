@@ -73,7 +73,7 @@ QString QueryExecution::trigger() const { return trigger_; }
 
 QString QueryExecution::string() const { return string_; }
 
-QString QueryExecution::synopsis() const { return query_handler_->synopsis(); }
+QString QueryExecution::synopsis() const { return query_handler_->synopsis(string_); }
 
 const bool &QueryExecution::isValid() const { return valid_; }
 
