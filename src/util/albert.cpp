@@ -29,20 +29,26 @@ QNetworkAccessManager *albert::network()
     return &network_manager;
 }
 
-QString albert::configLocation()
-{ return QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) ;}
+inline static filesystem::path getFilesystemPath(QStandardPaths::StandardLocation loc)
+{ return filesystem::path(QStandardPaths::writableLocation(loc).toStdString()); }
 
-QString albert::dataLocation()
-{ return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) ;}
+filesystem::path albert::cacheLocation()
+{ return getFilesystemPath(QStandardPaths::CacheLocation); }
 
-QString albert::cacheLocation()
-{ return QStandardPaths::writableLocation(QStandardPaths::CacheLocation) ;}
+filesystem::path albert::configLocation()
+{ return getFilesystemPath(QStandardPaths::AppConfigLocation); }
 
-std::unique_ptr<QSettings> albert::settings()
-{ return make_unique<QSettings>(QString("%1/%2").arg(configLocation(), "config"), QSettings::IniFormat); }
+filesystem::path albert::dataLocation()
+{ return getFilesystemPath(QStandardPaths::AppDataLocation); }
 
-std::unique_ptr<QSettings> albert::state()
-{ return make_unique<QSettings>(QString("%1/%2").arg(cacheLocation(), "state"), QSettings::IniFormat); }
+inline static unique_ptr<QSettings> settingsFromPath(const filesystem::path &path)
+{ return make_unique<QSettings>(path.string().data(), QSettings::IniFormat); }
+
+unique_ptr<QSettings> albert::settings()
+{ return settingsFromPath(configLocation() / "config"); }
+
+unique_ptr<QSettings> albert::state()
+{ return settingsFromPath(cacheLocation() / "state"); }
 
 void albert::showSettings(QString plugin_id)
 { App::instance()->showSettings(plugin_id); }

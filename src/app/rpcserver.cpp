@@ -7,6 +7,7 @@
 #include <QLocalSocket>
 #include <QRegularExpression>
 #include <iostream>
+using namespace std;
 
 RPCServer::RPCServer()
 {
@@ -52,9 +53,9 @@ RPCServer::~RPCServer()
     local_server.close();
 }
 
-void RPCServer::setPRC(std::map<QString, RPC> &&rpc)
+void RPCServer::setPRC(map<QString, RPC> &&rpc)
 {
-    rpc_ = std::move(rpc);
+    rpc_ = ::move(rpc);
 
     rpc_.emplace("commands", [this](const QString&){
         QStringList rpcs;
@@ -66,7 +67,7 @@ void RPCServer::setPRC(std::map<QString, RPC> &&rpc)
 
 QString RPCServer::socketPath()
 {
-    return QDir(albert::cacheLocation()).filePath("ipc_socket");
+    return QString::fromStdString(albert::cacheLocation() / "ipc_socket");
 }
 
 void RPCServer::onNewConnection()
@@ -84,7 +85,7 @@ void RPCServer::onNewConnection()
 
         try{
             socket->write(rpc_.at(op)(param).toLocal8Bit());
-        } catch (const std::out_of_range &) {
+        } catch (const out_of_range &) {
             QStringList l{QString("Invalid RPC command: '%1'. Use these").arg(message)};
             for (const auto &[key, value] : rpc_)
                 l << key;
@@ -107,13 +108,13 @@ bool RPCServer::trySendMessage(const QString &message)
         socket.write(message.toUtf8());
         socket.flush();
         if (socket.waitForReadyRead(1000))
-            std::cout << socket.readAll().toStdString() << std::endl;
+            cout << socket.readAll().toStdString() << endl;
         else
-            std::cout << "Read timed out. Albert busy?" << std::endl;
+            cout << "Read timed out. Albert busy?" << endl;
         socket.close();
         return true;
     } else {
-        std::cout << "Failed to connect to albert." << std::endl;
+        cout << "Failed to connect to albert." << endl;
         return false;
     }
 }

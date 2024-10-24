@@ -4,6 +4,7 @@
 #pragma once
 #include <QString>
 #include <albert/export.h>
+#include <filesystem>
 class NotificationPrivate;
 class QNetworkAccessManager;
 class QSettings;
@@ -37,17 +38,17 @@ ALBERT_EXPORT void showSettings(QString plugin_id = {});
 /// The app config location.
 /// The path to the directory where configuration files should be stored.
 /// \return The app config location.
-ALBERT_EXPORT QString configLocation();
+ALBERT_EXPORT std::filesystem::path configLocation();
 
 /// The app cache location.
 /// The path to the directory where cache files should be stored.
 /// \return The app cache location.
-ALBERT_EXPORT QString cacheLocation();
+ALBERT_EXPORT std::filesystem::path cacheLocation();
 
 /// The app data location.
 /// The path to the directory where data files should be stored.
 /// \return The app data location.
-ALBERT_EXPORT QString dataLocation();
+ALBERT_EXPORT std::filesystem::path dataLocation();
 
 /// Persistent app settings storage.
 /// \return Preconfigured QSettings object for configuration storage.

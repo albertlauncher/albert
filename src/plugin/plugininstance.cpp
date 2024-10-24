@@ -32,14 +32,14 @@ vector<Extension*> PluginInstance::extensions() { return {}; }
 
 QWidget *PluginInstance::buildConfigWidget() { return nullptr; }
 
-QString PluginInstance::cacheLocation() const
-{ return QDir(albert::cacheLocation()).filePath(d->loader->metaData().id); }
+filesystem::path PluginInstance::cacheLocation() const
+{ return albert::cacheLocation() / d->loader->metaData().id.toStdString(); }
 
-QString PluginInstance::configLocation() const
-{ return QDir(albert::configLocation()).filePath(d->loader->metaData().id); }
+filesystem::path PluginInstance::configLocation() const
+{ return albert::configLocation() / d->loader->metaData().id.toStdString(); }
 
-QString PluginInstance::dataLocation() const
-{ return QDir(albert::dataLocation()).filePath(d->loader->metaData().id); }
+filesystem::path PluginInstance::dataLocation() const
+{ return albert::dataLocation() / d->loader->metaData().id.toStdString(); }
 
 QDir PluginInstance::createOrThrow(const QString &path)
 {

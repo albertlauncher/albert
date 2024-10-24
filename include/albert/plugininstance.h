@@ -6,6 +6,7 @@
 #include <QString>
 #include <albert/config.h>
 #include <albert/export.h>
+#include <filesystem>
 #include <memory>
 class QSettings;
 class QWidget;
@@ -41,7 +42,7 @@ public:
     /// The PluginLoader of this instance.
     /// @returns @copybrief loader
     /// @since 0.24
-    const PluginLoader &loader() const;
+    [[nodiscard]] const PluginLoader &loader() const;
 
     /// The associated ExtensionRegistry.
     /// @returns @copybrief registry
@@ -50,18 +51,18 @@ public:
 
     /// The recommended cache location.
     /// @returns @copybrief cacheLocation
-    /// @since 0.24
-    QString cacheLocation() const;
+    /// @since 0.27
+    [[nodiscard]] std::filesystem::path cacheLocation() const;
 
     /// The recommended config location.
     /// @returns @copybrief configLocation
-    /// @since 0.24
-    QString configLocation() const;
+    /// @since 0.27
+    [[nodiscard]] std::filesystem::path configLocation() const;
 
     /// The recommended data location.
     /// @returns @copybrief dataLocation
-    /// @since 0.24
-    QString dataLocation() const;
+    /// @since 0.27
+    [[nodiscard]] std::filesystem::path dataLocation() const;
 
     /// Creates a directory, throws an exception if it fails.
     /// This is a utility function for use with the *Location functions.
@@ -73,14 +74,14 @@ public:
     /// Preconfigured according to albert conventions, i.e. using
     /// albert::settings() configured to write to a section titled <plugin-id>.
     /// @returns Preconfigured QSettings object for config storage.
-    std::unique_ptr<QSettings> settings() const;
+    [[nodiscard]] std::unique_ptr<QSettings> settings() const;
 
     /// Persistent plugin state.
     /// Preconfigured according to albert conventions, i.e. using
     /// albert::state() configured to write to a section titled <plugin-id>.
     /// @since 0.23
     /// @returns Preconfigured QSettings object for state storage.
-    std::unique_ptr<QSettings> state() const;
+    [[nodiscard]] std::unique_ptr<QSettings> state() const;
 
 protected:
 

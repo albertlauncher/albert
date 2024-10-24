@@ -550,7 +550,7 @@ int ALBERT_EXPORT run(int argc, char **argv)
     for (const auto &path : { cacheLocation(), configLocation(), dataLocation() })
     {
         if (!QDir(path).mkpath("."))
-            qFatal("Failed creating config dir at: %s", qPrintable(path));
+            qFatal("Failed creating config dir at: %s", path.c_str());
         QFile::setPermissions(path, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
     }
 
