@@ -650,29 +650,27 @@ int ALBERT_EXPORT run(int argc, char **argv)
     }
 
 
-    // Create app
-
-    new App(config.plugin_dirs, !config.autoload);
-
-
     // Run app
 
-    app_instance->initialize();
+    try {
+        app_instance = new App(config.plugin_dirs, config.autoload);
+        app_instance->initialize();
+        int return_value = qapp.exec();
+        app_instance->finalize();
+        delete app_instance;
 
-    int return_value = qApp->exec();
+        if (return_value == -1 && runDetachedProcess(qApp->arguments(), QDir::currentPath()))
+            return_value = EXIT_SUCCESS;
 
-    // Never quit with events in queue. 2024: Why? DeferredDelete is not handled anyway.
-    QCoreApplication::processEvents();
-
-    app_instance->finalize();
-
-    delete app_instance;
-
-    if (return_value == -1 && runDetachedProcess(qApp->arguments(), QDir::currentPath()))
-        return_value = EXIT_SUCCESS;
-
-    INFO << "Bye.";
-    return return_value;
+        INFO << "Bye.";
+        return return_value;
+    } catch (const std::exception &e) {
+        CRIT << "Uncaught exception in main: " << e.what();
+        return EXIT_FAILURE;
+    } catch (...) {
+        CRIT << "Uncaught unknown exception in main. Exiting.";
+        return EXIT_FAILURE;
+    }
 }
 
 }
