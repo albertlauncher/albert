@@ -9,7 +9,6 @@
 #include <QStringBuilder>
 #include <QStyle>
 #include <QStyleFactory>
-#include <iostream>
 
 QStringList report()
 {
@@ -58,9 +57,3 @@ QStringList report()
     return sl;
 }
 
-void printReportAndExit()
-{
-    for (const auto &line : report())
-        std::cout << line.toStdString() << std::endl;
-    ::exit(EXIT_SUCCESS);
-}

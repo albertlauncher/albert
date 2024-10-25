@@ -36,6 +36,7 @@
 #include <QStandardPaths>
 #include <QSystemTrayIcon>
 #include <QTranslator>
+#include <iostream>
 Q_LOGGING_CATEGORY(AlbertLoggingCategory, "albert")
 using namespace albert;
 using namespace std;
@@ -526,6 +527,50 @@ int ALBERT_EXPORT run(int argc, char **argv)
     QApplication::setQuitOnLastWindowClosed(false);
 
 
+    // Parse command line (asap for fast cli commands)
+
+    struct {
+        QStringList plugin_dirs;
+        bool autoload;
+    } config;
+
+    {
+        auto opt_p = QCommandLineOption({"p", "plugin-dirs"},
+                                        App::tr("Set the plugin dirs to use. Comma separated."),
+                                        App::tr("directories"));
+        auto opt_r = QCommandLineOption({"r", "report"},
+                                        App::tr("Print report and quit."));
+        auto opt_n = QCommandLineOption({"n", "no-autoload"},
+                                        App::tr("Do not implicitly load enabled plugins."));
+
+        QCommandLineParser parser;
+        parser.addOptions({opt_p, opt_r, opt_n});
+        parser.addPositionalArgument(App::tr("command"),
+                                     App::tr("RPC command to send to the running instance."),
+                                     App::tr("[command [params...]]"));
+        parser.addVersionOption();
+        parser.addHelpOption();
+        parser.setApplicationDescription(App::tr("Launch Albert or control a running instance."));
+        parser.process(qapp);
+
+        if (parser.isSet(opt_r)) {
+            for (const auto &line : report())
+                std::cout << line.toStdString() << std::endl;
+            ::exit(EXIT_SUCCESS);
+        } else
+            for (const auto &line : report())
+                DEBG << line;
+
+        if (auto args = parser.positionalArguments(); !args.isEmpty())
+            return RPCServer::trySendMessage(args.join(" ")) ? 0 : 1;
+
+        config = {
+            .plugin_dirs = parser.value(opt_p).split(',', Qt::SkipEmptyParts),
+            .autoload    = !parser.isSet(opt_n),
+        };
+    }
+
+
     // Initialize app directories
 
     for (const auto &path : { cacheLocation(), configLocation(), dataLocation() })
@@ -598,41 +643,9 @@ int ALBERT_EXPORT run(int argc, char **argv)
         qApp->installTranslator(&translator);
 
 
-    // Parse command line
+    // Create app
 
-    {
-        auto opt_p = QCommandLineOption({"p", "plugin-dirs"},
-                                        App::tr("Set the plugin dirs to use. Comma separated."),
-                                        App::tr("directories"));
-        auto opt_r = QCommandLineOption({"r", "report"},
-                                        App::tr("Print report and quit."));
-        auto opt_n = QCommandLineOption({"n", "no-load"},
-                                        App::tr("Do not load enabled plugins."));
-
-        QCommandLineParser parser;
-        parser.addOptions({opt_p, opt_r, opt_n});
-        parser.addPositionalArgument(App::tr("command"),
-                                     App::tr("RPC command to send to the running instance."),
-                                     App::tr("[command [params...]]"));
-        parser.addVersionOption();
-        parser.addHelpOption();
-        parser.setApplicationDescription(App::tr("Launch Albert or control a running instance."));
-        parser.process(qapp);
-
-        if (!parser.positionalArguments().isEmpty())
-            return RPCServer::trySendMessage(parser.positionalArguments().join(" ")) ? 0 : 1;
-
-        if (parser.isSet(opt_r))
-            printReportAndExit();
-
-
-        // Create app
-
-        for (const auto &line : report())
-            DEBG << line;
-
-        new App(parser.value(opt_p).split(',', Qt::SkipEmptyParts), !parser.isSet(opt_n));
-    }
+    new App(config.plugin_dirs, !config.autoload);
 
 
     // Run app

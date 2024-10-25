@@ -3,4 +3,3 @@
 #include <QStringList>
 
 QStringList report();
-void printReportAndExit();
