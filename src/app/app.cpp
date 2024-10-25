@@ -633,14 +633,21 @@ int ALBERT_EXPORT run(int argc, char **argv)
 
     // Load translators
 
-    QTranslator qtTranslator;
-    if (qtTranslator.load(QLocale(), "qtbase", "_",
-                          QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
-        qApp->installTranslator(&qtTranslator);
+    {
+        DEBG << "Loading translations";
 
-    QTranslator translator;
-    if (translator.load(QLocale(), qApp->applicationName(), "_", ":/i18n"))
-        qApp->installTranslator(&translator);
+        auto *t = new QTranslator(&qapp);
+        if (t->load(QLocale(), "qtbase", "_", QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
+            qapp.installTranslator(t);
+        else
+            delete t;
+
+        t = new QTranslator(&qapp);
+        if (t->load(QLocale(), qapp.applicationName(), "_", ":/i18n"))
+            qapp.installTranslator(t);
+        else
+            delete t;
+    }
 
 
     // Create app
