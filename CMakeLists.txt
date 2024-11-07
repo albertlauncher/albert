@@ -10,6 +10,7 @@ project(albert
     DESCRIPTION "Keyboard launcher"
     HOMEPAGE_URL "https://albertlauncher.github.io"
 )
+set(PROJECT_DISPLAY_NAME "Albert")
 
 # Local cmake modules (also CMake uses this in a pretty obscure way, e.g. for the plist)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
@@ -448,11 +449,11 @@ if (APPLE)
     set_target_properties(${TARGET_APP} PROPERTIES
         BUNDLE True
         MACOSX_BUNDLE TRUE
-        MACOSX_BUNDLE_BUNDLE_NAME "${PROJECT_NAME}"
+        MACOSX_BUNDLE_BUNDLE_NAME "${PROJECT_DISPLAY_NAME}"  # "${PROJECT_NAME}"
         MACOSX_BUNDLE_BUNDLE_VERSION "${CMAKE_PROJECT_VERSION}"
         MACOSX_BUNDLE_COPYRIGHT "Copyright (c) 2024 Manuel Schneider"
         MACOSX_BUNDLE_GUI_IDENTIFIER "org.albertlauncher.albert"
-        MACOSX_BUNDLE_ICON_FILE ${ICON_NAME}
+        MACOSX_BUNDLE_ICON_FILE "${ICON_NAME}"
         MACOSX_BUNDLE_INFO_STRING "Albert keyboard launcher"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "${CMAKE_PROJECT_VERSION}"
     )
@@ -486,11 +487,16 @@ install(
 # CMake uses this one instead of searching systemwide.
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_BINARY_DIR}")
 
-# on macOS include the macports lookup path
-if (APPLE)
-    list(APPEND CMAKE_PREFIX_PATH "/opt/local")
-    message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
-endif()
+# # on macOS include the macports lookup path
+# if (APPLE)
+#     list(APPEND CMAKE_PREFIX_PATH "/opt/local")
+#     message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+# endif()
+#2024: Drop ports use brew only
+# if (APPLE)
+#     list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew")
+#     message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+# endif()
 
 option(BUILD_PLUGINS "Build plugins" ON)
 set(PLUGINS_DIR "${CMAKE_CURRENT_LIST_DIR}/plugins")
@@ -540,7 +546,6 @@ endif()
 
 ### Packaging #################################################################
 
-set(PROJECT_DISPLAY_NAME "Albert")
 
 if (APPLE)
     set(CPACK_GENERATOR "DragNDrop")

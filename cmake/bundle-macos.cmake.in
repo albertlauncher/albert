@@ -4,70 +4,148 @@ set(CMAKE_INSTALL_LIBDIR "@CMAKE_INSTALL_LIBDIR@")  # library paths
 set(CMAKE_INSTALL_DATADIR "@CMAKE_INSTALL_DATADIR@")
 set(CMAKE_SOURCE_DIR "@CMAKE_SOURCE_DIR@")  # qml lib lookup dir for macdeployqt
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "@CMAKE_LIBRARY_OUTPUT_DIRECTORY@")
-set(QT_DEPLOY_SCRIPT "@QT_DEPLOY_SCRIPT@")
-set(QT_DEPLOY_SUPPORT "@QT_DEPLOY_SUPPORT@")
 set(BUNDLE_PATH "${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}.app")
 
-# Print CMake env
+
+
+# PRINT CMAKE ENV
+
+message(STATUS "--- ENV ---")
 get_cmake_property(_variableNames VARIABLES)
 list (SORT _variableNames)
 foreach (_variableName ${_variableNames})
     message(STATUS "${_variableName}=${${_variableName}}")
 endforeach()
+message(STATUS "--- ENV END ---")
 
-message(STATUS "QT_DEPLOY_SUPPORT ${QT_DEPLOY_SUPPORT}")
-include("${QT_DEPLOY_SUPPORT}")
 
-# Move resources
-set(RES_SRC ${CMAKE_INSTALL_PREFIX}/share/albert)
-FILE(GLOB children RELATIVE ${RES_SRC} ${RES_SRC}/*)
-FOREACH(child ${children})
-    file(RENAME
-        ${RES_SRC}/${child}
-        ${BUNDLE_PATH}/Contents/Resources/${child}
-    )
-ENDFOREACH()
 
-file(MAKE_DIRECTORY "${BUNDLE_PATH}/Contents/PlugIns")
+
+# MOVE FILES INTO BUNDLE
+
+
+## Library
 file(MAKE_DIRECTORY "${BUNDLE_PATH}/Contents/Frameworks")
-
-# Move plugins
-file(RENAME
-    ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/albert
-    ${BUNDLE_PATH}/Contents/PlugIns/albert
-)
-
-# Move albert lib
 file(RENAME
     "${CMAKE_INSTALL_PREFIX}/albert.framework"
     "${BUNDLE_PATH}/Contents/Frameworks/albert.framework"
 )
 
-# RPATH frameworks
-execute_process(
-    COMMAND install_name_tool -add_rpath "@executable_path/../Frameworks/" "${BUNDLE_PATH}/Contents/MacOS/albert"
-    COMMAND_ECHO STDOUT
-    COMMAND_ERROR_IS_FATAL ANY
+## Plugins
+file(MAKE_DIRECTORY "${BUNDLE_PATH}/Contents/PlugIns")
+file(RENAME
+    ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/albert
+    ${BUNDLE_PATH}/Contents/PlugIns/albert
 )
-# RPATH macports
+
+## Resources
+set(RES_SRC ${CMAKE_INSTALL_PREFIX}/share/albert)
+file(GLOB children RELATIVE ${RES_SRC} ${RES_SRC}/*)
+foreach(child ${children})
+    file(RENAME
+        ${RES_SRC}/${child}
+        ${BUNDLE_PATH}/Contents/Resources/${child}
+    )
+endforeach()
+
+file(REMOVE_RECURSE "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+file(REMOVE_RECURSE "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}")
+
+
+
+# ADD RPATHS TO EXECUTABLE
+
 execute_process(
-    COMMAND install_name_tool -add_rpath "/opt/local/lib/" "${BUNDLE_PATH}/Contents/MacOS/albert"
-    COMMAND_ECHO STDOUT
-    COMMAND_ERROR_IS_FATAL ANY
-)
-# RPATH homebrew arm
-execute_process(
-    COMMAND install_name_tool -add_rpath "/opt/homebrew/lib/" "${BUNDLE_PATH}/Contents/MacOS/albert"
-    COMMAND_ECHO STDOUT
-    COMMAND_ERROR_IS_FATAL ANY
-)
-# RPATH homebrew intel
-execute_process(
-    COMMAND install_name_tool -add_rpath "/usr/local/lib/" "${BUNDLE_PATH}/Contents/MacOS/albert"
+    COMMAND install_name_tool
+        -add_rpath "@executable_path/../Frameworks/"  # in bundle
+        -add_rpath "/opt/local/lib/"                  # RPATH macports
+        -add_rpath "/opt/homebrew/lib/"               # RPATH homebrew arm
+        -add_rpath "/usr/local/lib/"                  # RPATH homebrew intel
+        "${BUNDLE_PATH}/Contents/MacOS/${PROJECT_NAME}"
     COMMAND_ECHO STDOUT
     COMMAND_ERROR_IS_FATAL ANY
 )
 
+
+
+# DEPLOY (APPROACH #1, use qt_deploy_runtime_dependencies)
+
+# set(QT_DEPLOY_SUPPORT "@QT_DEPLOY_SUPPORT@")
+# message(STATUS "QT_DEPLOY_SUPPORT ${QT_DEPLOY_SUPPORT}")
+# include("${QT_DEPLOY_SUPPORT}")
+
+# ## Get a list of plugin files
+# # file(GLOB PLUGINS "${BUNDLE_PATH}/Contents/MacOS/plugins/*")
+# # message(STATUS PLUGINS: ${PLUGINS})
+
+# qt_deploy_runtime_dependencies(
+#     EXECUTABLE ${BUNDLE_PATH}
+#     # ADDITIONAL_EXECUTABLES ${PLUGINS}
+#     GENERATE_QT_CONF
+#     VERBOSE
+# )
+
+
+
+# DEPLOY (APPROACH #2, call macdeployqt)
+
+# find_program(MACDEPLOYQT NAMES macdeployqt macdeployqt REQUIRED)
+# get_filename_component(QT_BIN_DIR "${MACDEPLOYQT}" DIRECTORY)
+# get_filename_component(QT_DIR "${QT_BIN_DIR}" DIRECTORY)
+# set(QT_LIB_DIR "${QT_DIR}/${CMAKE_INSTALL_LIBDIR}")
+
+# # Build list of -executable= parameters for plugins consumed by macdeployqt
+# FILE(GLOB PLUGINS "${BUNDLE_PATH}/Contents/PlugIns/albert/*")
+# foreach(PLUGIN ${PLUGINS})
+#     list(APPEND PLUGINS_EXEC_PARAMS "-executable=${PLUGIN}")
+# endforeach()
+
+# message(STATUS "MACDEPLOYQT ${MACDEPLOYQT}")
+# message(STATUS "QT_DIR ${QT_DIR}")
+# message(STATUS "QT_BIN_DIR ${QT_BIN_DIR}")
+# message(STATUS "QT_LIB_DIR ${QT_LIB_DIR}")
+
+# execute_process(
+#     COMMAND "${MACDEPLOYQT}"
+#     "${BUNDLE_PATH}"
+#     "-executable=${BUNDLE_PATH}/Contents/Frameworks/albert.framework/Versions/A/albert"
+#     ${PLUGINS_EXEC_PARAMS}
+#     #"-libpath=${CMAKE_INSTALL_PREFIX}"  # albert lib
+#     #"-libpath=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"  # albert lib
+#     #"-libpath=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"  # albert lib
+#     "-libpath=/opt/local/lib"  # macports dependencies
+#     #"-qmldir=${CMAKE_SOURCE_DIR}/plugins/qmlboxmodel/resources/qml"
+#     "-appstore-compliant"
+#     "-verbose=1"
+#     #"-dmg"
+#     COMMAND_ECHO STDOUT
+#     COMMAND_ERROR_IS_FATAL ANY
+# )
+
+
+
+# CODE SIGN
+
+# execute_process(
+#     COMMAND xattr -d com.apple.quarantine "${BUNDLE_PATH}"
+#     COMMAND_ECHO STDOUT
+#     COMMAND_ERROR_IS_FATAL ANY
+# )
+execute_process(
+    COMMAND codesign --force --deep --sign - "${BUNDLE_PATH}"
+    COMMAND_ECHO STDOUT
+    COMMAND_ERROR_IS_FATAL ANY
+)
+
+
+
+## CLEANUP
+
+# include(BundleUtilities)
+# verify_app("${BUNDLE_PATH}")
+
+
+# Older, possibly useful stuff
 
 ## Build library lookup paths from CMAKE_PREFIX_PATH
 #foreach(PATH ${CMAKE_PREFIX_PATH})
@@ -76,55 +154,16 @@ execute_process(
 #list(APPEND DIRS "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}") # albert lib
 #list(APPEND DIRS "/Library/Developer/CommandLineTools/Library/Frameworks/") # system python
 
-## Get a list of plugin files
-#FILE(GLOB LIBS "${BUNDLE_PATH}/Contents/MacOS/plugins/*")
+
+
 
 #include(BundleUtilities)
-##fixup_bundle("${BUNDLE_PATH}" "${LIBS}" "${DIRS}")
+#fixup_bundle("${BUNDLE_PATH}" "${LIBS}" "${DIRS}")
 
-file(REMOVE_RECURSE "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-file(REMOVE_RECURSE "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}")
 
-# Build list of -executable= parameters for plugins consumed by macdeployqt
-FILE(GLOB PLUGINS "${BUNDLE_PATH}/Contents/PlugIns/albert/*")
-foreach(PLUGIN ${PLUGINS})
-    list(APPEND PLUGINS_EXEC_PARAMS "-executable=${PLUGIN}")
-endforeach()
 
-# Qt macdeployqt
-find_program(MACDEPLOYQT NAMES macdeployqt macdeployqt REQUIRED)
-get_filename_component(QT_BIN_DIR "${MACDEPLOYQT}" DIRECTORY)
-get_filename_component(QT_DIR "${QT_BIN_DIR}" DIRECTORY)
-set(QT_LIB_DIR "${QT_DIR}/${CMAKE_INSTALL_LIBDIR}")
-message(STATUS "MACDEPLOYQT ${MACDEPLOYQT}")
-message(STATUS "QT_BIN_DIR ${QT_BIN_DIR}")
-message(STATUS "QT_LIB_DIR ${QT_LIB_DIR}")
-message(STATUS "QT_DIR ${QT_DIR}")
-message(STATUS "MACDEPLOYQT: ${MACDEPLOYQT}")
-#message(STATUS "DYLD_LIBRARY_PATH: ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-#set(ENV{DYLD_LIBRARY_PATH} "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-execute_process(
-    COMMAND "${MACDEPLOYQT}"
-    "${BUNDLE_PATH}"
-    "-executable=${BUNDLE_PATH}/Contents/Frameworks/albert.framework/Versions/A/albert"
-    ${PLUGINS_EXEC_PARAMS}
-    #"-libpath=${CMAKE_INSTALL_PREFIX}"  # albert lib
-    #"-libpath=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"  # albert lib
-    #"-libpath=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"  # albert lib
-    "-libpath=/opt/local/lib"  # macports dependencies
-    "-qmldir=${CMAKE_SOURCE_DIR}/plugins/qmlboxmodel/resources/qml"
-    "-appstore-compliant"
-    "-verbose=1"
-    #"-dmg"
-    COMMAND_ECHO STDOUT
-    COMMAND_ERROR_IS_FATAL ANY
-)
 
-# Copy missing svg imageformat
-file(COPY_FILE
-    "${QT_DIR}/plugins/imageformats/libqsvg.dylib"
-    "${BUNDLE_PATH}/Contents/PlugIns/imageformats/libqsvg.dylib"
-)
 
-##        file(REMOVE_RECURSE \${CMAKE_INSTALL_PREFIX}/lib)
-##        file(REMOVE_RECURSE \${CMAKE_INSTALL_PREFIX}/share)
+
+
+
