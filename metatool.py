@@ -29,23 +29,24 @@ def create_changelog(args) -> str:
 
         return '\n'.join(indented_output)
 
+    out.append(f"[Key changes]")
 
     log = run(["git", "log", f"--pretty=format:{placeholder} %B", f"{latest_tag}..HEAD"], capture_output=True).stdout.decode().strip()
     log = process_git_log(log)
     if log:
-        out.append(f"## Albert\n\n{log}")
+        out.append(f"## Albert\n\n{log}\n\n\n## API\n\n- ````")
 
     begin = run(["git", "ls-tree", latest_tag, native_plugins_root], capture_output=True).stdout.decode().strip().split()[2]
     log = run(["git", "-C", native_plugins_root, "log", f"--pretty=format:{placeholder} %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
     log = process_git_log(log)
     if log:
-        out.append(f"## Plugins\n\n{log}")
+        out.append(f"## Plugins\n\n- ****\n\n{log}")
 
     begin = run(["git", "-C", native_plugins_root, "ls-tree", begin, python_plugins_root], capture_output=True).stdout.decode().strip().split()[2]
     log = run(["git", "-C", python_plugins_root, "log", f"--pretty=format:{placeholder} %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
     log = process_git_log(log)
     if log:
-        out.append(f"## Python\n\n{log}")
+        out.append(f"## Python\n\n- ****\n\n{log}")
 
     return '\n\n'.join(out)
 
@@ -60,7 +61,6 @@ def test_build(args):
         'Ubuntu': ["docker", "build", "--progress=plain", "-f", ".docker/ubuntu.Dockerfile", "-t",
                    "albert:ubuntu", "."],
     }
-
 
     if args.distribution is not None:
         cmds = [v for k,v  in cmds.items() if args.distribution.lower() in k.lower()]
@@ -94,7 +94,6 @@ def release(args):
     if not re.match(r'^[0-9]+\.[0-9]+\.[0-9]+$', args.version):
         print('Expected version number as parameter: major.minor.patch')
         sys.exit(1)
-
 
     print("CHECK THESE!")
     print("- PRs and feature branches merged?")
@@ -151,7 +150,7 @@ title:  "Albert v{args.version} released"
 date: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M%z")}
 ---
 
-# {{{ page.title }}}
+# {{{{ page.title }}}}
 
 {changelog.strip()}
 
