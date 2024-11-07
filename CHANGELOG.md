@@ -1,3 +1,19 @@
+v0.26.7 (2024-11-07)
+
+This release contains the new plugin menubar and separates the sleep inhibition extension from the system plugin.
+
+## Albert
+
+- CPack drop qt deloy tool
+- Update translations
+- Parse cli params asap for faster hotkeys
+
+## Plugins
+
+- **menubar** 1.0
+- **system** Move sleep inhibition in separate plugin
+- **caffeine** Separate from system
+
 v0.26.6 (2024-10-23)
 
 ## Albert
