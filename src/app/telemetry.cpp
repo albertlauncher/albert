@@ -19,42 +19,40 @@
 #include <QSettings>
 #include <QTimeZone>
 static const char *CFG_LAST_REPORT = "last_report";
-static const char *CFG_TELEMETRY = "telemetry";
+static const char *CFG_TELEMETRY_ENABLED = "telemetry";
 using namespace albert;
 
 
-Telemetry::Telemetry(albert::ExtensionRegistry &registry) : registry_(registry)
+Telemetry::Telemetry(albert::ExtensionRegistry &registry):
+    registry_(registry),
+    last_report(state()->value(CFG_LAST_REPORT,  // Default to -24h avoid sending old data
+                               QDateTime::currentDateTime().addDays(-1)).toDateTime())
 {
-    if (auto s = settings(); !s->contains(CFG_TELEMETRY))
+    if (auto s = settings(); s->contains(CFG_TELEMETRY_ENABLED))
+        enabled_ = s->value(CFG_TELEMETRY_ENABLED).toBool();
+    else
     {
         auto text = tr(
             "Telemetry helps improving the user experience by collecing anonymous data. "
             "You can review the telemetry data to be sent in the settings. Do you want "
             "to enable telemetry? This configuration be changed at any time in the settings.");
 
-        QMessageBox mb(QMessageBox::Question, qApp->applicationDisplayName(),
-                       text, QMessageBox::No|QMessageBox::Yes);
-
-        mb.setDefaultButton(QMessageBox::Yes);
-        auto button = mb.exec();
-        setEnabled(button == QMessageBox::Yes);
+        setEnabled(QMessageBox::question(0, qApp->applicationDisplayName(),
+                                         text, QMessageBox::No|QMessageBox::Yes, QMessageBox::Yes)
+                   == QMessageBox::Yes);
     }
-    else
-        enabled_ = s->value(CFG_TELEMETRY).toBool();
-    last_report = state()->value(CFG_LAST_REPORT).toDateTime();
 
     QObject::connect(&timer, &QTimer::timeout, this, &Telemetry::trySendReport);
-    timer.setInterval(60000);  // every minute
-    if (enabled_)
-        timer.start();
+
+    timer.start(60000);  // every minute
 }
 
 void Telemetry::trySendReport()
 {
     auto now = QDateTime::currentDateTime();
 
+    // Skip if sent already today.
     // At 3 AM most people are asleep. Use it as the beginning of a "human day".
-    // Skip. Sent already today.
     if (now.addSecs(-10800).date() == last_report.addSecs(-10800).date())
         return;
 
@@ -69,19 +67,21 @@ void Telemetry::trySendReport()
     auto *reply = network()->put(request, buildReport().toJson(QJsonDocument::Compact));
 
     QObject::connect(reply, &QNetworkReply::finished, this, [this, reply, now] {
-        if (reply->error() != QNetworkReply::NoError)
+        reply->deleteLater();
+
+        if (reply->error() == QNetworkReply::NoError)
+        {
+            INFO << "Successfully sent telemetry data.";
+            last_report = now;
+            state()->setValue(CFG_LAST_REPORT, last_report);
+        }
+        else
         {
             WARN << "Failed to send telemetry data:";
             WARN << reply->errorString();
             auto json = QJsonDocument::fromJson(reply->readAll());
             WARN << json["error"].toString();
         }
-        else
-        {
-            DEBG << "Successfully sent telemetry data.";
-            state()->setValue(CFG_LAST_REPORT, last_report = now);
-        }
-        reply->deleteLater();
     });
 }
 
@@ -129,10 +129,12 @@ QJsonDocument Telemetry::buildReport() const
 {
     QJsonObject data;
 
-    data.insert("albert", albertTelemetry(last_report));
-
-    if (auto *apps_plugin = registry_.extension<TelemetryProvider>("applications"); apps_plugin)
-        data.insert("applications", apps_plugin->telemetryData());
+    if (enabled_)
+    {
+        data.insert("albert", albertTelemetry(last_report));
+        if (auto *apps_plugin = registry_.extension<TelemetryProvider>("applications"); apps_plugin)
+            data.insert("applications", apps_plugin->telemetryData());
+    }
 
     QJsonObject o;
     o.insert("report", 2);  // report version
@@ -155,7 +157,6 @@ void Telemetry::setEnabled(bool value)
     if (enabled_ != value)
     {
         enabled_ = value;
-        settings()->setValue(CFG_TELEMETRY, enabled_);
-        enabled_ ? timer.start() : timer.stop();
+        settings()->setValue(CFG_TELEMETRY_ENABLED, enabled_);
     }
 }

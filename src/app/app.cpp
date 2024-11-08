@@ -64,7 +64,6 @@ public:
     void finalize();
 
     void initTrayIcon();
-    void initTelemetry();
     void initHotkey();
     void initPRC();
     void loadAnyFrontend();
@@ -131,8 +130,6 @@ void App::Private::initialize()
 
     notifyVersionChange();
 
-    initTelemetry();
-
     initPRC(); // Also may trigger frontend
 
     initHotkey();  // Connect hotkey after! frontend has been loaded else segfaults
@@ -140,7 +137,9 @@ void App::Private::initialize()
     extension_registry.registerExtension(&app_query_handler);
     extension_registry.registerExtension(&plugin_query_handler);
     extension_registry.registerExtension(&triggers_query_handler);
-    extension_registry.registerExtension(&plugin_provider);  // loads plugins
+
+    // Load plugins not before loop is executing
+    QTimer::singleShot(0, [this] { extension_registry.registerExtension(&plugin_provider); });
 }
 
 void App::Private::finalize()
@@ -211,10 +210,6 @@ void App::Private::initTrayIcon()
             App::instance()->toggle();
     });
 #endif
-}
-
-void App::Private::initTelemetry()
-{
 }
 
 void App::Private::initHotkey()

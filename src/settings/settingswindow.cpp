@@ -144,12 +144,14 @@ void SettingsWindow::init_tab_general_frontends()
 
 void SettingsWindow::init_tab_general_telemetry()
 {
-    ui.checkBox_telemetry->setChecked(app.telemetry().enabled());
-    connect(ui.checkBox_telemetry, &QCheckBox::toggled,
-            &app.telemetry(), &Telemetry::setEnabled);
-
     ui.checkBox_telemetry->setToolTip(app.telemetry().buildReportString());
     ui.checkBox_telemetry->setIcon(style()->standardPixmap(QStyle::SP_MessageBoxQuestion));
+    ui.checkBox_telemetry->setChecked(app.telemetry().enabled());
+
+    connect(ui.checkBox_telemetry, &QCheckBox::toggled, this, [this](bool checked){
+        app.telemetry().setEnabled(checked);
+        ui.checkBox_telemetry->setToolTip(app.telemetry().buildReportString());
+    });
 }
 
 void SettingsWindow::init_tab_general_about()
