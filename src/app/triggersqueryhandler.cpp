@@ -36,18 +36,9 @@ void TriggersQueryHandler::handleTriggerQuery(Query *q)
     // Match tigger, id and name.
 
     vector<RankItem> RI;
-    Matcher matcher(q->string());
-
     for (const auto &[trigger, handler] : query_engine_.activeTriggerHandlers())
-    {
-        Match m;
-        for (const auto &s : {trigger, handler->name(), handler->id()})
-            if (auto _m = matcher.match(s); m < _m)
-                m = _m;
-
-        if (m.isMatch())
+        if (auto m = Matcher(q->string()).match(trigger, handler->name(), handler->id()); m)
             RI.emplace_back(make_item(trigger, handler), m);
-    }
 
     applyUsageScore(&RI);
 

@@ -11,23 +11,37 @@ namespace albert
 ///
 /// Configuration for string matching.
 ///
+/// \sa \ref Matcher, \ref IndexQueryHandler
+///
 class ALBERT_EXPORT MatchConfig
 {
 public:
+    ///
     /// The separator regex used to split the compared strings.
+    ///
     QRegularExpression separator_regex =
-        QRegularExpression(R"([\s\\\/\-\[\](){}#!?<>"'=+*.:,;_]+)");
+        //    QRegularExpression(R"([\s\\\/\-\[\](){}#!?<>"'=+*.:,;_]+)");
+        // make doxygen happy
+        QRegularExpression("([\\s\\\\/\\-\\[\\](){}#!?<>\"'=+*.:,;_]+)");
 
+    ///
     /// Match strings case insensitive.
+    ///
     bool ignore_case = true;
 
+    ///
     /// Match strings normalized.
+    ///
     bool ignore_diacritics = true;
 
+    ///
     /// Match strings independent of their order.
+    ///
     bool ignore_word_order = true;
 
+    ///
     /// Match strings error tolerant.
+    ///
     bool fuzzy = false;
 
     ///

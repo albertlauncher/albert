@@ -3,12 +3,9 @@
 #include "itemindex.h"
 #include "levenshtein.h"
 #include "matcher.h"
-#include "rankitem.h"
 #include "standarditem.h"
 #include "test.h"
 #include "topologicalsort.hpp"
-#include <chrono>
-#include <iostream>
 #include <set>
 #include <unistd.h>
 using namespace albert;
@@ -262,6 +259,10 @@ void AlbertTests::matcher_score()
     QCOMPARE(m.match("a").score(), 1./1.);
     QCOMPARE(m.match("a ab").score(), 1./3.);
     QCOMPARE(m.match("a ab abc").score(), 1./6.);
+
+    // variadic
+    QCOMPARE(m.match("a", "a ab", "a ab abc").score(), 1./1.);
+    QCOMPARE(m.match("a ab", "a ab abc").score(), 1./3.);
 
     m = Matcher("ab");
 
