@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
 
-  Release:
+  ReleaseSourceArchive:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
@@ -35,7 +35,25 @@ jobs:
             ${{ github.ref_name }}.tar.gz
             ${{ github.ref_name }}.zip
 
-  MacOS:
+  LinuxBuilds:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        dockerfile: [arch.Dockerfile, fedora.Dockerfile, ubuntu.Dockerfile]
+
+    steps:
+
+      - name: Checkout source code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Build docker test image
+        run: docker build . --file .docker/${{ matrix.dockerfile }}
+
+  MacBuilds:
     name: ${{matrix.buildname}}
     runs-on: ${{matrix.os}}
     strategy:
@@ -143,9 +161,6 @@ jobs:
           mv "${dmg}" "${new_dmg}"
           mv "${dmg}.sha256" "${new_dmg}.sha256"
 
-      - name: list files
-        run: find build
-
       - name: Upload macOS bundle
         uses: actions/upload-artifact@v4
         with:
@@ -155,8 +170,8 @@ jobs:
             build/*.sha256
             #appcast_item.txt
 
-  Relase:
-    needs: MacOS
+  RelaseMacBuilds:
+    needs: MacBuilds
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
@@ -165,18 +180,41 @@ jobs:
         with:
           merge-multiple: true
 
-      - name: list files
-        run: find .
-
       - name: Upload
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            build/Albert-*.dmg
-            build/Albert-*.sha256
+            Albert-*.dmg
+            Albert-*.sha256
+
+  UpdateTap:
+    needs: RelaseMacBuilds
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - uses: actions/checkout@v4
+        with:
+          repository: albertlauncher/homebrew-albert
+          token: ${{ secrets.PAT }}
+
+      - name: Update cask
+        run: |
+          sha_arm=$(cut -f 1 -d " "  Albert-v0.26.8-arm64.dmg.sha256)
+          sha_intel=$(cut -f 1 -d " "  Albert-v0.26.8-x86_64.dmg.sha256)
+          sed -i '.bak' "s/version .*$/version \"${{ github.ref_name }}\"/; s/^  sha256.*$/  sha256 arm: \"${sha_arm}\", intel: \"${sha_intel}\"/" albert.rb
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add albert.rb
+          git commit -m "${{ github.ref_name }}"
+          git push
 
  # Appcast:
- #   needs: Relase
+ #   needs: RelaseMacBuilds
  #   if: startsWith(github.ref, 'refs/tags/')
  #   runs-on: ubuntu-latest
  #   steps:
@@ -200,20 +238,3 @@ jobs:
       #    git commit -m "Update appcast"
       #    git push origin master
 
-  Linux:
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        dockerfile: [arch.Dockerfile, fedora.Dockerfile, ubuntu.Dockerfile]
-
-    steps:
-
-      - name: Checkout source code
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-
-      - name: Build docker test image
-        run: docker build . --file .docker/${{ matrix.dockerfile }}
