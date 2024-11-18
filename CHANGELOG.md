@@ -1,3 +1,21 @@
+v0.26.8 (2024-11-18)
+
+## Albert
+
+- Minor improvements around telemetry
+
+## API
+
+- Add variadic ``Matcher::match(…)``
+
+## Plugins
+
+- **python** Interface 2.5
+- **applications**
+  - Recurse app directories on macos
+  - Revert back to command based heuristic to find terminals
+- **menubar** Show hotkeys
+
 v0.26.7 (2024-11-07)
 
 This release contains the new plugin menubar and separates the sleep inhibition extension from the system plugin.
