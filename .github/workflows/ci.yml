@@ -204,8 +204,8 @@ jobs:
 
       - name: Update cask
         run: |
-          sha_arm=$(cut -f 1 -d " "  Albert-v0.26.8-arm64.dmg.sha256)
-          sha_intel=$(cut -f 1 -d " "  Albert-v0.26.8-x86_64.dmg.sha256)
+          sha_arm=$(cut -f 1 -d " "  Albert-${{ github.ref_name }}-arm64.dmg.sha256)
+          sha_intel=$(cut -f 1 -d " "  Albert-${{ github.ref_name }}-x86_64.dmg.sha256)
           sed -i '.bak' "s/version .*$/version \"${{ github.ref_name }}\"/; s/^  sha256.*$/  sha256 arm: \"${sha_arm}\", intel: \"${sha_intel}\"/" albert.rb
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
