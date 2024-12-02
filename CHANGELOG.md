@@ -1,3 +1,13 @@
+v0.26.9 (2024-12-02)
+
+This release contains the latest bug fixes.
+
+- **widgetsboxmodel** Fix broken input history behavior
+- **applications** Set ignore_show_in_keys default to true
+- **clipboard** Fix typo
+- **path** Show PATH in settings and tr synopsis
+- **docs** "Fix" mac builds
+
 v0.26.8 (2024-11-18)
 
 ## Albert
