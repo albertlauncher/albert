@@ -9,7 +9,11 @@ project(albert
     VERSION ${PROJECT_VERSION}
     DESCRIPTION "Keyboard launcher"
     HOMEPAGE_URL "https://albertlauncher.github.io"
+    LANGUAGES CXX
 )
+if(APPLE)
+    enable_language(OBJCXX)  # used by pch
+endif()
 set(PROJECT_DISPLAY_NAME "Albert")
 
 # Local cmake modules (also CMake uses this in a pretty obscure way, e.g. for the plist)
@@ -238,6 +242,8 @@ generate_export_header(${TARGET_LIB}
     BASE_NAME ${PROJECT_NAME}
     EXPORT_FILE_NAME "${PROJECT_BINARY_DIR}/include/albert/export.h"
 )
+
+target_precompile_headers(${TARGET_LIB} PRIVATE ${LIB_PUBLIC_HEADER})
 
 target_compile_options(${TARGET_LIB} PRIVATE ${ALBERT_COMPILE_OPTIONS})
 
