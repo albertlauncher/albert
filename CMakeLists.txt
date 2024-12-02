@@ -300,9 +300,8 @@ target_link_libraries(${TARGET_LIB}
 )
 
 if(APPLE)
-    target_link_libraries(${TARGET_LIB}
-        PRIVATE objc "-framework Cocoa"
-    )
+    target_link_libraries(${TARGET_LIB} PRIVATE objc "-framework Cocoa")
+    target_compile_options(${TARGET_LIB} PUBLIC "-fobjc-arc")
 elseif(UNIX)
     if (DEFINED CMAKE_LIBRARY_ARCHITECTURE)
         target_compile_definitions(${TARGET_LIB}

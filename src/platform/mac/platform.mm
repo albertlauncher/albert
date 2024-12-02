@@ -8,43 +8,14 @@
 #include <QGuiApplication>
 #include <QMessageBox>
 #include <QTimer>
-// #include <UserNotifications/UserNotifications.h>
-// #if ! __has_feature(objc_arc)
-//     #error This file must be compiled with ARC. Use -fobjc-arc flag (or convert project to ARC).
-// #endif
-
-//#include <Foundation/Foundation.h>
-
 using namespace albert;
 
-// static void requestAccessibilityPermissions()
-// {
-//     if (!AXIsProcessTrusted())
-//     {
-//         NSDictionary *options = @{(id)kAXTrustedCheckOptionPrompt: @YES};
-//         AXIsProcessTrustedWithOptions((CFDictionaryRef)options);
-//     }
-// }
-
-void platform::initPlatform()
-{
-    // requestAccessibilityPermissions();
-}
+void platform::initPlatform() {}
 
 void platform::initNativeWindow(unsigned long long wid)
 {
-    NSWindow *ns_window = [reinterpret_cast<id>(wid) window];
-    // NSWindow *ns_window = reinterpret_cast<NSWindow*>(wid);
-
-    // NSView *ns_view = reinterpret_cast<NSView*>(wid);
-    // NSWindow *ns_window = ns_view.window;
-
-    // NSWindow *ns_window = [NSApp windowWithWindowNumber:wid];
-
-    // auto ns_number_wid = [NSNumber numberWithUnsignedLongLong:wid];
-    // NSView *ns_view = reinterpret_cast<NSView*>(ns_number_wid);
-
-    // NSWindow *ns_window = ns_view.window;
+    NSView *nsview = (__bridge NSView *)reinterpret_cast<void *>(wid);
+    NSWindow *ns_window = [nsview window];
 
     /*
      * @const NSWindowAnimationBehaviorDefault  Let AppKit infer animation behavior for this window.
