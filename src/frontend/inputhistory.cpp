@@ -14,8 +14,8 @@ class InputHistory::Private
 {
 public:
     QString file_path;
-    QStringList lines_;
-    int currentLine_;
+    QStringList history;
+    qsizetype current;
 };
 
 
@@ -31,7 +31,7 @@ InputHistory::InputHistory(const QString &path):
     {
         QTextStream ts(&f);
         while (!ts.atEnd())
-            d->lines_ << ts.readLine();
+            d->history << ts.readLine();
         f.close();
     }
 
@@ -43,7 +43,7 @@ InputHistory::~InputHistory()
     if (QFile f(d->file_path); f.open(QIODevice::WriteOnly))
     {
         QTextStream ts(&f);
-        for (const auto &line : d->lines_)
+        for (const auto &line : d->history)
             ts << line << Qt::endl;
         f.close();
     }
@@ -55,31 +55,53 @@ void InputHistory::add(const QString& s)
 {
     if (!s.isEmpty())
     {
-        if (d->lines_.contains(s))
-            d->lines_.removeAll(s); // Remove dups
-        d->lines_ << s;
+        if (d->history.contains(s))
+            d->history.removeAll(s); // Remove dups
+        d->history << s;
     }
     resetIterator();
 }
 
 QString InputHistory::next(const QString &substring)
 {
-    for (int l = d->currentLine_ - 1; 0 <= l; --l)
-        // Simple hack to avoid the seemingly-noop-on-first-history-iteration on disabled clear-on-hide
-        if (d->lines_[l].contains(substring, Qt::CaseInsensitive) && substring != d->lines_[l])
-            return d->lines_[d->currentLine_ = l];
-    return QString{};
+    // already at end or no history
+    if (d->history.isEmpty() || d->current < 0)
+        return {};
+
+    while(0 <= --d->current)
+    {
+        const auto &c = d->history[d->current];
+        if (substring != c  // avoid effective noop on disabled clear-on-hide
+            && c.contains(substring, Qt::CaseInsensitive))
+            return c;
+    }
+
+    return {};
 }
 
 QString InputHistory::prev(const QString &substring)
 {
-    for (int l = d->currentLine_ + 1; l < (int)d->lines_.size(); ++l)
-        if (d->lines_[l].contains(substring, Qt::CaseInsensitive))
-            return d->lines_[d->currentLine_ = l];
-    return QString{};
+    // already at end or no history
+    if (d->history.isEmpty() || d->current >= d->history.size())
+        return {};
+
+    while(++d->current < d->history.size())
+    {
+        const auto &c = d->history[d->current];
+        if (c.contains(substring, Qt::CaseInsensitive))
+            return c;
+    }
+
+    return {};
 }
 
 void InputHistory::resetIterator()
 {
-    d->currentLine_ = (int)d->lines_.size();
+    d->current = (int)d->history.size();
+}
+
+void InputHistory::clear()
+{
+    d->history.clear();
+    resetIterator();
 }

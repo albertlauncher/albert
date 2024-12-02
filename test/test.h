@@ -39,6 +39,8 @@ private slots:
     void index_case();
     void index_score();
 
+    void input_history();
+
     // void benchmark_comparison_vanilla_vs_fast_levenshtein();
 
     // void benchmark_hash_qstring();

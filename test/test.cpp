@@ -2,6 +2,7 @@
 
 #include "itemindex.h"
 #include "levenshtein.h"
+#include "inputhistory.h"
 #include "matcher.h"
 #include "standarditem.h"
 #include "test.h"
@@ -385,6 +386,72 @@ void AlbertTests::index_score()
     QVERIFY(qFuzzyCompare(m[1].score, 3./4.));
 }
 
+void AlbertTests::input_history()
+{
+    QTemporaryFile t;
+    t.open(); t.close(); // required to get the filename
+
+    qDebug() << t.fileName();
+    InputHistory h(t.fileName());
+
+    h.add("a");
+    h.add("b");
+    h.add("c");
+
+    // Full iteration
+    QCOMPARE(h.prev(), "");
+    QCOMPARE(h.prev(), "");
+    QCOMPARE(h.next(), "c");
+    QCOMPARE(h.next(), "b");
+    QCOMPARE(h.next(), "a");
+    QCOMPARE(h.next(), "");
+    QCOMPARE(h.next(), "");
+    QCOMPARE(h.prev(), "a");
+    QCOMPARE(h.prev(), "b");
+    QCOMPARE(h.prev(), "c");
+    QCOMPARE(h.prev(), "");
+    QCOMPARE(h.prev(), "");
+
+    // Reset
+    h.resetIterator();
+    QCOMPARE(h.prev(), "");
+    QCOMPARE(h.prev(), "");
+    QCOMPARE(h.next(), "c");
+    h.resetIterator();
+    QCOMPARE(h.prev(), "");
+    QCOMPARE(h.prev(), "");
+    QCOMPARE(h.next(), "c");
+    h.resetIterator();
+
+    // Direction change
+    QCOMPARE(h.prev(), "");
+    QCOMPARE(h.next(), "c");
+    QCOMPARE(h.next(), "b");
+    QCOMPARE(h.prev(), "c");
+    QCOMPARE(h.prev(), "");
+
+    // Clear
+    h.clear();
+    QCOMPARE(h.prev(), "");
+    QCOMPARE(h.prev(), "");
+    QCOMPARE(h.next(), "");
+    QCOMPARE(h.next(), "");
+
+    h.add("abc");
+    h.add("def");
+    h.add("ghj");
+
+    // search
+    QCOMPARE(h.prev("hj"), "");
+    QCOMPARE(h.prev("hj"), "");
+    QCOMPARE(h.next("hj"), "ghj");
+    QCOMPARE(h.next("hj"), "");
+    QCOMPARE(h.prev("hj"), "ghj");
+    QCOMPARE(h.prev("hj"), "");
+    QCOMPARE(h.prev("hj"), "");
+
+
+}
 
 // // -------------------------------------------------------------------------------------------------
 

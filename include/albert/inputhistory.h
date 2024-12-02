@@ -25,7 +25,7 @@ public:
     ~InputHistory() override;
 
     ///
-    /// Add text to history search.
+    /// Adds text to history search.
     ///
     /// Skips empty strings and drops duplicates.
     ///
@@ -34,7 +34,7 @@ public:
     Q_INVOKABLE void add(const QString& str);
 
     ///
-    /// Get next history item matching the pattern.
+    /// Gets next history item matching the pattern.
     ///
     /// @param pattern A pattern used to filter the history items.
     /// @returns The next history item matching the pattern or empty string.
@@ -42,7 +42,7 @@ public:
     Q_INVOKABLE QString next(const QString &pattern = QString{});
 
     ///
-    /// Get previous history item matching the pattern.
+    /// Gets previous history item matching the pattern.
     ///
     /// @param pattern A pattern used to filter the history items.
     /// @returns The previous history item matching the pattern or empty string.
@@ -50,9 +50,14 @@ public:
     Q_INVOKABLE QString prev(const QString &pattern = QString{});
 
     ///
-    /// Reset history search.
+    /// Resets history search.
     ///
     Q_INVOKABLE void resetIterator();
+
+    ///
+    /// Clears the history.
+    ///
+    Q_INVOKABLE void clear();
 
 private:
 
