@@ -491,27 +491,6 @@ int ALBERT_EXPORT run(int argc, char **argv)
     QLoggingCategory::setFilterRules("*.debug=false");
     qInstallMessageHandler(messageHandler);
 
-
-    // Put /usr/local/bin hardcoded to env… why?
-
-    // {
-    //     auto usr_local_bin = QStringLiteral("/usr/local/bin");
-    //     auto PATHS = QString(qgetenv("PATH")).split(':');
-    //     if (!PATHS.contains(usr_local_bin))
-    //         PATHS.prepend(usr_local_bin);
-    //     auto PATH = PATHS.join(':').toLocal8Bit();
-    //     qputenv("PATH", PATH);
-    // }
-
-
-    // Set locale from env vars (for macos debug builds)
-
-    // if (const char *key = "LANGUAGE"; qEnvironmentVariableIsSet(key))
-    //     QLocale::setDefault(QLocale(qEnvironmentVariable(key)));
-    // else if (key = "LANG"; qEnvironmentVariableIsSet(key))
-    //     QLocale::setDefault(QLocale(qEnvironmentVariable(key)));
-
-
     // Initialize Qt application
 
     QApplication qapp(argc, argv);
