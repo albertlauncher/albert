@@ -69,12 +69,12 @@ public:
     ///
     /// Returns `true` if this is a match, otherwise returns `false`.
     ///
-    inline operator bool() const { return isMatch(); }
+    inline explicit operator bool() const { return isMatch(); }
 
     ///
     /// Returns the score.
     ///
-    inline explicit operator Score() const { return score_; }
+    inline operator Score() const { return score_; }
 
 private:
 
