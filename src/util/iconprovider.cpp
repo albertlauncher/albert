@@ -88,7 +88,7 @@ static void drawGenericIcon(QPainter *p, const QRect &rect, const QColor &bgcolo
         p->setPen(fgcolor);
 
         QFont font = p->font();
-        font.setPixelSize(rect.height() * scalar);
+        font.setPixelSize(static_cast<int>(round(rect.height() * scalar)));
         p->setFont(font);
 
         p->drawText(rect, Qt::AlignCenter, text);
