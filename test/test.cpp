@@ -126,19 +126,38 @@ void AlbertTests::levenshtein_shorter_prefix()
     QVERIFY(l.computePrefixEditDistanceWithLimit("abc", "", 1) == 2);
 }
 
+void AlbertTests::match_conversion()
+{
+    auto m = Match(-1);
+    QCOMPARE((bool)m, false);
+    QCOMPARE(m.isMatch(), false);
+    QCOMPARE(m.isEmptyMatch(), false);
+    QCOMPARE(m.isExactMatch(), false);
+
+    m = Match(0);
+    QCOMPARE((bool)m, true);
+    QCOMPARE(m.isMatch(), true);
+    QCOMPARE(m.isEmptyMatch(), true);
+    QCOMPARE(m.isExactMatch(), false);
+
+    m = Match(1);
+    QCOMPARE((bool)m, true);
+    QCOMPARE(m.isMatch(), true);
+    QCOMPARE(m.isEmptyMatch(), false);
+    QCOMPARE(m.isExactMatch(), true);
+}
+
 void AlbertTests::matcher_empty()
 {
     Matcher m("");
     QVERIFY(qFuzzyCompare(m.match("a").score(), .0));
     QVERIFY(qFuzzyCompare(m.match("a b").score(), .0));
-    QVERIFY(m.match("a") == true);
-    QVERIFY(m.match("a b") == true);
-    QVERIFY(m.match("a").isMatch() == true);
-    QVERIFY(m.match("a b").isMatch() == true);
-    QVERIFY(m.match("a").isEmptyMatch() == true);
-    QVERIFY(m.match("a b").isEmptyMatch() == true);
-    QVERIFY(m.match("a").isExactMatch() == false);
-    QVERIFY(m.match("a b").isExactMatch() == false);
+    QCOMPARE(m.match("a").isMatch(), true);
+    QCOMPARE(m.match("a b").isMatch(), true);
+    QCOMPARE(m.match("a").isEmptyMatch(), true);
+    QCOMPARE(m.match("a b").isEmptyMatch(), true);
+    QCOMPARE(m.match("a").isExactMatch(), false);
+    QCOMPARE(m.match("a b").isExactMatch(), false);
 }
 
 void AlbertTests::matcher_single()
@@ -146,29 +165,27 @@ void AlbertTests::matcher_single()
     Matcher m("a");
     QVERIFY(qFuzzyCompare(m.match("a").score(), 1.0));
     QVERIFY(qFuzzyCompare(m.match("a b").score(), 1.0 / 2));
-    QVERIFY(m.match("a") == true);
-    QVERIFY(m.match("a b") == true);
-    QVERIFY(m.match("a").isMatch() == true);
-    QVERIFY(m.match("a b").isMatch() == true);
-    QVERIFY(m.match("a").isEmptyMatch() == false);
-    QVERIFY(m.match("a b").isEmptyMatch() == false);
-    QVERIFY(m.match("a").isExactMatch() == true);
-    QVERIFY(m.match("a b").isExactMatch() == false);
+    QCOMPARE(m.match("a").isMatch(), true);
+    QCOMPARE(m.match("a b").isMatch(), true);
+    QCOMPARE(m.match("a").isEmptyMatch(), false);
+    QCOMPARE(m.match("a b").isEmptyMatch(), false);
+    QCOMPARE(m.match("a").isExactMatch(), true);
+    QCOMPARE(m.match("a b").isExactMatch(), false);
 }
 
 void AlbertTests::matcher_multiple()
 {
     Matcher m("a b");
-    QVERIFY(m.match("a") == false);
-    QVERIFY(m.match("b") == false);
-    QVERIFY(m.match("a b") == true);
-    QVERIFY(m.match("b a") == true);
-    QVERIFY(m.match("a b c") == true);
-    QVERIFY(m.match("a c b") == true);
-    QVERIFY(m.match("b a c") == true);
-    QVERIFY(m.match("c a b") == true);
-    QVERIFY(m.match("b c a") == true);
-    QVERIFY(m.match("c b a") == true);
+    QCOMPARE(m.match("a").isMatch(), false);
+    QCOMPARE(m.match("b").isMatch(), false);
+    QCOMPARE(m.match("a b").isMatch(), true);
+    QCOMPARE(m.match("b a").isMatch(), true);
+    QCOMPARE(m.match("a b c").isMatch(), true);
+    QCOMPARE(m.match("a c b").isMatch(), true);
+    QCOMPARE(m.match("b a c").isMatch(), true);
+    QCOMPARE(m.match("c a b").isMatch(), true);
+    QCOMPARE(m.match("b c a").isMatch(), true);
+    QCOMPARE(m.match("c b a").isMatch(), true);
     QVERIFY(qFuzzyCompare(m.match("a b c").score(), 2.0 / 3));
     QVERIFY(qFuzzyCompare(m.match("a c b").score(), 2.0 / 3));
     QVERIFY(qFuzzyCompare(m.match("b a c").score(), 2.0 / 3));
@@ -182,26 +199,26 @@ void AlbertTests::matcher_multiple()
 void AlbertTests::matcher_multiple_ordered()
 {
     Matcher m("a b", {.ignore_word_order = false});
-    QVERIFY(m.match("a") == false);
-    QVERIFY(m.match("b") == false);
-    QVERIFY(m.match("a b") == true);
-    QVERIFY(m.match("b a") == false);
-    QVERIFY(m.match("a b c") == true);
-    QVERIFY(m.match("a c b") == true);
-    QVERIFY(m.match("b a c") == false);
-    QVERIFY(m.match("c a b") == true);
-    QVERIFY(m.match("b c a") == false);
-    QVERIFY(m.match("c b a") == false);
+    QCOMPARE(m.match("a").isMatch(), false);
+    QCOMPARE(m.match("b").isMatch(), false);
+    QCOMPARE(m.match("a b").isMatch(), true);
+    QCOMPARE(m.match("b a").isMatch(), false);
+    QCOMPARE(m.match("a b c").isMatch(), true);
+    QCOMPARE(m.match("a c b").isMatch(), true);
+    QCOMPARE(m.match("b a c").isMatch(), false);
+    QCOMPARE(m.match("c a b").isMatch(), true);
+    QCOMPARE(m.match("b c a").isMatch(), false);
+    QCOMPARE(m.match("c b a").isMatch(), false);
 }
 
 void AlbertTests::matcher_diacritics()
 {
     Matcher m("é");
-    QVERIFY(m.match("e") == true);
-    QVERIFY(m.match("é") == true);
+    QCOMPARE(m.match("e").isMatch(), true);
+    QCOMPARE(m.match("é").isMatch(), true);
     Matcher m2("e");
-    QVERIFY(m2.match("e") == true);
-    QVERIFY(m2.match("é") == true);
+    QCOMPARE(m2.match("e").isMatch(), true);
+    QCOMPARE(m2.match("é").isMatch(), true);
 }
 
 void AlbertTests::matcher_seprarators()
@@ -216,7 +233,7 @@ void AlbertTests::matcher_seprarators()
     QVERIFY(qFuzzyCompare(m.match("a b").score(), 1.0 / 2));
     QVERIFY(qFuzzyCompare(m.match("a!b").score(), 1. / 3));
     QVERIFY(qFuzzyCompare(m.match("a !b").score(), 1. / 3));
-    QVERIFY(m.match("!a b") == false);
+    QCOMPARE(m.match("!a b").isMatch(), false);
 }
 
 void AlbertTests::matcher_fuzzy()
@@ -264,6 +281,10 @@ void AlbertTests::matcher_score()
     // variadic
     QCOMPARE(m.match("a", "a ab", "a ab abc").score(), 1./1.);
     QCOMPARE(m.match("a ab", "a ab abc").score(), 1./3.);
+
+    // range
+    vector<QString> strings{"a", "a ab", "a ab abc"};
+    QCOMPARE(m.match(strings).score(), 1./1.);
 
     m = Matcher("ab");
 
@@ -391,7 +412,6 @@ void AlbertTests::input_history()
     QTemporaryFile t;
     t.open(); t.close(); // required to get the filename
 
-    qDebug() << t.fileName();
     InputHistory h(t.fileName());
 
     h.add("a");

@@ -20,6 +20,8 @@ private slots:
     void levenshtein_fuzzy_insertion();
     void levenshtein_shorter_prefix();
 
+    void match_conversion();
+
     void matcher_empty();
     void matcher_single();
     void matcher_multiple();
