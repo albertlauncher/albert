@@ -447,6 +447,13 @@ add_executable(${TARGET_APP} MACOSX_BUNDLE "src/main.cpp")
 
 if (APPLE)
 
+    # Avoid regranting permissions all the time
+    option(BUILD_DEV_BUNDLE "Build a separate plugins" OFF)
+    if (BUILD_DEV_BUNDLE)
+        set(DEV_BUNDLE_SUFFIX "Dev")
+        set(DEV_BUNDLE_ID_SUFFIX ".dev")
+    endif()
+
     set(ICON_NAME "albert")
     set(ICON_PATH "dist/macos/${ICON_NAME}.icns")
     target_sources(${TARGET_APP} PRIVATE ${ICON_PATH})
@@ -455,11 +462,12 @@ if (APPLE)
 
     set_target_properties(${TARGET_APP} PROPERTIES
         BUNDLE True
+        OUTPUT_NAME "${PROJECT_DISPLAY_NAME}${DEV_BUNDLE_SUFFIX}"
         MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_BUNDLE_NAME "${PROJECT_DISPLAY_NAME}"  # "${PROJECT_NAME}"
         MACOSX_BUNDLE_BUNDLE_VERSION "${CMAKE_PROJECT_VERSION}"
         MACOSX_BUNDLE_COPYRIGHT "Copyright (c) 2024 Manuel Schneider"
-        MACOSX_BUNDLE_GUI_IDENTIFIER "org.albertlauncher.albert"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "org.albertlauncher.albert${DEV_BUNDLE_ID_SUFFIX}"
         MACOSX_BUNDLE_ICON_FILE "${ICON_NAME}"
         MACOSX_BUNDLE_INFO_STRING "Albert keyboard launcher"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "${CMAKE_PROJECT_VERSION}"
