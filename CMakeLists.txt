@@ -19,34 +19,6 @@ set(PROJECT_DISPLAY_NAME "Albert")
 # Local cmake modules (also CMake uses this in a pretty obscure way, e.g. for the plist)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-set(ALBERT_COMPILE_OPTIONS
-    #-Werror
-    -Wall
-    -Wextra
-    -Wpedantic
-
-    # warnings that should be errors
-    -Werror=return-type  # silently buils but crashes at runtime
-    -Werror=float-conversion  # Implicit cast may loose precision (e.g. match scores)
-
-    # -Wconversion
-    # -Weffc++
-    -Winline
-    -Wmissing-field-initializers
-    -Wshadow
-    -Wstrict-aliasing
-
-    # Use this from time to time
-    # -Weverything
-    # -Wdocumentation
-    # -Wno-c++98-compat
-    # -Wno-c++20-compat
-    # -Wno-c++98-compat-pedantic
-
-    # ??
-    # -Wl,-undefined
-)
-
 # Put the binaries in dedicated toplevel directories
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -74,7 +46,6 @@ set(TARGET_LIB lib${PROJECT_NAME})
 set(LIB_PUBLIC_HEADER
     ${PROJECT_BINARY_DIR}/include/albert/config.h  # generated
     ${PROJECT_BINARY_DIR}/include/albert/export.h  # generated
-
     include/albert/action.h
     include/albert/backgroundexecutor.h
     include/albert/extension.h
@@ -246,8 +217,6 @@ generate_export_header(${TARGET_LIB}
 
 target_precompile_headers(${TARGET_LIB} PRIVATE ${LIB_PUBLIC_HEADER})
 
-target_compile_options(${TARGET_LIB} PRIVATE ${ALBERT_COMPILE_OPTIONS})
-
 target_include_directories(${TARGET_LIB}
     PUBLIC
         "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/>"
@@ -333,6 +302,37 @@ set_target_properties(${TARGET_LIB} PROPERTIES
     AUTORCC ON
 )
 
+target_compile_options(${TARGET_LIB}
+    PUBLIC
+        #-Werror
+        -Wall
+        -Wextra
+        -Wpedantic
+
+        # warnings that should be errors
+        -Werror=return-type  # silently buils but crashes at runtime
+        -Werror=float-conversion  # Implicit cast may loose precision (e.g. match scores)
+
+        # -Wconversion
+        # -Weffc++
+        -Winline
+        -Wmissing-field-initializers
+        -Wshadow
+        -Wstrict-aliasing
+        -Winvalid-pch
+
+        # Use this from time to time
+        # -Weverything
+        # -Wdocumentation
+        # -Wno-c++98-compat
+        # -Wno-c++20-compat
+        # -Wno-c++98-compat-pedantic
+
+        # ??
+        # -Wl,-undefined
+)
+
+
 ### Internationalization
 
 file(GLOB TS_FILES i18n/*.ts)
@@ -358,6 +358,7 @@ qt_add_translations(
 # For convenience, QtCreator does not show the umbrella target
 add_custom_target(global_lupdate DEPENDS update_translations)
 
+
 ### Export/Install
 
 include(CMakePackageConfigHelpers)
@@ -375,7 +376,7 @@ set(INSTALL_CONFIGDIR "${CMAKE_INSTALL_LIBDIR}/cmake/Albert")
 # https://cmake.org/cmake/help/latest/command/install.html#targets
 install(
     TARGETS ${TARGET_LIB}
-    EXPORT ${LIB_EXPORT_NAME}  # just an association
+    EXPORT ${LIB_EXPORT_NAME}  # association for install(EXPORT …) and export(EXPORT …)
     FRAMEWORK DESTINATION .
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -386,7 +387,7 @@ install(
 # https://cmake.org/cmake/help/latest/command/install.html#export
 # By default the generated file will be called <export-name>.cmake
 install(
-    EXPORT ${LIB_EXPORT_NAME}
+    EXPORT ${LIB_EXPORT_NAME} # association from above
     NAMESPACE ${PROJECT_NAME}::
     DESTINATION ${INSTALL_CONFIGDIR}
 )
@@ -395,7 +396,7 @@ install(
 # https://cmake.org/cmake/help/latest/command/export.html#exporting-targets-matching-install-export
 # Seems like a shorthand for export(TARGETS)
 export(
-   EXPORT ${LIB_EXPORT_NAME}
+   EXPORT ${LIB_EXPORT_NAME} # association from above
    NAMESPACE ${PROJECT_NAME}::
    FILE "${PROJECT_BINARY_DIR}/${LIB_TARGETS_FILE}"
 )

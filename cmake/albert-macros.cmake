@@ -97,7 +97,7 @@ macro(_albert_plugin_add_target)
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS OFF
         CXX_VISIBILITY_PRESET hidden
-        VISIBILITY_INLINES_HIDDEN j
+        VISIBILITY_INLINES_HIDDEN ON
         PREFIX ""  # no libfoo
         AUTOMOC ON
         AUTOUIC ON
@@ -107,7 +107,6 @@ macro(_albert_plugin_add_target)
     set_property(TARGET ${PROJECT_NAME}
         APPEND PROPERTY AUTOMOC_MACRO_NAMES "ALBERT_PLUGIN")
 
-    target_compile_options(${PROJECT_NAME} PRIVATE ${ALBERT_COMPILE_OPTIONS})
 
     target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_BINARY_DIR})
     if (DEFINED ARG_INCLUDE)
