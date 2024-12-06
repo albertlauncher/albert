@@ -1,3 +1,21 @@
+v0.26.10 (2024-12-06)
+
+## Albert
+
+- Add some more precise Match tests
+- Hardcode /usr/local/bin into PATH on macos
+- Fix Matcher type conversion
+- Precompile headers
+
+## Plugins
+
+- **chromium** Avoid warnings on emtpy paths
+- **menubar**
+  - Properly display glyphs
+  - Fix modifier conversion
+  - Minor improvements and fixes
+- **bluetooth** Add open settings action
+
 v0.26.9 (2024-12-02)
 
 This release contains the latest bug fixes.
