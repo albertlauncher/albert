@@ -26,7 +26,8 @@ set(ALBERT_COMPILE_OPTIONS
     -Wpedantic
 
     # warnings that should be errors
-    -Werror=return-type
+    -Werror=return-type  # silently buils but crashes at runtime
+    -Werror=float-conversion  # Implicit cast may loose precision (e.g. match scores)
 
     # -Wconversion
     # -Weffc++
