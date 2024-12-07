@@ -142,8 +142,17 @@ void PluginsWidget::updatePluginWidget()
         config_widget_scroll_area_->setWidget(new PluginWidget(p));
     }
     catch (const out_of_range &) {
-        auto *lbl = new QLabel(tr("Select a plugin"));
+
+        auto t = tr(
+            "<p>Plugins are a community effort,<br>built by awesome people like you.</p>"
+            "<p>💡 <a href='https://albertlauncher.github.io/gettingstarted/extension/'>"
+            "Learn how to build plugins</a></p>"
+            "<br>"  // move text slightly up, looks more balanced
+        );
+
+        auto *lbl = new QLabel(t);
         lbl->setAlignment(Qt::AlignCenter);
+        lbl->setOpenExternalLinks(true);
         config_widget_scroll_area_->setWidget(lbl);
     }
 }
