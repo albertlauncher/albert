@@ -1,3 +1,25 @@
+v0.26.11 (2024-12-30)
+
+## Albert
+
+- Add a motivating text in the plugin settings placeholder page
+
+## Plugins
+
+- **timer** Allow h, m, s durations
+  - Clean obsolete translations
+  - User timer emoji icon
+- **caffeine** Fix non-persistent default interval
+- **menubar** Do not retain NSRunningApplication forever
+  Rather keep its PID for comparison.
+- **widgetsboxmodel** Update icon handling
+  - Do not upscale icons that are smaller than requested
+  - Draw the icon such that it is centered in the icon area
+- **chromium** Update bookmark icon
+  Also avoid usage of xdg: schemes on other than linux platforms
+- **websearch** Change icon sizes which lead to blurry output
+- **applications** Change missing terminal link to issues choice
+
 v0.26.10 (2024-12-06)
 
 ## Albert
