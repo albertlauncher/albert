@@ -19,7 +19,6 @@ using namespace std;
 static const QString &explicit_qrc_scheme = QStringLiteral("qrc:");
 static const QString &file_scheme = QStringLiteral("file:");
 static const QString &generative_scheme = QStringLiteral("gen:?");
-static const QString &mask_scheme = QStringLiteral("mask:?");
 static const QString &implicit_qrc_scheme = QStringLiteral(":");
 static const QString &qfileiconprovider_scheme = QStringLiteral("qfip:");
 static const QString &qstandardpixmap_scheme = QStringLiteral("qsp:");
@@ -186,26 +185,6 @@ QPixmap albert::pixmapFromUrl(const QString &url, const QSize &requestedSize)
             scalar = 1.;
 
         return genericPixmap(requestedSize.height(), bgcolor, fgcolor, text, scalar);
-    }
-
-    else if (url.startsWith(mask_scheme))
-    {
-        QUrlQuery urlquery(url.mid(mask_scheme.size()));
-
-        QPixmap pm = pixmapFromUrl(urlquery.queryItemValue(QStringLiteral("src"),
-                                                           QUrl::FullyDecoded),
-                                   requestedSize);
-
-        auto color_str = urlquery.queryItemValue(QStringLiteral("color"));
-
-        QColor color = color_str == QStringLiteral("accent")
-                           ? QApplication::palette().color(QPalette::Active, QPalette::Accent)
-                           : QColor(color_str);
-
-        QPainter p(&pm);
-        p.setCompositionMode(QPainter::CompositionMode_SourceIn);
-        p.fillRect(pm.rect(), color);
-        return pm;
     }
 
     // Implicitly check for file existence
