@@ -192,22 +192,25 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
+
+      - uses: actions/checkout@v4  # deletes .
+        with:
+          repository: albertlauncher/homebrew-albert
+          token: ${{ secrets.PAT }}
+          
       - name: Get all build artifacts
         uses: actions/download-artifact@v4
         with:
           merge-multiple: true
 
-      - uses: actions/checkout@v4
-        with:
-          repository: albertlauncher/homebrew-albert
-          token: ${{ secrets.PAT }}
-
       - name: Update cask
         run: |
           find .
-          sha_arm=$(cut -f 1 -d " "  Albert-${{ github.ref_name }}-arm64.dmg.sha256)
-          sha_intel=$(cut -f 1 -d " "  Albert-${{ github.ref_name }}-x86_64.dmg.sha256)
-          sed -i '.bak' "s/version .*$/version \"${{ github.ref_name }}\"/; s/^  sha256.*$/  sha256 arm: \"${sha_arm}\", intel: \"${sha_intel}\"/" albert.rb
+          ver=${{ github.ref_name }}
+          ver="${ver#v}"  # Remove leading 'v'
+          sha_arm=$(cut -f 1 -d " "  Albert-v$ver-arm64.dmg.sha256)
+          sha_intel=$(cut -f 1 -d " "  Albert-v$ver-x86_64.dmg.sha256)
+          sed -i '.bak' "s/version .*$/version \"$ver\"/; s/^  sha256.*$/  sha256 arm: \"${sha_arm}\", intel: \"${sha_intel}\"/" albert.rb
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add albert.rb
