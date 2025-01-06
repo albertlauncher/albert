@@ -1,3 +1,14 @@
+v0.26.12 (2025-01-06)
+
+## Albert
+
+- Fix device dependent pixmap creation
+- Avoid usage of deprecated QStyle::standardPixmap
+
+## Plugins
+
+- **applications** Add ghostty
+
 v0.26.11 (2024-12-30)
 
 ## Albert
