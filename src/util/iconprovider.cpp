@@ -19,20 +19,21 @@ using namespace std;
 static const QString &explicit_qrc_scheme = QStringLiteral("qrc:");
 static const QString &file_scheme = QStringLiteral("file:");
 static const QString &generative_scheme = QStringLiteral("gen:?");
+static const QString &mask_scheme = QStringLiteral("mask:?");
 static const QString &implicit_qrc_scheme = QStringLiteral(":");
 static const QString &qfileiconprovider_scheme = QStringLiteral("qfip:");
 static const QString &qstandardpixmap_scheme = QStringLiteral("qsp:");
 static const QString &xdg_icon_lookup_scheme = QStringLiteral("xdg:");
 
+/// Returns a pixmap from a file path.
+/// The size of the pixmap may be smaller but never larger than the requested size.
 static QPixmap pixmapFromFilePath(const QString &path, const QSize &requestedSize)
 {
-    // https://doc.qt.io/qt-6/qresource.html
-    auto pm = QPixmap(path);
-    if (!pm.isNull()
-        && (pm.width() > requestedSize.width()
-            || pm.height() > requestedSize.height()))
-        pm = pm.scaled(requestedSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    return pm;
+    if (auto pm = QPixmap(path);
+        pm.width() > requestedSize.width() || pm.height() > requestedSize.height())
+        return pm.scaled(requestedSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    else
+        return pm;
 }
 
 static QIcon standardIconFromName(const QString &enumerator_name)
@@ -42,17 +43,6 @@ static QIcon standardIconFromName(const QString &enumerator_name)
     for (int i = 0; i < meta_enum.keyCount(); ++i)
         if (enumerator_name == meta_enum.key(i))
             return qApp->style()->standardIcon(static_cast<QStyle::StandardPixmap>(meta_enum.value(i)));
-    WARN << "No such StandardPixmap found:" << enumerator_name;
-    return {};
-}
-
-static QPixmap standardPixmapFromName(const QString &enumerator_name)
-{
-    // https://doc.qt.io/qt-6/qstyle.html#StandardPixmap-enum
-    auto meta_enum = QMetaEnum::fromType<QStyle::StandardPixmap>();
-    for (int i = 0; i < meta_enum.keyCount(); ++i)
-        if (enumerator_name == meta_enum.key(i))
-            return qApp->style()->standardPixmap(static_cast<QStyle::StandardPixmap>(meta_enum.value(i)));
     WARN << "No such StandardPixmap found:" << enumerator_name;
     return {};
 }
@@ -163,11 +153,14 @@ QPixmap albert::pixmapFromUrl(const QString &url, const QSize &requestedSize)
 
     else if (url.startsWith(qstandardpixmap_scheme))
     {
-        auto pm = standardPixmapFromName(url.mid(qstandardpixmap_scheme.size()));
-        if (!pm.isNull()
-            && (pm.width() > requestedSize.width()
-                || pm.height() > requestedSize.height()))
+        auto icon = standardIconFromName(url.mid(qstandardpixmap_scheme.size()));
+        if (icon.isNull())
+            return {};
+
+        auto pm = icon.pixmap(requestedSize, 1.);
+        if (!pm.isNull() && (pm.width() > requestedSize.width() || pm.height() > requestedSize.height()))
             pm = pm.scaled(requestedSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
         return pm;
     }
 
@@ -193,6 +186,26 @@ QPixmap albert::pixmapFromUrl(const QString &url, const QSize &requestedSize)
             scalar = 1.;
 
         return genericPixmap(requestedSize.height(), bgcolor, fgcolor, text, scalar);
+    }
+
+    else if (url.startsWith(mask_scheme))
+    {
+        QUrlQuery urlquery(url.mid(mask_scheme.size()));
+
+        QPixmap pm = pixmapFromUrl(urlquery.queryItemValue(QStringLiteral("src"),
+                                                           QUrl::FullyDecoded),
+                                   requestedSize);
+
+        auto color_str = urlquery.queryItemValue(QStringLiteral("color"));
+
+        QColor color = color_str == QStringLiteral("accent")
+                           ? QApplication::palette().color(QPalette::Active, QPalette::Accent)
+                           : QColor(color_str);
+
+        QPainter p(&pm);
+        p.setCompositionMode(QPainter::CompositionMode_SourceIn);
+        p.fillRect(pm.rect(), color);
+        return pm;
     }
 
     // Implicitly check for file existence
