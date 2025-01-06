@@ -1,3 +1,7 @@
+v0.26.13 (2025-01-06)
+
+Hotfix backward compatibility.
+
 v0.26.12 (2025-01-06)
 
 ## Albert
