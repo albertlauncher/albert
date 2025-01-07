@@ -36,14 +36,13 @@
 
 
     <key>NSContactsUsageDescription</key><string>Contacts plugin access.</string>
-
     <key>NSBluetoothAlwaysUsageDescription</key><string>Bluetooth plugin access.</string>
-
     <key>NSDesktopFolderUsageDescription</key><string>Files plugin access.</string>
     <key>NSDocumentsFolderUsageDescription</key><string>Files plugin access.</string>
     <key>NSDownloadsFolderUsageDescription</key><string>Files plugin access.</string>
     <key>NSNetworkVolumesUsageDescription</key><string>Files plugin access.</string>
     <key>NSRemovableVolumesUsageDescription</key><string>Files plugin access.</string>
+    <key>NSLocationUsageDescription</key><string>Required to access WLAN names.</string>
 
 
 
