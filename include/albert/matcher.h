@@ -118,20 +118,18 @@ public:
     const QString &string() const;
 
     ///
-    /// Returns a Match for `string`.
+    /// Returns a \ref Match for `string`.
     ///
     Match match(const QString &string) const;
 
     ///
-    /// Returns a Match for the given strings.
+    /// Returns the max \ref Match for the given strings.
     ///
-    template<typename... Args>
-    Match match(QString first, Args... args) const {
-        return std::max(match(first), match(args...));
-    }
+    Match match(QString first, auto... args) const
+    { return std::max(match(first), match(args...)); }
 
     ///
-    /// Returns the max match for `strings`.
+    /// Returns the max \ref Match in the range of `strings`.
     ///
     Match match(std::ranges::range auto &&strings) const
          requires std::same_as<std::ranges::range_value_t<decltype(strings)>, QString>
