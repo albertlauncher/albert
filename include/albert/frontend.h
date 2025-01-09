@@ -12,20 +12,6 @@ namespace albert
 class Query;
 
 ///
-/// Convention on the item roles passed around
-///
-enum class ALBERT_EXPORT ItemRoles
-{
-    TextRole = Qt::DisplayRole,  ///< QString, The text
-    SubTextRole = Qt::UserRole,  ///< QString, The subtext
-    InputActionRole,  ///< QString, The tab action text
-    IconUrlsRole,  ///< QStringList, Urls for icon lookup
-    ActionsListRole,  ///< QStringList, List of action names
-    // Dont change these without changing ItemsModel::roleNames
-};
-
-
-///
 /// The interface for albert frontends.
 ///
 class ALBERT_EXPORT Frontend : public QObject

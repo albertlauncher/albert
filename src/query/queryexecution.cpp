@@ -24,11 +24,10 @@ QueryExecution::QueryExecution(QueryEngine *e,
     string_(::move(string)),
     query_handler_(query_handler),
     fallback_handlers_(::move(fallback_handlers)),
-    valid_(true),
-    matches_(this),  // Important for qml ownership determination
-    fallbacks_(this)  // Important for qml ownership determination
+    valid_(true)
 {
-    connect(&future_watcher_, &decltype(future_watcher_)::finished, this, &Query::finished);
+    connect(&future_watcher_, &decltype(future_watcher_)::finished,
+            this, [this](){ emit activeChanged(false); });
 }
 
 QueryExecution::~QueryExecution()
@@ -54,7 +53,7 @@ void QueryExecution::run()
             qCDebug(timeCat,).noquote()
                 << QStringLiteral("\x1b[38;5;33m│%1 ms│ TRIGGER |%2│ #%3  '%4' '%5' \x1b[0m")
                        .arg(duration_cast<milliseconds>(system_clock::now() - tp).count(), 6)
-                       .arg(matches_.rowCount(), 6)
+                       .arg(matches_.size(), 6)
                        .arg(query_id)
                        .arg(trigger_, string_);
         }
@@ -67,7 +66,11 @@ void QueryExecution::run()
     }));
 }
 
-void QueryExecution::cancel() { valid_ = false; }
+void QueryExecution::cancel()
+{
+    valid_ = false;
+    emit invalidated();
+}
 
 QString QueryExecution::trigger() const { return trigger_; }
 
@@ -81,19 +84,50 @@ bool QueryExecution::isFinished() const { return future_watcher_.isFinished(); }
 
 bool QueryExecution::isTriggered() const { return !trigger().isEmpty(); }
 
-QAbstractListModel *QueryExecution::matches() { return &matches_; }
+const std::vector<ResultItem> &QueryExecution::matches() { return matches_; }
 
-QAbstractListModel *QueryExecution::fallbacks()  { return &fallbacks_; }
+const std::vector<ResultItem> &QueryExecution::fallbacks() { return fallbacks_; }
 
-void QueryExecution::activateMatch(uint i, uint a) { matches_.activate(this, i, a); }
+static bool activate(const vector<ResultItem> &result_items, const QString &q, uint iidx, uint aidx)
+{
+    try {
+        auto &[e, i] = result_items.at(iidx);
 
-void QueryExecution::activateFallback(uint i, uint a) { fallbacks_.activate(this, i, a); }
+        try {
+            auto a = i->actions().at(aidx);
+
+            INFO << QString("Activating action %1 > %2 > %3 (%4 > %5 > %6) ")
+                        .arg(e.id(), i->id(), a.id, e.name(), i->text(), a.text);
+
+            // Order is cumbersome here
+            UsageHistory::addActivation(q, e.id(), i->id(), a.id);
+
+            // May delete the query, due to hide()
+            // Notes to self:
+            // - QTimer::singleShot(0, this, [a]{ a.function(); });
+            //   Disconnects on query deletion.
+
+            a.function();  // May delete the query, due to hide()
+            return true;
+        }
+        catch (const out_of_range&) {
+            WARN << "Activated action index is invalid:" << aidx;
+        }
+    } catch (const out_of_range&) {
+        WARN << "Activated item index is invalid:" << iidx;
+    }
+    return false;
+}
+
+bool QueryExecution::activateMatch(uint i, uint a) { return activate(matches_, string(), i, a); }
+
+bool QueryExecution::activateFallback(uint i, uint a) { return activate(fallbacks_, string(), i, a); }
 
 void QueryExecution::add(const shared_ptr<Item> &item)
 {
     unique_lock lock(results_buffer_mutex_);
 
-    results_buffer_.emplace_back(query_handler_, item);
+    results_buffer_.emplace_back(*query_handler_, item);
 
     if (valid_)
         invokeCollectResults();
@@ -103,7 +137,7 @@ void QueryExecution::add(shared_ptr<Item> &&item)
 {
     unique_lock lock(results_buffer_mutex_);
 
-    results_buffer_.emplace_back(query_handler_, ::move(item));
+    results_buffer_.emplace_back(*query_handler_, ::move(item));
 
     if (valid_)
         invokeCollectResults();
@@ -114,7 +148,7 @@ void QueryExecution::add(const vector<shared_ptr<Item>> &items)
     unique_lock lock(results_buffer_mutex_);
 
     for (const auto &item : items)
-        results_buffer_.emplace_back(query_handler_, item);
+        results_buffer_.emplace_back(*query_handler_, item);
 
     if (valid_)
         invokeCollectResults();
@@ -125,7 +159,7 @@ void QueryExecution::add(vector<shared_ptr<Item>> &&items)
     unique_lock lock(results_buffer_mutex_);
 
     for (auto &item : items)
-        results_buffer_.emplace_back(query_handler_, ::move(item));
+        results_buffer_.emplace_back(*query_handler_, ::move(item));
 
     if (valid_)
         invokeCollectResults();
@@ -154,7 +188,9 @@ void QueryExecution::runFallbackHandlers()
     sort(fallbacks.begin(), fallbacks.end(),
          [](const auto &a, const auto &b){ return a.second.score > b.second.score; });
 
-    fallbacks_.add(fallbacks.begin(), fallbacks.end()); // TODO ranges
+    // TODO ranges
+    for (auto &[e, i] : fallbacks)
+        fallbacks_.emplace_back(*e, ::move(i.item));
 }
 
 void QueryExecution::collectResults()
@@ -166,8 +202,16 @@ void QueryExecution::collectResults()
     unique_lock lock(results_buffer_mutex_);
     if (!results_buffer_.empty())
     {
-        matches_.add(results_buffer_.begin(), results_buffer_.end());
+        emit matchesAboutToBeAdded(results_buffer_.size());
+
+        matches_.reserve(matches_.size() + results_buffer_.size());
+
+        for (auto &r : results_buffer_)
+            matches_.emplace_back(r.extension, ::move(r.item));
+
         results_buffer_.clear();
+
+        emit matchesAdded();
     }
 }
 
@@ -301,7 +345,7 @@ void GlobalQuery::addRankItems(vector<pair<Extension*,RankItem>>::iterator begin
     unique_lock lock(results_buffer_mutex_);
 
     for (auto it = begin; it < end; ++it)
-        results_buffer_.emplace_back(it->first, ::move(it->second.item));
+        results_buffer_.emplace_back(*it->first, ::move(it->second.item));
 
     if (valid_)
         invokeCollectResults();

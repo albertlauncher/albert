@@ -3,7 +3,6 @@
 #pragma once
 #include "fallbackhandler.h"
 #include "globalqueryhandler.h"
-#include "itemsmodel.h"
 #include "query.h"
 #include "triggerqueryhandler.h"
 #include <QFutureWatcher>
@@ -37,11 +36,11 @@ public:
     bool isFinished() const override final;
     bool isTriggered() const override final;
 
-    QAbstractListModel *matches() override final;
-    QAbstractListModel *fallbacks() override final;
+    const std::vector<albert::ResultItem> &matches() override final;
+    const std::vector<albert::ResultItem> &fallbacks() override final;
 
-    void activateMatch(uint item, uint action) override final;
-    void activateFallback(uint item, uint action) override final;
+    bool activateMatch(uint item, uint action) override final;
+    bool activateFallback(uint item, uint action) override final;
 
     void add(const std::shared_ptr<albert::Item> &item) override;
     void add(std::shared_ptr<albert::Item> &&item) override;
@@ -68,14 +67,13 @@ protected:
 
     QFutureWatcher<void> future_watcher_;
 
-    // Mutable because global query handler needs adds items in handleTriggerQuery(…) _const_
-    mutable std::vector<std::pair<albert::Extension*, std::shared_ptr<albert::Item>>> results_buffer_;
+    std::vector<albert::ResultItem> results_buffer_;
     std::mutex results_buffer_mutex_;
 
 private:
 
-    ItemsModel matches_;
-    ItemsModel fallbacks_;
+    std::vector<albert::ResultItem> matches_;
+    std::vector<albert::ResultItem> fallbacks_;
 
 };
 

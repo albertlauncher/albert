@@ -12,6 +12,14 @@
 namespace albert
 {
 class Item;
+class Extension;
+
+class ALBERT_EXPORT ResultItem
+{
+public:
+    const Extension &extension;
+    std::shared_ptr<Item> item;
+};
 
 ///
 /// Common query object.
@@ -41,16 +49,16 @@ public:
     Q_INVOKABLE virtual bool isTriggered() const = 0;
 
     /// Returns the matches.
-    Q_INVOKABLE virtual QAbstractListModel *matches() = 0;
+    Q_INVOKABLE virtual const std::vector<ResultItem> &matches() = 0;
 
     /// Returns the fallbacks.
-    Q_INVOKABLE virtual QAbstractListModel *fallbacks() = 0;
+    Q_INVOKABLE virtual const std::vector<ResultItem> &fallbacks() = 0;
 
     /// Executes match a match action.
-    Q_INVOKABLE virtual void activateMatch(uint item, uint action = 0) = 0;
+    Q_INVOKABLE virtual bool activateMatch(uint item, uint action = 0) = 0;
 
     /// Executes match a fallback action.
-    Q_INVOKABLE virtual void activateFallback(uint item, uint action = 0) = 0;
+    Q_INVOKABLE virtual bool activateFallback(uint item, uint action = 0) = 0;
 
     /// Copy add single item.
     /// @note Use batch add if you can to avoid UI flicker.
@@ -79,8 +87,17 @@ protected:
 
 signals:
 
-    /// Emitted when the query finished processing
-    void finished();
+    /// Emitted before `count` matches are added to the matches.
+    void matchesAboutToBeAdded(uint count);
+
+    /// Emitted after matches have been added to the matches.
+    void matchesAdded();
+
+    /// Emitted when the query has been invalidated.
+    void invalidated();
+
+    /// Emitted when query processing started or finished.
+    void activeChanged(bool active);
 };
 
 }

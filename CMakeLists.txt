@@ -108,8 +108,6 @@ set(LIB_SRC
 
     src/frontend/frontend.cpp
     src/frontend/inputhistory.cpp
-    src/frontend/itemsmodel.cpp
-    src/frontend/itemsmodel.h
     src/frontend/session.cpp
     src/frontend/session.h
 
