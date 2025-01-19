@@ -35,7 +35,7 @@ Telemetry::Telemetry(albert::ExtensionRegistry &registry):
         auto text = tr(
             "Telemetry helps improving the user experience by collecing anonymous data. "
             "You can review the telemetry data to be sent in the settings. Do you want "
-            "to enable telemetry? This configuration be changed at any time in the settings.");
+            "to enable telemetry? This configuration can be changed at any time in the settings.");
 
         setEnabled(QMessageBox::question(0, qApp->applicationDisplayName(),
                                          text, QMessageBox::No|QMessageBox::Yes, QMessageBox::Yes)
