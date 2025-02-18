@@ -37,7 +37,7 @@ public:
     /// handleGlobalQuery it is not possible to have both. This function allows
     /// extensions to handle empty global queries differently, while still
     /// yielding all items using the trigger handler.
-    virtual std::vector<std::shared_ptr<Item>> handleEmptyQuery(const Query*);
+    virtual std::vector<std::shared_ptr<Item>> handleEmptyQuery();
 
     /// Takes rank items and modifies the score according to the users usage.
     /// Use this if you want to reuse your global results in the trigger handler.

@@ -266,7 +266,7 @@ void GlobalQuery::handleTriggerQuery(Query &)
 
             vector<RankItem> results;
             if (string_.isEmpty())
-                for (auto &item : handler->handleEmptyQuery(this))
+                for (auto &item : handler->handleEmptyQuery())
                     results.emplace_back(::move(item), 0);
             else
                 results = handler->handleGlobalQuery(*this);
