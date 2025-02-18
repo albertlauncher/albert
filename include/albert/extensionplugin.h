@@ -30,6 +30,11 @@ public:
     /// Overrides Extension::description()
     /// @returns Plugin description
     QString description() const override;
+
+    /// Overrides PluginInstance::extensions()
+    /// @returns `this`
+    std::vector<albert::Extension*> extensions() override;
+
 };
 
 }

@@ -14,3 +14,6 @@ QString ExtensionPlugin::name() const
 
 QString ExtensionPlugin::description() const
 { return loader().metaData().description; }
+
+vector<Extension*> ExtensionPlugin::extensions()
+{ return { this }; }

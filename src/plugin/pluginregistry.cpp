@@ -2,6 +2,7 @@
 
 #include "extensionregistry.h"
 #include "logging.h"
+#include "plugininstance.h"
 #include "pluginloader.h"
 #include "pluginmetadata.h"
 #include "pluginprovider.h"
@@ -143,11 +144,18 @@ void PluginRegistry::load(const QString &id)
         QStringList errors;
         for (auto *p : v)
             if (p->state() != Plugin::State::Loaded)
-                if (auto err = p->load(); !err.isEmpty())
+            {
+                if (auto err = p->load(); err.isEmpty())
+                {
+                    for (auto *e : p->instance()->extensions())
+                        extension_registry_.registerExtension(e);
+                }
+                else
                 {
                     WARN << QString("Failed loading plugin '%1': %2").arg(p->id(), err);
                     errors << p->metaData().name;
                 }
+            }
 
         if (!errors.isEmpty())
             QMessageBox::warning(nullptr, qApp->applicationDisplayName(),
@@ -174,11 +182,17 @@ void PluginRegistry::unload(const QString &id)
 
         QStringList errors;
         for (auto *p : v)
+        {
+            if (p->state() == Plugin::State::Loaded)
+                for (auto *e : p->instance()->extensions())
+                    extension_registry_.deregisterExtension(e);
+
             if (auto err = p->unload(); !err.isEmpty())
             {
                 WARN << QString("Failed unloading plugin '%1': %2").arg(p->id(), err);
                 errors << p->metaData().name;
             }
+        }
 
         if (!errors.isEmpty())
             QMessageBox::warning(nullptr, qApp->applicationDisplayName(),
@@ -192,9 +206,9 @@ void PluginRegistry::unload(const QString &id)
     }
 }
 
-void PluginRegistry::onRegistered(Extension *e)
+void PluginRegistry::onRegistered(Extension *extension)
 {
-    auto *plugin_provider = dynamic_cast<PluginProvider*>(e);
+    auto *plugin_provider = dynamic_cast<PluginProvider*>(extension);
     if (!plugin_provider)
         return;
 
@@ -282,7 +296,12 @@ void PluginRegistry::onRegistered(Extension *e)
     // Load enabled plugins
     QStringList errors;
     for (auto *p : plugins_to_load)
-        if (auto err = p->load(); !err.isEmpty())
+        if (auto err = p->load(); err.isEmpty())
+        {
+            for (auto *e : p->instance()->extensions())
+                extension_registry_.registerExtension(e);
+        }
+        else
         {
             WARN << QString("Failed loading plugin '%1': %2").arg(p->id(), err);
             errors << p->metaData().name;
@@ -296,9 +315,9 @@ void PluginRegistry::onRegistered(Extension *e)
                                       tr("Check the log for more information.")));
 }
 
-void PluginRegistry::onDeregistered(Extension *e)
+void PluginRegistry::onDeregistered(Extension *extension)
 {
-    auto *plugin_provider = dynamic_cast<PluginProvider*>(e);
+    auto *plugin_provider = dynamic_cast<PluginProvider*>(extension);
     if (!plugin_provider)
         return;
 
@@ -315,11 +334,17 @@ void PluginRegistry::onDeregistered(Extension *e)
     // Unload plugins
     QStringList errors;
     for (auto *p : plugins_to_unload)
+    {
+        if (p->state() == Plugin::State::Loaded)
+            for (auto *e : p->instance()->extensions())
+                extension_registry_.deregisterExtension(e);
+
         if (auto err = p->unload(); !err.isEmpty())
         {
             WARN << QString("Failed unloading plugin '%1': %2").arg(p->id(), err);
             errors << p->metaData().name;
         }
+    }
 
     if (!errors.isEmpty())
         QMessageBox::warning(nullptr, qApp->applicationDisplayName(),

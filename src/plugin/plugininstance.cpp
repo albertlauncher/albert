@@ -28,6 +28,10 @@ PluginInstance::PluginInstance():
 
 PluginInstance::~PluginInstance() = default;
 
+vector<Extension*> PluginInstance::extensions() { return {}; }
+
+QWidget *PluginInstance::buildConfigWidget() { return nullptr; }
+
 QString PluginInstance::cacheLocation() const
 { return QDir(albert::cacheLocation()).filePath(d->loader->metaData().id); }
 
@@ -64,6 +68,3 @@ const PluginLoader &PluginInstance::loader() const
 
 ExtensionRegistry &PluginInstance::registry()
 { return *d->registry; }
-
-QWidget *PluginInstance::buildConfigWidget()
-{ return nullptr; }

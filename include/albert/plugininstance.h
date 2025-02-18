@@ -13,6 +13,7 @@ class QWidget;
 namespace albert
 {
 
+class Extension;
 class ExtensionRegistry;
 class PluginLoader;
 
@@ -25,6 +26,18 @@ class ALBERT_EXPORT PluginInstance
 {
 public:
 
+    /// The widget used to configure the plugin in the settings.
+    /// @returns The config widget.
+    virtual QWidget *buildConfigWidget();
+
+    /// The extensions provided by this plugin.
+    /// @returns Weak references to the extensions.
+    /// @since 0.27
+    virtual std::vector<albert::Extension*> extensions();
+
+
+public:
+
     /// The PluginLoader of this instance.
     /// @returns @copybrief loader
     /// @since 0.24
@@ -34,10 +47,6 @@ public:
     /// @returns @copybrief registry
     /// @since 0.24
     albert::ExtensionRegistry &registry();
-
-    /// The widget used to configure the plugin in the settings.
-    /// @returns The config widget.
-    virtual QWidget *buildConfigWidget();
 
     /// The recommended cache location.
     /// @returns @copybrief cacheLocation

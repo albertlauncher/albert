@@ -48,8 +48,8 @@ public:
 
 
 private:
-    void onRegistered(albert::Extension *e);
-    void onDeregistered(albert::Extension *e);
+    void onRegistered(albert::Extension *extension);
+    void onDeregistered(albert::Extension *extension);
 
     albert::ExtensionRegistry &extension_registry_;
     std::set<albert::PluginProvider*> plugin_providers_;
