@@ -39,6 +39,9 @@ public:
     /// Query string _excluding_ the trigger.
     Q_INVOKABLE virtual QString string() const = 0;
 
+    /// True if the query is currently being processed.
+    Q_INVOKABLE virtual bool isActive() const = 0;
+
     /// True if the query thread stopped.
     Q_INVOKABLE virtual bool isFinished() const = 0;
 

@@ -80,6 +80,8 @@ QString QueryExecution::synopsis() const { return query_handler_->synopsis(strin
 
 const bool &QueryExecution::isValid() const { return valid_; }
 
+bool QueryExecution::isActive() const { return future_watcher_.isRunning(); }
+
 bool QueryExecution::isFinished() const { return future_watcher_.isFinished(); }
 
 bool QueryExecution::isTriggered() const { return !trigger().isEmpty(); }

@@ -33,6 +33,7 @@ public:
     QString string() const override final;
     QString synopsis() const override final;
     const bool &isValid() const override final;
+    bool isActive() const override final;
     bool isFinished() const override final;
     bool isTriggered() const override final;
 
