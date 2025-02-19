@@ -448,7 +448,7 @@ add_executable(${TARGET_APP} MACOSX_BUNDLE "src/main.cpp")
 if (APPLE)
 
     # Avoid regranting permissions all the time
-    option(BUILD_DEV_BUNDLE "Build a separate plugins" OFF)
+    option(BUILD_DEV_BUNDLE "Build a separate dev bundle (saves some headaches on permissions)" OFF)
     if (BUILD_DEV_BUNDLE)
         set(DEV_BUNDLE_SUFFIX "Dev")
         set(DEV_BUNDLE_ID_SUFFIX ".dev")
