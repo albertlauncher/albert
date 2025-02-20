@@ -146,14 +146,15 @@ void PluginRegistry::load(const QString &id)
                 if (auto err = p->load(); !err.isEmpty())
                 {
                     WARN << QString("Failed loading plugin '%1': %2").arg(p->id(), err);
-                    errors << QString("%1 (%2):\n%3").arg(p->metaData().name, p->id(), err);
+                    errors << p->metaData().name;
                 }
 
         if (!errors.isEmpty())
             QMessageBox::warning(nullptr, qApp->applicationDisplayName(),
-                                 QString("%1:\n\n%2")
+                                 QString("%1:\n\n%2\n\n%3")
                                      .arg(tr("Failed loading plugins", nullptr, errors.size()),
-                                          errors.join("\n")));
+                                          errors.join("\n"),
+                                          tr("Check the log for more information.")));
     }
     catch (const std::out_of_range &) {
         WARN << "Plugin does not exist:" << id;
@@ -176,14 +177,15 @@ void PluginRegistry::unload(const QString &id)
             if (auto err = p->unload(); !err.isEmpty())
             {
                 WARN << QString("Failed unloading plugin '%1': %2").arg(p->id(), err);
-                errors << QString("%1 (%2):\n%3").arg(p->metaData().name, p->id(), err);
+                errors << p->metaData().name;
             }
 
         if (!errors.isEmpty())
             QMessageBox::warning(nullptr, qApp->applicationDisplayName(),
-                                 QString("%1:\n\n%2")
+                                 QString("%1:\n\n%2\n\n%3")
                                      .arg(tr("Failed unloading plugins", nullptr, errors.size()),
-                                          errors.join("\n")));
+                                          errors.join("\n"),
+                                          tr("Check the log for more information.")));
     }
     catch (const std::out_of_range &) {
         WARN << "Plugin does not exist:" << id;
@@ -283,14 +285,15 @@ void PluginRegistry::onRegistered(Extension *e)
         if (auto err = p->load(); !err.isEmpty())
         {
             WARN << QString("Failed loading plugin '%1': %2").arg(p->id(), err);
-            errors << QString("%1 (%2):\n%3").arg(p->metaData().name, p->id(), err);
+            errors << p->metaData().name;
         }
 
     if (!errors.isEmpty())
         QMessageBox::warning(nullptr, qApp->applicationDisplayName(),
-                             QString("%1:\n\n%2")
+                             QString("%1:\n\n%2\n\n%3")
                                  .arg(tr("Failed loading plugins", nullptr, errors.size()),
-                                      errors.join("\n")));
+                                      errors.join("\n"),
+                                      tr("Check the log for more information.")));
 }
 
 void PluginRegistry::onDeregistered(Extension *e)
@@ -315,14 +318,15 @@ void PluginRegistry::onDeregistered(Extension *e)
         if (auto err = p->unload(); !err.isEmpty())
         {
             WARN << QString("Failed unloading plugin '%1': %2").arg(p->id(), err);
-            errors << QString("%1 (%2):\n%3").arg(p->metaData().name, p->id(), err);
+            errors << p->metaData().name;
         }
 
     if (!errors.isEmpty())
         QMessageBox::warning(nullptr, qApp->applicationDisplayName(),
-                             QString("%1:\n\n%2")
+                             QString("%1:\n\n%2\n\n%3")
                                  .arg(tr("Failed unloading plugins", nullptr, errors.size()),
-                                      errors.join("\n")));
+                                      errors.join("\n"),
+                                      tr("Check the log for more information.")));
 
     // Remove registerd plugins of this provider
     erase_if(registered_plugins_, [=](const auto& it){ return it.second.provider == plugin_provider; });
