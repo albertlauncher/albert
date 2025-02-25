@@ -240,7 +240,10 @@ void AlbertTests::matcher_fuzzy()
 {
     QString abc{"abcdefghijklmnopqrstuvwxyz"};
 
-    MatchConfig c = {.separator_regex = QRegularExpression("[ ]+"), .fuzzy = true};
+    MatchConfig c = {
+        .fuzzy = true,
+        .separator_regex = QRegularExpression("[ ]+")
+    };
 
     QVERIFY(Matcher("abcd", c).match(abc));
     QVERIFY(Matcher("abc_", c).match(abc));
@@ -366,8 +369,8 @@ void AlbertTests::index_fuzzy()
     QStringList abc{"abcdefghijklmnopqrstuvwxyz"};
 
     MatchConfig c = {
-        .separator_regex = QRegularExpression("[ ]+"),
-        .fuzzy = true
+        .fuzzy = true,
+        .separator_regex = QRegularExpression("[ ]+")
     };
 
     QVERIFY(indexMatch(abc, "abcd", c).size() == 1);

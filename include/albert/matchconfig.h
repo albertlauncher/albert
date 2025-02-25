@@ -8,21 +8,25 @@
 namespace albert
 {
 
+// Doxygen does not like raw strings
+// QRegularExpression(R"([\s\\\/\-\[\](){}#!?<>"'=+*.:,;_]+)");
+const QRegularExpression default_separator_regex("([\\s\\\\/\\-\\[\\](){}#!?<>\"'=+*.:,;_]+)");
+
 ///
 /// Configuration for string matching.
+///
+/// Initialize with designated initializers to avoid hard to find bugs on future changes.
 ///
 /// \sa \ref Matcher, \ref IndexQueryHandler
 ///
 class ALBERT_EXPORT MatchConfig
 {
 public:
+
     ///
-    /// The separator regex used to split the compared strings.
+    /// Match strings error tolerant.
     ///
-    QRegularExpression separator_regex =
-        //    QRegularExpression(R"([\s\\\/\-\[\](){}#!?<>"'=+*.:,;_]+)");
-        // make doxygen happy
-        QRegularExpression("([\\s\\\\/\\-\\[\\](){}#!?<>\"'=+*.:,;_]+)");
+    bool fuzzy = false;
 
     ///
     /// Match strings case insensitive.
@@ -30,19 +34,19 @@ public:
     bool ignore_case = true;
 
     ///
-    /// Match strings normalized.
-    ///
-    bool ignore_diacritics = true;
-
-    ///
     /// Match strings independent of their order.
     ///
     bool ignore_word_order = true;
 
     ///
-    /// Match strings error tolerant.
+    /// Match strings normalized.
     ///
-    bool fuzzy = false;
+    bool ignore_diacritics = true;
+
+    ///
+    /// The separator regex used to split the compared strings.
+    ///
+    QRegularExpression separator_regex = default_separator_regex;
 
     ///
     /// The error tolerance.
@@ -52,4 +56,4 @@ public:
     static const uint error_tolerance_divisor = 4;
 };
 
-}
+} // namespace albert
