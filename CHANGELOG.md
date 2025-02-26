@@ -1,3 +1,54 @@
+v0.27.0 (2025-02-27)
+
+This is primarily an intermediate release that reverts bad design decisions that make progress difficult.
+
+## API
+
+- `albert`
+  - Remove class `ItemsModel`
+  - Remove enum `ItemRoles`
+  - Remove `openUrl(const QUrl &url)`
+  - Remove `ExtensionWatcher<T>`
+  - Add class `ResultItem`
+  - Add `const ExtensionRegistry &extensionRegistry();`
+  - Add `tryCreateDirectory(const filesystem::path&)`
+  - `network()`: Return reference
+- `albert::ExtensionRegistry`
+  - Remove `T* extension<T>(const QString &id)`
+- `albert::PluginInstance`
+  - Remove `ExtensionRegistry &registry();`
+  - Remove `createOrThrow(const QString &path)`
+  - Make `cache/config/dataLocation` return filesystem::path
+  - Add `extensions()`
+- `ExtensionPlugin`
+  - Add `ExtensionPlugin::extensions()`
+- `albert::MatchConfig`
+  - Avoid recurring default separator regex instatiation
+  - Change field order
+- `albert::Query`
+  - Add isActive()
+  - Return `vector<ResultItem>` in `matches` and `fallbacks`
+  - Return `bool` in `activate*`
+  - Remove signal `finished`
+  - Add signal `matchesAboutToBeAdded`
+  - Add signal `matchesAdded`
+  - Add signal `invalidated`
+  - Add signal `activeChanged`
+- `albert::TriggerQueryHandler`
+  - Pass queries as reference
+  - `synopsis()` > `synopsis(const QString &query)`
+- `albert::GlobalQueryHandler`
+  - Pass queries as reference
+  - Remove param of `handleEmptyQuery`
+- Rename albert/util.h to albert/albert.h
+
+## Plugins
+
+- **python**
+  - Add tests.
+  - Google Docstring format stub file.
+  - Python API v3.0. See changelog in stub file for details.
+
 v0.26.13 (2025-01-06)
 
 Hotfix backward compatibility.
