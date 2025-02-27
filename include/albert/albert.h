@@ -19,14 +19,14 @@ class ExtensionRegistry;
 ///
 /// @since 0.27
 ///
-void restart();
+ALBERT_EXPORT void restart();
 
 ///
 /// Quit the application.
 ///
 /// @since 0.27
 ///
-void quit();
+ALBERT_EXPORT void quit();
 
 ///
 /// The threadlocal, global QNetworkAccessManager.
