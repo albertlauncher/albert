@@ -197,7 +197,7 @@ jobs:
         with:
           repository: albertlauncher/homebrew-albert
           token: ${{ secrets.PAT }}
-          
+
       - name: Get all build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -210,10 +210,11 @@ jobs:
           ver="${ver#v}"  # Remove leading 'v'
           sha_arm=$(cut -f 1 -d " "  Albert-v$ver-arm64.dmg.sha256)
           sha_intel=$(cut -f 1 -d " "  Albert-v$ver-x86_64.dmg.sha256)
-          sed -i '.bak' "s/version .*$/version \"$ver\"/; s/^  sha256.*$/  sha256 arm: \"${sha_arm}\", intel: \"${sha_intel}\"/" albert.rb
+          # Note this is GNU sed
+          sed -i "s/version .*$/version \"$ver\"/; s/^  sha256.*$/  sha256 arm: \"${sha_arm}\", intel: \"${sha_intel}\"/" Casks/albert.rb
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add albert.rb
+          git add Casks/albert.rb
           git commit -m "${{ github.ref_name }}"
           git push
 
