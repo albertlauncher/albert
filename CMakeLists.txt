@@ -343,14 +343,28 @@ file(GLOB_RECURSE TRANSLATION_SOURCE_FILES
     src/*.cpp
 )
 
-qt_add_translations(
-    ${TARGET_LIB}
-    TS_FILES ${TS_FILES}
-    SOURCES ${TRANSLATION_SOURCE_FILES}
-    LUPDATE_OPTIONS
-      # -no-obsolete
-      -locations none
-)
+if(Qt6_VERSION VERSION_GREATER_EQUAL "6.7.0")
+    message(STATUS "Using new qt_add_translations")
+    qt_add_translations(
+        ${TARGET_LIB}
+        TS_FILES ${TS_FILES}
+        SOURCES ${TRANSLATION_SOURCE_FILES}
+        LUPDATE_OPTIONS
+          #-no-obsolete
+          -locations none
+        IMMEDIATE_CALL
+    )
+else()
+    message(STATUS "Using old qt_add_translations")
+    qt_add_translations(
+        ${TARGET_LIB}
+        TS_FILES ${TS_FILES}
+        SOURCES ${TRANSLATION_SOURCE_FILES}
+        LUPDATE_OPTIONS
+          # -no-obsolete
+          -locations none
+    )
+endif()
 
 # For convenience, QtCreator does not show the umbrella target
 add_custom_target(global_lupdate DEPENDS update_translations)
