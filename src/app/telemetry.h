@@ -9,8 +9,9 @@ namespace albert {
 class ExtensionRegistry;
 }
 
-class Telemetry final : public QObject
+class Telemetry final
 {
+    Q_DECLARE_TR_FUNCTIONS(Telemetry)
 public:
     Telemetry(albert::ExtensionRegistry &registry);
 

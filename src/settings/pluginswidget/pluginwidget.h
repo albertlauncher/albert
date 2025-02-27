@@ -7,6 +7,8 @@ class QVBoxLayout;
 
 class PluginWidget final : public QWidget
 {
+    Q_OBJECT
+
 public:
     PluginWidget(const Plugin &);
     ~PluginWidget();

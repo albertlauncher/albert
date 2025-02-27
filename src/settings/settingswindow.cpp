@@ -19,10 +19,10 @@ public:
 
     QHotKeyDialog(QWidget *parent) : QDialog(parent)
     {
-        setWindowTitle(tr("Set hotkey"));
+        setWindowTitle(SettingsWindow::tr("Set hotkey"));
         setLayout(new QVBoxLayout);
         layout()->addWidget(&label);
-        label.setText(tr("Press a key combination"));
+        label.setText(SettingsWindow::tr("Press a key combination"));
         setWindowModality(Qt::WindowModal);
     }
 
