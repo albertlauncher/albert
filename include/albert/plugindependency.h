@@ -61,7 +61,7 @@ public:
                 throw std::runtime_error(
                         QCoreApplication::translate(
                             "Dependency",
-                            "Found '%1' but failed casting to expected type."
+                            "Extension '%1' is available, but it is not of the expected type."
                         ).arg(id).toStdString());
         }
         catch (const std::out_of_range &)
@@ -69,7 +69,7 @@ public:
             throw std::runtime_error(
                         QCoreApplication::translate(
                             "Dependency",
-                            "Required dependency '%1' not available."
+                            "The required extension '%1' is not available."
                         ).arg(id).toStdString());
         }
     }
