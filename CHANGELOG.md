@@ -1,3 +1,20 @@
+v0.27.1 (2025-02-27)
+
+## Albert
+
+- Fixes and minor improvementes
+- Update translations
+
+## Plugins
+
+- **vpn**
+  - Change icons
+  - Fix translations
+- **python**
+  - Redesign the settings widget
+  - Allow users to reset the venv
+  - Avoid initializing venv on every start
+
 v0.27.0 (2025-02-27)
 
 This is primarily an intermediate release that reverts bad design decisions that make progress difficult.
