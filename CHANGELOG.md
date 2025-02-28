@@ -1,3 +1,7 @@
+v0.27.3 (2025-02-28)
+
+This release fixes Qt 6.2 backward compatibility (Ubuntu 22.04 builds).
+
 v0.27.2 (2025-02-28)
 
 This is a hotfix release for #1517
