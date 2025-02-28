@@ -58,8 +58,10 @@ def test_build(args):
                    "albert:arch", "--platform", "linux/amd64", "."],
         'Fedora': ["docker", "build", "--progress=plain", "-f", ".docker/fedora.Dockerfile", "-t",
                    "albert:fedora", "."],
-        'Ubuntu': ["docker", "build", "--progress=plain", "-f", ".docker/ubuntu.Dockerfile", "-t",
-                   "albert:ubuntu", "."],
+        'Ubuntu22': ["docker", "build", "--progress=plain", "-f", ".docker/ubuntu.22.Dockerfile", "-t",
+                     "albert:ubuntu", "."],
+        'Ubuntu24': ["docker", "build", "--progress=plain", "-f", ".docker/ubuntu.24.Dockerfile", "-t",
+                     "albert:ubuntu", "."],
     }
 
     if args.distribution is not None:
