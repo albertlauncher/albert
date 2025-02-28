@@ -77,7 +77,11 @@ SettingsWindow::SettingsWindow(App &a):
     ui.tabs->insertTab(ui.tabs->count(), plugin_widget = new PluginsWidget(app.pluginRegistry()), tr("&Plugins"));
     ui.tabs->insertTab(ui.tabs->count(), new QueryWidget(app.queryEngine()), tr("&Query"));
 
-    auto geometry = QGuiApplication::screenAt(QCursor::pos())->geometry();
+    auto *screen = QGuiApplication::screenAt(QCursor::pos());
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+
+    auto geometry = screen->geometry();
     move(geometry.center().x() - frameSize().width()/2,
          geometry.top() + geometry.height() / 5);
 }
