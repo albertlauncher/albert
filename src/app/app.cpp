@@ -617,13 +617,19 @@ int ALBERT_EXPORT run(int argc, char **argv)
 
         auto *t = new QTranslator(&qapp);
         if (t->load(QLocale(), "qtbase", "_", QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
+        {
+            DEBG << ">" << t->filePath();
             qapp.installTranslator(t);
+        }
         else
             delete t;
 
         t = new QTranslator(&qapp);
         if (t->load(QLocale(), qapp.applicationName(), "_", ":/i18n"))
+        {
+            DEBG << ">" << t->filePath();
             qapp.installTranslator(t);
+        }
         else
             delete t;
     }

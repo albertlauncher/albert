@@ -175,7 +175,11 @@ void QtPluginLoader::load()
 
         translator = make_unique<QTranslator>();
         if (translator->load(QLocale(), metaData().id, "_", ":/i18n"))
+        {
+            DEBG << QString("Using translations for '%1' from %2").arg(metadata_.id,
+                                                                       translator->filePath());
             QCoreApplication::installTranslator(translator.get());
+        }
         else
             translator.reset();
     }
