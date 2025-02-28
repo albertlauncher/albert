@@ -1,3 +1,7 @@
+v0.27.2 (2025-02-28)
+
+This is a hotfix release for #1517
+
 v0.27.1 (2025-02-27)
 
 ## Albert
