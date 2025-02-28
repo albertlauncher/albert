@@ -7,6 +7,7 @@
 #include "usagedatabase.h"
 #include <QDateTime>
 #include <QDir>
+#include <QFile>
 #include <QSettings>
 #include <QSqlDriver>
 #include <QSqlError>
