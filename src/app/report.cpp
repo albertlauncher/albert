@@ -42,6 +42,7 @@ QStringList report()
     QLocale loc;
     sl << fn("Language",              metaEnum.valueToKey(loc.language()));
     sl << fn("Locale",                loc.name());
+    sl << fn("Ui languages",          loc.uiLanguages().join(", "));
 
     // APP
     sl << fn("Binary location",       QApplication::applicationFilePath());
