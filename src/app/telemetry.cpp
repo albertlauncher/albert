@@ -37,9 +37,11 @@ Telemetry::Telemetry(albert::ExtensionRegistry &registry):
             "You can review the telemetry data to be sent in the settings. Do you want "
             "to enable telemetry? This configuration can be changed at any time in the settings.");
 
-        setEnabled(QMessageBox::question(0, qApp->applicationDisplayName(),
-                                         text, QMessageBox::No|QMessageBox::Yes, QMessageBox::Yes)
-                   == QMessageBox::Yes);
+        using MB = QMessageBox;
+        auto enable = MB::question(0, qApp->applicationDisplayName(), text,
+                                   MB::Yes|MB::No, MB::Yes) == MB::Yes;
+        enabled_ = enable;
+        settings()->setValue(CFG_TELEMETRY_ENABLED, enable);
     }
 
     QObject::connect(&timer, &QTimer::timeout,
