@@ -1,3 +1,20 @@
+v0.27.4 (2025-03-05)
+
+## Albert
+
+- Fix translation file lookup
+
+## Plugins
+
+- **vpn** 5.0
+  - Add xdg platform (network manager)
+  - Listen to state changes
+- Append _en to the plural files
+
+## Python
+
+- **vpn** Archive
+
 v0.27.3 (2025-02-28)
 
 This release fixes Qt 6.2 backward compatibility (Ubuntu 22.04 builds).
