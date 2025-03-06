@@ -323,7 +323,6 @@ QString App::Private::loadFrontend(PluginLoader *loader)
         PluginRegistry::staticDI.loader = loader;
         loader->load();
 
-        plugin_registry.staticDI.loader = loader;
         auto * inst = loader->createInstance();
         if (!inst)
             return "Plugin loader returned null instance";
@@ -331,6 +330,9 @@ QString App::Private::loadFrontend(PluginLoader *loader)
         frontend = dynamic_cast<Frontend*>(loader->createInstance());
         if (!frontend)
             return QString("Failed casting Plugin instance to albert::Frontend: %1").arg(loader->metaData().id);
+
+        for (auto *ext : inst->extensions())
+            extension_registry.registerExtension(ext);
 
         frontend_plugin = loader;
 
