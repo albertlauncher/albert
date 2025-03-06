@@ -1,3 +1,16 @@
+v0.27.5 (2025-03-06)
+
+Fixes.
+
+## Plugins
+
+- **widgetsboxmodel** Fix dark mode detection on Gnome
+
+## Python
+
+- **coingecko** Make sure cache location exists
+- **emoji** Make sure cache location exists
+
 v0.27.4 (2025-03-05)
 
 ## Albert
