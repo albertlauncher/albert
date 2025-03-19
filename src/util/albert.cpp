@@ -2,6 +2,7 @@
 
 #include "albert.h"
 #include "app.h"
+#include "frontend.h"
 #include "logging.h"
 #include <QApplication>
 #include <QClipboard>
@@ -175,3 +176,39 @@ void albert::tryCreateDirectory(const filesystem::path& path)
 
 const albert::ExtensionRegistry &albert::extensionRegistry()
 { return App::instance()->extensionRegistry(); }
+
+QMessageBox::StandardButton albert::question(const QString &text,
+                                             QMessageBox::StandardButtons buttons,
+                                             QMessageBox::StandardButton defaultButton)
+{
+    return QMessageBox::information(QWidget::find(App::instance()->frontend()->winId()),
+                                    qApp->applicationDisplayName(),
+                                    text, buttons, defaultButton);
+}
+
+QMessageBox::StandardButton albert::information(const QString &text,
+                                                QMessageBox::StandardButtons buttons,
+                                                QMessageBox::StandardButton defaultButton)
+{
+    return QMessageBox::information(QWidget::find(App::instance()->frontend()->winId()),
+                                    qApp->applicationDisplayName(),
+                                    text, buttons, defaultButton);
+}
+
+QMessageBox::StandardButton albert::warning(const QString &text,
+                                            QMessageBox::StandardButtons buttons,
+                                            QMessageBox::StandardButton defaultButton)
+{
+    return QMessageBox::information(QWidget::find(App::instance()->frontend()->winId()),
+                                    qApp->applicationDisplayName(),
+                                    text, buttons, defaultButton);
+}
+
+QMessageBox::StandardButton albert::critical(const QString &text,
+                                             QMessageBox::StandardButtons buttons,
+                                             QMessageBox::StandardButton defaultButton)
+{
+    return QMessageBox::information(QWidget::find(App::instance()->frontend()->winId()),
+                                    qApp->applicationDisplayName(),
+                                    text, buttons, defaultButton);
+}

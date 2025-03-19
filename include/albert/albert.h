@@ -5,6 +5,9 @@
 #include <QString>
 #include <albert/export.h>
 #include <filesystem>
+#ifdef QT_WIDGETS_LIB
+#include <QMessageBox>
+#endif
 class NotificationPrivate;
 class QNetworkAccessManager;
 class QSettings;
@@ -140,6 +143,60 @@ ALBERT_EXPORT const ExtensionRegistry &extensionRegistry();
 /// @since 0.27
 ///
 ALBERT_EXPORT void tryCreateDirectory(const std::filesystem::path &path);
+
+#ifdef QT_WIDGETS_LIB
+
+///
+/// Shows a question message box containing `text` with the given `buttons` and `defaultButton`.
+///
+/// The message box modal will appear modal to the main window and have the app name as title.
+///
+/// Returns the button pressed by the user.
+///
+ALBERT_EXPORT QMessageBox::StandardButton
+question(const QString &text,
+         QMessageBox::StandardButtons buttons
+         = QMessageBox::StandardButtons(QMessageBox::Yes | QMessageBox::No),
+         QMessageBox::StandardButton defaultButton = QMessageBox::NoButton);
+
+///
+/// Shows an information message box containing `text` with the given `buttons` and `defaultButton`.
+///
+/// The message box modal will appear modal to the main window and have the app name as title.
+///
+/// Returns the button pressed by the user.
+///
+ALBERT_EXPORT QMessageBox::StandardButton
+information(const QString &text,
+            QMessageBox::StandardButtons buttons = QMessageBox::Ok,
+            QMessageBox::StandardButton defaultButton = QMessageBox::NoButton);
+
+///
+/// Shows a warning message box containing `text` with the given `buttons` and `defaultButton`.
+///
+/// The message box modal will appear modal to the main window and have the app name as title.
+///
+/// Returns the button pressed by the user.
+///
+ALBERT_EXPORT QMessageBox::StandardButton
+warning(const QString &text,
+        QMessageBox::StandardButtons buttons = QMessageBox::Ok,
+        QMessageBox::StandardButton defaultButton = QMessageBox::NoButton);
+
+///
+/// Shows a critical message box containing `text` with the given `buttons` and `defaultButton`.
+///
+/// The message box modal will appear modal to the main window and have the app name as title.
+///
+/// Returns the button pressed by the user.
+///
+ALBERT_EXPORT QMessageBox::StandardButton
+critical(const QString &text,
+         QMessageBox::StandardButtons buttons = QMessageBox::Ok,
+         QMessageBox::StandardButton defaultButton = QMessageBox::NoButton);
+
+#endif
+
 
 } // namespace albert
 
