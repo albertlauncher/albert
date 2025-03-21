@@ -26,6 +26,9 @@ QueryExecution::QueryExecution(QueryEngine *e,
     fallback_handlers_(::move(fallback_handlers)),
     valid_(true)
 {
+    connect(&future_watcher_, &decltype(future_watcher_)::started,
+            this, [this](){ emit activeChanged(true); });
+
     connect(&future_watcher_, &decltype(future_watcher_)::finished,
             this, [this](){ emit activeChanged(false); });
 }
