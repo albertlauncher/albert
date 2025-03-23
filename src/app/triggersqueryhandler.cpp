@@ -1,6 +1,7 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #include "app.h"
+#include "frontend.h"
 #include "matcher.h"
 #include "queryengine.h"
 #include "standarditem.h"
@@ -22,12 +23,21 @@ QString TriggersQueryHandler::name() const
 QString TriggersQueryHandler::description() const
 { return tr("Trigger completion items."); }
 
-static shared_ptr<Item> make_item(const QString &trigger, Extension * handler)
+shared_ptr<Item> TriggersQueryHandler::makeItem(const QString &trigger, Extension *handler) const
 {
     auto desc = QString("%1 - %2").arg(handler->name(), handler->description());
     return StandardItem::make(
-        trigger, QString(trigger).replace(" ", "•"), desc, trigger,
-        {QStringLiteral("gen:?&text=🚀")}, {}
+        trigger,
+        QString(trigger).replace(" ", "•"),
+        desc,
+        trigger,
+        {QStringLiteral("gen:?&text=🚀")},
+        {{
+            "set",
+            tr("Set input text"),
+            [trigger]{ App::instance()->frontend()->setInput(trigger); },
+            false
+        }}
     );
 }
 
@@ -38,7 +48,7 @@ void TriggersQueryHandler::handleTriggerQuery(Query &q)
     vector<RankItem> RI;
     for (const auto &[trigger, handler] : query_engine_.activeTriggerHandlers())
         if (auto m = Matcher(q.string()).match(trigger, handler->name(), handler->id()); m)
-            RI.emplace_back(make_item(trigger, handler), m);
+            RI.emplace_back(makeItem(trigger, handler), m);
 
     applyUsageScore(&RI);
 
@@ -61,7 +71,7 @@ vector<RankItem> TriggersQueryHandler::handleGlobalQuery(const Query &q)
     Matcher matcher(q.string(), { .ignore_case=false, .ignore_word_order=false });
     for (const auto &[trigger, handler] : query_engine_.activeTriggerHandlers())
         if (auto m = matcher.match(trigger); m)
-            rank_items.emplace_back(make_item(trigger, handler), m);
+            rank_items.emplace_back(makeItem(trigger, handler), m);
 
     return rank_items;
 }
