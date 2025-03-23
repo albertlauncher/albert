@@ -20,6 +20,8 @@ public:
 
 private:
 
+    std::shared_ptr<albert::Item> makeItem(const QString &trigger, Extension *handler) const;
+
     static const QStringList icon_urls;
     const QueryEngine &query_engine_;
 
