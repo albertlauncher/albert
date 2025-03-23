@@ -113,7 +113,7 @@ static bool activate(const vector<ResultItem> &result_items, const QString &q, u
             //   Disconnects on query deletion.
 
             a.function();  // May delete the query, due to hide()
-            return true;
+            return a.hide_on_activation;
         }
         catch (const out_of_range&) {
             WARN << "Activated action index is invalid:" << aidx;

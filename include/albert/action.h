@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -17,19 +17,23 @@ class ALBERT_EXPORT Action final
 public:
 
     /// Action constructor
-    /// \param id Identifier of the action.
-    /// \param text Description of the action.
-    /// \param function The action function.
-    Action(QString id, QString text, std::function<void()> function) noexcept;
+    /// \param id \copybrief id
+    /// \param text \copybrief text
+    /// \param function \copybrief function
+    /// \param hideOnActivation \copybrief hide_on_activation
+    Action(QString id, QString text, std::function<void()> function, bool hideOnActivation = true) noexcept;
 
-    /// The identifier of the action.
+    /// The identifier.
     QString id;
 
-    /// The description of the action.
+    /// The description.
     QString text;
 
-    /// The action function.
+    /// The action.
     std::function<void()> function;
+
+    /// The activation behavior.
+    bool hide_on_activation;
 };
 
 }
