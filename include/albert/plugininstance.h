@@ -7,6 +7,7 @@
 #include <albert/export.h>
 #include <filesystem>
 #include <memory>
+#include <vector>
 class QSettings;
 class QWidget;
 
@@ -54,6 +55,11 @@ public:
     /// @returns @copybrief dataLocation
     /// @since 0.27
     [[nodiscard]] std::filesystem::path dataLocation() const;
+
+    /// The existing data locations of this plugin.
+    /// @returns @copybrief dataLocations
+    /// @since 0.28
+    [[nodiscard]] std::vector<std::filesystem::path> dataLocations() const;
 
     /// Persistent plugin settings.
     /// Preconfigured according to albert conventions, i.e. using

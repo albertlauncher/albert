@@ -7,6 +7,7 @@
 #include "pluginregistry.h"
 #include <QCoreApplication>
 #include <QSettings>
+#include <QStandardPaths>
 using namespace albert;
 using namespace std;
 
@@ -58,3 +59,12 @@ unique_ptr<QSettings> PluginInstance::state() const
 const PluginLoader &PluginInstance::loader() const
 { return *d->loader; }
 
+vector<filesystem::path> PluginInstance::dataLocations() const
+{
+    vector<filesystem::path> data_locations;
+    for (const auto &path : QStandardPaths::locateAll(QStandardPaths::AppDataLocation,
+                                                      loader().metaData().id,
+                                                      QStandardPaths::LocateDirectory))
+        data_locations.emplace_back(path.toStdString());
+    return data_locations;
+}
