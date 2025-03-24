@@ -1,10 +1,12 @@
-// Copyright (c) 2022-2024 Manuel Schneider
+// Copyright (c) 2022-2025 Manuel Schneider
 
 #include "logging.h"
 #include "queryengine.h"
 #include "queryexecution.h"
 #include "usagedatabase.h"
-#include <QtConcurrent>
+#include <QtConcurrentRun>
+#include <QtConcurrentMap>
+#include <QCoreApplication>
 using namespace albert;
 using namespace std::chrono;
 using namespace std;

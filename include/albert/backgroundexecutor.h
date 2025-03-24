@@ -3,7 +3,7 @@
 
 #pragma once
 #include <QFutureWatcher>
-#include <QtConcurrent>
+#include <QtConcurrentRun>
 #include <albert/logging.h>
 #include <chrono>
 #include <functional>
