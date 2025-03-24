@@ -8,7 +8,7 @@
 #include <QFutureWatcher>
 #include <QPluginLoader>
 #include <QTranslator>
-#include <QtConcurrent>
+#include <QtConcurrentRun>
 using namespace albert;
 using namespace std;
 
