@@ -1,12 +1,9 @@
-[submodule "plugins"]
-	path = plugins
-	url = https://github.com/albertlauncher/plugins.git
-[submodule "lib/QHotkey"]
-	path = lib/QHotkey
-	url = https://github.com/QtCommunity/QHotkey
 [submodule "i18n"]
 	path = i18n
 	url = https://github.com/albertlauncher/i18n.git
+[submodule "lib/QHotkey"]
+	path = lib/QHotkey
+	url = https://github.com/QtCommunity/QHotkey
 [submodule "lib/QNotification"]
 	path = lib/QNotification
 	url = https://github.com/QtCommunity/QNotification
