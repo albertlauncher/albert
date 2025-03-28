@@ -220,6 +220,7 @@ target_include_directories(${TARGET_LIB}
         "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     PRIVATE
+        $<TARGET_PROPERTY:albert::applications,INTERFACE_INCLUDE_DIRECTORIES>  # for terminals
         "${PROJECT_BINARY_DIR}/include/albert"
         "${PROJECT_SOURCE_DIR}/include/albert"
         src
