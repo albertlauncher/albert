@@ -17,7 +17,22 @@ public:
     std::vector<albert::RankItem> handleGlobalQuery(const albert::Query &) override;
 
 private:
-    std::vector<std::shared_ptr<albert::Item>> items_;
-    static const QStringList icon_urls;
 
+    static const QStringList icon_urls;
+    struct {
+        const QString cache;
+        const QString cached;
+        const QString config;
+        const QString configd;
+        const QString data;
+        const QString datad;
+        const QString open;
+        const QString topen;
+        const QString quit;
+        const QString quitd;
+        const QString restart;
+        const QString restartd;
+        const QString settings;
+        const QString settingsd;
+    } strings;
 };
