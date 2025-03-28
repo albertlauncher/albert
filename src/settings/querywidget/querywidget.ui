@@ -77,7 +77,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="label_decay">
        <property name="text">
-        <string>Sort perference</string>
+        <string>Sort preference</string>
        </property>
        <property name="buddy">
         <cstring>slider_decay</cstring>
