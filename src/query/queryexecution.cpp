@@ -272,7 +272,7 @@ void GlobalQuery::handleTriggerQuery(Query &)
             auto t = system_clock::now();
 
             vector<RankItem> results;
-            if (string_.isEmpty())
+            if (string_.isNull())
                 for (auto &item : handler->handleEmptyQuery())
                     results.emplace_back(::move(item), 0);
             else

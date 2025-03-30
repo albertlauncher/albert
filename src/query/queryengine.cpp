@@ -79,22 +79,27 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry) : registry_(registry)
     });
 }
 
-unique_ptr<QueryExecution> QueryEngine::query(const QString &query_string)
+unique_ptr<QueryExecution> QueryEngine::query(const QString &query)
 {
     vector<FallbackHandler*> fhandlers;
     for (const auto&[id, handler] : fallback_handlers_)
         fhandlers.emplace_back(handler);
 
     for (const auto &[trigger, handler] : active_triggers_)
-        if (query_string.startsWith(trigger))
-            return make_unique<QueryExecution>(this, ::move(fhandlers), handler, query_string.mid(trigger.size()), trigger);
+        if (query.startsWith(trigger))
+            return make_unique<QueryExecution>(this, ::move(fhandlers), handler,
+                                               query.mid(trigger.size()), trigger);
 
     {
         vector<albert::GlobalQueryHandler*> handlers;
         for (const auto&[id, h] : global_handlers_)
             if (h.enabled)
                 handlers.emplace_back(h.handler);
-        return make_unique<GlobalQuery>(this, ::move(fhandlers), ::move(handlers), query_string);
+
+        return make_unique<GlobalQuery>(this, ::move(fhandlers), ::move(handlers),
+                                        query == QStringLiteral("*")
+                                            ? QString("")
+                                            : query.isEmpty() ? QString{} : query);
     }
 }
 
