@@ -18,16 +18,17 @@ namespace albert
 class ExtensionRegistry;
 
 ///
-/// Restart the application.
+/// Show the frontend. If `input_text` is not null the input is set.
 ///
-/// @since 0.27
+ALBERT_EXPORT void show(const QString &input_text = {});
+
+///
+/// Restart the application.
 ///
 ALBERT_EXPORT void restart();
 
 ///
 /// Quit the application.
-///
-/// @since 0.27
 ///
 ALBERT_EXPORT void quit();
 
@@ -35,7 +36,6 @@ ALBERT_EXPORT void quit();
 /// The threadlocal, global QNetworkAccessManager.
 ///
 /// \returns A reference to the QNetworkAccessManager object.
-/// \since 0.27
 ///
 ALBERT_EXPORT QNetworkAccessManager &network();
 
@@ -77,7 +77,6 @@ ALBERT_EXPORT void openUrl(const QString &url);
 /// Open URL with default handler.
 ///
 /// \param url The url to open.
-/// \since 0.27
 ///
 ALBERT_EXPORT void open(const QUrl &url);
 
@@ -85,7 +84,6 @@ ALBERT_EXPORT void open(const QUrl &url);
 /// Open file with default handler.
 ///
 /// \param path The path the file to open.
-/// \since 0.27
 ///
 ALBERT_EXPORT void open(const QString &path);
 
@@ -95,7 +93,6 @@ ALBERT_EXPORT void open(const QString &path);
 /// Convenience overlaod that works well with filesystem::path.
 ///
 /// \param path The path the file to open.
-/// \since 0.27
 ///
 ALBERT_EXPORT void open(const std::string &path);
 

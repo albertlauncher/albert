@@ -18,6 +18,13 @@
 using namespace std;
 
 
+void albert::show(const QString &input_text)
+{
+    if (!input_text.isNull())
+        App::instance()->frontend()->setInput(input_text);
+    App::instance()->frontend()->setVisible(true);
+}
+
 void albert::restart()
 { QMetaObject::invokeMethod(qApp, "exit", Qt::QueuedConnection, Q_ARG(int, -1)); }
 
