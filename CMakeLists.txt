@@ -311,6 +311,9 @@ target_compile_options(${TARGET_LIB}
         -Werror=return-type  # silently buils but crashes at runtime
         -Werror=float-conversion  # Implicit cast may loose precision (e.g. match scores)
 
+        -Wno-deprecated-enum-enum-conversion  # bitwise operation between different enumeration types used by drawText
+        -Wno-attributes  # mute visibility warnings
+
         # -Wconversion
         # -Weffc++
         -Winline
