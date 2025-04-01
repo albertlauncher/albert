@@ -1,3 +1,84 @@
+v0.27.6 (2025-04-02)
+
+The plugins are now organized in [submodules](https://github.com/albertlauncher/albert/tree/main/plugins).
+
+## Albert
+
+- Run the empty query on `*`
+- Add *'Open in terminal'* action to AppQueryHandler
+
+## API
+
+- Add `albert::Action::hide_on_activation`
+- Add `albert::PluginInstance::dataLocations`
+- Add `albert::show(const QString&)`
+- Add standard message box functions modal to the main window.
+  - Add `albert::question(…)`
+  - Add `albert::information(…)`
+  - Add `albert::warning(…)`
+  - Add `albert::critical(…)`
+
+## Plugins
+
+### ``bluetooth``
+
+- Add icons for (in)active/(dis)connected items.
+- Add completions.
+
+### ``caffeine``
+
+- Polish translations of durations.
+- Add natural duration spec (eg 1h1m).
+- Fix weird trigger completions.
+- Fix default trigger matching.
+- Add deactivation notification.
+- Use special text ∞ in settings.
+
+### ``clipboard``
+
+- Avoid flicker by using batch add.
+
+### ``system``
+
+- New icon set.
+- Update macOS logout command.
+
+### ``timer``
+
+- Remove timers from empty query without hiding the window.
+
+### ``vpn``
+
+- Add icons clearly indicating the state.
+
+### ``websearch``
+
+- New default icon.
+
+### ``widgetsboxmodel`` and ``widgetsboxmodel-qss``
+
+QStyleSheetStyle and its style sheets are a mess to work with and pretty limited.
+They may be suitable to style dedicated widgets but not for entire UIs.
+This release lays the foundation for a frontend that is not a pain to work with.
+The widgetsboxmodel as you know it has been forked to ``widgetsboxmodel-qss``.
+But for now it still has the id `widgetsboxmodel` id until the prototype is polished enough.
+The id of the new widgetsboxmodel frontend without style sheets is widgetsboxmodel-ng.
+
+- Theme files support.
+- Allow multiline input. Shift enter inserts a newline.
+- Empahsize the trigger.
+- Add context menu to button
+- Allow non hiding actions.
+- Add a handcrafted, buffered windowframe. Drop glitchy Qt shadow.
+- Add option 'Disable input method'.
+- Completion and synopsis side by side.
+- Handcrafted rounded rects that support gradients.
+- Ads settable window properties like colors, margins, sizes and such.
+- Put settingsbutton into the input layout. No overlay anymore.
+- Always show action to set the _current_ mode first (dark, light).
+- Add debug overlay option
+- Loads of fixes and mini improvements.
+
 v0.27.5 (2025-03-06)
 
 Fixes.
