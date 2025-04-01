@@ -11,82 +11,82 @@
 
 [submodule "plugins/applications"]
 	path = plugins/applications
-	url = git@github.com:albertlauncher/albert-plugin-applications.git
+	url = https://github.com/albertlauncher/albert-plugin-applications.git
 [submodule "plugins/bluetooth"]
 	path = plugins/bluetooth
-	url = git@github.com:albertlauncher/albert-plugin-bluetooth.git
+	url = https://github.com/albertlauncher/albert-plugin-bluetooth.git
 [submodule "plugins/caffeine"]
 	path = plugins/caffeine
-	url = git@github.com:albertlauncher/albert-plugin-caffeine.git
+	url = https://github.com/albertlauncher/albert-plugin-caffeine.git
 [submodule "plugins/calculator-qalculate"]
 	path = plugins/calculator-qalculate
-	url = git@github.com:albertlauncher/albert-plugin-calculator-qalculate.git
+	url = https://github.com/albertlauncher/albert-plugin-calculator-qalculate.git
 [submodule "plugins/chromium"]
 	path = plugins/chromium
-	url = git@github.com:albertlauncher/albert-plugin-chromium.git
+	url = https://github.com/albertlauncher/albert-plugin-chromium.git
 [submodule "plugins/clipboard"]
 	path = plugins/clipboard
-	url = git@github.com:albertlauncher/albert-plugin-clipboard.git
+	url = https://github.com/albertlauncher/albert-plugin-clipboard.git
 [submodule "plugins/contacts"]
 	path = plugins/contacts
-	url = git@github.com:albertlauncher/albert-plugin-contacts.git
+	url = https://github.com/albertlauncher/albert-plugin-contacts.git
 [submodule "plugins/datetime"]
 	path = plugins/datetime
-	url = git@github.com:albertlauncher/albert-plugin-datetime.git
+	url = https://github.com/albertlauncher/albert-plugin-datetime.git
 [submodule "plugins/debug"]
 	path = plugins/debug
-	url = git@github.com:albertlauncher/albert-plugin-debug.git
+	url = https://github.com/albertlauncher/albert-plugin-debug.git
 [submodule "plugins/dictionary"]
 	path = plugins/dictionary
-	url = git@github.com:albertlauncher/albert-plugin-dictionary.git
+	url = https://github.com/albertlauncher/albert-plugin-dictionary.git
 [submodule "plugins/docs"]
 	path = plugins/docs
-	url = git@github.com:albertlauncher/albert-plugin-docs.git
+	url = https://github.com/albertlauncher/albert-plugin-docs.git
 [submodule "plugins/files"]
 	path = plugins/files
-	url = git@github.com:albertlauncher/albert-plugin-files.git
+	url = https://github.com/albertlauncher/albert-plugin-files.git
 [submodule "plugins/hash"]
 	path = plugins/hash
-	url = git@github.com:albertlauncher/albert-plugin-hash.git
+	url = https://github.com/albertlauncher/albert-plugin-hash.git
 [submodule "plugins/menubar"]
 	path = plugins/menubar
-	url = git@github.com:albertlauncher/albert-plugin-menubar.git
+	url = https://github.com/albertlauncher/albert-plugin-menubar.git
 [submodule "plugins/mpris"]
 	path = plugins/mpris
-	url = git@github.com:albertlauncher/albert-plugin-mpris.git
+	url = https://github.com/albertlauncher/albert-plugin-mpris.git
 [submodule "plugins/path"]
 	path = plugins/path
-	url = git@github.com:albertlauncher/albert-plugin-path.git
+	url = https://github.com/albertlauncher/albert-plugin-path.git
 [submodule "plugins/python"]
 	path = plugins/python
-	url = git@github.com:albertlauncher/albert-plugin-python.git
+	url = https://github.com/albertlauncher/albert-plugin-python.git
 [submodule "plugins/snippets"]
 	path = plugins/snippets
-	url = git@github.com:albertlauncher/albert-plugin-snippets.git
+	url = https://github.com/albertlauncher/albert-plugin-snippets.git
 [submodule "plugins/ssh"]
 	path = plugins/ssh
-	url = git@github.com:albertlauncher/albert-plugin-ssh.git
+	url = https://github.com/albertlauncher/albert-plugin-ssh.git
 [submodule "plugins/system"]
 	path = plugins/system
-	url = git@github.com:albertlauncher/albert-plugin-system.git
+	url = https://github.com/albertlauncher/albert-plugin-system.git
 [submodule "plugins/timer"]
 	path = plugins/timer
-	url = git@github.com:albertlauncher/albert-plugin-timer.git
+	url = https://github.com/albertlauncher/albert-plugin-timer.git
 [submodule "plugins/timezones"]
 	path = plugins/timezones
-	url = git@github.com:albertlauncher/albert-plugin-timezones.git
+	url = https://github.com/albertlauncher/albert-plugin-timezones.git
 [submodule "plugins/urlhandler"]
 	path = plugins/urlhandler
-	url = git@github.com:albertlauncher/albert-plugin-urlhandler.git
+	url = https://github.com/albertlauncher/albert-plugin-urlhandler.git
 [submodule "plugins/vpn"]
 	path = plugins/vpn
-	url = git@github.com:albertlauncher/albert-plugin-vpn.git
+	url = https://github.com/albertlauncher/albert-plugin-vpn.git
 [submodule "plugins/websearch"]
 	path = plugins/websearch
-	url = git@github.com:albertlauncher/albert-plugin-websearch.git
+	url = https://github.com/albertlauncher/albert-plugin-websearch.git
 [submodule "plugins/widgetsboxmodel-qss"]
 	path = plugins/widgetsboxmodel-qss
-	url = git@github.com:albertlauncher/albert-plugin-widgetsboxmodel-qss.git
+	url = https://github.com/albertlauncher/albert-plugin-widgetsboxmodel-qss.git
 [submodule "plugins/widgetsboxmodel"]
 	path = plugins/widgetsboxmodel
-	url = git@github.com:albertlauncher/albert-plugin-widgetsboxmodel.git
+	url = https://github.com/albertlauncher/albert-plugin-widgetsboxmodel.git
