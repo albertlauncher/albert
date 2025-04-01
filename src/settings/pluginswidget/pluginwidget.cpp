@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2024 Manuel Schneider
+// Copyright (c) 2022-2025 Manuel Schneider
 
 #include "plugin.h"
 #include "plugininstance.h"
@@ -27,10 +27,7 @@ PluginWidget::PluginWidget(const Plugin &p):
             this, &PluginWidget::onPluginStateChanged);
 }
 
-PluginWidget::~PluginWidget()
-{
-
-}
+PluginWidget::~PluginWidget() = default;
 
 QWidget *PluginWidget::createPluginPageHeader()
 {
@@ -143,10 +140,14 @@ QWidget *PluginWidget::createPluginPageFooter()
 
 void PluginWidget::onPluginStateChanged()
 {
-    QWidget *new_w = createPluginPageBody();
-    auto layout_item = layout->replaceWidget(body, new_w, Qt::FindDirectChildrenOnly);
+    QWidget *new_body = createPluginPageBody();
+
+    auto layout_item = layout->replaceWidget(body, new_body, Qt::FindDirectChildrenOnly);
     Q_ASSERT(layout_item != nullptr);
-    layout_item->widget()->deleteLater();
-    body->deleteLater();
-    body = new_w;
+
+    // Do not! delete later
+    delete layout_item;
+    delete body;
+
+    body = new_body;
 }
