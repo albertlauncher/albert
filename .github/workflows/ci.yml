@@ -11,15 +11,34 @@ concurrency:
 
 jobs:
 
-  ReleaseSourceArchive:
+  SourceArtifact:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout source
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+          path: source
+
+      - name: Upload source artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-artifact
+          include-hidden-files: true
+          path: source
+
+
+  ReleaseSourceArchives:
+    needs: SourceArtifact
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
 
-      - name: Checkout recursive
-        uses: actions/checkout@v3
+      - name: Download source artifact
+        uses: actions/download-artifact@v4
         with:
-          submodules: 'recursive'
+          name: source-artifact
           path: albert
 
       - name: Create archives
@@ -36,6 +55,7 @@ jobs:
             ${{ github.ref_name }}.zip
 
   LinuxBuilds:
+    needs: SourceArtifact
     runs-on: ubuntu-latest
 
     strategy:
@@ -45,15 +65,16 @@ jobs:
 
     steps:
 
-      - name: Checkout source code
-        uses: actions/checkout@v3
+      - name: Download source artifact
+        uses: actions/download-artifact@v4
         with:
-          submodules: recursive
+          name: source-artifact
 
       - name: Build docker test image
         run: docker build . --file .docker/${{ matrix.dockerfile }}
 
   MacBuilds:
+    needs: SourceArtifact
     name: ${{matrix.buildname}}
     runs-on: ${{matrix.os}}
     strategy:
@@ -63,95 +84,42 @@ jobs:
             buildname: macOS x86_64
             arch: 'x86_64'
 
-          - os: macos-14
+          - os: macos-15
             buildname: macOS arm64
             arch: 'arm64'
 
     steps:
 
-      - name: Checkout source code
-        uses: actions/checkout@v3
+      - name: Download source artifact
+        uses: actions/download-artifact@v4
         with:
-          submodules: recursive
-
-      - name: Get latest CMake and ninja
-        uses: lukka/get-cmake@latest
-
-      #- name: Install Qt dependencies
-      #  uses: jurplel/install-qt-action@v3
-      #  with:
-      #    version: ${{ matrix.qt_version }}
-      #    cache: true
-      #    modules: 'qtscxml qt5compat qtshadertools'
-
-      #- name: Create writable /opt/local
-      #  run: sudo install -d -o $UID -m 755 /opt/local
+          name: source-artifact
+          path: source
 
       - name: Install dependencies available at homebrew
         env:
           #HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
           HOMEBREW_NO_AUTO_UPDATE: 1
           HOMEBREW_NO_INSTALL_CLEANUP: 1
-        run: brew install llvm qt python libqalculate # libarchive sparkle
-
-      #- name: Restore macports dependencies
-      #  id: cache-macports  # ref'ed below
-      #  uses: actions/cache/restore@v4
-      #  with:
-      #    path: |
-      #      /opt/local/lib
-      #      /opt/local/include
-      #    key: ${{ matrix.os }}-macports-r2
-
-      #- name: Install macports (for universal binaries of libqalculate and libarchive)
-      #  if: steps.cache-macports.outputs.cache-hit != 'true'
-      #  run: |
-      #    case ${{ matrix.os }} in
-      #      macos-11)
-      #          wget "https://github.com/macports/macports-base/releases/download/v2.8.1/MacPorts-2.8.1-11-BigSur.pkg"
-      #          sudo installer -pkg ./MacPorts-2.8.1-11-BigSur.pkg -target /
-      #      ;;
-      #      macos-12)
-      #          wget "https://github.com/macports/macports-base/releases/download/v2.8.1/MacPorts-2.8.1-12-Monterey.pkg"
-      #          sudo installer -pkg ./MacPorts-2.8.1-12-Monterey.pkg -target /
-      #      ;;
-      #      macos-13)
-      #          wget "https://github.com/macports/macports-base/releases/download/v2.8.1/MacPorts-2.8.1-13-Ventura.pkg"
-      #          sudo installer -pkg ./MacPorts-2.8.1-13-Ventura.pkg -target /
-      #      ;;
-      #    esac
-      #    sudo sh -c 'echo "\n+universal" >> /opt/local/etc/macports/variants.conf'
-
-      #- name: Install dependencies using macports
-      #  if: steps.cache-macports.outputs.cache-hit != 'true'
-      #  run : sudo /opt/local/bin/port install libqalculate libarchive  # increase steps.cache-macports.outputs.cache-primary-key revision on change
-
-      #- name: Save macports dependencies
-      #  uses: actions/cache/save@v4
-      #  with:
-      #    path: |
-      #      /opt/local/lib
-      #      /opt/local/include
-      #    key: ${{ steps.cache-macports.outputs.cache-primary-key }}
+          HOMEBREW_NO_INSTALL_UPGRADE: 1
+        run: |
+          brew install llvm@18 qt
+          brew install --ignore-dependencies libqalculate  # python libarchive sparkle
 
       - name: Build and package
         run: |
-          cmake -S . -B build \
-            -DCMAKE_CXX_COMPILER=$(brew --prefix)/opt/llvm/bin/clang++ \
+          cmake -S source -B build \
+            -DCMAKE_C_COMPILER=$(brew --prefix llvm@18)/bin/clang \
+            -DCMAKE_CXX_COMPILER=$(brew --prefix llvm@18)/bin/clang++ \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=11 \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_OSX_ARCHITECTURES="${{ matrix.arch }}" \
             -DBUILD_PLUGIN_DEBUG=OFF \
-            -DBUILD_PLUGIN_DOCS=OFF \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo
-            #-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+            -DBUILD_PLUGIN_DOCS=OFF
           cmake --build build
 
       - name: Build and package
         run: cd build && cpack -V
-
-      #- name: Generate appcast item
-      #  env:
-      #    EDDSA_PRIVATE_KEY: ${{ secrets.EDDSA_PRIVATE_KEY }}
-      #    VERSION: ${{ github.ref_name }}
-      #  run: ./dist/macos/generate_appcast_item.sh "build/Albert-${{ github.ref_name }}.dmg" "${VERSION:1}" "$EDDSA_PRIVATE_KEY" appcast_item.txt
 
       - name: Append suffix
         run: |
@@ -161,10 +129,10 @@ jobs:
           mv "${dmg}" "${new_dmg}"
           mv "${dmg}.sha256" "${new_dmg}.sha256"
 
-      - name: Upload macOS bundle
+      - name: Upload macOS bundle artifact
         uses: actions/upload-artifact@v4
         with:
-          name: artifacts-${{ matrix.arch }}
+          name: macos-bundle-artifact-${{ matrix.arch }}
           path: |
             build/*.dmg
             build/*.sha256
@@ -178,6 +146,7 @@ jobs:
       - name: Get all build artifacts
         uses: actions/download-artifact@v4
         with:
+          pattern: macos-bundle-artifact-*
           merge-multiple: true
 
       - name: Upload
@@ -218,6 +187,21 @@ jobs:
           git commit -m "${{ github.ref_name }}"
           git push
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  # Appcast:
  #   needs: RelaseMacBuilds
  #   if: startsWith(github.ref, 'refs/tags/')
@@ -242,4 +226,77 @@ jobs:
       #    git add src/appcast.xml
       #    git commit -m "Update appcast"
       #    git push origin master
+
+
+#- name: Restore macports dependencies
+#  id: cache-macports  # ref'ed below
+#  uses: actions/cache/restore@v4
+#  with:
+#    path: |
+#      /opt/local/lib
+#      /opt/local/include
+#    key: ${{ matrix.os }}-macports-r2
+
+#- name: Install macports (for universal binaries of libqalculate and libarchive)
+#  if: steps.cache-macports.outputs.cache-hit != 'true'
+#  run: |
+#    case ${{ matrix.os }} in
+#      macos-11)
+#          wget "https://github.com/macports/macports-base/releases/download/v2.8.1/MacPorts-2.8.1-11-BigSur.pkg"
+#          sudo installer -pkg ./MacPorts-2.8.1-11-BigSur.pkg -target /
+#      ;;
+#      macos-12)
+#          wget "https://github.com/macports/macports-base/releases/download/v2.8.1/MacPorts-2.8.1-12-Monterey.pkg"
+#          sudo installer -pkg ./MacPorts-2.8.1-12-Monterey.pkg -target /
+#      ;;
+#      macos-13)
+#          wget "https://github.com/macports/macports-base/releases/download/v2.8.1/MacPorts-2.8.1-13-Ventura.pkg"
+#          sudo installer -pkg ./MacPorts-2.8.1-13-Ventura.pkg -target /
+#      ;;
+#    esac
+#    sudo sh -c 'echo "\n+universal" >> /opt/local/etc/macports/variants.conf'
+
+#- name: Install dependencies using macports
+#  if: steps.cache-macports.outputs.cache-hit != 'true'
+#  run : sudo /opt/local/bin/port install libqalculate libarchive  # increase steps.cache-macports.outputs.cache-primary-key revision on change
+
+#- name: Save macports dependencies
+#  uses: actions/cache/save@v4
+#  with:
+#    path: |
+#      /opt/local/lib
+#      /opt/local/include
+#    key: ${{ steps.cache-macports.outputs.cache-primary-key }}
+
+# - name: Checkout source code
+#   uses: actions/checkout@v3
+#   with:
+#     submodules: recursive
+
+# - name: Get latest CMake and ninja
+#   uses: lukka/get-cmake@latest
+
+#- name: Install Qt dependencies
+#  uses: jurplel/install-qt-action@v3
+#  with:
+#    version: ${{ matrix.qt_version }}
+#    cache: true
+#    modules: 'qtscxml qt5compat qtshadertools'
+
+#- name: Create writable /opt/local
+#  run: sudo install -d -o $UID -m 755 /opt/local
+
+
+#- name: Generate appcast item
+#  env:
+#    EDDSA_PRIVATE_KEY: ${{ secrets.EDDSA_PRIVATE_KEY }}
+#    VERSION: ${{ github.ref_name }}
+#  run: ./dist/macos/generate_appcast_item.sh "build/Albert-${{ github.ref_name }}.dmg" "${VERSION:1}" "$EDDSA_PRIVATE_KEY" appcast_item.txt
+
+
+
+
+
+
+
 
