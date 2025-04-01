@@ -53,11 +53,17 @@ PluginsWidget::PluginsWidget(PluginRegistry &plugin_registry):
     config_widget_scroll_area_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     config_widget_scroll_area_->setWidgetResizable(true);
     config_widget_scroll_area_->setAlignment(Qt::AlignLeading | Qt::AlignLeft | Qt::AlignTop);
-
+    setPlaceholderWidget();
     connect(plugins_list_view_->selectionModel(), &QItemSelectionModel::currentChanged,
-            this, &PluginsWidget::updatePluginWidget);
-    updatePluginWidget();
-
+            this, [this](const QModelIndex &current, const QModelIndex &){
+        try {
+            const auto &p = plugin_registry_.plugins().at(current.data(Qt::UserRole).toString());
+            config_widget_scroll_area_->setWidget(new PluginWidget(p));  // takes ownership
+        }
+        catch (const out_of_range &) {
+            setPlaceholderWidget();
+        }
+    });
 
     // Layout
 
@@ -134,27 +140,19 @@ void PluginsWidget::showContextMenu(const QPoint &pos)
     menu.exec(mapToGlobal(pos));
 }
 
-void PluginsWidget::updatePluginWidget()
+void PluginsWidget::setPlaceholderWidget()
 {
-    try {
-        auto index = proxy_model_->mapToSource(plugins_list_view_->currentIndex());
-        auto &p = plugin_registry_.plugins().at(index.data(Qt::UserRole).toString());
-        config_widget_scroll_area_->setWidget(new PluginWidget(p));
-    }
-    catch (const out_of_range &) {
-
-        auto t = tr(
-            "<p>Plugins are a community effort,<br>built by awesome people like you.</p>"
-            "<p>💡 <a href='https://albertlauncher.github.io/gettingstarted/extension/'>"
-            "Learn how to build plugins</a></p>"
-            "<br>"  // move text slightly up, looks more balanced
+    auto t = tr(
+        "<p>Plugins are a community effort,<br>built by awesome people like you.</p>"
+        "<p>💡 <a href='https://albertlauncher.github.io/gettingstarted/extension/'>"
+        "Learn how to build plugins</a></p>"
+        "<br>"  // move text slightly up, looks more balanced
         );
 
-        auto *lbl = new QLabel(t);
-        lbl->setAlignment(Qt::AlignCenter);
-        lbl->setOpenExternalLinks(true);
-        config_widget_scroll_area_->setWidget(lbl);
-    }
+    auto *lbl = new QLabel(t);
+    lbl->setAlignment(Qt::AlignCenter);
+    lbl->setOpenExternalLinks(true);
+    config_widget_scroll_area_->setWidget(lbl);  // takes ownership
 }
 
 void PluginsWidget::updatePluginListWidth()

@@ -18,9 +18,9 @@ public:
     void tryShowPluginSettings(QString);
 
 private:
+    void setPlaceholderWidget();
     void showContextMenu(const QPoint &pos);
     void updatePluginListWidth();
-    void updatePluginWidget();
 
     PluginRegistry &plugin_registry_;
 
