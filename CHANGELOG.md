@@ -1,3 +1,7 @@
+v0.27.7 (2025-04-02)
+
+Hotfix git submodule urls.
+
 v0.27.6 (2025-04-02)
 
 The plugins are now organized in [submodules](https://github.com/albertlauncher/albert/tree/main/plugins).
