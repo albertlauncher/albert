@@ -170,6 +170,7 @@ jobs:
       - name: Get all build artifacts
         uses: actions/download-artifact@v4
         with:
+          pattern: macos-bundle-artifact-*
           merge-multiple: true
 
       - name: Update cask
