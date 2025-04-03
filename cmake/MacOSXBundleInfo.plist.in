@@ -44,7 +44,13 @@
     <key>NSRemovableVolumesUsageDescription</key><string>Files plugin access.</string>
     <key>NSLocationUsageDescription</key><string>Required to access WLAN names.</string>
 
-
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLSchemes</key>
+            <array><string>${PROJECT_NAME}</string></array>
+        </dict>
+    </array>
 
 
 </dict>

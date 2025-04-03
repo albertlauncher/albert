@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 Manuel Schneider
+// Copyright (c) 2023-2025 Manuel Schneider
 
 #pragma once
 #include <QObject>
@@ -22,7 +22,7 @@ public:
 
     static App *instance();
 
-    void show(const QString &text);
+    void show(const QString &text = {});
     void hide();
     void toggle();
     void restart();

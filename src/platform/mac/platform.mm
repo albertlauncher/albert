@@ -4,11 +4,32 @@
 #include "frontend.h"
 #include "logging.h"
 #include "platform.h"
+#include "rpcserver.h"
 #include <Cocoa/Cocoa.h>
 #include <QGuiApplication>
 #include <QMessageBox>
 #include <QTimer>
 using namespace albert;
+using namespace std;
+
+@interface AppDelegate : NSObject <NSApplicationDelegate>
+@end
+
+@implementation AppDelegate
+
+- (void)application:(NSApplication *)app openURLs:(NSArray<NSURL *> *)urls {
+    for (NSURL *nsurl in urls) {
+        try{
+            const auto url = QString::fromNSString(nsurl.absoluteString).toLocal8Bit();
+            RPCServer::sendMessage(QString(R"(["%1"])").arg(url).toLocal8Bit(), false);
+        } catch (const exception &e)
+        {
+            WARN << "Error while self piping in URL handler:" << e.what();
+        }
+    }
+}
+
+@end
 
 void platform::initPlatform()
 {
@@ -23,6 +44,10 @@ void platform::initPlatform()
         PATHS.prepend(p);
     auto PATH = PATHS.join(':').toLocal8Bit();
     qputenv("PATH", PATH);
+
+    // Register URL handler
+    AppDelegate *delegate = [[AppDelegate alloc] init];
+    [NSApp setDelegate:delegate];
 }
 
 void platform::initNativeWindow(unsigned long long wid)

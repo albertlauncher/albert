@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 Manuel Schneider
+// Copyright (c) 2023-2025 Manuel Schneider
 
 #include "albert.h"
 #include "app.h"
@@ -25,10 +25,14 @@
 #include "signalhandler.h"
 #include "telemetry.h"
 #include "triggersqueryhandler.h"
+#include "urlhandler.h"
+#include <QByteArray>
 #include <QCommandLineParser>
 #include <QDir>
 #include <QFile>
 #include <QHotkey>
+#include <QJsonArray>
+#include <QJsonDocument>
 #include <QLibraryInfo>
 #include <QMenu>
 #include <QMessageBox>
@@ -67,10 +71,11 @@ public:
 
     void initTrayIcon();
     void initHotkey();
-    void initPRC();
+    void initRPC();
     void loadAnyFrontend();
     QString loadFrontend(albert::PluginLoader *loader);
     void notifyVersionChange();
+    void handleUrl(const QUrl&);
 
 public:
 
@@ -132,7 +137,7 @@ void App::Private::initialize()
 
     notifyVersionChange();
 
-    initPRC(); // Also may trigger frontend
+    initRPC(); // Also may trigger frontend
 
     initHotkey();  // Connect hotkey after! frontend has been loaded else segfaults
 
@@ -251,40 +256,112 @@ void App::Private::initHotkey()
     }
 }
 
-void App::Private::initPRC()
+void App::Private::initRPC()
 {
-    std::map<QString, RPCServer::RPC> rpc =
+    auto messageHandler = [this](const QByteArray bytes) -> QByteArray
     {
-        {"show", [](const QString& t){
-            App::instance()->show(t);
-            return "Albert set visible.";
-        }},
-        {"hide", [](const QString&){
-            App::instance()->hide();
-            return "Albert set hidden.";
-        }},
-        {"toggle", [](const QString&){
-            App::instance()->toggle();
-            return "Albert visibility toggled.";
-        }},
-        {"settings", [](const QString& t){
-            App::instance()->showSettings(t);
-            return "Settings opened,";
-        }},
-        {"restart", [](const QString&){
-            App::instance()->restart();
-            return "Triggered restart.";
-        }},
-        {"quit", [](const QString&){
-            App::instance()->quit();
-            return "Triggered quit.";
-        }},
-        {"report", [](const QString&){
-            return report().join('\n');
-        }}
+        INFO << "Received RPC message:" << bytes;
+
+        const auto array = QJsonDocument::fromJson(bytes).array();
+
+        QStringList args;
+        for (const QJsonValue &value : array)
+            args << value.toString();
+
+        if (args.size() == 0)
+        {
+            WARN << "Received Invalid message expected json array of strings.";
+            return "Invalid message expected json array of strings.";
+        }
+
+        else if (args[0] == "show")
+        {
+            if (args.size() > 2)
+                return "'show' expects zero or one argument.";
+
+            else if (args.size() == 2)
+                App::instance()->show(args[1]);
+
+            else // if (args.size() == 1)
+                App::instance()->show();
+        }
+
+        else if (args[0] == "hide")
+
+            if (args.size() == 1)
+                App::instance()->hide();
+            else
+                return "'hide' expects no arguments.";
+
+        else if (args[0] == "toggle")
+
+            if (args.size() == 1)
+                App::instance()->toggle();
+            else
+                return "'toggle' expects no arguments.";
+
+        else if (args[0] == "settings")
+        {
+            if (args.size() > 2)
+                return "'settings' expects zero or one argument.";
+
+            else if (args.size() == 2)
+                App::instance()->showSettings(args[1]);
+
+            else // if (args.size() == 1)
+                App::instance()->showSettings();
+        }
+
+        else if (args[0] == "restart")
+
+            if (args.size() == 1)
+                App::instance()->restart();
+            else
+                return "'restart' expects no arguments.";
+
+        else if (args[0] == "quit")
+
+            if (args.size() == 1)
+                App::instance()->quit();
+            else
+                return "'quit' expects no arguments.";
+
+        else if (args[0] == "report")
+
+            if (args.size() == 1)
+                return report().join('\n').toLocal8Bit();
+            else
+                return "'report' expects no arguments.";
+
+        else if (args[0].startsWith("albert:"))
+
+            if (args.size() == 1)
+            {
+                QUrl url(args[0]);
+                if (url.authority().isEmpty())
+                    handleUrl(url);
+                else if (auto h = extension_registry.extension<UrlHandler>(url.authority()); h)
+                    h->handle(url);
+                else
+                    return "Handler not available: " + url.authority().toLocal8Bit();
+            }
+            else
+                return "Multiple URLs not supported.";
+
+        else
+        {
+            WARN << "Invalid RPC message" << bytes;
+        }
+
+        return {};
     };
 
-    rpc_server.setPRC(::move(rpc));
+    rpc_server.setMessageHandler(messageHandler);
+}
+
+void App::Private::handleUrl(const QUrl &)
+{
+
 }
 
 void App::Private::loadAnyFrontend()
@@ -373,7 +450,6 @@ void App::Private::notifyVersionChange()
     if (last_used_version != current_version)
         s->setValue(STATE_LAST_USED_VERSION, current_version);
 }
-
 
 App::App(const QStringList &additional_plugin_paths, bool load_enabled)
 {
@@ -533,6 +609,19 @@ int ALBERT_EXPORT run(int argc, char **argv)
         parser.setApplicationDescription(App::tr("Launch Albert or control a running instance."));
         parser.process(qapp);
 
+        // TODO If not running? Continue and use? Makes sense for albert show but not for URLs.
+        if (const auto args = parser.positionalArguments(); !args.isEmpty())
+            try {
+                QJsonDocument d(QJsonArray::fromStringList(args));
+                auto bytes = d.toJson(QJsonDocument::Compact);
+                bytes = RPCServer::sendMessage(bytes);
+                cout << bytes.data() << endl;
+                return EXIT_SUCCESS;
+            } catch (const exception &e) {
+                cout << e.what() << endl;
+                return EXIT_FAILURE;
+            }
+
         if (parser.isSet(opt_r)) {
             for (const auto &line : report())
                 std::cout << line.toStdString() << std::endl;
@@ -540,9 +629,6 @@ int ALBERT_EXPORT run(int argc, char **argv)
         } else
             for (const auto &line : report())
                 DEBG << line;
-
-        if (auto args = parser.positionalArguments(); !args.isEmpty())
-            return RPCServer::trySendMessage(args.join(" ")) ? 0 : 1;
 
         config = {
             .plugin_dirs = parser.value(opt_p).split(',', Qt::SkipEmptyParts),
