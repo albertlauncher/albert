@@ -4,11 +4,13 @@
 #include "frontend.h"
 #include "logging.h"
 #include "platform.h"
+#include "rpcserver.h"
 #include <Cocoa/Cocoa.h>
 #include <QGuiApplication>
 #include <QMessageBox>
 #include <QTimer>
 using namespace albert;
+using namespace std;
 
 void platform::initPlatform()
 {

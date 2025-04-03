@@ -36,7 +36,15 @@ set(QT_DEFAULT_MAJOR_VERSION 6)
 set(BUILD_SHARED_LIBS FALSE)
 set(QHOTKEY_INSTALL OFF CACHE BOOL "" FORCE)
 add_subdirectory(lib/QHotkey EXCLUDE_FROM_ALL)
-target_compile_options(qhotkey PRIVATE -Wno-gnu-zero-variadic-macro-arguments -Wno-unused-parameter -Wno-shadow)
+target_compile_options(qhotkey
+    PRIVATE
+        -Wno-gnu-zero-variadic-macro-arguments
+        -Wno-unused-parameter
+        -Wno-shadow
+        -Wno-elaborated-enum-base
+        -Wno-deprecated-declarations
+        -Wno-nullability-completeness
+)
 
 
 ### Lib  ######################################################################
@@ -76,6 +84,7 @@ set(LIB_PUBLIC_HEADER
     include/albert/telemetryprovider.h
     include/albert/timeit.h
     include/albert/triggerqueryhandler.h
+    include/albert/urlhandler.h
 )
 
 set(LIB_SRC
@@ -100,6 +109,7 @@ set(LIB_SRC
     src/app/telemetryprovider.cpp
     src/app/triggersqueryhandler.cpp
     src/app/triggersqueryhandler.h
+    src/app/urlhandler.cpp
 
     src/common/action.cpp
     src/common/extension.cpp
