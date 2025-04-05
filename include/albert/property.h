@@ -35,10 +35,10 @@
 ///
 #define ALBERT_PROPERTY_BASE(type, name, defaultValue, settings) \
     public: static type name##_default(){ return defaultValue; }; \
-    protected: void store_##name() { settings()->setValue(EXPAND_STRINGIZE(name), name()); } \
+    protected: void store_##name() { settings()->setValue(EXPAND_STRINGIZE(name), QVariant::fromValue(name())); } \
     protected: void restore_##name(const auto &s = nullptr) { \
-        if (s) set_##name##_(s->value(EXPAND_STRINGIZE(name), name##_default()).template value<type>()); \
-        else set_##name##_(settings()->value(EXPAND_STRINGIZE(name), name##_default()).template value<type>()); \
+        if (s) set_##name##_(s->value(EXPAND_STRINGIZE(name), QVariant::fromValue(name##_default())).template value<type>()); \
+        else set_##name##_(settings()->value(EXPAND_STRINGIZE(name), QVariant::fromValue(name##_default())).template value<type>()); \
     } \
     public: void reset_##name() { set_##name##_(name##_default()); settings()->remove(EXPAND_STRINGIZE(name));  } \
     Q_SIGNAL void name##_changed(type); \
@@ -145,6 +145,22 @@
 
 
 // -------------------------------------------------------------------------------------------------
+
+///
+/// @brief Convenience macro to connect QLineEdit to QString user properties
+///
+/// Specialization of ALBERT_PLUGIN_PROPERTY_CONNECT
+///
+/// @param object The object containing the property
+/// @param name The property name
+/// @param widget The widget pointer to connect to
+///
+#define ALBERT_PROPERTY_CONNECT_LINEEDIT(object, name, lineedit) \
+    lineedit->setText(object->name()); \
+    connect(object, &std::remove_pointer<decltype(object)>::type::name##_changed, \
+            lineedit, &QLineEdit::setText); \
+    connect(lineedit, &QLineEdit::editingFinished, \
+            object, [o=object, le=lineedit]{ o->set_##name(le->text()); });
 
 ///
 /// @brief Convenience macro to connect checkboxes to boolean user properties
