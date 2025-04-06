@@ -1,3 +1,19 @@
+v0.27.8 (2025-04-06)
+
+Hotfix release for the frontends.
+
+## Native plugins
+
+### widgetsboxmodel
+
+- Fix uninitialized trigger length causing crashes
+
+### widgetsboxmodel-qss
+
+- Adopt completion bahavior
+- Non hiding action support.
+- Themesqueryhandler behavior from wbm
+
 v0.27.7 (2025-04-02)
 
 Hotfix git submodule urls.
