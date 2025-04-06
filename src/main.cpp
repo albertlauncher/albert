@@ -15,4 +15,5 @@ int main(int argc, char **argv)
     } catch (...) {
         cout << "Unknown exception in main!" << endl;
     }
+    return EXIT_FAILURE;
 }
