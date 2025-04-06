@@ -1,52 +1,80 @@
 #!/usr/bin/env python3
-import os
 import re
 import subprocess
 import sys
 import argparse
 import datetime
-import tempfile
 from pathlib import Path
 from subprocess import run
 
 
 def create_changelog(args) -> str:
-    native_plugins_root = f"{args.root}/plugins"
-    python_plugins_root = f"{args.root}/plugins/python/plugins"
-    latest_tag = run(["git", "describe", "--tags", "--abbrev=0"], capture_output=True).stdout.decode().strip()
+
+    def indent_git_log(s: str):
+        indent_lines = []
+        lines = filter(None, s.split('\n'))  # skip empty
+        for line in lines:
+            if line.startswith("- "):
+                indent_lines.append(line)
+            else:
+                indent_lines.append('  ' + line)  # indent all other lines
+        return '\n'.join(indent_lines)
+
     out = []
+    latest_tag = run(["git", "describe", "--tags", "--abbrev=0"], capture_output=True).stdout.decode().strip()
 
-    placeholder = 'BOOOOM'
-    def process_git_log(s: str):
-        indented_output = []
-        for line in s.split('\n'):
-            if not line:  # skip empty
-                continue
-            if line.startswith(f'{placeholder} '): # replace placeholder with -
-                indented_output.append('- ' + line[7:])
-            else: # indent all other lines
-                indented_output.append('  ' + line)
 
-        return '\n'.join(indented_output)
+    # Albert log
 
-    out.append(f"[Key changes]")
-
-    log = run(["git", "log", f"--pretty=format:{placeholder} %B", f"{latest_tag}..HEAD"], capture_output=True).stdout.decode().strip()
-    log = process_git_log(log)
+    albert_root = Path(f"{args.root}")
+    log = run(["git", "log", "--pretty=format:%B", f"{latest_tag}..HEAD"], capture_output=True).stdout.decode().strip()
+    log = indent_git_log(log)
     if log:
         out.append(f"## Albert\n\n{log}\n\n\n## API\n\n- ````")
 
-    begin = run(["git", "ls-tree", latest_tag, native_plugins_root], capture_output=True).stdout.decode().strip().split()[2]
-    log = run(["git", "-C", native_plugins_root, "log", f"--pretty=format:{placeholder} %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
-    log = process_git_log(log)
-    if log:
-        out.append(f"## Plugins\n\n- ****\n\n{log}")
 
-    begin = run(["git", "-C", native_plugins_root, "ls-tree", begin, python_plugins_root], capture_output=True).stdout.decode().strip().split()[2]
-    log = run(["git", "-C", python_plugins_root, "log", f"--pretty=format:{placeholder} %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
-    log = process_git_log(log)
-    if log:
-        out.append(f"## Python\n\n- ****\n\n{log}")
+    # Native plugins log
+
+    native_plugins_logs = []
+    native_plugins_root = albert_root / "plugins"
+    for plugin in native_plugins_root.iterdir():
+
+        print(str(plugin).upper())
+
+        if not plugin.is_dir() or not (plugin / ".git").is_file():
+            print(f"Skipping non submodule {plugin}.")
+            continue
+        try:
+            begin = run(["git", "ls-tree", latest_tag, plugin], capture_output=True).stdout.decode().strip().split()[2]
+            log = run(["git", "-C", plugin, "log", "--pretty=format:- %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
+        except:
+            # Latest tag has no reference. Assuming initial commit. Add full log.
+            log = run(["git", "-C", plugin, "log", "--pretty=format:- %B",], capture_output=True).stdout.decode().strip()
+
+        if log:
+            native_plugins_logs.append(f"### {plugin.name}\n\n{indent_git_log(log)}")
+
+    if native_plugins_logs:
+        joined = "\n\n".join(native_plugins_logs)
+        out.append(f"## Native plugins\n\n{joined}")
+
+
+    # Python plugins log
+
+    python_plugins_logs = []
+    python_plugin_root = native_plugins_root / "python"
+    python_plugins_root = python_plugin_root / "plugins"
+
+    begin = run(["git", "ls-tree", latest_tag, python_plugin_root], capture_output=True).stdout.decode().strip().split()[2]
+    begin = run(["git", "-C", python_plugin_root, "ls-tree", begin, python_plugins_root], capture_output=True).stdout.decode().strip().split()[2]
+
+    log = run(["git", "-C", python_plugins_root, "log", "--pretty=format:- %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
+
+    log = indent_git_log(log)
+    if python_plugins_logs:
+        joined = "\n\n".join(native_plugins_logs)
+        out.append(f"## Python plugins\n\n{joined}")
+
 
     return '\n\n'.join(out)
 
