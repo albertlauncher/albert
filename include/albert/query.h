@@ -101,6 +101,9 @@ signals:
 
     /// Emitted when query processing started or finished.
     void activeChanged(bool active);
+
+    /// Emitted when a match item changed any of its fields
+    void dataChanged(uint i);
 };
 
 }
