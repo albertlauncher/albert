@@ -45,6 +45,10 @@ QueryExecution::~QueryExecution()
         QCoreApplication::processEvents();
         future_watcher_.waitForFinished();
     }
+
+    for (auto &result_item : matches_)
+        result_item.item->removeObserver(this);
+
     DEBG << QString("Query deleted. [#%1 '%2']").arg(query_id).arg(string());
 }
 
@@ -130,6 +134,16 @@ bool QueryExecution::activateMatch(uint i, uint a) { return activate(matches_, s
 
 bool QueryExecution::activateFallback(uint i, uint a) { return activate(fallbacks_, string(), i, a); }
 
+void QueryExecution::notify(const Item *item)
+{
+    // O(n) seems not okay here.
+    // however there will be stateful queries soon which only contain the top k items.
+    if (auto it = find_if(matches_.begin(), matches_.end(),
+                          [=](const ResultItem &ri){ return ri.item.get() == item; });
+        it != matches_.end())
+        emit dataChanged(distance(matches_.begin(), it));
+}
+
 void QueryExecution::add(const shared_ptr<Item> &item)
 {
     unique_lock lock(results_buffer_mutex_);
@@ -214,7 +228,10 @@ void QueryExecution::collectResults()
         matches_.reserve(matches_.size() + results_buffer_.size());
 
         for (auto &r : results_buffer_)
+        {
+            r.item->addObserver(this);
             matches_.emplace_back(r.extension, ::move(r.item));
+        }
 
         results_buffer_.clear();
 

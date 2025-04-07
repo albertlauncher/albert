@@ -9,7 +9,7 @@
 namespace albert { class Item; }
 class QueryEngine;
 
-class QueryExecution : public albert::Query
+class QueryExecution : public albert::Query, public albert::Item::Observer
 {
     Q_OBJECT  // needed for invokable methods
 
@@ -47,6 +47,8 @@ public:
     void add(std::shared_ptr<albert::Item> &&item) override;
     void add(const std::vector<std::shared_ptr<albert::Item>> &items) override;
     void add(std::vector<std::shared_ptr<albert::Item>> &&items) override;
+
+    void notify(const albert::Item*) override;
 
 protected:
 
