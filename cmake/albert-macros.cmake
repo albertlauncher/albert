@@ -62,83 +62,74 @@
 
 cmake_minimum_required(VERSION 3.19)  # string(JSON…
 
-macro(_albert_plugin_add_target)
+macro(albert_plugin_link_qt)
+    set(options REQUIRED)
+    set(one_value_args VERSION)
+    set(multi_value_args QT)
+    cmake_parse_arguments(ARG_QT "${options}" "${one_value_args}" "${multi_value_args}" ${ARGV})
 
-    if (NOT DEFINED ARG_SOURCES)
-
-        file(GLOB_RECURSE ARG_SOURCES
-            src/*.h
-            src/*.hpp
-            src/*.cpp
-            src/*.mm
-            src/*.ui
-            include/*.h
-            ${PROJECT_NAME}.qrc
-        )
-
-        if (NOT ARG_SOURCES)
-            message(FATAL_ERROR "No source files.")
-        endif()
-
-    else()
-
-        file(GLOB ARG_SOURCES ${ARG_SOURCES})
-
+    set(_qt_find_args COMPONENTS ${ARG_QT_UNPARSED_ARGUMENTS})
+    if(ARG_QT_REQUIRED)
+        list(APPEND _qt_find_args REQUIRED)
+    endif()
+    if(ARG_QT_VERSION)
+        list(PREPEND _qt_find_args ${ARG_QT_VERSION})
     endif()
 
+    find_package(Qt6 ${_qt_find_args})
 
-    # Instruct CMake to run moc automatically when needed.
-
-    add_library(${PROJECT_NAME} SHARED ${ARG_SOURCES})
-    add_library(albert::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
-
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-        CXX_STANDARD 20
-        CXX_STANDARD_REQUIRED ON
-        CXX_EXTENSIONS OFF
-        CXX_VISIBILITY_PRESET hidden
-        VISIBILITY_INLINES_HIDDEN ON
-        PREFIX ""  # no libfoo
-        AUTOMOC ON
-        AUTOUIC ON
-        AUTORCC ON
-    )
-
-    set_property(TARGET ${PROJECT_NAME}
-        APPEND PROPERTY AUTOMOC_MACRO_NAMES "ALBERT_PLUGIN")
-
-
-    target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_BINARY_DIR})
-    if (DEFINED ARG_INCLUDE)
-        target_include_directories(${PROJECT_NAME} ${ARG_INCLUDE})
-    endif()
-
-    if (DEFINED ARG_LINK)
-        target_link_libraries(${PROJECT_NAME} ${ARG_LINK})
-    endif()
-
-    if (DEFINED ARG_QT)
-        find_package(Qt6 6.2 REQUIRED COMPONENTS ${ARG_QT})
-        foreach(MODULE ${ARG_QT})
-            target_link_libraries(${PROJECT_NAME} PRIVATE "Qt6::${MODULE}")
-        endforeach()
-    endif()
-
-    target_link_libraries(${PROJECT_NAME} PRIVATE albert::libalbert)
-
-    #include(GenerateExportHeader)
-    #generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME "export.h")
-
-    install(
-        TARGETS ${PROJECT_NAME}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/albert
-    )
-
+    foreach(MODULE IN LISTS ARG_QT_UNPARSED_ARGUMENTS)
+        target_link_libraries(${PROJECT_NAME} PRIVATE "Qt6::${MODULE}")
+    endforeach()
 endmacro()
 
+#
+# albert_plugin_add_dbus_interface(<xml_interface_spec>)
+#
+# Adds a DBus interface to the plugin from an XML interface specification.
+#
+# The the DBUS_SRCS are generated in the PROJECT_BINARY_DIR.
+#
+macro(albert_plugin_dbus_interface)
+    set(options)
+    set(one_value_args XML INCLUDE)
+    set(multi_value_args)
+    cmake_parse_arguments(ARG_DBUS "${options}" "${one_value_args}" "${multi_value_args}" ${ARGV})
 
-macro(_albert_plugin_add_translations)
+    get_filename_component(ARG_DBUS_XML_BASENAME ${ARG_DBUS_XML} NAME_WE)
 
+    set_source_files_properties(${ARG_DBUS_XML} PROPERTIES NO_NAMESPACE ON)
+
+    if(ARG_DBUS_INCLUDE)
+        set_source_files_properties(${ARG_DBUS_XML} PROPERTIES INCLUDE ${ARG_DBUS_INCLUDE})
+    endif()
+
+    qt_add_dbus_interface(DBUS_SRCS ${ARG_DBUS_XML} ${ARG_DBUS_XML_BASENAME})
+
+    target_sources(${PROJECT_NAME} PRIVATE
+        ${ARG_DBUS_XML}
+        ${DBUS_SRCS}
+    )
+endmacro()
+
+macro(albert_plugin_sources)
+    file(GLOB SOURCES ${ARGV})
+    target_sources(${PROJECT_NAME} PRIVATE ${SOURCES})
+endmacro()
+
+macro(albert_plugin_link)
+    target_link_libraries(${PROJECT_NAME} ${ARGV})
+endmacro()
+
+macro(albert_plugin_include_directories)
+    target_include_directories(${PROJECT_NAME} ${ARGV})
+endmacro()
+
+macro(albert_plugin_compile_options)
+    target_compile_options(${PROJECT_NAME} ${ARGV})
+endmacro()
+
+macro(albert_plugin_i18n)
     find_package(Qt6 6.0 REQUIRED COMPONENTS
         Core  # required by LinguistTools
         LinguistTools
@@ -198,12 +189,9 @@ macro(_albert_plugin_add_translations)
 
         endif()
     endforeach()
-
 endmacro()
 
-
-macro(_albert_plugin_generate_metadata_json)
-
+macro(albert_plugin_generate_metadata)
     if (NOT DEFINED PROJECT_VERSION)
         message(FATAL_ERROR "Plugin version is undefined")
     endif()
@@ -231,22 +219,68 @@ macro(_albert_plugin_generate_metadata_json)
         "${PROJECT_SOURCE_DIR}/metadata.json"
         "${PROJECT_BINARY_DIR}/metadata.json"
     )
-
 endmacro()
 
-
+# This macro creates a plugin target with the given name.
 macro(albert_plugin)
-
     set(arg_bool )
     set(arg_vals )
     set(arg_list SOURCES I18N_SOURCES INCLUDE LINK QT)
     cmake_parse_arguments(ARG "${arg_bool}" "${arg_vals}" "${arg_list}" ${ARGV})
 
-    _albert_plugin_add_target()
+    if (NOT DEFINED ARG_SOURCES)
+        file(GLOB_RECURSE ARG_SOURCES
+            src/*.h
+            src/*.hpp
+            src/*.cpp
+            src/*.mm
+            src/*.ui
+            include/*.h
+            ${PROJECT_NAME}.qrc
+        )
+    else()
+        file(GLOB ARG_SOURCES ${ARG_SOURCES})
+    endif()
+
+    add_library(${PROJECT_NAME} SHARED ${ARG_SOURCES})
+    add_library(albert::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        CXX_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN ON
+        PREFIX ""  # no libfoo
+        AUTOMOC ON
+        AUTOUIC ON
+        AUTORCC ON
+    )
+
+    # Append. There are defaults.
+    set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY AUTOMOC_MACRO_NAMES "ALBERT_PLUGIN")
+
+    target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_BINARY_DIR})
+
+    albert_plugin_sources(README.md)  # if readme exists add to sources
+
+    if (DEFINED ARG_INCLUDE)
+        albert_plugin_include_directories(${ARG_INCLUDE})
+    endif()
+
+    if (DEFINED ARG_LINK)
+        albert_plugin_link(${ARG_LINK})
+    endif()
+    albert_plugin_link(PRIVATE albert::libalbert)
+
+    if (DEFINED ARG_QT)
+        albert_plugin_link_qt(${ARG_QT})
+    endif()
+
+    install(
+        TARGETS ${PROJECT_NAME}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/albert
+    )
+
     # after add_target, uses SOURCES
     # before metadata, defines TRANSLATIONS
-    _albert_plugin_add_translations()
-    _albert_plugin_generate_metadata_json()
-
+    albert_plugin_i18n()
+    albert_plugin_generate_metadata()
 endmacro()
-

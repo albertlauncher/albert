@@ -288,6 +288,8 @@ elseif(UNIX)
     endif()
 endif()
 
+target_compile_features(${TARGET_LIB} PUBLIC cxx_std_20)
+
 set_target_properties(${TARGET_LIB} PROPERTIES
     #INSTALL_RPATH "$ORIGIN"
     CXX_STANDARD 20
