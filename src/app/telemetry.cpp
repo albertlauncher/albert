@@ -1,9 +1,10 @@
-// Copyright (C) 2014-2024 Manuel Schneider
+// Copyright (C) 2014-2025 Manuel Schneider
 
+#include "albert.h"
 #include "app.h"
 #include "extensionregistry.h"
-#include "albert.h"
 #include "logging.h"
+#include "networkutil.h"
 #include "pluginregistry.h"
 #include "telemetry.h"
 #include "telemetryprovider.h"
@@ -67,7 +68,7 @@ void Telemetry::trySendReport()
     request.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
 
     DEBG << "trySendReport" << buildReportString();
-    auto *reply = network().put(request, buildReport().toJson(QJsonDocument::Compact));
+    auto *reply = util::network().put(request, buildReport().toJson(QJsonDocument::Compact));
 
     QObject::connect(reply, &QNetworkReply::finished, reply, [this, reply, now] {
         reply->deleteLater();

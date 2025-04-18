@@ -32,13 +32,6 @@ ALBERT_EXPORT void restart();
 ///
 ALBERT_EXPORT void quit();
 
-///
-/// The threadlocal, global QNetworkAccessManager.
-///
-/// \returns A reference to the QNetworkAccessManager object.
-///
-ALBERT_EXPORT QNetworkAccessManager &network();
-
 /// Open/Show the settings window (of plugin).
 /// \param plugin_id Id of the plugin whose settings should be displayed.
 ALBERT_EXPORT void showSettings(QString plugin_id = {});

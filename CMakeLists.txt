@@ -71,6 +71,7 @@ set(LIB_PUBLIC_HEADER
     include/albert/logging.h
     include/albert/matchconfig.h
     include/albert/matcher.h
+    include/albert/networkutil.h
     include/albert/notification.h
     include/albert/plugindependency.h
     include/albert/plugininstance.h
@@ -174,6 +175,7 @@ set(LIB_SRC
     src/util/levenshtein.cpp
     src/util/levenshtein.h
     src/util/matcher.cpp
+    src/util/networkutil.cpp
     src/util/notification.cpp
     src/util/standarditem.cpp
 
