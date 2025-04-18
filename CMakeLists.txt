@@ -73,6 +73,7 @@ set(LIB_PUBLIC_HEADER
     include/albert/matcher.h
     include/albert/networkutil.h
     include/albert/notification.h
+    include/albert/oauth.h
     include/albert/plugindependency.h
     include/albert/plugininstance.h
     include/albert/pluginloader.h
@@ -178,6 +179,7 @@ set(LIB_SRC
     src/util/matcher.cpp
     src/util/networkutil.cpp
     src/util/notification.cpp
+    src/util/oauth.cpp
     src/util/standarditem.cpp
     src/util/widgetsutil.cpp
 
