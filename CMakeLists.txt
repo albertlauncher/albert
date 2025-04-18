@@ -61,6 +61,7 @@ set(LIB_PUBLIC_HEADER
     include/albert/extensionplugin.h
     include/albert/extensionregistry.h
     include/albert/fallbackhandler.h
+    include/albert/filedownloader.h
     include/albert/frontend.h
     include/albert/globalqueryhandler.h
     include/albert/iconprovider.h
@@ -170,6 +171,7 @@ set(LIB_SRC
 
     src/util/albert.cpp
     src/util/extensionplugin.cpp
+    src/util/filedownloader.cpp
     src/util/iconprovider.cpp
     src/util/indexitem.cpp
     src/util/indexqueryhandler.cpp
