@@ -74,6 +74,7 @@ set(LIB_PUBLIC_HEADER
     include/albert/networkutil.h
     include/albert/notification.h
     include/albert/oauth.h
+    include/albert/oauthconfigwidget.h
     include/albert/plugindependency.h
     include/albert/plugininstance.h
     include/albert/pluginloader.h
@@ -180,6 +181,7 @@ set(LIB_SRC
     src/util/networkutil.cpp
     src/util/notification.cpp
     src/util/oauth.cpp
+    src/util/oauthconfigwidget.cpp
     src/util/standarditem.cpp
     src/util/widgetsutil.cpp
 
