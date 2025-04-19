@@ -86,6 +86,7 @@ set(LIB_PUBLIC_HEADER
     include/albert/timeit.h
     include/albert/triggerqueryhandler.h
     include/albert/urlhandler.h
+    include/albert/widgetsutil.h
 )
 
 set(LIB_SRC
@@ -178,6 +179,7 @@ set(LIB_SRC
     src/util/networkutil.cpp
     src/util/notification.cpp
     src/util/standarditem.cpp
+    src/util/widgetsutil.cpp
 
     src/config.h.in
 )
