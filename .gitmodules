@@ -54,9 +54,6 @@
 [submodule "plugins/menubar"]
 	path = plugins/menubar
 	url = https://github.com/albertlauncher/albert-plugin-menubar.git
-[submodule "plugins/mpris"]
-	path = plugins/mpris
-	url = https://github.com/albertlauncher/albert-plugin-mpris.git
 [submodule "plugins/path"]
 	path = plugins/path
 	url = https://github.com/albertlauncher/albert-plugin-path.git
