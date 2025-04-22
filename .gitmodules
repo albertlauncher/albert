@@ -69,6 +69,9 @@
 [submodule "plugins/snippets"]
 	path = plugins/snippets
 	url = https://github.com/albertlauncher/albert-plugin-snippets.git
+[submodule "plugins/spotify"]
+	path = plugins/spotify
+	url = https://github.com/albertlauncher/albert-plugin-spotify.git
 [submodule "plugins/ssh"]
 	path = plugins/ssh
 	url = https://github.com/albertlauncher/albert-plugin-ssh.git
