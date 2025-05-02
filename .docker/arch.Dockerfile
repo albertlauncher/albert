@@ -13,22 +13,24 @@ RUN pacman -Syu --verbose --noconfirm \
     qt6-declarative \
     qt6-scxml \
     qt6-svg \
-    qt6-tools
+    qt6-tools \
+    qtkeychain-qt6 \
+ && pacman -Scc --noconfirm
 
 COPY . /src
-WORKDIR /build
 
 # Build, test and install the main project
-RUN cmake -S /src -B . -DBUILD_TESTS=ON \
- && cmake --build . -j$(nproc) \
- && cmake --install . --prefix /usr \
- && ctest --output-on-failure
+RUN cmake -S /src -B /build -DBUILD_TESTS=ON \
+ && cmake --build /build -j$(nproc) \
+ && cmake --install /build --prefix /usr \
+ && ctest --test-dir /build --output-on-failure \
+ && rm -rf /build
 
 # Build and install a plugin separately
-RUN rm -rf * \
- && cmake /src/plugins/applications \
-    -DCMAKE_PREFIX_PATH=/usr/lib/$(gcc -dumpmachine)/cmake/ \
- && cmake --build . -j$(nproc) \
- && cmake --install . --prefix /usr
+RUN cmake -S /src/plugins/applications -B /build -DCMAKE_PREFIX_PATH=/usr/lib/$(gcc -dumpmachine)/cmake/ \
+ && cmake --build /build -j$(nproc) \
+ && cmake --install /build --prefix /usr \
+ && ctest --test-dir /build --output-on-failure \
+ && rm -rf /build
 
 ENTRYPOINT ["bash"]
