@@ -13,7 +13,8 @@ RUN pacman -Syu --verbose --noconfirm \
     qt6-declarative \
     qt6-scxml \
     qt6-svg \
-    qt6-tools
+    qt6-tools \
+    qtkeychain-qt6
 
 COPY . /src
 WORKDIR /build

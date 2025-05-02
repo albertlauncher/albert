@@ -14,6 +14,7 @@ RUN yum install -y \
     qt6-qtscxml-devel \
     qt6-qtsvg-devel \
     qt6-qttools-devel \
+    qtkeychain-qt6-devel \
     xml2
 
 COPY . /src

@@ -183,6 +183,7 @@ void SettingsWindow::init_tab_general_about()
     QStringList credits;
     credits << l->text();
     credits << "QHotkey - Felix Barz  (BSD-3-Clause)";
+    credits << "qtkeychain - Frank Osterfeld  (BSD-3-Clause)";
 
     l->setText(small_text_fmt.arg(credits.join("<br>")));
 

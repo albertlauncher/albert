@@ -279,6 +279,7 @@ find_package(Qt6 6.2 REQUIRED COMPONENTS # Ubuntu 22.04
     Widgets
     LinguistTools
 )
+find_package(Qt6Keychain REQUIRED)
 
 target_link_libraries(${TARGET_LIB}
     PRIVATE
@@ -289,6 +290,7 @@ target_link_libraries(${TARGET_LIB}
         Qt6::Network
         Qt6::Sql
         Qt6::Widgets
+        qt6keychain
 )
 
 if(APPLE)

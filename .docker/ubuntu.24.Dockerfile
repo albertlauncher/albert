@@ -25,6 +25,7 @@ RUN apt-get install --no-install-recommends -y \
     qt6-tools-dev \
     qt6-tools-dev-tools \
     qt6-l10n-tools \
+    qtkeychain-qt6-dev \
     xterm
 
 COPY . /src
