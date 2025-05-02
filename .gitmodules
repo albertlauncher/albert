@@ -48,6 +48,9 @@
 [submodule "plugins/files"]
 	path = plugins/files
 	url = https://github.com/albertlauncher/albert-plugin-files.git
+[submodule "plugins/github"]
+	path = plugins/github
+	url = https://github.com/albertlauncher/albert-plugin-github.git
 [submodule "plugins/hash"]
 	path = plugins/hash
 	url = https://github.com/albertlauncher/albert-plugin-hash.git
