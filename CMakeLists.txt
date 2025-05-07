@@ -56,19 +56,32 @@ set(LIB_PUBLIC_HEADER
     ${PROJECT_BINARY_DIR}/include/albert/export.h  # generated
     include/albert/action.h
     include/albert/albert.h
-    include/albert/backgroundexecutor.h
     include/albert/extension.h
     include/albert/extensionplugin.h
     include/albert/extensionregistry.h
     include/albert/fallbackhandler.h
-    include/albert/filedownloader.h
     include/albert/frontend.h
     include/albert/globalqueryhandler.h
+    include/albert/item.h
+    include/albert/plugindependency.h
+    include/albert/plugininstance.h
+    include/albert/pluginloader.h
+    include/albert/pluginmetadata.h
+    include/albert/pluginprovider.h
+    include/albert/query.h
+    include/albert/rankitem.h
+    include/albert/telemetryprovider.h
+    include/albert/triggerqueryhandler.h
+    include/albert/urlhandler.h
+
+    # util
+    include/albert/backgroundexecutor.h
+    include/albert/desktoputil.h
+    include/albert/filedownloader.h
     include/albert/iconprovider.h
     include/albert/indexitem.h
     include/albert/indexqueryhandler.h
     include/albert/inputhistory.h
-    include/albert/item.h
     include/albert/logging.h
     include/albert/matchconfig.h
     include/albert/matcher.h
@@ -76,19 +89,9 @@ set(LIB_PUBLIC_HEADER
     include/albert/notification.h
     include/albert/oauth.h
     include/albert/oauthconfigwidget.h
-    include/albert/plugindependency.h
-    include/albert/plugininstance.h
-    include/albert/pluginloader.h
-    include/albert/pluginmetadata.h
-    include/albert/pluginprovider.h
     include/albert/property.h
-    include/albert/query.h
-    include/albert/rankitem.h
     include/albert/standarditem.h
-    include/albert/telemetryprovider.h
     include/albert/timeit.h
-    include/albert/triggerqueryhandler.h
-    include/albert/urlhandler.h
     include/albert/widgetsutil.h
 )
 
@@ -122,7 +125,6 @@ set(LIB_SRC
     src/common/rankitem.cpp
 
     src/frontend/frontend.cpp
-    src/frontend/inputhistory.cpp
     src/frontend/session.cpp
     src/frontend/session.h
 
@@ -170,11 +172,13 @@ set(LIB_SRC
     src/settings/settingswindow.h
 
     src/util/albert.cpp
+    src/util/desktoputil.cpp
     src/util/extensionplugin.cpp
     src/util/filedownloader.cpp
     src/util/iconprovider.cpp
     src/util/indexitem.cpp
     src/util/indexqueryhandler.cpp
+    src/util/inputhistory.cpp
     src/util/itemindex.cpp
     src/util/itemindex.h
     src/util/levenshtein.cpp

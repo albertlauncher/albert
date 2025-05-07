@@ -5,7 +5,7 @@
 #include <albert/export.h>
 #include <QRegularExpression>
 
-namespace albert
+namespace albert::util
 {
 
 // Doxygen does not like raw strings

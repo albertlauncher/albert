@@ -7,7 +7,7 @@
 #include <albert/export.h>
 #include <memory>
 
-namespace albert
+namespace albert::util
 {
 
 ///

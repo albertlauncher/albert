@@ -10,6 +10,7 @@
 #include <albert/plugin/applications.h>
 using namespace albert;
 using namespace std;
+using namespace util;
 
 const QStringList AppQueryHandler::icon_urls{QStringLiteral(":app_icon")};
 

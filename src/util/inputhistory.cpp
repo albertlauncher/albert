@@ -9,6 +9,7 @@
 #include <QTextStream>
 using namespace albert;
 using namespace std;
+using namespace util;
 
 class InputHistory::Private
 {

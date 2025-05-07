@@ -1,14 +1,15 @@
 // Copyright (c) 2024 Manuel Schneider
 
+#include "inputhistory.h"
 #include "itemindex.h"
 #include "levenshtein.h"
-#include "inputhistory.h"
 #include "matcher.h"
 #include "standarditem.h"
 #include "test.h"
 #include "topologicalsort.hpp"
 #include <set>
 #include <unistd.h>
+using namespace albert::util;
 using namespace albert;
 using namespace std::chrono;
 using namespace std;

@@ -7,6 +7,8 @@
 #include <albert/logging.h>
 
 // Private API
+namespace albert::experimental
+{
 
 struct TimeIt
 {
@@ -25,3 +27,5 @@ struct TimeIt
         CRIT << QString(ccyan "%L1 µs | %2").arg(dur, 8).arg(name);
     }
 };
+
+}

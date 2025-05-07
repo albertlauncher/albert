@@ -7,7 +7,7 @@
 #include <albert/item.h>
 #include <memory>
 
-namespace albert
+namespace albert::util
 {
 
 /// An item utlized by ItemIndex

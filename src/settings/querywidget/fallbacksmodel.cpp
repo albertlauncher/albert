@@ -11,6 +11,7 @@
 #include <QMimeData>
 using namespace albert;
 using namespace std;
+using namespace util;
 
 namespace {
 enum class Column {

@@ -8,6 +8,7 @@
 #include "triggersqueryhandler.h"
 using namespace albert;
 using namespace std;
+using namespace util;
 
 const QStringList TriggersQueryHandler::icon_urls{QStringLiteral(":app_icon")};
 

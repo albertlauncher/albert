@@ -5,7 +5,7 @@
 #include <QObject>
 #include <albert/export.h>
 
-namespace albert
+namespace albert::util
 {
 
 ///

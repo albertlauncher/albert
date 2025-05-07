@@ -22,7 +22,6 @@ public:
 private:
 
     void runQuery(const QString &query);
-    void displayQuery();
 
     QueryEngine &engine_;
     albert::Frontend &frontend_;

@@ -15,6 +15,7 @@
 #endif
 using namespace albert;
 using namespace std;
+using namespace util;
 
 static const QString &explicit_qrc_scheme = QStringLiteral("qrc:");
 static const QString &file_scheme = QStringLiteral("file:");
@@ -47,14 +48,14 @@ static QIcon standardIconFromName(const QString &enumerator_name)
 }
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
-QString albert::xdgIconLookup(const QString &name)
+QString util::xdgIconLookup(const QString &name)
 {
     // https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
     return XDG::IconLookup::iconPath(name);
 }
 #endif
 
-QIcon albert::fileIcon(const QString &path)
+QIcon util::fileIcon(const QString &path)
 {
     // https://doc.qt.io/qt-6/qfileiconprovider.html
     static QFileIconProvider qfip;
@@ -84,7 +85,7 @@ static void drawGenericIcon(QPainter *p, const QRect &rect, const QColor &bgcolo
     }
 }
 
-QPixmap albert::genericPixmap(int size, const QColor &bgcolor, const QColor &fgcolor, const QString &text, float scalar)
+QPixmap util::genericPixmap(int size, const QColor &bgcolor, const QColor &fgcolor, const QString &text, float scalar)
 {
     QPixmap pm(size, size);
     pm.fill(Qt::transparent);
@@ -131,7 +132,7 @@ struct GenericIconEngine : public QIconEngine
 
 };
 
-QPixmap albert::pixmapFromUrl(const QString &url, const QSize &requestedSize)
+QPixmap util::pixmapFromUrl(const QString &url, const QSize &requestedSize)
 {
     if (url.startsWith(implicit_qrc_scheme))
         return pixmapFromFilePath(url, requestedSize);  // intended, colon has to remain
@@ -191,7 +192,7 @@ QPixmap albert::pixmapFromUrl(const QString &url, const QSize &requestedSize)
     return pixmapFromFilePath(url, requestedSize);
 }
 
-QPixmap albert::pixmapFromUrls(const QStringList &urls, const QSize &requestedSize)
+QPixmap util::pixmapFromUrls(const QStringList &urls, const QSize &requestedSize)
 {
     for (const auto &url : urls)
         if (auto pm = pixmapFromUrl(url, requestedSize); !pm.isNull())
@@ -199,7 +200,7 @@ QPixmap albert::pixmapFromUrls(const QStringList &urls, const QSize &requestedSi
     return {};
 }
 
-QIcon albert::iconFromUrl(const QString &url)
+QIcon util::iconFromUrl(const QString &url)
 {
     if (url.startsWith(implicit_qrc_scheme))
         return QIcon(url); // intended, colon has to remain
@@ -234,7 +235,7 @@ QIcon albert::iconFromUrl(const QString &url)
     else return {};
 }
 
-QIcon albert::iconFromUrls(const QStringList &urls)
+QIcon util::iconFromUrls(const QStringList &urls)
 {
     for (const auto &url : urls)
         if (auto icon = iconFromUrl(url); !icon.isNull())
@@ -242,7 +243,7 @@ QIcon albert::iconFromUrls(const QStringList &urls)
     return {};
 }
 
-QIcon genericIcon(const QColor &bgcolor, const QColor &fgcolor, const QString &text, float scalar)
+QIcon util::genericIcon(const QColor &bgcolor, const QColor &fgcolor, const QString &text, float scalar)
 {
     return QIcon(new GenericIconEngine(bgcolor, fgcolor, text, scalar));
 }

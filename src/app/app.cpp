@@ -47,6 +47,7 @@
 Q_LOGGING_CATEGORY(AlbertLoggingCategory, "albert")
 using namespace albert;
 using namespace std;
+using namespace util;
 
 
 namespace {
@@ -203,7 +204,7 @@ void App::Private::initTrayIcon()
 
     // icon
 
-    auto icon = albert::iconFromUrls({"xdg:albert-tray", "xdg:albert", ":app_tray_icon"});
+    auto icon = iconFromUrls({"xdg:albert-tray", "xdg:albert", ":app_tray_icon"});
     icon.setIsMask(true);
 
     tray_icon = make_unique<QSystemTrayIcon>();

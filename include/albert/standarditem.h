@@ -5,7 +5,7 @@
 #include <albert/item.h>
 #include <vector>
 
-namespace albert
+namespace albert::util
 {
 
 /// General purpose value type Item implememtation
