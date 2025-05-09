@@ -24,6 +24,8 @@ namespace albert::util
 /// - `qsp:<pixmap enumerator>` Get an icon from [QStyle::StandardPixmap] enum.
 /// - `xdg:<icon name>` Uses xdgIconLookup(const QString &name);
 /// - `gen:<>` Uses genericPixmapFactory. See also [QColor::fromString].
+/// - `mask:?src=&radius=` Masks a given icon url.
+/// - `comp:?src1=<>&src2=<>` Composes two given icons.
 ///
 /// Examples
 ///

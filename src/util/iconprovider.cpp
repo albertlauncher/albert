@@ -24,6 +24,8 @@ static const QString &implicit_qrc_scheme = QStringLiteral(":");
 static const QString &qfileiconprovider_scheme = QStringLiteral("qfip:");
 static const QString &qstandardpixmap_scheme = QStringLiteral("qsp:");
 static const QString &xdg_icon_lookup_scheme = QStringLiteral("xdg:");
+static const QString &compose_lookup_scheme = QStringLiteral("comp:?");
+static const QString &mask_lookup_scheme = QStringLiteral("mask:?");
 
 /// Returns a pixmap from a file path.
 /// The size of the pixmap may be smaller but never larger than the requested size.
@@ -186,6 +188,53 @@ QPixmap util::pixmapFromUrl(const QString &url, const QSize &requestedSize)
             scalar = 1.;
 
         return genericPixmap(requestedSize.height(), bgcolor, fgcolor, text, scalar);
+    }
+
+    else if (url.startsWith(mask_lookup_scheme))
+    {
+        QUrlQuery urlquery(url.mid(mask_lookup_scheme.size()));
+        const auto radius_divisor = urlquery.queryItemValue(QStringLiteral("radius")).toInt();
+        const auto src_url = urlquery.queryItemValue(QStringLiteral("src")).toLocal8Bit();
+        const auto src_pm = pixmapFromUrl(QUrl::fromPercentEncoding(src_url), requestedSize);
+        const auto src_img = src_pm.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
+
+        QPixmap pm(requestedSize);
+        pm.fill(Qt::transparent);
+
+        QPainter p(&pm);
+        p.setRenderHint(QPainter::Antialiasing);
+
+        const auto radius = requestedSize.width() / radius_divisor;
+
+        p.setPen(Qt::NoPen);
+        p.setBrush(Qt::black);
+        p.drawRoundedRect(pm.rect(), radius, radius);
+
+        p.setCompositionMode(QPainter::CompositionMode_SourceIn);
+        p.drawImage(pm.rect(), src_img);
+
+        return pm;
+    }
+
+    else if (url.startsWith(compose_lookup_scheme))
+    {
+        QUrlQuery urlquery(url.mid(compose_lookup_scheme.size()));
+
+        const auto src1 = pixmapFromUrl(QUrl::fromPercentEncoding(
+            urlquery.queryItemValue(QStringLiteral("src1")).toLocal8Bit()), requestedSize * 0.7);
+
+        const auto src2 = pixmapFromUrl(QUrl::fromPercentEncoding(
+            urlquery.queryItemValue(QStringLiteral("src2")).toLocal8Bit()), requestedSize * 0.7);
+
+        QPixmap pm(requestedSize);
+        pm.fill(Qt::transparent);
+        QPainter p(&pm);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.drawPixmap(0, 0, src1);
+        p.drawPixmap(static_cast<int>(pm.width() - src2.width()),
+                     static_cast<int>(pm.height() - src2.height()),
+                     src2);
+        return pm;
     }
 
     // Implicitly check for file existence
