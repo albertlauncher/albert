@@ -34,13 +34,26 @@ Telemetry::Telemetry(albert::ExtensionRegistry &registry):
     else
     {
         auto text = tr(
-            "Telemetry helps improving the user experience by collecing anonymous data. "
-            "You can review the telemetry data to be sent in the settings. Do you want "
-            "to enable telemetry? This configuration can be changed at any time in the settings.");
+            "Albert collects data to improve the user experience. "
+            "Do you want to help to improve Albert by sending optional telemetry data?"
+        );
+
+        auto informative_text = tr(
+            "No tracking, profiling, sharing or commercial use. "
+            "The transmitted data is non-personal. "
+            "You can change this configuration anytime in the settings. "
+            "See the <a href='https://albertlauncher.github.io/privacy/'>privacy notice</a> for details."
+        );
 
         using MB = QMessageBox;
-        auto enable = MB::question(0, qApp->applicationDisplayName(), text,
-                                   MB::Yes|MB::No, MB::Yes) == MB::Yes;
+        MB mb;
+        mb.setIcon(MB::Question);
+        mb.setWindowTitle(qApp->applicationDisplayName());
+        mb.setText(text);
+        mb.setInformativeText(informative_text);
+        mb.setStandardButtons(MB::Yes|MB::No);
+        mb.setDefaultButton(MB::Yes);
+        const auto enable = MB::Yes == mb.exec();
         enabled_ = enable;
         settings()->setValue(CFG_TELEMETRY_ENABLED, enable);
     }
