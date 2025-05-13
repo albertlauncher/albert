@@ -19,20 +19,20 @@ QueryWidget::QueryWidget(QueryEngine &qe)
     QObject::connect(ui.checkBox_prioritizePerfectMatch, &QCheckBox::toggled, this,
                      [](bool val){ UsageHistory::setPrioritizePerfectMatch(val); });
 
-    for (auto *tv : {ui.tableView_queryHandlers, ui.tableView_fallbackOrder})
-    {
-        tv->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-        tv->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-        tv->horizontalHeader()->setSectionsClickable(false);
-    }
-
     ui.tableView_queryHandlers->setModel(new QueryHandlerModel(qe, this)); // Takes ownership
     ui.tableView_fallbackOrder->setModel(fallbacks_model_ = new FallbacksModel(qe, this)); // Takes ownership
+
+    for (auto *tv : {ui.tableView_queryHandlers, ui.tableView_fallbackOrder})
+    {
+        tv->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);  // Requires a model!
+        tv->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);  // Requires a model!
+        tv->horizontalHeader()->setSectionsClickable(false);
+    }
 
     // Fix for some styles on linux setting a minimum secion size
     ui.tableView_queryHandlers->horizontalHeader()->setMinimumSectionSize(0);
 
-    // Size adjust does not work properly on macos do it manually
+    // Width adjust
     auto updateWidth = [&]{
         int width = 0;
         for (int c = 0; c < ui.tableView_queryHandlers->model()->columnCount(); ++c)
