@@ -12,6 +12,8 @@
 #include <QKeyEvent>
 using namespace std;
 
+const auto privacy_notice_url = "https://albertlauncher.github.io/privacy/";
+
 
 class QHotKeyDialog : public QDialog
 {
@@ -160,6 +162,9 @@ void SettingsWindow::init_tab_general_telemetry()
 
 void SettingsWindow::init_tab_general_about()
 {
+    ui.label_telemetry->setText(QString("[%1](%2)")
+                                    .arg(ui.label_telemetry->text(), privacy_notice_url));
+
     ui.label_app->setText(QString("<b>%1 v%2</b>")
                           .arg(qApp->applicationDisplayName(),
                                qApp->applicationVersion()));
