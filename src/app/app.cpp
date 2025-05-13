@@ -425,7 +425,7 @@ void App::Private::notifyVersionChange()
 
         App::instance()->showSettings();
     }
-    else if (current_version.section('.', 1, 1) != last_used_version.section('.', 1, 1) )  // FIXME in first major version
+    else if (current_version.section('.', 0, 0) != last_used_version.section('.', 0, 0) )  // FIXME in first major version
     {
         auto text = tr("You are now using Albert %1. The major version changed. "
                        "Some parts of the API might have changed. "
