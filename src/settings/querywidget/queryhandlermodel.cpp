@@ -141,7 +141,6 @@ bool QueryHandlerModel::setData(const QModelIndex &idx, const QVariant &value, i
             else
             {
                 engine.setTrigger(h->id(), value.toString());
-                emit dataChanged(index(idx.row(), idx.column()+1), idx, {Qt::DisplayRole});
                 return true;
             }
         }
