@@ -55,6 +55,7 @@ protected:
     void runFallbackHandlers();
     void invokeCollectResults();
     Q_INVOKABLE void collectResults();
+    bool activate(const std::vector<albert::ResultItem>&, const QString &q, uint iidx, uint aidx);
 
     QueryEngine *query_engine_;
     static uint query_count;
