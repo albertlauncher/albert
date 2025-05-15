@@ -4,9 +4,11 @@
 #include "queryengine.h"
 #include "queryexecution.h"
 #include "usagedatabase.h"
-#include <QtConcurrentRun>
-#include <QtConcurrentMap>
 #include <QCoreApplication>
+#include <QtConcurrentMap>
+#include <QtConcurrentRun>
+#include <albert/messagebox.h>
+using namespace albert::util;
 using namespace albert;
 using namespace std::chrono;
 using namespace std;
@@ -99,7 +101,7 @@ const std::vector<ResultItem> &QueryExecution::matches() { return matches_; }
 
 const std::vector<ResultItem> &QueryExecution::fallbacks() { return fallbacks_; }
 
-static bool activate(const vector<ResultItem> &result_items, const QString &q, uint iidx, uint aidx)
+bool QueryExecution::activate(const vector<ResultItem> &result_items, const QString &q, uint iidx, uint aidx)
 {
     try {
         auto &[e, i] = result_items.at(iidx);
@@ -118,7 +120,19 @@ static bool activate(const vector<ResultItem> &result_items, const QString &q, u
             // - QTimer::singleShot(0, this, [a]{ a.function(); });
             //   Disconnects on query deletion.
 
-            a.function();  // May delete the query, due to hide()
+            try {
+                a.function();  // May delete the query, due to hide()
+            } catch (const exception &exc) {
+                const auto msg = QT_TR_NOOP("Exception in action");
+                const auto fmt = QString("%1:\n\n%2 → %3 → %4\n\n%5");
+                CRIT << fmt.arg(msg, e.id(), i->id(), a.id, exc.what());
+                critical(fmt.arg(QueryExecution::tr(msg), e.name(), i->text(), a.text, exc.what()));
+            } catch (...) {
+                const auto msg = QT_TR_NOOP("Unknown exception in action");
+                const auto fmt = QString("%1:\n\n%2 → %3 → %4");
+                CRIT << fmt.arg(msg, e.id(), i->id(), a.id);
+                critical(fmt.arg(QueryExecution::tr(msg), e.name(), i->text(), a.text));
+            }
             return a.hide_on_activation;
         }
         catch (const out_of_range&) {
