@@ -34,7 +34,6 @@ public:
     QString synopsis() const override final;
     const bool &isValid() const override final;
     bool isActive() const override final;
-    bool isFinished() const override final;
     bool isTriggered() const override final;
 
     const std::vector<albert::ResultItem> &matches() override final;
