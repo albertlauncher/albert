@@ -67,6 +67,7 @@ protected:
     const std::vector<albert::FallbackHandler*> fallback_handlers_;
 
     bool valid_ = true;
+    bool active_ = false;
 
     QFutureWatcher<void> future_watcher_;
 

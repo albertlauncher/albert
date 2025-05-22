@@ -30,11 +30,10 @@ QueryExecution::QueryExecution(QueryEngine *e,
     fallback_handlers_(::move(fallback_handlers)),
     valid_(true)
 {
-    connect(&future_watcher_, &decltype(future_watcher_)::started,
-            this, [this](){ emit activeChanged(true); });
-
-    connect(&future_watcher_, &decltype(future_watcher_)::finished,
-            this, [this](){ emit activeChanged(false); });
+    connect(&future_watcher_, &decltype(future_watcher_)::finished, this, [this]{
+        active_ = false;
+        emit activeChanged(active_);
+    });
 }
 
 QueryExecution::~QueryExecution()
@@ -56,9 +55,10 @@ QueryExecution::~QueryExecution()
 
 void QueryExecution::run()
 {
+    runFallbackHandlers();
+
     future_watcher_.setFuture(QtConcurrent::run([this](){
         try {
-            runFallbackHandlers();
             auto tp = system_clock::now();
             query_handler_->handleTriggerQuery(*this);
             qCDebug(timeCat,).noquote()
@@ -75,6 +75,9 @@ void QueryExecution::run()
             CRIT << "Unexpected exception in QueryExecution::run()!";
         }
     }));
+
+    active_ = true;
+    emit activeChanged(active_);
 }
 
 void QueryExecution::cancel()
@@ -91,7 +94,7 @@ QString QueryExecution::synopsis() const { return query_handler_->synopsis(strin
 
 const bool &QueryExecution::isValid() const { return valid_; }
 
-bool QueryExecution::isActive() const { return future_watcher_.isRunning(); }
+bool QueryExecution::isActive() const { return active_; }
 
 bool QueryExecution::isTriggered() const { return !trigger().isEmpty(); }
 
