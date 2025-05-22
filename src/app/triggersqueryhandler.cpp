@@ -1,14 +1,13 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #include "app.h"
-#include "frontend.h"
 #include "matcher.h"
 #include "queryengine.h"
 #include "standarditem.h"
 #include "triggersqueryhandler.h"
+using namespace albert::util;
 using namespace albert;
 using namespace std;
-using namespace util;
 
 const QStringList TriggersQueryHandler::icon_urls{QStringLiteral(":app_icon")};
 
@@ -26,17 +25,16 @@ QString TriggersQueryHandler::description() const
 
 shared_ptr<Item> TriggersQueryHandler::makeItem(const QString &trigger, Extension *handler) const
 {
-    auto desc = QString("%1 - %2").arg(handler->name(), handler->description());
     return StandardItem::make(
         trigger,
         QString(trigger).replace(" ", "•"),
-        desc,
+        QString("%1 · %2").arg(handler->name(), handler->description()),
         trigger,
         {QStringLiteral("gen:?&text=🚀")},
         {{
             "set",
             tr("Set input text"),
-            [trigger]{ App::instance()->frontend()->setInput(trigger); },
+            [trigger]{ App::instance()->show(trigger); },
             false
         }}
     );
@@ -44,35 +42,24 @@ shared_ptr<Item> TriggersQueryHandler::makeItem(const QString &trigger, Extensio
 
 void TriggersQueryHandler::handleTriggerQuery(Query &q)
 {
-    // Match tigger, id and name.
+    auto ris = handleGlobalQuery(q);
+    applyUsageScore(&ris);
+    ranges::sort(ris, greater());
 
-    vector<RankItem> RI;
-    for (const auto &[trigger, handler] : query_engine_.activeTriggerHandlers())
-        if (auto m = Matcher(q.string()).match(trigger, handler->name(), handler->id()); m)
-            RI.emplace_back(makeItem(trigger, handler), m);
+    vector<shared_ptr<Item>> is;
+    is.reserve(ris.size());
+    for (auto &ri : ris)
+        is.emplace_back(::move(ri.item));
 
-    applyUsageScore(&RI);
-
-    ranges::sort(RI, greater());
-
-    vector<shared_ptr<Item>> I;
-    I.reserve(RI.size());
-    for (auto &ri : RI)
-        I.emplace_back(::move(ri.item));
-
-    q.add(I);
+    q.add(is);
 }
 
 vector<RankItem> TriggersQueryHandler::handleGlobalQuery(const Query &q)
 {
-    // Strictly match trigger
-
-    vector<RankItem> rank_items;
-
-    Matcher matcher(q.string(), { .ignore_case=false, .ignore_word_order=false });
-    for (const auto &[trigger, handler] : query_engine_.activeTriggerHandlers())
-        if (auto m = matcher.match(trigger); m)
-            rank_items.emplace_back(makeItem(trigger, handler), m);
-
-    return rank_items;
+    Matcher matcher(q);
+    vector<RankItem> r;
+    for (const auto &[t, h] : query_engine_.activeTriggerHandlers())
+        if (const auto m = Matcher(q.string()).match(t, h->name(), h->id()); m)
+            r.emplace_back(makeItem(t, h), m);
+    return r;
 }
