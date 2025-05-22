@@ -42,9 +42,6 @@ public:
     /// True if the query is currently being processed.
     Q_INVOKABLE virtual bool isActive() const = 0;
 
-    /// True if the query thread stopped.
-    Q_INVOKABLE virtual bool isFinished() const = 0;
-
     /// True if query has not been cancelled.
     Q_INVOKABLE virtual const bool &isValid() const = 0;
 

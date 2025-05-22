@@ -41,7 +41,7 @@ QueryExecution::~QueryExecution()
 {
     // Wait in derived class otherwise query is partially destroyed while handlers are still running
     cancel();
-    if (!isFinished()) {
+    if (future_watcher_.isRunning()) {
         WARN << QString("Busy wait on query: #%1").arg(query_id);
         // there may be some queued collectResults calls
         QCoreApplication::processEvents();
@@ -92,8 +92,6 @@ QString QueryExecution::synopsis() const { return query_handler_->synopsis(strin
 const bool &QueryExecution::isValid() const { return valid_; }
 
 bool QueryExecution::isActive() const { return future_watcher_.isRunning(); }
-
-bool QueryExecution::isFinished() const { return future_watcher_.isFinished(); }
 
 bool QueryExecution::isTriggered() const { return !trigger().isEmpty(); }
 
