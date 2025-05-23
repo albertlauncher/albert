@@ -100,10 +100,12 @@ static bool checkPasteSupport()
 #if defined Q_OS_MACOS
     return !QStandardPaths::findExecutable("osascript").isEmpty();
 #elif defined(Q_OS_UNIX)
-    bool have_paste_support = !QStandardPaths::findExecutable("xdotool").isEmpty();
+    bool xdotool = !QStandardPaths::findExecutable("xdotool").isEmpty();
+    bool ydotool = !QStandardPaths::findExecutable("ydotool").isEmpty();
+    bool have_paste_support = xdotool || ydotool;
     if(!have_paste_support)
-        WARN << "xdotool is not available. No paste support.";
-    else if(qgetenv("XDG_SESSION_TYPE") != "x11")
+        WARN << "neither xdotool or ydotool are available. No paste support.";
+    else if(qgetenv("XDG_SESSION_TYPE") != "x11" && !ydotool)
         WARN << "xdotool is available but but session type is not x11. "
                 "Paste will work for X11 windows only.";
     return have_paste_support;
@@ -137,7 +139,14 @@ void albert::setClipboardTextAndPaste(const QString &text)
 #elif defined(Q_OS_UNIX)
     QApplication::processEvents(); // ??
     auto *proc = new QProcess;
-    proc->start("sh" , {"-c", "sleep 0.1 && xdotool key ctrl+v"});
+    bool xdotool = !QStandardPaths::findExecutable("xdotool").isEmpty();
+    bool ydotool = !QStandardPaths::findExecutable("ydotool").isEmpty();
+    if (ydotool) {
+        proc->start("sh" , {"-c", "sleep 0.1 && ydotool key 29:1 47:1 47:0 29:0"}); // These keycodes stand for ctrl v
+    } else if (xdotool) {
+        proc->start("sh" , {"-c", "sleep 0.1 && xdotool key ctrl+v"});
+    }
+
     QObject::connect(proc, &QProcess::finished, proc, [proc](int exitCode, QProcess::ExitStatus exitStatus){
         if (exitStatus != QProcess::ExitStatus::NormalExit || exitCode != EXIT_SUCCESS)
         {
