@@ -101,16 +101,17 @@ static bool checkPasteSupport()
     return !QStandardPaths::findExecutable("osascript").isEmpty();
 #elif defined(Q_OS_UNIX)
     bool xdotool = !QStandardPaths::findExecutable("xdotool").isEmpty();
-    bool ydotool = !QStandardPaths::findExecutable("ydotool").isEmpty();
     bool wtype = qApp->platformName() == "wayland" && !QStandardPaths::findExecutable("wtype").isEmpty();
-    bool have_paste_support = xdotool || wtype || !( xdotool || wtype ) && ydotool;
+    bool wlrctl = qApp->platformName() == "wayland" && !QStandardPaths::findExecutable("wlrctl").isEmpty();
+    bool ydotool = !QStandardPaths::findExecutable("ydotool").isEmpty();
+    bool have_paste_support = xdotool || wtype || wlrctl || ydotool;
     if(!have_paste_support)
         WARN << "neither xdotool or wtype are available. No paste support.";
     else if(qgetenv("XDG_SESSION_TYPE") != "x11" && !ydotool && !wtype)
         WARN << "xdotool is available but but session type is not x11. "
                 "Unless your compositor supports libei, "
                 "Paste will work for X11 windows only. "
-                "Please install ydotool or wtype.";
+                "Please install ydotool, wlrctl or wtype.";
     return have_paste_support;
 #endif
 }
@@ -145,12 +146,15 @@ void albert::setClipboardTextAndPaste(const QString &text)
     bool xdotool = !QStandardPaths::findExecutable("xdotool").isEmpty();
     bool ydotool = !QStandardPaths::findExecutable("ydotool").isEmpty();
     bool wtype = qApp->platformName() == "wayland" && !QStandardPaths::findExecutable("wtype").isEmpty();
-    if (ydotool) {
+    bool wlrctl = qApp->platformName() == "wayland" && !QStandardPaths::findExecutable("wlrctl").isEmpty();
+    if (xdotool) {
         proc->start("sh" , {"-c", "sleep 0.1 && ydotool key 29:1 47:1 47:0 29:0"}); // These keycodes stand for ctrl v
-    } else if (xdotool) {
+    } else if (wlrctl) {
         proc->start("sh" , {"-c", "sleep 0.1 && xdotool key ctrl+v"});
-    } else if(wtype) {
+    } else if (wtype) {
         proc->start("sh" , {"-c", "sleep 0.1 && wtype -M ctrl v"});
+    } else if (ydotool) { // prefer platform-specific first
+        proc->start("sh" , {"-c", "sleep 0.1 && wlrctl keyboard type v modifiers CTRL"});
     }
 
     QObject::connect(proc, &QProcess::finished, proc, [proc](int exitCode, QProcess::ExitStatus exitStatus){
