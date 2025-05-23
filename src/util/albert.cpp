@@ -102,12 +102,15 @@ static bool checkPasteSupport()
 #elif defined(Q_OS_UNIX)
     bool xdotool = !QStandardPaths::findExecutable("xdotool").isEmpty();
     bool ydotool = !QStandardPaths::findExecutable("ydotool").isEmpty();
-    bool have_paste_support = xdotool || ydotool;
+    bool wtype = qApp->platformName() == "wayland" && !QStandardPaths::findExecutable("wtype").isEmpty();
+    bool have_paste_support = xdotool || wtype || !( xdotool || wtype ) && ydotool;
     if(!have_paste_support)
-        WARN << "neither xdotool or ydotool are available. No paste support.";
-    else if(qgetenv("XDG_SESSION_TYPE") != "x11" && !ydotool)
+        WARN << "neither xdotool or wtype are available. No paste support.";
+    else if(qgetenv("XDG_SESSION_TYPE") != "x11" && !ydotool && !wtype)
         WARN << "xdotool is available but but session type is not x11. "
-                "Paste will work for X11 windows only.";
+                "Unless your compositor supports libei, "
+                "Paste will work for X11 windows only. "
+                "Please install ydotool or wtype.";
     return have_paste_support;
 #endif
 }
@@ -141,10 +144,13 @@ void albert::setClipboardTextAndPaste(const QString &text)
     auto *proc = new QProcess;
     bool xdotool = !QStandardPaths::findExecutable("xdotool").isEmpty();
     bool ydotool = !QStandardPaths::findExecutable("ydotool").isEmpty();
+    bool wtype = qApp->platformName() == "wayland" && !QStandardPaths::findExecutable("wtype").isEmpty();
     if (ydotool) {
         proc->start("sh" , {"-c", "sleep 0.1 && ydotool key 29:1 47:1 47:0 29:0"}); // These keycodes stand for ctrl v
     } else if (xdotool) {
         proc->start("sh" , {"-c", "sleep 0.1 && xdotool key ctrl+v"});
+    } else if(wtype) {
+        proc->start("sh" , {"-c", "sleep 0.1 && wtype -M ctrl v"});
     }
 
     QObject::connect(proc, &QProcess::finished, proc, [proc](int exitCode, QProcess::ExitStatus exitStatus){
