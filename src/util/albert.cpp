@@ -147,14 +147,14 @@ void albert::setClipboardTextAndPaste(const QString &text)
     bool ydotool = !QStandardPaths::findExecutable("ydotool").isEmpty();
     bool wtype = qApp->platformName() == "wayland" && !QStandardPaths::findExecutable("wtype").isEmpty();
     bool wlrctl = qApp->platformName() == "wayland" && !QStandardPaths::findExecutable("wlrctl").isEmpty();
-    if (xdotool) {
-        proc->start("sh" , {"-c", "sleep 0.1 && ydotool key 29:1 47:1 47:0 29:0"}); // These keycodes stand for ctrl v
-    } else if (wlrctl) {
-        proc->start("sh" , {"-c", "sleep 0.1 && xdotool key ctrl+v"});
-    } else if (wtype) {
+    if (wtype) {
         proc->start("sh" , {"-c", "sleep 0.1 && wtype -M ctrl v"});
-    } else if (ydotool) { // prefer platform-specific first
+    } else if (wlrctl) {
         proc->start("sh" , {"-c", "sleep 0.1 && wlrctl keyboard type v modifiers CTRL"});
+    } else if (ydotool) {
+        proc->start("sh" , {"-c", "sleep 0.1 && ydotool key 29:1 47:1 47:0 29:0"}); // These keycodes stand for ctrl v
+    } else if (xdotool) { // prefer platform-specific first
+        proc->start("sh" , {"-c", "sleep 0.1 && xdotool key ctrl+v"});
     }
 
     QObject::connect(proc, &QProcess::finished, proc, [proc](int exitCode, QProcess::ExitStatus exitStatus){
