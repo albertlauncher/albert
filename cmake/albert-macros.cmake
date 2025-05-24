@@ -254,6 +254,8 @@ macro(albert_plugin)
         AUTORCC ON
     )
 
+    target_compile_definitions(${PROJECT_NAME} PRIVATE QT_NO_CAST_FROM_ASCII)
+
     # Append. There are defaults.
     set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY AUTOMOC_MACRO_NAMES "ALBERT_PLUGIN")
 

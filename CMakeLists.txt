@@ -271,7 +271,7 @@ configure_file(
     @ONLY
 )
 
-find_package(Qt6 6.2 REQUIRED COMPONENTS # Ubuntu 22.04
+find_package(Qt6 6.4 REQUIRED COMPONENTS # QString::operator""_s
     Core
     Concurrent
     Network

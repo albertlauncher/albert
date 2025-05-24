@@ -10,7 +10,7 @@ namespace albert::util
 
 // Doxygen does not like raw strings
 // QRegularExpression(R"([\s\\\/\-\[\](){}#!?<>"'=+*.:,;_]+)");
-const QRegularExpression default_separator_regex("([\\s\\\\/\\-\\[\\](){}#!?<>\"'=+*.:,;_]+)");
+const QRegularExpression default_separator_regex(QStringLiteral("([\\s\\\\/\\-\\[\\](){}#!?<>\"'=+*.:,;_]+)"));
 
 ///
 /// Configuration for string matching.

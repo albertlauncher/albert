@@ -13,19 +13,20 @@
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
 #include "iconlookup.h"
 #endif
+using namespace Qt::StringLiterals;
+using namespace albert::util;
 using namespace albert;
 using namespace std;
-using namespace util;
 
-static const QString &explicit_qrc_scheme = QStringLiteral("qrc:");
-static const QString &file_scheme = QStringLiteral("file:");
-static const QString &generative_scheme = QStringLiteral("gen:?");
-static const QString &implicit_qrc_scheme = QStringLiteral(":");
-static const QString &qfileiconprovider_scheme = QStringLiteral("qfip:");
-static const QString &qstandardpixmap_scheme = QStringLiteral("qsp:");
-static const QString &xdg_icon_lookup_scheme = QStringLiteral("xdg:");
-static const QString &compose_lookup_scheme = QStringLiteral("comp:?");
-static const QString &mask_lookup_scheme = QStringLiteral("mask:?");
+static const QString &explicit_qrc_scheme      = u"qrc:"_s;
+static const QString &file_scheme              = u"file:"_s;
+static const QString &generative_scheme        = u"gen:?"_s;
+static const QString &implicit_qrc_scheme      = u":"_s;
+static const QString &qfileiconprovider_scheme = u"qfip:"_s;
+static const QString &qstandardpixmap_scheme   = u"qsp:"_s;
+static const QString &xdg_icon_lookup_scheme   = u"xdg:"_s;
+static const QString &compose_lookup_scheme    = u"comp:?"_s;
+static const QString &mask_lookup_scheme       = u"mask:?"_s;
 
 /// Returns a pixmap from a file path.
 /// The size of the pixmap may be smaller but never larger than the requested size.
