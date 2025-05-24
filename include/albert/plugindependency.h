@@ -102,7 +102,7 @@ public:
         try {
             this->dependency_ = dynamic_cast<T*>(extensionRegistry().extensions().at(id));
             if (!this->dependency_)
-                WARN << QString("Found '%1' but failed casting to expected type.").arg(id);
+                WARN << QStringLiteral("Found '%1' but failed casting to expected type.").arg(id);
         } catch (const std::out_of_range &) { /* okay, optional */ }
 
         conn_add_ = QObject::connect(&albert::extensionRegistry(), &ExtensionRegistry::added,
@@ -136,7 +136,7 @@ private:
                     callback(true);
             }
             else
-                WARN << QString("Failed casting '%1' to expected type.").arg(this->id_);
+                WARN << QStringLiteral("Failed casting '%1' to expected type.").arg(this->id_);
         }
         else
             CRIT << "WeakDependency already set. Internal logic error?";
@@ -157,7 +157,7 @@ private:
                 this->dependency_ = nullptr;
             }
             else
-                WARN << QString("Failed casting '%1' to expected type.").arg(this->id_);
+                WARN << QStringLiteral("Failed casting '%1' to expected type.").arg(this->id_);
         }
         else
             CRIT << "WeakDependency already unset. Internal logic error?";
