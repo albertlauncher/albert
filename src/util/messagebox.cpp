@@ -2,15 +2,9 @@
 
 #include "app.h"
 #include "frontend.h"
-#include "widgetsutil.h"
-#include <QApplication>
+#include "messagebox.h"
 #include <QGuiApplication>
-#include <QObject>
-#include <QStyle>
-#include <QWidget>
-using namespace albert::util;
 using namespace albert;
-using namespace std;
 
 QMessageBox::StandardButton util::question(const QString &text,
                                            QMessageBox::StandardButtons buttons,
