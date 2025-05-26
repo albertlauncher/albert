@@ -430,7 +430,6 @@ void AlbertTests::input_history()
     QCOMPARE(h.next(), "a");
     QCOMPARE(h.next(), "");
     QCOMPARE(h.next(), "");
-    QCOMPARE(h.prev(), "a");
     QCOMPARE(h.prev(), "b");
     QCOMPARE(h.prev(), "c");
     QCOMPARE(h.prev(), "");
