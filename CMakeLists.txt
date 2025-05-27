@@ -92,6 +92,7 @@ set(LIB_PUBLIC_HEADER
     include/albert/oauthconfigwidget.h
     include/albert/property.h
     include/albert/standarditem.h
+    include/albert/systemutil.h
     include/albert/timeit.h
     include/albert/widgetsutil.h
 )
@@ -191,6 +192,7 @@ set(LIB_SRC
     src/util/oauth.cpp
     src/util/oauthconfigwidget.cpp
     src/util/standarditem.cpp
+    src/util/systemutil.cpp
 
     src/config.h.in
 )
