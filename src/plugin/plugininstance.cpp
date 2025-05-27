@@ -9,9 +9,11 @@
 #include <QCoreApplication>
 #include <QSettings>
 #include <QStandardPaths>
+#include <filesystem>
 #include <qt6keychain/keychain.h>
 using namespace albert;
 using namespace std;
+using std::filesystem::path;
 
 
 class PluginInstance::Private

@@ -1,12 +1,12 @@
-// Copyright (c) 2022-2024 Manuel Schneider
+// Copyright (c) 2022-2025 Manuel Schneider
 
-#include "albert.h"
 #include "app.h"
 #include "frontend.h"
 #include "pluginswidget.h"
 #include "querywidget.h"
-#include "telemetry.h"
 #include "settingswindow.h"
+#include "systemutil.h"
+#include "telemetry.h"
 #include <QDialog>
 #include <QHotkey>
 #include <QKeyEvent>
@@ -122,8 +122,8 @@ void SettingsWindow::init_tab_general_hotkey()
         ui.label_hotkey->setEnabled(false);
         ui.pushButton_hotkey->setText(tr("Not supported"));
         connect(ui.pushButton_hotkey, &QPushButton::clicked, this, []{
-            albert::openUrl("https://albertlauncher.github.io/gettingstarted/faq/"
-                            "#how-to-make-hotkeys-work-on-wayland");
+            albert::util::openUrl("https://albertlauncher.github.io/gettingstarted/faq/"
+                                  "#how-to-make-hotkeys-work-on-wayland");
         });
     }
 }

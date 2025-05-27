@@ -23,6 +23,7 @@
 #include "session.h"
 #include "settingswindow.h"
 #include "signalhandler.h"
+#include "systemutil.h"
 #include "telemetry.h"
 #include "triggersqueryhandler.h"
 #include "urlhandler.h"
@@ -45,9 +46,9 @@
 #include <QTranslator>
 #include <iostream>
 Q_LOGGING_CATEGORY(AlbertLoggingCategory, "albert")
+using namespace albert::util;
 using namespace albert;
 using namespace std;
-using namespace util;
 
 
 namespace {
@@ -192,7 +193,7 @@ void App::Private::initTrayIcon()
     connect(action, &QAction::triggered, [] { App::instance()->showSettings(); });
 
     action = tray_menu->addAction(tr("Open website"));
-    connect(action, &QAction::triggered, [] { albert::openWebsite(); });
+    connect(action, &QAction::triggered, [] { open(QUrl("https://albertlauncher.github.io/")); });
 
     tray_menu->addSeparator();
 
