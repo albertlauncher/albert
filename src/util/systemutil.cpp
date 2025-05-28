@@ -48,12 +48,18 @@ static bool checkPasteSupport()
 #if defined Q_OS_MACOS
     return !QStandardPaths::findExecutable("osascript").isEmpty();
 #elif defined(Q_OS_UNIX)
-    bool have_paste_support = !QStandardPaths::findExecutable("xdotool").isEmpty();
+    bool xdotool = !QStandardPaths::findExecutable("xdotool").isEmpty();
+    bool wtype = qApp->platformName() == "wayland" && !QStandardPaths::findExecutable("wtype").isEmpty();
+    bool wlrctl = qApp->platformName() == "wayland" && !QStandardPaths::findExecutable("wlrctl").isEmpty();
+    bool ydotool = !QStandardPaths::findExecutable("ydotool").isEmpty();
+    bool have_paste_support = xdotool || wtype || wlrctl || ydotool;
     if(!have_paste_support)
-        WARN << "xdotool is not available. No paste support.";
-    else if(qgetenv("XDG_SESSION_TYPE") != "x11")
+        WARN << "neither xdotool or wtype are available. No paste support.";
+    else if(qgetenv("XDG_SESSION_TYPE") != "x11" && !ydotool && !wtype)
         WARN << "xdotool is available but but session type is not x11. "
-                "Paste will work for X11 windows only.";
+                "Unless your compositor supports libei, "
+                "Paste will work for X11 windows only. "
+                "Please install ydotool, wlrctl or wtype.";
     return have_paste_support;
 #endif
 }
@@ -64,7 +70,7 @@ bool util::havePasteSupport()
     return have_paste_support;
 }
 
-void util::setClipboardTextAndPaste(const QString &text)
+void albert::setClipboardTextAndPaste(const QString &text)
 {
     setClipboardText(text);
     if (!havePasteSupport())
@@ -73,7 +79,7 @@ void util::setClipboardTextAndPaste(const QString &text)
                  "Looks like the plugin did not check for feature support before. "
                  "Please report this issue.";
         WARN << t;
-        warning(t);
+        QMessageBox::warning(nullptr, qApp->applicationDisplayName(), t);
         return;
     }
 
@@ -83,9 +89,22 @@ void util::setClipboardTextAndPaste(const QString &text)
         R"(tell application "System Events" to keystroke "v" using command down)"
     });
 #elif defined(Q_OS_UNIX)
-    QCoreApplication::processEvents(); // ??
+    QApplication::processEvents(); // ??
     auto *proc = new QProcess;
-    proc->start("sh" , {"-c", "sleep 0.1 && xdotool key ctrl+v"});
+    bool xdotool = !QStandardPaths::findExecutable("xdotool").isEmpty();
+    bool ydotool = !QStandardPaths::findExecutable("ydotool").isEmpty();
+    bool wtype = qApp->platformName() == "wayland" && !QStandardPaths::findExecutable("wtype").isEmpty();
+    bool wlrctl = qApp->platformName() == "wayland" && !QStandardPaths::findExecutable("wlrctl").isEmpty();
+    if (wtype) {
+        proc->start("sh" , {"-c", "sleep 0.1 && wtype -M ctrl v"});
+    } else if (wlrctl) {
+        proc->start("sh" , {"-c", "sleep 0.1 && wlrctl keyboard type v modifiers CTRL"});
+    } else if (ydotool) {
+        proc->start("sh" , {"-c", "sleep 0.1 && ydotool key 29:1 47:1 47:0 29:0"}); // These keycodes stand for ctrl v
+    } else if (xdotool) { // prefer platform-specific first
+        proc->start("sh" , {"-c", "sleep 0.1 && xdotool key ctrl+v"});
+    }
+
     QObject::connect(proc, &QProcess::finished, proc, [proc](int exitCode, QProcess::ExitStatus exitStatus){
         if (exitStatus != QProcess::ExitStatus::NormalExit || exitCode != EXIT_SUCCESS)
         {
