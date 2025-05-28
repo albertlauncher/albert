@@ -54,6 +54,22 @@ public:
     /// These are the actions a users can run.
     virtual std::vector<Action> actions() const;
 
+    /// Interface class for item observers
+    class Observer
+    {
+    public:
+        /// Notifies the Observer about any changes in `item`.
+        virtual void notify(const albert::Item *item) = 0;
+    protected:
+        virtual ~Observer();
+    };
+
+    /// Start notifying `observer` about any changes.
+    virtual void addObserver(Observer *observer);
+
+    /// Stop notifying `observer` about any changes.
+    virtual void removeObserver(Observer *observer);
+
 };
 
 }

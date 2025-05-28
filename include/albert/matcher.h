@@ -9,7 +9,7 @@
 #include <ranges>
 class MatcherPrivate;
 
-namespace albert
+namespace albert::util
 {
 
 ///

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -7,7 +7,7 @@
 #include <albert/export.h>
 #include <memory>
 
-namespace albert
+namespace albert::util
 {
 
 ///
@@ -58,6 +58,16 @@ public:
     /// Clears the history.
     ///
     Q_INVOKABLE void clear();
+
+    ///
+    /// Returns the maximum amount of history entries.
+    ///
+    Q_INVOKABLE uint limit() const;
+
+    ///
+    /// Sets the maximum amount of history entries.
+    ///
+    Q_INVOKABLE void setLimit(uint);
 
 private:
 

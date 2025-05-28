@@ -74,6 +74,14 @@ public:
     /// @returns Preconfigured QSettings object for state storage.
     [[nodiscard]] std::unique_ptr<QSettings> state() const;
 
+    /// Reads the keychain value for `key`.
+    /// Convenience function avoiding name conflicts.
+    [[nodiscard]] QString readKeychain(const QString & key) const;
+
+    /// Sets the keychain value of `key` to `value`.
+    /// Convenience function avoiding name conflicts.
+    void writeKeychain(const QString &key, const QString &value) const;
+
 protected:
 
     PluginInstance();

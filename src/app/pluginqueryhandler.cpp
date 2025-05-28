@@ -8,6 +8,7 @@
 #include <QWidget>
 using namespace albert;
 using namespace std;
+using namespace util;
 
 
 class PluginItem : public Item

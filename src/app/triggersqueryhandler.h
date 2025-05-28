@@ -1,13 +1,14 @@
-// Copyright (c) 2023-2024 Manuel Schneider
+// Copyright (c) 2023-2025 Manuel Schneider
 
 #pragma once
 #include "globalqueryhandler.h"
 #include <QCoreApplication>
+#include <shared_mutex>
 class QueryEngine;
 
-class TriggersQueryHandler : public albert::GlobalQueryHandler
+class TriggersQueryHandler : public QObject, public albert::GlobalQueryHandler
 {
-    Q_DECLARE_TR_FUNCTIONS(TriggersQueryHandler)
+    Q_OBJECT
 
 public:
 
@@ -15,14 +16,14 @@ public:
     QString id() const override;
     QString name() const override;
     QString description() const override;
-    void handleTriggerQuery(albert::Query &) override;
     std::vector<albert::RankItem> handleGlobalQuery(const albert::Query &) override;
 
 private:
 
     std::shared_ptr<albert::Item> makeItem(const QString &trigger, Extension *handler) const;
 
-    static const QStringList icon_urls;
     const QueryEngine &query_engine_;
+    std::map<QString, TriggerQueryHandler *> trigger_handlers_;
+    std::shared_mutex trigger_handlers_mutex_;
 
 };

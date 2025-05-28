@@ -3,6 +3,8 @@
 #include "notification.h"
 #include <QNotification>
 using namespace albert;
+using namespace std;
+using namespace util;
 
 class Notification::Private
 {

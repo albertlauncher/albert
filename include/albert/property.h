@@ -142,38 +142,3 @@
 ///
 #define ALBERT_PLUGIN_PROPERTY(type, name, defaultValue) \
     ALBERT_PROPERTY(type, name, defaultValue, PluginInstance::settings)
-
-
-// -------------------------------------------------------------------------------------------------
-
-///
-/// @brief Convenience macro to connect checkboxes to boolean user properties
-///
-/// Specialization of ALBERT_PLUGIN_PROPERTY_CONNECT
-///
-/// @param object The object containing the property
-/// @param name The property name
-/// @param widget The widget pointer to connect to
-///
-#define ALBERT_PROPERTY_CONNECT_CHECKBOX(object, name, checkbox) \
-    checkbox->setChecked(object->name()); \
-    connect(object, &std::remove_pointer<decltype(object)>::type::name##_changed, \
-            checkbox, &QCheckBox::setChecked); \
-    connect(checkbox, &QCheckBox::toggled, \
-            object, &std::remove_pointer<decltype(object)>::type::set_##name);
-
-///
-/// @brief Convenience macro to connect spinboxes to int user properties
-///
-/// Specialization of ALBERT_PLUGIN_PROPERTY_CONNECT
-///
-/// @param object The object containing the property
-/// @param name The property name
-/// @param widget The widget pointer to connect to
-///
-#define ALBERT_PROPERTY_CONNECT_SPINBOX(object, name, spinbox) \
-    spinbox->setValue(object->name()); \
-    connect(object, &std::remove_pointer<decltype(object)>::type::name##_changed, \
-            spinbox, &QSpinBox::setValue); \
-    connect(spinbox, &QSpinBox::valueChanged, \
-            object, &std::remove_pointer<decltype(object)>::type::set_##name);

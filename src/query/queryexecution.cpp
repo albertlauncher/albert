@@ -4,9 +4,11 @@
 #include "queryengine.h"
 #include "queryexecution.h"
 #include "usagedatabase.h"
-#include <QtConcurrentRun>
-#include <QtConcurrentMap>
 #include <QCoreApplication>
+#include <QtConcurrentMap>
+#include <QtConcurrentRun>
+#include <albert/messagebox.h>
+using namespace albert::util;
 using namespace albert;
 using namespace std::chrono;
 using namespace std;
@@ -28,31 +30,35 @@ QueryExecution::QueryExecution(QueryEngine *e,
     fallback_handlers_(::move(fallback_handlers)),
     valid_(true)
 {
-    connect(&future_watcher_, &decltype(future_watcher_)::started,
-            this, [this](){ emit activeChanged(true); });
-
-    connect(&future_watcher_, &decltype(future_watcher_)::finished,
-            this, [this](){ emit activeChanged(false); });
+    connect(&future_watcher_, &decltype(future_watcher_)::finished, this, [this]{
+        active_ = false;
+        emit activeChanged(active_);
+    });
 }
 
 QueryExecution::~QueryExecution()
 {
     // Wait in derived class otherwise query is partially destroyed while handlers are still running
     cancel();
-    if (!isFinished()) {
+    if (future_watcher_.isRunning()) {
         WARN << QString("Busy wait on query: #%1").arg(query_id);
         // there may be some queued collectResults calls
         QCoreApplication::processEvents();
         future_watcher_.waitForFinished();
     }
+
+    for (auto &result_item : matches_)
+        result_item.item->removeObserver(this);
+
     DEBG << QString("Query deleted. [#%1 '%2']").arg(query_id).arg(string());
 }
 
 void QueryExecution::run()
 {
+    runFallbackHandlers();
+
     future_watcher_.setFuture(QtConcurrent::run([this](){
         try {
-            runFallbackHandlers();
             auto tp = system_clock::now();
             query_handler_->handleTriggerQuery(*this);
             qCDebug(timeCat,).noquote()
@@ -69,6 +75,9 @@ void QueryExecution::run()
             CRIT << "Unexpected exception in QueryExecution::run()!";
         }
     }));
+
+    active_ = true;
+    emit activeChanged(active_);
 }
 
 void QueryExecution::cancel()
@@ -85,9 +94,7 @@ QString QueryExecution::synopsis() const { return query_handler_->synopsis(strin
 
 const bool &QueryExecution::isValid() const { return valid_; }
 
-bool QueryExecution::isActive() const { return future_watcher_.isRunning(); }
-
-bool QueryExecution::isFinished() const { return future_watcher_.isFinished(); }
+bool QueryExecution::isActive() const { return active_; }
 
 bool QueryExecution::isTriggered() const { return !trigger().isEmpty(); }
 
@@ -95,7 +102,7 @@ const std::vector<ResultItem> &QueryExecution::matches() { return matches_; }
 
 const std::vector<ResultItem> &QueryExecution::fallbacks() { return fallbacks_; }
 
-static bool activate(const vector<ResultItem> &result_items, const QString &q, uint iidx, uint aidx)
+bool QueryExecution::activate(const vector<ResultItem> &result_items, const QString &q, uint iidx, uint aidx)
 {
     try {
         auto &[e, i] = result_items.at(iidx);
@@ -114,7 +121,19 @@ static bool activate(const vector<ResultItem> &result_items, const QString &q, u
             // - QTimer::singleShot(0, this, [a]{ a.function(); });
             //   Disconnects on query deletion.
 
-            a.function();  // May delete the query, due to hide()
+            try {
+                a.function();  // May delete the query, due to hide()
+            } catch (const exception &exc) {
+                const auto msg = QT_TR_NOOP("Exception in action");
+                const auto fmt = QString("%1:\n\n%2 → %3 → %4\n\n%5");
+                CRIT << fmt.arg(msg, e.id(), i->id(), a.id, exc.what());
+                critical(fmt.arg(QueryExecution::tr(msg), e.name(), i->text(), a.text, exc.what()));
+            } catch (...) {
+                const auto msg = QT_TR_NOOP("Unknown exception in action");
+                const auto fmt = QString("%1:\n\n%2 → %3 → %4");
+                CRIT << fmt.arg(msg, e.id(), i->id(), a.id);
+                critical(fmt.arg(QueryExecution::tr(msg), e.name(), i->text(), a.text));
+            }
             return a.hide_on_activation;
         }
         catch (const out_of_range&) {
@@ -129,6 +148,16 @@ static bool activate(const vector<ResultItem> &result_items, const QString &q, u
 bool QueryExecution::activateMatch(uint i, uint a) { return activate(matches_, string(), i, a); }
 
 bool QueryExecution::activateFallback(uint i, uint a) { return activate(fallbacks_, string(), i, a); }
+
+void QueryExecution::notify(const Item *item)
+{
+    // O(n) seems not okay here.
+    // however there will be stateful queries soon which only contain the top k items.
+    if (auto it = find_if(matches_.begin(), matches_.end(),
+                          [=](const ResultItem &ri){ return ri.item.get() == item; });
+        it != matches_.end())
+        emit dataChanged(distance(matches_.begin(), it));
+}
 
 void QueryExecution::add(const shared_ptr<Item> &item)
 {
@@ -214,7 +243,10 @@ void QueryExecution::collectResults()
         matches_.reserve(matches_.size() + results_buffer_.size());
 
         for (auto &r : results_buffer_)
+        {
+            r.item->addObserver(this);
             matches_.emplace_back(r.extension, ::move(r.item));
+        }
 
         results_buffer_.clear();
 

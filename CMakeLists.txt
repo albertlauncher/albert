@@ -36,7 +36,15 @@ set(QT_DEFAULT_MAJOR_VERSION 6)
 set(BUILD_SHARED_LIBS FALSE)
 set(QHOTKEY_INSTALL OFF CACHE BOOL "" FORCE)
 add_subdirectory(lib/QHotkey EXCLUDE_FROM_ALL)
-target_compile_options(qhotkey PRIVATE -Wno-gnu-zero-variadic-macro-arguments -Wno-unused-parameter -Wno-shadow)
+target_compile_options(qhotkey
+    PRIVATE
+        -Wno-gnu-zero-variadic-macro-arguments
+        -Wno-unused-parameter
+        -Wno-shadow
+        -Wno-elaborated-enum-base
+        -Wno-deprecated-declarations
+        -Wno-nullability-completeness
+)
 
 
 ### Lib  ######################################################################
@@ -48,34 +56,45 @@ set(LIB_PUBLIC_HEADER
     ${PROJECT_BINARY_DIR}/include/albert/export.h  # generated
     include/albert/action.h
     include/albert/albert.h
-    include/albert/backgroundexecutor.h
     include/albert/extension.h
     include/albert/extensionplugin.h
     include/albert/extensionregistry.h
     include/albert/fallbackhandler.h
     include/albert/frontend.h
     include/albert/globalqueryhandler.h
-    include/albert/iconprovider.h
-    include/albert/indexitem.h
-    include/albert/indexqueryhandler.h
-    include/albert/inputhistory.h
     include/albert/item.h
-    include/albert/logging.h
-    include/albert/matchconfig.h
-    include/albert/matcher.h
-    include/albert/notification.h
     include/albert/plugindependency.h
     include/albert/plugininstance.h
     include/albert/pluginloader.h
     include/albert/pluginmetadata.h
     include/albert/pluginprovider.h
-    include/albert/property.h
     include/albert/query.h
     include/albert/rankitem.h
-    include/albert/standarditem.h
     include/albert/telemetryprovider.h
-    include/albert/timeit.h
     include/albert/triggerqueryhandler.h
+    include/albert/urlhandler.h
+
+    # util
+    include/albert/backgroundexecutor.h
+    include/albert/desktoputil.h
+    include/albert/filedownloader.h
+    include/albert/iconprovider.h
+    include/albert/indexitem.h
+    include/albert/indexqueryhandler.h
+    include/albert/inputhistory.h
+    include/albert/logging.h
+    include/albert/matchconfig.h
+    include/albert/matcher.h
+    include/albert/messagebox.h
+    include/albert/networkutil.h
+    include/albert/notification.h
+    include/albert/oauth.h
+    include/albert/oauthconfigwidget.h
+    include/albert/property.h
+    include/albert/standarditem.h
+    include/albert/systemutil.h
+    include/albert/timeit.h
+    include/albert/widgetsutil.h
 )
 
 set(LIB_SRC
@@ -100,6 +119,7 @@ set(LIB_SRC
     src/app/telemetryprovider.cpp
     src/app/triggersqueryhandler.cpp
     src/app/triggersqueryhandler.h
+    src/app/urlhandler.cpp
 
     src/common/action.cpp
     src/common/extension.cpp
@@ -107,7 +127,6 @@ set(LIB_SRC
     src/common/rankitem.cpp
 
     src/frontend/frontend.cpp
-    src/frontend/inputhistory.cpp
     src/frontend/session.cpp
     src/frontend/session.h
 
@@ -155,17 +174,25 @@ set(LIB_SRC
     src/settings/settingswindow.h
 
     src/util/albert.cpp
+    src/util/desktoputil.cpp
     src/util/extensionplugin.cpp
+    src/util/filedownloader.cpp
     src/util/iconprovider.cpp
     src/util/indexitem.cpp
     src/util/indexqueryhandler.cpp
+    src/util/inputhistory.cpp
     src/util/itemindex.cpp
     src/util/itemindex.h
     src/util/levenshtein.cpp
     src/util/levenshtein.h
     src/util/matcher.cpp
+    src/util/messagebox.cpp
+    src/util/networkutil.cpp
     src/util/notification.cpp
+    src/util/oauth.cpp
+    src/util/oauthconfigwidget.cpp
     src/util/standarditem.cpp
+    src/util/systemutil.cpp
 
     src/config.h.in
 )
@@ -246,7 +273,7 @@ configure_file(
     @ONLY
 )
 
-find_package(Qt6 6.2 REQUIRED COMPONENTS # Ubuntu 22.04
+find_package(Qt6 6.4 REQUIRED COMPONENTS # QString::operator""_s
     Core
     Concurrent
     Network
@@ -255,6 +282,7 @@ find_package(Qt6 6.2 REQUIRED COMPONENTS # Ubuntu 22.04
     Widgets
     LinguistTools
 )
+find_package(Qt6Keychain REQUIRED)
 
 target_link_libraries(${TARGET_LIB}
     PRIVATE
@@ -265,6 +293,7 @@ target_link_libraries(${TARGET_LIB}
         Qt6::Network
         Qt6::Sql
         Qt6::Widgets
+        qt6keychain
 )
 
 if(APPLE)
@@ -277,6 +306,8 @@ elseif(UNIX)
         )
     endif()
 endif()
+
+target_compile_features(${TARGET_LIB} PUBLIC cxx_std_20)
 
 set_target_properties(${TARGET_LIB} PROPERTIES
     #INSTALL_RPATH "$ORIGIN"

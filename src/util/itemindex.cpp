@@ -13,6 +13,7 @@
 #include <utility>
 using namespace albert;
 using namespace std;
+using namespace util;
 
 namespace
 {
@@ -252,7 +253,7 @@ ItemIndex::~ItemIndex() = default;
 
 const MatchConfig &ItemIndex::config() { return d->config; }
 
-void ItemIndex::setItems(vector<albert::IndexItem> &&index_items)
+void ItemIndex::setItems(vector<IndexItem> &&index_items)
 {
     IndexData new_index;
 

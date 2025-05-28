@@ -10,15 +10,17 @@ from subprocess import run
 
 def create_changelog(args) -> str:
 
-    def indent_git_log(s: str):
-        indent_lines = []
-        lines = filter(None, s.split('\n'))  # skip empty
-        for line in lines:
-            if line.startswith("- "):
-                indent_lines.append(line)
-            else:
-                indent_lines.append('  ' + line)  # indent all other lines
-        return '\n'.join(indent_lines)
+    placeholder = 'BOOOOM'
+    def indent_git_log(s: str, additional_indent = 0):
+        indented_output = []
+        for line in s.split('\n'):
+            if not line:  # skip empty
+                continue
+            if line.startswith(f'{placeholder} '): # replace placeholder with -
+                indented_output.append(f'{" "*additional_indent}- ' + line[7:])
+            else: # indent all other lines
+                indented_output.append(f'{" "*additional_indent}  ' + line)
+        return '\n'.join(indented_output)
 
     out = []
     latest_tag = run(["git", "describe", "--tags", "--abbrev=0"], capture_output=True).stdout.decode().strip()
@@ -27,17 +29,17 @@ def create_changelog(args) -> str:
     # Albert log
 
     albert_root = Path(f"{args.root}")
-    log = run(["git", "log", "--pretty=format:%B", f"{latest_tag}..HEAD"], capture_output=True).stdout.decode().strip()
+    log = run(["git", "log", f"--pretty=format:{placeholder} %B", f"{latest_tag}..HEAD"], capture_output=True).stdout.decode().strip()
     log = indent_git_log(log)
     if log:
-        out.append(f"## Albert\n\n{log}\n\n\n## API\n\n- ````")
+        out.append(f"### Albert\n\n{log}\n\n\n### API\n\n- ````")
 
 
     # Native plugins log
 
     native_plugins_logs = []
     native_plugins_root = albert_root / "plugins"
-    for plugin in native_plugins_root.iterdir():
+    for plugin in sorted(native_plugins_root.iterdir(), key=lambda p: p.name.lower()):
 
         print(str(plugin).upper())
 
@@ -46,17 +48,17 @@ def create_changelog(args) -> str:
             continue
         try:
             begin = run(["git", "ls-tree", latest_tag, plugin], capture_output=True).stdout.decode().strip().split()[2]
-            log = run(["git", "-C", plugin, "log", "--pretty=format:- %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
+            log = run(["git", "-C", plugin, "log", f"--pretty=format:{placeholder} %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
         except:
             # Latest tag has no reference. Assuming initial commit. Add full log.
-            log = run(["git", "-C", plugin, "log", "--pretty=format:- %B",], capture_output=True).stdout.decode().strip()
+            log = run(["git", "-C", plugin, "log", f"--pretty=format:{placeholder} %B",], capture_output=True).stdout.decode().strip()
 
         if log:
-            native_plugins_logs.append(f"### {plugin.name}\n\n{indent_git_log(log)}")
+            native_plugins_logs.append(f"- **{plugin.name}**\n{indent_git_log(log, 2)}")
 
     if native_plugins_logs:
-        joined = "\n\n".join(native_plugins_logs)
-        out.append(f"## Native plugins\n\n{joined}")
+        joined = "\n".join(native_plugins_logs)
+        out.append(f"### Plugins\n\n{joined}")
 
 
     # Python plugins log
@@ -68,12 +70,12 @@ def create_changelog(args) -> str:
     begin = run(["git", "ls-tree", latest_tag, python_plugin_root], capture_output=True).stdout.decode().strip().split()[2]
     begin = run(["git", "-C", python_plugin_root, "ls-tree", begin, python_plugins_root], capture_output=True).stdout.decode().strip().split()[2]
 
-    log = run(["git", "-C", python_plugins_root, "log", "--pretty=format:- %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
+    log = run(["git", "-C", python_plugins_root, "log", f"--pretty=format:{placeholder} %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
 
-    log = indent_git_log(log)
+    log = indent_git_log(log, 2)
     if python_plugins_logs:
         joined = "\n\n".join(native_plugins_logs)
-        out.append(f"## Python plugins\n\n{joined}")
+        out.append(f"### Python plugins\n\n{joined}")
 
 
     return '\n\n'.join(out)
@@ -86,8 +88,6 @@ def test_build(args):
                    "albert:arch", "--platform", "linux/amd64", "."],
         'Fedora': ["docker", "build", "--progress=plain", "-f", ".docker/fedora.Dockerfile", "-t",
                    "albert:fedora", "."],
-        'Ubuntu22': ["docker", "build", "--progress=plain", "-f", ".docker/ubuntu.22.Dockerfile", "-t",
-                     "albert:ubuntu", "."],
         'Ubuntu24': ["docker", "build", "--progress=plain", "-f", ".docker/ubuntu.24.Dockerfile", "-t",
                      "albert:ubuntu", "."],
     }
@@ -152,7 +152,7 @@ def release(args):
             old_changelog = file.read()
 
         with open(root/"CHANGELOG.md", 'w') as file:
-            file.write(f"v{args.version} ({datetime.date.today().strftime('%Y-%m-%d')})\n\n{changelog}\n\n{old_changelog}")
+            file.write(f"##v{args.version} ({datetime.date.today().strftime('%Y-%m-%d')})\n\n{changelog}\n\n{old_changelog}")
 
         print("Update CMake project version…")
         run(["sed", "-i.bak", f"s/^set(PROJECT_VERSION.*$/set(PROJECT_VERSION {args.version})/", root/"CMakeLists.txt"], cwd=root).check_returncode()

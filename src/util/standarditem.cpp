@@ -3,6 +3,7 @@
 #include "standarditem.h"
 using namespace albert;
 using namespace std;
+using namespace util;
 
 StandardItem::StandardItem(QString id,
                            QString text,

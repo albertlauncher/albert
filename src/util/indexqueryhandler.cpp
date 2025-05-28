@@ -8,6 +8,7 @@
 #include <shared_mutex>
 using namespace albert;
 using namespace std;
+using namespace util;
 
 class IndexQueryHandler::Private
 {

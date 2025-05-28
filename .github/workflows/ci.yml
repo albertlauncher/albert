@@ -61,7 +61,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dockerfile: [arch.Dockerfile, fedora.Dockerfile, ubuntu.22.Dockerfile, ubuntu.24.Dockerfile]
+        dockerfile: [arch.Dockerfile, fedora.Dockerfile, ubuntu.24.Dockerfile]
 
     steps:
 
@@ -104,7 +104,7 @@ jobs:
           HOMEBREW_NO_INSTALL_UPGRADE: 1
         run: |
           brew install llvm@18 qt
-          brew install --ignore-dependencies libqalculate  # python libarchive sparkle
+          brew install --ignore-dependencies libqalculate qtkeychain # python libarchive sparkle
 
       - name: Build and package
         run: |

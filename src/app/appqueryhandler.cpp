@@ -4,10 +4,13 @@
 #include "appqueryhandler.h"
 #include "matcher.h"
 #include "standarditem.h"
+#include "systemutil.h"
 #include <QString>
 #include <QUrl>
 #include <albert/extensionregistry.h>
 #include <albert/plugin/applications.h>
+#include <filesystem>
+using namespace albert::util;
 using namespace albert;
 using namespace std;
 
@@ -42,8 +45,11 @@ QString AppQueryHandler::description() const { return tr("Control the app"); }
 
 QString AppQueryHandler::defaultTrigger() const { return QStringLiteral("albert "); }
 
-static void openTermAt(applications::Plugin *apps, const filesystem::path &loc)
-{ apps->runTerminal(QStringLiteral("cd '%1'; exec $SHELL").arg(QString::fromStdString(loc))); }
+static void openTermAt(applications::Plugin *apps, const std::filesystem::path &loc)
+{
+    apps->runTerminal(QStringLiteral("cd '%1'; exec $SHELL")
+                          .arg(QString::fromLocal8Bit(loc.c_str())));
+}
 
 vector<RankItem> AppQueryHandler::handleGlobalQuery(const Query &query)
 {
@@ -106,7 +112,8 @@ vector<RankItem> AppQueryHandler::handleGlobalQuery(const Query &query)
 
     if (m = matcher.match(strings.config); m)
     {
-        vector<Action> actions = {{ QStringLiteral("open"), strings.open, [] { open(configLocation()); } }};
+        vector<Action> actions = {{ QStringLiteral("open"), strings.open,
+                                   [] { open(configLocation()); } }};
         if (apps)
             actions.emplace_back(QStringLiteral("term"), strings.topen,
                                  [=]{ openTermAt(apps, configLocation()); });
@@ -118,7 +125,8 @@ vector<RankItem> AppQueryHandler::handleGlobalQuery(const Query &query)
 
     if (m = matcher.match(strings.data); m)
     {
-        vector<Action> actions = {{ QStringLiteral("open"), strings.open, [] { open(dataLocation()); } }};
+        vector<Action> actions = {{ QStringLiteral("open"), strings.open,
+                                   [] { open(dataLocation()); } }};
         if (apps)
             actions.emplace_back(QStringLiteral("term"), strings.topen,
                                  [=]{ openTermAt(apps, dataLocation()); });

@@ -48,12 +48,12 @@
 [submodule "plugins/hash"]
 	path = plugins/hash
 	url = https://github.com/albertlauncher/albert-plugin-hash.git
+[submodule "plugins/mediaremote"]
+	path = plugins/mediaremote
+	url = https://github.com/albertlauncher/albert-plugin-mediaremote.git
 [submodule "plugins/menubar"]
 	path = plugins/menubar
 	url = https://github.com/albertlauncher/albert-plugin-menubar.git
-[submodule "plugins/mpris"]
-	path = plugins/mpris
-	url = https://github.com/albertlauncher/albert-plugin-mpris.git
 [submodule "plugins/path"]
 	path = plugins/path
 	url = https://github.com/albertlauncher/albert-plugin-path.git
@@ -90,3 +90,4 @@
 [submodule "plugins/widgetsboxmodel"]
 	path = plugins/widgetsboxmodel
 	url = https://github.com/albertlauncher/albert-plugin-widgetsboxmodel.git
+

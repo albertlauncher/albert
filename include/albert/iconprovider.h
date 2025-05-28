@@ -8,7 +8,8 @@
 #include <QStringList>
 #include <albert/export.h>
 
-namespace albert{
+namespace albert::util
+{
 
 ///
 /// URL based icon factory.
@@ -23,6 +24,8 @@ namespace albert{
 /// - `qsp:<pixmap enumerator>` Get an icon from [QStyle::StandardPixmap] enum.
 /// - `xdg:<icon name>` Uses xdgIconLookup(const QString &name);
 /// - `gen:<>` Uses genericPixmapFactory. See also [QColor::fromString].
+/// - `mask:?src=&radius=` Masks a given icon url.
+/// - `comp:?src1=<>&src2=<>` Composes two given icons.
 ///
 /// Examples
 ///
@@ -101,7 +104,7 @@ QPixmap ALBERT_EXPORT genericPixmap(int size, const QColor& bgcolor = {}, const 
 /// \param scalar Scalar for the default font size which is the pixmap height. Default: 1.
 /// \returns The generic pixmap.
 ///
-QIcon ALBERT_EXPORT genericIcon(int size, const QColor& bgcolor = {}, const QColor& fgcolor = Qt::black, const QString& text = {}, float scalar = 1.);
+QIcon ALBERT_EXPORT genericIcon(const QColor& bgcolor = {}, const QColor& fgcolor = Qt::black, const QString& text = {}, float scalar = 1.);
 
 ///
 /// Create an icon for a file using [QFileIconProvider].

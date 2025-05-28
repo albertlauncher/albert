@@ -1,15 +1,41 @@
-// Copyright (c) 2022-2024 Manuel Schneider
+// Copyright (c) 2022-2025 Manuel Schneider
 
 #include "albert.h"
 #include "logging.h"
 #include "rpcserver.h"
 #include <QDir>
+#include <QFile>  // QtPrivate::fromFilesystemPath
+#include <QLocalServer>
 #include <QLocalSocket>
-#include <QRegularExpression>
-#include <iostream>
+using namespace albert;
 using namespace std;
 
-RPCServer::RPCServer()
+static QString socketPath()
+{ return QtPrivate::fromFilesystemPath(cacheLocation() / "ipc_socket"); }
+
+class RPCServer::Private
+{
+public:
+    QLocalServer local_server;
+    function<QByteArray(const QByteArray&)> handler;
+
+    void onConnection()
+    {
+        QLocalSocket* socket = local_server.nextPendingConnection();
+        socket->waitForReadyRead(50);
+        if (socket->bytesAvailable())
+        {
+            if (handler)
+                socket->write(handler(socket->readAll()));
+
+        }
+        socket->flush();
+        socket->close();
+        socket->deleteLater();
+    }
+};
+
+RPCServer::RPCServer() : d(make_unique<Private>())
 {
     auto socket_path = socketPath();
 
@@ -40,81 +66,40 @@ RPCServer::RPCServer()
     }
 
     DEBG << "Creating local server" << socket_path;
-    if (!local_server.listen(socket_path))
-        qFatal("Failed creating IPC server: %s", qPrintable(local_server.errorString()));
+    if (!d->local_server.listen(socket_path))
+        qFatal("Failed creating IPC server: %s", qPrintable(d->local_server.errorString()));
 
-    QObject::connect(&local_server, &QLocalServer::newConnection,
-                     &local_server, [this](){RPCServer::onNewConnection();});
+    QObject::connect(&d->local_server, &QLocalServer::newConnection,
+                     &d->local_server, [this]{ d->onConnection(); });
 }
 
 RPCServer::~RPCServer()
 {
     DEBG << "Closing local RPC server.";
-    local_server.close();
+    d->local_server.close();
 }
 
-void RPCServer::setPRC(map<QString, RPC> &&rpc)
+void RPCServer::setMessageHandler(function<QByteArray(const QByteArray &)> h){ d->handler = h; }
+
+QByteArray RPCServer::sendMessage(const QByteArray &bytes, bool await_response)
 {
-    rpc_ = ::move(rpc);
-
-    rpc_.emplace("commands", [this](const QString&){
-        QStringList rpcs;
-        for (const auto &[k, v] : rpc_)
-            rpcs << k;
-        return rpcs.join('\n');
-    });
-}
-
-QString RPCServer::socketPath()
-{
-    return QString::fromStdString(albert::cacheLocation() / "ipc_socket");
-}
-
-void RPCServer::onNewConnection()
-{
-    QLocalSocket* socket = local_server.nextPendingConnection();
-    socket->waitForReadyRead(50);
-    if (socket->bytesAvailable()) {
-        auto message = QString::fromLocal8Bit(socket->readAll());
-        DEBG << "Received message:" << message;
-
-        static QRegularExpression re("\\S");
-        message = message.mid(message.indexOf(re));  // Trim left spaces
-        auto op = message.section(' ', 0, 0);
-        auto param = message.section(' ', 1, -1);
-
-        try{
-            socket->write(rpc_.at(op)(param).toLocal8Bit());
-        } catch (const out_of_range &) {
-            QStringList l{QString("Invalid RPC command: '%1'. Use these").arg(message)};
-            for (const auto &[key, value] : rpc_)
-                l << key;
-            socket->write(l.join(QChar::LineFeed).toLocal8Bit());
-            INFO << QString("Received invalid RPC command: %1").arg(message);
-        }
-    }
-    socket->flush();
-    socket->close();
-    socket->deleteLater();
-}
-
-bool RPCServer::trySendMessage(const QString &message)
-{
-    // Dont print logs in here
-
     QLocalSocket socket;
     socket.connectToServer(socketPath());
-    if (socket.waitForConnected(500)){
-        socket.write(message.toUtf8());
+    if (socket.waitForConnected(500))
+    {
+        socket.write(bytes);
         socket.flush();
+
+        if(!await_response)
+            return {};
+
         if (socket.waitForReadyRead(1000))
-            cout << socket.readAll().toStdString() << endl;
+            return socket.readAll();
+        else if (auto e = socket.error(); e == QLocalSocket::PeerClosedError)
+            return {};
         else
-            cout << "Read timed out. Albert busy?" << endl;
-        socket.close();
-        return true;
-    } else {
-        cout << "Failed to connect to albert." << endl;
-        return false;
+            throw runtime_error(socket.errorString().toStdString());
     }
+    else
+        throw runtime_error("Failed to connect to albert.");
 }

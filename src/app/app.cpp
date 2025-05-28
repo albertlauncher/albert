@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 Manuel Schneider
+// Copyright (c) 2023-2025 Manuel Schneider
 
 #include "albert.h"
 #include "app.h"
@@ -23,12 +23,18 @@
 #include "session.h"
 #include "settingswindow.h"
 #include "signalhandler.h"
+#include "systemutil.h"
 #include "telemetry.h"
 #include "triggersqueryhandler.h"
+#include "urlhandler.h"
+#include <QByteArray>
 #include <QCommandLineParser>
+#include <QDesktopServices>
 #include <QDir>
 #include <QFile>
 #include <QHotkey>
+#include <QJsonArray>
+#include <QJsonDocument>
 #include <QLibraryInfo>
 #include <QMenu>
 #include <QMessageBox>
@@ -40,6 +46,7 @@
 #include <QTranslator>
 #include <iostream>
 Q_LOGGING_CATEGORY(AlbertLoggingCategory, "albert")
+using namespace albert::util;
 using namespace albert;
 using namespace std;
 
@@ -67,7 +74,7 @@ public:
 
     void initTrayIcon();
     void initHotkey();
-    void initPRC();
+    void initRPC();
     void loadAnyFrontend();
     QString loadFrontend(albert::PluginLoader *loader);
     void notifyVersionChange();
@@ -114,6 +121,9 @@ void App::Private::initialize()
 {
     platform::initPlatform();
 
+    // Install scheme handler
+    QDesktopServices::setUrlHandler("albert", app_instance, "handleUrl");
+
     loadAnyFrontend();
 
     platform::initNativeWindow(frontend->winId());
@@ -132,7 +142,7 @@ void App::Private::initialize()
 
     notifyVersionChange();
 
-    initPRC(); // Also may trigger frontend
+    initRPC(); // Also may trigger frontend
 
     initHotkey();  // Connect hotkey after! frontend has been loaded else segfaults
 
@@ -183,7 +193,7 @@ void App::Private::initTrayIcon()
     connect(action, &QAction::triggered, [] { App::instance()->showSettings(); });
 
     action = tray_menu->addAction(tr("Open website"));
-    connect(action, &QAction::triggered, [] { albert::openWebsite(); });
+    connect(action, &QAction::triggered, [] { open(QUrl("https://albertlauncher.github.io/")); });
 
     tray_menu->addSeparator();
 
@@ -195,7 +205,7 @@ void App::Private::initTrayIcon()
 
     // icon
 
-    auto icon = albert::iconFromUrls({"xdg:albert-tray", "xdg:albert", ":app_tray_icon"});
+    auto icon = iconFromUrls({"xdg:albert-tray", "xdg:albert", ":app_tray_icon"});
     icon.setIsMask(true);
 
     tray_icon = make_unique<QSystemTrayIcon>();
@@ -251,40 +261,96 @@ void App::Private::initHotkey()
     }
 }
 
-void App::Private::initPRC()
+void App::Private::initRPC()
 {
-    std::map<QString, RPCServer::RPC> rpc =
+    auto messageHandler = [](const QByteArray bytes) -> QByteArray
     {
-        {"show", [](const QString& t){
-            App::instance()->show(t);
-            return "Albert set visible.";
-        }},
-        {"hide", [](const QString&){
-            App::instance()->hide();
-            return "Albert set hidden.";
-        }},
-        {"toggle", [](const QString&){
-            App::instance()->toggle();
-            return "Albert visibility toggled.";
-        }},
-        {"settings", [](const QString& t){
-            App::instance()->showSettings(t);
-            return "Settings opened,";
-        }},
-        {"restart", [](const QString&){
-            App::instance()->restart();
-            return "Triggered restart.";
-        }},
-        {"quit", [](const QString&){
-            App::instance()->quit();
-            return "Triggered quit.";
-        }},
-        {"report", [](const QString&){
-            return report().join('\n');
-        }}
+        INFO << "Received RPC message:" << bytes;
+
+        const auto array = QJsonDocument::fromJson(bytes).array();
+
+        QStringList args;
+        for (const QJsonValue &value : array)
+            args << value.toString();
+
+        if (args.size() == 0)
+        {
+            WARN << "Received Invalid message expected json array of strings.";
+            return "Invalid message expected json array of strings.";
+        }
+
+        else if (args[0] == "show")
+        {
+            if (args.size() > 2)
+                return "'show' expects zero or one argument.";
+
+            else if (args.size() == 2)
+                App::instance()->show(args[1]);
+
+            else // if (args.size() == 1)
+                App::instance()->show();
+        }
+
+        else if (args[0] == "hide")
+
+            if (args.size() == 1)
+                App::instance()->hide();
+            else
+                return "'hide' expects no arguments.";
+
+        else if (args[0] == "toggle")
+
+            if (args.size() == 1)
+                App::instance()->toggle();
+            else
+                return "'toggle' expects no arguments.";
+
+        else if (args[0] == "settings")
+        {
+            if (args.size() > 2)
+                return "'settings' expects zero or one argument.";
+
+            else if (args.size() == 2)
+                App::instance()->showSettings(args[1]);
+
+            else // if (args.size() == 1)
+                App::instance()->showSettings();
+        }
+
+        else if (args[0] == "restart")
+
+            if (args.size() == 1)
+                App::instance()->restart();
+            else
+                return "'restart' expects no arguments.";
+
+        else if (args[0] == "quit")
+
+            if (args.size() == 1)
+                App::instance()->quit();
+            else
+                return "'quit' expects no arguments.";
+
+        else if (args[0] == "report")
+
+            if (args.size() == 1)
+                return report().join('\n').toLocal8Bit();
+            else
+                return "'report' expects no arguments.";
+
+        else if (QUrl url(args[0]); url.isValid())
+            for (const auto &arg : as_const(args))
+                app_instance->handleUrl(arg);
+
+        else
+        {
+            WARN << "Invalid RPC message" << bytes;
+        }
+
+        return {};
     };
 
-    rpc_server.setPRC(::move(rpc));
+    rpc_server.setMessageHandler(messageHandler);
 }
 
 void App::Private::loadAnyFrontend()
@@ -360,7 +426,7 @@ void App::Private::notifyVersionChange()
 
         App::instance()->showSettings();
     }
-    else if (current_version.section('.', 1, 1) != last_used_version.section('.', 1, 1) )  // FIXME in first major version
+    else if (current_version.section('.', 0, 0) != last_used_version.section('.', 0, 0) )  // FIXME in first major version
     {
         auto text = tr("You are now using Albert %1. The major version changed. "
                        "Some parts of the API might have changed. "
@@ -373,7 +439,6 @@ void App::Private::notifyVersionChange()
     if (last_used_version != current_version)
         s->setValue(STATE_LAST_USED_VERSION, current_version);
 }
-
 
 App::App(const QStringList &additional_plugin_paths, bool load_enabled)
 {
@@ -391,6 +456,24 @@ App *App::instance() { return app_instance; }
 void App::initialize() { return d->initialize(); }
 
 void App::finalize() { return d->finalize(); }
+
+void App::handleUrl(const QUrl &url)
+{
+    DEBG << "Handle url" << url.toString();
+    if (url.scheme() == qApp->applicationName())
+    {
+        if (url.authority().isEmpty())
+        {
+            // ?
+        }
+        else if (auto h = d->extension_registry.extension<UrlHandler>(url.authority()); h)
+            h->handle(url);
+        else
+            WARN << "URL handler not available: " + url.authority().toLocal8Bit();
+    }
+    else
+        WARN << "Invalid URL scheme" << url.scheme();
+}
 
 PluginRegistry &App::pluginRegistry() { return d->plugin_registry; }
 
@@ -533,6 +616,19 @@ int ALBERT_EXPORT run(int argc, char **argv)
         parser.setApplicationDescription(App::tr("Launch Albert or control a running instance."));
         parser.process(qapp);
 
+        // TODO If not running? Continue and use? Makes sense for albert show but not for URLs.
+        if (const auto args = parser.positionalArguments(); !args.isEmpty())
+            try {
+                QJsonDocument d(QJsonArray::fromStringList(args));
+                auto bytes = d.toJson(QJsonDocument::Compact);
+                bytes = RPCServer::sendMessage(bytes);
+                cout << bytes.data() << endl;
+                return EXIT_SUCCESS;
+            } catch (const exception &e) {
+                cout << e.what() << endl;
+                return EXIT_FAILURE;
+            }
+
         if (parser.isSet(opt_r)) {
             for (const auto &line : report())
                 std::cout << line.toStdString() << std::endl;
@@ -540,9 +636,6 @@ int ALBERT_EXPORT run(int argc, char **argv)
         } else
             for (const auto &line : report())
                 DEBG << line;
-
-        if (auto args = parser.positionalArguments(); !args.isEmpty())
-            return RPCServer::trySendMessage(args.join(" ")) ? 0 : 1;
 
         config = {
             .plugin_dirs = parser.value(opt_p).split(',', Qt::SkipEmptyParts),
@@ -597,7 +690,7 @@ int ALBERT_EXPORT run(int argc, char **argv)
                     auto child_keys = s->childKeys();
                     s->endGroup();
 
-                    for (const QString &child_key : child_keys)
+                    for (const QString &child_key : as_const(child_keys))
                     {
                         auto old_key = QString("%1/%2").arg(old_group, child_key);
 

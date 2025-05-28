@@ -13,16 +13,20 @@
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
 #include "iconlookup.h"
 #endif
+using namespace Qt::StringLiterals;
+using namespace albert::util;
 using namespace albert;
 using namespace std;
 
-static const QString &explicit_qrc_scheme = QStringLiteral("qrc:");
-static const QString &file_scheme = QStringLiteral("file:");
-static const QString &generative_scheme = QStringLiteral("gen:?");
-static const QString &implicit_qrc_scheme = QStringLiteral(":");
-static const QString &qfileiconprovider_scheme = QStringLiteral("qfip:");
-static const QString &qstandardpixmap_scheme = QStringLiteral("qsp:");
-static const QString &xdg_icon_lookup_scheme = QStringLiteral("xdg:");
+static const QString &explicit_qrc_scheme      = u"qrc:"_s;
+static const QString &file_scheme              = u"file:"_s;
+static const QString &generative_scheme        = u"gen:?"_s;
+static const QString &implicit_qrc_scheme      = u":"_s;
+static const QString &qfileiconprovider_scheme = u"qfip:"_s;
+static const QString &qstandardpixmap_scheme   = u"qsp:"_s;
+static const QString &xdg_icon_lookup_scheme   = u"xdg:"_s;
+static const QString &compose_lookup_scheme    = u"comp:?"_s;
+static const QString &mask_lookup_scheme       = u"mask:?"_s;
 
 /// Returns a pixmap from a file path.
 /// The size of the pixmap may be smaller but never larger than the requested size.
@@ -47,14 +51,14 @@ static QIcon standardIconFromName(const QString &enumerator_name)
 }
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
-QString albert::xdgIconLookup(const QString &name)
+QString util::xdgIconLookup(const QString &name)
 {
     // https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
     return XDG::IconLookup::iconPath(name);
 }
 #endif
 
-QIcon albert::fileIcon(const QString &path)
+QIcon util::fileIcon(const QString &path)
 {
     // https://doc.qt.io/qt-6/qfileiconprovider.html
     static QFileIconProvider qfip;
@@ -84,7 +88,7 @@ static void drawGenericIcon(QPainter *p, const QRect &rect, const QColor &bgcolo
     }
 }
 
-QPixmap albert::genericPixmap(int size, const QColor &bgcolor, const QColor &fgcolor, const QString &text, float scalar)
+QPixmap util::genericPixmap(int size, const QColor &bgcolor, const QColor &fgcolor, const QString &text, float scalar)
 {
     QPixmap pm(size, size);
     pm.fill(Qt::transparent);
@@ -131,7 +135,7 @@ struct GenericIconEngine : public QIconEngine
 
 };
 
-QPixmap albert::pixmapFromUrl(const QString &url, const QSize &requestedSize)
+QPixmap util::pixmapFromUrl(const QString &url, const QSize &requestedSize)
 {
     if (url.startsWith(implicit_qrc_scheme))
         return pixmapFromFilePath(url, requestedSize);  // intended, colon has to remain
@@ -187,11 +191,108 @@ QPixmap albert::pixmapFromUrl(const QString &url, const QSize &requestedSize)
         return genericPixmap(requestedSize.height(), bgcolor, fgcolor, text, scalar);
     }
 
+    else if (url.startsWith(mask_lookup_scheme))
+    {
+        QUrlQuery urlquery(url.mid(mask_lookup_scheme.size()));
+        const auto radius_divisor = urlquery.queryItemValue(QStringLiteral("radius")).toInt();
+        const auto src_url = urlquery.queryItemValue(QStringLiteral("src")).toLocal8Bit();
+        const auto src_pm = pixmapFromUrl(QUrl::fromPercentEncoding(src_url), requestedSize);
+        const auto src_img = src_pm.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
+
+        QPixmap pm(requestedSize);
+        pm.fill(Qt::transparent);
+
+        QPainter p(&pm);
+        p.setRenderHint(QPainter::Antialiasing);
+
+        const auto radius = requestedSize.width() / radius_divisor;
+
+        p.setPen(Qt::NoPen);
+        p.setBrush(Qt::black);
+        p.drawRoundedRect(pm.rect(), radius, radius);
+
+        p.setCompositionMode(QPainter::CompositionMode_SourceIn);
+        p.drawImage(pm.rect(), src_img);
+
+        return pm;
+    }
+
+    else if (url.startsWith(compose_lookup_scheme))
+    {
+        QUrlQuery urlquery(url.mid(compose_lookup_scheme.size()));
+
+        double size1 = 0.7, size2 = 0.7;
+
+        if (const auto sizestr1 = urlquery.queryItemValue(u"size1"_s);
+            !sizestr1.isEmpty())
+            size1 = sizestr1.toDouble();
+
+        if (const auto sizestr2 = urlquery.queryItemValue(u"size2"_s);
+            !sizestr2.isEmpty())
+            size2 = sizestr2.toDouble();
+
+        const auto src1 = pixmapFromUrl(QUrl::fromPercentEncoding(
+            urlquery.queryItemValue(u"src1"_s).toLocal8Bit()), requestedSize * size1);
+        if (src1.isNull())
+            return {};
+
+        const auto src2 = pixmapFromUrl(QUrl::fromPercentEncoding(
+            urlquery.queryItemValue(u"src2"_s).toLocal8Bit()), requestedSize * size2);
+        if (src2.isNull())
+            return {};
+
+        struct Helper
+        {
+            static optional<QPoint> parsePosition(const QString &pos, const QPixmap &src, const QPixmap &dst)
+            {
+                if (pos == u"tl"_s)
+                    return QPoint{0, 0};
+                else if (pos == u"tc"_s)
+                    return QPoint{dst.height()/2 - src.height()/2, 0};
+                else if (pos == u"tr"_s)
+                        return QPoint{dst.height() - src.height(), 0};
+                else if (pos == u"cl"_s)
+                    return QPoint{0, dst.width()/2 - src.width()/2};
+                else if (pos == u"cc"_s)
+                    return QPoint{dst.height()/2 - src.height()/2, dst.width()/2 - src.width()/2};
+                else if (pos == u"cr"_s)
+                        return QPoint{dst.height() - src.height(), dst.width()/2 - src.width()/2};
+                else if (pos == u"bl"_s)
+                    return QPoint{0, dst.width() - src.width()};
+                else if (pos == u"bc"_s)
+                    return QPoint{dst.height()/2 - src.height()/2, dst.width() - src.width()};
+                else if (pos == u"br"_s)
+                    return QPoint{dst.height() - src.height(), dst.width() - src.width()};
+                else
+                    return {};
+            }
+        };
+
+        QPixmap pm(requestedSize);
+        pm.fill(Qt::transparent);
+        QPainter p(&pm);
+        p.setRenderHint(QPainter::Antialiasing);
+
+        if (const auto pos = Helper::parsePosition(urlquery.queryItemValue(u"pos1"_s), src1, pm);
+            pos)
+            p.drawPixmap(*pos, src1);
+        else
+            p.drawPixmap(0, 0, src1); // top left
+
+        if (const auto pos = Helper::parsePosition(urlquery.queryItemValue(u"pos2"_s), src2, pm);
+            pos)
+            p.drawPixmap(*pos, src2);
+        else
+            p.drawPixmap(pm.height() - src2.height(), pm.width() - src2.width(), src2);  // bottom right
+
+        return pm;
+    }
+
     // Implicitly check for file existence
     return pixmapFromFilePath(url, requestedSize);
 }
 
-QPixmap albert::pixmapFromUrls(const QStringList &urls, const QSize &requestedSize)
+QPixmap util::pixmapFromUrls(const QStringList &urls, const QSize &requestedSize)
 {
     for (const auto &url : urls)
         if (auto pm = pixmapFromUrl(url, requestedSize); !pm.isNull())
@@ -199,7 +300,7 @@ QPixmap albert::pixmapFromUrls(const QStringList &urls, const QSize &requestedSi
     return {};
 }
 
-QIcon albert::iconFromUrl(const QString &url)
+QIcon util::iconFromUrl(const QString &url)
 {
     if (url.startsWith(implicit_qrc_scheme))
         return QIcon(url); // intended, colon has to remain
@@ -234,7 +335,7 @@ QIcon albert::iconFromUrl(const QString &url)
     else return {};
 }
 
-QIcon albert::iconFromUrls(const QStringList &urls)
+QIcon util::iconFromUrls(const QStringList &urls)
 {
     for (const auto &url : urls)
         if (auto icon = iconFromUrl(url); !icon.isNull())
@@ -242,7 +343,7 @@ QIcon albert::iconFromUrls(const QStringList &urls)
     return {};
 }
 
-QIcon genericIcon(const QColor &bgcolor, const QColor &fgcolor, const QString &text, float scalar)
+QIcon util::genericIcon(const QColor &bgcolor, const QColor &fgcolor, const QString &text, float scalar)
 {
     return QIcon(new GenericIconEngine(bgcolor, fgcolor, text, scalar));
 }

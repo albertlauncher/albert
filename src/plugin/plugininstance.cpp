@@ -1,6 +1,7 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
 #include "albert.h"
+#include "logging.h"
 #include "plugininstance.h"
 #include "pluginloader.h"
 #include "pluginmetadata.h"
@@ -8,8 +9,11 @@
 #include <QCoreApplication>
 #include <QSettings>
 #include <QStandardPaths>
+#include <filesystem>
+#include <qt6keychain/keychain.h>
 using namespace albert;
 using namespace std;
+using std::filesystem::path;
 
 
 class PluginInstance::Private
@@ -58,6 +62,52 @@ unique_ptr<QSettings> PluginInstance::state() const
 
 const PluginLoader &PluginInstance::loader() const
 { return *d->loader; }
+
+QString PluginInstance::readKeychain(const QString &key) const
+{
+    // Deletes itself
+    auto job = new QKeychain::ReadPasswordJob(qApp->applicationName(), qApp);
+    job->setKey(QString("%1.%2").arg(d->loader->metaData().id, key));
+
+    QEventLoop loop;
+    QString value;
+
+    QObject::connect(job, &QKeychain::ReadPasswordJob::finished, &loop,
+                     [job, &loop, &value]
+                     {
+                         if (job->error())
+                             DEBG << "Failed to read" << job->key() << ":" << job->errorString();
+                         else
+                             value = job->textData();
+                         loop.quit();
+                     });
+
+    job->start();
+    loop.exec();
+    return value;
+}
+
+void PluginInstance::writeKeychain(const QString &key, const QString &value) const
+{
+    // Deletes itself
+    auto job = new QKeychain::WritePasswordJob(qApp->applicationName(), qApp);
+
+    job->setKey(QString("%1.%2").arg(d->loader->metaData().id, key));
+    job->setTextData(value);
+
+    QEventLoop loop;
+
+    QObject::connect(job, &QKeychain::Job::finished,
+                     &loop, [job, &loop]
+                     {
+                         if (job->error())
+                             WARN << "Failed to write" << job->key() << ":" << job->errorString();
+                         loop.quit();
+                     });
+
+    job->start();
+    loop.exec();
+}
 
 vector<filesystem::path> PluginInstance::dataLocations() const
 {

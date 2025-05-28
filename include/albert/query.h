@@ -42,9 +42,6 @@ public:
     /// True if the query is currently being processed.
     Q_INVOKABLE virtual bool isActive() const = 0;
 
-    /// True if the query thread stopped.
-    Q_INVOKABLE virtual bool isFinished() const = 0;
-
     /// True if query has not been cancelled.
     Q_INVOKABLE virtual const bool &isValid() const = 0;
 
@@ -101,6 +98,9 @@ signals:
 
     /// Emitted when query processing started or finished.
     void activeChanged(bool active);
+
+    /// Emitted when a match item changed any of its fields
+    void dataChanged(uint i);
 };
 
 }

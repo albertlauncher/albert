@@ -1,27 +1,25 @@
-// Copyright (C) 2022-2024 Manuel Schneider
+// Copyright (C) 2022-2025 Manuel Schneider
 
 #pragma once
-#include <QLocalServer>
-#include <map>
+#include <functional>
+#include <memory>
+namespace albert { class ExtensionRegistry; }
+class QByteArray;
 
 class RPCServer
 {
 public:
 
-    using RPC = std::function<QString(const QString&)>;
-
     RPCServer();
     ~RPCServer();
 
-    void setPRC(std::map<QString, RPC> &&rpc);
+    void setMessageHandler(std::function<QByteArray(const QByteArray&)> handler);
 
-    static QString socketPath();
-    static bool trySendMessage(const QString &message);
+    static QByteArray sendMessage(const QByteArray &bytes, bool await_response = true);
 
 private:
 
-    void onNewConnection();
-    QLocalServer local_server;
-    std::map<QString, RPC> rpc_;
+    class Private;
+    std::unique_ptr<Private> d;
 
 };

@@ -1,77 +1,62 @@
-// Copyright (c) 2023-2024 Manuel Schneider
+// Copyright (c) 2023-2025 Manuel Schneider
 
 #include "app.h"
-#include "frontend.h"
 #include "matcher.h"
 #include "queryengine.h"
 #include "standarditem.h"
 #include "triggersqueryhandler.h"
+using namespace Qt::StringLiterals;
+using namespace albert::util;
 using namespace albert;
 using namespace std;
 
-const QStringList TriggersQueryHandler::icon_urls{QStringLiteral(":app_icon")};
-
 TriggersQueryHandler::TriggersQueryHandler(const QueryEngine &query_engine):
-    query_engine_(query_engine) {}
+    query_engine_(query_engine),
+    trigger_handlers_(query_engine.activeTriggerHandlers())
+{
+    // Query engine is not thread safe. Keep a copy.
 
-QString TriggersQueryHandler::id() const
-{ return QStringLiteral("triggers"); }
+    QObject::connect(&query_engine, &QueryEngine::handlerAdded, this, [this]{
+        lock_guard l(trigger_handlers_mutex_);
+        trigger_handlers_ = query_engine_.activeTriggerHandlers();
+    });
 
-QString TriggersQueryHandler::name() const
-{ return QStringLiteral("Triggers"); }
+    QObject::connect(&query_engine, &QueryEngine::handlerRemoved, this, [this]{
+        lock_guard l(trigger_handlers_mutex_);
+        trigger_handlers_ = query_engine_.activeTriggerHandlers();
+    });
+}
 
-QString TriggersQueryHandler::description() const
-{ return tr("Trigger completion items."); }
+QString TriggersQueryHandler::id() const { return u"triggers"_s; }
+
+QString TriggersQueryHandler::name() const { return u"Triggers"_s; }
+
+QString TriggersQueryHandler::description() const { return tr("Trigger completion items."); }
 
 shared_ptr<Item> TriggersQueryHandler::makeItem(const QString &trigger, Extension *handler) const
 {
-    auto desc = QString("%1 - %2").arg(handler->name(), handler->description());
     return StandardItem::make(
         trigger,
         QString(trigger).replace(" ", "•"),
-        desc,
+        QString("%1 · %2").arg(handler->name(), handler->description()),
         trigger,
-        {QStringLiteral("gen:?&text=🚀")},
+        {u"gen:?&text=🚀"_s},
         {{
             "set",
             tr("Set input text"),
-            [trigger]{ App::instance()->frontend()->setInput(trigger); },
+            [trigger]{ App::instance()->show(trigger); },
             false
         }}
     );
 }
 
-void TriggersQueryHandler::handleTriggerQuery(Query &q)
-{
-    // Match tigger, id and name.
-
-    vector<RankItem> RI;
-    for (const auto &[trigger, handler] : query_engine_.activeTriggerHandlers())
-        if (auto m = Matcher(q.string()).match(trigger, handler->name(), handler->id()); m)
-            RI.emplace_back(makeItem(trigger, handler), m);
-
-    applyUsageScore(&RI);
-
-    ranges::sort(RI, greater());
-
-    vector<shared_ptr<Item>> I;
-    I.reserve(RI.size());
-    for (auto &ri : RI)
-        I.emplace_back(::move(ri.item));
-
-    q.add(I);
-}
-
 vector<RankItem> TriggersQueryHandler::handleGlobalQuery(const Query &q)
 {
-    // Strictly match trigger
-
-    vector<RankItem> rank_items;
-
-    Matcher matcher(q.string(), { .ignore_case=false, .ignore_word_order=false });
-    for (const auto &[trigger, handler] : query_engine_.activeTriggerHandlers())
-        if (auto m = matcher.match(trigger); m)
-            rank_items.emplace_back(makeItem(trigger, handler), m);
-
-    return rank_items;
+    shared_lock l(trigger_handlers_mutex_);
+    Matcher matcher(q);
+    vector<RankItem> r;
+    for (const auto &[t, h] : trigger_handlers_)
+        if (const auto m = Matcher(q.string()).match(t, h->name(), h->id()); m)
+            r.emplace_back(makeItem(t, h), m);
+    return r;
 }

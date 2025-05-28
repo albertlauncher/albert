@@ -1,16 +1,18 @@
-// Copyright (c) 2022-2024 Manuel Schneider
+// Copyright (c) 2022-2025 Manuel Schneider
 
-#include "albert.h"
 #include "app.h"
 #include "frontend.h"
 #include "pluginswidget.h"
 #include "querywidget.h"
-#include "telemetry.h"
 #include "settingswindow.h"
+#include "systemutil.h"
+#include "telemetry.h"
 #include <QDialog>
 #include <QHotkey>
 #include <QKeyEvent>
 using namespace std;
+
+const auto privacy_notice_url = "https://albertlauncher.github.io/privacy/";
 
 
 class QHotKeyDialog : public QDialog
@@ -120,8 +122,8 @@ void SettingsWindow::init_tab_general_hotkey()
         ui.label_hotkey->setEnabled(false);
         ui.pushButton_hotkey->setText(tr("Not supported"));
         connect(ui.pushButton_hotkey, &QPushButton::clicked, this, []{
-            albert::openUrl("https://albertlauncher.github.io/gettingstarted/faq/"
-                            "#how-to-make-hotkeys-work-on-wayland");
+            albert::util::openUrl("https://albertlauncher.github.io/gettingstarted/faq/"
+                                  "#how-to-make-hotkeys-work-on-wayland");
         });
     }
 }
@@ -160,6 +162,9 @@ void SettingsWindow::init_tab_general_telemetry()
 
 void SettingsWindow::init_tab_general_about()
 {
+    ui.label_telemetry->setText(QString("[%1](%2)")
+                                    .arg(ui.label_telemetry->text(), privacy_notice_url));
+
     ui.label_app->setText(QString("<b>%1 v%2</b>")
                           .arg(qApp->applicationDisplayName(),
                                qApp->applicationVersion()));
@@ -183,6 +188,7 @@ void SettingsWindow::init_tab_general_about()
     QStringList credits;
     credits << l->text();
     credits << "QHotkey - Felix Barz  (BSD-3-Clause)";
+    credits << "qtkeychain - Frank Osterfeld  (BSD-3-Clause)";
 
     l->setText(small_text_fmt.arg(credits.join("<br>")));
 

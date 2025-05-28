@@ -8,3 +8,9 @@ Item::~Item() = default;
 QString Item::inputActionText() const { return {}; }
 
 std::vector<Action> Item::actions() const { return {}; }
+
+void Item::addObserver(Item::Observer*) {}
+
+void Item::removeObserver(Item::Observer*) {}
+
+Item::Observer::~Observer() = default;

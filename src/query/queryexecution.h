@@ -9,7 +9,7 @@
 namespace albert { class Item; }
 class QueryEngine;
 
-class QueryExecution : public albert::Query
+class QueryExecution : public albert::Query, public albert::Item::Observer
 {
     Q_OBJECT  // needed for invokable methods
 
@@ -34,7 +34,6 @@ public:
     QString synopsis() const override final;
     const bool &isValid() const override final;
     bool isActive() const override final;
-    bool isFinished() const override final;
     bool isTriggered() const override final;
 
     const std::vector<albert::ResultItem> &matches() override final;
@@ -48,11 +47,14 @@ public:
     void add(const std::vector<std::shared_ptr<albert::Item>> &items) override;
     void add(std::vector<std::shared_ptr<albert::Item>> &&items) override;
 
+    void notify(const albert::Item*) override;
+
 protected:
 
     void runFallbackHandlers();
     void invokeCollectResults();
     Q_INVOKABLE void collectResults();
+    bool activate(const std::vector<albert::ResultItem>&, const QString &q, uint iidx, uint aidx);
 
     QueryEngine *query_engine_;
     static uint query_count;
@@ -65,6 +67,7 @@ protected:
     const std::vector<albert::FallbackHandler*> fallback_handlers_;
 
     bool valid_ = true;
+    bool active_ = false;
 
     QFutureWatcher<void> future_watcher_;
 
