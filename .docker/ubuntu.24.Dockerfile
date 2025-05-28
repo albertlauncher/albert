@@ -2,9 +2,7 @@ FROM ubuntu:24.04
 
 RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get -qq update \
- && apt-get -qq upgrade
-
-RUN apt-get install --no-install-recommends -y \
+ && apt-get install --no-install-recommends -y \
     cmake \
     doctest-dev \
     g++ \
@@ -26,22 +24,24 @@ RUN apt-get install --no-install-recommends -y \
     qt6-tools-dev-tools \
     qt6-l10n-tools \
     qtkeychain-qt6-dev \
-    xterm
+    xterm \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 COPY . /src
-WORKDIR /build
 
 # Build, test and install the main project
-RUN cmake -S /src -B . -DBUILD_TESTS=ON \
- && cmake --build . -j$(nproc) \
- && cmake --install . --prefix /usr \
- && ctest --output-on-failure
+RUN cmake -S /src -B /build -DBUILD_TESTS=ON \
+ && cmake --build /build -j$(nproc) \
+ && cmake --install /build --prefix /usr \
+ && ctest --test-dir /build --output-on-failure \
+ && rm -rf /build
 
 # Build and install a plugin separately
-RUN rm -rf * \
- && cmake /src/plugins/applications \
-    -DCMAKE_PREFIX_PATH=/usr/lib/$(gcc -dumpmachine)/cmake/ \
- && cmake --build . -j$(nproc) \
- && cmake --install . --prefix /usr
+RUN cmake -S /src/plugins/applications -B /build -DCMAKE_PREFIX_PATH=/usr/lib/$(gcc -dumpmachine)/cmake/ \
+ && cmake --build /build -j$(nproc) \
+ && cmake --install /build --prefix /usr \
+ && ctest --test-dir /build --output-on-failure \
+ && rm -rf /build
 
 ENTRYPOINT ["bash"]
