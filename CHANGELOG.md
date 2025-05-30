@@ -1,3 +1,105 @@
+##v0.28.0 (2025-05-30)
+
+### Albert
+
+- Make global and triggered triggersqueryhandler behave the same
+
+### API
+
+- Force plugins to not convert from ascii.
+- Move system related functions into `systemutil.h`
+  - Remove `void open(const std::string &path);`
+  - Remove default param workdir in `runDetachedProcess`
+  - Add `long long runDetachedProcess(const QStringList&);
+  - Remove `open(const std::string &path);`
+  - Add `open(const std::filesystem::path &path);`
+- Remove `Query::isFinished()`
+- Changes to `albert::util::InputHistory`
+  - Add `uint limit() const;`
+  - Add `void setLimit(uint);`
+  - Support multiline entries (store in JSON format)
+- Add keychain support
+  - Add `QString PluginInstance::readKeychain(const QString & key) const;`
+  - Add `void writeKeychain(const QString & key, const QString & value);`
+- Iconprovider add `mask:` and `comp:` schemes
+  - mask: Mask a given icon given a radius divisor.
+  - comp: Composes two given icons.
+- Move messagebox utils to `messagebox.h`
+- Move utility symbols into `albert::util` namespace
+- Add class `albert::util::FileDownLoader`
+- Add class `albert::util::OAuthConfigWidget`
+- Add class `albert::util::OAuth`
+- Add `widgetsutil.h`
+  - Add `bind` function for QCheckBox
+  - Add `bind` function for QLineEdit
+  - Add `bind` function for QSpinBox
+  - Add `bind` function for QDoubleSpinBox
+  - Remove `ALBERT_PROPERTY_CONNECT_*` macros
+- Add `networkutil.h`
+  - Move `albert::network()` to `albert::util::network`
+  - Add `waitForFinished(QNetworkReply *reply)`
+  - Add `QNetworkRequest makeRestRequest(…)`
+- Add CMake macros
+  - `albert_plugin_link_qt`
+  - `albert_plugin_dbus_interface`
+  - `albert_plugin_sources`
+  - `albert_plugin_link`
+  - `albert_plugin_include_directories`
+  - `albert_plugin_i18n`
+  - `albert_plugin_generate_metadata`
+  - `albert_plugin_compile_options`
+- Add dynamic items feature
+  - Add interface class `albert::Item::Observer`
+  - Add `void albert::Item::addObserver(Observer *observer);`
+  - Add `void albert::Item::removeObserver(Observer *observer);`
+- Add `albert:` scheme handling support
+  - Add `albert::UrlHandler` extension
+
+### Plugins
+
+- **chromium**
+  - Show the full folder path
+- **datetime**
+  - Add paste action
+  - Dynamic item support
+- **docs**
+  - Compose icon with the books emoji to compensate for its 32x32 size
+  - Fix missing cache location initialization
+  - Fix directory init mismatch
+- **mpris** → **mediaremote**
+  - v6 macOS implementation
+- **path**
+  - Fix trigger behavior
+- **snippets**
+  - Fix https://github.com/albertlauncher/albert-plugin-snippets/issues/1
+  - Use query dependent synopsis
+  - Allow putting text directly into inputline
+  - Add input validation in snippet name input dialog
+- **ssh**
+  - Avoid empty match in global query.
+- **timer**
+  - Use dynamic item feature
+- **timezones**
+  - Fix icon and translations
+  - Use batch add to avoid flicker
+- **vpn**
+  - Use dynamic item feature
+- **websearch**
+  - Fix 6.9 breaking tableview behavior
+- **widgetsboxmodel**
+  - Make use of Query::dataChanged for dynamic items
+  - Disable window properties for now
+  - Add input edit mode
+  - Change animation durations to a more calm behavior
+  - Drop redundant history text equality check
+  - Properly reset input history search on hide.
+  - Restore user input on backward history iteration end
+  - Fix macOS cmd+backspace behavior in multiline editing
+  - Fix weird selection glitch
+  - Fix out of bounds crashes. Trigger length is set async and may exceed the text length.
+  - Fix null query segfaults
+  - Fix comboboxes not showing system theme
+
 ## v0.27.8 (2025-04-06)
 
 Hotfix release for the frontends.
