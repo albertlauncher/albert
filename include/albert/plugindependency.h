@@ -8,13 +8,9 @@
 #include <albert/extensionregistry.h>
 #include <albert/logging.h>
 
-namespace albert
+namespace albert::util
 {
 
-///
-/// Base class for StrongDependency and WeakDependency.
-/// Client code should not use this class directly.
-///
 template<class T>
 class Dependency
 {
@@ -28,6 +24,9 @@ public:
     T* get() { return dependency_; }
 
 protected:
+
+    Dependency() = default;
+    ~Dependency() = default;
 
     T *dependency_ = nullptr;
 };
