@@ -1,4 +1,4 @@
-##v0.28.0 (2025-05-30)
+## v0.28.0 (2025-05-30)
 
 ### Albert
 
@@ -10,7 +10,7 @@
 - Move system related functions into `systemutil.h`
   - Remove `void open(const std::string &path);`
   - Remove default param workdir in `runDetachedProcess`
-  - Add `long long runDetachedProcess(const QStringList&);
+  - Add `long long runDetachedProcess(const QStringList&);`
   - Remove `open(const std::string &path);`
   - Add `open(const std::filesystem::path &path);`
 - Remove `Query::isFinished()`
@@ -153,8 +153,8 @@ Hotfix git submodule urls.
 - **timer** - Remove timers from empty query without hiding the window.
 - **vpn** - Add icons clearly indicating the state.
 - **websearch** - New default icon.
-- **widgetsboxmodel** and  **widgetsboxmodel-qss** 
-  
+- **widgetsboxmodel** and  **widgetsboxmodel-qss**
+
   QStyleSheetStyle and its style sheets are a mess to work with and pretty limited.
   They may be suitable to style dedicated widgets but not for entire UIs.
   This release lays the foundation for a frontend that is not a pain to work with.
@@ -295,7 +295,7 @@ Hotfix backward compatibility.
 - Add a motivating text in the plugin settings placeholder page
 
 ### Plugins
-- **timer** 
+- **timer**
   - Allow h, m, s durations
   - Clean obsolete translations
   - User timer emoji icon
@@ -755,7 +755,7 @@ Hotfix docs plugin cluttering output due to nonunique item id
 ### Plugins
 - Support i18n
 - **qmlboxmodel** archive wip
-- **widgetsboxmodel** 
+- **widgetsboxmodel**
   - Fix animation on linux
   - Dark theme support
   - Themes update
@@ -930,7 +930,7 @@ Let RPCServer take care of crash reports. This is a hotfix to remove the recurri
 
 ### Plugins
 - **qml** Add hack around lacking DropShadow.samples in Qt <6.4
-- **apps_macos** 
+- **apps_macos**
     - Find all apps in home dir
     - Keep apps up to date unsing online search
     - Localized app names
@@ -947,7 +947,7 @@ Let RPCServer take care of crash reports. This is a hotfix to remove the recurri
 ## v0.22.4 (2023-08-30)
 
 ### Plugins
-- **docs** 
+- **docs**
   - Add cache for docset list
   - Use find_program to find brew for ootb cmake config
 - **muparser** Use find_program to find brew for ootb cmake config
@@ -1103,15 +1103,15 @@ Let RPCServer take care of crash reports. This is a hotfix to remove the recurri
 - Change IPC socket path to `$CACHEDIR/albert/ipc_socket`. Was `$CACHEDIR/albert_socket`.
 - Fix triggered global query MRU sort
 
-### API 
+### API
 
 - Remove `Item::hasActions`
 - Add global config, cache and data location functions
 - Change `RankItem::score` type to float (0,1**
 - Make queries pointers in handler functions
 - Add function to get global network manager
-- Use explicit named query handling methods (no parameter overloading) `handleTriggerQuery` and 
-  `handleGlobalQuery`. This reduces confusion, avoids annoying extra boilerplate to disambiguate 
+- Use explicit named query handling methods (no parameter overloading) `handleTriggerQuery` and
+  `handleGlobalQuery`. This reduces confusion, avoids annoying extra boilerplate to disambiguate
   methods to avoid hide-virtual warnings and serves as a lowest common denominator on a
   language/naming level since these features may not be supported by script languages (e.g. Python).
 
@@ -1119,7 +1119,7 @@ Let RPCServer take care of crash reports. This is a hotfix to remove the recurri
 - Add
   - **docs** Reduced set of Zeal docsets at hands
   - **clipboard** Clipboard history
-  - **coingecko** v1.0 
+  - **coingecko** v1.0
   - **mathematica** iid:1.0 port
 - **contacts:1.2**
   - Formatting: Remove Apple specific braces
@@ -1366,7 +1366,7 @@ Let RPCServer take care of crash reports. This is a hotfix to remove the recurri
 - Show plugin header files in IDEs
 - Use handcrafted icon lookup again
 
-### API 
+### API
 - Revert to dedicated FallbackHandler
 - Clean interface using opaque pointers
 - GlobalQueryHandler::rankItems -> handlyQuery
@@ -1481,8 +1481,8 @@ Drop albertctl. Back to `albert <command>`
 
 ### Python plugins
 - **docker** -  Archive, curious segfaults
-- **aur** - Port 0.5 
-- **awiki** - Port 0.5 
+- **aur** - Port 0.5
+- **awiki** - Port 0.5
 
 
 ## v0.18.3 (2023-01-02)
@@ -1697,7 +1697,7 @@ Drop telemetry
 - Add a build flag for QtCharts
 - Drop debug options if favor of QLoggingCategory env vars
 
-### Plugins 
+### Plugins
 
 - **ssh** Fix input regex. Sort by length then lexically.
 - **ssh** Use backward compatible ssh url syntax
@@ -1716,7 +1716,7 @@ Drop telemetry
 - Let fuzzy require an additional character. Tolerance: floor((wordlen - 1)/3))
 - Print logging category to stdout QT_LOGGING_RULES="*debug=false;driver.usb.debug=true"
 
-### Plugins 
+### Plugins
 - **Term** Change terminal action order: Let "Run w/o term" be the last one
 - **VBox** Set default build switch for VirtualBox to OFF
 - **Files** Add fancy icons to mime dialog
@@ -1732,7 +1732,7 @@ Drop telemetry
 Usage graph in the settings (QtCharts (>=5.6))
 
 ### Plugins
-- **QML** 
+- **QML**
   - Frontend plugin requires ()5.9
   - History search of the input now allows substring matching (Type and navigate)
   - Store user input of every session
@@ -1781,7 +1781,7 @@ Bugfixes
 
 ## v0.14.16 (2018-03-09)
 
-### Plugins 
+### Plugins
 - **Gnome dictionary** (nikhilwanpal)
 - **Mathematica** (Asger Hautop Drewsen)
 - **TeX to unicode** (Asger Hautop Drewsen)
@@ -1889,12 +1889,12 @@ Bugfixes
 ## v0.14.0 (2017-10-18)
 
 ### Plugins
-- New 
-  - **Python Embedding** 
+- New
+  - **Python Embedding**
   - **Python Eval**
-  - **Debugging** 
-  - **Zeal** 
-  - **GoldenDict** 
+  - **Debugging**
+  - **Zeal**
+  - **GoldenDict**
   - **Unit Converter**
   - **Currency Converter**
 
@@ -1911,9 +1911,9 @@ Bugfixes
 - Tree structure in file index and "smart" indexing
 - Shell like completion for terminal extension
 
-### Plugins 
-- New: KeyValue 
-- New: Hash Generator 
+### Plugins
+- New: KeyValue
+- New: Hash Generator
 
 
 ## v0.12.0 (2017-06-09)
@@ -1980,7 +1980,7 @@ Bugfixes
 - The application extension allows to ignore the `OnlyShowIn`/`NotShowIn` keys.
 - The bash script to clone the template extension is now deprecated and replaced by a Python script.
 
-### Plugins 
+### Plugins
 - New: MPRIS
 - New: Secure Shell
 
@@ -2017,7 +2017,7 @@ Bugfixes
 
 - New extension system architecture
 
-### Plugins 
+### Plugins
 - External extensions
 - Firefox
 - Improved VirtualBox extension

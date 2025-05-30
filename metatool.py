@@ -152,7 +152,7 @@ def release(args):
             old_changelog = file.read()
 
         with open(root/"CHANGELOG.md", 'w') as file:
-            file.write(f"##v{args.version} ({datetime.date.today().strftime('%Y-%m-%d')})\n\n{changelog}\n\n{old_changelog}")
+            file.write(f"## v{args.version} ({datetime.date.today().strftime('%Y-%m-%d')})\n\n{changelog}\n\n\n{old_changelog}")
 
         print("Update CMake project version…")
         run(["sed", "-i.bak", f"s/^set(PROJECT_VERSION.*$/set(PROJECT_VERSION {args.version})/", root/"CMakeLists.txt"], cwd=root).check_returncode()
