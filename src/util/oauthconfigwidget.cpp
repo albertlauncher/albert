@@ -47,16 +47,11 @@ public:
         sizePolicy.setHeightForWidth(pushButton_auth->sizePolicy().hasHeightForWidth());
         pushButton_auth->setSizePolicy(sizePolicy);
 
-        formLayout->setWidget(0, QFormLayout::LabelRole, label_client_id);
-        formLayout->setWidget(0, QFormLayout::FieldRole, lineEdit_client_id);
-        formLayout->setWidget(1, QFormLayout::LabelRole, label_client_secret);
-        formLayout->setWidget(1, QFormLayout::FieldRole, lineEdit_client_secret);
-        formLayout->setWidget(2, QFormLayout::FieldRole, label_auth_state);
-        formLayout->setWidget(2, QFormLayout::LabelRole, label_auth);
-        formLayout->setWidget(3, QFormLayout::FieldRole, pushButton_auth);
-
-        QWidget::setTabOrder(lineEdit_client_id, lineEdit_client_secret);
-        QWidget::setTabOrder(lineEdit_client_secret, pushButton_auth);
+        formLayout->addRow(label_client_id, lineEdit_client_id);
+        if (!oauth.isPkceEnabled())
+            formLayout->addRow(label_client_secret, lineEdit_client_secret);
+        formLayout->addRow(label_auth, label_auth_state);
+        formLayout->addRow(nullptr, pushButton_auth);
 
         label_client_id->setText(QCoreApplication::translate("OAuthConfigWidget", "Client identifier", nullptr));
         label_client_secret->setText(QCoreApplication::translate("OAuthConfigWidget", "Client secret", nullptr));
