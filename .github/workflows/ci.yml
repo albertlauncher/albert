@@ -61,7 +61,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dockerfile: [arch.Dockerfile, fedora.Dockerfile, ubuntu.24.Dockerfile]
+        dockerfile: [arch.Dockerfile, fedora.Dockerfile, ubuntu.Dockerfile]
 
     steps:
 
@@ -71,7 +71,7 @@ jobs:
           name: source-artifact
 
       - name: Build docker test image
-        run: docker build . --file .docker/${{ matrix.dockerfile }}
+        run: docker build . --file .docker/${{ matrix.dockerfile }} --target build
 
   MacBuilds:
     needs: SourceArtifact

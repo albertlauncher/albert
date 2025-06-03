@@ -81,36 +81,6 @@ def create_changelog(args) -> str:
     return '\n\n'.join(out)
 
 
-def test_build(args):
-
-    cmds = {
-        'Arch':   ["docker", "build", "--progress=plain", "-f", ".docker/arch.Dockerfile", "-t",
-                   "albert:arch", "--platform", "linux/amd64", "."],
-        'Fedora': ["docker", "build", "--progress=plain", "-f", ".docker/fedora.Dockerfile", "-t",
-                   "albert:fedora", "."],
-        'Ubuntu24': ["docker", "build", "--progress=plain", "-f", ".docker/ubuntu.24.Dockerfile", "-t",
-                     "albert:ubuntu", "."],
-    }
-
-    if args.distribution is not None:
-        cmds = [v for k,v  in cmds.items() if args.distribution.lower() in k.lower()]
-    else:
-        keys = list(cmds.keys())
-        for i, k in enumerate(keys):
-            print(f"{i}: {k}")
-        indices = input("Choose image: [All] ")
-        indices = [int(s) for s in filter(None, indices.split())]
-        cmds = [cmds[key] for key in [keys[i] for i in indices]] if indices else cmds.values()
-
-    try:
-        for cmd in cmds:
-            print(f">>> {' '.join(cmd)}")
-            run(cmd).check_returncode()
-    except subprocess.CalledProcessError as e:
-        print(e)
-        sys.exit(1)
-
-
 def release(args):
     root = Path(args.root)
 
@@ -126,13 +96,11 @@ def release(args):
         sys.exit(1)
 
     print("CHECK THESE!")
+    print("- TESTED!??")
     print("- PRs and feature branches merged?")
     print("- submodules staged/committed? (python, plugins, …)")
     print("- 'v%s' > '%s' ?"
           % (args.version, run(["git", "describe", "--tags", "--abbrev=0"], capture_output=True).stdout.decode().strip()))
-
-    if "y".startswith(input("Shall I run a test build in docker (docker running?)? [Y/n] ").lower()):
-        test_build(args)
 
     atomic_changelog = root/f"changelog_v{args.version}"
 
@@ -201,11 +169,6 @@ def main():
     for c in ['changelog', 'cl']:
         sp = sps.add_parser(c, help='Create raw changelog.')
         sp.set_defaults(func=lambda args: print(create_changelog(args)))
-
-    for c in ['test', 't']:
-        sp = sps.add_parser(c, help='Test build using docker.')
-        sp.add_argument('distribution', type=str, nargs='?', default=None, help="The distro.")
-        sp.set_defaults(func=test_build)
 
     for c in ['release', 'r']:
         sp = sps.add_parser(c, help="Release a new version.")

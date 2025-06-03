@@ -1,5 +1,6 @@
-FROM fedora:latest AS builder
+ARG BASE_IMAGE=fedora:latest
 
+FROM ${BASE_IMAGE} AS base
 RUN yum install -y \
     cmake \
     gcc-c++ \
@@ -19,16 +20,15 @@ RUN yum install -y \
  && yum clean all \
  && rm -rf /var/cache/yum/*
 
+FROM base AS build
 COPY . /src
-
-# Build, test and install the main project
 RUN cmake -S /src -B /build -DBUILD_TESTS=ON \
  && cmake --build /build -j$(nproc) \
  && cmake --install /build --prefix /usr \
  && ctest --test-dir /build --output-on-failure \
  && rm -rf /build
 
-# Build and install a plugin separately
+FROM base AS build-plugins
 RUN cmake -S /src/plugins/applications -B /build -DCMAKE_PREFIX_PATH=/usr/lib64/cmake/ \
  && cmake --build /build -j$(nproc) \
  && cmake --install /build --prefix /usr \
