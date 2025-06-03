@@ -76,8 +76,7 @@ set(LIB_PUBLIC_HEADER
 
     # util
     include/albert/backgroundexecutor.h
-    include/albert/desktoputil.h
-    include/albert/filedownloader.h
+    include/albert/download.h
     include/albert/iconprovider.h
     include/albert/indexitem.h
     include/albert/indexqueryhandler.h
@@ -174,9 +173,8 @@ set(LIB_SRC
     src/settings/settingswindow.h
 
     src/util/albert.cpp
-    src/util/desktoputil.cpp
+    src/util/download.cpp
     src/util/extensionplugin.cpp
-    src/util/filedownloader.cpp
     src/util/iconprovider.cpp
     src/util/indexitem.cpp
     src/util/indexqueryhandler.cpp
