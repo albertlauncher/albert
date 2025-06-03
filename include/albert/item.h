@@ -72,4 +72,26 @@ public:
 
 };
 
+namespace detail
+{
+class ALBERT_EXPORT DynamicItem : public Item
+{
+public:
+
+    DynamicItem();
+    ~DynamicItem() override;
+
+    void dataChanged() const;
+
+    void addObserver(Observer *) override;
+    void removeObserver(Observer *) override;
+
+private:
+
+    class Private;
+    std::unique_ptr<Private> d;
+
+};
+}
+
 }
