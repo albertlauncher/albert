@@ -23,60 +23,93 @@ public:
     OAuth2();
     ~OAuth2();
 
+    /// Requests access, i.e. starts the Authorization Code Flow to obtain an access token.
     void requestAccess();
+
+    /// Updates the access token.
     void updateTokens();
 
+    /// Returns the client identifier.
     const QString &clientId() const;
-    void setClientId(const QString &);
 
+    /// Sets the client identifier to _id_.
+    void setClientId(const QString &id);
+
+    /// Returns the client secret.
     const QString &clientSecret() const;
-    void setClientSecret(const QString &);
 
+    /// Sets the client secret to _secret_.
+    void setClientSecret(const QString &secret);
+
+    /// Returns the OAuth scope to request permissions for.
     const QString &scope() const;
-    void setScope(const QString &);
 
+    /// Sets the OAuth scope to request permissions for to _scope_.
+    void setScope(const QString &scope);
+
+    /// Returns the authorization URL.
     const QString &authUrl() const;
-    void setAuthUrl(const QString &);
 
+    /// Sets the authorization URL to _url_.
+    void setAuthUrl(const QString &url);
+
+    /// Returns the redirect URI.
     const QString &redirectUri() const;
-    void setRedirectUri(const QString &);
 
+    /// Sets the redirect URI to _uri_.
+    void setRedirectUri(const QString &uri);
+
+    /// Returns true if PKCE is enabled, false otherwise.
     bool isPkceEnabled() const;
-    void setPkceEnabled(bool);
 
+    /// Sets whether PKCE is enabled or not.
+    void setPkceEnabled(bool enabled);
+
+    /// Returns the token URL.
     const QString &tokenUrl() const;
-    void setTokenUrl(const QString &);
 
+    /// Sets the token URL to _url_.
+    void setTokenUrl(const QString &url);
+
+    /// Returns the access token.
     const QString &accessToken() const;
+
+    /// Returns the access token.
     const QString &refreshToken() const;
+
+    /// Returns the access token.
     const QDateTime &tokenExpiration() const;
 
+    /// Sets the access token, refresh token and expiration date.
     void setTokens(const QString &access_token,
                    const QString &refresh_token = {},
                    const QDateTime &expiration = {});
 
+    /// Returns the error message if any.
     const QString &error() const;
 
     enum class State {
-        NotAuthorized,
-        Awaiting,
-        Granted
+        NotAuthorized,  ///< Not yet authorized.
+        Awaiting,  ///< Waiting for user interaction to authorize.
+        Granted  ///< Authorization granted and access token available.
     };
 
+    /// Returns the state of the authorization flow.
     State state() const;
 
+    /// Handles the redirect callback URL from the OAuth2 provider.
     void handleCallback(const QUrl &callback);
 
 signals:
 
-    void clientIdChanged(const QString &);
-    void clientSecretChanged(const QString &);
-    void scopeChanged(const QString &);
-    void authUrlChanged(const QString &);
-    void redirectUriChanged(const QString &);
-    void tokenUrlChanged(const QString &);
-    void tokensChanged();
-    void stateChanged(State);
+    void clientIdChanged(const QString &);  ///< Emitted when the client ID changes.
+    void clientSecretChanged(const QString &);  ///< Emitted when the client secret changes.
+    void scopeChanged(const QString &);  ///< Emitted when the scope changes.
+    void authUrlChanged(const QString &);  ///< Emitted when the authorization URL changes.
+    void redirectUriChanged(const QString &);  ///< Emitted when the redirect URI changes.
+    void tokenUrlChanged(const QString &);  ///< Emitted when the token URL changes.
+    void tokensChanged();  ///< Emitted when the access token, refresh token or expiration date changes.
+    void stateChanged(State);  ///< Emitted when the state changes.
 
 private:
 
