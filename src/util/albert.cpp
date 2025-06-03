@@ -22,26 +22,38 @@ void albert::restart()
 void albert::quit()
 { QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection); }
 
-inline static filesystem::path getFilesystemPath(QStandardPaths::StandardLocation loc)
+static filesystem::path getFilesystemPath(QStandardPaths::StandardLocation loc)
 { return filesystem::path(QStandardPaths::writableLocation(loc).toStdString()); }
 
-filesystem::path albert::cacheLocation()
-{ return getFilesystemPath(QStandardPaths::CacheLocation); }
+const filesystem::path &albert::cacheLocation()
+{
+    static const auto p = getFilesystemPath(QStandardPaths::CacheLocation);
+    return p;
+}
 
-filesystem::path albert::configLocation()
-{ return getFilesystemPath(QStandardPaths::AppConfigLocation); }
+const filesystem::path &albert::configLocation()
+{
+    static const auto p = getFilesystemPath(QStandardPaths::AppConfigLocation);
+    return p;
+}
 
-filesystem::path albert::dataLocation()
-{ return getFilesystemPath(QStandardPaths::AppDataLocation); }
-
-inline static unique_ptr<QSettings> settingsFromPath(const filesystem::path &path)
-{ return make_unique<QSettings>(path.string().data(), QSettings::IniFormat); }
+const filesystem::path &albert::dataLocation()
+{
+    static const auto p = getFilesystemPath(QStandardPaths::AppDataLocation);
+    return p;
+}
 
 unique_ptr<QSettings> albert::settings()
-{ return settingsFromPath(configLocation() / "config"); }
+{
+    const auto path = QString::fromStdString((configLocation() / "config").string());
+    return make_unique<QSettings>(path, QSettings::IniFormat);
+}
 
 unique_ptr<QSettings> albert::state()
-{ return settingsFromPath(dataLocation() / "state"); }
+{
+    const auto path = QString::fromStdString((dataLocation() / "state").string());
+    return make_unique<QSettings>(path, QSettings::IniFormat);
+}
 
 void albert::showSettings(QString plugin_id)
 { App::instance()->showSettings(plugin_id); }

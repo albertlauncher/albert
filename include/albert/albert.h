@@ -10,41 +10,56 @@ class QNetworkAccessManager;
 class QSettings;
 class QUrl;
 
+/// Albert utility namespace
+namespace albert::util {}
+
+/// Albert private namespace
+namespace albert::detail {}
+
+/// Albert core interface namespace
 namespace albert
 {
 class ExtensionRegistry;
 
-/// Shows the frontend. If `input_text` is not null the input is set.
+/// Shows the frontend.
+/// If _input_text_ is not null the input is set.
 ALBERT_EXPORT void show(const QString &input_text = {});
 
+/// Creates and/or shows the settings window.
+/// If specified the settings of the plugin with the id _plugin_id_ are shown.
+ALBERT_EXPORT void showSettings(QString plugin_id = {});
+
 /// Restarts the application.
+/// This function is thread-safe.
 ALBERT_EXPORT void restart();
 
 /// Quits the application.
+/// This function is thread-safe.
 ALBERT_EXPORT void quit();
 
-/// Opens/Shows the settings window (of `plugin_id`).
-ALBERT_EXPORT void showSettings(QString plugin_id = {});
-
 /// Returns the application config location.
-ALBERT_EXPORT std::filesystem::path configLocation();
+/// This function is thread-safe.
+ALBERT_EXPORT const std::filesystem::path &configLocation();
 
 /// Returns the application cache location.
-ALBERT_EXPORT std::filesystem::path cacheLocation();
+/// This function is thread-safe.
+ALBERT_EXPORT const std::filesystem::path &cacheLocation();
 
 /// Returns the application data location.
-ALBERT_EXPORT std::filesystem::path dataLocation();
+/// This function is thread-safe.
+ALBERT_EXPORT const std::filesystem::path &dataLocation();
 
 /// Returns a QSettings object for configuration storage.
+/// This function is thread-safe.
 ALBERT_EXPORT std::unique_ptr<QSettings> settings();
 
 /// Returns a QSettings object for state storage.
+/// This function is thread-safe.
 ALBERT_EXPORT std::unique_ptr<QSettings> state();
 
-/// Returns a const reference to the extension registry.
-/// Registering plugins via this registry is not allowed. Use PluginInstance::extensions().
-/// See also WeakDependency and StrongDependency.
+/// Returns a const reference to the central \ref ExtensionRegistry.
+/// Registering plugins via this registry is not allowed. Use \ref PluginInstance::extensions().
+/// See also \ref util::WeakDependency and \ref util::StrongDependency.
 ALBERT_EXPORT const ExtensionRegistry &extensionRegistry();
 
 } // namespace albert
-
