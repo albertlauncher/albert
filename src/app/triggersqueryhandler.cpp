@@ -5,6 +5,7 @@
 #include "queryengine.h"
 #include "standarditem.h"
 #include "triggersqueryhandler.h"
+#include <mutex>
 using namespace Qt::StringLiterals;
 using namespace albert::util;
 using namespace albert;
