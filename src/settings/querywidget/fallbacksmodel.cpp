@@ -7,7 +7,6 @@
 #include <QCoreApplication>
 #include <QHeaderView>
 #include <QIODevice>
-#include <QMessageBox>
 #include <QMimeData>
 using namespace albert;
 using namespace std;

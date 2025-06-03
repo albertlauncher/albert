@@ -4,7 +4,6 @@
 #include "pluginmetadata.h"
 #include "pluginqueryhandler.h"
 #include "pluginregistry.h"
-#include <QMessageBox>
 #include <QWidget>
 using namespace albert;
 using namespace std;

@@ -4,48 +4,33 @@
 #include "frontend.h"
 #include "messagebox.h"
 #include <QGuiApplication>
+#include <QMessageBox>
 using namespace albert;
 
-QMessageBox::StandardButton util::question(const QString &text,
-                                           QMessageBox::StandardButtons buttons,
-                                           QMessageBox::StandardButton defaultButton)
+bool util::question(const QString &text)
 {
     return QMessageBox::question(QWidget::find(App::instance()->frontend()->winId()),
                                  qApp->applicationDisplayName(),
-                                 text,
-                                 buttons,
-                                 defaultButton);
+                                 text) == QMessageBox::Yes;
 }
 
-QMessageBox::StandardButton util::information(const QString &text,
-                                              QMessageBox::StandardButtons buttons,
-                                              QMessageBox::StandardButton defaultButton)
+void util::information(const QString &text)
 {
-    return QMessageBox::information(QWidget::find(App::instance()->frontend()->winId()),
-                                    qApp->applicationDisplayName(),
-                                    text,
-                                    buttons,
-                                    defaultButton);
+    QMessageBox::information(QWidget::find(App::instance()->frontend()->winId()),
+                             qApp->applicationDisplayName(),
+                             text);
 }
 
-QMessageBox::StandardButton util::warning(const QString &text,
-                                          QMessageBox::StandardButtons buttons,
-                                          QMessageBox::StandardButton defaultButton)
+void util::warning(const QString &text)
 {
-    return QMessageBox::warning(QWidget::find(App::instance()->frontend()->winId()),
-                                qApp->applicationDisplayName(),
-                                text,
-                                buttons,
-                                defaultButton);
+    QMessageBox::warning(QWidget::find(App::instance()->frontend()->winId()),
+                         qApp->applicationDisplayName(),
+                         text);
 }
 
-QMessageBox::StandardButton util::critical(const QString &text,
-                                           QMessageBox::StandardButtons buttons,
-                                           QMessageBox::StandardButton defaultButton)
+void util::critical(const QString &text)
 {
-    return QMessageBox::critical(QWidget::find(App::instance()->frontend()->winId()),
-                                 qApp->applicationDisplayName(),
-                                 text,
-                                 buttons,
-                                 defaultButton);
+    QMessageBox::critical(QWidget::find(App::instance()->frontend()->winId()),
+                          qApp->applicationDisplayName(),
+                          text);
 }
