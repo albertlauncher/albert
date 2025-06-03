@@ -7,7 +7,7 @@
 #include <albert/logging.h>
 
 // Private API
-namespace albert::experimental
+namespace albert::detail
 {
 
 struct TimeIt
@@ -24,7 +24,7 @@ struct TimeIt
     {
         auto end = std::chrono::system_clock::now();
         auto dur = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-        CRIT << QString(ccyan "%L1 µs | %2").arg(dur, 8).arg(name);
+        CRIT << QStringLiteral(ccyan "%L1 µs | %2").arg(dur, 8).arg(name);
     }
 };
 
