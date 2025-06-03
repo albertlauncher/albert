@@ -9,7 +9,7 @@
 // PRIVATE API - DO NOT USE!
 
 
-namespace albert
+namespace albert::detail
 {
 class ALBERT_EXPORT TelemetryProvider : virtual public Extension
 {

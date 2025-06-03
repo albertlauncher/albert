@@ -2,4 +2,4 @@
 
 #include "telemetryprovider.h"
 
-albert::TelemetryProvider::~TelemetryProvider() = default;  // vtable
+albert::detail::TelemetryProvider::~TelemetryProvider() = default;  // vtable
