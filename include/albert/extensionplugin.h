@@ -6,7 +6,7 @@
 #include <albert/extension.h>
 #include <albert/plugininstance.h>
 
-namespace albert
+namespace albert::util
 {
 
 ///

@@ -1,8 +1,9 @@
-// Copyright (c) 2024 Manuel Schneider
+// Copyright (c) 2024-2025 Manuel Schneider
 
 #include "extensionplugin.h"
 #include "pluginloader.h"
 #include "pluginmetadata.h"
+using namespace albert::util;
 using namespace albert;
 using namespace std;
 
