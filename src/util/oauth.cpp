@@ -360,7 +360,10 @@ void OAuth2::setTokens(const QString &access_token,
     if (!refresh_token.isEmpty())
     {
         if (expiration.isNull())
-            WARN << "Got 'refresh_token' but no valid expiration.";
+        {
+            WARN << "Got 'refresh_token' but no valid expiration. Refreshing immediately.";
+            d->refreshAccessToken();
+        }
         else
         {
             if (const auto expires_in = QDateTime::currentDateTime().secsTo(expiration);
