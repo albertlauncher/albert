@@ -49,7 +49,7 @@ std::shared_ptr<StandardItem> StandardItem::make(QString id,
                                           ::move(text),
                                           ::move(subtext),
                                           ::move(input_action_text),
-                                          ::move(::move(icon_urls)),
+                                          ::move(icon_urls),
                                           ::move(actions));
 }
 
@@ -63,6 +63,6 @@ std::shared_ptr<StandardItem> StandardItem::make(QString id,
                                           ::move(text),
                                           ::move(subtext),
                                           QString(),
-                                          ::move(::move(icon_urls)),
+                                          ::move(icon_urls),
                                           ::move(actions));
 }
