@@ -2,6 +2,7 @@
 
 #pragma once
 #include <albert/export.h>
+#include <memory>
 class QByteArray;
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -27,5 +28,27 @@ ALBERT_EXPORT QNetworkRequest makeRestRequest(const QString &base_url,
                                               const QString &path,
                                               const QUrlQuery &query,
                                               const QByteArray &authorization_header);
+
+}
+
+namespace albert::detail {
+
+/// Blocks execution
+class ALBERT_EXPORT RateLimiter
+{
+public:
+    RateLimiter(unsigned int ms);
+    ~RateLimiter();
+
+    /// Blocks until the next request is allowed.
+    /// If `valid` is false, it returns immediately.
+    const bool &debounce(const bool &valid);
+
+private:
+
+    class Private;
+    std::unique_ptr<Private> d;
+
+};
 
 }
