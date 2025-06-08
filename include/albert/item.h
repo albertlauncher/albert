@@ -19,55 +19,50 @@ public:
 
     virtual ~Item();
 
-    /// Getter for the item identifier.
-    ///
-    /// Has to be unique per extension.
-    ///
-    /// This function is involved in several time critical operartion such as
-    /// indexing and sorting. It is therefore recommended to return a string
-    /// that is as short as possible as fast as possible.
+    /// Returns the item identifier.
+    /// Has to be unique per extension. This function is involved in several time critical
+    /// operartion such as indexing and sorting. It is therefore recommended to return a string that
+    /// is as short as possible as fast as possible.
     virtual QString id() const = 0;
 
-    /// Getter for the item text.
-    ///
-    /// Primary text displayed emphasized in a list item.
-    ///
-    /// This string is used in scoring. It is therefore recommended to return
-    /// as fast as possible. The text length is used as divisor for scoring,
-    /// hence the string must not be empty, otherwise you get undefined
-    /// behavior. For performance reasons text length is not checked.
+    /// Returns the item text.
+    /// Primary text displayed emphasized in a list item. This string is used in scoring. It is
+    /// therefore recommended to return as fast as possible. The text length is used as divisor for
+    /// scoring, hence the string must not be empty, otherwise you get undefined behavior. For
+    /// performance reasons text length is not checked.
     virtual QString text() const = 0;
 
-    /// Getter for the item subtext.
+    /// Returns the item subtext.
     /// Secondary descriptive text displayed in a list item.
     virtual QString subtext() const = 0;
 
-    /// Getter for the items iconUrls.
-    /// Used to get the item icon using the IconProvider.
+    /// Returns the items icon urls.
+    /// Used to get the item icon using the icon provider functions.
     virtual QStringList iconUrls() const = 0;
 
-    /// Getter for the input action text.
-    /// Used as input text replacement (usually by pressing Tab).
+    /// Returns the input action text.
+    /// Used as input text replacement (usually by pressing Tab). The base implementation returns
+    /// \ref text().
     virtual QString inputActionText() const;
 
-    /// Getter for item actions.
-    /// These are the actions a users can run.
+    /// Returns the item actions.
+    /// These are the actions a users can run. The base implementation returns an empty vector.
     virtual std::vector<Action> actions() const;
 
     /// Interface class for item observers
     class Observer
     {
     public:
-        /// Notifies the Observer about any changes in `item`.
+        /// Notifies the observer about any changes in _item_.
         virtual void notify(const albert::Item *item) = 0;
     protected:
         virtual ~Observer();
     };
 
-    /// Start notifying `observer` about any changes.
+    /// Start notifying _observer_ about any changes.
     virtual void addObserver(Observer *observer);
 
-    /// Stop notifying `observer` about any changes.
+    /// Stop notifying _observer_ about any changes.
     virtual void removeObserver(Observer *observer);
 
 };

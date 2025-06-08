@@ -6,7 +6,7 @@ using namespace albert;
 
 Item::~Item() = default;
 
-QString Item::inputActionText() const { return {}; }
+QString Item::inputActionText() const { return text(); }
 
 std::vector<Action> Item::actions() const { return {}; }
 
