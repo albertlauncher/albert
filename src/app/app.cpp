@@ -2,7 +2,6 @@
 
 #include "albert.h"
 #include "app.h"
-#include "appqueryhandler.h"
 #include "extensionregistry.h"
 #include "frontend.h"
 #include "iconprovider.h"
@@ -101,7 +100,6 @@ public:
     std::unique_ptr<Session> session{nullptr};
     QPointer<SettingsWindow> settings_window{nullptr};
 
-    AppQueryHandler app_query_handler;
     PluginQueryHandler plugin_query_handler;
     TriggersQueryHandler triggers_query_handler;
 
@@ -146,7 +144,6 @@ void App::Private::initialize()
 
     initHotkey();  // Connect hotkey after! frontend has been loaded else segfaults
 
-    extension_registry.registerExtension(&app_query_handler);
     extension_registry.registerExtension(&plugin_query_handler);
     extension_registry.registerExtension(&triggers_query_handler);
 
@@ -171,7 +168,6 @@ void App::Private::finalize()
     extension_registry.deregisterExtension(&plugin_provider);  // unloads plugins
     extension_registry.deregisterExtension(&triggers_query_handler);
     extension_registry.deregisterExtension(&plugin_query_handler);
-    extension_registry.deregisterExtension(&app_query_handler);
 
     try {
         frontend_plugin->unload();

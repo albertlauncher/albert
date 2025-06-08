@@ -9,6 +9,9 @@
 	path = lib/QNotification
 	url = https://github.com/QtCommunity/QNotification
 
+[submodule "plugins/application"]
+	path = plugins/application
+	url = git@github.com:albertlauncher/albert-plugin-application.git
 [submodule "plugins/applications"]
 	path = plugins/applications
 	url = https://github.com/albertlauncher/albert-plugin-applications.git
@@ -90,4 +93,3 @@
 [submodule "plugins/widgetsboxmodel"]
 	path = plugins/widgetsboxmodel
 	url = https://github.com/albertlauncher/albert-plugin-widgetsboxmodel.git
-

@@ -99,8 +99,6 @@ set(LIB_PUBLIC_HEADER
 set(LIB_SRC
     src/app/app.cpp
     src/app/app.h
-    src/app/appqueryhandler.cpp
-    src/app/appqueryhandler.h
     src/app/messagehandler.cpp
     src/app/messagehandler.h
     src/app/pluginqueryhandler.cpp
@@ -245,7 +243,6 @@ target_include_directories(${TARGET_LIB}
         "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     PRIVATE
-        $<TARGET_PROPERTY:albert::applications,INTERFACE_INCLUDE_DIRECTORIES>  # for terminals
         "${PROJECT_BINARY_DIR}/include/albert"
         "${PROJECT_SOURCE_DIR}/include/albert"
         src
