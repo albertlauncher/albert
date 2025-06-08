@@ -23,12 +23,6 @@ ALBERT_EXPORT QNetworkAccessManager &network();
 ///
 ALBERT_EXPORT QNetworkReply *await(QNetworkReply *reply);
 
-
-ALBERT_EXPORT QNetworkRequest makeRestRequest(const QString &base_url,
-                                              const QString &path,
-                                              const QUrlQuery &query,
-                                              const QByteArray &authorization_header);
-
 }
 
 namespace albert::detail {

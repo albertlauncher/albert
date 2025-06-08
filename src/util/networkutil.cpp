@@ -30,23 +30,6 @@ QNetworkReply *util::await(QNetworkReply *reply)
     }
 }
 
-QNetworkRequest util::makeRestRequest(const QString &base_url,
-                                      const QString &path,
-                                      const QUrlQuery &query,
-                                      const QByteArray &authorization_header)
-{
-    QUrl url(base_url);
-    url.setPath(path);
-    url.setQuery(query);
-    QNetworkRequest request(url);
-    request.setRawHeader("Accept", "application/json");
-    if (!authorization_header.isNull())
-        request.setRawHeader("Authorization", authorization_header);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    return request;
-}
-
-
 class detail::RateLimiter::Private
 {
 public:
