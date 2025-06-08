@@ -40,14 +40,14 @@ shared_ptr<Item> TriggersQueryHandler::makeItem(const QString &trigger, Extensio
         trigger,
         QString(trigger).replace(" ", "•"),
         QString("%1 · %2").arg(handler->name(), handler->description()),
-        trigger,
         {u"gen:?&text=🚀"_s},
         {{
             "set",
             tr("Set input text"),
             [trigger]{ App::instance()->show(trigger); },
             false
-        }}
+        }},
+        trigger
     );
 }
 

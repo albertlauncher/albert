@@ -311,7 +311,8 @@ static auto indexMatch(const QStringList &item_strings,
 
     vector<IndexItem> index_items;
     for (auto &string : item_strings)
-        index_items.emplace_back(make_shared<StandardItem>(string), string);
+        index_items.emplace_back(StandardItem::make(string, {}, {}, {}),
+                                 string);
 
     index.setItems(::move(index_items));
 
