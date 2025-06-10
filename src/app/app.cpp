@@ -45,6 +45,7 @@
 #include <QTranslator>
 #include <iostream>
 Q_LOGGING_CATEGORY(AlbertLoggingCategory, "albert")
+using namespace albert::detail;
 using namespace albert::util;
 using namespace albert;
 using namespace std;
@@ -93,7 +94,7 @@ public:
 
     // Weak, lazy or optional
     albert::PluginLoader *frontend_plugin{nullptr};
-    albert::Frontend *frontend{nullptr};
+    albert::detail::Frontend *frontend{nullptr};
     std::unique_ptr<QHotkey> hotkey{nullptr};
     std::unique_ptr<QSystemTrayIcon> tray_icon{nullptr};
     std::unique_ptr<QMenu> tray_menu{nullptr};

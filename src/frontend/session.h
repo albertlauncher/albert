@@ -6,7 +6,7 @@
 #include <memory>
 class QueryEngine;
 class QueryExecution;
-namespace albert {
+namespace albert::detail {
 class Frontend;
 }
 
@@ -16,7 +16,7 @@ class Session : public QObject
 
 public:
 
-    Session(QueryEngine &engine, albert::Frontend &frontend);
+    Session(QueryEngine &engine, albert::detail::Frontend &frontend);
     ~Session();
 
 private:
@@ -24,7 +24,7 @@ private:
     void runQuery(const QString &query);
 
     QueryEngine &engine_;
-    albert::Frontend &frontend_;
+    albert::detail::Frontend &frontend_;
     std::vector<std::unique_ptr<QueryExecution>> queries_;
 
 };

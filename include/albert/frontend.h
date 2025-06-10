@@ -10,6 +10,8 @@ class QWidget;
 namespace albert
 {
 class Query;
+namespace detail
+{
 
 ///
 /// The interface for albert frontends.
@@ -52,4 +54,5 @@ protected:
 
 };
 
+}
 }

@@ -4,10 +4,11 @@
 #include "queryengine.h"
 #include "queryexecution.h"
 #include "session.h"
+using namespace albert::detail;
 using namespace albert;
 using namespace std;
 
-Session::Session(QueryEngine &e, albert::Frontend &f) : engine_(e), frontend_(f)
+Session::Session(QueryEngine &e, Frontend &f) : engine_(e), frontend_(f)
 {
     connect(&frontend_, &Frontend::inputChanged,
             this, &Session::runQuery);

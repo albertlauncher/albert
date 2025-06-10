@@ -8,7 +8,7 @@ class QueryEngine;
 class QHotkey;
 class Telemetry;
 namespace albert {
-class Frontend;
+namespace detail { class Frontend; }
 class ExtensionRegistry;
 int run(int, char**);
 }
@@ -45,7 +45,7 @@ public:
     QStringList availableFrontends();
     QString currentFrontend();
     void setFrontend(uint i);
-    albert::Frontend *frontend();
+    albert::detail::Frontend *frontend();
 
 private:
 

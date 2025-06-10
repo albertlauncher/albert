@@ -8,9 +8,9 @@
 #include <QHeaderView>
 #include <QIODevice>
 #include <QMimeData>
+using namespace albert::detail;
 using namespace albert;
 using namespace std;
-using namespace util;
 
 namespace {
 enum class Column {

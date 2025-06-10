@@ -3,4 +3,4 @@
 #include "frontend.h"
 
 // vtable goes here
-albert::Frontend::~Frontend() = default;
+albert::detail::Frontend::~Frontend() = default;
