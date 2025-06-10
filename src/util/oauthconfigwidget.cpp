@@ -56,6 +56,7 @@ public:
         label_client_id->setText(QCoreApplication::translate("OAuthConfigWidget", "Client identifier", nullptr));
         label_client_secret->setText(QCoreApplication::translate("OAuthConfigWidget", "Client secret", nullptr));
         label_auth->setText(QCoreApplication::translate("OAuthConfigWidget", "Authorization", nullptr));
+        label_auth_state->setWordWrap(true);
         pushButton_auth->setText(QCoreApplication::translate("OAuthConfigWidget", "Request", "action"));
 
         updateGrantState();

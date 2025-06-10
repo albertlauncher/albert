@@ -386,9 +386,7 @@ const QString &OAuth2::error() const { return d->error; }
 OAuth2::State OAuth2::state() const
 {
     using enum State;
-    if (!d->access_token.isEmpty()
-        && (!d->token_expiration.isValid()
-            || d->token_expiration > QDateTime::currentDateTime()))
+    if (!d->access_token.isEmpty())
         return Granted;
     else if (d->state_string.isEmpty())
         return NotAuthorized;
