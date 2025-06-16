@@ -7,30 +7,34 @@
 #include <QMessageBox>
 using namespace albert;
 
-bool util::question(const QString &text)
+bool util::question(const QString &text, QWidget *parent)
 {
-    return QMessageBox::question(QWidget::find(App::instance()->frontend()->winId()),
+    return QMessageBox::question(parent ? parent
+                                        : QWidget::find(App::instance()->frontend()->winId()),
                                  qApp->applicationDisplayName(),
                                  text) == QMessageBox::Yes;
 }
 
-void util::information(const QString &text)
+void util::information(const QString &text, QWidget *parent)
 {
-    QMessageBox::information(QWidget::find(App::instance()->frontend()->winId()),
+    QMessageBox::information(parent ? parent
+                                    : QWidget::find(App::instance()->frontend()->winId()),
                              qApp->applicationDisplayName(),
                              text);
 }
 
-void util::warning(const QString &text)
+void util::warning(const QString &text, QWidget *parent)
 {
-    QMessageBox::warning(QWidget::find(App::instance()->frontend()->winId()),
+    QMessageBox::warning(parent ? parent
+                                : QWidget::find(App::instance()->frontend()->winId()),
                          qApp->applicationDisplayName(),
                          text);
 }
 
-void util::critical(const QString &text)
+void util::critical(const QString &text, QWidget *parent)
 {
-    QMessageBox::critical(QWidget::find(App::instance()->frontend()->winId()),
+    QMessageBox::critical(parent ? parent
+                                 : QWidget::find(App::instance()->frontend()->winId()),
                           qApp->applicationDisplayName(),
                           text);
 }
