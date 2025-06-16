@@ -44,6 +44,7 @@
 #include <QSystemTrayIcon>
 #include <QTranslator>
 #include <iostream>
+#include <QPluginLoader>
 Q_LOGGING_CATEGORY(AlbertLoggingCategory, "albert")
 using namespace albert::detail;
 using namespace albert::util;
@@ -170,11 +171,7 @@ void App::Private::finalize()
     extension_registry.deregisterExtension(&triggers_query_handler);
     extension_registry.deregisterExtension(&plugin_query_handler);
 
-    try {
-        frontend_plugin->unload();
-    } catch (const exception &e) {
-        WARN << e.what();
-    }
+    frontend_plugin->unload();
 }
 
 void App::Private::initTrayIcon()
@@ -352,29 +349,35 @@ void App::Private::initRPC()
 
 void App::Private::loadAnyFrontend()
 {
-    auto frontend_plugins = plugin_provider.frontendPlugins();
+    auto loaders = plugin_provider.frontendPlugins();
+    const auto id = settings()->value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString();
 
-    auto cfg_frontend = settings()->value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString();
-    DEBG << QString("Try loading the configured frontend '%1'.").arg(cfg_frontend);
-    if (auto it = find_if(frontend_plugins.begin(), frontend_plugins.end(),
-                          [&](const PluginLoader *loader){ return cfg_frontend == loader->metaData().id; });
-        it != frontend_plugins.end())
+    DEBG << QString("Try loading the configured frontend '%1'.").arg(id);
+
+    if (auto it = ranges::find(loaders, id, [&](auto loader){ return loader->metadata().id; });
+        it != loaders.end())
         if (auto err = loadFrontend(*it); err.isNull())
             return;
-        else {
-            WARN << QString("Loading configured frontend plugin '%1' failed: %2.").arg(cfg_frontend, err);
-            frontend_plugins.erase(it);
+        else
+        {
+            WARN << QString("Loading configured frontend '%1' failed: %2.").arg(id, err);
+            loaders.erase(it);
         }
     else
-        WARN << QString("Configured frontend plugin '%1' does not exist.").arg(cfg_frontend);
+        WARN << QString("Configured frontend plugin '%1' does not exist.").arg(id);
 
-    for (auto &loader : frontend_plugins){
-        DEBG << QString("Try loading frontend plugin '%1'.").arg(loader->metaData().id);;
-        if (auto err = loadFrontend(loader); err.isNull()){
-            INFO << QString("Using '%1' as fallback.").arg(loader->metaData().id);
+    for (auto &loader : loaders)
+    {
+        WARN << QString("Try loading '%1'.").arg(loader->metadata().id);
+
+        if (auto err = loadFrontend(loader);
+            err.isNull())
+        {
+            INFO << QString("Using '%1' as fallback.").arg(loader->metadata().id);
             return;
-        } else
-            WARN << QString("Failed loading frontend plugin '%1'.").arg(loader->metaData().id);
+        }
+        else
+            WARN << QString("Failed loading '%1'.").arg(loader->metadata().id);
     }
 
     qFatal("Could not load any frontend.");
@@ -382,28 +385,26 @@ void App::Private::loadAnyFrontend()
 
 QString App::Private::loadFrontend(PluginLoader *loader)
 {
-    try {
-        PluginRegistry::staticDI.loader = loader;
-        loader->load();
+    using enum Plugin::State;
 
-        auto * inst = loader->createInstance();
-        if (!inst)
-            return "Plugin loader returned null instance";
+    // Blocking load
+    QEventLoop loop;
+    connect(loader, &PluginLoader::finished,
+            &loop, [&](QString info) { DEBG << info; loop.quit(); });
+    loader->load();
+    if (!loader->instance())  // sync cases
+        loop.exec();
 
-        frontend = dynamic_cast<Frontend*>(loader->createInstance());
-        if (!frontend)
-            return QString("Failed casting Plugin instance to albert::Frontend: %1").arg(loader->metaData().id);
-
-        for (auto *ext : inst->extensions())
+    if (frontend = dynamic_cast<Frontend*>(loader->instance());
+        !frontend)
+        return QString("Failed casting plugin instance to albert::Frontend: %1")
+            .arg(loader->metadata().id);
+    else
+    {
+        for (auto *ext : loader->instance()->extensions())
             extension_registry.registerExtension(ext);
-
         frontend_plugin = loader;
-
         return {};
-    } catch (const exception &e) {
-        return QString::fromStdString(e.what());
-    } catch (...) {
-        return "Unknown exception";
     }
 }
 
@@ -506,7 +507,7 @@ void App::quit() { QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection)
 
 Frontend *App::frontend() { return d->frontend; }
 
-QString App::currentFrontend() { return d->frontend_plugin->metaData().name; }
+QString App::currentFrontend() { return d->frontend_plugin->metadata().name; }
 
 ExtensionRegistry &App::extensionRegistry() { return d->extension_registry; }
 
@@ -514,14 +515,14 @@ QStringList App::availableFrontends()
 {
     QStringList ret;
     for (const auto *loader : d->plugin_provider.frontendPlugins())
-        ret << loader->metaData().name;
+        ret << loader->metadata().name;
     return ret;
 }
 
 void App::setFrontend(uint i)
 {
     auto fp = d->plugin_provider.frontendPlugins().at(i);
-    settings()->setValue(CFG_FRONTEND_ID, fp->metaData().id);
+    settings()->setValue(CFG_FRONTEND_ID, fp->metadata().id);
 
     auto text = tr("Changing the frontend requires a restart. "
                    "Do you want to restart Albert?");
@@ -729,7 +730,7 @@ int ALBERT_EXPORT run(int argc, char **argv)
         auto *t = new QTranslator(&qapp);
         if (t->load(QLocale(), "qtbase", "_", QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
         {
-            DEBG << ">" << t->filePath();
+            DEBG << " -" << t->filePath();
             qapp.installTranslator(t);
         }
         else
@@ -738,7 +739,7 @@ int ALBERT_EXPORT run(int argc, char **argv)
         t = new QTranslator(&qapp);
         if (t->load(QLocale(), qapp.applicationName(), "_", ":/i18n"))
         {
-            DEBG << ">" << t->filePath();
+            DEBG << " -" << t->filePath();
             qapp.installTranslator(t);
         }
         else

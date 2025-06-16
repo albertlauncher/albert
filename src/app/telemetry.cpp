@@ -106,7 +106,7 @@ static QJsonObject albertTelemetry(const QDateTime &last_report)
 {
     QJsonArray enabled_plugins;
     for (const auto &[id, plugin] : App::instance()->pluginRegistry().plugins())
-        if (plugin.isEnabled())
+        if (plugin.enabled)
             enabled_plugins.append(id);
 
     QJsonObject activationsSinceLastReport;

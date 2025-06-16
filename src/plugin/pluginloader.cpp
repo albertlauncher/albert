@@ -1,6 +1,8 @@
-// Copyright (c) 2024 Manuel Schneider
+// Copyright (c) 2024-2025 Manuel Schneider
 
 #include "pluginloader.h"
+using namespace albert;
 
-// vtable in lib
-albert::PluginLoader::~PluginLoader() = default;
+thread_local PluginLoader *PluginLoader::current_loader;
+
+PluginLoader::~PluginLoader() = default;

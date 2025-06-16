@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2024 Manuel Schneider
+// Copyright (c) 2022-2025 Manuel Schneider
 
 #include "config.h"
 #include "logging.h"
@@ -9,9 +9,11 @@
 #include <QPluginLoader>
 #include <QTranslator>
 #include <QtConcurrentRun>
+#include <chrono>
+using namespace Qt::StringLiterals;
 using namespace albert;
+using namespace std::chrono;
 using namespace std;
-
 
 static QString fetchLocalizedMetadata(const QJsonObject &json ,const QString &key)
 {
@@ -35,7 +37,7 @@ QtPluginLoader::QtPluginLoader(const QString &p) : loader_(p), instance_(nullptr
     // Check interface
     //
 
-    auto iid = loader_.metaData()[QStringLiteral("IID")].toString();
+    auto iid = loader_.metaData().value("IID"_L1).toString();
 
     if (iid.isEmpty())
         throw runtime_error("Not a Qt plugin");
@@ -51,7 +53,8 @@ QtPluginLoader::QtPluginLoader(const QString &p) : loader_(p), instance_(nullptr
         throw runtime_error(msg.toStdString());
     }
 
-    if (auto plugin_iid_major = iid_match.captured(1).toUInt(); plugin_iid_major != ALBERT_VERSION_MAJOR)
+    if (auto plugin_iid_major = iid_match.captured(1).toUInt();
+        plugin_iid_major != ALBERT_VERSION_MAJOR)
     {
         auto msg = QCoreApplication::translate(
             "QtPluginLoader", "Incompatible major version: %1. Expected: %2.");
@@ -59,7 +62,8 @@ QtPluginLoader::QtPluginLoader(const QString &p) : loader_(p), instance_(nullptr
         throw runtime_error(msg.toStdString());
     }
 
-    if (auto plugin_iid_minor = iid_match.captured(2).toUInt(); plugin_iid_minor > ALBERT_VERSION_MINOR)
+    if (auto plugin_iid_minor = iid_match.captured(2).toUInt();
+        plugin_iid_minor > ALBERT_VERSION_MINOR)
     {
         auto msg = QCoreApplication::translate(
             "QtPluginLoader", "Incompatible minor version: %1. Supported up to: %2.");
@@ -71,46 +75,30 @@ QtPluginLoader::QtPluginLoader(const QString &p) : loader_(p), instance_(nullptr
     // Extract metadata
     //
 
-    const QString key_md = QStringLiteral("MetaData");
-    const QString key_id = QStringLiteral("id");
-    const QString key_version = QStringLiteral("version");
-    const QString key_name = QStringLiteral("name");
-    const QString key_description = QStringLiteral("description");
-    const QString key_license = QStringLiteral("license");
-    const QString key_url = QStringLiteral("url");
-    const QString key_translations = QStringLiteral("translations");
-    const QString key_authors = QStringLiteral("authors");
-    const QString key_runtime_dependencies = QStringLiteral("runtime_dependencies");
-    const QString key_binary_dependencies = QStringLiteral("binary_dependencies");
-    const QString key_plugin_dependencies = QStringLiteral("plugin_dependencies");
-    const QString key_credits = QStringLiteral("credits");
-    const QString key_load_type = QStringLiteral("loadtype");
-    const QString load_type_frontend = QStringLiteral("frontend");
-    const QString load_type_user = QStringLiteral("user");
+    auto rawMetadata = loader_.metaData().value("MetaData"_L1).toObject();
 
-    auto rawMetadata = loader_.metaData()[key_md].toObject();
+    auto load_type = PluginMetadata::LoadType::User;
+    if (auto lts = rawMetadata["loadtype"_L1].toString();
+        lts == "frontend"_L1)
+        load_type = PluginMetadata::LoadType::Frontend;
+    else if (!lts.isEmpty() && lts != "user"_L1)
+        WARN << QString("Invalid load type '%1'. Default to 'user'.").arg(lts);
 
-    auto load_type = PluginMetaData::LoadType::User;
-    if (auto lts = rawMetadata[key_load_type].toString(); lts == load_type_frontend)
-        load_type = PluginMetaData::LoadType::Frontend;
-    else if (!lts.isEmpty() && lts != load_type_user)
-        WARN << QString("Invalid load type '%1'. Default to '%2'.").arg(lts, load_type_user);
-
-    metadata_ = albert::PluginMetaData
+    metadata_ = albert::PluginMetadata
     {
-        .iid = iid,
-        .id = rawMetadata[key_id].toString(),
-        .version = rawMetadata[key_version].toString(),
-        .name = fetchLocalizedMetadata(rawMetadata, key_name),
-        .description = fetchLocalizedMetadata(rawMetadata, key_description),
-        .license = rawMetadata[key_license].toString(),
-        .url = rawMetadata[key_url].toString(),
-        .translations = rawMetadata[key_translations].toVariant().toStringList(),
-        .authors = rawMetadata[key_authors].toVariant().toStringList(),
-        .runtime_dependencies = rawMetadata[key_runtime_dependencies].toVariant().toStringList(),
-        .binary_dependencies = rawMetadata[key_binary_dependencies].toVariant().toStringList(),
-        .plugin_dependencies = rawMetadata[key_plugin_dependencies].toVariant().toStringList(),
-        .third_party_credits = rawMetadata[key_credits].toVariant().toStringList(),
+        .iid                  = iid,
+        .id                   = rawMetadata["id"_L1].toString(),
+        .version              = rawMetadata["version"_L1].toString(),
+        .name                 = fetchLocalizedMetadata(rawMetadata, "name"_L1),
+        .description          = fetchLocalizedMetadata(rawMetadata, "description"_L1),
+        .license              = rawMetadata["license"_L1].toString(),
+        .url                  = rawMetadata["url"_L1].toString(),
+        .translations         = rawMetadata["translations"_L1].toVariant().toStringList(),
+        .authors              = rawMetadata["authors"_L1].toVariant().toStringList(),
+        .runtime_dependencies = rawMetadata["runtime_dependencies"_L1].toVariant().toStringList(),
+        .binary_dependencies  = rawMetadata["binary_dependencies"_L1].toVariant().toStringList(),
+        .plugin_dependencies  = rawMetadata["plugin_dependencies"_L1].toVariant().toStringList(),
+        .third_party_credits  = rawMetadata["credits"_L1].toVariant().toStringList(),
         .platforms{},
         .load_type = load_type
     };
@@ -157,45 +145,68 @@ QtPluginLoader::~QtPluginLoader()
 
 QString QtPluginLoader::path() const { return loader_.fileName(); }
 
-const PluginMetaData &QtPluginLoader::metaData() const { return metadata_; }
+const PluginMetadata &QtPluginLoader::metadata() const { return metadata_; }
 
 void QtPluginLoader::load()
 {
-    QFutureWatcher<void> watcher;
-    watcher.setFuture(QtConcurrent::run([this]{
+    auto future = QtConcurrent::run([this]
+    {
+        auto tp_l = system_clock::now();
         if (!loader_.load())
             throw runtime_error(loader_.errorString().toStdString());
-    }));
+        auto dur_l = duration_cast<milliseconds>(system_clock::now() - tp_l).count();
 
-    try{
-        QEventLoop loop;
-        QObject::connect(&watcher, &decltype(watcher)::finished, &loop, &QEventLoop::quit);
-        loop.exec();
-        watcher.future().waitForFinished();
-
-        translator = make_unique<QTranslator>();
-        if (translator->load(QLocale(), metaData().id, "_", ":/i18n"))
-        {
-            DEBG << QString("Using translations for '%1' from %2").arg(metadata_.id,
-                                                                       translator->filePath());
-            QCoreApplication::installTranslator(translator.get());
-        }
+        if (translator = make_unique<QTranslator>();
+            translator->load(QLocale(), metadata().id, "_", ":/i18n"))
+            DEBG << QString("Using translations for '%1' from %2")
+                        .arg(metadata_.id,translator->filePath());
         else
             translator.reset();
-    }
-    catch (const QUnhandledException &e)
-    {
-        if (e.exception())
-            std::rethrow_exception(e.exception());
-        else {
-            CRIT << "QUnhandledException but exception() returns nullptr";
-            throw;
-        }
-    }
-    catch (...)
-    {
-        CRIT << "Unknown exception in QtPluginLoader::load()";
-    }
+
+        return dur_l;
+    })
+    .then(this, [this](long long dur_l){
+        if (translator)
+            QCoreApplication::installTranslator(translator.get());  // Not threadsafe
+
+        auto tp_c = system_clock::now();
+        current_loader = this;
+        if (auto *instance = loader_.instance();
+            !instance)
+            throw runtime_error("Plugin instance is null.");
+        else if (instance_ = dynamic_cast<PluginInstance*>(instance);
+                 !instance_)
+            throw runtime_error("Plugin instance is not of type albert::PluginInstance.");
+        auto dur_c = duration_cast<milliseconds>(system_clock::now() - tp_c).count();
+
+        emit finished(tr("Loading: %1 ms, Instantiating: %2 ms").arg(dur_l).arg(dur_c));
+    })
+    .onFailed(this, [this](const QUnhandledException &que) {
+        QString error;
+        if (que.exception())
+            try {
+                std::rethrow_exception(que.exception());
+            } catch (const std::exception &e) {
+                error = QString::fromStdString(e.what());
+            }
+        else
+            error = "QUnhandledException but exception() returns nullptr";
+        unload();
+        WARN << error;
+        emit finished(error);
+    })
+    .onFailed(this, [this](const std::exception &e) {
+        unload();
+        const auto error = QString::fromStdString(e.what());
+        WARN << error;
+        emit finished(error);
+    })
+    .onFailed(this, [this]{
+        unload();
+        const auto error = QStringLiteral("Unknown exception in QtPluginLoader::load()");
+        WARN << error;
+        emit finished(error);
+    });
 }
 
 void QtPluginLoader::unload()
@@ -207,22 +218,9 @@ void QtPluginLoader::unload()
     }
 
     instance_ = nullptr;
+
     if (!loader_.unload())
-        throw runtime_error(loader_.errorString().toStdString());
+        WARN << loader_.errorString();
 }
 
-PluginInstance *QtPluginLoader::createInstance()
-{
-    if (loader_.isLoaded())
-    {
-        if (!instance_)
-        {
-            auto *instance = loader_.instance();
-            instance_ = dynamic_cast<PluginInstance*>(instance);
-            if (!instance_)
-                throw runtime_error("Plugin instance is not of type albert::PluginInstance.");
-        }
-        return instance_;
-    }
-    return {};
-}
+PluginInstance *QtPluginLoader::instance() { return instance_; }

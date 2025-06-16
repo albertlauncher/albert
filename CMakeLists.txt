@@ -131,8 +131,6 @@ set(LIB_SRC
     src/platform/signalhandler.h
 
     src/plugin/extensionregistry.cpp
-    src/plugin/plugin.cpp
-    src/plugin/plugin.h
     src/plugin/plugininstance.cpp
     src/plugin/pluginloader.cpp
     src/plugin/pluginprovider.cpp

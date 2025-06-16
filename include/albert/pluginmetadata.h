@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2024-2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -8,22 +8,21 @@
 namespace albert
 {
 
-///
-/// Common plugin metadata of plugins.
-///
-class ALBERT_EXPORT PluginMetaData
+/// Common plugin metadata.
+class ALBERT_EXPORT PluginMetadata
 {
 public:
 
-    /// Interface identifier.
+    /// Plugin interface identifier.
+    /// The core app API version used.
     QString iid;
 
-    /// GUID, no duplicates allowed.
-    /// \remark To avoid name conflicts PluginLoaders should prefix
-    ///         their plugins ids with the id of the loader
+    /// Unique identifier.
+    /// No duplicates allowed. To avoid name conflicts implementations should prefix their plugins
+    /// ids with the id of the loader id.
     QString id;
 
-    /// https://semver.org/
+    /// [Semantic version](https://semver.org/).
     QString version;
 
     /// Human readable name.
@@ -32,7 +31,7 @@ public:
     /// Brief, imperative description.
     QString description;
 
-    /// Short form e.g. BSD-2.
+    /// [SPDX short-form license identifier](https://spdx.org/licenses/).
     QString license;
 
     /// Browsable source, README, issues.
@@ -51,13 +50,13 @@ public:
     QStringList binary_dependencies;
 
     /// Required plugins.
-    /// \since 0.23
     QStringList plugin_dependencies;
 
     /// Third party credits and license notes.
     QStringList third_party_credits;
 
-    /// List of supported platforms. Empty means all.
+    /// List of supported platforms.
+    /// If empty all platforms are supported.
     QStringList platforms;
 
     /// The load type of the plugin.
@@ -71,8 +70,7 @@ public:
     };
 
     /// \copybrief LoadType
-    /// \sa Loadtype
-    LoadType load_type{LoadType::User};
+    LoadType load_type;
 
 };
 

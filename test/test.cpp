@@ -1,9 +1,17 @@
-// Copyright (c) 2024 Manuel Schneider
+// Copyright (c) 2024-2025 Manuel Schneider
 
+#include "albert.h"
+#include "extensionplugin.h"
+#include "extensionregistry.h"
 #include "inputhistory.h"
 #include "itemindex.h"
 #include "levenshtein.h"
 #include "matcher.h"
+#include "plugininstance.h"
+#include "pluginloader.h"
+#include "pluginmetadata.h"
+#include "pluginprovider.h"
+#include "pluginregistry.h"
 #include "standarditem.h"
 #include "test.h"
 #include "topologicalsort.hpp"
@@ -14,7 +22,7 @@ using namespace albert;
 using namespace std::chrono;
 using namespace std;
 
-QTEST_APPLESS_MAIN(AlbertTests)
+QTEST_GUILESS_MAIN(AlbertTests)
 
 void AlbertTests::topological_sort_linear()
 {
@@ -47,6 +55,234 @@ void AlbertTests::topological_sort_not_existing_node()
     auto expect = map<int, set<int>>{{1, {2}}};
     QVERIFY(result.sorted.empty());
     QCOMPARE(result.error_set, expect);
+}
+
+void AlbertTests::plugin_registry()
+{
+    using enum Plugin::State;
+
+    struct PluginInstanceMock : public ExtensionPlugin{};
+
+    struct PluginLoaderMock : public PluginLoader
+    {
+        QString path_;
+        albert::PluginMetadata metadata_;
+        unique_ptr<PluginInstanceMock> instance_;
+
+        PluginLoaderMock(const QString &id):
+            path_("/mock/plugin/" + id),
+            metadata_{
+                .id=id,
+                .version="1.0.0",
+                .name=id,
+                .description=id + " description"
+            }
+        {}
+        ~PluginLoaderMock() {}
+
+        QString path() const noexcept override { return path_; }
+        const albert::PluginMetadata &metadata() const noexcept override { return metadata_; }
+        albert::PluginInstance *instance() noexcept override { return instance_.get(); }
+    };
+
+    struct SyncPluginLoaderMock : public PluginLoaderMock
+    {
+        using PluginLoaderMock::PluginLoaderMock;
+
+        void load() noexcept override
+        {
+            PluginLoader::current_loader = this;
+            instance_ = make_unique<PluginInstanceMock>();
+            emit finished({});
+        }
+        void unload() noexcept override
+        {
+            instance_.reset();
+        }
+    };
+
+    struct AsyncPluginLoaderMock : public SyncPluginLoaderMock
+    {
+        using SyncPluginLoaderMock::SyncPluginLoaderMock;
+        void load() noexcept override
+        {
+            QTimer::singleShot(10, this,  [this](){ SyncPluginLoaderMock::load(); });
+        }
+    };
+
+    struct PluginProviderMock : public PluginProvider
+    {
+        vector<PluginLoader *> loaders_;
+        PluginProviderMock(vector<PluginLoader*> p) : loaders_(p){}
+
+        QString id() const noexcept override { return "testpluginprovider"; }
+        QString name() const noexcept override { return "Mock Plugin Provider"; }
+        QString description() const noexcept override { return "Mock Plugin Provider Description"; }
+
+        vector<PluginLoader *> plugins() override { return loaders_; }
+    };
+
+    // Diamond
+    auto *loader0 = new AsyncPluginLoaderMock{"testplugin0"};
+    auto *loader1 = new AsyncPluginLoaderMock{"testplugin1"};
+    auto *loader2 = new AsyncPluginLoaderMock{"testplugin2"};
+    auto *loader3 = new AsyncPluginLoaderMock{"testplugin3"};
+    loader0->metadata_.plugin_dependencies = {"testplugin1", "testplugin2"};
+    loader1->metadata_.plugin_dependencies = {"testplugin3"};
+    loader2->metadata_.plugin_dependencies = {"testplugin3"};
+
+    const auto loaders = vector<PluginLoader*>{loader0, loader1, loader2, loader3};
+
+    for (const auto &loader : loaders)
+        albert::settings()->setValue(QString("%1/enabled").arg(loader->metadata().id), false);
+
+    PluginProviderMock provider(loaders);
+    ExtensionRegistry ext_reg;
+    PluginRegistry plu_reg(ext_reg, true);
+    ext_reg.registerExtension(&provider);
+
+    QVERIFY(ext_reg.extensions().contains("testpluginprovider"));
+    QCOMPARE(plu_reg.plugins().size(), 4);
+
+    QVERIFY(plu_reg.plugins().contains("testplugin0"));
+    QVERIFY(plu_reg.plugins().contains("testplugin1"));
+    QVERIFY(plu_reg.plugins().contains("testplugin2"));
+    QVERIFY(plu_reg.plugins().contains("testplugin3"));
+
+    const auto p0 = &plu_reg.plugins().at("testplugin0");
+    const auto p1 = &plu_reg.plugins().at("testplugin1");
+    const auto p2 = &plu_reg.plugins().at("testplugin2");
+    const auto p3 = &plu_reg.plugins().at("testplugin3");
+
+    QCOMPARE(plu_reg.dependencies(p0).size(), 2);
+    QCOMPARE(plu_reg.dependencies(p1).size(), 1);
+    QCOMPARE(plu_reg.dependencies(p2).size(), 1);
+    QCOMPARE(plu_reg.dependencies(p3).size(), 0);
+    QVERIFY(plu_reg.dependencies(p0).contains(p1));
+    QVERIFY(plu_reg.dependencies(p0).contains(p2));
+    QVERIFY(plu_reg.dependencies(p1).contains(p3));
+    QVERIFY(plu_reg.dependencies(p2).contains(p3));
+
+    QCOMPARE(plu_reg.dependees(p0).size(), 0);
+    QCOMPARE(plu_reg.dependees(p1).size(), 1);
+    QCOMPARE(plu_reg.dependees(p2).size(), 1);
+    QCOMPARE(plu_reg.dependees(p3).size(), 2);
+    QVERIFY(plu_reg.dependees(p1).contains(p0));
+    QVERIFY(plu_reg.dependees(p2).contains(p0));
+    QVERIFY(plu_reg.dependees(p3).contains(p1));
+    QVERIFY(plu_reg.dependees(p3).contains(p2));
+
+    QCOMPARE(plu_reg.dependencyClosure({p0}).size(), 4);
+    QCOMPARE(plu_reg.dependencyClosure({p1}).size(), 2);
+    QCOMPARE(plu_reg.dependencyClosure({p2}).size(), 2);
+    QCOMPARE(plu_reg.dependencyClosure({p3}).size(), 1);
+    QCOMPARE(plu_reg.dependencyClosure({p1,p2}).size(), 3);
+
+    QCOMPARE(plu_reg.dependeeClosure({p0}).size(), 1);
+    QCOMPARE(plu_reg.dependeeClosure({p1}).size(), 2);
+    QCOMPARE(plu_reg.dependeeClosure({p2}).size(), 2);
+    QCOMPARE(plu_reg.dependeeClosure({p3}).size(), 4);
+    QCOMPARE(plu_reg.dependeeClosure({p1,p2}).size(), 3);
+
+    QCOMPARE(p0->enabled, false);
+    QCOMPARE(p1->enabled, false);
+    QCOMPARE(p2->enabled, false);
+    QCOMPARE(p3->enabled, false);
+    QCOMPARE(p0->state, Unloaded);
+    QCOMPARE(p1->state, Unloaded);
+    QCOMPARE(p2->state, Unloaded);
+    QCOMPARE(p3->state, Unloaded);
+    QVERIFY(!ext_reg.extensions().contains("testplugin0"));
+    QVERIFY(!ext_reg.extensions().contains("testplugin1"));
+    QVERIFY(!ext_reg.extensions().contains("testplugin2"));
+    QVERIFY(!ext_reg.extensions().contains("testplugin3"));
+
+    plu_reg.setEnabled("testplugin1", true);
+    QTest::qWait(100);
+
+    QCOMPARE(p0->enabled, false);
+    QCOMPARE(p1->enabled, true);
+    QCOMPARE(p2->enabled, false);
+    QCOMPARE(p3->enabled, true);
+    QCOMPARE(p0->state, Unloaded);
+    QCOMPARE(p1->state, Loaded);
+    QCOMPARE(p2->state, Unloaded);
+    QCOMPARE(p3->state, Loaded);
+    QVERIFY(!ext_reg.extensions().contains("testplugin0"));
+    QVERIFY(ext_reg.extensions().contains("testplugin1"));
+    QVERIFY(!ext_reg.extensions().contains("testplugin2"));
+    QVERIFY(ext_reg.extensions().contains("testplugin3"));
+
+    plu_reg.setEnabled("testplugin0", true);
+    QTest::qWait(100);
+
+    QCOMPARE(p0->enabled, true);
+    QCOMPARE(p1->enabled, true);
+    QCOMPARE(p2->enabled, true);
+    QCOMPARE(p3->enabled, true);
+    QCOMPARE(p0->state, Loaded);
+    QCOMPARE(p1->state, Loaded);
+    QCOMPARE(p2->state, Loaded);
+    QCOMPARE(p3->state, Loaded);
+    QVERIFY(ext_reg.extensions().contains("testplugin0"));
+    QVERIFY(ext_reg.extensions().contains("testplugin1"));
+    QVERIFY(ext_reg.extensions().contains("testplugin2"));
+    QVERIFY(ext_reg.extensions().contains("testplugin3"));
+
+    plu_reg.setEnabled("testplugin1", false);
+    QTest::qWait(100);
+
+    QCOMPARE(p0->enabled, false);
+    QCOMPARE(p1->enabled, false);
+    QCOMPARE(p2->enabled, true);
+    QCOMPARE(p3->enabled, true);
+    QCOMPARE(p0->state, Unloaded);
+    QCOMPARE(p1->state, Unloaded);
+    QCOMPARE(p2->state, Loaded);
+    QCOMPARE(p3->state, Loaded);
+    QVERIFY(!ext_reg.extensions().contains("testplugin0"));
+    QVERIFY(!ext_reg.extensions().contains("testplugin1"));
+    QVERIFY(ext_reg.extensions().contains("testplugin2"));
+    QVERIFY(ext_reg.extensions().contains("testplugin3"));
+
+    plu_reg.setEnabled("testplugin3", false);
+    QTest::qWait(100);
+
+    QCOMPARE(p0->enabled, false);
+    QCOMPARE(p1->enabled, false);
+    QCOMPARE(p2->enabled, false);
+    QCOMPARE(p3->enabled, false);
+    QCOMPARE(p0->state, Unloaded);
+    QCOMPARE(p1->state, Unloaded);
+    QCOMPARE(p2->state, Unloaded);
+    QCOMPARE(p3->state, Unloaded);
+    QVERIFY(!ext_reg.extensions().contains("testplugin0"));
+    QVERIFY(!ext_reg.extensions().contains("testplugin1"));
+    QVERIFY(!ext_reg.extensions().contains("testplugin2"));
+    QVERIFY(!ext_reg.extensions().contains("testplugin3"));
+
+    ext_reg.deregisterExtension(&provider);
+
+    loader0->metadata_.plugin_dependencies = {"testplugin1"};  // invalid, 1 is invalid
+    loader1->metadata_.plugin_dependencies = {"testplugin3"};  // invalid, 3 is invalid
+    loader2->metadata_.plugin_dependencies = {"testplugin3"};  // invalid, circle
+    loader3->metadata_.plugin_dependencies = {"testplugin2"};  // invalid, circle
+
+    ext_reg.registerExtension(&provider);
+
+    QCOMPARE(plu_reg.plugins().size(), 0);
+
+    ext_reg.deregisterExtension(&provider);
+
+    loader0->metadata_.plugin_dependencies = {};
+    loader1->metadata_.plugin_dependencies = {"testplugin3"};  // invalid, 3 is invalid
+    loader2->metadata_.plugin_dependencies = {"testplugin3"};  // invalid, circle
+    loader3->metadata_.plugin_dependencies = {"testplugin2"};  // invalid, circle
+
+    ext_reg.registerExtension(&provider);
+
+    QCOMPARE(plu_reg.plugins().size(), 1);
+    QVERIFY(plu_reg.plugins().contains("testplugin0"));
 }
 
 void AlbertTests::levenshtein_fast_levenshtein_threshold()

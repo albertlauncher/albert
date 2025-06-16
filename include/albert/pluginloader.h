@@ -1,45 +1,52 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2024-2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
+#include <QObject>
 #include <QString>
 #include <albert/export.h>
 
 namespace albert
 {
 class PluginInstance;
-class PluginMetaData;
+class PluginMetadata;
 
-///
-/// Plugin loader interface class.
-///
-class ALBERT_EXPORT PluginLoader
+/// Asynchronous plugin loader turning a physical plugin into a logical \ref PluginInstance.
+class ALBERT_EXPORT PluginLoader : public QObject
 {
+    Q_OBJECT
+
 public:
 
-    /// The path to the plugin.
-    /// @return @copybrief path
+    /// Returns the path to the plugin.
     virtual QString path() const = 0;
 
-    /// The plugin metadata.
-    /// @return @copybrief metaData
-    virtual const PluginMetaData &metaData() const = 0;
+    /// Returns the plugin metadata.
+    virtual const PluginMetadata &metadata() const = 0;
 
-    /// Load the plugin.
-    /// Called in a background thread.
-    /// Expects the plugin to be loaded after this call.
-    /// @throws std::exception in case of errors.
+    /// Starts loading the plugin.
+    /// @sa \ref current_loader
     virtual void load() = 0;
 
-    /// Unload the plugin.
-    /// @throws std::exception in case of errors.
+    /// Unloads the plugin.
     virtual void unload() = 0;
 
-    /// The plugin instance.
-    /// Not called unless loaded.
-    /// Creates an instance of the plugin if it does not exist.
-    /// @return @copybrief createInstance
-    virtual PluginInstance *createInstance() = 0;
+    /// Returns the \ref PluginInstance if the plugin is loaded, else `nullptr`.
+    virtual albert::PluginInstance *instance() = 0;
+
+    /// Used to set the plugin loader while plugin instatiation.
+    /// This avoids injection mechanisms and therefore reduces boilerplate for \ref PluginInstance
+    /// implementations. Implementations have to set this before calling the constructor of the
+    /// plugin instance.
+    static thread_local PluginLoader *current_loader;
+
+signals:
+
+    /// Emitted when the loading process finished.
+    /// On success \ref instance() returns a valid \ref PluginInstance. _info_ contains additional
+    /// information about the finished loading proc \ref instance() returns a nullptr, i.e. the
+    /// plugin failed to load, _info_ is interpreted as error message.
+    void finished(QString info);
 
 protected:
 

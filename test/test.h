@@ -14,6 +14,8 @@ private slots:
     void topological_sort_cycle();
     void topological_sort_not_existing_node();
 
+    void plugin_registry();
+
     void levenshtein_fast_levenshtein_threshold();
     void levenshtein_fuzzy_substitution();
     void levenshtein_fuzzy_deletion();

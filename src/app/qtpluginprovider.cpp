@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2024 Manuel Schneider
+// Copyright (c) 2022-2025 Manuel Schneider
 
 #include "logging.h"
 #include "qtpluginloader.h"
@@ -75,7 +75,7 @@ vector<PluginLoader*> QtPluginProvider::plugins()
 {
     vector<PluginLoader*> plugins;
     for (const auto &pl : plugin_loaders_)
-        if (pl->metaData().load_type == PluginMetaData::LoadType::User)
+        if (pl->metadata().load_type == PluginMetadata::LoadType::User)
             plugins.emplace_back(pl.get());
     return plugins;
 }
@@ -84,7 +84,7 @@ vector<PluginLoader*> QtPluginProvider::frontendPlugins()
 {
     vector<PluginLoader*> frontend_plugins;
     for (const auto &pl : plugin_loaders_)
-        if (pl->metaData().load_type == PluginMetaData::LoadType::Frontend)
+        if (pl->metadata().load_type == PluginMetadata::LoadType::Frontend)
             frontend_plugins.emplace_back(pl.get());
     return frontend_plugins;
 }

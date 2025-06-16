@@ -1,16 +1,21 @@
-// Copyright (c) 2022-2024 Manuel Schneider
+// Copyright (c) 2022-2025 Manuel Schneider
 
-#include "pluginwidget.h"
+#include "messagebox.h"
+#include "pluginloader.h"
+#include "pluginmetadata.h"
 #include "pluginregistry.h"
 #include "pluginsmodel.h"
 #include "pluginssortproxymodel.h"
 #include "pluginswidget.h"
+#include "pluginwidget.h"
 #include <QApplication>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QListView>
 #include <QMenu>
 #include <QScrollArea>
+using enum Plugin::State;
+using enum albert::PluginMetadata::LoadType;
 using namespace albert;
 using namespace std;
 
@@ -58,7 +63,7 @@ PluginsWidget::PluginsWidget(PluginRegistry &plugin_registry):
             this, [this](const QModelIndex &current, const QModelIndex &){
         try {
             const auto &p = plugin_registry_.plugins().at(current.data(Qt::UserRole).toString());
-            config_widget_scroll_area_->setWidget(new PluginWidget(p));  // takes ownership
+            config_widget_scroll_area_->setWidget(new PluginWidget(plugin_registry_, p));  // takes ownership
         }
         catch (const out_of_range &) {
             setPlaceholderWidget();
@@ -98,29 +103,31 @@ void PluginsWidget::showContextMenu(const QPoint &pos)
     {
         try {
             auto &p = plugin_registry_.plugins().at(index.data(Qt::UserRole).toString());
-            auto id = p.id();
+            auto id = p.id;
 
-            if (p.isUser())
+            if (p.metadata.load_type == User)
             {
                 auto *a = new QAction(&menu);
-                a->setText(p.isEnabled() ? tr("Disable") : tr("Enable"));
-                auto fun = p.isEnabled() ? &PluginRegistry::disable : &PluginRegistry::enable;
-                connect(a, &QAction::triggered, this, [=, this] { (plugin_registry_.*fun)(id); });
+                a->setText(p.enabled ? tr("Disable") : tr("Enable"));
+                connect(a, &QAction::triggered,
+                        this, [=, this] { plugin_registry_.setEnabledWithUserConfirmation(id, !p.enabled); });
                 menu.addAction(a);
 
-                if (p.state() == Plugin::State::Loaded)
+                if (p.state == Loaded)
                 {
                     a = new QAction(&menu);
                     a->setText(tr("Unload"));
-                    connect(a, &QAction::triggered, this, [=, this] { plugin_registry_.unload(id); });
+                    connect(a, &QAction::triggered,
+                            this, [=, this] { plugin_registry_.setLoaded(id, false); });
                     menu.addAction(a);
                 }
 
-                if (p.state() == Plugin::State::Unloaded)
+                if (p.state == Unloaded)
                 {
                     a = new QAction(&menu);
                     a->setText(tr("Load"));
-                    connect(a, &QAction::triggered, this, [=, this] { plugin_registry_.load(id); });
+                    connect(a, &QAction::triggered,
+                            this, [=, this] { plugin_registry_.setLoaded(id, true); });
                     menu.addAction(a);
                 }
 

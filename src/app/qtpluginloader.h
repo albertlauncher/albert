@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 Manuel Schneider
+// Copyright (c) 2023-2025 Manuel Schneider
 
 #pragma once
 #include "pluginloader.h"
@@ -15,15 +15,15 @@ public:
     ~QtPluginLoader();
 
     QString path() const override;
-    const albert::PluginMetaData &metaData() const override;
+    const albert::PluginMetadata &metadata() const override;
     void load() override;
     void unload() override;
-    albert::PluginInstance *createInstance() override;
+    albert::PluginInstance *instance() override;
 
 private:
 
     QPluginLoader loader_;
-    albert::PluginMetaData metadata_;
+    albert::PluginMetadata metadata_;
     albert::PluginInstance *instance_;
     std::unique_ptr<QTranslator> translator;
 
