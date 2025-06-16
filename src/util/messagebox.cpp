@@ -10,11 +10,11 @@ QMessageBox::StandardButton util::question(const QString &text,
                                            QMessageBox::StandardButtons buttons,
                                            QMessageBox::StandardButton defaultButton)
 {
-    return QMessageBox::information(QWidget::find(App::instance()->frontend()->winId()),
-                                    qApp->applicationDisplayName(),
-                                    text,
-                                    buttons,
-                                    defaultButton);
+    return QMessageBox::question(QWidget::find(App::instance()->frontend()->winId()),
+                                 qApp->applicationDisplayName(),
+                                 text,
+                                 buttons,
+                                 defaultButton);
 }
 
 QMessageBox::StandardButton util::information(const QString &text,
@@ -32,20 +32,20 @@ QMessageBox::StandardButton util::warning(const QString &text,
                                           QMessageBox::StandardButtons buttons,
                                           QMessageBox::StandardButton defaultButton)
 {
-    return QMessageBox::information(QWidget::find(App::instance()->frontend()->winId()),
-                                    qApp->applicationDisplayName(),
-                                    text,
-                                    buttons,
-                                    defaultButton);
+    return QMessageBox::warning(QWidget::find(App::instance()->frontend()->winId()),
+                                qApp->applicationDisplayName(),
+                                text,
+                                buttons,
+                                defaultButton);
 }
 
 QMessageBox::StandardButton util::critical(const QString &text,
                                            QMessageBox::StandardButtons buttons,
                                            QMessageBox::StandardButton defaultButton)
 {
-    return QMessageBox::information(QWidget::find(App::instance()->frontend()->winId()),
-                                    qApp->applicationDisplayName(),
-                                    text,
-                                    buttons,
-                                    defaultButton);
+    return QMessageBox::critical(QWidget::find(App::instance()->frontend()->winId()),
+                                 qApp->applicationDisplayName(),
+                                 text,
+                                 buttons,
+                                 defaultButton);
 }
