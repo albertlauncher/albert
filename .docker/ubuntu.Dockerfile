@@ -5,7 +5,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get -qq update \
  && apt-get install --no-install-recommends -y \
     cmake \
-    g++ \
+    clang \
     libarchive-dev \
     libgl1-mesa-dev \
     libglvnd-dev \
@@ -30,8 +30,10 @@ FROM base AS dev
 RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get -qq update \
  && apt-get install --no-install-recommends -y \
+    ccache \
     clangd \
-    gdb \
+    lldb \
+    ninja-build \
     xterm \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
