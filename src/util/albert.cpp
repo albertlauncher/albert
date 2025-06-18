@@ -41,7 +41,7 @@ unique_ptr<QSettings> albert::settings()
 { return settingsFromPath(configLocation() / "config"); }
 
 unique_ptr<QSettings> albert::state()
-{ return settingsFromPath(cacheLocation() / "state"); }
+{ return settingsFromPath(dataLocation() / "state"); }
 
 void albert::showSettings(QString plugin_id)
 { App::instance()->showSettings(plugin_id); }

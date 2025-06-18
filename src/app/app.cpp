@@ -702,6 +702,25 @@ int ALBERT_EXPORT run(int argc, char **argv)
                 }
             }
         }
+
+        // Move state file from cache to data dir
+
+        {
+            using namespace std::filesystem;
+            const auto old_path = cacheLocation() / "state";
+            const auto new_path = dataLocation() / "state";
+
+            if(!exists(new_path.parent_path()))
+                create_directories(new_path.parent_path());
+
+            if (exists(old_path))
+            {
+                if (exists(new_path))
+                    remove(old_path);
+                else
+                    rename(old_path, new_path);
+            }
+        }
     }
 
 
