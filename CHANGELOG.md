@@ -1,3 +1,8 @@
+## v0.28.2 (2025-06-20)
+
+Hotfix index initialization
+
+
 ## v0.28.1 (2025-06-19)
 
 Fix release.
