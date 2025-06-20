@@ -155,6 +155,8 @@ void App::Private::initialize()
 
 void App::Private::finalize()
 {
+    QDesktopServices::unsetUrlHandler("albert");
+
     frontend->disconnect();
     query_engine.disconnect();
 
