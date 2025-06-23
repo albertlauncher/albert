@@ -131,3 +131,12 @@ void util::tryCreateDirectory(const filesystem::path& path)
                 .arg(e.path1().c_str(), e.what()).toStdString());
     }
 }
+
+QString util::toQString(const filesystem::path &path)
+{
+#ifdef Q_OS_WIN
+    return QString::fromStdWString(path.native());
+#else
+    return QString::fromStdString(path.native());
+#endif
+}

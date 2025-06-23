@@ -46,4 +46,7 @@ ALBERT_EXPORT long long runDetachedProcess(const QStringList &commandline, const
 /// This is a utility function for use with the *Location functions.
 ALBERT_EXPORT void tryCreateDirectory(const std::filesystem::path &path);
 
+/// Returns a QString representation of `path`.
+ALBERT_EXPORT QString toQString(const std::filesystem::path &path);
+
 }
