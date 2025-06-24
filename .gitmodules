@@ -11,7 +11,7 @@
 
 [submodule "plugins/application"]
 	path = plugins/application
-	url = git@github.com:albertlauncher/albert-plugin-application.git
+	url = https://github.com/albertlauncher/albert-plugin-application.git
 [submodule "plugins/applications"]
 	path = plugins/applications
 	url = https://github.com/albertlauncher/albert-plugin-applications.git
