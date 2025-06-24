@@ -1,3 +1,57 @@
+## v0.29.0 (2025-06-24)
+
+- New GitHub plugin
+- Next step in making the API more developer friendly
+
+### Albert
+
+- Move AppQueryHandler into plugin
+
+### API
+
+- c++23 👋
+- Make `PluginLoader` asynchronous
+- `StandardItem` changes
+  - Make `input_action_text` the last constructor argument
+  - Apply perfect forwarding in constructor and shared_ptr factory.
+  - The default behavior of `inputActionText()` is to return `name()` if
+    `input_action_text` is the null string. Set `input_action_text` explicitly to
+    the empty string to get no input action text at all.
+- Return `text()` in `Item::inputActionText` base implementation
+- Remove frontend related classes from public API
+- Add `albert::util::toQString(const std::filesystem::path&)`
+- Simplify messagebox functions
+- Add modal parent parameter to messagbox utils
+- Drop `makeRestRequest` from `networkutil.h`
+- Move `ExtensionPlugin` into `util` namespace
+- Move `TelemetryProvider` into private namespace
+- Rename `albert::util::FileDownloader` to `albert::util::Download`
+- Add `shared_ptr<Download> albert::util::Download::unique(const QUrl &url, const QString &path)`
+- Move plugin dependecies into `albert::util` namespace
+
+### Plugins
+
+- **application**
+  - Moved from core to plugin
+- **applications**
+  - Read env variable `ALBERT_APPLICATIONS_COMMAND_PREFIX`
+- **bluetooth**
+  - Fix MRU order
+- **caffeine**
+  - Fix completion behavior
+- **docs**
+  - Index docsets in background thread
+- **github** 🆕
+- **python**
+  - Check and install missing dependencies _before_ loading plugins
+  - Add button that opens terminal in activated venv
+- **ssh**
+  - Fix missing sort in triggered handler
+- **widgetsboxmodel**
+  - Remove deprecated theme info
+  - Support F/B bindings for pgdown/pgup
+
+
 ## v0.28.2 (2025-06-20)
 
 Hotfix index initialization
