@@ -1,3 +1,8 @@
+## v0.29.1 (2025-06-24)
+
+Hotfix gitmodules private link causing all Linux builds to fail
+
+
 ## v0.29.0 (2025-06-24)
 
 - New GitHub plugin
