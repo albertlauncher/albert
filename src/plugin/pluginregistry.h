@@ -77,6 +77,7 @@ private:
     std::set<const Plugin*> loading_plugins_;
     std::map<const Plugin*, std::set<const Plugin*>> loading_graph_;
     void onPluginLoaderFinished(Plugin &p, const QString &info);
+    void setPluginState(Plugin &plugin, Plugin::State state, const QString info = {});
 
 signals:
 

@@ -272,9 +272,7 @@ void PluginRegistry::load(set<const Plugin*> plugins)
             loading_plugins_.insert(&p);
             it = loading_graph_.erase(it);
 
-            p.state = Loading;
-            emit pluginStateChanged(p.id);
-
+            setPluginState(p, Loading);
             p.loader.load();  // may be async
         }
         else
@@ -303,18 +301,15 @@ void PluginRegistry::unload(set<const Plugin*> plugins)
         Plugin &p = *const_cast<Plugin*>(cp);
         for (auto *e : p.registered_extensions)
             extension_registry_.deregisterExtension(e);
+
         p.loader.unload();
-        p.state = Unloaded;
-        p.state_info.clear();
-        emit pluginStateChanged(p.id);
+        setPluginState(p, Unloaded);
     }
 }
 
 void PluginRegistry::onPluginLoaderFinished(Plugin &p, const QString &info)
 {
-    p.state = p.loader.instance() ? Loaded : Unloaded;
-    p.state_info = info;
-    emit pluginStateChanged(p.id);
+    setPluginState(p, p.loader.instance() ? Loaded : Unloaded, info);
 
     // remove from loading plugins
     loading_plugins_.erase(&p);
@@ -328,9 +323,7 @@ void PluginRegistry::onPluginLoaderFinished(Plugin &p, const QString &info)
             loading_plugins_.insert(&p_);
             it = loading_graph_.erase(it);
 
-            p_.state = Loading;
-            emit pluginStateChanged(p_.id);
-
+            setPluginState(p_, Loading);
             p_.loader.load();  // may be async
         }
         else
@@ -348,4 +341,23 @@ void PluginRegistry::onPluginLoaderFinished(Plugin &p, const QString &info)
             CRIT << p.id << "Unknown exception in PluginInstance::extensions()";
         }
     }
+}
+
+void PluginRegistry::setPluginState(Plugin &plugin, Plugin::State state, const QString info)
+{
+    plugin.state = state;
+    plugin.state_info = info;
+    switch (state)
+    {
+    case Unloaded:
+        DEBG << "Plugin" << plugin.id << "unloaded." << info;
+        break;
+    case Loading:
+        DEBG << "Plugin" << plugin.id << "loading.";
+        break;
+    case Loaded:
+        DEBG << "Plugin" << plugin.id << "loaded." << info;
+        break;
+    }
+    emit pluginStateChanged(plugin.id);
 }
