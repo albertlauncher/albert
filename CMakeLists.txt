@@ -54,7 +54,6 @@ set(TARGET_LIB lib${PROJECT_NAME})
 set(LIB_PUBLIC_HEADER
     ${PROJECT_BINARY_DIR}/include/albert/config.h  # generated
     ${PROJECT_BINARY_DIR}/include/albert/export.h  # generated
-    include/albert/action.h
     include/albert/albert.h
     include/albert/extension.h
     include/albert/extensionplugin.h
@@ -118,7 +117,6 @@ set(LIB_SRC
     src/app/triggersqueryhandler.h
     src/app/urlhandler.cpp
 
-    src/common/action.cpp
     src/common/extension.cpp
     src/common/item.cpp
     src/common/rankitem.cpp

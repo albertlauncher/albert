@@ -3,12 +3,49 @@
 
 #pragma once
 #include <QStringList>
-#include <albert/action.h>
 #include <albert/export.h>
+#include <functional>
 #include <vector>
 
 namespace albert
 {
+
+/// Action used by result items (\ref Item).
+class ALBERT_EXPORT Action final
+{
+public:
+
+    /// Constructs an \ref Action with the contents initialized with the data passed.
+    /// \param id \copybrief id
+    /// \param text \copybrief text
+    /// \param function \copybrief function
+    /// \param hideOnActivation \copybrief hide_on_activation
+    template<typename T1 = QString,
+             typename T2 = QString,
+             typename T3 = std::function<void()>>
+    Action(T1 &&id_,
+           T2 &&text_,
+           T3 &&function_,
+           bool hide_on_activation_ = true) noexcept :
+        id(std::forward<T1>(id_)),
+        text(std::forward<T2>(text_)),
+        function(std::forward<T3>(function_)),
+        hide_on_activation(hide_on_activation_)
+    {}
+
+    /// The identifier.
+    QString id;
+
+    /// The description.
+    QString text;
+
+    /// The function executed on activation.
+    std::function<void()> function;
+
+    /// The activation behavior.
+    bool hide_on_activation;
+};
+
 
 ///
 /// Result items displayed in the query results list
