@@ -46,7 +46,7 @@ docker-test-ubuntu base-image='ubuntu:24.04':
 
 docker-test-fedora base-image="fedora:latest":
     docker build \
-      --progress auto \
+      --progress plain \
       --file .docker/fedora.Dockerfile \
       --build-arg BASE_IMAGE={{base-image}} \
       --target build \
