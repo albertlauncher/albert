@@ -2,7 +2,7 @@
 [Desktop Entry]
 Categories=Utility;
 Comment=A desktop agnostic launcher
-Exec=albert --platform xcb
+Exec=albert --platform xcb %u
 GenericName=Launcher
 Icon=albert
 Name=Albert
