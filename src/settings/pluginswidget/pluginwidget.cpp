@@ -32,17 +32,32 @@ PluginWidget::PluginWidget(const PluginRegistry &r, const Plugin &p):
 
 PluginWidget::~PluginWidget() = default;
 
-QWidget *PluginWidget::createPluginPageHeader()
+QWidget *PluginWidget::createPluginPageHeader() const
 {
-    QString fmt = R"(<span style="font-size:16pt;">%1</span><br>)"
-                  R"(<span style="font-size:11pt; font-weight:lighter; font-style:italic;">)"
-                  "%2"
-                  "</span>";
+    auto *w = new QWidget;
+    auto *l = new QVBoxLayout(w);
 
-    return new QLabel(fmt.arg(plugin.metadata.name, plugin.metadata.description));
+    auto *t = new QLabel(plugin.metadata.name);
+    auto f = w->font();
+    f.setPointSize(f.pointSize() + 2);
+    t->setFont(f);
+    t->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+    auto *d = new QLabel(plugin.metadata.description);
+    f = w->font();
+    f.setPointSize(f.pointSize() - 2);
+    d->setForegroundRole(QPalette::PlaceholderText);
+    d->setFont(f);
+
+    l->setContentsMargins({});
+    l->setSpacing(2);
+    l->addWidget(t);
+    l->addWidget(d);
+
+    return w;
 }
 
-QWidget *PluginWidget::createPluginPageBody()
+QWidget *PluginWidget::createPluginPageBody() const
 {
     if (auto *inst = plugin.loader.instance(); inst)
     {
@@ -65,21 +80,12 @@ QWidget *PluginWidget::createPluginPageBody()
     return new QWidget;  // Empty placeholder
 }
 
-QWidget *PluginWidget::createPluginPageFooter()
+QWidget *PluginWidget::createPluginPageFooter() const
 {
     QStringList meta;
 
-    // Credits if any
-    if (const auto &list = plugin.metadata.third_party_credits; !list.isEmpty())
-        meta << tr("Credits: %1").arg(list.join(", "));
-
-    // Required executables, if any
-    if (const auto &list = plugin.metadata.binary_dependencies; !list.isEmpty())
-        meta << tr("Required executables: %1", nullptr, list.size()).arg(list.join(", "));
-
-    // Required libraries, if any
-    if (const auto &list = plugin.metadata.runtime_dependencies; !list.isEmpty())
-        meta << tr("Required libraries: %1", nullptr, list.size()).arg(list.join(", "));
+    if (!plugin.metadata.readme_url.isEmpty())
+        meta << QString("<a href=\"%1\">README</a>").arg(plugin.metadata.readme_url);
 
     // Id, version, license, authors
     QStringList authors;
@@ -114,6 +120,14 @@ QWidget *PluginWidget::createPluginPageFooter()
         meta << tr("Required by: %1").arg(QStringList(names.begin(), names.end()).join(", "));  // ranges::to
     }
 
+    // Required executables, if any
+    if (const auto &list = plugin.metadata.binary_dependencies; !list.isEmpty())
+        meta << tr("Required executables: %1", nullptr, list.size()).arg(list.join(", "));
+
+    // Required libraries, if any
+    if (const auto &list = plugin.metadata.runtime_dependencies; !list.isEmpty())
+        meta << tr("Required libraries: %1", nullptr, list.size()).arg(list.join(", "));
+
     // Translations
     if (const auto &list = plugin.metadata.translations; !list.empty())
     {
@@ -121,7 +135,6 @@ QWidget *PluginWidget::createPluginPageFooter()
         for (const auto &lang : list)
         {
             auto split = lang.split(" ");
-            ;
             auto language = QLocale(split[0]).nativeLanguageName();
             displayList << QString("%1 %2").arg(language, split[1]);
         }
@@ -134,8 +147,15 @@ QWidget *PluginWidget::createPluginPageFooter()
     // Path
     meta << plugin.loader.path();
 
-    QString fmt = R"(<span style="font-size:9pt; color:#808080;">%1</span>)";
-    auto *l = new QLabel(fmt.arg(meta.join("<br>")));
+    // Credits if any
+    if (const auto &list = plugin.metadata.third_party_credits; !list.isEmpty())
+        meta << tr("Credits: %1").arg(list.join(", "));
+
+    auto *l = new QLabel(meta.join("<br>"));
+    auto font = l->font();
+    font.setPointSize(font.pointSize() - 4);
+    l->setForegroundRole(QPalette::PlaceholderText);
+    l->setFont(font);
     l->setOpenExternalLinks(true);
     l->setWordWrap(true);
     return l;
@@ -150,7 +170,7 @@ void PluginWidget::onPluginStateChanged(const QString &id)
         auto layout_item = layout->replaceWidget(body, new_body, Qt::FindDirectChildrenOnly);
         Q_ASSERT(layout_item != nullptr);
 
-                // Do not! delete later
+        // Do _not_ delete later
         delete layout_item;
         delete body;
 

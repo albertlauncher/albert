@@ -34,8 +34,11 @@ public:
     /// [SPDX short-form license identifier](https://spdx.org/licenses/).
     QString license;
 
-    /// Browsable source, README, issues.
+    /// Browsable source.
     QString url;
+
+    /// Online readme.
+    QString readme_url;
 
     /// Available translations.
     QStringList translations;

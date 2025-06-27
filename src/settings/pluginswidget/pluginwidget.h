@@ -16,9 +16,9 @@ public:
     void onPluginStateChanged(const QString &id);
 
 private:
-    QWidget *createPluginPageBody();
-    QWidget *createPluginPageFooter();
-    QWidget *createPluginPageHeader();
+    QWidget *createPluginPageHeader() const;
+    QWidget *createPluginPageBody() const;
+    QWidget *createPluginPageFooter() const;
 
     const PluginRegistry &plugin_registry;
     const Plugin &plugin;
