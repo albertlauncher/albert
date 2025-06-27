@@ -1,3 +1,11 @@
+## v0.29.4 (2025-06-27)
+
+### Albert
+
+- Add optional field "readme_url" to metadata. Add a link in the plugin settings if it is available
+- Fix dysfunctional url scheme handler
+
+
 ## v0.29.3 (2025-06-26)
 
 Fix release.
