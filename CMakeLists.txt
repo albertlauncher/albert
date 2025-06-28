@@ -201,11 +201,15 @@ elseif (APPLE)
         src/platform/mac/platform.mm
     )
 elseif(UNIX)  # assume xdg
+    list(APPEND LIB_PUBLIC_HEADER
+        include/albert/desktopentryparser.h
+    )
     list(APPEND LIB_SRC
         src/platform/unix/signalhandler.cpp
         src/platform/xdg/iconlookup.cpp
         src/platform/xdg/iconlookup.h
         src/platform/xdg/platform.cpp
+        src/platform/xdg/desktopentryparser.cpp
         src/platform/xdg/themefileparser.cpp
         src/platform/xdg/themefileparser.h
     )
