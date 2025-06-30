@@ -63,7 +63,6 @@ def create_changelog(args) -> str:
 
     # Python plugins log
 
-    python_plugins_logs = []
     python_plugin_root = native_plugins_root / "python"
     python_plugins_root = python_plugin_root / "plugins"
 
@@ -72,10 +71,9 @@ def create_changelog(args) -> str:
 
     log = run(["git", "-C", python_plugins_root, "log", f"--pretty=format:{placeholder} %B", f"{begin}..HEAD"], capture_output=True).stdout.decode().strip()
 
-    log = indent_git_log(log, 2)
-    if python_plugins_logs:
-        joined = "\n\n".join(native_plugins_logs)
-        out.append(f"### Python plugins\n\n{joined}")
+    if log:
+        log = indent_git_log(log, 0)
+        out.append(f"### Python plugins\n\n{log}")
 
 
     return '\n\n'.join(out)
