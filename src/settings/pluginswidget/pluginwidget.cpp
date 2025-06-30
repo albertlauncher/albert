@@ -37,7 +37,8 @@ QWidget *PluginWidget::createPluginPageHeader() const
     auto *w = new QWidget;
     auto *l = new QVBoxLayout(w);
 
-    auto *t = new QLabel(plugin.metadata.name);
+    auto *t = new QLabel(plugin.metadata.version.startsWith("0.") ? plugin.metadata.name + " ⚠️🚧👷"
+                                                                  : plugin.metadata.name);
     auto f = w->font();
     f.setPointSize(f.pointSize() + 2);
     t->setFont(f);
