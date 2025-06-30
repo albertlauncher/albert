@@ -1,3 +1,38 @@
+## v0.30.0 (2025-06-30)
+
+Adds minor API improvements and new plugins Spotify (WIP) and VSCode.
+
+### Albert
+
+- Add construction site emojis to beta plugins title
+
+### API
+
+- Move `Action` into `item.h`. Apply perfect forwarding in ctor.
+- API: Add `QString albert::util::runAppleScript(const QString &script)`
+- Move DesktopEntryParser from app plugin into private albert API
+
+### Plugins
+
+- **files**
+  - Index trash item also by native title
+  - Fix link paths
+- **github**
+  - Fix translations of listview headers
+  - Drop fixed listview height
+- **mediaremote**
+  - v7
+    - Drop public API
+    - Reintroduce multi player support
+    - Nice composed icons
+- **spotify** 🆕
+
+### Python plugins
+
+- **vscode_projects** 🆕
+- **translators** Improve description
+
+
 ## v0.29.4 (2025-06-27)
 
 ### Albert
