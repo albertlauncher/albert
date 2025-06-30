@@ -43,6 +43,7 @@
     <key>NSNetworkVolumesUsageDescription</key><string>Files plugin access.</string>
     <key>NSRemovableVolumesUsageDescription</key><string>Files plugin access.</string>
     <key>NSLocationUsageDescription</key><string>Required to access WLAN names.</string>
+    <key>NSAppleEventsUsageDescription</key><string>Applescript support.</string>
 
     <key>CFBundleURLTypes</key>
     <array>

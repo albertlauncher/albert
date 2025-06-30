@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2024 Manuel Schneider
+// Copyright (c) 2022-2025 Manuel Schneider
 
 #include "albert.h"
 #include "frontend.h"
@@ -6,11 +6,13 @@
 #include "platform.h"
 #include "rpcserver.h"
 #include <Cocoa/Cocoa.h>
+#include <Foundation/Foundation.h>
 #include <QGuiApplication>
-#include <QMessageBox>
-#include <QTimer>
 using namespace albert;
 using namespace std;
+#if  ! __has_feature(objc_arc)
+#error This file must be compiled with ARC.
+#endif
 
 void platform::initPlatform()
 {
@@ -100,38 +102,20 @@ void platform::initNativeWindow(unsigned long long wid)
     [NSApp hide:nil];  // The app activates on start. undo.
 }
 
+QString platform::runAppleScript(const QString &script)
+{
+    @autoreleasepool {
+        NSAppleScript *appleScript = [[NSAppleScript alloc] initWithSource:script.toNSString()];
+        NSDictionary *errorInfo = nil;
+        [appleScript executeAndReturnError:&errorInfo];
+        if (errorInfo)
+            return QString::fromNSString(errorInfo.description);;
+        return {};
+    }
+}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//        Maybe useful trash
-
+// ------------------------------------ Maybe useful trash -----------------------------------------
 
 //static void requestFullDiskAccessPermissions(){
 ////    NSURL *url = [NSURL URLWithString:@"x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles"];

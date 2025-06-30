@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #pragma once
+#include <QtGlobal>
 #include <albert/export.h>
 #include <filesystem>
 class QString;
@@ -49,4 +50,9 @@ ALBERT_EXPORT void tryCreateDirectory(const std::filesystem::path &path);
 /// Returns a QString representation of `path`.
 ALBERT_EXPORT QString toQString(const std::filesystem::path &path);
 
+#ifdef Q_OS_MAC
+/// Execute the AppleScript _script_.
+/// Only available on macOS.
+ALBERT_EXPORT QString runAppleScript(const QString &script);
+#endif
 }

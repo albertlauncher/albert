@@ -296,6 +296,7 @@ target_link_libraries(${TARGET_LIB}
 if(APPLE)
     target_link_libraries(${TARGET_LIB} PRIVATE objc "-framework Cocoa")
     target_compile_options(${TARGET_LIB} PRIVATE "-fobjc-arc")
+    set_source_files_properties(src/platform/mac/platform.mm PROPERTIES COMPILE_FLAGS "-fobjc-arc")
 elseif(UNIX)
     if (DEFINED CMAKE_LIBRARY_ARCHITECTURE)
         target_compile_definitions(${TARGET_LIB}

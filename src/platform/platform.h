@@ -7,4 +7,5 @@ namespace platform
 {
 void initPlatform();
 void initNativeWindow(unsigned long long wid);
+QString runAppleScript(const QString &script);
 }

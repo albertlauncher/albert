@@ -140,3 +140,11 @@ QString util::toQString(const filesystem::path &path)
     return QString::fromStdString(path.native());
 #endif
 }
+
+#ifdef Q_OS_MAC
+#include "platform.h"
+QString util::runAppleScript(const QString &script)
+{
+    return platform::runAppleScript(script);
+}
+#endif
