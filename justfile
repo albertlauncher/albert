@@ -2,12 +2,13 @@ choose:
     @just --command-color blue --highlight --choose
 
 build_dir := "build/just"
+build_type := "Debug"
 
 configure:
-    cmake -S . -B {{build_dir}} -DBUILD_TESTS=ON
+    cmake -S . -B {{build_dir}} -DBUILD_TESTS=ON  -DCMAKE_BUILD_TYPE={{build_type}}
 
-build build_type='Debug': configure
-    cmake --build {{build_dir}} --config {{build_type}} -j$(nproc)
+build:
+    cmake --build {{build_dir}} -j$(nproc)
 
 test: build
     ctest --test-dir {{build_dir}} --output-on-failure
