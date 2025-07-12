@@ -1,3 +1,15 @@
+## v0.30.1 (2025-07-12)
+
+### Plugins
+
+- **contacts**
+  - Use AppleScript to open contacts which allows setting a selection.
+- **github**
+  - Avoid downloading icons multiple times
+- **python**
+  - Use pip freeze instead of inspect to check for existing packages
+
+
 ## v0.30.0 (2025-06-30)
 
 Adds minor API improvements and new plugins Spotify (WIP) and VSCode.
