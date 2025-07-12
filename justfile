@@ -53,3 +53,8 @@ docker-test-fedora base-image="fedora:latest":
       --target build \
       --tag albert:test-fedora \
       .
+
+docker-tests-arm:
+      just docker-test-ubuntu
+      just docker-test-arch-arm
+      just docker-test-fedora
