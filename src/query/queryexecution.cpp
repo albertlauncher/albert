@@ -313,7 +313,7 @@ void GlobalQuery::handleTriggerQuery(Query &)
             auto d_h = duration_cast<milliseconds>(system_clock::now()-t).count();
 
             t = system_clock::now();
-            handler->applyUsageScore(&results);
+            handler->applyUsageScore(results);
             auto d_s = duration_cast<milliseconds>(system_clock::now()-t).count();
 
             // makes no sense to time this, since waiting for unlock

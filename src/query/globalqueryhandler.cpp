@@ -10,14 +10,14 @@ using namespace std;
 
 GlobalQueryHandler::~GlobalQueryHandler() = default;
 
-void GlobalQueryHandler::applyUsageScore(std::vector<RankItem> *rank_items) const
-{ App::instance()->queryEngine().usageScoring().modifyMatchScores(*this, *rank_items); }
+void GlobalQueryHandler::applyUsageScore(vector<RankItem> &rank_items) const
+{ App::instance()->queryEngine().usageScoring().modifyMatchScores(*this, rank_items); }
 
 void GlobalQueryHandler::handleTriggerQuery(Query &query)
 {
     auto rank_items = handleGlobalQuery(query);
-    applyUsageScore(&rank_items);
-    ranges::sort(rank_items, std::greater());
+    applyUsageScore(rank_items);
+    ranges::sort(rank_items, greater());
 
     vector<shared_ptr<Item>> items;
     items.reserve(rank_items.size());
