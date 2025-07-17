@@ -110,7 +110,7 @@ static QJsonObject albertTelemetry(const QDateTime &last_report)
             enabled_plugins.append(id);
 
     QJsonObject activationsSinceLastReport;
-    for (const auto &[extension_id, activations] : UsageHistory::activationsSince(last_report))
+    for (const auto &[extension_id, activations] : UsageDatabase::instance().extensionActivationsSince(last_report))
         activationsSinceLastReport.insert(extension_id, (int)activations);
 
     QJsonObject o;

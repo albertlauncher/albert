@@ -146,6 +146,8 @@ set(LIB_SRC
     src/query/triggerqueryhandler.cpp
     src/query/usagedatabase.cpp
     src/query/usagedatabase.h
+    src/query/usagescoring.cpp
+    src/query/usagescoring.h
 
     src/settings/pluginswidget/pluginsmodel.cpp
     src/settings/pluginswidget/pluginsmodel.h

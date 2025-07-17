@@ -1,63 +1,31 @@
-// Copyright (c) 2022-2024 Manuel Schneider
+// Copyright (c) 2022-2025 Manuel Schneider
 
 #pragma once
-#include <QSqlDatabase>
+#include "usagescoring.h"  // ItemKey
 #include <QString>
-#include <mutex>
-#include <shared_mutex>
-#include <unordered_map>
-#include <vector>
+#include <map>
 class QDateTime;
-namespace albert {
-class Extension;
-class RankItem;
-}
 
-struct Activation {
-    Activation(QString q, QString e, QString i, QString a);
-    QString query;
-    QString extension_id;
-    QString item_id;
-    QString action_id;
-};
-
-using Key = std::pair<QString, QString>;
-using UsageScores = std::unordered_map<Key, double>;
-
-class UsageHistory
+// Direct database access. Main thread only.
+class UsageDatabase
 {
 public:
-    static void initialize();
 
-    static void applyScores(const QString &id, std::vector<albert::RankItem> &rank_items);
-    static void applyScores(std::vector<std::pair<albert::Extension*,albert::RankItem>>*);
+    static UsageDatabase &instance();
 
-    static double memoryDecay();
-    static void setMemoryDecay(double);
+    std::map<QString, uint> extensionActivationsSince(const QDateTime &query) const;
 
-    static bool prioritizePerfectMatch();
-    static void setPrioritizePerfectMatch(bool);
+    std::unordered_map<ItemKey, double> itemUsageScores(double memory_decay) const;
 
-    static void addActivation(const QString &query, const QString &extension,
-                              const QString &item, const QString &action);
+    void addActivation(const QString &query,
+                       const QString &extension,
+                       const QString &item,
+                       const QString &action) const;
 
-    static std::map<QString, uint> activationsSince(const QDateTime &query);
+    void clearActivations() const;
 
 private:
-    inline static void applyScore(const QString &extension_id, albert::RankItem *rank_item);
-    static void updateScores();
 
-    static std::shared_mutex global_data_mutex_;
-    static UsageScores usage_scores_;
-    static bool prioritize_perfect_match_;
-    static double memory_decay_;
+    UsageDatabase();
 
-    static std::recursive_mutex db_recursive_mutex_;
-    static void db_connect();
-    static void db_initialize();
-    static void db_clearActivations();
-    static void db_addActivation(const QString &query, const QString &extension,
-                                 const QString &item, const QString &action);
 };
-
-

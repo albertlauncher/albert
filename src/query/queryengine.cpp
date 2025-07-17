@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2024 Manuel Schneider
+// Copyright (c) 2022-2025 Manuel Schneider
 
 #include "albert.h"
 #include "extensionregistry.h"
@@ -9,21 +9,37 @@
 #include "queryexecution.h"
 #include "triggerqueryhandler.h"
 #include "usagedatabase.h"
+#include "usagescoring.h"
 #include <QCoreApplication>
 #include <QMessageBox>
 #include <QSettings>
 using namespace albert;
 using namespace std;
-static const char *CFG_GLOBAL_HANDLER_ENABLED = "global_handler_enabled";
-static const char *CFG_FALLBACK_ORDER = "fallback_order";
-static const char *CFG_FALLBACK_EXTENSION = "extension";
-static const char *CFG_FALLBACK_ITEM = "fallback";
-static const char *CFG_TRIGGER = "trigger";
-static const char *CFG_FUZZY = "fuzzy";
 
-QueryEngine::QueryEngine(ExtensionRegistry &registry) : registry_(registry)
+namespace
 {
-    UsageHistory::initialize();
+static const char*  CFG_GLOBAL_HANDLER_ENABLED = "global_handler_enabled";
+static const char*  CFG_FALLBACK_ORDER = "fallback_order";
+static const char*  CFG_FALLBACK_EXTENSION = "extension";
+static const char*  CFG_FALLBACK_ITEM = "fallback";
+static const char*  CFG_TRIGGER = "trigger";
+static const char*  CFG_FUZZY = "fuzzy";
+static const char*  CFG_MEMORY_DECAY = "memoryDecay";
+static const double DEF_MEMORY_DECAY = 0.5;
+static const char*  CFG_PRIO_PERFECT = "prioritizePerfectMatch";
+static const bool   DEF_PRIO_PERFECT = true;
+}
+
+QueryEngine::QueryEngine(ExtensionRegistry &registry):
+    registry_(registry)
+{
+    auto s = settings();
+    auto decay = s->value(CFG_MEMORY_DECAY, DEF_MEMORY_DECAY).toDouble();
+    auto prioritize_perfect_match = s->value(CFG_PRIO_PERFECT, DEF_PRIO_PERFECT).toBool();
+    usage_scoring_ = UsageScoring(prioritize_perfect_match, decay,
+                                  make_shared<unordered_map<ItemKey, double>>
+                                  (UsageDatabase::instance().itemUsageScores(decay)));
+
     loadFallbackOrder();
 
     connect(&registry, &ExtensionRegistry::added, this, [this](Extension *e) {
@@ -77,6 +93,36 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry) : registry_(registry)
             emit handlerRemoved();
         }
     });
+}
+
+void QueryEngine::setMemoryDecay(double v)
+{
+    lock_guard lock(usage_scoring_mutex_);
+    if (usage_scoring_.memory_decay != v)
+    {
+        DEBG << "memoryDecay set to" << v;
+        settings()->setValue(CFG_MEMORY_DECAY, v);
+        usage_scoring_ = UsageScoring(usage_scoring_.prioritize_perfect_match, v,
+                                      make_shared<unordered_map<ItemKey, double>>
+                                      (UsageDatabase::instance().itemUsageScores(v)));
+    }
+}
+
+void QueryEngine::setPrioritizePerfectMatch(bool v)
+{
+    lock_guard lock(usage_scoring_mutex_);
+    if (usage_scoring_.prioritize_perfect_match != v)
+    {
+        DEBG << "prioritizePerfectMatch set to" << v;
+        settings()->setValue(CFG_PRIO_PERFECT, v);
+        usage_scoring_ = UsageScoring(v, usage_scoring_.memory_decay, usage_scoring_.usage_scores);
+    }
+}
+
+UsageScoring QueryEngine::usageScoring() const
+{
+    lock_guard lock(usage_scoring_mutex_);
+    return usage_scoring_;
 }
 
 unique_ptr<QueryExecution> QueryEngine::query(const QString &query)

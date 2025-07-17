@@ -1,26 +1,30 @@
-// Copyright (c) 2022-2024 Manuel Schneider
+// Copyright (c) 2022-2025 Manuel Schneider
 
 #include "fallbacksmodel.h"
 #include "queryengine.h"
 #include "queryhandlermodel.h"
 #include "querywidget.h"
-#include "usagedatabase.h"
+#include "usagescoring.h"
 #include <QHeaderView>
 
-QueryWidget::QueryWidget(QueryEngine &qe)
+QueryWidget::QueryWidget(QueryEngine &query_engine) : query_engine_(query_engine)
 {
     ui.setupUi(this);
 
-    ui.slider_decay->setValue((int)(UsageHistory::memoryDecay() * 100));
-    QObject::connect(ui.slider_decay, &QSlider::valueChanged, this,
-                     [](int val){ UsageHistory::setMemoryDecay((double)val/100.0); });
+    auto usage_scoring = query_engine_.usageScoring();
 
-    ui.checkBox_prioritizePerfectMatch->setChecked(UsageHistory::prioritizePerfectMatch());
-    QObject::connect(ui.checkBox_prioritizePerfectMatch, &QCheckBox::toggled, this,
-                     [](bool val){ UsageHistory::setPrioritizePerfectMatch(val); });
+    ui.slider_decay->setValue((int)(usage_scoring.memory_decay * 100));
 
-    ui.tableView_queryHandlers->setModel(new QueryHandlerModel(qe, this)); // Takes ownership
-    ui.tableView_fallbackOrder->setModel(fallbacks_model_ = new FallbacksModel(qe, this)); // Takes ownership
+    connect(ui.slider_decay, &QSlider::sliderReleased, this,
+            [this]{ query_engine_.setMemoryDecay((double)ui.slider_decay->value()/100.0); });
+
+    ui.checkBox_prioritizePerfectMatch->setChecked(usage_scoring.prioritize_perfect_match);
+
+    connect(ui.checkBox_prioritizePerfectMatch, &QCheckBox::toggled, this,
+            [this](bool val){ query_engine_.setPrioritizePerfectMatch(val); });
+
+    ui.tableView_queryHandlers->setModel(new QueryHandlerModel(query_engine_, this)); // Takes ownership
+    ui.tableView_fallbackOrder->setModel(fallbacks_model_ = new FallbacksModel(query_engine_, this)); // Takes ownership
 
     for (auto *tv : {ui.tableView_queryHandlers, ui.tableView_fallbackOrder})
     {
@@ -40,8 +44,8 @@ QueryWidget::QueryWidget(QueryEngine &qe)
         width += + qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent);
         ui.tableView_queryHandlers->setFixedWidth(width + 2);  // 2: Frame spacing?
     };
-    connect(&qe, &QueryEngine::handlerAdded, this, updateWidth);
-    connect(&qe, &QueryEngine::handlerRemoved, this, updateWidth);
+    connect(&query_engine_, &QueryEngine::handlerAdded, this, updateWidth);
+    connect(&query_engine_, &QueryEngine::handlerRemoved, this, updateWidth);
     updateWidth();
 }
 

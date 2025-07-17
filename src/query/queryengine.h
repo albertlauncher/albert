@@ -1,10 +1,12 @@
-// Copyright (c) 2023-2024 Manuel Schneider
+// Copyright (c) 2023-2025 Manuel Schneider
 
 #pragma once
+#include "usagescoring.h"
 #include <QObject>
 #include <map>
 #include <memory>
 class QueryExecution;
+class UsageScoring;
 namespace albert {
 class ExtensionRegistry;
 class FallbackHandler;
@@ -21,6 +23,10 @@ public:
     QueryEngine(albert::ExtensionRegistry&);
     
     std::unique_ptr<QueryExecution> query(const QString &query);
+
+    UsageScoring usageScoring() const;  // thread-safe
+    void setMemoryDecay(double);
+    void setPrioritizePerfectMatch(bool);
 
     std::map<QString, albert::TriggerQueryHandler*> triggerHandlers();
     std::map<QString, albert::GlobalQueryHandler*> globalHandlers();
@@ -72,6 +78,9 @@ private:
 
     std::map<QString, albert::TriggerQueryHandler*> active_triggers_;
     std::map<std::pair<QString, QString>, int> fallback_order_;
+
+    UsageScoring usage_scoring_;
+    mutable std::mutex usage_scoring_mutex_;
 
 signals:
 

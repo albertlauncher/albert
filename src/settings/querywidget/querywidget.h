@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2024 Manuel Schneider
+// Copyright (c) 2022-2025 Manuel Schneider
 
 #pragma once
 #include "ui_querywidget.h"
@@ -17,6 +17,7 @@ private:
     void showEvent(QShowEvent *event) override;
 
     Ui::QueryWidget ui;
+    QueryEngine &query_engine_;
     FallbacksModel *fallbacks_model_;
 
 };
