@@ -44,9 +44,6 @@ public:
     /// executed. This function allows dedicated empty global query handling.
     virtual std::vector<std::shared_ptr<Item>> handleEmptyQuery();
 
-    /// Modifies the score of _rank_items_ to reflect the users usage history.
-    void applyUsageScore(std::vector<RankItem> &rank_items) const;
-
     /// Calls \ref handleGlobalQuery, \ref applyUsageScore, sorts and adds the items to _query_.
     ///
     /// @note Reimplement if the handler should have custom triggered behavior.

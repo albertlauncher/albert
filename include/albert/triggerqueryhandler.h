@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2024-2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -7,6 +7,7 @@
 
 namespace albert
 {
+class RankItem;
 
 ///
 /// Abstract trigger query handler.
@@ -48,6 +49,9 @@ public:
     /// The trigger query processing function.
     /// @note Executed in a worker thread.
     virtual void handleTriggerQuery(Query &) = 0;
+
+    /// Modifies the score of _rank_items_ to reflect the users usage history.
+    void applyUsageScore(std::vector<RankItem> &rank_items);
 
 protected:
 

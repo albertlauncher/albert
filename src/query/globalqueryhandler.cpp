@@ -1,17 +1,11 @@
 // Copyright (c) 2023-2025 Manuel Schneider
 
-#include "app.h"
 #include "globalqueryhandler.h"
 #include "query.h"
-#include "queryengine.h"
-#include "usagescoring.h"
 using namespace albert;
 using namespace std;
 
 GlobalQueryHandler::~GlobalQueryHandler() = default;
-
-void GlobalQueryHandler::applyUsageScore(vector<RankItem> &rank_items) const
-{ App::instance()->queryEngine().usageScoring().modifyMatchScores(*this, rank_items); }
 
 void GlobalQueryHandler::handleTriggerQuery(Query &query)
 {
@@ -27,5 +21,4 @@ void GlobalQueryHandler::handleTriggerQuery(Query &query)
     query.add(::move(items));
 }
 
-vector<shared_ptr<Item>> GlobalQueryHandler::handleEmptyQuery()
-{ return {}; }
+vector<shared_ptr<Item>> GlobalQueryHandler::handleEmptyQuery() { return {}; }
