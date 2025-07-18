@@ -104,6 +104,8 @@ void platform::initNativeWindow(unsigned long long wid)
 
 QString platform::runAppleScript(const QString &script)
 {
+    DEBG << "Running AppleScript:" << script;
+
     @autoreleasepool {
         NSAppleScript *appleScript = [[NSAppleScript alloc] initWithSource:script.toNSString()];
         NSDictionary *errorInfo = nil;
