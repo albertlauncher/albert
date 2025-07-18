@@ -2,14 +2,6 @@
 <ui version="4.0">
  <class>QueryWidget</class>
  <widget class="QWidget" name="QueryWidget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>457</width>
-    <height>341</height>
-   </rect>
-  </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
     <number>6</number>
@@ -87,12 +79,12 @@
      <item row="0" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_decay">
        <item>
-        <widget class="QLabel" name="label_mfu">
+        <widget class="QLabel" name="label_mru">
          <property name="toolTip">
-          <string>Prefer most frequently used results.</string>
+          <string>Prefer most recently used results.</string>
          </property>
          <property name="text">
-          <string>MFU</string>
+          <string>MRU</string>
          </property>
         </widget>
        </item>
@@ -116,14 +108,8 @@ Recommended is a value in between, such that the results you use often are prefe
          <property name="pageStep">
           <number>5</number>
          </property>
-         <property name="sliderPosition">
-          <number>55</number>
-         </property>
          <property name="orientation">
           <enum>Qt::Orientation::Horizontal</enum>
-         </property>
-         <property name="invertedAppearance">
-          <bool>true</bool>
          </property>
          <property name="tickPosition">
           <enum>QSlider::TickPosition::TicksBelow</enum>
@@ -134,26 +120,16 @@ Recommended is a value in between, such that the results you use often are prefe
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_mru">
+        <widget class="QLabel" name="label_mfu">
          <property name="toolTip">
-          <string>Prefer most recently used results.</string>
+          <string>Prefer most frequently used results.</string>
          </property>
          <property name="text">
-          <string>MRU</string>
+          <string>MFU</string>
          </property>
         </widget>
        </item>
       </layout>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_prioritizePerfectMatch">
-       <property name="text">
-        <string>Prioritize perfect matches</string>
-       </property>
-       <property name="buddy">
-        <cstring>checkBox_prioritizePerfectMatch</cstring>
-       </property>
-      </widget>
      </item>
      <item row="1" column="1">
       <widget class="QCheckBox" name="checkBox_prioritizePerfectMatch">
@@ -162,6 +138,16 @@ Recommended is a value in between, such that the results you use often are prefe
        </property>
        <property name="text">
         <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_prioritizePerfectMatch">
+       <property name="text">
+        <string>Prioritize perfect matches</string>
+       </property>
+       <property name="buddy">
+        <cstring>checkBox_prioritizePerfectMatch</cstring>
        </property>
       </widget>
      </item>
@@ -212,6 +198,12 @@ Recommended is a value in between, such that the results you use often are prefe
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>tableView_queryHandlers</tabstop>
+  <tabstop>slider_decay</tabstop>
+  <tabstop>checkBox_prioritizePerfectMatch</tabstop>
+  <tabstop>tableView_fallbackOrder</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
