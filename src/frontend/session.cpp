@@ -32,7 +32,13 @@ void Session::runQuery(const QString &query_string)
         queries_.back()->cancel();
 
     auto &q = queries_.emplace_back(engine_.query(query_string));
-    q->setParent(this);  // important for qml ownership determination
+
+    // important for qml ownership determination
+    // CAUTION INTRODUCES NASTY BUGS
+    // 1. this _was_ important and is no more required
+    // 2. this leads to early query deletion since its a child of qobject
+    // (earlier than intended, see above q.release()->deleteLater();)
+    // q->setParent(this);
 
     frontend_.setQuery(q.get());
     q->run();
