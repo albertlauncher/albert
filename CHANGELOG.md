@@ -1,3 +1,22 @@
+## v0.31.0 (2025-07-28)
+
+### API
+
+- Move `applyUsageScore` into `TriggerQueryHandler`
+- `GlobalQueryHandler::applyUsageScore` pass by reference
+
+### Plugins
+
+- **python** Add plugins as submodules
+- **ssh** v10
+  - Allow customizing the ssh command
+  - Allow customizing the remote command
+- **locate** v3
+  - Drop update database action
+  - Filter using `Matcher`
+  - Use system file icons
+
+
 ## v0.30.1 (2025-07-12)
 
 ### Plugins
