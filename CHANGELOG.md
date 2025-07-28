@@ -1,3 +1,8 @@
+## v0.31.1 (2025-07-29)
+
+Fix pre Qt6.7 builds not supporting QString spaceship operator
+
+
 ## v0.31.0 (2025-07-28)
 
 ### API
