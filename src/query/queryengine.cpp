@@ -45,10 +45,10 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry):
     connect(&registry, &ExtensionRegistry::added, this, [this](Extension *e) {
         if (auto *th = dynamic_cast<albert::TriggerQueryHandler*>(e))
         {
-            auto s = settings();
-            s->beginGroup(th->id());
-            auto t = s->value(CFG_TRIGGER, th->defaultTrigger()).toString();
-            auto f = s->value(CFG_FUZZY, false).toBool();
+            auto sett = settings();
+            sett->beginGroup(th->id());
+            auto t = sett->value(CFG_TRIGGER, th->defaultTrigger()).toString();
+            auto f = sett->value(CFG_FUZZY, false).toBool();
 
             th->setTrigger(t);
             th->setFuzzyMatching(f);
