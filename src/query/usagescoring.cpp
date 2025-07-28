@@ -1,5 +1,6 @@
 // Copyright (c) 2022-2025 Manuel Schneider
 
+#include "extension.h"
 #include "rankitem.h"
 #include "usagescoring.h"
 using namespace albert;
