@@ -16,7 +16,6 @@ struct ItemKey
     QString extension_id;
     QString item_id;
     bool operator==(const ItemKey&) const = default;
-    auto operator<=>(const ItemKey&) const = default;
 };
 
 // Hashing specialization for ItemKey

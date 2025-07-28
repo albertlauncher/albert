@@ -105,7 +105,7 @@ std::unordered_map<ItemKey, double> UsageDatabase::itemUsageScores(double memory
                                  sql.value(2).toString(), sql.value(3).toString());
 
     // Compute usage weights
-    map<ItemKey, double> usage_weights;
+    unordered_map<ItemKey, double> usage_weights;
     for (int i = 0, k = (int)activations.size(); i < (int)activations.size(); ++i, --k)
     {
         auto activation = activations[i];
