@@ -1,0 +1,31 @@
+name: Missing terminal
+description: Report a missing terminal.
+title: "Missing terminal <name>"
+assignees: ManuelSchneid3r
+labels: ["C: App", "Needs triage"]
+body:
+- type: input
+  attributes:
+    label: Absolute path to the desktop file
+    description: See <a href="https://specifications.freedesktop.org/desktop-entry-spec/latest/">this</a> if you dont know what a desktop file is.
+    placeholder: /usr/share/applications/…
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Contents of the desktop file
+    render: INI
+    placeholder: "[Desktop Entry] …"
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: App report
+    render: Text
+    description: |
+      Run the command below and post its output.
+      **Linux** `albert --report`
+      **macOS** `/Applications/Albert.app/Contents/MacOS/albert --report`
+    placeholder: "Post the report here"
+  validations:
+    required: true

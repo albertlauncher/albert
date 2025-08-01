@@ -1,0 +1,49 @@
+name: Bug report
+description: Report a bug.
+assignees: ManuelSchneid3r
+labels: ["Needs triage"]
+body:
+- type: dropdown
+  id: Source
+  attributes:
+    label: Source
+    description: Where did you get the build from?
+    options:
+      - Open Build Service 
+      - Homebrew
+      - AUR
+      - Built from source
+      - Other (leave a note)
+    default: 0
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: App logs
+    render: Text
+    description: |
+      Run the command below and post its output.
+      **Linux** `QT_LOGGING_RULES='albert*=true' albert`
+      **macOS** `QT_LOGGING_RULES='albert*=true' /Applications/Albert.app/Contents/MacOS/albert`
+    placeholder: "Post the logs here"
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Current Behavior
+    description: A concise description of what you're experiencing.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Expected Behavior
+    description: A concise description of what you expected to happen.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Anything else?
+    description: Anything that will give more context about the issue you are encountering!
+  validations:
+    required: false
+    

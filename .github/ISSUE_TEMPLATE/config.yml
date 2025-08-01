@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Feature request
+    url: https://github.com/orgs/albertlauncher/discussions/1307
+    about: Post a feature request on the wishlist. Dont forget to vote!
+  - name: Chat on Discord
+    url: https://discord.gg/t8G2EkvRZh
+    about: Bridged community chat.
+  - name: Chat on Telegram
+    url: https://telegram.me/albert_launcher_community
+    about: Bridged community chat.
