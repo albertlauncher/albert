@@ -33,6 +33,9 @@
 [submodule "plugins/contacts"]
 	path = plugins/contacts
 	url = https://github.com/albertlauncher/albert-plugin-contacts.git
+[submodule "plugins/contacts-akonadi"]
+	path = plugins/contacts-akonadi
+	url = https://github.com/albertlauncher/albert-plugin-contacts-akonadi.git
 [submodule "plugins/datetime"]
 	path = plugins/datetime
 	url = https://github.com/albertlauncher/albert-plugin-datetime.git
