@@ -75,6 +75,7 @@ QWidget *PluginWidget::createPluginPageBody() const
     {
         auto *lbl = new QLabel(info);
         lbl->setWordWrap(true);
+        lbl->setAlignment(Qt::AlignTop);
         return lbl;
     }
 
