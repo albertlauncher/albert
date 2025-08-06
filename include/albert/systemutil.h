@@ -51,8 +51,12 @@ ALBERT_EXPORT void tryCreateDirectory(const std::filesystem::path &path);
 ALBERT_EXPORT QString toQString(const std::filesystem::path &path);
 
 #ifdef Q_OS_MAC
-/// Execute the AppleScript _script_.
-/// Only available on macOS.
+
+/// Execute the AppleScript _script_. Returns any return value of the script.
+/// Throws runtime_error in case of an error.
+/// Available on macOS only.
 ALBERT_EXPORT QString runAppleScript(const QString &script);
+
 #endif
+
 }

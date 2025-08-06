@@ -109,10 +109,11 @@ QString platform::runAppleScript(const QString &script)
     @autoreleasepool {
         NSAppleScript *appleScript = [[NSAppleScript alloc] initWithSource:script.toNSString()];
         NSDictionary *errorInfo = nil;
-        [appleScript executeAndReturnError:&errorInfo];
+        NSAppleEventDescriptor *result = [appleScript executeAndReturnError:&errorInfo];
         if (errorInfo)
-            return QString::fromNSString(errorInfo.description);;
-        return {};
+            throw runtime_error([errorInfo.description UTF8String]);
+        else
+            return QString::fromNSString([result stringValue]);
     }
 }
 
