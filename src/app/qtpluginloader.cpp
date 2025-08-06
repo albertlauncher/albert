@@ -96,6 +96,7 @@ QtPluginLoader::QtPluginLoader(const QString &p) : loader_(p), instance_(nullptr
         .readme_url           = rawMetadata["readme_url"_L1].toString(),
         .translations         = rawMetadata["translations"_L1].toVariant().toStringList(),
         .authors              = rawMetadata["authors"_L1].toVariant().toStringList(),
+        .maintainers          = rawMetadata["maintainers"_L1].toVariant().toStringList(),
         .runtime_dependencies = rawMetadata["runtime_dependencies"_L1].toVariant().toStringList(),
         .binary_dependencies  = rawMetadata["binary_dependencies"_L1].toVariant().toStringList(),
         .plugin_dependencies  = rawMetadata["plugin_dependencies"_L1].toVariant().toStringList(),

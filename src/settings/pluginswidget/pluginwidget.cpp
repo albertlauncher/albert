@@ -88,29 +88,45 @@ QWidget *PluginWidget::createPluginPageFooter() const
     if (!plugin.metadata.readme_url.isEmpty())
         meta << QString("<a href=\"%1\">README</a>").arg(plugin.metadata.readme_url);
 
-    // Id, version, license, authors
+    // Id, version
+    meta << QString("<a href=\"%1\">%2 v%3</a>")
+                .arg(plugin.metadata.url, plugin.metadata.id, plugin.metadata.version);
+
+    // License
+    meta << tr("License: %1").arg(plugin.metadata.license);
+
+    // Authors
     QStringList authors;
-    for (const auto &author : plugin.metadata.authors)
-        if (author.startsWith(QStringLiteral("@")))
+    for (const auto &a : plugin.metadata.authors)
+        if (a.startsWith(QStringLiteral("@")))
             authors << QStringLiteral("<a href=\"https://github.com/%1\">%2</a>")
-                           .arg(author.mid(1), author);
+                           .arg(a.mid(1), a);
         else
-            authors << author;
+            authors << a;
 
-    meta << QString("<a href=\"%1\">%2 v%3</a>. %4. %5.")
-                .arg(plugin.metadata.url,
-                     plugin.metadata.id,
-                     plugin.metadata.version,
-                     tr("License: %1").arg(plugin.metadata.license),
-                     tr("Authors: %1", nullptr, authors.size()).arg(authors.join(", ")));
+    meta << tr("Authors: %1", nullptr, authors.size()).arg(authors.join(", "));
 
+    // Maintainers
+    QStringList maintainers;
+    for (const auto &m : plugin.metadata.maintainers)
+        if (m.startsWith(QStringLiteral("@")))
+            maintainers << QStringLiteral("<a href=\"https://github.com/%1\">%2</a>")
+                           .arg(m.mid(1), m);
+        else
+            maintainers << m;
+
+    meta << tr("Maintainers: %1", nullptr, authors.size())
+                //: Placeholder for empty maintainers
+                .arg(maintainers.isEmpty() ? QStringLiteral("<b>%1</b>").arg(tr("Wanted!"))
+                                           : maintainers.join(", "));
 
     // Dependencies
     if (const auto &list = plugin_registry.dependencies(&plugin);
         !list.empty())
     {
         auto names = list | views::transform([](const auto &p){ return p->metadata.name; });
-        meta << tr("Requires: %1").arg(QStringList(names.begin(), names.end()).join(", "));  // ranges::to
+        meta << tr("Required plugins: %1", nullptr, names.size())
+                    .arg(QStringList(names.begin(), names.end()).join(", "));  // ranges::to
     }
 
     // Dependees
@@ -118,7 +134,8 @@ QWidget *PluginWidget::createPluginPageFooter() const
         !list.empty())
     {
         auto names = list | views::transform([](const auto &p){ return p->metadata.name; });
-        meta << tr("Required by: %1").arg(QStringList(names.begin(), names.end()).join(", "));  // ranges::to
+        meta << tr("Required by plugins: %1", nullptr, names.size())
+                    .arg(QStringList(names.begin(), names.end()).join(", "));  // ranges::to
     }
 
     // Required executables, if any

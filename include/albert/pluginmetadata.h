@@ -46,6 +46,9 @@ public:
     /// The copyright holders.
     QStringList authors;
 
+    /// The current maintainers.
+    QStringList maintainers;
+
     /// Required libraries.
     QStringList runtime_dependencies;
 
