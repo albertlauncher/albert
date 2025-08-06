@@ -653,7 +653,7 @@ void AlbertTests::input_history()
     QTemporaryFile t;
     t.open(); t.close(); // required to get the filename
 
-    InputHistory h(t.fileName());
+    detail::InputHistory h(t.fileName());
 
     h.add("a");
     h.add("b");

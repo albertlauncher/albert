@@ -9,7 +9,7 @@
 #include <QJsonDocument>
 #include <QStringList>
 #include <ranges>
-using namespace albert::util;
+using namespace albert::detail;
 using namespace albert;
 using namespace std;
 
