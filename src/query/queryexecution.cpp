@@ -114,7 +114,8 @@ bool QueryExecution::activate(const vector<ResultItem> &result_items, const QStr
                         .arg(e.id(), i->id(), a.id, e.name(), i->text(), a.text);
 
             // Order is cumbersome here
-            UsageDatabase::instance().addActivation(q, e.id(), i->id(), a.id);
+
+            query_engine_->storeItemActivation(q, e.id(), i->id(), a.id);
 
             // May delete the query, due to hide()
             // Notes to self:

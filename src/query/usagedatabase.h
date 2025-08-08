@@ -6,7 +6,10 @@
 #include <map>
 class QDateTime;
 
-// Direct database access. Main thread only.
+//
+// Direct database access.
+// Use in main thread only!
+//
 class UsageDatabase
 {
 public:

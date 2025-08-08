@@ -119,6 +119,21 @@ void QueryEngine::setPrioritizePerfectMatch(bool v)
     }
 }
 
+void QueryEngine::storeItemActivation(const QString &query, const QString &extension,
+                                      const QString &item, const QString &action)
+{
+    UsageDatabase::instance().addActivation(query, extension, item, action);
+
+    auto scores = UsageDatabase::instance().itemUsageScores(usage_scoring_.memory_decay);
+
+    lock_guard lock(usage_scoring_mutex_);
+    usage_scoring_ = UsageScoring(
+        usage_scoring_.prioritize_perfect_match,
+        usage_scoring_.memory_decay,
+        make_shared<unordered_map<ItemKey, double>>(::move(scores))
+    );
+}
+
 UsageScoring QueryEngine::usageScoring() const
 {
     lock_guard lock(usage_scoring_mutex_);

@@ -69,7 +69,7 @@ map<QString, uint> UsageDatabase::extensionActivationsSince(const QDateTime &dat
 
 void UsageDatabase::addActivation(const QString &q, const QString &e, const QString &i, const QString &a) const
 {
-    DEBG << "Update usage database…";
+    DEBG << "Storing activation…";
 
     QSqlQuery sql(QSqlDatabase::database(db_conn_name));
     sql.prepare("INSERT INTO activation (query, extension_id, item_id, action_id) "

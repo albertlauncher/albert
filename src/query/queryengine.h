@@ -5,6 +5,7 @@
 #include <QObject>
 #include <map>
 #include <memory>
+#include <mutex>
 class QueryExecution;
 class UsageScoring;
 namespace albert {
@@ -27,6 +28,8 @@ public:
     UsageScoring usageScoring() const;  // thread-safe
     void setMemoryDecay(double);
     void setPrioritizePerfectMatch(bool);
+    void storeItemActivation(const QString &query, const QString &extension,
+                             const QString &item, const QString &action);
 
     std::map<QString, albert::TriggerQueryHandler*> triggerHandlers();
     std::map<QString, albert::GlobalQueryHandler*> globalHandlers();
