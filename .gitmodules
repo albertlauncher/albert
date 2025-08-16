@@ -60,6 +60,9 @@
 [submodule "plugins/menubar"]
 	path = plugins/menubar
 	url = https://github.com/albertlauncher/albert-plugin-menubar.git
+[submodule "plugins/obsidian"]
+	path = plugins/obsidian
+	url = https://github.com/albertlauncher/albert-plugin-obsidian.git
 [submodule "plugins/path"]
 	path = plugins/path
 	url = https://github.com/albertlauncher/albert-plugin-path.git
