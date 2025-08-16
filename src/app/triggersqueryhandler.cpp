@@ -32,7 +32,7 @@ QString TriggersQueryHandler::id() const { return u"triggers"_s; }
 
 QString TriggersQueryHandler::name() const { return u"Triggers"_s; }
 
-QString TriggersQueryHandler::description() const { return tr("Trigger completion items."); }
+QString TriggersQueryHandler::description() const { return tr("Trigger completions"); }
 
 shared_ptr<Item> TriggersQueryHandler::makeItem(const QString &trigger, Extension *handler) const
 {
