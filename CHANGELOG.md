@@ -1,3 +1,33 @@
+## v0.32.0 (2025-08-16)
+
+### Albert
+
+- Add plugin: Obsidian
+
+### API
+
+- Let `runAppleScript` return the result and throw on error
+- Add maintainers to metadata
+- Move InputHistory to namespace `detail`
+
+### Plugins
+
+- **clipboard**
+  - Specialize behavior of different platforms
+    Qt on macOS does not deliver clipboard changes reliably. Poll on macos. React on
+    clipboard changes everywhere else.
+- **copyq**
+  - v3 Add macOS support
+- **kill**
+  - Add platform filter.
+- **obsidian** 🆕
+- **python**
+  - API v3.1 Add additional metadata fields
+    - md_maintainers
+    - md_readme_url
+    - md_platforms
+
+
 ## v0.31.1 (2025-07-29)
 
 Fix pre Qt6.7 builds not supporting QString spaceship operator
