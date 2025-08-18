@@ -32,16 +32,20 @@ PluginsWidget::PluginsWidget(PluginRegistry &plugin_registry):
     proxy_model_->setDynamicSortFilter(true);
     proxy_model_->sort(0);
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
-    // Some styles on linux have bigger icons than rows
-    auto rh = plugins_list_view_->sizeHintForRow(0);  // this requires a model
-    plugins_list_view_->setIconSize(QSize(rh, rh));
-#endif
-
     plugins_list_view_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     plugins_list_view_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     plugins_list_view_->setProperty("showDropIndicator", QVariant(false));
     plugins_list_view_->setUniformItemSizes(true);
+
+    // https://invent.kde.org/plasma/breeze/-/merge_requests/520
+    // https://bugs.kde.org/show_bug.cgi?id=508437
+    // plugins_list_view_->viewport()->setAutoFillBackground(false);  // otherwise draws over border
+    plugins_list_view_->setProperty("_breeze_force_frame", true);
+    // #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+    //     // Some styles on linux have bigger icons than rows
+    //     auto rh = plugins_list_view_->sizeHintForRow(0);  // this requires a model
+    //     plugins_list_view_->setIconSize(QSize(rh, rh));
+    // #endif
 
     updatePluginListWidth();
     connect(proxy_model_, &PluginsModel::modelReset,
