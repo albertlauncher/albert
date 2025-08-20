@@ -39,8 +39,7 @@ public:
     virtual void updateIndexItems() = 0;
 
     /// Set the items of the index.
-    /// Call this in updateIndexItems().
-    /// @threadsafe
+    /// This method is threadsafe. Call this in updateIndexItems().
     void setIndexItems(std::vector<IndexItem>&&);
 
 protected:
