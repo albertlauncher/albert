@@ -1,3 +1,19 @@
+## v0.32.1 (2025-08-21)
+
+### Albert
+
+- Fix plugins list view borders in breeze styles
+
+### Plugins
+
+- **github**
+  - Add saved search action "Show on GitHub"
+- **obsidian**
+  - Fix obsidian.json path on xdg platforms
+- **widgetsboxmodel**
+  - Fix window property signals
+
+
 ## v0.32.0 (2025-08-16)
 
 ### Albert
