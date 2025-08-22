@@ -3,7 +3,6 @@
 #include "logging.h"
 #include "queryengine.h"
 #include "queryexecution.h"
-#include "usagedatabase.h"
 #include <QCoreApplication>
 #include <QtConcurrentMap>
 #include <QtConcurrentRun>
@@ -155,7 +154,7 @@ void QueryExecution::notify(const Item *item)
     // O(n) seems not okay here.
     // however there will be stateful queries soon which only contain the top k items.
     if (auto it = find_if(matches_.begin(), matches_.end(),
-                          [=](const ResultItem &ri){ return ri.item.get() == item; });
+                          [=](const auto &ri){ return ri.item.get() == item; });
         it != matches_.end())
         emit dataChanged(distance(matches_.begin(), it));
 }
