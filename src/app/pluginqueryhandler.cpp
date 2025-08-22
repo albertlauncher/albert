@@ -1,12 +1,14 @@
 // Copyright (c) 2023-2025 Manuel Schneider
 
 #include "albert.h"
+#include "iconutil.h"
 #include "pluginloader.h"
 #include "pluginmetadata.h"
 #include "pluginqueryhandler.h"
 #include "pluginregistry.h"
 #include <QWidget>
 using enum Plugin::State;
+using namespace Qt::StringLiterals;
 using namespace albert::util;
 using namespace albert;
 using namespace std;
@@ -55,16 +57,16 @@ public:
     QString inputActionText() const override
     { return plugin_.metadata.name; }
 
-    QStringList iconUrls() const override
+    unique_ptr<Icon> icon() const override
     {
         if(!plugin_.enabled)
-            return {QStringLiteral("gen:?&text=🧩&fontscalar=0.7")};
+            return makeGraphemeIcon(u"🧩"_s);
         else if (plugin_.state == Loaded)
-            return {QStringLiteral("gen:?&text=🧩&fontscalar=0.7&background=#4000A000")};
+            return makeComposedIcon(makeGraphemeIcon(u"🧩"_s), makeGraphemeIcon(u"✅"_s), 1.0, 0.5);
         else if (plugin_.state_info.isEmpty())
-            return {QStringLiteral("gen:?&text=🧩&fontscalar=0.7&background=#4000A0A0")};
+            return makeComposedIcon(makeGraphemeIcon(u"🧩"_s), makeGraphemeIcon(u"⏳"_s), 1.0, 0.5);
         else
-            return {QStringLiteral("gen:?&text=🧩&fontscalar=0.7&background=#40FF0000")};
+            return makeComposedIcon(makeGraphemeIcon(u"🧩"_s), makeGraphemeIcon(u"⚠️"_s), 1.0, 0.5);
     }
 
     vector<Action> actions() const override
@@ -95,17 +97,13 @@ PluginQueryHandler::PluginQueryHandler(PluginRegistry &plugin_registry) : plugin
                      &plugin_registry_, [this] { setIndexItems({}); updateIndexItems(); });
 }
 
-QString PluginQueryHandler::id() const
-{ return QStringLiteral("pluginregistry"); }
+QString PluginQueryHandler::id() const { return u"pluginregistry"_s; }
 
-QString PluginQueryHandler::name() const
-{ return tr("Plugins"); }
+QString PluginQueryHandler::name() const { return tr("Plugins"); }
 
-QString PluginQueryHandler::description() const
-{ return tr("Manage plugins"); }
+QString PluginQueryHandler::description() const { return tr("Manage plugins"); }
 
-QString PluginQueryHandler::defaultTrigger() const
-{ return QStringLiteral("plugin "); }
+QString PluginQueryHandler::defaultTrigger() const { return u"plugin "_s; }
 
 void PluginQueryHandler::updateIndexItems()
 {

@@ -4,7 +4,7 @@
 #include "app.h"
 #include "extensionregistry.h"
 #include "frontend.h"
-#include "iconprovider.h"
+#include "iconutil.h"
 #include "logging.h"
 #include "messagehandler.h"
 #include "platform.h"
@@ -201,7 +201,11 @@ void App::Private::initTrayIcon()
 
     // icon
 
-    auto icon = iconFromUrls({"xdg:albert-tray", "xdg:albert", ":app_tray_icon"});
+#ifdef Q_OS_MAC
+    auto icon = albert::qIcon(makeImageIcon(u":app_tray_icon"));
+#elifdef Q_OS_UNIX
+    auto icon = albert::qIcon(makeThemeIcon("albert-tray"));
+#endif
     icon.setIsMask(true);
 
     tray_icon = make_unique<QSystemTrayIcon>();
@@ -586,7 +590,7 @@ int ALBERT_EXPORT run(int argc, char **argv)
     QApplication::setApplicationName("albert");
     QApplication::setApplicationDisplayName("Albert");
     QApplication::setApplicationVersion(ALBERT_VERSION_STRING);
-    QApplication::setWindowIcon(iconFromUrls({"xdg:albert", "qrc:app_icon"}));
+    QApplication::setWindowIcon(qIcon(makeThemeIcon("albert")));
     QApplication::setQuitOnLastWindowClosed(false);
 
 

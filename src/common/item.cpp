@@ -1,10 +1,10 @@
-// Copyright (c) 2023-2024 Manuel Schneider
+// Copyright (c) 2023-2025 Manuel Schneider
 
 #include "item.h"
 #include <set>
 using namespace albert;
 
-Item::~Item() = default;
+Item::~Item() {}
 
 QString Item::inputActionText() const { return text(); }
 

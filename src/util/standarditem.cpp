@@ -1,9 +1,12 @@
-// Copyright (c) 2022-2024 Manuel Schneider
+// Copyright (c) 2022-2025 Manuel Schneider
 
+#include "icon.h"
 #include "standarditem.h"
 using namespace albert;
 using namespace std;
 using namespace util;
+
+StandardItem::~StandardItem() {}
 
 void StandardItem::setId(QString id) { id_ = ::move(id); }
 
@@ -11,9 +14,11 @@ void StandardItem::setText(QString text) { text_ = ::move(text); }
 
 void StandardItem::setSubtext(QString subtext) { subtext_ = ::move(subtext); }
 
-void StandardItem::setInputActionText(QString t) { input_action_text_ = ::move(t); }
+void StandardItem::setIconFactory(function<unique_ptr<Icon>()> icon_factory) { icon_factory_ = ::move(icon_factory); }
 
-void StandardItem::setIconUrls(QStringList icon_urls) { icon_urls_ = ::move(icon_urls); }
+std::function<std::unique_ptr<Icon>()> StandardItem::iconFactory() { return icon_factory_; }
+
+void StandardItem::setInputActionText(QString t) { input_action_text_ = ::move(t); }
 
 void StandardItem::setActions(vector<Action> actions) { actions_ = ::move(actions); }
 
@@ -23,9 +28,14 @@ QString StandardItem::text() const { return text_; }
 
 QString StandardItem::subtext() const { return subtext_; }
 
-QString StandardItem::inputActionText() const
-{ return input_action_text_.isNull() ? text_ : input_action_text_; }
+std::unique_ptr<Icon> StandardItem::icon() const
+{
+    if (icon_factory_)
+        if (auto icon = icon_factory_(); icon)
+            return icon;
+    return {};
+}
 
-QStringList StandardItem::iconUrls() const { return icon_urls_; }
+QString StandardItem::inputActionText() const { return input_action_text_.isNull() ? text_ : input_action_text_; }
 
 vector<Action> StandardItem::actions() const { return actions_; }

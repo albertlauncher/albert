@@ -76,7 +76,7 @@ set(LIB_PUBLIC_HEADER
     # util
     include/albert/backgroundexecutor.h
     include/albert/download.h
-    include/albert/iconprovider.h
+    include/albert/iconutil.h
     include/albert/indexitem.h
     include/albert/indexqueryhandler.h
     include/albert/inputhistory.h
@@ -171,7 +171,11 @@ set(LIB_SRC
     src/util/albert.cpp
     src/util/download.cpp
     src/util/extensionplugin.cpp
-    src/util/iconprovider.cpp
+    src/util/icons.cpp
+    src/util/icons.h
+    src/util/qiconengineadapter.cpp
+    src/util/qiconengineadapter.h
+    src/util/iconutil.cpp
     src/util/indexitem.cpp
     src/util/indexqueryhandler.cpp
     src/util/inputhistory.cpp
@@ -225,6 +229,7 @@ add_library(${TARGET_LIB} SHARED
     ${LIB_SRC}
     ${LIB_UI}
     resources/resources.qrc
+    include/albert/icon.h
 )
 
 add_library("${PROJECT_NAME}::${TARGET_LIB}" ALIAS ${TARGET_LIB})

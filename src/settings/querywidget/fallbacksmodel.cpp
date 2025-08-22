@@ -2,7 +2,7 @@
 
 #include "fallbackhandler.h"
 #include "fallbacksmodel.h"
-#include "iconprovider.h"
+#include "iconutil.h"
 #include "queryengine.h"
 #include <QCoreApplication>
 #include <QHeaderView>
@@ -65,7 +65,7 @@ QVariant FallbacksModel::data(const QModelIndex &index, int role) const
             try {
                 return icon_cache.at(i->id());
             } catch (const out_of_range &) {
-                return icon_cache[i->id()] = iconFromUrls(i->iconUrls());
+                return icon_cache[i->id()] = qIcon(i->icon());
             }
 
         else if (role == Qt::DisplayRole)

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2024-2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -9,6 +9,7 @@
 
 namespace albert
 {
+class Icon;
 
 /// Action used by result items (\ref Item).
 class ALBERT_EXPORT Action final
@@ -73,16 +74,19 @@ public:
     /// Secondary descriptive text displayed in a list item.
     virtual QString subtext() const = 0;
 
-    /// Returns the items icon urls.
-    /// Used to get the item icon using the icon provider functions.
-    virtual QStringList iconUrls() const = 0;
-
     /// Returns the input action text.
     /// Used as input text replacement (usually by pressing Tab). The base implementation returns
     /// \ref text().
     virtual QString inputActionText() const;
 
-    /// Returns the item actions.
+    /// Returns the item icon.
+    /// Do _not_ clone a stored icon in this function. Icons can be a heavy resource.
+    /// Instead return a new instance every time this function is called. The view will cache the icon instance.
+    /// See \ref iconutil.h for the built-in icon factories.
+    /// See \ref albert::Icon if you want to create your own icon engine.
+    virtual std::unique_ptr<Icon> icon() const = 0;
+
+    /// Returns item actions.
     /// These are the actions a users can run. The base implementation returns an empty vector.
     virtual std::vector<Action> actions() const;
 
@@ -96,10 +100,10 @@ public:
         virtual ~Observer();
     };
 
-    /// Start notifying _observer_ about any changes.
+    /// Starts notifying _observer_ about any changes.
     virtual void addObserver(Observer *observer);
 
-    /// Stop notifying _observer_ about any changes.
+    /// Stops notifying _observer_ about any changes.
     virtual void removeObserver(Observer *observer);
 
 };

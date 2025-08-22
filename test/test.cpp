@@ -3,6 +3,7 @@
 #include "albert.h"
 #include "extensionplugin.h"
 #include "extensionregistry.h"
+#include "icon.h"
 #include "inputhistory.h"
 #include "itemindex.h"
 #include "levenshtein.h"
