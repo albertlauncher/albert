@@ -18,11 +18,14 @@
 # |---------------------:|:------------:|---------------------------------------------------------------------------|
 # |                   id |   Reserved   | PROJECT_NAME added by CMake.                                              |
 # |              version |   Reserved   | PROJECT_VERSION added by CMake.                                           |
+# |         translations |   Reserved   | Added by CMake.                                                           |
 # |                 name | local string | Human readable name.                                                      |
 # |          description | local string | Brief, imperative description, e.g. "Open files".                         |
 # |              license |    string    | SPDX license identifier. E.g. BSD-2-Clause, MIT, LGPL-3.0-only, …         |
-# |                  url |    string    | Browsable online source code, issues etc.                                 |
+# |                  url |    string    | Browsable online source code                                              |
+# |           readme_url |    string    | Online README                                                             |
 # |              authors | string list  | List of copyright holders. Preferably using mentionable GitHub usernames. |
+# |              authors | string list  | List of maintainers. Preferably using mentionable GitHub usernames.       |
 # | runtime_dependencies | string list  | Default: `[]`. Required libraries.                                        |
 # |  binary_dependencies | string list  | Default: `[]`. Required executables.                                      |
 # |  plugin_dependencies | string list  | Default: `[]`. Required plugins.                                          |
