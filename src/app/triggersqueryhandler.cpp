@@ -12,20 +12,11 @@ using namespace albert;
 using namespace std;
 
 TriggersQueryHandler::TriggersQueryHandler(const QueryEngine &query_engine):
-    query_engine_(query_engine),
-    trigger_handlers_(query_engine.activeTriggerHandlers())
+    query_engine_(query_engine)
 {
-    // Query engine is not thread safe. Keep a copy.
-
-    QObject::connect(&query_engine, &QueryEngine::handlerAdded, this, [this]{
-        lock_guard l(trigger_handlers_mutex_);
-        trigger_handlers_ = query_engine_.activeTriggerHandlers();
-    });
-
-    QObject::connect(&query_engine, &QueryEngine::handlerRemoved, this, [this]{
-        lock_guard l(trigger_handlers_mutex_);
-        trigger_handlers_ = query_engine_.activeTriggerHandlers();
-    });
+    QObject::connect(&query_engine, &QueryEngine::activeTriggersChanged,
+                     this, &TriggersQueryHandler::updateTriggers);
+    updateTriggers();
 }
 
 QString TriggersQueryHandler::id() const { return u"triggers"_s; }
@@ -37,7 +28,7 @@ QString TriggersQueryHandler::description() const { return tr("Trigger completio
 shared_ptr<Item> TriggersQueryHandler::makeItem(const QString &trigger, Extension *handler) const
 {
     return StandardItem::make(
-        trigger,
+        handler->id(),
         QString(trigger).replace(" ", "•"),
         QString("%1 · %2").arg(handler->name(), handler->description()),
         {u"gen:?&text=🚀"_s},
@@ -53,11 +44,21 @@ shared_ptr<Item> TriggersQueryHandler::makeItem(const QString &trigger, Extensio
 
 vector<RankItem> TriggersQueryHandler::handleGlobalQuery(const Query &q)
 {
-    shared_lock l(trigger_handlers_mutex_);
     Matcher matcher(q);
     vector<RankItem> r;
-    for (const auto &[t, h] : trigger_handlers_)
-        if (const auto m = Matcher(q.string()).match(t, h->name(), h->id()); m)
+
+    for (shared_lock l(handler_triggers_mutex_);
+         const auto &[t, h] : handler_triggers_)
+        if (!q.isValid())
+            break;
+        else if (const auto m = matcher.match(t, h->name(), h->id()); m)
             r.emplace_back(makeItem(t, h), m);
+
     return r;
+}
+
+void TriggersQueryHandler::updateTriggers()
+{
+    lock_guard lock(handler_triggers_mutex_);
+    handler_triggers_ = query_engine_.activeTriggerHandlers();
 }

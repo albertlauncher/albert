@@ -22,7 +22,7 @@ class QueryEngine : public QObject
 public:
 
     QueryEngine(albert::ExtensionRegistry&);
-    
+
     std::unique_ptr<QueryExecution> query(const QString &query);
 
     UsageScoring usageScoring() const;  // thread-safe
@@ -89,5 +89,6 @@ signals:
 
     void handlerAdded();
     void handlerRemoved();
+    void activeTriggersChanged();
 
 };

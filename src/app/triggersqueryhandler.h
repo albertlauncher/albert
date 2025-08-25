@@ -21,9 +21,10 @@ public:
 private:
 
     std::shared_ptr<albert::Item> makeItem(const QString &trigger, Extension *handler) const;
+    void updateTriggers();
 
     const QueryEngine &query_engine_;
-    std::map<QString, TriggerQueryHandler *> trigger_handlers_;
-    std::shared_mutex trigger_handlers_mutex_;
+    std::map<QString, TriggerQueryHandler *> handler_triggers_;
+    std::shared_mutex handler_triggers_mutex_;
 
 };

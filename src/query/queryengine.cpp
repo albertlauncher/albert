@@ -186,6 +186,7 @@ void QueryEngine::updateActiveTriggers()
         if (const auto&[it, success] = active_triggers_.emplace(h.trigger, h.handler); !success)
             WARN << QString("Trigger '%1' of '%2' already registered for '%3'.")
                         .arg(h.trigger, id, it->second->id());
+    emit activeTriggersChanged();
 }
 
 QString QueryEngine::trigger(const QString &id) const
