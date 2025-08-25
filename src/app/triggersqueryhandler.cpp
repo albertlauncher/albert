@@ -25,6 +25,10 @@ QString TriggersQueryHandler::name() const { return u"Triggers"_s; }
 
 QString TriggersQueryHandler::description() const { return tr("Trigger completions"); }
 
+void TriggersQueryHandler::setFuzzyMatching(bool fuzzy) { fuzzy_ = fuzzy; }
+
+bool TriggersQueryHandler::supportsFuzzyMatching() const { return true; }
+
 shared_ptr<Item> TriggersQueryHandler::makeItem(const QString &trigger, Extension *handler) const
 {
     return StandardItem::make(
@@ -44,7 +48,7 @@ shared_ptr<Item> TriggersQueryHandler::makeItem(const QString &trigger, Extensio
 
 vector<RankItem> TriggersQueryHandler::handleGlobalQuery(const Query &q)
 {
-    Matcher matcher(q);
+    Matcher matcher(q, {.fuzzy = fuzzy_});
     vector<RankItem> r;
 
     for (shared_lock l(handler_triggers_mutex_);

@@ -17,6 +17,8 @@ public:
     QString name() const override;
     QString description() const override;
     std::vector<albert::RankItem> handleGlobalQuery(const albert::Query &) override;
+    void setFuzzyMatching(bool) override;
+    bool supportsFuzzyMatching() const override;
 
 private:
 
@@ -26,5 +28,6 @@ private:
     const QueryEngine &query_engine_;
     std::map<QString, TriggerQueryHandler *> handler_triggers_;
     std::shared_mutex handler_triggers_mutex_;
+    std::atomic_bool fuzzy_;
 
 };
