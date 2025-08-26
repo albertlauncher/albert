@@ -12,7 +12,7 @@ namespace albert::util
 ///
 /// Convenience base class for extension plugins.
 ///
-/// Implements pure virtual functions of Extension and PluginInstance.
+/// Implements pure virtual functions of \ref Extension and \ref PluginInstance.
 ///
 class ALBERT_EXPORT ExtensionPlugin : public QObject,
                                       public PluginInstance,
