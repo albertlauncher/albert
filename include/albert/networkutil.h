@@ -23,6 +23,11 @@ ALBERT_EXPORT QNetworkAccessManager &network();
 ///
 ALBERT_EXPORT QNetworkReply *await(QNetworkReply *reply);
 
+///
+/// Returns _string_ percent encoded.
+///
+ALBERT_EXPORT QString percentEncoded(const QString &string);
+
 }
 
 namespace albert::detail {
