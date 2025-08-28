@@ -28,6 +28,11 @@ ALBERT_EXPORT QNetworkReply *await(QNetworkReply *reply);
 ///
 ALBERT_EXPORT QString percentEncoded(const QString &string);
 
+///
+/// Returns _string_ percent decoded.
+///
+ALBERT_EXPORT QString percentDecoded(const QString &string);
+
 }
 
 namespace albert::detail {

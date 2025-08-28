@@ -65,3 +65,6 @@ const bool &detail::RateLimiter::debounce(const bool &valid)
 
 QString util::percentEncoded(const QString &string)
 { return QString::fromUtf8(QUrl::toPercentEncoding(string)); }
+
+QString util::percentDecoded(const QString &string)
+{ return QUrl::fromPercentEncoding(string.toUtf8()); }
