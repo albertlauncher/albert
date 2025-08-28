@@ -12,5 +12,11 @@ repos:
     rev:  v0.19.1
     hooks:
     -   id: gitlint
-        args: [--ignore=body-is-missing, --contrib=contrib-title-conventional-commits, --msg-filename]
+        args:
+            - --ignore=body-is-missing
+            - --contrib=contrib-title-conventional-commits
+            - -c
+            - contrib-title-conventional-commits.types=fix,feat,chore,docs,style,refactor,perf,test,revert,ci,build,api
+            - --msg-filename
+
 
