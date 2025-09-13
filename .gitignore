@@ -1,15 +1,6 @@
-*.jsc
-*.qmlc
 .DS_Store
-/.albertignore
-.idea
 /CMakeLists.txt.user*
-/LicenseTemplate
 /build*
-/cmake-*
-/design
 /documentation
-/doxygen
-/packaging
-config.h
-export.h
+justfile
+
