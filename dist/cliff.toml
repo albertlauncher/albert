@@ -1,0 +1,26 @@
+# https://git-cliff.org/docs/configuration
+
+[changelog]
+trim = false
+conventional_commits = true
+filter_unconventional = false
+require_conventional = false
+
+[git]
+commit_parsers = [
+    { message = "^feat", group = "<!-- 0 -->Features" },
+    { message = "^fix", group = "<!-- 1 -->Fixes" },
+    { message = "^perf", group = "<!-- 2 -->Performance" },
+    { message = "^api", group = "<!-- 3 -->API" },
+    { message = "^doc", group = "<!-- 4 -->Documentation" },
+    { message = "^style", group = "<!-- 5 -->Styling" },
+    { message = "^test", group = "<!-- 6 -->Testing" },
+    { message = "^refactor", skip = true },
+    { message = "^chore\\(release\\)", skip = true },
+    { message = "^chore\\(deps.*\\)", skip = true },
+    { message = "^chore\\(pr\\)", skip = true },
+    { message = "^chore\\(pull\\)", skip = true },
+    { message = "^chore|^ci", group = "<!-- 7 -->Miscellaneous Tasks" },
+    { message = ".*", group = "<!-- 8 -->Other" },
+]
+
