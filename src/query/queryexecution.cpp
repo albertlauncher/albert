@@ -342,13 +342,6 @@ void GlobalQuery::handleTriggerQuery(Query &)
     QtConcurrent::blockingMap(query_handlers_, map);
     auto d_h = duration_cast<milliseconds>(system_clock::now()-tp).count();
 
-    static const auto cmp = [](const auto &a, const auto &b){
-        if (a.second.score == b.second.score)
-            return a.second.item->text() > b.second.item->text();
-        else
-            return a.second.score > b.second.score;
-    };
-
     tp = system_clock::now();
     auto begin = ::begin(rank_items);
     auto end = ::end(rank_items);
@@ -357,12 +350,12 @@ void GlobalQuery::handleTriggerQuery(Query &)
     // Partially sort the visible items for fast response times
     if (mid < end)
     {
-        partial_sort(begin, mid, end, cmp);
+        ranges::partial_sort(begin, mid, end, greater(), &pair<Extension*, RankItem>::second);
         addRankItems(begin, mid);
         begin = mid;
     }
 
-    sort(begin, end, cmp);
+    ranges::sort(begin, end, greater(), &pair<Extension*, RankItem>::second);
     addRankItems(begin, end);
 
     auto d_s = duration_cast<milliseconds>(system_clock::now()-tp).count();
