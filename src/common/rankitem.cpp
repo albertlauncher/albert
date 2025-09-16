@@ -16,9 +16,9 @@ bool albert::RankItem::operator<(const RankItem &other) const
     else if (score > other.score)
         return false;
     else if (const auto lt = item->text(), rt = other.item->text();
-             lt.size() < rt.size())
+             lt.size() > rt.size())
         return true;
-    else if (lt.size() > rt.size())
+    else if (lt.size() < rt.size())
         return false;
     else
         return lt > rt;
