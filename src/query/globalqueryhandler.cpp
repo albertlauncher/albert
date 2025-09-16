@@ -10,14 +10,31 @@ GlobalQueryHandler::~GlobalQueryHandler() = default;
 void GlobalQueryHandler::handleTriggerQuery(Query &query)
 {
     auto rank_items = handleGlobalQuery(query);
+
     applyUsageScore(rank_items);
-    ranges::sort(rank_items, greater());
+
+    auto begin = ::begin(rank_items);
+    auto end = ::end(rank_items);
+    auto mid = begin + 20;
 
     vector<shared_ptr<Item>> items;
-    items.reserve(rank_items.size());
-    for (auto &match : rank_items)
-        items.push_back(::move(match.item));
+    items.reserve(mid - begin);
 
+    // Partially sort the visible items for fast response times
+    if (mid < end)
+    {
+        ranges::partial_sort(begin, mid, end, greater());
+        for (;begin != mid; ++begin)
+            items.emplace_back(::move(begin->item));
+        query.add(::move(items));
+    }
+
+    items.clear();
+    items.reserve(end - begin);
+
+    ranges::sort(begin, end, greater());
+    for (;begin != end; ++begin)
+        items.emplace_back(::move(begin->item));
     query.add(::move(items));
 }
 
