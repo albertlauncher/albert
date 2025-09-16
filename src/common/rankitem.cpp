@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 Manuel Schneider
+// Copyright (c) 2023-2025 Manuel Schneider
 
 #include "rankitem.h"
 using namespace std;
@@ -13,24 +13,28 @@ bool albert::RankItem::operator<(const RankItem &other) const
 {
     if (score < other.score)
         return true;
-    if (score > other.score)
+    else if (score > other.score)
         return false;
-    if (item->text().size() < other.item->text().size())
+    else if (const auto lt = item->text(), rt = other.item->text();
+             lt.size() < rt.size())
         return true;
-    if (item->text().size() > other.item->text().size())
+    else if (lt.size() > rt.size())
         return false;
-    return item->text() > other.item->text();
+    else
+        return lt > rt;
 }
 
 bool albert::RankItem::operator>(const RankItem &other) const
 {
     if (score > other.score)
         return true;
-    if (score < other.score)
+    else if (score < other.score)
         return false;
-    if (item->text().size() < other.item->text().size())
+    else if (const auto lt = item->text(), rt = other.item->text();
+             lt.size() < rt.size())
         return true;
-    if (item->text().size() > other.item->text().size())
+    else if (lt.size() > rt.size())
         return false;
-    return item->text() < other.item->text();
+    else
+        return lt < rt;
 }
