@@ -1,7 +1,5 @@
 <RCC>
     <qresource prefix="/icons/fallback/scalable">
-        <file alias="gear">gear.svg</file>
-        <file alias="unknown">unknown.svg</file>
         <file>albert-tray.svg</file>
         <file>albert.svg</file>
     </qresource>
