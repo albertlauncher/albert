@@ -201,11 +201,7 @@ void App::Private::initTrayIcon()
 
     // icon
 
-#ifdef Q_OS_MAC
-    auto icon = albert::qIcon(makeImageIcon(u":app_tray_icon"));
-#elifdef Q_OS_UNIX
     auto icon = albert::qIcon(makeThemeIcon("albert-tray"));
-#endif
     icon.setIsMask(true);
 
     tray_icon = make_unique<QSystemTrayIcon>();
@@ -750,6 +746,15 @@ int ALBERT_EXPORT run(int argc, char **argv)
         }
         else
             delete t;
+    }
+
+
+    // Initialize theme icon lookup
+
+    {
+        // QIcon::setThemeSearchPaths({":/icons"});  // implicitly set
+        // See https://bugreports.qt.io/browse/QTBUG-140639
+        QIcon::setFallbackThemeName("fallback");
     }
 
 

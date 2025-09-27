@@ -1,0 +1,16 @@
+# This is the builtin fallback theme.
+# Its purpose is to make plugin development easy.
+# Put your icons into it and query them on any platform.
+# On xdg the system icon theme is prefered.
+
+[Icon Theme]
+Name=fallback
+Comment=The builtin fallback icon theme
+
+Directories=scalable
+
+[scalable]
+MinSize=1
+Size=128
+MaxSize=256
+Type=Scalable

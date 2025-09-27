@@ -1,8 +1,11 @@
 <RCC>
-    <qresource prefix="/">
-        <file alias="app_icon">albert.svg</file>
+    <qresource prefix="/icons/fallback/scalable">
         <file alias="gear">gear.svg</file>
         <file alias="unknown">unknown.svg</file>
-        <file alias="app_tray_icon">albert-tray.svg</file>
+        <file>albert-tray.svg</file>
+        <file>albert.svg</file>
+    </qresource>
+    <qresource prefix="/icons/fallback">
+        <file>index.theme</file>
     </qresource>
 </RCC>

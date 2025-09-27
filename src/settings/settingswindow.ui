@@ -218,7 +218,7 @@
                 <string/>
                </property>
                <property name="pixmap">
-                <pixmap resource="../../resources/resources.qrc">:/app_icon</pixmap>
+                <pixmap resource="../../resources/resources.qrc">:/icons/fallback/scalable/albert.svg</pixmap>
                </property>
                <property name="scaledContents">
                 <bool>true</bool>
