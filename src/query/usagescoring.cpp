@@ -1,6 +1,7 @@
 // Copyright (c) 2022-2025 Manuel Schneider
 
 #include "extension.h"
+#include "logging.h"
 #include "rankitem.h"
 #include "usagescoring.h"
 using namespace albert;
@@ -38,7 +39,16 @@ void UsageScoring::modifyMatchScores(const QString &extension_id, vector<RankIte
     ItemKey key{extension_id, {}}; // avoid execessive key creation
     for (auto &rank_item : rank_items)
     {
-        key.item_id = rank_item.item->id();
+        try {
+            key.item_id = rank_item.item->id();
+        } catch (const std::exception &e) {
+            WARN << QString("Item in extension '%1' threw exception in id(): %2")
+                        .arg(extension_id, e.what());
+            continue;
+        } catch (...) {
+            WARN << QString("Item in extension '%1' threw unknown exception in id()").arg(extension_id);
+            continue;
+        }
         modifyMatchScore(key, rank_item.score);
     }
 }
