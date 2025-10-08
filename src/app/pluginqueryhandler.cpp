@@ -84,7 +84,21 @@ public:
             plugin_.enabled ? PluginQueryHandler::tr("Disable")
                             : PluginQueryHandler::tr("Enable"),
             [this] { plugin_registry_.setEnabledWithUserConfirmation(plugin_.id, !plugin_.enabled); }
-        );
+            );
+
+        if (plugin_.state == Loaded)
+            actions.emplace_back(
+                u"relaod"_s,
+                PluginQueryHandler::tr("Reload"),
+                [this] {
+                    plugin_registry_.setLoaded(plugin_.id, false);
+                    plugin_registry_.setLoaded(plugin_.id, true);
+                });
+        else if (plugin_.state == Unloaded)
+            actions.emplace_back(
+                u"laod"_s,
+                PluginQueryHandler::tr("Load"),
+                [this] { plugin_registry_.setLoaded(plugin_.id, true); });
 
         return actions;
     }
