@@ -157,42 +157,30 @@ void SettingsWindow::init_tab_general_telemetry()
         app.telemetry().setEnabled(checked);
         ui.checkBox_telemetry->setToolTip(app.telemetry().buildReportString());
     });
+
+    ui.label_telemetry->setText(QString("[%1](%2)")
+                                    .arg(ui.label_telemetry->text(), privacy_notice_url));
 }
 
 void SettingsWindow::init_tab_general_about()
 {
-    ui.label_telemetry->setText(QString("[%1](%2)")
-                                    .arg(ui.label_telemetry->text(), privacy_notice_url));
-
     ui.label_app->setText(QString("<b>%1 v%2</b>")
                           .arg(qApp->applicationDisplayName(),
                                qApp->applicationVersion()));
 
-    auto *l = ui.label_bugs;
-    l->setText(l->text()
-               .arg("https://github.com/albertlauncher/albert/issues/new/choose"));
-
-    l = ui.label_community;
-    l->setText(l->text()
-               .arg("https://telegram.me/albert_launcher_community",
-                    "https://discord.com/invite/t8G2EkvRZh"));
-
-    l = ui.label_support;
-    l->setText(l->text()
-               .arg("https://albertlauncher.github.io/donation/",
-                    "https://github.com/sponsors/ManuelSchneid3r"));
-
-    l = ui.label_credits;
+    QStringList links;
+    links << QStringLiteral("[Telegram](https://telegram.me/albert_launcher_community)");
+    links << QStringLiteral("[Discord](https://discord.com/invite/t8G2EkvRZh)");
+    links << QStringLiteral("[News](https://albertlauncher.github.io/news/)");
+    links << QStringLiteral("[GitHub](https://github.com/albertlauncher)");
+    links << QStringLiteral("[Donate](https://albertlauncher.github.io/donation/)");
+    ui.label_links->setText(links.join(" · "));
 
     QStringList credits;
-    credits << l->text();
+    credits << ui.label_credits->text();
     credits << "QHotkey - Felix Barz  (BSD-3-Clause)";
     credits << "qtkeychain - Frank Osterfeld  (BSD-3-Clause)";
-
-    l->setText(small_text_fmt.arg(credits.join("<br>")));
-
-    connect(ui.label_about, &QLabel::linkActivated,
-            this, [](const auto &link){ if(link == "aboutQt") qApp->aboutQt(); });
+    ui.label_credits->setText(small_text_fmt.arg(credits.join("<br>")));
 }
 
 void SettingsWindow::bringToFront(const QString &plugin)

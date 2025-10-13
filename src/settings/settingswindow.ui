@@ -169,7 +169,7 @@
         </layout>
        </item>
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout" stretch="2,0,4">
+        <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,1">
          <item>
           <spacer name="verticalSpacer_2">
            <property name="orientation">
@@ -248,66 +248,9 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="label_community">
+            <widget class="QLabel" name="label_links">
              <property name="text">
-              <string>Join the community on [Telegram](%1) or [Discord](%2).</string>
-             </property>
-             <property name="textFormat">
-              <enum>Qt::TextFormat::MarkdownText</enum>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignmentFlag::AlignCenter</set>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-             <property name="openExternalLinks">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_support">
-             <property name="text">
-              <string>Support Albert with a [donation](%1)&lt;br/&gt;or by becoming a [GitHub sponsor](%2).</string>
-             </property>
-             <property name="textFormat">
-              <enum>Qt::TextFormat::MarkdownText</enum>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignmentFlag::AlignCenter</set>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-             <property name="openExternalLinks">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_bugs">
-             <property name="text">
-              <string>Report bugs on [GitHub](%1).</string>
-             </property>
-             <property name="textFormat">
-              <enum>Qt::TextFormat::MarkdownText</enum>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignmentFlag::AlignCenter</set>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-             <property name="openExternalLinks">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_about">
-             <property name="text">
-              <string>Written in C++, powered by [Qt](aboutQt).</string>
+              <string/>
              </property>
              <property name="textFormat">
               <enum>Qt::TextFormat::MarkdownText</enum>
