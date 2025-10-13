@@ -14,20 +14,7 @@ using namespace std;
 #error This file must be compiled with ARC.
 #endif
 
-void platform::initPlatform()
-{
-    //
-    // Put /usr/local/bin hardcoded to env.
-    // PATH is inherited from launchctl and defaults to [/usr]/[s]bin.
-    // Delegating launch agent setup and such is too much for regular users.
-    //
-    auto p = QStringLiteral("/usr/local/bin");
-    auto PATHS = QString(qgetenv("PATH")).split(':');
-    if (!PATHS.contains(p))
-        PATHS.prepend(p);
-    auto PATH = PATHS.join(':').toLocal8Bit();
-    qputenv("PATH", PATH);
-}
+void platform::initPlatform(){}
 
 void platform::initNativeWindow(unsigned long long wid)
 {

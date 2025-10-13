@@ -61,6 +61,7 @@ static const char* CFG_SHOWTRAY = "showTray";
 static const bool  DEF_SHOWTRAY = true;
 static const char *CFG_HOTKEY = "hotkey";
 static const char *DEF_HOTKEY = "Ctrl+Space";
+static const char *CFG_ADDITIONAL_PATH_ENTRIES = "additional_path_entires";
 }
 
 
@@ -74,6 +75,7 @@ public:
     void finalize();
 
     void initTrayIcon();
+    void initPathVariable(const QSettings &settings);
     void initHotkey();
     void initRPC();
     void loadAnyFrontend();
@@ -85,6 +87,8 @@ public:
     // As early as possible
     RPCServer rpc_server; // Check for other instances first
     SignalHandler unix_signal_handler;
+    const QStringList original_path_entries;
+    QStringList additional_path_entries;
 
     // Core
     albert::ExtensionRegistry extension_registry;
@@ -109,6 +113,7 @@ public:
 
 
 App::Private::Private(const QStringList &additional_plugin_paths, bool load_enabled):
+    original_path_entries(qEnvironmentVariable("PATH").split(u':', Qt::SkipEmptyParts)),
     plugin_registry(extension_registry, load_enabled),
     plugin_provider(additional_plugin_paths),
     query_engine(extension_registry),
@@ -137,8 +142,12 @@ void App::Private::initialize()
     connect(frontend, &Frontend::visibleChanged, app_instance, reset_session);
     connect(&query_engine, &QueryEngine::handlerRemoved, app_instance, reset_session);
 
-    if (settings()->value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool())
+    auto settings = albert::settings();
+
+    if (settings->value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool())
         initTrayIcon();
+
+    initPathVariable(*settings);
 
     notifyVersionChange();
 
@@ -218,6 +227,15 @@ void App::Private::initTrayIcon()
             App::instance()->toggle();
     });
 #endif
+}
+
+void App::Private::initPathVariable(const QSettings &settings)
+{
+    additional_path_entries = settings.value(CFG_ADDITIONAL_PATH_ENTRIES).toStringList();
+    auto effective_path_entries = QStringList() << additional_path_entries << original_path_entries;
+    auto new_path = effective_path_entries.join(u':').toUtf8();
+    qputenv("PATH", new_path);
+    DEBG << "Effective PATH: " << new_path;
 }
 
 void App::Private::initHotkey()
@@ -546,6 +564,19 @@ void App::setTrayEnabled(bool enable)
     else
         return;
     settings()->setValue(CFG_SHOWTRAY, enable);
+}
+
+const QStringList &App::originalPathEntries() const { return d->original_path_entries; }
+
+const QStringList &App::additionalPathEntries() const { return d->additional_path_entries; }
+
+void App::setAdditionalPathEntries(const QStringList &entries)
+{
+    if (entries != d->additional_path_entries)
+    {
+        d->additional_path_entries = entries;
+        settings()->setValue(CFG_ADDITIONAL_PATH_ENTRIES, entries);
+    }
 }
 
 const QHotkey *App::hotkey() const { return d->hotkey.get(); }

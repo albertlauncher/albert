@@ -20,8 +20,9 @@ public:
 private:
 
     void init_tab_general_hotkey();
-    void init_tab_general_trayIcon();
     void init_tab_general_frontends();
+    void init_tab_general_path();
+    void init_tab_general_trayIcon();
     void init_tab_general_telemetry();
     void init_tab_general_about();
     void keyPressEvent(QKeyEvent * event) override;

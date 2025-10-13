@@ -1,7 +1,9 @@
 // Copyright (c) 2022-2025 Manuel Schneider
 
+#include "albert.h"
 #include "app.h"
 #include "frontend.h"
+#include "messagebox.h"
 #include "pluginswidget.h"
 #include "querywidget.h"
 #include "settingswindow.h"
@@ -10,6 +12,8 @@
 #include <QDialog>
 #include <QHotkey>
 #include <QKeyEvent>
+using namespace albert::util;
+using namespace albert;
 using namespace std;
 
 const auto privacy_notice_url = "https://albertlauncher.github.io/privacy/";
@@ -72,6 +76,7 @@ SettingsWindow::SettingsWindow(App &a):
     init_tab_general_hotkey();
     init_tab_general_trayIcon();
     init_tab_general_frontends();
+    init_tab_general_path();
     init_tab_general_telemetry();
     init_tab_general_about();
 
@@ -122,7 +127,7 @@ void SettingsWindow::init_tab_general_hotkey()
         ui.label_hotkey->setEnabled(false);
         ui.pushButton_hotkey->setText(tr("Not supported"));
         connect(ui.pushButton_hotkey, &QPushButton::clicked, this, []{
-            albert::util::openUrl("https://albertlauncher.github.io/gettingstarted/faq/#wayland");
+            openUrl("https://albertlauncher.github.io/gettingstarted/faq/#wayland");
         });
     }
 }
@@ -145,6 +150,25 @@ void SettingsWindow::init_tab_general_frontends()
     }
     connect(ui.comboBox_frontend, &QComboBox::currentIndexChanged, this,
             [this](int index){ app.setFrontend(index); });
+}
+
+void SettingsWindow::init_tab_general_path()
+{
+    ui.lineEdit_additional_path_entries->setPlaceholderText(app.originalPathEntries().join(":"));
+    ui.lineEdit_additional_path_entries->setText(app.additionalPathEntries().join(":"));
+    const auto effective_path_entries = QStringList() << app.additionalPathEntries() << app.originalPathEntries();
+    ui.lineEdit_additional_path_entries->setToolTip(effective_path_entries.join(":"));
+
+    connect(ui.lineEdit_additional_path_entries, &QLineEdit::editingFinished, this, [this] {
+        if (ui.lineEdit_additional_path_entries->text().split(":") == app.additionalPathEntries())
+            return;
+        app.setAdditionalPathEntries(ui.lineEdit_additional_path_entries->text().split(":"));
+        auto effective_path_entries = QStringList() << app.additionalPathEntries() << app.originalPathEntries();
+        ui.lineEdit_additional_path_entries->setToolTip(effective_path_entries.join(":"));
+        if (question(tr("For the changes to take effect, Albert has to be restarted. "
+                        "Do you want to restart Albert now?")))
+            restart();
+    });
 }
 
 void SettingsWindow::init_tab_general_telemetry()
