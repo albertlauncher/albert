@@ -1,3 +1,206 @@
+## v33.0.0 (2025-10-14)
+
+### Core changes
+
+#### Features
+
+- _triggersqueryhandler_ · Add fuzzy support
+- _tray_ · Install the app tray icon on xdg
+- Built-in fallback theme support
+- _PluginQueryHandler_ · Add 'Load'/'Reload' actions
+- User customizable PATH
+
+#### Fixes
+
+- _triggersqueryhandler_ · Properly sync triggers
+- _rankitem_ · Correct inverted text length in operator<
+- _globalquery_ · Remove leftover explicit comparator
+- Update wayland faq link
+
+#### Performance
+
+- _rankitem_ · Avoid multiple string allocations in comparison (🚀200%)
+- _globalqueryhandler_ · Instant response times in handleTriggerQuery
+
+#### API
+
+- Add `util::percentEncoded`
+- Add `util::percentDecoded`
+- [**BREAKING**] Add customizable and typesafe icon support
+- _PluginInstance_ · [**BREAKING**] Asynchronous keychain access
+
+#### Documentation
+
+- _cmake-macros_ · Add missing metadata fields
+- _plugininstance_ · Add \ref, remove \since, some updates.
+- _extensionplugin_ · Add doxygen references
+- _TriggerQueryHandler_ · Update doxygen documentation
+
+#### Miscellaneous Tasks
+
+- Add api group to gitlint
+- Remove justfile
+- Add git cliff configuration
+- Move frontend resources into frontend repository
+- _Scoring_ · Fetch exceptions thrown from items
+- Replace about text with list of links
+- Notify on major version change
+
+### Plugin changes
+
+#### Features
+
+- **Albert** · Use paths of app data locations as input action text
+- **Applications** · Add sakura terminal support
+- **Bluetooth** · Linux/BlueZ support
+- **Bluetooth** · Device icon based on class of device
+- **Clipboard** · Add fuzzy support
+- **Documentation** · _icon_ · Pixel density dependent icon
+- **Jetbrains projects** · Handle multiple config dir prefixes (#4)
+- **Jetbrains projects** · Update icons to 2025 (#5)
+- **Python Eval** · Customizable list of modules to preload
+- **VirtualBox** · Use SDK manually installed into venv
+
+#### Fixes
+
+- **Applications** · _macOS_ · Index apps in $HOME/Applications
+- **Calculator** · Remove completion on evaluation errors
+- **Emoji** · Do not lower others while capitalizing 1st char
+- **GitHub** · Correct endpoint in "Show on GitHub" action
+- **Menu bar** · Mutex item acces
+- **PacMan** · Remove trigger from input action
+- **Python Eval** · Remove trigger from input action
+- **Python plugins** · Add missing `setTrigger` trampoline
+- **System** · Strict standard conform array initialization
+
+#### Performance
+
+- **Spotify** · Select smallest picture greater than 128px
+
+#### API
+
+- **Python plugins** · [**BREAKING**] · Reflect core API changes in the Python API.
+
+#### Documentation
+
+- **Python plugins** · Unify and update links
+- **Python plugins** · Polish stubfile. Minor fixes.
+- **Python plugins** · _IndexQueryHandler_ · Mark final methods `@final`
+
+#### Testing
+
+- **Python plugins** · Add additional tests
+
+#### Miscellaneous Tasks
+
+- **AUR** · Add maintainer
+- **AUR** · Add README
+- **AUR** · Adopt v4 API changes
+- **AUR** · Adopt v4 StandardItem API changes
+- **Albert** · _icon_ · Adapt to updated icon API
+- **Applications** · _icon_ · Adapt to updated icon API
+- **Applications** · Make exec_args usable on all platforms
+- **Arch Linux Wiki** · Adopt v4 API changes
+- **Arch Linux Wiki** · Adopt v4 StandardItem API changes
+- **Bitwarden** · Add README
+- **Bitwarden** · Adopt v4 API changes
+- **Bitwarden** · Adopt v4 StandardItem API changes
+- **Bluetooth** · Platform abstraction
+- **Bluetooth** · _icon_ · Adapt to updated icon API
+- **Caffeine** · _icon_ · Adapt to updated icon API
+- **Calculator** · _icon_ · Adapt to updated icon API
+- **Chromium** · _icon_ · Adapt to updated icon API
+- **Clipboard** · _icon_ · Adapt to updated icon API
+- **CoinGecko** · Adopt v4 API changes
+- **CoinGecko** · Adopt v4 StandardItem API changes
+- **Contacts** · Remove unused code
+- **Contacts** · _icon_ · Adapt to updated icon API
+- **Contacts** · Avoid copyingitems vector on indexing
+- **CopyQ** · Adopt v4 API changes
+- **CopyQ** · Adopt v4 StandardItem API changes
+- **Date and time** · _icon_ · Adapt to updated icon API
+- **Debug** · _icon_ · Adapt to updated icon API
+- **Dictionary** · _icon_ · Adapt to updated icon API
+- **Docker** · Adopt v4 API changes
+- **Docker** · Adopt v4 StandardItem API changes
+- **DuckDuckGo** · Adopt v4 API changes
+- **DuckDuckGo** · Adopt v4 StandardItem API changes
+- **Emoji** · Add maintainers
+- **Emoji** · Adopt v4 API changes
+- **Emoji** · Adopt v4 StandardItem API changes
+- **Files** · _icon_ · Adapt to updated icon API
+- **GitHub** · _icon_ · Adapt to updated icon API
+- **GitHub** · Adapt to async keychain API
+- **GoldenDict** · Add README
+- **GoldenDict** · Adopt v4 API changes
+- **GoldenDict** · Adopt v4 StandardItem API changes
+- **Hash Generator** · _icon_ · Adapt to updated icon API
+- **Jetbrains projects** · Add maintainers
+- **Jetbrains projects** · Adopt v4 API changes
+- **Jetbrains projects** · Add README
+- **Jetbrains projects** · Adopt v4 StandardItem API changes
+- **Kill Process** · Add maintainer
+- **Kill Process** · Adopt v4 API changes
+- **Kill Process** · Adopt v4 StandardItem API changes
+- **Locate** · Adopt v4 API changes
+- **Locate** · Adopt v4 StandardItem API changes
+- **Media player remote** · _icon_ · Adapt to updated icon API
+- **Menu bar** · _icon_ · Adapt to updated icon API
+- **Obsidian** · _icon_ · Adapt to updated icon API
+- **PATH** · _icon_ · Adapt to updated icon API
+- **PacMan** · Add README
+- **PacMan** · Adopt v4 API changes
+- **PacMan** · Adopt v4 StandardItem API changes
+- **Pass** · Add maintainers
+- **Pass** · Adopt v4 API changes
+- **Pass** · Adopt v4 StandardItem API changes
+- **Pomodoro** · Adopt v4 API changes
+- **Pomodoro** · Adopt v4 StandardItem API changes
+- **Python Eval** · Adopt v4 API changes
+- **Python Eval** · Adopt v4 StandardItem API changes
+- **Python plugins** · Drop color plugin
+- **Python plugins** · Drop dice_roll plugin
+- **Python plugins** · Use smart_holders for items
+- **Python plugins** · >3.9 typing annotations
+- **Python plugins** · Update to pybind v3.0.1
+- **Python plugins** · Refactor and minor optimizations.
+- **SSH** · _icon_ · Adapt to updated icon API
+- **Snippets** · _icon_ · Adapt to updated icon API
+- **Spotify** · _icon_ · Adapt to updated icon API
+- **Spotify** · Adopt async keychain API
+- **Syncthing** · Adopt v4 API changes
+- **Syncthing** · Adopt v4 StandardItem API changes
+- **System** · _icon_ · Adapt to updated icon API
+- **TeX to Unicode** · Add maintainers
+- **TeX to Unicode** · Adopt v4 API changes
+- **TeX to Unicode** · Adopt v4 StandardItem API changes
+- **Time zones** · _icon_ · Adapt to updated icon API
+- **Timers** · _icon_ · Adapt to updated icon API
+- **Translator** · Adopt v4 API changes
+- **Translator** · Adopt v4 StandardItem API changes
+- **URL Handler** · _icon_ · Adapt to updated icon API
+- **Unit Converter** · Add maintainers
+- **Unit Converter** · Adopt v4 API changes
+- **Unit Converter** · Adopt v4 StandardItem API changes
+- **VPN** · _icon_ · Adapt to updated icon API
+- **VSCode projects** · Add maintainer
+- **VSCode projects** · Adopt v4 API changes
+- **VSCode projects** · Adopt v4 StandardItem API changes
+- **VirtualBox** · Adopt v4 API changes
+- **VirtualBox** · Adopt v4 StandardItem API changes
+- **Web search** · _icon_ · Adapt to updated icon API
+- **Widgets BoxModel** · _icon_ · Adapt to updated icon API
+- **Widgets BoxModel** · Adopt changes of async keychain
+- **Widgets BoxModel QSS** · _icon_ · Adapt to updated icon API
+- **Widgets BoxModel QSS** · Adopt API changes of async keychain
+- **Wikipedia** · Adopt v4 API changes
+- **Wikipedia** · Adopt v4 StandardItem API changes
+- **X Window Switcher** · Adopt v4 API changes
+- **X Window Switcher** · Adopt v4 StandardItem API changes
+- **Zeal** · Adopt v4 API changes
+- **Zeal** · Adopt v4 StandardItem API changes
+
+
 ## v0.32.1 (2025-08-21)
 
 ### Albert
