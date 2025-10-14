@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #pragma once
+#include <QObject>
 #include <QString>
 #include <albert/config.h>
 #include <albert/export.h>
@@ -21,7 +22,7 @@ class PluginLoader;
 ///
 /// The class every plugin has to inherit.
 ///
-class ALBERT_EXPORT PluginInstance
+class ALBERT_EXPORT PluginInstance : public QObject
 {
 public:
 
@@ -67,13 +68,18 @@ public:
     /// @returns Preconfigured QSettings object for state storage.
     [[nodiscard]] std::unique_ptr<QSettings> state() const;
 
-    /// Reads the keychain value for `key`.
-    /// Convenience function avoiding name conflicts.
-    [[nodiscard]] QString readKeychain(const QString & key) const;
+    /// Reads the keychain value for `key` asynchronously.
+    /// Calls `onSuccess` with the value on success and `onError` with an error message on failure.
+    void readKeychain(const QString &key,
+                      std::function<void(const QString &)> onSuccess,
+                      std::function<void(const QString &)> onError) const;
 
-    /// Sets the keychain value of `key` to `value`.
-    /// Convenience function avoiding name conflicts.
-    void writeKeychain(const QString &key, const QString &value) const;
+    /// Sets the keychain value of `key` to `value` asynchronously.
+    /// Calls `onSuccess` on success and `onError` with an error message on failure.
+    void writeKeychain(const QString &key,
+                       const QString &value,
+                       std::function<void()> onSuccess,
+                       std::function<void(const QString&)> onError) const;
 
 protected:
 

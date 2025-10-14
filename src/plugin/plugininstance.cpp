@@ -13,7 +13,7 @@
 #include <qt6keychain/keychain.h>
 using namespace albert;
 using namespace std;
-using std::filesystem::path;
+using filesystem::path;
 
 
 class PluginInstance::Private
@@ -62,58 +62,53 @@ unique_ptr<QSettings> PluginInstance::state() const
 const PluginLoader &PluginInstance::loader() const
 { return *d->loader; }
 
-QString PluginInstance::readKeychain(const QString &key) const
+void PluginInstance::readKeychain(const QString &key,
+                                  function<void(const QString&)> onSuccess,
+                                  function<void(const QString&)> onError) const
 {
-    // Deletes itself
-    auto job = new QKeychain::ReadPasswordJob(qApp->applicationName(), qApp);
+    auto job = new QKeychain::ReadPasswordJob(qApp->applicationName(), qApp);  // Deletes itself
+    job->moveToThread(qApp->thread());
+
     job->setKey(QString("%1.%2").arg(d->loader->metadata().id, key));
 
-    QEventLoop loop;
-    QString value;
-
-    QObject::connect(job, &QKeychain::ReadPasswordJob::finished, &loop,
-                     [job, &loop, &value]
-                     {
-                         if (job->error())
-                             DEBG << "Failed to read" << job->key() << ":" << job->errorString();
-                         else
-                             value = job->textData();
-                         loop.quit();
-                     });
+    connect(job, &QKeychain::ReadPasswordJob::finished, this, [=] {
+        if (job->error())
+            onError(job->errorString());
+        else
+            onSuccess(job->textData());
+    });
 
     job->start();
-    loop.exec();
-    return value;
 }
 
-void PluginInstance::writeKeychain(const QString &key, const QString &value) const
+void PluginInstance::writeKeychain(const QString &key,
+                                   const QString &value,
+                                   function<void()> onSuccess,
+                                   function<void(const QString&)> onError) const
 {
-    // Deletes itself
-    auto job = new QKeychain::WritePasswordJob(qApp->applicationName(), qApp);
+    auto job = new QKeychain::WritePasswordJob(qApp->applicationName(), qApp);  // Deletes itself
+    job->moveToThread(qApp->thread());
 
     job->setKey(QString("%1.%2").arg(d->loader->metadata().id, key));
     job->setTextData(value);
 
-    QEventLoop loop;
-
-    QObject::connect(job, &QKeychain::Job::finished,
-                     &loop, [job, &loop]
-                     {
-                         if (job->error())
-                             WARN << "Failed to write" << job->key() << ":" << job->errorString();
-                         loop.quit();
-                     });
+    connect(job, &QKeychain::Job::finished, this, [=] {
+        if (job->error())
+            onError(job->errorString());
+        else
+            onSuccess();
+    });
 
     job->start();
-    loop.exec();
 }
 
 vector<filesystem::path> PluginInstance::dataLocations() const
 {
     vector<filesystem::path> data_locations;
-    for (const auto &path : QStandardPaths::locateAll(QStandardPaths::AppDataLocation,
-                                                      loader().metadata().id,
-                                                      QStandardPaths::LocateDirectory))
+    const auto paths = QStandardPaths::locateAll(QStandardPaths::AppDataLocation,
+                                                 loader().metadata().id,
+                                                 QStandardPaths::LocateDirectory);
+    for (const auto &path : paths)
         data_locations.emplace_back(path.toStdString());
     return data_locations;
 }

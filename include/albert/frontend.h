@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QString>
 #include <albert/export.h>
+#include <albert/plugininstance.h>
 class QWidget;
 
 namespace albert
@@ -16,7 +17,7 @@ namespace detail
 ///
 /// The interface for albert frontends.
 ///
-class ALBERT_EXPORT Frontend : public QObject
+class ALBERT_EXPORT Frontend : public albert::PluginInstance
 {
     Q_OBJECT
 

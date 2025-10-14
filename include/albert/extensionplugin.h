@@ -14,8 +14,7 @@ namespace albert::util
 ///
 /// Implements pure virtual functions of \ref Extension and \ref PluginInstance.
 ///
-class ALBERT_EXPORT ExtensionPlugin : public QObject,
-                                      public PluginInstance,
+class ALBERT_EXPORT ExtensionPlugin : public PluginInstance,
                                       virtual public Extension
 {
 public:
