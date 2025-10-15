@@ -2,7 +2,7 @@
 
 #include "qiconengineadapter.h"
 #include "icon.h"
-#include <QPainter>
+class QPainter;
 using namespace std;
 
 QIconEngineAdapter::QIconEngineAdapter(unique_ptr<albert::Icon> icon) :
@@ -21,16 +21,9 @@ QPixmap QIconEngineAdapter::pixmap(const QSize &size, QIcon::Mode mode, QIcon::S
     return scaledPixmap(size, mode, state, 1.0);
 }
 
-QPixmap QIconEngineAdapter::scaledPixmap(const QSize &device_independent_size, QIcon::Mode mode, QIcon::State state, qreal scale)
+QPixmap QIconEngineAdapter::scaledPixmap(const QSize &device_independent_size, QIcon::Mode, QIcon::State, qreal scale)
 {
-    QPixmap pm(device_independent_size * scale);
-    pm.setDevicePixelRatio(scale);
-    pm.fill(Qt::transparent);
-
-    QPainter p(&pm);
-    paint(&p, QRect(QPoint(0, 0), device_independent_size), mode, state);
-
-    return pm;
+    return icon_->pixmap(device_independent_size, scale);
 }
 
 void QIconEngineAdapter::paint(QPainter *painter, const QRect &rect, QIcon::Mode, QIcon::State)
