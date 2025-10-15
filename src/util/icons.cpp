@@ -13,6 +13,9 @@
 #include <QStyle>
 #include <QUrlQuery>
 #include <memory>
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+#include "iconlookup.h"
+#endif
 static QFileIconProvider qfip;
 using namespace Qt::StringLiterals;
 using namespace albert::util;
@@ -126,7 +129,15 @@ std::unique_ptr<StandardIcon> StandardIcon::fromUrl(const QString &url)
 const QString ThemeIcon::scheme = u"xdg"_s;
 
 ThemeIcon::ThemeIcon(const QString &name)
-    : QIconIcon(QIcon::fromTheme(name))
+    : QIconIcon(
+        // https://bugreports.qt.io/browse/QTBUG-135159
+        // https://codereview.qt-project.org/c/qt/qtbase/+/634907
+#if QT_VERSION > 0x060800
+        QIcon::fromTheme(name)
+#else
+        QIcon(XDG::IconLookup::iconPath(name))
+#endif
+    )
     , name_(name)
 {}
 
