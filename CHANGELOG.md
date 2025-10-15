@@ -1,3 +1,16 @@
+## v33.0.1 (2025-10-15)
+
+### Core changes
+
+#### Fixes
+
+- Workaround hidpi icon Qt bug
+
+#### Miscellaneous Tasks
+
+- _QIconEngineAdapter_ · Remove drawing code
+
+
 ## v33.0.0 (2025-10-14)
 
 ### Core changes

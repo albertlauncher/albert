@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.22)  # Ubuntu 22.04
 
 # dont touch! set by metatool
-set(PROJECT_VERSION 33.0.0)
+set(PROJECT_VERSION 33.0.1)
 
 project(albert
     VERSION ${PROJECT_VERSION}
