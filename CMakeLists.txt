@@ -88,7 +88,6 @@ set(LIB_PUBLIC_HEADER
     include/albert/notification.h
     include/albert/oauth.h
     include/albert/oauthconfigwidget.h
-    include/albert/property.h
     include/albert/standarditem.h
     include/albert/systemutil.h
     include/albert/timeit.h
