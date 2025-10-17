@@ -67,17 +67,17 @@ public:
         connect(pushButton_auth, &QPushButton::clicked,
                 &oauth, &OAuth2::requestAccess);
 
-        bind(lineEdit_client_id,
-             &oauth,
-             &OAuth2::clientId,
-             &OAuth2::setClientId,
-             &OAuth2::clientIdChanged);
+        bindWidget(lineEdit_client_id,
+                   &oauth,
+                   &OAuth2::clientId,
+                   &OAuth2::setClientId,
+                   &OAuth2::clientIdChanged);
 
-        bind(lineEdit_client_secret,
-             &oauth,
-             &OAuth2::clientSecret,
-             &OAuth2::setClientSecret,
-             &OAuth2::clientSecretChanged);
+        bindWidget(lineEdit_client_secret,
+                   &oauth,
+                   &OAuth2::clientSecret,
+                   &OAuth2::setClientSecret,
+                   &OAuth2::clientSecretChanged);
 
         q->setLayout(formLayout);
     }

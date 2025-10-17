@@ -17,7 +17,7 @@ namespace albert::util
 /// Initializes _checkbox_ using _get_ and connects the `toggled` signal to _set_.
 ///
 template<typename T, typename GET, typename SET>
-void bind(QCheckBox *checkbox, T *object, GET get, SET set)
+void bindWidget(QCheckBox *checkbox, T *object, GET get, SET set)
 {
     checkbox->setChecked((object->*get)());
     QObject::connect(checkbox, &QCheckBox::toggled, object, set);
@@ -31,9 +31,9 @@ void bind(QCheckBox *checkbox, T *object, GET get, SET set)
 /// connects the signal _sig_ to `setChecked`.
 ///
 template<typename T, typename GET, typename SET, typename SIG>
-void bind(QCheckBox *checkbox, T *object, GET get, SET set, SIG sig)
+void bindWidget(QCheckBox *checkbox, T *object, GET get, SET set, SIG sig)
 {
-    bind(checkbox, object, get, set);
+    bindWidget(checkbox, object, get, set);
     QObject::connect(object, sig, checkbox, &QCheckBox::setChecked);
 }
 
@@ -44,7 +44,7 @@ void bind(QCheckBox *checkbox, T *object, GET get, SET set, SIG sig)
 /// connects the `editingFinished` signal to _set_.
 ///
 template<typename T, typename GET, typename SET>
-void bind(QLineEdit *lineedit, T *object, GET get, SET set)
+void bindWidget(QLineEdit *lineedit, T *object, GET get, SET set)
 {
     lineedit->setText((object->*get)());
     QObject::connect(lineedit, &QLineEdit::editingFinished,
@@ -59,9 +59,9 @@ void bind(QLineEdit *lineedit, T *object, GET get, SET set)
 /// connects the signal _sig_ to `setText`.
 ///
 template<typename T, typename GET, typename SET, typename SIG>
-void bind(QLineEdit *lineedit, T *object, GET get, SET set, SIG sig)
+void bindWidget(QLineEdit *lineedit, T *object, GET get, SET set, SIG sig)
 {
-    bind(lineedit, object, get, set);
+    bindWidget(lineedit, object, get, set);
     QObject::connect(object, sig, lineedit, &QLineEdit::setText);
 }
 
@@ -72,7 +72,7 @@ void bind(QLineEdit *lineedit, T *object, GET get, SET set, SIG sig)
 /// connects the `valueChanged` signal to _set_.
 ///
 template<typename T, typename GET, typename SET>
-void bind(QSpinBox *spinbox, T *object, GET get, SET set)
+void bindWidget(QSpinBox *spinbox, T *object, GET get, SET set)
 {
     spinbox->setValue((object->*get)());
     QObject::connect(spinbox, QOverload<int>::of(&QSpinBox::valueChanged), object, set);
@@ -86,9 +86,9 @@ void bind(QSpinBox *spinbox, T *object, GET get, SET set)
 /// connects the signal _sig_ to `setValue`.
 ///
 template<typename T, typename GET, typename SET, typename SIG>
-void bind(QSpinBox *spinbox, T *object, GET get, SET set, SIG sig)
+void bindWidget(QSpinBox *spinbox, T *object, GET get, SET set, SIG sig)
 {
-    bind(spinbox, object, get, set);
+    bindWidget(spinbox, object, get, set);
     QObject::connect(object, sig, spinbox, &QSpinBox::setValue);
 }
 
@@ -99,7 +99,7 @@ void bind(QSpinBox *spinbox, T *object, GET get, SET set, SIG sig)
 /// connects the `valueChanged` signal to _set_.
 ///
 template<typename T, typename GET, typename SET>
-void bind(QDoubleSpinBox *spinbox, T *object, GET get, SET set)
+void bindWidget(QDoubleSpinBox *spinbox, T *object, GET get, SET set)
 {
     spinbox->setValue((object->*get)());
     QObject::connect(spinbox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), object, set);
@@ -113,9 +113,9 @@ void bind(QDoubleSpinBox *spinbox, T *object, GET get, SET set)
 /// connects the signal _sig_ to `setValue`.
 ///
 template<typename T, typename GET, typename SET, typename SIG>
-void bind(QDoubleSpinBox *spinbox, T *object, GET get, SET set, SIG sig)
+void bindWidget(QDoubleSpinBox *spinbox, T *object, GET get, SET set, SIG sig)
 {
-    bind(spinbox, object, get, set);
+    bindWidget(spinbox, object, get, set);
     QObject::connect(object, sig, spinbox, &QDoubleSpinBox::setValue);
 }
 
