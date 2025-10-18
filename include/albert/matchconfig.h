@@ -4,7 +4,7 @@
 #pragma once
 #include <albert/export.h>
 
-namespace albert::util
+namespace albert
 {
 
 ///

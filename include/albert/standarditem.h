@@ -7,7 +7,7 @@
 #include <vector>
 namespace albert{ class Icon; }
 
-namespace albert::util
+namespace albert
 {
 
 /// General purpose \ref Item implementation.

@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-namespace albert::util
+namespace albert
 {
 
 /// Index query handler class.

@@ -22,7 +22,6 @@
 #include <QTimer>
 #include <set>
 #include <unistd.h>
-using namespace albert::util;
 using namespace albert;
 using namespace std::chrono;
 using namespace std;

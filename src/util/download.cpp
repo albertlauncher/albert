@@ -15,7 +15,7 @@
 #include <memory>
 #include <mutex>
 #include <QTimer>
-using namespace albert::util;
+using namespace albert;
 using namespace std;
 
 class Download::Private

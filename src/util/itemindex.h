@@ -16,17 +16,17 @@ class ALBERT_EXPORT ItemIndex final
 {
 public:
 
-    ItemIndex(albert::util::MatchConfig config = {});
+    ItemIndex(albert::MatchConfig config = {});
     ItemIndex(ItemIndex &&);
     ItemIndex& operator=(ItemIndex &&);
     ~ItemIndex();
 
     /// The index config
-    const albert::util::MatchConfig &config();
+    const albert::MatchConfig &config();
 
     /// Set the items to be indexed.
     /// @param items The items to be indexed.
-    void setItems(std::vector<albert::util::IndexItem> &&items);
+    void setItems(std::vector<albert::IndexItem> &&items);
 
     /// Search the index for a string.
     /// @param string The string to search for.

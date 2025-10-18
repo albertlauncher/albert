@@ -8,7 +8,7 @@
 #include <chrono>
 #include <functional>
 
-namespace albert::util
+namespace albert
 {
 
 /// Provides a lean interface for recurring indexing tasks.

@@ -8,7 +8,7 @@
 #include <albert/extensionregistry.h>
 #include <albert/logging.h>
 
-namespace albert::util
+namespace albert
 {
 
 template<class T>

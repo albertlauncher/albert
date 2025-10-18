@@ -8,7 +8,7 @@
 #include <QString>
 #include <albert/export.h>
 
-namespace albert::util
+namespace albert
 {
 
 ///

@@ -5,7 +5,7 @@
 #include <QWidget>
 #include <albert/export.h>
 
-namespace albert::util
+namespace albert
 {
 class OAuth2;
 
@@ -13,7 +13,7 @@ class ALBERT_EXPORT OAuthConfigWidget : public QWidget
 {
 public:
 
-    OAuthConfigWidget(albert::util::OAuth2 &oauth);
+    OAuthConfigWidget(OAuth2 &oauth);
     ~OAuthConfigWidget();
 
 private:

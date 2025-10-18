@@ -5,7 +5,7 @@
 class QWidget;
 class QString;
 
-namespace albert::util
+namespace albert
 {
 
 /// Shows a question message box with Yes and No buttons.

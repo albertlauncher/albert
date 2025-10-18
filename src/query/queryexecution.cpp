@@ -7,7 +7,6 @@
 #include <QtConcurrentMap>
 #include <QtConcurrentRun>
 #include <albert/messagebox.h>
-using namespace albert::util;
 using namespace albert;
 using namespace std::chrono;
 using namespace std;

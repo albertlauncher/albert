@@ -10,11 +10,10 @@
 #include <QProcess>
 #include <QStandardPaths>
 #include <QUrl>
-using namespace albert::util;
 using namespace albert;
 using namespace std;
 
-void util::openUrl(const QString &url)
+void albert::openUrl(const QString &url)
 {
     if (QUrl qurl(url); qurl.isValid())
         open(QUrl(url));
@@ -22,7 +21,7 @@ void util::openUrl(const QString &url)
         WARN << "Invalid URL" << url << qurl.errorString();
 }
 
-void util::open(const QUrl &url)
+void albert::open(const QUrl &url)
 {
     DEBG << QString("Open URL '%1'").arg(url.toString());
 
@@ -32,12 +31,12 @@ void util::open(const QUrl &url)
         WARN << "Failed to open URL" << url;
 }
 
-void util::open(const QString &path) { open(QUrl::fromLocalFile(path)); }
+void albert::open(const QString &path) { open(QUrl::fromLocalFile(path)); }
 
-void util::open(const filesystem::path &path) { open(QString::fromLocal8Bit(path.native())); }
+void albert::open(const filesystem::path &path) { open(QString::fromLocal8Bit(path.native())); }
 
 
-void util::setClipboardText(const QString &text)
+void albert::setClipboardText(const QString &text)
 {
     QGuiApplication::clipboard()->setText(text, QClipboard::Clipboard);
     QGuiApplication::clipboard()->setText(text, QClipboard::Selection);
@@ -58,13 +57,13 @@ static bool checkPasteSupport()
 #endif
 }
 
-bool util::havePasteSupport()
+bool albert::havePasteSupport()
 {
     static bool have_paste_support = checkPasteSupport();
     return have_paste_support;
 }
 
-void util::setClipboardTextAndPaste(const QString &text)
+void albert::setClipboardTextAndPaste(const QString &text)
 {
     setClipboardText(text);
     if (!havePasteSupport())
@@ -102,7 +101,7 @@ void util::setClipboardTextAndPaste(const QString &text)
 #endif
 }
 
-long long util::runDetachedProcess(const QStringList &commandline, const QString &working_dir)
+long long albert::runDetachedProcess(const QStringList &commandline, const QString &working_dir)
 {
     qint64 pid = 0;
     if (!commandline.empty())
@@ -118,10 +117,10 @@ long long util::runDetachedProcess(const QStringList &commandline, const QString
     return pid;
 }
 
-long long util::runDetachedProcess(const QStringList &commandline)
+long long albert::runDetachedProcess(const QStringList &commandline)
 { return runDetachedProcess(commandline, {}); }
 
-void util::tryCreateDirectory(const filesystem::path& path)
+void albert::tryCreateDirectory(const filesystem::path& path)
 {
     try {
         filesystem::create_directories(path);
@@ -132,7 +131,7 @@ void util::tryCreateDirectory(const filesystem::path& path)
     }
 }
 
-QString util::toQString(const filesystem::path &path)
+QString albert::toQString(const filesystem::path &path)
 {
 #ifdef Q_OS_WIN
     return QString::fromStdWString(path.native());
@@ -143,7 +142,7 @@ QString util::toQString(const filesystem::path &path)
 
 #ifdef Q_OS_MAC
 #include "platform.h"
-QString util::runAppleScript(const QString &script)
+QString albert::runAppleScript(const QString &script)
 {
     return platform::runAppleScript(script);
 }

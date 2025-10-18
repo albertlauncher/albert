@@ -74,7 +74,7 @@ void PluginRegistry::setEnabledWithUserConfirmation(const QString id, bool enabl
                         .arg(plugin.metadata.name);
         text.append(QString(":\n\n").append(names.join("\n")));
 
-        if (!util::question(text))
+        if (!question(text))
             return;
     }
 
@@ -106,10 +106,9 @@ void PluginRegistry::setEnabled(const QString &id, bool enable)
 void PluginRegistry::setLoaded(const QString &id, bool loaded)
 {
     if (!loading_plugins_.empty())
-        util::warning(QStringLiteral("%1: %2")
-                          .arg(loaded ? tr("Failed to load plugin")
-                                      : tr("Failed to unload plugin"),
-                               tr("Other plugins are currently being loaded.")));
+        warning(QStringLiteral("%1: %2")
+                    .arg(loaded ? tr("Failed to load plugin") : tr("Failed to unload plugin"),
+                         tr("Other plugins are currently being loaded.")));
 
     else if (loaded)
         load({&plugins_.at(id)});

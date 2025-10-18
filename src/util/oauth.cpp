@@ -15,8 +15,7 @@
 #include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
-using enum albert::util::OAuth2::State;
-using namespace albert::util;
+using enum albert::OAuth2::State;
 using namespace albert;
 using namespace std;
 

@@ -9,7 +9,7 @@ class QNetworkReply;
 class QString;
 class QUrl;
 
-namespace albert::util
+namespace albert
 {
 
 /// Downloads a file from the given URL to the given path.

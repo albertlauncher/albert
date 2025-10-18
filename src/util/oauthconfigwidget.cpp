@@ -9,14 +9,14 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QString>
-using namespace albert::util;
 using namespace std;
+using namespace albert;
 
 class OAuthConfigWidget::Private
 {
 public:
     OAuthConfigWidget *q;
-    albert::util::OAuth2 &oauth;
+    OAuth2 &oauth;
     QFormLayout *formLayout;
     QLabel *label_client_id;
     QLabel *label_client_secret;
@@ -26,7 +26,7 @@ public:
     QLineEdit *lineEdit_client_secret;
     QPushButton *pushButton_auth;
 
-    Private(OAuthConfigWidget *_q, albert::util::OAuth2 &_oauth):
+    Private(OAuthConfigWidget *_q, OAuth2 &_oauth):
         q(_q), oauth(_oauth)
     {
         formLayout = new QFormLayout;

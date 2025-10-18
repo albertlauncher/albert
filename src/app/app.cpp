@@ -47,7 +47,6 @@
 #include <QPluginLoader>
 Q_LOGGING_CATEGORY(AlbertLoggingCategory, "albert")
 using namespace albert::detail;
-using namespace albert::util;
 using namespace albert;
 using namespace std;
 

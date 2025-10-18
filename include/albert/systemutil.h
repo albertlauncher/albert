@@ -10,7 +10,7 @@ class QUrl;
 template <typename T> class QList;
 typedef QList<QString> QStringList;
 
-namespace albert::util
+namespace albert
 {
 
 /// Opens `url` with the default handler for the scheme.

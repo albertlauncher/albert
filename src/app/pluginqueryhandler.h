@@ -5,7 +5,7 @@
 #include <QCoreApplication>
 class PluginRegistry;
 
-class PluginQueryHandler : public albert::util::IndexQueryHandler
+class PluginQueryHandler : public albert::IndexQueryHandler
 {
     Q_DECLARE_TR_FUNCTIONS(PluginQueryHandler)
 

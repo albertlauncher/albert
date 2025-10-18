@@ -8,7 +8,7 @@
 #include <memory>
 class QUrl;
 
-namespace albert::util
+namespace albert
 {
 
 ///

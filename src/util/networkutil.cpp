@@ -11,13 +11,13 @@ using namespace albert;
 using namespace std;
 
 
-QNetworkAccessManager &util::network()
+QNetworkAccessManager &albert::network()
 {
     static thread_local QNetworkAccessManager network_manager;
     return network_manager;
 }
 
-QNetworkReply *util::await(QNetworkReply *reply)
+QNetworkReply *albert::await(QNetworkReply *reply)
 {
     if (reply->isFinished())
         return reply;
@@ -63,8 +63,8 @@ const bool &detail::RateLimiter::debounce(const bool &valid)
     return valid;
 }
 
-QString util::percentEncoded(const QString &string)
+QString albert::percentEncoded(const QString &string)
 { return QString::fromUtf8(QUrl::toPercentEncoding(string)); }
 
-QString util::percentDecoded(const QString &string)
+QString albert::percentDecoded(const QString &string)
 { return QUrl::fromPercentEncoding(string.toUtf8()); }

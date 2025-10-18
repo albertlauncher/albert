@@ -7,7 +7,7 @@
 #include <QMessageBox>
 using namespace albert;
 
-bool util::question(const QString &text, QWidget *parent)
+bool albert::question(const QString &text, QWidget *parent)
 {
     return QMessageBox::question(parent ? parent
                                         : QWidget::find(App::instance()->frontend()->winId()),
@@ -15,7 +15,7 @@ bool util::question(const QString &text, QWidget *parent)
                                  text) == QMessageBox::Yes;
 }
 
-void util::information(const QString &text, QWidget *parent)
+void albert::information(const QString &text, QWidget *parent)
 {
     QMessageBox::information(parent ? parent
                                     : QWidget::find(App::instance()->frontend()->winId()),
@@ -23,7 +23,7 @@ void util::information(const QString &text, QWidget *parent)
                              text);
 }
 
-void util::warning(const QString &text, QWidget *parent)
+void albert::warning(const QString &text, QWidget *parent)
 {
     QMessageBox::warning(parent ? parent
                                 : QWidget::find(App::instance()->frontend()->winId()),
@@ -31,7 +31,7 @@ void util::warning(const QString &text, QWidget *parent)
                          text);
 }
 
-void util::critical(const QString &text, QWidget *parent)
+void albert::critical(const QString &text, QWidget *parent)
 {
     QMessageBox::critical(parent ? parent
                                  : QWidget::find(App::instance()->frontend()->winId()),

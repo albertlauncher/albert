@@ -12,7 +12,6 @@
 #include <QDialog>
 #include <QHotkey>
 #include <QKeyEvent>
-using namespace albert::util;
 using namespace albert;
 using namespace std;
 

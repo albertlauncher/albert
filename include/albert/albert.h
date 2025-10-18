@@ -10,13 +10,6 @@ class QNetworkAccessManager;
 class QSettings;
 class QUrl;
 
-/// Albert utility namespace
-namespace albert::util {}
-
-/// Albert private namespace
-namespace albert::detail {}
-
-/// Albert core interface namespace
 namespace albert
 {
 class ExtensionRegistry;
@@ -59,7 +52,7 @@ ALBERT_EXPORT std::unique_ptr<QSettings> state();
 
 /// Returns a const reference to the central \ref ExtensionRegistry.
 /// Registering plugins via this registry is not allowed. Use \ref PluginInstance::extensions().
-/// See also \ref util::WeakDependency and \ref util::StrongDependency.
+/// See also \ref WeakDependency and \ref StrongDependency.
 ALBERT_EXPORT const ExtensionRegistry &extensionRegistry();
 
 } // namespace albert

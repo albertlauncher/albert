@@ -10,7 +10,7 @@ class QNetworkRequest;
 class QString;
 class QUrlQuery;
 
-namespace albert::util
+namespace albert
 {
 
 ///

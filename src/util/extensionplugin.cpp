@@ -3,7 +3,6 @@
 #include "extensionplugin.h"
 #include "pluginloader.h"
 #include "pluginmetadata.h"
-using namespace albert::util;
 using namespace albert;
 using namespace std;
 
