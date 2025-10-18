@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -11,39 +11,57 @@
 namespace albert
 {
 
-/// Index query handler class.
+///
 /// A GlobalQueryHandler providing implicit indexing and matching.
-/// You just have to provide your items with lookup strings.
+///
+/// \ingroup query_util
+///
 class ALBERT_EXPORT IndexQueryHandler : public GlobalQueryHandler
 {
 public:
-    IndexQueryHandler();
 
-    /// Returns "True"
+    ///
+    /// Returns `true`
+    ///
     bool supportsFuzzyMatching() const override;
 
-    /// Set the fuzzy mode of the internal index.
-    /// Triggers a rebuild by calling updateIndexItems.
-    void setFuzzyMatching(bool) override;
+    ///
+    /// Sets the fuzzy matching mode to _enabled_ and triggers \ref updateIndexItems().
+    ///
+    void setFuzzyMatching(bool enabled) override;
 
-    /// Uses the index to override GlobalQueryHandler::handleGlobalQuery
+    ///
+    /// Returns the matching items from the index.
+    ///
     std::vector<RankItem> handleGlobalQuery(const Query &) override;
 
-    /// Update the index.
-    /// Called when the index needs to be updated, i.e. for initialization
-    /// and on user changes to the index config (fuzzy, etc…) and probably by
-    /// the client itself if the items changed. This function should call
-    /// setIndexItems(std::vector<IndexItem>&&) to update the index.
-    /// @note Don't call this method in the constructor. It will be called on plugin
+    ///
+    /// Updates the index.
+    ///
+    /// Called when the index needs to be updated, i.e. for initialization, on user changes to the
+    /// index config (fuzzy, etc…) and probably by the client itself if the items changed. This
+    /// function should call \ref setIndexItems(std::vector<IndexItem>&&) to update the index.
+    ///
+    /// @note Do not call this method in the constructor. It will be called on plugin
     /// initialization.
+    ///
     virtual void updateIndexItems() = 0;
 
-    /// Set the items of the index.
-    /// This method is threadsafe. Call this in updateIndexItems().
-    void setIndexItems(std::vector<IndexItem>&&);
+    ///
+    /// Sets the items of the index to _items_.
+    ///
+    void setIndexItems(std::vector<IndexItem> &&items);
 
 protected:
 
+    ///
+    /// Constructs an index query handler.
+    ///
+    IndexQueryHandler();
+
+    ///
+    /// Destructs the index query handler.
+    ///
     ~IndexQueryHandler() override;
 
 private:

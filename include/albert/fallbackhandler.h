@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -14,20 +14,24 @@ namespace albert
 class Item;
 
 ///
-/// Abstract fallback provider.
+/// Abstract fallback item provider.
 ///
-/// Use this if you want to add items to the fallbacks
-/// shown if a query yielded no results
+/// \ingroup core
 ///
 class ALBERT_EXPORT FallbackHandler : virtual public Extension
 {
 public:
 
-    /// Fallbacks provided by this handler
+    ///
+    /// Returns fallback items for _query_.
+    ///
     virtual std::vector<std::shared_ptr<Item>> fallbacks(const QString &) const = 0;
 
 protected:
 
+    ///
+    /// Destructs the fallback handler.
+    ///
     ~FallbackHandler() override;
 
 };

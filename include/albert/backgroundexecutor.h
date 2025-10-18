@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -11,26 +11,35 @@
 namespace albert
 {
 
-/// Provides a lean interface for recurring indexing tasks.
-/// Takes care of the QtConcurrent boilerplate code to start,
-/// abort and schedule restarts of threads.
-/// \tparam T The type of results this executor produces.
+///
+/// Convenience class for recurring indexing tasks.
+///
+/// Takes care of the QtConcurrent boilerplate code to start, abort and schedule restarts of threads.
+///
+/// \ingroup query_util
+///
 template<typename T> class BackgroundExecutor
 {
 public:
-    /// The task that should be executed in background.
-    /// This function is executed in a separate thread.
-    /// \param abort The abort flag
-    /// \return The results of the task.
+
+    ///
+    /// The task to be executed in a thread.
+    ///
+    /// Return the results of type `T`.  Abort if _abort_ is `true`.
+    ///
     std::function<T(const bool &abort)> parallel;
 
+    ///
     /// The results handler.
-    /// When the parallel function finished, this function will be called in
-    /// the main thread with the results returned by the parallel function.
-    /// \param results The results parallel returned.
-    std::function<void(T && results)> finish;
+    ///
+    /// When the \ref parallel function finished, this function will be called in the main thread with
+    /// the _results_ returned by the \ref parallel function.
+    ///
+    std::function<void(T &&results)> finish;
 
-    /// The runtime of the last execution of parallel
+    ///
+    /// The runtime of the last execution of \ref parallel.
+    ///
     std::chrono::milliseconds runtime;
 
 private:
@@ -73,11 +82,13 @@ private:
     }
 
 public:
-    BackgroundExecutor() {
+    BackgroundExecutor()
+    {
         QObject::connect(&future_watcher_, &QFutureWatcher<T>::finished, [this](){onFinish();});
-    };
+    }
 
-    ~BackgroundExecutor() {
+    ~BackgroundExecutor()
+    {
         rerun_ = false;
         if (isRunning()){
             WARN << "Busy wait for BackgroundExecutor task. Abortion handled correctly?";
@@ -87,11 +98,14 @@ public:
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
             WARN << QStringLiteral("Busy waited for %1 ms.").arg(duration.count());
         }
-    };
+    }
 
+    ///
     /// Run or schedule a rerun of the task.
-    /// If a task is running this function sets the abort flag and schedules a
-    /// rerun. `finish` will not be called for the cancelled run.
+    ///
+    /// If a task is running this function sets the abort flag and schedules a rerun.
+    /// \ref finish will not be called for the cancelled run.
+    ///
     void run() {
         if (future_watcher_.isRunning())
             rerun_ = true;
@@ -99,8 +113,9 @@ public:
             future_watcher_.setFuture(QtConcurrent::run(&BackgroundExecutor<T>::run_, this, rerun_));
     }
 
-    /// Returns `true` if the asynchronous computation is currently
-    /// running; otherwise returns `false`.
+    ///
+    /// Returns `true` if the asynchronous computation is currently running; otherwise returns `false`.
+    ///
     bool isRunning() const { return future_watcher_.isRunning(); }
 };
 

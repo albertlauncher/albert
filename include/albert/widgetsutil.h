@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2025 Manuel Schneider
+// SPDX-License-Identifier: MIT
 
 #pragma once
 #include <QCheckBox>
@@ -8,8 +9,16 @@
 #include <QString>
 #include <albert/export.h>
 
+/// \defgroup util_ui Widget utilities
+/// \ingroup util
+/// Utility classes and helper functions for UI related tasks.
+
 namespace albert
 {
+
+/// @name Property editor bindings
+/// @addtogroup util_ui
+/// @{
 
 ///
 /// Binds a property of type `bool` of _object_ to _checkbox_.
@@ -118,5 +127,7 @@ void bindWidget(QDoubleSpinBox *spinbox, T *object, GET get, SET set, SIG sig)
     bindWidget(spinbox, object, get, set);
     QObject::connect(object, sig, spinbox, &QDoubleSpinBox::setValue);
 }
+
+/// @}
 
 }

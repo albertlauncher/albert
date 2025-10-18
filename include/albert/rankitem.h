@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -14,22 +14,35 @@ namespace albert
 ///
 /// Used to rank item results of mutliple handlers
 ///
+/// \ingroup core
+///
 class ALBERT_EXPORT RankItem
 {
 public:
+
+    ///
     /// Constructs a RankItem with the given `item` and `score`.
+    ///
     explicit RankItem(const std::shared_ptr<Item> &item, double score) noexcept;
 
+    ///
     /// Constructs a RankItem with the given `item` and `score` using move semantics.
+    ///
     explicit RankItem(std::shared_ptr<Item> &&item, double score) noexcept;
 
+    ///
     /// The less operator
+    ///
     bool operator<(const RankItem &other) const;
 
+    ///
     /// The greater operator
+    ///
     bool operator>(const RankItem &other) const;
 
+    ///
     /// The matched item
+    ///
     std::shared_ptr<Item> item;
 
     ///

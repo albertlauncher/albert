@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -13,6 +13,8 @@ namespace albert
 /// Initialize with designated initializers to avoid hard to find bugs on future API changes.
 ///
 /// \sa \ref Matcher, \ref IndexQueryHandler
+///
+/// \ingroup query_util
 ///
 class ALBERT_EXPORT MatchConfig
 {

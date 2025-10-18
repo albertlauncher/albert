@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2025 Manuel Schneider
+// SPDX-License-Identifier: MIT
 
 #pragma once
 #include <albert/export.h>
@@ -10,8 +11,15 @@ class QNetworkRequest;
 class QString;
 class QUrlQuery;
 
+/// \defgroup util_net Network utility
+/// \ingroup util
+/// Utility classes and helper functions for network related tasks.
+
 namespace albert
 {
+
+/// \addtogroup util_net
+/// @{
 
 ///
 /// Returns a global, threadlocal QNetworkAccessManager.
@@ -19,7 +27,7 @@ namespace albert
 ALBERT_EXPORT QNetworkAccessManager &network();
 
 ///
-/// Blocks until `reply` is finished.
+/// Blocks until _reply_ is finished.
 ///
 ALBERT_EXPORT QNetworkReply *await(QNetworkReply *reply);
 
@@ -33,19 +41,24 @@ ALBERT_EXPORT QString percentEncoded(const QString &string);
 ///
 ALBERT_EXPORT QString percentDecoded(const QString &string);
 
+/// @}
+
 }
 
 namespace albert::detail {
 
+///
 /// Blocks execution
+///
 class ALBERT_EXPORT RateLimiter
 {
 public:
     RateLimiter(unsigned int ms);
     ~RateLimiter();
 
-    /// Blocks until the next request is allowed.
-    /// If `valid` is false, it returns immediately.
+    ///
+    /// Blocks until the next request is allowed or `valid` is false.
+    ///
     const bool &debounce(const bool &valid);
 
 private:

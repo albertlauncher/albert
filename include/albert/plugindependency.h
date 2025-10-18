@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -39,6 +39,8 @@ protected:
 ///
 /// @note Hard dependencies have to be listed in the plugin metadata, such that the plugin loader is
 /// able to manage the loading order.
+///
+/// \ingroup plugin
 ///
 template<class T>
 class ALBERT_EXPORT StrongDependency final : public Dependency<T>
@@ -85,6 +87,8 @@ public:
 /// This should not be necessary since the plugin loader and the extension registry must not be
 /// accessed while a session query is running. Take care though if you defer the execution of
 /// the action using a timer or similar.
+///
+/// \ingroup plugin
 ///
 template<class T>
 class ALBERT_EXPORT WeakDependency final : public Dependency<T>

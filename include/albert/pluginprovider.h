@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -12,16 +12,24 @@ class PluginLoader;
 ///
 /// Plugin provider interface class.
 ///
+/// \ingroup plugin
+///
 class ALBERT_EXPORT PluginProvider : virtual public Extension
 {
 public:
 
-    /// The plugins provided by this extension.
-    /// @return @copybrief plugins
+    ///
+    /// Returns references to the plugins provided by this plugin provider.
+    ///
+    /// The calles does **not** take ownership of the returned plugin loaders.
+    ///
     virtual std::vector<PluginLoader*> plugins() = 0;
 
 protected:
 
+    ///
+    /// Destructs the plugin provider.
+    ///
     virtual ~PluginProvider();
 
 };

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 Manuel Schneider
+// SPDX-FileCopyrightText: 2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -10,13 +10,18 @@ namespace albert{ class Icon; }
 namespace albert
 {
 
+///
 /// General purpose \ref Item implementation.
-
+///
+/// \ingroup query_util
+///
 class ALBERT_EXPORT StandardItem : public Item
 {
 public:
 
+    ///
     /// Constructs a \ref StandardItem with the contents initialized with the data passed.
+    ///
     template<typename T_ID = QString,
              typename T_TEXT = QString,
              typename T_SUBTEXT = QString,
@@ -44,11 +49,12 @@ public:
     {}
 
 
+    ///
     /// Constructs a `shared_ptr` holding a \ref StandardItem with the contents initialized with the
     /// data passed.
     ///
     /// Convenience function for readability. See the \ref StandardItem::StandardItem for details.
-
+    ///
     template<typename T_ID = QString,
              typename T_TEXT = QString,
              typename T_SUBTEXT = QString,

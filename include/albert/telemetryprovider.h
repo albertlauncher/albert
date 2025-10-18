@@ -1,4 +1,5 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2025 Manuel Schneider
+// SPDX-License-Identifier: MIT
 
 #pragma once
 #include <QJsonObject>

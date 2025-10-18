@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -10,28 +10,34 @@ namespace albert
 {
 
 ///
-/// Convenience base class for extension plugins.
+/// Extension plugin base class.
 ///
 /// Implements pure virtual functions of \ref Extension and \ref PluginInstance.
+///
+/// \ingroup plugin
 ///
 class ALBERT_EXPORT ExtensionPlugin : public PluginInstance,
                                       virtual public Extension
 {
 public:
-    /// Overrides Extension::id()
-    /// @returns Plugin id
+    ///
+    /// Returns \ref PluginMetadata::id.
+    ///
     QString id() const override;
 
-    /// Overrides Extension::name()
-    /// @returns Plugin name
+    ///
+    /// Returns \ref PluginMetadata::name.
+    ///
     QString name() const override;
 
-    /// Overrides Extension::description()
-    /// @returns Plugin description
+    ///
+    /// Returns \ref PluginMetadata::description.
+    ///
     QString description() const override;
 
-    /// Overrides PluginInstance::extensions()
-    /// @returns `this`
+    ///
+    /// Returns `this` extension.
+    ///
     std::vector<albert::Extension*> extensions() override;
 
 };

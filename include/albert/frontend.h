@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -23,25 +23,39 @@ class ALBERT_EXPORT Frontend : public albert::PluginInstance
 
 public:
 
+    ///
     /// Visibility of the frontend
+    ///
     virtual bool isVisible() const = 0;
 
+    ///
     /// Set the visibility state of the frontend
+    ///
     virtual void setVisible(bool visible) = 0;
 
+    ///
     /// Input line text
+    ///
     virtual QString input() const = 0;
 
+    ///
     /// Input line text setter
+    ///
     virtual void setInput(const QString&) = 0;
 
+    ///
     /// The native window id. Used to apply platform quirks.
+    ///
     virtual unsigned long long winId() const = 0;
 
+    ///
     /// The config widget show in the window settings tab
+    ///
     virtual QWidget *createFrontendConfigWidget() = 0;
 
+    ///
     /// The query setter
+    ///
     virtual void setQuery(Query *query) = 0;
 
 signals:

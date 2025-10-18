@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -20,6 +20,8 @@ namespace albert
 /// - The Score/double type conversion seamlessly uses the \ref score()
 ///
 /// @sa \ref Matcher
+///
+/// \ingroup query_util
 ///
 class ALBERT_EXPORT Match final
 {
@@ -87,23 +89,25 @@ private:
 ///
 /// @sa \ref MatchConfig, \ref Match
 ///
+/// \ingroup query_util
+///
 class ALBERT_EXPORT Matcher final
 {
 public:
     ///
-    /// Constructs a Matcher with the given `string` and match `config`.
+    /// Constructs a Matcher with the given _string_ and match _config_.
     ///
-    /// If `config` is not provided, a default constructed config is used.
+    /// If _config_ is not provided, a default constructed config is used.
     ///
     Matcher(const QString &string, MatchConfig config = {});
 
     ///
-    /// Constructs a Matcher with the contents of `other` using move semantics.
+    /// Constructs a Matcher with the contents of _other_ using move semantics.
     ///
     Matcher(Matcher &&o);
 
     ///
-    /// Replaces the contents with those of `other` using move semantics.
+    /// Replaces the contents with those of _other_ using move semantics.
     ///
     Matcher &operator=(Matcher &&o);
 
@@ -118,18 +122,18 @@ public:
     const QString &string() const;
 
     ///
-    /// Returns a \ref Match for `string`.
+    /// Returns a \ref Match for _string_.
     ///
     Match match(const QString &string) const;
 
     ///
-    /// Returns the max \ref Match for the given strings.
+    /// Returns the max \ref Match for the strings _first_ and _remainder_.
     ///
-    Match match(QString first, auto... args) const
-    { return std::max(match(first), match(args...)); }
+    Match match(QString first, auto... remainder) const
+    { return std::max(match(first), match(remainder...)); }
 
     ///
-    /// Returns the max \ref Match in the range of `strings`.
+    /// Returns the max \ref Match in the range of _strings_.
     ///
     Match match(std::ranges::range auto &&strings) const
          requires std::same_as<std::ranges::range_value_t<decltype(strings)>, QString>
@@ -142,6 +146,7 @@ public:
 
 
 private:
+
     class Private;
     std::unique_ptr<Private> d;
 

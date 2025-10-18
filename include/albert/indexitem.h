@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -10,12 +10,15 @@
 namespace albert
 {
 
+///
 /// An item utlized by ItemIndex
+///
+/// \ingroup query_util
+///
 class ALBERT_EXPORT IndexItem
 {
 public:
-    /// \param item \copydoc item
-    /// \param string \copydoc string
+    /// Constructs an index item with the given _item_ and _string_.
     IndexItem(std::shared_ptr<Item> item, QString string);
 
     /// The item to be indexed

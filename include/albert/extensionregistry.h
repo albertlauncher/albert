@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -17,7 +17,7 @@ namespace albert
 /// listening to the signals added/removed or any particular extension
 /// interface using ExtensionWatcher.
 ///
-/// Use in the main thread only!
+/// \ingroup plugin
 ///
 class ALBERT_EXPORT ExtensionRegistry : public QObject
 {
@@ -25,16 +25,24 @@ class ALBERT_EXPORT ExtensionRegistry : public QObject
 
 public:
 
+    ///
     /// Add extension to the registry
+    ///
     bool registerExtension(Extension*);
 
+    ///
     /// Remove extension from the registry
+    ///
     void deregisterExtension(Extension*);
 
+    ///
     /// Get map of all registered extensions
+    ///
     const std::map<QString,Extension*> &extensions() const;
 
+    ///
     /// Get map of all extensions of type T
+    ///
     template<typename T> std::map<QString, T*> extensions() const
     {
         std::map<QString, T*> results;
@@ -44,7 +52,9 @@ public:
         return results;
     }
 
+    ///
     /// Get extension by id implicitly dynamic_cast'ed to type T.
+    ///
     template<typename T> T* extension(const QString &id)
     {
         try {
@@ -56,10 +66,14 @@ public:
 
 signals:
 
+    ///
     /// Emitted when an extension has been registered.
+    ///
     void added(Extension*);
 
+    ///
     /// Emitted when an extension has been deregistered.
+    ///
     void removed(Extension*);
 
 private:

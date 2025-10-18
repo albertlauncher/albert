@@ -1,5 +1,8 @@
-// SPDX-FileCopyrightText: 2024 Manuel Schneider
+// SPDX-FileCopyrightText: 2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
+
+/// \defgroup plugin Plugin API
+/// Classes and functions related to the plugin system.
 
 #pragma once
 #include <QObject>
@@ -22,68 +25,98 @@ class PluginLoader;
 ///
 /// The class every plugin has to inherit.
 ///
+/// \ingroup plugin
+///
 class ALBERT_EXPORT PluginInstance : public QObject
 {
 public:
 
-    /// The widget used to configure the plugin in the settings.
-    /// @returns The config widget.
+    ///
+    /// Creates a widget that can be used to configure the plugin properties.
+    ///
+    /// The caller takes ownership of the returned object.
+    ///
     virtual QWidget *buildConfigWidget();
 
-    /// The extensions provided by this plugin.
-    /// @returns Weak references to the extensions.
+    ///
+    /// Returns the extensions provided by this plugin.
+    ///
+    /// The caller does **not** take ownership of the returned objects.
+    ///
     virtual std::vector<albert::Extension*> extensions();
 
 public:
 
-    /// The \ref PluginLoader of this instance.
-    /// @returns @copybrief loader
+    ///
+    /// Returns the loader of this plugin.
+    ///
     [[nodiscard]] const PluginLoader &loader() const;
 
-    /// The recommended cache location.
-    /// @returns @copybrief cacheLocation
+    ///
+    /// Returns the writable cache location for this plugin.
+    ///
     [[nodiscard]] std::filesystem::path cacheLocation() const;
 
-    /// The recommended config location.
-    /// @returns @copybrief configLocation
+    ///
+    /// Returns the writable config location for this plugin.
+    ///
     [[nodiscard]] std::filesystem::path configLocation() const;
 
-    /// The recommended data location.
-    /// @returns @copybrief dataLocation
+    ///
+    /// Returns the writable data location for this plugin.
+    ///
     [[nodiscard]] std::filesystem::path dataLocation() const;
 
-    /// The existing data locations of this plugin.
-    /// @returns @copybrief dataLocations
+    ///
+    /// Returns the existing data locations for this plugin.
+    ///
+    /// This includes user, vendor, and system locations.
+    ///
     [[nodiscard]] std::vector<std::filesystem::path> dataLocations() const;
 
-    /// Persistent plugin settings.
-    /// Preconfigured according to albert conventions, i.e. using
-    /// \ref albert::settings() configured to write to a section titled <plugin-id>.
-    /// @returns Preconfigured QSettings object for config storage.
+    ///
+    /// Creates a preconfigured `QSettings` object for plugin config data.
+    ///
+    /// Configured to use the group <plugin-id> in \ref albert::config().
+    ///
     [[nodiscard]] std::unique_ptr<QSettings> settings() const;
 
-    /// Persistent plugin state.
-    /// Preconfigured according to albert conventions, i.e. using
-    /// \ref albert::state() configured to write to a section titled <plugin-id>.
-    /// @returns Preconfigured QSettings object for state storage.
+    ///
+    /// Creates a preconfigured `QSettings` object for plugin state data.
+    ///
+    /// Configured to use the group <plugin-id> in \ref albert::state().
+    ///
     [[nodiscard]] std::unique_ptr<QSettings> state() const;
 
-    /// Reads the keychain value for `key` asynchronously.
-    /// Calls `onSuccess` with the value on success and `onError` with an error message on failure.
+    ///
+    /// Reads the keychain value for _key_ asynchronously.
+    ///
+    /// Calls _onSuccess_ with the _value_ of the _key_ on success and `onError` with an _error_ message on failure.
+    ///
     void readKeychain(const QString &key,
-                      std::function<void(const QString &)> onSuccess,
-                      std::function<void(const QString &)> onError) const;
+                      std::function<void(const QString &value)> onSuccess,
+                      std::function<void(const QString &error)> onError) const;
 
-    /// Sets the keychain value of `key` to `value` asynchronously.
-    /// Calls `onSuccess` on success and `onError` with an error message on failure.
+    ///
+    /// Sets the keychain value of _key_ to _value_ asynchronously.
+    ///
+    /// Calls _onSuccess_ on success and _onError_ with an _error_ message on failure.
+    ///
     void writeKeychain(const QString &key,
                        const QString &value,
                        std::function<void()> onSuccess,
-                       std::function<void(const QString&)> onError) const;
+                       std::function<void(const QString&error)> onError) const;
 
 protected:
 
+    ///
+    /// Constructs a plugin instance.
+    ///
     PluginInstance();
+
+    ///
+    /// Destructs the plugin instance.
+    ///
     virtual ~PluginInstance();
 
 private:
