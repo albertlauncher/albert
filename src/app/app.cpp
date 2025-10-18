@@ -678,7 +678,7 @@ int ALBERT_EXPORT run(int argc, char **argv)
 
     for (const auto &path : { cacheLocation(), configLocation(), dataLocation() })
         try {
-            tryCreateDirectory(path);
+            filesystem::create_directories(path);
             QFile::setPermissions(path, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
         } catch (...) {
             qFatal("Failed creating directory: %s", path.c_str());

@@ -42,11 +42,6 @@ ALBERT_EXPORT long long runDetachedProcess(const QStringList &commandline);
 /// Run the `commandline` with `working_dir` as detached process. Returns the process id.
 ALBERT_EXPORT long long runDetachedProcess(const QStringList &commandline, const QString &working_dir);
 
-/// Tries to create a directory at `path`.
-/// Throws std::runtime_error if the directory could not be created.
-/// This is a utility function for use with the *Location functions.
-ALBERT_EXPORT void tryCreateDirectory(const std::filesystem::path &path);
-
 /// Returns a QString representation of `path`.
 ALBERT_EXPORT QString toQString(const std::filesystem::path &path);
 

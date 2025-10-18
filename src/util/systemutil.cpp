@@ -120,17 +120,6 @@ long long albert::runDetachedProcess(const QStringList &commandline, const QStri
 long long albert::runDetachedProcess(const QStringList &commandline)
 { return runDetachedProcess(commandline, {}); }
 
-void albert::tryCreateDirectory(const filesystem::path& path)
-{
-    try {
-        filesystem::create_directories(path);
-    } catch (const filesystem::filesystem_error &e) {
-        throw runtime_error(
-            QCoreApplication::translate("albert", "Failed creating directory %1: %2")
-                .arg(e.path1().c_str(), e.what()).toStdString());
-    }
-}
-
 QString albert::toQString(const filesystem::path &path)
 {
 #ifdef Q_OS_WIN
