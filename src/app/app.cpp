@@ -210,7 +210,7 @@ void App::Private::initTrayIcon()
 
     // icon
 
-    auto icon = albert::qIcon(makeThemeIcon("albert-tray"));
+    auto icon = QIcon::fromTheme("albert-tray");
     icon.setIsMask(true);
 
     tray_icon = make_unique<QSystemTrayIcon>();
