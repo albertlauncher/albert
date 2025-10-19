@@ -6,6 +6,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get install --no-install-recommends -y \
     cmake \
     clang \
+    clang-tools \
+    ninja-build \
     libarchive-dev \
     libgl1-mesa-dev \
     libglvnd-dev \
@@ -41,7 +43,10 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 FROM base AS build
 COPY . /src
 ARG dir="/build"
-RUN cmake -S /src -B $dir -DBUILD_TESTS=ON \
+RUN cmake -S /src -B $dir -G Ninja \
+      -DBUILD_TESTS=ON \
+      -DCMAKE_C_COMPILER=clang \
+      -DCMAKE_CXX_COMPILER=clang++ \
  && cmake --build $dir -j$(nproc) \
  && cmake --install $dir --prefix /usr \
  && ctest --test-dir $dir --output-on-failure \

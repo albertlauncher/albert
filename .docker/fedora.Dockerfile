@@ -3,7 +3,9 @@ ARG BASE_IMAGE=fedora:latest
 FROM ${BASE_IMAGE} AS base
 RUN yum install -y \
     cmake \
-    gcc-c++ \
+    clang \
+    clang-tools-extra \
+    ninja-build \
     libarchive-devel \
     libqalculate-devel \
     pkgconfig \
@@ -22,7 +24,10 @@ RUN yum install -y \
 
 FROM base AS build
 COPY . /src
-RUN cmake -S /src -B /build -DBUILD_TESTS=ON \
+RUN cmake -S /src -B /build -G Ninja \
+      -DBUILD_TESTS=ON \
+      -DCMAKE_C_COMPILER=clang \
+      -DCMAKE_CXX_COMPILER=clang++ \
  && cmake --build /build -j$(nproc) \
  && cmake --install /build --prefix /usr \
  && ctest --test-dir /build --output-on-failure \
