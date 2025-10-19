@@ -30,6 +30,9 @@
 [submodule "plugins/clipboard"]
 	path = plugins/clipboard
 	url = https://github.com/albertlauncher/albert-plugin-clipboard.git
+[submodule "plugins/commandline"]
+	path = plugins/commandline
+	url = https://github.com/albertlauncher/albert-plugin-commandline.git
 [submodule "plugins/contacts"]
 	path = plugins/contacts
 	url = https://github.com/albertlauncher/albert-plugin-contacts.git
@@ -63,9 +66,6 @@
 [submodule "plugins/obsidian"]
 	path = plugins/obsidian
 	url = https://github.com/albertlauncher/albert-plugin-obsidian.git
-[submodule "plugins/path"]
-	path = plugins/path
-	url = https://github.com/albertlauncher/albert-plugin-path.git
 [submodule "plugins/python"]
 	path = plugins/python
 	url = https://github.com/albertlauncher/albert-plugin-python.git
