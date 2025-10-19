@@ -651,8 +651,10 @@ void AlbertTests::index_score()
 
 void AlbertTests::input_history()
 {
+    // Create a temporary file
     QTemporaryFile t;
-    t.open(); t.close(); // required to get the filename
+    QVERIFY(t.open());
+    t.close();
 
     detail::InputHistory h(t.fileName());
 
