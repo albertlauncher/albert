@@ -154,21 +154,28 @@ void SettingsWindow::init_tab_general_frontends()
 
 void SettingsWindow::init_tab_general_path()
 {
-    ui.lineEdit_additional_path_entries->setPlaceholderText(app.originalPathEntries().join(":"));
-    ui.lineEdit_additional_path_entries->setText(app.additionalPathEntries().join(":"));
-    const auto effective_path_entries = QStringList() << app.additionalPathEntries() << app.originalPathEntries();
-    ui.lineEdit_additional_path_entries->setToolTip(effective_path_entries.join(":"));
+    const auto &additional = app.additionalPathEntries();
+    const auto &original  = app.originalPathEntries();
 
-    connect(ui.lineEdit_additional_path_entries, &QLineEdit::editingFinished, this, [this] {
-        if (ui.lineEdit_additional_path_entries->text().split(":") == app.additionalPathEntries())
-            return;
-        app.setAdditionalPathEntries(ui.lineEdit_additional_path_entries->text().split(":"));
-        auto effective_path_entries = QStringList() << app.additionalPathEntries() << app.originalPathEntries();
-        ui.lineEdit_additional_path_entries->setToolTip(effective_path_entries.join(":"));
-        if (question(tr("For the changes to take effect, Albert has to be restarted. "
-                        "Do you want to restart Albert now?")))
-            restart();
-    });
+    auto *le = ui.lineEdit_additional_path_entries;
+    le->setPlaceholderText(original.join(":"));
+    le->setText(additional.join(":"));
+    le->setToolTip((additional + original).join(":"));
+
+    connect(le, &QLineEdit::editingFinished,
+            this, [this, le] {
+                const auto new_add = le->text().split(":");
+
+                if (new_add == app.additionalPathEntries())
+                    return;
+
+                app.setAdditionalPathEntries(new_add);
+                le->setToolTip((new_add + app.originalPathEntries()).join(":"));
+
+                if (question(tr("For the changes to take effect, Albert has to be restarted. "
+                                "Do you want to restart Albert now?")))
+                    restart();
+            });
 }
 
 void SettingsWindow::init_tab_general_telemetry()
