@@ -24,12 +24,22 @@
 ### 🧩 Plugin changes
 {% for group, commits in commits | group_by(attribute="group") %}
 #### {{ group | striptags | trim | upper_first }}
-
+{% for name, commits in commits | group_by(attribute="extra.plugin_name") -%}
+{% if commits | length > 1 -%}
+- **{{ name }}** 
+{%- for commit in commits %}
+  - {% if commit.scope %}_{{ commit.scope }}_ · {% endif %}
+    {%- if commit.breaking %}[**BREAKING**] · {% endif %}
+    {%- if commit.message %}[{{ commit.message | upper_first }}](https://github.com/albertlauncher/{{ commit.extra.repo_name }}/commit/{{ commit.id}}){% endif -%}
+{% endfor %}
+{% else -%}
 {% for commit in commits -%}
-- **{{ commit.extra.plugin_name }}** 
+- **{{ name }}** 
   {%- if commit.scope %} · _{{ commit.scope }}_{% endif %}
   {%- if commit.breaking %} · [**BREAKING**]{% endif %}
   {%- if commit.message %} · [{{ commit.message | upper_first }}](https://github.com/albertlauncher/{{ commit.extra.repo_name }}/commit/{{ commit.id}}){% endif %}
+{% endfor -%}
+{% endif -%}
 {% endfor -%}
 {% endfor -%}
 {% endif -%}
