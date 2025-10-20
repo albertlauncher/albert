@@ -3,6 +3,7 @@
 #include "levenshtein.h"
 #include "matchconfig.h"
 #include "matcher.h"
+#include "querypreprocessing.h"
 #include <QRegularExpression>
 #include <QStringList>
 using namespace albert;
@@ -18,31 +19,6 @@ public:
     mutable Levenshtein levenshtein;
     QStringList tokens;
 
-    QStringList tokenize(QString s) const
-    {
-        // Remove soft hyphens
-        s.remove(QChar(0x00AD));
-
-        if (config.ignore_diacritics)
-        {
-            // https://en.wikipedia.org/wiki/Combining_Diacritical_Marks
-            static QRegularExpression re(R"([\x{0300}-\x{036f}])");
-            s = s.normalized(QString::NormalizationForm_D).remove(re);
-        }
-
-        if (config.ignore_case)
-            s = s.toLower();
-
-        auto t = s.split(config.separator_regex, Qt::SkipEmptyParts);
-
-        if (config.ignore_word_order)
-            t.sort();
-
-        return t;
-    }
-
-    void updateTokens() { tokens = tokenize(string); }
-
     Match match(const QString &s) const
     {
         // Empty query is a 0 score (epsilon) match
@@ -53,7 +29,7 @@ public:
         if (tokens.isEmpty())
             return {-1.};
 
-        QStringList other_tokens = tokenize(s);
+        const auto other_tokens = preprocessQuery(s, config);
 
         double matched_chars = 0;
         double total_chars = 0;
@@ -63,14 +39,13 @@ public:
 
         while (it != tokens.end() && oit != other_tokens.end())
         {
-
             // if the query word is longer it cant be a prefix
             if ((it->size() <= oit->size()))
             {
                 // check if the query word is a prefix of the matched word
                 if(config.fuzzy)
                 {
-                    uint allowed_errors = it->size() / config.error_tolerance_divisor;
+                    uint allowed_errors = it->size() / 4; // hardcoded 25% tolerance
                     auto edit_distance = levenshtein.computePrefixEditDistanceWithLimit(
                                 *it, *oit, allowed_errors);
                     if (edit_distance <= allowed_errors)
@@ -103,12 +78,12 @@ public:
 
 Matcher::Matcher(const QString &query, MatchConfig config):
     d(new Private{
-      .config = ::move(config),
+      .config = config,
       .string = query,
       .levenshtein = {},
-      .tokens = {}
+      .tokens = preprocessQuery(query, config)
     })
-{ d->updateTokens(); }
+{}
 
 Matcher::Matcher(Matcher &&o) = default;
 

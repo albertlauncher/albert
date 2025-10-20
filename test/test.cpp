@@ -13,9 +13,13 @@
 #include "pluginmetadata.h"
 #include "pluginprovider.h"
 #include "pluginregistry.h"
+#include "querypreprocessing.h"
 #include "standarditem.h"
 #include "test.h"
 #include "topologicalsort.hpp"
+#include <QSettings>
+#include <QTemporaryFile>
+#include <QTimer>
 #include <set>
 #include <unistd.h>
 using namespace albert::util;
@@ -364,6 +368,65 @@ void AlbertTests::levenshtein_shorter_prefix()
     QVERIFY(l.computePrefixEditDistanceWithLimit("abc", "", 1) == 2);
 }
 
+// void AlbertTests::bench_tokenizer()
+// {
+//     MatchConfig c;
+//     static const auto test_split_string =
+//         QString(uR"(String_containing, can't 1,11 2.22 한글날 金沢 我爱你。)");
+
+//     QBENCHMARK { Q_UNUSED(preprocessQueryLegacy(test_split_string)); }
+//     QBENCHMARK { Q_UNUSED(preprocessQuery(test_split_string, c)); }
+//     QBENCHMARK { Q_UNUSED(preprocessQuery(test_split_string, MatchConfig{.ignore_diacritics=false})); }
+
+//     static const auto test_split_string1 =
+//         QString(uR"(金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢)");
+
+//     QBENCHMARK { Q_UNUSED(preprocessQueryLegacy(test_split_string1)); }
+//     QBENCHMARK { Q_UNUSED(preprocessQuery(test_split_string1, c)); }
+
+//     static const auto test_split_string2 =
+//         QString(uR"(aaa bbb ccc aaa bbb ccc aaa bbb ccc)");
+
+//     QBENCHMARK { Q_UNUSED(preprocessQueryLegacy(test_split_string2)); }
+//     QBENCHMARK { Q_UNUSED(preprocessQuery(test_split_string2, c)); }
+// }
+
+void AlbertTests::match_config()
+{
+    MatchConfig c;  // F, !C, !O, !D
+
+    // Case sensitivity
+    QCOMPARE(preprocessQuery("A", MatchConfig{.ignore_case=true}), QStringList({"a"}));
+    QCOMPARE(preprocessQuery("A", MatchConfig{.ignore_case=false}), QStringList({"A"}));
+
+    // Word order
+    QCOMPARE(preprocessQuery("b a", MatchConfig{.ignore_word_order=true}), QStringList({"a", "b"}));
+    QCOMPARE(preprocessQuery("b a", MatchConfig{.ignore_word_order=false}), QStringList({"b", "a"}));
+
+    // Normalization
+    QCOMPARE(preprocessQuery("àáâãāa̅ăȧäåa̋ǎa̍a̎ȁa̐ȃa̒a̓a̔a̕a̖a̗a̘a̙a̚a̛a̜a̝a̞a̟a̠a̡a̢ạa̤ḁ"
+                             "a̦a̧ąa̩a̪a̫a̬a̭a̮a̯a̰a̱a̲a̳a̴a̵a̶a̷a̸a̹a̺a̻a̼a̽a̾a̿àáa͂a̓ä́aͅa͆a͇a͈a͉a͊"
+                             "a͋a͌a͍a͎a͏a͐a͑a͒a͓a͔a͕a͖a͗a͘a͙a͚a͛a͜a͝a͞a͟a͠a͡a͢aͣaͤaͥaͦaͧaͨaͩaͪaͫaͬaͭaͮaͯ", c),
+             QStringList({"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}));
+
+    // ICU Break Tokenization
+
+    // Korean should not be split
+    QCOMPARE(preprocessQuery("한글날", c).size(), 1);
+
+    // Japanese should be split by grapheme
+    QCOMPARE(preprocessQuery("金沢", c).size(), 2);
+
+    // Chinese should be split by grapheme
+    QCOMPARE(preprocessQuery("我爱你。", c).size(), 4);
+
+    QCOMPARE(preprocessQuery("a!b", c).size(), 3);
+
+    QCOMPARE(preprocessQuery("22.04", c).size(), 1);
+}
+
 void AlbertTests::match_conversion()
 {
     auto m = Match(-1);
@@ -459,29 +522,11 @@ void AlbertTests::matcher_diacritics()
     QCOMPARE(m2.match("é").isMatch(), true);
 }
 
-void AlbertTests::matcher_seprarators()
-{
-    Matcher m("a");
-    QVERIFY(qFuzzyCompare(m.match("a b").score(), 1.0 / 2));
-    QVERIFY(qFuzzyCompare(m.match("a!b").score(), 1. / 2));
-    QVERIFY(qFuzzyCompare(m.match("a !b").score(), 1. / 2));
-    QVERIFY(qFuzzyCompare(m.match("!a b").score(), 1. / 2));
-
-    m = Matcher("a", {.separator_regex = QRegularExpression("[\\s]+")});
-    QVERIFY(qFuzzyCompare(m.match("a b").score(), 1.0 / 2));
-    QVERIFY(qFuzzyCompare(m.match("a!b").score(), 1. / 3));
-    QVERIFY(qFuzzyCompare(m.match("a !b").score(), 1. / 3));
-    QCOMPARE(m.match("!a b").isMatch(), false);
-}
-
 void AlbertTests::matcher_fuzzy()
 {
     QString abc{"abcdefghijklmnopqrstuvwxyz"};
 
-    MatchConfig c = {
-        .fuzzy = true,
-        .separator_regex = QRegularExpression("[ ]+")
-    };
+    MatchConfig c{.fuzzy = true};
 
     QVERIFY(Matcher("abcd", c).match(abc));
     QVERIFY(Matcher("abc_", c).match(abc));
@@ -596,21 +641,11 @@ void AlbertTests::index_diacritics()
     QVERIFY(indexMatch(abc_perm, "b", {.ignore_diacritics = false}).size() == 6);
 }
 
-void AlbertTests::index_separators()
-{
-    QVERIFY(indexMatch({"a!b", "a b","a-b"}, "a b").size() == 3);
-    QVERIFY(indexMatch({"a!b", "a b","a-b"}, "a b",
-                       {.separator_regex = QRegularExpression("[ ]+")}).size() == 1);
-}
-
 void AlbertTests::index_fuzzy()
 {
     QStringList abc{"abcdefghijklmnopqrstuvwxyz"};
 
-    MatchConfig c = {
-        .fuzzy = true,
-        .separator_regex = QRegularExpression("[ ]+")
-    };
+    MatchConfig c{.fuzzy = true};
 
     QVERIFY(indexMatch(abc, "abcd", c).size() == 1);
     QVERIFY(indexMatch(abc, "abc_", c).size() == 1);

@@ -173,8 +173,6 @@ set(LIB_SRC
     src/util/extensionplugin.cpp
     src/util/icons.cpp
     src/util/icons.h
-    src/util/qiconengineadapter.cpp
-    src/util/qiconengineadapter.h
     src/util/iconutil.cpp
     src/util/indexitem.cpp
     src/util/indexqueryhandler.cpp
@@ -183,12 +181,16 @@ set(LIB_SRC
     src/util/itemindex.h
     src/util/levenshtein.cpp
     src/util/levenshtein.h
+    src/util/querypreprocessing.h
+    src/util/querypreprocessing.cpp
     src/util/matcher.cpp
     src/util/messagebox.cpp
     src/util/networkutil.cpp
     src/util/notification.cpp
     src/util/oauth.cpp
     src/util/oauthconfigwidget.cpp
+    src/util/qiconengineadapter.cpp
+    src/util/qiconengineadapter.h
     src/util/standarditem.cpp
     src/util/systemutil.cpp
 

@@ -4,6 +4,7 @@
 #include "itemindex.h"
 #include "levenshtein.h"
 #include "logging.h"
+#include "querypreprocessing.h"
 #include <QRegularExpression>
 #include <algorithm>
 #include <map>
@@ -102,34 +103,10 @@ public:
     mutable shared_mutex mutex;
     IndexData index;
 
-    QStringList tokenize(QString string) const;
     vector<QString> ngrams_for_word(const QString &word)const;
     vector<WordMatch> getWordMatches(const QString &word, const bool &isValid) const;
     vector<StringMatch> getStringMatches(const QString &word, const bool &isValid) const;
 };
-
-QStringList ItemIndex::Private::tokenize(QString s) const
-{
-    // Remove soft hyphens
-    s.remove(QChar(0x00AD));
-
-    if (config.ignore_diacritics)
-    {
-        // https://en.wikipedia.org/wiki/Combining_Diacritical_Marks
-        static QRegularExpression re(R"([\x{0300}-\x{036f}])");
-        s = s.normalized(QString::NormalizationForm_D).remove(re);
-    }
-
-    if (config.ignore_case)
-        s = s.toLower();
-
-    auto t = s.split(config.separator_regex, Qt::SkipEmptyParts);
-
-    if (config.ignore_word_order)
-        t.sort();
-
-    return t;
-}
 
 vector<QString> ItemIndex::Private::ngrams_for_word(const QString &word) const
 {
@@ -202,7 +179,7 @@ vector<WordMatch> ItemIndex::Private::getWordMatches(const QString &word, const 
         // that there are more errors than δ.
 
         Levenshtein levenshtein;
-        uint allowed_errors = word_length / config.error_tolerance_divisor;
+        uint allowed_errors = word_length / 4;  // hardcoded 25% tolerance
         uint minimum_match_count = word_length - allowed_errors * N;
 
         for (const auto &[word_idx, ngram_count]: word_match_counts)
@@ -262,7 +239,7 @@ void ItemIndex::setItems(vector<IndexItem> &&index_items)
 
     for (auto &[item, string] : index_items)
     {
-        QStringList &&words = d->tokenize(string);
+        const auto words = preprocessQuery(string, d->config);
         if (words.empty())
         {
             WARN << QString("Skipping index entry '%1'. Tokenization of '%2' yields empty set.")
@@ -325,7 +302,7 @@ void ItemIndex::setItems(vector<IndexItem> &&index_items)
 vector<albert::RankItem> ItemIndex::search(const QString &string, const bool &isValid) const
 {
     vector<RankItem> result;
-    QStringList &&words = d->tokenize(string);
+    const auto words = preprocessQuery(string, d->config);
     shared_lock lock(d->mutex);
 
     if (words.empty())

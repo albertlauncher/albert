@@ -1,7 +1,7 @@
 // Copyright (c) 2024 Manuel Schneider
 
 #include <QCoreApplication>
-#include <QtTest/QtTest>
+#include <QTest>
 
 class AlbertTests : public QObject
 {
@@ -22,6 +22,8 @@ private slots:
     void levenshtein_fuzzy_insertion();
     void levenshtein_shorter_prefix();
 
+    // void bench_tokenizer();
+    void match_config();
     void match_conversion();
 
     void matcher_empty();
@@ -29,16 +31,15 @@ private slots:
     void matcher_multiple();
     void matcher_multiple_ordered();
     void matcher_diacritics();
-    void matcher_seprarators();
     void matcher_fuzzy();
     void matcher_case();
     void matcher_score();
+
 
     void index_empty();
     void index_multiple();
     void index_multiple_ordered();
     void index_diacritics();
-    void index_separators();
     void index_fuzzy();
     void index_case();
     void index_score();
