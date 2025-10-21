@@ -69,12 +69,12 @@ signals:
     ///
     /// Emitted when an extension has been registered.
     ///
-    void added(Extension*);
+    void added(albert::Extension*);
 
     ///
     /// Emitted when an extension has been deregistered.
     ///
-    void removed(Extension*);
+    void removed(albert::Extension*);
 
 private:
 
