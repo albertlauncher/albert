@@ -72,6 +72,7 @@ set(LIB_PUBLIC_HEADER
     include/albert/telemetryprovider.h
     include/albert/triggerqueryhandler.h
     include/albert/urlhandler.h
+    include/albert/usagescoring.h
 
     # util
     include/albert/backgroundexecutor.h
@@ -146,7 +147,6 @@ set(LIB_SRC
     src/query/usagedatabase.cpp
     src/query/usagedatabase.h
     src/query/usagescoring.cpp
-    src/query/usagescoring.h
 
     src/settings/pluginswidget/pluginsmodel.cpp
     src/settings/pluginswidget/pluginsmodel.h

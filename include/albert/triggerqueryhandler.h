@@ -73,11 +73,6 @@ public:
     ///
     virtual void handleTriggerQuery(Query &query) = 0;
 
-    ///
-    /// Modifies the score of _rank_items_ to reflect the users usage history.
-    ///
-    void applyUsageScore(std::vector<RankItem> &rank_items);
-
 protected:
 
     ///

@@ -1,7 +1,9 @@
 // Copyright (c) 2023-2025 Manuel Schneider
 
+#include "albert.h"
 #include "globalqueryhandler.h"
 #include "query.h"
+#include "usagescoring.h"
 using namespace albert;
 using namespace std;
 
@@ -11,7 +13,7 @@ void GlobalQueryHandler::handleTriggerQuery(Query &query)
 {
     auto rank_items = handleGlobalQuery(query);
 
-    applyUsageScore(rank_items);
+    usageScoring().modifyMatchScores(*this, rank_items);
 
     auto begin = ::begin(rank_items);
     auto end = ::end(rank_items);

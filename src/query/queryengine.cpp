@@ -30,8 +30,10 @@ static const char*  CFG_PRIO_PERFECT = "prioritizePerfectMatch";
 static const bool   DEF_PRIO_PERFECT = true;
 }
 
-QueryEngine::QueryEngine(ExtensionRegistry &registry):
-    registry_(registry)
+
+QueryEngine::QueryEngine(ExtensionRegistry &registry)
+    : registry_(registry)
+    , usage_scoring_(0,0,{})  // Null scoring, just to not have to implement constructors
 {
     auto s = settings();
     auto decay = s->value(CFG_MEMORY_DECAY, DEF_MEMORY_DECAY).toDouble();
@@ -136,7 +138,7 @@ void QueryEngine::storeItemActivation(const QString &query, const QString &exten
 
 UsageScoring QueryEngine::usageScoring() const
 {
-    lock_guard lock(usage_scoring_mutex_);
+    shared_lock lock(usage_scoring_mutex_);
     return usage_scoring_;
 }
 

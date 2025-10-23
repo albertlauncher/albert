@@ -9,8 +9,9 @@
 
 #pragma once
 #include <QString>
-#include <filesystem>
 #include <albert/export.h>
+#include <filesystem>
+#include <memory>
 class NotificationPrivate;
 class QNetworkAccessManager;
 class QSettings;
@@ -19,6 +20,7 @@ class QUrl;
 namespace albert
 {
 class ExtensionRegistry;
+class UsageScoring;
 
 /// @name App functions
 /// @addtogroup core
@@ -90,6 +92,13 @@ ALBERT_EXPORT std::unique_ptr<QSettings> state();
 /// See also \ref WeakDependency and \ref StrongDependency.
 ///
 ALBERT_EXPORT const ExtensionRegistry &extensionRegistry();
+
+///
+/// Returns the global usage scoring.
+///
+/// This function is thread-safe.
+///
+ALBERT_EXPORT UsageScoring usageScoring();
 
 /// @}
 

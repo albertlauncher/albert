@@ -3,6 +3,7 @@
 #include "albert.h"
 #include "app.h"
 #include "frontend.h"
+#include "queryengine.h"
 #include <QCoreApplication>
 #include <QSettings>
 #include <QStandardPaths>
@@ -60,3 +61,6 @@ void albert::showSettings(QString plugin_id)
 
 const albert::ExtensionRegistry &albert::extensionRegistry()
 { return App::instance()->extensionRegistry(); }
+
+albert::UsageScoring albert::usageScoring()
+{ return App::instance()->queryEngine().usageScoring(); }

@@ -5,27 +5,21 @@
 #include <albert/export.h>
 #include <unordered_map>
 #include <vector>
-namespace albert {
+
+namespace albert
+{
 class Extension;
 class Item;
 class RankItem;
-}
 
-struct ItemKey
+
+struct ALBERT_EXPORT ItemKey
 {
     QString extension_id;
     QString item_id;
     bool operator==(const ItemKey&) const = default;
 };
 
-// Hashing specialization for ItemKey
-template <>
-struct std::hash<ItemKey>
-{
-    // https://stackoverflow.com/questions/17016175/c-unordered-map-using-a-custom-class-type-as-the-key#comment39936543_17017281
-    inline std::size_t operator()(const ItemKey& key) const
-    { return (qHash(key.extension_id) ^ (qHash(key.item_id)<< 1)); }
-};
 
 /// Holds and applies usage scores to items based on their usage history.
 class ALBERT_EXPORT UsageScoring
@@ -40,11 +34,9 @@ public:
 
     void modifyMatchScore(const albert::Extension &extension, albert::RankItem &rank_item) const;
 
-    void modifyMatchScores(const QString &extension_id,
-                           std::vector<albert::RankItem> &rank_items) const;
+    void modifyMatchScores(const QString &extension_id, std::vector<albert::RankItem> &rank_items) const;
 
-    void modifyMatchScores(const albert::Extension &extension,
-                           std::vector<albert::RankItem> &rank_items) const;
+    void modifyMatchScores(const albert::Extension &extension, std::vector<albert::RankItem> &rank_items) const;
 
     /// If `true` perfect matches should be prioritized even if their usage score is lower.
     bool prioritize_perfect_match;
@@ -62,4 +54,15 @@ public:
     /// The usage scores.
     std::shared_ptr<const std::unordered_map<ItemKey, double>> usage_scores;
 
+};
+
+}
+
+// Hashing specialization for ItemKey
+template <>
+struct std::hash<albert::ItemKey>
+{
+    // https://stackoverflow.com/questions/17016175/c-unordered-map-using-a-custom-class-type-as-the-key#comment39936543_17017281
+    inline std::size_t operator()(const albert::ItemKey& key) const
+    { return (qHash(key.extension_id) ^ (qHash(key.item_id)<< 1)); }
 };

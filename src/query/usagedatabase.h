@@ -18,7 +18,7 @@ public:
 
     std::map<QString, uint> extensionActivationsSince(const QDateTime &query) const;
 
-    std::unordered_map<ItemKey, double> itemUsageScores(double memory_decay) const;
+    std::unordered_map<albert::ItemKey, double> itemUsageScores(double memory_decay) const;
 
     void addActivation(const QString &query,
                        const QString &extension,

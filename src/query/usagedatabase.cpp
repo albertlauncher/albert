@@ -9,6 +9,7 @@
 #include <QSqlDriver>
 #include <QSqlError>
 #include <QSqlQuery>
+using namespace albert;
 using namespace std;
 
 static const char* db_conn_name = "usagehistory";

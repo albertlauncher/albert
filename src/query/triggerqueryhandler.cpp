@@ -18,7 +18,3 @@ void TriggerQueryHandler::setTrigger(const QString &) {}
 bool TriggerQueryHandler::supportsFuzzyMatching() const { return false; }
 
 void TriggerQueryHandler::setFuzzyMatching(bool) { }
-
-void TriggerQueryHandler::applyUsageScore(std::vector<RankItem> &rank_items)
-{ App::instance()->queryEngine().usageScoring().modifyMatchScores(*this, rank_items); }
-

@@ -5,9 +5,8 @@
 #include <QObject>
 #include <map>
 #include <memory>
-#include <mutex>
+#include <shared_mutex>
 class QueryExecution;
-class UsageScoring;
 namespace albert {
 class ExtensionRegistry;
 class FallbackHandler;
@@ -25,7 +24,7 @@ public:
 
     std::unique_ptr<QueryExecution> query(const QString &query);
 
-    UsageScoring usageScoring() const;  // thread-safe
+    albert::UsageScoring usageScoring() const;  // thread-safe
     void setMemoryDecay(double);
     void setPrioritizePerfectMatch(bool);
     void storeItemActivation(const QString &query, const QString &extension,
@@ -82,8 +81,8 @@ private:
     std::map<QString, albert::TriggerQueryHandler*> active_triggers_;
     std::map<std::pair<QString, QString>, int> fallback_order_;
 
-    UsageScoring usage_scoring_;
-    mutable std::mutex usage_scoring_mutex_;
+    albert::UsageScoring usage_scoring_;
+    mutable std::shared_mutex usage_scoring_mutex_;
 
 signals:
 
