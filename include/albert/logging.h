@@ -30,11 +30,3 @@ Q_DECLARE_LOGGING_CATEGORY(AlbertLoggingCategory)
 /// Creates a log object (level critial) you can use to pipe text into (<<).
 ///
 #define CRIT qCCritical(AlbertLoggingCategory,).noquote()
-
-#define cred     "\x1b[31m"
-#define cgreen   "\x1b[32m"
-#define cyellow  "\x1b[33m"
-#define cblue    "\x1b[34m"
-#define cmagenta "\x1b[35m"
-#define ccyan    "\x1b[36m"
-#define creset   "\x1b[0m"

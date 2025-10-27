@@ -168,6 +168,7 @@ set(LIB_SRC
     src/settings/settingswindow.h
 
     src/util/albert.cpp
+    src/util/color.h
     src/util/download.cpp
     src/util/extensionplugin.cpp
     src/util/icons.cpp

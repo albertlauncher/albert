@@ -24,7 +24,7 @@ struct TimeIt
     {
         auto end = std::chrono::system_clock::now();
         auto dur = std::chrono::duration_cast<std::chrono::microseconds>(end - start_).count();
-        CRIT << QStringLiteral(ccyan "%L1 µs | %2").arg(dur, 8).arg(name_);
+        CRIT << QStringLiteral("\x1b[36m%L1 µs | %2").arg(dur, 8).arg(name_);
     }
 };
 
