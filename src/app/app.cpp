@@ -785,6 +785,7 @@ int ALBERT_EXPORT run(int argc, char **argv)
         // QIcon::setThemeSearchPaths({":/icons"});  // implicitly set
         // See https://bugreports.qt.io/browse/QTBUG-140639
         QIcon::setFallbackThemeName("fallback");
+        DEBG << "Theme search paths:" << QIcon::themeSearchPaths();
     }
 
 
