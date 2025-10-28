@@ -1,6 +1,5 @@
 // Copyright (c) 2022-2025 Manuel Schneider
 
-#include "extension.h"
 #include "logging.h"
 #include "rankitem.h"
 #include "usagescoring.h"
@@ -25,15 +24,6 @@ double UsageScoring::modifiedMatchScore(const ItemKey &key, double match_score) 
     return match_score;
 }
 
-void UsageScoring::modifyMatchScore(const ItemKey &key, double &match_score) const
-{ match_score = modifiedMatchScore(key, match_score); }
-
-void UsageScoring::modifyMatchScore(const QString &extension_id, RankItem &rank_item) const
-{ modifyMatchScore({extension_id, rank_item.item->id()}, rank_item.score); }
-
-void UsageScoring::modifyMatchScore(const Extension &extension, RankItem &rank_item) const
-{ modifyMatchScore(extension.id(), rank_item); }
-
 void UsageScoring::modifyMatchScores(const QString &extension_id, vector<RankItem> &rank_items) const
 {
     ItemKey key{extension_id, {}}; // avoid execessive key creation
@@ -49,9 +39,6 @@ void UsageScoring::modifyMatchScores(const QString &extension_id, vector<RankIte
             WARN << QString("Item in extension '%1' threw unknown exception in id()").arg(extension_id);
             continue;
         }
-        modifyMatchScore(key, rank_item.score);
+        rank_item.score = modifiedMatchScore(key, rank_item.score);
     }
 }
-
-void UsageScoring::modifyMatchScores(const Extension &extension, vector<RankItem> &rank_items) const
-{ modifyMatchScores(extension.id(), rank_items); }

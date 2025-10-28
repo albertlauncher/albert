@@ -13,7 +13,7 @@ void GlobalQueryHandler::handleTriggerQuery(Query &query)
 {
     auto rank_items = handleGlobalQuery(query);
 
-    usageScoring().modifyMatchScores(*this, rank_items);
+    usageScoring().modifyMatchScores(id(), rank_items);
 
     auto begin = ::begin(rank_items);
     auto end = ::end(rank_items);

@@ -8,8 +8,6 @@
 
 namespace albert
 {
-class Extension;
-class Item;
 class RankItem;
 
 
@@ -21,22 +19,20 @@ struct ALBERT_EXPORT ItemKey
 };
 
 
-/// Holds and applies usage scores to items based on their usage history.
+///
+/// Modifies match scores according to user usage history and preferences.
+///
+/// \ingroup core
+///
 class ALBERT_EXPORT UsageScoring
 {
 public:
 
+    /// Returns the modified _match_score_ for an item identified by _key_.
     double modifiedMatchScore(const ItemKey &key, double match_score) const;
 
-    void modifyMatchScore(const ItemKey &key, double &match_score) const;
-
-    void modifyMatchScore(const QString &extension_id, albert::RankItem &rank_item) const;
-
-    void modifyMatchScore(const albert::Extension &extension, albert::RankItem &rank_item) const;
-
+    /// Modifies the match score of _rank_item_ for an item identified by _key_ in-place.
     void modifyMatchScores(const QString &extension_id, std::vector<albert::RankItem> &rank_items) const;
-
-    void modifyMatchScores(const albert::Extension &extension, std::vector<albert::RankItem> &rank_items) const;
 
     /// If `true` perfect matches should be prioritized even if their usage score is lower.
     bool prioritize_perfect_match;
