@@ -182,4 +182,15 @@ private:
 };
 }
 
-}
+/// A shared pointer to an \ref Item or subclass thereof
+template<typename T>
+concept ItemPtr
+    = std::is_base_of_v<Item, typename std::decay_t<T>::element_type>
+      && std::same_as<std::shared_ptr<typename std::decay_t<T>::element_type>, std::decay_t<T>>;
+
+/// A range of \ref ItemPtr
+template<typename R>
+concept ItemRange = std::ranges::range<R> && ItemPtr<std::ranges::range_value_t<R>>;
+
+}  // namespace albert
+

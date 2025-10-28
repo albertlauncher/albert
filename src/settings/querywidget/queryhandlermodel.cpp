@@ -3,7 +3,6 @@
 #include "globalqueryhandler.h"
 #include "queryengine.h"
 #include "queryhandlermodel.h"
-#include "triggerqueryhandler.h"
 #include <QCoreApplication>
 #include <QHeaderView>
 #include <QMessageBox>

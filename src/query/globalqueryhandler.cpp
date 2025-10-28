@@ -2,14 +2,13 @@
 
 #include "albert.h"
 #include "globalqueryhandler.h"
-#include "query.h"
 #include "usagescoring.h"
 using namespace albert;
 using namespace std;
 
-GlobalQueryHandler::~GlobalQueryHandler() = default;
+GlobalQueryHandler::~GlobalQueryHandler() {}
 
-void GlobalQueryHandler::handleTriggerQuery(Query &query)
+void GlobalQueryHandler::handleThreadedQuery(ThreadedQuery &query)
 {
     auto rank_items = handleGlobalQuery(query);
 

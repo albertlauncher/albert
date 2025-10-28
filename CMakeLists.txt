@@ -68,9 +68,13 @@ set(LIB_PUBLIC_HEADER
     include/albert/pluginmetadata.h
     include/albert/pluginprovider.h
     include/albert/query.h
+    include/albert/queryexecution.h
+    include/albert/queryhandler.h
+    include/albert/queryprivate.h
+    include/albert/queryresults.h
     include/albert/rankitem.h
     include/albert/telemetryprovider.h
-    include/albert/triggerqueryhandler.h
+    include/albert/threadedqueryhandler.h
     include/albert/urlhandler.h
     include/albert/usagescoring.h
 
@@ -116,18 +120,15 @@ set(LIB_SRC
     src/app/triggersqueryhandler.cpp
     src/app/triggersqueryhandler.h
     src/app/urlhandler.cpp
-
     src/common/extension.cpp
     src/common/item.cpp
     src/common/rankitem.cpp
-
+    src/config.h.in
     src/frontend/frontend.cpp
     src/frontend/session.cpp
     src/frontend/session.h
-
     src/platform/platform.h
     src/platform/signalhandler.h
-
     src/plugin/extensionregistry.cpp
     src/plugin/plugininstance.cpp
     src/plugin/pluginloader.cpp
@@ -135,19 +136,24 @@ set(LIB_SRC
     src/plugin/pluginregistry.cpp
     src/plugin/pluginregistry.h
     src/plugin/topologicalsort.hpp
-
     src/query/fallbackhandler.cpp
+    src/query/globalquery.cpp
+    src/query/globalquery.h
+    src/query/globalqueryexecution.cpp
+    src/query/globalqueryexecution.h
     src/query/globalqueryhandler.cpp
     src/query/query.cpp
     src/query/queryengine.cpp
     src/query/queryengine.h
     src/query/queryexecution.cpp
-    src/query/queryexecution.h
-    src/query/triggerqueryhandler.cpp
+    src/query/queryhandler.cpp
+    src/query/queryresults.cpp
+    src/query/threadedqueryexecution.cpp
+    src/query/threadedqueryexecution.h
+    src/query/threadedqueryhandler.cpp
     src/query/usagedatabase.cpp
     src/query/usagedatabase.h
     src/query/usagescoring.cpp
-
     src/settings/pluginswidget/pluginsmodel.cpp
     src/settings/pluginswidget/pluginsmodel.h
     src/settings/pluginswidget/pluginssortproxymodel.cpp
@@ -156,17 +162,14 @@ set(LIB_SRC
     src/settings/pluginswidget/pluginswidget.h
     src/settings/pluginswidget/pluginwidget.cpp
     src/settings/pluginswidget/pluginwidget.h
-
     src/settings/querywidget/fallbacksmodel.cpp
     src/settings/querywidget/fallbacksmodel.h
     src/settings/querywidget/queryhandlermodel.cpp
     src/settings/querywidget/queryhandlermodel.h
     src/settings/querywidget/querywidget.cpp
     src/settings/querywidget/querywidget.h
-
     src/settings/settingswindow.cpp
     src/settings/settingswindow.h
-
     src/util/albert.cpp
     src/util/color.h
     src/util/download.cpp
@@ -181,8 +184,6 @@ set(LIB_SRC
     src/util/itemindex.h
     src/util/levenshtein.cpp
     src/util/levenshtein.h
-    src/util/querypreprocessing.h
-    src/util/querypreprocessing.cpp
     src/util/matcher.cpp
     src/util/messagebox.cpp
     src/util/networkutil.cpp
@@ -191,10 +192,10 @@ set(LIB_SRC
     src/util/oauthconfigwidget.cpp
     src/util/qiconengineadapter.cpp
     src/util/qiconengineadapter.h
+    src/util/querypreprocessing.cpp
+    src/util/querypreprocessing.h
     src/util/standarditem.cpp
     src/util/systemutil.cpp
-
-    src/config.h.in
 )
 
 if (WIN32)

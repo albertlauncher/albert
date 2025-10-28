@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 
 #pragma once
-#include <QString>
 #include <albert/export.h>
+class QString;
 
 namespace albert
 {

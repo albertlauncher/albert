@@ -26,7 +26,7 @@ private:
     void updateTriggers();
 
     const QueryEngine &query_engine_;
-    std::map<QString, TriggerQueryHandler *> handler_triggers_;
+    std::map<QString, QueryHandler *> handler_triggers_;
     std::shared_mutex handler_triggers_mutex_;
     std::atomic_bool fuzzy_;
 

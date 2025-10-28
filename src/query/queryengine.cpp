@@ -6,13 +6,14 @@
 #include "globalqueryhandler.h"
 #include "logging.h"
 #include "queryengine.h"
-#include "queryexecution.h"
-#include "triggerqueryhandler.h"
+#include "queryprivate.h"
 #include "usagedatabase.h"
 #include "usagescoring.h"
 #include <QCoreApplication>
 #include <QMessageBox>
 #include <QSettings>
+using namespace Qt::StringLiterals;
+using namespace albert::detail;
 using namespace albert;
 using namespace std;
 
@@ -45,7 +46,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry)
     loadFallbackOrder();
 
     connect(&registry, &ExtensionRegistry::added, this, [this](Extension *e) {
-        if (auto *th = dynamic_cast<albert::TriggerQueryHandler*>(e))
+        if (auto *th = dynamic_cast<albert::QueryHandler*>(e))
         {
             auto sett = settings();
             sett->beginGroup(th->id());
@@ -61,12 +62,10 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry)
 
             if (auto *gh = dynamic_cast<albert::GlobalQueryHandler*>(th))
             {
-                auto en = settings()->value(QString("%1/%2")
-                                                .arg(gh->id(), CFG_GLOBAL_HANDLER_ENABLED),
-                                            true).toBool();
-                global_handlers_.emplace(piecewise_construct,
-                                         forward_as_tuple(gh->id()),
-                                         forward_as_tuple(gh, en));
+                global_handlers_.emplace(gh->id(), gh);
+                if (const auto cfg_key = u"%1/%2"_s.arg(gh->id(), CFG_GLOBAL_HANDLER_ENABLED);
+                    settings()->value(cfg_key, true).toBool())
+                    global_query_.global_query_handlers.emplace(gh->id(), gh);
             }
 
             emit handlerAdded();
@@ -79,7 +78,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry)
     });
 
     connect(&registry, &ExtensionRegistry::removed, this, [this](Extension *e) {
-        if (auto *th = dynamic_cast<albert::TriggerQueryHandler*>(e))
+        if (auto *th = dynamic_cast<albert::QueryHandler*>(e))
         {
             trigger_handlers_.erase(th->id());
             updateActiveTriggers();
@@ -142,43 +141,35 @@ UsageScoring QueryEngine::usageScoring() const
     return usage_scoring_;
 }
 
-unique_ptr<QueryExecution> QueryEngine::query(const QString &query)
+unique_ptr<detail::Query> QueryEngine::query(QString query_string)
 {
-    vector<FallbackHandler*> fhandlers;
-    for (const auto&[id, handler] : fallback_handlers_)
-        fhandlers.emplace_back(handler);
-
     for (const auto &[trigger, handler] : active_triggers_)
-        if (query.startsWith(trigger))
-            return make_unique<QueryExecution>(this, ::move(fhandlers), handler,
-                                               query.mid(trigger.size()), trigger);
+        if (query_string.startsWith(trigger))
+            return unique_ptr<detail::Query>(
+                new detail::Query(*this, *handler, trigger, query_string.mid(trigger.size())));
 
-    {
-        vector<albert::GlobalQueryHandler*> handlers;
-        for (const auto&[id, h] : global_handlers_)
-            if (h.enabled)
-                handlers.emplace_back(h.handler);
+    if (query_string.isEmpty())  // Null query indicates the "special empty query"
+        query_string = QString();
 
-        return make_unique<GlobalQuery>(this, ::move(fhandlers), ::move(handlers),
-                                        query == QStringLiteral("*")
-                                            ? QString("")
-                                            : query.isEmpty() ? QString{} : query);
-    }
+    if (query_string == u"*"_s)  // Asterisk runs the regular empty query
+        query_string = u""_s;
+
+    return unique_ptr<detail::Query>(new detail::Query(*this, global_query_, {}, query_string));
 }
 
 //
 // Trigger handlers
 //
 
-map<QString, TriggerQueryHandler*> QueryEngine::triggerHandlers()
+map<QString, QueryHandler*> QueryEngine::triggerHandlers()
 {
-    map<QString, albert::TriggerQueryHandler*> handlers;
+    map<QString, albert::QueryHandler*> handlers;
     for (const auto &[id, h] : trigger_handlers_)
         handlers.emplace(id, h.handler);
     return handlers;
 }
 
-const map<QString, TriggerQueryHandler *> &QueryEngine::activeTriggerHandlers() const
+const map<QString, QueryHandler *> &QueryEngine::activeTriggerHandlers() const
 { return active_triggers_; }
 
 void QueryEngine::updateActiveTriggers()
@@ -238,23 +229,27 @@ void QueryEngine::setFuzzy(const QString &id, bool f)
 
 map<QString, GlobalQueryHandler*> QueryEngine::globalHandlers()
 {
-    map<QString, albert::GlobalQueryHandler*> handlers;
-    for (const auto &[id, h] : global_handlers_)
-        handlers.emplace(id, h.handler);
-    return handlers;
+    return global_handlers_;
+    // map<QString, albert::GlobalQueryHandler*> handlers;
+    // for (const auto &[id, h] : global_handlers_)
+    //     handlers.emplace(id, h.handler);
+    // return handlers;
 }
 
 bool QueryEngine::isEnabled(const QString &id) const
-{ return global_handlers_.at(id).enabled; }
+{ return global_query_.global_query_handlers.contains(id); }
 
 void QueryEngine::setEnabled(const QString &id, bool e)
 {
-    auto &h = global_handlers_.at(id);
+    auto *h = global_handlers_.at(id);
 
-    if (h.enabled != e)
+    if (isEnabled(id) != e)
     {
         settings()->setValue(QString("%1/%2").arg(id, CFG_GLOBAL_HANDLER_ENABLED), e);
-        h.enabled = e;
+        if (e)
+            global_query_.global_query_handlers.emplace(id, h);
+        else
+            global_query_.global_query_handlers.erase(id);
     }
 }
 

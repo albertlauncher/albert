@@ -3,7 +3,7 @@
 #pragma once
 #include <QAbstractTableModel>
 class QueryEngine;
-namespace albert { class TriggerQueryHandler; }
+namespace albert { class QueryHandler; }
 
 class QueryHandlerModel : public QAbstractTableModel
 {
@@ -25,6 +25,6 @@ private:
     Qt::ItemFlags flags(const QModelIndex &idx) const override;
 
     QueryEngine &engine;
-    std::vector<albert::TriggerQueryHandler*> handlers_;
+    std::vector<albert::QueryHandler*> handlers_;
 
 };

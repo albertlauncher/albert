@@ -3,7 +3,7 @@
 
 #pragma once
 #include <albert/rankitem.h>
-#include <albert/triggerqueryhandler.h>
+#include <albert/threadedqueryhandler.h>
 #include <memory>
 #include <vector>
 
@@ -17,15 +17,15 @@ namespace albert
 /// global search. Use this if you want your results show up in the global
 /// search.
 ///
-/// By design choice every global query handler should also provide a trigger handler. To enforce
-/// this GlobalQueryHandler inherits \ref TriggerQueryHandler and implements the \ref
-/// TriggerQueryHandler::handleTriggerQuery.
+/// By design choice every global query handler should also provide an exclusive handler. To enforce
+/// this GlobalQueryHandler inherits \ref ThreadedQueryHandler and implements the \ref
+/// ThreadedQueryHandler::handleThreadedQuery.
 ///
 /// @note Do _not_ use this for long running tasks!
 ///
 /// \ingroup core
 ///
-class ALBERT_EXPORT GlobalQueryHandler : public albert::TriggerQueryHandler
+class ALBERT_EXPORT GlobalQueryHandler : public albert::ThreadedQueryHandler
 {
 public:
 
@@ -44,11 +44,15 @@ public:
     /// Returns a list of special items that should show up on an emtpy query.
     ///
     /// Empty patterns match everything. For triggered queries this is desired and by design lots of
-    /// handlers relay the handleTriggerQuery to handleGlobalQuery. For global queries this leads to
+    /// handlers relay the handleThreadedQuery to handleGlobalQuery. For global queries this leads to
     /// an expensive query execution on empty queries. Therefore the empty global query is not
     /// executed. This function allows dedicated empty global query handling.
     ///
     virtual std::vector<std::shared_ptr<Item>> handleEmptyQuery();
+
+protected:
+    /// Destructs the handler.
+    ~GlobalQueryHandler() override;
 
     ///
     /// Calls \ref handleGlobalQuery, \ref applyUsageScore, sorts and adds the items to _query_.
@@ -56,11 +60,7 @@ public:
     /// @note Reimplement if the handler should have custom triggered behavior.
     /// Think twice though, it may break user expectation.
     ///
-    void handleTriggerQuery(Query &query) override;
-
-protected:
-
-    ~GlobalQueryHandler() override;
+    void handleThreadedQuery(ThreadedQuery &query) override;
 
 };
 
