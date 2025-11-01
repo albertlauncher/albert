@@ -67,6 +67,9 @@
              <property name="text">
               <string>Hotkey</string>
              </property>
+             <property name="buddy">
+              <cstring>pushButton_hotkey</cstring>
+             </property>
             </widget>
            </item>
            <item row="0" column="1">
@@ -107,6 +110,9 @@
              <property name="text">
               <string>Addtional PATH entries</string>
              </property>
+             <property name="buddy">
+              <cstring>lineEdit_additional_path_entries</cstring>
+             </property>
             </widget>
            </item>
            <item row="3" column="0">
@@ -142,6 +148,9 @@
              </property>
              <property name="openExternalLinks">
               <bool>true</bool>
+             </property>
+             <property name="buddy">
+              <cstring>checkBox_telemetry</cstring>
              </property>
             </widget>
            </item>
@@ -313,10 +322,12 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>tabs</tabstop>
   <tabstop>pushButton_hotkey</tabstop>
   <tabstop>comboBox_frontend</tabstop>
+  <tabstop>lineEdit_additional_path_entries</tabstop>
   <tabstop>checkBox_showTray</tabstop>
+  <tabstop>checkBox_telemetry</tabstop>
+  <tabstop>tabs</tabstop>
  </tabstops>
  <resources>
   <include location="../../resources/resources.qrc"/>
