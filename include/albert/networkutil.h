@@ -3,13 +3,9 @@
 
 #pragma once
 #include <albert/export.h>
-#include <memory>
-class QByteArray;
 class QNetworkAccessManager;
 class QNetworkReply;
-class QNetworkRequest;
 class QString;
-class QUrlQuery;
 
 /// \defgroup util_net Network utility
 /// \ingroup util
@@ -42,30 +38,5 @@ ALBERT_EXPORT QString percentEncoded(const QString &string);
 ALBERT_EXPORT QString percentDecoded(const QString &string);
 
 /// @}
-
-}
-
-namespace albert::detail {
-
-///
-/// Blocks execution
-///
-class ALBERT_EXPORT RateLimiter
-{
-public:
-    RateLimiter(unsigned int ms);
-    ~RateLimiter();
-
-    ///
-    /// Blocks until the next request is allowed or `valid` is false.
-    ///
-    const bool &debounce(const bool &valid);
-
-private:
-
-    class Private;
-    std::unique_ptr<Private> d;
-
-};
 
 }

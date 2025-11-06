@@ -93,6 +93,7 @@ set(LIB_PUBLIC_HEADER
     include/albert/notification.h
     include/albert/oauth.h
     include/albert/oauthconfigwidget.h
+    include/albert/ratelimiter.h
     include/albert/standarditem.h
     include/albert/systemutil.h
     include/albert/timeit.h
@@ -194,6 +195,7 @@ set(LIB_SRC
     src/util/qiconengineadapter.h
     src/util/querypreprocessing.cpp
     src/util/querypreprocessing.h
+    src/util/ratelimiter.cpp
     src/util/standarditem.cpp
     src/util/systemutil.cpp
 )

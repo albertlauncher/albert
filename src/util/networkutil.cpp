@@ -5,11 +5,7 @@
 #include <QEventLoop>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QThread>
-#include <mutex>
-using namespace albert;
-using namespace std;
-
+#include <QUrl>
 
 QNetworkAccessManager &albert::network()
 {
@@ -28,39 +24,6 @@ QNetworkReply *albert::await(QNetworkReply *reply)
         loop.exec();
         return reply;
     }
-}
-
-class detail::RateLimiter::Private
-{
-public:
-    const uint interval;
-    mutex m;
-    long long block_until = 0;
-
-};
-
-detail::RateLimiter::RateLimiter(unsigned int interval) :
-    d(make_unique<Private>(interval))
-{
-}
-
-detail::RateLimiter::~RateLimiter() = default;
-
-const bool &detail::RateLimiter::debounce(const bool &valid)
-{
-    auto now = QDateTime::currentMSecsSinceEpoch();
-
-    unique_lock lock(d->m);
-
-    while (d->block_until > QDateTime::currentMSecsSinceEpoch())
-        if (valid)
-            QThread::msleep(10);
-        else
-            return valid;
-
-    d->block_until = now + 1000;
-
-    return valid;
 }
 
 QString albert::percentEncoded(const QString &string)
