@@ -96,9 +96,6 @@
 [submodule "plugins/websearch"]
 	path = plugins/websearch
 	url = https://github.com/albertlauncher/albert-plugin-websearch.git
-[submodule "plugins/widgetsboxmodel-qss"]
-	path = plugins/widgetsboxmodel-qss
-	url = https://github.com/albertlauncher/albert-plugin-widgetsboxmodel-qss.git
 [submodule "plugins/widgetsboxmodel"]
 	path = plugins/widgetsboxmodel
 	url = https://github.com/albertlauncher/albert-plugin-widgetsboxmodel.git
