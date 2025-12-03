@@ -61,6 +61,3 @@ void albert::showSettings(QString plugin_id)
 
 const albert::ExtensionRegistry &albert::extensionRegistry()
 { return App::instance()->extensionRegistry(); }
-
-albert::UsageScoring albert::usageScoring()
-{ return App::instance()->queryEngine().usageScoring(); }

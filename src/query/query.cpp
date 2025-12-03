@@ -4,6 +4,7 @@
 #include "queryhandler.h"
 #include "queryprivate.h"
 #include "queryresults.h"
+#include "usagescoring.h"
 #include <memory>
 #include <vector>
 using namespace albert::detail;
@@ -12,6 +13,8 @@ using namespace std;
 class Query::Private
 {
 public:
+    UsageScoring usage_scoring;
+
     atomic_bool valid;
     QueryHandler &handler;
     QString trigger;
@@ -23,11 +26,13 @@ public:
     std::unique_ptr<QueryExecution> execution;
 };
 
-Query::Query(vector<QueryResult> &&fallbacks,
+Query::Query(UsageScoring usage_scoring,
+             vector<QueryResult> &&fallbacks,
              QueryHandler &handler,
              QString trigger,
              QString string) :
-    d(new Private{.valid = true,
+    d(new Private{.usage_scoring = ::move(usage_scoring),
+                  .valid = true,
                   .handler = handler,
                   .trigger = trigger,
                   .string = string,
@@ -53,6 +58,8 @@ Query::~Query()
     // If not deleted early, Query::d is under destruction while destructing Query::execution.
     d->execution.reset();
 }
+
+const albert::UsageScoring &Query::usageScoring() const { return d->usage_scoring; }
 
 QString Query::trigger() const { return d->trigger; }
 

@@ -27,6 +27,7 @@ private:
     const albert::QueryHandler &handler() const override;
     QString string() const override;
     QString trigger() const override;
+    const albert::UsageScoring &usageScoring() const override;
 
     // ThreadedQuery
     std::lock_guard<std::mutex> getLock() override;

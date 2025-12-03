@@ -66,6 +66,8 @@ QString ThreadedQueryExecution::string() const { return query.string(); }
 
 QString ThreadedQueryExecution::trigger() const { return query.trigger(); }
 
+const UsageScoring &ThreadedQueryExecution::usageScoring() const { return query.usageScoring(); }
+
 lock_guard<mutex> ThreadedQueryExecution::getLock() { return lock_guard(match_buffer_mutex); }
 
 vector<shared_ptr<Item>> &ThreadedQueryExecution::matches() { return match_buffer; }

@@ -198,3 +198,6 @@ void GlobalQueryExecution::addResultChunk()
     // Ensure unfetched_rank_items integrity _before adding_!
     results.add(::move(taken));
 }
+
+const albert::UsageScoring &GlobalQueryExecution::usageScoring() const
+{ return query.usageScoring(); }

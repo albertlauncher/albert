@@ -11,6 +11,7 @@
 namespace albert {
 class GlobalQueryHandler;
 class QueryResults;
+class UsageScoring;
 }
 
 class GlobalQueryResult : public albert::RankItem
@@ -41,6 +42,7 @@ private:
     const albert::QueryHandler &handler() const override;
     QString string() const override;
     QString trigger() const override;
+    const albert::UsageScoring &usageScoring() const override;
 
     // albert::QueryExecution
     void cancel() override;

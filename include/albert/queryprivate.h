@@ -9,6 +9,7 @@ class QueryEngine;
 namespace albert
 {
 class QueryHandler;
+class QueryResult;
 class QueryResults;
 class QueryExecution;
 }  // namespace albert
@@ -21,7 +22,8 @@ class ALBERT_EXPORT Query : public albert::Query
 {
 public:
     /// Constructs a query.
-    Query(std::vector<albert::QueryResult> &&fallbacks,
+    Query(UsageScoring usage_scoring,
+          std::vector<albert::QueryResult> &&fallbacks,
           QueryHandler &handler,
           QString trigger,
           QString string);
@@ -40,6 +42,9 @@ public:
 
     /// \copydoc albert::Query::string
     QString string() const override;
+
+    /// \copydoc albert::Query::usageScoring
+    const UsageScoring &usageScoring() const override;
 
     /// Returns the execution of this query if running; else nullptr.
     QueryExecution &execution() const;

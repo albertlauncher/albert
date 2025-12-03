@@ -93,13 +93,6 @@ ALBERT_EXPORT std::unique_ptr<QSettings> state();
 ///
 ALBERT_EXPORT const ExtensionRegistry &extensionRegistry();
 
-///
-/// Returns the global usage scoring.
-///
-/// This function is thread-safe.
-///
-ALBERT_EXPORT UsageScoring usageScoring();
-
 /// @}
 
 } // namespace albert

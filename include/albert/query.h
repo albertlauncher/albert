@@ -12,6 +12,7 @@
 namespace albert
 {
 class QueryHandler;
+class UsageScoring;
 
 ///
 /// Query interface.
@@ -33,6 +34,9 @@ public:
 
     /// Returns the query string excluding the trigger.
     virtual QString string() const = 0;
+
+    /// Returns the usage scoring.
+    virtual const UsageScoring &usageScoring() const = 0;
 
     /// Implicit QString context conversion.
     operator QString() const { return string(); }

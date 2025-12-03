@@ -99,7 +99,6 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry)
 
 void QueryEngine::setMemoryDecay(double v)
 {
-    lock_guard lock(usage_scoring_mutex_);
     if (usage_scoring_.memory_decay != v)
     {
         DEBG << "memoryDecay set to" << v;
@@ -112,7 +111,6 @@ void QueryEngine::setMemoryDecay(double v)
 
 void QueryEngine::setPrioritizePerfectMatch(bool v)
 {
-    lock_guard lock(usage_scoring_mutex_);
     if (usage_scoring_.prioritize_perfect_match != v)
     {
         DEBG << "prioritizePerfectMatch set to" << v;
@@ -128,7 +126,6 @@ void QueryEngine::storeItemActivation(const QString &query, const QString &exten
 
     auto scores = UsageDatabase::instance().itemUsageScores(usage_scoring_.memory_decay);
 
-    lock_guard lock(usage_scoring_mutex_);
     usage_scoring_ = UsageScoring(
         usage_scoring_.prioritize_perfect_match,
         usage_scoring_.memory_decay,
@@ -138,7 +135,6 @@ void QueryEngine::storeItemActivation(const QString &query, const QString &exten
 
 UsageScoring QueryEngine::usageScoring() const
 {
-    shared_lock lock(usage_scoring_mutex_);
     return usage_scoring_;
 }
 
@@ -157,21 +153,18 @@ unique_ptr<detail::Query> QueryEngine::query(QString string)
         trigger = it->first;
         handler = it->second;
         string = string.mid(trigger.size());
-
-        return unique_ptr<detail::Query>(
-            new detail::Query(::move(fallbacks), *handler, trigger, string));
     }
     else
     {
         if (string.isEmpty())  // Null query indicates the "special empty query"
             string = QString();
-
-        if (string == u"*"_s)  // Asterisk runs the regular empty query
+        else if (string == u"*"_s)  // Asterisk runs the regular empty query
             string = u""_s;
-
-        return unique_ptr<detail::Query>(
-            new detail::Query(::move(fallbacks), global_query_, trigger, string));
+        handler = &global_query_;
     }
+
+    return unique_ptr<detail::Query>(
+        new detail::Query(usage_scoring_, ::move(fallbacks), *handler, trigger, string));
 }
 
 //
