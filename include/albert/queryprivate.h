@@ -21,7 +21,10 @@ class ALBERT_EXPORT Query : public albert::Query
 {
 public:
     /// Constructs a query.
-    Query(QueryEngine &engine, QueryHandler &handler, QString trigger, QString string);
+    Query(std::vector<albert::QueryResult> &&fallbacks,
+          QueryHandler &handler,
+          QString trigger,
+          QString string);
 
     /// Destructs the query.
     ~Query();

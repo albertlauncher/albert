@@ -6,6 +6,7 @@
 #include "globalqueryhandler.h"
 #include "logging.h"
 #include "queryengine.h"
+#include "queryresults.h"
 #include "queryprivate.h"
 #include "usagedatabase.h"
 #include "usagescoring.h"
@@ -141,20 +142,36 @@ UsageScoring QueryEngine::usageScoring() const
     return usage_scoring_;
 }
 
-unique_ptr<detail::Query> QueryEngine::query(QString query_string)
+unique_ptr<detail::Query> QueryEngine::query(QString string)
 {
-    for (const auto &[trigger, handler] : active_triggers_)
-        if (query_string.startsWith(trigger))
-            return unique_ptr<detail::Query>(
-                new detail::Query(*this, *handler, trigger, query_string.mid(trigger.size())));
+    vector<QueryResult> fallbacks;
+    if (!string.isEmpty())
+        fallbacks = this->fallbacks(string);
 
-    if (query_string.isEmpty())  // Null query indicates the "special empty query"
-        query_string = QString();
+    QString trigger;
+    albert::QueryHandler *handler;
+    if (auto it = ranges::find_if(active_triggers_.cbegin(), active_triggers_.cend(),
+                                  [&](const auto &t){ return string.startsWith(t.first); });
+        it != active_triggers_.cend())
+    {
+        trigger = it->first;
+        handler = it->second;
+        string = string.mid(trigger.size());
 
-    if (query_string == u"*"_s)  // Asterisk runs the regular empty query
-        query_string = u""_s;
+        return unique_ptr<detail::Query>(
+            new detail::Query(::move(fallbacks), *handler, trigger, string));
+    }
+    else
+    {
+        if (string.isEmpty())  // Null query indicates the "special empty query"
+            string = QString();
 
-    return unique_ptr<detail::Query>(new detail::Query(*this, global_query_, {}, query_string));
+        if (string == u"*"_s)  // Asterisk runs the regular empty query
+            string = u""_s;
+
+        return unique_ptr<detail::Query>(
+            new detail::Query(::move(fallbacks), global_query_, trigger, string));
+    }
 }
 
 //
@@ -261,7 +278,7 @@ void QueryEngine::setEnabled(const QString &id, bool e)
 map<QString, FallbackHandler*> QueryEngine::fallbackHandlers()
 { return fallback_handlers_; }
 
-map<pair<QString,QString>,int> QueryEngine::fallbackOrder() const
+const map<pair<QString,QString>,int> &QueryEngine::fallbackOrder() const
 { return fallback_order_; }
 
 void QueryEngine::setFallbackOrder(map<pair<QString,QString>,int> order)
@@ -328,4 +345,25 @@ void QueryEngine::loadFallbackOrder()
     uint rank = 1;
     for (auto it = o.rbegin(); it != o.rend(); ++it, ++rank)
         fallback_order_.emplace(*it, rank);
+}
+
+vector<QueryResult> QueryEngine::fallbacks(const QString &query)
+{
+    vector<pair<FallbackHandler*, RankItem>> fallbacks;
+
+    for (auto &[id, fallback_handler] : fallback_handlers_)
+        for (auto item : fallback_handler->fallbacks(query))
+            if (auto it = fallbackOrder().find(make_pair(id, item->id()));
+                it == fallbackOrder().end())
+                fallbacks.emplace_back(fallback_handler, RankItem(::move(item), 0));
+            else
+                fallbacks.emplace_back(fallback_handler, RankItem(::move(item), it->second));
+
+    ranges::sort(fallbacks, greater(), &decltype(fallbacks)::value_type::second);
+
+    auto view = fallbacks | views::transform([](auto &p) {
+                         return QueryResult{p.first, ::move(p.second.item)};
+                     });
+
+    return {begin(view), end(view)};
 }

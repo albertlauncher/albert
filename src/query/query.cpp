@@ -1,15 +1,10 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
-#include "fallbackhandler.h"
-#include "logging.h"
-#include "queryengine.h"
 #include "queryexecution.h"
 #include "queryhandler.h"
 #include "queryprivate.h"
 #include "queryresults.h"
-#include "rankitem.h"
 #include <memory>
-#include <ranges>
 #include <vector>
 using namespace albert::detail;
 using namespace std;
@@ -17,8 +12,6 @@ using namespace std;
 class Query::Private
 {
 public:
-    QueryEngine &query_engine;
-
     atomic_bool valid;
     QueryHandler &handler;
     QString trigger;
@@ -30,12 +23,11 @@ public:
     std::unique_ptr<QueryExecution> execution;
 };
 
-Query::Query(QueryEngine &query_engine,
+Query::Query(vector<QueryResult> &&fallbacks,
              QueryHandler &handler,
              QString trigger,
              QString string) :
-    d(new Private{.query_engine=query_engine,
-                  .valid = true,
+    d(new Private{.valid = true,
                   .handler = handler,
                   .trigger = trigger,
                   .string = string,
@@ -43,26 +35,7 @@ Query::Query(QueryEngine &query_engine,
                   .fallbacks = {*this},
                   .execution = {}})
 {
-    if (!(trigger.isEmpty() && string.isEmpty()))  // TODO redesign fallbacks
-    {
-        const auto &order = d->query_engine.fallbackOrder();
-
-        vector<pair<FallbackHandler*, RankItem>> fallbacks;
-
-        for (auto &[id, fallback_handler] : d->query_engine.fallbackHandlers())
-            for (auto item : fallback_handler->fallbacks(d->trigger + d->string))
-                if (auto it = order.find(make_pair(id, item->id()));
-                    it == order.end())
-                    fallbacks.emplace_back(fallback_handler, RankItem(::move(item), 0));
-                else
-                    fallbacks.emplace_back(fallback_handler, RankItem(::move(item), it->second));
-
-        ranges::sort(fallbacks, greater(), &decltype(fallbacks)::value_type::second);
-
-        d->fallbacks.add(fallbacks | views::transform([](auto &p) {
-                             return QueryResult{p.first, ::move(p.second.item)};
-                         }));
-    }
+    d->fallbacks.add(::move(fallbacks));
 
     // CRUCIAL: Instantiate execution here.
     // Do NOT construct the exection before query instance is constructed completely.

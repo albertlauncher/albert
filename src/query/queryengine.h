@@ -13,6 +13,7 @@ class FallbackHandler;
 class GlobalQueryHandler;
 class QueryHandler;
 class UsageScoring;
+class QueryResult;
 namespace detail { class Query; }
 }
 
@@ -48,7 +49,7 @@ public:
     void setEnabled(const QString&, bool = true);
 
     // Fallback handlers
-    std::map<std::pair<QString, QString>, int> fallbackOrder() const;
+    const std::map<std::pair<QString, QString>, int> &fallbackOrder() const;
     void setFallbackOrder(std::map<std::pair<QString, QString>, int>);
 
 private:
@@ -56,6 +57,7 @@ private:
     void updateActiveTriggers();
     void saveFallbackOrder() const;
     void loadFallbackOrder();
+    std::vector<albert::QueryResult> fallbacks(const QString &query);
 
     albert::ExtensionRegistry &registry_;
 
