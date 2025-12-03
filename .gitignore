@@ -3,4 +3,5 @@
 /build*
 /documentation
 justfile
+/.qtcreator
 
