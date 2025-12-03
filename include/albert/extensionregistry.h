@@ -55,7 +55,7 @@ public:
     ///
     /// Get extension by id implicitly dynamic_cast'ed to type T.
     ///
-    template<typename T> T* extension(const QString &id)
+    template<typename T> T* extension(const QString &id) const
     {
         try {
             return dynamic_cast<T*>(extensions_.at(id));
