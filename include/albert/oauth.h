@@ -16,6 +16,8 @@ namespace albert
 /// Provides OAuth2 authentication with support for the Authorization Code Flow with PKCE and
 /// refresh tokens.
 ///
+/// See also \ref OAuthConfigWidget.
+///
 /// \ingroup util_net
 ///
 class ALBERT_EXPORT OAuth2 : public QObject

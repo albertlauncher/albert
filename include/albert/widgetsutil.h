@@ -9,10 +9,6 @@
 #include <QString>
 #include <albert/export.h>
 
-/// \defgroup util_ui Widget utilities
-/// \ingroup util
-/// Utility classes and helper functions for UI related tasks.
-
 namespace albert
 {
 

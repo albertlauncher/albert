@@ -21,7 +21,7 @@ namespace albert
 ///
 /// @sa \ref Matcher
 ///
-/// \ingroup query_util
+/// \ingroup util_query
 ///
 class ALBERT_EXPORT Match final
 {
@@ -89,7 +89,7 @@ private:
 ///
 /// @sa \ref MatchConfig, \ref Match
 ///
-/// \ingroup query_util
+/// \ingroup util_query
 ///
 class ALBERT_EXPORT Matcher final
 {

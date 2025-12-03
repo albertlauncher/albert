@@ -14,7 +14,7 @@ namespace albert
 ///
 /// \sa \ref Matcher, \ref IndexQueryHandler
 ///
-/// \ingroup query_util
+/// \ingroup util_query
 ///
 class ALBERT_EXPORT MatchConfig
 {

@@ -59,7 +59,7 @@ private:
 /// be reordered or if you want to display your items of a long running query
 /// as soon as they are available.
 ///
-/// \ingroup core
+/// \ingroup util_query
 ///
 class ALBERT_EXPORT ThreadedQueryHandler : public QueryHandler
 {

@@ -14,7 +14,7 @@ namespace albert
 ///
 /// Controls the execution of a query, reports busy state and allows to fetch results on demand.
 ///
-/// \ingroup core
+/// \ingroup core_query
 ///
 class ALBERT_EXPORT QueryExecution : public QObject
 {

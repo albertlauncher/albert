@@ -4,8 +4,44 @@
 /// \defgroup core Core API
 /// Core classes and functions.
 
+/// \defgroup core_extension Extension
+/// Extension system and built-in extension interfaces classes.
+/// \ingroup core
+
+/// \defgroup core_plugin Plugin system
+/// \ingroup core
+/// Classes and functions of the plugin system.
+
+/// \defgroup core_query Query handling
+/// \ingroup core
+/// Classes and functions of the query system.
+
 /// \defgroup util Utility API
 /// Utility classes and helper functions.
+
+/// \defgroup util_plugin Plugin
+/// \ingroup util
+/// Utility for plugins.
+
+/// \defgroup util_query Query
+/// \ingroup util
+/// Utility for indexing and query handling.
+
+/// \defgroup util_icon Icon
+/// \ingroup util
+/// Utility for icon factories.
+
+/// \defgroup util_net Network
+/// \ingroup util
+/// Network utility.
+
+/// \defgroup util_system System
+/// \ingroup util
+/// System/Desktop utility.
+
+/// \defgroup util_ui UI
+/// \ingroup util
+/// UI utility.
 
 #pragma once
 #include <QString>

@@ -17,7 +17,7 @@ namespace albert
 /// listening to the signals added/removed or any particular extension
 /// interface using ExtensionWatcher.
 ///
-/// \ingroup plugin
+/// \ingroup core_extension
 ///
 class ALBERT_EXPORT ExtensionRegistry : public QObject
 {

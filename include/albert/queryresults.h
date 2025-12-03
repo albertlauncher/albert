@@ -17,7 +17,7 @@ class Extension;
 ///
 /// Result item associating an item with an extension.
 ///
-/// \ingroup core
+/// \ingroup core_query
 ///
 class ALBERT_EXPORT QueryResult
 {
@@ -31,7 +31,7 @@ public:
 ///
 /// Holds the results of a \ref Query and emits signals as expected by the UI models.
 ///
-/// \ingroup core
+/// \ingroup core_query
 ///
 class ALBERT_EXPORT QueryResults : public QObject, private Item::Observer
 {

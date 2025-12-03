@@ -12,9 +12,9 @@ class PluginInstance;
 class PluginMetadata;
 
 ///
-/// Asynchronous plugin loader turning a physical plugin into a logical \ref PluginInstance.
+/// Asynchronous plugin loader turning a physical plugin into a logical plugin instance.
 ///
-/// \ingroup plugin
+/// \ingroup core_plugin
 ///
 class ALBERT_EXPORT PluginLoader : public QObject
 {

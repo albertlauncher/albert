@@ -12,27 +12,20 @@ namespace albert
 {
 
 ///
-/// A GlobalQueryHandler providing implicit indexing and matching.
+/// A \ref GlobalQueryHandler providing implicit indexing and matching.
 ///
-/// \ingroup query_util
+/// \ingroup util_query
 ///
 class ALBERT_EXPORT IndexQueryHandler : public GlobalQueryHandler
 {
 public:
-
-    ///
     /// Returns `true`
-    ///
     bool supportsFuzzyMatching() const override;
 
-    ///
     /// Sets the fuzzy matching mode to _enabled_ and triggers \ref updateIndexItems().
-    ///
     void setFuzzyMatching(bool enabled) override;
 
-    ///
     /// Returns the matching items from the index.
-    ///
     std::vector<RankItem> handleGlobalQuery(Query &) override;
 
     ///
@@ -47,25 +40,17 @@ public:
     ///
     virtual void updateIndexItems() = 0;
 
-    ///
     /// Sets the items of the index to _items_.
-    ///
     void setIndexItems(std::vector<IndexItem> &&items);
 
 protected:
-
-    ///
     /// Constructs an index query handler.
-    ///
     IndexQueryHandler();
 
-    ///
     /// Destructs the index query handler.
-    ///
     ~IndexQueryHandler() override;
 
 private:
-
     class Private;
     std::unique_ptr<Private> d;
 

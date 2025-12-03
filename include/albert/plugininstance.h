@@ -1,9 +1,6 @@
 // SPDX-FileCopyrightText: 2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
-/// \defgroup plugin Plugin API
-/// Classes and functions related to the plugin system.
-
 #pragma once
 #include <QObject>
 #include <QString>
@@ -25,7 +22,7 @@ class PluginLoader;
 ///
 /// The class every plugin has to inherit.
 ///
-/// \ingroup plugin
+/// \ingroup core_plugin
 ///
 class ALBERT_EXPORT PluginInstance : public QObject
 {

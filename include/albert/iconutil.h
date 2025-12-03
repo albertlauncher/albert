@@ -9,10 +9,6 @@
 class QIcon;
 class QBrush;
 
-/// \defgroup util_icon Icon utility
-/// \ingroup util
-/// Icon utility classes and helper functions.
-
 namespace albert
 {
 

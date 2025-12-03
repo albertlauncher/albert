@@ -11,7 +11,7 @@ namespace albert
 ///
 /// Common plugin metadata.
 ///
-/// \ingroup plugin
+/// \ingroup core_plugin
 ///
 class ALBERT_EXPORT PluginMetadata
 {

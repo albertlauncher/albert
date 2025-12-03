@@ -23,7 +23,7 @@ namespace albert
 ///
 /// @note Do _not_ use this for long running tasks!
 ///
-/// \ingroup core
+/// \ingroup core_extension
 ///
 class ALBERT_EXPORT GlobalQueryHandler : public albert::ThreadedQueryHandler
 {

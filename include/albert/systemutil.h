@@ -14,7 +14,7 @@ namespace albert
 {
 
 /// @name System utility
-/// @addtogroup core
+/// @addtogroup util_system
 /// @{
 
 ///
@@ -24,29 +24,19 @@ namespace albert
 ///
 ALBERT_EXPORT void openUrl(const QString &url);
 
-///
 /// Opens _url_ with the default handler for the scheme.
-///
 ALBERT_EXPORT void open(const QUrl &url);
 
-///
 /// Opens a file at _path_ with the associated default application.
-///
 ALBERT_EXPORT void open(const QString &path);
 
-///
 /// Opens a file at _path_ with the associated default application.
-///
 ALBERT_EXPORT void open(const std::filesystem::path &path);
 
-///
 /// Sets the system clipboard to _text_.
-///
 ALBERT_EXPORT void setClipboardText(const QString &text);
 
-///
 /// Returns the `true` if the platform supports pasting, else `false`.
-///
 ALBERT_EXPORT bool havePasteSupport();
 
 ///
@@ -74,7 +64,6 @@ ALBERT_EXPORT long long runDetachedProcess(const QStringList &commandline);
 ALBERT_EXPORT long long runDetachedProcess(const QStringList &commandline, const QString &working_dir);
 
 /// Returns a QString representation of _path_.
-///
 ALBERT_EXPORT QString toQString(const std::filesystem::path &path);
 
 #ifdef Q_OS_MAC

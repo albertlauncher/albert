@@ -13,7 +13,7 @@ namespace albert
 ///
 /// An item utlized by ItemIndex
 ///
-/// \ingroup query_util
+/// \ingroup util_query
 ///
 class ALBERT_EXPORT IndexItem
 {

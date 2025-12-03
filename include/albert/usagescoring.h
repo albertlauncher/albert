@@ -23,7 +23,7 @@ struct ALBERT_EXPORT ItemKey
 ///
 /// Modifies match scores according to user usage history and preferences.
 ///
-/// \ingroup core
+/// \ingroup core_query
 ///
 class ALBERT_EXPORT UsageScoring
 {

@@ -12,7 +12,7 @@ class PluginLoader;
 ///
 /// Plugin provider interface class.
 ///
-/// \ingroup plugin
+/// \ingroup core_extension
 ///
 class ALBERT_EXPORT PluginProvider : virtual public Extension
 {

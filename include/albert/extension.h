@@ -13,12 +13,11 @@ namespace albert
 ///
 /// Inherited by classes that want to join the extensions pool of the \ref ExtensionRegistry.
 ///
-/// \ingroup plugin
+/// \ingroup core_extension
 ///
 class ALBERT_EXPORT Extension
 {
 public:
-
     ///
     /// Returns the extension identifier.
     ///
@@ -38,13 +37,10 @@ public:
     virtual QString description() const = 0;
 
 protected:
-
     ///
     /// Destructs the extension.
     ///
     virtual ~Extension();
-
 };
 
-}
-
+}  // namespace albert

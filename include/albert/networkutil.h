@@ -7,10 +7,6 @@ class QNetworkAccessManager;
 class QNetworkReply;
 class QString;
 
-/// \defgroup util_net Network utility
-/// \ingroup util
-/// Utility classes and helper functions for network related tasks.
-
 namespace albert
 {
 

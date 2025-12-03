@@ -16,7 +16,7 @@ namespace albert
 /// URLs with the host matching this extension's id are passed to the \ref handle() method.
 /// E.g. the URL `albert://github/?…` will be redirected to the GitHub extension.
 ///
-/// \ingroup core
+/// \ingroup core_extension
 ///
 class ALBERT_EXPORT UrlHandler : virtual public Extension
 {

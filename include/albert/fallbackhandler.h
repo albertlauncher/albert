@@ -16,7 +16,7 @@ class Item;
 ///
 /// Abstract fallback item provider.
 ///
-/// \ingroup core
+/// \ingroup core_extension
 ///
 class ALBERT_EXPORT FallbackHandler : virtual public Extension
 {

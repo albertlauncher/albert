@@ -14,7 +14,7 @@ namespace albert
 ///
 /// Implements pure virtual functions of \ref Extension and \ref PluginInstance.
 ///
-/// \ingroup plugin
+/// \ingroup util_plugin
 ///
 class ALBERT_EXPORT ExtensionPlugin : public PluginInstance,
                                       virtual public Extension

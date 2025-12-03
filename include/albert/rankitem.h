@@ -14,7 +14,7 @@ namespace albert
 ///
 /// Used to rank item results of mutliple handlers
 ///
-/// \ingroup core
+/// \ingroup core_query
 ///
 class ALBERT_EXPORT RankItem
 {

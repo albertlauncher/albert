@@ -32,7 +32,7 @@ protected:
 };
 
 ///
-/// Convenience holder class for plugin hard dependencies.
+/// Convenience holder class for hard plugin dependencies.
 ///
 /// Fetches and holds a weak pointer an extension `id` of type `T`. This class is intended to be
 /// initialized on plugin constuction without a try-catch block.
@@ -40,7 +40,7 @@ protected:
 /// @note Hard dependencies have to be listed in the plugin metadata, such that the plugin loader is
 /// able to manage the loading order.
 ///
-/// \ingroup plugin
+/// \ingroup util_plugin
 ///
 template<class T>
 class ALBERT_EXPORT StrongDependency final : public Dependency<T>
@@ -78,7 +78,7 @@ public:
 
 
 ///
-/// Convenience holder class for plugin soft dependencies.
+/// Convenience holder class for soft plugin dependencies.
 ///
 /// Watches for (de)registration of an extension `id` of type `T`. On (de)registration of the
 /// dependency the pointer is updated and the callback called.
@@ -88,7 +88,7 @@ public:
 /// accessed while a session query is running. Take care though if you defer the execution of
 /// the action using a timer or similar.
 ///
-/// \ingroup plugin
+/// \ingroup util_plugin
 ///
 template<class T>
 class ALBERT_EXPORT WeakDependency final : public Dependency<T>

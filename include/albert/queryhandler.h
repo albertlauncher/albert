@@ -15,18 +15,18 @@ class QueryExecution;
 class QueryResults;
 
 ///
-/// Abstract asynchronous query handler.
+/// Qt native, asynchronous and lazy query handler.
 ///
 /// This class is the base of the query handling API. Besides general properties and methods
 /// related to query handling and its user configuration it defines the abstract \ref
 /// QueryExecution factory \ref execution.
 ///
-/// Since you are supposed to handle the query **asynchonously** and **lazy**, implementing \ref
-/// execution is relatively complex. If you dont need that, e.g. because your handler is CPU
-/// bound, use the subclasses that sacrifice some of the power of the asychronous API for ease
-/// of development.
+/// When deriving this class you are supposed to handle the query asynchonously and lazily
+/// the native Qt way by implementing \ref execution. Compared to the convenience subclasses this
+/// is complex. Implement this class only if you know that you have to. Otherwise see \ref
+/// AsyncGeneratorQueryHandler or its subclasses.
 ///
-/// \ingroup core
+/// \ingroup core_extension
 ///
 class ALBERT_EXPORT QueryHandler : virtual public Extension
 {

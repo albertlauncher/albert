@@ -14,7 +14,7 @@ class Icon;
 ///
 /// Action used by result items (\ref Item).
 ///
-/// \ingroup core
+/// \ingroup core_query
 ///
 class ALBERT_EXPORT Action final
 {
@@ -65,7 +65,7 @@ public:
 ///
 /// Result items displayed in the query results list
 ///
-/// \ingroup core
+/// \ingroup core_query
 ///
 class ALBERT_EXPORT Item
 {

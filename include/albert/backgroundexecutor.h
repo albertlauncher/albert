@@ -15,7 +15,7 @@ namespace albert
 ///
 /// Takes care of the QtConcurrent boilerplate code to start, abort and schedule restarts of threads.
 ///
-/// \ingroup query_util
+/// \ingroup util_query
 ///
 template<typename T>
 class BackgroundExecutor

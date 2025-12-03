@@ -14,7 +14,7 @@ namespace albert
 /// This is basically a wrapper around the QNotification class.
 /// @see https://github.com/QtCommunity/QNotification
 ///
-/// \ingroup util_net
+/// \ingroup util_system
 ///
 class ALBERT_EXPORT Notification final : public QObject
 {

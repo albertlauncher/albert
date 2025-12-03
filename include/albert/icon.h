@@ -16,7 +16,9 @@ namespace albert
 ///
 /// Abstract icon engine.
 ///
-/// \ingroup core
+/// See also the topic on \ref util_icon "icon utility".
+///
+/// \ingroup core_query
 ///
 class ALBERT_EXPORT Icon
 {

@@ -13,7 +13,7 @@ namespace albert
 ///
 /// General purpose \ref Item implementation.
 ///
-/// \ingroup query_util
+/// \ingroup util_query
 ///
 class ALBERT_EXPORT StandardItem : public Item
 {

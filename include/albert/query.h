@@ -1,10 +1,6 @@
 // SPDX-FileCopyrightText: 2025 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
-/// \defgroup query_util Query utility API
-/// \ingroup util
-/// Utility classes and helper functions for query related tasks.
-
 #pragma once
 #include <QString>
 #include <albert/export.h>
@@ -17,7 +13,7 @@ class UsageScoring;
 ///
 /// Query interface.
 ///
-/// \ingroup core
+/// \ingroup core_query
 ///
 class ALBERT_EXPORT Query
 {
