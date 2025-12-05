@@ -1,10 +1,8 @@
 // Copyright (c) 2023-2025 Manuel Schneider
 
-#include "application.h"
 #include "logging.h"
 #include "messagebox.h"
 #include "query.h"
-#include "queryengine.h"
 #include "queryresults.h"
 using namespace albert;
 using namespace std;
@@ -17,7 +15,7 @@ QueryResults::~QueryResults()
         result_item.item->removeObserver(this);
 }
 
-bool QueryResults::activate(uint item_idx, uint action_idx) const
+bool QueryResults::activate(uint item_idx, uint action_idx)
 {
     try {
         auto &[e, i] = results.at(item_idx);
@@ -30,7 +28,7 @@ bool QueryResults::activate(uint item_idx, uint action_idx) const
 
             // Order is cumbersome here
 
-            Application::instance().queryEngine().storeItemActivation(query, e->id(), i->id(), a.id);
+            emit resultActivated(query, e->id(), i->id(), a.id);
 
             // May delete the query, due to hide()
             // Note to myself:

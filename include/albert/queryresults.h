@@ -55,7 +55,7 @@ public:
     inline uint count() const { return results.size(); }
 
     /// Activates the action at _action_index_ of the result item at _item_index_.
-    bool activate(uint item_index, uint action_index = 0) const;
+    bool activate(uint item_index, uint action_index = 0);
 
     ///
     /// Appends a \ref QueryResult constructed from _extension_ and _item_.
@@ -175,6 +175,9 @@ signals:
 
     /// Emitted when a result changed.
     void resultChanged(uint i);
+
+    /// Emitted when a result was activated.
+    void resultActivated(QString query, QString extension_id, QString item_id, QString action_id);
 
 private:
 

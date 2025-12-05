@@ -163,8 +163,16 @@ unique_ptr<detail::Query> QueryEngine::query(QString string)
         handler = &global_query_;
     }
 
-    return unique_ptr<detail::Query>(
+    auto query = unique_ptr<detail::Query>(
         new detail::Query(usage_scoring_, ::move(fallbacks), *handler, trigger, string));
+
+    connect(&query->matches(), &QueryResults::resultActivated,
+            this, &QueryEngine::storeItemActivation);
+
+    connect(&query->fallbacks(), &QueryResults::resultActivated,
+            this, &QueryEngine::storeItemActivation);
+
+    return query;
 }
 
 //
