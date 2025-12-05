@@ -58,8 +58,7 @@ Telemetry::Telemetry(albert::ExtensionRegistry &registry):
         settings()->setValue(CFG_TELEMETRY_ENABLED, enable);
     }
 
-    QObject::connect(&timer, &QTimer::timeout,
-                     &timer, [this] { trySendReport(); });
+    connect(&timer, &QTimer::timeout, this, [this] { trySendReport(); });
 
     timer.start(60000);  // every minute
 }
@@ -83,7 +82,7 @@ void Telemetry::trySendReport()
     DEBG << "trySendReport" << buildReportString();
     auto *reply = network().put(request, buildReport().toJson(QJsonDocument::Compact));
 
-    QObject::connect(reply, &QNetworkReply::finished, reply, [this, reply, now] {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, now] {
         reply->deleteLater();
 
         if (reply->error() == QNetworkReply::NoError)

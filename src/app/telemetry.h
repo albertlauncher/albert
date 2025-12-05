@@ -1,7 +1,6 @@
 // Copyright (C) 2014-2024 Manuel Schneider
 
 #pragma once
-#include <QCoreApplication>
 #include <QDateTime>
 #include <QObject>
 #include <QTimer>
@@ -10,9 +9,9 @@ namespace albert {
 class ExtensionRegistry;
 }
 
-class Telemetry final
+class Telemetry : public QObject
 {
-    Q_DECLARE_TR_FUNCTIONS(Telemetry)
+    Q_OBJECT
 
 public:
     Telemetry(albert::ExtensionRegistry &registry);
