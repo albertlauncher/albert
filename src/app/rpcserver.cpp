@@ -1,17 +1,15 @@
 // Copyright (c) 2022-2025 Manuel Schneider
 
 #include "albert/app.h"
-#include "logging.h"
+#include "albert/logging.h"
 #include "rpcserver.h"
 #include <QDir>
-#include <QFile>  // QtPrivate::fromFilesystemPath
 #include <QLocalServer>
 #include <QLocalSocket>
 using namespace albert;
 using namespace std;
 
-static QString socketPath()
-{ return QtPrivate::fromFilesystemPath(App::cacheLocation() / "ipc_socket"); }
+static inline QString socketPath() { return QDir(App::cacheLocation()).filePath("ipc_socket"); }
 
 class RPCServer::Private
 {
