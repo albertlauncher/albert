@@ -1,6 +1,6 @@
 // Copyright (c) 2022-2025 Manuel Schneider
 
-#include "albert.h"
+#include "app.h"
 #include "inputhistory.h"
 #include "logging.h"
 #include <QDir>
@@ -27,7 +27,7 @@ InputHistory::InputHistory(const QString &path):
     d(make_unique<Private>())
 {
     if (path.isEmpty())
-        d->file_path = QDir(albert::dataLocation()).filePath("albert.history");
+        d->file_path = QDir(App::instance().dataLocation()).filePath("albert.history");
     else
         d->file_path = path;
 

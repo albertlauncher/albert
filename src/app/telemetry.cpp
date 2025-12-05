@@ -1,6 +1,5 @@
 // Copyright (C) 2014-2025 Manuel Schneider
 
-#include "albert.h"
 #include "app.h"
 #include "extensionregistry.h"
 #include "logging.h"
@@ -24,12 +23,13 @@ static const char *CFG_TELEMETRY_ENABLED = "telemetry";
 using namespace albert;
 
 
-Telemetry::Telemetry(albert::ExtensionRegistry &registry):
-    registry_(registry),
-    last_report(state()->value(CFG_LAST_REPORT,  // Default to -24h avoid sending old data
+Telemetry::Telemetry(PluginRegistry &pr, ExtensionRegistry &er):
+    plugin_registry_(pr),
+    extension_registry_(er),
+    last_report(App::state()->value(CFG_LAST_REPORT,  // Default to -24h avoid sending old data
                                QDateTime::currentDateTime().addDays(-1)).toDateTime())
 {
-    if (auto s = settings(); s->contains(CFG_TELEMETRY_ENABLED))
+    if (auto s = App::settings(); s->contains(CFG_TELEMETRY_ENABLED))
         enabled_ = s->value(CFG_TELEMETRY_ENABLED).toBool();
     else
     {
@@ -55,7 +55,7 @@ Telemetry::Telemetry(albert::ExtensionRegistry &registry):
         mb.setDefaultButton(MB::Yes);
         const auto enable = MB::Yes == mb.exec();
         enabled_ = enable;
-        settings()->setValue(CFG_TELEMETRY_ENABLED, enable);
+        App::settings()->setValue(CFG_TELEMETRY_ENABLED, enable);
     }
 
     connect(&timer, &QTimer::timeout, this, [this] { trySendReport(); });
@@ -89,7 +89,7 @@ void Telemetry::trySendReport()
         {
             INFO << "Successfully sent telemetry data.";
             last_report = now;
-            state()->setValue(CFG_LAST_REPORT, last_report);
+            App::state()->setValue(CFG_LAST_REPORT, last_report);
         }
         else
         {
@@ -101,10 +101,10 @@ void Telemetry::trySendReport()
     });
 }
 
-static QJsonObject albertTelemetry(const QDateTime &last_report)
+QJsonObject Telemetry::albertTelemetry() const
 {
     QJsonArray enabled_plugins;
-    for (const auto &[id, plugin] : App::instance()->pluginRegistry().plugins())
+    for (const auto &[id, plugin] : plugin_registry_.plugins())
         if (plugin.enabled)
             enabled_plugins.append(id);
 
@@ -147,8 +147,10 @@ QJsonDocument Telemetry::buildReport() const
 
     if (enabled_)
     {
-        data.insert("albert", albertTelemetry(last_report));
-        if (auto *apps_plugin = registry_.extension<detail::TelemetryProvider>("applications"); apps_plugin)
+        data.insert("albert", albertTelemetry());
+        if (auto *apps_plugin = extension_registry_
+                                    .extension<detail::TelemetryProvider>("applications");
+            apps_plugin)
             data.insert("applications", apps_plugin->telemetryData());
     }
 
@@ -173,6 +175,6 @@ void Telemetry::setEnabled(bool value)
     if (enabled_ != value)
     {
         enabled_ = value;
-        settings()->setValue(CFG_TELEMETRY_ENABLED, enabled_);
+        App::settings()->setValue(CFG_TELEMETRY_ENABLED, enabled_);
     }
 }

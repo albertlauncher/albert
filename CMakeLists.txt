@@ -54,7 +54,7 @@ set(TARGET_LIB lib${PROJECT_NAME})
 set(LIB_PUBLIC_HEADER
     ${PROJECT_BINARY_DIR}/include/albert/config.h  # generated
     ${PROJECT_BINARY_DIR}/include/albert/export.h  # generated
-    include/albert/albert.h
+    include/albert/app.h
     include/albert/extension.h
     include/albert/extensionplugin.h
     include/albert/extensionregistry.h
@@ -101,8 +101,8 @@ set(LIB_PUBLIC_HEADER
 )
 
 set(LIB_SRC
-    src/app/app.cpp
-    src/app/app.h
+    src/app/application.cpp
+    src/app/application.h
     src/app/messagehandler.cpp
     src/app/messagehandler.h
     src/app/pluginqueryhandler.cpp
@@ -171,7 +171,6 @@ set(LIB_SRC
     src/settings/querywidget/querywidget.h
     src/settings/settingswindow.cpp
     src/settings/settingswindow.h
-    src/util/albert.cpp
     src/util/color.h
     src/util/download.cpp
     src/util/extensionplugin.cpp

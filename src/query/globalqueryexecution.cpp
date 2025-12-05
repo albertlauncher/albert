@@ -1,6 +1,5 @@
 // Copyright (c) 2022-2025 Manuel Schneider
 
-#include "albert.h"
 #include "color.h"
 #include "globalqueryexecution.h"
 #include "globalqueryhandler.h"

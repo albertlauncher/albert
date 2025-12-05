@@ -1,7 +1,6 @@
 // Copyright (c) 2023-2025 Manuel Schneider
 
-#include "albert.h"
-#include "logging.h"
+#include "albert/app.h"
 #include "plugininstance.h"
 #include "pluginloader.h"
 #include "pluginmetadata.h"
@@ -37,24 +36,24 @@ vector<Extension*> PluginInstance::extensions() { return {}; }
 QWidget *PluginInstance::buildConfigWidget() { return nullptr; }
 
 filesystem::path PluginInstance::cacheLocation() const
-{ return ::cacheLocation() / d->loader->metadata().id.toStdString(); }
+{ return App::cacheLocation() / d->loader->metadata().id.toStdString(); }
 
 filesystem::path PluginInstance::configLocation() const
-{ return ::configLocation() / d->loader->metadata().id.toStdString(); }
+{ return App::configLocation() / d->loader->metadata().id.toStdString(); }
 
 filesystem::path PluginInstance::dataLocation() const
-{ return ::dataLocation() / d->loader->metadata().id.toStdString(); }
+{ return App::dataLocation() / d->loader->metadata().id.toStdString(); }
 
 unique_ptr<QSettings> PluginInstance::settings() const
 {
-    auto s = ::settings();
+    auto s = App::settings();
     s->beginGroup(d->loader->metadata().id);
     return s;
 }
 
 unique_ptr<QSettings> PluginInstance::state() const
 {
-    auto s = ::state();
+    auto s = App::state();
     s->beginGroup(d->loader->metadata().id);
     return s;
 }

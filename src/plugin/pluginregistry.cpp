@@ -1,6 +1,6 @@
 // Copyright (c) 2023-2025 Manuel Schneider
 
-#include "albert.h"
+#include "albert/app.h"
 #include "extensionregistry.h"
 #include "logging.h"
 #include "messagebox.h"
@@ -92,7 +92,7 @@ void PluginRegistry::setEnabled(const QString &id, bool enable)
         if (p->metadata.load_type == User && p->enabled != enable)
         {
             const_cast<Plugin*>(p)->enabled = enable;  // safe, original is not const
-            settings()->setValue(QString("%1/enabled").arg(p->id), enable);
+            App::settings()->setValue(QString("%1/enabled").arg(p->id), enable);
             emit pluginEnabledChanged(p->id);
         }
 
@@ -204,7 +204,7 @@ void PluginRegistry::onRegistered(PluginProvider *pp)
             .state_info = {},
             .registered_extensions={},
             .provider = *pp,
-            .enabled = settings()->value(QString("%1/enabled").arg(id), false).toBool()
+            .enabled = App::settings()->value(QString("%1/enabled").arg(id), false).toBool()
         };
 
         if (const auto &[it, success] = plugins_.emplace(id, p);

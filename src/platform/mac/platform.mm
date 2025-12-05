@@ -1,14 +1,10 @@
 // Copyright (c) 2022-2025 Manuel Schneider
 
-#include "albert.h"
-#include "frontend.h"
 #include "logging.h"
 #include "platform.h"
-#include "rpcserver.h"
 #include <Cocoa/Cocoa.h>
 #include <Foundation/Foundation.h>
 #include <QGuiApplication>
-using namespace albert;
 using namespace std;
 #if  ! __has_feature(objc_arc)
 #error This file must be compiled with ARC.

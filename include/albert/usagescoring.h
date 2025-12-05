@@ -1,4 +1,5 @@
-// Copyright (c) 2022-2025 Manuel Schneider
+// SPDX-FileCopyrightText: 2025 Manuel Schneider
+// SPDX-License-Identifier: MIT
 
 #pragma once
 #include <QString>

@@ -1,7 +1,6 @@
 // Copyright (c) 2023-2025 Manuel Schneider
 
-#include "albert.h"
-#include "app.h"
+#include "application.h"
 #include "extensionregistry.h"
 #include "frontend.h"
 #include "iconutil.h"
@@ -52,7 +51,7 @@ using namespace std;
 
 
 namespace {
-static App * app_instance{nullptr};
+App *app_instance = nullptr;
 static const char *STATE_LAST_USED_VERSION = "last_used_version";
 static const char *CFG_FRONTEND_ID = "frontend";
 static const char *DEF_FRONTEND_ID = "widgetsboxmodel";
@@ -63,25 +62,84 @@ static const char *DEF_HOTKEY = "Ctrl+Space";
 static const char *CFG_ADDITIONAL_PATH_ENTRIES = "additional_path_entires";
 }
 
+// -------------------------------------------------------------------------------------------------
 
-class App::Private
+App::App()
+{
+    if (app_instance)
+        qFatal("There can be only one app instance.");
+    app_instance = this;
+}
+
+App::~App() { app_instance = nullptr; }
+
+App &App::instance() { return *app_instance; }
+
+void App::restart()
+{ QMetaObject::invokeMethod(qApp, "exit", Qt::QueuedConnection, Q_ARG(int, -1)); }
+
+void App::quit()
+{ QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection); }
+
+const filesystem::path &App::cacheLocation()
+{
+    static const auto path = filesystem::path(
+        QStandardPaths::writableLocation(QStandardPaths::CacheLocation).toStdString());
+    return path;
+}
+
+const filesystem::path &App::configLocation()
+{
+    static const auto path = filesystem::path(
+        QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation).toStdString());
+    return path;
+}
+
+const filesystem::path &App::dataLocation()
+{
+    static const auto path = filesystem::path(
+        QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toStdString());
+    return path;
+}
+
+unique_ptr<QSettings> App::settings()
+{
+    return make_unique<QSettings>(
+        QString::fromStdString((configLocation() / "config").string()),
+        QSettings::IniFormat
+    );
+}
+
+unique_ptr<QSettings> App::state()
+{
+    return make_unique<QSettings>(
+        QString::fromStdString((dataLocation() / "state").string()),
+        QSettings::IniFormat
+    );
+}
+
+// -------------------------------------------------------------------------------------------------
+
+class Application::Private
 {
 public:
 
-    Private(const QStringList &additional_plugin_paths, bool load_enabled);
+    Private(Application &app, const QStringList &additional_plugin_paths, bool load_enabled);
 
     void initialize();
     void finalize();
 
     void initTrayIcon();
-    void initPathVariable(const QSettings &settings);
-    void initHotkey();
+    void initPathVariable(const QSettings &);
+    void initHotkey(const QSettings &);
     void initRPC();
-    void loadAnyFrontend();
-    QString loadFrontend(albert::PluginLoader *loader);
+    void loadAnyFrontend(const QSettings &);
+    QString loadFrontend(albert::PluginLoader *);
     void notifyVersionChange();
 
 public:
+
+    Application &app;
 
     // As early as possible
     RPCServer rpc_server; // Check for other instances first
@@ -111,24 +169,27 @@ public:
 };
 
 
-App::Private::Private(const QStringList &additional_plugin_paths, bool load_enabled):
+Application::Private::Private(Application &q, const QStringList &additional_plugin_paths, bool load_enabled):
+    app(q),
     original_path_entries(qEnvironmentVariable("PATH").split(u':', Qt::SkipEmptyParts)),
     plugin_registry(extension_registry, load_enabled),
     plugin_provider(additional_plugin_paths),
     query_engine(extension_registry),
-    telemetry(extension_registry),
+    telemetry(plugin_registry, extension_registry),
     plugin_query_handler(plugin_registry),
     triggers_query_handler(query_engine)
 {}
 
-void App::Private::initialize()
+void Application::Private::initialize()
 {
+    auto settings = App::settings();
+
     platform::initPlatform();
 
     // Install scheme handler
-    QDesktopServices::setUrlHandler("albert", app_instance, "handleUrl");
+    QDesktopServices::setUrlHandler("albert", &app, "handleUrl");
 
-    loadAnyFrontend();
+    loadAnyFrontend(*settings);
 
     platform::initNativeWindow(frontend->winId());
 
@@ -138,10 +199,8 @@ void App::Private::initialize()
         if (frontend->isVisible())
             session = make_unique<Session>(query_engine, *frontend);
     };
-    connect(frontend, &Frontend::visibleChanged, app_instance, reset_session);
-    connect(&query_engine, &QueryEngine::handlerRemoved, app_instance, reset_session);
-
-    auto settings = albert::settings();
+    connect(frontend, &Frontend::visibleChanged, &app, reset_session);
+    connect(&query_engine, &QueryEngine::handlerRemoved, &app, reset_session);
 
     if (settings->value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool())
         initTrayIcon();
@@ -152,7 +211,7 @@ void App::Private::initialize()
 
     initRPC(); // Also may trigger frontend
 
-    initHotkey();  // Connect hotkey after! frontend has been loaded else segfaults
+    initHotkey(*settings);  // Connect hotkey after! frontend has been loaded else segfaults
 
     extension_registry.registerExtension(&plugin_query_handler);
     extension_registry.registerExtension(&triggers_query_handler);
@@ -161,7 +220,7 @@ void App::Private::initialize()
     QTimer::singleShot(0, [this] { extension_registry.registerExtension(&plugin_provider); });
 }
 
-void App::Private::finalize()
+void Application::Private::finalize()
 {
     QDesktopServices::unsetUrlHandler("albert");
 
@@ -184,17 +243,17 @@ void App::Private::finalize()
     frontend_plugin->unload();
 }
 
-void App::Private::initTrayIcon()
+void Application::Private::initTrayIcon()
 {
     // menu
 
     tray_menu = make_unique<QMenu>();
 
     auto *action = tray_menu->addAction(tr("Show/Hide"));
-    connect(action, &QAction::triggered, [] { App::instance()->toggle(); });
+    connect(action, &QAction::triggered, [this] { app.toggle(); });
 
     action = tray_menu->addAction(tr("Settings"));
-    connect(action, &QAction::triggered, [] { App::instance()->showSettings(); });
+    connect(action, &QAction::triggered, [this] { app.showSettings(); });
 
     action = tray_menu->addAction(tr("Open website"));
     connect(action, &QAction::triggered, [] { open(QUrl("https://albertlauncher.github.io/")); });
@@ -202,10 +261,10 @@ void App::Private::initTrayIcon()
     tray_menu->addSeparator();
 
     action = tray_menu->addAction(tr("Restart"));
-    connect(action, &QAction::triggered, [] { albert::restart(); });
+    connect(action, &QAction::triggered, [this] { app.restart(); });
 
     action = tray_menu->addAction(tr("Quit"));
-    connect(action, &QAction::triggered, [] { albert::quit(); });
+    connect(action, &QAction::triggered, [this] { app.quit(); });
 
     // icon
 
@@ -220,15 +279,15 @@ void App::Private::initTrayIcon()
 #ifndef Q_OS_MAC
     // Some systems open menus on right click, show albert on left trigger
     connect(tray_icon.get(), &QSystemTrayIcon::activated,
-            [](QSystemTrayIcon::ActivationReason reason)
+            &app, [this](QSystemTrayIcon::ActivationReason reason)
     {
         if( reason == QSystemTrayIcon::ActivationReason::Trigger)
-            App::instance()->toggle();
+            app.toggle();
     });
 #endif
 }
 
-void App::Private::initPathVariable(const QSettings &settings)
+void Application::Private::initPathVariable(const QSettings &settings)
 {
     additional_path_entries = settings.value(CFG_ADDITIONAL_PATH_ENTRIES).toStringList();
     auto effective_path_entries = QStringList() << additional_path_entries << original_path_entries;
@@ -237,7 +296,7 @@ void App::Private::initPathVariable(const QSettings &settings)
     DEBG << "Effective PATH: " << new_path;
 }
 
-void App::Private::initHotkey()
+void Application::Private::initHotkey(const QSettings &settings)
 {
     if (!QHotkey::isPlatformSupported())
     {
@@ -245,7 +304,7 @@ void App::Private::initHotkey()
         return;
     }
 
-    auto s_hk = settings()->value(CFG_HOTKEY, DEF_HOTKEY).toString();
+    auto s_hk = settings.value(CFG_HOTKEY, DEF_HOTKEY).toString();
 
     if (s_hk.isEmpty())
     {
@@ -260,7 +319,7 @@ void App::Private::initHotkey()
     {
         hotkey = ::move(hk);
         connect(hotkey.get(), &QHotkey::activated,
-                frontend, []{ App::instance()->toggle(); });
+                frontend, [this]{ app.toggle(); });
         INFO << "Hotkey set to" << s_hk;
     }
     else
@@ -270,13 +329,13 @@ void App::Private::initHotkey()
         QMessageBox::warning(nullptr, qApp->applicationDisplayName(),
                              tr(t).arg(QKeySequence(kc_hk)
                                        .toString(QKeySequence::NativeText)));
-        App::instance()->showSettings();
+        app.showSettings();
     }
 }
 
-void App::Private::initRPC()
+void Application::Private::initRPC()
 {
-    auto messageHandler = [](const QByteArray bytes) -> QByteArray
+    auto messageHandler = [this](const QByteArray bytes) -> QByteArray
     {
         INFO << "Received RPC message:" << bytes;
 
@@ -298,23 +357,23 @@ void App::Private::initRPC()
                 return "'show' expects zero or one argument.";
 
             else if (args.size() == 2)
-                App::instance()->show(args[1]);
+                app.show(args[1]);
 
             else // if (args.size() == 1)
-                App::instance()->show();
+                app.show();
         }
 
         else if (args[0] == "hide")
 
             if (args.size() == 1)
-                App::instance()->hide();
+                app.hide();
             else
                 return "'hide' expects no arguments.";
 
         else if (args[0] == "toggle")
 
             if (args.size() == 1)
-                App::instance()->toggle();
+                app.toggle();
             else
                 return "'toggle' expects no arguments.";
 
@@ -324,23 +383,23 @@ void App::Private::initRPC()
                 return "'settings' expects zero or one argument.";
 
             else if (args.size() == 2)
-                App::instance()->showSettings(args[1]);
+                app.showSettings(args[1]);
 
             else // if (args.size() == 1)
-                App::instance()->showSettings();
+                app.showSettings();
         }
 
         else if (args[0] == "restart")
 
             if (args.size() == 1)
-                App::instance()->restart();
+                app.restart();
             else
                 return "'restart' expects no arguments.";
 
         else if (args[0] == "quit")
 
             if (args.size() == 1)
-                App::instance()->quit();
+                app.quit();
             else
                 return "'quit' expects no arguments.";
 
@@ -353,7 +412,7 @@ void App::Private::initRPC()
 
         else if (QUrl url(args[0]); url.isValid())
             for (const auto &arg : as_const(args))
-                app_instance->handleUrl(arg);
+                app.handleUrl(arg);
 
         else
         {
@@ -366,10 +425,10 @@ void App::Private::initRPC()
     rpc_server.setMessageHandler(messageHandler);
 }
 
-void App::Private::loadAnyFrontend()
+void Application::Private::loadAnyFrontend(const QSettings &settings)
 {
     auto loaders = plugin_provider.frontendPlugins();
-    const auto id = settings()->value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString();
+    const auto id = settings.value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString();
 
     DEBG << QString("Try loading the configured frontend '%1'.").arg(id);
 
@@ -402,7 +461,7 @@ void App::Private::loadAnyFrontend()
     qFatal("Could not load any frontend.");
 }
 
-QString App::Private::loadFrontend(PluginLoader *loader)
+QString Application::Private::loadFrontend(PluginLoader *loader)
 {
     using enum Plugin::State;
 
@@ -427,7 +486,7 @@ QString App::Private::loadFrontend(PluginLoader *loader)
     }
 }
 
-void App::Private::notifyVersionChange()
+void Application::Private::notifyVersionChange()
 {
     auto s = state();
     auto current_version = qApp->applicationVersion();
@@ -441,7 +500,7 @@ void App::Private::notifyVersionChange()
 
         QMessageBox::information(nullptr, qApp->applicationDisplayName(), text);
 
-        App::instance()->showSettings();
+        app.showSettings();
     }
     else if (current_version.section('.', 0, 0) != last_used_version.section('.', 0, 0))
     {
@@ -457,24 +516,20 @@ void App::Private::notifyVersionChange()
         s->setValue(STATE_LAST_USED_VERSION, current_version);
 }
 
-App::App(const QStringList &additional_plugin_paths, bool load_enabled)
-{
-    if (app_instance)
-        qFatal("No multiple app instances allowed");
+// -------------------------------------------------------------------------------------------------
 
-    app_instance = this; // must be valid before Private is constructed
-    d = make_unique<Private>(additional_plugin_paths, load_enabled);
-}
+Application::Application(const QStringList &additional_plugin_paths, bool load_enabled):
+    d(make_unique<Private>(*this, additional_plugin_paths, load_enabled)) { }
 
-App::~App() = default;
+Application::~Application() = default;
 
-App *App::instance() { return app_instance; }
+Application &Application::instance() { return static_cast<Application&>(App::instance()); }
 
-void App::initialize() { return d->initialize(); }
+void Application::initialize() { return d->initialize(); }
 
-void App::finalize() { return d->finalize(); }
+void Application::finalize() { return d->finalize(); }
 
-void App::handleUrl(const QUrl &url)
+void Application::handleUrl(const QUrl &url)
 {
     DEBG << "Handle url" << url.toString();
     if (url.scheme() == qApp->applicationName())
@@ -492,13 +547,15 @@ void App::handleUrl(const QUrl &url)
         WARN << "Invalid URL scheme" << url.scheme();
 }
 
-PluginRegistry &App::pluginRegistry() { return d->plugin_registry; }
+PluginRegistry &Application::pluginRegistry() { return d->plugin_registry; }
 
-QueryEngine &App::queryEngine() { return d->query_engine; }
+QueryEngine &Application::queryEngine() { return d->query_engine; }
 
-Telemetry &App::telemetry() { return d->telemetry; }
+Telemetry &Application::telemetry() { return d->telemetry; }
 
-void App::showSettings(QString plugin_id)
+const ExtensionRegistry &Application::extensionRegistry() const { return d->extension_registry; }
+
+void Application::showSettings(QString plugin_id)
 {
     if (!d->settings_window)
         d->settings_window = new SettingsWindow(*this);
@@ -506,31 +563,23 @@ void App::showSettings(QString plugin_id)
     d->settings_window->bringToFront(plugin_id);
 }
 
-void App::show(const QString &text)
+void Application::show(const QString &text)
 {
     if (!text.isNull())
         d->frontend->setInput(text);
     d->frontend->setVisible(true);
 }
 
-void App::hide() { d->frontend->setVisible(false); }
+void Application::hide() { d->frontend->setVisible(false); }
 
-void App::toggle() { d->frontend->setVisible(!d->frontend->isVisible()); }
+void Application::toggle() { d->frontend->setVisible(!d->frontend->isVisible()); }
 
-void App::restart()
-{
-    QMetaObject::invokeMethod(qApp, "exit", Qt::QueuedConnection, Q_ARG(int, -1));
-}
+Frontend *Application::frontend() { return d->frontend; }
 
-void App::quit() { QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection); }
+QString Application::currentFrontend() { return d->frontend_plugin->metadata().name; }
 
-Frontend *App::frontend() { return d->frontend; }
 
-QString App::currentFrontend() { return d->frontend_plugin->metadata().name; }
-
-ExtensionRegistry &App::extensionRegistry() { return d->extension_registry; }
-
-QStringList App::availableFrontends()
+QStringList Application::availableFrontends()
 {
     QStringList ret;
     for (const auto *loader : d->plugin_provider.frontendPlugins())
@@ -538,7 +587,7 @@ QStringList App::availableFrontends()
     return ret;
 }
 
-void App::setFrontend(uint i)
+void Application::setFrontend(uint i)
 {
     auto fp = d->plugin_provider.frontendPlugins().at(i);
     settings()->setValue(CFG_FRONTEND_ID, fp->metadata().id);
@@ -550,9 +599,9 @@ void App::setFrontend(uint i)
         restart();
 }
 
-bool App::trayEnabled() const { return d->tray_icon.get(); }
+bool Application::trayEnabled() const { return d->tray_icon.get(); }
 
-void App::setTrayEnabled(bool enable)
+void Application::setTrayEnabled(bool enable)
 {
     if (enable && !trayEnabled())
         d->initTrayIcon();
@@ -565,11 +614,11 @@ void App::setTrayEnabled(bool enable)
     settings()->setValue(CFG_SHOWTRAY, enable);
 }
 
-const QStringList &App::originalPathEntries() const { return d->original_path_entries; }
+const QStringList &Application::originalPathEntries() const { return d->original_path_entries; }
 
-const QStringList &App::additionalPathEntries() const { return d->additional_path_entries; }
+const QStringList &Application::additionalPathEntries() const { return d->additional_path_entries; }
 
-void App::setAdditionalPathEntries(const QStringList &entries)
+void Application::setAdditionalPathEntries(const QStringList &entries)
 {
     if (entries != d->additional_path_entries)
     {
@@ -578,9 +627,9 @@ void App::setAdditionalPathEntries(const QStringList &entries)
     }
 }
 
-const QHotkey *App::hotkey() const { return d->hotkey.get(); }
+const QHotkey *Application::hotkey() const { return d->hotkey.get(); }
 
-void App::setHotkey(unique_ptr<QHotkey> hk)
+void Application::setHotkey(unique_ptr<QHotkey> hk)
 {
     if (!hk)
     {
@@ -591,21 +640,19 @@ void App::setHotkey(unique_ptr<QHotkey> hk)
     {
         d->hotkey = ::move(hk);
         connect(d->hotkey.get(), &QHotkey::activated,
-                d->frontend, []{ App::instance()->toggle(); });
+                d->frontend, [this]{ toggle(); });
         settings()->setValue(CFG_HOTKEY, d->hotkey->shortcut().toString());
     }
     else
         WARN << "Set unregistered hotkey. Ignoring.";
 }
 
-
-namespace albert
-{
+namespace albert {
 
 int ALBERT_EXPORT run(int argc, char **argv)
 {
     if (qApp != nullptr)
-        qFatal("Calling main twice is not allowed.");
+        qFatal("Calling run more than once is not allowed.");
 
     QLoggingCategory::setFilterRules("*.debug=false");
     qInstallMessageHandler(messageHandler);
@@ -629,21 +676,21 @@ int ALBERT_EXPORT run(int argc, char **argv)
 
     {
         auto opt_p = QCommandLineOption({"p", "plugin-dirs"},
-                                        App::tr("Set the plugin dirs to use. Comma separated."),
-                                        App::tr("directories"));
+                                        Application::tr("Set the plugin dirs to use. Comma separated."),
+                                        Application::tr("directories"));
         auto opt_r = QCommandLineOption({"r", "report"},
-                                        App::tr("Print report and quit."));
+                                        Application::tr("Print report and quit."));
         auto opt_n = QCommandLineOption({"n", "no-autoload"},
-                                        App::tr("Do not implicitly load enabled plugins."));
+                                        Application::tr("Do not implicitly load enabled plugins."));
 
         QCommandLineParser parser;
         parser.addOptions({opt_p, opt_r, opt_n});
-        parser.addPositionalArgument(App::tr("command"),
-                                     App::tr("RPC command to send to the running instance."),
-                                     App::tr("[command [params...]]"));
+        parser.addPositionalArgument(Application::tr("command"),
+                                     Application::tr("RPC command to send to the running instance."),
+                                     Application::tr("[command [params...]]"));
         parser.addVersionOption();
         parser.addHelpOption();
-        parser.setApplicationDescription(App::tr("Launch Albert or control a running instance."));
+        parser.setApplicationDescription(Application::tr("Launch Albert or control a running instance."));
         parser.process(qapp);
 
         // TODO If not running? Continue and use? Makes sense for albert show but not for URLs.
@@ -676,82 +723,13 @@ int ALBERT_EXPORT run(int argc, char **argv)
 
     // Initialize app directories
 
-    for (const auto &path : { cacheLocation(), configLocation(), dataLocation() })
+    for (const auto &path : { App::cacheLocation(), App::configLocation(), App::dataLocation() })
         try {
             filesystem::create_directories(path);
             QFile::setPermissions(path, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
         } catch (...) {
             qFatal("Failed creating directory: %s", path.c_str());
         }
-
-
-    // Section for ports
-
-    {
-        // Move old config file to new location TODO: Remove from 0.26 on
-
-        {
-            auto conf_loc = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-            auto old_conf_loc = QDir(conf_loc).filePath("albert.conf");
-            QFile config_file(old_conf_loc);
-            if (config_file.exists())
-            {
-                auto new_conf_loc = QDir(configLocation()).filePath("config");
-                if (config_file.rename(new_conf_loc))
-                    INFO << "Config file successfully moved to new location.";
-                else
-                    qFatal("Failed to move config file to new location. "
-                           "Please move the file at %s to %s manually.",
-                           old_conf_loc.toUtf8().data(), new_conf_loc.toUtf8().data());
-            }
-        }
-
-        // Merge settings sections of applications plugins
-
-        {
-            auto s = settings();
-            auto groups = s->childGroups();
-
-            for (const char *old_group : { "applications_macos", "applications_xdg"})
-            {
-                if (groups.contains(old_group))
-                {
-                    s->beginGroup(old_group);
-                    auto child_keys = s->childKeys();
-                    s->endGroup();
-
-                    for (const QString &child_key : as_const(child_keys))
-                    {
-                        auto old_key = QString("%1/%2").arg(old_group, child_key);
-
-                        s->setValue(QString("applications/%1").arg(child_key),
-                                    s->value(old_key));
-
-                        s->remove(old_key);
-                    }
-                }
-            }
-        }
-
-        // Move state file from cache to data dir
-
-        {
-            using namespace std::filesystem;
-            const auto old_path = cacheLocation() / "state";
-            const auto new_path = dataLocation() / "state";
-
-            if(!exists(new_path.parent_path()))
-                create_directories(new_path.parent_path());
-
-            if (exists(old_path))
-            {
-                if (exists(new_path))
-                    remove(old_path);
-                else
-                    rename(old_path, new_path);
-            }
-        }
-    }
 
 
     // Load translators
@@ -791,25 +769,15 @@ int ALBERT_EXPORT run(int argc, char **argv)
 
     // Run app
 
-    try {
-        app_instance = new App(config.plugin_dirs, config.autoload);
-        app_instance->initialize();
-        int return_value = qapp.exec();
-        app_instance->finalize();
-        delete app_instance;
+    Application app(config.plugin_dirs, config.autoload);
+    app.initialize();
+    int return_value = qapp.exec();
+    app.finalize();
 
-        if (return_value == -1 && runDetachedProcess(qApp->arguments(), QDir::currentPath()))
-            return_value = EXIT_SUCCESS;
+    if (return_value == -1 && runDetachedProcess(qApp->arguments(), QDir::currentPath()))
+        return_value = EXIT_SUCCESS;
 
-        INFO << "Bye.";
-        return return_value;
-    } catch (const std::exception &e) {
-        CRIT << "Uncaught exception in main: " << e.what();
-        return EXIT_FAILURE;
-    } catch (...) {
-        CRIT << "Uncaught unknown exception in main. Exiting.";
-        return EXIT_FAILURE;
-    }
+    return return_value;
 }
 
 }

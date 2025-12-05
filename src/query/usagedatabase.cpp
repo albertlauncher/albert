@@ -1,7 +1,7 @@
 // Copyright (c) 2022-2025 Manuel Schneider
 
-#include "albert.h"
-#include "logging.h"
+#include "albert/app.h"
+#include "albert/logging.h"
 #include "usagedatabase.h"
 #include <QDateTime>
 #include <QDir>
@@ -32,7 +32,7 @@ UsageDatabase::UsageDatabase()
     else if (!db.driver()->hasFeature(QSqlDriver::Transactions))
         qFatal("QSqlDriver::Transactions not available.");
 
-    else if (db.setDatabaseName(QDir(albert::dataLocation()).filePath(db_file_name));
+    else if (db.setDatabaseName(QDir(App::dataLocation()).filePath(db_file_name));
              !db.open())
         qFatal("Database: Unable to establish connection: %s", qPrintable(db.lastError().text()));
 

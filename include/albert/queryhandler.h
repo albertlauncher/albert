@@ -1,4 +1,5 @@
-// Copyright (c) 2022-2025 Manuel Schneider
+// SPDX-FileCopyrightText: 2025 Manuel Schneider
+// SPDX-License-Identifier: MIT
 
 #pragma once
 #include <albert/export.h>
@@ -10,7 +11,6 @@ class QueryEngine;
 
 namespace albert
 {
-class Query;
 class QueryExecution;
 class QueryResults;
 

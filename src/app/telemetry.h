@@ -4,17 +4,17 @@
 #include <QDateTime>
 #include <QObject>
 #include <QTimer>
+class PluginRegistry;
 class QJsonDocument;
-namespace albert {
-class ExtensionRegistry;
-}
+class QJsonObject;
+namespace albert { class ExtensionRegistry; }
 
 class Telemetry : public QObject
 {
     Q_OBJECT
 
 public:
-    Telemetry(albert::ExtensionRegistry &registry);
+    Telemetry(PluginRegistry &, albert::ExtensionRegistry &);
 
     QJsonDocument buildReport() const;
     QString buildReportString() const;
@@ -24,8 +24,10 @@ public:
 
 private:
     void trySendReport();
+    QJsonObject albertTelemetry() const;
 
-    albert::ExtensionRegistry &registry_;
+    PluginRegistry &plugin_registry_;
+    albert::ExtensionRegistry &extension_registry_;
     QTimer timer;
     QDateTime last_report;
     bool enabled_;

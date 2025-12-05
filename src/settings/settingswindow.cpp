@@ -1,7 +1,6 @@
 // Copyright (c) 2022-2025 Manuel Schneider
 
-#include "albert.h"
-#include "app.h"
+#include "application.h"
 #include "frontend.h"
 #include "messagebox.h"
 #include "pluginswidget.h"
@@ -64,7 +63,7 @@ public:
 };
 
 
-SettingsWindow::SettingsWindow(App &a):
+SettingsWindow::SettingsWindow(Application &a):
     app(a),
     ui(),
     small_text_fmt(R"(<span style="font-size:9pt; color:#808080;">%1</span>)")
@@ -135,7 +134,7 @@ void SettingsWindow::init_tab_general_trayIcon()
 {
     ui.checkBox_showTray->setChecked(app.trayEnabled());
     connect(ui.checkBox_showTray, &QCheckBox::toggled,
-            &app, &App::setTrayEnabled);
+            &app, &Application::setTrayEnabled);
 }
 
 void SettingsWindow::init_tab_general_frontends()
@@ -173,7 +172,7 @@ void SettingsWindow::init_tab_general_path()
 
                 if (question(tr("For the changes to take effect, Albert has to be restarted. "
                                 "Do you want to restart Albert now?")))
-                    restart();
+                    App::restart();
             });
 }
 

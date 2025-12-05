@@ -1,6 +1,6 @@
 // Copyright (c) 2023-2025 Manuel Schneider
 
-#include "albert.h"
+#include "albert/app.h"
 #include "iconutil.h"
 #include "pluginloader.h"
 #include "pluginmetadata.h"
@@ -75,7 +75,7 @@ public:
         actions.emplace_back(
             "settings",
             PluginQueryHandler::tr("Open settings"),
-            [this] { showSettings(id()); }
+            [this] { App::instance().showSettings(id()); }
             );
 
         actions.emplace_back(

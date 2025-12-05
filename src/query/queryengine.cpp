@@ -1,6 +1,6 @@
 // Copyright (c) 2022-2025 Manuel Schneider
 
-#include "albert.h"
+#include "albert/app.h"
 #include "extensionregistry.h"
 #include "fallbackhandler.h"
 #include "globalqueryhandler.h"
@@ -37,7 +37,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry)
     : registry_(registry)
     , usage_scoring_(0,0,{})  // Null scoring, just to not have to implement constructors
 {
-    auto s = settings();
+    auto s = App::settings();
     auto decay = s->value(CFG_MEMORY_DECAY, DEF_MEMORY_DECAY).toDouble();
     auto prioritize_perfect_match = s->value(CFG_PRIO_PERFECT, DEF_PRIO_PERFECT).toBool();
     usage_scoring_ = UsageScoring(prioritize_perfect_match, decay,
@@ -49,7 +49,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry)
     connect(&registry, &ExtensionRegistry::added, this, [this](Extension *e) {
         if (auto *th = dynamic_cast<albert::QueryHandler*>(e))
         {
-            auto sett = settings();
+            auto sett = App::instance().settings();
             sett->beginGroup(th->id());
             auto t = sett->value(CFG_TRIGGER, th->defaultTrigger()).toString();
             auto f = sett->value(CFG_FUZZY, false).toBool();
@@ -65,7 +65,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry)
             {
                 global_handlers_.emplace(gh->id(), gh);
                 if (const auto cfg_key = u"%1/%2"_s.arg(gh->id(), CFG_GLOBAL_HANDLER_ENABLED);
-                    settings()->value(cfg_key, true).toBool())
+                    App::settings()->value(cfg_key, true).toBool())
                     global_query_.global_query_handlers.emplace(gh->id(), gh);
             }
 
@@ -102,7 +102,7 @@ void QueryEngine::setMemoryDecay(double v)
     if (usage_scoring_.memory_decay != v)
     {
         DEBG << "memoryDecay set to" << v;
-        settings()->setValue(CFG_MEMORY_DECAY, v);
+        App::settings()->setValue(CFG_MEMORY_DECAY, v);
         usage_scoring_ = UsageScoring(usage_scoring_.prioritize_perfect_match, v,
                                       make_shared<unordered_map<ItemKey, double>>
                                       (UsageDatabase::instance().itemUsageScores(v)));
@@ -114,7 +114,7 @@ void QueryEngine::setPrioritizePerfectMatch(bool v)
     if (usage_scoring_.prioritize_perfect_match != v)
     {
         DEBG << "prioritizePerfectMatch set to" << v;
-        settings()->setValue(CFG_PRIO_PERFECT, v);
+        App::settings()->setValue(CFG_PRIO_PERFECT, v);
         usage_scoring_ = UsageScoring(v, usage_scoring_.memory_decay, usage_scoring_.usage_scores);
     }
 }
@@ -205,12 +205,12 @@ void QueryEngine::setTrigger(const QString &id, const QString& t)
     if (t.isEmpty() || t == h.handler->defaultTrigger())
     {
         h.trigger = h.handler->defaultTrigger();
-        settings()->remove(QString("%1/%2").arg(id, CFG_TRIGGER));
+        App::settings()->remove(QString("%1/%2").arg(id, CFG_TRIGGER));
     }
     else
     {
         h.trigger = t;
-        settings()->setValue(QString("%1/%2").arg(id, CFG_TRIGGER), t);
+        App::settings()->setValue(QString("%1/%2").arg(id, CFG_TRIGGER), t);
     }
 
     h.handler->setTrigger(h.trigger);
@@ -227,7 +227,7 @@ void QueryEngine::setFuzzy(const QString &id, bool f)
     if (h.handler->supportsFuzzyMatching())
     {
         h.fuzzy = f;
-        settings()->setValue(QString("%1/%2").arg(id, CFG_FUZZY), f);
+        App::settings()->setValue(QString("%1/%2").arg(id, CFG_FUZZY), f);
         h.handler->setFuzzyMatching(f);
     }
 }
@@ -255,7 +255,7 @@ void QueryEngine::setEnabled(const QString &id, bool e)
 
     if (isEnabled(id) != e)
     {
-        settings()->setValue(QString("%1/%2").arg(id, CFG_GLOBAL_HANDLER_ENABLED), e);
+        App::settings()->setValue(QString("%1/%2").arg(id, CFG_GLOBAL_HANDLER_ENABLED), e);
         if (e)
             global_query_.global_query_handlers.emplace(id, h);
         else
@@ -308,7 +308,7 @@ void QueryEngine::saveFallbackOrder() const
          { return fallback_order_.at(a) > fallback_order_.at(b); });
 
     // Save to settings
-    auto s = settings();
+    auto s = App::settings();
     s->beginWriteArray(CFG_FALLBACK_ORDER);
     for (int i = 0; i < (int)o.size(); ++i)
     {
@@ -323,7 +323,7 @@ void QueryEngine::loadFallbackOrder()
 {
     // Load from settings
     vector<pair<QString, QString>> o;
-    auto s = settings();
+    auto s = App::settings();
     int size = s->beginReadArray(CFG_FALLBACK_ORDER);
     for (int i = 0; i < size; ++i)
     {

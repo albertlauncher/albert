@@ -3,7 +3,7 @@
 #pragma once
 #include "ui_settingswindow.h"
 #include <QWidget>
-class App;
+class Application;
 class PluginsWidget;
 
 class SettingsWindow final : public QWidget
@@ -12,7 +12,7 @@ class SettingsWindow final : public QWidget
 
 public:
 
-    SettingsWindow(App &app);
+    SettingsWindow(Application &app);
     ~SettingsWindow();
 
     void bringToFront(const QString & = {});
@@ -27,7 +27,7 @@ private:
     void init_tab_general_about();
     void keyPressEvent(QKeyEvent * event) override;
 
-    App &app;
+    Application &app;
     Ui::SettingsWindow ui;
     PluginsWidget *plugin_widget;
     QString small_text_fmt;

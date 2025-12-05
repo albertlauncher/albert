@@ -1,6 +1,6 @@
 // Copyright (c) 2023-2025 Manuel Schneider
 
-#include "app.h"
+#include "application.h"
 #include "logging.h"
 #include "messagebox.h"
 #include "query.h"
@@ -30,7 +30,7 @@ bool QueryResults::activate(uint item_idx, uint action_idx) const
 
             // Order is cumbersome here
 
-            App::instance()->queryEngine().storeItemActivation(query, e->id(), i->id(), a.id);
+            Application::instance().queryEngine().storeItemActivation(query, e->id(), i->id(), a.id);
 
             // May delete the query, due to hide()
             // Note to myself:

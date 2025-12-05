@@ -1,6 +1,6 @@
 // Copyright (c) 2024-2025 Manuel Schneider
 
-#include "albert.h"
+#include "app.h"
 #include "extensionplugin.h"
 #include "extensionregistry.h"
 #include "icon.h"
@@ -138,7 +138,7 @@ void AlbertTests::plugin_registry()
     const auto loaders = vector<PluginLoader*>{loader0, loader1, loader2, loader3};
 
     for (const auto &loader : loaders)
-        albert::settings()->setValue(QString("%1/enabled").arg(loader->metadata().id), false);
+        App::settings()->setValue(QString("%1/enabled").arg(loader->metadata().id), false);
 
     PluginProviderMock provider(loaders);
     ExtensionRegistry ext_reg;

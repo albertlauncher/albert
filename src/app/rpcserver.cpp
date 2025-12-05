@@ -1,6 +1,6 @@
 // Copyright (c) 2022-2025 Manuel Schneider
 
-#include "albert.h"
+#include "albert/app.h"
 #include "logging.h"
 #include "rpcserver.h"
 #include <QDir>
@@ -11,7 +11,7 @@ using namespace albert;
 using namespace std;
 
 static QString socketPath()
-{ return QtPrivate::fromFilesystemPath(cacheLocation() / "ipc_socket"); }
+{ return QtPrivate::fromFilesystemPath(App::cacheLocation() / "ipc_socket"); }
 
 class RPCServer::Private
 {

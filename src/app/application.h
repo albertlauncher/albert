@@ -3,6 +3,7 @@
 #pragma once
 #include <QObject>
 #include <memory>
+#include "app.h"
 class PluginRegistry;
 class QueryEngine;
 class QHotkey;
@@ -14,27 +15,27 @@ int run(int, char**);
 }
 
 
-class App : public QObject
+class Application : public QObject, public albert::App
 {
     Q_OBJECT
 
 public:
 
-    static App *instance();
+    // Public interface
+    void show(const QString &text = {}) override;
+    void showSettings(QString plugin_id = {}) override;
+    const albert::ExtensionRegistry &extensionRegistry() const override;
 
-    void show(const QString &text = {});
+    const std::filesystem::path &settingsFilePath() const;
+    const std::filesystem::path &stateFilePath() const;
+
     void hide();
     void toggle();
-    void restart();
-    void quit();
     Q_INVOKABLE void handleUrl(const QUrl &url);
 
-    albert::ExtensionRegistry &extensionRegistry();
     PluginRegistry &pluginRegistry();
     QueryEngine &queryEngine();
     Telemetry &telemetry();
-
-    void showSettings(QString plugin_id = {});
 
     bool trayEnabled() const;
     void setTrayEnabled(bool);
@@ -51,10 +52,12 @@ public:
     void setFrontend(uint i);
     albert::detail::Frontend *frontend();
 
+    static Application &instance();
+
 private:
 
-    explicit App(const QStringList &additional_plugin_paths, bool load_enabled);
-    ~App() override;
+    explicit Application(const QStringList &additional_plugin_paths, bool load_enabled);
+    ~Application() override;
 
     void initialize();
     void finalize();

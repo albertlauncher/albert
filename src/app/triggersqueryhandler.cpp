@@ -39,7 +39,7 @@ shared_ptr<Item> TriggersQueryHandler::makeItem(const QString &trigger, Extensio
         {{
             "set",
             tr("Set input text"),
-            [trigger]{ App::instance()->show(trigger); },
+            [trigger]{ App::instance().show(trigger); },
             false
         }},
         trigger
