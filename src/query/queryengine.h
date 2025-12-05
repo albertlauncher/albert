@@ -78,8 +78,15 @@ private:
 
 signals:
 
-    void handlerAdded();
-    void handlerRemoved();
+    void queryHandlerAdded(albert::QueryHandler*);
+    void queryHandlerRemoved(albert::QueryHandler*);
+
+    void globalQueryHandlerAdded(albert::GlobalQueryHandler*);
+    void globalQueryHandlerRemoved(albert::GlobalQueryHandler*);
+
+    void fallbackHandlerAdded(albert::FallbackHandler*);
+    void fallbackHandlerRemoved(albert::FallbackHandler*);
+
     void activeTriggersChanged();
 
 };

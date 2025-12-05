@@ -14,7 +14,6 @@
 #include <QMessageBox>
 #include <QSettings>
 using namespace Qt::StringLiterals;
-using namespace albert::detail;
 using namespace albert;
 using namespace std;
 
@@ -38,6 +37,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry)
     , usage_scoring_(0,0,{})  // Null scoring, just to not have to implement constructors
 {
     auto s = App::settings();
+
     auto decay = s->value(CFG_MEMORY_DECAY, DEF_MEMORY_DECAY).toDouble();
     auto prioritize_perfect_match = s->value(CFG_PRIO_PERFECT, DEF_PRIO_PERFECT).toBool();
     usage_scoring_ = UsageScoring(prioritize_perfect_match, decay,
@@ -46,53 +46,68 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry)
 
     loadFallbackOrder();
 
-    connect(&registry, &ExtensionRegistry::added, this, [this](Extension *e) {
-        if (auto *th = dynamic_cast<albert::QueryHandler*>(e))
-        {
-            auto sett = App::instance().settings();
-            sett->beginGroup(th->id());
-            auto t = sett->value(CFG_TRIGGER, th->defaultTrigger()).toString();
-            auto f = sett->value(CFG_FUZZY, false).toBool();
+    connect(&registry, &ExtensionRegistry::added, this, [this](Extension *e)
+    {
+        const auto id = e->id();
+        auto settings = App::instance().settings();
+        settings->beginGroup(id);
 
-            th->setTrigger(t);
-            th->setFuzzyMatching(f);
+        if (auto *h = dynamic_cast<albert::QueryHandler*>(e))
+        {
+            auto t = settings->value(CFG_TRIGGER, h->defaultTrigger()).toString();
+            auto f = settings->value(CFG_FUZZY, false).toBool();
+
+            h->setTrigger(t);
+            h->setFuzzyMatching(f);
             trigger_handlers_.emplace(piecewise_construct,
-                                      forward_as_tuple(th->id()),
-                                      forward_as_tuple(th, t, f));
+                                      forward_as_tuple(id),
+                                      forward_as_tuple(h, t, f));
+            emit queryHandlerAdded(h);
+
             updateActiveTriggers();
-
-            if (auto *gh = dynamic_cast<albert::GlobalQueryHandler*>(th))
-            {
-                global_handlers_.emplace(gh->id(), gh);
-                if (const auto cfg_key = u"%1/%2"_s.arg(gh->id(), CFG_GLOBAL_HANDLER_ENABLED);
-                    App::settings()->value(cfg_key, true).toBool())
-                    global_query_.global_query_handlers.emplace(gh->id(), gh);
-            }
-
-            emit handlerAdded();
         }
-        if (auto *fh = dynamic_cast<albert::FallbackHandler*>(e))
+
+        if (auto *h = dynamic_cast<albert::GlobalQueryHandler*>(e))
         {
-            fallback_handlers_.emplace(fh->id(), fh);
-            emit handlerAdded();
+            global_handlers_.emplace(id, h);
+            if (settings->value(CFG_GLOBAL_HANDLER_ENABLED, true).toBool())
+                global_query_.global_query_handlers.emplace(id, h);
+
+            emit globalQueryHandlerAdded(h);
+        }
+
+        if (auto *h = dynamic_cast<albert::FallbackHandler*>(e))
+        {
+            fallback_handlers_.emplace(id, h);
+            emit fallbackHandlerAdded(h);
         }
     });
 
-    connect(&registry, &ExtensionRegistry::removed, this, [this](Extension *e) {
-        if (auto *th = dynamic_cast<albert::QueryHandler*>(e))
+    connect(&registry, &ExtensionRegistry::removed, this, [this](Extension *e)
+    {
+        const auto id = e->id();
+
+        if (const auto it = trigger_handlers_.find(id); it != trigger_handlers_.end())
         {
-            trigger_handlers_.erase(th->id());
+            auto h = it->second.handler;
+            trigger_handlers_.erase(it);
+            emit queryHandlerRemoved(h);
             updateActiveTriggers();
-
-            if (auto *gh = dynamic_cast<albert::GlobalQueryHandler*>(th))
-                global_handlers_.erase(gh->id());
-
-            emit handlerRemoved();
         }
-        if (auto *fh = dynamic_cast<albert::FallbackHandler*>(e))
+
+        if (const auto it = global_handlers_.find(id); it != global_handlers_.end())
         {
-            fallback_handlers_.erase(fh->id());
-            emit handlerRemoved();
+            auto h = it->second;
+            global_handlers_.erase(it);
+            global_query_.global_query_handlers.erase(id);
+            emit globalQueryHandlerRemoved(h);
+        }
+
+        if (const auto it = fallback_handlers_.find(id); it != fallback_handlers_.end())
+        {
+            auto h = it->second;
+            fallback_handlers_.erase(it);
+            emit fallbackHandlerRemoved(h);
         }
     });
 }

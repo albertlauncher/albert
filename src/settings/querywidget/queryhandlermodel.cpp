@@ -19,8 +19,8 @@ static int column_count = 4;
 QueryHandlerModel::QueryHandlerModel(QueryEngine &qe, QObject *parent)
     : QAbstractTableModel(parent), engine(qe)
 {
-    connect(&engine, &QueryEngine::handlerAdded, this, &QueryHandlerModel::updateHandlers);
-    connect(&engine, &QueryEngine::handlerRemoved, this, &QueryHandlerModel::updateHandlers);
+    connect(&engine, &QueryEngine::queryHandlerAdded, this, &QueryHandlerModel::updateHandlers);
+    connect(&engine, &QueryEngine::queryHandlerRemoved, this, &QueryHandlerModel::updateHandlers);
     updateHandlers();
 }
 

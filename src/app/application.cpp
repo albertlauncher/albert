@@ -200,7 +200,7 @@ void Application::Private::initialize()
             session = make_unique<Session>(query_engine, *frontend);
     };
     connect(frontend, &Frontend::visibleChanged, &app, reset_session);
-    connect(&query_engine, &QueryEngine::handlerRemoved, &app, reset_session);
+    connect(&query_engine, &QueryEngine::queryHandlerRemoved, &app, reset_session);
 
     if (settings->value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool())
         initTrayIcon();
