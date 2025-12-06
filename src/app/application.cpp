@@ -1,6 +1,7 @@
 // Copyright (c) 2023-2025 Manuel Schneider
 
 #include "application.h"
+#include "config.h"
 #include "extensionregistry.h"
 #include "frontend.h"
 #include "iconutil.h"
@@ -37,13 +38,13 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QObject>
+#include <QPluginLoader>
 #include <QPointer>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QSystemTrayIcon>
 #include <QTranslator>
 #include <iostream>
-#include <QPluginLoader>
 Q_LOGGING_CATEGORY(AlbertLoggingCategory, "albert")
 using namespace albert::detail;
 using namespace albert;

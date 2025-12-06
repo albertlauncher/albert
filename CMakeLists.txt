@@ -53,6 +53,7 @@ set(TARGET_LIB lib${PROJECT_NAME})
 
 set(LIB_PUBLIC_HEADER
     ${PROJECT_BINARY_DIR}/include/albert/config.h  # generated
+    ${PROJECT_BINARY_DIR}/include/albert/plugin.h  # generated
     ${PROJECT_BINARY_DIR}/include/albert/export.h  # generated
     include/albert/app.h
     include/albert/extension.h
@@ -130,6 +131,7 @@ set(LIB_SRC
     src/frontend/session.h
     src/platform/platform.h
     src/platform/signalhandler.h
+    src/plugin.h.in
     src/plugin/extensionregistry.cpp
     src/plugin/plugininstance.cpp
     src/plugin/pluginloader.cpp
@@ -276,6 +278,12 @@ target_include_directories(${TARGET_LIB}
 configure_file(
     "${PROJECT_SOURCE_DIR}/src/config.h.in"
     "${PROJECT_BINARY_DIR}/include/albert/config.h"
+    @ONLY
+)
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/src/plugin.h.in"
+    "${PROJECT_BINARY_DIR}/include/albert/plugin.h"
     @ONLY
 )
 
