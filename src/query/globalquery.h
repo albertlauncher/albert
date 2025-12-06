@@ -9,14 +9,12 @@ namespace albert { class GlobalQueryHandler; }
 class GlobalQuery : public albert::QueryHandler
 {
 public:
-
-    std::map<QString, albert::GlobalQueryHandler*> global_query_handlers;
+    std::map<QString, albert::GlobalQueryHandler *> global_query_handlers;
 
 private:
-
     QString id() const override;
     QString name() const override;
     QString description() const override;
+    QString synopsis(const QString &query) const override;
     std::unique_ptr<albert::QueryExecution> execution(albert::Query &query) override;
-
 };

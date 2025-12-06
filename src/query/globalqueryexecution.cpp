@@ -141,7 +141,8 @@ bool GlobalQueryExecution::isValid() const { return valid; }
 
 const QueryHandler &GlobalQueryExecution::handler() const { return query.handler(); }
 
-QString GlobalQueryExecution::string() const { return query.string(); }
+QString GlobalQueryExecution::string() const
+{ return query.string() == "*" ? QString() : query.string(); }
 
 QString GlobalQueryExecution::trigger() const { return query.trigger(); }
 

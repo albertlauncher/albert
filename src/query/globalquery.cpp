@@ -19,3 +19,6 @@ unique_ptr<QueryExecution> GlobalQuery::execution(Query &query)
     auto v = global_query_handlers | views::values;
     return make_unique<GlobalQueryExecution>(query, vector<GlobalQueryHandler*>{begin(v), end(v)});
 }
+
+QString GlobalQuery::synopsis(const QString &query) const
+{ return query == u"*"_s ? u"🕚"_s : u""_s; }
