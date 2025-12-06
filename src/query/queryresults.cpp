@@ -1,5 +1,6 @@
 // Copyright (c) 2023-2025 Manuel Schneider
 
+#include "extension.h"
 #include "logging.h"
 #include "messagebox.h"
 #include "query.h"
@@ -38,12 +39,12 @@ bool QueryResults::activate(uint item_idx, uint action_idx)
             try {
                 a.function();  // May delete the query, due to hide()
             } catch (const exception &exc) {
-                const auto msg = QT_TR_NOOP("Exception in action");
+                const auto msg = QT_TRANSLATE_NOOP("QueryResults", "Exception in action");
                 const auto fmt = QString("%1:\n\n%2 → %3 → %4\n\n%5");
                 CRIT << fmt.arg(msg, e->id(), i->id(), a.id, exc.what());
                 critical(fmt.arg(tr(msg), e->name(), i->text(), a.text, exc.what()));
             } catch (...) {
-                const auto msg = QT_TR_NOOP("Unknown exception in action");
+                const auto msg = QT_TRANSLATE_NOOP("QueryResults", "Unknown exception in action");
                 const auto fmt = QString("%1:\n\n%2 → %3 → %4");
                 CRIT << fmt.arg(msg, e->id(), i->id(), a.id);
                 critical(fmt.arg(tr(msg), e->name(), i->text(), a.text));
