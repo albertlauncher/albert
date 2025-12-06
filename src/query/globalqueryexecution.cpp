@@ -57,7 +57,7 @@ GlobalQueryExecution::GlobalQueryExecution(Query &q, vector<GlobalQueryHandler*>
                         .scoring_duration = 0};
         try {
             auto t = system_clock::now();
-            if (query.string().isNull())
+            if (query.string().isEmpty())
                 for (auto &item : handler->handleEmptyQuery()) // order ???
                     data.rank_items.emplace_back(::move(item), 0);
             else

@@ -170,13 +170,7 @@ unique_ptr<detail::Query> QueryEngine::query(QString string)
         string = string.mid(trigger.size());
     }
     else
-    {
-        if (string.isEmpty())  // Null query indicates the "special empty query"
-            string = QString();
-        else if (string == u"*"_s)  // Asterisk runs the regular empty query
-            string = u""_s;
         handler = &global_query_;
-    }
 
     auto query = unique_ptr<detail::Query>(
         new detail::Query(usage_scoring_, ::move(fallbacks), *handler, trigger, string));
