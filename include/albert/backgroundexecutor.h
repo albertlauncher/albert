@@ -4,8 +4,7 @@
 #pragma once
 #include <QFutureWatcher>
 #include <QtConcurrentRun>
-#include <albert/logging.h>
-#include <chrono>
+#include <atomic>
 #include <functional>
 
 namespace albert
@@ -18,8 +17,13 @@ namespace albert
 ///
 /// \ingroup query_util
 ///
-template<typename T> class BackgroundExecutor
+template<typename T>
+class BackgroundExecutor
 {
+    std::unique_ptr<QFutureWatcher<T>> future_watcher_;
+    bool rerun_ = false;
+    std::atomic_bool stop_ = false;
+
 public:
 
     ///
@@ -30,74 +34,29 @@ public:
     std::function<T(const bool &abort)> parallel;
 
     ///
-    /// The results handler.
+    /// The finish callback.
     ///
-    /// When the \ref parallel function finished, this function will be called in the main thread with
-    /// the _results_ returned by the \ref parallel function.
+    /// When the \ref parallel function finished, this function will be called in the main thread.
+    /// Use \ref BackgroundExecutor::takeResult to get the _results_ returned from \ref parallel.
     ///
-    std::function<void(T &&results)> finish;
+    std::function<void()> finish;
+
+
+    /// Constructs the background executor.
+    BackgroundExecutor() = default;
 
     ///
-    /// The runtime of the last execution of \ref parallel.
+    /// Destructs the background executor.
     ///
-    std::chrono::milliseconds runtime;
-
-private:
-    QFutureWatcher<T> future_watcher_;
-    bool rerun_ = false;
-
-    void onFinish()
-    {
-        if (rerun_){  // discard and rerun
-            rerun_ = false;
-            run();
-        }
-        else
-        {
-            try {
-                finish(std::move(future_watcher_.future().takeResult()));
-            } catch (const std::exception &e) {
-                WARN << "Exception in BackgroundExecutor::finish"
-                     << QString::fromStdString(e.what());
-            } catch (...) {
-                WARN << "Unknown exception in BackgroundExecutor::finish.";
-            }
-        }
-    }
-
-    T run_(const bool &abort)
-    {
-        try {
-            auto start = std::chrono::system_clock::now();
-            T ret = parallel(abort);
-            auto end = std::chrono::system_clock::now();
-            runtime = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
-            return ret;
-        } catch (const std::exception &e) {
-            WARN << "Exception in BackgroundExecutor::parallel" << QString::fromStdString(e.what());
-        } catch (...) {
-            WARN << "Unknown exception in BackgroundExecutor::parallel.";
-        }
-        return {};
-    }
-
-public:
-    BackgroundExecutor()
-    {
-        QObject::connect(&future_watcher_, &QFutureWatcher<T>::finished, [this](){onFinish();});
-    }
-
+    /// Silently blocks execution until a running task is finished.
+    /// See \ref isRunning() and \ref waitForFinished().
+    ///
     ~BackgroundExecutor()
     {
+        stop_ = true;
         rerun_ = false;
-        if (isRunning()){
-            WARN << "Busy wait for BackgroundExecutor task. Abortion handled correctly?";
-            auto start = std::chrono::system_clock::now();
-            future_watcher_.waitForFinished();
-            auto end = std::chrono::system_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
-            WARN << QStringLiteral("Busy waited for %1 ms.").arg(duration.count());
-        }
+        if (future_watcher_ && !future_watcher_->isFinished())
+            future_watcher_->waitForFinished();
     }
 
     ///
@@ -106,17 +65,62 @@ public:
     /// If a task is running this function sets the abort flag and schedules a rerun.
     /// \ref finish will not be called for the cancelled run.
     ///
-    void run() {
-        if (future_watcher_.isRunning())
+    void run()
+    {
+        if (isRunning())
+        {
+            stop_ = true;
             rerun_ = true;
+        }
         else
-            future_watcher_.setFuture(QtConcurrent::run(&BackgroundExecutor<T>::run_, this, rerun_));
+        {
+            stop_ = false;
+            rerun_ = false;
+
+            future_watcher_ = std::make_unique<QFutureWatcher<T>>();
+
+            QObject::connect(future_watcher_.get(), &QFutureWatcher<T>::finished,
+                             future_watcher_.get(), [this]
+            {
+                if (rerun_)
+                {
+                    future_watcher_.reset();
+                    run();  // discard results and rerun
+                }
+                else
+                {
+                    try {
+                        finish();  // may throw
+                    } catch (...) {}
+                    future_watcher_.reset();
+                }
+            });
+
+            future_watcher_->setFuture(QtConcurrent::run([this]{ return parallel(stop_); }));
+
+        }
+    }
+
+    /// Stops the current execution.
+    inline void stop() { stop_ = true; }
+
+    /// Returns `true` if the asynchronous computation is currently running; otherwise returns `false`.
+    inline bool isRunning() const { return future_watcher_.get(); }
+
+    /// Blocks until the current task finished.
+    inline void waitForFinished()
+    {
+        if (future_watcher_)
+            future_watcher_->waitForFinished();
     }
 
     ///
-    /// Returns `true` if the asynchronous computation is currently running; otherwise returns `false`.
+    /// Takes the result from the future.
     ///
-    bool isRunning() const { return future_watcher_.isRunning(); }
+    /// Must be called from \ref finish only. Rethrows any exception thrown in \ref parallel.
+    ///
+    inline T takeResult() { return future_watcher_->future().takeResult(); }
+
 };
 
 }
