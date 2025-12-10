@@ -38,7 +38,7 @@ public:
     ///
     /// @note Executed in a worker thread.
     ///
-    virtual std::vector<RankItem> handleGlobalQuery(const Query &query) = 0;
+    virtual std::vector<RankItem> handleGlobalQuery(Query &query) = 0;
 
     ///
     /// Returns a list of special items that should show up on an emtpy query.

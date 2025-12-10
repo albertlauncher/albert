@@ -33,7 +33,7 @@ public:
     ///
     /// Returns the matching items from the index.
     ///
-    std::vector<RankItem> handleGlobalQuery(const albert::Query &) override;
+    std::vector<RankItem> handleGlobalQuery(Query &) override;
 
     ///
     /// Updates the index.
