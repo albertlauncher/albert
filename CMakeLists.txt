@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2024 Manuel Schneider
 
-cmake_minimum_required(VERSION 3.22)  # Ubuntu 22.04
+cmake_minimum_required(VERSION 3.26)  # Required by BUILD_LOCAL_INTERFACE generator expression
 
 # dont touch! set by metatool
 set(PROJECT_VERSION 33.0.1)
@@ -248,16 +248,18 @@ generate_export_header(${TARGET_LIB}
     EXPORT_FILE_NAME "${PROJECT_BINARY_DIR}/include/albert/export.h"
 )
 
-target_precompile_headers(${TARGET_LIB} PRIVATE ${LIB_PUBLIC_HEADER})
+# target_precompile_headers(${TARGET_LIB} PRIVATE ${LIB_PUBLIC_HEADER})
 
 target_include_directories(${TARGET_LIB}
     PUBLIC
-        "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/>"
-        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>"
+        "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>"
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>"
     PRIVATE
-        "${PROJECT_BINARY_DIR}/include/albert"
-        "${PROJECT_SOURCE_DIR}/include/albert"
+        "${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}"
+        "${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}"
         src
         src/app
         src/common
@@ -300,14 +302,14 @@ find_package(Qt6Keychain REQUIRED)
 
 target_link_libraries(${TARGET_LIB}
     PRIVATE
-        QHotkey::QHotkey
-        QNotifications::QNotifications
+        $<BUILD_LOCAL_INTERFACE:QHotkey::QHotkey>
+        $<BUILD_LOCAL_INTERFACE:QNotifications::QNotifications>
+        $<BUILD_LOCAL_INTERFACE:qt6keychain>
         Qt6::Concurrent
         Qt6::Core
         Qt6::Network
         Qt6::Sql
         Qt6::Widgets
-        qt6keychain
 )
 
 if(APPLE)
@@ -441,7 +443,7 @@ install(
     FRAMEWORK DESTINATION .
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/albert
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
 )
 
 # Create a targets file in install tree
