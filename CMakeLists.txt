@@ -116,6 +116,8 @@ set(LIB_SRC
     src/app/report.h
     src/app/rpcserver.cpp
     src/app/rpcserver.h
+    src/app/systemtrayicon.cpp
+    src/app/systemtrayicon.h
     src/app/telemetry.cpp
     src/app/telemetry.h
     src/app/telemetryprovider.cpp

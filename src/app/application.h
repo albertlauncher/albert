@@ -5,8 +5,9 @@
 #include <memory>
 #include "app.h"
 class PluginRegistry;
-class QueryEngine;
 class QHotkey;
+class QueryEngine;
+class SystemTrayIcon;
 class Telemetry;
 namespace albert {
 namespace detail { class Frontend; }
@@ -36,9 +37,7 @@ public:
     PluginRegistry &pluginRegistry();
     QueryEngine &queryEngine();
     Telemetry &telemetry();
-
-    bool trayEnabled() const;
-    void setTrayEnabled(bool);
+    SystemTrayIcon &systemTrayIcon();
 
     const QStringList &originalPathEntries() const;
     const QStringList &additionalPathEntries() const;

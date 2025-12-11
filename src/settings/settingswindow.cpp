@@ -6,6 +6,7 @@
 #include "pluginswidget.h"
 #include "querywidget.h"
 #include "settingswindow.h"
+#include "systemtrayicon.h"
 #include "systemutil.h"
 #include "telemetry.h"
 #include <QDialog>
@@ -132,9 +133,9 @@ void SettingsWindow::init_tab_general_hotkey()
 
 void SettingsWindow::init_tab_general_trayIcon()
 {
-    ui.checkBox_showTray->setChecked(app.trayEnabled());
+    ui.checkBox_showTray->setChecked(app.systemTrayIcon().isEnabled());
     connect(ui.checkBox_showTray, &QCheckBox::toggled,
-            &app, &Application::setTrayEnabled);
+            this, [this](bool enable) { app.systemTrayIcon().setEnabled(enable); });
 }
 
 void SettingsWindow::init_tab_general_frontends()

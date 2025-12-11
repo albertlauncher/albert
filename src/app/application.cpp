@@ -22,6 +22,7 @@
 #include "session.h"
 #include "settingswindow.h"
 #include "signalhandler.h"
+#include "systemtrayicon.h"
 #include "systemutil.h"
 #include "telemetry.h"
 #include "triggersqueryhandler.h"
@@ -35,14 +36,12 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QLibraryInfo>
-#include <QMenu>
 #include <QMessageBox>
 #include <QObject>
 #include <QPluginLoader>
 #include <QPointer>
 #include <QSettings>
 #include <QStandardPaths>
-#include <QSystemTrayIcon>
 #include <QTranslator>
 #include <iostream>
 Q_LOGGING_CATEGORY(AlbertLoggingCategory, "albert")
@@ -56,8 +55,6 @@ App *app_instance = nullptr;
 static const char *STATE_LAST_USED_VERSION = "last_used_version";
 static const char *CFG_FRONTEND_ID = "frontend";
 static const char *DEF_FRONTEND_ID = "widgetsboxmodel";
-static const char* CFG_SHOWTRAY = "showTray";
-static const bool  DEF_SHOWTRAY = true;
 static const char *CFG_HOTKEY = "hotkey";
 static const char *DEF_HOTKEY = "Ctrl+Space";
 static const char *CFG_ADDITIONAL_PATH_ENTRIES = "additional_path_entires";
@@ -157,13 +154,12 @@ public:
     QtPluginProvider plugin_provider;
     QueryEngine query_engine;
     Telemetry telemetry;
+    SystemTrayIcon tray_icon;
 
     // Weak, lazy or optional
     albert::PluginLoader *frontend_plugin{nullptr};
     albert::detail::Frontend *frontend{nullptr};
     std::unique_ptr<QHotkey> hotkey{nullptr};
-    std::unique_ptr<QSystemTrayIcon> tray_icon{nullptr};
-    std::unique_ptr<QMenu> tray_menu{nullptr};
     std::unique_ptr<Session> session{nullptr};
     QPointer<SettingsWindow> settings_window{nullptr};
 
@@ -184,6 +180,7 @@ Application::Private::Private(Application &q,
     plugin_provider(additional_plugin_paths),
     query_engine(extension_registry),
     telemetry(plugin_registry, extension_registry),
+    tray_icon(settings),
     plugin_query_handler(plugin_registry),
     triggers_query_handler(query_engine)
 {
@@ -202,9 +199,6 @@ Application::Private::Private(Application &q,
     };
     connect(frontend, &Frontend::visibleChanged, &app, reset_session);
     connect(&query_engine, &QueryEngine::queryHandlerRemoved, &app, reset_session);
-
-    if (settings.value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool())
-        initTrayIcon();
 
     initPathVariable(settings);
 
@@ -242,50 +236,6 @@ Application::Private::~Private()
     extension_registry.deregisterExtension(&plugin_query_handler);
 
     frontend_plugin->unload();
-}
-
-void Application::Private::initTrayIcon()
-{
-    // menu
-
-    tray_menu = make_unique<QMenu>();
-
-    auto *action = tray_menu->addAction(tr("Show/Hide"));
-    connect(action, &QAction::triggered, [this] { app.toggle(); });
-
-    action = tray_menu->addAction(tr("Settings"));
-    connect(action, &QAction::triggered, [this] { app.showSettings(); });
-
-    action = tray_menu->addAction(tr("Open website"));
-    connect(action, &QAction::triggered, [] { open(QUrl("https://albertlauncher.github.io/")); });
-
-    tray_menu->addSeparator();
-
-    action = tray_menu->addAction(tr("Restart"));
-    connect(action, &QAction::triggered, [this] { app.restart(); });
-
-    action = tray_menu->addAction(tr("Quit"));
-    connect(action, &QAction::triggered, [this] { app.quit(); });
-
-    // icon
-
-    auto icon = QIcon::fromTheme("albert-tray");
-    icon.setIsMask(true);
-
-    tray_icon = make_unique<QSystemTrayIcon>();
-    tray_icon->setIcon(icon);
-    tray_icon->setContextMenu(tray_menu.get());
-    tray_icon->setVisible(true);
-
-#ifndef Q_OS_MAC
-    // Some systems open menus on right click, show albert on left trigger
-    connect(tray_icon.get(), &QSystemTrayIcon::activated,
-            &app, [this](QSystemTrayIcon::ActivationReason reason)
-    {
-        if( reason == QSystemTrayIcon::ActivationReason::Trigger)
-            app.toggle();
-    });
-#endif
 }
 
 void Application::Private::initPathVariable(QSettings &settings)
@@ -557,6 +507,8 @@ QueryEngine &Application::queryEngine() { return d->query_engine; }
 
 Telemetry &Application::telemetry() { return d->telemetry; }
 
+SystemTrayIcon &Application::systemTrayIcon() { return d->tray_icon; }
+
 const ExtensionRegistry &Application::extensionRegistry() const { return d->extension_registry; }
 
 void Application::showSettings(QString plugin_id)
@@ -601,21 +553,6 @@ void Application::setFrontend(uint i)
 
     if (QMessageBox::question(nullptr, qApp->applicationDisplayName(), text) == QMessageBox::Yes)
         restart();
-}
-
-bool Application::trayEnabled() const { return d->tray_icon.get(); }
-
-void Application::setTrayEnabled(bool enable)
-{
-    if (enable && !trayEnabled())
-        d->initTrayIcon();
-    else if (!enable && trayEnabled()) {
-        d->tray_icon.reset();
-        d->tray_menu.reset();
-    }
-    else
-        return;
-    settings()->setValue(CFG_SHOWTRAY, enable);
 }
 
 const QStringList &Application::originalPathEntries() const { return d->original_path_entries; }
