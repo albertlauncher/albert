@@ -125,18 +125,21 @@ class Application::Private
 {
 public:
 
-    Private(Application &app, const QStringList &additional_plugin_paths, bool load_enabled);
-
-    void initialize();
-    void finalize();
+    Private(Application &app,
+            const QStringList &additional_plugin_paths,
+            bool load_enabled,
+            QSettings &settings,
+            QSettings &state);
+    ~Private();
 
     void initTrayIcon();
-    void initPathVariable(const QSettings &);
-    void initHotkey(const QSettings &);
+    void initPathVariable(QSettings &settings);
+    void initHotkey(QSettings &settings);
     void initRPC();
-    void loadAnyFrontend(const QSettings &);
+    void initFrontend(QSettings &settings);
+
     QString loadFrontend(albert::PluginLoader *);
-    void notifyVersionChange();
+    void notifyVersionChange(QSettings &state);
 
 public:
 
@@ -170,7 +173,11 @@ public:
 };
 
 
-Application::Private::Private(Application &q, const QStringList &additional_plugin_paths, bool load_enabled):
+Application::Private::Private(Application &q,
+                              const QStringList &additional_plugin_paths,
+                              bool load_enabled,
+                              QSettings &settings,
+                              QSettings &state):
     app(q),
     original_path_entries(qEnvironmentVariable("PATH").split(u':', Qt::SkipEmptyParts)),
     plugin_registry(extension_registry, load_enabled),
@@ -179,20 +186,13 @@ Application::Private::Private(Application &q, const QStringList &additional_plug
     telemetry(plugin_registry, extension_registry),
     plugin_query_handler(plugin_registry),
     triggers_query_handler(query_engine)
-{}
-
-void Application::Private::initialize()
 {
-    auto settings = App::settings();
-
     platform::initPlatform();
 
     // Install scheme handler
     QDesktopServices::setUrlHandler("albert", &app, "handleUrl");
 
-    loadAnyFrontend(*settings);
-
-    platform::initNativeWindow(frontend->winId());
+    initFrontend(settings);
 
     // Invalidate sessions on handler removal or visibility change
     auto reset_session = [this]{
@@ -203,16 +203,16 @@ void Application::Private::initialize()
     connect(frontend, &Frontend::visibleChanged, &app, reset_session);
     connect(&query_engine, &QueryEngine::queryHandlerRemoved, &app, reset_session);
 
-    if (settings->value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool())
+    if (settings.value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool())
         initTrayIcon();
 
-    initPathVariable(*settings);
-
-    notifyVersionChange();
+    initPathVariable(settings);
 
     initRPC(); // Also may trigger frontend
 
-    initHotkey(*settings);  // Connect hotkey after! frontend has been loaded else segfaults
+    initHotkey(settings);  // Connect hotkey after! frontend has been loaded else segfaults
+
+    notifyVersionChange(state);
 
     extension_registry.registerExtension(&plugin_query_handler);
     extension_registry.registerExtension(&triggers_query_handler);
@@ -221,7 +221,7 @@ void Application::Private::initialize()
     QTimer::singleShot(0, [this] { extension_registry.registerExtension(&plugin_provider); });
 }
 
-void Application::Private::finalize()
+Application::Private::~Private()
 {
     QDesktopServices::unsetUrlHandler("albert");
 
@@ -288,7 +288,7 @@ void Application::Private::initTrayIcon()
 #endif
 }
 
-void Application::Private::initPathVariable(const QSettings &settings)
+void Application::Private::initPathVariable(QSettings &settings)
 {
     additional_path_entries = settings.value(CFG_ADDITIONAL_PATH_ENTRIES).toStringList();
     auto effective_path_entries = QStringList() << additional_path_entries << original_path_entries;
@@ -297,7 +297,7 @@ void Application::Private::initPathVariable(const QSettings &settings)
     DEBG << "Effective PATH: " << new_path;
 }
 
-void Application::Private::initHotkey(const QSettings &settings)
+void Application::Private::initHotkey(QSettings &settings)
 {
     if (!QHotkey::isPlatformSupported())
     {
@@ -426,7 +426,7 @@ void Application::Private::initRPC()
     rpc_server.setMessageHandler(messageHandler);
 }
 
-void Application::Private::loadAnyFrontend(const QSettings &settings)
+void Application::Private::initFrontend(QSettings &settings)
 {
     auto loaders = plugin_provider.frontendPlugins();
     const auto id = settings.value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString();
@@ -474,24 +474,26 @@ QString Application::Private::loadFrontend(PluginLoader *loader)
     if (!loader->instance())  // sync cases
         loop.exec();
 
-    if (frontend = dynamic_cast<Frontend*>(loader->instance());
-        !frontend)
-        return QString("Failed casting plugin instance to albert::Frontend: %1")
-            .arg(loader->metadata().id);
-    else
+    if (frontend = dynamic_cast<Frontend*>(loader->instance()); frontend)
     {
+        platform::initNativeWindow(frontend->winId());
+
         for (auto *ext : loader->instance()->extensions())
             extension_registry.registerExtension(ext);
+
         frontend_plugin = loader;
+
         return {};
     }
+    else
+        return QString("Failed casting plugin instance to albert::Frontend: %1")
+            .arg(loader->metadata().id);
 }
 
-void Application::Private::notifyVersionChange()
+void Application::Private::notifyVersionChange(QSettings &state)
 {
-    auto s = state();
     auto current_version = qApp->applicationVersion();
-    auto last_used_version = s->value(STATE_LAST_USED_VERSION).toString();
+    auto last_used_version = state.value(STATE_LAST_USED_VERSION).toString();
 
     // First run
     if (last_used_version.isNull())
@@ -514,21 +516,22 @@ void Application::Private::notifyVersionChange()
     }
 
     if (last_used_version != current_version)
-        s->setValue(STATE_LAST_USED_VERSION, current_version);
+        state.setValue(STATE_LAST_USED_VERSION, current_version);
 }
 
 // -------------------------------------------------------------------------------------------------
 
-Application::Application(const QStringList &additional_plugin_paths, bool load_enabled):
-    d(make_unique<Private>(*this, additional_plugin_paths, load_enabled)) { }
+Application::Application(const QStringList &additional_plugin_paths, bool load_enabled) :
+    d(make_unique<Private>(*this,
+                           additional_plugin_paths,
+                           load_enabled,
+                           *App::settings(),
+                           *App::state()))
+{}
 
-Application::~Application() = default;
+Application::~Application() {}
 
 Application &Application::instance() { return static_cast<Application&>(App::instance()); }
-
-void Application::initialize() { return d->initialize(); }
-
-void Application::finalize() { return d->finalize(); }
 
 void Application::handleUrl(const QUrl &url)
 {
@@ -771,9 +774,7 @@ int ALBERT_EXPORT run(int argc, char **argv)
     // Run app
 
     Application app(config.plugin_dirs, config.autoload);
-    app.initialize();
     int return_value = qapp.exec();
-    app.finalize();
 
     if (return_value == -1 && runDetachedProcess(qApp->arguments(), QDir::currentPath()))
         return_value = EXIT_SUCCESS;

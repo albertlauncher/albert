@@ -59,9 +59,6 @@ private:
     explicit Application(const QStringList &additional_plugin_paths, bool load_enabled);
     ~Application() override;
 
-    void initialize();
-    void finalize();
-
     friend int albert::run(int, char**);
 
     class Private;
