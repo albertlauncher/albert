@@ -18,6 +18,7 @@ RUN yum install -y \
     qt6-qtsvg-devel \
     qt6-qttools-devel \
     qtkeychain-qt6-devel \
+    qcoro-qt6-devel \
     xml2 \
  && yum clean all \
  && rm -rf /var/cache/yum/*

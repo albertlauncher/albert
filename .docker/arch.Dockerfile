@@ -16,6 +16,7 @@ RUN pacman -Syu --verbose --noconfirm \
     qt6-svg \
     qt6-tools \
     qtkeychain-qt6 \
+    qcoro-qt6 \
  && pacman -Scc --noconfirm
 
 FROM base AS build

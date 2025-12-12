@@ -25,6 +25,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     qt6-tools-dev-tools \
     qt6-l10n-tools \
     qtkeychain-qt6-dev \
+    qcoro-qt6-dev \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
