@@ -191,14 +191,27 @@ Application::Private::Private(Application &q,
 
     initFrontend(settings);
 
-    // Invalidate sessions on handler removal or visibility change
-    auto reset_session = [this]{
-        session.reset();
-        if (frontend->isVisible())
+
+    connect(frontend, &Frontend::visibleChanged,
+            &app, [this]{
+                if (frontend->isVisible())
+                    session = make_unique<Session>(query_engine, *frontend);
+                else
+                    session.reset();
+            });
+
+    auto reset_session = [this] {
+        if (frontend->isVisible()) {
+            session.reset();  // Make sure session is deleted _before_ creating a new one
             session = make_unique<Session>(query_engine, *frontend);
+        }
     };
-    connect(frontend, &Frontend::visibleChanged, &app, reset_session);
-    connect(&query_engine, &QueryEngine::queryHandlerRemoved, &app, reset_session);
+
+    connect(&query_engine, &QueryEngine::queryHandlerAdded,
+            &app, reset_session);
+
+    connect(&query_engine, &QueryEngine::queryHandlerRemoved,
+            &app, reset_session, Qt::QueuedConnection);
 
     initPathVariable(settings);
 
