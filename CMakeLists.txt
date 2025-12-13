@@ -56,6 +56,10 @@ qcoro_enable_coroutines()
 
 set(TARGET_LIB lib${PROJECT_NAME})
 
+set(LIB_MODULE_FILES
+    src/module/albert.cppm
+)
+
 set(LIB_PUBLIC_HEADER
     ${PROJECT_BINARY_DIR}/include/albert/config.h  # generated
     ${PROJECT_BINARY_DIR}/include/albert/plugin.h  # generated
@@ -262,6 +266,12 @@ add_library(${TARGET_LIB} SHARED
     resources/resources.qrc
 )
 
+target_sources(${TARGET_LIB}
+    PUBLIC
+        FILE_SET CXX_MODULES
+        FILES ${LIB_MODULE_FILES}
+)
+
 add_library("${PROJECT_NAME}::${TARGET_LIB}" ALIAS ${TARGET_LIB})
 
 include(GNUInstallDirs)
@@ -466,6 +476,7 @@ set(INSTALL_CONFIGDIR "${CMAKE_INSTALL_LIBDIR}/cmake/Albert")
 install(
     TARGETS ${TARGET_LIB}
     EXPORT ${LIB_EXPORT_NAME}  # association for install(EXPORT …) and export(EXPORT …)
+    FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/modules
     FRAMEWORK DESTINATION .
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -479,6 +490,7 @@ install(
     EXPORT ${LIB_EXPORT_NAME} # association from above
     NAMESPACE ${PROJECT_NAME}::
     DESTINATION ${INSTALL_CONFIGDIR}
+    CXX_MODULES_DIRECTORY ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/modules
 )
 
 # Create a targets file in build tree (matching install(EXPORT))
@@ -488,6 +500,7 @@ export(
    EXPORT ${LIB_EXPORT_NAME} # association from above
    NAMESPACE ${PROJECT_NAME}::
    FILE "${PROJECT_BINARY_DIR}/${LIB_TARGETS_FILE}"
+   CXX_MODULES_DIRECTORY .
 )
 
 include(CMakePackageConfigHelpers)
