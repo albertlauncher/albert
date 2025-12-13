@@ -248,7 +248,18 @@ macro(albert_plugin)
     add_library(${PROJECT_NAME} SHARED ${ARG_SOURCES})
     add_library(albert::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
+    #get_target_property(ALBERT_PCM albert::libalbert CXX_MODULES_DEBUG)
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        #"-fmodules-ts"
+        #"-fmodule-file=${ALBERT_PCM}"
+        "-fmodule-file=albert=${CMAKE_BINARY_DIR}/CMakeFiles/libalbert.dir/albert.pcm"
+    )
+
+    get_target_property(LIB_CXX_STANDARD albert::libalbert CXX_STANDARD)
     set_target_properties(${PROJECT_NAME} PROPERTIES
+        CXX_EXTENSIONS OFF
+        CXX_STANDARD ${LIB_CXX_STANDARD}
+        CXX_STANDARD_REQUIRED ON
         CXX_VISIBILITY_PRESET hidden
         VISIBILITY_INLINES_HIDDEN ON
         PREFIX ""  # no libfoo
