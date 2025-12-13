@@ -3,41 +3,19 @@
 #pragma once
 #include "query.h"
 #include "queryexecution.h"
-#include "rankitem.h"
-#include <QFuture>
-#include <QString>
-#include <chrono>
-#include <vector>
-namespace albert {
-class GlobalQueryHandler;
-class QueryResults;
-class UsageScoring;
-}
+#include <memory>
+namespace albert{ class GlobalQueryHandler; }
 
-class GlobalQueryResult : public albert::RankItem
+class GlobalQueryExecution final : public albert::QueryExecution, public albert::Query
 {
 public:
-    explicit GlobalQueryResult(albert::GlobalQueryHandler *handler,
-                               const albert::RankItem &rank_item) noexcept;
-    ~GlobalQueryResult() noexcept;
-    albert::GlobalQueryHandler *handler;
-};
-
-
-class GlobalQueryExecution final : public albert::QueryExecution,
-                                   public albert::Query
-{
-    Q_OBJECT  // needed for invokable methods
-
-public:
-
     GlobalQueryExecution(albert::Query &query,
-                         std::vector<albert::GlobalQueryHandler*> query_handlers);
+                         std::vector<albert::GlobalQueryHandler *> query_handlers);
     ~GlobalQueryExecution();
 
 private:
-
     // albert::Query
+    // Required because we want to handle '*' as empty query and for atomic valid flag
     bool isValid() const override;
     const albert::QueryHandler &handler() const override;
     QString string() const override;
@@ -50,13 +28,6 @@ private:
     bool canFetchMore() const override;
     bool isActive() const override;
 
-    void addResultChunk();
-
-    const std::vector<albert::GlobalQueryHandler*> handlers;
-    QFuture<void> future;
-    std::atomic_bool valid;
-    bool active;
-    std::vector<GlobalQueryResult> unordered_results;
-    std::chrono::time_point<std::chrono::system_clock> start_timepoint;
-    std::chrono::time_point<std::chrono::system_clock> finish_timepoint;
+    class Private;
+    std::unique_ptr<Private> d;
 };
