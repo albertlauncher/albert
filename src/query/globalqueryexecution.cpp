@@ -120,38 +120,40 @@ GlobalQueryExecution::Private::Private(GlobalQueryExecution *execution,
         }
     );
 
-
     QObject::connect(&future_watcher, &QFutureWatcher<ReducedData>::finished, q, [this] {
-        auto reduced = future_watcher.future().takeResult();
+        if (valid)
+        {
+            auto reduced = future_watcher.future().takeResult();
 
-        const auto total_duration = duration_cast<milliseconds>(system_clock::now() - start_timepoint).count();
+            const auto total_duration = duration_cast<milliseconds>(system_clock::now() - start_timepoint).count();
 
-        static const auto header  = color::blue + u"╭ Handling╷  Scoring╷ Count╷"_s + color::reset;
-        static const auto body    = color::blue + u"│%1 ms│%2 ms│%3│ #%4 '%5' %6"_s + color::reset;
-        static const auto fheader = color::blue + u"├ Handling│         │ Count╷"_s + color::reset;
-        static const auto footer  = color::blue + u"╰%1 ms╵         ╵%2╵ #%3 '%4' TOTAL"_s + color::reset;
+            static const auto header  = color::blue + u"╭ Handling╷  Scoring╷ Count╷"_s + color::reset;
+            static const auto body    = color::blue + u"│%1 ms│%2 ms│%3│ #%4 '%5' %6"_s + color::reset;
+            static const auto fheader = color::blue + u"├ Handling│         │ Count╷"_s + color::reset;
+            static const auto footer  = color::blue + u"╰%1 ms╵         ╵%2╵ #%3 '%4' TOTAL"_s + color::reset;
 
-        DEBG << header;
+            DEBG << header;
 
-        for (const auto &diag : reduced.handler_diag)
-            DEBG << body
-                        .arg(diag.handling_runtime, 6)
-                        .arg(diag.scoring_runtime, 6)
-                        .arg(diag.item_count, 6)
+            for (const auto &diag : reduced.handler_diag)
+                DEBG << body
+                            .arg(diag.handling_runtime, 6)
+                            .arg(diag.scoring_runtime, 6)
+                            .arg(diag.item_count, 6)
+                            .arg(q->id)
+                            .arg(q->string(), diag.handler->id());
+
+            DEBG << fheader;
+            DEBG << footer
+                        .arg(total_duration, 6)
+                        .arg(reduced.results.size(), 6)
                         .arg(q->id)
-                        .arg(q->string(), diag.handler->id());
+                        .arg(q->query.string());
 
-        DEBG << fheader;
-        DEBG << footer
-                    .arg(total_duration, 6)
-                    .arg(reduced.results.size(), 6)
-                    .arg(q->id)
-                    .arg(q->query.string());
+            unordered_results = ::move(reduced.results);
 
-        unordered_results = ::move(reduced.results);
-
-        // Required because while active fetchMore has no effect
-        addResultChunk();
+            // Required because while active fetchMore has no effect
+            addResultChunk();
+        }
 
         emit q->activeChanged(active = false);
     });
@@ -219,10 +221,12 @@ const albert::UsageScoring &GlobalQueryExecution::usageScoring() const
 
 void GlobalQueryExecution::cancel()
 {
-    d->valid = false;
-    // make sure not to call finish
-    disconnect(&d->future_watcher, &QFutureWatcher<ReducedData>::finished, this, nullptr);
-    d->future_watcher.cancel();
+    if (d->valid)
+    {
+        d->valid = false;
+        if (!d->future_watcher.isFinished())
+            d->future_watcher.cancel();
+    }
 }
 
 void GlobalQueryExecution::fetchMore()
