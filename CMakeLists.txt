@@ -61,6 +61,7 @@ set(LIB_PUBLIC_HEADER
     ${PROJECT_BINARY_DIR}/include/albert/plugin.h  # generated
     ${PROJECT_BINARY_DIR}/include/albert/export.h  # generated
     include/albert/app.h
+    include/albert/asyncgeneratorqueryhandler.h
     include/albert/extension.h
     include/albert/extensionplugin.h
     include/albert/extensionregistry.h
@@ -147,6 +148,7 @@ set(LIB_SRC
     src/plugin/pluginregistry.cpp
     src/plugin/pluginregistry.h
     src/plugin/topologicalsort.hpp
+    src/query/asyncgeneratorqueryhandler.cpp
     src/query/fallbackhandler.cpp
     src/query/generatorqueryhandler.cpp
     src/query/globalquery.cpp
