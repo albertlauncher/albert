@@ -4,42 +4,63 @@
 #pragma once
 #include <QString>
 #include <albert/export.h>
-
+#include <albert/querycontext.h>
+class QueryEngine;
 namespace albert
 {
 class QueryHandler;
-class UsageScoring;
+class QueryResult;
+class QueryResults;
+class QueryExecution;
+}  // namespace albert
 
-///
-/// Query interface.
-///
-/// \ingroup core_query
-///
-class ALBERT_EXPORT Query
+namespace albert::detail
+{
+
+/// The query implementation.
+class ALBERT_EXPORT Query : public albert::QueryContext
 {
 public:
+    /// Constructs a query.
+    Query(UsageScoring usage_scoring,
+          std::vector<albert::QueryResult> &&fallbacks,
+          QueryHandler &handler,
+          QString trigger,
+          QString string);
 
-    /// Returns `true` if the query is valid; `false` if it has been cancelled.
-    virtual bool isValid() const = 0;
+    /// Destructs the query.
+    ~Query();
 
-    /// Returns the handler of this query.
-    virtual const QueryHandler &handler() const = 0;
+    /// \copydoc albert::Query::isValid
+    bool isValid() const override;
 
-    /// Returns the trigger of this query.
-    virtual QString trigger() const = 0;
+    /// \copydoc albert::Query::handler
+    QueryHandler &handler() const override;
 
-    /// Returns the query string excluding the trigger.
-    virtual QString string() const = 0;
+    /// \copydoc albert::Query::trigger
+    QString trigger() const override;
 
-    /// Returns the usage scoring.
-    virtual const UsageScoring &usageScoring() const = 0;
+    /// \copydoc albert::Query::string
+    QString string() const override;
 
-    /// Implicit QString context conversion.
-    operator QString() const { return string(); }
+    /// \copydoc albert::Query::usageScoring
+    const UsageScoring &usageScoring() const override;
 
-protected:
+    /// Returns the execution of this query if running; else nullptr.
+    QueryExecution &execution() const;
 
-    virtual ~Query() = default;
+    /// Stops the query execution.
+    void cancel();
+
+    /// Returns the matches.
+    QueryResults &matches();
+
+    /// Returns the fallbacks.
+    QueryResults &fallbacks();
+
+private:
+    class Private;
+    std::unique_ptr<Private> d;
 };
 
-}
+}  // namespace albert::detail

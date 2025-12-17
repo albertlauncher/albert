@@ -5,7 +5,7 @@
 #include <QObject>
 #include <albert/export.h>
 #include <albert/item.h>
-#include <albert/query.h>
+#include <albert/querycontext.h>
 #include <memory>
 #include <ranges>
 #include <vector>
@@ -39,8 +39,8 @@ class ALBERT_EXPORT QueryResults : public QObject, private Item::Observer
 
 public:
 
-    /// Constructs query results with the _query_ it belongs to.
-    QueryResults(const Query &query);
+    /// Constructs query results with the _context_ it belongs to.
+    QueryResults(const QueryContext &context);
 
     /// Destructs the query results.
     ~QueryResults() override;
@@ -75,7 +75,7 @@ public:
     ///
     /// Use the range add methods to avoid UI flicker.
     ///
-    void add(ItemPtr auto &&item) { add(query.handler(), std::forward<decltype(item)>(item)); }
+    void add(ItemPtr auto &&item) { add(context.handler(), std::forward<decltype(item)>(item)); }
 
     /// Appends _query_results_ to the results.
     void add(std::ranges::range auto &&query_results)
@@ -123,7 +123,7 @@ public:
     }
 
     /// Appends \ref QueryResult's constructed from _items_ and the handler this results belong to.
-    void add(ItemRange auto &&items){ add(query.handler(), std::forward<decltype(items)>(items)); }
+    void add(ItemRange auto &&items){ add(context.handler(), std::forward<decltype(items)>(items)); }
 
     /// Removes _count_ results starting from _index_.
     void remove(uint index, uint count = 1)
@@ -183,7 +183,7 @@ private:
 
     void notify(const albert::Item *item) override;
 
-    const Query &query;
+    const QueryContext &context;
     std::vector<QueryResult> results;
 
 };

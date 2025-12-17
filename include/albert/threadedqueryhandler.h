@@ -23,7 +23,7 @@ class ALBERT_EXPORT ThreadedQueryHandler : public GeneratorQueryHandler
 {
 public:
     ///
-    /// Returns scored items matching the _query_.
+    /// Returns scored items matching the _context_.
     ///
     /// The match score should make sense and often is the fraction of matched characters (legth of
     /// query string / length of matched string).
@@ -32,13 +32,13 @@ public:
     ///
     /// @note Executed in a worker thread.
     ///
-    virtual std::vector<RankItem> rankItems(Query &query) = 0;
+    virtual std::vector<RankItem> rankItems(QueryContext &context) = 0;
 
     /// Yields items from _rank_items_ lazily sorted by score.
     static ItemGenerator lazySort(std::vector<RankItem> rank_items);
 
-    /// Yields items for _query_ lazily sorted taking usage scoring into account.
-    ItemGenerator items(Query &query) override;
+    /// Yields items for _context_ lazily sorted taking usage scoring into account.
+    ItemGenerator items(QueryContext &context) override;
 
 protected:
     /// Destructs the handler.

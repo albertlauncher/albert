@@ -9,10 +9,10 @@ using namespace std;
 
 ThreadedQueryHandler::~ThreadedQueryHandler() {}
 
-ItemGenerator ThreadedQueryHandler::items(Query &query)
+ItemGenerator ThreadedQueryHandler::items(QueryContext &ctx)
 {
-    auto rank_items = rankItems(query);
-    query.usageScoring().modifyMatchScores(id(), rank_items);
+    auto rank_items = rankItems(ctx);
+    ctx.usageScoring().modifyMatchScores(id(), rank_items);
     return lazySort(::move(rank_items));
 }
 

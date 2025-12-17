@@ -46,14 +46,14 @@ shared_ptr<Item> TriggersQueryHandler::makeItem(const QString &trigger, Extensio
         );
 }
 
-vector<RankItem> TriggersQueryHandler::rankItems(Query &q)
+vector<RankItem> TriggersQueryHandler::rankItems(QueryContext &ctx)
 {
-    Matcher matcher(q, {.fuzzy = fuzzy_});
+    Matcher matcher(ctx, {.fuzzy = fuzzy_});
     vector<RankItem> r;
 
     for (shared_lock l(handler_triggers_mutex_);
          const auto &[t, h] : handler_triggers_)
-        if (!q.isValid())
+        if (!ctx.isValid())
             break;
         else if (const auto m = matcher.match(t, h->name(), h->id()); m)
             r.emplace_back(makeItem(t, h), m);

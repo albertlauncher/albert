@@ -29,9 +29,9 @@ class GeneratorQueryHandlerExecution final : public QueryExecution
 
 public:
 
-    GeneratorQueryHandlerExecution(Query &q, ItemGenerator g)
-        : QueryExecution(q)
-        , generator(::move(g))
+    GeneratorQueryHandlerExecution(QueryContext &ctx, ItemGenerator gen)
+        : QueryExecution(ctx)
+        , generator(::move(gen))
         , iterator(nullopt)
         , active(false)
         , at_end(false)
@@ -55,7 +55,7 @@ public:
 
     bool isActive() const override { return active; }
 
-    bool canFetchMore() const override { return query.isValid() && !at_end; }
+    bool canFetchMore() const override { return context.isValid() && !at_end; }
 
     void fetchMore() override
     {
@@ -64,7 +64,7 @@ public:
             emit activeChanged(active = true);
             watcher.setFuture(QtConcurrent::run([this]()
             {
-                if (query.isValid())
+                if (context.isValid())
                 {
                     try {
                         if (iterator)
@@ -84,7 +84,7 @@ public:
 
     void onFetchFinished()
     {
-        if (query.isValid())
+        if (context.isValid())
         {
             std::vector<std::shared_ptr<albert::Item>> items;
             try {
@@ -102,8 +102,8 @@ public:
     }
 };
 
-unique_ptr<QueryExecution> GeneratorQueryHandler::execution(Query &query)
-{ return make_unique<GeneratorQueryHandlerExecution>(query, items(query)); }
+unique_ptr<QueryExecution> GeneratorQueryHandler::execution(QueryContext &ctx)
+{ return make_unique<GeneratorQueryHandlerExecution>(ctx, items(ctx)); }
 
 
 // -------------------------------------------------------------------------------------------------

@@ -4,7 +4,7 @@
 #pragma once
 #include <albert/export.h>
 #include <albert/extension.h>
-#include <albert/query.h>
+#include <albert/querycontext.h>
 #include <memory>
 class QString;
 class QueryEngine;
@@ -65,11 +65,11 @@ public:
     virtual bool supportsFuzzyMatching() const;
 
     ///
-    /// Creates a query execution for the given _query_.
+    /// Creates a query execution for the given _context_.
     ///
     /// The results are added to _results_ as they become available.
     ///
-    virtual std::unique_ptr<QueryExecution> execution(Query &query) = 0;
+    virtual std::unique_ptr<QueryExecution> execution(QueryContext &context) = 0;
 
 protected:
     /// Destructs the handler.

@@ -25,8 +25,8 @@ public:
     /// Sets the fuzzy matching mode to _enabled_ and triggers \ref updateIndexItems().
     void setFuzzyMatching(bool enabled) override;
 
-    /// Returns the matching items from the index.
-    std::vector<RankItem> rankItems(Query &) override;
+    /// Returns the matching items for _context_.
+    std::vector<RankItem> rankItems(QueryContext &context) override;
 
     ///
     /// Updates the index.

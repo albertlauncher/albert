@@ -2,7 +2,7 @@
 
 #include "indexqueryhandler.h"
 #include "itemindex.h"
-#include "query.h"
+#include "querycontext.h"
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
@@ -27,11 +27,11 @@ void IndexQueryHandler::setIndexItems(vector<IndexItem> &&index_items)
         d->index->setItems(::move(index_items));
 }
 
-vector<RankItem> IndexQueryHandler::rankItems(Query &query)
+vector<RankItem> IndexQueryHandler::rankItems(QueryContext &ctx)
 {
     shared_lock l(d->index_mutex);
     if (d->index)
-        return d->index->search(query.string(), query.isValid());
+        return d->index->search(ctx.string(), ctx.isValid());
     return {};
 }
 

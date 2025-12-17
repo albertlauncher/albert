@@ -7,9 +7,9 @@ namespace {
 uint query_execution_count = 0;
 }
 
-QueryExecution::QueryExecution(albert::Query &q)
+QueryExecution::QueryExecution(albert::QueryContext &ctx)
     : id(query_execution_count++)
-    , query(q)
-    , results(q)
+    , context(ctx)
+    , results(ctx)
 {}
 

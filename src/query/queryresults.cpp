@@ -3,12 +3,11 @@
 #include "extension.h"
 #include "logging.h"
 #include "messagebox.h"
-#include "query.h"
 #include "queryresults.h"
 using namespace albert;
 using namespace std;
 
-QueryResults::QueryResults(const Query &q) : query(q){}
+QueryResults::QueryResults(const QueryContext &ctx) : context(ctx){}
 
 QueryResults::~QueryResults()
 {
@@ -29,7 +28,7 @@ bool QueryResults::activate(uint item_idx, uint action_idx)
 
             // Order is cumbersome here
 
-            emit resultActivated(query, e->id(), i->id(), a.id);
+            emit resultActivated(context.string(), e->id(), i->id(), a.id);
 
             // May delete the query, due to hide()
             // Note to myself:

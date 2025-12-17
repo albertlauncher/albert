@@ -1,9 +1,9 @@
 // Copyright (c) 2024-2025 Manuel Schneider
 
 #include "frontend.h"
+#include "query.h"
 #include "queryengine.h"
 #include "queryexecution.h"
-#include "queryprivate.h"
 #include "session.h"
 using namespace albert::detail;
 using namespace albert;

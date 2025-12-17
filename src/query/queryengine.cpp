@@ -7,7 +7,7 @@
 #include "logging.h"
 #include "queryengine.h"
 #include "queryresults.h"
-#include "queryprivate.h"
+#include "query.h"
 #include "usagedatabase.h"
 #include "usagescoring.h"
 #include <QCoreApplication>

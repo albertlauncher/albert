@@ -1,8 +1,8 @@
 // Copyright (c) 2023-2024 Manuel Schneider
 
+#include "query.h"
 #include "queryexecution.h"
 #include "queryhandler.h"
-#include "queryprivate.h"
 #include "queryresults.h"
 #include "usagescoring.h"
 #include <memory>

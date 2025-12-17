@@ -22,14 +22,14 @@ class ALBERT_EXPORT QueryExecution : public QObject
 
 public:
 
-    /// Constructs a query execution for _query_
-    QueryExecution(Query &query);
+    /// Constructs a query execution for _context_
+    QueryExecution(QueryContext &context);
 
     /// The unique id of this query execution.
     const uint id;
 
-    /// The unique id of this query execution.
-    const Query &query;
+    /// The query context of this query execution.
+    const QueryContext &context;
 
     /// The results of this query.
     QueryResults results;

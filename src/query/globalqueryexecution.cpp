@@ -89,7 +89,7 @@ GlobalQueryExecution::Private::Private(GlobalQueryExecution *execution,
                             .scoring_duration = 0};
             try {
                 auto t = system_clock::now();
-                if (q->query.string().isEmpty()) // important redirection
+                if (q->context.string().isEmpty()) // important redirection
                     for (auto &item : handler->handleEmptyQuery()) // order ???
                         data.rank_items.emplace_back(::move(item), 0);
                 else
@@ -147,7 +147,7 @@ GlobalQueryExecution::Private::Private(GlobalQueryExecution *execution,
                         .arg(total_duration, 6)
                         .arg(reduced.results.size(), 6)
                         .arg(q->id)
-                        .arg(q->query.string());
+                        .arg(q->context.string());
 
             unordered_results = ::move(reduced.results);
 
@@ -192,8 +192,8 @@ void GlobalQueryExecution::Private::addResultChunk()
 
 // -------------------------------------------------------------------------------------------------
 
-GlobalQueryExecution::GlobalQueryExecution(Query &q, vector<GlobalQueryHandler*> h)
-    : QueryExecution(q)
+GlobalQueryExecution::GlobalQueryExecution(QueryContext &c, vector<GlobalQueryHandler*> h)
+    : QueryExecution(c)
     , d(make_unique<Private>(this, ::move(h)))
 {}
 
@@ -209,15 +209,15 @@ GlobalQueryExecution::~GlobalQueryExecution()
 
 bool GlobalQueryExecution::isValid() const { return d->valid; }
 
-const QueryHandler &GlobalQueryExecution::handler() const { return query.handler(); }
+const QueryHandler &GlobalQueryExecution::handler() const { return context.handler(); }
 
 QString GlobalQueryExecution::string() const
-{ return query.string() == "*" ? QString() : query.string(); }
+{ return context.string() == "*" ? QString() : context.string(); }
 
-QString GlobalQueryExecution::trigger() const { return query.trigger(); }
+QString GlobalQueryExecution::trigger() const { return context.trigger(); }
 
 const albert::UsageScoring &GlobalQueryExecution::usageScoring() const
-{ return query.usageScoring(); }
+{ return context.usageScoring(); }
 
 void GlobalQueryExecution::cancel()
 {

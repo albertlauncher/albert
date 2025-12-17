@@ -75,9 +75,9 @@ set(LIB_PUBLIC_HEADER
     include/albert/pluginmetadata.h
     include/albert/pluginprovider.h
     include/albert/query.h
+    include/albert/querycontext.h
     include/albert/queryexecution.h
     include/albert/queryhandler.h
-    include/albert/queryprivate.h
     include/albert/queryresults.h
     include/albert/rankitem.h
     include/albert/telemetryprovider.h

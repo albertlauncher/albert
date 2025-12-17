@@ -30,19 +30,19 @@ class ALBERT_EXPORT GeneratorQueryHandler : public QueryHandler
 {
 public:
     ///
-    /// Yields batches of items for _query_ lazily.
+    /// Yields batches of items for _context_ lazily.
     ///
     /// The batch size is defined by the implementation.
     ///
     /// \note Executed in a background thread.
     ///
-    virtual ItemGenerator items(Query &query) = 0;
+    virtual ItemGenerator items(QueryContext &context) = 0;
 
 protected:
     /// Destructs the handler.
     ~GeneratorQueryHandler() override;
 
-    /// Returns a threaded synchronous generator query execution.
-    std::unique_ptr<QueryExecution> execution(Query &query) override;
+    /// Returns a threaded synchronous generator query execution for _context_.
+    std::unique_ptr<QueryExecution> execution(QueryContext &context) override;
 };
 }  // namespace albert

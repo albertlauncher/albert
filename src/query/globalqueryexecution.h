@@ -1,15 +1,15 @@
 // Copyright (c) 2022-2025 Manuel Schneider
 
 #pragma once
-#include "query.h"
+#include "querycontext.h"
 #include "queryexecution.h"
 #include <memory>
 namespace albert{ class GlobalQueryHandler; }
 
-class GlobalQueryExecution final : public albert::QueryExecution, public albert::Query
+class GlobalQueryExecution final : public albert::QueryExecution, public albert::QueryContext
 {
 public:
-    GlobalQueryExecution(albert::Query &query,
+    GlobalQueryExecution(albert::QueryContext &context,
                          std::vector<albert::GlobalQueryHandler *> query_handlers);
     ~GlobalQueryExecution();
 

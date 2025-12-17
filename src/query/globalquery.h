@@ -16,5 +16,5 @@ private:
     QString name() const override;
     QString description() const override;
     QString synopsis(const QString &query) const override;
-    std::unique_ptr<albert::QueryExecution> execution(albert::Query &query) override;
+    std::unique_ptr<albert::QueryExecution> execution(albert::QueryContext &context) override;
 };
