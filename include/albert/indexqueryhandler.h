@@ -26,7 +26,7 @@ public:
     void setFuzzyMatching(bool enabled) override;
 
     /// Returns the matching items from the index.
-    std::vector<RankItem> handleGlobalQuery(Query &) override;
+    std::vector<RankItem> rankItems(Query &) override;
 
     ///
     /// Updates the index.

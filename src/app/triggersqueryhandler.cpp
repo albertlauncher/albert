@@ -46,7 +46,7 @@ shared_ptr<Item> TriggersQueryHandler::makeItem(const QString &trigger, Extensio
         );
 }
 
-vector<RankItem> TriggersQueryHandler::handleGlobalQuery(Query &q)
+vector<RankItem> TriggersQueryHandler::rankItems(Query &q)
 {
     Matcher matcher(q, {.fuzzy = fuzzy_});
     vector<RankItem> r;

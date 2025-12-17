@@ -93,7 +93,7 @@ GlobalQueryExecution::Private::Private(GlobalQueryExecution *execution,
                     for (auto &item : handler->handleEmptyQuery()) // order ???
                         data.rank_items.emplace_back(::move(item), 0);
                 else
-                    data.rank_items = handler->handleGlobalQuery(*q);
+                    data.rank_items = handler->rankItems(*q);
                 data.handling_duration = duration_cast<milliseconds>(system_clock::now()-t).count();
 
                 t = system_clock::now();

@@ -27,7 +27,7 @@ void IndexQueryHandler::setIndexItems(vector<IndexItem> &&index_items)
         d->index->setItems(::move(index_items));
 }
 
-vector<RankItem> IndexQueryHandler::handleGlobalQuery(Query &query)
+vector<RankItem> IndexQueryHandler::rankItems(Query &query)
 {
     shared_lock l(d->index_mutex);
     if (d->index)
