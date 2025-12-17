@@ -2,54 +2,12 @@
 // SPDX-License-Identifier: MIT
 
 #pragma once
-#include <albert/item.h>
-#include <albert/query.h>
-#include <albert/queryhandler.h>
-#include <memory>
-#include <mutex>
+#include <albert/generatorqueryhandler.h>
+#include <albert/rankitem.h>
 #include <vector>
 
 namespace albert
 {
-class RankItem;
-
-
-class ThreadedQuery : public albert::Query
-{
-public:
-    /// Adds _item_ to the query results thread-safe.
-    void add(ItemPtr auto &&item)
-    {
-        if (const auto lock = getLock();
-            isValid())
-            matches().emplace_back(std::forward<decltype(item)>(item));
-        collect();
-    }
-
-    /// Adds _items_ to the query results thread-safe.
-    void add(ItemRange auto &&items)
-    {
-        if (const auto lock = getLock();
-            isValid() || !items.empty())
-        {
-            auto &m = matches();
-            m.reserve(m.size() + std::ranges::distance(items));
-            for (auto &&item : items)
-                // m.emplace_back(std::forward_like<decltype(items)>(item));
-                // TODO remove if forward_like is available everywhere (26.04)
-                if constexpr (std::is_lvalue_reference_v<decltype(items)>)
-                    m.emplace_back(item);           // copy if lvalue range
-                else
-                    m.emplace_back(std::move(item)); // move if rvalue range
-        }
-        collect();
-    }
-
-private:
-    virtual std::lock_guard<std::mutex> getLock() = 0;
-    virtual std::vector<std::shared_ptr<Item>> &matches() = 0;
-    virtual void collect() = 0;
-};
 
 ///
 /// Abstract trigger query handler extension.
@@ -61,21 +19,30 @@ private:
 ///
 /// \ingroup util_query
 ///
-class ALBERT_EXPORT ThreadedQueryHandler : public QueryHandler
+class ALBERT_EXPORT ThreadedQueryHandler : public GeneratorQueryHandler
 {
 public:
+    ///
+    /// Returns scored items matching the _query_.
+    ///
+    /// The match score should make sense and often is the fraction of matched characters (legth of
+    /// query string / length of matched string).
+    ///
+    /// Note that the empty pattern matches everything and returns all items with a score of 0.
+    ///
+    /// @note Executed in a worker thread.
+    ///
+    virtual std::vector<RankItem> rankItems(Query &query) = 0;
 
-    ///
-    /// Handles the _threaded_query_.
-    ///
-    /// @note Executed in a thread.
-    ///
-    virtual void handleThreadedQuery(ThreadedQuery &threaded_query) = 0;
+    /// Yields items from _rank_items_ lazily sorted by score.
+    static ItemGenerator lazySort(std::vector<RankItem> rank_items);
+
+    /// Yields items for _query_ lazily sorted taking usage scoring into account.
+    ItemGenerator items(Query &query) override;
 
 protected:
-
-    std::unique_ptr<QueryExecution> execution(Query &query) override;
-
+    /// Destructs the handler.
+    ~ThreadedQueryHandler() override;
 };
 
 }  // namespace albert

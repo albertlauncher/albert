@@ -60,7 +60,7 @@ protected:
     /// @note Reimplement if the handler should have custom triggered behavior.
     /// Think twice though, it may break user expectation.
     ///
-    void handleThreadedQuery(ThreadedQuery &query) override;
+    std::vector<RankItem> rankItems(Query &query) override;
 
 };
 

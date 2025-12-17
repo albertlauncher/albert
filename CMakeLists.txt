@@ -46,6 +46,11 @@ target_compile_options(qhotkey
         -Wno-nullability-completeness
 )
 
+#  QCoro
+
+find_package(QCoro6 REQUIRED COMPONENTS Coro Core)
+qcoro_enable_coroutines()
+
 
 ### Lib  ######################################################################
 
@@ -61,6 +66,7 @@ set(LIB_PUBLIC_HEADER
     include/albert/extensionregistry.h
     include/albert/fallbackhandler.h
     include/albert/frontend.h
+    include/albert/generatorqueryhandler.h
     include/albert/globalqueryhandler.h
     include/albert/item.h
     include/albert/plugindependency.h
@@ -142,6 +148,7 @@ set(LIB_SRC
     src/plugin/pluginregistry.h
     src/plugin/topologicalsort.hpp
     src/query/fallbackhandler.cpp
+    src/query/generatorqueryhandler.cpp
     src/query/globalquery.cpp
     src/query/globalquery.h
     src/query/globalqueryexecution.cpp
@@ -153,8 +160,6 @@ set(LIB_SRC
     src/query/queryexecution.cpp
     src/query/queryhandler.cpp
     src/query/queryresults.cpp
-    src/query/threadedqueryexecution.cpp
-    src/query/threadedqueryexecution.h
     src/query/threadedqueryhandler.cpp
     src/query/usagedatabase.cpp
     src/query/usagedatabase.h
@@ -307,6 +312,7 @@ target_link_libraries(${TARGET_LIB}
         $<BUILD_LOCAL_INTERFACE:QHotkey::QHotkey>
         $<BUILD_LOCAL_INTERFACE:QNotifications::QNotifications>
         $<BUILD_LOCAL_INTERFACE:qt6keychain>
+        QCoro6::Coro
         Qt6::Concurrent
         Qt6::Core
         Qt6::Network
