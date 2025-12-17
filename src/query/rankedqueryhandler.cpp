@@ -1,22 +1,22 @@
 // Copyright (c) 2023-2025 Manuel Schneider
 
-#include "threadedqueryhandler.h"
+#include "rankedqueryhandler.h"
 #include "usagescoring.h"
 #include <QCoroGenerator>
 #include <ranges>
 using namespace albert;
 using namespace std;
 
-ThreadedQueryHandler::~ThreadedQueryHandler() {}
+RankedQueryHandler::~RankedQueryHandler() {}
 
-ItemGenerator ThreadedQueryHandler::items(QueryContext &ctx)
+ItemGenerator RankedQueryHandler::items(QueryContext &ctx)
 {
     auto rank_items = rankItems(ctx);
     ctx.usageScoring().modifyMatchScores(id(), rank_items);
     return lazySort(::move(rank_items));
 }
 
-ItemGenerator ThreadedQueryHandler::lazySort(vector<RankItem> rank_items)
+ItemGenerator RankedQueryHandler::lazySort(vector<RankItem> rank_items)
 {
     while(!rank_items.empty())
     {

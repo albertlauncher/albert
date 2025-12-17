@@ -79,9 +79,9 @@ set(LIB_PUBLIC_HEADER
     include/albert/queryexecution.h
     include/albert/queryhandler.h
     include/albert/queryresults.h
+    include/albert/rankedqueryhandler.h
     include/albert/rankitem.h
     include/albert/telemetryprovider.h
-    include/albert/threadedqueryhandler.h
     include/albert/urlhandler.h
     include/albert/usagescoring.h
 
@@ -160,7 +160,7 @@ set(LIB_SRC
     src/query/queryexecution.cpp
     src/query/queryhandler.cpp
     src/query/queryresults.cpp
-    src/query/threadedqueryhandler.cpp
+    src/query/rankedqueryhandler.cpp
     src/query/usagedatabase.cpp
     src/query/usagedatabase.h
     src/query/usagescoring.cpp

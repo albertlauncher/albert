@@ -19,7 +19,7 @@ namespace albert
 ///
 /// \ingroup util_query
 ///
-class ALBERT_EXPORT ThreadedQueryHandler : public GeneratorQueryHandler
+class ALBERT_EXPORT RankedQueryHandler : public GeneratorQueryHandler
 {
 public:
     ///
@@ -42,7 +42,7 @@ public:
 
 protected:
     /// Destructs the handler.
-    ~ThreadedQueryHandler() override;
+    ~RankedQueryHandler() override;
 };
 
 }  // namespace albert

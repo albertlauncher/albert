@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 
 #pragma once
+#include <albert/rankedqueryhandler.h>
 #include <albert/rankitem.h>
-#include <albert/threadedqueryhandler.h>
 #include <memory>
 #include <vector>
 
@@ -25,15 +25,15 @@ namespace albert
 ///
 /// \ingroup core_extension
 ///
-class ALBERT_EXPORT GlobalQueryHandler : public albert::ThreadedQueryHandler
+class ALBERT_EXPORT GlobalQueryHandler : public albert::RankedQueryHandler
 {
 public:
     ///
     /// Returns a list of special items that should show up on an emtpy query.
     ///
     /// Empty patterns match everything. For triggered queries this is desired and by design lots of
-    /// handlers relay the handleThreadedQuery to handleGlobalQuery. For global queries this leads to
-    /// an expensive query execution on empty queries. Therefore the empty global query is not
+    /// handlers relay the handleThreadedQuery to handleGlobalQuery. For global queries this leads
+    /// to an expensive query execution on empty queries. Therefore the empty global query is not
     /// executed. This function allows dedicated empty global query handling.
     ///
     virtual std::vector<std::shared_ptr<Item>> handleEmptyQuery();
