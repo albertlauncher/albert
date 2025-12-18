@@ -25,10 +25,10 @@ public:
     /// Returns the handler of this query.
     virtual const QueryHandler &handler() const = 0;
 
-    /// Returns the trigger of this query.
+    /// Returns the trigger string of the query.
     virtual QString trigger() const = 0;
 
-    /// Returns the query string excluding the trigger.
+    /// Returns the query string of the query.
     virtual QString string() const = 0;
 
     /// Returns the usage scoring.

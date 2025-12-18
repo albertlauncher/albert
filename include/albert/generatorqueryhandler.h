@@ -14,15 +14,15 @@ class Item;
 using ItemGenerator = QCoro::Generator<std::vector<std::shared_ptr<albert::Item>>>;
 
 ///
-/// C++ coroutine based, threaded item generator query handler.
+/// Coroutine-based synchronous generator query handler.
 ///
-/// Convenience class for lazy, CPU-bound tasks.
+/// Convenience base class for implementing triggered query handlers using C++ coroutines. Results
+/// are produced lazily via a synchronous item generator. Item production is executed in a worker
+/// thread, allowing CPU-bound work without blocking the main thread. The items are displayed in the
+/// order they are yielded.
 ///
-/// CAUTION: The items of the provided generator are implicitly yielded in a background thread.
-/// Make sure your data is handled thread safe.
-///
-/// Note: `std::generator` is not available on all major platforms yet. Therefore this class is
-/// based on `QCoro::Generator` for now.
+/// This class is intended for computational workloads. For I/O-bound or event-driven tasks, prefer
+/// \ref AsyncGeneratorQueryHandler.
 ///
 /// \ingroup util_query
 ///

@@ -11,17 +11,15 @@ namespace albert
 {
 
 ///
-/// Abstract global query handler.
+/// Query handler participating in the global search.
 ///
-/// A functional query handler returning scored items. Applicable for the
-/// global search. Use this if you want your results show up in the global
-/// search.
+/// By design, every global query handler is also a triggered query handler. Therefore this class
+/// inherits \ref RankedQueryHandler and as such inherits its contract. I.e. the handler returns a
+/// complete set of match-scored items eagerly. The provided match scores will be combined with the
+/// usage-based scoring weighted by user configuration. Finally the items (of all global handlers)
+/// will be yielded lazily in order of their final score.
 ///
-/// By design choice every global query handler should also provide an exclusive handler. To enforce
-/// this GlobalQueryHandler inherits \ref ThreadedQueryHandler and implements the \ref
-/// ThreadedQueryHandler::handleThreadedQuery.
-///
-/// @note Do _not_ use this for long running tasks!
+/// Note: Global queries are expected to complete within a few milliseconds.
 ///
 /// \ingroup core_extension
 ///
@@ -31,10 +29,9 @@ public:
     ///
     /// Returns a list of special items that should show up on an emtpy query.
     ///
-    /// Empty patterns match everything. For triggered queries this is desired and by design lots of
-    /// handlers relay the handleThreadedQuery to handleGlobalQuery. For global queries this leads
-    /// to an expensive query execution on empty queries. Therefore the empty global query is not
-    /// executed. This function allows dedicated empty global query handling.
+    /// The empty pattern matches everything. For triggered queries this is desired and by design
+    /// lots of triggered handlers reuse GlobalQueryHandler::rankItems. The empty global query is
+    /// not executed. This function allows dedicated empty global query handling.
     ///
     virtual std::vector<std::shared_ptr<Item>> handleEmptyQuery();
 

@@ -15,16 +15,17 @@ class QueryExecution;
 class QueryResults;
 
 ///
-/// Qt native, asynchronous and lazy query handler.
+/// Base query handler interface for triggered queries.
 ///
-/// This class is the base of the query handling API. Besides general properties and methods
-/// related to query handling and its user configuration it defines the abstract \ref
-/// QueryExecution factory \ref execution.
+/// This class defines the fundamental contract between the core and a query
+/// handler. It is used for triggered queries and is selected exclusively when
+/// its trigger matches the user input.
 ///
-/// When deriving this class you are supposed to handle the query asynchonously and lazily
-/// the native Qt way by implementing \ref execution. Compared to the convenience subclasses this
-/// is complex. Implement this class only if you know that you have to. Otherwise see \ref
-/// AsyncGeneratorQueryHandler or its subclasses.
+/// Implementations are responsible for executing the query asynchronously and
+/// providing results via a \ref QueryExecution created by \ref execution.
+///
+/// This interface is low-level and intentionally flexible. Implement it only
+/// if your use case is not covered by the convenience subclasses.
 ///
 /// \ingroup core_extension
 ///
@@ -55,10 +56,10 @@ public:
     virtual QString defaultTrigger() const;
 
     ///
-    /// Returns `true` if the handler supports error tolerant matching, otherwise returns `false`.
+    /// Returns `true` if the handler supports fuzzy matching, otherwise returns `false`.
     ///
-    /// If `true`, the user can enable fuzzy matching for this handler and \ref setFuzzyMatching(bool)
-    /// should be implemented accordingly.
+    /// If `true`, the user can enable fuzzy matching for this handler and \ref
+    /// setFuzzyMatching(bool) should be implemented accordingly.
     ///
     /// The base class implementation returns `false`.
     ///
@@ -78,7 +79,7 @@ protected:
     ///
     /// Sets the fuzzy matching mode to _enabled_.
     ///
-    /// This function is called when the user enables or disables fuzzy matching for this handler.
+    /// This function is called when the user toggles fuzzy matching for this handler.
     ///
     /// The base class implementation does nothing.
     ///

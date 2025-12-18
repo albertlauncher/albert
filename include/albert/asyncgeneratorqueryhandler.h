@@ -14,17 +14,17 @@ class Item;
 using AsyncItemGenerator = QCoro::AsyncGenerator<std::vector<std::shared_ptr<albert::Item>>>;
 
 ///
-/// C++ coroutine based, asynchronous item generator query handler.
+/// Coroutine-based asynchronous generator query handler.
 ///
-/// This class is especially useful if your task is I/O bound (e.g. network requests, subprocessing,
-/// etc.). If your task is CPU bound consider using \ref GeneratorQueryHandler or its subclasses.
+/// Convenience base class for implementing triggered query handlers using C++ coroutines. Results
+/// are produced lazily via an asynchronous item generator. The items are displayed in the order
+/// they are yielded.
 ///
-/// Note that \ref items is called from the main thread. Do not run blocking operations in it.
+/// This class is suitable for I/O-bound query handling (e.g. network requests, subprocessing,
+/// etc.). For CPU-bound work, prefer \ref GeneratorQueryHandler or its subclasses.
 ///
 /// If you derive this class you want to link against QCoro which provides coroutine support for Qt
-/// classes. Note that QCoro is still in development and as such does not have a stable API/ABI.
-/// Also some of its awaiters introduce memory leaks and segfaults so maybe it is better to not use
-/// system packaged QCoro and carefully test your implementation.
+/// classes. Note that QCoro is still in development.
 ///
 /// \ingroup util_query
 ///
@@ -36,7 +36,7 @@ public:
     ///
     /// The batch size is defined by the implementation.
     ///
-    /// \note Called from main thread.
+    /// \note Called from main thread. Do not run blocking operations in it.
     ///
     virtual AsyncItemGenerator items(QueryContext &context) = 0;
 
