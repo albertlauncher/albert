@@ -63,7 +63,7 @@ const albert::UsageScoring &Query::usageScoring() const { return d->usage_scorin
 
 QString Query::trigger() const { return d->trigger; }
 
-QString Query::string() const { return d->string; }
+QString Query::query() const { return d->string; }
 
 albert::QueryResults &Query::matches() { return d->execution->results; }
 

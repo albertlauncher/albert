@@ -89,7 +89,7 @@ GlobalQueryExecution::Private::Private(GlobalQueryExecution *execution,
                             .scoring_duration = 0};
             try {
                 auto t = system_clock::now();
-                if (q->context.string().isEmpty()) // important redirection
+                if (q->context.query().isEmpty()) // important redirection
                     for (auto &item : handler->handleEmptyQuery()) // order ???
                         data.rank_items.emplace_back(::move(item), 0);
                 else
@@ -140,14 +140,14 @@ GlobalQueryExecution::Private::Private(GlobalQueryExecution *execution,
                             .arg(diag.scoring_runtime, 6)
                             .arg(diag.item_count, 6)
                             .arg(q->id)
-                            .arg(q->string(), diag.handler->id());
+                            .arg(q->query(), diag.handler->id());
 
             DEBG << fheader;
             DEBG << footer
                         .arg(total_duration, 6)
                         .arg(reduced.results.size(), 6)
                         .arg(q->id)
-                        .arg(q->context.string());
+                        .arg(q->context.query());
 
             unordered_results = ::move(reduced.results);
 
@@ -211,8 +211,8 @@ bool GlobalQueryExecution::isValid() const { return d->valid; }
 
 const QueryHandler &GlobalQueryExecution::handler() const { return context.handler(); }
 
-QString GlobalQueryExecution::string() const
-{ return context.string() == "*" ? QString() : context.string(); }
+QString GlobalQueryExecution::query() const
+{ return context.query() == "*" ? QString() : context.query(); }
 
 QString GlobalQueryExecution::trigger() const { return context.trigger(); }
 

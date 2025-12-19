@@ -18,7 +18,7 @@ private:
     // Required because we want to handle '*' as empty query and for atomic valid flag
     bool isValid() const override;
     const albert::QueryHandler &handler() const override;
-    QString string() const override;
+    QString query() const override;
     QString trigger() const override;
     const albert::UsageScoring &usageScoring() const override;
 

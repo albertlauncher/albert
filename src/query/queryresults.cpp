@@ -28,7 +28,7 @@ bool QueryResults::activate(uint item_idx, uint action_idx)
 
             // Order is cumbersome here
 
-            emit resultActivated(context.string(), e->id(), i->id(), a.id);
+            emit resultActivated(context.query(), e->id(), i->id(), a.id);
 
             // May delete the query, due to hide()
             // Note to myself:

@@ -29,13 +29,13 @@ public:
     virtual QString trigger() const = 0;
 
     /// Returns the query string of the query.
-    virtual QString string() const = 0;
+    virtual QString query() const = 0;
 
     /// Returns the usage scoring.
     virtual const UsageScoring &usageScoring() const = 0;
 
     /// Implicit QString context conversion.
-    operator QString() const { return string(); }
+    operator QString() const { return query(); }
 
 protected:
 

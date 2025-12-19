@@ -40,8 +40,8 @@ public:
     /// \copydoc albert::Query::trigger
     QString trigger() const override;
 
-    /// \copydoc albert::Query::string
-    QString string() const override;
+    /// \copydoc albert::Query::query
+    QString query() const override;
 
     /// \copydoc albert::Query::usageScoring
     const UsageScoring &usageScoring() const override;
