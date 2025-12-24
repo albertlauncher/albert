@@ -25,7 +25,7 @@
 # |                  url |    string    | Browsable online source code                                              |
 # |           readme_url |    string    | Online README                                                             |
 # |              authors | string list  | List of copyright holders. Preferably using mentionable GitHub usernames. |
-# |              authors | string list  | List of maintainers. Preferably using mentionable GitHub usernames.       |
+# |          maintainers | string list  | List of maintainers. Preferably using mentionable GitHub usernames.       |
 # | runtime_dependencies | string list  | Default: `[]`. Required libraries.                                        |
 # |  binary_dependencies | string list  | Default: `[]`. Required executables.                                      |
 # |  plugin_dependencies | string list  | Default: `[]`. Required plugins.                                          |
