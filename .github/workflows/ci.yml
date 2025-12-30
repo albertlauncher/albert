@@ -103,7 +103,7 @@ jobs:
           HOMEBREW_NO_INSTALL_CLEANUP: 1
           HOMEBREW_NO_INSTALL_UPGRADE: 1
         run: |
-          brew install llvm@18 qt
+          brew install llvm@18 qt qcoro6
           brew install --ignore-dependencies libqalculate qtkeychain # python libarchive sparkle
 
       - name: Build and package
