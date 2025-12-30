@@ -597,7 +597,7 @@ static auto indexMatch(const QStringList &item_strings,
 
     index.setItems(::move(index_items));
 
-    return index.search(search_string, true);
+    return index.search(search_string, [] { return true; });
 };
 
 void AlbertTests::index_empty()

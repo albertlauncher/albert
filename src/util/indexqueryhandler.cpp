@@ -31,7 +31,7 @@ vector<RankItem> IndexQueryHandler::rankItems(QueryContext &ctx)
 {
     shared_lock l(d->index_mutex);
     if (d->index)
-        return d->index->search(ctx.query(), ctx.isValid());
+        return d->index->search(ctx.query(), [&ctx] { return ctx.isValid(); });
     return {};
 }
 

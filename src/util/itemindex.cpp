@@ -103,8 +103,10 @@ public:
     IndexData index;
 
     vector<QString> ngrams_for_word(const QString &word)const;
-    vector<WordMatch> getWordMatches(const QString &word, const bool &isValid) const;
-    vector<StringMatch> getStringMatches(const QString &word, const bool &isValid) const;
+    vector<WordMatch> getWordMatches(const QString &word,
+                                     const function<bool()> &stop_requested) const;
+    vector<StringMatch> getStringMatches(const QString &word,
+                                         const function<bool()> &stop_requested) const;
 };
 
 vector<QString> ItemIndex::Private::ngrams_for_word(const QString &word) const
@@ -120,7 +122,8 @@ vector<QString> ItemIndex::Private::ngrams_for_word(const QString &word) const
     return ngrams;
 }
 
-vector<WordMatch> ItemIndex::Private::getWordMatches(const QString &word, const bool &isValid) const
+vector<WordMatch> ItemIndex::Private::getWordMatches(const QString &word,
+                                                     const function<bool()> &stop_requested) const
 {
     vector<WordMatch> matches;
     const uint word_length = word.length();
@@ -150,7 +153,7 @@ vector<WordMatch> ItemIndex::Private::getWordMatches(const QString &word, const 
         unordered_map<Index, uint> word_match_counts;
         for (const QString &n_gram : ngrams)
         {
-            if (!isValid)
+            if (!stop_requested)
                 return {};
 
             // Get the ngram occurrences
@@ -183,7 +186,7 @@ vector<WordMatch> ItemIndex::Private::getWordMatches(const QString &word, const 
 
         for (const auto &[word_idx, ngram_count]: word_match_counts)
         {
-            if (!isValid)
+            if (!stop_requested)
                 return {};
 
             if (ngram_count < minimum_match_count)
@@ -202,12 +205,12 @@ vector<WordMatch> ItemIndex::Private::getWordMatches(const QString &word, const 
     return matches;
 }
 
-vector<StringMatch>
-ItemIndex::Private::getStringMatches(const QString &word, const bool &isValid) const
+vector<StringMatch> ItemIndex::Private::getStringMatches(const QString &word,
+                                                         const function<bool()> &stop_requested) const
 {
     vector<StringMatch> string_matches;
 
-    for (const auto &word_match : getWordMatches(word, isValid))
+    for (const auto &word_match : getWordMatches(word, stop_requested))
         for (const auto &occurrence : word_match.word_index_item.occurrences)
             string_matches.emplace_back(occurrence.index, occurrence.position, word_match.match_length);
 
@@ -298,7 +301,8 @@ void ItemIndex::setItems(vector<IndexItem> &&index_items)
     d->index = new_index;
 }
 
-vector<albert::RankItem> ItemIndex::search(const QString &string, const bool &isValid) const
+vector<albert::RankItem> ItemIndex::search(const QString &string,
+                                           const function<bool()> &stop_requested) const
 {
     vector<RankItem> result;
     const auto words = preprocessQuery(string, d->config);
@@ -318,15 +322,15 @@ vector<albert::RankItem> ItemIndex::search(const QString &string, const bool &is
     else
     {
         unordered_map<Index, double> result_map;
-        vector<StringMatch> string_matches = d->getStringMatches(words[0], isValid);
+        vector<StringMatch> string_matches = d->getStringMatches(words[0], stop_requested);
 
         // In case of multiple words intersect. Todo: user chooses strategy
         for (int w = 1; w < words.size(); ++w)
         {
-            if (!isValid || string_matches.empty())
+            if (!stop_requested || string_matches.empty())
                 return {};
 
-            vector<StringMatch> other_string_matches = d->getStringMatches(words[w], isValid);
+            vector<StringMatch> other_string_matches = d->getStringMatches(words[w], stop_requested);
 
             if (other_string_matches.empty())
                 return {};

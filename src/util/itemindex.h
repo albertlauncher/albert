@@ -32,7 +32,8 @@ public:
     /// @param string The string to search for.
     /// @param isValid A flag used to cancel the search.
     /// @return A list of scored items.
-    std::vector<albert::RankItem> search(const QString &string, const bool &isValid) const;
+    std::vector<albert::RankItem> search(const QString &string,
+                                         const std::function<bool()> &stop_requested) const;
 
 private:
 
