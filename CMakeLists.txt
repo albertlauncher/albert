@@ -69,6 +69,7 @@ set(LIB_PUBLIC_HEADER
     include/albert/frontend.h
     include/albert/generatorqueryhandler.h
     include/albert/globalqueryhandler.h
+    include/albert/icon.h
     include/albert/item.h
     include/albert/plugindependency.h
     include/albert/plugininstance.h
@@ -244,7 +245,6 @@ add_library(${TARGET_LIB} SHARED
     ${LIB_SRC}
     ${LIB_UI}
     resources/resources.qrc
-    include/albert/icon.h
 )
 
 add_library("${PROJECT_NAME}::${TARGET_LIB}" ALIAS ${TARGET_LIB})
