@@ -30,9 +30,9 @@ RUN cmake \
       -S /src \
       -B $build_dir \
       -G Ninja \
-      -DBUILD_TESTS=ON \
       -DCMAKE_C_COMPILER=clang \
       -DCMAKE_CXX_COMPILER=clang++ \
+      -DBUILD_TESTS=ON \
  && cmake --build $build_dir -j$(nproc) \
  && cmake --install $build_dir --prefix /usr \
  && ctest --test-dir $build_dir --output-on-failure \
@@ -42,6 +42,9 @@ FROM build AS build-plugin
 RUN cmake \
       -S /src/plugins/applications \
       -B $build_dir \
+      -G Ninja \
+      -DCMAKE_C_COMPILER=clang \
+      -DCMAKE_CXX_COMPILER=clang++ \
       -DCMAKE_PREFIX_PATH=/usr/lib64/cmake \
  && cmake --build $build_dir -j$(nproc) \
  && cmake --install $build_dir --prefix /usr \
