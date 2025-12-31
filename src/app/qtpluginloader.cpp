@@ -15,15 +15,15 @@ using namespace albert;
 using namespace std::chrono;
 using namespace std;
 
-static QString fetchLocalizedMetadata(const QJsonObject &json ,const QString &key)
+static QString fetchLocalizedMetadata(const QJsonObject &json, const QString &key)
 {
     auto locale = QLocale();
 
-    auto k = QStringLiteral("%1[%2]").arg(key, locale.name());
+    auto k = u"%1[%2]"_s.arg(key, locale.name());
     if (auto v = json[k].toString(); !v.isEmpty())
         return v;
 
-    k = QStringLiteral("%1[%2]").arg(key, QLocale::languageToCode(locale.language()));
+    k = u"%1[%2]"_s.arg(key, QLocale::languageToCode(locale.language()));
     if (auto v = json[k].toString(); !v.isEmpty())
         return v;
 
@@ -82,7 +82,7 @@ QtPluginLoader::QtPluginLoader(const QString &p) : loader_(p), instance_(nullptr
         lts == "frontend"_L1)
         load_type = PluginMetadata::LoadType::Frontend;
     else if (!lts.isEmpty() && lts != "user"_L1)
-        WARN << QString("Invalid load type '%1'. Default to 'user'.").arg(lts);
+        WARN << u"Invalid load type '%1'. Default to 'user'."_s.arg(lts);
 
     metadata_ = albert::PluginMetadata
     {
@@ -164,7 +164,7 @@ void QtPluginLoader::load()
 
         if (translator = make_unique<QTranslator>();
             translator->load(QLocale(), metadata().id, "_", ":/i18n"))
-            DEBG << QString("Using translations for '%1' from %2")
+            DEBG << u"Using translations for '%1' from %2"_s
                         .arg(metadata_.id,translator->filePath());
         else
             translator.reset();
