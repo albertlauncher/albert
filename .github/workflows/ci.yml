@@ -71,7 +71,7 @@ jobs:
           name: source-artifact
 
       - name: Build docker test image
-        run: docker build . --file .docker/${{ matrix.dockerfile }} --target build
+        run: docker build . --file .docker/${{ matrix.dockerfile }} --target build-plugin
 
   MacBuilds:
     needs: SourceArtifact

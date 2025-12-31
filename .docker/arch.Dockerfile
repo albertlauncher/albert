@@ -21,20 +21,27 @@ RUN pacman -Syu --verbose --noconfirm \
 
 FROM base AS build
 COPY . /src
-RUN cmake -S /src -B /build -G Ninja \
+ARG build_dir="/build"
+RUN cmake \
+      -S /src \
+      -B $build_dir \
+      -G Ninja \
       -DBUILD_TESTS=ON \
       -DCMAKE_C_COMPILER=clang \
       -DCMAKE_CXX_COMPILER=clang++ \
- && cmake --build /build -j$(nproc) \
- && cmake --install /build --prefix /usr \
- && ctest --test-dir /build --output-on-failure \
- && rm -rf /build
+ && cmake --build $build_dir -j$(nproc) \
+ && cmake --install $build_dir --prefix /usr \
+ && ctest --test-dir $build_dir --output-on-failure \
+ && rm -rf $build_dir
 
-FROM base AS build-plugins
-RUN cmake -S /src/plugins/applications -B /build -DCMAKE_PREFIX_PATH=/usr/lib/$(gcc -dumpmachine)/cmake/ \
- && cmake --build /build -j$(nproc) \
- && cmake --install /build --prefix /usr \
- && ctest --test-dir /build --output-on-failure \
- && rm -rf /build
+FROM build AS build-plugin
+RUN cmake \
+      -S /src/plugins/applications \
+      -B $build_dir \
+      -DCMAKE_PREFIX_PATH=/usr/lib/$(gcc -dumpmachine)/cmake/ \
+ && cmake --build $build_dir -j$(nproc) \
+ && cmake --install $build_dir --prefix /usr \
+ && ctest --test-dir $build_dir --output-on-failure \
+ && rm -rf $build_dir
 
 ENTRYPOINT ["bash"]

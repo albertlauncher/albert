@@ -43,19 +43,25 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 
 FROM base AS build
 COPY . /src
-ARG dir="/build"
-RUN cmake -S /src -B $dir -G Ninja \
+ARG build_dir="/build"
+RUN cmake \
+      -S /src \
+      -B $build_dir \
+      -G Ninja \
       -DBUILD_TESTS=ON \
       -DCMAKE_C_COMPILER=clang \
       -DCMAKE_CXX_COMPILER=clang++ \
- && cmake --build $dir -j$(nproc) \
- && cmake --install $dir --prefix /usr \
- && ctest --test-dir $dir --output-on-failure \
- && rm -rf $dir
+ && cmake --build $build_dir -j$(nproc) \
+ && cmake --install $build_dir --prefix /usr \
+ && ctest --test-dir $build_dir --output-on-failure \
+ && rm -rf $build_dir
 
-FROM base AS build-plugins
-RUN cmake -S /src/plugins/applications -B $dir -DCMAKE_PREFIX_PATH=/usr/lib/$(gcc -dumpmachine)/cmake/ \
- && cmake --build $dir -j$(nproc) \
- && cmake --install $dir --prefix /usr \
- && ctest --test-dir $dir --output-on-failure \
- && rm -rf $dir
+FROM build AS build-plugin
+RUN cmake \
+      -S /src/plugins/applications \
+      -B $build_dir \
+      -DCMAKE_PREFIX_PATH=/usr/lib/$(gcc -dumpmachine)/cmake/ \
+ && cmake --build $build_dir -j$(nproc) \
+ && cmake --install $build_dir --prefix /usr \
+ && ctest --test-dir $build_dir --output-on-failure \
+ && rm -rf $build_dir
