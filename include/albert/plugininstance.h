@@ -22,6 +22,9 @@ class PluginLoader;
 ///
 /// The class every plugin has to inherit.
 ///
+/// If the plugin instantiation fails you are supposed to print errors in english to the logs and
+/// throw a localized message that will be shown to the user.
+///
 /// \ingroup core_plugin
 ///
 class ALBERT_EXPORT PluginInstance : public QObject
