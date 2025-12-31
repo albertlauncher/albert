@@ -151,6 +151,10 @@ const PluginMetadata &QtPluginLoader::metadata() const { return metadata_; }
 
 void QtPluginLoader::load()
 {
+    // Errors are intentionally not logged. Thats the responsibility of the plugin implementation.
+    // Plugins are expected to throw a localized message and print english logs using their
+    // logging category.
+
     auto future = QtConcurrent::run([this]
     {
         auto tp_l = system_clock::now();
@@ -184,30 +188,23 @@ void QtPluginLoader::load()
         emit finished(tr("Loading: %1 ms, Instantiating: %2 ms").arg(dur_l).arg(dur_c));
     })
     .onFailed(this, [this](const QUnhandledException &que) {
-        QString error;
+        unload();
         if (que.exception())
             try {
                 std::rethrow_exception(que.exception());
             } catch (const std::exception &e) {
-                error = QString::fromStdString(e.what());
+                emit finished(QString::fromStdString(e.what()));
             }
         else
-            error = "QUnhandledException but exception() returns nullptr";
-        unload();
-        WARN << error;
-        emit finished(error);
+            emit finished(u"QUnhandledException but exception() returns nullptr"_s);
     })
     .onFailed(this, [this](const std::exception &e) {
         unload();
-        const auto error = QString::fromStdString(e.what());
-        WARN << error;
-        emit finished(error);
+        emit finished(QString::fromStdString(e.what()));
     })
     .onFailed(this, [this]{
         unload();
-        const auto error = QStringLiteral("Unknown exception in QtPluginLoader::load()");
-        WARN << error;
-        emit finished(error);
+        emit finished(u"Unknown exception in QtPluginLoader::load()"_s);
     });
 }
 
