@@ -1,49 +1,62 @@
+{% if extra.plugin_contexts -%}
+{% set_global commits = commits -%}
+{% for context in extra.plugin_contexts -%}
+{% set_global commits = commits | concat(with=context.commits) -%}
+{% endfor -%}
+
 {% if version -%}
 ## {{ version }} ({{ timestamp | date(format="%Y-%m-%d") }})
 {%- else %}
 ## [unreleased]
 {%- endif %}
-
-{% if commits -%}
-### ⚙️ Core changes
 {% for group, commits in commits | group_by(attribute="group") %}
-#### {{ group | striptags | trim | upper_first }}
+### {{ group | striptags | trim | upper_first }}
 
+{% set_global core_commits = [] -%}
 {% for commit in commits -%}
-- {% if commit.scope %}_{{ commit.scope }}_ · {% endif -%}
-  {% if commit.breaking %}[**BREAKING**] {% endif -%}
+{% if not commit.extra.plugin_name -%}
+{% set_global core_commits = core_commits | concat(with=commit) -%}
+{% endif -%}
+{% endfor -%}
+
+{% set_global plugin_commits = [] -%}
+{% for commit in commits -%}
+{% if commit.extra.plugin_name -%}
+{% set_global plugin_commits = plugin_commits | concat(with=commit) -%}
+{% endif -%}
+{% endfor -%}
+
+{% if core_commits -%}
+#### Core
+
+{% for commit in core_commits -%}
+- {% if commit.breaking %}[**BREAKING**] {% endif -%}
+  {% if commit.scope %}_{{ commit.scope }}_ · {% endif -%}
   [{{ commit.message | upper_first }}](https://github.com/albertlauncher/albert/commit/{{ commit.id}})
 {% endfor -%}
-{% endfor -%}
-{% endif %}
-{% if extra.plugin_contexts -%}
-{% set commits = [] -%}
-{% for context in extra.plugin_contexts -%}
-{% set_global commits = commits | concat(with=context.commits) -%}
-{% endfor -%}
-### 🧩 Plugin changes
-{% for group, commits in commits | group_by(attribute="group") %}
-#### {{ group | striptags | trim | upper_first }}
-{% for name, commits in commits | group_by(attribute="extra.plugin_name") -%}
+{% endif -%}
+
+{% if plugin_commits %}
+#### Plugins
+
+{% for name, commits in plugin_commits | group_by(attribute="extra.plugin_name") -%}
 {% if commits | length > 1 -%}
 - **{{ name }}** 
 {%- for commit in commits %}
-  - {% if commit.scope %}_{{ commit.scope }}_ · {% endif %}
-    {%- if commit.breaking %}[**BREAKING**] · {% endif %}
+  - {% if commit.breaking %}[**BREAKING**] · {% endif %}
+    {%- if commit.scope %}_{{ commit.scope }}_ · {% endif %}
     {%- if commit.message %}[{{ commit.message | upper_first }}](https://github.com/albertlauncher/{{ commit.extra.repo_name }}/commit/{{ commit.id}}){% endif -%}
 {% endfor %}
 {% else -%}
 {% for commit in commits -%}
 - **{{ name }}** 
-  {%- if commit.scope %} · _{{ commit.scope }}_{% endif %}
   {%- if commit.breaking %} · [**BREAKING**]{% endif %}
+  {%- if commit.scope %} · _{{ commit.scope }}_{% endif %}
   {%- if commit.message %} · [{{ commit.message | upper_first }}](https://github.com/albertlauncher/{{ commit.extra.repo_name }}/commit/{{ commit.id}}){% endif %}
 {% endfor -%}
 {% endif -%}
 {% endfor -%}
-{% endfor -%}
 {% endif -%}
 
-{% for contributor in github.contributors %}
-  * @{{ contributor.username }} made their first contribution in #{{ contributor.pr_number }}
-{%- endfor -%}
+{% endfor -%}
+{% endif -%}
