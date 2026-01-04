@@ -36,6 +36,9 @@ public:
     ///
     /// The batch size is defined by the implementation.
     ///
+    /// \note GCC-13 does not support returning temporary values in generators.
+    ///       So for as long as Ubuntu 24.04 is supported, we have to return lvalues.
+    ///
     /// \note Called from main thread. Do not run blocking operations in it.
     ///
     virtual AsyncItemGenerator items(QueryContext &context) = 0;

@@ -36,6 +36,9 @@ public:
     ///
     /// \note Executed in a background thread.
     ///
+    /// \note GCC-13 does not support returning temporary values in generators.
+    ///       So for as long as Ubuntu 24.04 is supported, we have to return lvalues.
+    ///
     virtual ItemGenerator items(QueryContext &context) = 0;
 
 protected:
