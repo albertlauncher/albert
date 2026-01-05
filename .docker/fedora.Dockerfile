@@ -3,9 +3,7 @@ ARG BASE_IMAGE=fedora:latest
 FROM ${BASE_IMAGE} AS base
 RUN yum install -y \
     cmake \
-    clang \
-    clang-tools-extra \
-    ninja-build \
+    gcc-c++ \
     libarchive-devel \
     libqalculate-devel \
     pkgconfig \
@@ -29,9 +27,6 @@ ARG build_dir="/build"
 RUN cmake \
       -S /src \
       -B $build_dir \
-      -G Ninja \
-      -DCMAKE_C_COMPILER=clang \
-      -DCMAKE_CXX_COMPILER=clang++ \
       -DBUILD_TESTS=ON \
  && cmake --build $build_dir -j$(nproc) \
  && cmake --install $build_dir --prefix /usr \
@@ -42,9 +37,6 @@ FROM build AS build-plugin
 RUN cmake \
       -S /src/plugins/applications \
       -B $build_dir \
-      -G Ninja \
-      -DCMAKE_C_COMPILER=clang \
-      -DCMAKE_CXX_COMPILER=clang++ \
       -DCMAKE_PREFIX_PATH=/usr/lib64/cmake \
  && cmake --build $build_dir -j$(nproc) \
  && cmake --install $build_dir --prefix /usr \

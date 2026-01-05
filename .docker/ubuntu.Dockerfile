@@ -5,9 +5,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get -qq update \
  && apt-get install --no-install-recommends -y \
     cmake \
-    clang \
-    clang-tools \
-    ninja-build \
+    g++ \
     libarchive-dev \
     libgl1-mesa-dev \
     libglvnd-dev \
@@ -47,9 +45,6 @@ ARG build_dir="/build"
 RUN cmake \
       -S /src \
       -B $build_dir \
-      -G Ninja \
-      -DCMAKE_C_COMPILER=clang \
-      -DCMAKE_CXX_COMPILER=clang++ \
       -DBUILD_TESTS=ON \
  && cmake --build $build_dir -j$(nproc) \
  && cmake --install $build_dir --prefix /usr \
@@ -60,9 +55,6 @@ FROM build AS build-plugin
 RUN cmake \
       -S /src/plugins/applications \
       -B $build_dir \
-      -G Ninja \
-      -DCMAKE_C_COMPILER=clang \
-      -DCMAKE_CXX_COMPILER=clang++ \
       -DCMAKE_PREFIX_PATH=/usr/lib/$(gcc -dumpmachine)/cmake/ \
  && cmake --build $build_dir -j$(nproc) \
  && cmake --install $build_dir --prefix /usr \
