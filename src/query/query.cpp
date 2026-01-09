@@ -53,6 +53,8 @@ Query::Query(UsageScoring usage_scoring,
 
 Query::~Query()
 {
+    d->valid = false;
+
     // DEBG << QString("Query about to be deleted. [#%1 '%2']").arg(d->execution->id).arg(d->string);
 
     // If not deleted early, Query::d is under destruction while destructing Query::execution.

@@ -19,7 +19,11 @@ class ALBERT_EXPORT QueryContext
 {
 public:
 
+    ///
     /// Returns `true` if the query is valid; `false` if it has been cancelled.
+    ///
+    /// This function is thread-safe.
+    ///
     virtual bool isValid() const = 0;
 
     /// Returns the handler of this query.

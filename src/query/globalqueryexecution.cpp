@@ -60,7 +60,6 @@ public:
 
     GlobalQueryExecution *q;
     const vector<albert::GlobalQueryHandler*> handlers;
-    atomic_bool valid;
     bool active;
 
     QFutureWatcher<ReducedData> future_watcher;
@@ -74,7 +73,6 @@ GlobalQueryExecution::Private::Private(GlobalQueryExecution *execution,
                                        vector<GlobalQueryHandler *> h) :
     q(execution),
     handlers(::move(h)),
-    valid(true),
     active(true)
 {
     start_timepoint = system_clock::now();
@@ -121,7 +119,7 @@ GlobalQueryExecution::Private::Private(GlobalQueryExecution *execution,
     );
 
     QObject::connect(&future_watcher, &QFutureWatcher<ReducedData>::finished, q, [this] {
-        if (valid)
+        if (q->isValid())
         {
             auto reduced = future_watcher.future().takeResult();
 
@@ -207,7 +205,7 @@ GlobalQueryExecution::~GlobalQueryExecution()
     }
 }
 
-bool GlobalQueryExecution::isValid() const { return d->valid; }
+bool GlobalQueryExecution::isValid() const { return context.isValid(); }
 
 const QueryHandler &GlobalQueryExecution::handler() const { return context.handler(); }
 
@@ -221,12 +219,8 @@ const albert::UsageScoring &GlobalQueryExecution::usageScoring() const
 
 void GlobalQueryExecution::cancel()
 {
-    if (d->valid)
-    {
-        d->valid = false;
-        if (!d->future_watcher.isFinished())
-            d->future_watcher.cancel();
-    }
+    disconnect(&d->future_watcher, &QFutureWatcher<ReducedData>::finished, this, nullptr);
+    d->future_watcher.cancel();
 }
 
 void GlobalQueryExecution::fetchMore()
