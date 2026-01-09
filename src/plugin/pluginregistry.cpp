@@ -12,7 +12,6 @@
 #include "topologicalsort.hpp"
 #include <QCoreApplication>
 #include <QSettings>
-#include <QTimer>
 #include <ranges>
 using enum Plugin::State;
 using enum albert::PluginMetadata::LoadType;
