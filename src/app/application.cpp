@@ -45,6 +45,7 @@
 #include <QTranslator>
 #include <iostream>
 Q_LOGGING_CATEGORY(AlbertLoggingCategory, "albert")
+using namespace Qt::StringLiterals;
 using namespace albert::detail;
 using namespace albert;
 using namespace std;
@@ -289,7 +290,7 @@ void Application::Private::initHotkey(QSettings &settings)
     else
     {
         auto t = QT_TR_NOOP("Failed to set the hotkey '%1'");
-        WARN << QString(t).arg(s_hk);
+        WARN << QString::fromUtf8(t).arg(s_hk);
         QMessageBox::warning(nullptr, qApp->applicationDisplayName(),
                              tr(t).arg(QKeySequence(kc_hk)
                                        .toString(QKeySequence::NativeText)));
@@ -394,7 +395,7 @@ void Application::Private::initFrontend(QSettings &settings)
     auto loaders = plugin_provider.frontendPlugins();
     const auto id = settings.value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString();
 
-    DEBG << QString("Try loading the configured frontend '%1'.").arg(id);
+    DEBG << u"Try loading the configured frontend '%1'."_s.arg(id);
 
     if (auto it = ranges::find(loaders, id, [&](auto loader){ return loader->metadata().id; });
         it != loaders.end())
@@ -402,24 +403,23 @@ void Application::Private::initFrontend(QSettings &settings)
             return;
         else
         {
-            WARN << QString("Loading configured frontend '%1' failed: %2.").arg(id, err);
+            WARN << u"Loading configured frontend '%1' failed: %2."_s.arg(id, err);
             loaders.erase(it);
         }
     else
-        WARN << QString("Configured frontend plugin '%1' does not exist.").arg(id);
+        WARN << u"Configured frontend plugin '%1' does not exist."_s.arg(id);
 
     for (auto &loader : loaders)
     {
-        WARN << QString("Try loading '%1'.").arg(loader->metadata().id);
+        WARN << u"Try loading '%1'."_s.arg(loader->metadata().id);
 
-        if (auto err = loadFrontend(loader);
-            err.isNull())
+        if (auto err = loadFrontend(loader); err.isNull())
         {
-            INFO << QString("Using '%1' as fallback.").arg(loader->metadata().id);
+            INFO << u"Using '%1' as fallback."_s.arg(loader->metadata().id);
             return;
         }
         else
-            WARN << QString("Failed loading '%1'.").arg(loader->metadata().id);
+            WARN << u"Failed loading '%1'."_s.arg(loader->metadata().id);
     }
 
     qFatal("Could not load any frontend.");
