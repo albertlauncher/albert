@@ -9,7 +9,6 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <filesystem>
-#include <qt6keychain/keychain.h>
 using namespace albert;
 using namespace std;
 using filesystem::path;
@@ -58,49 +57,6 @@ unique_ptr<QSettings> PluginInstance::state() const
 }
 
 const PluginLoader &PluginInstance::loader() const { return *d->loader; }
-
-void PluginInstance::readKeychain(const QString &key,
-                                  function<void(const QString &)> onSuccess,
-                                  function<void(const QString &)> onError) const
-{
-    auto job = new QKeychain::ReadPasswordJob(qApp->applicationName(), qApp);  // Deletes itself
-
-    job->moveToThread(qApp->thread());
-
-    job->setKey(QString("%1.%2").arg(d->loader->metadata().id, key));
-
-    connect(job, &QKeychain::ReadPasswordJob::finished, this, [=] {
-        if (job->error())
-            onError(job->errorString());
-        else
-            onSuccess(job->textData());
-    });
-
-    job->start();
-}
-
-void PluginInstance::writeKeychain(const QString &key,
-                                   const QString &value,
-                                   function<void()> onSuccess,
-                                   function<void(const QString &)> onError) const
-{
-    auto job = new QKeychain::WritePasswordJob(qApp->applicationName(), qApp);  // Deletes itself
-
-    job->moveToThread(qApp->thread());
-
-    job->setKey(QString("%1.%2").arg(d->loader->metadata().id, key));
-
-    job->setTextData(value);
-
-    connect(job, &QKeychain::Job::finished, this, [=] {
-        if (job->error())
-            onError(job->errorString());
-        else
-            onSuccess();
-    });
-
-    job->start();
-}
 
 vector<filesystem::path> PluginInstance::dataLocations() const
 {

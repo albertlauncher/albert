@@ -307,13 +307,11 @@ find_package(Qt6 6.4 REQUIRED COMPONENTS # QString::operator""_s
     Widgets
     LinguistTools
 )
-find_package(Qt6Keychain REQUIRED)
 
 target_link_libraries(${TARGET_LIB}
     PRIVATE
         $<BUILD_LOCAL_INTERFACE:QHotkey::QHotkey>
         $<BUILD_LOCAL_INTERFACE:QNotifications::QNotifications>
-        $<BUILD_LOCAL_INTERFACE:qt6keychain>
         QCoro6::Coro
         Qt6::Concurrent
         Qt6::Core

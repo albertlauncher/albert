@@ -89,25 +89,6 @@ public:
     ///
     [[nodiscard]] std::unique_ptr<QSettings> state() const;
 
-    ///
-    /// Reads the keychain value for _key_ asynchronously.
-    ///
-    /// Calls _onSuccess_ with the _value_ of the _key_ on success and `onError` with an _error_ message on failure.
-    ///
-    void readKeychain(const QString &key,
-                      std::function<void(const QString &value)> onSuccess,
-                      std::function<void(const QString &error)> onError) const;
-
-    ///
-    /// Sets the keychain value of _key_ to _value_ asynchronously.
-    ///
-    /// Calls _onSuccess_ on success and _onError_ with an _error_ message on failure.
-    ///
-    void writeKeychain(const QString &key,
-                       const QString &value,
-                       std::function<void()> onSuccess,
-                       std::function<void(const QString&error)> onError) const;
-
 signals:
 
     /// Emitted when the plugin has completed initialization.
