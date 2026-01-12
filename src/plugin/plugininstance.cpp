@@ -14,22 +14,21 @@ using namespace albert;
 using namespace std;
 using filesystem::path;
 
-
 class PluginInstance::Private
 {
 public:
     PluginLoader *loader;
-
 };
 
-
-PluginInstance::PluginInstance():
+PluginInstance::PluginInstance() :
     d(new Private{
         .loader = PluginLoader::current_loader,
     })
 {}
 
 PluginInstance::~PluginInstance() = default;
+
+void PluginInstance::initialize() { emit initialized(); }
 
 vector<Extension*> PluginInstance::extensions() { return {}; }
 
@@ -58,14 +57,14 @@ unique_ptr<QSettings> PluginInstance::state() const
     return s;
 }
 
-const PluginLoader &PluginInstance::loader() const
-{ return *d->loader; }
+const PluginLoader &PluginInstance::loader() const { return *d->loader; }
 
 void PluginInstance::readKeychain(const QString &key,
-                                  function<void(const QString&)> onSuccess,
-                                  function<void(const QString&)> onError) const
+                                  function<void(const QString &)> onSuccess,
+                                  function<void(const QString &)> onError) const
 {
     auto job = new QKeychain::ReadPasswordJob(qApp->applicationName(), qApp);  // Deletes itself
+
     job->moveToThread(qApp->thread());
 
     job->setKey(QString("%1.%2").arg(d->loader->metadata().id, key));
@@ -83,12 +82,14 @@ void PluginInstance::readKeychain(const QString &key,
 void PluginInstance::writeKeychain(const QString &key,
                                    const QString &value,
                                    function<void()> onSuccess,
-                                   function<void(const QString&)> onError) const
+                                   function<void(const QString &)> onError) const
 {
     auto job = new QKeychain::WritePasswordJob(qApp->applicationName(), qApp);  // Deletes itself
+
     job->moveToThread(qApp->thread());
 
     job->setKey(QString("%1.%2").arg(d->loader->metadata().id, key));
+
     job->setTextData(value);
 
     connect(job, &QKeychain::Job::finished, this, [=] {

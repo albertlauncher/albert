@@ -4,10 +4,11 @@
 #include "pluginloader.h"
 #include "pluginmetadata.h"
 #include <QPluginLoader>
+#include <memory>
 namespace albert { class PluginInstance; }
 class QTranslator;
 
-class QtPluginLoader : public albert::PluginLoader
+class QtPluginLoader final : public albert::PluginLoader
 {
 public:
 
@@ -25,6 +26,6 @@ private:
     QPluginLoader loader_;
     albert::PluginMetadata metadata_;
     albert::PluginInstance *instance_;
-    std::unique_ptr<QTranslator> translator;
+    std::unique_ptr<QTranslator> translator_;
 
 };

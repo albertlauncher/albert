@@ -18,9 +18,11 @@ class PluginProvider;
 class Plugin
 {
 public:
+    const albert::PluginProvider &provider;
     albert::PluginLoader &loader;
     const QString &id;  // convenience reference to loader.metadata.id
     const albert::PluginMetadata &metadata;  // convenience reference to loader.metadata
+    bool enabled;
     enum class State {
         Unloaded,
         Loading,
@@ -28,8 +30,6 @@ public:
     } state;
     QString state_info;
     std::vector<albert::Extension*> registered_extensions;
-    const albert::PluginProvider &provider;
-    bool enabled;
 };
 
 

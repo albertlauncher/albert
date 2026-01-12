@@ -12,10 +12,13 @@
 #include "topologicalsort.hpp"
 #include <QCoreApplication>
 #include <QSettings>
+#include <chrono>
 #include <ranges>
 using enum Plugin::State;
 using enum albert::PluginMetadata::LoadType;
+using namespace Qt::StringLiterals;
 using namespace albert;
+using namespace std::chrono;
 using namespace std;
 
 PluginRegistry::PluginRegistry(ExtensionRegistry &reg, bool autoload_enabled_plugins) :
@@ -196,20 +199,22 @@ void PluginRegistry::onRegistered(PluginProvider *pp)
     for (auto &[id, loader] : unique_loaders)
     {
         Plugin p{
+            .provider = *pp,
             .loader = *loader,
             .id = loader->metadata().id,
             .metadata = loader->metadata(),
+            .enabled = App::settings()->value(QString("%1/enabled").arg(id), false).toBool(),
             .state = Unloaded,
             .state_info = {},
-            .registered_extensions={},
-            .provider = *pp,
-            .enabled = App::settings()->value(QString("%1/enabled").arg(id), false).toBool()
+            .registered_extensions={}
         };
 
         if (const auto &[it, success] = plugins_.emplace(id, p);
             success)
             connect(loader, &PluginLoader::finished,
-                    this, [this, &p=it->second](QString info){ onPluginLoaderFinished(p, info); });
+                    this, [this, &p=it->second](QString info){
+                onPluginLoaderFinished(p, info);
+            });
         else
             CRIT << "Logic error: Plugin already exists" << it->first;
     }
@@ -271,7 +276,7 @@ void PluginRegistry::load(set<const Plugin*> plugins)
             it = loading_graph_.erase(it);
 
             setPluginState(p, Loading);
-            p.loader.load();  // may be async
+            p.loader.load();  // Async
         }
         else
             ++it;
@@ -307,7 +312,6 @@ void PluginRegistry::unload(set<const Plugin*> plugins)
 
 void PluginRegistry::onPluginLoaderFinished(Plugin &p, const QString &info)
 {
-    setPluginState(p, p.loader.instance() ? Loaded : Unloaded, info);
 
     // remove from loading plugins
     loading_plugins_.erase(&p);
@@ -327,16 +331,55 @@ void PluginRegistry::onPluginLoaderFinished(Plugin &p, const QString &info)
         else
             ++it;
 
-    if (p.loader.instance())
+    if (auto *instance = p.loader.instance();
+        !instance)
+        setPluginState(p, Unloaded, info);
+    else
     {
+        connect(instance, &PluginInstance::initialized,
+                this, [this, &p, tp=system_clock::now()] {
+                    DEBG << u"%1: Initialized in %2 ms"_s
+                                .arg(p.id)
+                                .arg(duration_cast<milliseconds>(system_clock::now() - tp).count());
+
+                    try {
+                        for (p.registered_extensions = p.loader.instance()->extensions();
+                             auto *e : p.registered_extensions)
+                            extension_registry_.registerExtension(e);
+                        setPluginState(p, Loaded);
+                    }
+                    catch (const exception &e) {
+                        const auto &msg = u"Exception in PluginInstance::extensions: %1"_s
+                                              .arg(QString::fromUtf8(e.what()));
+                        CRIT << p.id << msg;
+                        p.loader.unload();
+                        setPluginState(p, Unloaded, msg);
+                    }
+                    catch (...) {
+                        const auto &msg = u"Unknown exception in PluginInstance::extensions."_s;
+                        CRIT << p.id << msg;
+                        p.loader.unload();
+                        setPluginState(p, Unloaded, msg);
+                    }
+
+                },
+                Qt::SingleShotConnection);
+
         try {
-            p.registered_extensions = p.loader.instance()->extensions();
-            for (auto *e : p.registered_extensions)
-                extension_registry_.registerExtension(e);
-        } catch (const exception &e) {
-            CRIT << p.id << "Exception in PluginInstance::extensions()" << e.what();
-        } catch (...) {
-            CRIT << p.id << "Unknown exception in PluginInstance::extensions()";
+            p.loader.instance()->initialize();
+        }
+        catch (const exception &e) {
+            const auto &msg = u"Exception in PluginInstance::initialize: %1"_s
+                                  .arg(QString::fromUtf8(e.what()));
+            CRIT << p.id << msg;
+            p.loader.unload();
+            setPluginState(p, Unloaded, msg);
+        }
+        catch (...) {
+            const auto &msg = u"Unknown exception in PluginInstance::initialize."_s;
+            CRIT << p.id << msg;
+            p.loader.unload();
+            setPluginState(p, Unloaded, msg);
         }
     }
 }
@@ -345,16 +388,17 @@ void PluginRegistry::setPluginState(Plugin &plugin, Plugin::State state, const Q
 {
     plugin.state = state;
     plugin.state_info = info;
+    const auto &msg = u"%1: State changed to '%2'."_s;
     switch (state)
     {
     case Unloaded:
-        DEBG << "Plugin" << plugin.id << "unloaded." << info;
+        DEBG << msg.arg(plugin.id, u"Unloaded"_s) << info;
         break;
     case Loading:
-        DEBG << "Plugin" << plugin.id << "loading.";
+        DEBG << msg.arg(plugin.id, u"Loading"_s) << info;
         break;
     case Loaded:
-        DEBG << "Plugin" << plugin.id << "loaded." << info;
+        DEBG << msg.arg(plugin.id, u"Loaded"_s) << info;
         break;
     }
     emit pluginStateChanged(plugin.id);

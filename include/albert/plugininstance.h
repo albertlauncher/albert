@@ -29,7 +29,17 @@ class PluginLoader;
 ///
 class ALBERT_EXPORT PluginInstance : public QObject
 {
+    Q_OBJECT
+
 public:
+
+    ///
+    /// Triggers the asynchronous initialization.
+    ///
+    /// Implementations have to emit \ref initialized() or call base::initialize() when done
+    /// initializing.
+    ///
+    virtual void initialize();
 
     ///
     /// Creates a widget that can be used to configure the plugin properties.
@@ -43,28 +53,19 @@ public:
     ///
     /// The caller does **not** take ownership of the returned objects.
     ///
-    virtual std::vector<albert::Extension*> extensions();
+    virtual std::vector<albert::Extension *> extensions();
 
 public:
-
-    ///
     /// Returns the loader of this plugin.
-    ///
     [[nodiscard]] const PluginLoader &loader() const;
 
-    ///
     /// Returns the writable cache location for this plugin.
-    ///
     [[nodiscard]] std::filesystem::path cacheLocation() const;
 
-    ///
     /// Returns the writable config location for this plugin.
-    ///
     [[nodiscard]] std::filesystem::path configLocation() const;
 
-    ///
     /// Returns the writable data location for this plugin.
-    ///
     [[nodiscard]] std::filesystem::path dataLocation() const;
 
     ///
@@ -107,23 +108,21 @@ public:
                        std::function<void()> onSuccess,
                        std::function<void(const QString&error)> onError) const;
 
-protected:
+signals:
 
-    ///
+    /// Emitted when the plugin has completed initialization.
+    void initialized();
+
+protected:
     /// Constructs a plugin instance.
-    ///
     PluginInstance();
 
-    ///
     /// Destructs the plugin instance.
-    ///
     virtual ~PluginInstance();
 
 private:
-
     class Private;
     std::unique_ptr<Private> d;
-
 };
 
-}
+}  // namespace albert

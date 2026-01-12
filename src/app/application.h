@@ -16,7 +16,7 @@ int run(int, char**);
 }
 
 
-class Application : public QObject, public albert::App
+class Application final : public QObject, public albert::App
 {
     Q_OBJECT
 

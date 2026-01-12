@@ -431,11 +431,19 @@ QString Application::Private::loadFrontend(PluginLoader *loader)
 
     // Blocking load
     QEventLoop loop;
-    connect(loader, &PluginLoader::finished,
-            &loop, [&](QString info) { DEBG << info; loop.quit(); });
-    loader->load();
-    if (!loader->instance())  // sync cases
-        loop.exec();
+
+    connect(loader, &PluginLoader::finished, &loop, [&](QString info) {
+        if (!info.isEmpty())
+            DEBG << info;
+        loop.quit();
+    });
+    QTimer::singleShot(0, loader, [loader]{ loader->load(); });
+    loop.exec();
+
+    connect(loader->instance(), &PluginInstance::initialized,
+            &loop, [&] { loop.quit(); });
+    QTimer::singleShot(0, loader, [loader]{ loader->instance()->initialize(); });
+    loop.exec();
 
     if (frontend = dynamic_cast<Frontend*>(loader->instance()); frontend)
     {

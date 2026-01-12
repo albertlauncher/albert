@@ -31,7 +31,9 @@ static QString fetchLocalizedMetadata(const QJsonObject &json, const QString &ke
 }
 
 
-QtPluginLoader::QtPluginLoader(const QString &p) : loader_(p), instance_(nullptr)
+QtPluginLoader::QtPluginLoader(const QString &path)
+    : loader_(path)
+    , instance_(nullptr)
 {
     //
     // Check interface
@@ -140,8 +142,8 @@ QtPluginLoader::~QtPluginLoader()
 {
     if (loader_.isLoaded())
     {
-        CRIT << "QtPluginLoader destroyed in loaded state:" << metadata_.id;
-        QtPluginLoader::unload();
+        WARN << "QtPluginLoader destroyed in loaded state:" << metadata_.id;
+        unload();
     }
 }
 
@@ -149,77 +151,98 @@ QString QtPluginLoader::path() const { return loader_.fileName(); }
 
 const PluginMetadata &QtPluginLoader::metadata() const { return metadata_; }
 
+static inline auto now() { return system_clock::now(); }
+
+template<typename T=milliseconds>
+static inline auto diff(const time_point<system_clock> & tp)
+{ return duration_cast<milliseconds>(now() - tp).count(); }
+
 void QtPluginLoader::load()
 {
     // Errors are intentionally not logged. Thats the responsibility of the plugin implementation.
     // Plugins are expected to throw a localized message and print english logs using their
     // logging category.
 
-    auto future = QtConcurrent::run([this]
-    {
-        auto tp_l = system_clock::now();
-        if (!loader_.load())
-            throw runtime_error(loader_.errorString().toStdString());
-        auto dur_l = duration_cast<milliseconds>(system_clock::now() - tp_l).count();
+    auto future = QtConcurrent::run([&loader=loader_, id=metadata().id]
+                                    -> unique_ptr<QTranslator> {
+        unique_ptr<QTranslator> translator;
 
+        auto tp = now();
+        if (!loader.load())
+            throw runtime_error(loader.errorString().toStdString());
+        DEBG << u"%1: Library loaded in %2 ms (%3)"_s
+                    .arg(id).arg(diff<>(tp)).arg(loader.fileName());
+
+        tp = now();
         if (translator = make_unique<QTranslator>();
-            translator->load(QLocale(), metadata().id, "_", ":/i18n"))
-            DEBG << u"Using translations for '%1' from %2"_s
-                        .arg(metadata_.id,translator->filePath());
+            translator->load(QLocale(), id, "_", ":/i18n"))
+
+            DEBG << u"%1: Translations loaded in %2 ms (%3)"_s
+                        .arg(id).arg(diff<>(tp)).arg(translator->filePath());
         else
             translator.reset();
 
-        return dur_l;
+        return translator;
     })
-    .then(this, [this](long long dur_l){
+    .then(this, [this](unique_ptr<QTranslator> translator) {
         if (translator)
-            QCoreApplication::installTranslator(translator.get());  // Not threadsafe
+        {
+            translator_ = ::move(translator);
+            // Does _not_ take ownership. Not thread-safe.
+            QCoreApplication::installTranslator(translator_.get());  // Not threadsafe
+        }
 
-        auto tp_c = system_clock::now();
-        current_loader = this;
-        if (auto *instance = loader_.instance();
-            !instance)
+        auto tp = now();
+        PluginLoader::current_loader = this;
+        auto *instance = loader_.instance();
+        if (!instance)
             throw runtime_error("Plugin instance is null.");
-        else if (instance_ = dynamic_cast<PluginInstance*>(instance);
-                 !instance_)
+        if (instance_ = dynamic_cast<PluginInstance *>(instance);
+            !instance_)
             throw runtime_error("Plugin instance is not of type albert::PluginInstance.");
-        auto dur_c = duration_cast<milliseconds>(system_clock::now() - tp_c).count();
-
-        emit finished(tr("Loading: %1 ms, Instantiating: %2 ms").arg(dur_l).arg(dur_c));
+        DEBG << u"%1: Instantiated in %2 ms"_s
+                    .arg(metadata().id).arg(diff<>(tp));
+        emit finished({});
     })
-    .onFailed(this, [this](const QUnhandledException &que) {
+    .onCanceled(this, [this] {
         unload();
-        if (que.exception())
-            try {
-                std::rethrow_exception(que.exception());
-            } catch (const std::exception &e) {
-                emit finished(QString::fromStdString(e.what()));
-            }
-        else
-            emit finished(u"QUnhandledException but exception() returns nullptr"_s);
     })
-    .onFailed(this, [this](const std::exception &e) {
+    .onFailed(this, [](const QUnhandledException &que) {
+        if (que.exception())
+            rethrow_exception(que.exception());
+        else
+            throw runtime_error("QUnhandledException::exception() returned nullptr.");
+    })
+    .onFailed(this, [this](const exception &e) {
         unload();
         emit finished(QString::fromStdString(e.what()));
     })
     .onFailed(this, [this]{
         unload();
-        emit finished(u"Unknown exception in QtPluginLoader::load()"_s);
+        emit finished(u"Unknown exception while loading plugin."_s);
     });
 }
 
 void QtPluginLoader::unload()
 {
-    if (translator)
+    if (loader_.isLoaded())
     {
-        QCoreApplication::removeTranslator(translator.get());
-        translator.reset();
+        // if (instance_){
+        //     delete static_cast<QObject*>(instance_);
+        //     instance_ = nullptr;
+        // }
+
+        if (!loader_.unload())
+            WARN << u"%1: Unload failed: %2"_s.arg(metadata_.id, loader_.errorString());
+        else
+            DEBG << u"%1: Unloaded."_s.arg(metadata_.id);
     }
 
-    instance_ = nullptr;
-
-    if (!loader_.unload())
-        WARN << loader_.errorString();
+    if (translator_)
+    {
+        QCoreApplication::removeTranslator(translator_.get());
+        translator_.reset();
+    }
 }
 
 PluginInstance *QtPluginLoader::instance() { return instance_; }
