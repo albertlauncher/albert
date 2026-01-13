@@ -198,7 +198,15 @@ GlobalQueryExecution::GlobalQueryExecution(QueryContext &c, vector<GlobalQueryHa
 GlobalQueryExecution::~GlobalQueryExecution()
 {
     cancel();
+
+    // Qt 6.4 QFutureWatcher is broken.
+    // isFinished returns wrong values and waitForFinished blocks forever on finished futures.
+    // TODO(26.04): Remove workaround when dropping Qt < 6.5 support.
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
     if (!d->future_watcher.isFinished())
+#else
+    if (d->future_watcher.isRunning())
+#endif
     {
         DEBG << QString("Busy wait on query: #%1").arg(id);
         d->future_watcher.waitForFinished();
