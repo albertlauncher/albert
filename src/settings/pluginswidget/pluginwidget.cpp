@@ -182,17 +182,18 @@ QWidget *PluginWidget::createPluginPageFooter() const
 
 void PluginWidget::onPluginStateChanged(const QString &id)
 {
-    if (plugin.id == id)
-    {
-        QWidget *new_body = createPluginPageBody();
+    QWidget *new_body;
+    if (plugin.id == id && plugin.state == Loaded)
+        new_body = createPluginPageBody();
+    else
+        new_body = new QWidget;
 
-        auto layout_item = layout->replaceWidget(body, new_body, Qt::FindDirectChildrenOnly);
-        Q_ASSERT(layout_item != nullptr);
+    auto layout_item = layout->replaceWidget(body, new_body, Qt::FindDirectChildrenOnly);
+    Q_ASSERT(layout_item != nullptr);
 
-        // Do _not_ delete later
-        delete layout_item;
-        delete body;
+    // Do _not_ delete later
+    delete layout_item;
+    delete body;
 
-        body = new_body;
-    }
+    body = new_body;
 }
