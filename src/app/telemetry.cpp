@@ -35,7 +35,7 @@ Telemetry::Telemetry(PluginRegistry &pr, ExtensionRegistry &er):
     {
         auto text = tr(
             "Albert collects data to improve the user experience. "
-            "Do you want to help to improve Albert by sending optional telemetry data?"
+            "Do you want to help to improve Albert by sending telemetry data?"
         );
 
         auto informative_text = tr(
@@ -60,7 +60,10 @@ Telemetry::Telemetry(PluginRegistry &pr, ExtensionRegistry &er):
 
     connect(&timer, &QTimer::timeout, this, [this] { trySendReport(); });
 
-    timer.start(60000);  // every minute
+    timer.setInterval(60000);   // every minute
+
+    if (enabled_)
+        timer.start();
 }
 
 void Telemetry::trySendReport()
@@ -144,15 +147,11 @@ static QString iso8601now()
 QJsonDocument Telemetry::buildReport() const
 {
     QJsonObject data;
-
-    if (enabled_)
-    {
-        data.insert("albert", albertTelemetry());
-        if (auto *apps_plugin = extension_registry_
-                                    .extension<detail::TelemetryProvider>("applications");
-            apps_plugin)
-            data.insert("applications", apps_plugin->telemetryData());
-    }
+    data.insert("albert", albertTelemetry());
+    if (auto *apps_plugin = extension_registry_
+                                .extension<detail::TelemetryProvider>("applications");
+        apps_plugin)
+        data.insert("applications", apps_plugin->telemetryData());
 
     QJsonObject o;
     o.insert("report", 2);  // report version
@@ -176,5 +175,7 @@ void Telemetry::setEnabled(bool value)
     {
         enabled_ = value;
         App::settings()->setValue(CFG_TELEMETRY_ENABLED, enabled_);
+
+        enabled_ ? timer.start() : timer.stop();
     }
 }
