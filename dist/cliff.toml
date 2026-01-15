@@ -9,9 +9,9 @@ require_conventional = false
 [git]
 commit_parsers = [
     { message = "^feat", group = "<!-- 0 -->Features" },
-    { message = "^fix", group = "<!-- 1 -->Fixes" },
+    { message = "^api", group = "<!-- 1 -->API" },
     { message = "^perf", group = "<!-- 2 -->Performance" },
-    { message = "^api", group = "<!-- 3 -->API" },
+    { message = "^fix", group = "<!-- 3 -->Fixes" },
     { message = "^doc", group = "<!-- 4 -->Documentation" },
     { message = "^style", group = "<!-- 5 -->Styling" },
     { message = "^test", group = "<!-- 6 -->Testing" },
