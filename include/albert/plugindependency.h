@@ -5,7 +5,6 @@
 #include <QCoreApplication>
 #include <albert/app.h>
 #include <albert/export.h>
-#include <albert/extensionregistry.h>
 #include <albert/logging.h>
 
 namespace albert
@@ -56,7 +55,7 @@ public:
     {
         try
         {
-            this->dependency_ = dynamic_cast<T*>(App::instance().extensionRegistry().extensions().at(id));
+            this->dependency_ = dynamic_cast<T*>(App::instance().extensions().at(id));
 
             if (!this->dependency_)
                 throw std::runtime_error(
@@ -103,15 +102,15 @@ public:
         id_(id)
     {
         try {
-            this->dependency_ = dynamic_cast<T*>(App::instance().extensionRegistry().extensions().at(id));
+            this->dependency_ = dynamic_cast<T*>(App::instance().extensions().at(id));
             if (!this->dependency_)
                 WARN << QStringLiteral("Found '%1' but failed casting to expected type.").arg(id);
         } catch (const std::out_of_range &) { /* okay, optional */ }
 
-        conn_add_ = QObject::connect(&App::instance().extensionRegistry(), &ExtensionRegistry::added,
+        conn_add_ = QObject::connect(&App::instance(), &App::added,
                                      [this](Extension *e){ onRegistered(e);});
 
-        conn_rem_ = QObject::connect(&App::instance().extensionRegistry(), &ExtensionRegistry::removed,
+        conn_rem_ = QObject::connect(&App::instance(), &App::removed,
                                      [this](Extension *e){ onDeregistered(e);});
     }
 

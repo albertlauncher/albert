@@ -44,9 +44,11 @@
 /// UI utility.
 
 #pragma once
+#include <QObject>
 #include <QString>
 #include <albert/export.h>
 #include <filesystem>
+#include <map>
 #include <memory>
 class QNetworkAccessManager;
 class QSettings;
@@ -54,7 +56,7 @@ class QUrl;
 
 namespace albert
 {
-class ExtensionRegistry;
+class Extension;
 class UsageScoring;
 
 ///
@@ -62,26 +64,43 @@ class UsageScoring;
 ///
 /// \ingroup core
 ///
-class ALBERT_EXPORT App
+class ALBERT_EXPORT App : public QObject
 {
+    Q_OBJECT
 public:
-    ///
+    /// Returns the global app instance.
+    static App &instance();
+
     /// Shows the frontend and optionally sets the text to _input_text_.
-    ///
     virtual void show(const QString &input_text = {}) = 0;
 
-    ///
     /// Shows the settings window and optionally selects the plugin with _plugin_id_.
-    ///
     virtual void showSettings(QString plugin_id = {}) = 0;
 
-    ///
-    /// Returns a const reference to the central extension registry.
-    ///
-    /// Registering plugins via this registry is not allowed. Use \ref PluginInstance::extensions().
-    /// See also \ref WeakDependency and \ref StrongDependency.
-    ///
-    virtual const ExtensionRegistry &extensionRegistry() const = 0;
+    /// Get map of all registered extensions
+    virtual const std::map<QString,Extension*> &extensions() const = 0;
+
+    /// Get map of all extensions of type T
+    template<typename T>
+    std::map<QString, T*> extensions() const
+    {
+        std::map<QString, T*> results;
+        for (auto &[id, extension] : extensions())
+            if (T *t = dynamic_cast<T*>(extension))
+                results.emplace(id, t);
+        return results;
+    }
+
+    /// Get extension by id implicitly dynamic_cast'ed to type T.
+    template<typename T>
+    T* extension(const QString &id) const
+    {
+        try {
+            return dynamic_cast<T*>(extensions().at(id));
+        } catch (const std::out_of_range &) {
+            return nullptr;
+        }
+    }
 
     ///
     /// Restarts the application.
@@ -136,10 +155,13 @@ public:
     ///
     static std::unique_ptr<QSettings> state();
 
-    ///
-    /// Returns the core app instance.
-    ///
-    static App &instance();
+signals:
+
+    /// Emitted when an extension has been registered.
+    void added(albert::Extension*);
+
+    /// Emitted when an extension has been deregistered.
+    void removed(albert::Extension*);
 
 protected:
 

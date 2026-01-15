@@ -498,7 +498,10 @@ Application::Application(const QStringList &additional_plugin_paths, bool load_e
                            load_enabled,
                            *App::settings(),
                            *App::state()))
-{}
+{
+    connect(&d->extension_registry, &ExtensionRegistry::added, this, &Application::added);
+    connect(&d->extension_registry, &ExtensionRegistry::removed, this, &Application::removed);
+}
 
 Application::~Application() {}
 
@@ -513,7 +516,7 @@ void Application::handleUrl(const QUrl &url)
         {
             // ?
         }
-        else if (auto h = d->extension_registry.extension<UrlHandler>(url.authority()); h)
+        else if (auto h = extension<UrlHandler>(url.authority()); h)
             h->handle(url);
         else
             WARN << "URL handler not available: " + url.authority().toLocal8Bit();
@@ -530,7 +533,8 @@ Telemetry &Application::telemetry() { return d->telemetry; }
 
 SystemTrayIcon &Application::systemTrayIcon() { return d->tray_icon; }
 
-const ExtensionRegistry &Application::extensionRegistry() const { return d->extension_registry; }
+const map<QString, Extension *> &Application::extensions() const
+{ return d->extension_registry.extensions(); }
 
 void Application::showSettings(QString plugin_id)
 {

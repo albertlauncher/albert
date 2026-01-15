@@ -64,7 +64,6 @@ set(LIB_PUBLIC_HEADER
     include/albert/asyncgeneratorqueryhandler.h
     include/albert/extension.h
     include/albert/extensionplugin.h
-    include/albert/extensionregistry.h
     include/albert/fallbackhandler.h
     include/albert/frontend.h
     include/albert/generatorqueryhandler.h
@@ -143,6 +142,7 @@ set(LIB_SRC
     src/platform/signalhandler.h
     src/plugin.h.in
     src/plugin/extensionregistry.cpp
+    src/plugin/extensionregistry.h
     src/plugin/plugininstance.cpp
     src/plugin/pluginloader.cpp
     src/plugin/pluginprovider.cpp

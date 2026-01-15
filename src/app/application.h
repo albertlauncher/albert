@@ -16,7 +16,7 @@ int run(int, char**);
 }
 
 
-class Application final : public QObject, public albert::App
+class Application final : public albert::App
 {
     Q_OBJECT
 
@@ -25,7 +25,7 @@ public:
     // Public interface
     void show(const QString &text = {}) override;
     void showSettings(QString plugin_id = {}) override;
-    const albert::ExtensionRegistry &extensionRegistry() const override;
+    const std::map<QString, albert::Extension *> &extensions() const override;
 
     const std::filesystem::path &settingsFilePath() const;
     const std::filesystem::path &stateFilePath() const;

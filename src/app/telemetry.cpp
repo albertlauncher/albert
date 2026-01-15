@@ -148,8 +148,7 @@ QJsonDocument Telemetry::buildReport() const
 {
     QJsonObject data;
     data.insert("albert", albertTelemetry());
-    if (auto *apps_plugin = extension_registry_
-                                .extension<detail::TelemetryProvider>("applications");
+    if (auto *apps_plugin = App::instance().extension<detail::TelemetryProvider>("applications");
         apps_plugin)
         data.insert("applications", apps_plugin->telemetryData());
 
