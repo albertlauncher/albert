@@ -21,10 +21,9 @@ using namespace std;
 class GlobalQueryResult : public albert::RankItem
 {
 public:
-    explicit GlobalQueryResult(albert::GlobalQueryHandler *handler,
-                               const albert::RankItem &rank_item) noexcept :
-        RankItem(rank_item),
-        handler(handler)
+    explicit GlobalQueryResult(albert::GlobalQueryHandler *h, const albert::RankItem &i) noexcept :
+        RankItem(i),
+        handler(h)
     {}
     ~GlobalQueryResult() noexcept {}
     albert::GlobalQueryHandler *handler;
