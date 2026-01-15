@@ -4,12 +4,12 @@
 
 namespace color
 {
-static const auto *black   = "\x1b[30m";
-static const auto *red     = "\x1b[31m";
-static const auto *green   = "\x1b[32m";
-static const auto *yellow  = "\x1b[33m";
-static const auto *blue    = "\x1b[34m";
-static const auto *purple  = "\x1b[35m";
-static const auto *cyan    = "\x1b[36m";
-static const auto *reset   = "\x1b[0m";
+inline constexpr const char* black  = "\x1b[30m";
+inline constexpr const char* red    = "\x1b[31m";
+inline constexpr const char* green  = "\x1b[32m";
+inline constexpr const char* yellow = "\x1b[33m";
+inline constexpr const char* blue   = "\x1b[34m";
+inline constexpr const char* purple = "\x1b[35m";
+inline constexpr const char* cyan   = "\x1b[36m";
+inline constexpr const char* reset  = "\x1b[0m";
 }
