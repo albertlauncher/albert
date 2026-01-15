@@ -57,6 +57,9 @@
 [submodule "plugins/hash"]
 	path = plugins/hash
 	url = https://github.com/albertlauncher/albert-plugin-hash.git
+[submodule "plugins/homebrew"]
+	path = plugins/homebrew
+	url = https://github.com/albertlauncher/albert-plugin-homebrew.git
 [submodule "plugins/mediaremote"]
 	path = plugins/mediaremote
 	url = https://github.com/albertlauncher/albert-plugin-mediaremote.git
