@@ -89,7 +89,6 @@ set(LIB_PUBLIC_HEADER
     # util
     include/albert/backgroundexecutor.h
     include/albert/download.h
-    include/albert/iconutil.h
     include/albert/indexitem.h
     include/albert/indexqueryhandler.h
     include/albert/inputhistory.h
@@ -138,6 +137,25 @@ set(LIB_SRC
     src/frontend/frontend.cpp
     src/frontend/session.cpp
     src/frontend/session.h
+    src/icon/composedicon.cpp
+    src/icon/composedicon.h
+    src/icon/filetypeicon.cpp
+    src/icon/filetypeicon.h
+    src/icon/graphemeicon.cpp
+    src/icon/graphemeicon.h
+    src/icon/icon.cpp
+    src/icon/iconifiedicon.cpp
+    src/icon/iconifiedicon.h
+    src/icon/imageicon.cpp
+    src/icon/imageicon.h
+    src/icon/qiconicon.cpp
+    src/icon/qiconicon.h
+    src/icon/recticon.cpp
+    src/icon/recticon.h
+    src/icon/standardicon.cpp
+    src/icon/standardicon.h
+    src/icon/themeicon.cpp
+    src/icon/themeicon.h
     src/platform/platform.h
     src/platform/signalhandler.h
     src/plugin.h.in
@@ -186,9 +204,6 @@ set(LIB_SRC
     src/util/color.h
     src/util/download.cpp
     src/util/extensionplugin.cpp
-    src/util/icons.cpp
-    src/util/icons.h
-    src/util/iconutil.cpp
     src/util/indexitem.cpp
     src/util/indexqueryhandler.cpp
     src/util/inputhistory.cpp

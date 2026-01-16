@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2025 Manuel Schneider
 
 #include "albert/app.h"
-#include "iconutil.h"
+#include "icon.h"
 #include "pluginloader.h"
 #include "pluginmetadata.h"
 #include "pluginqueryhandler.h"
@@ -59,13 +59,13 @@ public:
     unique_ptr<Icon> icon() const override
     {
         if(!plugin_.enabled)
-            return makeGraphemeIcon(u"🧩"_s);
+            return Icon::grapheme(u"🧩"_s);
         else if (plugin_.state == Loaded)
-            return makeComposedIcon(makeGraphemeIcon(u"🧩"_s), makeGraphemeIcon(u"✅"_s), 1.0, 0.5);
+            return Icon::composed(Icon::grapheme(u"🧩"_s), Icon::grapheme(u"✅"_s), 1.0, 0.5);
         else if (plugin_.state_info.isEmpty())
-            return makeComposedIcon(makeGraphemeIcon(u"🧩"_s), makeGraphemeIcon(u"⏳"_s), 1.0, 0.5);
+            return Icon::composed(Icon::grapheme(u"🧩"_s), Icon::grapheme(u"⏳"_s), 1.0, 0.5);
         else
-            return makeComposedIcon(makeGraphemeIcon(u"🧩"_s), makeGraphemeIcon(u"⚠️"_s), 1.0, 0.5);
+            return Icon::composed(Icon::grapheme(u"🧩"_s), Icon::grapheme(u"⚠️"_s), 1.0, 0.5);
     }
 
     vector<Action> actions() const override

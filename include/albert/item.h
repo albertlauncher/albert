@@ -113,11 +113,8 @@ public:
     ///
     /// Returns the item icon.
     ///
-    /// Do _not_ clone a stored icon in this function. Icons can be a heavy resource.
-    /// Instead return a new instance every time this function is called. The view will cache the icon instance.
-    ///
-    /// See \ref iconutil.h for the built-in icon factories.
-    /// See \ref albert::Icon if you want to create your own icon engine.
+    /// Do _not_ clone a stored icon in this function. Icons can be a heavy resource. Instead return
+    /// a new instance every time this function is called. The view will cache the icon instance.
     ///
     virtual std::unique_ptr<Icon> icon() const = 0;
 

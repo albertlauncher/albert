@@ -4,7 +4,6 @@
 #include "config.h"
 #include "extensionregistry.h"
 #include "frontend.h"
-#include "iconutil.h"
 #include "logging.h"
 #include "messagehandler.h"
 #include "platform.h"
@@ -629,7 +628,7 @@ int ALBERT_EXPORT run(int argc, char **argv)
     QApplication::setApplicationName("albert");
     QApplication::setApplicationDisplayName("Albert");
     QApplication::setApplicationVersion(ALBERT_VERSION_STRING);
-    QApplication::setWindowIcon(qIcon(makeThemeIcon("albert")));
+    QApplication::setWindowIcon(QIcon::fromTheme("albert"));
     QApplication::setQuitOnLastWindowClosed(false);
 
 

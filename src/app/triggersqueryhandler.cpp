@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2025 Manuel Schneider
 
 #include "app.h"
-#include "iconutil.h"
+#include "icon.h"
 #include "matcher.h"
 #include "queryengine.h"
 #include "standarditem.h"
@@ -35,7 +35,7 @@ shared_ptr<Item> TriggersQueryHandler::makeItem(const QString &trigger, Extensio
         handler->id(),
         QString(trigger).replace(" ", "•"),
         QString("%1 · %2").arg(handler->name(), handler->description()),
-        []{ return makeGraphemeIcon(u"🚀"_s); },
+        []{ return Icon::grapheme(u"🚀"_s); },
         {{
             "set",
             tr("Set input text"),
