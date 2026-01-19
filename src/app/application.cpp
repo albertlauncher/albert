@@ -6,6 +6,7 @@
 #include "frontend.h"
 #include "logging.h"
 #include "messagehandler.h"
+#include "pathmanager.h"
 #include "platform.h"
 #include "plugininstance.h"
 #include "pluginloader.h"
@@ -57,7 +58,6 @@ static const char *CFG_FRONTEND_ID = "frontend";
 static const char *DEF_FRONTEND_ID = "widgetsboxmodel";
 static const char *CFG_HOTKEY = "hotkey";
 static const char *DEF_HOTKEY = "Ctrl+Space";
-static const char *CFG_ADDITIONAL_PATH_ENTRIES = "additional_path_entires";
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -129,8 +129,6 @@ public:
             QSettings &state);
     ~Private();
 
-    void initTrayIcon();
-    void initPathVariable(QSettings &settings);
     void initHotkey(QSettings &settings);
     void initRPC();
     void initFrontend(QSettings &settings);
@@ -145,8 +143,7 @@ public:
     // As early as possible
     RPCServer rpc_server; // Check for other instances first
     SignalHandler unix_signal_handler;
-    const QStringList original_path_entries;
-    QStringList additional_path_entries;
+    PathManager path_manager;
 
     // Core
     albert::ExtensionRegistry extension_registry;
@@ -175,7 +172,7 @@ Application::Private::Private(Application &q,
                               QSettings &settings,
                               QSettings &state):
     app(q),
-    original_path_entries(qEnvironmentVariable("PATH").split(u':', Qt::SkipEmptyParts)),
+    path_manager(settings),
     plugin_registry(extension_registry, load_enabled),
     plugin_provider(additional_plugin_paths),
     query_engine(extension_registry),
@@ -213,8 +210,6 @@ Application::Private::Private(Application &q,
     connect(&query_engine, &QueryEngine::queryHandlerRemoved,
             &app, reset_session, Qt::QueuedConnection);
 
-    initPathVariable(settings);
-
     initRPC(); // Also may trigger frontend
 
     initHotkey(settings);  // Connect hotkey after! frontend has been loaded else segfaults
@@ -249,15 +244,6 @@ Application::Private::~Private()
     extension_registry.deregisterExtension(&plugin_query_handler);
 
     frontend_plugin->unload();
-}
-
-void Application::Private::initPathVariable(QSettings &settings)
-{
-    additional_path_entries = settings.value(CFG_ADDITIONAL_PATH_ENTRIES).toStringList();
-    auto effective_path_entries = QStringList() << additional_path_entries << original_path_entries;
-    auto new_path = effective_path_entries.join(u':').toUtf8();
-    qputenv("PATH", new_path);
-    DEBG << "Effective PATH: " << new_path;
 }
 
 void Application::Private::initHotkey(QSettings &settings)
@@ -532,6 +518,8 @@ Telemetry &Application::telemetry() { return d->telemetry; }
 
 SystemTrayIcon &Application::systemTrayIcon() { return d->tray_icon; }
 
+PathManager &Application::pathManager() { return d->path_manager; }
+
 const map<QString, Extension *> &Application::extensions() const
 { return d->extension_registry.extensions(); }
 
@@ -558,7 +546,6 @@ Frontend *Application::frontend() { return d->frontend; }
 
 QString Application::currentFrontend() { return d->frontend_plugin->metadata().name; }
 
-
 QStringList Application::availableFrontends()
 {
     QStringList ret;
@@ -577,19 +564,6 @@ void Application::setFrontend(uint i)
 
     if (QMessageBox::question(nullptr, qApp->applicationDisplayName(), text) == QMessageBox::Yes)
         restart();
-}
-
-const QStringList &Application::originalPathEntries() const { return d->original_path_entries; }
-
-const QStringList &Application::additionalPathEntries() const { return d->additional_path_entries; }
-
-void Application::setAdditionalPathEntries(const QStringList &entries)
-{
-    if (entries != d->additional_path_entries)
-    {
-        d->additional_path_entries = entries;
-        settings()->setValue(CFG_ADDITIONAL_PATH_ENTRIES, entries);
-    }
 }
 
 const QHotkey *Application::hotkey() const { return d->hotkey.get(); }

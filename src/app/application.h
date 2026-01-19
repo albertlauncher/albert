@@ -1,9 +1,10 @@
 // Copyright (c) 2023-2025 Manuel Schneider
 
 #pragma once
+#include "app.h"
 #include <QObject>
 #include <memory>
-#include "app.h"
+class PathManager;
 class PluginRegistry;
 class QHotkey;
 class QueryEngine;
@@ -38,10 +39,7 @@ public:
     QueryEngine &queryEngine();
     Telemetry &telemetry();
     SystemTrayIcon &systemTrayIcon();
-
-    const QStringList &originalPathEntries() const;
-    const QStringList &additionalPathEntries() const;
-    void setAdditionalPathEntries(const QStringList&);
+    PathManager &pathManager();
 
     const QHotkey *hotkey() const;
     void setHotkey(std::unique_ptr<QHotkey> hotkey);

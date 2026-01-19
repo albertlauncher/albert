@@ -3,6 +3,7 @@
 #include "application.h"
 #include "frontend.h"
 #include "messagebox.h"
+#include "pathmanager.h"
 #include "pluginswidget.h"
 #include "querywidget.h"
 #include "settingswindow.h"
@@ -153,8 +154,8 @@ void SettingsWindow::init_tab_general_frontends()
 
 void SettingsWindow::init_tab_general_path()
 {
-    const auto &additional = app.additionalPathEntries();
-    const auto &original  = app.originalPathEntries();
+    const auto &additional = app.pathManager().additionalPathEntries();
+    const auto &original  = app.pathManager().originalPathEntries();
 
     auto *le = ui.lineEdit_additional_path_entries;
     le->setPlaceholderText(original.join(":"));
@@ -165,11 +166,11 @@ void SettingsWindow::init_tab_general_path()
             this, [this, le] {
                 const auto new_add = le->text().split(":");
 
-                if (new_add == app.additionalPathEntries())
+                if (new_add == app.pathManager().additionalPathEntries())
                     return;
 
-                app.setAdditionalPathEntries(new_add);
-                le->setToolTip((new_add + app.originalPathEntries()).join(":"));
+                app.pathManager().setAdditionalPathEntries(new_add);
+                le->setToolTip((new_add + app.pathManager().originalPathEntries()).join(":"));
 
                 if (question(tr("For the changes to take effect, Albert has to be restarted. "
                                 "Do you want to restart Albert now?")))
