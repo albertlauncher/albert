@@ -1,3 +1,396 @@
+## v34.0.0 (2026-01-19)
+
+### Features
+
+#### Core
+
+- [**BREAKING**] Tokenize strings using unicode word boundaries
+- Add 🕚 inputhint to global query wildcard
+- Add Homebrew plugin
+
+#### Plugins
+
+- **Arch Linux Wiki** · Infinite scrolling
+- **Documentation** · Allow custom docsets
+- **GitHub**
+  - Use a placeholder icon to impove visual appearance
+  - Lazily fetch pages (Infinite scroll)
+- **Kill Process** · Support all platforms
+- **Obsidian**
+  - Flatpak app support
+  - Snapcraft support
+- **Python plugins** · Add firefox plugin
+- **Spotify** · Lazy item generation (Infinite scroll)
+- **Widgets BoxModel**
+  - Customizable window properties
+  - Drop "quit on close" option
+- **Wikipedia** · Infinite scrolling
+
+### API
+
+#### Core
+
+- [**BREAKING**] Drop property.h
+- [**BREAKING**] Rename `bind` to `bindWidget`
+- [**BREAKING**] Drop `util` namespace
+- [**BREAKING**] Drop `tryCreateDirectory`
+- [**BREAKING**] Expose the `UsageScoring` class
+- [**BREAKING**] Remove color macros from public interface
+- [**BREAKING**] Simplify `UsageScoring` API
+- [**BREAKING**] Add asynchronous query handling support
+- [**BREAKING**] _BackgroundExecutor_ · Remove any logging or exception handling
+- Make `template<typename T> T* extension(const QString &id)` const
+- [**BREAKING**] Move UsageScoring into the Query
+- [**BREAKING**] Add object oriented global `App` interface
+- [**BREAKING**] Remove const from global query handlers parameter
+- [**BREAKING**] Add `GeneratorQueryHandler` class
+- [**BREAKING**] Drop `GlobalQueryHandler::handleGlobalQuery`
+- [**BREAKING**] Rename `Query` to `QueryContext`
+- [**BREAKING**] Rename `ThreadedQueryHandler` to `RankedQueryHandler`
+- Add class `AsyncGeneratorQueryHandler`
+- [**BREAKING**] Rename `QueryContext::string` to `QueryContext::query`
+- Make `QueryContext::isValid` thread-safe
+- Asynchronous PluginInstance initialization
+- [**BREAKING**] _PluginInstance_ · Remove keychain API
+- [**BREAKING**] Facade `ExtensionRegistry` behind `App` interface
+- [**BREAKING**] Redesign icon API
+
+#### Plugins
+
+- **Python plugins** · [**BREAKING**] · Python plugin interface v5.0
+
+### Performance
+
+#### Plugins
+
+- **Calculator** · Initialize calculator in background thread
+- **Documentation** · Asynchronous initialization
+- **Python plugins** · Asynchronous plugin initialization
+
+### Fixes
+
+#### Core
+
+- No tray icon on xdg platforms
+- Taborder in settingswidget
+- _QueryResults_ · Proper tr context
+- _OAuth_ · Do not silently fail on incorrect credentials
+- Prevent segfaults on plugin unload while window is visible
+- _GlobalQuery_ · Threading bugs
+- Replace leftover bool ref stop token
+- Add icon.h to header file set
+- Use clang for dedicated plugin test builds
+- `configWidget` call on unloaded plugin
+- Workaround Qt 6.4 deadlocks
+- Dead link in CONTRIBUTING.md
+- Mute shadow warnings
+- Mute -Wunused warnings
+
+#### Plugins
+
+- **CopyQ** · Invalid return type
+- **Debug** · Workaround GCC13 bugs
+- **Docker** · Proper tag handling
+- **Documentation** · Extract docsets into the docset directory
+- **Emoji** · Loading error when locale is 'C'
+- **Files** · Apply mime filter to the root item.
+- **GitHub**
+  - Fix typos in logs
+  - Avoid writing keychain on initial read
+  - Workaround GCC13 bugs (Ubuntu 24.04).
+- **Obsidian** · Backward compatibility
+- **Pass** · Correct license
+- **Python plugins**
+  - Python AST API dropped attr `Str`
+  - Fix virtual dispatch of `GlobalQueryHandler::items`
+  - Fix virtual dispatch of `IndexQueryHandler::items`
+  - Fix virtual dispatch of `IndexQueryHandler::rankItems`
+  - Use regular exceptions instead of pybind11_fail
+- **Spotify**
+  - Broken error icon lookup
+  - Avoid unneccesary writes to keychain on initial read
+- **Widgets BoxModel**
+  - Correct window_shadow_size literal
+  - Segfaults on null query
+  - Derive palette from app instead style
+
+### Documentation
+
+#### Core
+
+- Structure by topics
+- Update doxygen topic structure
+- Update query handlers documentation
+- Update ALBERT_PLUGIN macro documentation
+- Fix maintainers field documentation
+- Document how to handle plugin initialization failure
+- Add a note on GCC-13 generator bugs
+- _PluginLoader_ · Move contract into class description
+- Reorder changelog groups
+
+#### Plugins
+
+- **Documentation** · Document the custom docset feature
+
+### Testing
+
+#### Plugins
+
+- **Files** · Fix tests according to d033020b89f0306eaf09fdf95070e1697ed7c633
+- **Python plugins** · Update tests
+
+### Miscellaneous Tasks
+
+#### Core
+
+- Mute `-Wshadow` warnings
+- _docker_ · Build test images with Clang and  Ninja
+- _test_ · Mute `-Wunused-result` warnings
+- _changelog_ · Group plugin commits if >1
+- Rename plugin _path_ to _commandline_
+- Mute clazy-fully-qualified-moc-types
+- Print theme search paths on start
+- _RateLimiter_ · Async acquire support
+- Drop Widgetsboxmodel QSS frontend
+- Git ignore ".qtcreator"
+- _StandardIconType_ · Add values and documentation
+- _Telemetry_ · Derive QObject, use proper context objects
+- Remove global engine access on item activation
+- _RPCServer_ · Avoid using QtPrivate
+- _QueryEngine_ · Emit signal per handler type
+- Separate plugin macros from `config.h` into `plugin.h`
+- Do not export privately linked dependencies
+- _docker_ · Pull qcoro dependencies
+- _GlobalQuery_ · Print diag and add results of valid queries only
+- Update translations
+- _CI_ · Update macos build system
+- _CI_ · Add QCoro dependency
+- Run dedicated plugin test builds in docker files
+- Do not print plugin exceptions to the root logging category
+- Update changelog template
+- Revert to GCC builds
+- Do not send anything if users opt out telemetry
+
+#### Plugins
+
+- **AUR**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **Albert**
+  - Adapt API changes
+  - Use new icon API
+- **Applications**
+  - Adapt API changes
+  - Drop soft hyphen removal
+  - Use new icon API
+- **Arch Linux Wiki**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **Bitwarden**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **Bluetooth**
+  - Adapt API changes
+  - Use new icon API
+- **Caffeine**
+  - Adapt API changes
+  - Use new icon API
+- **Calculator**
+  - Adapt API changes
+  - Use new icon API
+- **Chromium**
+  - Adapt API changes
+  - Use new icon API
+- **Clipboard**
+  - Adapt API changes
+  - Remove unused include
+  - Adapt new icon API
+- **CoinGecko**
+  - Adapt to API changes
+  - Add readme
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **Contacts**
+  - Adapt API changes
+  - Remove legacy shared_ptr holder
+  - Adapt new icon API
+- **CopyQ**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **Date and time**
+  - Adapt API changes
+  - Adapt new icon API
+- **Debug**
+  - Adapt API changes
+  - Adapt new icon API
+- **Dictionary**
+  - Adapt API changes
+  - Adapt new icon API
+- **Docker**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **Documentation**
+  - Add README content
+  - Document the custom dataset feature
+  - Adapt API changes
+  - Drop legacy workaraound for lacking move semantics
+  - Adapt new icon API
+- **Emoji**
+  - Increase interface version
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **Files**
+  - Adapt API changes
+  - Fix test
+  - Remove unused include
+  - Adapt new icon API
+- **GitHub**
+  - Adapt API changes
+  - Move all saved search handling into root handler
+  - Adapt further API changes
+  - Use qtkeychain directly
+  - Adapt new icon API
+- **GoldenDict**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **Hash Generator**
+  - Adapt API changes
+  - Adapt new icon API
+- **Jetbrains projects**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **Kill Process**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **Locate**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **Media player remote**
+  - Adapt API changes
+  - Adapt new icon API
+- **Menu bar**
+  - Adapt API changes
+  - Adapt new icon API
+- **Obsidian**
+  - Fix range-loop-detach warning
+  - Print found vaults to console
+  - Adapt API changes
+  - Index all vaults on change
+  - Adapt further API changes
+  - Adapt new icon API
+- **PacMan**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **Pass**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **Pomodoro**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **Python Eval**
+  - Adapt to API changes
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **Python plugins**
+  - Drop plugin duckduckgo
+  - Remove unused include
+  - Update plugins
+- **SSH**
+  - Adapt API changes
+  - Adapt new icon API
+- **Snippets**
+  - Adapt API changes
+  - Avoid `-Wunused`
+  - Update translations
+  - Adapt new icon API
+- **Spotify**
+  - Adapt API changes
+  - Use detail::DyamicItem
+  - _TrackItem_ · Show only authors in description
+  - _ArtistItem_ · Show followers and genres in description
+  - _AlbumItem_ · Show only artists in description
+  - _PlaylistItem_ · Show only owner in description
+  - _ShowItem_ · Show only publisher in description
+  - _EpisodeItem_ · Show only description in description
+  - _AudiobookItem_ · Show only authors in description
+  - Further adaption of API changes
+  - Use qtkeychain directly
+  - Adapt new icon API
+- **Syncthing**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **System**
+  - Adapt API changes
+  - Remove unused include
+  - Adapt new icon API
+- **TeX to Unicode**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **Time zones**
+  - Adapt API changes
+  - Adapt new icon API
+- **Timers**
+  - Adapt API changes
+  - Adapt new icon API
+- **Translator**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **URL Handler**
+  - Adapt API changes
+  - Adapt new icon API
+- **Unit Converter**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **VPN**
+  - Adapt API changes
+  - Adapt new icon API
+- **VSCode projects**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **VirtualBox**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **Web search**
+  - Adapt API changes
+  - Adapt new icon API
+- **Widgets BoxModel**
+  - Adapt API changes
+  - Mute missing context object warning
+  - Take namespace of the old WBM frontend
+  - Adapt new icon API
+- **Wikipedia**
+  - Add CODEOWNERS
+  - Adapt icon API changes
+- **X Window Switcher**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+  - Add maintainer
+- **Zeal**
+  - Adapt to API changes
+  - Add CODEOWNERS
+  - Adapt icon API changes
+
+
 ## v33.0.1 (2025-10-15)
 
 ### Core changes
