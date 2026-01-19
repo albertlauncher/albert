@@ -204,7 +204,7 @@ public:
     /// @name Grapheme icon
     /// @{
 
-    // Returns the window text color of the current application palette.
+    /// Returns the window text color of the current application palette.
     static QBrush graphemeDefaultBrush();
 
     /// Returns an icon rendering the given _grapheme_ with \ref graphemeDefaultBrush, scaled by _scalar_.
