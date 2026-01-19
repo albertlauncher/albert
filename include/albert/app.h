@@ -67,11 +67,20 @@ public:
     /// Returns the global app instance.
     static App &instance();
 
+
+    /// @name Main window
+    /// @{
+
     /// Shows the frontend and optionally sets the text to _input_text_.
     virtual void show(const QString &input_text = {}) = 0;
 
     /// Shows the settings window and optionally selects the plugin with _plugin_id_.
     virtual void showSettings(QString plugin_id = {}) = 0;
+
+    /// @}
+
+    /// @name Extensions
+    /// @{
 
     /// Get map of all registered extensions
     virtual const std::map<QString,Extension*> &extensions() const = 0;
@@ -98,6 +107,11 @@ public:
         }
     }
 
+    /// @}
+
+    /// @name Application control
+    /// @{
+
     ///
     /// Restarts the application.
     ///
@@ -111,6 +125,29 @@ public:
     /// This function is thread-safe.
     ///
     static void quit();
+
+    /// @}
+
+    /// @name Persistence
+    /// @{
+
+    ///
+    /// Returns a `QSettings` object initialized with the application configuration file path.
+    ///
+    /// As `unique_ptr` for the sake of movability.
+    ///
+    /// This function is thread-safe.
+    ///
+    static std::unique_ptr<QSettings> settings();
+
+    ///
+    /// Returns a `QSettings` object initialized with the application state file path.
+    ///
+    /// As `unique_ptr` for the sake of movability.
+    ///
+    /// This function is thread-safe.
+    ///
+    static std::unique_ptr<QSettings> state();
 
     ///
     /// Returns the path to the application config directory.
@@ -133,23 +170,7 @@ public:
     ///
     static const std::filesystem::path &dataLocation();
 
-    ///
-    /// Returns a `QSettings` object initialized with the application configuration file path.
-    ///
-    /// As `unique_ptr` for the sake of movability.
-    ///
-    /// This function is thread-safe.
-    ///
-    static std::unique_ptr<QSettings> settings();
-
-    ///
-    /// Returns a `QSettings` object initialized with the application state file path.
-    ///
-    /// As `unique_ptr` for the sake of movability.
-    ///
-    /// This function is thread-safe.
-    ///
-    static std::unique_ptr<QSettings> state();
+    /// @}
 
 signals:
 

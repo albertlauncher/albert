@@ -56,11 +56,11 @@ void SystemTrayIcon::setEnabled(bool enable)
 
         action = tray_menu->addAction(tr("Restart"));
         QObject::connect(action, &QAction::triggered,
-                         [] { Application::instance().restart(); });
+                         [] { Application::restart(); });
 
         action = tray_menu->addAction(tr("Quit"));
         QObject::connect(action, &QAction::triggered,
-                         [] { Application::instance().quit(); });
+                         [] { Application::quit(); });
 
         // icon
 
