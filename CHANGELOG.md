@@ -1,3 +1,29 @@
+## v34.0.1 (2026-01-19)
+
+### Fixes
+
+#### Core
+
+- Misleading tooltip in query widget
+- Segfault on initial run
+
+#### Plugins
+
+- **Date and time**
+  - "Show date on empty query" not persisent
+  - Segfaults due to timers controlled from different threads
+
+### Documentation
+
+- Fix missing graphemeDefaultBrush docs
+- Remove leftover icon topic
+- Group `App` functions
+
+### Miscellaneous Tasks
+
+- _gitlint_ · Ignore body min length
+
+
 ## v34.0.0 (2026-01-19)
 
 ### Features
