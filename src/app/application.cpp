@@ -42,6 +42,7 @@
 #include <QPointer>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QTimer>
 #include <QTranslator>
 #include <iostream>
 Q_LOGGING_CATEGORY(AlbertLoggingCategory, "albert")
@@ -459,7 +460,7 @@ void Application::Private::notifyVersionChange(QSettings &state)
 
         QMessageBox::information(nullptr, qApp->applicationDisplayName(), text);
 
-        app.showSettings();
+        QTimer::singleShot(0, &app, [&]{ app.showSettings(); });
     }
     else if (current_version.section('.', 0, 0) != last_used_version.section('.', 0, 0))
     {
