@@ -27,10 +27,6 @@
 /// \ingroup util
 /// Utility for indexing and query handling.
 
-/// \defgroup util_icon Icon
-/// \ingroup util
-/// Utility for icon factories.
-
 /// \defgroup util_net Network
 /// \ingroup util
 /// Network utility.
