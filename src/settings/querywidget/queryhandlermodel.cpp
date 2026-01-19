@@ -95,12 +95,7 @@ QVariant QueryHandlerModel::data(const QModelIndex &idx, int role) const
                 return engine.isEnabled(gh->id()) ? Qt::Checked : Qt::Unchecked;
 
             else if (role == Qt::ToolTipRole)
-            {
-                if (engine.isEnabled(gh->id()))
-                    return tr("Disable global query handler.");
-                else
-                    return tr("Enable global query handler.");
-            }
+                return tr("Enable global query handling.");
         }
     }
 
@@ -112,12 +107,7 @@ QVariant QueryHandlerModel::data(const QModelIndex &idx, int role) const
                 return engine.fuzzy(h->id()) ? Qt::Checked : Qt::Unchecked;
 
             else if (role == Qt::ToolTipRole)
-            {
-                if (engine.fuzzy(h->id()))
-                    return tr("Disable fuzzy matching.");
-                else
-                    return tr("Enable fuzzy matching.");
-            }
+                return tr("Enable fuzzy matching.");
         }
     }
 
@@ -181,7 +171,7 @@ QVariant QueryHandlerModel::headerData(int section, Qt::Orientation orientation,
         switch ((Column) section) {
         case Column::Name: return headerData(section, orientation, Qt::DisplayRole);
         case Column::Trigger: return tr("The trigger of the handler. Spaces are visualized by •.");
-        case Column::Global: return tr("Enabled global query handlers.");
+        case Column::Global: return tr("Global query handling.");
         case Column::Fuzzy: return tr("Fuzzy matching.");
         }
     return {};
