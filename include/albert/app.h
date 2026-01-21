@@ -50,6 +50,7 @@ class QNetworkAccessManager;
 class QSettings;
 class QUrl;
 
+/// The Albert namespace.
 namespace albert
 {
 class Extension;
