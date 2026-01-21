@@ -535,12 +535,6 @@ add_executable(${TARGET_APP} MACOSX_BUNDLE "src/main.cpp")
 
 if (APPLE)
 
-    # Avoid regranting permissions all the time
-    option(BUILD_DEV_BUNDLE "Build a separate dev bundle (saves some headaches on permissions)" OFF)
-    if (BUILD_DEV_BUNDLE)
-        set(DEV_BUNDLE_SUFFIX "Dev")
-        set(DEV_BUNDLE_ID_SUFFIX ".dev")
-    endif()
 
     set(ICON_NAME "albert")
     set(ICON_PATH "dist/macos/${ICON_NAME}.icns")
@@ -560,6 +554,20 @@ if (APPLE)
         MACOSX_BUNDLE_INFO_STRING "Albert keyboard launcher"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "${CMAKE_PROJECT_VERSION}"
     )
+
+    # Avoid regranting permissions all the time
+    option(BUILD_DEV_BUNDLE "Build a separate dev bundle (saves some headaches on permissions)" OFF)
+    if (BUILD_DEV_BUNDLE)
+        set(DEV_BUNDLE_SUFFIX "Dev")
+        set(DEV_BUNDLE_ID_SUFFIX ".dev")
+
+        set(CODESIGN_IDENTITY "Albert Dev Code Signing")
+
+        add_custom_command(
+          TARGET ${TARGET_APP} POST_BUILD
+          COMMAND codesign --force --deep --sign "${CODESIGN_IDENTITY}" "$<TARGET_BUNDLE_DIR:${TARGET_APP}>"
+        )
+    endif()
 
 elseif (UNIX)
 
