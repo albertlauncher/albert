@@ -1,3 +1,33 @@
+## v34.0.2 (2026-01-21)
+
+### Fixes
+
+#### Plugins
+
+- **Applications** · Non persistent and ineffective applications options
+- **Python plugins**
+  - Pip freeze parsing
+  - Reset venv when Python version changed
+  - Handle errors of process executions
+
+### Documentation
+
+- Give the albert namespace a docstring
+- Remove reference to ExtensionRegistry
+
+### Miscellaneous Tasks
+
+#### Core
+
+- Codesign bundle with local certificate
+
+#### Plugins
+
+- **Python plugins**
+  - Instantiate plugins on main thread
+  - Drop dynamic dependecy installation
+
+
 ## v34.0.1 (2026-01-19)
 
 ### Fixes
