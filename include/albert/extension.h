@@ -11,8 +11,6 @@ namespace albert
 ///
 /// Abstract extension class.
 ///
-/// Inherited by classes that want to join the extensions pool of the \ref ExtensionRegistry.
-///
 /// \ingroup core_extension
 ///
 class ALBERT_EXPORT Extension
