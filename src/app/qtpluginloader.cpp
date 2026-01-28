@@ -227,15 +227,12 @@ void QtPluginLoader::unload()
 {
     if (loader_.isLoaded())
     {
-        // if (instance_){
-        //     delete static_cast<QObject*>(instance_);
-        //     instance_ = nullptr;
-        // }
-
         if (!loader_.unload())
             WARN << u"%1: Unload failed: %2"_s.arg(metadata_.id, loader_.errorString());
         else
             DEBG << u"%1: Unloaded."_s.arg(metadata_.id);
+
+        instance_ = nullptr;
     }
 
     if (translator_)
