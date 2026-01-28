@@ -1,3 +1,55 @@
+## v34.0.3 (2026-01-28)
+
+### Features
+
+#### Plugins
+
+- **Applications**
+  - _macOS_ · Use default terminal for *.command files
+  - Add cosmic-term support
+  - Support guake terminal
+- **Chromium**
+  - [**BREAKING**] · Add profile selection combo box
+  - Add option "Show favicons"
+- **Clipboard** · Use clipboard emoji icon
+
+### Performance
+
+#### Plugins
+
+- **Widgets BoxModel** · Cache icon by item identifier
+
+### Fixes
+
+#### Core
+
+- _RankedQueryHandler_ · Do not call rankItems on main thread
+- Segfault on plugin selection of unloaded plugin
+
+#### Plugins
+
+- **Bitwarden** · Return type and attr error
+- **Clipboard** · Deadlock on clipboard change
+- **Date and time** · Timer not started/stopped in same thread
+- **Python plugins**
+  - Empty debug line
+  - Missing dependencies are not automatically installed
+  - Duplicate interpreter config dump
+
+### Miscellaneous Tasks
+
+#### Plugins
+
+- **Applications** · Update translations
+- **Bluetooth** · Add README link
+- **Chromium**
+  - Add README
+  - Platform specific base dirs
+- **Python plugins**
+  - Update translations
+  - Comment config dumps
+
+
 ## v34.0.2 (2026-01-21)
 
 ### Fixes
