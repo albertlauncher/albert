@@ -127,7 +127,7 @@ void SettingsWindow::init_tab_general_hotkey()
         ui.label_hotkey->setEnabled(false);
         ui.pushButton_hotkey->setText(tr("Not supported"));
         connect(ui.pushButton_hotkey, &QPushButton::clicked, this, []{
-            openUrl("https://albertlauncher.github.io/gettingstarted/faq/#wayland");
+            openUrl("https://albertlauncher.github.io/faq/#wayland");
         });
     }
 }
