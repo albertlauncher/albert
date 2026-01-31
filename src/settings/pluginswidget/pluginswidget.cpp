@@ -157,7 +157,7 @@ void PluginsWidget::setPlaceholderWidget()
 {
     auto t = tr(
         "<p>Plugins are a community effort,<br>built by awesome people like you.</p>"
-        "<p>💡 <a href='https://albertlauncher.github.io/gettingstarted/extension/'>"
+        "<p>💡 <a href='https://albertlauncher.github.io/extension/'>"
         "Learn how to build plugins</a></p>"
         "<br>"  // move text slightly up, looks more balanced
         );
