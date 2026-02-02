@@ -1,3 +1,58 @@
+## v34.0.4 (2026-02-02)
+
+### Features
+
+#### Plugins
+
+- **Albert** · Show composed dir icon on albert dirs
+- **Files** · Default to case insensitive matching for fs browsers
+- **Jetbrains projects** · Global query handling
+- **Spotify** · Add open settings action on error items
+- **VSCode projects** · Support workspaces and singlefile recents
+- **Widgets BoxModel**
+  - Linear-gradient brush support
+  - Add ubuntu prototype theme
+
+### Performance
+
+#### Plugins
+
+- **Jetbrains projects** · Debounce projects cache update
+
+### Fixes
+
+#### Core
+
+- Link to extension website
+
+#### Plugins
+
+- **PacMan** · Query context variable
+- **Pass** · Pass generate could have empty location
+- **Widgets BoxModel** · Correct input_hint_color default
+
+### Miscellaneous Tasks
+
+#### Core
+
+- Update FAQ link
+
+#### Plugins
+
+- **Albert** · Translation correction
+- **Bitwarden** · Add maintainer
+- **Chromium**
+  - Log reason on favicons db copy failure
+  - Add some more data directories
+  - Scan for profiles on init only if none configured
+- **Files**
+  - Drop static dir mime type
+  - Do not store mime types, fetch mimetype on demand
+- **Jetbrains projects** · Update readme
+- **Spotify** · Update german translations
+- **Widgets BoxModel** · Update README
+
+
 ## v34.0.3 (2026-01-28)
 
 ### Features
