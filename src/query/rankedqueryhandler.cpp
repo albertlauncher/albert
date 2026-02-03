@@ -13,8 +13,7 @@ ItemGenerator RankedQueryHandler::items(QueryContext &ctx)
 {
     auto rank_items = rankItems(ctx);
     ctx.usageScoring().modifyMatchScores(id(), rank_items);
-    for (auto &ri : lazySort(::move(rank_items)))
-        co_yield ::move(ri);
+    return lazySort(::move(rank_items));
 }
 
 ItemGenerator RankedQueryHandler::lazySort(vector<RankItem> rank_items)

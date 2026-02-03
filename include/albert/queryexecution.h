@@ -29,7 +29,7 @@ public:
     const uint id;
 
     /// The query context of this query execution.
-    const QueryContext &context;
+    QueryContext &context;
 
     /// The results of this query.
     QueryResults results;
