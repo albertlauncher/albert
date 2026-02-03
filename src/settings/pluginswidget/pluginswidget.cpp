@@ -155,12 +155,14 @@ void PluginsWidget::showContextMenu(const QPoint &pos)
 
 void PluginsWidget::setPlaceholderWidget()
 {
-    auto t = tr(
-        "<p>Plugins are a community effort,<br>built by awesome people like you.</p>"
-        "<p>💡 <a href='https://albertlauncher.github.io/extension/'>"
-        "Learn how to build plugins</a></p>"
-        "<br>"  // move text slightly up, looks more balanced
-        );
+    auto contrib = "https://albertlauncher.github.io/contributing/";
+
+    auto t = tr("<p>Plugins are a community effort,"
+                "<br>built by awesome people like you.</p>"
+                "<p><a href='%1'>Join our community</a>"
+                "<br>and help make Albert thrive.</p>"
+                "<br>")  // move text slightly up, looks more balanced
+                 .arg(contrib);
 
     auto *lbl = new QLabel(t);
     lbl->setAlignment(Qt::AlignCenter);
