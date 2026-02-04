@@ -1,3 +1,42 @@
+## v34.0.5 (2026-02-04)
+
+### Features
+
+#### Plugins
+
+- **Jetbrains projects** · Global query handling
+- **VSCode projects** · Support workspaces and singlefile recents
+
+### Performance
+
+#### Plugins
+
+- **Jetbrains projects** · Debounce projects cache update
+
+### Fixes
+
+#### Core
+
+- Run calls to `items()` threaded
+
+#### Plugins
+
+- **Chromium** · GCC13 builds
+- **PacMan** · Query context variable
+- **Pass** · Pass generate could have empty location
+
+### Miscellaneous Tasks
+
+#### Core
+
+- Change motivational text in plugins tab placeholder widget
+
+#### Plugins
+
+- **Bitwarden** · Add maintainer
+- **Jetbrains projects** · Update readme
+
+
 ## v34.0.4 (2026-02-02)
 
 ### Features
