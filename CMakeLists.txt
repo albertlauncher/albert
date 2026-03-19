@@ -323,7 +323,7 @@ configure_file(
     @ONLY
 )
 
-find_package(Qt6 6.4 REQUIRED COMPONENTS # QString::operator""_s
+find_package(Qt6 6.8 REQUIRED COMPONENTS
     Core
     Concurrent
     Network
