@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ubuntu:24.04
+ARG BASE_IMAGE=ubuntu:latest
 
 FROM ${BASE_IMAGE} AS base
 RUN export DEBIAN_FRONTEND=noninteractive \
