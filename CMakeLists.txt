@@ -48,7 +48,7 @@ target_compile_options(qhotkey
 
 #  QCoro
 
-find_package(QCoro6 REQUIRED COMPONENTS Coro Core)
+find_package(QCoro6 0.13 REQUIRED COMPONENTS Coro Core)
 qcoro_enable_coroutines()
 
 
