@@ -122,21 +122,23 @@ QWidget *PluginWidget::createPluginPageFooter() const
                                            : maintainers.join(", "));
 
     // Dependencies
-    if (const auto &list = plugin_registry.dependencies(&plugin);
-        !list.empty())
+    if (const auto &dependencies = plugin_registry.dependencies(&plugin);
+        !dependencies.empty())
     {
-        auto names = list | views::transform([](const auto &p){ return p->metadata.name; });
-        meta << tr("Required plugins: %1", nullptr, names.size())
-                    .arg(QStringList(names.begin(), names.end()).join(", "));  // ranges::to
+        auto names = dependencies
+                     | views::transform([](const auto *p){ return p->metadata.name; })
+                     | ranges::to<QStringList>();
+        meta << tr("Required plugins: %1", nullptr, names.size()).arg(names.join(", "));
     }
 
     // Dependees
-    if (const auto &list = plugin_registry.dependees(&plugin);
-        !list.empty())
+    if (const auto &dependees = plugin_registry.dependees(&plugin);
+        !dependees.empty())
     {
-        auto names = list | views::transform([](const auto &p){ return p->metadata.name; });
-        meta << tr("Required by plugins: %1", nullptr, names.size())
-                    .arg(QStringList(names.begin(), names.end()).join(", "));  // ranges::to
+        auto names = dependees
+                     | views::transform([](const auto *p){ return p->metadata.name; })
+                     | ranges::to<QStringList>();
+        meta << tr("Required by plugins: %1", nullptr, names.size()).arg(names.join(", "));
     }
 
     // Required executables, if any

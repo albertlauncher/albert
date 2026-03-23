@@ -5,6 +5,7 @@
 #include <QString>
 #include <albert/export.h>
 #include <albert/querycontext.h>
+#include <vector>
 class QueryEngine;
 namespace albert
 {
