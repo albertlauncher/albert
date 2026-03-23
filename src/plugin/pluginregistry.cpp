@@ -62,12 +62,12 @@ void PluginRegistry::setEnabledWithUserConfirmation(const QString id, bool enabl
     if (plugin.enabled == enable)
         return;
 
-    auto v = (enable ? dependencyClosure({&plugin}) : dependeeClosure({&plugin}))
-             | views::filter([&](auto p) { return p->metadata.load_type == User
-                                                  && p->id != id
-                                                  && p->enabled != enable;})
-             | views::transform([](auto p) { return p->metadata.name; });
-    QStringList names(v.begin(), v.end());  // ranges::to
+    const auto names = (enable ? dependencyClosure({&plugin}) : dependeeClosure({&plugin}))
+                       | views::filter([&](auto p) { return p->metadata.load_type == User
+                                                            && p->id != id
+                                                            && p->enabled != enable;})
+                       | views::transform([](auto p) { return p->metadata.name; })
+                       | ranges::to<QStringList>();
 
     if (!names.empty())
     {
@@ -120,20 +120,20 @@ void PluginRegistry::setLoaded(const QString &id, bool loaded)
 
 std::set<const Plugin *> PluginRegistry::dependencies(const Plugin *p) const
 {
-    auto v = p->loader.metadata().plugin_dependencies
-             | views::transform([this](const QString &id){ return &plugins_.at(id); });
-    return {v.begin(), v.end()};  // ranges::to
+    return p->loader.metadata().plugin_dependencies
+           | views::transform([this](const QString &id){ return &plugins_.at(id); })
+           | ranges::to<set>();
 }
 
 std::set<const Plugin *> PluginRegistry::dependees(const Plugin *p) const
 {
-    auto v =  plugins_
-             | views::transform([](auto &pair){ return &pair.second; })
-             | views::filter([p](const Plugin *o){
-                   return ranges::any_of(o->metadata.plugin_dependencies,
-                                         [p](auto &id){ return id == p->id;});
-               });
-    return {v.begin(), v.end()};  // ranges::to
+    return plugins_
+           | views::transform([](auto &pair){ return &pair.second; })
+           | views::filter([p](const Plugin *o){
+                 return ranges::any_of(o->metadata.plugin_dependencies,
+                                       [p](auto &id){ return id == p->id;});
+             })
+        | ranges::to<set>();
 }
 
 set<const Plugin *> PluginRegistry::dependencyClosure(const std::set<const Plugin*> &plugins) const
@@ -176,8 +176,7 @@ void PluginRegistry::onRegistered(PluginProvider *pp)
 
     map<QString, set<QString>> dependency_graph;
     for (auto &[id, loader] : unique_loaders)
-        dependency_graph.emplace(id, set<QString>{begin(loader->metadata().plugin_dependencies),
-                                                  end(loader->metadata().plugin_dependencies)});  // ranges::to
+        dependency_graph.emplace(id, loader->metadata().plugin_dependencies | ranges::to<set>());
 
     if (auto topo_result = topologicalSort(dependency_graph);
         !topo_result.error_set.empty())
@@ -222,14 +221,12 @@ void PluginRegistry::onRegistered(PluginProvider *pp)
     emit pluginsChanged();
 
     if (load_enabled_)
-    {
-        auto v = plugins_
-                 | views::transform([](auto &p) { return &p.second; })
-                 | views::filter([pp](auto p) { return &p->provider == pp
-                                                       && p->metadata.load_type == User
-                                                       && p->enabled; });
-        load({v.begin(), v.end()});  // ranges::to
-    }
+        load(plugins_
+             | views::transform([](const auto &p) { return &p.second; })
+             | views::filter([pp](const auto *p) { return &p->provider == pp
+                                                          && p->metadata.load_type == User
+                                                          && p->enabled; })
+             | ranges::to<set>());
 }
 
 void PluginRegistry::onDeregistered(PluginProvider *pp)
@@ -237,8 +234,10 @@ void PluginRegistry::onDeregistered(PluginProvider *pp)
     const auto filter = [pp](const auto& it){ return &it.second.provider == pp; };
 
     // Unload plugins of this provider
-    auto v = plugins_ | views::filter(filter) | views::transform([](auto &p){ return &p.second; });
-    unload({v.begin(), v.end()});  // ranges::to
+    unload(plugins_
+           | views::transform([](const auto &p) { return &p.second; })
+           | views::filter([pp](const auto *p){ return &p->provider == pp; })
+           | ranges::to<set>());
 
     // Remove plugins of this provider
     erase_if(plugins_, filter);

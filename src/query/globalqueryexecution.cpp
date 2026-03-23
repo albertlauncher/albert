@@ -159,12 +159,11 @@ void GlobalQueryExecution::Private::addResultChunk()
 
     ranges::partial_sort(reverse_view, fetch_view.end(), greater{});
 
-    // FIXME ranges::to
-    auto take_view = fetch_view | views::transform([](const GlobalQueryResult &r) {
-                         return QueryResult(r.handler, ::move(r.item));
-                     });
-
-    vector<QueryResult> taken{begin(take_view), end(take_view)};
+    auto taken = fetch_view
+                 | views::transform([](const GlobalQueryResult &r) {
+                       return QueryResult(r.handler, ::move(r.item));
+                   })
+                 | ranges::to<vector>();
 
     // Cheap pop_n
     unordered_results.erase(unordered_results.end() - fetch_view.size(), unordered_results.end());

@@ -14,11 +14,7 @@ QString GlobalQuery::name() const { return u"Global query"_s; }
 QString GlobalQuery::description() const { return u"Runs a bunch of global query handlers"_s; }
 
 unique_ptr<QueryExecution> GlobalQuery::execution(QueryContext &ctx)
-{
-    // FIXME ranges::to
-    auto v = handlers | views::values;
-    return make_unique<GlobalQueryExecution>(ctx, vector<GlobalQueryHandler*>{begin(v), end(v)});
-}
+{ return make_unique<GlobalQueryExecution>(ctx, handlers | views::values | ranges::to<vector>()); }
 
 QString GlobalQuery::synopsis(const QString &query) const
 { return query == u"*"_s ? u"🕚"_s : u""_s; }

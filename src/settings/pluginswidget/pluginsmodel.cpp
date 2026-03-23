@@ -26,10 +26,11 @@ PluginsModel::PluginsModel(PluginRegistry &plugin_registry, QObject *parent):
     connect(&plugin_registry_, &PluginRegistry::pluginsChanged,
             this, [this]
             {
-                auto v = plugin_registry_.plugins()
-                         | views::transform([](auto &p){ return &p.second; });
-                vector<const Plugin*> vec(v.begin(), v.end());  // ranges::to
+                auto vec = plugin_registry_.plugins()
+                         | views::transform([](auto &p){ return &p.second; })
+                         | ranges::to<vector>();
                 ranges::sort(vec, less<>{}, [](auto p){ return p->id; });
+
                 beginResetModel();
                 plugins = std::move(vec);
                 endResetModel();
