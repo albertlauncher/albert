@@ -89,12 +89,7 @@ public:
             for (auto&& query_result : query_results)
             {
                 query_result.item->addObserver(this);
-                // results.emplace_back(std::forward_like<decltype(query_results)>(query_result));
-                // TODO remove if forward_like is available everywhere (26.04)
-                if constexpr (std::is_lvalue_reference_v<decltype(query_results)>)
-                    results.emplace_back(query_result);
-                else
-                    results.emplace_back(std::move(query_result));
+                results.emplace_back(std::forward_like<decltype(query_results)>(query_result));
             }
             emit resultsInserted();
         }
@@ -111,12 +106,7 @@ public:
             for (auto&& item : items)
             {
                 item->addObserver(this);
-                // results.emplace_back(std::forward_like<decltype(query_results)>(query_result));
-                // TODO remove if forward_like is available everywhere (26.04)
-                if constexpr (std::is_lvalue_reference_v<decltype(items)>)
-                    results.emplace_back(&extension, item);
-                else
-                    results.emplace_back(&extension, std::move(item));
+                results.emplace_back(&extension, std::forward_like<decltype(items)>(item));
             }
             emit resultsInserted();
         }
