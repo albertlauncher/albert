@@ -39,12 +39,8 @@ public:
 
     bool isActive() const override { return active; }
 
-    bool canFetchMore() const override {
-        return context.isValid()
-               && (!iterator
-                   // https://github.com/qcoro/qcoro/issues/294
-                   || iterator != const_cast<AsyncItemGenerator&>(*generator).end());
-    }
+    bool canFetchMore() const override
+    { return context.isValid() && (!iterator || iterator != generator->end()); }
 
     void fetchMore() override
     {
