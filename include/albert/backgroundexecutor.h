@@ -55,16 +55,7 @@ public:
     {
         stop_ = true;
         rerun_ = false;
-
-        // Qt 6.4 QFutureWatcher is broken.
-        // isFinished returns wrong values and waitForFinished blocks forever on finished futures.
-        // TODO(26.04): Remove workaround when dropping Qt < 6.5 support.
-        if (future_watcher_
-#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
-            && !future_watcher_->isFinished())
-#else
-            && future_watcher_->isRunning())
-#endif
+        if (future_watcher_ && !future_watcher_->isFinished())
             future_watcher_->waitForFinished();
     }
 
