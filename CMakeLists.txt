@@ -243,12 +243,8 @@ elseif(UNIX)  # assume xdg
     )
     list(APPEND LIB_SRC
         src/platform/unix/signalhandler.cpp
-        src/platform/xdg/iconlookup.cpp
-        src/platform/xdg/iconlookup.h
         src/platform/xdg/platform.cpp
         src/platform/xdg/desktopentryparser.cpp
-        src/platform/xdg/themefileparser.cpp
-        src/platform/xdg/themefileparser.h
     )
 endif()
 
