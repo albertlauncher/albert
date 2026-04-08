@@ -40,24 +40,16 @@ public:
     //     hide_on_activation(hide_on_activation_)
     // {}
 
-    ///
     /// The identifier.
-    ///
     QString id;
 
-    ///
     /// The description.
-    ///
     QString text;
 
-    ///
     /// The function executed on activation.
-    ///
     std::function<void()> function;
 
-    ///
     /// The activation behavior.
-    ///
     bool hide_on_activation = true;
 };
 
@@ -70,10 +62,7 @@ public:
 class ALBERT_EXPORT Item
 {
 public:
-
-    ///
     /// Destructs the item.
-    ///
     virtual ~Item();
 
     ///
@@ -125,34 +114,21 @@ public:
     ///
     virtual std::vector<Action> actions() const;
 
-    ///
     /// Interface class for item observers
-    ///
     class Observer
     {
     public:
-
-        ///
         /// Notifies the observer about any changes in _item_.
-        ///
-        virtual void notify(const albert::Item *item) = 0;
-
+        virtual void onItemChanged(const albert::Item *item) = 0;
     protected:
-
-        ///
         /// Destructs the observer.
-        ///
         virtual ~Observer();
     };
 
-    ///
     /// Starts notifying _observer_ about any changes.
-    ///
     virtual void addObserver(Observer *observer);
 
-    ///
     /// Stops notifying _observer_ about any changes.
-    ///
     virtual void removeObserver(Observer *observer);
 
 };

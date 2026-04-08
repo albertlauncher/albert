@@ -60,7 +60,7 @@ bool QueryResults::activate(uint item_idx, uint action_idx)
     return false;
 }
 
-void QueryResults::notify(const Item *item)
+void QueryResults::onItemChanged(const Item *item)
 {
     // O(n) but since the results are populated lazy this should be okay.
     if (auto it = find_if(results.begin(), results.end(),
