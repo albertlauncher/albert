@@ -181,7 +181,7 @@ signals:
 
 private:
 
-    void notify(const albert::Item *item) override;
+    void onItemChanged(const albert::Item *item) override;
 
     const QueryContext &context;
     std::vector<QueryResult> results;

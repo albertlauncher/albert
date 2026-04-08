@@ -33,7 +33,7 @@ detail::DynamicItem::~DynamicItem() {}
 void detail::DynamicItem::dataChanged() const
 {
     for (auto observer : d->observers)
-        observer->notify(this);
+        observer->onItemChanged(this);
 }
 
 void detail::DynamicItem::addObserver(Item::Observer *o) { d->observers.insert(o); }
