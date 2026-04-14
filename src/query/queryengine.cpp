@@ -175,11 +175,11 @@ unique_ptr<detail::Query> QueryEngine::query(QString string)
     auto query = unique_ptr<detail::Query>(
         new detail::Query(usage_scoring_, ::move(fallbacks), *handler, trigger, string));
 
-    connect(&query->matches(), &QueryResults::resultActivated,
-            this, &QueryEngine::storeItemActivation);
-
-    connect(&query->fallbacks(), &QueryResults::resultActivated,
-            this, &QueryEngine::storeItemActivation);
+    auto slot = [this, q = query.get()](QString e, QString i, QString a) {
+        storeItemActivation(q->query(), e, i, a);
+    };
+    connect(&query->matches(), &QueryResults::resultActivated, this, slot);
+    connect(&query->fallbacks(), &QueryResults::resultActivated, this, slot);
 
     return query;
 }

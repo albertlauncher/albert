@@ -11,17 +11,18 @@ using namespace std;
 
 class AsyncExecution final : public QueryExecution
 {
-    unique_ptr<AsyncItemGenerator> generator;
+    AsyncGeneratorQueryHandler &handler;
+    optional<AsyncItemGenerator> generator;
     optional<AsyncItemGenerator::iterator> iterator;
     QCoro::Task<> fetch_task;
     bool active;
 
 public:
 
-    AsyncExecution(QueryContext &ctx, AsyncItemGenerator &&gen)
-        : QueryExecution(ctx)
-        , generator(make_unique<AsyncItemGenerator>(::move(gen)))
-        , iterator(nullopt)
+    AsyncExecution(QueryContext &c, AsyncGeneratorQueryHandler &h)
+        : QueryExecution(c)
+        , handler(h)
+        , generator(h.items(c))
         , active(false)
     {
         fetchMore();
@@ -73,9 +74,10 @@ public:
                 iterator = co_await generator->begin();
 
             if (*iterator != generator->end())
-                results.add(::move(**iterator));
-
-        } catch (const exception &e) {
+                results.add(handler, ::move(**iterator));
+        }
+        catch (const exception &e)
+        {
             WARN << u"AsyncGeneratorQueryHandler threw exception:\n"_s << e.what();
         }
         catch (...)
@@ -88,4 +90,4 @@ public:
 AsyncGeneratorQueryHandler::~AsyncGeneratorQueryHandler() {}
 
 unique_ptr<QueryExecution> AsyncGeneratorQueryHandler::execution(QueryContext &ctx)
-{ return make_unique<AsyncExecution>(ctx, items(ctx)); }
+{ return make_unique<AsyncExecution>(ctx, *this); }

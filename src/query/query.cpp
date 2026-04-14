@@ -36,8 +36,8 @@ Query::Query(UsageScoring usage_scoring,
                   .handler = handler,
                   .trigger = trigger,
                   .string = string,
-                  .matches = {*this},
-                  .fallbacks = {*this},
+                  .matches = {},
+                  .fallbacks = {},
                   .execution = {}})
 {
     d->fallbacks.add(::move(fallbacks));

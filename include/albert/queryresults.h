@@ -5,7 +5,6 @@
 #include <QObject>
 #include <albert/export.h>
 #include <albert/item.h>
-#include <albert/querycontext.h>
 #include <memory>
 #include <ranges>
 #include <vector>
@@ -39,10 +38,7 @@ class ALBERT_EXPORT QueryResults : public QObject, private Item::Observer
 
 public:
 
-    /// Constructs query results with the _context_ it belongs to.
-    QueryResults(const QueryContext &context);
-
-    /// Destructs the query results.
+    /// Destructs the query results object.
     ~QueryResults() override;
 
     /// Returns the result at index _index_.
@@ -69,13 +65,6 @@ public:
         results.emplace_back(&extension, std::forward<decltype(item)>(item));
         emit resultsInserted();
     }
-
-    ///
-    /// Appends a \ref QueryResult constructed from _item_ and the handler this results belong to.
-    ///
-    /// Use the range add methods to avoid UI flicker.
-    ///
-    void add(ItemPtr auto &&item) { add(context.handler(), std::forward<decltype(item)>(item)); }
 
     /// Appends _query_results_ to the results.
     void add(std::ranges::range auto &&query_results)
@@ -121,9 +110,6 @@ public:
             emit resultsInserted();
         }
     }
-
-    /// Appends \ref QueryResult's constructed from _items_ and the handler this results belong to.
-    void add(ItemRange auto &&items){ add(context.handler(), std::forward<decltype(items)>(items)); }
 
     /// Removes _count_ results starting from _index_.
     void remove(uint index, uint count = 1)
@@ -177,13 +163,12 @@ signals:
     void resultChanged(uint i);
 
     /// Emitted when a result was activated.
-    void resultActivated(QString query, QString extension_id, QString item_id, QString action_id);
+    void resultActivated(QString extension_id, QString item_id, QString action_id);
 
 private:
 
     void onItemChanged(const albert::Item *item) override;
 
-    const QueryContext &context;
     std::vector<QueryResult> results;
 
 };
