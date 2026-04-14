@@ -11,17 +11,18 @@ using namespace std;
 
 class AsyncExecution final : public QueryExecution
 {
-    unique_ptr<AsyncItemGenerator> generator;
+    AsyncGeneratorQueryHandler &handler;
+    optional<AsyncItemGenerator> generator;
     optional<AsyncItemGenerator::iterator> iterator;
     QCoro::Task<> fetch_task;
     bool active;
 
 public:
 
-    AsyncExecution(QueryContext &ctx, AsyncItemGenerator &&gen)
-        : QueryExecution(ctx)
-        , generator(make_unique<AsyncItemGenerator>(::move(gen)))
-        , iterator(nullopt)
+    AsyncExecution(QueryContext &c, AsyncGeneratorQueryHandler &h)
+        : QueryExecution(c)
+        , handler(h)
+        , generator(h.items(c))
         , active(false)
     {
         fetchMore();
@@ -42,7 +43,7 @@ public:
         return context.isValid()
                && (!iterator
                    // https://github.com/qcoro/qcoro/issues/294
-                   || iterator != const_cast<AsyncItemGenerator*>(generator.get())->end());
+                   || iterator != const_cast<AsyncItemGenerator&>(*generator).end());
     }
 
     void fetchMore() override
@@ -63,9 +64,10 @@ public:
                 co_await ++(*iterator);
 
             if (*iterator != generator->end())
-                results.add(::move(**iterator));
-
-        } catch (const exception &e) {
+                results.add(handler, ::move(**iterator));
+        }
+        catch (const exception &e)
+        {
             WARN << u"AsyncGeneratorQueryHandler threw exception:\n"_s << e.what();
         } catch (...) {
             WARN << u"AsyncGeneratorQueryHandler threw unknown exception."_s;
@@ -78,4 +80,4 @@ public:
 AsyncGeneratorQueryHandler::~AsyncGeneratorQueryHandler() {}
 
 unique_ptr<QueryExecution> AsyncGeneratorQueryHandler::execution(QueryContext &ctx)
-{ return make_unique<AsyncExecution>(ctx, items(ctx)); }
+{ return make_unique<AsyncExecution>(ctx, *this); }
