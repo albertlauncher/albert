@@ -4,6 +4,7 @@
 #pragma once
 #include <QObject>
 #include <albert/export.h>
+#include <albert/querycontext.h>
 #include <albert/queryresults.h>
 
 namespace albert

@@ -101,7 +101,7 @@ public:
                     if (items.empty())
                         at_end = true;
                     else
-                        results.add(::move(items));
+                        results.add(handler, ::move(items));
                 } catch (const QUnhandledException &que) {
                     if (que.exception())
                         rethrow_exception(que.exception());

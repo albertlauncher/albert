@@ -7,8 +7,6 @@
 using namespace albert;
 using namespace std;
 
-QueryResults::QueryResults(const QueryContext &ctx) : context(ctx){}
-
 QueryResults::~QueryResults()
 {
     for (auto &result_item : results)
@@ -28,7 +26,7 @@ bool QueryResults::activate(uint item_idx, uint action_idx)
 
             // Order is cumbersome here
 
-            emit resultActivated(context.query(), e->id(), i->id(), a.id);
+            emit resultActivated(e->id(), i->id(), a.id);
 
             // May delete the query, due to hide()
             // Note to myself:
