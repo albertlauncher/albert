@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #pragma once
+#include <QHash>
 #include <QString>
 #include <albert/export.h>
 #include <unordered_map>
