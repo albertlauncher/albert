@@ -1,7 +1,8 @@
-// Copyright (c) 2022-2025 Manuel Schneider
+// Copyright (c) 2022-2026 Manuel Schneider
 
 #include "albert/app.h"
 #include "albert/logging.h"
+#include "itemkey.hpp"
 #include "usagedatabase.h"
 #include <QDateTime>
 #include <QDir>

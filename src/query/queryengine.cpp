@@ -1,13 +1,14 @@
-// Copyright (c) 2022-2025 Manuel Schneider
+// Copyright (c) 2022-2026 Manuel Schneider
 
 #include "albert/app.h"
 #include "extensionregistry.h"
 #include "fallbackhandler.h"
 #include "globalqueryhandler.h"
+#include "itemkey.hpp"
 #include "logging.h"
+#include "query.h"
 #include "queryengine.h"
 #include "queryresults.h"
-#include "query.h"
 #include "usagedatabase.h"
 #include "usagescoring.h"
 #include <QCoreApplication>
@@ -31,18 +32,15 @@ static const char*  CFG_PRIO_PERFECT = "prioritizePerfectMatch";
 static const bool   DEF_PRIO_PERFECT = true;
 }
 
-
 QueryEngine::QueryEngine(ExtensionRegistry &registry)
     : registry_(registry)
-    , usage_scoring_(0,0,{})  // Null scoring, just to not have to implement constructors
+    , usage_scoring_(false, {})
 {
     auto s = app().settings();
 
-    auto decay = s->value(CFG_MEMORY_DECAY, DEF_MEMORY_DECAY).toDouble();
-    auto prioritize_perfect_match = s->value(CFG_PRIO_PERFECT, DEF_PRIO_PERFECT).toBool();
-    usage_scoring_ = UsageScoring(prioritize_perfect_match, decay,
-                                  make_shared<unordered_map<ItemKey, double>>
-                                  (UsageDatabase::instance().itemUsageScores(decay)));
+    prioritize_perfect_match_ = s->value(CFG_PRIO_PERFECT, DEF_PRIO_PERFECT).toBool();
+    memory_decay_ = s->value(CFG_MEMORY_DECAY, DEF_MEMORY_DECAY).toDouble();
+    updateUsageScoring();
 
     loadFallbackOrder();
 
@@ -112,25 +110,29 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry)
     });
 }
 
+double QueryEngine::memoryDecay() const { return memory_decay_; }
+
 void QueryEngine::setMemoryDecay(double v)
 {
-    if (usage_scoring_.memory_decay != v)
+    if (memory_decay_ != v)
     {
-        DEBG << "memoryDecay set to" << v;
+        DEBG << "memory_decay set to" << v;
+        memory_decay_ = v;
         app().settings()->setValue(CFG_MEMORY_DECAY, v);
-        usage_scoring_ = UsageScoring(usage_scoring_.prioritize_perfect_match, v,
-                                      make_shared<unordered_map<ItemKey, double>>
-                                      (UsageDatabase::instance().itemUsageScores(v)));
+        updateUsageScoring();
     }
 }
 
+bool QueryEngine::prioritizePerfectMatch() const { return prioritize_perfect_match_; }
+
 void QueryEngine::setPrioritizePerfectMatch(bool v)
 {
-    if (usage_scoring_.prioritize_perfect_match != v)
+    if (prioritize_perfect_match_ != v)
     {
-        DEBG << "prioritizePerfectMatch set to" << v;
+        DEBG << "prioritize_perfect_match set to" << v;
+        prioritize_perfect_match_ = v;
         app().settings()->setValue(CFG_PRIO_PERFECT, v);
-        usage_scoring_ = UsageScoring(v, usage_scoring_.memory_decay, usage_scoring_.usage_scores);
+        updateUsageScoring();
     }
 }
 
@@ -138,19 +140,7 @@ void QueryEngine::storeItemActivation(const QString &query, const QString &exten
                                       const QString &item, const QString &action)
 {
     UsageDatabase::instance().addActivation(query, extension, item, action);
-
-    auto scores = UsageDatabase::instance().itemUsageScores(usage_scoring_.memory_decay);
-
-    usage_scoring_ = UsageScoring(
-        usage_scoring_.prioritize_perfect_match,
-        usage_scoring_.memory_decay,
-        make_shared<unordered_map<ItemKey, double>>(::move(scores))
-    );
-}
-
-UsageScoring QueryEngine::usageScoring() const
-{
-    return usage_scoring_;
+    updateUsageScoring();
 }
 
 unique_ptr<detail::Query> QueryEngine::query(QString string)
@@ -355,6 +345,12 @@ void QueryEngine::loadFallbackOrder()
     uint rank = 1;
     for (auto it = o.rbegin(); it != o.rend(); ++it, ++rank)
         fallback_order_.emplace(*it, rank);
+}
+
+void QueryEngine::updateUsageScoring()
+{
+    usage_scoring_ = UsageScoring{prioritize_perfect_match_,
+                                  UsageDatabase::instance().itemUsageScores(memory_decay_)};
 }
 
 vector<QueryResult> QueryEngine::fallbacks(const QString &query)

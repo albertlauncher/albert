@@ -1,24 +1,21 @@
-// Copyright (c) 2022-2025 Manuel Schneider
+// Copyright (c) 2022-2026 Manuel Schneider
 
 #include "fallbacksmodel.h"
 #include "queryengine.h"
 #include "queryhandlermodel.h"
 #include "querywidget.h"
-#include "usagescoring.h"
 #include <QHeaderView>
 
 QueryWidget::QueryWidget(QueryEngine &query_engine) : query_engine_(query_engine)
 {
     ui.setupUi(this);
 
-    auto usage_scoring = query_engine_.usageScoring();
-
-    ui.slider_decay->setValue((int)(usage_scoring.memory_decay * 100));
+    ui.slider_decay->setValue((int)(query_engine_.memoryDecay() * 100));
 
     connect(ui.slider_decay, &QSlider::sliderReleased, this,
             [this]{ query_engine_.setMemoryDecay((double)ui.slider_decay->value()/100.0); });
 
-    ui.checkBox_prioritizePerfectMatch->setChecked(usage_scoring.prioritize_perfect_match);
+    ui.checkBox_prioritizePerfectMatch->setChecked(query_engine_.prioritizePerfectMatch());
 
     connect(ui.checkBox_prioritizePerfectMatch, &QCheckBox::toggled, this,
             [this](bool val){ query_engine_.setPrioritizePerfectMatch(val); });

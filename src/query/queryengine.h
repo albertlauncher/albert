@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2025 Manuel Schneider
+// Copyright (c) 2023-2026 Manuel Schneider
 
 #pragma once
 #include "globalquery.h"
@@ -26,9 +26,12 @@ public:
 
     std::unique_ptr<albert::detail::Query> query(QString query);
 
-    albert::UsageScoring usageScoring() const;
+    double memoryDecay() const;
     void setMemoryDecay(double);
+
+    bool prioritizePerfectMatch() const;
     void setPrioritizePerfectMatch(bool);
+
     void storeItemActivation(const QString &query, const QString &extension,
                              const QString &item, const QString &action);
 
@@ -57,6 +60,7 @@ private:
     void saveFallbackOrder() const;
     void loadFallbackOrder();
     std::vector<albert::QueryResult> fallbacks(const QString &query);
+    void updateUsageScoring();
 
     albert::ExtensionRegistry &registry_;
 
@@ -73,6 +77,19 @@ private:
 
     std::map<QString, albert::FallbackHandler*> fallback_handlers_;
     std::map<std::pair<QString, QString>, int> fallback_order_;
+
+    /// The exponential decay applied to usage scores based on recency.
+    /// This value adjusts the influence of recent item activations using a geometric weighting
+    /// scheme: each activation contributes a weight of 1 / (memory_decay^recency).
+    /// A value of 1.0 disables decay, assigning equal weight to all activations and the score of
+    /// an item is the sum of its activations (Most Frequently Used).
+    /// A value of 0.5 implies that for any activation a_i in history the sum of all older
+    /// activations can not exceed the weight of a_i (Most Recently Used).
+    /// Valid range: [0.5, 1.0]
+    double memory_decay_;
+
+    /// If `true` perfect matches should be prioritized even if their usage score is lower.
+    bool prioritize_perfect_match_;
 
     albert::UsageScoring usage_scoring_;
 
