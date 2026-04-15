@@ -1,9 +1,9 @@
 // Copyright (c) 2022-2025 Manuel Schneider
 
 #pragma once
-#include "usagescoring.h"  // ItemKey
 #include <QString>
 #include <map>
+class ItemKey;
 class QDateTime;
 
 //
@@ -18,7 +18,7 @@ public:
 
     std::map<QString, uint> extensionActivationsSince(const QDateTime &query) const;
 
-    std::unordered_map<albert::ItemKey, double> itemUsageScores(double memory_decay) const;
+    std::unordered_map<ItemKey, double> itemUsageScores(double memory_decay) const;
 
     void addActivation(const QString &query,
                        const QString &extension,

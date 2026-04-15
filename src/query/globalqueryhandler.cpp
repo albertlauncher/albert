@@ -11,8 +11,4 @@ GlobalQueryHandler::~GlobalQueryHandler() {}
 vector<shared_ptr<Item>> GlobalQueryHandler::handleEmptyQuery() { return {}; }
 
 ItemGenerator GlobalQueryHandler::items(QueryContext &ctx)
-{
-    auto rank_items = rankItems(ctx);
-    ctx.usageScoring().modifyMatchScores(id(), rank_items);
-    return lazySort(::move(rank_items));
-}
+{ return lazySort(ctx.usageScoring().applied(id(), rankItems(ctx))); }
