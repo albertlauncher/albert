@@ -16,7 +16,7 @@ QString GlobalQuery::description() const { return u"Runs a bunch of global query
 unique_ptr<QueryExecution> GlobalQuery::execution(QueryContext &ctx)
 {
     // FIXME ranges::to
-    auto v = global_query_handlers | views::values;
+    auto v = handlers | views::values;
     return make_unique<GlobalQueryExecution>(ctx, vector<GlobalQueryHandler*>{begin(v), end(v)});
 }
 

@@ -71,7 +71,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry)
         {
             global_handlers_.emplace(id, h);
             if (settings->value(CFG_GLOBAL_HANDLER_ENABLED, true).toBool())
-                global_query_.global_query_handlers.emplace(id, h);
+                global_query_.handlers.emplace(id, h);
 
             emit globalQueryHandlerAdded(h);
         }
@@ -99,7 +99,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry)
         {
             auto h = it->second;
             global_handlers_.erase(it);
-            global_query_.global_query_handlers.erase(id);
+            global_query_.handlers.erase(id);
             emit globalQueryHandlerRemoved(h);
         }
 
@@ -264,7 +264,7 @@ map<QString, GlobalQueryHandler*> QueryEngine::globalHandlers()
 }
 
 bool QueryEngine::isEnabled(const QString &id) const
-{ return global_query_.global_query_handlers.contains(id); }
+{ return global_query_.handlers.contains(id); }
 
 void QueryEngine::setEnabled(const QString &id, bool e)
 {
@@ -274,9 +274,9 @@ void QueryEngine::setEnabled(const QString &id, bool e)
     {
         App::settings()->setValue(QString("%1/%2").arg(id, CFG_GLOBAL_HANDLER_ENABLED), e);
         if (e)
-            global_query_.global_query_handlers.emplace(id, h);
+            global_query_.handlers.emplace(id, h);
         else
-            global_query_.global_query_handlers.erase(id);
+            global_query_.handlers.erase(id);
     }
 }
 

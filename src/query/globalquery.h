@@ -9,7 +9,7 @@ namespace albert { class GlobalQueryHandler; }
 class GlobalQuery : public albert::QueryHandler
 {
 public:
-    std::map<QString, albert::GlobalQueryHandler *> global_query_handlers;
+    std::map<QString, albert::GlobalQueryHandler *> handlers;
 
 private:
     QString id() const override;
