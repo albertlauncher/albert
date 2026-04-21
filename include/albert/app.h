@@ -188,4 +188,11 @@ protected:
 
 };
 
+///
+/// \copybrief albert::App::instance.
+///
+/// Shorthand for \ref albert::App::instance.
+///
+ALBERT_EXPORT inline App &app() { return App::instance(); }
+
 } // namespace albert
