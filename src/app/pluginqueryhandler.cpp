@@ -121,10 +121,7 @@ QString PluginQueryHandler::defaultTrigger() const { return u"plugin "_s; }
 void PluginQueryHandler::updateIndexItems()
 {
     vector<IndexItem> items;
-    for (auto &[id, plugin] : plugin_registry_.plugins()){
-        auto item = make_shared<PluginItem>(plugin_registry_, plugin);
-        items.emplace_back(item, id);
-        items.emplace_back(item, plugin.metadata.name);
-    }
+    for (auto &[id, plugin] : plugin_registry_.plugins())
+        items.emplace_back(make_shared<PluginItem>(plugin_registry_, plugin), plugin.metadata.name);
     setIndexItems(::move(items));
 }
