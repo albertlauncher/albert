@@ -8,29 +8,40 @@
 #include "telemetry.h"
 #include "telemetryprovider.h"
 #include "usagedatabase.h"
+#include <QCoroNetworkReply>
+#include <QCoroTask>
 #include <QCryptographicHash>
 #include <QGuiApplication>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonParseError>
 #include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QRestReply>
 #include <QSettings>
 #include <QTimeZone>
-static const char *CFG_LAST_REPORT = "last_report";
-static const char *CFG_TELEMETRY_ENABLED = "telemetry";
+#include <expected>
+using namespace Qt::StringLiterals;
 using namespace albert;
+using namespace std;
+
+namespace
+{
+const auto *K_LAST_REPORT = "last_report";
+const auto *K_TELEMETRY_ENABLED = "telemetry";
+}
 
 
 Telemetry::Telemetry(PluginRegistry &pr, ExtensionRegistry &er):
     plugin_registry_(pr),
     extension_registry_(er),
-    last_report(App::state()->value(CFG_LAST_REPORT,  // Default to -24h avoid sending old data
-                               QDateTime::currentDateTime().addDays(-1)).toDateTime())
+    last_report(App::state()->value(K_LAST_REPORT,  // Default to -24h avoid sending old data
+                                    QDateTime::currentDateTime().addDays(-1)).toDateTime())
 {
-    if (auto s = App::settings(); s->contains(CFG_TELEMETRY_ENABLED))
-        enabled_ = s->value(CFG_TELEMETRY_ENABLED).toBool();
+    if (auto s = App::settings(); s->contains(K_TELEMETRY_ENABLED))
+        enabled_ = s->value(K_TELEMETRY_ENABLED).toBool();
     else
     {
         auto text = tr(
@@ -55,7 +66,7 @@ Telemetry::Telemetry(PluginRegistry &pr, ExtensionRegistry &er):
         mb.setDefaultButton(MB::Yes);
         const auto enable = MB::Yes == mb.exec();
         enabled_ = enable;
-        App::settings()->setValue(CFG_TELEMETRY_ENABLED, enable);
+        App::settings()->setValue(K_TELEMETRY_ENABLED, enable);
     }
 
     connect(&timer, &QTimer::timeout, this, [this] { trySendReport(); });
@@ -66,42 +77,80 @@ Telemetry::Telemetry(PluginRegistry &pr, ExtensionRegistry &er):
         timer.start();
 }
 
+// TODO: Qt>6.7 use QRestReply
+static expected<QJsonObject, QString> parseJsonObject(const QByteArray &bytes)
+{
+    QJsonParseError parse_error;
+    const auto doc = QJsonDocument::fromJson(bytes, &parse_error);
+
+    if (parse_error.error != QJsonParseError::NoError)
+        return unexpected(parse_error.errorString());
+
+    else if (!doc.isObject())
+        return unexpected(u"Json document is not a JSON object."_s);
+
+    else
+        return doc.object();
+}
+
+static QCoro::Task<optional<QString>> sendReport(QJsonDocument report)
+{
+    // Not that optimal but there is no official domain and the IP has to be dynamic.
+
+    // Get config
+    auto request = QNetworkRequest(u"https://albertlauncher.github.io/config.json"_s);
+    auto reply = unique_ptr<QNetworkReply>(network().get(request));
+    co_await reply.get();
+    if (reply->error() != QNetworkReply::NoError)
+        co_return reply->errorString();
+
+    // Parse config
+    auto exp_obj = parseJsonObject(reply->readAll());
+    if (!exp_obj)
+        co_return exp_obj.error();
+
+    // Extract endpoint
+    const auto base_url = exp_obj->value("api_base_url").toString();
+    if (base_url.isNull())
+        co_return u"Config does not contain the api base url."_s;
+
+    // Put report
+    request = QNetworkRequest(base_url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, u"application/json"_s);
+    request.setHeader(QNetworkRequest::UserAgentHeader, u"Albert/"_s + qApp->applicationVersion());
+    reply = unique_ptr<QNetworkReply>(
+        network().put(request, report.toJson(QJsonDocument::Compact)));
+    co_await reply.get();
+
+    // On success return
+    if (reply->error() == QNetworkReply::NoError)
+        co_return nullopt;
+
+    // On failure try to extract error message from response
+    if (exp_obj = parseJsonObject(reply->readAll()); exp_obj)
+        if (const auto msg = exp_obj->value("message").toString(); !msg.isEmpty())
+            co_return msg;
+
+    // Fallback to http status message
+    co_return reply->errorString();
+}
+
 void Telemetry::trySendReport()
 {
-    auto now = QDateTime::currentDateTime();
-
     // Skip if sent already today.
     // At 3 AM most people are asleep. Use it as the beginning of a "human day".
-    if (now.addSecs(-10800).date() == last_report.addSecs(-10800).date())
-        return;
-
-    QString a = "Zffb,!!*\" $## $\"' **!";
-    for (auto &c : a)
-        c.unicode() = c.unicode() + 14;
-
-    QNetworkRequest request((QUrl(a)));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
-
-    DEBG << "trySendReport" << buildReportString();
-    auto *reply = network().put(request, buildReport().toJson(QJsonDocument::Compact));
-
-    connect(reply, &QNetworkReply::finished, this, [this, reply, now] {
-        reply->deleteLater();
-
-        if (reply->error() == QNetworkReply::NoError)
-        {
-            INFO << "Successfully sent telemetry data.";
-            last_report = now;
-            App::state()->setValue(CFG_LAST_REPORT, last_report);
-        }
-        else
-        {
-            WARN << "Failed to send telemetry data:";
-            WARN << reply->errorString();
-            auto json = QJsonDocument::fromJson(reply->readAll());
-            WARN << json["error"].toString();
-        }
-    });
+    auto now = QDateTime::currentDateTime();
+    if (now.addSecs(-10800).date() > last_report.addSecs(-10800).date())
+        QCoro::connect(sendReport(buildReport()), this, [now, this](auto &&opt_err) {
+            if (opt_err)
+                WARN << "Failed to send telemetry data:" << *opt_err;
+            else
+            {
+                INFO << "Successfully sent telemetry data.";
+                last_report = now;
+                App::state()->setValue(K_LAST_REPORT, last_report);
+            }
+        });
 }
 
 QJsonObject Telemetry::albertTelemetry() const
@@ -173,7 +222,7 @@ void Telemetry::setEnabled(bool value)
     if (enabled_ != value)
     {
         enabled_ = value;
-        App::settings()->setValue(CFG_TELEMETRY_ENABLED, enabled_);
+        App::settings()->setValue(K_TELEMETRY_ENABLED, enabled_);
 
         enabled_ ? timer.start() : timer.stop();
     }
