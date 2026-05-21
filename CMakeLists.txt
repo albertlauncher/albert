@@ -48,7 +48,7 @@ target_compile_options(qhotkey
 
 #  QCoro
 
-find_package(QCoro6 REQUIRED COMPONENTS Coro Core)
+find_package(QCoro6 REQUIRED COMPONENTS Coro Core Network)
 qcoro_enable_coroutines()
 
 
@@ -330,6 +330,7 @@ target_link_libraries(${TARGET_LIB}
         $<BUILD_LOCAL_INTERFACE:QHotkey::QHotkey>
         $<BUILD_LOCAL_INTERFACE:QNotifications::QNotifications>
         QCoro6::Coro
+        QCoro6::Network
         Qt6::Concurrent
         Qt6::Core
         Qt6::Network
