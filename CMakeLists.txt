@@ -80,7 +80,6 @@ set(LIB_PUBLIC_HEADER
     include/albert/queryexecution.h
     include/albert/queryhandler.h
     include/albert/queryresults.h
-    include/albert/rankedqueryhandler.h
     include/albert/rankitem.h
     include/albert/telemetryprovider.h
     include/albert/urlhandler.h
@@ -183,7 +182,6 @@ set(LIB_SRC
     src/query/queryexecution.cpp
     src/query/queryhandler.cpp
     src/query/queryresults.cpp
-    src/query/rankedqueryhandler.cpp
     src/query/usagedatabase.cpp
     src/query/usagedatabase.h
     src/query/usagescoring.cpp
@@ -329,13 +327,15 @@ target_link_libraries(${TARGET_LIB}
     PRIVATE
         $<BUILD_LOCAL_INTERFACE:QHotkey::QHotkey>
         $<BUILD_LOCAL_INTERFACE:QNotifications::QNotifications>
-        QCoro6::Coro
         QCoro6::Network
         Qt6::Concurrent
         Qt6::Core
         Qt6::Network
         Qt6::Sql
         Qt6::Widgets
+    PUBLIC
+        QCoro6::Coro  # TODO: Private when std::generator is available everywhere
+
 )
 
 if(APPLE)

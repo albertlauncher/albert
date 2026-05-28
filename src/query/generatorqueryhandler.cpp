@@ -2,6 +2,7 @@
 
 #include "generatorqueryhandler.h"
 #include "logging.h"
+#include "usagescoring.h"
 #include <QCoroGenerator>
 #include <QFutureWatcher>
 #include <QtConcurrentRun>
@@ -120,6 +121,35 @@ public:
 unique_ptr<QueryExecution> GeneratorQueryHandler::execution(QueryContext &ctx)
 { return make_unique<GeneratorQueryHandlerExecution>(ctx, *this); }
 
+ItemGenerator GeneratorQueryHandler::lazySort(vector<RankItem> rank_items)
+{
+    while(!rank_items.empty())
+    {
+        // Partial sort the items incrementally in reverse order (for cheap "pop_n")
+        auto reverse_view = rank_items | views::reverse;
+        auto take_view = reverse_view | views::take(10);
+        ranges::partial_sort(reverse_view, take_view.end(), greater{});
+
+        // Yield chunk
+        auto item_view = take_view | views::transform(&RankItem::item);
+        vector<shared_ptr<Item>> item_vector {
+            make_move_iterator(begin(item_view)),
+            make_move_iterator(end(item_view))
+        };
+
+        // Cheap pop_n
+        rank_items.erase(rank_items.end() - take_view.size(),rank_items.end());
+
+        co_yield ::move(item_vector);
+    }
+}
+
+ItemGenerator GeneratorQueryHandler::lazySort(vector<RankItem> rank_items,
+                                              const UsageScoring &usage_scoring) const
+{
+    usage_scoring.modifyMatchScores(id(), rank_items);
+    return lazySort(::move(rank_items));
+}
 
 // -------------------------------------------------------------------------------------------------
 // Future queryhandler implementation. Based on AsyncGeneratorQueryHandler.
