@@ -2,3 +2,10 @@
 
 include("${CMAKE_CURRENT_LIST_DIR}/@LIB_TARGETS_FILE@")
 include("${CMAKE_CURRENT_LIST_DIR}/@LIB_MACROS_FILE@")
+
+# `find_package(Albert)` exports the transitive dependency QCoro6 but does not search the package
+# config. For as long as QCoro is used as the default synchronous generator we perform this search
+# here, such that not every plug-in has to do it.
+# TODO: Remove this once `std::generator` is available on all platforms.
+include(CMakeFindDependencyMacro)
+find_dependency(QCoro6 REQUIRED COMPONENTS Coro)
