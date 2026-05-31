@@ -20,6 +20,7 @@ class GeneratorQueryHandlerExecution final : public QueryExecution
     ItemGenerator generator;  // mutexed
     optional<ItemGenerator::iterator> iterator;  // mutexed
     bool active;
+    bool fetch_more_pending;
     // items(), begin and operator++ are potentially long blocking operations.
     // it had to be mutexed because canFetchMore may check the iterator in the main thread.
     // awaiting the lock however blocks the main thread potentially long.
@@ -36,6 +37,7 @@ public:
         , handler(h)
         , iterator(nullopt)
         , active(true)
+        , fetch_more_pending(false)
         , at_end(false)
     {
         connect(&watcher, &QFutureWatcher<void>::finished,
@@ -79,7 +81,16 @@ public:
 
     void fetchMore() override
     {
-        if (!isActive() && canFetchMore())
+        if (!canFetchMore())
+            return;
+
+        if (isActive())
+        {
+            // Model updates can synchronously trigger fetchMore while this execution is still active.
+            // Queue the request and replay it right after this batch finished.
+            fetch_more_pending = true;
+        }
+        else
         {
             emit activeChanged(active = true);
             watcher.setFuture(QtConcurrent::run([this] -> vector<shared_ptr<Item>>
@@ -115,6 +126,13 @@ public:
             }
 
         emit activeChanged(active = false);
+
+        if (fetch_more_pending)
+        {
+            fetch_more_pending = false;
+            if (!isActive())
+                fetchMore();
+        }
     }
 };
 
