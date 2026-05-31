@@ -31,10 +31,10 @@ class ALBERT_EXPORT UsageScoring
 public:
 
     /// Returns the modified _match_score_ for an item identified by _key_.
-    double modifiedMatchScore(const ItemKey &key, double match_score) const;
+    double applied(const ItemKey &key, double match_score) const;
 
-    /// Modifies the match score of _rank_item_ for an item identified by _key_ in-place.
-    void modifyMatchScores(const QString &extension_id, std::vector<albert::RankItem> &rank_items) const;
+    /// Modifies the score of _rank_item_ for an item identified by _key_ in-place.
+    void apply(const QString &extension_id, std::vector<albert::RankItem> &rank_items) const;
 
     /// If `true` perfect matches should be prioritized even if their usage score is lower.
     bool prioritize_perfect_match;

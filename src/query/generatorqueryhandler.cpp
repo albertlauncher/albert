@@ -147,7 +147,7 @@ ItemGenerator GeneratorQueryHandler::lazySort(vector<RankItem> rank_items)
 ItemGenerator GeneratorQueryHandler::lazySort(vector<RankItem> rank_items,
                                               const UsageScoring &usage_scoring) const
 {
-    usage_scoring.modifyMatchScores(id(), rank_items);
+    usage_scoring.apply(id(), rank_items);
     return lazySort(::move(rank_items));
 }
 

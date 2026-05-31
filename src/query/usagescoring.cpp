@@ -6,7 +6,7 @@
 using namespace albert;
 using namespace std;
 
-double UsageScoring::modifiedMatchScore(const ItemKey &key, double match_score) const
+double UsageScoring::applied(const ItemKey &key, double match_score) const
 {
     const auto &it = usage_scores->find(key);
 
@@ -24,7 +24,7 @@ double UsageScoring::modifiedMatchScore(const ItemKey &key, double match_score) 
     return match_score;
 }
 
-void UsageScoring::modifyMatchScores(const QString &extension_id, vector<RankItem> &rank_items) const
+void UsageScoring::apply(const QString &extension_id, vector<RankItem> &rank_items) const
 {
     ItemKey key{extension_id, {}}; // avoid execessive key creation
     for (auto &rank_item : rank_items)
@@ -39,6 +39,6 @@ void UsageScoring::modifyMatchScores(const QString &extension_id, vector<RankIte
             WARN << QString("Item in extension '%1' threw unknown exception in id()").arg(extension_id);
             continue;
         }
-        rank_item.score = modifiedMatchScore(key, rank_item.score);
+        rank_item.score = applied(key, rank_item.score);
     }
 }

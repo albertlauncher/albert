@@ -94,7 +94,7 @@ GlobalQueryExecution::Private::Private(GlobalQueryExecution *execution,
                 data.handling_duration = duration_cast<milliseconds>(system_clock::now()-t).count();
 
                 t = system_clock::now();
-                q->usageScoring().modifyMatchScores(handler->id(), data.rank_items);
+                q->usageScoring().apply(handler->id(), data.rank_items);
                 data.scoring_duration = duration_cast<milliseconds>(system_clock::now()-t).count();
             }
             catch (const exception &e) {
