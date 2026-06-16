@@ -54,6 +54,10 @@ public:
     ///
     virtual ItemGenerator items(QueryContext &context) = 0;
 
+    /// Returns a generator yielding _rank_items_ lazily sorted by score with _usage_scoring_ applied.
+    ItemGenerator lazySort(std::vector<RankItem> rank_items,
+                           const UsageScoring &usage_scoring) const;
+
     /// Returns a generator yielding _rank_items_ lazily sorted by score.
     static ItemGenerator lazySort(std::vector<RankItem> rank_items);
 
