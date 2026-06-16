@@ -144,6 +144,10 @@ ItemGenerator GeneratorQueryHandler::lazySort(vector<RankItem> rank_items)
     }
 }
 
+ItemGenerator GeneratorQueryHandler::lazySort(vector<RankItem> items,
+                                              const UsageScoring &scoring) const
+{ return lazySort(scoring.applied(id(), ::move(items))); }
+
 // -------------------------------------------------------------------------------------------------
 // Future queryhandler implementation. Based on AsyncGeneratorQueryHandler.
 // -------------------------------------------------------------------------------------------------
