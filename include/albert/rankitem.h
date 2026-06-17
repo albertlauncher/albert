@@ -23,12 +23,17 @@ public:
     ///
     /// Constructs a RankItem with the given `item` and `score`.
     ///
-    explicit RankItem(const std::shared_ptr<Item> &item, double score) noexcept;
+    RankItem(const std::shared_ptr<Item> &item, double score) noexcept;
 
     ///
     /// Constructs a RankItem with the given `item` and `score` using move semantics.
     ///
-    explicit RankItem(std::shared_ptr<Item> &&item, double score) noexcept;
+    RankItem(std::shared_ptr<Item> &&item, double score) noexcept;
+
+    // RankItem(const RankItem &other) = delete;
+    // RankItem(RankItem &&other) = default;
+    // RankItem &operator=(const RankItem &other) = delete;
+    // RankItem &operator=(RankItem &&other) = default;
 
     ///
     /// The less operator
