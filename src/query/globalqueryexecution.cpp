@@ -16,24 +16,15 @@ using namespace albert;
 using namespace std::chrono;
 using namespace std;
 
-// -------------------------------------------------------------------------------------------------
-
-class GlobalQueryResult : public albert::RankItem
+struct GlobalQueryResult
 {
-public:
-    explicit GlobalQueryResult(albert::GlobalQueryHandler *h, const albert::RankItem &i) noexcept :
-        RankItem(i),
-        handler(h)
-    {}
-    ~GlobalQueryResult() noexcept {}
-    albert::GlobalQueryHandler *handler;
+    GlobalQueryHandler *handler;
+    RankItem rank_item;
 };
-
-// -------------------------------------------------------------------------------------------------
 
 struct MappedData {
     GlobalQueryHandler *handler;
-    vector<RankItem> rank_items;
+    mutable vector<RankItem> rank_items;
     uint handling_duration;
     uint scoring_duration;
 };
@@ -112,8 +103,8 @@ GlobalQueryExecution::Private::Private(GlobalQueryExecution *execution,
                                               mapped.scoring_duration,
                                               mapped.rank_items.size());
             reduced.results.reserve(reduced.results.size() + mapped.rank_items.size());
-            for (auto &rank_item : mapped.rank_items)
-                reduced.results.emplace_back(mapped.handler, rank_item);  // copies, but at least threaded
+            for (auto &&rank_item : mapped.rank_items)
+                reduced.results.emplace_back(mapped.handler, ::move(rank_item));
         }
     );
 
@@ -157,11 +148,11 @@ void GlobalQueryExecution::Private::addResultChunk()
 
     auto fetch_view = reverse_view | views::take(10);
 
-    ranges::partial_sort(reverse_view, fetch_view.end(), greater{});
+    ranges::partial_sort(reverse_view, fetch_view.end(), greater{}, &GlobalQueryResult::rank_item);
 
     // FIXME ranges::to
-    auto take_view = fetch_view | views::transform([](const GlobalQueryResult &r) {
-                         return QueryResult(r.handler, ::move(r.item));
+    auto take_view = fetch_view | views::transform([](GlobalQueryResult &r) {
+                         return QueryResult(r.handler, ::move(r.rank_item.item));
                      });
 
     vector<QueryResult> taken{begin(take_view), end(take_view)};
