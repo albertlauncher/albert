@@ -31,7 +31,8 @@ public:
 
     void cancel() override
     {
-        generator.reset();
+        iterator.reset();
+        generator.reset();  // Forces frame destruction and thus cancellation of the coroutine.
         if (active)
             emit activeChanged(active = false);
     }
@@ -42,7 +43,7 @@ public:
         return context.isValid()
                && (!iterator
                    // https://github.com/qcoro/qcoro/issues/294
-                   || iterator != const_cast<AsyncItemGenerator*>(generator.get())->end());
+                   || *iterator != const_cast<AsyncItemGenerator&>(*generator).end());
     }
 
     void fetchMore() override
@@ -57,17 +58,19 @@ public:
 
         try {
 
-            if (iterator == nullopt)
-                iterator = co_await generator->begin();
-            else
+            if (iterator)
                 co_await ++(*iterator);
+            else
+                iterator = co_await generator->begin();
 
             if (*iterator != generator->end())
                 results.add(::move(**iterator));
 
         } catch (const exception &e) {
             WARN << u"AsyncGeneratorQueryHandler threw exception:\n"_s << e.what();
-        } catch (...) {
+        }
+        catch (...)
+        {
             WARN << u"AsyncGeneratorQueryHandler threw unknown exception."_s;
         }
 
