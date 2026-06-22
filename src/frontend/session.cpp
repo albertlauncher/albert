@@ -3,7 +3,6 @@
 #include "frontend.h"
 #include "query.h"
 #include "queryengine.h"
-#include "queryexecution.h"
 #include "session.h"
 using namespace albert::detail;
 using namespace albert;
@@ -24,7 +23,7 @@ Session::~Session()
 void Session::runQuery(const QString &query_string)
 {
     if(!queries_.empty())
-        queries_.back()->execution().cancel();
+        queries_.back()->cancel();
     auto &q = queries_.emplace_back(engine_.query(query_string));
     frontend_.setQuery(q.get());
 }

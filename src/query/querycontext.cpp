@@ -9,14 +9,14 @@ QueryContext::QueryContext(const detail::Query &q) :
     query_(q)
 {}
 
-bool QueryContext::isValid() const { return query_.isValid(); }
+bool QueryContext::isValid() const { return query_.valid_; }
 
-uint QueryContext::id() const { return query_.id(); }
+uint QueryContext::id() const { return query_.id_; }
 
-const QString &QueryContext::trigger() const { return query_.trigger(); }
+const QString &QueryContext::trigger() const { return query_.trigger_; }
 
-const QString &QueryContext::query() const { return query_.query(); }
+const QString &QueryContext::query() const { return query_.query_; }
 
-const QueryHandler &QueryContext::handler() const { return query_.handler(); }
+const QueryHandler &QueryContext::handler() const { return query_.handler_; }
 
-const UsageScoring &QueryContext::usageScoring() const { return query_.usageScoring(); }
+const UsageScoring &QueryContext::usageScoring() const { return query_.usage_scoring_; }
