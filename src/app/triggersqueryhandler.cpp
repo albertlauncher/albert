@@ -47,7 +47,7 @@ shared_ptr<Item> TriggersQueryHandler::makeItem(const TriggerHandler &h) const
         );
 }
 
-vector<RankItem> TriggersQueryHandler::rankItems(QueryContext &ctx)
+vector<RankItem> TriggersQueryHandler::rankItems(QueryContext ctx)
 {
     vector<RankItem> r;
 

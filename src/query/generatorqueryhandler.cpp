@@ -31,8 +31,8 @@ class GeneratorQueryHandlerExecution final : public QueryExecution
 
 public:
 
-    GeneratorQueryHandlerExecution(QueryContext &ctx, GeneratorQueryHandler &h)
-        : QueryExecution(ctx)
+    GeneratorQueryHandlerExecution(QueryContext c, GeneratorQueryHandler &h)
+        : QueryExecution(c)
         , handler(h)
         , iterator(nullopt)
         , active(true)
@@ -118,7 +118,7 @@ public:
     }
 };
 
-unique_ptr<QueryExecution> GeneratorQueryHandler::execution(QueryContext &ctx)
+unique_ptr<QueryExecution> GeneratorQueryHandler::execution(QueryContext ctx)
 { return make_unique<GeneratorQueryHandlerExecution>(ctx, *this); }
 
 ItemGenerator GeneratorQueryHandler::lazySort(vector<RankItem> rank_items)

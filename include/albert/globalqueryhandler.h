@@ -40,7 +40,7 @@ public:
     ///
     /// \note Executed in a background thread.
     ///
-    virtual std::vector<RankItem> rankItems(QueryContext &context) = 0;
+    virtual std::vector<RankItem> rankItems(QueryContext context) = 0;
 
     ///
     /// Returns a list of special items that should show up on an emtpy query.
@@ -54,7 +54,7 @@ public:
     virtual std::vector<std::shared_ptr<Item>> handleEmptyQuery();
 
     /// Yields result of \ref rankItems for _context_ with usage scoring applied and lazily sorted.
-    ItemGenerator items(QueryContext &context) override;
+    ItemGenerator items(QueryContext context) override;
 
 protected:
     /// Destructs the handler.

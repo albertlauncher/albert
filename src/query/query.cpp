@@ -9,10 +9,13 @@
 #include <vector>
 using namespace albert::detail;
 using namespace std;
+static uint query_count = 0;
 
 class Query::Private
 {
 public:
+    uint id = query_count++;
+
     UsageScoring usage_scoring;
 
     atomic_bool valid;
@@ -63,9 +66,9 @@ Query::~Query()
 
 const albert::UsageScoring &Query::usageScoring() const { return d->usage_scoring; }
 
-QString Query::trigger() const { return d->trigger; }
+const QString &Query::trigger() const { return d->trigger; }
 
-QString Query::query() const { return d->string; }
+const QString &Query::query() const { return d->string; }
 
 albert::QueryResults &Query::matches() { return d->execution->results; }
 
@@ -76,6 +79,8 @@ albert::QueryHandler &Query::handler() const { return d->handler; }
 albert::QueryExecution &Query::execution() const { return *d->execution; }
 
 bool Query::isValid() const { return d->valid; }
+
+uint Query::id() const { return d->id; }
 
 void Query::cancel()
 {

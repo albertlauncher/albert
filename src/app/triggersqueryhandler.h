@@ -16,7 +16,7 @@ public:
     QString id() const override;
     QString name() const override;
     QString description() const override;
-    std::vector<albert::RankItem> rankItems(albert::QueryContext &) override;
+    std::vector<albert::RankItem> rankItems(albert::QueryContext) override;
     bool supportsFuzzyMatching() const override;
     void onFuzzyMatchingChanged(bool) override;
 
