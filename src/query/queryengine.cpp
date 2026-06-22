@@ -163,7 +163,7 @@ unique_ptr<detail::Query> QueryEngine::query(QString string)
         handler = &global_query_;
 
     auto query = unique_ptr<detail::Query>(
-        new detail::Query(usage_scoring_, ::move(fallbacks), *handler, trigger, string));
+        new detail::Query(trigger, string, *handler, ::move(fallbacks), usage_scoring_));
 
     auto slot = [this, q = query.get()](QString e, QString i, QString a) {
         storeItemActivation(q->query(), e, i, a);

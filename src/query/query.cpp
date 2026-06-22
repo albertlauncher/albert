@@ -1,92 +1,127 @@
-// Copyright (c) 2023-2024 Manuel Schneider
+// Copyright (c) 2023-2026 Manuel Schneider
 
 #include "query.h"
+#include "logging.h"
 #include "queryexecution.h"
 #include "queryhandler.h"
 #include "queryresults.h"
 #include "usagescoring.h"
 #include <memory>
 #include <vector>
+#include <chrono>
 using namespace albert::detail;
+using namespace Qt::StringLiterals;
+using namespace albert;
 using namespace std;
-static uint query_count = 0;
+using namespace std::chrono;
 
-class Query::Private
-{
-public:
-    uint id = query_count++;
+namespace {
+uint query_count = 0;
+}
 
-    UsageScoring usage_scoring;
-
-    atomic_bool valid;
-    QueryHandler &handler;
-    QString trigger;
-    QString string;
-
-    QueryResults matches;
-    QueryResults fallbacks;
-
-    std::unique_ptr<QueryExecution> execution;
-};
-
-Query::Query(UsageScoring usage_scoring,
-             vector<QueryResult> &&fallbacks,
+Query::Query(const QString &trigger,
+             const QString &query,
              QueryHandler &handler,
-             QString trigger,
-             QString string) :
-    d(new Private{.usage_scoring = ::move(usage_scoring),
-                  .valid = true,
-                  .handler = handler,
-                  .trigger = trigger,
-                  .string = string,
-                  .matches = {},
-                  .fallbacks = {},
-                  .execution = {}})
+             vector<QueryResult> fallbacks,
+             UsageScoring usage_scoring) :
+    id_(++query_count),
+    trigger_(trigger),
+    query_(query),
+    synopsis_(handler.synopsis(query)),  // may throw
+    valid_(true),
+    usage_scoring_(::move(usage_scoring)),
+    handler_(handler),
+    execution_(handler.execution(*this))  // may throw
 {
-    d->fallbacks.add(::move(fallbacks));
-
-    // CRUCIAL: Instantiate execution here.
-    // Do NOT construct the exection before query instance is constructed completely.
-    // `QueryExecution`s use `Query` which has to be valid throughout their entire lifetime.
-    // Note: While creating `Private` `Query::d` is not yet assigned.
-    d->execution = handler.execution(*this);
-
-    // DEBG << QString("Query created. [#%1 '%2']").arg(d->execution->id).arg(d->string);
+    fallbacks_.add(::move(fallbacks));
+    connect(execution_.get(), &QueryExecution::activeChanged,
+            this, &Query::activeChanged);
 }
 
-Query::~Query()
+Query::~Query() { valid_ = false; }
+
+QString Query::trigger() const { return trigger_; }
+
+QString Query::query() const { return query_; }
+
+QString Query::synopsis() const { return synopsis_; }
+
+QueryHandler &Query::handler() const {return handler_; }
+
+bool Query::isValid() const { return valid_; }
+
+bool Query::isActive() const { return execution_->isActive(); }
+
+bool Query::canFetchMore() const
 {
-    d->valid = false;
+    if (!isValid() || isActive())
+        return false;
 
-    // DEBG << QString("Query about to be deleted. [#%1 '%2']").arg(d->execution->id).arg(d->string);
-
-    // If not deleted early, Query::d is under destruction while destructing Query::execution.
-    d->execution.reset();
+    try
+    {
+        return execution_->canFetchMore();
+    }
+    catch (const exception &e)
+    {
+        WARN << u"QueryHandler::canFetchMore threw:\n"_s << e.what();
+    }
+    catch (...)
+    {
+        WARN << u"QueryHandler::canFetchMore threw unknown exception."_s;
+    }
+    return false;
 }
 
-const albert::UsageScoring &Query::usageScoring() const { return d->usage_scoring; }
+void Query::fetchMore()
+{
+    if (isValid() && !isActive())
+    {
+        DEBG << u"Fetch started (#%1)"_s.arg(id_);
 
-const QString &Query::trigger() const { return d->trigger; }
+        connect(execution_.get(), &QueryExecution::activeChanged,
+                this, [this, tp=system_clock::now()] {
+                    DEBG << u"Fetch finshed (#%1) after %2 ms"_s
+                                .arg(id_)
+                                .arg(duration_cast<milliseconds>(system_clock::now() - tp).count());
+                }, Qt::SingleShotConnection);
 
-const QString &Query::query() const { return d->string; }
-
-albert::QueryResults &Query::matches() { return d->execution->results; }
-
-albert::QueryResults &Query::fallbacks() { return d->fallbacks; }
-
-albert::QueryHandler &Query::handler() const { return d->handler; }
-
-albert::QueryExecution &Query::execution() const { return *d->execution; }
-
-bool Query::isValid() const { return d->valid; }
-
-uint Query::id() const { return d->id; }
+        try
+        {
+            execution_->fetchMore();
+        }
+        catch (const exception &e)
+        {
+            WARN << u"QueryHandler::fetchMore threw:\n"_s << e.what();
+        }
+        catch (...)
+        {
+            WARN << u"QueryHandler::fetchMore threw unknown exception."_s;
+        }
+    }
+}
 
 void Query::cancel()
 {
-    if (d->valid)
+    if (isValid())
     {
-        d->valid = false;
-        d->execution->cancel();
+        valid_ = false;
+
+        if (isActive())
+            try
+            {
+                execution_->cancel();
+            }
+            catch (const exception &e)
+            {
+                WARN << u"QueryHandler::cancel threw:\n"_s << e.what();
+            }
+            catch (...)
+            {
+                WARN << u"QueryHandler::cancel threw unknown exception."_s;
+            }
     }
 }
+
+QueryResults &Query::matches() { return execution_->results; }
+
+QueryResults &Query::fallbacks() { return fallbacks_; }

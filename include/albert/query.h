@@ -1,69 +1,63 @@
 // SPDX-FileCopyrightText: 2025 Manuel Schneider
-// SPDX-License-Identifier: MIT
 
 #pragma once
 #include <QString>
 #include <albert/export.h>
 #include <albert/querycontext.h>
-class QueryEngine;
+#include <albert/queryresults.h>
+#include <albert/usagescoring.h>
+#include <memory>
+
 namespace albert
 {
 class QueryHandler;
-class QueryResult;
-class QueryResults;
 class QueryExecution;
-}  // namespace albert
 
-namespace albert::detail
+namespace detail
 {
 
-/// The query implementation.
-class ALBERT_EXPORT Query
+class ALBERT_EXPORT Query : public QObject
 {
+    Q_OBJECT
 public:
-    /// Constructs a query.
-    Query(UsageScoring usage_scoring,
-          std::vector<albert::QueryResult> &&fallbacks,
+    Query(const QString &trigger,
+          const QString &query,
           QueryHandler &handler,
-          QString trigger,
-          QString string);
-
-    /// Destructs the query.
+          std::vector<QueryResult> fallbacks,
+          UsageScoring usage_scoring);
     ~Query();
 
-    /// \copydoc albert::Query::isValid
-    bool isValid() const;
+    QString trigger() const;
+    QString query() const;
+    QString synopsis() const;
 
-    /// Returns the identifier of the query.
-    uint id() const;
-
-    /// \copydoc albert::Query::handler
     QueryHandler &handler() const;
 
-    /// \copydoc albert::Query::trigger
-    const QString &trigger() const;
-
-    /// \copydoc albert::Query::query
-    const QString &query() const;
-
-    /// \copydoc albert::Query::usageScoring
-    const UsageScoring &usageScoring() const;
-
-    /// Returns the execution of this query if running; else nullptr.
-    QueryExecution &execution() const;
-
-    /// Stops the query execution.
+    bool isValid() const;
+    bool isActive() const;
+    bool canFetchMore() const;
+    void fetchMore();
     void cancel();
 
-    /// Returns the matches.
     QueryResults &matches();
-
-    /// Returns the fallbacks.
     QueryResults &fallbacks();
 
+signals:
+    void activeChanged(bool active);
+
 private:
-    class Private;
-    std::unique_ptr<Private> d;
+    uint id_;
+    QString trigger_;
+    QString query_;
+    QString synopsis_;
+    std::atomic_bool valid_;
+    UsageScoring usage_scoring_;
+    QueryHandler &handler_;
+    QueryResults fallbacks_;
+    std::unique_ptr<QueryExecution> execution_;
+
+    friend class albert::QueryContext;
 };
 
 }  // namespace albert::detail
+}  // namespace albert
