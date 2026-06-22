@@ -57,6 +57,7 @@ private:
     QueryHandler &handler_;
     QueryResults fallbacks_;
     std::unique_ptr<QueryExecution> execution_;
+    bool is_active_;
 
     friend class albert::QueryContext;
 };

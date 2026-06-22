@@ -31,14 +31,15 @@ Query::Query(const QString &trigger,
     valid_(true),
     usage_scoring_(::move(usage_scoring)),
     handler_(handler),
-    execution_(handler.execution(*this))  // may throw
+    execution_(handler.execution(*this)),  // may throw
+    is_active_(false)
 {
     fallbacks_.add(::move(fallbacks));
-    connect(execution_.get(), &QueryExecution::activeChanged,
-            this, &Query::activeChanged);
+    connect(execution_.get(), &QueryExecution::fetchFinished,
+            this, [this] { emit activeChanged(is_active_ = false); });
 }
 
-Query::~Query() { valid_ = false; }
+Query::~Query() { cancel(); }
 
 QString Query::trigger() const { return trigger_; }
 
@@ -50,11 +51,11 @@ QueryHandler &Query::handler() const {return handler_; }
 
 bool Query::isValid() const { return valid_; }
 
-bool Query::isActive() const { return execution_->isActive(); }
+bool Query::isActive() const { return is_active_; }
 
 bool Query::canFetchMore() const
 {
-    if (!isValid() || isActive())
+    if (!valid_ || is_active_)
         return false;
 
     try
@@ -74,51 +75,55 @@ bool Query::canFetchMore() const
 
 void Query::fetchMore()
 {
-    if (isValid() && !isActive())
+    if (!valid_ || is_active_)
+        return;
+
+    DEBG << u"Fetch started (#%1)"_s.arg(id_);
+
+    connect(execution_.get(), &QueryExecution::fetchFinished,
+            this, [this, tp=system_clock::now()] {
+                DEBG << u"Fetch finshed (#%1) after %2 ms"_s
+                            .arg(id_)
+                            .arg(duration_cast<milliseconds>(system_clock::now() - tp).count());
+            }, Qt::SingleShotConnection);
+
+    emit activeChanged(is_active_ = true);
+
+    try
     {
-        DEBG << u"Fetch started (#%1)"_s.arg(id_);
-
-        connect(execution_.get(), &QueryExecution::activeChanged,
-                this, [this, tp=system_clock::now()] {
-                    DEBG << u"Fetch finshed (#%1) after %2 ms"_s
-                                .arg(id_)
-                                .arg(duration_cast<milliseconds>(system_clock::now() - tp).count());
-                }, Qt::SingleShotConnection);
-
-        try
-        {
-            execution_->fetchMore();
-        }
-        catch (const exception &e)
-        {
-            WARN << u"QueryHandler::fetchMore threw:\n"_s << e.what();
-        }
-        catch (...)
-        {
-            WARN << u"QueryHandler::fetchMore threw unknown exception."_s;
-        }
+        execution_->fetchMore();
+    }
+    catch (const exception &e)
+    {
+        WARN << u"QueryHandler::fetchMore threw:\n"_s << e.what();
+    }
+    catch (...)
+    {
+        WARN << u"QueryHandler::fetchMore threw unknown exception."_s;
     }
 }
 
 void Query::cancel()
 {
-    if (isValid())
-    {
-        valid_ = false;
+    if (!valid_)
+        return;
 
-        if (isActive())
-            try
-            {
-                execution_->cancel();
-            }
-            catch (const exception &e)
-            {
-                WARN << u"QueryHandler::cancel threw:\n"_s << e.what();
-            }
-            catch (...)
-            {
-                WARN << u"QueryHandler::cancel threw unknown exception."_s;
-            }
+    valid_ = false;
+
+    if (!is_active_)
+        return;
+
+    try
+    {
+        execution_->cancel();
+    }
+    catch (const exception &e)
+    {
+        WARN << u"QueryHandler::cancel threw:\n"_s << e.what();
+    }
+    catch (...)
+    {
+        WARN << u"QueryHandler::cancel threw unknown exception."_s;
     }
 }
 

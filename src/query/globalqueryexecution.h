@@ -18,11 +18,9 @@ public:
 
 private:
 
-    // albert::QueryExecution
-    void cancel() override;
-    void fetchMore() override;
     bool canFetchMore() const override;
-    bool isActive() const override;
+    void fetchMore() override;
+    void cancel() override;
 
     class Private;
     std::unique_ptr<Private> d;
