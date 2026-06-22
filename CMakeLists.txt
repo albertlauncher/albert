@@ -189,7 +189,6 @@ set(LIB_SRC
     src/query/querycontext.cpp
     src/query/queryengine.cpp
     src/query/queryengine.h
-    src/query/queryexecution.cpp
     src/query/queryhandler.cpp
     src/query/queryresults.cpp
     src/query/usagedatabase.cpp

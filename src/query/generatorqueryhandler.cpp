@@ -4,7 +4,7 @@
 #include "logging.h"
 #include "usagescoring.h"
 #include <QCoroGenerator>
-#include <QFutureWatcher>
+#include <QFuture>
 #include <QtConcurrentRun>
 #include <albert/queryexecution.h>
 using namespace Qt::StringLiterals;
@@ -15,11 +15,11 @@ GeneratorQueryHandler::~GeneratorQueryHandler() {}
 
 class GeneratorQueryHandlerExecution final : public QueryExecution
 {
-    QFutureWatcher<vector<shared_ptr<Item>>> watcher;  // implicit active flag
     GeneratorQueryHandler &handler;
-    ItemGenerator generator;  // mutexed
-    optional<ItemGenerator::iterator> iterator;  // mutexed
-    bool active;
+    QueryContext context;
+    optional<ItemGenerator> generator;
+    optional<ItemGenerator::iterator> iterator;
+    QFuture<void> future;
     // items(), begin and operator++ are potentially long blocking operations.
     // it had to be mutexed because canFetchMore may check the iterator in the main thread.
     // awaiting the lock however blocks the main thread potentially long.
@@ -30,96 +30,77 @@ class GeneratorQueryHandlerExecution final : public QueryExecution
     atomic_bool at_end;
 
 public:
-
-    GeneratorQueryHandlerExecution(QueryContext c, GeneratorQueryHandler &h)
-        : QueryExecution(c)
-        , handler(h)
-        , iterator(nullopt)
-        , active(true)
-        , at_end(false)
-    {
-        connect(&watcher, &QFutureWatcher<void>::finished,
-                this, &GeneratorQueryHandlerExecution::onFetchFinished);
-
-        watcher.setFuture(QtConcurrent::run([this] -> vector<shared_ptr<Item>>
-        {
-            // `items()` could also be a regular function that returns a generator.
-            // This function should as well run in the thread.
-            generator = handler.items(context);
-            iterator = generator.begin();
-            if (iterator != generator.end())
-                return ::move(*iterator.value());
-            return {};
-        }));
-    }
+    GeneratorQueryHandlerExecution(GeneratorQueryHandler &h, QueryContext c) :
+        handler(h),
+        context(c),
+        at_end(false)
+    {}
 
     ~GeneratorQueryHandlerExecution()
     {
-        cancel();
-
-        // Qt 6.4 QFutureWatcher is broken.
+        // Qt 6.4 QFuture is broken.
         // isFinished returns wrong values and waitForFinished blocks forever on finished futures.
         // TODO(26.04): Remove workaround when dropping Qt < 6.5 support.
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
-        if (!watcher.isFinished())
+        if (!future.isFinished())
 #else
-        if (watcher.isRunning())
+        if (future.isRunning())
 #endif
         {
-            DEBG << QString("Busy wait on query: #%1").arg(id);
-            watcher.waitForFinished();
+            DEBG << QString("Busy wait on query: #%1").arg(context.id());
+            future.waitForFinished();
         }
     }
 
-    void cancel() override { }
-
-    bool isActive() const override { return active; }
-
-    bool canFetchMore() const override { return context.isValid() && !at_end; }
+    bool canFetchMore() const override { return !at_end; }
 
     void fetchMore() override
     {
-        if (!isActive() && canFetchMore())
+        future = QtConcurrent::run([this] -> vector<shared_ptr<Item>>
         {
-            emit activeChanged(active = true);
-            watcher.setFuture(QtConcurrent::run([this] -> vector<shared_ptr<Item>>
-            {
+            // `items()` could also be a regular function that returns a generator.
+            // This function should as well run in the thread.
+            if (!generator)
+                generator = handler.items(context);
+
+            if (iterator)
                 ++*iterator;
-                if (iterator != generator.end())
-                    return ::move(*iterator.value());
-                return {};
-            }));
-        }
+            else
+                iterator = generator->begin();
+
+            if (iterator != generator->end())
+                return ::move(*iterator.value());
+
+            at_end = true;
+            return {};
+        })
+        .then(this, [this](vector<shared_ptr<Item>> items){
+            if (!context.isValid())
+                return;
+            results.add(handler, ::move(items));
+        })
+        .onFailed(this, [](const QUnhandledException &que) {
+            if (que.exception())
+                rethrow_exception(que.exception());
+            else
+                throw runtime_error("QUnhandledException::exception() returned nullptr.");
+        })
+        .onFailed(this, [](const exception &e) {
+            WARN << u"GeneratorQueryHandler threw exception:\n"_s << e.what();
+        })
+        .onFailed(this, [] {
+            WARN << u"GeneratorQueryHandler threw unknown exception."_s;
+        })
+        .then(this, [this]{
+            emit fetchFinished();
+        });
     }
 
-    void onFetchFinished()
-    {
-        if (context.isValid())
-            try {
-                try {
-                    auto items = watcher.future().takeResult();
-                    if (items.empty())
-                        at_end = true;
-                    else
-                        results.add(handler, ::move(items));
-                } catch (const QUnhandledException &que) {
-                    if (que.exception())
-                        rethrow_exception(que.exception());
-                    else
-                        throw runtime_error("QUnhandledException::exception() returned nullptr.");
-                }
-            } catch (const exception &e) {
-                WARN << u"GeneratorQueryHandler threw exception:\n"_s << e.what();
-            } catch (...) {
-                WARN << u"GeneratorQueryHandler threw unknown exception."_s;
-            }
-
-        emit activeChanged(active = false);
-    }
+    void cancel() override { }
 };
 
 unique_ptr<QueryExecution> GeneratorQueryHandler::execution(QueryContext ctx)
-{ return make_unique<GeneratorQueryHandlerExecution>(ctx, *this); }
+{ return make_unique<GeneratorQueryHandlerExecution>(*this, ctx); }
 
 ItemGenerator GeneratorQueryHandler::lazySort(vector<RankItem> rank_items)
 {

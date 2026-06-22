@@ -145,25 +145,34 @@ void QueryEngine::storeItemActivation(const QString &query, const QString &exten
 
 unique_ptr<detail::Query> QueryEngine::query(QString string)
 {
-    vector<QueryResult> fallbacks;
-    if (!string.isEmpty())
-        fallbacks = this->fallbacks(string);
+    unique_ptr<detail::Query> query;
 
-    QString trigger;
-    albert::QueryHandler *handler;
-    if (auto it = ranges::find_if(active_triggers_.cbegin(), active_triggers_.cend(),
-                                  [&](const auto &t){ return string.startsWith(t.first); });
-        it != active_triggers_.cend())
-    {
-        trigger = it->first;
-        handler = it->second;
-        string = string.mid(trigger.size());
-    }
-    else
-        handler = &global_query_;
+    if (auto it = ranges::find_if(active_triggers_,
+                                  [&](const auto &t) { return string.startsWith(t.first); });
+             it != active_triggers_.cend())
+        try
+        {
+            query.reset(new detail::Query(it->first,
+                                          string.mid(it->first.size()),
+                                          *it->second,
+                                          fallbacks(string),
+                                          usage_scoring_));
+        }
+        catch (const exception &e)
+        {
+            WARN << u"Failed creatting QueryExecution:\n"_s << e.what();
+        }
+        catch (...)
+        {
+            WARN << u"Failed creatting QueryExecution: unknown exception"_s;
+        }
 
-    auto query = unique_ptr<detail::Query>(
-        new detail::Query(trigger, string, *handler, ::move(fallbacks), usage_scoring_));
+    if (!query)
+        query.reset(new detail::Query({},
+                                      string,
+                                      global_query_,
+                                      string.isEmpty() ? vector<QueryResult>{} : fallbacks(string),
+                                      usage_scoring_));
 
     auto slot = [this, q = query.get()](QString e, QString i, QString a) {
         storeItemActivation(q->query(), e, i, a);

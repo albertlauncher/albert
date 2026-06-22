@@ -44,13 +44,13 @@ struct ReducedData {
 class GlobalQueryExecution::Private
 {
 public:
-    Private(GlobalQueryExecution *, vector<albert::GlobalQueryHandler *>);
+    Private(GlobalQueryExecution*, QueryContext, vector<GlobalQueryHandler*>);
 
     void addResultChunk();
 
     GlobalQueryExecution *q;
+    QueryContext context;
     const vector<GlobalQueryHandler*> handlers;
-    bool active;
 
     QFutureWatcher<ReducedData> future_watcher;
 
@@ -59,11 +59,12 @@ public:
     chrono::time_point<chrono::system_clock> finish_timepoint;
 };
 
-GlobalQueryExecution::Private::Private(GlobalQueryExecution *execution,
+GlobalQueryExecution::Private::Private(GlobalQueryExecution *e,
+                                       QueryContext c,
                                        vector<GlobalQueryHandler *> h) :
-    q(execution),
-    handlers(::move(h)),
-    active(true)
+    q(e),
+    context(c),
+    handlers(::move(h))
 {
     start_timepoint = system_clock::now();
 
@@ -77,15 +78,15 @@ GlobalQueryExecution::Private::Private(GlobalQueryExecution *execution,
                             .scoring_duration = 0};
             try {
                 auto t = system_clock::now();
-                if (q->context.query().isEmpty()) // important redirection
+                if (context.query().isEmpty()) // important redirection
                     for (auto &item : handler->handleEmptyQuery()) // order ???
                         data.rank_items.emplace_back(::move(item), 0);
                 else
-                    data.rank_items = handler->rankItems(q->context);
+                    data.rank_items = handler->rankItems(context);
                 data.handling_duration = duration_cast<milliseconds>(system_clock::now()-t).count();
 
                 t = system_clock::now();
-                data.rank_items = q->context.usageScoring().applied(handler->id(), ::move(data.rank_items));
+                data.rank_items = context.usageScoring().applied(handler->id(), ::move(data.rank_items));
                 data.scoring_duration = duration_cast<milliseconds>(system_clock::now()-t).count();
             }
             catch (const exception &e) {
@@ -109,7 +110,7 @@ GlobalQueryExecution::Private::Private(GlobalQueryExecution *execution,
     );
 
     QObject::connect(&future_watcher, &QFutureWatcher<ReducedData>::finished, q, [this] {
-        if (q->context.isValid())
+        if (context)
         {
             auto reduced = future_watcher.future().takeResult();
 
@@ -119,7 +120,7 @@ GlobalQueryExecution::Private::Private(GlobalQueryExecution *execution,
             static const auto body    = color::blue + u"│%1 ms│%2 ms│%3│ %4"_s + color::reset;
             static const auto footer  = color::blue + u"╰%1 ms╵         ╵%2╵ TOTAL"_s + color::reset;
 
-            DEBG << header.arg(q->context.id()).arg(q->context.query());
+            DEBG << header.arg(context.id()).arg(context.query());
             for (const auto &diag : reduced.handler_diag)
                 DEBG << body.arg(diag.handling_runtime, 6)
                             .arg(diag.scoring_runtime, 6)
@@ -133,7 +134,7 @@ GlobalQueryExecution::Private::Private(GlobalQueryExecution *execution,
             addResultChunk();
         }
 
-        emit q->activeChanged(active = false);
+        emit q->fetchFinished();
     });
 
     future_watcher.setFuture(future);
@@ -171,8 +172,7 @@ void GlobalQueryExecution::Private::addResultChunk()
 // -------------------------------------------------------------------------------------------------
 
 GlobalQueryExecution::GlobalQueryExecution(QueryContext c, vector<GlobalQueryHandler *> h) :
-    QueryExecution(c),
-    d(make_unique<Private>(this, ::move(h)))
+    d(make_unique<Private>(this, c, ::move(h)))
 {}
 
 GlobalQueryExecution::~GlobalQueryExecution()
@@ -188,7 +188,7 @@ GlobalQueryExecution::~GlobalQueryExecution()
     if (d->future_watcher.isRunning())
 #endif
     {
-        DEBG << QString("Busy wait on query: #%1").arg(context.id());
+        DEBG << QString("Busy wait on query: #%1").arg(d->context.id());
         d->future_watcher.waitForFinished();
     }
 }
@@ -201,15 +201,8 @@ void GlobalQueryExecution::cancel()
 
 void GlobalQueryExecution::fetchMore()
 {
-    if (!isActive() && canFetchMore())
-    {
-        emit activeChanged(d->active = true);
-        d->addResultChunk();
-        emit activeChanged(d->active = false);
-    }
+    d->addResultChunk();
+    emit fetchFinished();
 }
 
 bool GlobalQueryExecution::canFetchMore() const { return !d->unordered_results.empty(); }
-
-bool GlobalQueryExecution::isActive() const { return d->active; }
-
