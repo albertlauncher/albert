@@ -52,7 +52,7 @@ public:
     /// \note GCC-13 does not support returning temporary values in generators.
     ///       So for as long as Ubuntu 24.04 is supported, we have to return lvalues.
     ///
-    virtual ItemGenerator items(QueryContext &context) = 0;
+    virtual ItemGenerator items(QueryContext context) = 0;
 
     /// Returns a generator yielding _rank_items_ lazily sorted by score with _usage_scoring_ applied.
     ItemGenerator lazySort(std::vector<RankItem> rank_items,
@@ -66,6 +66,6 @@ protected:
     ~GeneratorQueryHandler() override;
 
     /// Returns a threaded synchronous generator query execution for _context_.
-    std::unique_ptr<QueryExecution> execution(QueryContext &context) override;
+    std::unique_ptr<QueryExecution> execution(QueryContext context) override;
 };
 }  // namespace albert

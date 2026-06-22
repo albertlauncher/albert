@@ -9,5 +9,5 @@ GlobalQueryHandler::~GlobalQueryHandler() {}
 
 vector<shared_ptr<Item>> GlobalQueryHandler::handleEmptyQuery() { return {}; }
 
-ItemGenerator GlobalQueryHandler::items(QueryContext &ctx)
+ItemGenerator GlobalQueryHandler::items(QueryContext ctx)
 { return lazySort(rankItems(ctx), ctx.usageScoring()); }

@@ -42,13 +42,13 @@ public:
     ///
     /// \note Called from main thread. Do not run blocking operations in it.
     ///
-    virtual AsyncItemGenerator items(QueryContext &context) = 0;
+    virtual AsyncItemGenerator items(QueryContext context) = 0;
 
 protected:
     /// Destructs the handler.
     ~AsyncGeneratorQueryHandler() override;
 
     /// Returns an asynchronous generator query execution for _context_.
-    std::unique_ptr<QueryExecution> execution(QueryContext &context) override;
+    std::unique_ptr<QueryExecution> execution(QueryContext context) override;
 };
 }  // namespace albert

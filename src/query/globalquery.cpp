@@ -13,7 +13,7 @@ QString GlobalQuery::name() const { return u"Global query"_s; }
 
 QString GlobalQuery::description() const { return u"Runs a bunch of global query handlers"_s; }
 
-unique_ptr<QueryExecution> GlobalQuery::execution(QueryContext &ctx)
+unique_ptr<QueryExecution> GlobalQuery::execution(QueryContext ctx)
 {
     // FIXME ranges::to
     auto v = handlers | views::values;

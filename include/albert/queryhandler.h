@@ -70,7 +70,7 @@ public:
     ///
     /// The results are added to _results_ as they become available.
     ///
-    virtual std::unique_ptr<QueryExecution> execution(QueryContext &context) = 0;
+    virtual std::unique_ptr<QueryExecution> execution(QueryContext context) = 0;
 
 protected:
     /// Destructs the handler.

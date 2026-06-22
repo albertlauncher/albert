@@ -89,5 +89,5 @@ public:
 
 AsyncGeneratorQueryHandler::~AsyncGeneratorQueryHandler() {}
 
-unique_ptr<QueryExecution> AsyncGeneratorQueryHandler::execution(QueryContext &ctx)
+unique_ptr<QueryExecution> AsyncGeneratorQueryHandler::execution(QueryContext ctx)
 { return make_unique<AsyncExecution>(ctx, *this); }

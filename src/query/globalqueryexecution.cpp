@@ -32,7 +32,7 @@ struct MappedData {
 //V function(T &result, const U &intermediate)
 struct ReducedData {
     struct Diagnostics {
-        albert::GlobalQueryHandler *handler;
+        GlobalQueryHandler *handler;
         uint handling_runtime = 0;
         uint scoring_runtime = 0;
         uint item_count = 0;
@@ -49,7 +49,7 @@ public:
     void addResultChunk();
 
     GlobalQueryExecution *q;
-    const vector<albert::GlobalQueryHandler*> handlers;
+    const vector<GlobalQueryHandler*> handlers;
     bool active;
 
     QFutureWatcher<ReducedData> future_watcher;
@@ -81,11 +81,11 @@ GlobalQueryExecution::Private::Private(GlobalQueryExecution *execution,
                     for (auto &item : handler->handleEmptyQuery()) // order ???
                         data.rank_items.emplace_back(::move(item), 0);
                 else
-                    data.rank_items = handler->rankItems(*q);
+                    data.rank_items = handler->rankItems(q->context);
                 data.handling_duration = duration_cast<milliseconds>(system_clock::now()-t).count();
 
                 t = system_clock::now();
-                data.rank_items = q->usageScoring().applied(handler->id(), ::move(data.rank_items));
+                data.rank_items = q->context.usageScoring().applied(handler->id(), ::move(data.rank_items));
                 data.scoring_duration = duration_cast<milliseconds>(system_clock::now()-t).count();
             }
             catch (const exception &e) {
@@ -109,7 +109,7 @@ GlobalQueryExecution::Private::Private(GlobalQueryExecution *execution,
     );
 
     QObject::connect(&future_watcher, &QFutureWatcher<ReducedData>::finished, q, [this] {
-        if (q->isValid())
+        if (q->context.isValid())
         {
             auto reduced = future_watcher.future().takeResult();
 
@@ -119,7 +119,7 @@ GlobalQueryExecution::Private::Private(GlobalQueryExecution *execution,
             static const auto body    = color::blue + u"│%1 ms│%2 ms│%3│ %4"_s + color::reset;
             static const auto footer  = color::blue + u"╰%1 ms╵         ╵%2╵ TOTAL"_s + color::reset;
 
-            DEBG << header.arg(q->id).arg(q->context.query());
+            DEBG << header.arg(q->context.id()).arg(q->context.query());
             for (const auto &diag : reduced.handler_diag)
                 DEBG << body.arg(diag.handling_runtime, 6)
                             .arg(diag.scoring_runtime, 6)
@@ -170,9 +170,9 @@ void GlobalQueryExecution::Private::addResultChunk()
 
 // -------------------------------------------------------------------------------------------------
 
-GlobalQueryExecution::GlobalQueryExecution(QueryContext &c, vector<GlobalQueryHandler*> h)
-    : QueryExecution(c)
-    , d(make_unique<Private>(this, ::move(h)))
+GlobalQueryExecution::GlobalQueryExecution(QueryContext c, vector<GlobalQueryHandler *> h) :
+    QueryExecution(c),
+    d(make_unique<Private>(this, ::move(h)))
 {}
 
 GlobalQueryExecution::~GlobalQueryExecution()
@@ -188,22 +188,10 @@ GlobalQueryExecution::~GlobalQueryExecution()
     if (d->future_watcher.isRunning())
 #endif
     {
-        DEBG << QString("Busy wait on query: #%1").arg(id);
+        DEBG << QString("Busy wait on query: #%1").arg(context.id());
         d->future_watcher.waitForFinished();
     }
 }
-
-bool GlobalQueryExecution::isValid() const { return context.isValid(); }
-
-const QueryHandler &GlobalQueryExecution::handler() const { return context.handler(); }
-
-QString GlobalQueryExecution::query() const
-{ return context.query() == "*" ? QString() : context.query(); }
-
-QString GlobalQueryExecution::trigger() const { return context.trigger(); }
-
-const albert::UsageScoring &GlobalQueryExecution::usageScoring() const
-{ return context.usageScoring(); }
 
 void GlobalQueryExecution::cancel()
 {

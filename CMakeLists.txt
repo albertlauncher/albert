@@ -186,6 +186,7 @@ set(LIB_SRC
     src/query/globalqueryhandler.cpp
     src/query/itemkey.hpp
     src/query/query.cpp
+    src/query/querycontext.cpp
     src/query/queryengine.cpp
     src/query/queryengine.h
     src/query/queryexecution.cpp

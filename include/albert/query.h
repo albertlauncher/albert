@@ -18,7 +18,7 @@ namespace albert::detail
 {
 
 /// The query implementation.
-class ALBERT_EXPORT Query : public albert::QueryContext
+class ALBERT_EXPORT Query
 {
 public:
     /// Constructs a query.
@@ -32,19 +32,22 @@ public:
     ~Query();
 
     /// \copydoc albert::Query::isValid
-    bool isValid() const override;
+    bool isValid() const;
+
+    /// Returns the identifier of the query.
+    uint id() const;
 
     /// \copydoc albert::Query::handler
-    QueryHandler &handler() const override;
+    QueryHandler &handler() const;
 
     /// \copydoc albert::Query::trigger
-    QString trigger() const override;
+    const QString &trigger() const;
 
     /// \copydoc albert::Query::query
-    QString query() const override;
+    const QString &query() const;
 
     /// \copydoc albert::Query::usageScoring
-    const UsageScoring &usageScoring() const override;
+    const UsageScoring &usageScoring() const;
 
     /// Returns the execution of this query if running; else nullptr.
     QueryExecution &execution() const;

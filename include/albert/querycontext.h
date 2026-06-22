@@ -7,43 +7,51 @@
 
 namespace albert
 {
+namespace detail { class Query; }
 class QueryHandler;
 class UsageScoring;
 
 ///
-/// Query interface.
+/// The query context.
+///
+/// This class is thread-safe.
 ///
 /// \ingroup core_query
 ///
 class ALBERT_EXPORT QueryContext
 {
 public:
+    QueryContext(const detail::Query &);
 
-    ///
     /// Returns `true` if the query is valid; `false` if it has been cancelled.
-    ///
-    /// This function is thread-safe.
-    ///
-    virtual bool isValid() const = 0;
+    bool isValid() const;
 
-    /// Returns the handler of this query.
-    virtual const QueryHandler &handler() const = 0;
+    /// Returns the identifier of the query.
+    uint id() const;
 
     /// Returns the trigger string of the query.
-    virtual QString trigger() const = 0;
+    const QString &trigger() const;
 
     /// Returns the query string of the query.
-    virtual QString query() const = 0;
+    const QString &query() const;
+
+    /// Returns the handler of this query.
+    const QueryHandler &handler() const;
 
     /// Returns the usage scoring.
-    virtual const UsageScoring &usageScoring() const = 0;
+    const UsageScoring &usageScoring() const;
 
     /// Implicit QString context conversion.
-    operator QString() const { return query(); }
+    inline operator const QString &() const { return query(); }
 
-protected:
+    /// Implicit bool context conversion.
+    inline operator bool() const { return isValid(); }
 
-    virtual ~QueryContext() = default;
+    /// Implicit UsageScoring context conversion.
+    inline operator const UsageScoring &() const { return usageScoring(); }
+
+private:
+    const detail::Query &query_;
 };
 
-}
+}  // namespace albert
