@@ -23,8 +23,9 @@ using AsyncItemGenerator = QCoro::AsyncGenerator<std::vector<std::shared_ptr<alb
 /// This class is suitable for I/O-bound query handling (e.g. network requests, subprocessing,
 /// etc.). For CPU-bound work, prefer \ref GeneratorQueryHandler or its subclasses.
 ///
-/// If you derive this class you want to link against QCoro which provides coroutine support for Qt
-/// classes. Note that QCoro is still in development.
+/// @warning Coroutines are a powerful tool but they are also easy to misuse. Coroutine frames can
+/// be deleted at any suspension point. Responsibly manage your resources. RAII everything.
+/// Especially make sure no unmanaged memory is surpassing a suspension point!
 ///
 /// \ingroup util_query
 ///
