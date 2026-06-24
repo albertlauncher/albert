@@ -73,3 +73,14 @@ unique_ptr<Acquire> RateLimiter::acquire()
     d->queueAcquire(acquire.get());
     return acquire;
 }
+
+bool Acquire::Awaiter::await_ready() const noexcept { return false; }
+
+void Acquire::Awaiter::await_suspend(std::coroutine_handle<> handle)
+{
+    QObject::connect(acquire, &Acquire::granted,
+                     acquire, [handle]() mutable { handle.resume(); },
+                     Qt::QueuedConnection);
+}
+
+void Acquire::Awaiter::await_resume() const noexcept {}
