@@ -27,14 +27,17 @@ public:
         fetchMore();
     }
 
-    ~AsyncExecution() { cancel(); }
+    ~AsyncExecution()
+    {
+        // ~fetch_task deletes the suspended coro awaiting the generator
+        // ~generator deletes the suspended generator coro. Unwinding the frame may block.
+    }
 
     void cancel() override
     {
-        iterator.reset();
-        generator.reset();  // Forces frame destruction and thus cancellation of the coroutine.
-        if (active)
-            emit activeChanged(active = false);
+        // Deleting the generator, forces coroutine frame destruction and as such MAY BLOCK because
+        // the coroutine implementation deliberately does so, e.g. to join a thread or such.
+        // Since it must not block, deleting the generator on cancel is not an option.
     }
 
     bool isActive() const override { return active; }
@@ -54,7 +57,13 @@ public:
 
     QCoro::Task<> fetchMoreTask()
     {
-        emit activeChanged(active = true);
+        struct ScopedActivation {
+            AsyncExecution &exec;
+            ScopedActivation(AsyncExecution &e) : exec(e)
+            { emit exec.activeChanged(exec.active = true); }
+            ~ScopedActivation()
+            { emit exec.activeChanged(exec.active = false); }
+        } scoped_activation(*this);
 
         try {
 
@@ -73,8 +82,6 @@ public:
         {
             WARN << u"AsyncGeneratorQueryHandler threw unknown exception."_s;
         }
-
-        emit activeChanged(active = false);
     }
 };
 
