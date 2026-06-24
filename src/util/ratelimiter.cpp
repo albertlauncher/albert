@@ -13,54 +13,18 @@ using namespace albert;
 using namespace std::chrono;
 using namespace std;
 
-class detail::Acquire::Private
-{
-public:
-    Acquire *q;
-    atomic_bool is_granted_ = false;
 
-    void grant()
-    {
-        is_granted_ = true;
-        emit q->granted();
-    }
-
-};
-
-Acquire::Acquire() : d(make_unique<detail::Acquire::Private>(this, false)) {}
-
-Acquire::~Acquire() {}
-
-bool Acquire::isGranted() { return d->is_granted_; }
-
-bool Acquire::await(std::function<bool()> stop_requested)
-{
-    while (true)
-    {
-        if (stop_requested())
-            return false;
-        else if (d->is_granted_)
-            return true;
-        else
-            QThread::msleep(10);
-    }
-}
-
-// -------------------------------------------------------------------------------------------------
-
-
-class detail::RateLimiterPrivate
+class detail::RateLimiter::Private
 {
 public:
     RateLimiter *q;
-    milliseconds delay;
-    time_point<system_clock> last_grant;
+    time_point<system_clock> until;
     queue<QPointer<Acquire>> wait_queue;
     mutex mtx;
 
     inline uint remaining()
     {
-        auto ms = duration_cast<milliseconds>(last_grant + delay - system_clock::now()).count();
+        auto ms = duration_cast<milliseconds>(until - system_clock::now()).count();
         return static_cast<uint>(max<decltype(ms)>(0, ms));
     }
 
@@ -74,11 +38,12 @@ public:
 
             if (acquire)
             {
-                last_grant = system_clock::now();
-                acquire->d->grant();
-                if (!wait_queue.empty())
-                    QTimer::singleShot(delay, q, [this] { grantNext(); });
-                return;
+                emit acquire->granted();  // grant
+                if(q->isLimited()) // if grant has been effectively used cooldown, else next
+                {
+                    QTimer::singleShot(remaining(), q, [this] { grantNext(); });
+                    return;
+                }
             }
         }
     }
@@ -92,23 +57,15 @@ public:
     }
 };
 
-RateLimiter::RateLimiter(uint ms):
-    d(make_unique<RateLimiterPrivate>(this, milliseconds(ms)))
+RateLimiter::RateLimiter():
+    d(make_unique<RateLimiter::Private>(this))
 {}
 
 RateLimiter::~RateLimiter() {}
 
-void RateLimiter::setDelay(uint delay)
-{
-    lock_guard lock(d->mtx);
-    d->delay = milliseconds(delay);
-}
+void RateLimiter::limit(milliseconds delay) { d->until = system_clock::now() + delay; }
 
-uint RateLimiter::delay() const
-{
-    lock_guard lock(d->mtx);
-    return d->delay.count();
-}
+bool RateLimiter::isLimited() const { return d->remaining() > 0; }
 
 unique_ptr<Acquire> RateLimiter::acquire()
 {
