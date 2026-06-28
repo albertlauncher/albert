@@ -59,7 +59,7 @@ public:
     /// Returns `true` if the handler supports fuzzy matching, otherwise returns `false`.
     ///
     /// If `true`, the user can enable fuzzy matching for this handler and \ref
-    /// setFuzzyMatching(bool) should be implemented accordingly.
+    /// onFuzzyMatchingChanged(bool) should be implemented accordingly.
     ///
     /// The base class implementation returns `false`.
     ///
@@ -77,22 +77,22 @@ protected:
     ~QueryHandler() override;
 
     ///
-    /// Sets the fuzzy matching mode to _enabled_.
+    /// Notifies that the `fuzzyMatching` property has changed to _enabled_.
     ///
     /// This function is called when the user toggles fuzzy matching for this handler.
     ///
     /// The base class implementation does nothing.
     ///
-    virtual void setFuzzyMatching(bool enabled);
+    virtual void onFuzzyMatchingChanged(bool enabled);
 
     ///
-    /// Notifies that the user-defined trigger has changed to _trigger_.
+    /// Notifies that the `trigger` property has changed to _trigger_.
     ///
     /// This function is called when the user changes the trigger for this handler.
     ///
     /// The base class implementation does nothing.
     ///
-    virtual void setTrigger(const QString &trigger);
+    virtual void onTriggerChanged(const QString &trigger);
 
     friend class ::QueryEngine;
 };

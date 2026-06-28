@@ -37,7 +37,7 @@ vector<RankItem> IndexQueryHandler::rankItems(QueryContext &ctx)
 
 bool IndexQueryHandler::supportsFuzzyMatching() const { return true; }
 
-void IndexQueryHandler::setFuzzyMatching(bool fuzzy)
+void IndexQueryHandler::onFuzzyMatchingChanged(bool fuzzy)
 {
     d->index_mutex.lock();
     if (!d->index  // lazy index init

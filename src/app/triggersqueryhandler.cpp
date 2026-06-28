@@ -26,7 +26,7 @@ QString TriggersQueryHandler::name() const { return u"Triggers"_s; }
 
 QString TriggersQueryHandler::description() const { return tr("Trigger completions"); }
 
-void TriggersQueryHandler::setFuzzyMatching(bool fuzzy) { fuzzy_ = fuzzy; }
+void TriggersQueryHandler::onFuzzyMatchingChanged(bool fuzzy) { fuzzy_ = fuzzy; }
 
 bool TriggersQueryHandler::supportsFuzzyMatching() const { return true; }
 
