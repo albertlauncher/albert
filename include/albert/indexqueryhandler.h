@@ -28,7 +28,7 @@ public:
     bool supportsFuzzyMatching() const override;
 
     /// Sets the fuzzy matching mode to _enabled_ and triggers \ref updateIndexItems().
-    void setFuzzyMatching(bool enabled) override;
+    void onFuzzyMatchingChanged(bool enabled) override;
 
     /// Returns a list of scored matches for _context_ using the index.
     std::vector<RankItem> rankItems(QueryContext &context) override;

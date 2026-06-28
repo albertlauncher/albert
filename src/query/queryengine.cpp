@@ -55,8 +55,8 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry)
             auto t = settings->value(CFG_TRIGGER, h->defaultTrigger()).toString();
             auto f = settings->value(CFG_FUZZY, false).toBool();
 
-            h->setTrigger(t);
-            h->setFuzzyMatching(f);
+            h->onTriggerChanged(t);
+            h->onFuzzyMatchingChanged(f);
             trigger_handlers_.emplace(piecewise_construct,
                                       forward_as_tuple(id),
                                       forward_as_tuple(h, t, f));
@@ -220,7 +220,7 @@ void QueryEngine::setTrigger(const QString &id, const QString& t)
         app().settings()->setValue(QString("%1/%2").arg(id, CFG_TRIGGER), t);
     }
 
-    h.handler->setTrigger(h.trigger);
+    h.handler->onTriggerChanged(h.trigger);
     updateActiveTriggers();
 }
 
@@ -235,7 +235,7 @@ void QueryEngine::setFuzzy(const QString &id, bool f)
     {
         h.fuzzy = f;
         app().settings()->setValue(QString("%1/%2").arg(id, CFG_FUZZY), f);
-        h.handler->setFuzzyMatching(f);
+        h.handler->onFuzzyMatchingChanged(f);
     }
 }
 

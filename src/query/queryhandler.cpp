@@ -12,8 +12,8 @@ QString QueryHandler::defaultTrigger() const { return id() + QChar::Space; }
 
 bool QueryHandler::allowTriggerRemap() const { return true; }
 
-void QueryHandler::setTrigger(const QString &) {}
+void QueryHandler::onTriggerChanged(const QString &) {}
 
 bool QueryHandler::supportsFuzzyMatching() const { return false; }
 
-void QueryHandler::setFuzzyMatching(bool) { }
+void QueryHandler::onFuzzyMatchingChanged(bool) { }
