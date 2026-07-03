@@ -608,15 +608,6 @@ int ALBERT_EXPORT run(int argc, char **argv)
     QLoggingCategory::setFilterRules("*.debug=false");
     qInstallMessageHandler(messageHandler);
 
-    // Initialize Qt application
-
-    QApplication qapp(argc, argv);
-    QApplication::setApplicationName("albert");
-    QApplication::setApplicationDisplayName("Albert");
-    QApplication::setApplicationVersion(ALBERT_VERSION_STRING);
-    QApplication::setWindowIcon(QIcon::fromTheme("albert"));
-    QApplication::setQuitOnLastWindowClosed(false);
-
 
     // Parse command line (asap for fast cli commands)
 
@@ -640,7 +631,11 @@ int ALBERT_EXPORT run(int argc, char **argv)
         parser.addVersionOption();
         parser.addHelpOption();
         parser.setApplicationDescription(Application::tr("Launch Albert or control a running instance."));
-        parser.process(qapp);
+
+        QCoreApplication qcoreapp(argc, argv);
+        QCoreApplication::setApplicationName("albert");
+        QCoreApplication::setApplicationVersion(ALBERT_VERSION_STRING);
+        parser.process(qcoreapp);
 
         if (const auto args = parser.positionalArguments(); !args.isEmpty())
         {
@@ -664,9 +659,17 @@ int ALBERT_EXPORT run(int argc, char **argv)
     }
 
 
+
+    // Initialize Qt application
+
+    QApplication qapp(argc, argv);
+    QApplication::setApplicationName("albert");
+    QApplication::setApplicationDisplayName("Albert");
+    QApplication::setApplicationVersion(ALBERT_VERSION_STRING);
+    QApplication::setWindowIcon(QIcon::fromTheme("albert"));
+    QApplication::setQuitOnLastWindowClosed(false);
     for (const auto &line : report())
         DEBG << line;
-
 
     // Initialize app directories
 
