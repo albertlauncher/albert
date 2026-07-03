@@ -622,7 +622,7 @@ int ALBERT_EXPORT run(int argc, char **argv)
 
     struct {
         QStringList plugin_dirs;
-        bool autoload;
+        bool autoload = true;
     } config;
 
     {
@@ -642,18 +642,20 @@ int ALBERT_EXPORT run(int argc, char **argv)
         parser.setApplicationDescription(Application::tr("Launch Albert or control a running instance."));
         parser.process(qapp);
 
-        // TODO If not running? Continue and use? Makes sense for albert show but not for URLs.
         if (const auto args = parser.positionalArguments(); !args.isEmpty())
-            try {
-                QJsonDocument d(QJsonArray::fromStringList(args));
-                auto bytes = d.toJson(QJsonDocument::Compact);
-                bytes = RPCServer::sendMessage(bytes);
-                cout << bytes.data() << endl;
-                return EXIT_SUCCESS;
-            } catch (const exception &e) {
-                cout << e.what() << endl;
-                return EXIT_FAILURE;
+        {
+            if (auto reply = RPCServer::sendMessage(
+                    QJsonDocument(QJsonArray::fromStringList(args)).toJson(QJsonDocument::Compact)))
+            {
+                cout << reply->data() << endl;
+                ::exit(EXIT_SUCCESS);
             }
+            else
+            {
+                cout << reply.error().toStdString() << endl;
+                ::exit(EXIT_FAILURE);
+            }
+        }
 
         config = {
             .plugin_dirs = parser.value(opt_p).split(',', Qt::SkipEmptyParts),

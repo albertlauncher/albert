@@ -1,9 +1,10 @@
 // Copyright (C) 2022-2025 Manuel Schneider
 
 #pragma once
+#include <QString>
+#include <expected>
 #include <functional>
 #include <memory>
-namespace albert { class ExtensionRegistry; }
 class QByteArray;
 
 class RPCServer
@@ -15,7 +16,7 @@ public:
 
     void setMessageHandler(std::function<QByteArray(const QByteArray&)> handler);
 
-    static QByteArray sendMessage(const QByteArray &bytes, bool await_response = true);
+    static std::expected<QByteArray, QString> sendMessage(const QByteArray &bytes);
 
 private:
 

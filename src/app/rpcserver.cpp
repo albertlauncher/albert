@@ -79,25 +79,22 @@ RPCServer::~RPCServer()
 
 void RPCServer::setMessageHandler(function<QByteArray(const QByteArray &)> h){ d->handler = h; }
 
-QByteArray RPCServer::sendMessage(const QByteArray &bytes, bool await_response)
+expected<QByteArray, QString> RPCServer::sendMessage(const QByteArray &bytes)
 {
     QLocalSocket socket;
     socket.connectToServer(socketPath());
-    if (socket.waitForConnected(500))
-    {
-        socket.write(bytes);
-        socket.flush();
+    if (!socket.waitForConnected(500))
+        return unexpected("Failed to connect to albert.");
 
-        if(!await_response)
-            return {};
+    socket.write(bytes);
+    socket.flush();
 
-        if (socket.waitForReadyRead(1000))
-            return socket.readAll();
-        else if (auto e = socket.error(); e == QLocalSocket::PeerClosedError)
-            return {};
-        else
-            throw runtime_error(socket.errorString().toStdString());
-    }
+    if (socket.waitForReadyRead(5000))
+        return socket.readAll();
+
+    else if (auto e = socket.error(); e == QLocalSocket::PeerClosedError)
+        return QByteArray{};
+
     else
-        throw runtime_error("Failed to connect to albert.");
+        return unexpected(socket.errorString());
 }
