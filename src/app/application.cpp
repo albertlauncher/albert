@@ -361,13 +361,18 @@ void Application::Private::initRPC()
             else
                 return "'report' expects no arguments.";
 
-        else if (QUrl url(args[0]); url.isValid())
+        else if (ranges::all_of(args, [](const auto &arg){
+                     QUrl url(arg);
+                     return url.isValid() && url.scheme() == qApp->applicationName();
+                 }))
             for (const auto &arg : as_const(args))
                 app.handleUrl(arg);
 
         else
         {
-            WARN << "Invalid RPC message" << bytes;
+            const auto *msg = "Invalid RPC message";
+            WARN << msg << bytes;
+            return msg;
         }
 
         return {};
