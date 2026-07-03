@@ -629,13 +629,11 @@ int ALBERT_EXPORT run(int argc, char **argv)
         auto opt_p = QCommandLineOption({"p", "plugin-dirs"},
                                         Application::tr("Set the plugin dirs to use. Comma separated."),
                                         Application::tr("directories"));
-        auto opt_r = QCommandLineOption({"r", "report"},
-                                        Application::tr("Print report and quit."));
         auto opt_n = QCommandLineOption({"n", "no-autoload"},
                                         Application::tr("Do not implicitly load enabled plugins."));
 
         QCommandLineParser parser;
-        parser.addOptions({opt_p, opt_r, opt_n});
+        parser.addOptions({opt_p, opt_n});
         parser.addPositionalArgument(Application::tr("command"),
                                      Application::tr("RPC command to send to the running instance."),
                                      Application::tr("[command [params...]]"));
@@ -657,19 +655,15 @@ int ALBERT_EXPORT run(int argc, char **argv)
                 return EXIT_FAILURE;
             }
 
-        if (parser.isSet(opt_r)) {
-            for (const auto &line : report())
-                std::cout << line.toStdString() << std::endl;
-            ::exit(EXIT_SUCCESS);
-        } else
-            for (const auto &line : report())
-                DEBG << line;
-
         config = {
             .plugin_dirs = parser.value(opt_p).split(',', Qt::SkipEmptyParts),
             .autoload    = !parser.isSet(opt_n),
         };
     }
+
+
+    for (const auto &line : report())
+        DEBG << line;
 
 
     // Initialize app directories
