@@ -493,6 +493,12 @@ Application::~Application() {}
 
 Application &Application::instance() { return static_cast<Application&>(App::instance()); }
 
+int Application::run(const QStringList &additional_plugin_paths, bool load_enabled)
+{
+    Application app(additional_plugin_paths, load_enabled);
+    return qApp->exec();
+}
+
 void Application::handleUrl(const QUrl &url)
 {
     DEBG << "Handle url" << url.toString();
@@ -708,14 +714,12 @@ int ALBERT_EXPORT run(int argc, char **argv)
 
 
     // Run app
+    if (int return_value = Application::run(config.plugin_dirs, config.autoload);
+        return_value != -1)
+        return return_value;
 
-    Application app(config.plugin_dirs, config.autoload);
-    int return_value = qapp.exec();
-
-    if (return_value == -1 && runDetachedProcess(qApp->arguments(), QDir::currentPath()))
-        return_value = EXIT_SUCCESS;
-
-    return return_value;
+    runDetachedProcess(qApp->arguments(), QDir::currentPath());
+    return EXIT_SUCCESS;
 }
 
 }
