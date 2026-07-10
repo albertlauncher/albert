@@ -164,7 +164,6 @@ set(LIB_SRC
     src/plugin/extensionregistry.cpp
     src/plugin/extensionregistry.h
     src/plugin/plugininstance.cpp
-    src/plugin/pluginloader.cpp
     src/plugin/pluginprovider.cpp
     src/plugin/pluginregistry.cpp
     src/plugin/pluginregistry.h

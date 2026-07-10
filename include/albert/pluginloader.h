@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Manuel Schneider
+// SPDX-FileCopyrightText: 2023-2026 Manuel Schneider
 // SPDX-License-Identifier: MIT
 
 #pragma once
@@ -51,17 +51,11 @@ public:
     virtual albert::PluginInstance *instance() = 0;
 
     /// The static injection pointer.
-    static thread_local PluginLoader *current_loader;
+    static inline thread_local PluginLoader *current_loader;
 
 signals:
-
     /// Emitted when the loading process finished.
     void finished(QString info);
-
-protected:
-
-    virtual ~PluginLoader();
-
 };
 
 }
