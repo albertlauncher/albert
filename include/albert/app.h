@@ -65,9 +65,6 @@ class ALBERT_EXPORT App : public QObject
 {
     Q_OBJECT
 public:
-    /// Returns the global app instance.
-    static App &instance();
-
 
     /// @name Main window
     /// @{
@@ -189,10 +186,10 @@ protected:
 };
 
 ///
-/// \copybrief albert::App::instance.
+/// Returns the global app instance.
 ///
 /// Shorthand for \ref albert::App::instance.
 ///
-ALBERT_EXPORT inline App &app() { return App::instance(); }
+ALBERT_EXPORT App &app();
 
 } // namespace albert

@@ -49,8 +49,6 @@ public:
     void setFrontend(uint i);
     albert::detail::Frontend *frontend();
 
-    static Application &instance();
-
     static int run(const QStringList &additional_plugin_paths, bool load_enabled);
 
 private:

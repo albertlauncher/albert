@@ -61,6 +61,8 @@ static const char *CFG_HOTKEY = "hotkey";
 static const char *DEF_HOTKEY = "Ctrl+Space";
 }
 
+App &albert::app() { return *app_instance; }
+
 // -------------------------------------------------------------------------------------------------
 
 App::App()
@@ -71,8 +73,6 @@ App::App()
 }
 
 App::~App() { app_instance = nullptr; }
-
-App &App::instance() { return *app_instance; }
 
 void App::restart()
 { QMetaObject::invokeMethod(qApp, "exit", Qt::QueuedConnection, Q_ARG(int, -1)); }
@@ -495,8 +495,6 @@ Application::Application(const QStringList &additional_plugin_paths, bool load_e
 }
 
 Application::~Application() {}
-
-Application &Application::instance() { return static_cast<Application&>(App::instance()); }
 
 int Application::run(const QStringList &additional_plugin_paths, bool load_enabled)
 {

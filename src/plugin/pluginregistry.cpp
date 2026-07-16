@@ -94,7 +94,7 @@ void PluginRegistry::setEnabled(const QString &id, bool enable)
         if (p->metadata.load_type == User && p->enabled != enable)
         {
             const_cast<Plugin*>(p)->enabled = enable;  // safe, original is not const
-            App::settings()->setValue(QString("%1/enabled").arg(p->id), enable);
+            app().settings()->setValue(QString("%1/enabled").arg(p->id), enable);
             emit pluginEnabledChanged(p->id);
         }
 
@@ -203,7 +203,7 @@ void PluginRegistry::onRegistered(PluginProvider *pp)
             .loader = *loader,
             .id = loader->metadata().id,
             .metadata = loader->metadata(),
-            .enabled = App::settings()->value(QString("%1/enabled").arg(id), false).toBool(),
+            .enabled = app().settings()->value(QString("%1/enabled").arg(id), false).toBool(),
             .state = Unloaded,
             .state_info = {},
             .registered_extensions={}

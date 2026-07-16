@@ -37,10 +37,10 @@ const auto *K_TELEMETRY_ENABLED = "telemetry";
 Telemetry::Telemetry(PluginRegistry &pr, ExtensionRegistry &er):
     plugin_registry_(pr),
     extension_registry_(er),
-    last_report(App::state()->value(K_LAST_REPORT,  // Default to -24h avoid sending old data
-                                    QDateTime::currentDateTime().addDays(-1)).toDateTime())
+    last_report(app().state()->value(K_LAST_REPORT,  // Default to -24h avoid sending old data
+                                     QDateTime::currentDateTime().addDays(-1)).toDateTime())
 {
-    if (auto s = App::settings(); s->contains(K_TELEMETRY_ENABLED))
+    if (auto s = app().settings(); s->contains(K_TELEMETRY_ENABLED))
         enabled_ = s->value(K_TELEMETRY_ENABLED).toBool();
     else
     {
@@ -66,7 +66,7 @@ Telemetry::Telemetry(PluginRegistry &pr, ExtensionRegistry &er):
         mb.setDefaultButton(MB::Yes);
         const auto enable = MB::Yes == mb.exec();
         enabled_ = enable;
-        App::settings()->setValue(K_TELEMETRY_ENABLED, enable);
+        app().settings()->setValue(K_TELEMETRY_ENABLED, enable);
     }
 
     connect(&timer, &QTimer::timeout, this, [this] { trySendReport(); });
@@ -148,7 +148,7 @@ void Telemetry::trySendReport()
             {
                 INFO << "Successfully sent telemetry data.";
                 last_report = now;
-                App::state()->setValue(K_LAST_REPORT, last_report);
+                app().state()->setValue(K_LAST_REPORT, last_report);
             }
         });
 }
@@ -197,7 +197,7 @@ QJsonDocument Telemetry::buildReport() const
 {
     QJsonObject data;
     data.insert("albert", albertTelemetry());
-    if (auto *apps_plugin = App::instance().extension<detail::TelemetryProvider>("applications");
+    if (auto *apps_plugin = app().extension<detail::TelemetryProvider>("applications");
         apps_plugin)
         data.insert("applications", apps_plugin->telemetryData());
 
@@ -222,7 +222,7 @@ void Telemetry::setEnabled(bool value)
     if (enabled_ != value)
     {
         enabled_ = value;
-        App::settings()->setValue(K_TELEMETRY_ENABLED, enabled_);
+        app().settings()->setValue(K_TELEMETRY_ENABLED, enabled_);
 
         enabled_ ? timer.start() : timer.stop();
     }

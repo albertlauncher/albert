@@ -7,7 +7,10 @@
 #include <QMessageBox>
 using namespace albert;
 
-inline static QWidget *mainWindow() { return QWidget::find(Application::instance().frontend()->winId()); }
+inline static QWidget *mainWindow()
+{
+    return QWidget::find(static_cast<Application&>(app()).frontend()->winId());
+}
 
 bool albert::question(const QString &text, QWidget *parent)
 {

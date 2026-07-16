@@ -39,6 +39,6 @@ void PathManager::setAdditionalPathEntries(const QStringList &entries)
     if (entries != d->additional_path_entries)
     {
         d->additional_path_entries = entries;
-        App::instance().settings()->setValue(CFG_ADDITIONAL_PATH_ENTRIES, entries);
+        app().settings()->setValue(CFG_ADDITIONAL_PATH_ENTRIES, entries);
     }
 }

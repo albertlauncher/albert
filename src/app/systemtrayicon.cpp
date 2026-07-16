@@ -42,11 +42,11 @@ void SystemTrayIcon::setEnabled(bool enable)
 
         auto *action = tray_menu->addAction(tr("Show/Hide"));
         QObject::connect(action, &QAction::triggered,
-                         [] { Application::instance().toggle(); });
+                         [] { static_cast<Application&>(app()).toggle(); });
 
         action = tray_menu->addAction(tr("Settings"));
         QObject::connect(action, &QAction::triggered,
-                         [] { Application::instance().showSettings(); });
+                         [] { app().showSettings(); });
 
         action = tray_menu->addAction(tr("Open website"));
         QObject::connect(action, &QAction::triggered,
@@ -56,11 +56,11 @@ void SystemTrayIcon::setEnabled(bool enable)
 
         action = tray_menu->addAction(tr("Restart"));
         QObject::connect(action, &QAction::triggered,
-                         [] { Application::restart(); });
+                         [] { App::restart(); });
 
         action = tray_menu->addAction(tr("Quit"));
         QObject::connect(action, &QAction::triggered,
-                         [] { Application::quit(); });
+                         [] { App::quit(); });
 
         // icon
 
@@ -78,7 +78,7 @@ void SystemTrayIcon::setEnabled(bool enable)
                          tray_icon.get(), [](QSystemTrayIcon::ActivationReason reason)
                 {
                     if(reason == QSystemTrayIcon::ActivationReason::Trigger)
-                        Application::instance().toggle();
+                        static_cast<Application&>(app()).toggle();
                 });
 #endif
     }
@@ -89,5 +89,5 @@ void SystemTrayIcon::setEnabled(bool enable)
         tray_menu.reset();
     }
 
-    App::settings()->setValue(CFG_SHOWTRAY, enable);
+    app().settings()->setValue(CFG_SHOWTRAY, enable);
 }

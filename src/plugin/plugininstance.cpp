@@ -34,24 +34,24 @@ vector<Extension*> PluginInstance::extensions() { return {}; }
 QWidget *PluginInstance::buildConfigWidget() { return nullptr; }
 
 filesystem::path PluginInstance::cacheLocation() const
-{ return App::cacheLocation() / d->loader->metadata().id.toStdString(); }
+{ return app().cacheLocation() / d->loader->metadata().id.toStdString(); }
 
 filesystem::path PluginInstance::configLocation() const
-{ return App::configLocation() / d->loader->metadata().id.toStdString(); }
+{ return app().configLocation() / d->loader->metadata().id.toStdString(); }
 
 filesystem::path PluginInstance::dataLocation() const
-{ return App::dataLocation() / d->loader->metadata().id.toStdString(); }
+{ return app().dataLocation() / d->loader->metadata().id.toStdString(); }
 
 unique_ptr<QSettings> PluginInstance::settings() const
 {
-    auto s = App::settings();
+    auto s = app().settings();
     s->beginGroup(d->loader->metadata().id);
     return s;
 }
 
 unique_ptr<QSettings> PluginInstance::state() const
 {
-    auto s = App::state();
+    auto s = app().state();
     s->beginGroup(d->loader->metadata().id);
     return s;
 }

@@ -9,7 +9,8 @@
 using namespace albert;
 using namespace std;
 
-static inline QString socketPath() { return QDir(App::cacheLocation()).filePath("ipc_socket"); }
+static inline QString socketPath()
+{ return QDir(app().cacheLocation()).filePath("ipc_socket"); }
 
 class RPCServer::Private
 {

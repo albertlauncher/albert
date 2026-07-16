@@ -40,7 +40,7 @@ shared_ptr<Item> TriggersQueryHandler::makeItem(const TriggerHandler &h) const
         {{
             "set",
             tr("Set input text"),
-            [&]{ App::instance().show(h.trigger); },
+            [&]{ app().show(h.trigger); },
             false
         }},
         h.trigger

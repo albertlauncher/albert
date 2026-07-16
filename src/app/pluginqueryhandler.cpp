@@ -75,7 +75,7 @@ public:
         actions.emplace_back(
             "settings",
             PluginQueryHandler::tr("Open settings"),
-            [this] { App::instance().showSettings(id()); }
+            [this] { app().showSettings(id()); }
             );
 
         actions.emplace_back(

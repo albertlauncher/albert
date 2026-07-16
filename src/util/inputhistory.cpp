@@ -27,7 +27,7 @@ InputHistory::InputHistory(const QString &path):
     d(make_unique<Private>())
 {
     if (path.isEmpty())
-        d->file_path = QDir(App::instance().dataLocation()).filePath("albert.history");
+        d->file_path = QDir(app().dataLocation()).filePath("albert.history");
     else
         d->file_path = path;
 
