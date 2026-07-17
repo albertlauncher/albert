@@ -19,7 +19,7 @@ public:
     QString id() const override;
     QString name() const override;
     QString description() const override;
-    std::vector<albert::PluginLoader*> plugins() override;
+    std::vector<albert::PluginLoader*> plugins() const override;
     std::vector<albert::PluginLoader*> frontendPlugins();
 
 private:

@@ -21,9 +21,9 @@ public:
     ///
     /// Returns references to the plugins provided by this plugin provider.
     ///
-    /// The calles does **not** take ownership of the returned plugin loaders.
+    /// The caller does **not** take ownership of the returned plugin loaders.
     ///
-    virtual std::vector<PluginLoader*> plugins() = 0;
+    virtual std::vector<PluginLoader*> plugins() const = 0;
 
 protected:
 

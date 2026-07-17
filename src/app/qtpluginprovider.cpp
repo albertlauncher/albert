@@ -71,13 +71,10 @@ QString QtPluginProvider::description() const
     return tr;
 }
 
-vector<PluginLoader*> QtPluginProvider::plugins()
+vector<PluginLoader*> QtPluginProvider::plugins() const
 {
-    vector<PluginLoader*> plugins;
-    for (const auto &pl : plugin_loaders_)
-        if (pl->metadata().load_type == PluginMetadata::LoadType::User)
-            plugins.emplace_back(pl.get());
-    return plugins;
+    auto v = plugin_loaders_ | views::transform([](const auto &uptr){ return uptr.get();});
+    return {v.begin(), v.end()};
 }
 
 vector<PluginLoader*> QtPluginProvider::frontendPlugins()

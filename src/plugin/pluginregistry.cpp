@@ -166,11 +166,12 @@ void PluginRegistry::onRegistered(PluginProvider *pp)
 
     map<QString, PluginLoader*> unique_loaders;
     for (auto loader : pp->plugins())
-        if (const auto &[it, succ] = unique_loaders.emplace(loader->metadata().id,
-                                                            loader);
-            !succ)
-            INFO << QString("Plugin '%1' at '%2' shadowed by '%3'")
-                        .arg(it->first, loader->path(), it->second->path());
+        if (loader->metadata().load_type == PluginMetadata::LoadType::User)
+            if (const auto &[it, succ] = unique_loaders.emplace(loader->metadata().id,
+                                                                loader);
+                !succ)
+                INFO << QString("Plugin '%1' at '%2' shadowed by '%3'")
+                            .arg(it->first, loader->path(), it->second->path());
 
     // Topo sort once to filter by valid dependencies
 
