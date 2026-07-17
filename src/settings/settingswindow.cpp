@@ -2,8 +2,11 @@
 
 #include "application.h"
 #include "frontend.h"
+#include "frontendregistry.h"
 #include "messagebox.h"
 #include "pathmanager.h"
+#include "pluginloader.h"
+#include "pluginmetadata.h"
 #include "pluginswidget.h"
 #include "querywidget.h"
 #include "settingswindow.h"
@@ -75,14 +78,23 @@ SettingsWindow::SettingsWindow(Application &a):
 
     init_tab_general_hotkey();
     init_tab_general_trayIcon();
-    init_tab_general_frontends();
+    init_tab_general_frontends(app.frontenRegistry());
     init_tab_general_path();
     init_tab_general_telemetry();
     init_tab_general_about();
 
-    ui.tabs->insertTab(ui.tabs->count(), app.frontend()->createFrontendConfigWidget(), tr("&Window"));
-    ui.tabs->insertTab(ui.tabs->count(), plugin_widget = new PluginsWidget(app.pluginRegistry()), tr("&Plugins"));
-    ui.tabs->insertTab(ui.tabs->count(), new QueryWidget(app.queryEngine()), tr("&Query"));
+    ui.tabs->insertTab(ui.tabs->count(),
+                       app.frontenRegistry().frontend().createFrontendConfigWidget(),
+                       tr("&Window"));
+
+    ui.tabs->insertTab(ui.tabs->count(),
+                       plugin_widget = new PluginsWidget(app.pluginRegistry()),
+                       tr("&Plugins"));
+
+    ui.tabs->insertTab(ui.tabs->count(),
+                       new QueryWidget(app.queryEngine()),
+                       tr("&Query"));
+
 
     auto *screen = QGuiApplication::screenAt(QCursor::pos());
     if (!screen)
@@ -139,17 +151,32 @@ void SettingsWindow::init_tab_general_trayIcon()
             this, [this](bool enable) { app.systemTrayIcon().setEnabled(enable); });
 }
 
-void SettingsWindow::init_tab_general_frontends()
+void SettingsWindow::init_tab_general_frontends(FrontendRegistry &frontend_registry)
 {
     // Populate frontend checkbox
-    for (const auto &name : app.availableFrontends())
+    for (const auto *plugin_loader : frontend_registry.availableFrontends())
     {
-        ui.comboBox_frontend->addItem(name);
-        if (name == app.currentFrontend())
+        const auto &id = plugin_loader->metadata().id;
+        const auto &name = plugin_loader->metadata().name;
+
+        ui.comboBox_frontend->addItem(name, id);
+        if (id == frontend_registry.frontend().loader().metadata().id)
             ui.comboBox_frontend->setCurrentIndex(ui.comboBox_frontend->count()-1);
     }
-    connect(ui.comboBox_frontend, &QComboBox::currentIndexChanged, this,
-            [this](int index){ app.setFrontend(index); });
+
+    connect(ui.comboBox_frontend, &QComboBox::currentIndexChanged, this, [&](int index) {
+        frontend_registry.setFrontend(index);
+
+        if (frontend_registry.availableFrontends().at(index)->metadata().id
+            != frontend_registry.frontend().loader().metadata().id)
+        {
+            auto text = tr("Changing the frontend requires a restart. "
+                           "Do you want to restart Albert?");
+
+            if (question(text))
+                App::restart();
+        }
+    });
 }
 
 void SettingsWindow::init_tab_general_path()

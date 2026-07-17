@@ -5,6 +5,7 @@
 #include <QWidget>
 class Application;
 class PluginsWidget;
+class FrontendRegistry;
 
 class SettingsWindow final : public QWidget
 {
@@ -20,7 +21,7 @@ public:
 private:
 
     void init_tab_general_hotkey();
-    void init_tab_general_frontends();
+    void init_tab_general_frontends(FrontendRegistry &);
     void init_tab_general_path();
     void init_tab_general_trayIcon();
     void init_tab_general_telemetry();

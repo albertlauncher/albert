@@ -76,12 +76,3 @@ vector<PluginLoader*> QtPluginProvider::plugins() const
     auto v = plugin_loaders_ | views::transform([](const auto &uptr){ return uptr.get();});
     return {v.begin(), v.end()};
 }
-
-vector<PluginLoader*> QtPluginProvider::frontendPlugins()
-{
-    vector<PluginLoader*> frontend_plugins;
-    for (const auto &pl : plugin_loaders_)
-        if (pl->metadata().load_type == PluginMetadata::LoadType::Frontend)
-            frontend_plugins.emplace_back(pl.get());
-    return frontend_plugins;
-}

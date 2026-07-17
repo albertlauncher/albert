@@ -4,6 +4,7 @@
 #include "app.h"
 #include <QObject>
 #include <memory>
+class FrontendRegistry;
 class PathManager;
 class PluginRegistry;
 class QHotkey;
@@ -36,6 +37,7 @@ public:
     Q_INVOKABLE void handleUrl(const QUrl &url);
 
     PluginRegistry &pluginRegistry();
+    FrontendRegistry &frontenRegistry();
     QueryEngine &queryEngine();
     Telemetry &telemetry();
     SystemTrayIcon &systemTrayIcon();
@@ -43,11 +45,6 @@ public:
 
     const QHotkey *hotkey() const;
     void setHotkey(std::unique_ptr<QHotkey> hotkey);
-
-    QStringList availableFrontends();
-    QString currentFrontend();
-    void setFrontend(uint i);
-    albert::detail::Frontend *frontend();
 
     static int run(const QStringList &additional_plugin_paths, bool load_enabled);
 

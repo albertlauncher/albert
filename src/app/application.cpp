@@ -4,6 +4,7 @@
 #include "config.h"
 #include "extensionregistry.h"
 #include "frontend.h"
+#include "frontendregistry.h"
 #include "logging.h"
 #include "messagehandler.h"
 #include "pathmanager.h"
@@ -55,8 +56,6 @@ using namespace std;
 namespace {
 App *app_instance = nullptr;
 static const char *STATE_LAST_USED_VERSION = "last_used_version";
-static const char *CFG_FRONTEND_ID = "frontend";
-static const char *DEF_FRONTEND_ID = "widgetsboxmodel";
 static const char *CFG_HOTKEY = "hotkey";
 static const char *DEF_HOTKEY = "Ctrl+Space";
 }
@@ -132,7 +131,6 @@ public:
 
     void initHotkey(QSettings &settings);
     void initRPC();
-    void initFrontend(QSettings &settings);
 
     QString loadFrontend(albert::PluginLoader *);
     void notifyVersionChange(QSettings &state);
@@ -150,13 +148,13 @@ public:
     albert::ExtensionRegistry extension_registry;
     PluginRegistry plugin_registry;
     QtPluginProvider plugin_provider;
+    FrontendRegistry frontend_registry;
+    Frontend &frontend;  // convenience reference
     QueryEngine query_engine;
     Telemetry telemetry;
     SystemTrayIcon tray_icon;
 
     // Weak, lazy or optional
-    albert::PluginLoader *frontend_plugin{nullptr};
-    albert::detail::Frontend *frontend{nullptr};
     std::unique_ptr<QHotkey> hotkey{nullptr};
     std::unique_ptr<Session> session{nullptr};
     QPointer<SettingsWindow> settings_window{nullptr};
@@ -176,6 +174,8 @@ Application::Private::Private(Application &q,
     path_manager(settings),
     plugin_registry(extension_registry, load_enabled),
     plugin_provider(additional_plugin_paths),
+    frontend_registry(settings, plugin_provider),
+    frontend(frontend_registry.frontend()),
     query_engine(extension_registry),
     telemetry(plugin_registry, extension_registry),
     tray_icon(settings),
@@ -183,25 +183,23 @@ Application::Private::Private(Application &q,
     triggers_query_handler(query_engine)
 {
     platform::initPlatform();
+    platform::initNativeWindow(frontend.winId());
 
     // Install scheme handler
     QDesktopServices::setUrlHandler("albert", &app, "handleUrl");
 
-    initFrontend(settings);
-
-
-    connect(frontend, &Frontend::visibleChanged,
+    connect(&frontend, &Frontend::visibleChanged,
             &app, [this]{
-                if (frontend->isVisible())
-                    session = make_unique<Session>(query_engine, *frontend);
+                if (frontend.isVisible())
+                    session = make_unique<Session>(query_engine, frontend);
                 else
                     session.reset();
             });
 
     auto reset_session = [this] {
-        if (frontend->isVisible()) {
+        if (frontend.isVisible()) {
             session.reset();  // Make sure session is deleted _before_ creating a new one
-            session = make_unique<Session>(query_engine, *frontend);
+            session = make_unique<Session>(query_engine, frontend);
         }
     };
 
@@ -217,6 +215,8 @@ Application::Private::Private(Application &q,
 
     notifyVersionChange(state);
 
+    for (auto *ext : frontend.extensions())
+        extension_registry.registerExtension(ext);
     extension_registry.registerExtension(&plugin_query_handler);
     extension_registry.registerExtension(&triggers_query_handler);
 
@@ -228,7 +228,8 @@ Application::Private::~Private()
 {
     QDesktopServices::unsetUrlHandler("albert");
 
-    frontend->disconnect();
+    frontend.disconnect();
+
     query_engine.disconnect();
 
     if (hotkey)
@@ -244,7 +245,6 @@ Application::Private::~Private()
     extension_registry.deregisterExtension(&triggers_query_handler);
     extension_registry.deregisterExtension(&plugin_query_handler);
 
-    frontend_plugin->unload();
 }
 
 void Application::Private::initHotkey(QSettings &settings)
@@ -270,7 +270,7 @@ void Application::Private::initHotkey(QSettings &settings)
     {
         hotkey = ::move(hk);
         connect(hotkey.get(), &QHotkey::activated,
-                frontend, [this]{ app.toggle(); });
+                &frontend, [this]{ app.toggle(); });
         INFO << "Hotkey set to" << s_hk;
     }
     else
@@ -381,77 +381,6 @@ void Application::Private::initRPC()
     rpc_server.setMessageHandler(messageHandler);
 }
 
-void Application::Private::initFrontend(QSettings &settings)
-{
-    auto loaders = plugin_provider.frontendPlugins();
-    const auto id = settings.value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString();
-
-    DEBG << u"Try loading the configured frontend '%1'."_s.arg(id);
-
-    if (auto it = ranges::find(loaders, id, [&](auto loader){ return loader->metadata().id; });
-        it != loaders.end())
-        if (auto err = loadFrontend(*it); err.isNull())
-            return;
-        else
-        {
-            WARN << u"Loading configured frontend '%1' failed: %2."_s.arg(id, err);
-            loaders.erase(it);
-        }
-    else
-        WARN << u"Configured frontend plugin '%1' does not exist."_s.arg(id);
-
-    for (auto &loader : loaders)
-    {
-        WARN << u"Try loading '%1'."_s.arg(loader->metadata().id);
-
-        if (auto err = loadFrontend(loader); err.isNull())
-        {
-            INFO << u"Using '%1' as fallback."_s.arg(loader->metadata().id);
-            return;
-        }
-        else
-            WARN << u"Failed loading '%1'."_s.arg(loader->metadata().id);
-    }
-
-    qFatal("Could not load any frontend.");
-}
-
-QString Application::Private::loadFrontend(PluginLoader *loader)
-{
-    using enum Plugin::State;
-
-    // Blocking load
-    QEventLoop loop;
-
-    connect(loader, &PluginLoader::finished, &loop, [&](QString info) {
-        if (!info.isEmpty())
-            DEBG << info;
-        loop.quit();
-    });
-    QTimer::singleShot(0, loader, [loader]{ loader->load(); });
-    loop.exec();
-
-    connect(loader->instance(), &PluginInstance::initialized,
-            &loop, [&] { loop.quit(); });
-    QTimer::singleShot(0, loader, [loader]{ loader->instance()->initialize(); });
-    loop.exec();
-
-    if (frontend = dynamic_cast<Frontend*>(loader->instance()); frontend)
-    {
-        platform::initNativeWindow(frontend->winId());
-
-        for (auto *ext : loader->instance()->extensions())
-            extension_registry.registerExtension(ext);
-
-        frontend_plugin = loader;
-
-        return {};
-    }
-    else
-        return QString("Failed casting plugin instance to albert::Frontend: %1")
-            .arg(loader->metadata().id);
-}
-
 void Application::Private::notifyVersionChange(QSettings &state)
 {
     auto current_version = qApp->applicationVersion();
@@ -522,6 +451,8 @@ void Application::handleUrl(const QUrl &url)
 
 PluginRegistry &Application::pluginRegistry() { return d->plugin_registry; }
 
+FrontendRegistry &Application::frontenRegistry() { return d->frontend_registry; }
+
 QueryEngine &Application::queryEngine() { return d->query_engine; }
 
 Telemetry &Application::telemetry() { return d->telemetry; }
@@ -544,37 +475,13 @@ void Application::showSettings(QString plugin_id)
 void Application::show(const QString &text)
 {
     if (!text.isNull())
-        d->frontend->setInput(text);
-    d->frontend->setVisible(true);
+        d->frontend.setInput(text);
+    d->frontend.setVisible(true);
 }
 
-void Application::hide() { d->frontend->setVisible(false); }
+void Application::hide() { d->frontend.setVisible(false); }
 
-void Application::toggle() { d->frontend->setVisible(!d->frontend->isVisible()); }
-
-Frontend *Application::frontend() { return d->frontend; }
-
-QString Application::currentFrontend() { return d->frontend_plugin->metadata().name; }
-
-QStringList Application::availableFrontends()
-{
-    QStringList ret;
-    for (const auto *loader : d->plugin_provider.frontendPlugins())
-        ret << loader->metadata().name;
-    return ret;
-}
-
-void Application::setFrontend(uint i)
-{
-    auto fp = d->plugin_provider.frontendPlugins().at(i);
-    settings()->setValue(CFG_FRONTEND_ID, fp->metadata().id);
-
-    auto text = tr("Changing the frontend requires a restart. "
-                   "Do you want to restart Albert?");
-
-    if (QMessageBox::question(nullptr, qApp->applicationDisplayName(), text) == QMessageBox::Yes)
-        restart();
-}
+void Application::toggle() { d->frontend.setVisible(!d->frontend.isVisible()); }
 
 const QHotkey *Application::hotkey() const { return d->hotkey.get(); }
 
@@ -589,7 +496,7 @@ void Application::setHotkey(unique_ptr<QHotkey> hk)
     {
         d->hotkey = ::move(hk);
         connect(d->hotkey.get(), &QHotkey::activated,
-                d->frontend, [this]{ toggle(); });
+                &d->frontend, [this]{ toggle(); });
         settings()->setValue(CFG_HOTKEY, d->hotkey->shortcut().toString());
     }
     else
