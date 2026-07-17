@@ -6,18 +6,14 @@
 #include "frontend.h"
 #include "frontendregistry.h"
 #include "logging.h"
+#include "messagebox.h"
 #include "messagehandler.h"
 #include "pathmanager.h"
 #include "platform.h"
-#include "plugininstance.h"
-#include "pluginloader.h"
-#include "pluginmetadata.h"
 #include "pluginqueryhandler.h"
 #include "pluginregistry.h"
-#include "pluginswidget.h"
 #include "qtpluginprovider.h"
 #include "queryengine.h"
-#include "querywidget.h"
 #include "report.h"
 #include "rpcserver.h"
 #include "session.h"
@@ -28,22 +24,15 @@
 #include "telemetry.h"
 #include "triggersqueryhandler.h"
 #include "urlhandler.h"
-#include <QByteArray>
 #include <QCommandLineParser>
 #include <QDesktopServices>
-#include <QDir>
-#include <QFile>
 #include <QHotkey>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QLibraryInfo>
-#include <QMessageBox>
-#include <QObject>
-#include <QPluginLoader>
 #include <QPointer>
 #include <QSettings>
 #include <QStandardPaths>
-#include <QTimer>
 #include <QTranslator>
 #include <iostream>
 Q_LOGGING_CATEGORY(AlbertLoggingCategory, "albert")
@@ -277,9 +266,7 @@ void Application::Private::initHotkey(QSettings &settings)
     {
         auto t = QT_TR_NOOP("Failed to set the hotkey '%1'");
         WARN << QString::fromUtf8(t).arg(s_hk);
-        QMessageBox::warning(nullptr, qApp->applicationDisplayName(),
-                             tr(t).arg(QKeySequence(kc_hk)
-                                       .toString(QKeySequence::NativeText)));
+        warning(tr(t).arg(QKeySequence(kc_hk).toString(QKeySequence::NativeText)));
         app.showSettings();
     }
 }
@@ -392,7 +379,7 @@ void Application::Private::notifyVersionChange(QSettings &state)
         auto text = tr("This is the first time you've launched Albert. Albert is "
                        "plugin based. You have to enable some plugins you want to use.");
 
-        QMessageBox::information(nullptr, qApp->applicationDisplayName(), text);
+        information(text);
 
         QTimer::singleShot(0, &app, [&]{ app.showSettings(); });
     }
@@ -403,7 +390,7 @@ void Application::Private::notifyVersionChange(QSettings &state)
                        "Check the <a href=\"https://albertlauncher.github.io/news/\">news</a>."
                        ).arg(current_version);
 
-        QMessageBox::information(nullptr, qApp->applicationDisplayName(), text);
+        information(text);
     }
 
     if (last_used_version != current_version)
@@ -578,10 +565,11 @@ int ALBERT_EXPORT run(int argc, char **argv)
 
     // Initialize app directories
 
+    using namespace std::filesystem;
     for (const auto &path : { App::cacheLocation(), App::configLocation(), App::dataLocation() })
         try {
-            filesystem::create_directories(path);
-            QFile::setPermissions(path, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
+            create_directories(path);
+            permissions(path, perms::owner_read | perms::owner_write | perms::owner_exec);
         } catch (...) {
             qFatal("Failed creating directory: %s", path.c_str());
         }
@@ -627,7 +615,7 @@ int ALBERT_EXPORT run(int argc, char **argv)
         return_value != -1)
         return return_value;
 
-    runDetachedProcess(qApp->arguments(), QDir::currentPath());
+    runDetachedProcess(qApp->arguments(), current_path().c_str());
     return EXIT_SUCCESS;
 }
 
