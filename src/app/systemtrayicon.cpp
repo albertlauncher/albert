@@ -1,9 +1,9 @@
 // Copyright (C) 2025-2025 Manuel Schneider
 
-#include "application.h"
-#include "systemutil.h"
+#include "app.h"
+#include "frontend.h"
 #include "systemtrayicon.h"
-#include <QCoreApplication>
+#include "systemutil.h"
 #include <QMenu>
 #include <QSettings>
 #include <QSystemTrayIcon>
@@ -12,22 +12,15 @@ static const char* CFG_SHOWTRAY = "showTray";
 using namespace albert;
 using namespace std;
 
-static inline QString tr(const char *sourceText, const char *disambiguation = nullptr, int n = -1)
-{ return QCoreApplication::translate("SystemTrayIcon", sourceText, disambiguation, n); }
-
-
-SystemTrayIcon::SystemTrayIcon(QSettings &settings)
+SystemTrayIcon::SystemTrayIcon(QSettings &s, detail::Frontend &f) : frontend(f)
 {
-    if (settings.value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool())
+    if (s.value(CFG_SHOWTRAY, DEF_SHOWTRAY).toBool())
         setEnabled(true);
 }
 
 SystemTrayIcon::~SystemTrayIcon() = default;
 
-bool SystemTrayIcon::isEnabled() const
-{
-    return tray_icon.get();
-}
+bool SystemTrayIcon::isEnabled() const { return tray_icon.get(); }
 
 void SystemTrayIcon::setEnabled(bool enable)
 {
@@ -42,7 +35,7 @@ void SystemTrayIcon::setEnabled(bool enable)
 
         auto *action = tray_menu->addAction(tr("Show/Hide"));
         QObject::connect(action, &QAction::triggered,
-                         [] { static_cast<Application&>(app()).toggle(); });
+                         [this] { frontend.setVisible(!frontend.isVisible()); });
 
         action = tray_menu->addAction(tr("Settings"));
         QObject::connect(action, &QAction::triggered,
@@ -75,10 +68,10 @@ void SystemTrayIcon::setEnabled(bool enable)
 #ifndef Q_OS_MAC
         // Some systems open menus on right click, show albert on left trigger
         QObject::connect(tray_icon.get(), &QSystemTrayIcon::activated,
-                         tray_icon.get(), [](QSystemTrayIcon::ActivationReason reason)
+                         tray_icon.get(), [this](QSystemTrayIcon::ActivationReason reason)
                 {
                     if(reason == QSystemTrayIcon::ActivationReason::Trigger)
-                        static_cast<Application&>(app()).toggle();
+                        frontend.setVisible(!frontend.isVisible());
                 });
 #endif
     }

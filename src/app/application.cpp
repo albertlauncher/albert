@@ -178,7 +178,7 @@ Application::Private::Private(Application &q,
     frontend(frontend_registry.frontend()),
     query_engine(extension_registry),
     telemetry(plugin_registry, extension_registry),
-    tray_icon(settings),
+    tray_icon(settings, frontend),
     plugin_query_handler(plugin_registry),
     triggers_query_handler(query_engine)
 {
