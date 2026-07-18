@@ -136,7 +136,7 @@ public:
     ///
     /// This function is thread-safe.
     ///
-    static std::unique_ptr<QSettings> settings();
+    virtual std::unique_ptr<QSettings> settings() = 0;
 
     ///
     /// Returns a `QSettings` object initialized with the application state file path.
@@ -145,28 +145,28 @@ public:
     ///
     /// This function is thread-safe.
     ///
-    static std::unique_ptr<QSettings> state();
-
-    ///
-    /// Returns the path to the application config directory.
-    ///
-    /// This function is thread-safe.
-    ///
-    static const std::filesystem::path &configLocation();
+    virtual std::unique_ptr<QSettings> state() = 0;
 
     ///
     /// Returns the path to the application cache directory.
     ///
     /// This function is thread-safe.
     ///
-    static const std::filesystem::path &cacheLocation();
+    virtual const std::filesystem::path &cacheLocation() = 0;
+
+    ///
+    /// Returns the path to the application config directory.
+    ///
+    /// This function is thread-safe.
+    ///
+    virtual const std::filesystem::path &configLocation() = 0;
 
     ///
     /// Returns the path to the application data directory.
     ///
     /// This function is thread-safe.
     ///
-    static const std::filesystem::path &dataLocation();
+    virtual const std::filesystem::path &dataLocation() = 0;
 
     /// @}
 

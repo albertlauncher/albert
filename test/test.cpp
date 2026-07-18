@@ -28,6 +28,26 @@ using namespace std;
 
 QTEST_GUILESS_MAIN(AlbertTests)
 
+class MockApp : public albert::App
+{
+    // App interface
+public:
+    void show(const QString &input_text) override {}
+    void showSettings(QString plugin_id) override {}
+    const map<QString, Extension *> &extensions() const override {
+        static map<QString, Extension *> m;
+        return m;
+    }
+    unique_ptr<QSettings> settings() override { return make_unique<QSettings>(); }
+    unique_ptr<QSettings> state() override { return make_unique<QSettings>(); }
+    static inline auto here = filesystem::path("./");
+    const filesystem::path &cacheLocation() override { return here; }
+    const filesystem::path &configLocation() override { return here; }
+    const filesystem::path &dataLocation() override { return here; }
+};
+
+void AlbertTests::initTestCase() { new MockApp; }
+
 void AlbertTests::topological_sort_linear()
 {
     auto result = topologicalSort(map<int, set<int>>{{1, {2}}, {2, {3}}, {3, {}}});
@@ -123,7 +143,7 @@ void AlbertTests::plugin_registry()
         QString name() const noexcept override { return "Mock Plugin Provider"; }
         QString description() const noexcept override { return "Mock Plugin Provider Description"; }
 
-        vector<PluginLoader *> plugins() override { return loaders_; }
+        vector<PluginLoader *> plugins() const override { return loaders_; }
     };
 
     // Diamond
@@ -138,7 +158,7 @@ void AlbertTests::plugin_registry()
     const auto loaders = vector<PluginLoader*>{loader0, loader1, loader2, loader3};
 
     for (const auto &loader : loaders)
-        App::settings()->setValue(QString("%1/enabled").arg(loader->metadata().id), false);
+        app().settings()->setValue(QString("%1/enabled").arg(loader->metadata().id), false);
 
     PluginProviderMock provider(loaders);
     ExtensionRegistry ext_reg;

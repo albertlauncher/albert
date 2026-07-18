@@ -9,6 +9,8 @@ class AlbertTests : public QObject
 
 private slots:
 
+    void initTestCase();
+
     void topological_sort_linear();
     void topological_sort_diamond();
     void topological_sort_cycle();

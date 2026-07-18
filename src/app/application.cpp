@@ -66,42 +66,6 @@ void App::restart()
 void App::quit()
 { QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection); }
 
-const filesystem::path &App::cacheLocation()
-{
-    static const auto path = filesystem::path(
-        QStandardPaths::writableLocation(QStandardPaths::CacheLocation).toStdString());
-    return path;
-}
-
-const filesystem::path &App::configLocation()
-{
-    static const auto path = filesystem::path(
-        QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation).toStdString());
-    return path;
-}
-
-const filesystem::path &App::dataLocation()
-{
-    static const auto path = filesystem::path(
-        QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toStdString());
-    return path;
-}
-
-unique_ptr<QSettings> App::settings()
-{
-    return make_unique<QSettings>(
-        QString::fromStdString((configLocation() / "config").string()),
-        QSettings::IniFormat
-    );
-}
-
-unique_ptr<QSettings> App::state()
-{
-    return make_unique<QSettings>(
-        QString::fromStdString((dataLocation() / "state").string()),
-        QSettings::IniFormat
-    );
-}
 
 
 // -------------------------------------------------------------------------------------------------
@@ -127,12 +91,23 @@ public:
 
     const std::map<QString, albert::Extension *> &extensions() const override;
 
+    const std::filesystem::path &cacheLocation() override;
+    const std::filesystem::path &configLocation() override;
+    const std::filesystem::path &dataLocation() override;
+
+    std::unique_ptr<QSettings> settings() override;
+    std::unique_ptr<QSettings> state() override;
+
     void initRPC();
 
     QString loadFrontend(albert::PluginLoader *);
     void notifyVersionChange(QSettings &state);
 
 public:
+
+    const std::filesystem::path cache_location;
+    const std::filesystem::path config_location;
+    const std::filesystem::path data_location;
 
     // As early as possible
     RPCServer rpc_server; // Check for other instances first
@@ -160,7 +135,18 @@ public:
     TriggersQueryHandler triggers_query_handler;
 };
 
+static filesystem::path initBaseDirectory(QStandardPaths::StandardLocation location)
+{
+    path path = QStandardPaths::writableLocation(location).toStdString();
+    create_directories(path);
+    permissions(path, perms::owner_read | perms::owner_write | perms::owner_exec);
+    return path;
+}
+
 Application::Application(const Config &cfg):
+    cache_location(initBaseDirectory(QStandardPaths::CacheLocation)),
+    config_location(initBaseDirectory(QStandardPaths::AppConfigLocation)),
+    data_location(initBaseDirectory(QStandardPaths::AppDataLocation)),
     path_manager(*settings()),
     localization(*settings()),
     plugin_registry(extension_registry, cfg.load_enabled),
@@ -231,6 +217,18 @@ Application::~Application()
     extension_registry.deregisterExtension(&triggers_query_handler);
     extension_registry.deregisterExtension(&plugin_query_handler);
 }
+
+const filesystem::path &Application::cacheLocation() { return cache_location; }
+
+const filesystem::path &Application::configLocation() { return config_location; }
+
+const filesystem::path &Application::dataLocation() { return data_location; }
+
+unique_ptr<QSettings> Application::settings()
+{ return make_unique<QSettings>(toQString(config_location / "config"), QSettings::IniFormat); }
+
+unique_ptr<QSettings> Application::state()
+{ return make_unique<QSettings>(toQString(data_location / "state"), QSettings::IniFormat); }
 
 const map<QString, Extension *> &Application::extensions() const
 { return extension_registry.extensions(); }
