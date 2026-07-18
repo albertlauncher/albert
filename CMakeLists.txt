@@ -116,6 +116,8 @@ set(LIB_SRC
     src/app/hotkey.h
     src/app/hotkeymanager.cpp
     src/app/hotkeymanager.h
+    src/app/localization.cpp
+    src/app/localization.h
     src/app/messagehandler.cpp
     src/app/messagehandler.h
     src/app/pathmanager.cpp

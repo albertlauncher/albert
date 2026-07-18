@@ -6,6 +6,7 @@
 #include "frontend.h"
 #include "frontendregistry.h"
 #include "hotkeymanager.h"
+#include "localization.h"
 #include "logging.h"
 #include "messagebox.h"
 #include "messagehandler.h"
@@ -29,11 +30,9 @@
 #include <QDesktopServices>
 #include <QJsonArray>
 #include <QJsonDocument>
-#include <QLibraryInfo>
 #include <QPointer>
 #include <QSettings>
 #include <QStandardPaths>
-#include <QTranslator>
 #include <iostream>
 Q_LOGGING_CATEGORY(AlbertLoggingCategory, "albert")
 using namespace Qt::StringLiterals;
@@ -129,6 +128,7 @@ public:
     RPCServer rpc_server; // Check for other instances first
     SignalHandler unix_signal_handler;
     PathManager path_manager;
+    Localization localization;
 
     // Core
     albert::ExtensionRegistry extension_registry;
@@ -158,6 +158,7 @@ Application::Private::Private(Application &q,
                               QSettings &state):
     app(q),
     path_manager(settings),
+    localization(settings),
     plugin_registry(extension_registry, load_enabled),
     plugin_provider(additional_plugin_paths),
     frontend_registry(settings, plugin_provider),
@@ -403,6 +404,8 @@ SystemTrayIcon &Application::systemTrayIcon() { return d->tray_icon; }
 
 PathManager &Application::pathManager() { return d->path_manager; }
 
+Localization &Application::localization() { return d->localization; }
+
 const map<QString, Extension *> &Application::extensions() const
 { return d->extension_registry.extensions(); }
 
@@ -508,31 +511,6 @@ int ALBERT_EXPORT run(int argc, char **argv)
         } catch (...) {
             qFatal("Failed creating directory: %s", path.c_str());
         }
-
-
-    // Load translators
-
-    {
-        DEBG << "Loading translations";
-
-        auto *t = new QTranslator(&qapp);
-        if (t->load(QLocale(), "qtbase", "_", QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
-        {
-            DEBG << " -" << t->filePath();
-            qapp.installTranslator(t);
-        }
-        else
-            delete t;
-
-        t = new QTranslator(&qapp);
-        if (t->load(QLocale(), qapp.applicationName(), "_", ":/i18n"))
-        {
-            DEBG << " -" << t->filePath();
-            qapp.installTranslator(t);
-        }
-        else
-            delete t;
-    }
 
 
     // Initialize theme icon lookup

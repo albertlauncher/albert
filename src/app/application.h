@@ -10,6 +10,7 @@ class PathManager;
 class PluginRegistry;
 class QueryEngine;
 class SystemTrayIcon;
+class Localization;
 class Telemetry;
 namespace albert {
 namespace detail { class Frontend; }
@@ -36,6 +37,7 @@ public:
     void toggle();
     Q_INVOKABLE void handleUrl(const QUrl &url);
 
+    Localization &localization();
     PluginRegistry &pluginRegistry();
     FrontendRegistry &frontenRegistry();
     QueryEngine &queryEngine();
