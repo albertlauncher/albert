@@ -109,7 +109,6 @@ set(LIB_PUBLIC_HEADER
 
 set(LIB_SRC
     src/app/application.cpp
-    src/app/application.h
     src/app/frontendregistry.cpp
     src/app/frontendregistry.h
     src/app/hotkey.cpp

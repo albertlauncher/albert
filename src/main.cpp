@@ -2,14 +2,14 @@
 
 #include <iostream>
 using namespace std;
-namespace albert {
+namespace albert::detail {
 extern int run(int, char **);
 }
 
 int main(int argc, char **argv)
 {
     try {
-        return albert::run(argc, argv);
+        return albert::detail::run(argc, argv);
     } catch (const exception &e) {
         cout << e.what() << endl;
     } catch (...) {

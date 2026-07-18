@@ -1,6 +1,6 @@
 // Copyright (c) 2023-2025 Manuel Schneider
 
-#include "application.h"
+#include "app.h"
 #include "config.h"
 #include "extensionregistry.h"
 #include "frontend.h"
@@ -34,12 +34,13 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <iostream>
+#include <memory>
 Q_LOGGING_CATEGORY(AlbertLoggingCategory, "albert")
 using namespace Qt::StringLiterals;
 using namespace albert::detail;
 using namespace albert;
+using namespace std::filesystem;
 using namespace std;
-
 
 namespace {
 App *app_instance = nullptr;
@@ -102,18 +103,29 @@ unique_ptr<QSettings> App::state()
     );
 }
 
+
 // -------------------------------------------------------------------------------------------------
 
-class Application::Private
+class Application final : public albert::App
 {
 public:
 
-    Private(Application &app,
-            const QStringList &additional_plugin_paths,
-            bool load_enabled,
-            QSettings &settings,
-            QSettings &state);
-    ~Private();
+    struct Config
+    {
+        QStringList additional_plugin_paths;
+        bool load_enabled = true;
+    };
+
+    Application(const Config &config);
+    ~Application();
+
+    void show(const QString &text = {}) override;
+    void hide();
+    void toggle();
+
+    void showSettings(QString plugin_id = {}) override;
+
+    const std::map<QString, albert::Extension *> &extensions() const override;
 
     void initRPC();
 
@@ -121,8 +133,6 @@ public:
     void notifyVersionChange(QSettings &state);
 
 public:
-
-    Application &app;
 
     // As early as possible
     RPCServer rpc_server; // Check for other instances first
@@ -148,35 +158,37 @@ public:
 
     PluginQueryHandler plugin_query_handler;
     TriggersQueryHandler triggers_query_handler;
-
 };
 
-
-Application::Private::Private(Application &q,
-                              const QStringList &additional_plugin_paths,
-                              bool load_enabled,
-                              QSettings &settings,
-                              QSettings &state):
-    app(q),
-    path_manager(settings),
-    localization(settings),
-    plugin_registry(extension_registry, load_enabled),
-    plugin_provider(additional_plugin_paths),
-    frontend_registry(settings, plugin_provider),
+Application::Application(const Config &cfg):
+    path_manager(*settings()),
+    localization(*settings()),
+    plugin_registry(extension_registry, cfg.load_enabled),
+    plugin_provider(cfg.additional_plugin_paths),
+    frontend_registry(*settings(), plugin_provider),
     frontend(frontend_registry.frontend()),
     query_engine(extension_registry),
     telemetry(plugin_registry, extension_registry),
-    tray_icon(settings, frontend),
-    hotkey_manager(settings),
+    tray_icon(*settings(), frontend),
+    hotkey_manager(*settings()),
     plugin_query_handler(plugin_registry),
     triggers_query_handler(query_engine)
 {
+    auto settings = this->settings();
+    auto state = this->state();
+
     platform::initPlatform();
     platform::initNativeWindow(frontend.winId());
 
+    for (auto *ext : frontend.extensions())
+        extension_registry.registerExtension(ext);
+    extension_registry.registerExtension(&plugin_query_handler);
+    extension_registry.registerExtension(&triggers_query_handler);
+    // Load plugins not before loop is executing
+    QTimer::singleShot(0, [this] { extension_registry.registerExtension(&plugin_provider); });
 
     connect(&frontend, &Frontend::visibleChanged,
-            &app, [this]{
+            this, [this]{
                 if (frontend.isVisible())
                     session = make_unique<Session>(query_engine, frontend);
                 else
@@ -191,30 +203,27 @@ Application::Private::Private(Application &q,
     };
 
     connect(&query_engine, &QueryEngine::queryHandlerAdded,
-            &app, reset_session);
+            this, reset_session);
 
     connect(&query_engine, &QueryEngine::queryHandlerRemoved,
-            &app, reset_session, Qt::QueuedConnection);
+            this, reset_session, Qt::QueuedConnection);
 
     connect(&hotkey_manager, &HotkeyManager::activated,
-            &app, &Application::toggle);
+            this, &Application::toggle);
+
+    connect(&extension_registry, &ExtensionRegistry::added,
+            this, &Application::added);
+
+    connect(&extension_registry, &ExtensionRegistry::removed,
+            this, &Application::removed);
 
     initRPC(); // Also may trigger frontend
 
-    notifyVersionChange(state);
-
-    for (auto *ext : frontend.extensions())
-        extension_registry.registerExtension(ext);
-    extension_registry.registerExtension(&plugin_query_handler);
-    extension_registry.registerExtension(&triggers_query_handler);
-
-    // Load plugins not before loop is executing
-    QTimer::singleShot(0, [this] { extension_registry.registerExtension(&plugin_provider); });
+    notifyVersionChange(*state);
 }
 
-Application::Private::~Private()
+Application::~Application()
 {
-
     delete settings_window.get();
     session.reset();
 
@@ -223,7 +232,35 @@ Application::Private::~Private()
     extension_registry.deregisterExtension(&plugin_query_handler);
 }
 
-void Application::Private::initRPC()
+const map<QString, Extension *> &Application::extensions() const
+{ return extension_registry.extensions(); }
+
+void Application::showSettings(QString plugin_id)
+{
+    if (!settings_window)
+        settings_window = new SettingsWindow(frontend_registry,
+                                             hotkey_manager,
+                                             path_manager,
+                                             plugin_registry,
+                                             query_engine,
+                                             tray_icon,
+                                             telemetry);
+    hide();
+    settings_window->bringToFront(plugin_id);
+}
+
+void Application::show(const QString &text)
+{
+    if (!text.isNull())
+        frontend.setInput(text);
+    frontend.setVisible(true);
+}
+
+void Application::hide() { frontend.setVisible(false); }
+
+void Application::toggle() { frontend.setVisible(!frontend.isVisible()); }
+
+void Application::initRPC()
 {
     auto messageHandler = [this](const QByteArray bytes) -> QByteArray
     {
@@ -247,23 +284,23 @@ void Application::Private::initRPC()
                 return "'show' expects zero or one argument.";
 
             else if (args.size() == 2)
-                app.show(args[1]);
+                show(args[1]);
 
             else // if (args.size() == 1)
-                app.show();
+                show();
         }
 
         else if (args[0] == "hide")
 
             if (args.size() == 1)
-                app.hide();
+                hide();
             else
                 return "'hide' expects no arguments.";
 
         else if (args[0] == "toggle")
 
             if (args.size() == 1)
-                app.toggle();
+                toggle();
             else
                 return "'toggle' expects no arguments.";
 
@@ -273,23 +310,23 @@ void Application::Private::initRPC()
                 return "'settings' expects zero or one argument.";
 
             else if (args.size() == 2)
-                app.showSettings(args[1]);
+                showSettings(args[1]);
 
             else // if (args.size() == 1)
-                app.showSettings();
+                showSettings();
         }
 
         else if (args[0] == "restart")
 
             if (args.size() == 1)
-                app.restart();
+                restart();
             else
                 return "'restart' expects no arguments.";
 
         else if (args[0] == "quit")
 
             if (args.size() == 1)
-                app.quit();
+                quit();
             else
                 return "'quit' expects no arguments.";
 
@@ -320,7 +357,7 @@ void Application::Private::initRPC()
     rpc_server.setMessageHandler(messageHandler);
 }
 
-void Application::Private::notifyVersionChange(QSettings &state)
+void Application::notifyVersionChange(QSettings &state)
 {
     auto current_version = qApp->applicationVersion();
     auto last_used_version = state.value(STATE_LAST_USED_VERSION).toString();
@@ -333,7 +370,7 @@ void Application::Private::notifyVersionChange(QSettings &state)
 
         information(text);
 
-        QTimer::singleShot(0, &app, [&]{ app.showSettings(); });
+        QTimer::singleShot(0, this, [this]{ showSettings(); });
     }
     else if (current_version.section('.', 0, 0) != last_used_version.section('.', 0, 0))
     {
@@ -349,96 +386,29 @@ void Application::Private::notifyVersionChange(QSettings &state)
         state.setValue(STATE_LAST_USED_VERSION, current_version);
 }
 
+
 // -------------------------------------------------------------------------------------------------
 
-Application::Application(const QStringList &additional_plugin_paths, bool load_enabled) :
-    d(make_unique<Private>(*this,
-                           additional_plugin_paths,
-                           load_enabled,
-                           *App::settings(),
-                           *App::state()))
-{
-    connect(&d->extension_registry, &ExtensionRegistry::added, this, &Application::added);
-    connect(&d->extension_registry, &ExtensionRegistry::removed, this, &Application::removed);
-}
-
-Application::~Application() {}
-
-int Application::run(const QStringList &additional_plugin_paths, bool load_enabled)
-{
-    Application app(additional_plugin_paths, load_enabled);
-    return qApp->exec();
-}
-
-
-PluginRegistry &Application::pluginRegistry() { return d->plugin_registry; }
-
-FrontendRegistry &Application::frontenRegistry() { return d->frontend_registry; }
-
-QueryEngine &Application::queryEngine() { return d->query_engine; }
-
-Telemetry &Application::telemetry() { return d->telemetry; }
-
-HotkeyManager &Application::hotkeyManager() { return d->hotkey_manager; }
-
-SystemTrayIcon &Application::systemTrayIcon() { return d->tray_icon; }
-
-PathManager &Application::pathManager() { return d->path_manager; }
-
-Localization &Application::localization() { return d->localization; }
-
-const map<QString, Extension *> &Application::extensions() const
-{ return d->extension_registry.extensions(); }
-
-void Application::showSettings(QString plugin_id)
-{
-    if (!d->settings_window)
-        d->settings_window = new SettingsWindow(d->frontend_registry,
-                                                d->hotkey_manager,
-                                                d->path_manager,
-                                                d->plugin_registry,
-                                                d->query_engine,
-                                                d->tray_icon,
-                                                d->telemetry);
-    hide();
-    d->settings_window->bringToFront(plugin_id);
-}
-
-void Application::show(const QString &text)
-{
-    if (!text.isNull())
-        d->frontend.setInput(text);
-    d->frontend.setVisible(true);
-}
-
-void Application::hide() { d->frontend.setVisible(false); }
-
-void Application::toggle() { d->frontend.setVisible(!d->frontend.isVisible()); }
-
-namespace albert {
-
+namespace albert::detail {
 int ALBERT_EXPORT run(int argc, char **argv)
 {
     if (qApp != nullptr)
         qFatal("Calling run more than once is not allowed.");
 
-    QLoggingCategory::setFilterRules("*.debug=false");
-    qInstallMessageHandler(messageHandler);
-
-
-    // Parse command line (asap for fast cli commands)
-
-    struct {
-        QStringList plugin_dirs;
-        bool autoload = true;
-    } config;
-
+    Application::Config config;
     {
-        auto opt_p = QCommandLineOption({"p", "plugin-dirs"},
-                                        Application::tr("Set the plugin dirs to use. Comma separated."),
-                                        Application::tr("directories"));
-        auto opt_n = QCommandLineOption({"n", "no-autoload"},
-                                        Application::tr("Do not implicitly load enabled plugins."));
+        QCoreApplication qcoreapp(argc, argv);
+        QCoreApplication::setApplicationName("albert");
+        QCoreApplication::setApplicationVersion(ALBERT_VERSION_STRING);
+
+        auto opt_p = QCommandLineOption(
+            {"p", "plugin-dirs"},
+            Application::tr("Set the plugin dirs to use. Comma separated."),
+            Application::tr("directories"));
+
+        auto opt_n = QCommandLineOption(
+            {"n", "no-autoload"},
+            Application::tr("Do not implicitly load enabled plugins."));
 
         QCommandLineParser parser;
         parser.addOptions({opt_p, opt_n});
@@ -448,10 +418,6 @@ int ALBERT_EXPORT run(int argc, char **argv)
         parser.addVersionOption();
         parser.addHelpOption();
         parser.setApplicationDescription(Application::tr("Launch Albert or control a running instance."));
-
-        QCoreApplication qcoreapp(argc, argv);
-        QCoreApplication::setApplicationName("albert");
-        QCoreApplication::setApplicationVersion(ALBERT_VERSION_STRING);
         parser.process(qcoreapp);
 
         if (const auto args = parser.positionalArguments(); !args.isEmpty())
@@ -469,15 +435,15 @@ int ALBERT_EXPORT run(int argc, char **argv)
             }
         }
 
-        config = {
-            .plugin_dirs = parser.value(opt_p).split(',', Qt::SkipEmptyParts),
-            .autoload    = !parser.isSet(opt_n),
-        };
+        config.additional_plugin_paths = parser.value(opt_p).split(',', Qt::SkipEmptyParts);
+        config.load_enabled            = !parser.isSet(opt_n);
     }
 
 
-
     // Initialize Qt application
+
+    QLoggingCategory::setFilterRules("*.debug=false");
+    qInstallMessageHandler(messageHandler);
 
     QApplication qapp(argc, argv);
     QApplication::setApplicationName("albert");
@@ -485,20 +451,6 @@ int ALBERT_EXPORT run(int argc, char **argv)
     QApplication::setApplicationVersion(ALBERT_VERSION_STRING);
     QApplication::setWindowIcon(QIcon::fromTheme("albert"));
     QApplication::setQuitOnLastWindowClosed(false);
-    for (const auto &line : report())
-        DEBG << line;
-
-    // Initialize app directories
-
-    using namespace std::filesystem;
-    for (const auto &path : { App::cacheLocation(), App::configLocation(), App::dataLocation() })
-        try {
-            create_directories(path);
-            permissions(path, perms::owner_read | perms::owner_write | perms::owner_exec);
-        } catch (...) {
-            qFatal("Failed creating directory: %s", path.c_str());
-        }
-
 
     // Initialize theme icon lookup
 
@@ -509,10 +461,15 @@ int ALBERT_EXPORT run(int argc, char **argv)
         DEBG << "Theme search paths:" << QIcon::themeSearchPaths();
     }
 
+    for (const auto &line : report())
+        DEBG << line;
 
-    // Run app
-    if (int return_value = Application::run(config.plugin_dirs, config.autoload);
-        return_value != -1)
+    int return_value = [&] {
+        Application app(config);
+        return qApp->exec();
+    }();
+
+    if (return_value != -1)
         return return_value;
 
     runDetachedProcess(qApp->arguments(), current_path().c_str());
