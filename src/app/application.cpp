@@ -5,6 +5,7 @@
 #include "extensionregistry.h"
 #include "frontend.h"
 #include "frontendregistry.h"
+#include "hotkeymanager.h"
 #include "logging.h"
 #include "messagebox.h"
 #include "messagehandler.h"
@@ -26,7 +27,6 @@
 #include "urlhandler.h"
 #include <QCommandLineParser>
 #include <QDesktopServices>
-#include <QHotkey>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QLibraryInfo>
@@ -45,8 +45,6 @@ using namespace std;
 namespace {
 App *app_instance = nullptr;
 static const char *STATE_LAST_USED_VERSION = "last_used_version";
-static const char *CFG_HOTKEY = "hotkey";
-static const char *DEF_HOTKEY = "Ctrl+Space";
 }
 
 App &albert::app() { return *app_instance; }
@@ -118,7 +116,6 @@ public:
             QSettings &state);
     ~Private();
 
-    void initHotkey(QSettings &settings);
     void initRPC();
 
     QString loadFrontend(albert::PluginLoader *);
@@ -142,9 +139,9 @@ public:
     QueryEngine query_engine;
     Telemetry telemetry;
     SystemTrayIcon tray_icon;
+    HotkeyManager hotkey_manager;
 
     // Weak, lazy or optional
-    std::unique_ptr<QHotkey> hotkey{nullptr};
     std::unique_ptr<Session> session{nullptr};
     QPointer<SettingsWindow> settings_window{nullptr};
 
@@ -168,6 +165,7 @@ Application::Private::Private(Application &q,
     query_engine(extension_registry),
     telemetry(plugin_registry, extension_registry),
     tray_icon(settings, frontend),
+    hotkey_manager(settings),
     plugin_query_handler(plugin_registry),
     triggers_query_handler(query_engine)
 {
@@ -198,9 +196,10 @@ Application::Private::Private(Application &q,
     connect(&query_engine, &QueryEngine::queryHandlerRemoved,
             &app, reset_session, Qt::QueuedConnection);
 
-    initRPC(); // Also may trigger frontend
+    connect(&hotkey_manager, &HotkeyManager::activated,
+            &app, &Application::toggle);
 
-    initHotkey(settings);  // Connect hotkey after! frontend has been loaded else segfaults
+    initRPC(); // Also may trigger frontend
 
     notifyVersionChange(state);
 
@@ -217,58 +216,12 @@ Application::Private::~Private()
 {
     QDesktopServices::unsetUrlHandler("albert");
 
-    frontend.disconnect();
-
-    query_engine.disconnect();
-
-    if (hotkey)
-    {
-        hotkey.get()->disconnect();
-        hotkey->setRegistered(false);
-    }
-
     delete settings_window.get();
     session.reset();
 
     extension_registry.deregisterExtension(&plugin_provider);  // unloads plugins
     extension_registry.deregisterExtension(&triggers_query_handler);
     extension_registry.deregisterExtension(&plugin_query_handler);
-
-}
-
-void Application::Private::initHotkey(QSettings &settings)
-{
-    if (!QHotkey::isPlatformSupported())
-    {
-        INFO << "Hotkeys are not supported on this platform.";
-        return;
-    }
-
-    auto s_hk = settings.value(CFG_HOTKEY, DEF_HOTKEY).toString();
-
-    if (s_hk.isEmpty())
-    {
-        DEBG << "Hotkey explicitly unset.";
-        return;
-    }
-
-    auto kc_hk = QKeySequence::fromString(s_hk)[0];
-
-    if (auto hk = make_unique<QHotkey>(kc_hk);
-        hk->setRegistered(true))
-    {
-        hotkey = ::move(hk);
-        connect(hotkey.get(), &QHotkey::activated,
-                &frontend, [this]{ app.toggle(); });
-        INFO << "Hotkey set to" << s_hk;
-    }
-    else
-    {
-        auto t = QT_TR_NOOP("Failed to set the hotkey '%1'");
-        WARN << QString::fromUtf8(t).arg(s_hk);
-        warning(tr(t).arg(QKeySequence(kc_hk).toString(QKeySequence::NativeText)));
-        app.showSettings();
-    }
 }
 
 void Application::Private::initRPC()
@@ -444,6 +397,8 @@ QueryEngine &Application::queryEngine() { return d->query_engine; }
 
 Telemetry &Application::telemetry() { return d->telemetry; }
 
+HotkeyManager &Application::hotkeyManager() { return d->hotkey_manager; }
+
 SystemTrayIcon &Application::systemTrayIcon() { return d->tray_icon; }
 
 PathManager &Application::pathManager() { return d->path_manager; }
@@ -469,26 +424,6 @@ void Application::show(const QString &text)
 void Application::hide() { d->frontend.setVisible(false); }
 
 void Application::toggle() { d->frontend.setVisible(!d->frontend.isVisible()); }
-
-const QHotkey *Application::hotkey() const { return d->hotkey.get(); }
-
-void Application::setHotkey(unique_ptr<QHotkey> hk)
-{
-    if (!hk)
-    {
-        d->hotkey.reset();
-        settings()->setValue(CFG_HOTKEY, QString{});
-    }
-    else if (hk->isRegistered())
-    {
-        d->hotkey = ::move(hk);
-        connect(d->hotkey.get(), &QHotkey::activated,
-                &d->frontend, [this]{ toggle(); });
-        settings()->setValue(CFG_HOTKEY, d->hotkey->shortcut().toString());
-    }
-    else
-        WARN << "Set unregistered hotkey. Ignoring.";
-}
 
 namespace albert {
 

@@ -5,9 +5,9 @@
 #include <QObject>
 #include <memory>
 class FrontendRegistry;
+class HotkeyManager;
 class PathManager;
 class PluginRegistry;
-class QHotkey;
 class QueryEngine;
 class SystemTrayIcon;
 class Telemetry;
@@ -42,9 +42,7 @@ public:
     Telemetry &telemetry();
     SystemTrayIcon &systemTrayIcon();
     PathManager &pathManager();
-
-    const QHotkey *hotkey() const;
-    void setHotkey(std::unique_ptr<QHotkey> hotkey);
+    HotkeyManager &hotkeyManager();
 
     static int run(const QStringList &additional_plugin_paths, bool load_enabled);
 

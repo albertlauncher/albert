@@ -3,6 +3,8 @@
 #include "application.h"
 #include "frontend.h"
 #include "frontendregistry.h"
+#include "hotkey.h"
+#include "hotkeymanager.h"
 #include "messagebox.h"
 #include "pathmanager.h"
 #include "pluginloader.h"
@@ -14,7 +16,6 @@
 #include "systemutil.h"
 #include "telemetry.h"
 #include <QDialog>
-#include <QHotkey>
 #include <QKeyEvent>
 using namespace albert;
 using namespace std;
@@ -22,11 +23,10 @@ using namespace std;
 const auto privacy_notice_url = "https://albertlauncher.github.io/privacy/";
 
 
-class QHotKeyDialog : public QDialog
+class HotKeyDialog : public QDialog
 {
 public:
-
-    QHotKeyDialog(QWidget *parent) : QDialog(parent)
+    HotKeyDialog(QWidget *parent) : QDialog(parent)
     {
         setWindowTitle(SettingsWindow::tr("Set hotkey"));
         setLayout(new QVBoxLayout);
@@ -52,11 +52,10 @@ public:
                 return true;
             }
 
-            if (auto hk = make_unique<QHotkey>(keyEvent->keyCombination());
-                hk->setRegistered(true))
+            if (auto exp_hk = Hotkey::grab(keyEvent->keyCombination()))
             {
-                label.setText(hk->shortcut().toString(QKeySequence::NativeText));
-                hotkey = ::move(hk);
+                hotkey = ::move(*exp_hk);
+                label.setText(hotkey->nativeString());
                 accept();
             }
         }
@@ -64,7 +63,7 @@ public:
     }
 
     QLabel label;
-    std::unique_ptr<QHotkey> hotkey;
+    unique_ptr<Hotkey> hotkey;
 };
 
 
@@ -109,28 +108,22 @@ SettingsWindow::~SettingsWindow() = default;
 
 void SettingsWindow::init_tab_general_hotkey()
 {
-    if (QHotkey::isPlatformSupported())
+    if (Hotkey::isPlatformSupported())
     {
-        if (const auto &hk = app.hotkey(); hk)
-            ui.pushButton_hotkey->setText(hk->shortcut().toString(QKeySequence::NativeText));
+        if (const auto *hk = app.hotkeyManager().hotkey())
+            ui.pushButton_hotkey->setText(hk->nativeString());
         else
             ui.pushButton_hotkey->setText(tr("Not set"));
 
         connect(ui.pushButton_hotkey, &QPushButton::clicked, this, [this]{
-            QHotKeyDialog dialog(this);
+            HotKeyDialog dialog(this);
             if(dialog.exec() == QDialog::Accepted)
             {
                 if (dialog.hotkey)
-                {
-                    app.setHotkey(::move(dialog.hotkey));
-                    ui.pushButton_hotkey->
-                        setText(app.hotkey()->shortcut().toString(QKeySequence::NativeText));
-                }
+                    ui.pushButton_hotkey->setText(dialog.hotkey->nativeString());
                 else
-                {
-                    app.setHotkey(nullptr);
                     ui.pushButton_hotkey->setText(tr("Not set"));
-                }
+                app.hotkeyManager().setHotkey(::move(dialog.hotkey));
             }
         });
     }

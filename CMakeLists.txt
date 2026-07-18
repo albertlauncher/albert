@@ -112,6 +112,10 @@ set(LIB_SRC
     src/app/application.h
     src/app/frontendregistry.cpp
     src/app/frontendregistry.h
+    src/app/hotkey.cpp
+    src/app/hotkey.h
+    src/app/hotkeymanager.cpp
+    src/app/hotkeymanager.h
     src/app/messagehandler.cpp
     src/app/messagehandler.h
     src/app/pathmanager.cpp
