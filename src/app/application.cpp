@@ -25,9 +25,9 @@
 #include "systemutil.h"
 #include "telemetry.h"
 #include "triggersqueryhandler.h"
+#include "urldispatcher.h"
 #include "urlhandler.h"
 #include <QCommandLineParser>
-#include <QDesktopServices>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QPointer>
@@ -140,6 +140,7 @@ public:
     Telemetry telemetry;
     SystemTrayIcon tray_icon;
     HotkeyManager hotkey_manager;
+    UrlDispatcher url_dispatcher;
 
     // Weak, lazy or optional
     std::unique_ptr<Session> session{nullptr};
@@ -173,8 +174,6 @@ Application::Private::Private(Application &q,
     platform::initPlatform();
     platform::initNativeWindow(frontend.winId());
 
-    // Install scheme handler
-    QDesktopServices::setUrlHandler("albert", &app, "handleUrl");
 
     connect(&frontend, &Frontend::visibleChanged,
             &app, [this]{
@@ -215,7 +214,6 @@ Application::Private::Private(Application &q,
 
 Application::Private::~Private()
 {
-    QDesktopServices::unsetUrlHandler("albert");
 
     delete settings_window.get();
     session.reset();
@@ -307,7 +305,7 @@ void Application::Private::initRPC()
                      return url.isValid() && url.scheme() == qApp->applicationName();
                  }))
             for (const auto &arg : as_const(args))
-                app.handleUrl(arg);
+                url_dispatcher.dispatch(arg);
 
         else
         {
@@ -372,23 +370,6 @@ int Application::run(const QStringList &additional_plugin_paths, bool load_enabl
     return qApp->exec();
 }
 
-void Application::handleUrl(const QUrl &url)
-{
-    DEBG << "Handle url" << url.toString();
-    if (url.scheme() == qApp->applicationName())
-    {
-        if (url.authority().isEmpty())
-        {
-            // ?
-        }
-        else if (auto h = extension<UrlHandler>(url.authority()); h)
-            h->handle(url);
-        else
-            WARN << "URL handler not available: " + url.authority().toLocal8Bit();
-    }
-    else
-        WARN << "Invalid URL scheme" << url.scheme();
-}
 
 PluginRegistry &Application::pluginRegistry() { return d->plugin_registry; }
 

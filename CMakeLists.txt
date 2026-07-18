@@ -139,6 +139,8 @@ set(LIB_SRC
     src/app/telemetryprovider.cpp
     src/app/triggersqueryhandler.cpp
     src/app/triggersqueryhandler.h
+    src/app/urldispatcher.cpp
+    src/app/urldispatcher.h
     src/app/urlhandler.cpp
     src/common/extension.cpp
     src/common/item.cpp

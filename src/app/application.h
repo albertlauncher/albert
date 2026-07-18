@@ -35,7 +35,6 @@ public:
 
     void hide();
     void toggle();
-    Q_INVOKABLE void handleUrl(const QUrl &url);
 
     Localization &localization();
     PluginRegistry &pluginRegistry();
