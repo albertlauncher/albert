@@ -1,6 +1,6 @@
-// Copyright (c) 2022-2025 Manuel Schneider
+// Copyright (c) 2022-2026 Manuel Schneider
 
-#include "application.h"
+#include "app.h"
 #include "frontend.h"
 #include "frontendregistry.h"
 #include "hotkey.h"
@@ -66,32 +66,36 @@ public:
     unique_ptr<Hotkey> hotkey;
 };
 
-
-SettingsWindow::SettingsWindow(Application &a):
-    app(a),
+SettingsWindow::SettingsWindow(FrontendRegistry &fronten_registry,
+                               HotkeyManager &hotkey_manager,
+                               PathManager &path_manager,
+                               PluginRegistry &plugin_registry,
+                               QueryEngine &query_engine,
+                               SystemTrayIcon &tray_icon,
+                               Telemetry &telemetry) :
     ui(),
     small_text_fmt(R"(<span style="font-size:9pt; color:#808080;">%1</span>)")
 {
     ui.setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
 
-    init_tab_general_hotkey();
-    init_tab_general_trayIcon();
-    init_tab_general_frontends(app.frontenRegistry());
-    init_tab_general_path();
-    init_tab_general_telemetry();
+    init_tab_general_hotkey(hotkey_manager);
+    init_tab_general_trayIcon(tray_icon);
+    init_tab_general_frontends(fronten_registry);
+    init_tab_general_path(path_manager);
+    init_tab_general_telemetry(telemetry);
     init_tab_general_about();
 
     ui.tabs->insertTab(ui.tabs->count(),
-                       app.frontenRegistry().frontend().createFrontendConfigWidget(),
+                       fronten_registry.frontend().createFrontendConfigWidget(),
                        tr("&Window"));
 
     ui.tabs->insertTab(ui.tabs->count(),
-                       plugin_widget = new PluginsWidget(app.pluginRegistry()),
+                       plugin_widget = new PluginsWidget(plugin_registry),
                        tr("&Plugins"));
 
     ui.tabs->insertTab(ui.tabs->count(),
-                       new QueryWidget(app.queryEngine()),
+                       new QueryWidget(query_engine),
                        tr("&Query"));
 
 
@@ -106,16 +110,16 @@ SettingsWindow::SettingsWindow(Application &a):
 
 SettingsWindow::~SettingsWindow() = default;
 
-void SettingsWindow::init_tab_general_hotkey()
+void SettingsWindow::init_tab_general_hotkey(HotkeyManager &hotkey_manager)
 {
     if (Hotkey::isPlatformSupported())
     {
-        if (const auto *hk = app.hotkeyManager().hotkey())
+        if (const auto *hk = hotkey_manager.hotkey())
             ui.pushButton_hotkey->setText(hk->nativeString());
         else
             ui.pushButton_hotkey->setText(tr("Not set"));
 
-        connect(ui.pushButton_hotkey, &QPushButton::clicked, this, [this]{
+        connect(ui.pushButton_hotkey, &QPushButton::clicked, this, [this, &hotkey_manager]{
             HotKeyDialog dialog(this);
             if(dialog.exec() == QDialog::Accepted)
             {
@@ -123,7 +127,7 @@ void SettingsWindow::init_tab_general_hotkey()
                     ui.pushButton_hotkey->setText(dialog.hotkey->nativeString());
                 else
                     ui.pushButton_hotkey->setText(tr("Not set"));
-                app.hotkeyManager().setHotkey(::move(dialog.hotkey));
+                hotkey_manager.setHotkey(::move(dialog.hotkey));
             }
         });
     }
@@ -137,11 +141,11 @@ void SettingsWindow::init_tab_general_hotkey()
     }
 }
 
-void SettingsWindow::init_tab_general_trayIcon()
+void SettingsWindow::init_tab_general_trayIcon(SystemTrayIcon &tray_icon)
 {
-    ui.checkBox_showTray->setChecked(app.systemTrayIcon().isEnabled());
+    ui.checkBox_showTray->setChecked(tray_icon.isEnabled());
     connect(ui.checkBox_showTray, &QCheckBox::toggled,
-            this, [this](bool enable) { app.systemTrayIcon().setEnabled(enable); });
+            this, [&tray_icon](bool enable) { tray_icon.setEnabled(enable); });
 }
 
 void SettingsWindow::init_tab_general_frontends(FrontendRegistry &frontend_registry)
@@ -172,25 +176,24 @@ void SettingsWindow::init_tab_general_frontends(FrontendRegistry &frontend_regis
     });
 }
 
-void SettingsWindow::init_tab_general_path()
+void SettingsWindow::init_tab_general_path(PathManager &path_manager)
 {
-    const auto &additional = app.pathManager().additionalPathEntries();
-    const auto &original  = app.pathManager().originalPathEntries();
-
     auto *le = ui.lineEdit_additional_path_entries;
-    le->setPlaceholderText(original.join(":"));
+    const auto &additional = path_manager.additionalPathEntries();
+    const auto &original   = path_manager.originalPathEntries();
+
     le->setText(additional.join(":"));
     le->setToolTip((additional + original).join(":"));
 
     connect(le, &QLineEdit::editingFinished,
-            this, [this, le] {
+            this, [&path_manager, le] {
                 const auto new_add = le->text().split(":");
 
-                if (new_add == app.pathManager().additionalPathEntries())
+                if (new_add == path_manager.additionalPathEntries())
                     return;
 
-                app.pathManager().setAdditionalPathEntries(new_add);
-                le->setToolTip((new_add + app.pathManager().originalPathEntries()).join(":"));
+                path_manager.setAdditionalPathEntries(new_add);
+                le->setToolTip((new_add + path_manager.originalPathEntries()).join(":"));
 
                 if (question(tr("For the changes to take effect, Albert has to be restarted. "
                                 "Do you want to restart Albert now?")))
@@ -198,15 +201,15 @@ void SettingsWindow::init_tab_general_path()
             });
 }
 
-void SettingsWindow::init_tab_general_telemetry()
+void SettingsWindow::init_tab_general_telemetry(Telemetry &telemetry)
 {
-    ui.checkBox_telemetry->setToolTip(app.telemetry().buildReportString());
+    ui.checkBox_telemetry->setToolTip(telemetry.buildReportString());
     ui.checkBox_telemetry->setIcon(style()->standardPixmap(QStyle::SP_MessageBoxQuestion));
-    ui.checkBox_telemetry->setChecked(app.telemetry().enabled());
+    ui.checkBox_telemetry->setChecked(telemetry.enabled());
 
-    connect(ui.checkBox_telemetry, &QCheckBox::toggled, this, [this](bool checked){
-        app.telemetry().setEnabled(checked);
-        ui.checkBox_telemetry->setToolTip(app.telemetry().buildReportString());
+    connect(ui.checkBox_telemetry, &QCheckBox::toggled, this, [this, &telemetry](bool checked){
+        telemetry.setEnabled(checked);
+        ui.checkBox_telemetry->setToolTip(telemetry.buildReportString());
     });
 
     ui.label_telemetry->setText(QString("[%1](%2)")

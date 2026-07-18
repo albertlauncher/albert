@@ -393,7 +393,13 @@ const map<QString, Extension *> &Application::extensions() const
 void Application::showSettings(QString plugin_id)
 {
     if (!d->settings_window)
-        d->settings_window = new SettingsWindow(*this);
+        d->settings_window = new SettingsWindow(d->frontend_registry,
+                                                d->hotkey_manager,
+                                                d->path_manager,
+                                                d->plugin_registry,
+                                                d->query_engine,
+                                                d->tray_icon,
+                                                d->telemetry);
     hide();
     d->settings_window->bringToFront(plugin_id);
 }
