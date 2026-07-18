@@ -1,23 +1,21 @@
-// Copyright (C) 2022-2025 Manuel Schneider
+// Copyright (C) 2026-2026 Manuel Schneider
 
 #pragma once
-#include <memory>
 #include <QStringList>
 class QSettings;
 
 class PathManager
 {
 public:
-
     PathManager(const QSettings &settings);
-    ~PathManager();
 
     const QStringList &originalPathEntries() const;
     const QStringList &additionalPathEntries() const;
+
+    // Restart reqiured to properly take effect
     void setAdditionalPathEntries(const QStringList &entries);
 
 private:
-    class Private;
-    std::unique_ptr<Private> d;
-
+    QStringList original_path_entries_;
+    QStringList additional_path_entries_;
 };
