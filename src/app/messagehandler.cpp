@@ -40,7 +40,6 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
                 context.category,
                 message.toLocal8Bit().constData(),
                 context.function);
-        QMessageBox::critical(nullptr, "Fatal error", message);
         fflush(stdout);
         std::abort();
     }
