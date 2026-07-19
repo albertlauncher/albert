@@ -25,16 +25,21 @@ static expected<Frontend*, QString> loadFrontendPlugin(PluginLoader *loader)
 {
     // Blocking load
     QEventLoop loop;
+    QString error;
 
     QObject::connect(loader, &PluginLoader::finished, &loop, [&](QString info) {
-        if (!info.isEmpty())
+        if (!loader->instance())
+            error = info;
+        else if (!info.isEmpty())
             DEBG << info;
-        loop.quit();
+
+        loop.exit(loader->instance() ? EXIT_SUCCESS : EXIT_FAILURE);
     });
 
     QTimer::singleShot(0, loader, [loader]{ loader->load(); });
 
-    loop.exec();
+    if (loop.exec() != EXIT_SUCCESS)
+        return unexpected(u"Failed loading frontend plugin: %1"_s.arg(error));
 
     QObject::connect(loader->instance(), &PluginInstance::initialized,
                      &loop, [&] { loop.quit(); });
@@ -46,9 +51,8 @@ static expected<Frontend*, QString> loadFrontendPlugin(PluginLoader *loader)
     if (auto frontend = dynamic_cast<Frontend*>(loader->instance()))
         return frontend;
     else
-        return unexpected(
-            QString("Failed casting plugin instance to albert::Frontend: %1")
-                .arg(loader->metadata().id));
+        return unexpected(u"Failed casting plugin instance to albert::Frontend: %1"_s
+                              .arg(loader->metadata().id));
 }
 
 class FrontendRegistry::Private
