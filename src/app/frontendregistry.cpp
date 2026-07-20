@@ -61,9 +61,9 @@ public:
     const QtPluginProvider &plugin_provider;
     Frontend &frontend;
 
-    Private(const QSettings &settings, const QtPluginProvider &plugin_provider) :
-        plugin_provider(plugin_provider),
-        frontend(loadFrontend(settings.value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString()))
+    Private(const QSettings &s, const QtPluginProvider &pp) :
+        plugin_provider(pp),
+        frontend(loadFrontend(s.value(CFG_FRONTEND_ID, DEF_FRONTEND_ID).toString()))
     {}
 
     vector<PluginLoader*> frontendPlugins() const
