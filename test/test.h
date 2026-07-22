@@ -18,13 +18,14 @@ private slots:
 
     void plugin_registry();
 
+    void bench_tokenizer();
+
     void levenshtein_fast_levenshtein_threshold();
     void levenshtein_fuzzy_substitution();
     void levenshtein_fuzzy_deletion();
     void levenshtein_fuzzy_insertion();
     void levenshtein_shorter_prefix();
 
-    // void bench_tokenizer();
     void match_config();
     void match_conversion();
 

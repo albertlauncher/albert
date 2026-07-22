@@ -1,9 +1,11 @@
-// SPDX-FileCopyrightText: 2025 Manuel Schneider
+// SPDX-FileCopyrightText: 2025-2026 Manuel Schneider
 
-#include <QString>
-namespace albert { class MatchConfig; }
+#include <QStringList>
+#include "matchconfig.h"
 
-QStringList preprocessQuery(QString s, const albert::MatchConfig &config);
+QStringList preprocessQuery(const QString &string, const albert::MatchConfig &config = {});
 
-QStringList preprocessQueryLegacy(QString s);
+QStringList preprocessQueryUntil2026(QString, const albert::MatchConfig &config = {});
+
+QStringList preprocessQueryLegacy(QString string);
 

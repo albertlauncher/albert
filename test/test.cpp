@@ -309,6 +309,30 @@ void AlbertTests::plugin_registry()
     QVERIFY(plu_reg.plugins().contains("testplugin0"));
 }
 
+void AlbertTests::bench_tokenizer()
+{
+    static const auto test_split_string =
+        QString(uR"(String_containing, can't 1,11 2.22 한글날 金沢 我爱你。)");
+
+    QBENCHMARK { Q_UNUSED(preprocessQuery(test_split_string, {})); }
+    QBENCHMARK { Q_UNUSED(preprocessQueryUntil2026(test_split_string, {})); }
+    QBENCHMARK { Q_UNUSED(preprocessQueryLegacy(test_split_string)); }
+
+    static const auto test_split_string1 =
+        QString(uR"(金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢)");
+
+    QBENCHMARK { Q_UNUSED(preprocessQuery(test_split_string1, {})); }
+    QBENCHMARK { Q_UNUSED(preprocessQueryUntil2026(test_split_string1, {})); }
+    QBENCHMARK { Q_UNUSED(preprocessQueryLegacy(test_split_string1)); }
+
+    static const auto test_split_string2 =
+        QString(uR"(aaa bbb ccc aaa bbb ccc aaa bbb ccc)");
+
+    QBENCHMARK { Q_UNUSED(preprocessQuery(test_split_string2, {})); }
+    QBENCHMARK { Q_UNUSED(preprocessQueryUntil2026(test_split_string2, {})); }
+    QBENCHMARK { Q_UNUSED(preprocessQueryLegacy(test_split_string2)); }
+}
+
 void AlbertTests::levenshtein_fast_levenshtein_threshold()
 {
     Levenshtein l;
@@ -386,29 +410,6 @@ void AlbertTests::levenshtein_shorter_prefix()
     QVERIFY(l.computePrefixEditDistanceWithLimit("abc", "a", 1) == 2);
     QVERIFY(l.computePrefixEditDistanceWithLimit("abc", "", 1) == 2);
 }
-
-// void AlbertTests::bench_tokenizer()
-// {
-//     MatchConfig c;
-//     static const auto test_split_string =
-//         QString(uR"(String_containing, can't 1,11 2.22 한글날 金沢 我爱你。)");
-
-//     QBENCHMARK { Q_UNUSED(preprocessQueryLegacy(test_split_string)); }
-//     QBENCHMARK { Q_UNUSED(preprocessQuery(test_split_string, c)); }
-//     QBENCHMARK { Q_UNUSED(preprocessQuery(test_split_string, MatchConfig{.ignore_diacritics=false})); }
-
-//     static const auto test_split_string1 =
-//         QString(uR"(金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢)");
-
-//     QBENCHMARK { Q_UNUSED(preprocessQueryLegacy(test_split_string1)); }
-//     QBENCHMARK { Q_UNUSED(preprocessQuery(test_split_string1, c)); }
-
-//     static const auto test_split_string2 =
-//         QString(uR"(aaa bbb ccc aaa bbb ccc aaa bbb ccc)");
-
-//     QBENCHMARK { Q_UNUSED(preprocessQueryLegacy(test_split_string2)); }
-//     QBENCHMARK { Q_UNUSED(preprocessQuery(test_split_string2, c)); }
-// }
 
 void AlbertTests::match_config()
 {
