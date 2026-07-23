@@ -40,6 +40,11 @@ public:
     ///
     bool ignore_diacritics = true;
 
+    ///
+    /// Treat underscore as whitespace.
+    ///
+    bool ignore_underscore = true;
+
 };
 
 } // namespace albert

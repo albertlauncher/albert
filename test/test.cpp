@@ -413,20 +413,18 @@ void AlbertTests::levenshtein_shorter_prefix()
 
 void AlbertTests::match_config()
 {
-    MatchConfig c;  // F, !C, !O, !D
-
     // Case sensitivity
-    QCOMPARE(preprocessQuery("A", MatchConfig{.ignore_case=true}), QStringList({"a"}));
-    QCOMPARE(preprocessQuery("A", MatchConfig{.ignore_case=false}), QStringList({"A"}));
+    QCOMPARE(preprocessQuery("A", {.ignore_case=true}), QStringList({"a"}));
+    QCOMPARE(preprocessQuery("A", {.ignore_case=false}), QStringList({"A"}));
 
     // Word order
-    QCOMPARE(preprocessQuery("b a", MatchConfig{.ignore_word_order=true}), QStringList({"a", "b"}));
-    QCOMPARE(preprocessQuery("b a", MatchConfig{.ignore_word_order=false}), QStringList({"b", "a"}));
+    QCOMPARE(preprocessQuery("b a", {.ignore_word_order=true}), QStringList({"a", "b"}));
+    QCOMPARE(preprocessQuery("b a", {.ignore_word_order=false}), QStringList({"b", "a"}));
 
     // Normalization
     QCOMPARE(preprocessQuery("àáâãāa̅ăȧäåa̋ǎa̍a̎ȁa̐ȃa̒a̓a̔a̕a̖a̗a̘a̙a̚a̛a̜a̝a̞a̟a̠a̡a̢ạa̤ḁ"
                              "a̦a̧ąa̩a̪a̫a̬a̭a̮a̯a̰a̱a̲a̳a̴a̵a̶a̷a̸a̹a̺a̻a̼a̽a̾a̿àáa͂a̓ä́aͅa͆a͇a͈a͉a͊"
-                             "a͋a͌a͍a͎a͏a͐a͑a͒a͓a͔a͕a͖a͗a͘a͙a͚a͛a͜a͝a͞a͟a͠a͡a͢aͣaͤaͥaͦaͧaͨaͩaͪaͫaͬaͭaͮaͯ", c),
+                             "a͋a͌a͍a͎a͏a͐a͑a͒a͓a͔a͕a͖a͗a͘a͙a͚a͛a͜a͝a͞a͟a͠a͡a͢aͣaͤaͥaͦaͧaͨaͩaͪaͫaͬaͭaͮaͯ", {}),
              QStringList({"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                           "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                           "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}));
@@ -434,17 +432,22 @@ void AlbertTests::match_config()
     // ICU Break Tokenization
 
     // Korean should not be split
-    QCOMPARE(preprocessQuery("한글날", c).size(), 1);
+    QCOMPARE(preprocessQuery("한글날").size(), 1);
 
     // Japanese should be split by grapheme
-    QCOMPARE(preprocessQuery("金沢", c).size(), 2);
+    QCOMPARE(preprocessQuery("金沢").size(), 2);
 
     // Chinese should be split by grapheme
-    QCOMPARE(preprocessQuery("我爱你。", c).size(), 4);
+    QCOMPARE(preprocessQuery("我爱你。").size(), 4);
 
-    QCOMPARE(preprocessQuery("a!b", c).size(), 3);
+    QCOMPARE(preprocessQuery("a!b").size(), 3);
 
-    QCOMPARE(preprocessQuery("22.04", c).size(), 1);
+    QCOMPARE(preprocessQuery("22.04").size(), 1);
+
+    QCOMPARE(preprocessQuery("_x").size(), 1);
+    QCOMPARE(preprocessQuery("x_").size(), 1);
+    QCOMPARE(preprocessQuery("_x_").size(), 1);
+    QCOMPARE(preprocessQuery("x_x").size(), 2);
 }
 
 void AlbertTests::match_conversion()
@@ -471,8 +474,8 @@ void AlbertTests::match_conversion()
 void AlbertTests::matcher_empty()
 {
     Matcher m("");
-    QVERIFY(qFuzzyCompare(m.match("a").score(), .0));
-    QVERIFY(qFuzzyCompare(m.match("a b").score(), .0));
+    QCOMPARE(m.match("a").score(), .0);
+    QCOMPARE(m.match("a b").score(), .0);
     QCOMPARE(m.match("a").isMatch(), true);
     QCOMPARE(m.match("a b").isMatch(), true);
     QCOMPARE(m.match("a").isEmptyMatch(), true);
@@ -484,8 +487,8 @@ void AlbertTests::matcher_empty()
 void AlbertTests::matcher_single()
 {
     Matcher m("a");
-    QVERIFY(qFuzzyCompare(m.match("a").score(), 1.0));
-    QVERIFY(qFuzzyCompare(m.match("a b").score(), 1.0 / 2));
+    QCOMPARE(m.match("a").score(), 1.0);
+    QCOMPARE(m.match("a b").score(), 1.0 / 2);
     QCOMPARE(m.match("a").isMatch(), true);
     QCOMPARE(m.match("a b").isMatch(), true);
     QCOMPARE(m.match("a").isEmptyMatch(), false);
@@ -507,14 +510,14 @@ void AlbertTests::matcher_multiple()
     QCOMPARE(m.match("c a b").isMatch(), true);
     QCOMPARE(m.match("b c a").isMatch(), true);
     QCOMPARE(m.match("c b a").isMatch(), true);
-    QVERIFY(qFuzzyCompare(m.match("a b c").score(), 2.0 / 3));
-    QVERIFY(qFuzzyCompare(m.match("a c b").score(), 2.0 / 3));
-    QVERIFY(qFuzzyCompare(m.match("b a c").score(), 2.0 / 3));
-    QVERIFY(qFuzzyCompare(m.match("c a b").score(), 2.0 / 3));
-    QVERIFY(qFuzzyCompare(m.match("b c a").score(), 2.0 / 3));
-    QVERIFY(qFuzzyCompare(m.match("c b a").score(), 2.0 / 3));
-    QVERIFY(qFuzzyCompare(m.match("a b").score(), 1.0));
-    QVERIFY(qFuzzyCompare(m.match("b a").score(), 1.0));
+    QCOMPARE(m.match("a b c").score(), 2.0 / 3);
+    QCOMPARE(m.match("a c b").score(), 2.0 / 3);
+    QCOMPARE(m.match("b a c").score(), 2.0 / 3);
+    QCOMPARE(m.match("c a b").score(), 2.0 / 3);
+    QCOMPARE(m.match("b c a").score(), 2.0 / 3);
+    QCOMPARE(m.match("c b a").score(), 2.0 / 3);
+    QCOMPARE(m.match("a b").score(), 1.0);
+    QCOMPARE(m.match("b a").score(), 1.0);
 }
 
 void AlbertTests::matcher_multiple_ordered()
@@ -549,12 +552,12 @@ void AlbertTests::matcher_fuzzy()
     MatchConfig c{.fuzzy = true};
 
     QVERIFY(Matcher("abcd", c).match(abc));
-    QVERIFY(Matcher("abc_", c).match(abc));
-    QVERIFY(!Matcher("ab__", c).match(abc));
+    QVERIFY(Matcher("abcX", c).match(abc));
+    QVERIFY(!Matcher("abXX", c).match(abc));
     QVERIFY(Matcher("abcdefgh", c).match(abc));
-    QVERIFY(Matcher("abcdefg_", c).match(abc));
-    QVERIFY(Matcher("abcde_g_", c).match(abc));
-    QVERIFY(!Matcher("abc_e_g_", c).match(abc));
+    QVERIFY(Matcher("abcdefgX", c).match(abc));
+    QVERIFY(Matcher("abcdeXgX", c).match(abc));
+    QVERIFY(!Matcher("abcXeXgX", c).match(abc));
 }
 
 void AlbertTests::matcher_case()
@@ -574,6 +577,21 @@ void AlbertTests::matcher_case()
     m = Matcher("a", {.ignore_case = false});
     QVERIFY(!m.match("A"));
     QVERIFY(m.match("a"));
+}
+
+void AlbertTests::matcher_underscore()
+{
+    auto m = Matcher("x", {.ignore_underscore = false});
+    QCOMPARE(m.match("_x" ), -1.);
+    QCOMPARE(m.match("x_" ), 0.5);
+    QCOMPARE(m.match("_x_"), -1.);
+    QCOMPARE(m.match("x_y"), 1./3);
+
+    m = Matcher("x", {.ignore_underscore = true});
+    QCOMPARE(m.match("_x" ).score(), 1.0);
+    QCOMPARE(m.match("x_" ).score(), 1.0);
+    QCOMPARE(m.match("_x_").score(), 1.0);
+    QCOMPARE(m.match("x_y").score(), 0.5);
 }
 
 void AlbertTests::matcher_score()
@@ -600,7 +618,7 @@ void AlbertTests::matcher_score()
 
     m = Matcher("abcc", {.fuzzy = true});
 
-    QCOMPARE(m.match("ab--").score(), -1);
+    QCOMPARE(m.match("abXX").score(), -1);
     QCOMPARE(m.match("abcc").score(), 1.);
     QCOMPARE(m.match("abcd").score(), 3./4.);
 }
@@ -668,12 +686,12 @@ void AlbertTests::index_fuzzy()
     MatchConfig c{.fuzzy = true};
 
     QVERIFY(indexMatch(abc, "abcd", c).size() == 1);
-    QVERIFY(indexMatch(abc, "abc_", c).size() == 1);
-    QVERIFY(indexMatch(abc, "ab__", c).size() == 0);
+    QVERIFY(indexMatch(abc, "abcX", c).size() == 1);
+    QVERIFY(indexMatch(abc, "abXX", c).size() == 0);
     QVERIFY(indexMatch(abc, "abcdefgh", c).size() == 1);
-    QVERIFY(indexMatch(abc, "abcdefg_", c).size() == 1);
-    QVERIFY(indexMatch(abc, "abcde_g_", c).size() == 1);
-    QVERIFY(indexMatch(abc, "abc_e_g_", c).size() == 0);
+    QVERIFY(indexMatch(abc, "abcdefgX", c).size() == 1);
+    QVERIFY(indexMatch(abc, "abcdeXgX", c).size() == 1);
+    QVERIFY(indexMatch(abc, "abcXeXgX", c).size() == 0);
 }
 
 void AlbertTests::index_case()
@@ -687,21 +705,34 @@ void AlbertTests::index_case()
     QVERIFY(m[0].score == 1.);
 }
 
+void AlbertTests::index_underscore()
+{
+    QCOMPARE(indexMatch({"_x"}, "x", {.ignore_underscore=false}).size(), 0);
+    QCOMPARE(indexMatch({"x_"}, "x", {.ignore_underscore=false})[0].score, .5);
+    QCOMPARE(indexMatch({"_x_"}, "x", {.ignore_underscore=false}).size(), 0);
+    QCOMPARE(indexMatch({"x_x"}, "x", {.ignore_underscore=false})[0].score, 1./3);
+
+    QCOMPARE(indexMatch({"_x"},  "x", {.ignore_underscore=true})[0].score, 1.);
+    QCOMPARE(indexMatch({"x_"},  "x", {.ignore_underscore=true})[0].score, 1.);
+    QCOMPARE(indexMatch({"_x_"}, "x", {.ignore_underscore=true})[0].score, 1.);
+    QCOMPARE(indexMatch({"x_x"}, "x", {.ignore_underscore=true})[0].score, .5);
+}
+
 void AlbertTests::index_score()
 {
     auto m = indexMatch({"a","ab","abc"}, "a",  {.fuzzy = true});
 
     QVERIFY(m.size() == 3);
     sort(m.begin(), m.end(), [](auto &a, auto &b){ return a.item->id() < b.item->id(); });
-    QVERIFY(qFuzzyCompare(m[0].score, 1.0));
-    QVERIFY(qFuzzyCompare(m[1].score, 1.0/2.0));
-    QVERIFY(qFuzzyCompare(m[2].score, 1.0/3.0));
+    QCOMPARE(m[0].score, 1.0);
+    QCOMPARE(m[1].score, 1.0/2.0);
+    QCOMPARE(m[2].score, 1.0/3.0);
 
     m = indexMatch({"abcd","abcb"}, "abcc", {.fuzzy = true});
 
     QVERIFY(m.size() == 2);
-    QVERIFY(qFuzzyCompare(m[0].score, 3./4.));
-    QVERIFY(qFuzzyCompare(m[1].score, 3./4.));
+    QCOMPARE(m[0].score, 3./4.);
+    QCOMPARE(m[1].score, 3./4.);
 }
 
 void AlbertTests::input_history()

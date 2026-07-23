@@ -24,6 +24,11 @@ QStringList preprocessQuery(const QString &string, const MatchConfig &config)
         else if (config.ignore_diacritics && cat == QChar::Mark_NonSpacing)
             continue;
 
+        // Ignore undersores
+        else if (static auto underscore = QChar(u'_');
+            config.ignore_underscore && c == underscore)
+            *(it++) = QChar::Space;
+
         else
             *(it++) = c;
 

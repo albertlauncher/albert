@@ -37,6 +37,7 @@ private slots:
     void matcher_fuzzy();
     void matcher_case();
     void matcher_score();
+    void matcher_underscore();
 
 
     void index_empty();
@@ -46,6 +47,7 @@ private slots:
     void index_fuzzy();
     void index_case();
     void index_score();
+    void index_underscore();
 
     void input_history();
 
