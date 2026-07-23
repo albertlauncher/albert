@@ -34,6 +34,7 @@ class MockApp : public albert::App
 public:
     void show(const QString &input_text) override {}
     void showSettings(QString plugin_id) override {}
+    bool localizationEnabled() const override { return true; }
     const map<QString, Extension *> &extensions() const override {
         static map<QString, Extension *> m;
         return m;

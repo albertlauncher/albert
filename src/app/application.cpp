@@ -89,6 +89,8 @@ public:
 
     void showSettings(QString plugin_id = {}) override;
 
+    bool localizationEnabled() const override;
+
     const std::map<QString, albert::Extension *> &extensions() const override;
 
     const std::filesystem::path &cacheLocation() override;
@@ -246,6 +248,8 @@ void Application::showSettings(QString plugin_id)
     hide();
     settings_window->bringToFront(plugin_id);
 }
+
+bool Application::localizationEnabled() const { return localization.isEnabled(); }
 
 void Application::show(const QString &text)
 {

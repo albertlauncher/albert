@@ -2,7 +2,6 @@
 
 #include "app.h"
 #include "localization.h"
-#include "logging.h"
 #include <QCoreApplication>
 #include <QLibraryInfo>
 #include <QLocale>
@@ -16,27 +15,28 @@ static const char* CFG_L10N_ENABLED = "localization_enabled";
 static const bool  DEF_L10N_ENABLED = true;
 }
 
-Localization::Localization(const QSettings &settings) :
-    enabled_(settings.value(CFG_L10N_ENABLED, DEF_L10N_ENABLED).toBool())
+Localization::Localization(const QSettings &settings)
 {
-    if (enabled_)
-    {
-        DEBG << "Loading translations";
+    // The lookup is flexible but complex. The translations lookup _could_ be emulated to avoid
+    // the runtime overhead of loading it to find out if translations exist at all (QTranslator
+    // does not have a static method to check if a translation exists). However, this is not worth
+    // the effort and a source of errors. Load the translations and check if any were loaded.
 
-        if (auto translator = make_unique<QTranslator>(qApp);
+    auto translator = make_unique<QTranslator>();
+    available_ = translator->load(QLocale(), qApp->applicationName(), "_", ":/i18n");
+    enabled_ = settings.value(CFG_L10N_ENABLED, DEF_L10N_ENABLED).toBool();
+
+    if (available_ && enabled_)
+    {
+        translators.emplace_back(::move(translator));
+
+        if (translator = make_unique<QTranslator>();
             translator->load(QLocale(), "qtbase", "_",
                              QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
             translators.emplace_back(::move(translator));
 
-        if (auto translator = make_unique<QTranslator>(qApp);
-            translator->load(QLocale(), qApp->applicationName(), "_", ":/i18n"))
-            translators.emplace_back(::move(translator));
-
         for (const auto &t : translators)
-        {
-            DEBG << " -" << t->filePath();
             qApp->installTranslator(t.get());
-        }
     }
 }
 
@@ -44,11 +44,11 @@ Localization::~Localization()
 {
     for (const auto &t : translators)
         qApp->removeTranslator(t.get());
-
-    translators.clear();
 }
 
 bool Localization::isActive() const { return !translators.empty(); }
+
+bool Localization::isAvailable() const { return available_; }
 
 bool Localization::isEnabled() const { return enabled_; }
 

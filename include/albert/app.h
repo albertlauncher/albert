@@ -77,8 +77,11 @@ public:
 
     /// @}
 
-    /// @name Extensions
+    /// @name Plugins and extensions
     /// @{
+
+    /// Returns whether \ref PluginLoaders should load translations.
+    virtual bool localizationEnabled() const = 0;
 
     /// Get map of all registered extensions
     virtual const std::map<QString,Extension*> &extensions() const = 0;

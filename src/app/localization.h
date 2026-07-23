@@ -12,6 +12,7 @@ public:
     Localization(const QSettings &settings);
     ~Localization();
 
+    bool isAvailable() const;
     bool isActive() const;
 
     // Restart reqiured to properly take effect
@@ -19,6 +20,7 @@ public:
     bool isEnabled() const;
 
 private:
+    bool available_;
     bool enabled_;
     std::vector<std::unique_ptr<QTranslator>> translators;
 };

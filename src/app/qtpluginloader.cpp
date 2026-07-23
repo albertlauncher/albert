@@ -1,5 +1,6 @@
 // Copyright (c) 2022-2025 Manuel Schneider
 
+#include "app.h"
 #include "config.h"
 #include "logging.h"
 #include "plugininstance.h"
@@ -17,15 +18,18 @@ using namespace std;
 
 static QString fetchLocalizedMetadata(const QJsonObject &json, const QString &key)
 {
-    auto locale = QLocale();
+    if (app().localizationEnabled())
+    {
+        auto locale = QLocale();
 
-    auto k = u"%1[%2]"_s.arg(key, locale.name());
-    if (auto v = json[k].toString(); !v.isEmpty())
-        return v;
+        auto k = u"%1[%2]"_s.arg(key, locale.name());
+        if (auto v = json[k].toString(); !v.isEmpty())
+            return v;
 
-    k = u"%1[%2]"_s.arg(key, QLocale::languageToCode(locale.language()));
-    if (auto v = json[k].toString(); !v.isEmpty())
-        return v;
+        k = u"%1[%2]"_s.arg(key, QLocale::languageToCode(locale.language()));
+        if (auto v = json[k].toString(); !v.isEmpty())
+            return v;
+    }
 
     return json[key].toString();
 }
@@ -163,9 +167,7 @@ void QtPluginLoader::load()
     // Plugins are expected to throw a localized message and print english logs using their
     // logging category.
 
-    auto future = QtConcurrent::run([&loader=loader_, id=metadata().id]
-                                    -> unique_ptr<QTranslator> {
-        unique_ptr<QTranslator> translator;
+    auto future = QtConcurrent::run([&loader=loader_, id=metadata().id] -> unique_ptr<QTranslator> {
 
         auto tp = now();
         if (!loader.load())
@@ -174,15 +176,15 @@ void QtPluginLoader::load()
                     .arg(id).arg(diff<>(tp)).arg(loader.fileName());
 
         tp = now();
-        if (translator = make_unique<QTranslator>();
-            translator->load(QLocale(), id, "_", ":/i18n"))
-
+        if (auto translator = make_unique<QTranslator>();
+            app().localizationEnabled() && translator->load(QLocale(), id, "_", ":/i18n"))
+        {
             DEBG << u"%1: Translations loaded in %2 ms (%3)"_s
                         .arg(id).arg(diff<>(tp)).arg(translator->filePath());
+            return translator;
+        }
         else
-            translator.reset();
-
-        return translator;
+            return {};
     })
     .then(this, [this](unique_ptr<QTranslator> translator) {
         if (translator)
