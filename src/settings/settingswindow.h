@@ -5,6 +5,7 @@
 #include <QWidget>
 class FrontendRegistry;
 class HotkeyManager;
+class Localization;
 class PathManager;
 class PluginRegistry;
 class PluginsWidget;
@@ -19,6 +20,7 @@ class SettingsWindow final : public QWidget
 public:
     SettingsWindow(FrontendRegistry &,
                    HotkeyManager &,
+                   Localization &,
                    PathManager &,
                    PluginRegistry &,
                    QueryEngine &,
@@ -35,6 +37,7 @@ private:
     void init_tab_general_path(PathManager &);
     void init_tab_general_trayIcon(SystemTrayIcon &);
     void init_tab_general_telemetry(Telemetry &);
+    void init_tab_general_localization(Localization &);
     void init_tab_general_about();
     void keyPressEvent(QKeyEvent * event) override;
 

@@ -240,6 +240,7 @@ void Application::showSettings(QString plugin_id)
     if (!settings_window)
         settings_window = new SettingsWindow(frontend_registry,
                                              hotkey_manager,
+                                             localization,
                                              path_manager,
                                              plugin_registry,
                                              query_engine,

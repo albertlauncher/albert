@@ -5,6 +5,7 @@
 #include "frontendregistry.h"
 #include "hotkey.h"
 #include "hotkeymanager.h"
+#include "localization.h"
 #include "messagebox.h"
 #include "pathmanager.h"
 #include "pluginloader.h"
@@ -71,6 +72,7 @@ public:
 
 SettingsWindow::SettingsWindow(FrontendRegistry &fronten_registry,
                                HotkeyManager &hotkey_manager,
+                               Localization &localization,
                                PathManager &path_manager,
                                PluginRegistry &plugin_registry,
                                QueryEngine &query_engine,
@@ -87,6 +89,7 @@ SettingsWindow::SettingsWindow(FrontendRegistry &fronten_registry,
     init_tab_general_frontends(fronten_registry);
     init_tab_general_path(path_manager);
     init_tab_general_telemetry(telemetry);
+    init_tab_general_localization(localization);
     init_tab_general_about();
 
     ui.tabs->insertTab(ui.tabs->count(),
@@ -211,6 +214,22 @@ void SettingsWindow::init_tab_general_telemetry(Telemetry &telemetry)
 
     ui.label_telemetry->setText(QString("[%1](%2)")
                                     .arg(ui.label_telemetry->text(), privacy_notice_url));
+}
+
+void SettingsWindow::init_tab_general_localization(Localization &localization)
+{
+    ui.checkBox_localization->setEnabled(localization.isAvailable());
+    if (localization.isAvailable())
+    {
+        ui.checkBox_localization->setChecked(localization.isEnabled());
+        connect(ui.checkBox_localization, &QCheckBox::toggled, this, [&localization](bool v){
+            localization.setEnabled(v);
+            if (question(tr(restart_required_text)))
+                App::restart();
+        });
+    }
+    else
+        ui.checkBox_localization->setToolTip(tr("No translations available for your language."));
 }
 
 void SettingsWindow::init_tab_general_about()
