@@ -20,8 +20,11 @@
 using namespace albert;
 using namespace std;
 
-const auto privacy_notice_url = "https://albertlauncher.github.io/privacy/";
-
+const auto *privacy_notice_url = "https://albertlauncher.github.io/privacy/";
+const char *restart_required_text
+    = QT_TRANSLATE_NOOP("SettingsWindow",
+                        "For the changes to take effect, Albert has to be restarted. "
+                        "Do you want to restart Albert now?");
 
 class HotKeyDialog : public QDialog
 {
@@ -166,13 +169,8 @@ void SettingsWindow::init_tab_general_frontends(FrontendRegistry &frontend_regis
 
         if (frontend_registry.availableFrontends().at(index)->metadata().id
             != frontend_registry.frontend().loader().metadata().id)
-        {
-            auto text = tr("Changing the frontend requires a restart. "
-                           "Do you want to restart Albert?");
-
-            if (question(text))
+            if (question(tr(restart_required_text)))
                 App::restart();
-        }
     });
 }
 
@@ -195,8 +193,7 @@ void SettingsWindow::init_tab_general_path(PathManager &path_manager)
                 path_manager.setAdditionalPathEntries(new_add);
                 le->setToolTip((new_add + path_manager.originalPathEntries()).join(":"));
 
-                if (question(tr("For the changes to take effect, Albert has to be restarted. "
-                                "Do you want to restart Albert now?")))
+                if (question(tr(restart_required_text)))
                     App::restart();
             });
 }
