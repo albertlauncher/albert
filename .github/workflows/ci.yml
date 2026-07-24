@@ -22,7 +22,7 @@ jobs:
           path: source
 
       - name: Upload source artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: source-artifact
           include-hidden-files: true
@@ -130,7 +130,7 @@ jobs:
           mv "${dmg}.sha256" "${new_dmg}.sha256"
 
       - name: Upload macOS bundle artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: macos-bundle-artifact-${{ matrix.arch }}
           path: |
