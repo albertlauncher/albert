@@ -16,7 +16,7 @@ jobs:
     steps:
 
       - name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           submodules: 'recursive'
           path: source
@@ -162,7 +162,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@v4  # deletes .
+      - uses: actions/checkout@v7  # deletes .
         with:
           repository: albertlauncher/homebrew-albert
           token: ${{ secrets.PAT }}
@@ -209,7 +209,7 @@ jobs:
  #   runs-on: ubuntu-latest
  #   steps:
  #     - name: Checkout website source code
- #       uses: actions/checkout@v3
+ #       uses: actions/checkout@v7
  #       with:
  #         repository: albertlauncher/documentation
  #         ref: 'master'
@@ -270,7 +270,7 @@ jobs:
 #    key: ${{ steps.cache-macports.outputs.cache-primary-key }}
 
 # - name: Checkout source code
-#   uses: actions/checkout@v3
+#   uses: actions/checkout@v7
 #   with:
 #     submodules: recursive
 
