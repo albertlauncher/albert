@@ -36,7 +36,7 @@ jobs:
     steps:
 
       - name: Download source artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: source-artifact
           path: albert
@@ -66,7 +66,7 @@ jobs:
     steps:
 
       - name: Download source artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: source-artifact
 
@@ -91,7 +91,7 @@ jobs:
     steps:
 
       - name: Download source artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: source-artifact
           path: source
@@ -144,7 +144,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get all build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: macos-bundle-artifact-*
           merge-multiple: true
@@ -168,7 +168,7 @@ jobs:
           token: ${{ secrets.PAT }}
 
       - name: Get all build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: macos-bundle-artifact-*
           merge-multiple: true
