@@ -27,8 +27,8 @@ public:
     ///
     /// Unique identifier.
     ///
-    /// No duplicates allowed. To avoid name conflicts implementations should prefix their plugins
-    /// ids with the id of the loader id.
+    /// No duplicates allowed. To avoid name conflicts, implementations should prefix their plugin
+    /// ids with the loader id.
     ///
     QString id;
 
@@ -110,7 +110,7 @@ public:
     /// Some plugins have to be treated differently when loading.
     /// E.g. a frontends are an integral part of the app, there has to be
     /// exactly one frontend which will be loaded before any other plugins.
-    /// Some other pluins cannot be safely unloaded at runtime (e.g. Python).
+    /// Some other plugins cannot be safely unloaded at runtime (e.g. Python).
     ///
     enum class LoadType {
         User,          ///< Plugin should be user (un-)loadable.

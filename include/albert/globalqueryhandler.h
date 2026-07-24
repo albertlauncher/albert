@@ -27,7 +27,7 @@ class ALBERT_EXPORT GlobalQueryHandler : public albert::RankedQueryHandler
 {
 public:
     ///
-    /// Returns a list of special items that should show up on an emtpy query.
+    /// Returns a list of special items that should show up on an empty query.
     ///
     /// The empty pattern matches everything. For triggered queries this is desired and by design
     /// lots of triggered handlers reuse GlobalQueryHandler::rankItems. The empty global query is

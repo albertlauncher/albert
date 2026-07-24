@@ -12,7 +12,7 @@ namespace albert
 ///
 /// An Item with a score.
 ///
-/// Used to rank item results of mutliple handlers
+/// Used to rank item results of multiple handlers
 ///
 /// \ingroup core_query
 ///
@@ -55,7 +55,7 @@ public:
     ///
     /// The match score should make sense in the context of the matched item. Often "make sense"
     /// means it should be the fraction of matched characters over length of the string matched
-    /// agaist. The empty string should yield a match with a score of 0.
+    /// against. The empty string should yield a match with a score of 0.
     ///
     /// Must be in the range (0,1]. Not checked for performance.
     ///

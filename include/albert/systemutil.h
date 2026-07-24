@@ -40,7 +40,7 @@ ALBERT_EXPORT void setClipboardText(const QString &text);
 ALBERT_EXPORT bool havePasteSupport();
 
 ///
-/// Sets the system clipboard to _text_ and pastes _text_ to the front-most window.
+/// Sets the system clipboard to _text_ and pastes it to the front-most window.
 ///
 /// Check \ref albert::havePasteSupport before using this function.
 ///
@@ -58,8 +58,8 @@ ALBERT_EXPORT long long runDetachedProcess(const QStringList &commandline);
 /// Starts the _commandline_ in a new process, and detaches from it.
 ///
 /// Returns the PID on success; otherwise returns 0.
-/// The process will be started in the directory `working_dir`.
-/// If `working_dir` is empty, the working directory is the users home directory.
+/// The process will be started in the directory _working_dir_.
+/// Defaults to user home directory if _working_dir_ is empty.
 ///
 ALBERT_EXPORT long long runDetachedProcess(const QStringList &commandline, const QString &working_dir);
 

@@ -34,7 +34,7 @@ protected:
 /// Convenience holder class for hard plugin dependencies.
 ///
 /// Fetches and holds a weak pointer an extension `id` of type `T`. This class is intended to be
-/// initialized on plugin constuction without a try-catch block.
+/// initialized on plugin construction without a try-catch block.
 ///
 /// @note Hard dependencies have to be listed in the plugin metadata, such that the plugin loader is
 /// able to manage the loading order.

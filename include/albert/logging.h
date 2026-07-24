@@ -27,6 +27,6 @@ Q_DECLARE_LOGGING_CATEGORY(AlbertLoggingCategory)
 #define WARN qCWarning(AlbertLoggingCategory,).noquote()
 
 ///
-/// Creates a log object (level critial) you can use to pipe text into (<<).
+/// Creates a log object (level critical) you can use to pipe text into (<<).
 ///
 #define CRIT qCCritical(AlbertLoggingCategory,).noquote()

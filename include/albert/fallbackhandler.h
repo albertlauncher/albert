@@ -25,7 +25,7 @@ public:
     ///
     /// Returns fallback items for _query_.
     ///
-    virtual std::vector<std::shared_ptr<Item>> fallbacks(const QString &) const = 0;
+    virtual std::vector<std::shared_ptr<Item>> fallbacks(const QString &query) const = 0;
 
 protected:
 

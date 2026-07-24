@@ -26,7 +26,7 @@ public:
     ///
     /// Returns a list of scored matches for _context_.
     ///
-    /// The match score should make sense and often is the fraction of matched characters (legth of
+    /// The match score should make sense and often is the fraction of matched characters (length of
     /// query string / length of matched string). The empty pattern matches everything and returns
     /// all items with a score of 0.
     ///

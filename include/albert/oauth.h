@@ -121,12 +121,12 @@ public:
     const QString &accessToken() const;
 
     ///
-    /// Returns the access token.
+    /// Returns the refresh token.
     ///
     const QString &refreshToken() const;
 
     ///
-    /// Returns the access token.
+    /// Returns the access token expiration date.
     ///
     const QDateTime &tokenExpiration() const;
 

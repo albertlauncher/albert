@@ -11,7 +11,7 @@ namespace albert
 {
 
 ///
-/// An item utlized by ItemIndex
+/// An item utilized by ItemIndex
 ///
 /// \ingroup util_query
 ///
