@@ -35,7 +35,8 @@ public:
         setWindowTitle(SettingsWindow::tr("Set hotkey"));
         setLayout(new QVBoxLayout);
         layout()->addWidget(&label);
-        label.setText(SettingsWindow::tr("Press a key combination"));
+        label.setText(SettingsWindow::tr("Press a key combination\nBackspace to clear · Escape to cancel"));
+        label.setAlignment(Qt::AlignCenter);
         setWindowModality(Qt::WindowModal);
     }
 
