@@ -1,3 +1,162 @@
+## v35.0.0 (2026-07-24)
+
+### Features
+
+#### Core
+
+- _PluginsQueryHandler_ · Do not match plugins id
+- Drop CLI option --report
+- Create core dumps on fatal errors
+- _RateLimiter_ · Do not implicitly consume a granted acquire
+- _RateLimiter_ · Add coroutine awaiter (for smart pointers as well)
+- Do not kill async coroutines on cancel
+- [**BREAKING**] _TriggersQueryHandler_ · Do not match the handler id
+- _MatchConfig_ · Add option `ignore_underscore`
+- Add localization option
+
+#### Plugins
+
+- **Albert** · Add es, fr, ja, ko, pt, zh translations
+- **Applications** · Add es, fr, ja, ko, pt, zh translations
+- **Bluetooth** · Add es, fr, ja, ko, pt, zh translations
+- **Caffeine** · Add es, fr, ja, ko, pt, zh translations
+- **Calculator** · Add es, fr, ja, ko, pt, zh translations
+- **Chromium**
+  - Revert icon composition on hidpi displays
+  - Flatpak/Snapcraft support
+  - Drop relative path from profile combobox, add full path tooltip
+  - Add es, fr, ja, ko, pt, zh translations
+- **Clipboard** · Add es, fr, ja, ko, pt, zh translations
+- **Commandline** · Add es, fr, ja, ko, pt, zh translations
+- **Contacts** · Add es, fr, ja, ko, pt, zh translations
+- **Date and time** · Add es, fr, ja, ko, pt, zh translations
+- **Dictionary** · Add es, fr, ja, ko, pt, zh translations
+- **Documentation** · Add es, fr, ja, ko, pt, zh translations
+- **Files**
+  - Special value text ∞ for 0 time interval
+  - Add es, fr, ja, ko, pt, zh translations
+- **Firefox**
+  - Handle Firefox data dir under .config/mozilla and fallback to .mozilla/config
+  - Add chronologically ordered history search handler
+- **GitHub**
+  - Show user account on empty query
+  - Add es, fr, ja, ko, pt, zh translations
+- **Hash Generator** · Add es, fr, ja, ko, pt, zh translations
+- **Homebrew** · Add es, fr, ja, ko, pt, zh translations
+- **Locate** · Add copy action
+- **Media player remote** · Add es, fr, ja, ko, pt, zh translations
+- **Menu bar** · Add es, fr, ja, ko, pt, zh translations
+- **Obsidian** · Add es, fr, ja, ko, pt, zh translations
+- **Python plugins** · Add es, fr, ja, ko, pt, zh translations
+- **SSH** · Add es, fr, ja, ko, pt, zh translations
+- **Snippets** · Add es, fr, ja, ko, pt, zh translations
+- **Spotify** · Add es, fr, ja, ko, pt, zh translations
+- **System** · Add es, fr, ja, ko, pt, zh translations
+- **Time zones** · Add es, fr, ja, ko, pt, zh translations
+- **Timers** · Add es, fr, ja, ko, pt, zh translations
+- **URL Handler** · Add es, fr, ja, ko, pt, zh translations
+- **VPN** · Add es, fr, ja, ko, pt, zh translations
+- **Web search** · Add es, fr, ja, ko, pt, zh translations
+- **Widgets BoxModel** · Add es, fr, ja, ko, pt, zh translations
+
+### API
+
+#### Core
+
+- [**BREAKING**] _Item::Observer_ · `notify` > `onItemChanged`
+- Add shorthand `albert::app` for `albert::App::instance`
+- _RankItem_ · Make constructor non-explicit
+- [**BREAKING**] _App_ · Remove redundant instance getter
+- [**BREAKING**] _PluginProvider_ · Make loader getter const
+- [**BREAKING**] _App_ · Make several static member functions non-static
+- Add a l10n flag indicating localization usage
+
+### Performance
+
+#### Core
+
+- Avoid `QApplication` instantiation before commandline parsing
+- Optimize query string preprocessing
+
+### Fixes
+
+#### Core
+
+- Action exception text translation
+- Dev bundle suffix has no effect
+- Avoid unneccesary copies in global query
+- Restart does not work
+- CLI accepts invalid URLs
+- _AsyncGeneratorQueryHandler_ · Proper iterator handling
+- _PathManager_ · Setting additional paths has no immediate effect
+- SEGV on qFatal without initialized QGuiApplication
+- Errors while loading frontend not being catched
+- Ubuntu builds
+- Clicking the slider groove has no effect
+
+#### Plugins
+
+- **Arch Linux Wiki** · Proper query context usage
+- **Chromium**
+  - Crashes on FaviconsDatabase miss
+  - Loading plugin fails when configured profile directory disappeared
+  - _i18n_ · Fix wrong ts file, tidy up
+  - Ubuntu builds (IWYU)
+- **Documentation** · Invalid zeal download url (again)
+- **Files** · Time interval 0 not stored
+- **GitHub**
+  - Fedora builds
+  - Ubuntu builds
+- **Python plugins**
+  - Use PYBIND11_VERSION_MICRO instead *_PATCH
+  - Loss of precision in `RankItem`
+  - Do not catch action exceptions early
+  - Exclude hidden files on install
+  - Wrap C++ return type in `GeneratorQueryHandler::items`
+- **VSCode projects**
+  - `runTerminal` command
+  - No recent entries in current vscode versions
+- **Widgets BoxModel**
+  - Revert "Cache icon by item identifier"
+  - Redraw background when dpr changes
+
+### Documentation
+
+#### Core
+
+- _AsyncGeneratorQueryHandler_ · Add coro caveats warning
+
+### Miscellaneous Tasks
+
+#### Core
+
+- Remove feature request contact link
+- Dynamic endpoint lookup
+- Add ScopedFuture prototype
+- `expected` instead `exception` in RPCServer::sendMessage
+- _CI_ · Use LLVM@20 for macOS builds
+- Test
+
+#### Plugins
+
+- **Albert** · Adapt API changes
+- **Applications** · Adapt API changes
+- **Date and time** · Adapt API changes
+- **GitHub**
+  - Adapt to RateLimiter changes
+  - Adapt API changes
+- **Obsidian** · Adapt API changes
+- **Python plugins**
+  - Adapt API changes
+  - Update to pybind v3.0.4
+- **Snippets** · Adapt API changes
+- **Spotify**
+  - Update README with Spotify Development Mode warning
+  - Adapt API changes
+  - Adapt to RateLimiter changes
+- **Widgets BoxModel** · Adapt API changes
+
+
 ## v34.0.10 (2026-02-13)
 
 ### Features
