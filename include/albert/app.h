@@ -80,13 +80,13 @@ public:
     /// @name Plugins and extensions
     /// @{
 
-    /// Returns whether \ref PluginLoaders should load translations.
+    /// Returns `true` when a \ref PluginLoader should load translations, `false` otherwise.
     virtual bool localizationEnabled() const = 0;
 
     /// Get map of all registered extensions
     virtual const std::map<QString,Extension*> &extensions() const = 0;
 
-    /// Get map of all extensions of type T
+    /// Get map of all extensions of type `T`
     template<typename T>
     std::map<QString, T*> extensions() const
     {
@@ -97,7 +97,7 @@ public:
         return results;
     }
 
-    /// Get extension by id implicitly dynamic_cast'ed to type T.
+    /// Get extension by _id_ implicitly `dynamic_cast`'ed to type `T`.
     template<typename T>
     T* extension(const QString &id) const
     {
