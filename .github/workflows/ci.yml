@@ -16,13 +16,13 @@ jobs:
     steps:
 
       - name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           submodules: 'recursive'
           path: source
 
       - name: Upload source artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: source-artifact
           include-hidden-files: true
@@ -36,7 +36,7 @@ jobs:
     steps:
 
       - name: Download source artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: source-artifact
           path: albert
@@ -47,7 +47,7 @@ jobs:
           zip -r ${{ github.ref_name }}.zip albert -x "*/.*"
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           generate_release_notes: true
           files: |
@@ -66,7 +66,7 @@ jobs:
     steps:
 
       - name: Download source artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: source-artifact
 
@@ -91,7 +91,7 @@ jobs:
     steps:
 
       - name: Download source artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: source-artifact
           path: source
@@ -130,7 +130,7 @@ jobs:
           mv "${dmg}.sha256" "${new_dmg}.sha256"
 
       - name: Upload macOS bundle artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: macos-bundle-artifact-${{ matrix.arch }}
           path: |
@@ -144,13 +144,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get all build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: macos-bundle-artifact-*
           merge-multiple: true
 
       - name: Upload
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             Albert-*.dmg
@@ -162,13 +162,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@v4  # deletes .
+      - uses: actions/checkout@v7  # deletes .
         with:
           repository: albertlauncher/homebrew-albert
           token: ${{ secrets.PAT }}
 
       - name: Get all build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: macos-bundle-artifact-*
           merge-multiple: true
@@ -187,20 +187,6 @@ jobs:
           git add Casks/albert.rb
           git commit -m "${{ github.ref_name }}"
           git push
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
  # Appcast:
@@ -293,11 +279,3 @@ jobs:
 #    EDDSA_PRIVATE_KEY: ${{ secrets.EDDSA_PRIVATE_KEY }}
 #    VERSION: ${{ github.ref_name }}
 #  run: ./dist/macos/generate_appcast_item.sh "build/Albert-${{ github.ref_name }}.dmg" "${VERSION:1}" "$EDDSA_PRIVATE_KEY" appcast_item.txt
-
-
-
-
-
-
-
-
