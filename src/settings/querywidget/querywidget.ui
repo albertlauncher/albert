@@ -108,6 +108,9 @@ Recommended is a value in between, such that the results you use often are prefe
          <property name="pageStep">
           <number>5</number>
          </property>
+         <property name="tracking">
+          <bool>false</bool>
+         </property>
          <property name="orientation">
           <enum>Qt::Orientation::Horizontal</enum>
          </property>

@@ -15,8 +15,8 @@ QueryWidget::QueryWidget(QueryEngine &query_engine) : query_engine_(query_engine
 
     ui.slider_decay->setValue((int)(usage_scoring.memory_decay * 100));
 
-    connect(ui.slider_decay, &QSlider::sliderReleased, this,
-            [this]{ query_engine_.setMemoryDecay((double)ui.slider_decay->value()/100.0); });
+    connect(ui.slider_decay, &QSlider::valueChanged,
+            this, [this](int value) { query_engine_.setMemoryDecay((double)value/100.0); });
 
     ui.checkBox_prioritizePerfectMatch->setChecked(usage_scoring.prioritize_perfect_match);
 
