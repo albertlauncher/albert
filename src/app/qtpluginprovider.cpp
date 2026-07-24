@@ -5,8 +5,9 @@
 #include "qtpluginprovider.h"
 #include <QCoreApplication>
 #include <QDirIterator>
-using namespace std;
+#include <ranges>
 using namespace albert;
+using namespace std;
 
 
 QtPluginProvider::QtPluginProvider(QStringList paths)
@@ -34,17 +35,17 @@ QtPluginProvider::QtPluginProvider(QStringList paths)
     install_paths << "/usr/lib/";
     install_paths << "/usr/lib64/";
 #endif
-    for (const QString& p : install_paths)
+    for (const QString& p : as_const(install_paths))
         paths << QDir(p).filePath("albert");
 
     QStringList unique_canonical_paths;
-    for (const QString& p : paths)
+    for (const QString& p : as_const(paths))
         if (auto pfi = QFileInfo(p); pfi.isDir())  // implicit exists()
             unique_canonical_paths << pfi.canonicalFilePath();
     unique_canonical_paths.removeDuplicates();
 
     INFO << "Searching native plugins in" << unique_canonical_paths.join(", ");
-    for (const auto &path : unique_canonical_paths)
+    for (const auto &path : as_const(unique_canonical_paths))
     {
         QDirIterator dirIterator(path, QDir::Files);
         while (dirIterator.hasNext()) {
@@ -73,6 +74,6 @@ QString QtPluginProvider::description() const
 
 vector<PluginLoader*> QtPluginProvider::plugins() const
 {
-    auto v = plugin_loaders_ | views::transform([](const auto &uptr){ return uptr.get();});
+    auto v = plugin_loaders_ | views::transform(&unique_ptr<QtPluginLoader>::get);
     return {v.begin(), v.end()};
 }

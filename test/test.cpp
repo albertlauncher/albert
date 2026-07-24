@@ -22,6 +22,7 @@
 #include <QTimer>
 #include <set>
 #include <unistd.h>
+using namespace Qt::StringLiterals;
 using namespace albert;
 using namespace std::chrono;
 using namespace std;
@@ -313,21 +314,21 @@ void AlbertTests::plugin_registry()
 void AlbertTests::bench_tokenizer()
 {
     static const auto test_split_string =
-        QString(uR"(String_containing, can't 1,11 2.22 한글날 金沢 我爱你。)");
+        u"String_containing, can't 1,11 2.22 한글날 金沢 我爱你。"_s;
 
     QBENCHMARK { Q_UNUSED(preprocessQuery(test_split_string, {})); }
     QBENCHMARK { Q_UNUSED(preprocessQueryUntil2026(test_split_string, {})); }
     QBENCHMARK { Q_UNUSED(preprocessQueryLegacy(test_split_string)); }
 
     static const auto test_split_string1 =
-        QString(uR"(金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢)");
+        u"金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢金沢"_s;
 
     QBENCHMARK { Q_UNUSED(preprocessQuery(test_split_string1, {})); }
     QBENCHMARK { Q_UNUSED(preprocessQueryUntil2026(test_split_string1, {})); }
     QBENCHMARK { Q_UNUSED(preprocessQueryLegacy(test_split_string1)); }
 
     static const auto test_split_string2 =
-        QString(uR"(aaa bbb ccc aaa bbb ccc aaa bbb ccc)");
+        u"aaa bbb ccc aaa bbb ccc aaa bbb ccc"_s;
 
     QBENCHMARK { Q_UNUSED(preprocessQuery(test_split_string2, {})); }
     QBENCHMARK { Q_UNUSED(preprocessQueryUntil2026(test_split_string2, {})); }

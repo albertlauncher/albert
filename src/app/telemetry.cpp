@@ -19,7 +19,6 @@
 #include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QRestReply>
 #include <QSettings>
 #include <QTimeZone>
 #include <expected>
