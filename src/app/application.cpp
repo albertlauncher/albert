@@ -28,6 +28,7 @@
 #include "urldispatcher.h"
 #include "urlhandler.h"
 #include <QCommandLineParser>
+#include <QDir>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QPointer>
@@ -149,6 +150,7 @@ Application::Application(const Config &cfg):
     cache_location(initBaseDirectory(QStandardPaths::CacheLocation)),
     config_location(initBaseDirectory(QStandardPaths::AppConfigLocation)),
     data_location(initBaseDirectory(QStandardPaths::AppDataLocation)),
+    rpc_server(toQString(cache_location / "ipc_socket")),
     path_manager(*settings()),
     localization(*settings()),
     plugin_registry(extension_registry, cfg.load_enabled),
@@ -425,8 +427,11 @@ int ALBERT_EXPORT run(int argc, char **argv)
 
         if (const auto args = parser.positionalArguments(); !args.isEmpty())
         {
-            if (auto reply = RPCServer::sendMessage(
-                    QJsonDocument(QJsonArray::fromStringList(args)).toJson(QJsonDocument::Compact)))
+            auto cache_location = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+            const auto socket_path = QDir(cache_location).filePath("ipc_socket");
+            const auto message = QJsonDocument(QJsonArray::fromStringList(args))
+                                     .toJson(QJsonDocument::Compact);
+            if (auto reply = RPCServer::sendMessage(socket_path, message))
             {
                 cout << reply->data() << endl;
                 ::exit(EXIT_SUCCESS);

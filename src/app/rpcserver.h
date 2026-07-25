@@ -11,12 +11,13 @@ class RPCServer
 {
 public:
 
-    RPCServer();
+    RPCServer(const QString socket_path);
     ~RPCServer();
 
     void setMessageHandler(std::function<QByteArray(const QByteArray&)> handler);
 
-    static std::expected<QByteArray, QString> sendMessage(const QByteArray &bytes);
+    static std::expected<QByteArray, QString> sendMessage(const QString socket_path,
+                                                          const QByteArray &bytes);
 
 private:
 

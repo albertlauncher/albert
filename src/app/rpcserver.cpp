@@ -1,16 +1,10 @@
 // Copyright (c) 2022-2025 Manuel Schneider
 
-#include "albert/app.h"
 #include "albert/logging.h"
 #include "rpcserver.h"
-#include <QDir>
 #include <QLocalServer>
 #include <QLocalSocket>
-using namespace albert;
 using namespace std;
-
-static inline QString socketPath()
-{ return QDir(app().cacheLocation()).filePath("ipc_socket"); }
 
 class RPCServer::Private
 {
@@ -34,10 +28,9 @@ public:
     }
 };
 
-RPCServer::RPCServer() : d(make_unique<Private>())
+RPCServer::RPCServer(const QString socket_path) :
+    d(make_unique<Private>())
 {
-    auto socket_path = socketPath();
-
     DEBG << "Checking for a running instance…";
     QLocalSocket socket;
     socket.connectToServer(socket_path);
@@ -80,10 +73,11 @@ RPCServer::~RPCServer()
 
 void RPCServer::setMessageHandler(function<QByteArray(const QByteArray &)> h){ d->handler = h; }
 
-expected<QByteArray, QString> RPCServer::sendMessage(const QByteArray &bytes)
+expected<QByteArray, QString>
+RPCServer::sendMessage(const QString socket_path, const QByteArray &bytes)
 {
     QLocalSocket socket;
-    socket.connectToServer(socketPath());
+    socket.connectToServer(socket_path);
     if (!socket.waitForConnected(500))
         return unexpected("Failed to connect to albert.");
 
