@@ -400,51 +400,37 @@ int ALBERT_EXPORT run(int argc, char **argv)
     if (qApp != nullptr)
         qFatal("Calling run more than once is not allowed.");
 
-    Application::Config config;
+    // Client commandline interface
     {
         QCoreApplication qcoreapp(argc, argv);
         QCoreApplication::setApplicationName("albert");
         QCoreApplication::setApplicationVersion(ALBERT_VERSION_STRING);
 
-        auto opt_p = QCommandLineOption(
-            {"p", "plugin-dirs"},
-            Application::tr("Set the plugin dirs to use. Comma separated."),
-            Application::tr("directories"));
-
-        auto opt_n = QCommandLineOption(
-            {"n", "no-autoload"},
-            Application::tr("Do not implicitly load enabled plugins."));
-
         QCommandLineParser parser;
-        parser.addOptions({opt_p, opt_n});
+        parser.setApplicationDescription(Application::tr("Control a running instance."));
         parser.addPositionalArgument(Application::tr("command"),
                                      Application::tr("RPC command to send to the running instance."),
                                      Application::tr("[command [params...]]"));
-        parser.addVersionOption();
-        parser.addHelpOption();
-        parser.setApplicationDescription(Application::tr("Launch Albert or control a running instance."));
-        parser.process(qcoreapp);
 
-        if (const auto args = parser.positionalArguments(); !args.isEmpty())
-        {
-            auto cache_location = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-            const auto socket_path = QDir(cache_location).filePath("ipc_socket");
-            const auto message = QJsonDocument(QJsonArray::fromStringList(args))
-                                     .toJson(QJsonDocument::Compact);
-            if (auto reply = RPCServer::sendMessage(socket_path, message))
+        if (parser.parse(qcoreapp.arguments()))
+            if (const auto args = parser.positionalArguments();
+                !args.isEmpty())
             {
-                cout << reply->data() << endl;
-                ::exit(EXIT_SUCCESS);
+                auto cache_location = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+                const auto socket_path = QDir(cache_location).filePath("ipc_socket");
+                const auto message = QJsonDocument(QJsonArray::fromStringList(args))
+                                         .toJson(QJsonDocument::Compact);
+                if (auto reply = RPCServer::sendMessage(socket_path, message))
+                {
+                    cout << reply->data() << endl;
+                    ::exit(EXIT_SUCCESS);
+                }
+                else
+                {
+                    cout << reply.error().toStdString() << endl;
+                    ::exit(EXIT_FAILURE);
+                }
             }
-            else
-            {
-                cout << reply.error().toStdString() << endl;
-                ::exit(EXIT_FAILURE);
-            }
-        }
-
-        config.additional_plugin_paths = parser.value(opt_p).split(',', Qt::SkipEmptyParts);
-        config.load_enabled            = !parser.isSet(opt_n);
     }
 
 
@@ -459,6 +445,28 @@ int ALBERT_EXPORT run(int argc, char **argv)
     QApplication::setApplicationVersion(ALBERT_VERSION_STRING);
     QApplication::setWindowIcon(QIcon::fromTheme("albert"));
     QApplication::setQuitOnLastWindowClosed(false);
+
+    Application::Config config;
+    {
+        auto opt_p = QCommandLineOption(
+            {"p", "plugin-dirs"},
+            Application::tr("Set the plugin dirs to use. Comma separated."),
+            Application::tr("directories"));
+
+        auto opt_n = QCommandLineOption(
+            {"n", "no-autoload"},
+            Application::tr("Do not implicitly load enabled plugins."));
+
+        QCommandLineParser parser;
+        parser.addOptions({opt_p, opt_n});
+        parser.addVersionOption();
+        parser.addHelpOption();
+        parser.setApplicationDescription(Application::tr("Launch Albert."));
+        parser.process(qapp);
+
+        config.additional_plugin_paths = parser.value(opt_p).split(',', Qt::SkipEmptyParts);
+        config.load_enabled            = !parser.isSet(opt_n);
+    }
 
     // Initialize theme icon lookup
 
