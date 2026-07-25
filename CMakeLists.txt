@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.26)  # Required by BUILD_LOCAL_INTERFACE generator expression
 
 # dont touch! set by metatool
-set(PROJECT_VERSION 35.0.0)
+set(PROJECT_VERSION 35.1.0)
 
 project(albert
     VERSION ${PROJECT_VERSION}
@@ -436,7 +436,7 @@ if(Qt6_VERSION VERSION_GREATER_EQUAL "6.7.0")
         TS_FILES ${TS_FILES}
         SOURCES ${TRANSLATION_SOURCE_FILES}
         LUPDATE_OPTIONS
-          #-no-obsolete
+          -no-obsolete
           -locations none
         IMMEDIATE_CALL
     )
@@ -447,7 +447,7 @@ else()
         TS_FILES ${TS_FILES}
         SOURCES ${TRANSLATION_SOURCE_FILES}
         LUPDATE_OPTIONS
-          # -no-obsolete
+          -no-obsolete
           -locations none
     )
 endif()
