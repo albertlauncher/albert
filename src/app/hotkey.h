@@ -29,4 +29,5 @@ private:
 
 signals:
     void activated();
+    void revoked(const QString &message);
 };

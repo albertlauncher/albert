@@ -356,6 +356,29 @@ elseif(UNIX)
             PRIVATE -DMULTIARCH_TUPLE="${CMAKE_LIBRARY_ARCHITECTURE}"
         )
     endif()
+
+    find_package(Qt6 6.5 QUIET COMPONENTS WaylandClient)
+    find_package(PkgConfig QUIET)
+    if (PKG_CONFIG_FOUND)
+        pkg_check_modules(xkbcommon QUIET IMPORTED_TARGET xkbcommon)
+    endif()
+
+    if (Qt6WaylandClient_FOUND AND TARGET PkgConfig::xkbcommon)
+        enable_language(C)
+        qt6_generate_wayland_protocol_client_sources(${TARGET_LIB}
+            FILES "${PROJECT_SOURCE_DIR}/src/platform/xdg/vicinae-hotkey-v1.xml"
+        )
+        target_sources(${TARGET_LIB} PRIVATE
+            src/platform/xdg/waylandhotkey.cpp
+            src/platform/xdg/waylandhotkey.h
+        )
+        target_link_libraries(${TARGET_LIB} PRIVATE Qt6::WaylandClient PkgConfig::xkbcommon)
+        target_compile_definitions(${TARGET_LIB} PRIVATE HAVE_WAYLAND_HOTKEY)
+        message(STATUS "Building with Wayland global hotkey support (vicinae-hotkey-v1)")
+    else()
+        message(STATUS "Building without Wayland global hotkey support "
+                       "(requires Qt6WaylandClient >= 6.5 and xkbcommon)")
+    endif()
 endif()
 
 target_compile_features(${TARGET_LIB} PUBLIC cxx_std_23)

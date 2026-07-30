@@ -17,6 +17,8 @@ public:
     void setHotkey(std::unique_ptr<Hotkey> hotkey);
 
 private:
+    void onRevoked(const QString &message);
+
     std::unique_ptr<Hotkey> hotkey_;
 
 signals:
