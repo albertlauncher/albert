@@ -1,6 +1,19 @@
 ## v35.1.0 (2026-07-25)
 
+### Features
 
+- _HotkeyDialog_ · Describe the supported key actions
+
+### Fixes
+
+- Broken commandline interface
+- SEGV on sending message in client mode
+
+### Miscellaneous Tasks
+
+- Update CI workflow dependencies
+- Add stalebot setup for abandoned need-info issues
+- Let dependanbot manage github action dependencies
 
 
 ## v35.0.0 (2026-07-24)
