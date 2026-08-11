@@ -342,6 +342,19 @@ void Application::initRPC()
             else
                 return "'report' expects no arguments.";
 
+        else if (args[0] == "reload")
+
+            if (args.size() != 2)
+                return "'reload' expects an argument.";
+            else if (auto it = plugin_registry.plugins().find(args[1]);
+                     it == plugin_registry.plugins().end())
+                return u"No such plugin: '%1'."_s.arg(args[1]).toUtf8();
+            else
+            {
+                plugin_registry.setLoaded(args[1], false);
+                plugin_registry.setLoaded(args[1], true);
+            }
+
         else if (ranges::all_of(args, [](const auto &arg){
                      QUrl url(arg);
                      return url.isValid() && url.scheme() == qApp->applicationName();
