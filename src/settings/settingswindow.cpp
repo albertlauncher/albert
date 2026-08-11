@@ -18,6 +18,7 @@
 #include "telemetry.h"
 #include <QDialog>
 #include <QKeyEvent>
+using namespace Qt::StringLiterals;
 using namespace albert;
 using namespace std;
 
@@ -240,11 +241,11 @@ void SettingsWindow::init_tab_general_about()
                                qApp->applicationVersion()));
 
     QStringList links;
-    links << QStringLiteral("[Telegram](https://telegram.me/albert_launcher_community)");
-    links << QStringLiteral("[Discord](https://discord.com/invite/t8G2EkvRZh)");
-    links << QStringLiteral("[News](https://albertlauncher.github.io/news/)");
-    links << QStringLiteral("[GitHub](https://github.com/albertlauncher)");
-    links << QStringLiteral("[Donate](https://albertlauncher.github.io/donation/)");
+    links << u"[Telegram](https://telegram.me/albert_launcher_community)"_s;
+    links << u"[Discord](https://discord.com/invite/t8G2EkvRZh)"_s;
+    links << u"[News](https://albertlauncher.github.io/news/)"_s;
+    links << u"[GitHub](https://github.com/albertlauncher)"_s;
+    links << u"[%1](https://albertlauncher.github.io/donation/)"_s.arg(tr("Donate"));
     ui.label_links->setText(links.join(" · "));
 
     QStringList credits;
