@@ -1,0 +1,10 @@
+name: "Close abandoned issues"
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  call-stale:
+    uses: albertlauncher/.github/.github/workflows/close-abandoned-reusable.yml@main
+
