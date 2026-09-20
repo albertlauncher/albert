@@ -2,6 +2,7 @@
 
 #pragma once
 #include <QAbstractTableModel>
+#include "queryengine.h"
 class QueryEngine;
 namespace albert { class QueryHandler; }
 
@@ -25,6 +26,6 @@ private:
     Qt::ItemFlags flags(const QModelIndex &idx) const override;
 
     QueryEngine &engine;
-    std::vector<albert::QueryHandler*> handlers_;
+    std::vector<const QueryEngine::QueryHandler*> handlers_;
 
 };

@@ -59,9 +59,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry)
 
             h->setTrigger(t);
             h->setFuzzyMatching(f);
-            trigger_handlers_.emplace(piecewise_construct,
-                                      forward_as_tuple(id),
-                                      forward_as_tuple(h, t, f));
+            trigger_handlers_.try_emplace(id, h, t, f);  // extension ids are unique
             emit queryHandlerAdded(h);
 
             updateActiveTriggers();
@@ -89,7 +87,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry)
 
         if (const auto it = trigger_handlers_.find(id); it != trigger_handlers_.end())
         {
-            auto h = it->second.handler;
+            auto *h = it->second.instance;
             trigger_handlers_.erase(it);
             emit queryHandlerRemoved(h);
             updateActiveTriggers();
@@ -97,7 +95,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry)
 
         if (const auto it = global_handlers_.find(id); it != global_handlers_.end())
         {
-            auto h = it->second;
+            auto *h = it->second;
             global_handlers_.erase(it);
             global_query_.handlers.erase(id);
             emit globalQueryHandlerRemoved(h);
@@ -105,7 +103,7 @@ QueryEngine::QueryEngine(ExtensionRegistry &registry)
 
         if (const auto it = fallback_handlers_.find(id); it != fallback_handlers_.end())
         {
-            auto h = it->second;
+            auto *h = it->second;
             fallback_handlers_.erase(it);
             emit fallbackHandlerRemoved(h);
         }
@@ -188,13 +186,8 @@ unique_ptr<detail::Query> QueryEngine::query(QString string)
 // Trigger handlers
 //
 
-map<QString, QueryHandler*> QueryEngine::triggerHandlers()
-{
-    map<QString, albert::QueryHandler*> handlers;
-    for (const auto &[id, h] : trigger_handlers_)
-        handlers.emplace(id, h.handler);
-    return handlers;
-}
+const map<QString, QueryEngine::QueryHandler> &QueryEngine::triggerHandlers()
+{ return trigger_handlers_; }
 
 const map<QString, QueryHandler *> &QueryEngine::activeTriggerHandlers() const
 { return active_triggers_; }
@@ -203,25 +196,22 @@ void QueryEngine::updateActiveTriggers()
 {
     active_triggers_.clear();
     for (const auto&[id, h] : trigger_handlers_)
-        if (const auto&[it, success] = active_triggers_.emplace(h.trigger, h.handler); !success)
+        if (const auto&[it, success] = active_triggers_.emplace(h.trigger, h.instance); !success)
             WARN << QString("Trigger '%1' of '%2' already registered for '%3'.")
                         .arg(h.trigger, id, it->second->id());
     emit activeTriggersChanged();
 }
 
-QString QueryEngine::trigger(const QString &id) const
-{ return trigger_handlers_.at(id).trigger; }
-
 void QueryEngine::setTrigger(const QString &id, const QString& t)
 {
     auto &h = trigger_handlers_.at(id);
 
-    if (h.trigger == t || !h.handler->allowTriggerRemap())
+    if (h.trigger == t || !h.instance->allowTriggerRemap())
         return;
 
-    if (t.isEmpty() || t == h.handler->defaultTrigger())
+    if (t.isEmpty() || t == h.instance->defaultTrigger())
     {
-        h.trigger = h.handler->defaultTrigger();
+        h.trigger = h.instance->defaultTrigger();
         app().settings()->remove(QString("%1/%2").arg(id, CFG_TRIGGER));
     }
     else
@@ -230,22 +220,19 @@ void QueryEngine::setTrigger(const QString &id, const QString& t)
         app().settings()->setValue(QString("%1/%2").arg(id, CFG_TRIGGER), t);
     }
 
-    h.handler->setTrigger(h.trigger);
+    h.instance->setTrigger(h.trigger);
     updateActiveTriggers();
 }
-
-bool QueryEngine::fuzzy(const QString &id) const
-{ return trigger_handlers_.at(id).fuzzy; }
 
 void QueryEngine::setFuzzy(const QString &id, bool f)
 {
     auto &h = trigger_handlers_.at(id);
 
-    if (h.handler->supportsFuzzyMatching())
+    if (h.instance->supportsFuzzyMatching())
     {
         h.fuzzy = f;
         app().settings()->setValue(QString("%1/%2").arg(id, CFG_FUZZY), f);
-        h.handler->setFuzzyMatching(f);
+        h.instance->setFuzzyMatching(f);
     }
 }
 
@@ -254,14 +241,7 @@ void QueryEngine::setFuzzy(const QString &id, bool f)
 // Global handlers
 //
 
-map<QString, GlobalQueryHandler*> QueryEngine::globalHandlers()
-{
-    return global_handlers_;
-    // map<QString, albert::GlobalQueryHandler*> handlers;
-    // for (const auto &[id, h] : global_handlers_)
-    //     handlers.emplace(id, h.handler);
-    // return handlers;
-}
+const map<QString, GlobalQueryHandler*> &QueryEngine::globalHandlers() { return global_handlers_; }
 
 bool QueryEngine::isEnabled(const QString &id) const
 { return global_query_.handlers.contains(id); }
@@ -285,8 +265,7 @@ void QueryEngine::setEnabled(const QString &id, bool e)
 // Fallback handlers
 //
 
-map<QString, FallbackHandler*> QueryEngine::fallbackHandlers()
-{ return fallback_handlers_; }
+const map<QString, FallbackHandler*> &QueryEngine::fallbackHandlers() { return fallback_handlers_; }
 
 const map<pair<QString,QString>,int> &QueryEngine::fallbackOrder() const
 { return fallback_order_; }

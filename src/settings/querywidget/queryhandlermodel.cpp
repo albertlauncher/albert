@@ -6,7 +6,6 @@
 #include <QCoreApplication>
 #include <QHeaderView>
 #include <QMessageBox>
-#include <set>
 using namespace albert;
 using namespace std;
 
@@ -28,21 +27,19 @@ void QueryHandlerModel::updateHandlers()
 {
     beginResetModel();
 
-    handlers_.clear();
-    for (auto &[id, h] : engine.triggerHandlers())
-        handlers_.emplace_back(h);
+    handlers_ = engine.triggerHandlers()
+                | ranges::views::transform([](auto &p){ return &p.second; })
+                | ranges::to<vector>();
 
-    ::sort(begin(handlers_), end(handlers_),
-           [&](auto *a, auto *b){ return a->name() < b->name(); });
+    ranges::sort(handlers_,
+                 [&](auto *a, auto *b){ return a->instance->name() < b->instance->name(); });
 
     endResetModel();
 }
 
-int QueryHandlerModel::rowCount(const QModelIndex&) const
-{ return handlers_.size(); }
+int QueryHandlerModel::rowCount(const QModelIndex&) const { return handlers_.size(); }
 
-int QueryHandlerModel::columnCount(const QModelIndex&) const
-{ return column_count; }
+int QueryHandlerModel::columnCount(const QModelIndex&) const { return column_count; }
 
 QVariant QueryHandlerModel::data(const QModelIndex &idx, int role) const
 {
@@ -51,15 +48,15 @@ QVariant QueryHandlerModel::data(const QModelIndex &idx, int role) const
     if (idx.column() == (int) Column::Name)
     {
         if (role == Qt::DisplayRole)
-            return h->name();
+            return h->instance->name();
 
         else if (role == Qt::ToolTipRole)
-            return h->description();
+            return h->instance->description();
     }
 
     else if (idx.column() == (int) Column::Trigger)
     {
-        auto t = engine.trigger(h->id());
+        auto t = h->trigger;
 
         if (role == Qt::DisplayRole)
             return t.replace(" ", "•");
@@ -69,10 +66,10 @@ QVariant QueryHandlerModel::data(const QModelIndex &idx, int role) const
 
         else if (role == Qt::ToolTipRole)
         {
-            if (!h->allowTriggerRemap())
+            if (!h->instance->allowTriggerRemap())
                 return tr("This extension does not allow trigger remapping.");
             else if (auto it = engine.activeTriggerHandlers().find(t);
-                     it != engine.activeTriggerHandlers().end() && it->second != h)
+                     it != engine.activeTriggerHandlers().end() && it->second != h->instance)
                 return tr("Trigger '%1' is reserved for '%2'.")
                     .arg(t, it->second->name());
         }
@@ -80,16 +77,16 @@ QVariant QueryHandlerModel::data(const QModelIndex &idx, int role) const
         else if (role == Qt::ForegroundRole)
         {
             if (auto it = engine.activeTriggerHandlers().find(t);
-                it == engine.activeTriggerHandlers().end() || it->second != h)
+                it == engine.activeTriggerHandlers().end() || it->second != h->instance)
                 return QColor(Qt::red);
-            else if (!h->allowTriggerRemap())
+            else if (!h->instance->allowTriggerRemap())
                 return QColor(Qt::gray);
         }
     }
 
     else if (idx.column() == (int) Column::Global)
     {
-        if (auto *gh = dynamic_cast<const GlobalQueryHandler*>(h); gh)
+        if (auto *gh = dynamic_cast<const GlobalQueryHandler*>(h->instance); gh)
         {
             if (role == Qt::CheckStateRole)
                 return engine.isEnabled(gh->id()) ? Qt::Checked : Qt::Unchecked;
@@ -101,10 +98,10 @@ QVariant QueryHandlerModel::data(const QModelIndex &idx, int role) const
 
     else if (idx.column() == (int) Column::Fuzzy)
     {
-        if (h->supportsFuzzyMatching())
+        if (h->instance->supportsFuzzyMatching())
         {
             if (role == Qt::CheckStateRole)
-                return engine.fuzzy(h->id()) ? Qt::Checked : Qt::Unchecked;
+                return h->fuzzy ? Qt::Checked : Qt::Unchecked;
 
             else if (role == Qt::ToolTipRole)
                 return tr("Enable fuzzy matching.");
@@ -116,7 +113,7 @@ QVariant QueryHandlerModel::data(const QModelIndex &idx, int role) const
 
 bool QueryHandlerModel::setData(const QModelIndex &idx, const QVariant &value, int role)
 {
-    auto *h = handlers_[idx.row()];
+    auto *h = handlers_[idx.row()]->instance;
 
     if (idx.column() == (int) Column::Trigger)
     {
@@ -179,7 +176,7 @@ QVariant QueryHandlerModel::headerData(int section, Qt::Orientation orientation,
 
 Qt::ItemFlags QueryHandlerModel::flags(const QModelIndex &idx) const
 {
-    auto *h = handlers_[idx.row()];
+    auto *h = handlers_[idx.row()]->instance;
 
     switch ((Column) idx.column()) {
     case Column::Name:
