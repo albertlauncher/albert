@@ -22,6 +22,13 @@ class QueryEngine : public QObject
 
 public:
 
+    struct QueryHandler
+    {
+        albert::QueryHandler *instance;
+        QString trigger;
+        bool fuzzy;
+    };
+
     QueryEngine(albert::ExtensionRegistry&);
 
     std::unique_ptr<albert::detail::Query> query(QString query);
@@ -32,20 +39,18 @@ public:
     void storeItemActivation(const QString &query, const QString &extension,
                              const QString &item, const QString &action);
 
-    std::map<QString, albert::QueryHandler*> triggerHandlers();
-    std::map<QString, albert::GlobalQueryHandler*> globalHandlers();
-    std::map<QString, albert::FallbackHandler*> fallbackHandlers();
+    const std::map<QString, QueryHandler> &triggerHandlers();
+    const std::map<QString, albert::GlobalQueryHandler*> &globalHandlers();
+    const std::map<QString, albert::FallbackHandler*> &fallbackHandlers();
 
     // Trigger handlers
     const std::map<QString, albert::QueryHandler*> &activeTriggerHandlers() const;
-    QString trigger(const QString&) const;
-    void setTrigger(const QString&, const QString&);
-    bool fuzzy(const QString&) const;
-    void setFuzzy(const QString&, bool);
+    void setTrigger(const QString &id, const QString &trigger);
+    void setFuzzy(const QString &id, bool enabled);
 
     // Global handlers
-    bool isEnabled(const QString&) const;
-    void setEnabled(const QString&, bool = true);
+    bool isEnabled(const QString &id) const;
+    void setEnabled(const QString &id, bool enabled = true);
 
     // Fallback handlers
     const std::map<std::pair<QString, QString>, int> &fallbackOrder() const;
@@ -59,12 +64,6 @@ private:
     std::vector<albert::QueryResult> fallbacks(const QString &query);
 
     albert::ExtensionRegistry &registry_;
-
-    struct QueryHandler {
-        albert::QueryHandler *handler;
-        QString trigger;
-        bool fuzzy;
-    };
     std::map<QString, QueryHandler> trigger_handlers_;
     std::map<QString, albert::QueryHandler*> active_triggers_;
 
