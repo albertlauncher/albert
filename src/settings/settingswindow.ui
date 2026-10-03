@@ -346,6 +346,7 @@
   <tabstop>comboBox_frontend</tabstop>
   <tabstop>lineEdit_additional_path_entries</tabstop>
   <tabstop>checkBox_showTray</tabstop>
+  <tabstop>checkBox_localization</tabstop>
   <tabstop>checkBox_telemetry</tabstop>
   <tabstop>tabs</tabstop>
  </tabstops>
