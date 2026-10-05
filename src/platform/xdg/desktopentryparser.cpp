@@ -3,6 +3,7 @@
 #include "desktopentryparser.h"
 #include <QFile>
 #include <albert/logging.h>
+#include <libintl.h>
 using namespace Qt::StringLiterals;
 using namespace albert::detail;
 using namespace std;
