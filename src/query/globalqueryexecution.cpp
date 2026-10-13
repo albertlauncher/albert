@@ -22,23 +22,12 @@ struct GlobalQueryResult
     RankItem rank_item;
 };
 
-struct MappedData {
+struct ExecutionContext
+{
     GlobalQueryHandler *handler;
-    mutable vector<RankItem> rank_items;
+    vector<RankItem> rank_items;
     uint handling_duration;
     uint scoring_duration;
-};
-
-//V function(T &result, const U &intermediate)
-struct ReducedData {
-    struct Diagnostics {
-        albert::GlobalQueryHandler *handler;
-        uint handling_runtime = 0;
-        uint scoring_runtime = 0;
-        uint item_count = 0;
-    };
-    vector<Diagnostics> handler_diag;
-    vector<GlobalQueryResult> results;
 };
 
 class GlobalQueryExecution::Private
@@ -49,85 +38,72 @@ public:
     void addResultChunk();
 
     GlobalQueryExecution *q;
-    const vector<albert::GlobalQueryHandler*> handlers;
+    vector<ExecutionContext> execution_contexts;
     bool active;
-
-    QFutureWatcher<ReducedData> future_watcher;
-
+    QFutureWatcher<void> future_watcher;
     vector<GlobalQueryResult> unordered_results;
-    chrono::time_point<chrono::system_clock> start_timepoint;
-    chrono::time_point<chrono::system_clock> finish_timepoint;
 };
 
 GlobalQueryExecution::Private::Private(GlobalQueryExecution *execution,
-                                       vector<GlobalQueryHandler *> h) :
+                                       vector<GlobalQueryHandler*> h) :
     q(execution),
-    handlers(::move(h)),
+    execution_contexts(h.size()),
     active(true)
 {
-    start_timepoint = system_clock::now();
+    for (auto i = 0u; i < h.size(); ++i)
+        execution_contexts[i].handler = h[i];
 
-    auto future = QtConcurrent::mappedReduced(
-        handlers,
-        [this](GlobalQueryHandler *handler) -> MappedData {
-            // 6.4 Still no move semantics in QtConcurrent
-            MappedData data{.handler = handler,
-                            .rank_items = {},
-                            .handling_duration = 0,
-                            .scoring_duration = 0};
-            try {
-                auto t = system_clock::now();
-                if (q->context.query().isEmpty()) // important redirection
-                    for (auto &item : handler->handleEmptyQuery()) // order ???
-                        data.rank_items.emplace_back(::move(item), 0);
-                else
-                    data.rank_items = handler->rankItems(*q);
-                data.handling_duration = duration_cast<milliseconds>(system_clock::now()-t).count();
+    auto future = QtConcurrent::map(execution_contexts, [this](ExecutionContext &ctx) {
+        try {
+            auto t = system_clock::now();
+            if (q->context.query().isEmpty()) // important redirection
+                for (auto &item : ctx.handler->handleEmptyQuery()) // order ???
+                    ctx.rank_items.emplace_back(::move(item), 0);
+            else
+                ctx.rank_items = ctx.handler->rankItems(*q);
+            ctx.handling_duration = duration_cast<milliseconds>(system_clock::now()-t).count();
 
-                t = system_clock::now();
-                q->usageScoring().modifyMatchScores(handler->id(), data.rank_items);
-                data.scoring_duration = duration_cast<milliseconds>(system_clock::now()-t).count();
-            }
-            catch (const exception &e) {
-                WARN << u"GlobalQueryHandler '%1' threw exception:\n"_s.arg(handler->id()) << e.what();
-            }
-            catch (...) {
-                WARN << u"GlobalQueryHandler '%1' threw unknown exception:\n"_s.arg(handler->id());
-            }
-
-            return data;
-        },
-        [](ReducedData &reduced, const MappedData &mapped) {
-            reduced.handler_diag.emplace_back(mapped.handler,
-                                              mapped.handling_duration,
-                                              mapped.scoring_duration,
-                                              mapped.rank_items.size());
-            reduced.results.reserve(reduced.results.size() + mapped.rank_items.size());
-            for (auto &&rank_item : mapped.rank_items)
-                reduced.results.emplace_back(mapped.handler, ::move(rank_item));
+            t = system_clock::now();
+            q->usageScoring().modifyMatchScores(ctx.handler->id(), ctx.rank_items);
+            ctx.scoring_duration = duration_cast<milliseconds>(system_clock::now()-t).count();
         }
-    );
+        catch (const exception &e) {
+            WARN << u"GlobalQueryHandler '%1' threw exception:\n"_s.arg(ctx.handler->id()) << e.what();
+        }
+        catch (...) {
+            WARN << u"GlobalQueryHandler '%1' threw unknown exception:\n"_s.arg(ctx.handler->id());
+        }
+    });
 
-    QObject::connect(&future_watcher, &QFutureWatcher<ReducedData>::finished, q, [this] {
+    QObject::connect(&future_watcher, &QFutureWatcher<void>::finished,
+                     q, [this, tp=system_clock::now()]
+    {
         if (q->isValid())
         {
-            auto reduced = future_watcher.future().takeResult();
-
-            const auto total_duration = duration_cast<milliseconds>(system_clock::now() - start_timepoint).count();
-
-            static const auto header  = color::blue + u"╭ Handling╷  Scoring╷ Count╷ Query #%1 '%2'"_s + color::reset;
-            static const auto body    = color::blue + u"│%1 ms│%2 ms│%3│ %4"_s + color::reset;
-            static const auto footer  = color::blue + u"╰%1 ms╵         ╵%2╵ TOTAL"_s + color::reset;
-
+            static const auto header = color::blue + u"╭ Handling╷  Scoring╷ Count╷ Query #%1 '%2'"_s + color::reset;
             DEBG << header.arg(q->id).arg(q->context.query());
-            for (const auto &diag : reduced.handler_diag)
-                DEBG << body.arg(diag.handling_runtime, 6)
-                            .arg(diag.scoring_runtime, 6)
-                            .arg(diag.item_count, 6)
-                            .arg(diag.handler->id());
-            DEBG << footer.arg(total_duration, 6).arg(reduced.results.size(), 6);
 
-            unordered_results = ::move(reduced.results);
+            static const auto body = color::blue + u"│%1 ms│%2 ms│%3│ %4"_s + color::reset;
+            for (const auto &ctx : execution_contexts)
+                DEBG << body.arg(ctx.handling_duration, 6)
+                            .arg(ctx.scoring_duration, 6)
+                            .arg(ctx.rank_items.size(), 6)
+                            .arg(ctx.handler->id());
+
+            auto total = 0;
+            for (const auto &ec : execution_contexts)
+                total += ec.rank_items.size();
+            unordered_results.reserve(total);
+            for (auto &ctx : execution_contexts)
+                for (auto &rank_item : ctx.rank_items)
+                    unordered_results.emplace_back(ctx.handler, ::move(rank_item));
+
+            static const auto footer = color::blue + u"╰%1 ms╵         ╵%2╵ TOTAL"_s + color::reset;
+            DEBG << footer
+                        .arg(duration_cast<milliseconds>(system_clock::now() - tp).count(), 6)
+                        .arg(unordered_results.size(), 6);
+
+            execution_contexts.clear();
 
             // Required because while active fetchMore has no effect
             addResultChunk();
@@ -207,7 +183,7 @@ const albert::UsageScoring &GlobalQueryExecution::usageScoring() const
 
 void GlobalQueryExecution::cancel()
 {
-    disconnect(&d->future_watcher, &QFutureWatcher<ReducedData>::finished, this, nullptr);
+    disconnect(&d->future_watcher, &QFutureWatcher<void>::finished, this, nullptr);
     d->future_watcher.cancel();
 }
 
