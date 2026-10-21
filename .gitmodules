@@ -1,7 +1,3 @@
-[submodule "i18n"]
-	path = i18n
-	url = https://github.com/albertlauncher/i18n.git
-
 [submodule "lib/QHotkey"]
 	path = lib/QHotkey
 	url = https://github.com/QtCommunity/QHotkey
