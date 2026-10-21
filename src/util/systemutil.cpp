@@ -129,7 +129,7 @@ QString albert::toQString(const filesystem::path &path)
 #endif
 }
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 #include "platform.h"
 QString albert::runAppleScript(const QString &script)
 {

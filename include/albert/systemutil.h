@@ -66,7 +66,7 @@ ALBERT_EXPORT long long runDetachedProcess(const QStringList &commandline, const
 /// Returns a QString representation of _path_.
 ALBERT_EXPORT QString toQString(const std::filesystem::path &path);
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 ///
 /// Execute the AppleScript _script_. Returns any return value of the script.
 ///

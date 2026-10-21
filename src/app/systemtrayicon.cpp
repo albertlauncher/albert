@@ -65,7 +65,7 @@ void SystemTrayIcon::setEnabled(bool enable)
         tray_icon->setContextMenu(tray_menu.get());
         tray_icon->setVisible(true);
 
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
         // Some systems open menus on right click, show albert on left trigger
         QObject::connect(tray_icon.get(), &QSystemTrayIcon::activated,
                          tray_icon.get(), [this](QSystemTrayIcon::ActivationReason reason)

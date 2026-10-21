@@ -12,14 +12,14 @@ using namespace std;
 
 QtPluginProvider::QtPluginProvider(QStringList paths)
 {
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MACOS)
     paths << "../../../../lib";  // ./bin/albert.app/Contents/MacOS/
 #elif defined(Q_OS_UNIX)
     paths << "../lib";
 #endif
 
     QStringList install_paths;
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MACOS)
     install_paths << QDir::home().filePath("Library/Application Support/albert/PlugIns");
     install_paths << QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("../PlugIns");
 #elif defined(Q_OS_UNIX)
