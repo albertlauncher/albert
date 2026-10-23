@@ -1,7 +1,8 @@
 ARG BASE_IMAGE=archlinux:latest
 
 FROM ${BASE_IMAGE} AS base
-RUN pacman -Syu --verbose --noconfirm \
+RUN echo 'DisableSandboxSyscalls' >> /etc/pacman.conf \
+ && pacman -Syu --verbose --noconfirm \
     ccache \
     cmake \
     gcc \
