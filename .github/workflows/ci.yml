@@ -61,17 +61,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dockerfile: [arch.Dockerfile, fedora.Dockerfile, ubuntu.Dockerfile]
+        os: [archlinux, fedora, ubuntu]
 
     steps:
-
       - name: Download source artifact
         uses: actions/download-artifact@v8
         with:
           name: source-artifact
+          path: source
 
-      - name: Build docker test image
-        run: docker build . --file .docker/${{ matrix.dockerfile }} --target build-plugin
+      - uses: extractions/setup-just@v4
+
+      - name: Run dockerized tests
+        run: just --justfile source/.docker/justfile test-${{ matrix.os }}
 
   MacBuilds:
     needs: SourceArtifact
@@ -106,7 +108,7 @@ jobs:
           brew install llvm@20 qt qcoro6
           brew install --ignore-dependencies libqalculate qtkeychain # python libarchive sparkle
 
-      - name: Build and package
+      - name: Build
         run: |
           cmake -S source -B build \
             -DCMAKE_C_COMPILER=$(brew --prefix llvm@20)/bin/clang \
@@ -118,7 +120,7 @@ jobs:
             -DBUILD_PLUGIN_DOCS=OFF
           cmake --build build
 
-      - name: Build and package
+      - name: Package
         run: cd build && cpack -V
 
       - name: Append suffix

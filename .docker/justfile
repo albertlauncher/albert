@@ -1,0 +1,127 @@
+_choose:
+    @just --highlight --choose
+
+config:
+    @vim {{justfile()}}
+
+# --- Devel image builder
+
+build-devel-image os_name os_version="latest" *args:
+    docker build \
+      --progress plain \
+      --target dev \
+      --file {{os_name}}.Dockerfile \
+      --build-arg BASE_IMAGE="{{os_name}}:{{os_version}}" \
+      --tag albert:{{os_name}}-{{os_version}} \
+      {{args}} \
+      .
+
+# --- Test image builders
+
+_build_image os_name os_version *args:
+    docker build \
+      --progress plain \
+      --target base \
+      --file {{os_name}}.Dockerfile \
+      --build-arg BASE_IMAGE="{{os_name}}:{{os_version}}" \
+      --tag albert:{{os_name}}-{{os_version}} \
+      {{args}} \
+      .
+
+build-image-archlinux os_version='latest':
+    @just _build_image "archlinux" {{os_version}} --platform linux/amd64
+
+build-image-fedora os_version='latest':
+    @just _build_image "fedora" {{os_version}}
+
+build-image-ubuntu os_version='latest':
+    @just _build_image "ubuntu" {{os_version}}
+
+
+# --- Test stages
+
+run os_name os_version="latest" *args:
+    docker run --rm \
+      -v "${HOST_WORKSPACE:-$PWD/..}:/src:ro" \
+      -v albert-build-{{os_name}}-{{os_version}}:/build \
+      -v albert-ccache-{{os_name}}-{{os_version}}:/root/.cache/ccache \
+      --name "albert-{{os_name}}-{{os_version}}" \
+      albert:{{os_name}}-{{os_version}} \
+      {{args}}
+
+_configure os_name os_version *args:
+    @just run {{os_name}} {{os_version}} \
+      cmake -S /src -B /build \
+        -DBUILD_TESTS=ON \
+        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+        {{args}}
+
+_build os_name os_version *args:
+    @just run {{os_name}} {{os_version}} \
+      cmake --build /build {{args}}
+
+_test os_name os_version *args:
+    @just run {{os_name}} {{os_version}} \
+      ctest --test-dir /build --output-on-failure {{args}}
+
+_install os_name os_version *args:
+    @just run {{os_name}} {{os_version}} \
+      cmake --install $build_dir --prefix /usr {{args}}
+
+_configure-plugin os_name os_version plugin *args:
+    @just run {{os_name}} {{os_version}} \
+      cmake -S /src/plugins/{{plugin}} -B /build/plugin-{{plugin}} \
+        -DBUILD_TESTS=ON -DCMAKE_CXX_COMPILER_LAUNCHER=ccache {{args}}
+
+_build-plugin os_name os_version plugin *args:
+    @just run {{os_name}} {{os_version}} \
+      cmake --build /build/plugin-{{plugin}} {{args}}
+
+_test-plugin os_name os_version plugin *args:
+    @just run {{os_name}} {{os_version}} \
+      ctest --test-dir /build/plugin-{{plugin}} --output-on-failure {{args}}
+
+_install-plugin os_name os_version plugin *args:
+    @just run {{os_name}} {{os_version}} \
+      cmake --install $build_dir --prefix /usr {{args}}
+
+# --- Staged targets
+
+configure os_name os_version: \
+    (_configure os_name os_version)
+build os_name os_version: \
+    (configure os_name os_version) (_build os_name os_version)
+test os_name os_version: \
+    (build os_name os_version) (_test os_name os_version)
+install os_name os_version: \
+    (test os_name os_version) (_install os_name os_version)
+configure-plugin os_name os_version plugin: \
+    (install os_name os_version) (_configure-plugin os_name os_version plugin)
+build-plugin os_name os_version plugin: \
+    (configure-plugin os_name os_version plugin) (_build-plugin os_name os_version plugin)
+test-plugin os_name os_version plugin: \
+    (build-plugin os_name os_version plugin) (_test-plugin os_name os_version plugin)
+install-plugin os_name os_version plugin: \
+    (_test-plugin os_name os_version plugin) (_install-plugin os_name os_version plugin)
+
+# ---
+
+launch os_name="ubuntu" os_version="latest" *args: (build os_name os_version)
+    docker run --rm \
+      -v albert-build-ubuntu:/build \
+      -e QT_LOGGING_RULES="albert*=true" \
+      --name albert-X11 \
+      -e DISPLAY="host.docker.internal:0" \
+      albert:ubuntu /build/bin/albert -p /build/lib {{args}}
+
+# --- Presets
+
+build-archlinux version="latest": (build-image-archlinux version) (build "archlinux" version)
+build-fedora version="latest": (build-image-fedora version) (build "fedora" version)
+build-ubuntu version="24.04": (build-image-ubuntu version) (build "ubuntu" version)
+build-all: build-archlinux build-fedora build-ubuntu
+
+test-archlinux version="latest": (build-image-archlinux version) (test-plugin "archlinux" version "python")
+test-fedora version="latest": (build-image-fedora version) (test-plugin "fedora" version "python")
+test-ubuntu version="24.04": (build-image-ubuntu version) (test-plugin "ubuntu" version "python")
+test-all: test-archlinux test-fedora test-ubuntu
