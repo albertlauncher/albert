@@ -70,7 +70,7 @@ jobs:
           name: source-artifact
           path: source
 
-      - uses: extractions/setup-just@v2
+      - uses: extractions/setup-just@v4
 
       - name: Build docker test image
         run: |
