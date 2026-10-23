@@ -2,12 +2,14 @@ ARG BASE_IMAGE=fedora:latest
 
 FROM ${BASE_IMAGE} AS base
 RUN yum install -y \
+    ccache \
     cmake \
     gcc-c++ \
     libarchive-devel \
     libqalculate-devel \
     pkgconfig \
     python3-devel \
+    qcoro-qt6-devel \
     qt6-qtbase \
     qt6-qtbase-mysql \
     qt6-qtbase-odbc \
@@ -16,31 +18,8 @@ RUN yum install -y \
     qt6-qtsvg-devel \
     qt6-qttools-devel \
     qtkeychain-qt6-devel \
-    qcoro-qt6-devel \
     xml2 \
  && yum clean all \
  && rm -rf /var/cache/yum/*
 
-FROM base AS build
-COPY . /src
-ARG build_dir="/build"
-RUN cmake \
-      -S /src \
-      -B $build_dir \
-      -DBUILD_TESTS=ON \
- && cmake --build $build_dir -j$(nproc) \
- && cmake --install $build_dir --prefix /usr \
- && ctest --test-dir $build_dir --output-on-failure \
- && rm -rf $build_dir
-
-FROM build AS build-plugin
-RUN cmake \
-      -S /src/plugins/applications \
-      -B $build_dir \
-      -DCMAKE_PREFIX_PATH=/usr/lib64/cmake \
- && cmake --build $build_dir -j$(nproc) \
- && cmake --install $build_dir --prefix /usr \
- && ctest --test-dir $build_dir --output-on-failure \
- && rm -rf $build_dir
-
-ENTRYPOINT ["bash"]
+CMD ["bash"]

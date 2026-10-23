@@ -1,0 +1,96 @@
+_choose:
+    @just --command-color blue --highlight --choose
+
+
+_build_image base-image *args:
+    docker build --progress plain --target base --build-arg BASE_IMAGE={{base-image}} {{args}} .
+
+build-image-archlinux base-image='archlinux:latest':
+    just _build_image {{base-image}} \
+      --platform linux/amd64 \
+      --file archlinux.Dockerfile \
+      --tag albert:archlinux
+
+build-image-archlinuxarm base-image='agners/archlinuxarm':
+    just _build_image {{base-image}} \
+      --platform linux/arm64 \
+      --file archlinux.Dockerfile \
+      --tag albert:archlinuxarm
+
+build-image-fedora base-image="fedora:latest":
+    just _build_image {{base-image}} \
+      --file fedora.Dockerfile \
+      --tag albert:fedora
+
+build-image-ubuntu base-image='ubuntu:24.04':
+    just _build_image {{base-image}} \
+      --file ubuntu.Dockerfile \
+      --tag albert:ubuntu
+
+build-image-devel base-image='ubuntu:24.04':
+    just _build_image {{base-image}} \
+      --file ubuntu.Dockerfile \
+      --tag albert:devel \
+      --target dev
+
+run name *args:
+    docker run --rm \
+      -v "$PWD/..:/src:ro" \
+      -v albert-build-{{name}}:/build \
+      -v albert-ccache-{{name}}:/root/.cache/ccache \
+      -w /src \
+      --name albert-{{name}} \
+      albert:{{name}} \
+      {{args}}
+
+configure name *args:
+    just run {{name}} cmake -S /src -B /build -DCMAKE_CXX_COMPILER_LAUNCHER=ccache {{args}}
+
+build name *args: (configure name)
+    just run {{name}} cmake --build /build {{args}}
+
+#build-plugin name *args: (configure name)
+#    just run {{name}} cmake --build /build {{args}}
+
+test name *args: (configure name "-DBUILD_TESTS=ON") (build name)
+    just run {{name}} ctest --test-dir /build --output-on-failure {{args}}
+
+launch: #(build "ubuntu")
+    docker run --rm \
+      -v albert-build-ubuntu:/build \
+      -e QT_LOGGING_RULES="albert*=true" \
+      --name albert-X11 \
+      -e DISPLAY="host.docker.internal:0" \
+      albert:ubuntu /build/bin/albert -p  /build/lib
+
+build-archlinux: (build "archlinux")
+build-archlinuxarm: (build "archlinuxarm")
+build-fedora: (build "fedora")
+build-ubuntu: (build "ubuntu")
+
+test-archlinux: (test "archlinux")
+test-archlinuxarm: (test "archlinuxarm")
+test-fedora: (test "fedora")
+test-ubuntu: (test "ubuntu")
+
+test-all:
+    just test-archlinux
+    just test-archlinuxarm
+    just test-fedora
+    just test-ubuntu
+
+alias bia := build-image-archlinux
+alias biaa := build-image-archlinuxarm
+alias bif := build-image-fedora
+alias biu := build-image-ubuntu
+alias ba := build-archlinux
+alias baa := build-archlinuxarm
+alias bf := build-fedora
+alias bu := build-ubuntu
+alias ta := test-archlinux
+alias taa := test-archlinuxarm
+alias tf := test-fedora
+alias tu := test-ubuntu
+
+
+
