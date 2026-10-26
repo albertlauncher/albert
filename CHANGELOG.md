@@ -1,3 +1,87 @@
+## v35.2.0 (2026-10-26)
+
+### Features
+
+#### Core
+
+- Add RPC that allows to `reload` plugins
+
+#### Plugins
+
+- **Albert** · _i18n_ · Add italian translations
+- **Applications** · _i18n_ · Add italian translations
+- **Bluetooth** · _i18n_ · Add italian translations
+- **Caffeine** · _i18n_ · Add italian translations
+- **Calculator** · _i18n_ · Add italian translations
+- **Chromium** · _i18n_ · Add italian translations
+- **Clipboard** · _i18n_ · Add italian translations
+- **Commandline** · _i18n_ · Add italian translations
+- **Contacts** · _i18n_ · Add italian translations
+- **Date and time** · _i18n_ · Add italian translations
+- **Dictionary** · _i18n_ · Add italian translations
+- **Documentation** · _i18n_ · Add italian translations
+- **Emoji** · Skin tone selector
+- **Files** · _i18n_ · Add italian translations
+- **GitHub**
+  - _i18n_ · Add italian translations
+  - Cache saved search results
+  - Make "Show on Github" open dedicated search
+- **Hash Generator** · _i18n_ · Add italian translations
+- **Homebrew** · _i18n_ · Add italian translations
+- **Media player remote** · _i18n_ · Add italian translations
+- **Menu bar** · _i18n_ · Add italian translations
+- **Obsidian** · _i18n_ · Add italian translations
+- **Python plugins** · _i18n_ · Add italian translations
+- **SSH** · _i18n_ · Add italian translations
+- **Snippets** · _i18n_ · Add italian translations
+- **Spotify** · _i18n_ · Add italian translations
+- **System** · _i18n_ · Add italian translations
+- **Time zones** · _i18n_ · Add italian translations
+- **Timers** · _i18n_ · Add italian translations
+- **Translator**
+  - [**BREAKING**] · Drop default language option
+  - Show "init" item on queries after failed init
+- **URL Handler** · _i18n_ · Add italian translations
+- **VPN** · _i18n_ · Add italian translations
+- **Web search**
+  - Support portable icon path
+  - _i18n_ · Add italian translations
+- **Widgets BoxModel**
+  - _i18n_ · Add italian translations
+  - Log icon id on slow rendering
+
+### Fixes
+
+#### Core
+
+- Tabulator order in settings general tab
+- Dgettext not available on musl
+- Items may be destroyed in worker threads
+
+#### Plugins
+
+- **GitHub** · Saved search default config
+- **Translator** · Unhandled exception while loading plugin
+- **Web search** · Do not write engines after initial read
+
+### Documentation
+
+#### Core
+
+- Add missing changelog contents
+
+### Miscellaneous Tasks
+
+#### Core
+
+- Use reusable action for abandoned issues
+- Do not show i18n and ci chores in changelogs
+
+#### Plugins
+
+- **GitHub** · Update translations
+
+
 ## v35.1.0 (2026-07-25)
 
 ### Features
